@@ -7205,17 +7205,7 @@ i32 CPlay::ClearPlacedObjects() {
         while (!done) {
             if (i < PlacedObjectCellCount(blockIdx)) {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
-                CMapMgr* grid = g_gameReg->m_tileGrid;
-
-                i32 occupantId;
-                i32 cellX = obj->m_x;
-                i32 cellY = obj->m_y;
-                if (static_cast<u32>(cellX) < static_cast<u32>(grid->m_width)
-                    && static_cast<u32>(cellY) < static_cast<u32>(grid->m_height)) {
-                    occupantId = grid->m_rows[cellY][cellX].m_objectId;
-                } else {
-                    occupantId = 0;
-                }
+                i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                 if (occupantId != 0) {
                     CGameObject* out = NULL;
                     b32 found = MapLookupById(
@@ -7229,14 +7219,7 @@ i32 CPlay::ClearPlacedObjects() {
                     }
                     if (result == NULL) {
 
-                        CMapMgr* g = g_gameReg->m_tileGrid;
-                        i32 freeX = obj->m_x;
-                        i32 freeY = obj->m_y;
-                        if (static_cast<u32>(freeX) < static_cast<u32>(g->m_width)
-                            && static_cast<u32>(freeY) < static_cast<u32>(g->m_height)) {
-                            g->m_rows[freeY][freeX].m_objectId = 0;
-                            g->m_rows[freeY][freeX].m_flags &= 0xfffbffff;
-                        }
+                        ReleaseCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                         g_coordPool.Push(obj);

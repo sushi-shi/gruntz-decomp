@@ -5,6 +5,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
@@ -2498,14 +2499,7 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 if (static_cast<u32>(y) >= static_cast<u32>(g_gameReg->m_tileGrid->m_height)) {
                     continue;
                 }
-                CMapMgr* grid = g_gameReg->m_tileGrid;
-                i32 val;
-                if (static_cast<u32>(x) < static_cast<u32>(grid->m_width)
-                    && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
-                    val = grid->m_rows[y][x].m_occupantId;
-                } else {
-                    val = -1;
-                }
+                i32 val = g_gameReg->m_tileGrid->OccupantAt(x, y);
                 if (val == -1) {
                     continue;
                 }

@@ -549,14 +549,7 @@ i32 CGrunt::TryPowerupAtTile() {
     i32 py = (my & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 tx = px >> TILE_SHIFT_PX;
     i32 ty = py >> TILE_SHIFT_PX;
-    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-    i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
-        flags = 1;
-    } else {
-        flags = b->m_rowInts[ty][tx * 7];
-    }
+    i32 flags = g_gameReg->m_tileGrid->CellFlagsAt(tx, ty);
     if ((flags & BRICKZ_BLOCKED_MASK) || (flags & IDX(CELL_FLAG_SPECIAL))) {
         return 0;
     }
@@ -2015,14 +2008,7 @@ void CGrunt::StepBehavior(char*) {
         CMapMgr* grid = reg->m_tileGrid;
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 cellObj;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-            cellObj = 0;
-        } else {
-
-            cellObj = ((grid->m_rowInts[ty]))[tx * 7 + 2];
-        }
+        i32 cellObj = CellObjectIdAt(grid, tx, ty);
         if (cellObj != 0) {
             CGameObject* found = NULL;
             CGameObject* result = NULL;
@@ -2034,12 +2020,7 @@ void CGrunt::StepBehavior(char*) {
                 result = found;
             }
             if (result == NULL) {
-                grid = g_gameReg->m_tileGrid;
-                if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
-                    && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
-                    ((grid->m_rowInts[ty]))[tx * 7 + 2] = 0;
-                    ((grid->m_rowInts[ty]))[tx * 7] &= ~0x40000;
-                }
+                ReleaseCellObject(g_gameReg->m_tileGrid, tx, ty);
             } else {
 
                 CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_logicRecord->m_userLogic);
@@ -2147,14 +2128,7 @@ void CGrunt::StepBehavior(char*) {
                     gate = false;
                     break;
                 default: {
-                    CMapMgr* bd = g_gameReg->m_tileGrid;
-                    i32 cellId;
-                    if (static_cast<u32>(ptx) >= static_cast<u32>(bd->m_width)
-                        || static_cast<u32>(pty) >= static_cast<u32>(bd->m_height)) {
-                        cellId = 0;
-                    } else {
-                        cellId = ((bd->m_rowInts[pty]))[ptx * 7 + 3];
-                    }
+                    i32 cellId = g_gameReg->m_tileGrid->TileIdAt(ptx, pty);
                     if (cellId == -1) {
                         hazard = g_areaPitDeath;
                     } else {
