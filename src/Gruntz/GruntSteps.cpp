@@ -50,6 +50,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Wap32/Object.h>
 #include <Wap32/TileGeometry.h>
 
@@ -340,16 +341,10 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 
     RECT r1 = m_reachRect;
     RECT r2 = m_reachExclusionRect;
-    r1.left += dx;
-    r1.top += dy;
-    r1.right += dx;
-    r1.bottom += dy;
+    OFFSET_RECT_COMPONENTS(r1, dx, dy);
     r1.right++;
     r1.bottom++;
-    r2.left += dx;
-    r2.top += dy;
-    r2.right += dx;
-    r2.bottom += dy;
+    OFFSET_RECT_COMPONENTS(r2, dx, dy);
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
@@ -380,16 +375,10 @@ i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
 
     RECT r1 = m_vehicleContactRect;
     RECT r2 = m_vehicleContactExclusionRect;
-    r1.left += dx;
-    r1.top += dy;
-    r1.right += dx;
-    r1.bottom += dy;
+    OFFSET_RECT_COMPONENTS(r1, dx, dy);
     r1.right++;
     r1.bottom++;
-    r2.left += dx;
-    r2.top += dy;
-    r2.right += dx;
-    r2.bottom += dy;
+    OFFSET_RECT_COMPONENTS(r2, dx, dy);
 
     if (m_vehiclePickupType == PICKUP_NONE) {
         return 0;
