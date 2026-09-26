@@ -4781,8 +4781,11 @@ class DecodeNormalizationControls(unittest.TestCase):
         lines = _decode(self.BODY, self.REL, "Self")
         self.assertEqual([x.addr for x in lines], [0, 5, 6, 7])
         self.assertTrue(lines[0].asm.startswith("call "))
-        # the referent means "here" and only our own object spells it
-        self.assertIsNone(lines[0].ref)
+        # the referent means "here" and only our own object spells it: the
+        # line keeps it for `features`, the referent sequence skips it
+        from gruntz.walls.semdiff import referent_runs
+        self.assertEqual(lines[0].ref, "Self")
+        self.assertEqual(referent_runs(lines, "Self"), [])
 
 
 class SemDiffControls(unittest.TestCase):

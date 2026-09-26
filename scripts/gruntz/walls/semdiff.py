@@ -60,8 +60,10 @@ applied mechanically are applied, the rest are for the reader:
                             deltas are noise; fild/fistp deltas are not.
   * jump-table data         a function's own index/target table decodes as
                             junk instructions with huge displacements.
-                            FILTERED: yes - every line whose referent is the
-                            function itself is dropped.
+                            FILTERED: yes - decoding stops at the first table
+                            the function's own `jmp [r*4+T]` / `mov dl,[r+I]`
+                            addresses (cl emits every table after the code),
+                            and those self-relocated operands are not keys.
   * byte-continuation       the second line of a long instruction carries
                             bytes and no mnemonic. FILTERED: yes.
   * frame-size immediates   `sub esp,N` / `add esp,N` / `ret N` are the
@@ -113,6 +115,11 @@ MEM = re.compile(r"\[(e[a-d]x|e[sd]i|ebx|ecx|ebp)(?:\+e[a-z]{2}\*\d)?"
 EBP_MEM = re.compile(r"\[ebp(?:\+e[a-z]{2}(?:\*\d)?)?([+-]0x[0-9a-f]+)?\]")
 EBP_FRAME = re.compile(
     r"^(?:mov\s+ebp,esp|lea\s+ebp,\[esp(?:[+-]0x[0-9a-f]+)?\])$")
+#: a function's own jump table (`jmp [r*4+T]`) and byte index table
+#: (`mov dl,[r+I]`); both operands carry a relocation naming the function
+TABLE_OPERAND = re.compile(
+    r"^(?:jmp\s+DWORD PTR \[e[a-z]{2}\*4\+|"
+    r"mov\s+[a-d]l,BYTE PTR \[e[a-z]{2}\+)(0x[0-9a-f]+)\]$")
 IMM = re.compile(r"(?<![\[+])\b0x[0-9a-f]+\b")
 FP = re.compile(r"^(fild|fistp?|fld|fstp?|fmul|fdiv|fadd|fsub|fcom|fchs|fabs"
                 r"|frndint|fxch|fsqrt|fnstsw)\w*")
@@ -144,6 +151,26 @@ class Line:
         self.addr, self.asm, self.ref = addr, asm, ref
 
 
+def table_start(lines: list[Line], self_name: str) -> int | None:
+    """The offset of the function's first switch table, or None.
+
+    cl 5.0 emits every jump table and byte index table AFTER the function's
+    code, so the lowest table a real `jmp [r*4+T]` / `mov dl,[r+I]` addresses
+    is where the instructions end. The byte index table carries no relocation
+    at all, so the self-relocated DIR32 entries cannot bound it. An operand
+    must point FORWARD: a junk line decoded inside a table cannot move the
+    bound below the real one.
+    """
+    starts = []
+    for ln in lines:
+        if ln.ref != self_name:
+            continue
+        m = TABLE_OPERAND.match(ln.asm)
+        if m and int(m.group(1), 16) > ln.addr:
+            starts.append(int(m.group(1), 16))
+    return min(starts, default=None)
+
+
 def _decode(body: bytes, rel: dict, self_name: str | None = None) -> list[Line]:
     """Disassemble one function window and attach each relocation to the
     instruction whose bytes contain it.
@@ -151,22 +178,20 @@ def _decode(body: bytes, rel: dict, self_name: str | None = None) -> list[Line]:
     Given the function's own name, two normalizations that every consumer
     needs and none of them can do afterwards:
 
-      * the function's own jump/index TABLE is DATA embedded in .text, and
-        objdump decodes it as instructions.  The offsets a self-referent
-        relocation covers are the table (the rule `walls diagnose` already
-        applies through `_jump_table_bytes`), and a line STARTING inside them
-        is dropped.  A real self-transfer is never dropped by this: its
-        relocation sits at `addr+1`, so the instruction's own address is not
-        covered.
+      * the function's own jump/index TABLES are DATA embedded in .text, and
+        objdump decodes them as instructions.  Decoding stops at the first
+        table (`table_start`), and a line starting inside a self-relocated
+        DIR32 entry is dropped (`_jump_table_bytes`, the rule `walls
+        diagnose` applies).  A real self-transfer is never dropped by this:
+        its relocation sits at `addr+1`, so the instruction's own address is
+        not covered.
       * a relocation that names the function ITSELF on a real instruction is
-        a self-transfer - a recursive `call`, a tail `jmp`, or the indirect
-        `jmp` that ADDRESSES the table - and the delinked target resolves it
+        a self-transfer - a recursive `call`, a tail `jmp`, or the table
+        operand of a switch - and the delinked target resolves a transfer
         inside its own section with NO relocation at all.  The two sides then
-        disagree about a name that only means "here".  Measured 2026-08-23 on
-        the exact-row reflexivity control: `zPTree::Walk` and
-        `CDDrawSubMgrLeaf::ScanTree` are both byte-identical to retail and
-        both read as a one-instruction `selection` residual purely from this.
-        The referent is dropped; the instruction is kept.
+        disagree about a name that only means "here".  The line keeps the
+        self-referent (so `features` can drop the table operand as a key) and
+        `referent_runs` skips it.
     """
     table = _jump_table_bytes(rel, self_name) if self_name else ()
     out: list[Line] = []
@@ -188,9 +213,11 @@ def _decode(body: bytes, rel: dict, self_name: str | None = None) -> list[Line]:
             if addr <= off < addr + max(nbytes, 1):
                 ref = re.sub(r"\+0x[0-9a-f]+$", "", target)
                 break
-        if self_name and ref == self_name:
-            ref = None
         out.append(Line(addr, asm, ref))
+    if self_name:
+        cut = table_start(out, self_name)
+        if cut is not None:
+            out = [ln for ln in out if ln.addr < cut]
     return out
 
 
@@ -213,19 +240,18 @@ def features(lines: list[Line], self_name: str = "",
              ebp_frame: bool | None = None) -> dict[str, Counter]:
     """The five multisets, with the mechanical filters applied.
 
-    Dropped here: the function's own jump/index table (self-annotated lines,
-    which decode as junk), byte-continuation lines, the frame-size and
-    callee-cleanup immediates, and - in the handful of functions cl gives an
-    ebp frame - the `[ebp+-N]` operands, which are stack slots there and not
-    member displacements. Pass `ebp_frame` from BOTH sides (`ebp_is_frame(base,
-    target)`); reading it off one side masks asymmetrically.
+    Dropped here: the operands of the function's own table references
+    (self-referent lines keep only their mnemonic), byte-continuation lines,
+    the frame-size and callee-cleanup immediates, and - in the handful of
+    functions cl gives an ebp frame - the `[ebp+-N]` operands, which are
+    stack slots there and not member displacements. Pass `ebp_frame` from
+    BOTH sides (`ebp_is_frame(base, target)`); reading it off one side masks
+    asymmetrically.
     """
     if ebp_frame is None:
         ebp_frame = ebp_is_frame(lines)
     disp, imm, mnem, fp, store = (Counter() for _ in range(5))
     for ln in lines:
-        if self_name and ln.ref == self_name:
-            continue
         asm = ln.asm
         if not asm or BYTES_ONLY.match(asm):
             continue
@@ -235,6 +261,8 @@ def features(lines: list[Line], self_name: str = "",
             asm = EBP_MEM.sub("[esp]", asm)
         op = asm.split()[0]
         mnem[op] += 1
+        if self_name and ln.ref == self_name:
+            continue
         m = FP.match(asm)
         if m:
             fp[m.group(1)] += 1
@@ -262,11 +290,12 @@ def exclusive(fb: dict, ft: dict) -> list[tuple[str, str, int, int]]:
     return out
 
 
-def referent_runs(lines: list[Line]) -> list[str]:
-    """The ordered referent sequence, consecutive duplicates collapsed."""
+def referent_runs(lines: list[Line], self_name: str = "") -> list[str]:
+    """The ordered referent sequence, consecutive duplicates collapsed; the
+    function's own name means "here" and only one side spells it."""
     out: list[str] = []
     for ln in lines:
-        if ln.ref and (not out or out[-1] != ln.ref):
+        if ln.ref and ln.ref != self_name and (not out or out[-1] != ln.ref):
             out.append(ln.ref)
     return out
 
@@ -323,7 +352,8 @@ def adjudicate(token: str, top: int = 30, show_all: bool = False) -> int:
         for x, u, v in diffs[:top]:
             print(f"   {x:>14}  base {u:3d}  target {v:3d}")
 
-    _seq_report("referent sequence", referent_runs(lb), referent_runs(lt))
+    _seq_report("referent sequence", referent_runs(lb, b.name),
+                referent_runs(lt, b.name))
     _seq_report("cmd/key pairing", cmd_key_pairs(lb), cmd_key_pairs(lt))
     return 0
 
