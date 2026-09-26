@@ -5,7 +5,6 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicRecordHandler.h>
-#include <Gruntz/LogicRecordState.h>
 #include <Gruntz/Projectile.h>
 #include <Gruntz/StaticHazard.h>
 #include <Gruntz/TimeBomb.h>

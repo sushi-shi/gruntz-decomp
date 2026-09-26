@@ -23,7 +23,6 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicRecordHandler.h>
-#include <Gruntz/LogicRecordState.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
