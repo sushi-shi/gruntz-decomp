@@ -51,13 +51,15 @@ i32 CGrunt::UpdateDeathAnimation() {
             epoch = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
             m_idleWindowLo = dt;
             m_idleWindowHi = 0;
+            m_idleTimerLo = epoch;
+            m_idleTimerHi = 0;
         } else {
             m_idleWindowLo = dt;
             m_idleWindowHi = 0;
             epoch = static_cast<i32>(g_frameTime);
+            m_idleTimerLo = epoch;
+            m_idleTimerHi = 0;
         }
-        m_idleTimerLo = epoch;
-        m_idleTimerHi = 0;
         i64 e = static_cast<i64>(g_frameTime) - m_idleTimer;
         u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
         i32 r = static_cast<i32>(
