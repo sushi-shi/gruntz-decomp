@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/FaderConfig.h>
 
 GZ_ENUM_FORWARD(FaderMode);

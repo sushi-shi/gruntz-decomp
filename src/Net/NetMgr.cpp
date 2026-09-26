@@ -1,8 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Net/NetMgr.h>
 
-#include <AddrWord.h>
 #include <ComOutRef.h>
 #include <Enums.h>
 #include <Font/Font.h>
@@ -284,9 +285,8 @@ i32 CNetMgr::ReadProviderSelection(HWND hList) {
 
 
 
-    AddrWord<CNetProviderNode> cookie;
-    cookie.m_word = itemData;
-    m_selectedProvider = cookie.m_addr;
+    // API-forced: the combo box keeps the node pointer as its item data.
+    m_selectedProvider = reinterpret_cast<CNetProviderNode*>(itemData);
     return itemData;
 }
 
@@ -432,9 +432,8 @@ i32 CNetMgr::ReadSessionSelection(HWND hList) {
         return 0;
     }
 
-    AddrWord<CNetSessionListNode> cookie;
-    cookie.m_word = itemData;
-    m_selectedSession = cookie.m_addr;
+    // API-forced: the combo box keeps the node pointer as its item data.
+    m_selectedSession = reinterpret_cast<CNetSessionListNode*>(itemData);
     return itemData;
 }
 

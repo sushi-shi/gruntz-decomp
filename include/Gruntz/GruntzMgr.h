@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
 #include <Gruntz/DebugDisplayFlags.h>

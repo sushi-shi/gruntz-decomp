@@ -3,9 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/BootySeqPhase.h>
 #include <Gruntz/BootyStatRow.h>

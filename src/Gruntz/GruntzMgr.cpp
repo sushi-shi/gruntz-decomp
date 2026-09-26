@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntzMgr.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <Crypto/FecCrypt.h>
 #include <DDrawMgr/ColorDepth.h>

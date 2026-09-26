@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/VoiceManager.h>
-
-#include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
 #include <Dsndmgr/SoundStream.h>

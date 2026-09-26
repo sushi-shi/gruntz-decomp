@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_UTILS_H
 #define GRUNTZ_GRUNTZ_UTILS_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 struct tagMODULEENTRY32;

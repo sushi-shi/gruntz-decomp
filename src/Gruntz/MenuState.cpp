@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/MenuState.h>
-
-#include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>

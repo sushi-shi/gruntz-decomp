@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Enums.h>
 
 GZ_ENUM_CONST_BEGIN(CustomWorldCtrlId)

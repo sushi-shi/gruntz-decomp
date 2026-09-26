@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Rez/RezArchive.h>
-
-#include <Mfc.h>
 
 #include <Dsndmgr/SoundBankLoad.h>
 #include <Enums.h>

@@ -1,8 +1,7 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
-#include <Mfc.h>
-
-#include <AddrWord.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <Globals.h>

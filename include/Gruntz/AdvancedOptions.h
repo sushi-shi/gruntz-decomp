@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_ADVANCEDOPTIONS_H
 #define GRUNTZ_GRUNTZ_ADVANCEDOPTIONS_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 #include <Utils/RegMgr.h>
 

@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/LogicRecord.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/LogicTypeId.h>

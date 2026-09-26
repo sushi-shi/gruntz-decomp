@@ -3,9 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <Gruntz/FaderConfigKind.h>
 #include <Ints.h>
 

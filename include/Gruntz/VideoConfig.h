@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_VIDEOCONFIG_H_H
 #define GRUNTZ_GRUNTZ_VIDEOCONFIG_H_H
 
-#include <Mfc.h>
-
 #include <Gruntz/Resolution.h>
 #include <Ints.h>
 

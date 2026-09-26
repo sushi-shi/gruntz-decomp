@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/DDrawShadeBlit.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/ClutTable.h>
 #include <DDrawMgr/DDSurface.h>

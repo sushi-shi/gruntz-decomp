@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>

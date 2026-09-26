@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_COLORTINTREF_H
 #define GRUNTZ_GRUNTZ_COLORTINTREF_H
 
-#include <Mfc.h>
-
 #include <Gruntz/ColorTint.h>
 
 inline COLORREF TintColorRef(ColorTint tint) {

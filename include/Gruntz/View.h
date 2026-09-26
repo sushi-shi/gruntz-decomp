@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 class CDDSurface;
 
 #endif // GRUNTZ_GRUNTZ_CVIEW_H

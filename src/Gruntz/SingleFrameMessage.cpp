@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SingleFrameMessage.h>
-
-#include <Mfc.h>
 
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>

@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/ShadeTableCache.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/ColorHsv.h>
 #include <DDrawMgr/ColorHsvMacros.h>
@@ -15,7 +15,6 @@
 #include <Lith/BDefs.h>
 #include <Pix16.h>
 
-#include <afxtempl.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

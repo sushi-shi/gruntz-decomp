@@ -3,7 +3,6 @@
 
 #include <rva.h>
 
-#include <AddrWord.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <ZTools/Error.h>
@@ -16,9 +15,8 @@ GZ_ENUM_CONST_END(ZVecSentinel)
 
 inline char* ZVecNoScratch() {
 
-    AddrWord<char> sentinel;
-    sentinel.m_word = ZVEC_NO_SCRATCH_ADDRESS;
-    return sentinel.m_addr;
+    // byte-evidenced: ztools marks "no scratch" with a fixed non-null address.
+    return reinterpret_cast<char*>(ZVEC_NO_SCRATCH_ADDRESS);
 }
 
 class _zvec : public zErrHandling {

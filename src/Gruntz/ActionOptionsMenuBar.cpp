@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <Gruntz/ActionOptionsMenuBar.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>

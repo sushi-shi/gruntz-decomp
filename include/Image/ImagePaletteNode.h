@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Image/RezDecodeKind.h>
 #include <Ints.h>
 

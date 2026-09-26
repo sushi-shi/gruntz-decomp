@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/SBI_GruntMachine.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SBI_ImageSet.h>

@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/DirPal.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PaletteSize.h>

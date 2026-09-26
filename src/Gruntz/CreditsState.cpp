@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/CreditsState.h>
-
-#include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>

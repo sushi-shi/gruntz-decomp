@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/RasterRowOrder.h>
 #include <Enums.h>

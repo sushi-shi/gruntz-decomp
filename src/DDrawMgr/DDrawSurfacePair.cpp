@@ -1,10 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/DDrawSurfacePair.h>
 
-#include <Mfc.h>
-
-#include <AddrWord.h>
 #include <DDrawMgr/AniRecord.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -426,10 +425,9 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(surfaceManager->m_flags),
             SURFACEMGR_EMULATION_ONLY)) {
 
-        AddrWord<GUID> emulationOnly;
-        emulationOnly.m_word = DDCREATE_EMULATIONONLY;
-        hr = deviceManager
-                 ->CreateDevice(surfaceManager->m_hWnd, emulationOnly.m_addr, w, h, bpp, mode);
+        // API-forced: DirectDraw takes DDCREATE_EMULATIONONLY in the GUID* slot.
+        GUID* emulationOnly = reinterpret_cast<GUID*>(DDCREATE_EMULATIONONLY);
+        hr = deviceManager->CreateDevice(surfaceManager->m_hWnd, emulationOnly, w, h, bpp, mode);
     } else {
         hr = deviceManager->CreateDevice(surfaceManager->m_hWnd, NULL, w, h, bpp, mode);
     }
@@ -1024,11 +1022,11 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 fl
         return NULL;
     }
 
-    AddrWord<char> keyArg;
-    keyArg.m_word = key;
+    // byte-evidenced: the caller passes the palette name in the integer key slot.
+    const char* keyArg = reinterpret_cast<const char*>(key);
     char buf[0x50];
-    if (keyArg.m_addr != NULL) {
-        strcpy(buf, keyArg.m_addr);
+    if (keyArg != NULL) {
+        strcpy(buf, keyArg);
     } else {
         strcpy(buf, src->GetName());
     }

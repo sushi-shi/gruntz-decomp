@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 struct CKeyedNode {
     CKeyedNode() {
         m_key.Empty();

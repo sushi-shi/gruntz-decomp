@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_LOADGAMEMENU_H
 #define GRUNTZ_GRUNTZ_LOADGAMEMENU_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 BOOL CALLBACK GruntzLoadGameDlgProc(HWND, UINT, WPARAM, LPARAM);

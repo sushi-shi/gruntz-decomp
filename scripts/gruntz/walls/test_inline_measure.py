@@ -21,7 +21,7 @@ class InlineMeasureControls(unittest.TestCase):
         self.patch.start()
         self.addCleanup(self.patch.stop)
         self.source = self.directory / "constructor_sites.cpp"
-        self.source.write_text('''#include <Mfc.h>
+        self.source.write_text('''#include <StdAfx.h>
 #include <new>
 struct ConstructorSiteControl : CObject {
     int id, flags;

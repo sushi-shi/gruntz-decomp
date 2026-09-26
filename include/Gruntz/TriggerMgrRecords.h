@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Bute/ButeMgr.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GruntDirection.h>

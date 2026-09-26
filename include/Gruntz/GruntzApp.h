@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/GruntzCommandId.h>
 #include <Wap32/Wap32.h>
 

@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Ints.h>

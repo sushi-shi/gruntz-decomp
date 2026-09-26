@@ -1,10 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 
-#include <Mfc.h>
-
-#include <AddrWord.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -211,9 +210,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     if (m_selectValue != selectVal) {
         if (selectVal == 0) {
 
-            AddrWord<CImage> zero;
-            zero.m_word = selectVal;
-            m_selectGlyph = zero.m_addr;
+            m_selectGlyph = NULL;
         } else {
             CDDrawWorker* gm = m_glyphMap;
             i32 key = selectVal + 0x28;

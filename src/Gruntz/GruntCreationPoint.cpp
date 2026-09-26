@@ -1,8 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntCreationPoint.h>
 
-#include <AddrWord.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -48,9 +49,8 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
 
-            AddrWord<CGameObject> handle;
-            handle.m_addr = obj;
-            idx = handle.m_word;
+            // byte-evidenced: the shade-table selector is keyed by the object address.
+            idx = reinterpret_cast<i32>(obj);
         }
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);

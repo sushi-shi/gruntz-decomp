@@ -9,7 +9,6 @@
 #include <Ints.h>
 #include <Wap32/Object.h>
 
-#include <afxtempl.h>
 #include <ddraw.h>
 #include <stddef.h>
 

@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/ActionArea.h>
-
-#include <Mfc.h>
 
 #include <Gruntz/ActionAreaOwner.h>
 #include <Gruntz/ActNameRegistry.h>

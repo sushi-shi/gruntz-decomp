@@ -1,13 +1,12 @@
 """gruntz.verify.include_order - the canonical #include block (fast tier).
 
-Ported: DUPLICATES, ORDER, and header SELF-SUFFICIENCY are gated. The order
-(groups, blank-line separated): 0 config #defines; 1 <rva.h>; 2 the TU's own
-header; 3 the platform preludes in DEPENDENCY order (Mfc.h, MfcNoInline.h,
-MfcWin.h, Win32.h - they configure how later headers parse, so group 3 is
-RANKED, not sorted); 4 project headers; 5 libraries. A header that names a
-platform type pulls its own prelude (self-sufficiency; proven by the
-2026-08-02 standalone-compile sweep). Anything unrecognised in the block
-makes the file MANUAL: reported, never mangled.
+Gated: DUPLICATES, ORDER, and the PRELUDE contract. The order (groups, blank-
+line separated): 0 config #defines; 1 <StdAfx.h>, the project-wide prelude,
+first in every .cpp (Monolith's precompiled-header convention); 2 <rva.h>;
+3 the TU's own header; 4 project headers; 5 libraries. Headers never include
+the prelude: they rely on the including .cpp, as the LithTech sources do, and
+no file but StdAfx.h includes <afx*.h> or <windows.h> directly. Anything
+unrecognised in the block makes the file MANUAL: reported, never mangled.
 
     python3 -m gruntz.verify.include_order            # report
     python3 -m gruntz.verify.include_order --gate     # exit 1 on violations
@@ -32,51 +31,11 @@ PP_RE = re.compile(r"^\s*#\s*(\w+)")
 
 RVA_H = "rva.h"
 
-PRELUDE_RANK = {"Mfc.h": 0, "MfcNoInline.h": 1, "MfcWin.h": 2, "Win32.h": 3}
+PRELUDE = "StdAfx.h"
+PLATFORM_RE = re.compile(r"^(afx\w*|windows)\.h$", re.I)
 
-G_RVA, G_OWN, G_PRELUDE, G_PROJECT, G_LIBRARY = 1, 2, 3, 4, 5
-GROUPS = (G_RVA, G_OWN, G_PRELUDE, G_PROJECT, G_LIBRARY)
-
-AFXWIN_TOKENS = re.compile(
-    r"\b(CWnd|CDialog|CDC|CClientDC|CPaintDC|CWindowDC|CRgn|CBitmap|CPalette|"
-    r"CFont|CBrush|CPen|CGdiObject|CWinApp|CWinThread|CFrameWnd|CView|"
-    r"CDocument|CMenu|CButton|CEdit|CListBox|CComboBox|CStatic|CScrollBar|"
-    r"CRect|CPoint|CSize|"
-    r"DECLARE_MESSAGE_MAP|BEGIN_MESSAGE_MAP)\b")
-AFX_TOKENS = re.compile(
-    r"\b(CString|CObject|CFile|CArchive|CException|CMemFile|CRuntimeClass|"
-    r"CPtrArray|CPtrList|CObList|CObArray|CStringList|CStringArray|CByteArray|"
-    r"CWordArray|CDWordArray|CUIntArray|CMapPtrToPtr|CMapPtrToWord|"
-    r"CMapStringToPtr|CMapStringToOb|CMapStringToString|CMapWordToPtr|"
-    r"CMapWordToOb|CTime|CTimeSpan|POSITION|DECLARE_DYNAMIC|DECLARE_DYNCREATE|"
-    r"DECLARE_SERIAL|IMPLEMENT_DYNAMIC|IMPLEMENT_DYNCREATE|IMPLEMENT_SERIAL)\b")
-WIN_TOKENS = re.compile(
-    r"\b(HWND|HDC|HINSTANCE|HBITMAP|HPALETTE|HMODULE|HRESULT|HGLOBAL|LPARAM|"
-    r"WPARAM|LRESULT|tagRECT|tagPOINT|PALETTEENTRY|WINAPI|CALLBACK|IUnknown|"
-    r"CRITICAL_SECTION|LARGE_INTEGER|WNDPROC|COLORREF|LPDIRECT\w+)\b")
-MFC_SUPPLIERS = {"Mfc.h", "MfcWin.h", "MfcNoInline.h", "afx.h", "afxwin.h",
-                 "afxtempl.h", "afxcmn.h"}
-AFXWIN_SUPPLIERS = {"MfcWin.h", "afxwin.h", "afxcmn.h"}
-WIN_SUPPLIERS = MFC_SUPPLIERS | {"Win32.h", "windows.h"}
-
-FWD_RE = re.compile(r"^\s*(?:class|struct|union)\s+(\w+)\s*;", re.M)
-ELAB_RE = re.compile(r"\b(?:class|struct|union)\s+(\w+)")
-
-
-def _vendor_win_suppliers():
-    out = set()
-    vendor = REPO / "vendor"
-    if vendor.is_dir():
-        for p in vendor.rglob("*"):
-            if p.suffix.lower() == ".h":
-                try:
-                    txt = p.read_text(encoding="utf-8", errors="replace")
-                except OSError:
-                    continue
-                if re.search(r'^\s*#\s*include\s*[<"]windows\.h[>"]', txt, re.M):
-                    out.add(p.name)
-    return out
-
+G_PRELUDE, G_RVA, G_OWN, G_PROJECT, G_LIBRARY = 1, 2, 3, 4, 5
+GROUPS = (G_PRELUDE, G_RVA, G_OWN, G_PROJECT, G_LIBRARY)
 
 def repo_files():
     for d in SRC_DIRS:
@@ -103,7 +62,7 @@ def own_header(path: Path):
 def classify(header: str, own: str | None) -> int:
     if header == RVA_H:
         return G_RVA
-    if header in PRELUDE_RANK:
+    if header == PRELUDE:
         return G_PRELUDE
     if own and header == own:
         return G_OWN
@@ -113,8 +72,6 @@ def classify(header: str, own: str | None) -> int:
 
 
 def sort_key(group: int, header: str):
-    if group == G_PRELUDE:
-        return (PRELUDE_RANK[header],)
     return (header.lower(),)
 
 
@@ -248,69 +205,17 @@ def assert_conserved(path: Path, before, after, dropped):
             f"   gained: {list(gained.elements())[:8]}")
 
 
-_SUPPLY_CACHE: dict[str, tuple[bool, bool, bool]] = {}
-_VENDOR_WIN: set[str] | None = None
-
-
-def _header_text(name: str) -> str:
-    try:
-        return (REPO / "include" / name).read_text(encoding="utf-8",
-                                                   errors="replace")
-    except OSError:
-        return ""
-
-
-def _supply(name: str, stack=()) -> tuple[bool, bool, bool]:
-    global _VENDOR_WIN
-    if _VENDOR_WIN is None:
-        _VENDOR_WIN = _vendor_win_suppliers()
-    if name in AFXWIN_SUPPLIERS:
-        return True, True, True
-    if name in MFC_SUPPLIERS:
-        return True, False, True
-    if name in WIN_SUPPLIERS or name in _VENDOR_WIN:
-        return False, False, True
-    if name not in PROJECT_HEADERS or name in stack:
-        return False, False, False
-    if name in _SUPPLY_CACHE:
-        return _SUPPLY_CACHE[name]
-    afx = afxwin = win = False
-    for line in _header_text(name).splitlines():
-        if m := INC_RE.match(line):
-            a, aw, w = _supply(m.group(1), stack + (name,))
-            afx, afxwin, win = afx or a, afxwin or aw, win or w
-    _SUPPLY_CACHE[name] = (afx, afxwin, win)
-    return afx, afxwin, win
-
-
-def missing_prelude(path: Path, headers) -> list[str]:
-    if path.suffix != ".h" or path.name in PRELUDE_RANK:
-        return []
-    txt = path.read_text(encoding="utf-8", errors="replace")
-    incs = [m.group(1) for m in (INC_RE.match(ln) for ln in txt.splitlines())
-            if m]
-    afx_ok = any(_supply(h)[0] or h in MFC_SUPPLIERS for h in incs)
-    afxwin_ok = any(_supply(h)[1] or h in AFXWIN_SUPPLIERS for h in incs)
-    win_ok = afx_ok or any(_supply(h)[2] or h in WIN_SUPPLIERS for h in incs)
-    # comments are stripped: a type named in PROSE needs no declaration
-    body = "\n".join(ln for ln in txt.splitlines() if not INC_RE.match(ln))
-    body = re.sub(r"/\*.*?\*/", " ", body, flags=re.S)
-    body = re.sub(r"//[^\n]*", "", body)
-    declared = set(FWD_RE.findall(body)) | set(ELAB_RE.findall(body))
-    for h in incs:
-        if h in PROJECT_HEADERS:
-            declared |= set(FWD_RE.findall(_header_text(h)))
-    want = []
-    afxwin_hits = set(AFXWIN_TOKENS.findall(body)) - declared
-    if afxwin_hits and not afxwin_ok:
-        want.append("MfcWin.h")
-    afx_hits = set(AFX_TOKENS.findall(body)) - declared
-    if not want and afx_hits and not afx_ok:
-        want.append("Mfc.h")
-    win_hits = set(WIN_TOKENS.findall(body)) - declared
-    if not want and win_hits and not win_ok:
-        want.append("Mfc.h")
-    return want
+def prelude_violations(path: Path, headers) -> list[str]:
+    """The prelude contract for one file: a .cpp includes <StdAfx.h>; a header
+    never does; nothing but StdAfx.h includes <afx*.h> or <windows.h>."""
+    out = []
+    if path.suffix == ".cpp" and PRELUDE not in headers:
+        out.append(f"missing <{PRELUDE}>")
+    if path.suffix != ".cpp" and PRELUDE in headers:
+        out.append(f"header includes <{PRELUDE}>")
+    if path.name != PRELUDE:
+        out += [f"direct <{h}>" for h in headers if PLATFORM_RE.match(h)]
+    return out
 
 
 # Shared container/library headers sit below the game layers: nothing they
@@ -352,6 +257,8 @@ def audit(fix=False, fix_dupes=False, fix_prelude=False):
     changed = 0
     for path in repo_files():
         rel = path.relative_to(REPO).as_posix()
+        if path.name == PRELUDE:
+            continue
         try:
             head, entries, tail = parse(path)
         except Manual as e:
@@ -364,16 +271,18 @@ def audit(fix=False, fix_dupes=False, fix_prelude=False):
         dropped = [h for i, h in enumerate(headers) if h in headers[:i]]
         if dropped:
             dupes[rel] = sorted(set(dropped))
-        want_add = missing_prelude(path, headers)
-        if want_add:
-            preludes[rel] = want_add
+        found = prelude_violations(path, headers)
+        if found:
+            preludes[rel] = found
+        want_add = ([PRELUDE] if path.suffix == ".cpp"
+                    and PRELUDE not in headers else [])
         work = list(entries)
         if fix_prelude:
             work.extend(([], h) for h in want_add)
         want = render(head, work, tail, own)
         have = path.read_text(encoding="utf-8", errors="replace").splitlines()
         if want != have:
-            if not dropped and not want_add:
+            if not dropped and not found:
                 unordered.append(rel)
             do = fix or (fix_dupes and dropped) or (fix_prelude and want_add)
             if do:
@@ -397,7 +306,7 @@ def main(argv=None) -> int:
     ap.add_argument("--fix-dupes", action="store_true",
                     help="rewrite files to drop duplicate includes")
     ap.add_argument("--fix-prelude", action="store_true",
-                    help="rewrite files to add the missing platform prelude")
+                    help="add <StdAfx.h> to every .cpp that lacks it")
     ap.add_argument("--fix", action="store_true",
                     help="rewrite files into the full canonical order")
     ap.add_argument("--verbose", "-v", action="store_true",
@@ -409,7 +318,7 @@ def main(argv=None) -> int:
     ndupe = sum(len(v) for v in dupes.values())
     print(f"[include-order] duplicate includes:      {ndupe} in "
           f"{len(dupes)} file(s)")
-    print(f"[include-order] headers missing prelude: {len(preludes)}")
+    print(f"[include-order] prelude violations:      {len(preludes)}")
     print(f"[include-order] files out of order:      {len(unordered)}")
     print(f"[include-order] MANUAL (untouched):      {len(manual)}")
     if a.verbose:
@@ -428,11 +337,11 @@ def main(argv=None) -> int:
     if a.gate and (ndupe or unordered or preludes):
         print("[include-order] FATAL: include block is not canonical - fix "
               "with `python3 -m gruntz.verify.include_order --fix-dupes "
-              "--fix` (preludes: add the includer-side prelude by hand)")
+              "--fix --fix-prelude` (a header's platform include moves to StdAfx.h)")
         return 1
     if a.gate:
-        print("[include-order] OK - deduped, canonical order, every header "
-              "self-sufficient")
+        print("[include-order] OK - deduped, canonical order, StdAfx.h first "
+              "in every .cpp and nowhere else")
     return 0
 
 

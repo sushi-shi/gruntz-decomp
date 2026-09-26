@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/MapLogic.h>
-
-#include <Mfc.h>
 
 #include <Gruntz/ScrollState.h>
 #include <Gruntz/SerialArchive.h>
