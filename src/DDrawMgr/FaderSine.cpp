@@ -173,10 +173,10 @@ void CFaderSine::RenderFrame(i32 frame) {
     }
     m_previousFrame = frame;
     if (m_targetSurface != NULL) {
-        m_targetSurface->m_ddSurface->Unlock(NULL);
+        m_targetSurface->Unlock();
     }
     if (m_restoreSurface != NULL) {
-        m_restoreSurface->m_ddSurface->Unlock(NULL);
+        m_restoreSurface->Unlock();
     }
 }
 

@@ -111,8 +111,8 @@ void CFaderFlat::RenderFrame(i32 frame) {
     }
     m_previousFrame = frame;
 
-    m_srcSurface->m_ddSurface->Unlock(NULL);
-    m_dstSurface->m_ddSurface->Unlock(NULL);
+    m_srcSurface->Unlock();
+    m_dstSurface->Unlock();
 }
 
 RVA(0x0017f950, 0x24)

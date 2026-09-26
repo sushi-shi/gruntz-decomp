@@ -135,7 +135,7 @@ void CFaderLight::RenderFrame(i32 frame) {
             row++;
         }
         if (m_overlay != NULL) {
-            m_overlay->m_ddSurface->Unlock(NULL);
+            m_overlay->Unlock();
         }
     } else {
         i32 fr2 = SQR(frame);
@@ -176,10 +176,10 @@ void CFaderLight::RenderFrame(i32 frame) {
     }
     m_previousFrame = frame;
     if (m_targetSurface != NULL) {
-        m_targetSurface->m_ddSurface->Unlock(NULL);
+        m_targetSurface->Unlock();
     }
     if (m_restoreSurface != NULL) {
-        m_restoreSurface->m_ddSurface->Unlock(NULL);
+        m_restoreSurface->Unlock();
     }
 }
 
