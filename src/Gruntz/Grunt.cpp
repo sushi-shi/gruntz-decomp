@@ -57,6 +57,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Projectile.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/RockNeighborMask.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
@@ -1879,7 +1880,7 @@ i32 CGrunt::Place(
     if (shade == NULL) {
         shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    SET_DRAW_FILL_ARG_FIRST(m_object, SHADE_PAL_16, shade);
+    m_object->SetDrawFill(SHADE_PAL_16, shade);
     if (entranceMode != GRUNT_ENTRANCE_NONE) {
         BuildEntranceAnimation(entranceMode);
         return 1;

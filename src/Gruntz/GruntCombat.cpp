@@ -58,6 +58,7 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -499,7 +500,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
     CShadeTable* sel =
         g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
     CWwdSpriteObject* h = m_object;
-    SET_DRAW_FILL(h, SHADE_PAL_16, sel);
+    h->SetDrawFill(SHADE_PAL_16, sel);
 }
 
 RVA(0x00057890, 0x19c)
@@ -2288,7 +2289,7 @@ kindDispatch:
                     g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
                 CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
-                SET_DRAW_FILL(obj, cmd, sel);
+                obj->SetDrawFill(cmd, sel);
             }
         }
         i64 left = m_conversionTiming.m_interval + m_conversionTiming.m_start

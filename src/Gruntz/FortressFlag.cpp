@@ -18,6 +18,7 @@
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Particlez.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
@@ -111,7 +112,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     i32 idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdSpriteObject* spr = m_object;
-    SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
+    spr->SetDrawFill(SHADE_PAL_16, sel);
 }
 
 RVA(0x00046080, 0x102)
@@ -145,7 +146,7 @@ i32 CFortressFlag::SerializeDispatch(
         i32 idx = IDX(g_gameReg->m_players[spr->m_smarts].m_color);
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
-        SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
+        spr->SetDrawFill(SHADE_PAL_16, sel);
     }
     return 1;
 }

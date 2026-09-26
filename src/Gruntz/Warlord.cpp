@@ -23,6 +23,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
@@ -99,7 +100,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
     CWwdSpriteObject* d = m_object;
-    SET_DRAW_FILL(d, SHADE_PAL_16, sel);
+    d->SetDrawFill(SHADE_PAL_16, sel);
 
     switch (owner) {
         case WARLORDZ_KING:
@@ -288,7 +289,7 @@ i32 CWarlord::SerializeDispatch(
             }
 
             CWwdSpriteObject* sprite = m_object;
-            SET_DRAW_FILL(sprite, SHADE_PAL_16, sel);
+            sprite->SetDrawFill(SHADE_PAL_16, sel);
             break;
         }
     }

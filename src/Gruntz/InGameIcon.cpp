@@ -29,6 +29,7 @@
 #include <Gruntz/MapCellInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -431,7 +432,7 @@ i32 CInGameIcon::HandleInput() {
         return 1;
     }
     CWwdSpriteObject* o = m_object;
-    SET_DRAW_FILL(o, SHADE_PAL_16, rec);
+    o->SetDrawFill(SHADE_PAL_16, rec);
     return 1;
 }
 
@@ -530,7 +531,7 @@ i32 CInGameIcon::PeekCycle() {
     if (m_peekTiming.Expired()) {
         CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(GetRandomNumber() % 0x11, 0);
         CWwdSpriteObject* o = m_object;
-        SET_DRAW_FILL(o, SHADE_PAL_16, rec);
+        o->SetDrawFill(SHADE_PAL_16, rec);
         m_peekTiming.Start(0xfa);
     }
     return 0;

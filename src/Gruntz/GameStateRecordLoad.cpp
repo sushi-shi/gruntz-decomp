@@ -13,6 +13,7 @@
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecordMacros.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -213,7 +214,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     b32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);
     CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), flag);
     CWwdSpriteObject* cb = m_object;
-    SET_DRAW_FILL(cb, SHADE_PAL_16, r);
+    cb->SetDrawFill(SHADE_PAL_16, r);
 
     if (m_gruntKind == GRUNT_GHOST) {
         CWwdSpriteObject* cb2 = m_object;
