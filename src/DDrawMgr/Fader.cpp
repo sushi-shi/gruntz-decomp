@@ -8,9 +8,6 @@
 #include <Gruntz/ShapeFaderConfig.h>
 #include <Wap32/ScreenGeometry.h>
 
-DATA(0x001f07bc)
-static const float s_msToSeconds = 0.001f;
-
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
     m_table = NULL;
@@ -60,9 +57,8 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
         loops++;
     }
     float fLoops = static_cast<float>(loops);
-    m_measuredFps = static_cast<i32>(
-        (fLoops / (static_cast<float>(GetTickCount() - startTick) * s_msToSeconds))
-    );
+    m_measuredFps =
+        static_cast<i32>((fLoops / (static_cast<float>(GetTickCount() - startTick) * 0.001f)));
     EndFade();
 }
 
@@ -101,9 +97,8 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
         loops++;
     }
     float fLoops = static_cast<float>(loops);
-    m_measuredFps = static_cast<i32>(
-        (fLoops / (static_cast<float>(GetTickCount() - startTick) * s_msToSeconds))
-    );
+    m_measuredFps =
+        static_cast<i32>((fLoops / (static_cast<float>(GetTickCount() - startTick) * 0.001f)));
     EndFade();
 }
 
