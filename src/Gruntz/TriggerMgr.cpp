@@ -76,7 +76,7 @@ RVA(0x00077f80, 0xab)
 CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
     i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 playerIndex = g->m_playerIndex;
-    CGrunt** units = &m_units[playerIndex * TM_UNITS_PER_PLAYER];
+    CGrunt** units = PlayerUnits(playerIndex);
     i32 ty = g->m_lastTilePx.m_y >> TILE_SHIFT_PX;
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
@@ -1158,7 +1158,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
         firstPlayerIndex = playerSelector;
     }
     if (firstPlayerIndex <= lastPlayerIndex) {
-        CGrunt** units = &m_units[firstPlayerIndex * TM_UNITS_PER_PLAYER];
+        CGrunt** units = PlayerUnits(firstPlayerIndex);
         i32 playersRemaining = lastPlayerIndex - firstPlayerIndex + 1;
         do {
             i32 unitsRemaining = TM_UNITS_PER_PLAYER;
@@ -1919,7 +1919,7 @@ i32 CTriggerMgr::SpawnGrunt(
     i32 freeUnitIndex = 0;
     i32 dstBaseIndex = dstPlayerIndex * TM_UNITS_PER_PLAYER;
     if (m_units[dstBaseIndex] != NULL) {
-        CGrunt** units = &m_units[dstPlayerIndex * TM_UNITS_PER_PLAYER];
+        CGrunt** units = PlayerUnits(dstPlayerIndex);
         while (freeUnitIndex < TM_UNITS_PER_PLAYER) {
             units++;
             freeUnitIndex++;
@@ -2420,7 +2420,7 @@ void CTriggerMgr::ClearSelections() {
 
 RVA(0x0007d140, 0x61)
 i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
-    CGrunt** units = &m_units[playerIndex * TM_UNITS_PER_PLAYER];
+    CGrunt** units = PlayerUnits(playerIndex);
     i32 unitsRemaining = TM_UNITS_PER_PLAYER;
     do {
         CGrunt* unit = *units;
