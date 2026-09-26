@@ -312,6 +312,7 @@ i32 RotateRasterize(
     i32 clipBottom
 ) {
     float leftBound, topBound, rightBound, bottomBound;
+    i32 i;
     if (clipLeft == -1) {
         topBound = 0.0f;
         rightBound = static_cast<float>(static_cast<i32>(dst->m_apiDesc.dwWidth));
@@ -324,33 +325,31 @@ i32 RotateRasterize(
         bottomBound = static_cast<float>(clipBottom);
     }
 
-    ClipVtx* out = g_rasterOddClipPassBuffer;
+    ClipVtx* out;
     {
         ClipVtx* prev = &verts[n - 1];
         ClipVtx* cur = verts;
-        if (n > 0) {
-            i32 j = n;
-            do {
-                if (prev->m_x >= leftBound) {
-                    *out++ = *prev;
-                }
-                if ((prev->m_x < leftBound && cur->m_x >= leftBound)
-                    || (prev->m_x >= leftBound && cur->m_x < leftBound)) {
-                    out->m_x = leftBound;
-                    out->m_y = prev->m_y
-                               + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
-                                     * (leftBound - prev->m_x);
-                    out->m_u = prev->m_u
-                               + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x))
-                                     * (leftBound - prev->m_x);
-                    out->m_v = prev->m_v
-                               + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x))
-                                     * (leftBound - prev->m_x);
-                    out++;
-                }
-                prev = cur;
-                cur++;
-            } while (--j);
+        out = g_rasterOddClipPassBuffer;
+        for (i = n; i > 0; i--) {
+            if (prev->m_x >= leftBound) {
+                *out++ = *prev;
+            }
+            if ((prev->m_x < leftBound && cur->m_x >= leftBound)
+                || (prev->m_x >= leftBound && cur->m_x < leftBound)) {
+                out->m_x = leftBound;
+                out->m_y =
+                    prev->m_y
+                    + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x)) * (leftBound - prev->m_x);
+                out->m_u =
+                    prev->m_u
+                    + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x)) * (leftBound - prev->m_x);
+                out->m_v =
+                    prev->m_v
+                    + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x)) * (leftBound - prev->m_x);
+                out++;
+            }
+            prev = cur;
+            cur++;
         }
     }
     n = static_cast<i32>((out - g_rasterOddClipPassBuffer));
@@ -362,29 +361,26 @@ i32 RotateRasterize(
         ClipVtx* prev = &g_rasterOddClipPassBuffer[n - 1];
         ClipVtx* cur = g_rasterOddClipPassBuffer;
         out = g_rasterEvenClipPassBuffer;
-        if (n > 0) {
-            i32 j = n;
-            do {
-                if (prev->m_x < rightBound) {
-                    *out++ = *prev;
-                }
-                if ((prev->m_x < rightBound && cur->m_x >= rightBound)
-                    || (prev->m_x >= rightBound && cur->m_x < rightBound)) {
-                    out->m_x = rightBound;
-                    out->m_y = prev->m_y
-                               + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
-                                     * (rightBound - prev->m_x);
-                    out->m_u = prev->m_u
-                               + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x))
-                                     * (rightBound - prev->m_x);
-                    out->m_v = prev->m_v
-                               + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x))
-                                     * (rightBound - prev->m_x);
-                    out++;
-                }
-                prev = cur;
-                cur++;
-            } while (--j);
+        for (i = n; i > 0; i--) {
+            if (prev->m_x < rightBound) {
+                *out++ = *prev;
+            }
+            if ((prev->m_x < rightBound && cur->m_x >= rightBound)
+                || (prev->m_x >= rightBound && cur->m_x < rightBound)) {
+                out->m_x = rightBound;
+                out->m_y =
+                    prev->m_y
+                    + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x)) * (rightBound - prev->m_x);
+                out->m_u =
+                    prev->m_u
+                    + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x)) * (rightBound - prev->m_x);
+                out->m_v =
+                    prev->m_v
+                    + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x)) * (rightBound - prev->m_x);
+                out++;
+            }
+            prev = cur;
+            cur++;
         }
     }
     n = static_cast<i32>((out - g_rasterEvenClipPassBuffer));
@@ -392,33 +388,30 @@ i32 RotateRasterize(
         return 0;
     }
 
-    out = g_rasterOddClipPassBuffer;
     {
         ClipVtx* prev = &g_rasterEvenClipPassBuffer[n - 1];
-        if (n > 0) {
-            ClipVtx* cur = g_rasterEvenClipPassBuffer;
-            i32 j = n;
-            do {
-                if (prev->m_y >= topBound) {
-                    *out++ = *prev;
-                }
-                if ((prev->m_y >= topBound && cur->m_y < topBound)
-                    || (prev->m_y < topBound && cur->m_y >= topBound)) {
-                    out->m_y = topBound;
-                    out->m_x = prev->m_x
-                               + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y))
-                                     * (topBound - prev->m_y);
-                    out->m_u = prev->m_u
-                               + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y))
-                                     * (topBound - prev->m_y);
-                    out->m_v = prev->m_v
-                               + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y))
-                                     * (topBound - prev->m_y);
-                    out++;
-                }
-                prev = cur;
-                cur++;
-            } while (--j);
+        ClipVtx* cur = g_rasterEvenClipPassBuffer;
+        out = g_rasterOddClipPassBuffer;
+        for (i = n; i > 0; i--) {
+            if (prev->m_y >= topBound) {
+                *out++ = *prev;
+            }
+            if ((prev->m_y >= topBound && cur->m_y < topBound)
+                || (prev->m_y < topBound && cur->m_y >= topBound)) {
+                out->m_y = topBound;
+                out->m_x =
+                    prev->m_x
+                    + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y)) * (topBound - prev->m_y);
+                out->m_u =
+                    prev->m_u
+                    + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y)) * (topBound - prev->m_y);
+                out->m_v =
+                    prev->m_v
+                    + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y)) * (topBound - prev->m_y);
+                out++;
+            }
+            prev = cur;
+            cur++;
         }
     }
     n = static_cast<i32>((out - g_rasterOddClipPassBuffer));
@@ -426,33 +419,30 @@ i32 RotateRasterize(
         return 0;
     }
 
-    out = g_rasterEvenClipPassBuffer;
     {
         ClipVtx* prev = &g_rasterOddClipPassBuffer[n - 1];
-        if (n > 0) {
-            ClipVtx* cur = g_rasterOddClipPassBuffer;
-            i32 j = n;
-            do {
-                if (prev->m_y < bottomBound) {
-                    *out++ = *prev;
-                }
-                if ((prev->m_y < bottomBound && cur->m_y >= bottomBound)
-                    || (prev->m_y >= bottomBound && cur->m_y < bottomBound)) {
-                    out->m_y = bottomBound;
-                    out->m_x = prev->m_x
-                               + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y))
-                                     * (bottomBound - prev->m_y);
-                    out->m_u = prev->m_u
-                               + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y))
-                                     * (bottomBound - prev->m_y);
-                    out->m_v = prev->m_v
-                               + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y))
-                                     * (bottomBound - prev->m_y);
-                    out++;
-                }
-                prev = cur;
-                cur++;
-            } while (--j);
+        ClipVtx* cur = g_rasterOddClipPassBuffer;
+        out = g_rasterEvenClipPassBuffer;
+        for (i = n; i > 0; i--) {
+            if (prev->m_y < bottomBound) {
+                *out++ = *prev;
+            }
+            if ((prev->m_y < bottomBound && cur->m_y >= bottomBound)
+                || (prev->m_y >= bottomBound && cur->m_y < bottomBound)) {
+                out->m_y = bottomBound;
+                out->m_x =
+                    prev->m_x
+                    + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y)) * (bottomBound - prev->m_y);
+                out->m_u =
+                    prev->m_u
+                    + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y)) * (bottomBound - prev->m_y);
+                out->m_v =
+                    prev->m_v
+                    + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y)) * (bottomBound - prev->m_y);
+                out++;
+            }
+            prev = cur;
+            cur++;
         }
     }
     n = static_cast<i32>((out - g_rasterEvenClipPassBuffer));
