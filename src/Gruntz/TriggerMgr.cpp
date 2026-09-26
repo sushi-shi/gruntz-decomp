@@ -26,8 +26,8 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
-#include <Gruntz/LightFx.h>
 #include <Gruntz/LevelCollisionInline.h>
+#include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
