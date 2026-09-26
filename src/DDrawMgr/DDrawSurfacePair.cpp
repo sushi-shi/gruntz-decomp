@@ -279,7 +279,6 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
     m_surface->Unlock();
 }
 
-// @early-stop
 RVA(0x00164180, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {
