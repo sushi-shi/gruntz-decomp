@@ -484,8 +484,9 @@ i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
     }
 
     file.Seek(fh.bfOffBits, 0);
+    u8* bytes = GetBytes();
     u32 size = (IDX(bitcount) / 8) * m_nPitch * height;
-    if (file.Read(m_pBytes, size) != size) {
+    if (file.Read(bytes, size) != size) {
         return 0;
     }
     return 1;
