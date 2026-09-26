@@ -64,6 +64,7 @@ public:
     MidiManager() {
         m_currentSequence = NULL;
         m_ownerWindow = NULL;
+        g_ailMidiDriver = NULL;
     }
 
     ~MidiManager() {

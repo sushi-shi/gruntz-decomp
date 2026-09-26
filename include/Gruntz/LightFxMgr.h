@@ -7,6 +7,7 @@
 #include <Ints.h>
 
 #include <stddef.h>
+#include <string.h>
 
 GZ_ENUM_FORWARD(ShadeMode);
 
@@ -43,9 +44,7 @@ inline CLightFxMgr::CLightFxMgr() {
     m_world = NULL;
     m_cache = NULL;
     m_greyTable = NULL;
-    for (i32 i = 0; i < 10; ++i) {
-        m_tables[i] = NULL;
-    }
+    memset(m_tables, 0, sizeof(m_tables));
 }
 
 inline CLightFxMgr::~CLightFxMgr() {
