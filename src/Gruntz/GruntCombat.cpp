@@ -768,22 +768,7 @@ i32 CGrunt::PathScan() {
     SET_RECT_COMPONENTS(nb, target.m_x - 4, target.m_y - 4, target.m_x + 4, target.m_y + 4);
     if (::PtInRect(&nb, start.m_x, start.m_y)) {
 
-        CRect rb(0, 0, grid->m_width, grid->m_height);
-        RECT ra;
-        const RECT* pn = &nb;
-        if (pn != NULL) {
-            ra = *pn;
-            ra.right++;
-            ra.bottom++;
-        } else {
-            ra = CRect(0, 0, grid->m_width, grid->m_height);
-        }
-        RECT* raDst = &grid->m_bounds;
-        if (!IntersectRect(raDst, &ra, &rb)) {
-            *raDst = ra;
-        }
-        grid->m_gridW = raDst->right - raDst->left;
-        grid->m_gridH = raDst->bottom - raDst->top;
+        GRID_CLIP(grid, &nb);
 
         for (i32 dy = -1; dy < 2; dy++) {
             for (i32 dx = -1; dx < 2; dx++) {
