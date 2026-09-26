@@ -58,12 +58,10 @@ i32 CGruntSelectedSprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
-    CGruntzMgr* reg = g_gameReg;
     CGrunt* e =
-        reg->m_triggerMgr->m_units
+        g_gameReg->m_triggerMgr->m_units
             [m_gruntIdentity.m_unitIndex + m_gruntIdentity.m_playerIndex * TM_UNITS_PER_PLAYER];
     if (e != NULL && e->m_arrived != false) {
         m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);

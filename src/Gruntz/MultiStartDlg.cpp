@@ -59,7 +59,7 @@ RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* gameManager, CWnd* pParent)
     : CDialog(0xc5, pParent), m_reserved74(0xa) {
     m_gameManager = gameManager;
-    m_customMapSelection = CUSTOM_MAP_STANDARD;
+    m_usesCustomMap = false;
     m_latencyOptions = NULL;
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
@@ -156,9 +156,8 @@ i32 CMultiStartDlg::RefreshWorldControls() {
         return 0;
     }
     worldCombo->SendMessageA(CB_SETCURSEL, static_cast<WPARAM>(-1), 0);
-    m_customMapSelection =
-        g_multiState->m_usesCustomLevel != false ? CUSTOM_MAP_SELECTED : CUSTOM_MAP_STANDARD;
-    if (m_customMapSelection != CUSTOM_MAP_STANDARD) {
+    m_usesCustomMap = g_multiState->m_usesCustomLevel;
+    if (m_usesCustomMap != false) {
         worldEdit->SetWindowTextA(g_multiState->CustomLevelName());
     } else {
         CString currentName;
@@ -203,7 +202,6 @@ i32 CMultiStartDlg::BuildLatencyOptions() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c1fd0, 0x99)
 i32 CMultiStartDlg::RefreshLatencyControl() {
     CWnd* latencyCombo = GetDlgItem(IDX(IDC_MULTI_LATENCY));
@@ -218,21 +216,19 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
         latencyCombo->EnableWindow(false);
     }
     HWND dialogHwnd = GetSafeHwnd();
-    CMulti* currentMulti = g_multiState;
-    if (currentMulti->m_autoCommandDelay) {
+    if (g_multiState->m_autoCommandDelay) {
         m_latencyOptions->SelectItem(dialogHwnd, IDX(IDC_MULTI_LATENCY), 0, 0);
     } else {
         m_latencyOptions->SelectItem(
             dialogHwnd,
             IDX(IDC_MULTI_LATENCY),
-            currentMulti->m_commandDelay,
-            currentMulti->m_resendInterval
+            g_multiState->m_commandDelay,
+            g_multiState->m_resendInterval
         );
     }
     return 1;
 }
 
-// @early-stop
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     CRegMgr* reg = static_cast<CRegMgr*>(g_gameReg->m_settings);
@@ -279,7 +275,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             char mapName[0x100];
             DWORD size = 0x100;
             reg->Get("LastMultiMap", mapName, size, "");
-            m_customMapSelection = customFlag;
+            m_usesCustomMap = customFlag;
             if (customFlag != CUSTOM_MAP_STANDARD) {
                 char path[0x100];
                 sprintf(path, "custom\\%s", mapName);
@@ -331,15 +327,14 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         child->GetWindowTextA(m_worldName);
         if (g_multiState->m_isHost != false) {
             reg->Set("LastMultiMap", m_worldName);
-            reg->Set("CustomMultiMap", IDX(m_customMapSelection));
+            reg->Set("CustomMultiMap", m_usesCustomMap);
         }
-        GruntzPlayer* slots = m_gameManager->m_players;
         for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
             CWnd* nameControl = GetPlayerNameControl(i);
             if (nameControl != NULL) {
                 CString name;
                 nameControl->GetWindowTextA(name);
-                slots[i].m_name = name;
+                m_gameManager->m_players[i].m_name = name;
             }
         }
         NetLobby::g_curDlg = NULL;
@@ -814,7 +809,7 @@ void CMultiStartDlg::OnCustomWorld() {
         }
         dlg.m_customName.MakeUpper();
         worldEdit->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
-        m_customMapSelection = CUSTOM_MAP_SELECTED;
+        m_usesCustomMap = true;
         g_multiState->m_usesCustomLevel = true;
         g_multiState->m_customLevelName = static_cast<LPCTSTR>(dlg.m_customName);
         g_multiState->m_builtInLevelName = "";
@@ -832,7 +827,7 @@ void CMultiStartDlg::CommitWorldSelection() {
                 CString worldName;
                 (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
                 if (worldName.GetLength() != 0) {
-                    m_customMapSelection = CUSTOM_MAP_STANDARD;
+                    m_usesCustomMap = false;
                 }
                 g_multiState->m_usesCustomLevel = false;
                 g_multiState->m_customLevelName = "";
@@ -993,7 +988,6 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c46b0, 0x384)
 void CMultiStartDlg::Watchdog() {
     if (g_watchdogBusy != false) {
@@ -1007,8 +1001,7 @@ void CMultiStartDlg::Watchdog() {
     g_multiState->m_netMgr->EnumerateSessionPlayers(session, 0);
     g_multiState->ResolveLocalPlayer();
     if (g_netStatsTick == 0) {
-        u32 timestamp = timeGetTime();
-        g_multiState->BroadcastValueMessage(NETMSG_LATENCY_PROBE, static_cast<i32>(timestamp), 0);
+        g_multiState->BroadcastValueMessage(NETMSG_LATENCY_PROBE, timeGetTime(), 0);
     }
     if (g_multiState->m_isHost == false) {
         if (g_netStatsTick == 0) {
@@ -1029,9 +1022,7 @@ void CMultiStartDlg::Watchdog() {
             g_multiState->AutoTuneCmdDelay();
         }
     }
-    i32 nextNetStatsTick = g_netStatsTick + 1;
-    g_netStatsTick = nextNetStatsTick;
-    if (nextNetStatsTick > 3) {
+    if (++g_netStatsTick > 3) {
         g_netStatsTick = 0;
     }
     if (g_latencyDisplayTick == 0) {
@@ -1068,9 +1059,7 @@ void CMultiStartDlg::Watchdog() {
             }
         }
     }
-    i32 nextLatencyDisplayTick = g_latencyDisplayTick + 1;
-    g_latencyDisplayTick = nextLatencyDisplayTick;
-    if (nextLatencyDisplayTick > 0x31) {
+    if (++g_latencyDisplayTick > 0x31) {
         g_latencyDisplayTick = 0;
     }
     if (g_multiState->m_sessionTerminated != false) {
@@ -1085,19 +1074,21 @@ void CMultiStartDlg::Watchdog() {
         g_watchdogBusy = false;
         return;
     }
-    char* errorMessage;
     if (g_multiState->m_removedByHost != false) {
         KillTimer(1);
-        errorMessage = "You have been removed from the game by the host.";
+        g_multiState->ReportVersionMsg("You have been removed from the game by the host.", 0);
     } else if (g_multiState->m_gameClosed != false) {
         KillTimer(1);
-        errorMessage = "This game is closed.";
+        g_multiState->ReportVersionMsg("This game is closed.", 0);
     } else if (g_multiState->m_gameFull != false) {
         KillTimer(1);
-        errorMessage = "This game is already full.";
+        g_multiState->ReportVersionMsg("This game is already full.", 0);
     } else if (g_multiState->m_versionMismatch != false) {
         KillTimer(1);
-        errorMessage = "This version is not the same as the host computer's version of the game.";
+        g_multiState->ReportVersionMsg(
+            "This version is not the same as the host computer's version of the game.",
+            0
+        );
     } else {
         if (g_playerRosterChanged != false) {
             RefreshPlayerControls(1);
@@ -1115,7 +1106,6 @@ void CMultiStartDlg::Watchdog() {
         g_watchdogBusy = false;
         return;
     }
-    g_multiState->ReportVersionMsg(errorMessage, 0);
     EndDialog(0);
     g_watchdogBusy = false;
 }

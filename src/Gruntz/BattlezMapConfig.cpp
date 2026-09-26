@@ -1815,7 +1815,9 @@ void CMapMgr::Clip(const RECT* src) {
         a.right++;
         a.bottom++;
     } else {
-        SET_RECT_COMPONENTS(a, 0, 0, w, h);
+        a.left = a.top = 0;
+        a.right = w;
+        a.bottom = h;
     }
     RECT* dst = &m_bounds;
     if (!IntersectRect(dst, &a, &b)) {

@@ -413,9 +413,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_QUIT:
                     HiCueLookup();
                     if (g_gameReg->m_frameGate != false) {
-                        b32 gate = !g_gameReg->m_frameGate;
-                        g_gameReg->m_frameGate = gate;
-                        g_gameReg->FinishLevel(gate, true);
+                        g_gameReg->FinishLevel(g_gameReg->ToggleFrameGate(), true);
                     }
                     (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(true);
                     return 1;
@@ -630,7 +628,6 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000ff850, 0x121)
 i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
@@ -639,12 +636,15 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     }
     r->OnDoubleClick(keyFlags, x, y);
     SbiCommandId cmd = r->m_cmd;
-    if (r->m_tab == TAB_STATZ && m_chatBoxDisabled == false
-        && g_gameReg->m_triggerMgr->m_groupFlag != false && cmd >= SBICMD_CURSOR_TARGET_FIRST
-        && cmd <= SBICMD_CURSOR_TARGET_LAST) {
-        HiCueTimed();
-        PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
-        return 1;
+    switch (r->m_tab) {
+        case TAB_STATZ:
+            if (m_chatBoxDisabled == false && g_gameReg->m_triggerMgr->m_groupFlag != false
+                && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
+                HiCueTimed();
+                PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
+                return 1;
+            }
+            break;
     }
 
     return UpdateStatusBarTabHighlight(keyFlags, x, y);
@@ -2982,11 +2982,10 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
-    i32 rectFlag = 0;
     i32 refreshFlag = 0;
+    i32 rectFlag = 0;
     ClockInterval* belt = &m_beltClock;
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:

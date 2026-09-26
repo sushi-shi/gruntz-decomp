@@ -666,7 +666,6 @@ i32 CMulti::AdvanceGameFrame() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000b6e90, 0x34d)
 void CMulti::RenderGameFrame() {
     if (m_roundComplete == false && Mgr()->m_frameGate != false) {
@@ -702,25 +701,22 @@ void CMulti::RenderGameFrame() {
     );
     DrawWorldView();
     m_statusBar->LoadMainStatusBarSprite();
-    if (m_minimap != NULL) {
-        CStatusBarMgr* statusBar = m_statusBar;
-        if (statusBar->m_position != STATUSBAR_HIDDEN && statusBar->m_activeTab != TAB_GAME) {
-            RECT rc;
-            if (statusBar->m_position == STATUSBAR_DOCK_LEFT) {
-                SetRect(&rc, 20, 5, 140, 125);
-            } else {
-                rc.top = g_gameReg->m_modeSize.cy;
-                i32 right = g_gameReg->m_modeSize.cx - 20;
-                i32 left = g_gameReg->m_modeSize.cx - 140;
-                rc.top = g_gameReg->m_modeSize.cy;
-                SetRect(&rc, left, 5, right, 125);
-            }
-            m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
-            m_minimap->Draw(
-                static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
-                &rc
+    if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
+        && m_statusBar->m_activeTab != TAB_GAME) {
+        RECT rc;
+        if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+            SetRect(&rc, 20, 5, 140, 125);
+        } else {
+            SetRect(
+                &rc,
+                g_gameReg->GetModeSize().cx - 140,
+                5,
+                g_gameReg->GetModeSize().cx - 20,
+                125
             );
         }
+        m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
+        m_minimap->Draw(static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair), &rc);
     }
     Mgr()->m_chatLog->Scroll(g_frameDelta);
     CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
