@@ -171,6 +171,9 @@ struct CNetCmdSlot {
     b32 IsDraining() const {
         return m_isDraining;
     }
+    i32* ReceivedAhead() {
+        return m_receivedAhead;
+    }
     b32 HasReceivedThrough(i32 sequence) const {
         return !(m_contiguousSequence < sequence);
     }

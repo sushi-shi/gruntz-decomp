@@ -3235,9 +3235,9 @@ netcmdslot	?DrainAcknowledged@CNetCmdSlot@@QAEHXZ	100.0000	100.0000	4	ee55c9f4ae
 netcmdslot	?FindRecord@CNetCmdSlot@@QAEPAUGruntRec@@H@Z	100.0000	100.0000	3	5a9690b3aaeb	0xc12b0	100.0000	
 netcmdslot	?GetRecordRange@CNetCmdSlot@@QAEXPAH0@Z	100.0000	100.0000	2	6d3036c6f420	0xc1230	100.0000	
 netcmdslot	?Initialize@CNetCmdSlot@@QAEHPAVCMulti@@PAVGruntzPlayer@@W4NetSlotState@@@Z	100.0000	100.0000	5	1748a7050933	0xc0b10	100.0000	
-netcmdslot	?ProcessPacket@CNetCmdSlot@@QAEHHPADH@Z	87.3500	87.3500	13	8be55e841f62	0xc0c70	87.3500	
+netcmdslot	?ProcessPacket@CNetCmdSlot@@QAEHHPADH@Z	87.3500	87.3500	14	bb10dc385af4	0xc0c70	87.3500	
 netcmdslot	?RecordPeerWindowBase@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	2	6fd2d5273bd3	0xc0fa0	100.0000	
-netcmdslot	?RecordReceivedSequence@CNetCmdSlot@@QAEXH@Z	95.8824	95.8824	2	eff73890ab48	0xc0f10	95.8824	
+netcmdslot	?RecordReceivedSequence@CNetCmdSlot@@QAEXH@Z	95.8824	95.8824	3	fadd54db9607	0xc0f10	95.8824	
 netcmdslot	?RemoveRecord@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	2	063e2bdd4231	0xc11b0	100.0000	
 netcmdslot	?RemoveSequence@CNetCmdSlot@@QAEXPAHH@Z	100.0000	100.0000	2	ce0dfdb50d83	0xc1060	100.0000	
 netcmdslot	?ResetSlot@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	4	724f41fe9566	0xc0bb0	100.0000	
@@ -3324,7 +3324,7 @@ netsessionmgr	?AllPeerWindowsReached@CNetSession@@QAEHH@Z	100.0000	100.0000	3	10
 netsessionmgr	?AllocateGruntRecord@@YAPAUGruntRec@@H@Z	100.0000	100.0000	3	e7e02eaa4041	0xbf530	100.0000	
 netsessionmgr	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	99.9198	99.9198	9	6b2e8f21ae9d	0xbf1d0	99.9198	
 netsessionmgr	?ClearDrainAcks@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	3	f6c29a9dd696	0xbf120	100.0000	
-netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4189	96.4054	13	b911ab3fb5f8	0xc0590	96.4527	
+netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4324	96.4324	14	722ee418c8e9	0xc0590	96.4527	
 netsessionmgr	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HW4NetSlotState@@@Z	100.0000	100.0000	5	80e406ba893d	0xbfff0	100.0000	
 netsessionmgr	?Dispatch@CNetSession@@QAEHHPAUCNetPacketPrefix@@H@Z	100.0000	100.0000	3	c79e57b7eee5	0xbf700	100.0000	
 netsessionmgr	?DispatchSystemMessage@CNetSession@@QAEHPAUDPMSG_GENERIC@@H@Z	100.0000	100.0000	3	bf34d97947f2	0xbf7c0	100.0000	
@@ -3345,9 +3345,9 @@ netsessionmgr	?ResetRound@CNetSession@@QAEXXZ	100.0000	100.0000	3	ffabc0a5aeb1	0
 netsessionmgr	?ScheduleCommand@CNetSession@@QAEXPAVCGruntzCommand@@E@Z	100.0000	100.0000	3	b09fdc956a48	0xc03f0	100.0000	
 netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	100.0000	100.0000	3	623bb5d4e672	0xbfc70	100.0000	
 netsessionmgr	?SendPendingRecords@CNetSession@@QAEHXZ	100.0000	100.0000	3	00e852840ef1	0xbfd40	100.0000	
-netsessionmgr	?SendRecord@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	100.0000	100.0000	5	f1d55b353c83	0xbfeb0	100.0000	
+netsessionmgr	?SendRecord@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	100.0000	100.0000	6	4d5d7e96dcab	0xbfeb0	100.0000	
 netsessionmgr	?SendTick@CNetSession@@QAEHXZ	100.0000	100.0000	10	e36e7aac7b08	0xbf9e0	100.0000	
-netsessionmgr	?Shutdown@CNetSession@@QAEXXZ	100.0000	100.0000	8	5763913e0b72	0xbf000	100.0000	
+netsessionmgr	?Shutdown@CNetSession@@QAEXXZ	100.0000	100.0000	9	afa5888b7ea0	0xbf000	100.0000	
 netsessionmgr	?VerifyChecksums@CNetSession@@QAEHXZ	100.0000	100.0000	8	0e8fa62dd5d1	0xc04f0	100.0000	
 palettebmp	?InitBmp@CDibPal@@QAEHPBDI@Z	100.0000	100.0000	6	635bf6e341dc	0x177480	100.0000	
 palettebmp	?InitRes@CDibPal@@QAEHPBDI@Z	100.0000	100.0000	4	88dc0d9181ba	0x1775f0	100.0000	

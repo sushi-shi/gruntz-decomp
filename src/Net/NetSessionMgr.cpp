@@ -66,7 +66,7 @@ void CNetSession::Shutdown() {
         slot->m_owner = NULL;
         slot->ClearRecords();
         slot->ClearDrainAcks();
-        slot->ClearSequenceSet(slot->m_receivedAhead);
+        slot->ClearSequenceSet(slot->ReceivedAhead());
         slot->ClearSequenceSet(slot->m_peerReceivedAhead);
     }
     for (i32 j = 0; j < 0x80; j++) {
@@ -441,10 +441,10 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     }
     unsigned char flags = 0;
     i32 baseSeq = slot->m_contiguousSequence;
-    if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 2)) {
+    if (slot->ContainsSequence(slot->ReceivedAhead(), baseSeq + 2)) {
         flags = 0x10;
     }
-    if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 3)) {
+    if (slot->ContainsSequence(slot->ReceivedAhead(), baseSeq + 3)) {
         flags |= 0x20;
     }
     GruntRec* entry = &m_commandRecords[sequence % 0x80];
@@ -690,7 +690,7 @@ i32 CNetSession::ComputeChecksum() {
     i32 sum = 0;
     for (i32 player = 0; player < PLAYER_SLOT_COUNT; player++) {
         for (i32 g = 0; g < TM_UNITS_PER_PLAYER; g++) {
-            CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->UnitAt(player, g);
+            CGrunt* grunt = m_owner->Mgr()->m_triggerMgr->UnitAt(player, g);
             if (grunt != NULL) {
                 sum += IDX(grunt->m_entranceCell.m_direction) + grunt->m_stamina + grunt->m_toyTime
                        + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
