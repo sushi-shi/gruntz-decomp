@@ -49,16 +49,8 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
     CSineFaderConfig* cfg = static_cast<CSineFaderConfig*>(desc);
     m_previousFrame = 0;
     m_clearToBlack = cfg->m_clearToBlack;
-    if (cfg->m_targetSurface == NULL) {
-        m_targetSurface = m_primarySurface;
-    } else {
-        m_targetSurface = cfg->m_targetSurface;
-    }
-    if (cfg->m_sourceSurface == NULL) {
-        m_restoreSurface = m_secondarySurface;
-    } else {
-        m_restoreSurface = cfg->m_sourceSurface;
-    }
+    SelectTarget(m_targetSurface, cfg->m_targetSurface);
+    SelectSource(m_restoreSurface, cfg->m_sourceSurface);
     if (!m_targetSurface) {
         return 0;
     }

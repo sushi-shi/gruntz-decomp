@@ -26,6 +26,21 @@ public:
 
     void RunFade(u32 dur, i32 lead, i32 vsync);
 
+    void SelectTarget(CDDSurface*& dst, CDDSurface* target) {
+        if (target == NULL) {
+            dst = m_primarySurface;
+        } else {
+            dst = target;
+        }
+    }
+    void SelectSource(CDDSurface*& dst, CDDSurface* source) {
+        if (source == NULL) {
+            dst = m_secondarySurface;
+        } else {
+            dst = source;
+        }
+    }
+
     CShadeTableCache m_cache;
     CShadeTable* m_table;
     i32 m_previousFrame;

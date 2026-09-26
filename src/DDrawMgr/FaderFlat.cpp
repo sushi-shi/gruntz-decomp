@@ -24,16 +24,8 @@ CFaderFlat::~CFaderFlat() {
 RVA(0x0017f5e0, 0x7d)
 i32 CFaderFlat::ApplyInit(CFaderConfig* desc) {
     CFlatFaderConfig* s = static_cast<CFlatFaderConfig*>(desc);
-    if (s->m_targetSurface == NULL) {
-        m_dstSurface = m_primarySurface;
-    } else {
-        m_dstSurface = s->m_targetSurface;
-    }
-    if (s->m_sourceSurface == NULL) {
-        m_srcSurface = m_secondarySurface;
-    } else {
-        m_srcSurface = s->m_sourceSurface;
-    }
+    SelectTarget(m_dstSurface, s->m_targetSurface);
+    SelectSource(m_srcSurface, s->m_sourceSurface);
     m_unusedOption = s->m_unusedOption;
     m_durationPercent = s->m_durationPercent;
     m_splitPercent = s->m_splitPercent;

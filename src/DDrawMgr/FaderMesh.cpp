@@ -19,16 +19,8 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 
     CMeshFaderConfig* cfg = static_cast<CMeshFaderConfig*>(descOpaque);
 
-    if (cfg->m_targetSurface == NULL) {
-        m_dstSurface = m_primarySurface;
-    } else {
-        m_dstSurface = cfg->m_targetSurface;
-    }
-    if (cfg->m_sourceSurface == NULL) {
-        m_sourceSurface = m_secondarySurface;
-    } else {
-        m_sourceSurface = cfg->m_sourceSurface;
-    }
+    SelectTarget(m_dstSurface, cfg->m_targetSurface);
+    SelectSource(m_sourceSurface, cfg->m_sourceSurface);
     if (cfg->m_flipTarget == NULL) {
         return 0;
     }
