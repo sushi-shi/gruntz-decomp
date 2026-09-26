@@ -16,6 +16,7 @@
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
@@ -55,24 +56,24 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     READCSTR(m_frameSetName);
     READCSTR(m_deathFrameSetName);
 
-    NAMEREF(m_poseWalk);
-    NAMEREF(AT(m_poseAttack, GRUNT_ATTACK1));
-    NAMEREF(AT(m_poseAttack, GRUNT_ATTACK2));
-    NAMEREF(m_poseAttackIdle);
-    NAMEREF(AT(m_poseStruck, GRUNT_STRUCK1));
-    NAMEREF(AT(m_poseStruck, GRUNT_STRUCK2));
-    NAMEREF(AT(m_poseIdle, GRUNT_IDLE1));
-    NAMEREF(AT(m_poseIdle, GRUNT_IDLE2));
-    NAMEREF(AT(m_poseIdle, GRUNT_IDLE3));
-    NAMEREF(AT(m_poseIdle, GRUNT_IDLE4));
-    NAMEREF(AT(m_poseIdle, GRUNT_IDLE5));
-    NAMEREF(m_poseDeath);
-    NAMEREF(AT(m_poseToy, GRUNT_TOY1));
-    NAMEREF(AT(m_poseToy, GRUNT_TOY2));
-    NAMEREF(AT(m_poseToy, GRUNT_TOY_BREAK));
-    NAMEREF(AT(m_poseItem, GRUNT_ITEM1));
-    NAMEREF(AT(m_poseItem, GRUNT_ITEM2));
-    NAMEREF(m_pickupGeoSrc);
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_poseWalk);
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseAttack, GRUNT_ATTACK1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseAttack, GRUNT_ATTACK2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_poseAttackIdle);
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseStruck, GRUNT_STRUCK1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseStruck, GRUNT_STRUCK2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE3));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE4));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE5));
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_poseDeath);
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseToy, GRUNT_TOY1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseToy, GRUNT_TOY2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseToy, GRUNT_TOY_BREAK));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseItem, GRUNT_ITEM1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseItem, GRUNT_ITEM2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_pickupGeoSrc);
 
     ar->Read(&m_reserved18c, sizeof(m_reserved18c));
     ar->Read(&m_toyBlendPct, sizeof(m_toyBlendPct));

@@ -22,19 +22,6 @@
         (field) = buf;                                                                             \
     } while (0)
 
-#define NAMEREF(field)                                                                             \
-    do {                                                                                           \
-        ++g_serialCounter;                                                                         \
-        ar->Read(buf, SERIAL_NAME_LEN);                                                            \
-        if (strlen(buf) != 0) {                                                                    \
-            CAniElement* value = NULL;                                                             \
-            MapLookup(dir->m_animRegistry->m_animations, buf, value);                              \
-            (field) = value;                                                                       \
-        } else {                                                                                   \
-            (field) = NULL;                                                                        \
-        }                                                                                          \
-    } while (0)
-
 #define GS_SUBREC(field)                                                                           \
     g_serialCounter++;                                                                             \
     memset(buf, 0, sizeof(buf));                                                                   \
