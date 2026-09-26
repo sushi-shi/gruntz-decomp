@@ -172,7 +172,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     );
 
     m_notifyTimer.m_start = 0;
-    m_notifyTimer.m_window = 0;
+    m_notifyTimer.m_interval = 0;
     m_deathStarted = false;
     ResolveMovingAnimation();
 }
@@ -369,7 +369,7 @@ i32 CWarlord::UpdateMovingState() {
         }
     }
 
-    if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_window) {
+    if (m_cooldownTimer.Expired()) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -399,9 +399,9 @@ i32 CWarlord::UpdatePanicState() {
             ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_window) {
+        if (m_cooldownTimer.Expired()) {
             g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
-            m_cooldownTimer.m_window = 0x7530;
+            m_cooldownTimer.m_interval = 0x7530;
             m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
         }
     }
@@ -415,9 +415,8 @@ i32 CWarlord::FinishJoyAnimation() {
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
-            tm->m_window = 0x3e8;
-            tm->m_base = static_cast<u32>(g_frameTime);
+            ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
+            tm->Start(0x3e8);
         }
         ResolveMovingAnimation();
     }
@@ -453,9 +452,8 @@ i32 CWarlord::BuildFortSplashParticles() {
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
-            tm->m_window = 0x3e8;
-            tm->m_base = static_cast<u32>(g_frameTime);
+            ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
+            tm->Start(0x3e8);
         }
 
         GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
@@ -479,7 +477,7 @@ i32 CWarlord::ResolveMovingAnimation() {
 
     SET_ANIMATION_ACT("B");
 
-    m_cooldownTimer.m_window = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
+    m_cooldownTimer.m_interval = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
     m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
     return 1;
 }
@@ -491,11 +489,10 @@ i32 CWarlord::NotifyFortUnderAttack() {
         if (!ANIMATION_ACT_EQUALS("D")) {
             if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
-                m_cooldownTimer.m_window = 0x7530;
+                m_cooldownTimer.m_interval = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
-                if (static_cast<i64>(g_frameTime) - m_notifyTimer.m_start >= m_notifyTimer.m_window
-                    && g_gameReg->m_triggerMgr->m_pendingFx == this) {
+                if (m_notifyTimer.Expired() && g_gameReg->m_triggerMgr->m_pendingFx == this) {
                     g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)
@@ -507,7 +504,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                         FONT_ITEM_FLAGS_NONE,
                         0x11
                     );
-                    m_notifyTimer.m_window =
+                    m_notifyTimer.m_interval =
                         static_cast<u32>(g_buteMgr.GetInt("Warlordz", "NotifyTimer", 0x1770));
                     m_notifyTimer.m_start = static_cast<u32>(g_frameTime);
                 }

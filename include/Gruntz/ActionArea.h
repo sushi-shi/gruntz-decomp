@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -12,10 +13,7 @@
 class CActionArea : public CUserLogic, public CWapX {
 public:
 public:
-    CActionArea() {
-        m_timestamp = 0;
-        m_duration = 0;
-    }
+    CActionArea() {}
     CActionArea(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;
@@ -32,13 +30,7 @@ public:
     i32 Tick();
 
     i32 m_phase;
-    union {
-        struct {
-            i64 m_timestamp;
-            i64 m_duration;
-        };
-        CPairRecord m_timing;
-    };
+    ClockInterval m_timing;
 };
 
 #endif // GRUNTZ_CACTIONAREA_H

@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
@@ -33,13 +34,6 @@ class CWwdSpriteObject;
 class CActionOptionsMenuBar;
 
 class CGruntPuddle;
-
-struct CueTimer {
-    i64 m_base;
-    i64 m_window;
-
-    CueTimer() : m_base(0), m_window(0) {}
-};
 
 class CTriggerMgr {
 public:
@@ -292,14 +286,14 @@ public:
 
     FinishLevelState m_phase;
 
-    CueTimer m_cueTimer;
+    ClockInterval m_cueTimer;
 
     CWarlord* m_pendingFx;
     b32 m_countdownActive;
     i32 m_pendingFxKind;
 
-    CueTimer m_gooTimer;
-    CueTimer m_resourceTimer;
+    ClockInterval m_gooTimer;
+    ClockInterval m_resourceTimer;
     CPtrList m_selLists[10];
     i32 m_selSentinel;
     FinishLevelReason m_finishReasonFrame;

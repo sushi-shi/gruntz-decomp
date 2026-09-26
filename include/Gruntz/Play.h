@@ -5,8 +5,8 @@
 
 #include <Mfc.h>
 
-#include <Clock64.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegistry.h>
@@ -58,19 +58,6 @@ public:
     inline void SetNotifyLatch(b32 notify);
     inline void SetInitialFramePending(b32 pending);
     inline void ResetAssetLoadState(GruntzPlayer* player);
-    struct ClockInterval {
-        Clock64 m_start;
-        Clock64 m_interval;
-
-        ClockInterval() {
-            m_start.m_v = 0;
-            m_interval.m_v = 0;
-        }
-
-        i64 Deadline() const {
-            return m_interval.m_v + m_start.m_v;
-        }
-    };
 
     QuestLevel CurrentQuestLevel() const {
         return static_cast<QuestLevel>(m_levelIndex);
@@ -333,12 +320,10 @@ public:
     RECT m_hudRect;
 
     CMinimap* m_minimap;
-    char m_pad324[0x328 - 0x324];
     ClockInterval m_bootyTiming;
 
     ClockInterval m_ambientTiming;
     b32 m_ambientInitDone;
-    char m_pad34c[0x350 - 0x34c];
     ClockInterval m_syncTiming;
     Coord m_tileClick;
     b32 m_dragInhibit1;
@@ -363,7 +348,6 @@ public:
     POINT m_pathPreviewSource;
     POINT m_pathPreviewDestination;
     i16 m_pathPreviewColor;
-    char m_pad42a[0x430 - 0x42a];
 
     ClockInterval m_region0Timing;
     ClockInterval m_region1Timing;

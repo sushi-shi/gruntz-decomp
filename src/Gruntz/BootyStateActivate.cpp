@@ -314,9 +314,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         return 0;
     }
 
-    i64* clock = &m_frameStamp64;
-    clock[1] = 0x21;
-    clock[0] = g_frameTime;
+    m_frameTiming.Start(0x21);
     return 1;
 }
 
@@ -1380,13 +1378,11 @@ i32 CBootyState::Render() {
         snd->TickStreams(now);
     }
 
-    i64 elapsed = static_cast<i64>(g_frameTime) - m_frameStamp64;
-    if (elapsed < m_frameInterval64) {
+    i64 elapsed = static_cast<i64>(g_frameTime) - m_frameTiming.m_start;
+    if (elapsed < m_frameTiming.m_interval) {
         return 0;
     }
-    i64* clock = &m_frameStamp64;
-    clock[1] = 0x21;
-    clock[0] = g_frameTime;
+    m_frameTiming.Start(0x21);
 
     switch (m_activation) {
         case BOOTYSEQ_WARP_CUE: {

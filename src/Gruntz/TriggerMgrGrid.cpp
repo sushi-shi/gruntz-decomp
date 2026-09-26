@@ -429,10 +429,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
         cell->CreateHealthSprite();
         cell->CreateStaminaSprite();
         cell->CreateToySprite();
-        cell->m_hudRetireWindowLo = g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388);
-        cell->m_hudRetireWindowHi = 0;
-        cell->m_hudRetireClockLo = g_frameTime;
-        cell->m_hudRetireClockHi = 0;
+        cell->m_hudRetireTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
         return 0;
     }
     if (force == 0) {
@@ -1379,11 +1376,11 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
 
-    i64 diff = static_cast<i64>(g_frameTime) - world->m_levelTimer->m_startStamp.m_v;
+    i64 diff = static_cast<i64>(g_frameTime) - world->m_levelTimer->m_stamp.m_start;
     g_gameReg->m_gameStats->m_elapsedTimeMs += (diff < 0) ? 0 : static_cast<i32>(diff);
     CTimer* sub = world->m_levelTimer;
-    sub->m_unusedStamp.m_v = 0;
-    sub->m_accum.m_v = 0;
+    sub->m_stamp.m_interval = 0;
+    sub->m_countdown.m_interval = 0;
     sub->m_running = false;
     sub->m_currentMs = 0;
     world->SetDefeatCountdown(false, 0xbb7);

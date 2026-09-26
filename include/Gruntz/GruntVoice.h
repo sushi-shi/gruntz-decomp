@@ -5,8 +5,8 @@
 
 #include <Mfc.h>
 
-#include <Clock64.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/UserLogic.h>
 
@@ -33,24 +33,10 @@ public:
 
     StreamVoice* m_stream;
 
-    union {
-        Clock64 m_startStamp;
-        struct {
-            i32 m_startStampLo;
-            i32 m_startStampHi;
-        };
-    };
-    union {
-        Clock64 m_duration;
-        struct {
-            i32 m_durationMs;
-            i32 m_durationHi;
-        };
-    };
+    ClockInterval m_playbackTiming;
     i32 m_sourceObjectId;
     i32 m_priority;
     i32 m_positionMode;
-    char m_pad74[0x78 - 0x74];
 };
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTVOICE_H

@@ -54,8 +54,7 @@ inline void CPlay::FreePlacedObjectCells(i32 group) {
 
 inline void CPlay::UpdateAmbientMusic() {
     if (m_ambientInitDone == false) {
-        if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-            >= m_ambientTiming.m_interval.m_v) {
+        if (m_ambientTiming.Expired()) {
             char sequenceName[0x40];
             wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled != false) {

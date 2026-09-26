@@ -512,12 +512,11 @@ i32 CBoomerang::LoadProjectileSprites(
     CGrunt* g =
         g_gameReg->m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * sourcePlayerIndex + sourceUnitIndex];
     if (g != NULL) {
-        g->m_holdWindowLo = static_cast<i32>(
-            (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
+        g->m_holdTiming.Start(
+            static_cast<i32>(
+                (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
+            )
         );
-        g->m_holdWindowHi = 0;
-        g->m_holdAnchorLo = g_frameTime;
-        g->m_holdAnchorHi = 0;
         if (g->CoordCount() != 0) {
             RECYCLE_GRUNT_COORDS(g)
         }
@@ -854,8 +853,7 @@ void CTimeBomb::RegisterActs() {
 // @early-stop
 
 RVA(0x000e1b90, 0x23d)
-CTimeBomb::CTimeBomb(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_startTime(0), m_duration(0) {
+CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_PROJECTILE)
@@ -864,13 +862,11 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     m_value = m_wwdObject->m_animationCursor.m_animation;
     if (m_object->m_damage > 0) {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
-        m_duration = static_cast<u32>(m_object->m_damage);
-        m_startTime = static_cast<u32>(g_frameTime);
+        m_timing.Start(m_object->m_damage);
         m_fastPhase = true;
     } else {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBSLOW", 0);
-        m_duration = g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0);
-        m_startTime = static_cast<u32>(g_frameTime);
+        m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0));
         m_fastPhase = false;
     }
     i32 cx = m_object->m_screenX >> TILE_SHIFT_PX;
@@ -896,12 +892,10 @@ i32 CTimeBomb::UpdateCountdown() {
     }
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
-    if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
+    if (m_timing.Expired()) {
         if (m_fastPhase == false) {
             SwitchAnimationByName("GAME_TIMEBOMBFAST", 0);
-            i64* clock = &m_startTime;
-            clock[1] = g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8);
-            clock[0] = g_frameTime;
+            m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8));
             m_fastPhase = true;
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

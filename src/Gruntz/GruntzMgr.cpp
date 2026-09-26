@@ -418,7 +418,7 @@ void CGruntzMgr::FinalizeLevelAndShowResults() {
     if (m_gameMode == GAMEMODE_BATTLEZ) {
 
         CTimer* levelTimer = (static_cast<CPlay*>(currentState))->m_levelTimer;
-        i64 elapsedMs = static_cast<i64>(g_frameTime) - levelTimer->m_startStamp.m_v;
+        i64 elapsedMs = static_cast<i64>(g_frameTime) - levelTimer->m_stamp.m_start;
         g_gameReg->m_gameStats->m_elapsedTimeMs +=
             (elapsedMs < 0) ? 0 : static_cast<i32>(elapsedMs);
         TransitionState(GAMESTATE_MULTIBOOTY, 1, false, 0);

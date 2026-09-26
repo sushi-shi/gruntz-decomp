@@ -451,12 +451,9 @@ i32 CPlay::Render() {
         m_statusBar->LoadMainStatusBarSprite();
 
         {
-            if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
-                >= m_cueTiming.m_interval.m_v) {
+            if (m_cueTiming.Expired()) {
                 m_cueToggle = (m_cueToggle == false);
-                i64* clock = &m_cueTiming.m_start.m_v;
-                clock[1] = CUE_INTERVAL_MS;
-                clock[0] = g_frameTime;
+                m_cueTiming.Start(CUE_INTERVAL_MS);
             }
             if (m_cueToggle != false) {
                 PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -485,12 +482,9 @@ i32 CPlay::Render() {
         m_mgr->m_commandMgr->ExecuteScheduledCommands(0);
 
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
-            if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
-                >= m_bootyTiming.m_interval.m_v) {
+            if (m_bootyTiming.Expired()) {
                 g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-                i64* clock = &m_bootyTiming.m_start.m_v;
-                clock[1] = BOOTY_INTERVAL_MS;
-                clock[0] = g_frameTime;
+                m_bootyTiming.Start(BOOTY_INTERVAL_MS);
             }
         }
 
@@ -572,8 +566,7 @@ i32 CPlay::Render() {
                 leftMs = 0;
             }
             i32 secsLeft = static_cast<i32>(leftMs / MILLIS_PER_SECOND) + 1;
-            if (static_cast<i64>(g_frameTime) - m_defeatCountdownTiming.m_start.m_v
-                >= m_defeatCountdownTiming.m_interval.m_v) {
+            if (m_defeatCountdownTiming.Expired()) {
 
                 if (m_statusBar->m_destructButtonLocked != false) {
                     g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(5);
@@ -583,10 +576,10 @@ i32 CPlay::Render() {
                 }
 
                 CTimer* marker = m_levelTimer;
-                marker->m_unusedStamp.m_lo = 0;
-                marker->m_unusedStamp.m_hi = 0;
-                marker->m_accum.m_lo = 0;
-                marker->m_accum.m_hi = 0;
+                marker->m_stamp.m_intervalLo = 0;
+                marker->m_stamp.m_intervalHi = 0;
+                marker->m_countdown.m_intervalLo = 0;
+                marker->m_countdown.m_intervalHi = 0;
                 marker->m_running = false;
                 marker->m_currentMs = 0;
                 m_statusBar->LockDestructButton(0);
@@ -626,12 +619,9 @@ i32 CPlay::Render() {
         if (m_winLoseBanner != false && m_statusBar->m_levelOverlayActive == false
             && m_statusBar->m_quitConfirmationActive == false) {
 
-            if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
-                >= m_cueTiming.m_interval.m_v) {
+            if (m_cueTiming.Expired()) {
                 m_cueToggle = (m_cueToggle == false);
-                i64* clock = &m_cueTiming.m_start.m_v;
-                clock[1] = CUE_INTERVAL_MS;
-                clock[0] = g_frameTime;
+                m_cueTiming.Start(CUE_INTERVAL_MS);
             }
             if (m_cueToggle != false) {
                 PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -653,26 +643,22 @@ i32 CPlay::Render() {
         }
 
         if (m_region0Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region0Timing.m_start.m_v
-                >= m_region0Timing.m_interval.m_v) {
+            if (m_region0Timing.Expired()) {
                 SetTinyViewportCurse(false);
             }
         }
         if (m_region1Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region1Timing.m_start.m_v
-                >= m_region1Timing.m_interval.m_v) {
+            if (m_region1Timing.Expired()) {
                 SetDarknessCurse(false);
             }
         }
         if (m_region2Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region2Timing.m_start.m_v
-                >= m_region2Timing.m_interval.m_v) {
+            if (m_region2Timing.Expired()) {
                 SetMonitorCurse(false);
             }
         }
         if (m_region3Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region3Timing.m_start.m_v
-                >= m_region3Timing.m_interval.m_v) {
+            if (m_region3Timing.Expired()) {
                 SetRandomMoveIconsCurse(false);
             }
         }
@@ -936,10 +922,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CTimer* worker = self->m_levelTimer;
     if (worker != NULL) {
-        worker->m_unusedStamp.m_lo = 0;
-        worker->m_unusedStamp.m_hi = 0;
-        worker->m_accum.m_lo = 0;
-        worker->m_accum.m_hi = 0;
+        worker->m_stamp.m_intervalLo = 0;
+        worker->m_stamp.m_intervalHi = 0;
+        worker->m_countdown.m_intervalLo = 0;
+        worker->m_countdown.m_intervalHi = 0;
         worker->m_running = false;
         worker->m_currentMs = 0;
     }
@@ -1461,10 +1447,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_paused = false;
         self->m_playerCommandPending = false;
         self->m_winLoseBanner = false;
-        self->m_cueTiming.m_interval.m_lo = 0x1f4;
-        self->m_cueTiming.m_interval.m_hi = 0;
-        self->m_cueTiming.m_start.m_lo = g_frameTime;
-        self->m_cueTiming.m_start.m_hi = 0;
+        self->m_cueTiming.Start(0x1f4);
         self->m_cueToggle = true;
         self->m_cueText = "";
         self->m_lastCueId = 0;
@@ -3492,10 +3475,10 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         this->m_dragInhibit1 = true;
         this->m_cursorTargetValid = false;
         g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-        this->m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
-        this->m_bootyTiming.m_interval.m_hi = 0;
-        this->m_bootyTiming.m_start.m_lo = g_frameTime;
-        this->m_bootyTiming.m_start.m_hi = 0;
+        this->m_bootyTiming.m_intervalLo = BOOTY_INTERVAL_MS;
+        this->m_bootyTiming.m_intervalHi = 0;
+        this->m_bootyTiming.m_startLo = g_frameTime;
+        this->m_bootyTiming.m_startHi = 0;
         this->m_cursorId = cursorId;
         return 1;
     }
@@ -4276,10 +4259,10 @@ i32 CPlay::ExecuteCommand(
                     ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
             if (g != NULL) {
                 if (g->m_tileClaimed != true) {
-                    g->m_arrivalRerollLo = 0;
-                    g->m_arrivalRerollWindowLo = 0;
-                    g->m_arrivalRerollHi = 0;
-                    g->m_arrivalRerollWindowHi = 0;
+                    g->m_arrivalRerollTiming.m_startLo = 0;
+                    g->m_arrivalRerollTiming.m_intervalLo = 0;
+                    g->m_arrivalRerollTiming.m_startHi = 0;
+                    g->m_arrivalRerollTiming.m_intervalHi = 0;
                     g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
                     g->m_tileClaimed = true;
                     g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
@@ -5538,10 +5521,7 @@ RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char sequenceName[0x40];
     if (m_mgr->m_musicEnabled != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        m_ambientTiming.m_interval.m_lo = AMBIENT_INTRO_INTERVAL_MS;
-        m_ambientTiming.m_interval.m_hi = 0;
-        m_ambientTiming.m_start.m_lo = g_frameTime;
-        m_ambientTiming.m_start.m_hi = 0;
+        m_ambientTiming.Start(AMBIENT_INTRO_INTERVAL_MS);
         wsprintfA(sequenceName, "INTRO%d", GetAmbientId());
         if (g_gameReg->m_musicEnabled != false) {
             m_mgr->m_midi->PlaySequence(sequenceName, false);
@@ -5555,10 +5535,10 @@ i32 CPlay::ResetPlayState() {
         if (gameManager->m_musicEnabled != false && gameManager->m_gameMode == GAMEMODE_BATTLEZ) {
             m_mgr->m_midi->PlaySequence(sequenceName, true);
         }
-        m_ambientTiming.m_start.m_lo = 0;
-        m_ambientTiming.m_interval.m_lo = 0;
-        m_ambientTiming.m_start.m_hi = 0;
-        m_ambientTiming.m_interval.m_hi = 0;
+        m_ambientTiming.m_startLo = 0;
+        m_ambientTiming.m_intervalLo = 0;
+        m_ambientTiming.m_startHi = 0;
+        m_ambientTiming.m_intervalHi = 0;
         m_ambientInitDone = true;
     }
     if (m_mgr->m_gameMode == GAMEMODE_QUESTZ) {
@@ -5602,24 +5582,23 @@ i32 CPlay::ResetPlayState() {
     m_winLoseBanner = false;
     CTimer* fm = m_levelTimer;
     if (fm != NULL) {
-        fm->m_unusedStamp.m_v = 0xffffffff;
+        fm->m_stamp.m_interval = 0xffffffff;
         if (fm->m_currentMs != 0) {
             fm->m_running = true;
-            fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
-            fm->m_accum.m_v = static_cast<u32>(fm->m_currentMs);
-            fm->m_baseTime.m_v = static_cast<u32>(g_frameTime);
+            fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
+            fm->m_countdown.Start(fm->m_currentMs);
         } else {
-            fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
+            fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
         }
     }
     CTriggerMgr* tl = m_mgr->m_triggerMgr;
     tl->m_countdownActive = true;
     tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
-    tl->m_gooTimer.m_base = 0;
-    tl->m_gooTimer.m_window = 0;
-    tl->m_resourceTimer.m_base = 0;
-    tl->m_resourceTimer.m_window = 0;
+    tl->m_gooTimer.m_start = 0;
+    tl->m_gooTimer.m_interval = 0;
+    tl->m_resourceTimer.m_start = 0;
+    tl->m_resourceTimer.m_interval = 0;
     tl->m_finishReasonFrame = FINISH_REASON_NONE;
     tl->m_rollingballWanted = false;
     tl->m_teleportWanted = false;
@@ -6490,9 +6469,7 @@ i32 CPlay::SetTinyViewportCurse(b32 active) {
         RegionLeave();
         m_viewportResizeMode = VIEW_RESIZE_EXPAND;
     }
-    m_region0Timing.m_interval.m_lo = REGION_INTERVAL_MS;
-    m_region0Timing.m_interval.m_hi = 0;
-    m_region0Timing.m_start.m_v = g_frameTime;
+    m_region0Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6505,9 +6482,7 @@ i32 CPlay::SetDarknessCurse(b32 active) {
         m_region1Gate = false;
         RegionLeave();
     }
-    m_region1Timing.m_interval.m_lo = REGION_INTERVAL_MS;
-    m_region1Timing.m_interval.m_hi = 0;
-    m_region1Timing.m_start.m_v = g_frameTime;
+    m_region1Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6521,9 +6496,7 @@ i32 CPlay::SetMonitorCurse(b32 active) {
         m_region2Gate = false;
         RegionLeave();
     }
-    m_region2Timing.m_interval.m_lo = REGION_INTERVAL_MS;
-    m_region2Timing.m_interval.m_hi = 0;
-    m_region2Timing.m_start.m_v = g_frameTime;
+    m_region2Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6537,9 +6510,7 @@ i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
         RegionLeave();
         g_gameReg->m_triggerMgr->CycleMoveIcons(-1, false);
     }
-    m_region3Timing.m_interval.m_lo = REGION_INTERVAL_MS;
-    m_region3Timing.m_interval.m_hi = 0;
-    m_region3Timing.m_start.m_v = g_frameTime;
+    m_region3Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6718,9 +6689,7 @@ RVA(0x000d9240, 0x3c)
 i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
     if (active != false) {
 
-        m_defeatCountdownTiming.m_interval.m_lo = durationMs;
-        m_defeatCountdownTiming.m_interval.m_hi = 0;
-        m_defeatCountdownTiming.m_start.m_v = static_cast<u32>(g_frameTime);
+        m_defeatCountdownTiming.Start(durationMs);
     }
     m_defeatCountdownActive = active;
     return 1;

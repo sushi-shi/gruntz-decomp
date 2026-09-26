@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_ImageSetAni.h>
 #include <Gruntz/SerialArchive.h>
@@ -29,20 +30,7 @@ public:
     i32 RenderCel();
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    union {
-        i64 m_start64;
-        struct {
-            i32 m_startLo;
-            i32 m_startHi;
-        };
-    };
-    union {
-        i64 m_window64;
-        struct {
-            i32 m_windowLo;
-            i32 m_windowHi;
-        };
-    };
+    ClockInterval m_timing;
 };
 
 #endif // GRUNTZ_GRUNTZ_CANIPLAYER_H

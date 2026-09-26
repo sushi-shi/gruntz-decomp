@@ -5,8 +5,8 @@
 
 #include <Mfc.h>
 
-#include <Clock64.h>
 #include <Gruntz/BattlezDifficulty.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
@@ -127,19 +127,7 @@ public:
     i32 m_gooberzChance;
     u32 m_gruntRatio;
 
-    union {
-        Clock64 m_routeTimers[2];
-        struct {
-            Clock64 m_routeClock;
-            Clock64 m_routeWindow;
-        };
-        struct {
-            i32 m_routeClockLo;
-            i32 m_routeClockHi;
-            i32 m_routeWindowLo;
-            i32 m_routeWindowHi;
-        };
-    };
+    ClockInterval m_routeTiming;
     i32 m_reserved088;
     i32 m_defenderSearchRadiusX;
     i32 m_defenderSearchRadiusY;

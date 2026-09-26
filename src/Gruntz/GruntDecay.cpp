@@ -46,18 +46,17 @@ i32 CGrunt::UpdateDeathAnimation() {
         UnregisterFromBoard(this, 0);
         i32 dt = static_cast<i32>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8));
         i32 epoch;
-        i64* clock = &m_idleTimer;
+        ClockInterval* clock = &m_idleWindowTiming;
         if (m_object->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
             epoch = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
-            clock[1] = static_cast<u32>(dt);
-            clock[0] = static_cast<u32>(epoch);
+            clock->m_interval = static_cast<u32>(dt);
+            clock->m_start = static_cast<u32>(epoch);
         } else {
-            clock[1] = static_cast<u32>(dt);
+            clock->m_interval = static_cast<u32>(dt);
             epoch = static_cast<i32>(g_frameTime);
-            clock[0] = static_cast<u32>(epoch);
+            clock->m_start = static_cast<u32>(epoch);
         }
-        i64 e = static_cast<i64>(g_frameTime) - m_idleTimer;
-        u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
+        u32 elapsed = m_idleWindowTiming.Elapsed();
         CWwdSpriteObject* o = m_object;
         i32 r = static_cast<i32>(
             (static_cast<double>(elapsed) * 256.0
@@ -75,14 +74,14 @@ i32 CGrunt::UpdateDeathAnimation() {
 RVA(0x00061570, 0x11d)
 i32 CGrunt::UpdateDecayFade() {
     i64 now = static_cast<i64>(g_frameTime);
-    if (now - m_idleTimer >= m_idleWindow) {
+    if (now - m_idleWindowTiming.m_start >= m_idleWindowTiming.m_interval) {
         Hide();
         m_wwdObject->m_imageSet->SetAllTypes(SHADE_COPY);
         UnregisterFromBoard(this, 0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
-    i64 e = now - m_idleTimer;
+    i64 e = now - m_idleWindowTiming.m_start;
     u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
     CWwdSpriteObject* o = m_object;
     i32 r = static_cast<i32>(
