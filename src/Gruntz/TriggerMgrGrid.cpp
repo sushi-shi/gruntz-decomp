@@ -24,6 +24,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -464,7 +465,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
     CGameLevel* level = m_world->m_level;
     TileCollisionKind tag;
-    PROBE_TILE(level, x, y, tag);
+    tag = LookupTileTypeDirect(level, x, y);
 
     if (static_cast<u32>((IDX(tag) - 0xb)) > 0x65) {
         return 0;
