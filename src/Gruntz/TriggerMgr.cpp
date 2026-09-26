@@ -1478,7 +1478,6 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_overlay;
@@ -1507,6 +1506,10 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
                 TARGET_SELECTION_GRUNT,
                 1
             );
+        } else {
+            i32 v = IDX(alt) + kPendingFxIdBase;
+            m_pendingFxKind = v;
+            world->LoadCursorSprites(v, false);
         }
     } else if (kind == ACTIONOPTION_HIT_SECONDARY) {
 
