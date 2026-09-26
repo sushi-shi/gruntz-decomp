@@ -6475,9 +6475,7 @@ i32 CPlay::SetTinyViewportCurse(b32 active) {
         RegionLeave();
         m_viewportResizeMode = VIEW_RESIZE_EXPAND;
     }
-    m_region0Timing.m_intervalLo = REGION_INTERVAL_MS;
-    m_region0Timing.m_intervalHi = 0;
-    m_region0Timing.m_start = g_frameTime;
+    m_region0Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6490,9 +6488,7 @@ i32 CPlay::SetDarknessCurse(b32 active) {
         m_region1Gate = false;
         RegionLeave();
     }
-    m_region1Timing.m_intervalLo = REGION_INTERVAL_MS;
-    m_region1Timing.m_intervalHi = 0;
-    m_region1Timing.m_start = g_frameTime;
+    m_region1Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6506,9 +6502,7 @@ i32 CPlay::SetMonitorCurse(b32 active) {
         m_region2Gate = false;
         RegionLeave();
     }
-    m_region2Timing.m_intervalLo = REGION_INTERVAL_MS;
-    m_region2Timing.m_intervalHi = 0;
-    m_region2Timing.m_start = g_frameTime;
+    m_region2Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6522,9 +6516,7 @@ i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
         RegionLeave();
         g_gameReg->m_triggerMgr->CycleMoveIcons(-1, false);
     }
-    m_region3Timing.m_intervalLo = REGION_INTERVAL_MS;
-    m_region3Timing.m_intervalHi = 0;
-    m_region3Timing.m_start = g_frameTime;
+    m_region3Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6703,9 +6695,7 @@ RVA(0x000d9240, 0x3c)
 i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
     if (active != false) {
 
-        m_defeatCountdownTiming.m_intervalLo = durationMs;
-        m_defeatCountdownTiming.m_intervalHi = 0;
-        m_defeatCountdownTiming.m_start = static_cast<u32>(g_frameTime);
+        m_defeatCountdownTiming.Start(durationMs);
     }
     m_defeatCountdownActive = active;
     return 1;
