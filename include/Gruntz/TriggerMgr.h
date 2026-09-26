@@ -275,6 +275,13 @@ public:
     Coord* HeadRec() {
         return static_cast<Coord*>(m_recList.GetHead());
     }
+    CGrunt* SoleSelectedGrunt() {
+        if (m_recList.GetCount() != 1) {
+            return NULL;
+        }
+        Coord* rec = HeadRec();
+        return m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
+    }
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;
     char m_reserved274[0x10];

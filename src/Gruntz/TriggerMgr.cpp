@@ -422,13 +422,7 @@ void CTriggerMgr::CloseActionOptionsMenu() {
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
-    CGrunt* cell;
-    if (m_recList.GetCount() != 1) {
-        cell = NULL;
-    } else {
-        Coord* rec = HeadRec();
-        cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
-    }
+    CGrunt* cell = SoleSelectedGrunt();
     if (cell == NULL || cell->m_playerIndex != g_curPlayer) {
         return 1;
     }
@@ -698,13 +692,7 @@ i32 CTriggerMgr::HandleTargetSelection(
         return 0;
     }
     CGrunt* hit = CellHitTest(targetX, targetY, NULL, NULL, PLAYER_SLOT_ALL);
-    CGrunt* selectedGrunt;
-    if (m_recList.GetCount() != 1) {
-        selectedGrunt = NULL;
-    } else {
-        Coord* rec = HeadRec();
-        selectedGrunt = m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
-    }
+    CGrunt* selectedGrunt = SoleSelectedGrunt();
 
     TargetSelectionKind targetKind;
     if (selectedGrunt != NULL) {
@@ -865,13 +853,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     if (m_overlay->m_active != false) {
         return 0;
     }
-    CGrunt* selectedGrunt;
-    if (m_recList.GetCount() != 1) {
-        selectedGrunt = NULL;
-    } else {
-        Coord* rec = HeadRec();
-        selectedGrunt = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
-    }
+    CGrunt* selectedGrunt = SoleSelectedGrunt();
     if (selectedGrunt == NULL) {
         return 0;
     }
