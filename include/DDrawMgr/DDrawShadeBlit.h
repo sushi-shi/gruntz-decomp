@@ -58,6 +58,7 @@ public:
 
     void BlitCopyForward(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
     void BlitCopyMirrored(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+    inline void CopyRowFlip(u8* dst, u8* src, i32 bytes);
     void BlitShadedForward(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip);
     void BlitShadedMirrored(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
 

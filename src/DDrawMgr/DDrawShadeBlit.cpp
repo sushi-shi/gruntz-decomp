@@ -638,6 +638,21 @@ void CDDrawShadeBlit::BlitCopyForward(
     surf->m_ddSurface->Unlock(NULL);
 }
 
+inline void CDDrawShadeBlit::CopyRowFlip(u8* dst, u8* src, i32 bytes) {
+    if (m_srcBpp == 1) {
+        while (bytes-- > 0) {
+            *dst-- = *src++;
+        }
+    } else {
+        u16* d = Pix16(dst);
+        u16* s = Pix16(src);
+        while (bytes-- > 0) {
+            *d-- = *s++;
+            bytes--;
+        }
+    }
+}
+
 RVA(0x00149d00, 0x4f8)
 void CDDrawShadeBlit::BlitCopyMirrored(
     ShadeRect* dst,
@@ -685,22 +700,11 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 x += SHADE_RLE_TRANSPARENT_FLAG - static_cast<i32>(m_rleData[pos]);
                 pos++;
             } else {
-                i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
-                u8* s = &m_rleData[pos + 1];
-                u8* dst0 = base + x * m_dstBpp;
-                if (m_srcBpp == 1) {
-                    u8* d = dst0;
-                    while (bytes-- > 0) {
-                        *d-- = *s++;
-                    }
-                } else {
-                    u16* d = Pix16(dst0);
-                    u16* sw = Pix16(s);
-                    while (bytes-- > 0) {
-                        *d-- = *sw++;
-                        bytes--;
-                    }
-                }
+                CopyRowFlip(
+                    base + x * m_dstBpp,
+                    &m_rleData[pos + 1],
+                    static_cast<i32>(m_rleData[pos]) * m_srcBpp
+                );
                 x -= m_rleData[pos];
                 pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
@@ -724,37 +728,13 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 u8* sd = &m_rleData[pos + 1];
                 if (x - m_rleData[pos] <= clip->left) {
                     i32 vis = (x - clip->left) * m_srcBpp;
-                    i32 bytes = vis < 0 ? 0 : vis;
-                    u8* dbase = base + (x - clip->left) * m_dstBpp;
-                    if (m_srcBpp == 1) {
-                        u8* d = dbase;
-                        while (bytes-- > 0) {
-                            *d-- = *sd++;
-                        }
-                    } else {
-                        u16* d = Pix16(dbase);
-                        u16* sw = Pix16(sd);
-                        while (bytes-- > 0) {
-                            *d-- = *sw++;
-                            bytes--;
-                        }
-                    }
+                    CopyRowFlip(base + (x - clip->left) * m_dstBpp, sd, vis < 0 ? 0 : vis);
                 } else {
-                    i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
-                    u8* dbase = base + (x - clip->left) * m_dstBpp;
-                    if (m_srcBpp == 1) {
-                        u8* d = dbase;
-                        while (bytes-- > 0) {
-                            *d-- = *sd++;
-                        }
-                    } else {
-                        u16* d = Pix16(dbase);
-                        u16* sw = Pix16(sd);
-                        while (bytes-- > 0) {
-                            *d-- = *sw++;
-                            bytes--;
-                        }
-                    }
+                    CopyRowFlip(
+                        base + (x - clip->left) * m_dstBpp,
+                        sd,
+                        static_cast<i32>(m_rleData[pos]) * m_srcBpp
+                    );
                 }
                 x -= m_rleData[pos];
                 pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
@@ -785,19 +765,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 if (x >= 0 && trans == false) {
                     i32 bytes = (clip->right - x) * m_srcBpp;
                     u8* s = &m_rleData[pos] - bytes;
-                    if (m_srcBpp == 1) {
-                        u8* d = base + clip->right * m_dstBpp;
-                        while (bytes-- > 0) {
-                            *d-- = *s++;
-                        }
-                    } else {
-                        u16* d = Pix16(base + clip->right * m_dstBpp);
-                        u16* sw = Pix16(s);
-                        while (bytes-- > 0) {
-                            *d-- = *sw++;
-                            bytes--;
-                        }
-                    }
+                    CopyRowFlip(base + clip->right * m_dstBpp, s, bytes);
                 }
             }
             if (x > 0) {
@@ -805,22 +773,11 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                     x += SHADE_RLE_TRANSPARENT_FLAG - static_cast<i32>(m_rleData[pos]);
                     pos++;
                 } else {
-                    i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
-                    u8* s = &m_rleData[pos + 1];
-                    u8* dst0 = base + x * m_dstBpp;
-                    if (m_srcBpp == 1) {
-                        u8* d = dst0;
-                        while (bytes-- > 0) {
-                            *d-- = *s++;
-                        }
-                    } else {
-                        u16* d = Pix16(dst0);
-                        u16* sw = Pix16(s);
-                        while (bytes-- > 0) {
-                            *d-- = *sw++;
-                            bytes--;
-                        }
-                    }
+                    CopyRowFlip(
+                        base + x * m_dstBpp,
+                        &m_rleData[pos + 1],
+                        static_cast<i32>(m_rleData[pos]) * m_srcBpp
+                    );
                     x -= m_rleData[pos];
                     pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
                 }
