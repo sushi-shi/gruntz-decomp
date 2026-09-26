@@ -170,6 +170,14 @@ public:
 #define SET_WORKER_HOST_CELL(plane, x, y, id)                                                      \
     (plane)->m_tileHandles[(plane)->m_tileRowOffsets[y] + x] = id
 
+#define TILE_SHIFT_INTO(shift, scratch, extent)                                                    \
+    (shift) = 0;                                                                                   \
+    (scratch) = (extent);                                                                          \
+    while ((scratch) > 1) {                                                                        \
+        (scratch) >>= 1;                                                                           \
+        (shift) = (shift) + 1;                                                                     \
+    }
+
 #define CLAMP_TO_EXTENT(value, extent)                                                             \
     if ((value) < 0) {                                                                             \
         (value) = 0;                                                                               \

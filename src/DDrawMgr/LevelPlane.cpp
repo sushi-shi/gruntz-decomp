@@ -190,18 +190,9 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_viewportHeight = m_viewportRect.bottom - m_viewportRect.top + 1;
     m_viewHalfWidth = m_viewportWidth / 2;
     m_viewHalfHeight = m_viewportHeight / 2;
-    m_shiftX = 0;
-    i32 v = tileWidthPx;
-    while (v > 1) {
-        v >>= 1;
-        m_shiftX = m_shiftX + 1;
-    }
-    m_shiftY = 0;
-    v = tileWidthPx;
-    while (v > 1) {
-        v >>= 1;
-        m_shiftY = m_shiftY + 1;
-    }
+    i32 v;
+    TILE_SHIFT_INTO(m_shiftX, v, tileWidthPx);
+    TILE_SHIFT_INTO(m_shiftY, v, tileWidthPx);
     if (planeName != NULL) {
         strcpy(m_planeName, planeName);
     }
@@ -343,18 +334,9 @@ void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
     SET_RECT_COMPONENTS(m_tileRect, 0, 0, tileWidthPx, tileHeightPx);
     m_planePixelWidth = m_tileColumns * tileWidthPx;
     m_planePixelHeight = m_tileRows * tileHeightPx;
-    m_shiftX = 0;
-    i32 v = tileWidthPx;
-    while (v > 1) {
-        v >>= 1;
-        m_shiftX = m_shiftX + 1;
-    }
-    m_shiftY = 0;
-    v = tileWidthPx;
-    while (v > 1) {
-        v >>= 1;
-        m_shiftY = m_shiftY + 1;
-    }
+    i32 v;
+    TILE_SHIFT_INTO(m_shiftX, v, tileWidthPx);
+    TILE_SHIFT_INTO(m_shiftY, v, tileWidthPx);
 }
 
 // @dead-code
