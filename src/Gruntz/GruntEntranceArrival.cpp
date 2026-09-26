@@ -178,9 +178,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
         SET_SORT_KEY_IF_CHANGED(h, z)
     }
 
-    CWwdSpriteObject* p = m_wwdObject;
-    m_value = p->m_animationCursor.m_animation;
-    p->m_animationCursor.SetAnimation(m_poseAttack[idx]);
+    SwitchAnimation(m_poseAttack[idx]);
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
@@ -195,9 +193,7 @@ RVA(0x00061bc0, 0xb2)
 i32 CGrunt::StartRangedAttackAnimation() {
     SET_ANIMATION_ACT("F");
 
-    CWwdSpriteObject* p = m_wwdObject;
-    m_value = p->m_animationCursor.m_animation;
-    p->m_animationCursor.SetAnimation(AT(m_poseAttack, GRUNT_ATTACK2));
+    SwitchAnimation(AT(m_poseAttack, GRUNT_ATTACK2));
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 

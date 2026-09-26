@@ -1150,8 +1150,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                     if (cand->m_pending == false && cand->m_tileX == argTileX
                         && cand->m_tileY == argTileY) {
                         cell->RunMoveConfig(argTileX, argTileY);
-                        cand->m_value = cand->m_wwdObject->m_animationCursor.m_animation;
-                        cand->m_wwdObject->SetAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
+                        cand->SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                         cand->m_pending = true;
                         return 1;
                     }

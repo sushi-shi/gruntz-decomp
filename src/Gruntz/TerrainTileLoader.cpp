@@ -216,8 +216,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             puddle->SetBute("B");
                             puddle->m_placed = true;
                             puddle->m_pending = false;
-                            puddle->m_value = puddle->m_wwdObject->m_animationCursor.m_animation;
-                            puddle->m_wwdObject->SetAnimationByName(g_puddleSpriteKey, 0);
+                            puddle->SwitchAnimationByName(g_puddleSpriteKey, 0);
                             return 1;
                         }
                         gaugePoints = puddle->m_gaugePoints;
