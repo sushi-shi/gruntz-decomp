@@ -686,7 +686,7 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_BCAST_KEY_MISS));
             return 0;
         }
-        if (m_cellKey != node->m_cellKey && node->m_linkGate != false) {
+        if (node->m_cellKey != m_cellKey && node->m_linkGate != false) {
             node->SwitchUp();
             b32 any = false;
             POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
