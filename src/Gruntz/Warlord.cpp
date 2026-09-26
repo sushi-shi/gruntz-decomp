@@ -415,9 +415,9 @@ i32 CWarlord::FinishJoyAnimation() {
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
-            tm->m_window = 0x3e8;
-            tm->m_base = static_cast<u32>(g_frameTime);
+            ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
+            tm->m_interval = 0x3e8;
+            tm->m_start = static_cast<u32>(g_frameTime);
         }
         ResolveMovingAnimation();
     }
@@ -453,9 +453,9 @@ i32 CWarlord::BuildFortSplashParticles() {
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
-            tm->m_window = 0x3e8;
-            tm->m_base = static_cast<u32>(g_frameTime);
+            ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
+            tm->m_interval = 0x3e8;
+            tm->m_start = static_cast<u32>(g_frameTime);
         }
 
         GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];

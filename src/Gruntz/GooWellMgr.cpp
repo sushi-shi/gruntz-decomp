@@ -73,7 +73,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
         if (m_phase == FINISH_STATE_DEFEAT && play->m_statusBar->m_levelOverlayActive == false
             && play->m_statusBar->m_quitConfirmationActive == false && m_pendingFx == NULL) {
-            if (static_cast<i64>(g_frameTime) - m_cueTimer.m_base >= m_cueTimer.m_window) {
+            if (static_cast<i64>(g_frameTime) - m_cueTimer.m_start >= m_cueTimer.m_interval) {
                 play->OpenLevelOverlay(false);
             }
         }
@@ -87,7 +87,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (m_pendingFx != NULL) {
             return 0;
         }
-        if (static_cast<i64>(g_frameTime) - m_cueTimer.m_base >= m_cueTimer.m_window) {
+        if (static_cast<i64>(g_frameTime) - m_cueTimer.m_start >= m_cueTimer.m_interval) {
             if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
 
                 (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = true;
@@ -100,7 +100,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     }
 
     if (m_phase == FINISH_STATE_VICTORY) {
-        if (static_cast<i64>(g_frameTime) - m_cueTimer.m_base < m_cueTimer.m_window) {
+        if (static_cast<i64>(g_frameTime) - m_cueTimer.m_start < m_cueTimer.m_interval) {
             goto done;
         }
         if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_pendingFx != NULL) {
@@ -190,16 +190,17 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             return 0;
         }
 
-        if (static_cast<i64>(g_frameTime) - m_gooTimer.m_base >= m_gooTimer.m_window) {
+        if (static_cast<i64>(g_frameTime) - m_gooTimer.m_start >= m_gooTimer.m_interval) {
             obj->m_statusBar->AdvanceGruntWell(1);
-            m_gooTimer.m_window = g_buteMgr.GetDword("Multiplayer", "TimePerGoo", 0x258);
-            m_gooTimer.m_base = g_frameTime;
+            m_gooTimer.m_interval = g_buteMgr.GetDword("Multiplayer", "TimePerGoo", 0x258);
+            m_gooTimer.m_start = g_frameTime;
         }
 
-        if (static_cast<i64>(g_frameTime) - m_resourceTimer.m_base >= m_resourceTimer.m_window) {
+        if (static_cast<i64>(g_frameTime) - m_resourceTimer.m_start >= m_resourceTimer.m_interval) {
             obj->m_statusBar->UpdateRezMachineWakeStatusBar();
-            m_resourceTimer.m_window = g_buteMgr.GetDword("Multiplayer", "TimePerResource", 0x7530);
-            m_resourceTimer.m_base = g_frameTime;
+            m_resourceTimer.m_interval =
+                g_buteMgr.GetDword("Multiplayer", "TimePerResource", 0x7530);
+            m_resourceTimer.m_start = g_frameTime;
         }
 
         for (i32 i = 0; i < 4; i++) {

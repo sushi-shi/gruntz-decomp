@@ -2002,8 +2002,8 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
                 SoundCue* p = m_world->m_soundRegistry->FindCue("GAME_FINISHLEVEL");
-                m_cueTimer.m_window = static_cast<u32>((p->m_sound->m_durationMs + 500));
-                m_cueTimer.m_base = g_frameTime;
+                m_cueTimer.m_interval = static_cast<u32>((p->m_sound->m_durationMs + 500));
+                m_cueTimer.m_start = g_frameTime;
                 PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_FINISHLEVEL");
                 m_phase = FINISH_STATE_VICTORY;
                 m_groupFlag = false;
@@ -2019,8 +2019,8 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
             break;
         case FINISH_REASON_TIME_EXPIRED:
             m_phase = FINISH_STATE_DEFEAT;
-            m_cueTimer.m_window = 3000;
-            m_cueTimer.m_base = g_frameTime;
+            m_cueTimer.m_interval = 3000;
+            m_cueTimer.m_start = g_frameTime;
             goto Lab_56b;
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
             if (m_phase == FINISH_STATE_ACTIVE) {
@@ -2030,8 +2030,8 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                 }
             }
         Lab_522:
-            m_cueTimer.m_window = 3000;
-            m_cueTimer.m_base = g_frameTime;
+            m_cueTimer.m_interval = 3000;
+            m_cueTimer.m_start = g_frameTime;
             goto Lab_56b;
         case FINISH_REASON_BATTLEZ_DEFEAT:
             m_phase = FINISH_STATE_DEFEAT;
@@ -2039,8 +2039,8 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
         default:
             return;
     }
-    m_cueTimer.m_window = 3000;
-    m_cueTimer.m_base = g_frameTime;
+    m_cueTimer.m_interval = 3000;
+    m_cueTimer.m_start = g_frameTime;
 Lab_56b:
     m_groupFlag = false;
     m_finishReasonFrame = state;

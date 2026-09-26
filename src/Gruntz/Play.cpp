@@ -5601,10 +5601,10 @@ i32 CPlay::ResetPlayState() {
     tl->m_countdownActive = true;
     tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
-    tl->m_gooTimer.m_base = 0;
-    tl->m_gooTimer.m_window = 0;
-    tl->m_resourceTimer.m_base = 0;
-    tl->m_resourceTimer.m_window = 0;
+    tl->m_gooTimer.m_start = 0;
+    tl->m_gooTimer.m_interval = 0;
+    tl->m_resourceTimer.m_start = 0;
+    tl->m_resourceTimer.m_interval = 0;
     tl->m_finishReasonFrame = FINISH_REASON_NONE;
     tl->m_rollingballWanted = false;
     tl->m_teleportWanted = false;
