@@ -39,7 +39,7 @@
         case ACT_LIVE:                                                                             \
             break;                                                                                 \
         default:                                                                                   \
-            DispatchUnhandledLogicEvent(record->m_userLogic);                                      \
+            DispatchLogicEvent(record->m_userLogic);                                               \
             break;                                                                                 \
     }                                                                                              \
     return 1;

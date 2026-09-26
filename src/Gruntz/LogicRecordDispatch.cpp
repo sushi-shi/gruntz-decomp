@@ -44,7 +44,7 @@ i32 DispatchProjectileLogic(CGameObject* owner) {
         case LOGICREC_BUILT:
             break;
         default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -83,7 +83,7 @@ i32 DispatchBoomerangLogic(CGameObject* owner) {
         case LOGICREC_BUILT:
             break;
         default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -122,7 +122,7 @@ i32 DispatchTimeBombLogic(CGameObject* owner) {
         case LOGICREC_BUILT:
             break;
         default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
