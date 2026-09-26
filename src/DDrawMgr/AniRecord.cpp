@@ -53,7 +53,6 @@ i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00168d00, 0x14c)
 void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     if (owner == NULL || str == NULL) {
@@ -84,8 +83,7 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     if (m_cueCount > 0) {
         m_cues = new SoundCue*[m_cueCount];
         for (i32 i = 0; i < m_cueCount; i++) {
-            SoundCue* v = NULL;
-            m_cues[i] = (MapLookup(owner->m_cues, tokens.GetAt(i), v), v);
+            m_cues[i] = owner->FindCue(tokens.GetAt(i));
         }
     }
 }
