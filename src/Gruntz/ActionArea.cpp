@@ -38,7 +38,6 @@ i32 DispatchActionAreaLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CActionArea)
 }
 
-// @early-stop
 RVA(0x00007da0, 0x17e)
 CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_ACTIONAREA_RED");
@@ -46,7 +45,8 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTION_AREA)
     m_phase = 1;
-    m_timing.m_interval = 0;
+    m_timing.m_intervalLo = 0;
+    m_timing.m_intervalHi = 0;
     Hide();
 }
 
