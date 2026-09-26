@@ -356,17 +356,9 @@ i32 CKitchenSlime::LoadSprites() {
         CWwdSpriteObject* player = Anim();
         CDDrawWorker* spr = player->m_imageSet;
         if (spr != NULL) {
-            if (DDRAW_WORKER_CONTAINS_FRAME(spr, 1)) {
-                CImage* img = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1);
-                player->m_frameIndex = 1;
-                player->m_frameImage = img;
-                m_stepMag = 0.0;
-                return 1;
-            }
+            CImage* img = spr->GetAt(1);
             player->m_frameIndex = 1;
-            player->m_frameImage = NULL;
-            m_stepMag = 0.0;
-            return 1;
+            player->m_frameImage = img;
         }
     }
     m_stepMag = 0.0;
