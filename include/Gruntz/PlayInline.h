@@ -1,8 +1,13 @@
 #ifndef GRUNTZ_GRUNTZ_PLAYINLINE_H
 #define GRUNTZ_GRUNTZ_PLAYINLINE_H
 
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerList.h>
 #include <Dsndmgr/MidiManager.h>
 #include <Gruntz/CoordPool.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -61,6 +66,22 @@ inline void CPlay::UpdateAmbientMusic() {
             }
             m_ambientInitDone = true;
         }
+    }
+}
+
+inline void CPlay::DrawVisibleWorld() {
+    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
+    m_world->m_workerList->RenderAndPruneWorkers(
+        m_world->m_drawTarget->m_backPair,
+        m_world->m_drawTarget->m_overlayPair
+    );
+}
+
+inline void CPlay::DrawWorldView() {
+    if (m_region1Gate != false) {
+        NotifyVisibleEntities();
+    } else {
+        DrawVisibleWorld();
     }
 }
 

@@ -672,11 +672,7 @@ RVA(0x000b6e90, 0x34d)
 void CMulti::RenderGameFrame() {
     if (m_roundComplete == false && Mgr()->m_frameGate != false) {
         RestoreCursorSaveUnder();
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
+        DrawVisibleWorld();
         m_statusBar->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
         if (h == NULL) {
@@ -705,15 +701,7 @@ void CMulti::RenderGameFrame() {
         (m_world->m_level->m_mainPlane)->m_scrollPixelX,
         (m_world->m_level->m_mainPlane)->m_scrollPixelY
     );
-    if (m_region1Gate != false) {
-        NotifyVisibleEntities();
-    } else {
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
-    }
+    DrawWorldView();
     m_statusBar->LoadMainStatusBarSprite();
     if (m_minimap != NULL) {
         CStatusBarMgr* statusBar = m_statusBar;

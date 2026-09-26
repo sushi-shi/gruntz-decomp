@@ -438,11 +438,7 @@ i32 CPlay::Render() {
         g_engineFrameDelta = g_frameDelta;
 
         m_world->m_childGroup->TickKillCues(0);
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
+        DrawVisibleWorld();
         m_mgr->m_worldSounds->SetListenerPosition(
             m_world->m_level->m_mainPlane->m_scrollPixelX,
             m_world->m_level->m_mainPlane->m_scrollPixelY
@@ -542,18 +538,7 @@ i32 CPlay::Render() {
                 stream->TickStreams(t);
             }
         }
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
         m_statusBar->LoadMainStatusBarSprite();
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
@@ -716,14 +701,7 @@ i32 CPlay::Render() {
 
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
-                m_world->m_level->VisitVisible(
-                    m_world->m_drawTarget->m_backPair,
-                    m_world->m_childGroup
-                );
-                m_world->m_workerList->RenderAndPruneWorkers(
-                    m_world->m_drawTarget->m_backPair,
-                    m_world->m_drawTarget->m_overlayPair
-                );
+                DrawVisibleWorld();
                 m_statusBar->LoadMainStatusBarSprite();
                 back->m_surface->ShadeRect(0x32, NULL);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -732,14 +710,7 @@ i32 CPlay::Render() {
             UpdateAmbientMusic();
         } else {
 
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
+            DrawVisibleWorld();
             m_statusBar->LoadMainStatusBarSprite();
             if (m_statusBar->m_levelOverlayActive == false
                 && m_statusBar->m_quitConfirmationActive == false) {
@@ -927,11 +898,7 @@ i32 CPlay::ProfileDeltaFrame() {
         m_world->m_level->m_mainPlane->m_scrollPixelY
     );
     u32 t2 = tg();
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    m_world->m_workerList->RenderAndPruneWorkers(
-        m_world->m_drawTarget->m_backPair,
-        m_world->m_drawTarget->m_overlayPair
-    );
+    DrawVisibleWorld();
     i32 presentMs = static_cast<i32>((tg() - t2));
     g_brickText1.Format(
         "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
@@ -1684,15 +1651,7 @@ i32 CPlay::InputVirtual() {
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
 
-    if (m_region1Gate != false) {
-        NotifyVisibleEntities();
-    } else {
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
-    }
+    DrawWorldView();
 
     m_statusBar->Deactivate();
     m_statusBar->LoadMainStatusBarSprite();
@@ -1719,18 +1678,7 @@ i32 CPlay::RestoreDisplay() {
     }
     if (m_statusBar != NULL) {
         m_statusBar->Deactivate();
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     }
     return 1;
@@ -3183,11 +3131,7 @@ i32 CPlay::DrawWorldPresent() {
         }
     }
     m_world->m_childGroup->TickKillCues(1);
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    m_world->m_workerList->RenderAndPruneWorkers(
-        m_world->m_drawTarget->m_backPair,
-        m_world->m_drawTarget->m_overlayPair
-    );
+    DrawVisibleWorld();
     m_mgr->RefreshGameClock();
     return 1;
 }
@@ -6133,33 +6077,11 @@ i32 CPlay::EnterMode(GameStateId mode) {
         m_initialFramePending = false;
         m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
     } else {
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
         if (mode == GAMESTATE_HELP) {
