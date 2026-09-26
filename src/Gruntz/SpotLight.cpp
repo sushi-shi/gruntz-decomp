@@ -26,6 +26,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLightActReg.h>
@@ -146,23 +147,7 @@ i32 CSpotLight::Tick() {
                 i32 laser = GetRandomNumber() % 2 + 1;
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
-                SoundCueRegistry* obj = g_gameReg->m_world->m_soundRegistry;
-                if (obj->m_silentMode == false) {
-                    SoundCue* found = obj->FindCue(name);
-                    SoundCue* cue = found;
-                    if (cue != NULL) {
-                        b32 soundEnabled = g_soundEnabled;
-                        i32 volumePercent = g_soundVolumePercent;
-                        if (soundEnabled != false) {
-                            u32 cueTimeMs = g_soundCueTimeMs;
-                            if (cueTimeMs - cue->m_lastPlayTimeMs
-                                >= static_cast<u32>(cue->m_replayDelayMs)) {
-                                cue->m_lastPlayTimeMs = cueTimeMs;
-                                cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                            }
-                        }
-                    }
-                }
+                PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, name);
                 return 0;
             } else {
                 tgt->SnapToLastTile(1);
