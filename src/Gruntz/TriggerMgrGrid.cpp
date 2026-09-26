@@ -1202,6 +1202,20 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     return -1;
 }
 
+#define CANCEL_UNIT_ARRIVAL_FX(unit, player, index)                                                \
+    {                                                                                              \
+        if (ANIMATION_ACT_EQUALS_FOR((unit), "I")) {                                               \
+            LoadTileArrivalFx(                                                                     \
+                (player),                                                                          \
+                (index),                                                                           \
+                (unit)->MoveTile().m_x,                                                            \
+                (unit)->MoveTile().m_y,                                                            \
+                (unit)->m_entranceReason,                                                          \
+                WWDDRAW_NO_ANIMATION                                                               \
+            );                                                                                     \
+        }                                                                                          \
+    }
+
 // @early-stop
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
@@ -1258,16 +1272,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             return 0;
         }
 
-        if (ANIMATION_ACT_EQUALS_FOR(cell, "I")) {
-            LoadTileArrivalFx(
-                playerIndex,
-                unitIndex,
-                cell->MoveTile().m_x,
-                cell->MoveTile().m_y,
-                cell->m_entranceReason,
-                WWDDRAW_NO_ANIMATION
-            );
-        }
+        CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
         cell->FaceTowardPixel(bx, by);
         if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
             RESET_GRUNT_POWERED_STATE(cell)
@@ -1307,16 +1312,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         RESET_GRUNT_POWERED_STATE(cell)
     }
 
-    if (ANIMATION_ACT_EQUALS_FOR(cell, "I")) {
-        LoadTileArrivalFx(
-            playerIndex,
-            unitIndex,
-            cell->MoveTile().m_x,
-            cell->MoveTile().m_y,
-            cell->m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
-    }
+    CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
     if (hit->LoadGruntTypeTable(cell->m_vehiclePickupType, 1, moveKind, 0) != 0) {
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
 
@@ -1361,16 +1357,7 @@ i32 CTriggerMgr::ClearCell(
     if (cell->m_entranceActive != false) {
         return 0;
     }
-    if (ANIMATION_ACT_EQUALS_FOR(cell, "I")) {
-        this->LoadTileArrivalFx(
-            playerIndex,
-            unitIndex,
-            cell->MoveTile().m_x,
-            cell->MoveTile().m_y,
-            cell->m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
-    }
+    CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
     i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     cell->m_coordRetryCount = 0;
