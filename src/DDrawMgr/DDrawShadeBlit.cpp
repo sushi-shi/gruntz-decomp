@@ -1220,8 +1220,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
-                u8* row = pal + (*sc++ << PALETTE_INDEX_BITS);
-                *dst++ = row[*src++];
+                *dst++ = pal[(*sc++ << PALETTE_INDEX_BITS) + *src++];
             }
             break;
         }
@@ -1379,7 +1378,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             u8* sc = &g_scratch[count - 1];
             u8* ss = src;
             while (count-- > 0) {
-                *dst-- = base[(*sc-- << PALETTE_INDEX_BITS) + *ss++];
+                u8* row = base + (*sc-- << PALETTE_INDEX_BITS);
+                *dst-- = row[*ss++];
             }
             break;
         }
