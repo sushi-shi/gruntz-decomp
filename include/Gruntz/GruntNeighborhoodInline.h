@@ -8,8 +8,7 @@ static inline Coord ScreenPosition(CGameObject* object) {
     Coord out;
     i32 y = object->m_screenY;
     i32 x = object->m_screenX;
-    out.m_y = y;
-    out.m_x = x;
+    out.Set(x, y);
     return out;
 }
 
