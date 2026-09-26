@@ -45,6 +45,7 @@ public:
     virtual void Reset();
     virtual i32 GetFrameHeight();
     virtual i32 GetFrameWidth();
+    inline b32 IsSelectable();
     RVA(0x00184650, 0xa)
     virtual void SetState(MenuItemState state) {
         m_state = state;

@@ -197,8 +197,7 @@ i32 CMenuPage::FocusInitialItem() {
             if (item) {
                 bool matches = item->GetItemName() == m_initialFocusItemName;
                 if (matches) {
-                    MenuItemState state = item->m_state;
-                    if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+                    if (item->IsSelectable()) {
                         if (SetFocusedItem(item, 0)) {
                             return 1;
                         }
@@ -211,8 +210,7 @@ i32 CMenuPage::FocusInitialItem() {
     while (position) {
         CMenuItem* item = NextItem(position);
         if (item) {
-            MenuItemState state = item->m_state;
-            if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+            if (item->IsSelectable()) {
                 if (SetFocusedItem(item, 0)) {
                     return 1;
                 }
@@ -305,8 +303,7 @@ i32 CMenuPage::MoveFocusUpSequential() {
     while (scanPosition) {
         candidateItem = PrevItem(scanPosition);
         if (candidateItem) {
-            MenuItemState state = candidateItem->m_state;
-            if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+            if (candidateItem->IsSelectable()) {
 
                 scanPosition = NULL;
                 continue;
@@ -327,8 +324,7 @@ i32 CMenuPage::MoveFocusUpSequential() {
             while (wrapPosition) {
                 CMenuItem* wrapCandidate = NextItem(wrapPosition);
                 if (wrapCandidate) {
-                    MenuItemState state = wrapCandidate->m_state;
-                    if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+                    if (wrapCandidate->IsSelectable()) {
                         candidateItem = wrapCandidate;
                     }
                 }
@@ -338,8 +334,7 @@ i32 CMenuPage::MoveFocusUpSequential() {
             return 0;
         }
     }
-    MenuItemState state = candidateItem->m_state;
-    if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
+    if (!candidateItem->IsSelectable()) {
         return 0;
     }
     if (candidateItem == m_focusedItem) {
@@ -364,8 +359,7 @@ i32 CMenuPage::MoveFocusDownSequential() {
     while (scanPosition) {
         candidateItem = NextItem(scanPosition);
         if (candidateItem) {
-            MenuItemState state = candidateItem->m_state;
-            if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+            if (candidateItem->IsSelectable()) {
 
                 scanPosition = NULL;
                 continue;
@@ -386,8 +380,7 @@ i32 CMenuPage::MoveFocusDownSequential() {
             while (wrapPosition) {
                 CMenuItem* wrapCandidate = PrevItem(wrapPosition);
                 if (wrapCandidate) {
-                    MenuItemState state = wrapCandidate->m_state;
-                    if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+                    if (wrapCandidate->IsSelectable()) {
                         candidateItem = wrapCandidate;
                     }
                 }
@@ -397,8 +390,7 @@ i32 CMenuPage::MoveFocusDownSequential() {
             return 0;
         }
     }
-    MenuItemState state = candidateItem->m_state;
-    if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
+    if (!candidateItem->IsSelectable()) {
         return 0;
     }
     if (candidateItem == m_focusedItem) {
@@ -517,8 +509,7 @@ i32 CMenuPage::MoveFocusRightColumn() {
     if (!candidateItem) {
         return 0;
     }
-    MenuItemState state = candidateItem->m_state;
-    if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
+    if (!candidateItem->IsSelectable()) {
         return 0;
     }
     if (candidateItem == currentItem) {
@@ -556,8 +547,7 @@ i32 CMenuPage::MoveFocusLeftColumn() {
     if (!candidateItem) {
         return 0;
     }
-    MenuItemState state = candidateItem->m_state;
-    if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
+    if (!candidateItem->IsSelectable()) {
         return 0;
     }
     if (candidateItem == currentItem) {
@@ -631,8 +621,7 @@ i32 CMenuPage::MoveFocusLeft() {
     }
     CMenuItem* item = FindItemByName(m_focusedItem->GetLeftItemName());
     if (item) {
-        MenuItemState state = item->m_state;
-        if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
+        if (!item->IsSelectable()) {
             return 0;
         }
         if (item == m_focusedItem) {
@@ -650,8 +639,7 @@ i32 CMenuPage::MoveFocusRight() {
     }
     CMenuItem* item = FindItemByName(m_focusedItem->GetRightItemName());
     if (item) {
-        MenuItemState state = item->m_state;
-        if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
+        if (!item->IsSelectable()) {
             return 0;
         }
         if (item == m_focusedItem) {
@@ -669,8 +657,7 @@ i32 CMenuPage::MoveFocusUp() {
     }
     CMenuItem* item = FindItemByName(m_focusedItem->GetUpItemName());
     if (item) {
-        MenuItemState state = item->m_state;
-        if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
+        if (!item->IsSelectable()) {
             return 0;
         }
         if (item == m_focusedItem) {
@@ -688,8 +675,7 @@ i32 CMenuPage::MoveFocusDown() {
     }
     CMenuItem* item = FindItemByName(m_focusedItem->GetDownItemName());
     if (item) {
-        MenuItemState state = item->m_state;
-        if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
+        if (!item->IsSelectable()) {
             return 0;
         }
         if (item == m_focusedItem) {
