@@ -39,7 +39,7 @@ storage, control flow, calling conventions, referents) outranks any score.
    inline/call-set, then CFG, then register/schedule. Fix the earliest class.
 3. Reconstruct with the `matcher` skill; classify plateaus with
    `wall-identifier`; use `gruntz permute` (the `permute` skill) only for a
-   diagnosed register/schedule residue with HIST < 100.
+   diagnosed register/schedule residue with MAX < 100.
 4. Iterate with `gruntz match <unit|source>`: it compiles, labels, delinks,
    and compares only that TU (a few seconds), even after a header edit other
    TUs include, and reports MAX changes only: an edited function against the

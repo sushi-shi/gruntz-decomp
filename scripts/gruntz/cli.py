@@ -134,9 +134,9 @@ def _dispatch(argv: list[str]) -> int:
             rva -= 0x400000
         binding = next((row for row in resolve().functions if row.rva == rva), None)
         bank = load_baseline().get((binding.unit, binding.name)) if binding else None
-        if bank and bank["hist"] >= 100.0:
-            print(f"gruntz permute {verb}: refused - historical MAX is already "
-                  "100%", file=sys.stderr)
+        if bank and bank["best"] >= 100.0:
+            print(f"gruntz permute {verb}: refused - MAX is already 100%",
+                  file=sys.stderr)
             return 2
         if verb == "state":
             from gruntz.permute.tu_state_noise import main as permute_main
