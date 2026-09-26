@@ -15,6 +15,12 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
     return 0;
 }
 
+inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
+    if (grunt->m_cellRemovalNotified == false) {
+        grunt->m_triggerMgr->UnregisterUnit(grunt->m_playerIndex, grunt->m_unitIndex, exitedLevel);
+    }
+}
+
 inline void ResetToSeek(CGrunt* grunt) {
     Coord none;
     grunt->m_arrivalCell = *none.Set(-1, -1);

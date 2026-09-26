@@ -1045,9 +1045,7 @@ i32 CGrunt::StepWarpExit() {
                 PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
             }
         }
-        if (m_cellRemovalNotified == false) {
-            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 1);
-        }
+        UnregisterFromBoard(this, 1);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;

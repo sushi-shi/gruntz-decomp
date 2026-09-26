@@ -727,10 +727,7 @@ i32 CGrunt::FinishEntranceMove() {
     if (!cur->IsComplete()) {
         return 0;
     }
-    if (m_cellRemovalNotified == false) {
-
-        m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-    }
+    UnregisterFromBoard(this, 0);
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
