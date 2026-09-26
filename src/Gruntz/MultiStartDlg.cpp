@@ -232,7 +232,6 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     CRegMgr* reg = static_cast<CRegMgr*>(g_gameReg->m_settings);
@@ -333,13 +332,12 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             reg->Set("LastMultiMap", m_worldName);
             reg->Set("CustomMultiMap", IDX(m_customMapSelection));
         }
-        GruntzPlayer* slots = m_gameManager->m_players;
         for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
             CWnd* nameControl = GetPlayerNameControl(i);
             if (nameControl != NULL) {
                 CString name;
                 nameControl->GetWindowTextA(name);
-                slots[i].m_name = name;
+                m_gameManager->m_players[i].m_name = name;
             }
         }
         NetLobby::g_curDlg = NULL;
