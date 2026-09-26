@@ -644,8 +644,8 @@ bootystateactivate	?QueryGruntSlots@CMultiBootyState@@QAEHXZ	100.0000	100.0000	3
 bootystateactivate	?RandRange@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	2	b1e0523c77f1	0x19f50	100.0000	
 bootystateactivate	?ReleaseResources@CBootyState@@UAEXXZ	98.4375	98.4375	4	27d51b216dcf	0x18c90	98.4375	
 bootystateactivate	?ReleaseResources@CMultiBootyState@@UAEXXZ	100.0000	100.0000	5	630f5b65d388	0x1e520	100.0000	
-bootystateactivate	?Render@CBootyState@@UAEHXZ	100.0000	100.0000	20	33c37f96351b	0x1c210	100.0000	
-bootystateactivate	?Render@CMultiBootyState@@UAEHXZ	100.0000	100.0000	11	732ea6a5bced	0x1f480	100.0000	
+bootystateactivate	?Render@CBootyState@@UAEHXZ	100.0000	100.0000	21	6c73335e06bf	0x1c210	100.0000	
+bootystateactivate	?Render@CMultiBootyState@@UAEHXZ	100.0000	100.0000	12	74991fb6acfc	0x1f480	100.0000	
 bootystateactivate	?RestoreDisplay@CBootyState@@UAEHXZ	100.0000	100.0000	1	8663882ce876	0x1ce10	100.0000	
 bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	95768a0e98a4	0x1f850	100.0000	
 bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	100.0000	100.0000	5	b68a2e1fcc2c	0x1c9d0	100.0000	
