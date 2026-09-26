@@ -173,14 +173,10 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
             return false;
         }
     }
-    StreamVoice* stream = m_streamVoices[slotIndex];
-    i32 volume = m_voiceVolume;
-    stream->m_feeder.Pause();
-    if (stream->SetSource(source) != 0 && stream->Configure(volume, 0, 0, false) != 0) {
-        CGruntVoice* indicator = m_indicators[slotIndex];
-        if (indicator->BeginPlayback(
+    if (m_streamVoices[slotIndex]->PlaySource(source, m_voiceVolume, 0, 0, false) != 0) {
+        if (m_indicators[slotIndex]->BeginPlayback(
                 grunt->m_object->m_objectId,
-                stream,
+                m_streamVoices[slotIndex],
                 priority,
                 VOICE_INDICATOR_AT_LOGIC_OBJECT
             )) {
@@ -273,14 +269,8 @@ i32 CVoiceManager::PlayVoice(
             return 0;
         }
     }
-    StreamVoice* stream = m_streamVoices[slotIndex];
-    i32 volume = m_voiceVolume;
-    stream->m_feeder.Pause();
-    if (stream->SetSource(source) == 0) {
-        goto streamFailed;
-    }
-    if (stream->Configure(volume, 0, 0, false) == 0) {
-        goto streamFailed;
+    if (m_streamVoices[slotIndex]->PlaySource(source, m_voiceVolume, 0, 0, false) == 0) {
+        return 0;
     }
     if (m_indicators[slotIndex]->BeginPlayback(
             sourceObjectId,
@@ -292,9 +282,6 @@ i32 CVoiceManager::PlayVoice(
         return 0;
     }
     return 1;
-
-streamFailed:
-    return 0;
 }
 
 RVA(0x0011b7c0, 0x304)
@@ -373,14 +360,8 @@ i32 CVoiceManager::PlayVoice(
             return 0;
         }
     }
-    StreamVoice* stream = m_streamVoices[slotIndex];
-    i32 volume = m_voiceVolume;
-    stream->m_feeder.Pause();
-    if (stream->SetSource(source) == 0) {
-        goto streamFailed;
-    }
-    if (stream->Configure(volume, 0, 0, false) == 0) {
-        goto streamFailed;
+    if (m_streamVoices[slotIndex]->PlaySource(source, m_voiceVolume, 0, 0, false) == 0) {
+        return 0;
     }
     if (m_indicators[slotIndex]->BeginPlayback(
             sourceObjectId,
@@ -392,9 +373,6 @@ i32 CVoiceManager::PlayVoice(
         return 0;
     }
     return 1;
-
-streamFailed:
-    return 0;
 }
 
 RVA(0x0011bba0, 0x280)
