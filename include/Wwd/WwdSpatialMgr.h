@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
 #include <Wwd/WwdGameObjectFlags.h>
@@ -24,8 +25,7 @@ struct CWwdSpatialMgr {
     i32 m_largeRegionHalfWidth, m_largeRegionHalfHeight;
     i32 m_smallRegionHalfWidth, m_smallRegionHalfHeight;
     RECT m_levelBounds;
-    i32 m_activeCenterX;
-    i32 m_activeCenterY;
+    Coord m_activeCenter;
     CWwdGridIter m_iter;
     CWwdGrid* m_iterationGrid;
 
@@ -44,8 +44,7 @@ struct CWwdSpatialMgr {
     );
     void FreeGrids();
     void SetActiveCenter(i32 x, i32 y) {
-        m_activeCenterX = x;
-        m_activeCenterY = y;
+        m_activeCenter.Set(x, y);
     }
     i32 ActivateAt(i32 centerX, i32 centerY);
     i32 ActivateKeepActiveObjects();

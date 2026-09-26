@@ -448,8 +448,7 @@ i32 CWwdSpatialMgr::Init(
                 levelBounds->right,
                 levelBounds->bottom
             );
-            m_activeCenterX = static_cast<i32>(0xffffa932);
-            m_activeCenterY = static_cast<i32>(0xffffa932);
+            SetActiveCenter(-22222, -22222);
             return 1;
         }
     }

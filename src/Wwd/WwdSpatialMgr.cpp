@@ -22,10 +22,9 @@ void CWwdSpatialMgr::FreeGrids() {
     m_activeGroup = NULL;
 }
 
-// @early-stop
 RVA(0x00168340, 0xe1)
 i32 CWwdSpatialMgr::ActivateAt(i32 centerX, i32 centerY) {
-    if (m_activeCenterX == centerX && m_activeCenterY == centerY) {
+    if (m_activeCenter.m_x == centerX && m_activeCenter.m_y == centerY) {
         return 0;
     }
     SetActiveCenter(centerX, centerY);

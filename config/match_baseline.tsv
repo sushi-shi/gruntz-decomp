@@ -186,7 +186,7 @@ guardpoint	5	5
 hash	10	10
 hazardlogicdispatch	6	6
 helpstate	14	14
-imagepolyclip	8	1
+imagepolyclip	8	2
 imagepool	55	51
 imageset1	1	0
 imageset2	9	8
@@ -317,7 +317,7 @@ wwdgameobject	47	44
 wwdgameobjectrender	15	12
 wwdgrid	13	10
 wwdobjmgr	56	50
-wwdspatialmgr	14	13
+wwdspatialmgr	14	14
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva	hist_pct	state
 actionarea	??0?$zDArray@P8CUserLogic@@AEHXZ@@QAE@HH@Z	100.0000	100.0000	1	cpp:de88d7e7f0f5	0x8710	100.0000	
@@ -1934,7 +1934,7 @@ gamelevelmove	??_GCWwdGrid@@UAEPAXI@Z	100.0000	100.0000	1	cpp:196267b9ebad	0x168
 gamelevelmove	??_GCWwdGridShell@@UAEPAXI@Z	100.0000	100.0000	1	cpp:08eecef35a65	0x168280	100.0000	
 gamelevelmove	?ApplyMove@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	100.0000	100.0000	4	fcfdf57533f2	0x167130	100.0000	
 gamelevelmove	?BroadPhase@CGameLevel@@QAEHPAUCGameObject@@HH@Z	82.9701	82.7910	5	9f1170914261	0x167ea0	82.9701	
-gamelevelmove	?Init@CWwdSpatialMgr@@QAEHPAVCDDrawChildGroup@@PAUtagRECT@@PAH22222@Z	100.0000	100.0000	5	9734856bc6f0	0x168080	100.0000	
+gamelevelmove	?Init@CWwdSpatialMgr@@QAEHPAVCDDrawChildGroup@@PAUtagRECT@@PAH22222@Z	100.0000	100.0000	6	d99302273a7e	0x168080	100.0000	
 gamelevelmove	?MoveAxisAligned@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	100.0000	100.0000	2	73e4b20fd77d	0x1671c0	100.0000	
 gamelevelmove	?MoveStepXHi@CGameLevel@@QAEHPAUCGameObject@@HHPAHH@Z	99.9886	99.9886	10	20a139c09995	0x167260	99.9886	
 gamelevelmove	?MoveStepXLo@CGameLevel@@QAEHPAUCGameObject@@HHPAHH@Z	99.9886	99.9886	10	a385731e06f4	0x167450	99.9886	
@@ -2622,12 +2622,12 @@ helpstate	?RestoreDisplay@CHelpState@@UAEHXZ	100.0000	100.0000	3	5d6d394618cb	0x
 helpstate	?Update@CDemo@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	e46f1bf96ca2	0x8d080	100.0000	
 helpstate	?Update@CHelpState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	443521c6b2c3	0x8cee0	100.0000	
 helpstate	?Update@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c79e8d4a	0x8cfb0	100.0000	
-imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	97.9091	97.9091	9	84b0981f7663	0x146fe0	97.9091	
-imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.3272	99.3272	3	bbdaf68c59f9	0x1461b0	99.3272	
+imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	97.9091	97.9091	10	9d3e0fcab76c	0x146fe0	97.9091	
+imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	100.0000	100.0000	4	eda648012bf1	0x1461b0	100.0000	
 imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4611	3	c40e7e8d7a45	0x145f60	79.4671	
 imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	98.1982	98.1982	5	581241cabaa2	0x145e30	98.1982	
 imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	78.9856	77.2230	9	a4fa149bc377	0x1471d0	78.9856	
-imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	96.2031	96.2031	6	008c18ed1d85	0x146550	96.2031	
+imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	96.7388	96.7388	7	2ea96ed61ba0	0x146550	96.7388	
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000	
 imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	99.1604	99.1604	14	80b06cd4e230	0x146a20	99.1604	
 imagepool	?AddDib@CDibMgr@@QAEPAVCDib@@HHW4ColorDepth@@I@Z	100.0000	100.0000	7	6d28231b75c4	0x174fe0	100.0000	
@@ -2824,7 +2824,7 @@ levelplane	?SetTileSizeFromImage@CDDrawWorkerHost@@QAEXPAVCImage@@@Z	100.0000	10
 levelplane	?SetTileSizeFromImageSet@CDDrawWorkerHost@@QAEXPAVCDDrawWorker@@@Z	100.0000	100.0000	2	bbadc0a84bb4	0x161fa0	100.0000	
 levelplane	?SetViewportRect@CDDrawWorkerHost@@QAEXPAUtagRECT@@@Z	100.0000	100.0000	3	05626b0abc73	0x161e80	100.0000	
 levelplane	?Unload@CDDrawWorkerHost@@UAEXXZ	100.0000	100.0000	3	060e1a03cdf4	0x161bf0	100.0000	
-levelplane	?UpdateActiveRegionSizes@CDDrawWorkerHost@@QAEXXZ	100.0000	100.0000	4	8925e997faff	0x163420	100.0000	
+levelplane	?UpdateActiveRegionSizes@CDDrawWorkerHost@@QAEXXZ	100.0000	100.0000	5	6e04bd29cc84	0x163420	100.0000	
 levelplane	?UpdatePlaneViewRect@CDDrawWorkerHost@@QAEXXZ	98.3721	98.3721	3	4f73749fdc57	0x161c90	98.3721	
 levelplane	?ValidateTiles@CDDrawWorkerHost@@QAEHPAD@Z	97.0085	97.0085	12	c2114fc40a7b	0x163510	97.0085	
 levelpreview	?AcceptPreviewCommand@CPreviewState@@QAEHH@Z	100.0000	100.0000	2	a49f12405ac3	0xde1e0	100.0000	
@@ -4684,7 +4684,7 @@ wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	2	ddc0b5d5e97c	0x191a70	100.00
 wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	2	b0863f893baa	0x191800	100.0000	
 wwdgrid	?GetNext@CWwdGridIter@@QAEPAUWwdRegion@@XZ	100.0000	100.0000	7	e53cc6f62612	0x191c30	100.0000	
 wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	4	25203fdd599f	0x191b10	95.5000	
-wwdgrid	?Query@CWwdGrid@@QAEHUWwdRect@@H@Z	99.9250	99.9250	4	d279e8ae7cda	0x1918c0	99.9250	
+wwdgrid	?Query@CWwdGrid@@QAEHUWwdRect@@H@Z	99.9250	99.9250	5	1e1e3d43e4d9	0x1918c0	99.9250	
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	2	2bfab4d73e6a	0x191890	100.0000	
 wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	6	e8f52e0dbae5	0x191770	100.0000	
 wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	99.9658	99.9658	6	e8f52e0dbae5	0x1915c0	99.9658	
@@ -4746,7 +4746,7 @@ wwdobjmgr	?TickKillCues@CDDrawChildGroup@@UAEXH@Z	100.0000	100.0000	10	fd781a235
 wwdobjmgr	?Unload@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	2a1963225501	0x1591e0	100.0000	
 wwdobjmgr	?WriteObjectSnapshots@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4LogicTypeId@@@Z	100.0000	100.0000	6	dd2f7a7e1a0e	0x15acb0	100.0000	
 wwdspatialmgr	??_GCWwdGridIter@@UAEPAXI@Z	100.0000	100.0000	1	cpp:fce7074e101f	0x163a20	100.0000	
-wwdspatialmgr	?ActivateAt@CWwdSpatialMgr@@QAEHHH@Z	93.8523	93.8523	9	43fbeff0f7c8	0x168340	93.8523	
+wwdspatialmgr	?ActivateAt@CWwdSpatialMgr@@QAEHHH@Z	100.0000	100.0000	10	cae0ad4e6f5d	0x168340	100.0000	
 wwdspatialmgr	?ActivateKeepActiveFromGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	4	7530319421ea	0x168460	100.0000	
 wwdspatialmgr	?ActivateKeepActiveObjects@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	7ca861e4b12c	0x168430	100.0000	
 wwdspatialmgr	?DeactivateOutside@CWwdSpatialMgr@@QAEHHH@Z	100.0000	100.0000	10	0d39935d411c	0x168500	100.0000	
