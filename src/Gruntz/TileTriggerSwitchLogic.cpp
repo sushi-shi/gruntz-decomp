@@ -24,6 +24,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileCoordMacros.h>
@@ -113,24 +114,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-        SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-        if (h->m_silentMode == false) {
-            SoundCue* found = h->FindCue("GAME_SWITCHDOWN");
-            SoundCue* spr = found;
-            if (spr) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    u32 elapsedMs = cueTimeMs - static_cast<u32>(spr->m_lastPlayTimeMs);
-                    u32 replayDelayMs = static_cast<u32>(spr->m_replayDelayMs);
-                    if (elapsedMs >= replayDelayMs) {
-                        spr->m_lastPlayTimeMs = cueTimeMs;
-                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_SWITCHDOWN");
     }
     m_linkGate = true;
     return 1;
@@ -149,24 +133,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-        SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-        if (h->m_silentMode == false) {
-            SoundCue* found = h->FindCue("GAME_SWITCHUP");
-            SoundCue* spr = found;
-            if (spr) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    u32 elapsedMs = cueTimeMs - static_cast<u32>(spr->m_lastPlayTimeMs);
-                    u32 replayDelayMs = static_cast<u32>(spr->m_replayDelayMs);
-                    if (elapsedMs >= replayDelayMs) {
-                        spr->m_lastPlayTimeMs = cueTimeMs;
-                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_SWITCHUP");
     }
     m_linkGate = false;
     return 1;
@@ -828,22 +795,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     if (!::PtInRect(&g_gameReg->m_viewBounds, bx, by)) {
         return 0;
     }
-    SoundCueRegistry* sreg = g_gameReg->m_world->m_soundRegistry;
-    if (sreg->m_silentMode == false) {
-        SoundCue* found = sreg->FindCue("LEVEL_ROCKBREAK");
-        SoundCue* out = found;
-        if (out != NULL) {
-            i32 volumePercent = g_soundVolumePercent;
-            if (g_soundEnabled != false) {
-                i32 cueTimeMs = g_soundCueTimeMs;
-                if (static_cast<u32>((cueTimeMs - out->m_lastPlayTimeMs))
-                    >= static_cast<u32>(out->m_replayDelayMs)) {
-                    out->m_lastPlayTimeMs = cueTimeMs;
-                    out->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                }
-            }
-        }
-    }
+    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "LEVEL_ROCKBREAK");
     return 0;
 }
 

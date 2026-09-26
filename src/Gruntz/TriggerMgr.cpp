@@ -40,6 +40,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarDock.h>
@@ -1682,23 +1683,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             spr->SetImageSetByName("LEVEL_ROCKBREAK");
             spr->SetAnimationByName("LEVEL_ROCKBREAK", 0);
 
-            SoundCueRegistry* registry = m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-
-                SoundCue* found = registry->FindCue("LEVEL_ROCKBREAK");
-                SoundCue* cue = found;
-                if (cue != NULL) {
-                    b32 soundEnabled = g_soundEnabled;
-                    i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != false) {
-                        u32 cueTimeMs = g_soundCueTimeMs;
-                        if (cueTimeMs - cue->m_lastPlayTimeMs >= cue->m_replayDelayMs) {
-                            cue->m_lastPlayTimeMs = cueTimeMs;
-                            cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
-            }
+            PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "LEVEL_ROCKBREAK");
         }
     }
     return 1;
@@ -2073,19 +2058,7 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                     MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                 m_cueTimer.m_window = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_cueTimer.m_base = g_frameTime;
-                if (m_world->m_soundRegistry->m_silentMode == false) {
-                    SoundCue* cue =
-                        MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
-                    if (cue != NULL) {
-                        i32 volumePercent = g_soundVolumePercent;
-                        if (g_soundEnabled != false
-                            && static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
-                                   >= static_cast<u32>(cue->m_replayDelayMs)) {
-                            cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
+                PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_FINISHLEVEL");
                 m_phase = FINISH_STATE_VICTORY;
                 m_groupFlag = false;
                 m_finishReasonFrame = state;
