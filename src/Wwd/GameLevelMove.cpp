@@ -333,16 +333,6 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     return t->m_screenY;
 }
 
-static inline BOOL ExtentsOverlapAt(CGameObject* a, i32 x, i32 y, CGameObject* b) {
-    const RECT& aBounds = a->ExtentAt(x, y);
-    i32 bLeft = b->m_screenX + b->m_extent.left;
-    i32 bTop = b->m_extent.top + b->m_screenY;
-    i32 bBottom = b->m_screenY + b->m_extent.bottom;
-    i32 bRight = b->m_screenX + b->m_extent.right;
-    return aBounds.left <= bRight && aBounds.right >= bLeft && aBounds.top <= bBottom
-           && aBounds.bottom >= bTop;
-}
-
 RVA(0x00167ea0, 0x1b9)
 i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))) {
@@ -355,8 +345,9 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
         if (obj != t && (obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))
             && (t->CollisionBits(obj)) && t->m_extent.left != COORD_UNSET
             && obj->m_extent.left != COORD_UNSET) {
-            if (!ExtentsOverlapAt(t, t->m_screenX, t->m_screenY, obj)) {
-                if (ExtentsOverlapAt(t, candX, candY, obj)) {
+            RECT bounds;
+            if (!t->ExtentsOverlapAt(t->m_screenX, t->m_screenY, obj, bounds)) {
+                if (t->ExtentsOverlapAt(candX, candY, obj, bounds)) {
                     i32 fire;
                     if (t->m_collisionLogic != NULL) {
                         fire = t->NotifyCollision(obj);
