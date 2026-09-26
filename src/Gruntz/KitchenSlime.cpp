@@ -187,18 +187,14 @@ i32 CKitchenSlime::Tick() {
         newY = static_cast<i32>(floor(t));
         i32 ty = m_tilePosition.m_y;
         m_stepMag = fabs(m_posY - static_cast<double>(ty));
-        if (newY > ty) {
-            SET_SCREEN_POS(Level(), newX, ty);
-            return 0;
-        }
+        CLAMP_UPPER_INPLACE(newY, ty);
     } else if (m_dirY < 0.0) {
         double t = (m_posY = m_posY - step);
         newY = static_cast<i32>(ceil(t));
         i32 ty = m_tilePosition.m_y;
         m_stepMag = fabs(m_posY - static_cast<double>(ty));
         if (newY < ty) {
-            SET_SCREEN_POS(Level(), newX, ty);
-            return 0;
+            newY = ty;
         }
     } else {
         newY = static_cast<i32>(floor(m_posY));
