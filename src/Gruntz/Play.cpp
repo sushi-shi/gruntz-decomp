@@ -5586,8 +5586,7 @@ i32 CPlay::ResetPlayState() {
         if (fm->m_currentMs != 0) {
             fm->m_running = true;
             fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
-            fm->m_countdown.m_interval = static_cast<u32>(fm->m_currentMs);
-            fm->m_countdown.m_start = static_cast<u32>(g_frameTime);
+            fm->m_countdown.Start(fm->m_currentMs);
         } else {
             fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
         }
