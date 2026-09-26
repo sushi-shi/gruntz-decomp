@@ -62,6 +62,16 @@ Prioritize hypotheses by evidence:
 6. classified compiler-state experiments, only after semantics, call set,
    CFG, constants, and referents are credible.
 
+A missing out-of-line copy is not evidence against an inline helper. A
+trivial accessor or setter (front-end cost ≤ 40) is exempt from the inline
+budget, so cl always expands it and it leaves no out-of-line copy in retail. Retail's
+bytes cannot distinguish `World()->SoundRegistry()` from
+`m_world->m_soundRegistry`, but the inline sites change the caller's budget
+arithmetic. When an inline-budget measurement (`gruntz walls inline-model`,
+threshold probes) says sites are missing, adopt the repeated accessor
+spellings that supply them, at every site in the tree, instead of waiting for
+retail to prove each accessor exists.
+
 [references/levers.md](references/levers.md) catalogs the levers that have
 produced exact closures; scan it so the search is not limited to the first
 familiar explanation. `docs/patterns/INDEX.md` lists compiler mechanisms.
