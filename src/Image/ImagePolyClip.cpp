@@ -181,7 +181,6 @@ void ImageRotateBlit(
     RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }
 
-// @early-stop
 RVA(0x001461b0, 0x399)
 i32 ImagePolyClipRect(
     ClipVtx* poly,
@@ -197,10 +196,11 @@ i32 ImagePolyClipRect(
     float bottom = static_cast<float>(clipBottom);
     i32 i;
 
-    ClipVtx* out = g_rasterOddClipPassBuffer;
+    ClipVtx* out;
     {
         ClipVtx* prev = &poly[n - 1];
         ClipVtx* cur = poly;
+        out = g_rasterOddClipPassBuffer;
         for (i = n; i > 0; i--) {
             if (!(prev->m_x < left)) {
                 *out++ = *prev;
@@ -221,10 +221,10 @@ i32 ImagePolyClipRect(
         return 0;
     }
 
-    out = g_rasterEvenClipPassBuffer;
     {
         ClipVtx* prev = &g_rasterOddClipPassBuffer[n1 - 1];
         ClipVtx* cur = g_rasterOddClipPassBuffer;
+        out = g_rasterEvenClipPassBuffer;
         for (i = n1; i > 0; i--) {
             if (prev->m_x < right) {
                 *out++ = *prev;
@@ -246,10 +246,10 @@ i32 ImagePolyClipRect(
         return 0;
     }
 
-    out = g_rasterOddClipPassBuffer;
     {
         ClipVtx* prev = &g_rasterEvenClipPassBuffer[n2 - 1];
         ClipVtx* cur = g_rasterEvenClipPassBuffer;
+        out = g_rasterOddClipPassBuffer;
         for (i = n2; i > 0; i--) {
             if (!(prev->m_y < top)) {
                 *out++ = *prev;
@@ -269,10 +269,10 @@ i32 ImagePolyClipRect(
         return 0;
     }
 
-    out = g_rasterEvenClipPassBuffer;
     {
         ClipVtx* prev = &g_rasterOddClipPassBuffer[n3 - 1];
         ClipVtx* cur = g_rasterOddClipPassBuffer;
+        out = g_rasterEvenClipPassBuffer;
         for (i = n3; i > 0; i--) {
             if (prev->m_y < bottom) {
                 *out++ = *prev;
