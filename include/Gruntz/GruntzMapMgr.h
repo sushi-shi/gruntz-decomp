@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Gruntz/Brickz.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h>
@@ -30,5 +32,17 @@ public:
     CPtrArray m_arr;
     i32 m_reserved90;
 };
+
+RVA(0x00085480, 0x52)
+inline void CGruntzMapMgr::Reset() {
+    for (i32 i = 0; i < m_arr.GetSize(); i++) {
+        Coord* elem = static_cast<Coord*>(m_arr.GetData()[i]);
+        if (elem != NULL) {
+            g_coordPool.Push(elem);
+        }
+    }
+    m_arr.RemoveAll();
+    CMapMgr::Reset();
+}
 
 #endif // GRUNTZ_CGRUNTZMAPMGR_H

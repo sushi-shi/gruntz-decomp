@@ -214,7 +214,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_ROCK:
             case GRUNT_WELDER:
             case GRUNT_WINGZ: {
-                CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -239,7 +239,7 @@ i32 CGrunt::StepAttackFire() {
                 break;
             }
             case GRUNT_BOOMERANG: {
-                CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -266,7 +266,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_TIMEBOMB: {
                 i32 pos[2];
                 EntranceTileOffset(pos);
-                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CGameObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
                     0,
                     pos[0],
                     pos[1],
@@ -391,7 +391,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
-                    g->m_voiceManager->PlayVoice(this, tier, 0, -1, -1, -1);
+                    g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
             } else {
                 if (m_moveKind == 0) {
@@ -406,7 +406,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
-                    g->m_voiceManager->PlayVoice(this, tier, 0, -1, -1, -1);
+                    g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
             }
             return 0;
@@ -485,11 +485,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     if (sel == 0) {
         if (::PtInRect(&g->m_world->m_level->m_mainPlane->m_planeViewRect, xx, yy)) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
+            g->VoiceMgr()->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
         }
     } else {
         if (::PtInRect(&g->m_world->m_level->m_mainPlane->m_planeViewRect, xx, yy)) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
+            g->VoiceMgr()->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
         }
     }
     return 0;
@@ -913,7 +913,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             i32 x = h->m_screenX;
             const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
             if (::PtInRect(&rect, x, y)) {
-                g->m_voiceManager->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
+                g->VoiceMgr()->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
                 StopVehicleLoopSound();
                 return 0;
             }

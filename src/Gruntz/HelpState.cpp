@@ -106,7 +106,7 @@ i32 CHelpState::Render() {
         }
     }
 
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
 
     CInputDeviceGroup* list = g_actorList;
     i32 i;

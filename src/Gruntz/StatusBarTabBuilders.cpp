@@ -119,7 +119,7 @@ i32 CSBI_GruntMachine::Render() {
         idx = m_rightFrameIndex;
         m_rightFrame = cfg->GetAt(idx);
 
-        CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
+        CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->m_backPair;
 
         CImage* f = m_standaloneFrame;
         if (f) {
@@ -160,7 +160,7 @@ i32 CSBI_GruntMachine::SerializeFields(
     if (s == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
+    CDDrawSurfaceMgr* reg = g_gameReg->World();
     if (reg == NULL) {
         return 0;
     }

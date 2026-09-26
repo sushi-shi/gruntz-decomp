@@ -83,7 +83,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     if (!sounds) {
         return 0;
     }
-    m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(sounds), "CREDITZ", "_");
+    m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sounds), "CREDITZ", "_");
 
     CRezDir* midiTable = StateResources()->GetDirFromPath("MIDIZ");
     if (midiTable) {
@@ -122,11 +122,11 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_world) {
-        SoundCueRegistry* reg = m_world->m_soundRegistry;
+        SoundCueRegistry* reg = m_world->SoundRegistry();
         if (reg->m_soundStream) {
             reg->m_soundStream->StopAllStreams();
         }
-        m_world->m_soundRegistry->RemoveWithPrefix("CREDITZ", "_");
+        m_world->SoundRegistry()->RemoveWithPrefix("CREDITZ", "_");
         m_world->m_imageRegistry->RemoveWithPrefix("CREDITZ", "_");
 
         m_world->m_animRegistry->RemoveWithPrefix("CREDITZ", "_");
@@ -172,7 +172,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
 
     {
         CInputDeviceGroup* L = g_actorList;

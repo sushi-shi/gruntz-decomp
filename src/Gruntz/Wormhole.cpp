@@ -148,7 +148,7 @@ i32 CWormhole::SpawnPartners() {
         return 0;
     }
 
-    CObList* list = &g_gameReg->m_world->m_childGroup->m_list;
+    CObList* list = &g_gameReg->World()->m_childGroup->m_list;
     if (list == NULL) {
         return 0;
     }
@@ -157,7 +157,7 @@ i32 CWormhole::SpawnPartners() {
         return 0;
     }
     do {
-        CGameObject* obj = g_gameReg->m_world->m_childGroup->NextChild(pos);
+        CGameObject* obj = g_gameReg->World()->m_childGroup->NextChild(pos);
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
             if (record->m_dispatch == &DispatchTeleporterLogic && obj->m_screenX == tx
@@ -463,7 +463,7 @@ i32 CTeleporter::Update() {
         g_gameReg->m_gameStats->m_secretsFound++;
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
         CWwdSpriteObject* s = m_object;
-        CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spawned = g_gameReg->World()->m_childGroup->CreateSprite(
             0,
             s->m_powerup * TILE_SIZE_PX + TILE_HALF_PX,
             s->m_damage * TILE_SIZE_PX + TILE_HALF_PX,
@@ -480,7 +480,7 @@ i32 CTeleporter::Update() {
         }
     } else {
         CWwdSpriteObject* s = m_object;
-        CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spawned = g_gameReg->World()->m_childGroup->CreateSprite(
             0,
             s->m_speedX * TILE_SIZE_PX + TILE_HALF_PX,
             s->m_speedY * TILE_SIZE_PX + TILE_HALF_PX,

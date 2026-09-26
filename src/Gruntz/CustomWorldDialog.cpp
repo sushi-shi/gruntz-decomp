@@ -67,7 +67,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     if (parent == NULL) {
         v = g_gameReg->m_gameWnd->m_hwnd;
     }
-    CDDrawSurfaceMgr* world = g_gameReg->m_world;
+    CDDrawSurfaceMgr* world = g_gameReg->World();
     g_customWorldParent = v;
     g_customWorldSurfaceMgr = world;
 
@@ -173,7 +173,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = SetDlgItemTextA;
-    if (g_gameReg->m_world->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+    if (g_gameReg->World()->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
         char* p = info.m_levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
@@ -232,7 +232,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
         return -1;
     }
 
-    CGameLevel* lvl = g_gameReg->m_world->m_level;
+    CGameLevel* lvl = g_gameReg->World()->m_level;
     if (lvl == NULL) {
         return -1;
     }

@@ -4,6 +4,9 @@
 
 #include <Gruntz/GruntzMgr.h>
 
+#include <Bute/ButeMgr.h>
+#include <Crypto/BitStreamBlowfish.h>
+#include <Crypto/Blowfish.h>
 #include <Crypto/FecCrypt.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -18,6 +21,8 @@
 #include <DDrawMgr/ShadeTableCache.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <DinMgr2/DirectInputMgr2.h>
+#include <DinMgr2/InputMgrPtr.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
@@ -26,11 +31,14 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Blk6c.h>
 #include <Gruntz/CheatMgr.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/Demo.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FaderMgr.h>
+#include <Gruntz/FaderSettings.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/Fonts.h>
 #include <Gruntz/GameLevel.h>
@@ -41,16 +49,20 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GameStats.h>
+#include <Gruntz/GameText.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzApp.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzDebugDialog.h>
+#include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgrMacros.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/HelpState.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/InputState.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LoadGameMenu.h>
 #include <Gruntz/LogicTypeId.h>
@@ -96,14 +108,17 @@
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezSync.h>
+#include <Rez/RezTypeTag.h>
 #include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/Object.h>
 #include <Wap32/ScreenGeometry.h>
+#include <Wap32/Wap32.h>
 #include <Wwd/WwdFile.h>
 
 #include <ddraw.h>
@@ -112,6 +127,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strstrea.h>
 #include <time.h>
 
 DATA(0x00211054)
@@ -264,9 +280,478 @@ i32 CGruntzMgr::IsActive() {
 
 RVA_COMPGEN(0x00083330, 0x1e, ??_GCGruntzMgr@@UAEPAXI@Z)
 
+GZ_ENUM_CONST_BEGIN(GruntzGameTiming)
+    GRUNTZ_PERIODIC_TIMER_MS = 33
+GZ_ENUM_CONST_END(GruntzGameTiming)
+
+DATA(0x002455b4)
+b32 g_disableAudio = false;
+DATA(0x002455bc)
+b32 g_disableSound = false;
+DATA(0x002455c0)
+b32 g_disableMusic = false;
+DATA(0x002455c4)
+b32 g_disableFades = false;
+DATA(0x002455c8)
+b32 g_disableJoystick = false;
+DATA(0x002455cc)
+b32 g_disableSoundFonts = false;
+DATA(0x002455d0)
+b32 g_disableDirectVideo = false;
+DATA(0x002455d4)
+b32 g_enableHqMovie = false;
+DATA(0x002455d8)
+b32 g_enableTriple = false;
+DATA(0x002455dc)
+b32 g_enableHiColor = false;
+DATA(0x002455e0)
+b32 g_enableTrueColor = false;
+DATA(0x002455e4)
+b32 g_enableEmulation = false;
+
 RVA(0x00083360, 0xb2)
 CGruntzMgr::~CGruntzMgr() {
     Close();
+}
+
+RVA(0x00083450, 0x192d)
+i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
+
+    if (!g_coordPool.Init(0x4e20, 4)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x404);
+        return 0;
+    }
+
+    if (!CGameMgr::Run(pGameWnd, szCmdLine)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x462);
+        return 0;
+    }
+    if (!InitializeFonts()) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x463);
+        return 0;
+    }
+    srand((timeGetTime() + GetTickCount()) >> 1);
+    g_gameAppTimerPeriodMs = GRUNTZ_PERIODIC_TIMER_MS;
+    while (ShowCursor(false) >= 0) {
+    }
+
+    CRegMgr* reg = new CRegMgr;
+    m_settings = reg;
+    if (!m_settings
+             ->Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x406);
+        return 0;
+    }
+    SET_SIZE_COMPONENTS(m_savedModeSize, SCREEN_W_PX, SCREEN_H_PX);
+    m_numRuns = m_settings->Get("Num Runs", 0);
+    m_numMovies = m_settings->Get("Num Movies", 0);
+    g_enableHqMovie = m_settings->Get("Disable High Quality Movie", 0) == 0;
+    g_disableAudio = m_settings->Get("Disable Audio", 0);
+    g_disableSound = m_settings->Get("Disable Sound", 0);
+    g_disableMusic = m_settings->Get("Disable Music", 0);
+    g_disableFades = m_settings->Get("Disable Fades", 0);
+    g_disableDirectVideo = m_settings->Get("Disable Direct Video Access", 0);
+    g_disableJoystick = m_settings->Get("Disable Joystick", 0);
+    g_disableSoundFonts = m_settings->Get("Disable SoundFonts", 0);
+    g_enableTriple = m_settings->Get("Enable Triple", 0);
+    g_enableHiColor = m_settings->Get("Enable HiColor", 0);
+    g_enableTrueColor = m_settings->Get("Enable TrueColor", 0);
+    g_enableEmulation = m_settings->Get("Enable Emulation", 0);
+    m_isCheckpointPrompts = m_settings->Get("Checkpoint Prompts", 1);
+    g_enableHiColor = true;
+    g_debugGruntPlayer = 0;
+    g_debugGruntTool = 0;
+    g_debugGruntToy = 0;
+    g_debugGruntAiType = 0;
+    g_debugGruntColumn = 0;
+    g_debugGruntRow = 0;
+    g_debugGruntColor = 1;
+    g_debugGruntRadius = 0;
+    g_debugGruntMoveLeft = 0;
+    g_debugGruntMoveRight = 0;
+    g_debugGruntMoveTop = 0;
+    g_debugGruntMoveBottom = 0;
+
+    i32 vMusic = m_settings->Get("Music", m_musicEnabled);
+    i32 vSound = m_settings->Get("Sound", m_soundEnabled);
+    i32 vVoice = m_settings->Get("Voice", m_isVoiceEnabled);
+    i32 vAmbient = m_settings->Get("Ambient", m_isAmbientEnabled);
+    i32 vInterlaced = m_settings->Get("Interlaced", m_isInterlaced);
+    i32 vHigh1 = m_settings->Get("High Detail", m_isHighDetail);
+    i32 vHigh2 = m_settings->Get("High Detail", m_isEffectsEnabled);
+    m_isEasyMode = m_settings->Get("Easy Mode", m_isEasyMode);
+    Resolution resolution =
+        static_cast<Resolution>(m_settings->Get("Resolution", IDX(RES_640X480)));
+    if (resolution == RES_1024X768) {
+        SET_SIZE_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768);
+    } else if (resolution == RES_800X600) {
+        SET_SIZE_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600);
+    } else {
+        SET_SIZE_COMPONENTS(m_savedModeSize, SCREEN_W_PX, SCREEN_H_PX);
+    }
+    i32 musicVolume = m_settings->Get("Music Volume", 0x64);
+    i32 soundVolume = m_settings->Get("Sound Volume", 0x3c);
+    i32 voiceVolume = m_settings->Get("Voice Volume", 0x50);
+    i32 scrollSpeed = m_settings->Get("Scroll Speed", 0x14);
+    m_soundVolume = soundVolume;
+    m_voiceVolume = voiceVolume;
+
+    m_scrollSpeed = scrollSpeed;
+    m_numRuns = m_numRuns + 1;
+    if (g_disableDirectVideo != false) {
+        g_disableFades = true;
+        g_enableEmulation = true;
+    }
+    m_modalBusy = false;
+    m_renderGate = false;
+    m_driveLetterProbed = false;
+    m_driveLetter = 0;
+    GetGruntzDriveLetter();
+
+    i32 noLogo = 0;
+    GameStateId mode = GAMESTATE_ATTRACT;
+    char cpy[300];
+    char levelName[0x80];
+    levelName[0] = 0;
+    if (szCmdLine) {
+        char buf[300];
+        strcpy(buf, szCmdLine);
+        _strupr(buf);
+        if (strstr(buf, "PLAY")) {
+            mode = GAMESTATE_PLAY;
+        }
+        if (strstr(buf, "MULTI")) {
+            mode = GAMESTATE_MULTI;
+        }
+        if (strstr(buf, "DEMO")) {
+            mode = GAMESTATE_DEMO;
+        }
+        if (strstr(buf, "SELECT")) {
+            mode = GAMESTATE_LEVEL_SELECT;
+        }
+        if (strstr(buf, "NOLOGO")) {
+            noLogo = 1;
+        }
+        strstr(buf, "NOMOVIES");
+        if (strstr(buf, "LOAD:")) {
+            strcpy(cpy, buf);
+            char* tok = strstr(cpy, "LOAD:");
+            if (tok && strlen(tok) > 5) {
+                tok += 5;
+                i32 j = 0;
+                while (tok[j] != ' ' && tok[j] != 0) {
+                    ++j;
+                }
+                tok[j] = 0;
+                if (tok[0] != 0) {
+                    for (char* q = tok; *q; ++q) {
+                        if (*q == '_') {
+                            *q = ' ';
+                        }
+                        if (*q == '+') {
+                            *q = ' ';
+                        }
+                    }
+                }
+                strcpy(levelName, tok);
+            }
+        }
+    }
+    if (InitializeLobbyConnectionSettings()) {
+        mode = GAMESTATE_MULTI;
+        m_reservedb4 = 0;
+    }
+
+    g_gruntzWinApp.m_hInstance = m_owner->m_hInstance;
+    char dpBuf[256];
+    strcpy(dpBuf, szCmdLine);
+    AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, 1);
+    m_strWorldFile.Empty();
+
+    m_world = new CDDrawSurfaceMgr;
+    i32 flags = 0xe1;
+    if (g_disableAudio || g_disableSound) {
+        flags = 0xe5;
+    }
+    if (g_enableEmulation) {
+        flags |= 0x10;
+    }
+    m_colorDepth = BPP_RGB_16;
+    if (!m_world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, BPP_RGB_16, flags)) {
+        ReportWorldStatus(WORLD_REPORT_STARTUP_INIT);
+        return 0;
+    }
+    {
+        LevelCoordRect rect;
+        SET_RECT_COMPONENTS(rect, 0, 0, 0x1df, 0x1df);
+        LevelOf(m_world)->UpdatePlaneViewports(&rect);
+    }
+    SET_SIZE_COMPONENTS(m_modeSize, SCREEN_W_PX, SCREEN_H_PX);
+    m_world->SetRestoreHandler(&PumpIdleFrame);
+    CGameLevel* view = LevelOf(m_world);
+    view->m_maxStepX = 0xe;
+    view->m_maxStepY = 0xe;
+    m_world->m_drawTarget->CreateOverlay(0, 0x30000);
+    RecomputeViewScale();
+    RegisterGameObjectLogicTypes(m_world);
+    if (!MakeRezPath()) {
+        return 0;
+    }
+
+    SAFE_DELETE(m_resourceArchive);
+    m_resourceArchive = new CRezMgr;
+    bool parseFailed = ResourceArchive()->Open(
+                           const_cast<char*>(static_cast<const char*>(GetRezPath())),
+                           true,
+                           false
+                       )
+                       == 0;
+    if (parseFailed) {
+        ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x409);
+        return 0;
+    }
+    if (!ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.VRZ"), false)) {
+        ReportError(IDX(IDS_LOAD_VOICE_RESOURCE_FILE), 0x460);
+        return 0;
+    }
+    ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.ZZZ"), true);
+    ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.XXX"), true);
+    SetColorDepth(m_colorDepth);
+
+    m_faderMgr = new CFaderMgr;
+    if (!m_faderMgr->SetDefaults(NULL, NULL, NULL)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x40a);
+        return 0;
+    }
+    m_cheatMgr = new CCheatMgr;
+    if (!CheatMgr()->Init(m_gameWnd->m_hwnd)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x40b);
+        return 0;
+    }
+    if (g_disableAudio == false && g_disableSoundFonts == false) {
+        if (SFManager_SelectBestDevice()) {
+            if (!BuildSoundFontPath(GetGruntzDriveLetter())) {
+                CloseSoundFontDevice();
+            }
+        }
+    }
+
+    m_midi = new MidiManager;
+    if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->m_hwnd, false)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x40c);
+        return 0;
+    }
+    if (g_disableAudio == false && g_disableMusic == false) {
+        m_midi->SetMasterVolume(musicVolume);
+    } else {
+        m_midi->SetEnabled(false);
+    }
+
+    SAFE_DELETE(m_worldSounds);
+    m_worldSounds = new CWorldSoundSet;
+    if (!m_worldSounds->Init(m_world->SoundRegistry(), soundVolume)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x40d);
+        return 0;
+    }
+    m_worldSounds->SetEnabled(vAmbient);
+    SetSoundVolume(soundVolume);
+
+    SetVoiceVolume(voiceVolume);
+    m_scrollSpeed = scrollSpeed;
+
+    g_inputMgr = new DirectInputMgr2;
+    if (!g_inputMgr->Create(
+            m_gameWnd->m_hwnd,
+            m_owner->m_hInstance,
+            IDX(DIN_CREATE_ASYNC_KEYBOARD | DIN_CREATE_NO_MOUSE | DIN_CREATE_NO_JOYSTICKS)
+        )) {
+        SAFE_DELETE(g_inputMgr);
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x40e);
+        return 0;
+    }
+
+    g_actorList = g_inputMgr->CreateDeviceGroup(
+        g_inputMgr->GetJoystick(0),
+        g_inputMgr->GetJoystick(1),
+        g_inputMgr->GetJoystick(2),
+        g_inputMgr->GetJoystick(3),
+        NULL,
+        NULL,
+        0
+    );
+    if (!g_actorList) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x40f);
+        return 0;
+    }
+
+    CKeyboardDevice* keyboard = g_inputMgr->m_keyboard;
+    if (keyboard != NULL) {
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = VK_CONTROL;
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON1)] = 'X';
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON2)] = VK_SPACE;
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON3)] = VK_RETURN;
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON8)] = 0;
+    }
+
+    m_shadeCache = new CShadeTableCache;
+    if (!m_shadeCache->Init()) {
+        SAFE_DELETE(m_shadeCache);
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x410);
+        return 0;
+    }
+
+    m_lightFxMgr = new CLightFxMgr;
+    if (!m_lightFxMgr->Init(this, NULL)) {
+        SAFE_DELETE(m_lightFxMgr);
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x411);
+        return 0;
+    }
+    m_saveGame = new CSaveGame;
+    if (!m_saveGame->InitializeSaveDirectory("")) {
+        SAFE_DELETE(m_saveGame);
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x412);
+        return 0;
+    }
+    m_gameStats = new CGameStats;
+    if (!m_gameStats->ResetWithLevelRecords(m_saveGame->m_levelStats)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x464);
+        return 0;
+    }
+
+    g_gameplayInput = new CInputState;
+    if (!g_gameplayInput->Init(g_inputMgr, INPUTDEV_KEYBOARD_JOYSTICK1)) {
+        SAFE_DELETE(g_gameplayInput);
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x413);
+        return 0;
+    }
+
+    m_commandMgr = new CGruntzCmdMgr;
+
+    if (!m_commandMgr->SetManager(this)) {
+        SAFE_DELETE(m_commandMgr);
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x414);
+        return 0;
+    }
+    m_tileGrid = new CGruntzMapMgr;
+    if (!m_tileGrid) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x415);
+        return 0;
+    }
+    m_spriteFactory = new CSpriteRefTable;
+
+    if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
+        SAFE_DELETE(m_spriteFactory);
+
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x416);
+    }
+
+    g_gameReg = this;
+    g_lastNow = timeGetTime();
+    g_frameDelta = 0;
+    for (i32 s = 0; s < 4; ++s) {
+        if (!m_players[s].SeedForSlot(s)) {
+            ReportError(IDX(IDS_INITIALIZE_GAME), 0x417);
+            return 0;
+        }
+    }
+
+    {
+        CRezItm* stream =
+            g_gameReg->ResourceArchive()->GetRezFromPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
+        // Dead trace: retail keeps two NULL-action unwind states and no conditional-temporary flag.
+        if (0) {
+            AfxTrace("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
+        }
+        g_buteMgr.Init(&ButeParseErrorSink);
+        if (!g_buteMgr.Parse(stream, "1212C")) {
+            ReportError(IDX(IDS_INITIALIZE_GAME), 0x418);
+            return 0;
+        }
+    }
+
+    CheatMgr()->RegisterCheats();
+    m_chatLog = new CFontConfig;
+    if (!ChatLog()->LoadFontConfig(0x1388, 0xbb8)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x41a);
+        return 0;
+    }
+    m_triggerMgr = new CTriggerMgr;
+    if (!m_triggerMgr->SetLevel(World())) {
+        SAFE_DELETE(m_triggerMgr);
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x41b);
+        return 0;
+    }
+    g_localVersion = static_cast<i32>(
+        g_buteMgr.GetDword("General", "RezSync", static_cast<u32>(g_localVersion))
+    );
+    m_voiceManager = new CVoiceManager;
+    if (!VoiceMgr()->Init(this)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x45f);
+        return 0;
+    }
+    VoiceMgr()->SetVolume(voiceVolume);
+    m_musicEnabled = vMusic;
+    m_soundEnabled = vSound;
+    g_soundEnabled = vSound;
+    m_isVoiceEnabled = vVoice;
+    m_isAmbientEnabled = vAmbient;
+    m_isInterlaced = vInterlaced;
+    m_isHighDetail = vHigh1;
+    m_isEffectsEnabled = vHigh2;
+    if (!World()->SoundRegistry()->HasWithPrefix("GAME")) {
+        CRezDir* sz = ResourceArchive()->GetDirFromPath("GAME_SOUNDZ");
+        if (!sz) {
+            return 0;
+        }
+        m_world->SoundRegistry()->LoadFromTree(sz, "GAME", "_");
+    }
+    {
+        SoundCue* movieCue = World()->SoundRegistry()->FindCue("GAME_MOVIE");
+        World()->SoundRegistry()->ConfigurePrimaryFromCue(movieCue, 0);
+    }
+    CheckMovieFileExists();
+    if (!InitializeLobbyConnectionSettings()) {
+        if (m_numMovies > 0 && m_numRuns > 1) {
+            i32 skipLogo = m_settings->Get("Skip Logo Movies", 0);
+            if (skipLogo == 0 && noLogo == 0) {
+                PlayLogoMovie();
+            }
+        } else {
+            PlayLogoMovie();
+            if (PlayMovieEntry(IDX(MOVIE_ENTRY_INTRO))) {
+                ++m_numMovies;
+            }
+        }
+    }
+
+    CRezDir* attract = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
+    g_attractStateCount = 0;
+    CString title;
+    title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
+    CRezItm* titleImage = attract->GetRezFromPath(title, IMGTAG_XCP);
+    while (titleImage != NULL) {
+        g_attractStateCount++;
+        title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
+        titleImage = attract->GetRezFromPath(title, IMGTAG_XCP);
+    }
+    if (!TransitionState(mode, 1, false, 0)) {
+        if (mode == GAMESTATE_MULTI) {
+            if (!TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x41c);
+                return 0;
+            }
+        } else {
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x41d);
+            return 0;
+        }
+    }
+    g_frameDelta = 0;
+    return 1;
+}
+
+RVA(0x00085500, 0x23)
+CString CGruntzMgr::GetRezPath() {
+    return m_strRezPath;
 }
 
 RVA_COMPGEN(0x00085540, 0xb, ??1CGameMgr@@UAE@XZ)
@@ -286,7 +771,7 @@ RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 RVA(0x000855e0, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
-        m_world->SetRestoreHandler(NULL);
+        World()->SetRestoreHandler(NULL);
     }
     FreeFontsMemory();
     if (m_settings) {
@@ -304,9 +789,9 @@ void CGruntzMgr::Close() {
             m_settings->Set("Music Volume", m_midi->GetMasterVolume());
         }
         if (m_voiceManager) {
-            m_settings->Set("Voice Volume", m_voiceManager->m_voiceVolume);
+            m_settings->Set("Voice Volume", VoiceMgr()->m_voiceVolume);
         }
-        if (m_world && m_world->m_soundRegistry) {
+        if (m_world && World()->SoundRegistry()) {
             m_settings->Set("Sound Volume", g_soundVolumePercent);
         }
         m_settings->Set("Scroll Speed", m_scrollSpeed);
@@ -389,7 +874,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
         return;
     }
 
-    if (m_cheatMgr->m_cheatsUsed == false) {
+    if (CheatMgr()->m_cheatsUsed == false) {
         m_gameStats->UpdateLevelRecord(currentState->m_levelIndex, false);
         g_gameReg->m_saveGame->SetCurLevel(static_cast<QuestLevel>(currentState->m_levelIndex));
         g_gameReg->m_saveGame->SetMaxLevel(
@@ -436,7 +921,7 @@ i32 PumpIdleFrame() {
     if (g_gameReg == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* world = g_gameReg->m_world;
+    CDDrawSurfaceMgr* world = g_gameReg->World();
     if (world == NULL) {
         return 0;
     }
@@ -776,13 +1261,13 @@ i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
-    CObList* list = &m_world->m_childGroup->m_list;
+    CObList* list = &World()->m_childGroup->m_list;
     if (list == NULL) {
         return;
     }
     POSITION pos = list->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
+        CGameObject* obj = World()->m_childGroup->NextChild(pos);
         if (obj) {
             obj->m_stateFlags ^= static_cast<SpriteStateFlags>(mask);
         }
@@ -806,7 +1291,7 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
         return;
     }
 
-    SoundCueRegistry* snd = w->m_soundRegistry;
+    SoundCueRegistry* snd = w->SoundRegistry();
     w->m_imageRegistry->SumSizesEqual(NULL, 1);
     snd->SumAudioBytes(NULL);
     w->m_deviceManager->GetCapsChecked();
@@ -816,10 +1301,10 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     w->m_imageRegistry->SumSizesEqual("GAME", 1);
     w->m_imageRegistry->SumSizesEqual("LEVEL", 1);
     w->m_imageRegistry->SumSizesEqual("ACTION", 1);
-    w->m_soundRegistry->SumAudioBytes(NULL);
-    w->m_soundRegistry->SumAudioBytes("GRUNTZ");
-    w->m_soundRegistry->SumAudioBytes("GAME");
-    w->m_soundRegistry->SumAudioBytes("LEVEL");
+    w->SoundRegistry()->SumAudioBytes(NULL);
+    w->SoundRegistry()->SumAudioBytes("GRUNTZ");
+    w->SoundRegistry()->SumAudioBytes("GAME");
+    w->SoundRegistry()->SumAudioBytes("LEVEL");
 }
 
 RVA(0x0008dd80, 0x31)
@@ -945,7 +1430,7 @@ i32 CGruntzMgr::TryNextResolution() {
     }
     DisplayResolution resolution;
     resolution =
-        m_world->m_deviceManager->FindNextResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
+        World()->m_deviceManager->FindNextResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
     i32 width = resolution.m_width;
     i32 height = resolution.m_height;
     if (width > 0x514 || width == -1 || height == -1) {
@@ -967,8 +1452,11 @@ i32 CGruntzMgr::TryPreviousResolution() {
         return 1;
     }
     DisplayResolution resolution;
-    resolution = m_world->m_deviceManager
-                     ->FindPreviousResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
+    resolution = World()->m_deviceManager->FindPreviousResolution(
+        m_modeSize.cx,
+        m_modeSize.cy,
+        m_colorDepth
+    );
     i32 width = resolution.m_width;
     i32 height = resolution.m_height;
     if (width == -1 || height == -1 || width < SCREEN_HALF_W_PX || height < 0xc8) {
@@ -992,7 +1480,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
         *out = local;
         return out;
     }
-    local = m_world->m_level->m_viewportRect;
+    local = LevelOf(World())->m_viewportRect;
     *out = local;
     return out;
 }
@@ -1019,7 +1507,7 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
     switch (msg) {
         case WM_INITDIALOG: {
 
-            CDDrawWorkerHost* warp = g_gameReg->m_world->m_level->m_mainPlane;
+            CDDrawWorkerHost* warp = LevelOf(g_gameReg->World())->m_mainPlane;
             i32 seedX = warp->m_scrollPixelX;
             i32 seedY = warp->m_scrollPixelY;
             SetDlgItemInt(hDlg, 0x40e, seedX, false);
@@ -1153,7 +1641,7 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
             m_worldSounds->Stop();
         }
         if (m_world) {
-            SoundCueRegistry* sub = m_world->m_soundRegistry;
+            SoundCueRegistry* sub = World()->SoundRegistry();
             if (sub && sub->m_soundStream) {
                 sub->m_soundStream->StopAllStreams();
             }
@@ -1338,7 +1826,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
-        CGameLevel* view = m_world->m_level;
+        CGameLevel* view = LevelOf(World());
         if (view) {
             u32 idx = view->m_planes.GetSize();
             if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
@@ -1359,7 +1847,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (IsActive() && m_world) {
-        CGameLevel* view = m_world->m_level;
+        CGameLevel* view = LevelOf(World());
         if (view) {
             CDDrawWorkerHost* layer = view->m_mainPlane;
             if (layer) {
@@ -1376,7 +1864,7 @@ i32 CGruntzMgr::ToggleHeightLayer() {
 RVA(0x0008f0b0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
-        CGameLevel* view = m_world->m_level;
+        CGameLevel* view = LevelOf(World());
         if (view) {
             CDDrawWorkerHost* layer = view->GetPlane(0);
             if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
@@ -1500,10 +1988,10 @@ void CGruntzMgr::DelayedQuit() {
         return;
     }
     m_delayedQuitPending = true;
-    SoundCue* out = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
+    SoundCue* out = World()->SoundRegistry()->FindCue("MENU_ACTIVATE");
     i32 base;
     if (out != NULL) {
-        out = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
+        out = World()->SoundRegistry()->FindCue("MENU_ACTIVATE");
         base = out->m_sound->m_durationMs + 0x1f4;
     } else {
         base = 0;
@@ -1571,7 +2059,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
 RVA(0x0008f740, 0x46)
 void CGruntzMgr::StopAudioPlayback() {
     if (m_world) {
-        SoundCueRegistry* soundRegistry = m_world->m_soundRegistry;
+        SoundCueRegistry* soundRegistry = World()->SoundRegistry();
         if (soundRegistry) {
             SoundStream* soundStream = soundRegistry->m_soundStream;
             if (soundStream) {
@@ -1599,7 +2087,7 @@ void CGruntzMgr::RecomputeViewScale() {
     if (m_world == NULL) {
         return;
     }
-    CGameLevel* view = m_world->m_level;
+    CGameLevel* view = LevelOf(World());
     LevelCoordRect ext = view->m_viewportRect;
     i32 iw = ext.right - ext.left + 1;
     i32 ih = ext.bottom - ext.top + 1;
@@ -1610,26 +2098,26 @@ void CGruntzMgr::RecomputeViewScale() {
     view->m_defaultActiveRegionSize.m_h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
-    view = m_world->m_level;
+    view = LevelOf(World());
     view->m_largeActiveRegionSize.m_w = static_cast<i32>((fw * 5.3f));
     view->m_largeActiveRegionSize.m_h = static_cast<i32>((fh * 5.3f));
     view->MainPlaneNotify();
 
-    view = m_world->m_level;
+    view = LevelOf(World());
     view->m_smallActiveRegionSize.m_w = static_cast<i32>((fw * 1.12f));
     view->m_smallActiveRegionSize.m_h = static_cast<i32>((fh * 1.12f));
     view->MainPlaneNotify();
 
-    CGameLevel* v = m_world->m_level;
+    CGameLevel* v = LevelOf(World());
     if (v->m_mainPlane == NULL) {
         return;
     }
     SET_RECT_COMPONENTS(
         m_viewBounds,
         (v->m_mainPlane)->m_planeViewRect.left - 0x60,
-        (m_world->m_level->m_mainPlane)->m_planeViewRect.top - 0x60,
-        (m_world->m_level->m_mainPlane)->m_planeViewRect.right + 0x60,
-        (m_world->m_level->m_mainPlane)->m_planeViewRect.bottom + 0x60
+        (LevelOf(World())->m_mainPlane)->m_planeViewRect.top - 0x60,
+        (LevelOf(World())->m_mainPlane)->m_planeViewRect.right + 0x60,
+        (LevelOf(World())->m_mainPlane)->m_planeViewRect.bottom + 0x60
     );
 }
 
@@ -1692,22 +2180,22 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     CMoviePlayer player;
     IDirectSound* dsound = NULL;
 
-    CDDSurface* front = m_world->m_drawTarget->m_frontSurface->m_surface;
-    IDirectDraw2* dd2 = m_world->m_deviceManager->m_device;
+    CDDSurface* front = World()->m_drawTarget->m_frontSurface->m_surface;
+    IDirectDraw2* dd2 = World()->m_deviceManager->m_device;
 
-    if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
-        CRezDir* snd = m_resourceArchive->GetDirFromPath("GAME_SOUNDZ");
+    if (World()->SoundRegistry()->HasWithPrefix("GAME") == 0) {
+        CRezDir* snd = ResourceArchive()->GetDirFromPath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(snd), "GAME", "_");
+        World()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(snd), "GAME", "_");
     }
     if (front == NULL || dd2 == NULL) {
         return 0;
     }
 
-    if (m_world->m_soundStream != NULL) {
-        dsound = m_world->m_soundStream->m_device;
+    if (World()->m_soundStream != NULL) {
+        dsound = World()->m_soundStream->m_device;
     }
     if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
         MovieOpenFlags openFlags =
@@ -1826,7 +2314,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
         return 0;
     }
     if (m_voiceManager) {
-        m_voiceManager->PauseAllVoices();
+        VoiceMgr()->PauseAllVoices();
     }
     if (m_triggerMgr && m_soundEnabled) {
         m_triggerMgr->DestroyAllAnims();
@@ -1838,7 +2326,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
             notify = false;
         }
 
-        CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
+        CDDrawDeviceManager* deviceManager = World()->m_deviceManager;
         deviceManager->m_device->FlipToGDISurface();
     }
 
@@ -1879,7 +2367,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
 RVA(0x000903f0, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
     if (m_voiceManager) {
-        m_voiceManager->PauseAllVoices();
+        VoiceMgr()->PauseAllVoices();
     }
     if (m_triggerMgr && m_soundEnabled) {
         m_triggerMgr->DestroyAllAnims();
@@ -1891,7 +2379,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
             notify = false;
         }
 
-        CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
+        CDDrawDeviceManager* deviceManager = World()->m_deviceManager;
         deviceManager->m_device->FlipToGDISurface();
     }
 
@@ -2062,7 +2550,7 @@ void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
     if (m_world == NULL) {
         ReportError(IDX(IDS_INITIALIZE_GAME), IDX(tag));
     }
-    GZ_ENUM_STORAGE(WorldInitError, u32) status = m_world->m_lastError;
+    GZ_ENUM_STORAGE(WorldInitError, u32) status = World()->m_lastError;
     if (status == WORLDERR_NONE) {
         ReportError(IDX(IDS_INITIALIZE_GAME), IDX(tag));
     }
@@ -2191,7 +2679,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_world == NULL) {
         return 0;
     }
-    CDDrawWorker* out = m_world->FindWorker("GAME_DEVHEADS");
+    CDDrawWorker* out = World()->FindWorker("GAME_DEVHEADS");
     if (out == NULL) {
         return 0;
     }
@@ -2217,7 +2705,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     if (sink && key) {
-        CDDrawWorker* row = m_world->FindWorker(key);
+        CDDrawWorker* row = World()->FindWorker(key);
         if (row) {
             CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->m_minIndex);
             if (dst) {
@@ -2269,7 +2757,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 
         CDDrawWorker* set;
         {
-            set = m_world->FindWorker("Gruntz");
+            set = World()->FindWorker("Gruntz");
         }
         if (set) {
             CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
@@ -2286,7 +2774,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                             AppendChatMessage(const_cast<char*>("You're scaring me..."));
                             break;
                     }
-                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MINORCHEAT");
+                    PlayRegistryCueIfElapsed(World()->SoundRegistry(), "GAME_MINORCHEAT");
                 }
             }
         }
@@ -2301,7 +2789,7 @@ void CGruntzMgr::CheatEclipseToggle() {
 
         CDDrawWorker* set;
         {
-            set = m_world->FindWorker("Gruntz");
+            set = World()->FindWorker("Gruntz");
         }
         if (set) {
             CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
@@ -2317,7 +2805,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                         set->SetAllTypes(SHADE_COPY);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
-                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MINORCHEAT");
+                    PlayRegistryCueIfElapsed(World()->SoundRegistry(), "GAME_MINORCHEAT");
                 }
             }
         }
@@ -2453,7 +2941,7 @@ i32 CGruntzMgr::MakeRezPath() {
 RVA(0x000919d0, 0x30)
 void CGruntzMgr::SetSoundVolume(i32 v) {
     m_soundVolume = v;
-    if (m_world && m_world->m_soundRegistry) {
+    if (m_world && World()->SoundRegistry()) {
         g_soundVolumePercent = v;
     }
     CWorldSoundSet* in = m_worldSounds;
@@ -2467,7 +2955,7 @@ i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     m_voiceVolume = v;
     CVoiceManager* timer = m_voiceManager;
     if (timer) {
-        timer->m_voiceVolume = v;
+        timer->SetVolume(v);
     }
     return v;
 }
@@ -2675,7 +3163,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     }
     i32 r2 = SQR(radius);
     i32 count = 0;
-    CDDrawChildGroup* children = m_world->m_childGroup;
+    CDDrawChildGroup* children = World()->m_childGroup;
     POSITION pos = children->m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
@@ -2711,7 +3199,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     box.top = r->top + offY;
     box.bottom = r->bottom + offY;
     i32 count = 0;
-    CDDrawChildGroup* children = m_world->m_childGroup;
+    CDDrawChildGroup* children = World()->m_childGroup;
     POSITION pos = children->m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
@@ -2740,7 +3228,7 @@ void CGruntzMgr::SetSoundEnabled(b32 enabled) {
     if (m_world == NULL) {
         return;
     }
-    SoundStream* soundStream = m_world->m_soundRegistry->m_soundStream;
+    SoundStream* soundStream = World()->SoundRegistry()->m_soundStream;
     if (soundStream) {
         soundStream->StopAllStreams();
     }
@@ -2782,7 +3270,7 @@ void CGruntzMgr::SetMusicEnabled(b32 enabled) {
 
 RVA(0x00092420, 0xa4)
 i32 CGruntzMgr::LoadSaveMessageSprite() {
-    if (m_cheatMgr->m_cheatsUsed != false) {
+    if (CheatMgr()->m_cheatsUsed != false) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
@@ -2806,7 +3294,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
-    if (m_cheatMgr->m_cheatsUsed != false) {
+    if (CheatMgr()->m_cheatsUsed != false) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
@@ -2820,7 +3308,7 @@ i32 CGruntzMgr::Quicksave() {
         return 0;
     }
     if (m_voiceManager) {
-        m_voiceManager->PauseAllVoices();
+        VoiceMgr()->PauseAllVoices();
     }
     FillSaveInfo(m_saveInfoRec, NULL);
 
@@ -2828,7 +3316,7 @@ i32 CGruntzMgr::Quicksave() {
         EnterModalUI("ERROR - Cannot Save Game.");
         return 1;
     }
-    m_chatLog->AddItem("Game Quicksaved successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
+    ChatLog()->AddItem("Game Quicksaved successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
     return 1;
 }
 
@@ -2838,7 +3326,7 @@ i32 CGruntzMgr::Quickload() {
         return 0;
     }
     if (m_voiceManager) {
-        m_voiceManager->PauseAllVoices();
+        VoiceMgr()->PauseAllVoices();
     }
     if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
 
@@ -2846,7 +3334,7 @@ i32 CGruntzMgr::Quickload() {
             return 1;
         }
         PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
-        m_chatLog->AddItem("Game Quickloaded successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
+        ChatLog()->AddItem("Game Quickloaded successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
         return 1;
     }
     return RunLoadGameDialog();
@@ -3171,7 +3659,7 @@ i32 CGruntzMgr::SerializeGameState(
             if (LoadState(ar) == 0) {
                 return 0;
             }
-            m_voiceManager->ClearVoiceIndicatorSlots();
+            VoiceMgr()->ClearVoiceIndicatorSlots();
             break;
     }
 
@@ -3257,7 +3745,7 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     g_serialCounter++;

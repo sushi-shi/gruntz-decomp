@@ -54,12 +54,12 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         m_world->m_imageRegistry->InstallTree(img, "GAME", "_");
         g_resourceInstallActive = false;
     }
-    if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
+    if (m_world->SoundRegistry()->HasWithPrefix("GAME") == 0) {
         CRezDir* snd = m_resourceArchive->GetDirFromPath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(snd), "GAME", "_");
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(snd), "GAME", "_");
     }
     if (m_world->m_animRegistry->HasWithPrefix("GAME") == 0) {
         CRezDir* aniz = m_resourceArchive->GetDirFromPath("GAME_ANIZ");

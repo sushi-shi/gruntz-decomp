@@ -291,7 +291,7 @@ i32 CMenuTree::PlayFocusSound() {
     if (m_focusSoundKey.IsEmpty()) {
         return 0;
     }
-    return PlayRegistryCueIfElapsed(m_world->m_soundRegistry, m_focusSoundKey);
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), m_focusSoundKey);
 }
 
 RVA(0x001830b0, 0x7b)
@@ -299,7 +299,7 @@ i32 CMenuTree::PlayActivationSound() {
     if (m_activationSoundKey.IsEmpty()) {
         return 0;
     }
-    return PlayRegistryCueIfElapsed(m_world->m_soundRegistry, m_activationSoundKey);
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), m_activationSoundKey);
 }
 
 RVA(0x00183130, 0x16)

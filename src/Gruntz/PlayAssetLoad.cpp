@@ -142,19 +142,19 @@ i32 CPlay::LoadLevelSounds(i32 force) {
         return 0;
     }
     if (!force
-        && (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+        && (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                ->HasWithPrefix("LEVEL")) {
         return 1;
     }
 
-    (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
         ->RemoveWithPrefix("LEVEL", "_");
 
     CRezDir* sounds = (self->m_levelResources)->GetDirFromPath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
-    (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
         ->LoadFromTree(static_cast<CRezDir*>(sounds), "LEVEL", "_");
     return 1;
 }
@@ -230,7 +230,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     if (!self->m_world) {
         return 0;
     }
-    if ((static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))->HasWithPrefix("GAME")) {
+    if ((static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))->HasWithPrefix("GAME")) {
         return 1;
     }
 
@@ -238,7 +238,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     if (!sounds) {
         return 0;
     }
-    (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
         ->LoadFromTree(static_cast<CRezDir*>(sounds), "GAME", "_");
     return 1;
 }
@@ -379,131 +379,131 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
 RVA(0x000dc060, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
     SoundCue* d;
-    d = m_world->m_soundRegistry->FindCue("GAME_PYRAMIDMOVE");
+    d = m_world->SoundRegistry()->FindCue("GAME_PYRAMIDMOVE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("GAME_TELEPORTEROPEN");
+    d = m_world->SoundRegistry()->FindCue("GAME_TELEPORTEROPEN");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = m_world->m_soundRegistry->FindCue("GAME_TELEPORTERCLOSE");
+    d = m_world->SoundRegistry()->FindCue("GAME_TELEPORTERCLOSE");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = m_world->m_soundRegistry->FindCue("GAME_TELEPORTERALL");
+    d = m_world->SoundRegistry()->FindCue("GAME_TELEPORTERALL");
     if (d != NULL) {
         d->m_replayDelayMs = 4000;
     }
-    d = m_world->m_soundRegistry->FindCue("GAME_BRICKBREAK");
+    d = m_world->SoundRegistry()->FindCue("GAME_BRICKBREAK");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_DEATHBRIDGEMOVE");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_DEATHBRIDGEMOVE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_WATERBRIDGEMOVE");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_WATERBRIDGEMOVE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_ROCKBREAK");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_ROCKBREAK");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_LAVAGEYSER");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_LAVAGEYSER");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_TRAPDOORCLOSE");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_TRAPDOORCLOSE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_TRAPDOOROPEN");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_TRAPDOOROPEN");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_CANDLEIGNITE");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_CANDLEIGNITE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_CANDLEUP");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_CANDLEUP");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_CANDLEDOWN");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_CANDLEDOWN");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_GOLFBALLAIR2");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_GOLFBALLAIR2");
     if (d != NULL) {
         d->m_replayDelayMs = 250;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_GOLFBALLHOLE");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_GOLFBALLHOLE");
     if (d != NULL) {
         d->m_replayDelayMs = 250;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_GOLFBALLSINK");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_GOLFBALLSINK");
     if (d != NULL) {
         d->m_replayDelayMs = 250;
     }
-    d = m_world->m_soundRegistry->FindCue("GAME_EXPLOSION1");
+    d = m_world->SoundRegistry()->FindCue("GAME_EXPLOSION1");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_OUTLETHAZARD");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_OUTLETHAZARD");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZFREEZE1A");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_DEATHZ_DEATHZFREEZE1A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZFREEZE2A");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_DEATHZ_DEATHZFREEZE2A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_RESSURECT");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_DEATHZ_RESSURECT");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZSQUASH1A");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_DEATHZ_DEATHZSQUASH1A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_CLOUDHAZARDMOVE");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_CLOUDHAZARDMOVE");
     if (d != NULL) {
         d->m_replayDelayMs = 10000;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_CLOUDHAZARDKILL");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_CLOUDHAZARDKILL");
     if (d != NULL) {
         d->m_replayDelayMs = 3000;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = m_world->m_soundRegistry->FindCue("GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1");
+    d = m_world->SoundRegistry()->FindCue("GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = m_world->m_soundRegistry->FindCue("LEVEL_PLANEHAZARDFLY");
+    d = m_world->SoundRegistry()->FindCue("LEVEL_PLANEHAZARDFLY");
     if (d != NULL) {
         d->m_replayDelayMs = 5000;
     }
@@ -639,15 +639,15 @@ i32 CState::BuildAssetNamespacePrefixes(
     i32 result;
     if (mode != 0) {
         if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
-            g_gameReg->m_voiceManager->PauseAllVoices();
+            g_gameReg->VoiceMgr()->PauseAllVoices();
             (static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(IDS_LOADING);
-                RECT r = *(&g_gameReg->m_world->m_level->m_viewportRect);
+                RECT r = *(&g_gameReg->World()->m_level->m_viewportRect);
                 RECT r2;
                 CopyRect(&r2, &r);
-                DrawTextToFrontSurface(g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToFrontSurface(g_gameReg->World(), &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = true;
             CRezDir* tree = m_gruntResources->GetDirFromPath("IMAGEZ_" + name);
@@ -661,11 +661,11 @@ i32 CState::BuildAssetNamespacePrefixes(
                 finishGate->SendLobbyKeepAlive();
             }
         }
-        if (m_world->m_soundRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
+        if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + name) == 0) {
             CRezDir* tree = m_gruntResources->GetDirFromPath("SOUNDZ_" + name);
             if (tree != NULL) {
 
-                m_world->m_soundRegistry
+                m_world->SoundRegistry()
                     ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + name, "_");
             }
         }
@@ -688,8 +688,8 @@ i32 CState::BuildAssetNamespacePrefixes(
             finishGate->SendLobbyKeepAlive();
         }
     }
-    if (m_world->m_soundRegistry->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->m_soundRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
+    if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + name)) {
+        m_world->SoundRegistry()->RemoveWithPrefix("GRUNTZ_" + name, "_");
     }
     if (m_world->m_animRegistry->HasWithPrefix("GRUNTZ_" + name)) {
         m_world->m_animRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
@@ -858,68 +858,68 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
         return 0;
     }
 
-    if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
              ->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("SOUNDZ_NORMALGRUNT");
         if (s) {
-            (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+            (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_NORMALGRUNT", "_");
         }
     }
-    if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
              ->HasWithPrefix("GRUNTZ_DEATHZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("SOUNDZ_DEATHZ");
         if (s) {
-            (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+            (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_DEATHZ", "_");
         }
     }
-    if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
              ->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("SOUNDZ_ENTRANCEZ");
         if (s) {
-            (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+            (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_ENTRANCEZ", "_");
         }
     }
-    if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
              ->HasWithPrefix("GRUNTZ_EXITZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("SOUNDZ_EXITZ");
         if (s) {
-            (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+            (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
              ->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("SOUNDZ_GRUNTPUDDLE");
         if (s) {
-            (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+            (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
              ->HasWithPrefix("GRUNTZ_PICKUPS")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("SOUNDZ_PICKUPS");
         if (s) {
-            (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+            (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+    if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
              ->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("SOUNDZ_BOMBGRUNT");
         if (s) {
-            (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
+            (static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {

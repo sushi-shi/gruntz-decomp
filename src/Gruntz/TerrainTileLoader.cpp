@@ -122,12 +122,12 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         case TILEKIND_GAUNTLET_ROCK_A:
                         case TILEKIND_GAUNTLET_ROCK_B:
                         case TILEKIND_GIANT_ROCK:
-                            m_world->m_soundRegistry->PlayCue("LEVEL_GAUNTLETROCK1");
+                            m_world->SoundRegistry()->PlayCue("LEVEL_GAUNTLETROCK1");
                             return 1;
                         case TILEKIND_GAUNTLET_BRICK_A:
                         case TILEKIND_GAUNTLET_BRICK_B:
                         case TILEKIND_GAUNTLET_BRICK_C:
-                            m_world->m_soundRegistry->PlayCue("GAME_GAUNTLETBRICK1");
+                            m_world->SoundRegistry()->PlayCue("GAME_GAUNTLETBRICK1");
                             return 1;
                     }
                     return 0;
@@ -194,7 +194,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     if (particle != NULL) {
                         particle->SetImageSetByName("LEVEL_ROCKBREAK");
                         particle->SetAnimationByName("LEVEL_ROCKBREAK", 0);
-                        m_world->m_soundRegistry->PlayCue("LEVEL_ROCKBREAK");
+                        m_world->SoundRegistry()->PlayCue("LEVEL_ROCKBREAK");
                     }
                 }
             }
@@ -256,7 +256,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookupById(
-                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                                 objectId,
                                 mapped
                             );
@@ -318,7 +318,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookupById(
-                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                                 objectId,
                                 mapped
                             );
@@ -384,7 +384,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookupById(
-                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                                 objectId,
                                 mapped
                             );
@@ -446,7 +446,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookupById(
-                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                                 objectId,
                                 mapped
                             );
@@ -568,7 +568,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (splash != NULL) {
                     splash->SetImageSetByName("GAME_WATER");
                     splash->SetAnimationByName("GAME_WATER", 0);
-                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_WATERSPLASH");
+                    PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_WATERSPLASH");
                 }
             }
             return 1;

@@ -95,12 +95,12 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         g_resourceInstallActive = false;
     }
 
-    if (!m_world->m_soundRegistry->HasWithPrefix("MENU")) {
+    if (!m_world->SoundRegistry()->HasWithPrefix("MENU")) {
         CRezDir* soundSymbols = StateResources()->GetDirFromPath("SOUNDZ");
         if (soundSymbols == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundSymbols), "MENU", "_");
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundSymbols), "MENU", "_");
     }
 
     if (!m_world->m_drawTarget->HasOverlay()) {
@@ -125,9 +125,9 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     menuTree->m_activationSoundKey = "MENU_ACTIVATE";
 
     {
-        SoundCue* activationCue = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
+        SoundCue* activationCue = m_world->SoundRegistry()->FindCue("MENU_ACTIVATE");
         if (activationCue != NULL) {
-            activationCue = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
+            activationCue = m_world->SoundRegistry()->FindCue("MENU_ACTIVATE");
             m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
         } else {
             m_activateCueDurationMs = 0;
@@ -139,7 +139,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     SoundCue* menuMusicCue = MapFind<SoundCue>(
-        (static_cast<SoundCueRegistry*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
+        (static_cast<SoundCueRegistry*>(g_gameReg->World()->SoundRegistry()))->m_cues,
         "MENU_MENU"
     );
     m_menuMusicCue = menuMusicCue;
@@ -155,10 +155,10 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
 
     m_world->m_imageRegistry->RemoveWithPrefix("MENU", "_");
-    m_world->m_soundRegistry->RemoveWithPrefix("MENU", "_");
+    m_world->SoundRegistry()->RemoveWithPrefix("MENU", "_");
     if (m_world) {
 
-        SoundCueRegistry* soundRegistry = m_world->m_soundRegistry;
+        SoundCueRegistry* soundRegistry = m_world->SoundRegistry();
         if (soundRegistry->m_soundStream) {
             soundRegistry->m_soundStream->StopAllStreams();
         }
@@ -263,7 +263,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        m_world->m_soundRegistry->TickVolumeRamps();
+        m_world->SoundRegistry()->TickVolumeRamps();
     } while (m_menuMusicCue->m_sound->IsPlaying());
 }
 

@@ -2,15 +2,15 @@
 #define GRUNTZ_GRUNTZ_GRUNTZCOMMANDMACROS_H
 
 #define PLAYCUE(TAG)                                                                               \
-    if (m_world->m_soundRegistry->m_silentMode == false) {                                         \
-        SoundCue* _c = static_cast<SoundCue*>(m_world->m_soundRegistry->Lookup(TAG));              \
+    if (m_world->SoundRegistry()->m_silentMode == false) {                                         \
+        SoundCue* _c = static_cast<SoundCue*>(m_world->SoundRegistry()->Lookup(TAG));              \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                      \
     }
 
 #define PLAYCUE_MAP(TAG, VAR)                                                                      \
     {                                                                                              \
-        SoundCueRegistry* _reg = m_world->m_soundRegistry;                                         \
+        SoundCueRegistry* _reg = m_world->SoundRegistry();                                         \
         if (_reg->m_silentMode == false) {                                                         \
             VAR = 0;                                                                               \
             MapLookup(_reg->m_cues, TAG, VAR);                                                     \

@@ -50,7 +50,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     i32 focusY = m_object->m_screenY;
     slot->m_focusX = focusX;
     slot->m_focusY = focusY;
-    CGameObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
+    CGameObject* e = g_gameReg->World()->m_childGroup->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY,
@@ -85,7 +85,7 @@ i32 CExitTrigger::SerializeDispatch(
     CFileMemBase* arc = ar;
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(ar, arc, mode, typeId, object)
 
-    CDDrawSurfaceMgr* holder = g_gameReg->m_world;
+    CDDrawSurfaceMgr* holder = g_gameReg->World();
     switch (mode) {
         case SERIAL_LOAD: {
             CGameObject* found;

@@ -316,7 +316,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     CWwdSpriteObject* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
-        PlayRegistryCueIfElapsed(reg->m_world->m_soundRegistry, "LEVEL_CLOUDHAZARDKILL");
+        PlayRegistryCueIfElapsed(reg->m_world->SoundRegistry(), "LEVEL_CLOUDHAZARDKILL");
     }
     return 1;
 }
@@ -373,9 +373,14 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     i32 sy = m_object->m_screenY;
     SwitchAnimationByName("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CWwdSpriteObject* sl =
-            g_gameReg->m_world->m_childGroup
-                ->CreateSprite(0, sx, sy, 0, "SpotLight", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
+        CWwdSpriteObject* sl = g_gameReg->World()->m_childGroup->CreateSprite(
+            0,
+            sx,
+            sy,
+            0,
+            "SpotLight",
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+        );
         if (sl != NULL) {
             sl->SetImageSetByName("LEVEL_SPOTLIGHT");
             CLogicRecord* sub = sl->m_logicRecord;

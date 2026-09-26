@@ -98,7 +98,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_idleWindow = m_object->m_damage;
     m_pulseEpoch = g_frameTime;
     CAniElement* entry = MapFind<CAniElement>(
-        g_gameReg->m_world->m_animRegistry->m_animations,
+        g_gameReg->World()->m_animRegistry->m_animations,
         "LEVEL_STATICHAZARDGO"
     );
     if (entry != NULL) {

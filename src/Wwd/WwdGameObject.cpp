@@ -87,7 +87,7 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
 
 RVA(0x00150610, 0x41)
 i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
-    SoundCue* cue = OwnerMgr()->m_soundRegistry->FindCue(name);
+    SoundCue* cue = OwnerMgr()->SoundRegistry()->FindCue(name);
     if (cue == NULL) {
         return 0;
     }
@@ -258,7 +258,7 @@ i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
 
     memset(tmp, 0, SERIAL_NAME_LEN);
     {
-        strcpy(tmp, OwnerMgr()->m_soundRegistry->FindCueKey(m_soundCue));
+        strcpy(tmp, OwnerMgr()->SoundRegistry()->FindCueKey(m_soundCue));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -295,7 +295,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
 
         SoundCue* found = NULL;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        MapLookup(mgr->m_soundRegistry->m_cues, name, found);
+        MapLookup(mgr->SoundRegistry()->m_cues, name, found);
         m_soundCue = found;
     }
     return 1;

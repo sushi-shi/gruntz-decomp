@@ -349,7 +349,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     if (glitter != ICON_GLITTER_NONE) {
-        CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* fx = g_gameReg->World()->m_childGroup->CreateSprite(
             0,
             m_object->m_screenX,
             m_object->m_screenY,
@@ -904,7 +904,7 @@ i32 CInGameText::Update() {
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;
         if (::PtInRect(&reg->m_viewBounds, x, y)) {
-            PlayRegistryCueIfElapsed(reg->m_world->m_soundRegistry, "GAME_HELPBOOK");
+            PlayRegistryCueIfElapsed(reg->m_world->SoundRegistry(), "GAME_HELPBOOK");
         }
 
         m_cachedPlayerIndex = playerIndex;
@@ -946,7 +946,7 @@ void CInGameIcon::SetupSprite(const char* category) {
     SoundCue* found = NULL;
     if (category != NULL) {
         found = NULL;
-        MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, category, found);
+        MapLookup(g_gameReg->World()->SoundRegistry()->m_cues, category, found);
     }
     m_cue = found;
 }

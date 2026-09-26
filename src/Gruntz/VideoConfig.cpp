@@ -495,7 +495,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == SB_THUMBTRACK) {
             return;
         }
-        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
+        SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
         if (registry->m_silentMode == false) {
             SoundCue* cue = registry->FindCue("GAME_VOICE");
             if (cue != NULL) {
@@ -509,7 +509,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == SB_THUMBTRACK) {
             return;
         }
-        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_CHIPFALLOUT");
+        PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_CHIPFALLOUT");
         return;
     }
 }

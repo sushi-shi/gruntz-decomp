@@ -58,18 +58,18 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prev
 
     CRezDir* soundz = StateResources()->GetDir("SOUNDZ");
     if (soundz) {
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundz), "", "_");
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundz), "", "_");
     }
     return 1;
 }
 
 RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
-    SoundCueRegistry* reg = m_world->m_soundRegistry;
+    SoundCueRegistry* reg = m_world->SoundRegistry();
     if (reg->m_soundStream != NULL) {
         reg->m_soundStream->StopAllStreams();
     }
-    m_world->m_soundRegistry->ClearCues();
+    m_world->SoundRegistry()->ClearCues();
     CState::ReleaseResources();
 }
 
@@ -99,7 +99,7 @@ i32 CSplashState::Render() {
         }
     }
 
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
 
     if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_splashCountdownMs) {
         m_splashCountdownMs = 0;

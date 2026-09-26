@@ -818,7 +818,7 @@ i32 CTriggerMgr::HandleTargetSelection(
     }
 
 reportError:
-    g_gameReg->m_voiceManager->PlayVoice(selectedGrunt, 0x324, -1, 0, -1, -1);
+    g_gameReg->VoiceMgr()->PlayVoice(selectedGrunt, 0x324, -1, 0, -1, -1);
     return 0;
 }
 
@@ -908,7 +908,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         lvl->ResetGoals(col, row);
     }
 
-    CGameLevel* plane = g_gameReg->m_world->m_level;
+    CGameLevel* plane = g_gameReg->World()->m_level;
     LONG outR = col;
     LONG outC = row;
     plane->m_mainPlane->WorldToViewport(&outR, &outC);
@@ -1634,7 +1634,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             spr->SetImageSetByName("LEVEL_ROCKBREAK");
             spr->SetAnimationByName("LEVEL_ROCKBREAK", 0);
 
-            PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "LEVEL_ROCKBREAK");
+            PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "LEVEL_ROCKBREAK");
         }
     }
     return 1;
@@ -1710,7 +1710,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                                                       : rand() % maxTileY + 1;
                             if (grunt->TryTeleportToCell(tileX, tileY, false, true)) {
                                 CGameObject* flashObject =
-                                    g_gameReg->m_world->m_childGroup->CreateSprite(
+                                    g_gameReg->World()->m_childGroup->CreateSprite(
                                         0,
                                         gruntX,
                                         gruntY,
@@ -1734,7 +1734,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         grunt->CreateHealthSprite();
                         ArmGruntCombatTimeout(grunt);
                         CreateLightFx(
-                            g_gameReg->m_world->m_childGroup,
+                            g_gameReg->World()->m_childGroup,
                             gruntX,
                             gruntY,
                             SORTKEY_OVERLAY,
@@ -1756,7 +1756,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         }
                         grunt->LoadGruntTypeTable(toy, 1, 0, 0);
                         CreateLightFx(
-                            g_gameReg->m_world->m_childGroup,
+                            g_gameReg->World()->m_childGroup,
                             gruntX,
                             gruntY,
                             SORTKEY_OVERLAY,
@@ -1774,7 +1774,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         grunt->StepArrivalCommit();
                         CGameObject* object = grunt->m_object;
                         CreateLightFx(
-                            g_gameReg->m_world->m_childGroup,
+                            g_gameReg->World()->m_childGroup,
                             object->m_screenX,
                             object->m_screenY,
                             SORTKEY_OVERLAY,
@@ -1885,7 +1885,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
             m_baseList.RemoveAt(cur);
             CreateLightFx(
-                g_gameReg->m_world->m_childGroup,
+                g_gameReg->World()->m_childGroup,
                 (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
                 SORTKEY_OVERLAY,
@@ -1999,9 +1999,9 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
     switch (state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
-                SoundCue* p = m_world->m_soundRegistry->FindCue("GAME_FINISHLEVEL");
+                SoundCue* p = m_world->SoundRegistry()->FindCue("GAME_FINISHLEVEL");
                 m_cueTimer.Start(p->m_sound->m_durationMs + 500);
-                PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_FINISHLEVEL");
+                PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_FINISHLEVEL");
                 m_phase = FINISH_STATE_VICTORY;
                 m_groupFlag = false;
                 m_finishReasonFrame = state;
@@ -2214,9 +2214,14 @@ i32 CTriggerMgr::SpawnPowerupIcon(
             name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
         case PICKUP_COVEREDTIMEBOMB: {
-            CGameObject* tb =
-                g_gameReg->m_world->m_childGroup
-                    ->CreateSprite(0, x, y, 0xf, "TimeBomb", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
+            CGameObject* tb = g_gameReg->World()->m_childGroup->CreateSprite(
+                0,
+                x,
+                y,
+                0xf,
+                "TimeBomb",
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+            );
             if (tb) {
                 tb->m_damage = g_buteMgr.GetDword("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
@@ -2226,9 +2231,14 @@ i32 CTriggerMgr::SpawnPowerupIcon(
             return 0;
     }
 
-    CWwdSpriteObject* spr =
-        g_gameReg->m_world->m_childGroup
-            ->CreateSprite(0, x, y, 0x17318, "InGameIcon", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
+    CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+        0,
+        x,
+        y,
+        0x17318,
+        "InGameIcon",
+        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+    );
     if (!spr) {
         return 0;
     }
@@ -2284,7 +2294,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     RECT bbox;
     bbox.right = 0;
     bbox.bottom = 0;
-    CDDrawWorkerHost* grid = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* grid = g_gameReg->World()->m_level->m_mainPlane;
     bbox.left = grid->m_planePixelWidth - 1;
     bbox.top = grid->m_planePixelHeight - 1;
     do {
@@ -2337,7 +2347,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     }
     RECT bbox;
     i32 count = 0;
-    CDDrawWorkerHost* dims = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* dims = g_gameReg->World()->m_level->m_mainPlane;
     bbox.left = dims->m_planePixelWidth - 1;
     bbox.top = dims->m_planePixelHeight - 1;
     bbox.right = 0;

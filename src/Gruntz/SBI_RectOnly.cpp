@@ -701,7 +701,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
             && m_destructButtonLocked == false) {
             if (m_destructWarningSound == NULL) {
 
-                SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
+                SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
                 CMapStringToPtr* map = &registry->m_cues;
                 SoundCue* found = MapFind<SoundCue>(*map, "GAME_DESTRUCT");
                 if (found) {
@@ -2304,7 +2304,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetSampledDirection(m_position, true);
-            PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_STATZTABTOGGLE");
+            PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_STATZTABTOGGLE");
         }
     }
     m_statFlags[idx] = mode;
@@ -2320,7 +2320,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetUnsampledDirection(m_position, true);
-            PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_STATZTABTOGGLE");
+            PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_STATZTABTOGGLE");
         }
     }
     m_statFlags[idx] = STATUS_SAMPLE_NONE;
@@ -2345,7 +2345,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
 
         b32 ok = newobj->BuildStatzTabStatusBar(
             this,
-            g_gameReg->m_world,
+            g_gameReg->World(),
             static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + i),
             TAB_CONTROLS,
             rc,
@@ -2400,7 +2400,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                 tab->m_state = SLOT_READY;
                 frame = 0x1a;
                 PlayRegistryCueIfElapsed(
-                    g_gameReg->m_world->m_soundRegistry,
+                    g_gameReg->World()->SoundRegistry(),
                     "GAME_COOKINGCOMPLETE"
                 );
             }
@@ -3623,7 +3623,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
 
@@ -3716,7 +3716,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* dir = g_gameReg->m_world;
+    CDDrawSurfaceMgr* dir = g_gameReg->World();
     if (dir == NULL) {
         return 0;
     }
@@ -3837,7 +3837,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_owner = owner;
 
     i32 n = IDX(fragment) + 1;
-    CImage* frame = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", n);
+    CImage* frame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", n);
     m_sprite = frame;
     if (frame == NULL) {
 
@@ -3877,7 +3877,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_xDirection = static_cast<double>(deltaX) / dist;
     m_yDirection = static_cast<double>(dyv) / dist;
 
-    SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
+    SoundCueRegistry* h = g_gameReg->World()->SoundRegistry();
     PlayRegistryCueIfElapsed(h, "GAME_WARPSTONEFLY");
 
     m_currentX = static_cast<double>(srcX);
@@ -3895,7 +3895,7 @@ i32 CWarpStoneFly::SerializeDispatch(
     if (arc == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* lvl = g_gameReg->m_world;
+    CDDrawSurfaceMgr* lvl = g_gameReg->World();
     if (lvl == NULL) {
         return 0;
     }
@@ -3992,7 +3992,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->RenderFrame(
-        g_gameReg->m_world->m_drawTarget->m_backPair,
+        g_gameReg->World()->m_drawTarget->m_backPair,
         static_cast<i32>(m_currentX),
         static_cast<i32>(m_currentY),
         0

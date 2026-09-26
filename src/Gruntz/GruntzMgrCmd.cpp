@@ -83,9 +83,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 SoundCue* _c;
                 switch (static_cast<GruntzCommandId>(IDX(nID) & 0xffff)) {
                     case CHEAT_PROGRAMMING_GOD: {
-                        if (m_world->m_soundRegistry->m_silentMode == false) {
+                        if (m_world->SoundRegistry()->m_silentMode == false) {
                             SoundCue* _c = static_cast<SoundCue*>(
-                                (static_cast<SoundCueRegistry*>(m_world->m_soundRegistry))
+                                (static_cast<SoundCueRegistry*>(m_world->SoundRegistry()))
                                     ->Lookup("GAME_MINORCHEAT")
                             );
                             if (_c) {
@@ -249,7 +249,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (_key) {
                             _dr = NULL;
                             if (MapLookupById(
-                                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                                     _key,
                                     _dr
                                 )
@@ -358,9 +358,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_WAWA:
-                        if (m_world->m_soundRegistry->m_silentMode == false) {
+                        if (m_world->SoundRegistry()->m_silentMode == false) {
                             SoundCue* _c = static_cast<SoundCue*>(
-                                (static_cast<SoundCueRegistry*>(m_world->m_soundRegistry))
+                                (static_cast<SoundCueRegistry*>(m_world->SoundRegistry()))
                                     ->Lookup("GAME_WAWA")
                             );
                             if (_c) {
@@ -468,7 +468,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     case CHEAT_EXPLOSIONZ: {
                         g_explosionz ^= 1;
-                        SoundCueRegistry* _reg = m_world->m_soundRegistry;
+                        SoundCueRegistry* _reg = m_world->SoundRegistry();
                         if (_reg->m_silentMode == false) {
                             _c = NULL;
                             MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
@@ -911,7 +911,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         }
         case CMD_TOGGLE_SOUND: {
             if (m_world) {
-                SoundStream* soundStream = m_world->m_soundRegistry->m_soundStream;
+                SoundStream* soundStream = m_world->SoundRegistry()->m_soundStream;
                 if (soundStream) {
                     soundStream->StopAllStreams();
                 }

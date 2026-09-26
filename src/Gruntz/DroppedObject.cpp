@@ -198,7 +198,7 @@ i32 CObjectDropper::Update() {
                         i32 cy = fy >> TILE_SHIFT_PX;
                         u32 flags = plane->CellFlagsAt(cx, cy);
                         if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
-                            g_gameReg->m_world->m_childGroup->CreateSprite(
+                            g_gameReg->World()->m_childGroup->CreateSprite(
                                 0,
                                 fx,
                                 fy,
@@ -224,7 +224,7 @@ i32 CObjectDropper::Update() {
     if (m_travelDx > 0) {
         m_posX += drift;
         if (m_posX
-            >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_planePixelWidth)) {
+            >= static_cast<double>(g_gameReg->World()->m_level->m_mainPlane->m_planePixelWidth)) {
             m_posX = 0.0;
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
@@ -233,7 +233,7 @@ i32 CObjectDropper::Update() {
         m_posX -= drift;
         if (m_posX < 0.0) {
             m_posX = static_cast<double>(
-                (g_gameReg->m_world->m_level->m_mainPlane->m_planePixelWidth - 1)
+                (g_gameReg->World()->m_level->m_mainPlane->m_planePixelWidth - 1)
             );
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
@@ -242,7 +242,7 @@ i32 CObjectDropper::Update() {
     if (m_travelDy > 0) {
         m_posY += drift;
         if (m_posY
-            > static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_planePixelHeight)) {
+            > static_cast<double>(g_gameReg->World()->m_level->m_mainPlane->m_planePixelHeight)) {
             m_posY = 0.0;
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
@@ -251,7 +251,7 @@ i32 CObjectDropper::Update() {
         m_posY -= drift;
         if (m_posY < 0.0) {
             m_posY = static_cast<double>(
-                (g_gameReg->m_world->m_level->m_mainPlane->m_planePixelHeight - 1)
+                (g_gameReg->World()->m_level->m_mainPlane->m_planePixelHeight - 1)
             );
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
@@ -374,7 +374,7 @@ i32 CDroppedObject::AdvanceFall() {
                         default:
                             if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
                                 CreateParticlez(
-                                    g_gameReg->m_world->m_childGroup,
+                                    g_gameReg->World()->m_childGroup,
                                     x,
                                     m_landY,
                                     "LEVEL_DEATHSPLASH",
@@ -390,7 +390,7 @@ i32 CDroppedObject::AdvanceFall() {
         } else {
             if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
                 CreateParticlez(
-                    g_gameReg->m_world->m_childGroup,
+                    g_gameReg->World()->m_childGroup,
                     x,
                     m_landY,
                     "GAME_WATER",
@@ -469,7 +469,7 @@ RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         CWwdSpriteObject* o = m_object;
-        g_gameReg->m_world->m_childGroup->CreateSprite(
+        g_gameReg->World()->m_childGroup->CreateSprite(
             0,
             o->m_screenX,
             o->m_screenY,

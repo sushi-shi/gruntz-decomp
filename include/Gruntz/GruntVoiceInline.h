@@ -15,7 +15,7 @@
 
 inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
     CGameObject* resolved = LookupSerialRef(
-        g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+        g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
         m_sourceObjectId
     );
     if (resolved == NULL) {
@@ -32,7 +32,7 @@ inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
 
 inline b32 CGruntVoice::PositionIndicatorAtSourceObject() {
     CGameObject* resolved = LookupSerialRef(
-        g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+        g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
         m_sourceObjectId
     );
 
