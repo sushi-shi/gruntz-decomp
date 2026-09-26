@@ -641,18 +641,18 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     }
 
     bool eq;
-    eq = ANIMATION_ACT_EQUALS("F");
+    eq = IsAnimationAct("F");
     if (eq) {
         return;
     }
     bool ne;
-    ne = ANIMATION_ACT_DIFFERS("D");
+    ne = IsNotAnimationAct("D");
     if (ne) {
-        eq = ANIMATION_ACT_EQUALS("A");
+        eq = IsAnimationAct("A");
         if (!eq) {
-            eq = ANIMATION_ACT_EQUALS("K");
+            eq = IsAnimationAct("K");
             if (!eq) {
-                eq = ANIMATION_ACT_EQUALS("E");
+                eq = IsAnimationAct("E");
                 if (eq) {
 
                     SwitchAnimation(m_poseAttackIdle);
@@ -665,9 +665,9 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     }
                     goto store;
                 }
-                eq = ANIMATION_ACT_EQUALS("I");
+                eq = IsAnimationAct("I");
                 if (!eq) {
-                    eq = ANIMATION_ACT_EQUALS("M");
+                    eq = IsAnimationAct("M");
                     if (!eq) {
                         goto walk;
                     }
@@ -808,7 +808,7 @@ i32 CGrunt::StepArrivalDrop(
     bool eq;
 
     m_pendingTrigger = false;
-    eq = ANIMATION_ACT_DIFFERS("D");
+    eq = IsNotAnimationAct("D");
     if (!eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
         goto commitPhase;
     }
@@ -1359,7 +1359,7 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = true;
     } else {
-        if (ANIMATION_ACT_DIFFERS("L")) {
+        if (IsNotAnimationAct("L")) {
             m_entranceActive = false;
         }
     }

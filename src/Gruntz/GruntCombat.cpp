@@ -1005,9 +1005,9 @@ i32 CGrunt::HandleCombatContact(
     } else {
         FaceTowardPixel(otherPxX, otherPxY);
 
-        if (ANIMATION_ACT_DIFFERS("H")) {
-            if (ANIMATION_ACT_DIFFERS(DATA_COMPGEN(0x0020d2e8, "F"))) {
-                if (ANIMATION_ACT_DIFFERS("O")) {
+        if (IsNotAnimationAct("H")) {
+            if (IsNotAnimationAct(DATA_COMPGEN(0x0020d2e8, "F"))) {
+                if (IsNotAnimationAct("O")) {
                     ResetGeometry();
                 }
             }
@@ -1282,7 +1282,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    if (ANIMATION_ACT_EQUALS("O")) {
+    if (IsAnimationAct("O")) {
         return 1;
     }
 
@@ -1516,7 +1516,7 @@ i32 CGrunt::CommitNeighbor(
     }
 
     bool eq;
-    eq = ANIMATION_ACT_EQUALS("F");
+    eq = IsAnimationAct("F");
     if (eq) {
         return 0;
     }
@@ -1531,11 +1531,11 @@ i32 CGrunt::CommitNeighbor(
         return 1;
     }
 
-    eq = ANIMATION_ACT_EQUALS("I");
+    eq = IsAnimationAct("I");
     if (eq) {
         ClearMoveTileFx(this);
     } else {
-        eq = ANIMATION_ACT_EQUALS("N");
+        eq = IsAnimationAct("N");
         if (eq) {
             SettleTubeMove();
         }
@@ -1572,7 +1572,7 @@ RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
 
-        if (!ANIMATION_ACT_EQUALS("F")) {
+        if (!IsAnimationAct("F")) {
             if (m_stamina >= STAMINA_FULL) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
@@ -1838,9 +1838,9 @@ void CGrunt::StepBehavior(char*) {
     m_dwell += g_frameDelta;
 
     if (m_entranceDropActive != false) {
-        bool differs = ANIMATION_ACT_DIFFERS("A");
+        bool differs = IsNotAnimationAct("A");
         if (differs) {
-            differs = ANIMATION_ACT_DIFFERS("K");
+            differs = IsNotAnimationAct("K");
             if (differs) {
                 goto dropExpire;
             }
@@ -2055,7 +2055,7 @@ void CGrunt::StepBehavior(char*) {
                 goto afterTile;
             }
             if (m_entranceReason == PICKUP_BOMB) {
-                bool nameDiffers = ANIMATION_ACT_DIFFERS("M");
+                bool nameDiffers = IsNotAnimationAct("M");
                 if (!nameDiffers) {
                     goto afterTile;
                 }
@@ -2391,9 +2391,9 @@ void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
     AdvanceMotion();
     if (m_vehicleLoopSound != NULL) {
-        bool neL = ANIMATION_ACT_DIFFERS("L");
+        bool neL = IsNotAnimationAct("L");
         if (neL) {
-            bool neG = ANIMATION_ACT_DIFFERS("G");
+            bool neG = IsNotAnimationAct("G");
             if (neG) {
                 StopVehicleLoopSound();
             }
@@ -2411,7 +2411,7 @@ void CGrunt::FinalizeStep(char* name) {
             }
         }
     }
-    bool eqO = ANIMATION_ACT_EQUALS("O");
+    bool eqO = IsAnimationAct("O");
     if (eqO && !IsGruntAtSavedScreenPos(this)) {
         GruntDirectionCell c = m_entranceCell;
         i32 row = OppositeGridIndex(c.m_row);
@@ -2445,7 +2445,7 @@ void CGrunt::FinalizeStep(char* name) {
         return;
     }
 
-    if (ANIMATION_ACT_EQUALS("S")) {
+    if (IsAnimationAct("S")) {
         if (IsGruntAtSavedScreenPos(this)) {
             return;
         }
@@ -2479,7 +2479,7 @@ RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
         bool eq;
-        eq = ANIMATION_ACT_EQUALS("A");
+        eq = IsAnimationAct("A");
         if (eq && CoordCount() != 0) {
             Coord* co = GetHeadCoord();
             i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
@@ -2508,10 +2508,10 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    if (ANIMATION_ACT_DIFFERS("D")) {
-        if (ANIMATION_ACT_DIFFERS("N")) {
-            if (ANIMATION_ACT_DIFFERS("L")) {
-                if (ANIMATION_ACT_DIFFERS("M")) {
+    if (IsNotAnimationAct("D")) {
+        if (IsNotAnimationAct("N")) {
+            if (IsNotAnimationAct("L")) {
+                if (IsNotAnimationAct("M")) {
                     return;
                 }
                 if (m_bombRunActive != false) {
@@ -2629,17 +2629,17 @@ void CGrunt::AdvanceMotion() {
             }
         }
 
-        if (ANIMATION_ACT_EQUALS("N")) {
+        if (IsAnimationAct("N")) {
             return;
         }
-        if (ANIMATION_ACT_EQUALS("L")) {
+        if (IsAnimationAct("L")) {
             if (StepCompassMove() != 0) {
                 return;
             }
             m_toyTiming.m_interval = 0;
             return;
         }
-        if (ANIMATION_ACT_EQUALS("M")) {
+        if (IsAnimationAct("M")) {
             if (ClaimSwitchTile() != 0) {
                 return;
             }

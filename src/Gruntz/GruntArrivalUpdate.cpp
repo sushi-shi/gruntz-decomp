@@ -43,7 +43,7 @@
 
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
-    if (ANIMATION_ACT_EQUALS("I")) {
+    if (IsAnimationAct("I")) {
         return 1;
     }
     this->m_defenderPx = this->m_lastTilePx;

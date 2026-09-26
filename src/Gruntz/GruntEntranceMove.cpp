@@ -521,7 +521,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
             MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
     }
 
-    if (ANIMATION_ACT_EQUALS("D")) {
+    if (IsAnimationAct("D")) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* buf = EntranceCell()->WalkName().GetBuffer(0);
@@ -529,7 +529,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         return 1;
     }
 
-    if (ANIMATION_ACT_EQUALS("A")) {
+    if (IsAnimationAct("A")) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* buf = EntranceCell()->IdleName().GetBuffer(0);
@@ -598,15 +598,15 @@ i32 CGrunt::StepArrivalCommit() {
 
     bool eq;
 
-    eq = ANIMATION_ACT_DIFFERS("A");
+    eq = IsNotAnimationAct("A");
     if (!eq) {
         goto finalize;
     }
-    eq = ANIMATION_ACT_DIFFERS("D");
+    eq = IsNotAnimationAct("D");
     if (!eq) {
         goto finalize;
     }
-    eq = ANIMATION_ACT_EQUALS("I");
+    eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
@@ -872,16 +872,16 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool ne;
-    ne = ANIMATION_ACT_DIFFERS("A");
+    ne = IsNotAnimationAct("A");
     if (!ne) {
         goto retZero;
     }
-    ne = ANIMATION_ACT_DIFFERS("D");
+    ne = IsNotAnimationAct("D");
     if (!ne) {
         goto retZero;
     }
     bool eq;
-    eq = ANIMATION_ACT_EQUALS("I");
+    eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
@@ -903,7 +903,7 @@ i32 CGrunt::FinishActiveAction() {
         return 1;
     }
 
-    eq = ANIMATION_ACT_EQUALS("K");
+    eq = IsAnimationAct("K");
     if (!eq || m_entranceArmed == false) {
         goto retZero;
     }

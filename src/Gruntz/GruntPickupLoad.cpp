@@ -38,11 +38,11 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
         }
 
-        bool eqA = ANIMATION_ACT_EQUALS("A");
+        bool eqA = IsAnimationAct("A");
         if (!eqA) {
-            bool eqD = ANIMATION_ACT_EQUALS("D");
+            bool eqD = IsAnimationAct("D");
             if (!eqD) {
-                bool eqE = ANIMATION_ACT_EQUALS("E");
+                bool eqE = IsAnimationAct("E");
                 if (!eqE) {
                     return 0;
                 }

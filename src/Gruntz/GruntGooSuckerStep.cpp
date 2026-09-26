@@ -66,7 +66,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
 
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
-    bool eqI = ANIMATION_ACT_EQUALS("I");
+    bool eqI = IsAnimationAct("I");
     if (eqI) {
         return 1;
     }

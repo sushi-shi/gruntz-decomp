@@ -44,7 +44,7 @@
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::StepTimeBomberBehavior() {
     m_neighborScanEnabled = false;
-    bool isFlag = ANIMATION_ACT_EQUALS("F");
+    bool isFlag = IsAnimationAct("F");
     if (isFlag) {
         return 1;
     }
@@ -76,7 +76,7 @@ i32 CGrunt::StepTimeBomberBehavior() {
     goto common;
 
 state2: {
-    bool isFlagObj = ANIMATION_ACT_EQUALS("F");
+    bool isFlagObj = IsAnimationAct("F");
     if (isFlagObj) {
         goto common;
     }

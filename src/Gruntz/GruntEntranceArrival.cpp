@@ -607,7 +607,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
 
     i32 applied = 0;
 
-    if (ANIMATION_ACT_DIFFERS("A") && chooseIdleVariant == 0) {
+    if (IsNotAnimationAct("A") && chooseIdleVariant == 0) {
 
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindowTiming.Start(0x3a98);
@@ -776,11 +776,11 @@ tail:
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
     bool eq;
-    eq = ANIMATION_ACT_EQUALS("D");
+    eq = IsAnimationAct("D");
     if (eq) {
         return 0;
     }
-    eq = ANIMATION_ACT_EQUALS("L");
+    eq = IsAnimationAct("L");
     if (eq) {
         return 0;
     }
@@ -788,7 +788,7 @@ i32 CGrunt::StepEntranceReinit() {
     m_arrivalVoiceTiming.Start(0x7530);
     m_neighborScanEnabled = false;
 
-    eq = ANIMATION_ACT_EQUALS("I");
+    eq = IsAnimationAct("I");
     if (eq) {
         ClearMoveTileFx(this);
     }
@@ -1039,15 +1039,15 @@ i32 CGrunt::StepCombatReaction(
 
     bool ne;
     bool eq;
-    ne = ANIMATION_ACT_DIFFERS("A");
+    ne = IsNotAnimationAct("A");
     if (!ne) {
         goto tail;
     }
-    ne = ANIMATION_ACT_DIFFERS("D");
+    ne = IsNotAnimationAct("D");
     if (!ne) {
         goto tail;
     }
-    eq = ANIMATION_ACT_EQUALS("I");
+    eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
@@ -1061,7 +1061,7 @@ i32 CGrunt::StepCombatReaction(
     if (SettleActiveKnockback()) {
         goto tail;
     }
-    eq = ANIMATION_ACT_EQUALS("Q");
+    eq = IsAnimationAct("Q");
     if (eq) {
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
         return 0;
@@ -1217,7 +1217,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
 // @early-stop
 RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
-    bool eq = ANIMATION_ACT_EQUALS("I");
+    bool eq = IsAnimationAct("I");
     if (eq) {
         ClearMoveTileFx(this);
     } else {

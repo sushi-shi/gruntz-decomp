@@ -398,31 +398,31 @@ i32 CBattlezMapConfig::StepBoard() {
                     continue;
                 }
                 bool eq;
-                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
+                eq = unit->IsAnimationAct("I");
                 if (eq) {
                     continue;
                 }
-                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
+                eq = unit->IsAnimationAct("G");
                 if (eq) {
                     continue;
                 }
-                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
+                eq = unit->IsAnimationAct("L");
                 if (eq) {
                     continue;
                 }
-                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
+                eq = unit->IsAnimationAct("P");
                 if (eq) {
                     continue;
                 }
-                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
+                eq = unit->IsAnimationAct("J");
                 if (eq) {
                     continue;
                 }
-                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
+                eq = unit->IsAnimationAct("C");
                 if (eq) {
                     continue;
                 }
-                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
+                eq = unit->IsAnimationAct("R");
                 if (eq) {
                     continue;
                 }
@@ -625,7 +625,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     if (!unit->IsArrivalRerollPending()) {
                         RouteToNearbyPickup(unit);
                         if (unit->m_poweredUp != false) {
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "A"));
+                            eq = unit->IsAnimationAct("A");
                             if (eq) {
                                 goto resetEntrance;
                             }
@@ -904,7 +904,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             char nd;
-                            nd = (ANIMATION_ACT_DIFFERS_FOR(unit, "D"));
+                            nd = unit->IsNotAnimationAct("D");
                             if (nd) {
                                 ResolveArrival(unit);
                             }
@@ -970,7 +970,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
         if (unit->CoordCount() != 0) {
-            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "A"));
+            eq = unit->IsAnimationAct("A");
             if (eq) {
                 Coord* gc = unit->GetHeadCoord();
                 i32 gx = gc->m_x;
@@ -1691,23 +1691,23 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
         return 0;
     }
     bool eq;
-    eq = (ANIMATION_ACT_EQUALS_FOR(other, "J"));
+    eq = other->IsAnimationAct("J");
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(other, "C"));
+    eq = other->IsAnimationAct("C");
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(other, "R"));
+    eq = other->IsAnimationAct("R");
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(other, "G"));
+    eq = other->IsAnimationAct("G");
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(other, "L"));
+    eq = other->IsAnimationAct("L");
     if (eq) {
         return 0;
     }
@@ -2875,23 +2875,23 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                 continue;
             }
             bool ne;
-            ne = ANIMATION_ACT_DIFFERS_FOR(u, "C");
+            ne = u->IsNotAnimationAct("C");
             if (!ne) {
                 continue;
             }
-            ne = ANIMATION_ACT_DIFFERS_FOR(u, "R");
+            ne = u->IsNotAnimationAct("R");
             if (!ne) {
                 continue;
             }
-            ne = ANIMATION_ACT_DIFFERS_FOR(u, "J");
+            ne = u->IsNotAnimationAct("J");
             if (!ne) {
                 continue;
             }
-            ne = ANIMATION_ACT_DIFFERS_FOR(u, "G");
+            ne = u->IsNotAnimationAct("G");
             if (!ne) {
                 continue;
             }
-            ne = ANIMATION_ACT_DIFFERS_FOR(u, "L");
+            ne = u->IsNotAnimationAct("L");
             if (!ne) {
                 continue;
             }
@@ -3097,24 +3097,24 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                 && cand->m_deathAnimStarted == false && cand->m_entranceActive == false
                 && cand->m_poweredUp == false) {
                 bool eq;
-                eq = (ANIMATION_ACT_EQUALS_FOR(cand, "I"));
+                eq = cand->IsAnimationAct("I");
                 if (!eq) {
-                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "G"));
+                    eq = cand->IsAnimationAct("G");
                 }
                 if (!eq) {
-                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "L"));
+                    eq = cand->IsAnimationAct("L");
                 }
                 if (!eq) {
-                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "P"));
+                    eq = cand->IsAnimationAct("P");
                 }
                 if (!eq) {
-                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "J"));
+                    eq = cand->IsAnimationAct("J");
                 }
                 if (!eq) {
-                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "C"));
+                    eq = cand->IsAnimationAct("C");
                 }
                 if (!eq) {
-                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "R"));
+                    eq = cand->IsAnimationAct("R");
                 }
                 if (!eq && cand != unit && cand->m_defenderState != AISTATE_RETURN
                     && cand->m_defenderState != AISTATE_RETREAT) {
