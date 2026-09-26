@@ -35,6 +35,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -1425,20 +1426,8 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         i32 key;
         ar->Read(&key, sizeof(key));
         if (key != 0) {
-            CGameObject* found = NULL;
-            CGameObject* looked = NULL;
-            if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found)
-                != false) {
-                looked = found;
-            }
-            CWwdSpriteObject* obj;
-            if (looked == NULL) {
-                obj = NULL;
-            } else {
-                obj = (looked->GetClassId() == CLASSID_SERIALREF)
-                          ? static_cast<CWwdSpriteObject*>(looked)
-                          : NULL;
-            }
+            CWwdSpriteObject* obj =
+                LookupSerialRef(world->m_childGroup->m_registeredGameObjectsById, key);
             m_goal = obj;
             if (obj == NULL) {
                 return 0;

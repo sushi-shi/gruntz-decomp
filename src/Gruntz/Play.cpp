@@ -77,6 +77,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockMacros.h>
 #include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -6576,26 +6577,12 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         ar->Read(&m_cursorFrameCountdownMs, sizeof(m_cursorFrameCountdownMs));
         ar->Read(&m_cursorFrameIndex, sizeof(m_cursorFrameIndex));
         g_serialCounter++;
-        ar->Read(&found, sizeof(found));
-
-        CGameObject* oe = NULL;
-        CWwdSpriteObject* sink;
-        if (MapLookup(
-                res->m_childGroup->m_registeredGameObjectsById,
-                static_cast<void*>(found),
-                oe
-            )) {
-            if (oe == NULL) {
-                sink = NULL;
-            } else {
-                sink = oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(oe)
-                                                             : NULL;
-            }
-        } else {
-            sink = NULL;
-        }
+        i32 id;
+        ar->Read(&id, sizeof(id));
+        CWwdSpriteObject* sink =
+            LookupSerialRef(res->m_childGroup->m_registeredGameObjectsById, id);
         m_cursorSnapSprite = sink;
-        if (sink == NULL && found != NULL) {
+        if (sink == NULL && id != 0) {
             return 0;
         }
     }

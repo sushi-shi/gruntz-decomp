@@ -44,6 +44,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
@@ -4121,16 +4122,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     i32 seq;
     s->Read(&seq, sizeof(seq));
 
-    CGameObject* obj = NULL;
-    CWwdSpriteObject* barSprite;
-    if (MapLookupById(gm->m_childGroup->m_registeredGameObjectsById, seq, obj) == false) {
-        barSprite = NULL;
-    } else if (obj == NULL) {
-        barSprite = NULL;
-    } else {
-        barSprite =
-            (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdSpriteObject*>(obj) : NULL;
-    }
+    CWwdSpriteObject* barSprite =
+        LookupSerialRef(gm->m_childGroup->m_registeredGameObjectsById, seq);
     m_barSprite = barSprite;
     if (barSprite == NULL && seq != 0) {
         return 0;
