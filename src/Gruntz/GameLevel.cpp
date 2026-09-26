@@ -627,8 +627,7 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
             result = MoveClimbing(target, destX, destY, moveFlags);
             break;
         case MOVE_DIRECT:
-            target->m_screenX = destX;
-            target->m_screenY = destY;
+            SET_SCREEN_POS(target, destX, destY);
             break;
     }
 
@@ -718,8 +717,7 @@ rebracket:
     t->m_moveMode = MOVE_CLIMBING;
 
 commit:
-    t->m_screenX = destX;
-    t->m_screenY = destY;
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -779,8 +777,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
         }
     }
 
-    t->m_screenX = destX;
-    t->m_screenY = destY;
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -816,8 +813,7 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
         }
     }
 
-    t->m_screenX = destX;
-    t->m_screenY = destY;
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -858,8 +854,7 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         result = StepAxisHi(t, coord, cursor, &coord, moveFlags);
     }
 
-    t->m_screenX = coord;
-    t->m_screenY = cursor;
+    SET_SCREEN_POS(t, coord, cursor);
     return result;
 }
 
@@ -1388,20 +1383,7 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, 
 
 RVA(0x0015ffe0, 0x99)
 i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
-    if (x < 0) {
-        x = 0;
-    } else {
-        if (x >= m_mainPlane->m_planePixelWidth) {
-            x = m_mainPlane->m_planePixelWidth - 1;
-        }
-    }
-    if (y < 0) {
-        y = 0;
-    } else {
-        if (y >= m_mainPlane->m_planePixelHeight) {
-            y = m_mainPlane->m_planePixelHeight - 1;
-        }
-    }
+    CLAMP_PIXEL_TO_PLANE(x, y, m_mainPlane);
     CDDrawWorkerHost* pl = m_mainPlane;
     i32 qx = x >> pl->m_shiftX;
     i32 alignedX = qx << pl->m_shiftX;
@@ -1811,21 +1793,9 @@ RVA(0x00161270, 0xb2)
 TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
 
     i32 px = coord;
-    if (px < 0) {
-        px = 0;
-    } else {
-        if (px >= m_mainPlane->m_planePixelWidth) {
-            px = m_mainPlane->m_planePixelWidth - 1;
-        }
-    }
+    CLAMP_TO_EXTENT(px, m_mainPlane->m_planePixelWidth);
     i32 py = limit;
-    if (py < 0) {
-        py = 0;
-    } else {
-        if (py >= m_mainPlane->m_planePixelHeight) {
-            py = m_mainPlane->m_planePixelHeight - 1;
-        }
-    }
+    CLAMP_TO_EXTENT(py, m_mainPlane->m_planePixelHeight);
     CDDrawWorkerHost* pl = m_mainPlane;
     i32 qx = px >> pl->m_shiftX;
     i32 qy = py >> pl->m_shiftY;

@@ -151,10 +151,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (slot->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, slot)) {
-                return 1;
-            }
-            if (slot->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, slot)) {
+            if (!(GRUNT_AT_SAVED_SCREEN_POS(slot))) {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
@@ -187,10 +184,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 goto ph1;
             }
-            if (slot->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, slot)) {
-                goto ph1;
-            }
-            if (slot->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, slot)) {
+            if (!(GRUNT_AT_SAVED_SCREEN_POS(slot))) {
                 goto ph1;
             }
             COMMIT_GRUNT_NEIGHBOR(slot);

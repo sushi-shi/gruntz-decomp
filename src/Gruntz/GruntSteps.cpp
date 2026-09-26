@@ -50,6 +50,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Wap32/Object.h>
 #include <Wap32/TileGeometry.h>
 
@@ -274,15 +275,13 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         i32 coordY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (node->m_next != NULL) {
             coord = &node->m_value;
-            coord->m_x = coordX;
-            coord->m_y = coordY;
+            coord->Set(coordX, coordY);
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
         m_coordList.AddHead(coord);
     }
 
-    m_object->m_screenX = m_commitPx.m_x;
-    m_object->m_screenY = m_commitPx.m_y;
+    SET_SCREEN_POS(m_object, m_commitPx.m_x, m_commitPx.m_y);
     object = m_object;
     if (object->m_sortKey != object->m_screenY + 0x186a0) {
         object->m_sortKey = object->m_screenY + 0x186a0;
@@ -321,8 +320,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
 
 RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 clearArrivalState) {
-    m_object->m_screenX = m_lastTilePx.m_x;
-    m_object->m_screenY = m_lastTilePx.m_y;
+    SET_SCREEN_POS(m_object, m_lastTilePx.m_x, m_lastTilePx.m_y);
     CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
     SetEntrancePos(clearArrivalState, 1);
@@ -342,16 +340,10 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 
     RECT r1 = m_reachRect;
     RECT r2 = m_reachExclusionRect;
-    r1.left += dx;
-    r1.top += dy;
-    r1.right += dx;
-    r1.bottom += dy;
+    OFFSET_RECT_COMPONENTS(r1, dx, dy);
     r1.right++;
     r1.bottom++;
-    r2.left += dx;
-    r2.top += dy;
-    r2.right += dx;
-    r2.bottom += dy;
+    OFFSET_RECT_COMPONENTS(r2, dx, dy);
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
@@ -382,16 +374,10 @@ i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
 
     RECT r1 = m_vehicleContactRect;
     RECT r2 = m_vehicleContactExclusionRect;
-    r1.left += dx;
-    r1.top += dy;
-    r1.right += dx;
-    r1.bottom += dy;
+    OFFSET_RECT_COMPONENTS(r1, dx, dy);
     r1.right++;
     r1.bottom++;
-    r2.left += dx;
-    r2.top += dy;
-    r2.right += dx;
-    r2.bottom += dy;
+    OFFSET_RECT_COMPONENTS(r2, dx, dy);
 
     if (m_vehiclePickupType == PICKUP_NONE) {
         return 0;
@@ -776,8 +762,7 @@ i32 CGrunt::ClaimSwitchTile() {
     nb->m_rowBytes[ty][tx * 7 * 4 + 3] |= 0x20;
     nb->m_rowInts[ty][tx * 7 + 1] = owner;
 
-    m_lastTilePx.m_x = nextX;
-    m_lastTilePx.m_y = nextY;
+    m_lastTilePx.Set(nextX, nextY);
     ComputeFacing(1.0);
     m_arrivalPending = true;
     return 1;
@@ -794,8 +779,10 @@ i32 CGrunt::SetArrivalTarget(
     cell.Set(targetPlayerIndex, targetUnitIndex);
     m_arrivalCell = cell;
     m_arrivalActive = true;
-    m_defenderPx.m_x = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_defenderPx.m_y = (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_defenderPx.Set(
+        (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX,
+        (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX
+    );
     return 1;
 }
 
@@ -889,16 +876,14 @@ applyTail:
     m_triggerMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
     {
         DECLARE_TILE_CENTER_PIXEL_PAIR(spawnPx, spawnPy, tileX, tileY)
-        m_object->m_screenX = spawnPx;
-        m_object->m_screenY = spawnPy;
+        SET_SCREEN_POS(m_object, spawnPx, spawnPy);
         {
             CGruntzMapMgr* board = g_gameReg->m_tileGrid;
             i32 gx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 gy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
             board->m_rowInts[gy][gx * 7] &= BRICKZ_CELL_UNOCCUPIED_MASK;
             board->m_rowInts[gy][gx * 7 + 1] = -1;
-            m_lastTilePx.m_x = -1;
-            m_lastTilePx.m_y = -1;
+            m_lastTilePx.Set(-1, -1);
         }
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {

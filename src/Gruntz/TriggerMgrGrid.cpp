@@ -447,8 +447,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
     Coord* slot = NULL;
     if (node->m_next != NULL) {
         slot = &node->m_value;
-        slot->m_x = playerIndex;
-        slot->m_y = unitIndex;
+        slot->Set(playerIndex, unitIndex);
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     m_recList.AddTail(slot);
@@ -469,16 +468,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     CGameLevel* level = m_world->m_level;
     i32 cx = x;
     i32 cy = y;
-    if (cx < 0) {
-        cx = 0;
-    } else if (cx >= level->m_mainPlane->m_planePixelWidth) {
-        cx = level->m_mainPlane->m_planePixelWidth - 1;
-    }
-    if (cy < 0) {
-        cy = 0;
-    } else if (cy >= level->m_mainPlane->m_planePixelHeight) {
-        cy = level->m_mainPlane->m_planePixelHeight - 1;
-    }
+    CLAMP_PIXEL_TO_PLANE(cx, cy, level->m_mainPlane);
     i32 tx = cx >> level->m_mainPlane->m_shiftX;
     i32 ty = cy >> level->m_mainPlane->m_shiftY;
     i32 subX = cx - (tx << level->m_mainPlane->m_shiftX);

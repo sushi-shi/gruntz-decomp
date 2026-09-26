@@ -25,17 +25,8 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
     CGameLevel* level = m_attrMgr->m_level;
 
     i32 cx = x;
-    if (x < 0) {
-        cx = 0;
-    } else if (x >= level->m_mainPlane->m_tileColumns) {
-        cx = level->m_mainPlane->m_tileColumns - 1;
-    }
     i32 cy = y;
-    if (y < 0) {
-        cy = 0;
-    } else if (y >= level->m_mainPlane->m_tileRows) {
-        cy = level->m_mainPlane->m_tileRows - 1;
-    }
+    CLAMP_TILE_TO_PLANE(cx, cy, level->m_mainPlane);
     i32 id = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
     TileCollisionKind typeCode = level->CollisionAtHandle(id, 0, 0);
     i32 oldFlags = cell->m_flags;

@@ -16,6 +16,7 @@
 #include <Gruntz/State.h>
 #include <Image/ImageClipMacros.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
@@ -475,10 +476,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 bottom = m_height + y - 1;
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
-    s.left = right - d.right;
-    s.top = d.top - y;
-    s.right = s.left + w;
-    s.bottom = s.top + h;
+    SET_RECT_COMPONENTS(s, right - d.right, d.top - y, s.left + w, s.top + h);
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT;
@@ -500,10 +498,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 bottom = m_height + y - 1;
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
-    s.left = d.left - x;
-    s.top = bottom - d.bottom;
-    s.right = s.left + w;
-    s.bottom = s.top + h;
+    SET_RECT_COMPONENTS(s, d.left - x, bottom - d.bottom, s.left + w, s.top + h);
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORUPDOWN;

@@ -381,11 +381,7 @@ i32 CGrunt::RearmEntranceDrop() {
 
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-        GruntDirectionCell cell = m_entranceCell;
-        i32 row = cell.m_row;
-        i32 column = cell.m_column;
-
-        const char* name = m_cells[3 * row + column].ItemName().GetBuffer(0);
+        const char* name = EntranceCell()->ItemName().GetBuffer(0);
         SetImageFrameByName(name, frame);
     }
 
@@ -551,9 +547,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (eqWalk) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        GruntDirectionCell cell = m_entranceCell;
-        i32 idx = 3 * cell.m_row + cell.m_column;
-        char* buf = m_cells[idx].WalkName().GetBuffer(0);
+        char* buf = EntranceCell()->WalkName().GetBuffer(0);
         SetImageFrameByName(buf, frame);
         return 1;
     }
@@ -563,9 +557,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (eqIdle) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        GruntDirectionCell cell = m_entranceCell;
-        i32 idx = 3 * cell.m_row + cell.m_column;
-        char* buf = m_cells[idx].IdleName().GetBuffer(0);
+        char* buf = EntranceCell()->IdleName().GetBuffer(0);
         SetImageFrameByName(buf, frame);
     }
     return 1;

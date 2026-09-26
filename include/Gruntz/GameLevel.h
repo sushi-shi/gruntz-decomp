@@ -26,20 +26,7 @@ static const i32 s_tileClear = -1;
     do {                                                                                           \
         i32 py_ = (Y);                                                                             \
         i32 px_ = (X);                                                                             \
-        if (px_ < 0) {                                                                             \
-            px_ = 0;                                                                               \
-        } else {                                                                                   \
-            if (px_ >= (LVL)->m_mainPlane->m_planePixelWidth) {                                    \
-                px_ = (LVL)->m_mainPlane->m_planePixelWidth - 1;                                   \
-            }                                                                                      \
-        }                                                                                          \
-        if (py_ < 0) {                                                                             \
-            py_ = 0;                                                                               \
-        } else {                                                                                   \
-            if (py_ >= (LVL)->m_mainPlane->m_planePixelHeight) {                                   \
-                py_ = (LVL)->m_mainPlane->m_planePixelHeight - 1;                                  \
-            }                                                                                      \
-        }                                                                                          \
+        CLAMP_PIXEL_TO_PLANE(px_, py_, (LVL)->m_mainPlane);                                        \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
         i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
         i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
@@ -55,20 +42,7 @@ static const i32 s_tileClear = -1;
     do {                                                                                           \
         i32 py_ = (Y);                                                                             \
         i32 px_ = (X);                                                                             \
-        if (px_ < 0) {                                                                             \
-            px_ = 0;                                                                               \
-        } else {                                                                                   \
-            if (px_ >= (LVL)->m_mainPlane->m_planePixelWidth) {                                    \
-                px_ = (LVL)->m_mainPlane->m_planePixelWidth - 1;                                   \
-            }                                                                                      \
-        }                                                                                          \
-        if (py_ < 0) {                                                                             \
-            py_ = 0;                                                                               \
-        } else {                                                                                   \
-            if (py_ >= (LVL)->m_mainPlane->m_planePixelHeight) {                                   \
-                py_ = (LVL)->m_mainPlane->m_planePixelHeight - 1;                                  \
-            }                                                                                      \
-        }                                                                                          \
+        CLAMP_PIXEL_TO_PLANE(px_, py_, (LVL)->m_mainPlane);                                        \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
         i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
         i32 qy_ = py_ >> pl_->m_shiftY;                                                            \

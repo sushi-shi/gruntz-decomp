@@ -170,4 +170,27 @@ public:
 #define SET_WORKER_HOST_CELL(plane, x, y, id)                                                      \
     (plane)->m_tileHandles[(plane)->m_tileRowOffsets[y] + x] = id
 
+#define TILE_SHIFT_INTO(shift, scratch, extent)                                                    \
+    (shift) = 0;                                                                                   \
+    (scratch) = (extent);                                                                          \
+    while ((scratch) > 1) {                                                                        \
+        (scratch) >>= 1;                                                                           \
+        (shift) = (shift) + 1;                                                                     \
+    }
+
+#define CLAMP_TO_EXTENT(value, extent)                                                             \
+    if ((value) < 0) {                                                                             \
+        (value) = 0;                                                                               \
+    } else if ((value) >= (extent)) {                                                              \
+        (value) = (extent) - 1;                                                                    \
+    }
+
+#define CLAMP_TILE_TO_PLANE(tileX, tileY, plane)                                                   \
+    CLAMP_TO_EXTENT(tileX, (plane)->m_tileColumns)                                                 \
+    CLAMP_TO_EXTENT(tileY, (plane)->m_tileRows)
+
+#define CLAMP_PIXEL_TO_PLANE(pixelX, pixelY, plane)                                                \
+    CLAMP_TO_EXTENT(pixelX, (plane)->m_planePixelWidth)                                            \
+    CLAMP_TO_EXTENT(pixelY, (plane)->m_planePixelHeight)
+
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

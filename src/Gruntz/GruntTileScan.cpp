@@ -13,9 +13,11 @@
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 
 #include <stdlib.h>
@@ -39,15 +41,15 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
         if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordCount() == 0) {
             CMapMgr* grid = m_board;
             RECT box;
-            box.left = g->ScanCell().m_x - 5;
-            box.top = g->ScanCell().m_y - 5;
-            box.right = g->ScanCell().m_x + 5;
-            box.bottom = (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5;
+            SET_RECT_COMPONENTS(
+                box,
+                g->ScanCell().m_x - 5,
+                g->ScanCell().m_y - 5,
+                g->ScanCell().m_x + 5,
+                (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5
+            );
             RECT gb;
-            gb.left = 0;
-            gb.top = 0;
-            gb.right = m_board->m_width;
-            gb.bottom = m_board->m_height;
+            SET_RECT_COMPONENTS(gb, 0, 0, m_board->m_width, m_board->m_height);
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
                 u32 hits = 0;
@@ -61,36 +63,14 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                             i32 flags = cell->m_flags;
                             if (flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    RECT hitClip;
-                                    hitClip.left = 0;
-                                    hitClip.top = 0;
-                                    hitClip.right = grid->m_width;
-                                    hitClip.bottom = grid->m_height;
-                                    RECT hitFull = CRect(0, 0, grid->m_width, grid->m_height);
-                                    RECT* hitDst = &grid->m_bounds;
-                                    if (!IntersectRect(hitDst, &hitFull, &hitClip)) {
-                                        *hitDst = hitFull;
-                                    }
-                                    grid->m_gridW = hitDst->right - hitDst->left;
-                                    grid->m_gridH = hitDst->bottom - hitDst->top;
+                                    SCAN_BOUNDS_PLAINCLIP(grid);
                                     return 1;
                                 }
                                 hits++;
                             } else if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                                        && cell->m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    RECT brickClip;
-                                    brickClip.left = 0;
-                                    brickClip.top = 0;
-                                    brickClip.right = grid->m_width;
-                                    brickClip.bottom = grid->m_height;
-                                    RECT brickFull = CRect(0, 0, grid->m_width, grid->m_height);
-                                    RECT* brickDst = &grid->m_bounds;
-                                    if (!IntersectRect(brickDst, &brickFull, &brickClip)) {
-                                        *brickDst = brickFull;
-                                    }
-                                    grid->m_gridW = brickDst->right - brickDst->left;
-                                    grid->m_gridH = brickDst->bottom - brickDst->top;
+                                    SCAN_BOUNDS_PLAINCLIP(grid);
                                     return 1;
                                 }
                                 hits++;
@@ -101,14 +81,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                 }
             }
             {
-                CRect tailClip(0, 0, grid->m_width, grid->m_height);
-                RECT tailFull = CRect(0, 0, grid->m_width, grid->m_height);
-                RECT* tailDst = &grid->m_bounds;
-                if (!IntersectRect(tailDst, &tailFull, &tailClip)) {
-                    *tailDst = tailFull;
-                }
-                grid->m_gridW = tailDst->right - tailDst->left;
-                grid->m_gridH = tailDst->bottom - tailDst->top;
+                GRID_CLIP_NULL(grid);
             }
             if (m_attackWaypoints.GetSize() != 0) {
 

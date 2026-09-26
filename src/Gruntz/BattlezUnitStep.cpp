@@ -33,6 +33,7 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
@@ -234,8 +235,7 @@ RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {
     Coord out;
     CWwdSpriteObject* object = m_object;
-    out.m_x = object->m_screenX;
-    out.m_y = object->m_screenY;
+    out.Set(object->m_screenX, object->m_screenY);
     ScreenTile(&out);
     return out;
 }
@@ -259,15 +259,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             }
 
             CMapMgr* board = m_board;
-            CRect r1(0, 0, board->m_width, board->m_height);
-            RECT rc;
-            rc = CRect(0, 0, board->m_width, board->m_height);
-            RECT* rcDst = &board->m_bounds;
-            if (!IntersectRect(rcDst, &rc, &r1)) {
-                *rcDst = rc;
-            }
-            board->m_gridW = rcDst->right - rcDst->left;
-            board->m_gridH = rcDst->bottom - rcDst->top;
+            GRID_CLIP_NULL(board);
             if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordCount() == 0) {
                 i32 flags = unit->m_routeBlockedMask;
                 unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
@@ -438,20 +430,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             }
             case AISTATE_BATTLEZ_FINAL_ROUTE: {
                 CMapMgr* board = m_board;
-                RECT box2;
-                box2.left = 0;
-                box2.top = 0;
-                i32 h = board->m_height;
-                i32 w = board->m_width;
-                box2.right = w;
-                box2.bottom = h;
-                RECT rc = CRect(0, 0, w, h);
-                RECT* rcDst = &board->m_bounds;
-                if (!IntersectRect(rcDst, &rc, &box2)) {
-                    *rcDst = rc;
-                }
-                board->m_gridW = rcDst->right - rcDst->left;
-                board->m_gridH = rcDst->bottom - rcDst->top;
+                SCAN_BOUNDS_PLAINCLIP(board);
                 i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
                 if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     goto routeSuccess;

@@ -930,16 +930,7 @@ void* CTileTriggerContainer::DeserializeLogic(
             CGameLevel* level = g_gameReg->m_world->m_level;
             i32 x = obj->m_tileX;
             i32 y = obj->m_tileY;
-            if (x < 0) {
-                x = 0;
-            } else if (x >= level->m_mainPlane->m_tileColumns) {
-                x = level->m_mainPlane->m_tileColumns - 1;
-            }
-            if (y < 0) {
-                y = 0;
-            } else if (y >= level->m_mainPlane->m_tileRows) {
-                y = level->m_mainPlane->m_tileRows - 1;
-            }
+            CLAMP_TILE_TO_PLANE(x, y, level->m_mainPlane);
             i32 cell = level->m_mainPlane->m_tileRowOffsets[y] + x;
             i32 tile = level->m_mainPlane->m_tileHandles[cell];
             TileCollisionKind tileKind = level->CollisionAtHandle(tile, 0, 0);

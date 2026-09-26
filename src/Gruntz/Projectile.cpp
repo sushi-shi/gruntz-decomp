@@ -229,20 +229,8 @@ i32 CProjectile::LoadProjectileSprites(
     dy /= len;
     m_velY = dy;
 
-    if (vx > 0.0) {
-        m_roundX = 0.5;
-    } else if (vx < 0.0) {
-        m_roundX = -0.5;
-    } else {
-        m_roundX = 0.0;
-    }
-    if (dy > 0.0) {
-        m_roundY = 0.5;
-    } else if (dy < 0.0) {
-        m_roundY = -0.5;
-    } else {
-        m_roundY = 0.0;
-    }
+    ROUND_BIAS_FOR_SIGN(m_roundX, vx);
+    ROUND_BIAS_FOR_SIGN(m_roundY, dy);
     m_flightDist = fabs(len);
     m_curX = m_object->m_screenX;
     m_curY = m_object->m_screenY;
@@ -378,11 +366,9 @@ void CProjectile::AdvanceMotion() {
                 }
             }
         }
-        m_object->m_screenX = offX + m_curX;
-        m_object->m_screenY = offY + m_curY;
+        SET_SCREEN_POS(m_object, offX + m_curX, offY + m_curY);
         if (m_shadow != NULL) {
-            m_shadow->m_screenX = localX;
-            m_shadow->m_screenY = yRes;
+            SET_SCREEN_POS(m_shadow, localX, yRes);
         }
         return;
     }
@@ -657,8 +643,7 @@ void CProjectile::ScanTargets(i32 impact) {
             CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
                 slot = &p->m_value;
-                slot->m_x = hitPlayerIndex;
-                slot->m_y = hitUnitIndex;
+                slot->Set(hitPlayerIndex, hitUnitIndex);
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_hitList.AddTail(slot);

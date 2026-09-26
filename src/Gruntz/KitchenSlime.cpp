@@ -187,27 +187,20 @@ i32 CKitchenSlime::Tick() {
         newY = static_cast<i32>(floor(t));
         i32 ty = m_tilePosition.m_y;
         m_stepMag = fabs(m_posY - static_cast<double>(ty));
-        if (newY > ty) {
-            Level()->m_screenX = newX;
-            Level()->m_screenY = ty;
-            return 0;
-        }
+        CLAMP_UPPER_INPLACE(newY, ty);
     } else if (m_dirY < 0.0) {
         double t = (m_posY = m_posY - step);
         newY = static_cast<i32>(ceil(t));
         i32 ty = m_tilePosition.m_y;
         m_stepMag = fabs(m_posY - static_cast<double>(ty));
         if (newY < ty) {
-            Level()->m_screenX = newX;
-            Level()->m_screenY = ty;
-            return 0;
+            newY = ty;
         }
     } else {
         newY = static_cast<i32>(floor(m_posY));
     }
 
-    Level()->m_screenX = newX;
-    Level()->m_screenY = newY;
+    SET_SCREEN_POS(Level(), newX, newY);
     return 0;
 }
 
@@ -256,29 +249,25 @@ i32 CKitchenSlime::LoadSprites() {
         switch (static_cast<CardinalDir>(sw)) {
             case CARDINAL_NORTH: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x;
-                step.m_y = m_tilePosition.m_y - 0x20;
+                step.Set(m_tilePosition.m_x, m_tilePosition.m_y - 0x20);
                 tile = step;
                 break;
             }
             case CARDINAL_EAST: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x + 0x20;
-                step.m_y = m_tilePosition.m_y;
+                step.Set(m_tilePosition.m_x + 0x20, m_tilePosition.m_y);
                 tile = step;
                 break;
             }
             case CARDINAL_SOUTH: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x;
-                step.m_y = m_tilePosition.m_y + 0x20;
+                step.Set(m_tilePosition.m_x, m_tilePosition.m_y + 0x20);
                 tile = step;
                 break;
             }
             case CARDINAL_WEST: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x - 0x20;
-                step.m_y = m_tilePosition.m_y;
+                step.Set(m_tilePosition.m_x - 0x20, m_tilePosition.m_y);
                 tile = step;
                 break;
             }

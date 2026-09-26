@@ -83,8 +83,7 @@ i32 CGruntToySprite::Update() {
             r->m_frameIndex = layerIndex;
         }
     }
-    m_object->m_screenX = e->m_object->m_screenX;
-    m_object->m_screenY = e->m_object->m_screenY - 0x20;
+    SET_SCREEN_POS(m_object, e->m_object->m_screenX, e->m_object->m_screenY - 0x20);
     return 0;
 }
 

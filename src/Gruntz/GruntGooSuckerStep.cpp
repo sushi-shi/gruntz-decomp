@@ -31,6 +31,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
 
@@ -194,10 +195,7 @@ L_scanb:
         box.top = c2.m_y - r;
         box.bottom = c2.m_y + r;
         RECT gb;
-        gb.left = 0;
-        gb.top = 0;
-        gb.right = grid->m_width;
-        gb.bottom = grid->m_height;
+        SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
         RECT isect;
         if (!IntersectRect(&isect, &box, &gb)) {
             isect = box;

@@ -319,8 +319,7 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     if (m_barSprite == NULL) {
         return 0;
     }
-    m_barSprite->m_screenX = x;
-    m_barSprite->m_screenY = y;
+    SET_SCREEN_POS(m_barSprite, x, y);
     m_barX = x;
     m_barY = y;
     return 1;
@@ -2745,8 +2744,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->m_triggerMgr;
                 if (obj->RecordListHas(playerIndex, unitIndex)) {
-                    obj->m_cameraTargetIdentity.m_x = playerIndex;
-                    obj->m_cameraTargetIdentity.m_y = unitIndex;
+                    obj->m_cameraTargetIdentity.Set(playerIndex, unitIndex);
                     obj->m_armed = true;
                     obj->LoadCameraSprite();
                 }

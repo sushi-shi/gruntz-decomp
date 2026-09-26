@@ -660,8 +660,7 @@ i32 CGrunt::PathScan() {
     POSITION node = coordz->GetHeadPosition();
 
     Coord start;
-    start.m_x = m_object->m_screenX >> TILE_SHIFT_PX;
-    start.m_y = m_object->m_screenY >> TILE_SHIFT_PX;
+    start.Set(m_object->m_screenX >> TILE_SHIFT_PX, m_object->m_screenY >> TILE_SHIFT_PX);
 
     {
         RECT gb;
@@ -768,22 +767,7 @@ i32 CGrunt::PathScan() {
     SET_RECT_COMPONENTS(nb, target.m_x - 4, target.m_y - 4, target.m_x + 4, target.m_y + 4);
     if (::PtInRect(&nb, start.m_x, start.m_y)) {
 
-        CRect rb(0, 0, grid->m_width, grid->m_height);
-        RECT ra;
-        const RECT* pn = &nb;
-        if (pn != NULL) {
-            ra = *pn;
-            ra.right++;
-            ra.bottom++;
-        } else {
-            ra = CRect(0, 0, grid->m_width, grid->m_height);
-        }
-        RECT* raDst = &grid->m_bounds;
-        if (!IntersectRect(raDst, &ra, &rb)) {
-            *raDst = ra;
-        }
-        grid->m_gridW = raDst->right - raDst->left;
-        grid->m_gridH = raDst->bottom - raDst->top;
+        GRID_CLIP(grid, &nb);
 
         for (i32 dy = -1; dy < 2; dy++) {
             for (i32 dx = -1; dx < 2; dx++) {
@@ -1559,8 +1543,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 ry = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
             if (g_coordPool.m_freeHead->m_next != NULL) {
                 node = &g_coordPool.m_freeHead->m_value;
-                node->m_x = rx;
-                node->m_y = ry;
+                node->Set(rx, ry);
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_coordList.AddHead(node);
@@ -1713,8 +1696,7 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
 
                 ArmGruntCombatTimeout(this);
                 m_neighborScanEnabled = true;
-                m_attackTargetPx.m_x = targetPxX;
-                m_attackTargetPx.m_y = targetPxY;
+                m_attackTargetPx.Set(targetPxX, targetPxY);
                 StartRangedAttackAnimation();
                 return 1;
             }
@@ -1736,10 +1718,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         m_triggerMgr->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
     if (n != NULL && n->m_entranceCommitted != false) {
         if (validate != 0) {
-            if (n->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, n)) {
-                return NULL;
-            }
-            if (n->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, n)) {
+            if (!(GRUNT_AT_SAVED_SCREEN_POS(n))) {
                 return NULL;
             }
         }
@@ -1909,8 +1888,7 @@ void CGrunt::Activate() {
     m_commitPx.m_y = py;
     m_lastTilePx.m_y = py;
     m_entrancePx.m_y = py;
-    m_reserved1dc.m_x = 0;
-    m_reserved1dc.m_y = 0;
+    m_reserved1dc.Set(0, 0);
     m_health = HEALTH_FULL;
     m_stamina = STAMINA_FULL;
     m_toyTime = 0;
@@ -2139,17 +2117,8 @@ void CGrunt::StepBehavior(char*) {
             i32 pty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
             CGameLevel* level = g_gameReg->m_world->m_level;
             i32 cx = ptx;
-            if (cx < 0) {
-                cx = 0;
-            } else if (cx >= level->m_mainPlane->m_tileColumns) {
-                cx = level->m_mainPlane->m_tileColumns - 1;
-            }
             i32 cy = pty;
-            if (cy < 0) {
-                cy = 0;
-            } else if (cy >= level->m_mainPlane->m_tileRows) {
-                cy = level->m_mainPlane->m_tileRows - 1;
-            }
+            CLAMP_TILE_TO_PLANE(cx, cy, level->m_mainPlane);
             i32 raw =
                 level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
             TileCollisionKind kind;
@@ -2313,10 +2282,7 @@ afterTile:
             CMapMgr* grid = g_gameReg->m_tileGrid;
 
             RECT rs;
-            rs.left = col5 - reach;
-            rs.top = row5 - reach;
-            rs.right = reach + col5 + 1;
-            rs.bottom = reach + row5 + 1;
+            SET_RECT_COMPONENTS(rs, col5 - reach, row5 - reach, reach + col5 + 1, reach + row5 + 1);
             GRID_CLIP_INL(grid, &rs)
         }
         if (m_arrivalState != AI_NONE) {
@@ -2646,8 +2612,7 @@ void CGrunt::FinalizeStep(char* name) {
         } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
-        m_object->m_screenX = nx;
-        m_object->m_screenY = ny;
+        SET_SCREEN_POS(m_object, nx, ny);
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
         SET_SORT_KEY_IF_CHANGED(h, v)
@@ -2680,8 +2645,7 @@ void CGrunt::FinalizeStep(char* name) {
         } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
-        m_object->m_screenX = nx;
-        m_object->m_screenY = ny;
+        SET_SCREEN_POS(m_object, nx, ny);
     }
     return;
 }
@@ -2760,8 +2724,7 @@ void CGrunt::AdvanceMotion() {
                             i32 x = (otherPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
-                                m_defenderPx.m_x = x;
-                                m_defenderPx.m_y = y;
+                                m_defenderPx.Set(x, y);
                                 if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_A, -1, 1, 0)
                                     == ARRIVAL_TAG_NONE) {
                                     m_arrivalPhase = ARRIVAL_TAG_NONE;
@@ -2809,8 +2772,7 @@ void CGrunt::AdvanceMotion() {
                             i32 x = (otherPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
-                                m_defenderPx.m_x = x;
-                                m_defenderPx.m_y = y;
+                                m_defenderPx.Set(x, y);
                                 if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_B, -1, 1, 0)
                                     == ARRIVAL_TAG_NONE) {
                                     m_arrivalPhase = ARRIVAL_TAG_NONE;
