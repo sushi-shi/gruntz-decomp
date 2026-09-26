@@ -25,8 +25,8 @@
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
-#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueInline.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileCoordMacros.h>

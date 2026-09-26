@@ -20,8 +20,8 @@
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
-#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueInline.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarMgr.h>
