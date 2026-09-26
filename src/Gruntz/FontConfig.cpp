@@ -8,6 +8,7 @@
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/ColorTintRef.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>

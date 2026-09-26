@@ -7,6 +7,7 @@
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/ColorTintRef.h>
 #include <Gruntz/CustomMapSelection.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
