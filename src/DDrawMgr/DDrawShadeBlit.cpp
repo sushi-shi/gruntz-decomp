@@ -109,10 +109,7 @@ i32 CDDrawShadeBlit::BuildRle(
                                && static_cast<i32>(src[i]) == keyVal) {
                             i++;
                         }
-                        ba.SetAtGrow(
-                            ba.GetSize(),
-                            static_cast<u8>(((i - runStart) | SHADE_RLE_TRANSPARENT_FLAG))
-                        );
+                        ba.Add(static_cast<u8>(((i - runStart) | SHADE_RLE_TRANSPARENT_FLAG)));
                         runStart = i;
                     }
                 } while (i < m_width);
