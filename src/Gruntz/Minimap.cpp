@@ -197,7 +197,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
             }
         }
     }
-    m_surface->m_ddSurface->Unlock(NULL);
+    m_surface->Unlock();
     return 1;
 }
 
@@ -337,7 +337,7 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
         rightOffset += rowStride;
     }
 
-    surface->m_ddSurface->Unlock(NULL);
+    surface->Unlock();
 }
 
 RVA(0x000a3c90, 0xe8)

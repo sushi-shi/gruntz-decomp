@@ -291,13 +291,13 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (!file.Open(path, 0x1001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
     }
@@ -310,7 +310,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
         file.Write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth);
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -360,14 +360,14 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     CFile file;
     if (flag != 0) {
         if (file.Open(path, 0x2001, NULL) == false) {
-            this->m_ddSurface->Unlock(NULL);
+            Unlock();
             delete[] line;
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (file.Open(path, 0x1001, NULL) == false) {
-            this->m_ddSurface->Unlock(NULL);
+            Unlock();
             delete[] line;
             return 0;
         }
@@ -396,7 +396,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         file.Write(line, 3 * this->m_apiDesc.dwWidth);
     }
 
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     delete[] line;
     return 1;
 }
@@ -442,13 +442,13 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (!file.Open(path, 0x1001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
     }
@@ -466,7 +466,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
         }
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 

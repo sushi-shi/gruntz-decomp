@@ -338,7 +338,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         firstCol = 0;
     }
 
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
 }
 
 RVA(0x0017a460, 0x7ec)
