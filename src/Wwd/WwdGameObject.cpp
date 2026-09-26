@@ -35,6 +35,7 @@
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
@@ -767,10 +768,7 @@ CLogicRecord::~CLogicRecord() {
         m_payload = NULL;
         m_payloadSize = 0;
     }
-    if (m_userLogic) {
-        delete m_userLogic;
-        m_userLogic = NULL;
-    }
+    SAFE_DELETE(m_userLogic);
     m_target = NULL;
 }
 
@@ -803,10 +801,7 @@ void CLogicRecord::Unload() {
         m_payload = NULL;
         m_payloadSize = 0;
     }
-    if (m_userLogic) {
-        delete m_userLogic;
-        m_userLogic = NULL;
-    }
+    SAFE_DELETE(m_userLogic);
     m_target = NULL;
 }
 

@@ -76,6 +76,7 @@
 #include <RectMacros.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/ScreenGeometry.h>
@@ -3434,10 +3435,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     clock[0] = 0;
     clock[1] = 0;
     m_hlBusy = false;
-    if (m_retabNotify) {
-        delete m_retabNotify;
-        m_retabNotify = NULL;
-    }
+    SAFE_DELETE(m_retabNotify);
     ExitMode();
     m_observerTabAvailable = false;
     m_destructButtonLocked = false;
@@ -4113,10 +4111,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
             m_owner->TryActivate();
         }
         CStatusBarMgr* owner = m_owner;
-        if (owner->m_retabNotify != NULL) {
-            delete owner->m_retabNotify;
-            owner->m_retabNotify = NULL;
-        }
+        SAFE_DELETE(owner->m_retabNotify);
         return 1;
     }
 

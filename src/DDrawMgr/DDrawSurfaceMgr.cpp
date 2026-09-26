@@ -21,6 +21,7 @@
 #include <Gruntz/SoundCueRegistry.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <SafeDelete.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdObjMgr.h>
@@ -132,50 +133,17 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
 RVA(0x00155e20, 0xd1)
 void CDDrawSurfaceMgr::Cleanup() {
-    if (m_level) {
-        delete m_level;
-        m_level = NULL;
-    }
-    if (m_soundRegistry) {
-        delete m_soundRegistry;
-        m_soundRegistry = NULL;
-    }
-    if (m_soundStream) {
-        delete m_soundStream;
-        m_soundStream = NULL;
-    }
-    if (m_drawTarget) {
-        delete m_drawTarget;
-        m_drawTarget = NULL;
-    }
-    if (m_childGroup) {
-        delete m_childGroup;
-        m_childGroup = NULL;
-    }
-    if (m_workerList) {
-        delete m_workerList;
-        m_workerList = NULL;
-    }
-    if (m_imageRegistry) {
-        delete m_imageRegistry;
-        m_imageRegistry = NULL;
-    }
-    if (m_logicRegistry) {
-        delete m_logicRegistry;
-        m_logicRegistry = NULL;
-    }
-    if (m_paletteRegistry) {
-        delete m_paletteRegistry;
-        m_paletteRegistry = NULL;
-    }
-    if (m_animRegistry) {
-        delete m_animRegistry;
-        m_animRegistry = NULL;
-    }
-    if (m_deviceManager) {
-        delete m_deviceManager;
-        m_deviceManager = NULL;
-    }
+    SAFE_DELETE(m_level);
+    SAFE_DELETE(m_soundRegistry);
+    SAFE_DELETE(m_soundStream);
+    SAFE_DELETE(m_drawTarget);
+    SAFE_DELETE(m_childGroup);
+    SAFE_DELETE(m_workerList);
+    SAFE_DELETE(m_imageRegistry);
+    SAFE_DELETE(m_logicRegistry);
+    SAFE_DELETE(m_paletteRegistry);
+    SAFE_DELETE(m_animRegistry);
+    SAFE_DELETE(m_deviceManager);
     m_callback = NULL;
 }
 

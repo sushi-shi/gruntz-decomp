@@ -58,6 +58,7 @@
 #include <Gruntz/Warlord.h>
 #include <Io/FileMem.h>
 #include <RectMacros.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
@@ -963,10 +964,7 @@ void CTriggerMgr::ResetSpawnState() {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     CStatusBarMgr* st = world->m_statusBar;
-    if (st->m_retabNotify != NULL) {
-        delete st->m_retabNotify;
-        st->m_retabNotify = NULL;
-    }
+    SAFE_DELETE(st->m_retabNotify);
     world->m_statusBar->m_hlBusy = false;
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);

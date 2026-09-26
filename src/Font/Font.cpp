@@ -9,6 +9,7 @@
 #include <DDrawMgr/PixelShift.h>
 #include <Font/FontBlendInline.h>
 #include <RectMacros.h>
+#include <SafeDelete.h>
 #include <Wap32/TileGeometry.h>
 
 #include <ddraw.h>
@@ -64,10 +65,7 @@ void Font::FreeMemory() {
         }
         delete[] m_surfaces;
         m_surfaces = NULL;
-        if (m_glyphs) {
-            delete[] m_glyphs;
-            m_glyphs = NULL;
-        }
+        SAFE_DELETE_ARRAY(m_glyphs);
         m_count = 0;
         m_ready = false;
     }

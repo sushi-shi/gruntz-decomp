@@ -11,6 +11,7 @@
 #include <Net/NetGuids.h>
 #include <Net/NetProviderFindKind.h>
 #include <Net/NetProviderNode.h>
+#include <SafeDelete.h>
 
 #include <dplay.h>
 #include <dplobby.h>
@@ -137,10 +138,7 @@ void CNetMgr::Destroy() {
     ClearSessionListings();
     ClearPlayers();
 
-    if (m_directPlayBase != NULL) {
-        m_directPlayBase->Release();
-        m_directPlayBase = NULL;
-    }
+    SAFE_RELEASE(m_directPlayBase);
 
 
 
@@ -1072,14 +1070,8 @@ i32 CNetSessionListNode::Initialize(LPCDPSESSIONDESC2 sessionDesc) {
 
 RVA(0x00179680, 0x3a)
 void CNetSessionListNode::FreeSessionStrings() {
-    if (m_sessionDesc.lpszSessionNameA) {
-        delete[] m_sessionDesc.lpszSessionNameA;
-        m_sessionDesc.lpszSessionNameA = NULL;
-    }
-    if (m_sessionDesc.lpszPasswordA) {
-        delete[] m_sessionDesc.lpszPasswordA;
-        m_sessionDesc.lpszPasswordA = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_sessionDesc.lpszSessionNameA);
+    SAFE_DELETE_ARRAY(m_sessionDesc.lpszPasswordA);
     m_sessionDesc.dwSize = 0;
 }
 

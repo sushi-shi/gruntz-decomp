@@ -20,6 +20,7 @@
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/RezMgr.h>
+#include <SafeDelete.h>
 
 #include <string.h>
 
@@ -408,10 +409,7 @@ void CDib::Term() {
         DeleteObject(m_hBmp);
         m_hBmp = NULL;
     }
-    if (m_pLines) {
-        delete[] m_pLines;
-        m_pLines = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_pLines);
     m_pBytes = NULL;
     m_pPal = NULL;
 }
