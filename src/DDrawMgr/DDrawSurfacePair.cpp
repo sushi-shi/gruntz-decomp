@@ -39,6 +39,7 @@
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
+#include <Wwd/WwdObjMgrInline.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -566,7 +567,6 @@ i32 CResolveNode::Init(
     return 1;
 }
 
-// @early-stop
 RVA(0x00164830, 0xec)
 i32 CLogicRecord::SerializeDispatch(
     CFileMemBase* archive,
@@ -598,11 +598,10 @@ i32 CLogicRecord::SerializeDispatch(
             break;
         case SERIAL_POSTLOAD:
             if (m_targetId) {
-                CMapPtrToPtr* objectsById = &m_ownerCtx->m_childGroup->m_registeredGameObjectsById;
-                CWwdGameObject* target = NULL;
-                if (MapLookupById(*objectsById, m_targetId, target)) {
-                    m_target = target;
-                }
+                m_target = LookupObjectById(
+                    m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
+                    m_targetId
+                );
             }
             break;
         default:
@@ -788,7 +787,6 @@ i32 CLogicRecord::Load(CFileMemBase* ar) {
     return 1;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001651b0, 0x5d)
@@ -797,13 +795,8 @@ i32 CLogicRecord::ResolveTarget(void* context) {
         return 0;
     }
     if (m_targetId) {
-        CMapPtrToPtr* objectsById = &m_ownerCtx->m_childGroup->m_registeredGameObjectsById;
-        CWwdGameObject* target = NULL;
-        if (!MapLookupById(*objectsById, m_targetId, target)) {
-            m_target = NULL;
-        } else {
-            m_target = target;
-        }
+        m_target =
+            LookupObjectById(m_ownerCtx->m_childGroup->m_registeredGameObjectsById, m_targetId);
     }
     return 1;
 }
