@@ -77,5 +77,31 @@ class EhStateControls(unittest.TestCase):
             {("imm", "0x5"), ("imm", "0x6")})
 
 
+class EbpControls(unittest.TestCase):
+    def test_a_local_pointer_masks_only_its_live_range(self):
+        base = _lines(["push ebp", "lea ebp,[esp+0x10]",
+                       "mov eax,DWORD PTR [ebp+0x4]", "push ebp"])
+        target = _lines(["push ebp", "lea ebp,[esp+0x14]",
+                         "mov eax,DWORD PTR [ebp+0x8]", "push ebp"])
+        self.assertEqual(_keys(base, target), set())
+
+    def test_this_in_ebp_is_not_masked_by_a_later_local_pointer(self):
+        base = _lines(["push ebp", "mov ebp,ecx",
+                       "mov eax,DWORD PTR [ebp+0x218]",
+                       "lea ebp,[esp+0x10]", "push ebp"])
+        target = _lines(["push ebp", "mov ebp,ecx",
+                         "mov eax,DWORD PTR [ebp+0x21c]"])
+        self.assertEqual(_keys(base, target),
+                         {("disp", "+0x218"), ("disp", "+0x21c")})
+
+    def test_a_prologue_frame_masks_its_slots(self):
+        self.assertEqual(
+            _keys(_lines(["push ebp", "mov ebp,esp",
+                          "mov eax,DWORD PTR [ebp-0x8]"]),
+                  _lines(["push ebp", "mov ebp,esp",
+                          "mov eax,DWORD PTR [ebp-0xc]"])),
+            set())
+
+
 if __name__ == "__main__":
     unittest.main()

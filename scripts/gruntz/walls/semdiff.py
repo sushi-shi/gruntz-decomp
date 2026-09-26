@@ -113,16 +113,22 @@ NORM = BUILD / "objdiff/compare-new"
 #: frame-layout accident, a member displacement is the class model.
 MEM = re.compile(r"\[(e[a-d]x|e[sd]i|ebx|ecx|ebp)(?:\+e[a-z]{2}\*\d)?"
                  r"([+-]0x[0-9a-f]+)?\]")
-#: the same operand with EBP as its base, and the two spellings that make EBP a
-#: FRAME POINTER. cl 5.0 at /O2 usually spends EBP as a general register, and
-#: then `[ebp+N]` IS a member displacement - but it does give a handful of
-#: functions an ebp frame, and there `[ebp-N]` is a stack slot the two sides do
-#: not agree on. Measured 2026-08-23 over the 595-row todo queue: 8 rows
-#: establish one and 3 address slots through it (`WarpTextureBlit` 65/67
-#: operands, `FillPolygon` 37/38, `CWwdSpatialMgr::ScrollTo` 4/4).
+#: the same operand with EBP as its base, and the two spellings that point EBP
+#: into the STACK. cl 5.0 at /O2 usually spends EBP as a general register, and
+#: then `[ebp+N]` IS a member displacement - but it gives a handful of
+#: functions an ebp frame (`push ebp; mov ebp,esp` in the prologue: there
+#: every `[ebp-N]` is a stack slot), and it also parks a pointer to a local in
+#: EBP mid-function (`lea ebp,[esp+0xc]` to pass a local's address, `mov
+#: ebp,esp` over an array at the stack top). The second is a stack pointer
+#: only until the next write to EBP; a function-wide mask there hides every
+#: `this`-in-ebp member access elsewhere in the body.
 EBP_MEM = re.compile(r"\[ebp(?:\+e[a-z]{2}(?:\*\d)?)?([+-]0x[0-9a-f]+)?\]")
 EBP_FRAME = re.compile(
     r"^(?:mov\s+ebp,esp|lea\s+ebp,\[esp(?:[+-]0x[0-9a-f]+)?\])$")
+EBP_WRITE = re.compile(r"^(?:mov|movzx|movsx|lea|xor|or|and|add|sub|adc|sbb"
+                       r"|inc|dec|neg|not|shl|shr|sar|imul|pop|xchg)\s+ebp\b")
+#: the prologue window a frame pointer is established in
+FRAME_WINDOW = 6
 #: an 8/16-bit AND/OR/XOR with an immediate: the register-width mirror
 NARROW_LOGIC = re.compile(
     r"^(and|or|xor)\s+(?:([a-d][lhx]|[sd]i|[sb]p)|"
@@ -140,9 +146,23 @@ FRAME = re.compile(r"^(sub|add)\s+esp,")
 NOT_A_VALUE = re.compile(r"^(j\w+|call|loop|ret)$")
 
 
+def _prologue_frame(lines) -> bool:
+    """`push ebp` then `mov ebp,esp` / `lea ebp,[esp+N]` before any transfer."""
+    head = lines[:FRAME_WINDOW]
+    for i, ln in enumerate(head[:-1]):
+        if ln.asm.startswith(("j", "call", "ret")):
+            return False
+        if ln.asm == "push ebp" and EBP_FRAME.match(head[i + 1].asm):
+            return True
+    return False
+
+
 def ebp_is_frame(*sides) -> bool:
-    """Whether EBP is a frame pointer, in which case its `[ebp+-N]` operands
-    are stack slots and not member displacements.
+    """Whether EBP is the FRAME pointer, in which case every `[ebp+-N]`
+    operand is a stack slot and not a member displacement.
+
+    Only a prologue establishment counts; a mid-body `lea ebp,[esp+N]` is a
+    pointer to one local and `features` masks it over its own live range.
 
     Take BOTH sides. cl gives one side an ebp frame and not the other
     (`CGrunt::StepBrickLayerBehavior` is ours, retail's ebp is a general
@@ -150,7 +170,25 @@ def ebp_is_frame(*sides) -> bool:
     manufactures a difference. If either side's ebp is a frame pointer, the
     operand is not comparable on that row and both sides mask.
     """
-    return any(EBP_FRAME.match(ln.asm) for lines in sides for ln in lines)
+    return any(_prologue_frame(lines) for lines in sides)
+
+
+def ebp_stack_lines(lines) -> set[int]:
+    """Indexes of the lines where EBP points into the stack because a mid-body
+    `lea ebp,[esp+N]` / `mov ebp,esp` set it: from that line up to the next
+    write to EBP (straight-line order - the pointer's live range)."""
+    out: set[int] = set()
+    live = False
+    for i, ln in enumerate(lines):
+        if EBP_FRAME.match(ln.asm):
+            live = True
+            continue
+        if EBP_WRITE.match(ln.asm):
+            live = False
+            continue
+        if live:
+            out.add(i)
+    return out
 
 
 class Line:
@@ -286,24 +324,25 @@ def features(lines: list[Line], self_name: str = "",
     Dropped here: the operands of the function's own table references
     (self-referent lines keep only their mnemonic), byte-continuation lines,
     the frame-size and callee-cleanup immediates, the /GX unwind-state
-    stores' immediates, and - in the handful of functions cl gives an ebp
-    frame - the `[ebp+-N]` operands, which are stack slots there and not
-    member displacements. Pass `ebp_frame` from BOTH sides
-    (`ebp_is_frame(base, target)`); reading it off one side masks
-    asymmetrically. Narrow AND/OR/XOR immediates are keyed as the 32-bit
-    operation (`value_immediates`).
+    stores' immediates, and the `[ebp+-N]` operands where EBP points into the
+    stack - function-wide in the handful of functions cl gives an ebp frame,
+    over its live range where EBP holds a local's address. Pass `ebp_frame`
+    from BOTH sides (`ebp_is_frame(base, target)`); reading it off one side
+    masks asymmetrically. Narrow AND/OR/XOR immediates are keyed as the
+    32-bit operation (`value_immediates`).
     """
     if ebp_frame is None:
         ebp_frame = ebp_is_frame(lines)
+    stack_ebp = ebp_stack_lines(lines)
     eh_states = eh_state_lines(lines)
     disp, imm, mnem, fp, store = (Counter() for _ in range(5))
-    for ln in lines:
+    for i, ln in enumerate(lines):
         asm = ln.asm
         if not asm or BYTES_ONLY.match(asm):
             continue
         if FRAME.match(asm):
             continue
-        if ebp_frame:
+        if ebp_frame or i in stack_ebp:
             asm = EBP_MEM.sub("[esp]", asm)
         op = asm.split()[0]
         mnem[op] += 1
