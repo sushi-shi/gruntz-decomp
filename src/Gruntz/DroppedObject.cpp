@@ -101,8 +101,8 @@ i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
 RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_lastDropTime = 0;
-    m_dropInterval = 0;
+    m_dropTiming.m_start.m_v = 0;
+    m_dropTiming.m_interval.m_v = 0;
     SwitchAnimationByName("LEVEL_OBJECTDROPPER", 0);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
@@ -145,8 +145,8 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     }
     CShadeTable* sel = g_gameReg->m_lightFxMgr->m_tables[5];
     SET_DRAW_FILL(m_object, SHADE_DST_BY_SRC_16, sel);
-    m_lastDropTime = 0;
-    m_dropInterval = 0;
+    m_dropTiming.m_start.m_v = 0;
+    m_dropTiming.m_interval.m_v = 0;
     SET_OBJECT_AREA(1)
 }
 
@@ -164,7 +164,7 @@ void CObjectDropper::RegisterActs() {
 
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
-    if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
+    if (static_cast<i64>(g_frameTime) - m_dropTiming.m_start.m_v >= m_dropTiming.m_interval.m_v) {
         if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
             RECT box;
@@ -206,9 +206,9 @@ i32 CObjectDropper::Update() {
                             );
                             m_lastDropPlayerIndex = playerIndex;
                             m_lastDropUnitIndex = unitIndex;
-                            m_dropInterval =
+                            m_dropTiming.m_interval.m_v =
                                 g_buteMgr.GetDword("Hazardz", "ObjectDropperDelay", 1000);
-                            m_lastDropTime = g_frameTime;
+                            m_dropTiming.m_start.m_v = g_frameTime;
                         }
                     }
                 }

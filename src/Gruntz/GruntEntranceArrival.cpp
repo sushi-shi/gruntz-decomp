@@ -319,7 +319,7 @@ i32 CGrunt::StepAttackFire() {
         if (m_gruntKind == GRUNT_ROIDZ) {
             dt = 0;
         }
-        i64* clock = &m_attackClock64;
+        i64* clock = &m_attackTiming.m_start.m_v;
         clock[1] = dt;
         clock[0] = g_frameTime;
         m_lowStaminaCued = false;
@@ -421,8 +421,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             return 0;
         } else {
             DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
-            m_toyDuration = static_cast<u32>(tt);
-            m_toyClock = static_cast<u32>(g_frameTime);
+            m_toyTiming.m_interval.m_v = static_cast<u32>(tt);
+            m_toyTiming.m_start.m_v = static_cast<u32>(g_frameTime);
             m_toyTime = 0x64;
             CreateToyTimeSprite();
         }
@@ -443,8 +443,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         SetImageSetByName(nm);
 
         DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
-        m_idleDelay = tt >> 1;
-        m_idleAnchor = g_frameTime;
+        m_idleDelayTiming.m_interval.m_v = tt >> 1;
+        m_idleDelayTiming.m_start.m_v = g_frameTime;
         return 0;
     }
 
@@ -456,7 +456,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->m_durationMs;
     i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->m_durationMs;
-    i64 remainingMs = m_toyDuration - static_cast<i64>(g_frameTime) + m_toyClock;
+    i64 remainingMs =
+        m_toyTiming.m_interval.m_v - static_cast<i64>(g_frameTime) + m_toyTiming.m_start.m_v;
     i32 availableMs = static_cast<i32>(remainingMs);
     if (remainingMs < 0) {
         availableMs = 0;
@@ -535,8 +536,8 @@ i32 CGrunt::UpdateToyUseAnimation() {
         return 0;
     }
 
-    i64 diff = static_cast<i64>(g_frameTime) - m_toyClock;
-    if (diff >= m_toyDuration && m_entranceStamped == false && ready == true) {
+    i64 diff = static_cast<i64>(g_frameTime) - m_toyTiming.m_start.m_v;
+    if (diff >= m_toyTiming.m_interval.m_v && m_entranceStamped == false && ready == true) {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
@@ -622,11 +623,11 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
     if (ANIMATION_ACT_DIFFERS("A") && chooseIdleVariant == 0) {
 
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
-        m_idleWindow = static_cast<u32>(0x3a98);
-        m_idleTimer = g_frameTime;
+        m_idleWindowTiming.m_interval.m_v = static_cast<u32>(0x3a98);
+        m_idleWindowTiming.m_start.m_v = g_frameTime;
         i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
-        m_idleDelay = static_cast<u32>(0x7530 + GetRandom(0, d));
-        m_idleAnchor = g_frameTime;
+        m_idleDelayTiming.m_interval.m_v = static_cast<u32>(0x7530 + GetRandom(0, d));
+        m_idleDelayTiming.m_start.m_v = g_frameTime;
         applied = 1;
     } else if (AT(m_poseIdle, GRUNT_IDLE2) != NULL) {
         if (chooseIdleVariant != 0) {
@@ -664,8 +665,8 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
                 {
                     i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
                     applied = 1;
-                    m_idleDelay = static_cast<u32>(GetRandom(0x4e20, d));
-                    m_idleAnchor = g_frameTime;
+                    m_idleDelayTiming.m_interval.m_v = static_cast<u32>(GetRandom(0x4e20, d));
+                    m_idleDelayTiming.m_start.m_v = g_frameTime;
                 }
             }
         }
@@ -723,7 +724,8 @@ i32 CGrunt::ResolveEntranceArrival() {
 
     b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (static_cast<i64>(g_frameTime) - m_idleTimer >= m_idleWindow) {
+    if (static_cast<i64>(g_frameTime) - m_idleWindowTiming.m_start.m_v
+        >= m_idleWindowTiming.m_interval.m_v) {
         CGruntzMgr* g = g_gameReg;
         GameModeId mode = g->m_gameMode;
         if (mode != GAMEMODE_QUESTZ) {
@@ -738,10 +740,10 @@ i32 CGrunt::ResolveEntranceArrival() {
                 }
                 if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
                     && m_arrived == false && m_tileClaimed != true) {
-                    m_arrivalRerollLo = 0;
-                    m_arrivalRerollWindowLo = 0;
-                    m_arrivalRerollHi = 0;
-                    m_arrivalRerollWindowHi = 0;
+                    m_arrivalRerollTiming.m_start.m_lo = 0;
+                    m_arrivalRerollTiming.m_interval.m_lo = 0;
+                    m_arrivalRerollTiming.m_start.m_hi = 0;
+                    m_arrivalRerollTiming.m_interval.m_hi = 0;
                     m_defenderPx = m_lastTilePx;
                     m_tileClaimed = true;
                     PickupType kind = m_entranceReason;
@@ -781,7 +783,9 @@ tail:
         }
         return 0;
     }
-    if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay && ready == true) {
+    if (static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start.m_v
+            >= m_idleDelayTiming.m_interval.m_v
+        && ready == true) {
         ResetEntranceAnimation(0, 1, 1);
     }
     return 0;
@@ -800,10 +804,10 @@ i32 CGrunt::StepEntranceReinit() {
         return 0;
     }
 
-    m_arrivalVoiceWindowLo = 0x7530;
-    m_arrivalVoiceWindowHi = 0;
-    m_arrivalVoiceClockLo = static_cast<i32>(g_frameTime);
-    m_arrivalVoiceClockHi = 0;
+    m_arrivalVoiceTiming.m_interval.m_lo = 0x7530;
+    m_arrivalVoiceTiming.m_interval.m_hi = 0;
+    m_arrivalVoiceTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
+    m_arrivalVoiceTiming.m_start.m_hi = 0;
     m_neighborScanEnabled = false;
 
     eq = ANIMATION_ACT_EQUALS("I");
@@ -851,7 +855,7 @@ i32 CGrunt::StepEntranceReinit() {
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    i64 diff = static_cast<i64>(g_frameTime) - m_arrivalVoiceClock.m_v;
+    i64 diff = static_cast<i64>(g_frameTime) - m_arrivalVoiceTiming.m_start.m_v;
 
     u32 elapsed;
     if (diff < 0) {
@@ -912,8 +916,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         return 0;
     }
 
-    i64 elapsed = static_cast<i64>(g_frameTime) - m_toyClock;
-    if (elapsed >= m_toyDuration) {
+    i64 elapsed = static_cast<i64>(g_frameTime) - m_toyTiming.m_start.m_v;
+    if (elapsed >= m_toyTiming.m_interval.m_v) {
         if (m_entranceStamped == false && GRUNT_AT_SAVED_SCREEN_POS(this)) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
             SetEntrancePos(1, 1);
@@ -939,8 +943,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         return 0;
     }
 
-    i64 elapsed2 = static_cast<i64>(g_frameTime) - m_idleAnchor;
-    if (elapsed2 >= m_idleDelay) {
+    i64 elapsed2 = static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start.m_v;
+    if (elapsed2 >= m_idleDelayTiming.m_interval.m_v) {
         PLAY_GRUNT_CUE_IN_VIEW(0xd);
     }
 
@@ -1311,7 +1315,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_gruntKind == GRUNT_ROIDZ) {
                 downtime = 0;
             }
-            i64* clock = &m_attackClock64;
+            i64* clock = &m_attackTiming.m_start.m_v;
             clock[1] = downtime;
             clock[0] = g_frameTime;
             m_lowStaminaCued = false;

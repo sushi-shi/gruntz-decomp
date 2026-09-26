@@ -316,12 +316,13 @@ inline void CGrunt::ResolveEntranceOccupant() {
                 m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                         \
             }                                                                                      \
             m_entranceDropActive = true;                                                           \
-            m_entranceSafeTimeLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);          \
-            m_entranceSafeTimeHi = 0;                                                              \
-            m_entranceClockLo = g_frameTime;                                                       \
-            m_entranceClockHi = 0;                                                                 \
-            m_flashWindowLo = 0;                                                                   \
-            m_flashWindowHi = 0;                                                                   \
+            m_entranceTiming.m_interval.m_lo =                                                     \
+                g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);                             \
+            m_entranceTiming.m_interval.m_hi = 0;                                                  \
+            m_entranceTiming.m_start.m_lo = g_frameTime;                                           \
+            m_entranceTiming.m_start.m_hi = 0;                                                     \
+            m_flashTiming.m_interval.m_lo = 0;                                                     \
+            m_flashTiming.m_interval.m_hi = 0;                                                     \
         } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {                      \
             CommitArrival();                                                                       \
         }                                                                                          \
@@ -447,11 +448,11 @@ RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (enable != false) {
         m_wingzEnabled = true;
-        m_wingzDurationLo =
+        m_wingzTiming.m_interval.m_lo =
             static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias));
-        m_wingzDurationHi = 0;
-        m_wingzClockLo = static_cast<i32>(g_frameTime);
-        m_wingzClockHi = 0;
+        m_wingzTiming.m_interval.m_hi = 0;
+        m_wingzTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
+        m_wingzTiming.m_start.m_hi = 0;
         CreateWingzTimeSprite();
 
         m_cells[0].IdleName() = s_nwItem;
@@ -486,8 +487,8 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         PLAY_GRUNT_CUE_IN_VIEW(8);
     } else {
         m_wingzEnabled = false;
-        m_wingzDurationLo = 0;
-        m_wingzDurationHi = 0;
+        m_wingzTiming.m_interval.m_lo = 0;
+        m_wingzTiming.m_interval.m_hi = 0;
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
 
         m_cells[0].WalkName() = s_nwWalk;
@@ -689,12 +690,13 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             return 0;
         }
         SwitchAnimationByName(s_gruntzDeathzSparkle, 0);
-        m_idleDelay = g_buteMgr.GetDword("Spellz", s_freezeDelay, 0x2710);
-        m_idleAnchor = g_frameTime;
+        m_idleDelayTiming.m_interval.m_v = g_buteMgr.GetDword("Spellz", s_freezeDelay, 0x2710);
+        m_idleDelayTiming.m_start.m_v = g_frameTime;
         m_freezeDelayDone = false;
     }
     if (m_freezeDelayDone == false) {
-        if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay) {
+        if (static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start.m_v
+            >= m_idleDelayTiming.m_interval.m_v) {
             SwitchAnimationByName(s_gruntzDeathzUnfreeze, 0);
             PLAY_VOICE_IN_VIEW(0x35c);
             m_freezeUnfrozen = true;

@@ -40,14 +40,13 @@ i32 DispatchActionAreaLogic(CGameObject* owner) {
 
 // @early-stop
 RVA(0x00007da0, 0x17e)
-CActionArea::CActionArea(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_timestamp(0), m_duration(0) {
+CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_ACTIONAREA_RED");
     SET_ANIMATION_ACT("A");
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTION_AREA)
     m_phase = 1;
-    m_duration = 0;
+    m_timing.m_interval.m_v = 0;
     Hide();
 }
 
@@ -68,11 +67,11 @@ void CProjActObj::RegisterType() {
 
 RVA(0x00008440, 0xfe)
 i32 CActionArea::Tick() {
-    i64* ts = &m_timestamp;
+    i64* ts = &m_timing.m_start.m_v;
     i32* phase = &m_phase;
-    if (static_cast<i64>(g_frameTime) - *ts >= m_duration) {
+    if (static_cast<i64>(g_frameTime) - *ts >= m_timing.m_interval.m_v) {
         *phase = (*phase == 0);
-        m_duration = 0x1f4;
+        m_timing.m_interval.m_v = 0x1f4;
         *ts = static_cast<u32>(g_frameTime);
     }
     if (*phase != 0) {

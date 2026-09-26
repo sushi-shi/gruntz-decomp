@@ -429,10 +429,11 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
         cell->CreateHealthSprite();
         cell->CreateStaminaSprite();
         cell->CreateToySprite();
-        cell->m_hudRetireWindowLo = g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388);
-        cell->m_hudRetireWindowHi = 0;
-        cell->m_hudRetireClockLo = g_frameTime;
-        cell->m_hudRetireClockHi = 0;
+        cell->m_hudRetireTiming.m_interval.m_lo =
+            g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388);
+        cell->m_hudRetireTiming.m_interval.m_hi = 0;
+        cell->m_hudRetireTiming.m_start.m_lo = g_frameTime;
+        cell->m_hudRetireTiming.m_start.m_hi = 0;
         return 0;
     }
     if (force == 0) {

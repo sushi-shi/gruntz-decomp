@@ -17,11 +17,13 @@ rva	unit	function	lost_max	cur
 0x0c68b0	droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	95.1716	94.7239
 0x1817e0	fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFaderConfig@@@Z	91.8740	91.8425
 0x180640	faderlight	?RenderFrame@CFaderLight@@UAEXH@Z	95.0099	94.9913
+0x047a10	grunt	??0CGrunt@@QAE@PAUCGameObject@@@Z	92.7946	72.6832
 0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	73.7003
 0x0ecc90	gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	87.6818	80.1788
 0x05b050	gruntcombat	?CommitNeighbor@CGrunt@@QAEHHHHH@Z	95.3511	74.5110
 0x0597a0	gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.2468	73.1162
 0x057db0	gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	83.5442
+0x05d210	gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	68.0605	67.8550
 0x0f36a0	gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	66.9018
 0x065630	gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	90.4314	89.9569
 0x0f0e20	gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	91.6483	85.3241

@@ -844,7 +844,7 @@ i32 CGrunt::PathScan() {
 
 RVA(0x000588f0, 0x1ea)
 void CGrunt::OnStruck(b32 wasHit) {
-    i64* clock = &m_struckClock64;
+    i64* clock = &m_struckTiming.m_start.m_v;
     clock[1] = 0xfa0;
     clock[0] = g_frameTime;
     i32 c = ++m_struckCount;
@@ -912,7 +912,7 @@ CUserLogic::CUserLogic(CGameObject* obj) {
 }
 
 RVA(0x00058ee0, 0x5c)
-i32 CPairRecord::Serialize(
+i32 ClockInterval::Serialize(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -921,11 +921,11 @@ i32 CPairRecord::Serialize(
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_start, sizeof(m_start));
-            ar->Write(&m_duration, sizeof(m_duration));
+            ar->Write(&m_interval, sizeof(m_interval));
             break;
         case SERIAL_LOAD:
             ar->Read(&m_start, sizeof(m_start));
-            ar->Read(&m_duration, sizeof(m_duration));
+            ar->Read(&m_interval, sizeof(m_interval));
             break;
     }
     return 1;
@@ -1851,7 +1851,8 @@ static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
 
 RVA(0x0005d210, 0x1554)
 void CGrunt::StepBehavior(char*) {
-    if (static_cast<i64>(g_frameTime) - m_struckClock64 >= m_struckTimer64) {
+    if (static_cast<i64>(g_frameTime) - m_struckTiming.m_start.m_v
+        >= m_struckTiming.m_interval.m_v) {
         m_struckCount = 0;
     }
     m_dwell += g_frameDelta;
@@ -1865,16 +1866,18 @@ void CGrunt::StepBehavior(char*) {
             }
         }
 
-        if (static_cast<i64>(g_frameTime) - m_entranceClock64 >= m_entranceSafeTime64) {
+        if (static_cast<i64>(g_frameTime) - m_entranceTiming.m_start.m_v
+            >= m_entranceTiming.m_interval.m_v) {
         dropExpire: {
             CWwdSpriteObject* obj = m_object;
             m_entranceDropActive = false;
             obj->m_drawActive = true;
             obj->m_drawFillCmd = SHADE_PAL_16;
         }
-            m_entranceSafeTimeLo = 0;
-            m_entranceSafeTimeHi = 0;
-        } else if (static_cast<i64>(g_frameTime) - m_flashClock64 >= m_flashWindow64) {
+            m_entranceTiming.m_interval.m_lo = 0;
+            m_entranceTiming.m_interval.m_hi = 0;
+        } else if (static_cast<i64>(g_frameTime) - m_flashTiming.m_start.m_v
+                   >= m_flashTiming.m_interval.m_v) {
             CWwdSpriteObject* obj = m_object;
             if (obj->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
                 obj->m_drawActive = true;
@@ -1886,7 +1889,7 @@ void CGrunt::StepBehavior(char*) {
             }
             i32 flash = g_buteMgr.GetInt("Grunt", s_safeFlashTime, 0x32);
             if (g_buteMgr.GetInt("Grunt", s_accelerateFlash, 0) == 1) {
-                i64 el = static_cast<i64>(g_frameTime) - m_entranceClock64;
+                i64 el = static_cast<i64>(g_frameTime) - m_entranceTiming.m_start.m_v;
                 u32 elapsed = (el < 0 ? 0 : static_cast<u32>(el));
 
                 double span =
@@ -1897,10 +1900,10 @@ void CGrunt::StepBehavior(char*) {
             if (flash < 0x1e) {
                 flash = 0x1e;
             }
-            m_flashWindowLo = flash;
-            m_flashWindowHi = 0;
-            m_flashClockLo = static_cast<i32>(g_frameTime);
-            m_flashClockHi = 0;
+            m_flashTiming.m_interval.m_lo = flash;
+            m_flashTiming.m_interval.m_hi = 0;
+            m_flashTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
+            m_flashTiming.m_start.m_hi = 0;
         }
     }
 
@@ -2083,7 +2086,8 @@ void CGrunt::StepBehavior(char*) {
                     goto afterTile;
                 }
             }
-            if (static_cast<i64>(g_frameTime) - m_entranceClock64 < m_entranceSafeTime64) {
+            if (static_cast<i64>(g_frameTime) - m_entranceTiming.m_start.m_v
+                < m_entranceTiming.m_interval.m_v) {
                 goto afterTile;
             }
             {
@@ -2105,10 +2109,10 @@ void CGrunt::StepBehavior(char*) {
                 }
             }
             PLAY_VOICE_IN_VIEW(0x348);
-            m_entranceSafeTimeLo = 0x3e8;
-            m_entranceSafeTimeHi = 0;
-            m_entranceClockLo = static_cast<i32>(g_frameTime);
-            m_entranceClockHi = 0;
+            m_entranceTiming.m_interval.m_lo = 0x3e8;
+            m_entranceTiming.m_interval.m_hi = 0;
+            m_entranceTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
+            m_entranceTiming.m_start.m_hi = 0;
         } else if (flags & 0x2000000) {
             if (m_entranceReason == PICKUP_TOOB) {
                 bool nameDiffers = IsNotAnimationAct("N");
@@ -2223,14 +2227,15 @@ afterTile:
 
 afterArrival:
     if (m_toyTime > 0) {
-        i64 durationMinusNow = m_toyDuration - static_cast<i64>(g_frameTime);
-        i64 left = durationMinusNow + m_toyClock;
+        i64 durationMinusNow = m_toyTiming.m_interval.m_v - static_cast<i64>(g_frameTime);
+        i64 left = durationMinusNow + m_toyTiming.m_start.m_v;
         m_toyTime = static_cast<i32>(
             static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
-                / static_cast<double>(static_cast<u32>(m_toyDurationLo)) * g_wingzScale
+                / static_cast<double>(static_cast<u32>(m_toyTiming.m_interval.m_lo)) * g_wingzScale
             - g_wingzBias
         );
-        i64 left2 = m_toyDuration - static_cast<i64>(g_frameTime) + m_toyClock;
+        i64 left2 =
+            m_toyTiming.m_interval.m_v - static_cast<i64>(g_frameTime) + m_toyTiming.m_start.m_v;
         if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
             m_toyTime = 0;
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
@@ -2238,14 +2243,16 @@ afterArrival:
     }
 
     if (m_stamina < STAMINA_FULL) {
-        i64 left = m_attackDowntime64 + m_attackClock64 - static_cast<i64>(g_frameTime);
+        i64 left = m_attackTiming.m_interval.m_v + m_attackTiming.m_start.m_v
+                   - static_cast<i64>(g_frameTime);
         if (static_cast<u32>((left < 0 ? 0 : static_cast<u32>(left))) == 0) {
             m_stamina = STAMINA_FULL;
         } else {
-            i64 spent = static_cast<i64>(g_frameTime) - m_attackClock64;
+            i64 spent = static_cast<i64>(g_frameTime) - m_attackTiming.m_start.m_v;
             m_stamina = static_cast<i32>(
                 static_cast<double>((spent < 0 ? 0 : static_cast<u32>(spent)))
-                    / static_cast<double>(static_cast<u32>(m_attackDowntimeLo)) * g_wingzScale
+                    / static_cast<double>(static_cast<u32>(m_attackTiming.m_interval.m_lo))
+                    * g_wingzScale
                 - g_wingzBias
             );
         }
@@ -2255,12 +2262,14 @@ afterArrival:
     }
 
     if (m_wingzEnabled != false) {
-        i64 left = m_wingzDuration64 - static_cast<i64>(g_frameTime) + m_wingzClock64;
+        i64 left = m_wingzTiming.m_interval.m_v - static_cast<i64>(g_frameTime)
+                   + m_wingzTiming.m_start.m_v;
         m_wingzTime = static_cast<i32>(
             static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
             * DATA_COMPGEN(0x001e9a58, 0.01) - g_wingzBias
             );
-        i64 left2 = m_wingzDuration64 - static_cast<i64>(g_frameTime) + m_wingzClock64;
+        i64 left2 = m_wingzTiming.m_interval.m_v - static_cast<i64>(g_frameTime)
+                    + m_wingzTiming.m_start.m_v;
         if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
             ConsiderArrival(1);
             m_wingzTime = 0;
@@ -2272,12 +2281,14 @@ afterArrival:
     if (m_arrivalState == AI_BATTLEZ_PATH) {
         ExpireBattlezPoweredState(this);
     } else {
-        if (static_cast<i64>(g_frameTime) - m_combatClock64 >= m_combatTimeout64) {
+        if (static_cast<i64>(g_frameTime) - m_combatTiming.m_start.m_v
+            >= m_combatTiming.m_interval.m_v) {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
             if (m_arrived == false
-                && static_cast<i64>(g_frameTime) - m_hudRetireClock64 >= m_hudRetireWindow64) {
+                && static_cast<i64>(g_frameTime) - m_hudRetireTiming.m_start.m_v
+                       >= m_hudRetireTiming.m_interval.m_v) {
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
@@ -2289,7 +2300,8 @@ kindDispatch:
     if (m_gruntKind != GRUNT_NORMAL) {
         if (m_gruntKind == GRUNT_CONVERSION) {
 
-            if (static_cast<i64>(g_frameTime) - m_convertClock64 < m_convertTime64) {
+            if (static_cast<i64>(g_frameTime) - m_conversionTiming.m_start.m_v
+                < m_conversionTiming.m_interval.m_v) {
                 return;
             }
             i32 bite = m_health - 5;
@@ -2300,16 +2312,17 @@ kindDispatch:
                 m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 return;
             }
-            m_convertTimeLo =
+            m_conversionTiming.m_interval.m_lo =
                 static_cast<i32>(g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4));
-            m_convertTimeHi = 0;
-            m_convertClockLo = static_cast<i32>(g_frameTime);
-            m_convertClockHi = 0;
+            m_conversionTiming.m_interval.m_hi = 0;
+            m_conversionTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
+            m_conversionTiming.m_start.m_hi = 0;
             return;
         }
         if (m_gruntKind == GRUNT_INVULNERABLE) {
 
-            if (static_cast<i64>(g_frameTime) - m_shimmerClock64 >= m_shimmerWindow64) {
+            if (static_cast<i64>(g_frameTime) - m_shimmerTiming.m_start.m_v
+                >= m_shimmerTiming.m_interval.m_v) {
                 i32 pick = rand() % 16;
                 if (pick == IDX(m_moveIcon)) {
                     pick = 0x10;
@@ -2321,12 +2334,14 @@ kindDispatch:
                 SET_DRAW_FILL(obj, cmd, sel);
             }
         }
-        i64 left = m_convertTime64 + m_convertClock64 - static_cast<i64>(g_frameTime);
+        i64 left = m_conversionTiming.m_interval.m_v + m_conversionTiming.m_start.m_v
+                   - static_cast<i64>(g_frameTime);
         i32 leftMs = (left < 0 ? 0 : static_cast<i32>(left));
         if (leftMs <= 0xbb8) {
             if (m_gruntKind == GRUNT_GHOST) {
 
-                i64 rem = m_convertTime64 + m_convertClock64 - static_cast<i64>(g_frameTime);
+                i64 rem = m_conversionTiming.m_interval.m_v + m_conversionTiming.m_start.m_v
+                          - static_cast<i64>(g_frameTime);
                 u32 remMs = (rem < 0 ? 0 : static_cast<u32>(rem));
                 i32 frac = static_cast<i32>(
                     static_cast<double>(
@@ -2686,7 +2701,7 @@ void CGrunt::AdvanceMotion() {
             if (StepCompassMove() != 0) {
                 return;
             }
-            m_toyDuration = 0;
+            m_toyTiming.m_interval.m_v = 0;
             return;
         }
         if (ANIMATION_ACT_EQUALS("M")) {

@@ -1104,28 +1104,28 @@ perimSweep: {
 }
 
 topRowProbeHit: {
-    unit->m_arrivalRerollLo = 0;
-    unit->m_arrivalRerollWindowLo = 0;
-    unit->m_arrivalRerollHi = 0;
-    unit->m_arrivalRerollWindowHi = 0;
-    unit->m_arrivalRerollWindowLo = 0x1f40;
-    unit->m_arrivalRerollWindowHi = 0;
-    unit->m_arrivalRerollLo = g_frameTime;
-    unit->m_arrivalRerollHi = 0;
+    unit->m_arrivalRerollTiming.m_start.m_lo = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_lo = 0;
+    unit->m_arrivalRerollTiming.m_start.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_lo = 0x1f40;
+    unit->m_arrivalRerollTiming.m_interval.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_start.m_lo = g_frameTime;
+    unit->m_arrivalRerollTiming.m_start.m_hi = 0;
     CMapMgr* hb = m_board;
     GRID_CLIP_NULL(hb);
     return 1;
 }
 
 bottomRowProbeHit: {
-    unit->m_arrivalRerollLo = 0;
-    unit->m_arrivalRerollWindowLo = 0;
-    unit->m_arrivalRerollHi = 0;
-    unit->m_arrivalRerollWindowHi = 0;
-    unit->m_arrivalRerollWindowLo = 0x1f40;
-    unit->m_arrivalRerollWindowHi = 0;
-    unit->m_arrivalRerollLo = g_frameTime;
-    unit->m_arrivalRerollHi = 0;
+    unit->m_arrivalRerollTiming.m_start.m_lo = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_lo = 0;
+    unit->m_arrivalRerollTiming.m_start.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_lo = 0x1f40;
+    unit->m_arrivalRerollTiming.m_interval.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_start.m_lo = g_frameTime;
+    unit->m_arrivalRerollTiming.m_start.m_hi = 0;
     CMapMgr* hb = m_board;
     GRID_CLIP_NULL(hb);
     return 1;
@@ -1179,28 +1179,28 @@ tailArm2: {
 }
 
 firstColumnProbeHit: {
-    unit->m_arrivalRerollLo = 0;
-    unit->m_arrivalRerollWindowLo = 0;
-    unit->m_arrivalRerollHi = 0;
-    unit->m_arrivalRerollWindowHi = 0;
-    unit->m_arrivalRerollWindowLo = 0x1f40;
-    unit->m_arrivalRerollWindowHi = 0;
-    unit->m_arrivalRerollLo = g_frameTime;
-    unit->m_arrivalRerollHi = 0;
+    unit->m_arrivalRerollTiming.m_start.m_lo = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_lo = 0;
+    unit->m_arrivalRerollTiming.m_start.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_lo = 0x1f40;
+    unit->m_arrivalRerollTiming.m_interval.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_start.m_lo = g_frameTime;
+    unit->m_arrivalRerollTiming.m_start.m_hi = 0;
     CMapMgr* hb = m_board;
     GRID_CLIP_NULL(hb);
     return 1;
 }
 
 secondColumnProbeHit: {
-    unit->m_arrivalRerollLo = 0;
-    unit->m_arrivalRerollWindowLo = 0;
-    unit->m_arrivalRerollHi = 0;
-    unit->m_arrivalRerollWindowHi = 0;
-    unit->m_arrivalRerollWindowLo = 0x1f40;
-    unit->m_arrivalRerollWindowHi = 0;
-    unit->m_arrivalRerollLo = g_frameTime;
-    unit->m_arrivalRerollHi = 0;
+    unit->m_arrivalRerollTiming.m_start.m_lo = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_lo = 0;
+    unit->m_arrivalRerollTiming.m_start.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_interval.m_lo = 0x1f40;
+    unit->m_arrivalRerollTiming.m_interval.m_hi = 0;
+    unit->m_arrivalRerollTiming.m_start.m_lo = g_frameTime;
+    unit->m_arrivalRerollTiming.m_start.m_hi = 0;
     CMapMgr* hb = m_board;
     GRID_CLIP_NULL(hb);
     return 1;

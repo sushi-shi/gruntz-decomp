@@ -7,6 +7,7 @@
 
 #include <Clock64.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegistry.h>
@@ -58,19 +59,6 @@ public:
     inline void SetNotifyLatch(b32 notify);
     inline void SetInitialFramePending(b32 pending);
     inline void ResetAssetLoadState(GruntzPlayer* player);
-    struct ClockInterval {
-        Clock64 m_start;
-        Clock64 m_interval;
-
-        ClockInterval() {
-            m_start.m_v = 0;
-            m_interval.m_v = 0;
-        }
-
-        i64 Deadline() const {
-            return m_interval.m_v + m_start.m_v;
-        }
-    };
 
     QuestLevel CurrentQuestLevel() const {
         return static_cast<QuestLevel>(m_levelIndex);

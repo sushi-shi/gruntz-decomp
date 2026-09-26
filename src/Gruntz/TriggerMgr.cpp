@@ -128,11 +128,11 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
                         ResetCell(g_curPlayer, j, 1, 1);
                     } else {
                         g->CreateHealthSprite();
-                        g->m_hudRetireWindowLo =
+                        g->m_hudRetireTiming.m_interval.m_lo =
                             g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388);
-                        g->m_hudRetireWindowHi = 0;
-                        g->m_hudRetireClockLo = g_frameTime;
-                        g->m_hudRetireClockHi = 0;
+                        g->m_hudRetireTiming.m_interval.m_hi = 0;
+                        g->m_hudRetireTiming.m_start.m_lo = g_frameTime;
+                        g->m_hudRetireTiming.m_start.m_hi = 0;
                     }
                 }
             }

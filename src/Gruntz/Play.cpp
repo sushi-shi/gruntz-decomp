@@ -4276,10 +4276,10 @@ i32 CPlay::ExecuteCommand(
                     ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
             if (g != NULL) {
                 if (g->m_tileClaimed != true) {
-                    g->m_arrivalRerollLo = 0;
-                    g->m_arrivalRerollWindowLo = 0;
-                    g->m_arrivalRerollHi = 0;
-                    g->m_arrivalRerollWindowHi = 0;
+                    g->m_arrivalRerollTiming.m_start.m_lo = 0;
+                    g->m_arrivalRerollTiming.m_interval.m_lo = 0;
+                    g->m_arrivalRerollTiming.m_start.m_hi = 0;
+                    g->m_arrivalRerollTiming.m_interval.m_hi = 0;
                     g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
                     g->m_tileClaimed = true;
                     g->m_defenderPx.m_y = g->m_lastTilePx.m_y;

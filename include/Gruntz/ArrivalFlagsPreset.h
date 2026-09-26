@@ -33,8 +33,8 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
 
 #define END_GUARD(grunt)                                                                           \
     {                                                                                              \
-        (grunt)->m_arrivalReroll64 = 0;                                                            \
-        (grunt)->m_arrivalRerollWindow64 = 0;                                                      \
+        (grunt)->m_arrivalRerollTiming.m_start.m_v = 0;                                            \
+        (grunt)->m_arrivalRerollTiming.m_interval.m_v = 0;                                         \
         (grunt)->m_tileClaimed = false;                                                            \
         (grunt)->m_arrivalState = AI_NONE;                                                         \
         (grunt)->m_arrivalFlags &= 0xe7fbfbfd;                                                     \

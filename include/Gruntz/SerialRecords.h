@@ -9,14 +9,6 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 
-struct CGameObject;
-
-struct CPairRecord {
-    Clock64 m_start;
-    Clock64 m_duration;
-    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
-};
-
 inline void SerBandPair(CFileMemBase* ar, SerialMode mode, void* band) {
     char* p = static_cast<char*>(band);
     if (mode != SERIAL_SAVE) {

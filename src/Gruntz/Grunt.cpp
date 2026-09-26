@@ -243,69 +243,7 @@ RVA_COMPGEN(0x0000f430, 0x10, ??1CGruntCellRec@@QAE@XZ)
 
 // @early-stop
 RVA(0x00047a10, 0x770)
-CGrunt::CGrunt(CGameObject* owner)
-    : CMovingLogic(owner, CMovingLogic::GRUNT_SCALE),
-      CWapX(owner),
-      m_struckClockLo(0),
-      m_struckTimerLo(0),
-      m_struckClockHi(0),
-      m_struckTimerHi(0),
-      m_holdAnchorLo(0),
-      m_holdWindowLo(0),
-      m_holdAnchorHi(0),
-      m_holdWindowHi(0),
-      m_arrivalRerollLo(0),
-      m_arrivalRerollWindowLo(0),
-      m_arrivalRerollHi(0),
-      m_arrivalRerollWindowHi(0),
-      m_toyClockLo(0),
-      m_toyDurationLo(0),
-      m_toyClockHi(0),
-      m_toyDurationHi(0),
-      m_idleAnchorLo(0),
-      m_idleDelayLo(0),
-      m_idleAnchorHi(0),
-      m_idleDelayHi(0),
-      m_idleTimerLo(0),
-      m_idleWindowLo(0),
-      m_idleTimerHi(0),
-      m_idleWindowHi(0),
-      m_entranceClockLo(0),
-      m_entranceSafeTimeLo(0),
-      m_entranceClockHi(0),
-      m_entranceSafeTimeHi(0),
-      m_flashClockLo(0),
-      m_flashWindowLo(0),
-      m_flashClockHi(0),
-      m_flashWindowHi(0),
-      m_attackClockLo(0),
-      m_attackDowntimeLo(0),
-      m_attackClockHi(0),
-      m_attackDowntimeHi(0),
-      m_combatClockLo(0),
-      m_combatTimeoutLo(0),
-      m_combatClockHi(0),
-      m_combatTimeoutHi(0),
-      m_hudRetireClockLo(0),
-      m_hudRetireWindowLo(0),
-      m_hudRetireClockHi(0),
-      m_hudRetireWindowHi(0),
-      m_wingzClockLo(0),
-      m_wingzDurationLo(0),
-      m_wingzClockHi(0),
-      m_wingzDurationHi(0),
-      m_convertClockLo(0),
-      m_convertTimeLo(0),
-      m_convertClockHi(0),
-      m_convertTimeHi(0),
-      m_shimmerClockLo(0),
-      m_shimmerWindowLo(0),
-      m_shimmerClockHi(0),
-      m_shimmerWindowHi(0),
-      m_arrivalVoiceClockLo(0),
-      m_arrivalVoiceWindowLo(0),
-      m_arrivalVoiceClockHi(0),
-      m_arrivalVoiceWindowHi(0) {
+CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCALE), CWapX(owner) {
     m_entranceCell = g_gruntMoveDirSouth;
     m_startingItemId = m_object->m_powerup;
     m_recordedFrameTick = g_frameTicks;
@@ -364,58 +302,58 @@ CGrunt::CGrunt(CGameObject* owner)
     m_vehicleContactRect = zero;
     m_vehicleContactExclusionRect = zero;
 
-    m_toyClockLo = 0;
-    m_toyDurationLo = 0;
-    m_toyClockHi = 0;
-    m_toyDurationHi = 0;
-    m_idleAnchorLo = 0;
-    m_idleDelayLo = 0;
-    m_idleAnchorHi = 0;
-    m_idleDelayHi = 0;
-    m_idleTimerLo = 0;
-    m_idleWindowLo = 0;
-    m_idleTimerHi = 0;
-    m_idleWindowHi = 0;
-    m_entranceClockLo = 0;
-    m_entranceSafeTimeLo = 0;
-    m_entranceClockHi = 0;
-    m_entranceSafeTimeHi = 0;
-    m_flashClockLo = 0;
-    m_flashWindowLo = 0;
-    m_flashClockHi = 0;
-    m_flashWindowHi = 0;
-    m_attackClockLo = 0;
-    m_attackDowntimeLo = 0;
-    m_attackClockHi = 0;
-    m_attackDowntimeHi = 0;
-    m_combatClockLo = 0;
-    m_combatTimeoutLo = 0;
-    m_combatClockHi = 0;
-    m_combatTimeoutHi = 0;
-    m_hudRetireClockLo = 0;
-    m_hudRetireWindowLo = 0;
-    m_hudRetireClockHi = 0;
-    m_hudRetireWindowHi = 0;
-    m_wingzClockLo = 0;
-    m_wingzDurationLo = 0;
-    m_wingzClockHi = 0;
-    m_wingzDurationHi = 0;
-    m_convertClockLo = 0;
-    m_convertTimeLo = 0;
-    m_convertClockHi = 0;
-    m_convertTimeHi = 0;
-    m_shimmerClockLo = 0;
-    m_shimmerWindowLo = 0;
-    m_shimmerClockHi = 0;
-    m_shimmerWindowHi = 0;
-    m_arrivalVoiceClockLo = 0;
-    m_arrivalVoiceWindowLo = 0;
-    m_arrivalVoiceClockHi = 0;
-    m_arrivalVoiceWindowHi = 0;
-    m_arrivalRerollLo = 0;
-    m_arrivalRerollWindowLo = 0;
-    m_arrivalRerollHi = 0;
-    m_arrivalRerollWindowHi = 0;
+    m_toyTiming.m_start.m_lo = 0;
+    m_toyTiming.m_interval.m_lo = 0;
+    m_toyTiming.m_start.m_hi = 0;
+    m_toyTiming.m_interval.m_hi = 0;
+    m_idleDelayTiming.m_start.m_lo = 0;
+    m_idleDelayTiming.m_interval.m_lo = 0;
+    m_idleDelayTiming.m_start.m_hi = 0;
+    m_idleDelayTiming.m_interval.m_hi = 0;
+    m_idleWindowTiming.m_start.m_lo = 0;
+    m_idleWindowTiming.m_interval.m_lo = 0;
+    m_idleWindowTiming.m_start.m_hi = 0;
+    m_idleWindowTiming.m_interval.m_hi = 0;
+    m_entranceTiming.m_start.m_lo = 0;
+    m_entranceTiming.m_interval.m_lo = 0;
+    m_entranceTiming.m_start.m_hi = 0;
+    m_entranceTiming.m_interval.m_hi = 0;
+    m_flashTiming.m_start.m_lo = 0;
+    m_flashTiming.m_interval.m_lo = 0;
+    m_flashTiming.m_start.m_hi = 0;
+    m_flashTiming.m_interval.m_hi = 0;
+    m_attackTiming.m_start.m_lo = 0;
+    m_attackTiming.m_interval.m_lo = 0;
+    m_attackTiming.m_start.m_hi = 0;
+    m_attackTiming.m_interval.m_hi = 0;
+    m_combatTiming.m_start.m_lo = 0;
+    m_combatTiming.m_interval.m_lo = 0;
+    m_combatTiming.m_start.m_hi = 0;
+    m_combatTiming.m_interval.m_hi = 0;
+    m_hudRetireTiming.m_start.m_lo = 0;
+    m_hudRetireTiming.m_interval.m_lo = 0;
+    m_hudRetireTiming.m_start.m_hi = 0;
+    m_hudRetireTiming.m_interval.m_hi = 0;
+    m_wingzTiming.m_start.m_lo = 0;
+    m_wingzTiming.m_interval.m_lo = 0;
+    m_wingzTiming.m_start.m_hi = 0;
+    m_wingzTiming.m_interval.m_hi = 0;
+    m_conversionTiming.m_start.m_lo = 0;
+    m_conversionTiming.m_interval.m_lo = 0;
+    m_conversionTiming.m_start.m_hi = 0;
+    m_conversionTiming.m_interval.m_hi = 0;
+    m_shimmerTiming.m_start.m_lo = 0;
+    m_shimmerTiming.m_interval.m_lo = 0;
+    m_shimmerTiming.m_start.m_hi = 0;
+    m_shimmerTiming.m_interval.m_hi = 0;
+    m_arrivalVoiceTiming.m_start.m_lo = 0;
+    m_arrivalVoiceTiming.m_interval.m_lo = 0;
+    m_arrivalVoiceTiming.m_start.m_hi = 0;
+    m_arrivalVoiceTiming.m_interval.m_hi = 0;
+    m_arrivalRerollTiming.m_start.m_lo = 0;
+    m_arrivalRerollTiming.m_interval.m_lo = 0;
+    m_arrivalRerollTiming.m_start.m_hi = 0;
+    m_arrivalRerollTiming.m_interval.m_hi = 0;
     m_unusedBattleCell.Set(-1, -1);
     m_arrivalNotified = false;
     m_defenderState = AISTATE_SEEK;
@@ -1892,14 +1830,14 @@ i32 CGrunt::Place(
     m_arrivalCell.m_y = -1;
     m_defenderPickupType = static_cast<PickupType>(defenderPickupType);
     m_defenderRadius = defenderRadiusMinusOne + 1;
-    m_arrivalRerollLo = 0;
-    m_arrivalRerollWindowLo = 0;
-    m_arrivalRerollHi = 0;
-    m_arrivalRerollWindowHi = 0;
-    m_holdAnchorLo = 0;
-    m_holdWindowLo = 0;
-    m_holdAnchorHi = 0;
-    m_holdWindowHi = 0;
+    m_arrivalRerollTiming.m_start.m_lo = 0;
+    m_arrivalRerollTiming.m_interval.m_lo = 0;
+    m_arrivalRerollTiming.m_start.m_hi = 0;
+    m_arrivalRerollTiming.m_interval.m_hi = 0;
+    m_holdTiming.m_start.m_lo = 0;
+    m_holdTiming.m_interval.m_lo = 0;
+    m_holdTiming.m_start.m_hi = 0;
+    m_holdTiming.m_interval.m_hi = 0;
     m_moveIcon = moveIcon;
     m_triggerMgr = board;
     m_daFlag = 1;
@@ -2039,8 +1977,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     }
     if (kind != PICKUP_WINGZ) {
         m_wingzEnabled = false;
-        m_wingzDurationLo = 0;
-        m_wingzDurationHi = 0;
+        m_wingzTiming.m_interval.m_lo = 0;
+        m_wingzTiming.m_interval.m_hi = 0;
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     }
     fresh = 0;
@@ -2499,7 +2437,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_gruntKind = GRUNT_CONVERSION;
-            i64* clock = &m_convertClock64;
+            i64* clock = &m_conversionTiming.m_start.m_v;
             clock[1] = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
             clock[0] = g_frameTime;
             StopPowerupLoopSound();
@@ -2519,11 +2457,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "DeathTouchTime", 0x4e20);
             }
-            i64* clock = &m_convertClock64;
+            i64* clock = &m_conversionTiming.m_start.m_v;
             clock[1] = m_powerupDuration;
             clock[0] = g_frameTime;
-            m_shimmerWindowLo = 0;
-            m_shimmerWindowHi = 0;
+            m_shimmerTiming.m_interval.m_lo = 0;
+            m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_DEATHTOUCHLOOP");
             break;
@@ -2535,11 +2473,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }
-            i64* clock = &m_convertClock64;
+            i64* clock = &m_conversionTiming.m_start.m_v;
             clock[1] = m_powerupDuration;
             clock[0] = g_frameTime;
-            m_shimmerWindowLo = 0;
-            m_shimmerWindowHi = 0;
+            m_shimmerTiming.m_interval.m_lo = 0;
+            m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_GHOSTLOOP");
             return 1;
@@ -2549,11 +2487,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
-            i64* clock = &m_convertClock64;
+            i64* clock = &m_conversionTiming.m_start.m_v;
             clock[1] = m_powerupDuration;
             clock[0] = g_frameTime;
-            m_shimmerWindowLo = 0;
-            m_shimmerWindowHi = 0;
+            m_shimmerTiming.m_interval.m_lo = 0;
+            m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_INVULNERABILITYLOOP");
             return 1;
@@ -2564,11 +2502,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
-            i64* clock = &m_convertClock64;
+            i64* clock = &m_conversionTiming.m_start.m_v;
             clock[1] = m_powerupDuration;
             clock[0] = g_frameTime;
-            m_shimmerWindowLo = 0;
-            m_shimmerWindowHi = 0;
+            m_shimmerTiming.m_interval.m_lo = 0;
+            m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_REACTIVEARMORLOOP");
             return 1;
@@ -2579,11 +2517,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "RoidzTime", 0x4e20);
             }
-            i64* clock = &m_convertClock64;
+            i64* clock = &m_conversionTiming.m_start.m_v;
             clock[1] = m_powerupDuration;
             clock[0] = g_frameTime;
-            m_shimmerWindowLo = 0;
-            m_shimmerWindowHi = 0;
+            m_shimmerTiming.m_interval.m_lo = 0;
+            m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_ROIDZLOOP");
             return 1;
@@ -2594,11 +2532,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "SuperSpeedTime", 0x4e20);
             }
-            i64* clock = &m_convertClock64;
+            i64* clock = &m_conversionTiming.m_start.m_v;
             clock[1] = m_powerupDuration;
             clock[0] = g_frameTime;
-            m_shimmerWindowLo = 0;
-            m_shimmerWindowHi = 0;
+            m_shimmerTiming.m_interval.m_lo = 0;
+            m_shimmerTiming.m_interval.m_hi = 0;
             ReadConfigFromButeMgr();
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
