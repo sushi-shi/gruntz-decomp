@@ -145,8 +145,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
                     Coord sp;
                     occ->GetScreenPos(&sp);
-                    sp.m_x >>= TILE_SHIFT_PX;
-                    sp.m_y >>= TILE_SHIFT_PX;
+                    ScreenTile(&sp);
                     if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(occ);
                         m_defenderState = AISTATE_CHASE;

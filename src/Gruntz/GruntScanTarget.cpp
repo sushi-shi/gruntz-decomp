@@ -101,8 +101,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         Coord bp;
         best->GetScreenPos(&bp);
         POINT pt;
-        pt.x = bp.m_x >> TILE_SHIFT_PX;
-        pt.y = bp.m_y >> TILE_SHIFT_PX;
+        SET_POINT_COMPONENTS(pt, bp.m_x >> TILE_SHIFT_PX, bp.m_y >> TILE_SHIFT_PX);
         if (!PtInRect(&box, pt)) {
             best = NULL;
         }

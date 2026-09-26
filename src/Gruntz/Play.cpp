@@ -91,6 +91,7 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/String.h>
+#include <Gruntz/TextBounds.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
@@ -4079,11 +4080,7 @@ void CPlay::LoadSBITextEdges(i32 msgId) {
     RECT rect;
 
     RECT vp = m_world->m_level->m_viewportRect;
-    i32 bottom = vp.bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
-    i32 right = vp.right - g_buteMgr.GetInt("Font", "TextRightEdge");
-    i32 top = vp.top + g_buteMgr.GetInt("Font", "TextTopEdge");
-    i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
-    SetRect(&rect, left, top, right, bottom);
+    GET_TEXT_BOUNDS(rect, vp);
 
     DrawTextToFrontSurface(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     m_stepCountdown = 2;
@@ -4111,19 +4108,11 @@ void CPlay::PlayCueAt(
     }
 
     if (rectSrc != NULL) {
-        i32 bottom = rectSrc->bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
-        i32 right = rectSrc->right - g_buteMgr.GetInt("Font", "TextRightEdge");
-        i32 top = rectSrc->top + g_buteMgr.GetInt("Font", "TextTopEdge");
-        i32 left = rectSrc->left + g_buteMgr.GetInt("Font", "TextLeftEdge");
-        SetRect(&rect, left, top, right, bottom);
+        GET_TEXT_BOUNDS(rect, *rectSrc);
     } else {
 
         RECT vp = m_world->m_level->m_viewportRect;
-        i32 bottom = vp.bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
-        i32 right = vp.right - g_buteMgr.GetInt("Font", "TextRightEdge");
-        i32 top = vp.top + g_buteMgr.GetInt("Font", "TextTopEdge");
-        i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
-        SetRect(&rect, left, top, right, bottom);
+        GET_TEXT_BOUNDS(rect, vp);
     }
 
     if (toFrontPage != 0) {

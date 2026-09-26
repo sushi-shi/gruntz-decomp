@@ -602,34 +602,26 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 
     POINT a, b;
 
-    b.x = m_object->m_screenX;
-    b.y = m_object->m_screenY - 0x3e8;
-    a.x = m_object->m_screenX;
-    a.y = m_object->m_screenY + 0x3e8;
+    SET_POINT_COMPONENTS(b, m_object->m_screenX, m_object->m_screenY - 0x3e8);
+    SET_POINT_COMPONENTS(a, m_object->m_screenX, m_object->m_screenY + 0x3e8);
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_object->m_screenX - 0x3e8;
-    b.y = m_object->m_screenY;
-    a.x = m_object->m_screenX + 0x3e8;
-    a.y = m_object->m_screenY;
+    SET_POINT_COMPONENTS(b, m_object->m_screenX - 0x3e8, m_object->m_screenY);
+    SET_POINT_COMPONENTS(a, m_object->m_screenX + 0x3e8, m_object->m_screenY);
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_object->m_screenX - 0x3e8;
-    b.y = m_object->m_screenY - 0x3e8;
-    a.x = m_object->m_screenX + 0x3e8;
-    a.y = m_object->m_screenY + 0x3e8;
+    SET_POINT_COMPONENTS(b, m_object->m_screenX - 0x3e8, m_object->m_screenY - 0x3e8);
+    SET_POINT_COMPONENTS(a, m_object->m_screenX + 0x3e8, m_object->m_screenY + 0x3e8);
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_object->m_screenX - 0x3e8;
-    b.y = m_object->m_screenY + 0x3e8;
-    a.x = m_object->m_screenX + 0x3e8;
-    a.y = m_object->m_screenY - 0x3e8;
+    SET_POINT_COMPONENTS(b, m_object->m_screenX - 0x3e8, m_object->m_screenY + 0x3e8);
+    SET_POINT_COMPONENTS(a, m_object->m_screenX + 0x3e8, m_object->m_screenY - 0x3e8);
     return RectSegProbe(&r, &b, &a) != 0;
 }
 

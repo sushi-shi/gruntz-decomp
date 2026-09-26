@@ -21,6 +21,7 @@
 #include <Io/GameSave.h>
 #include <Io/SaveGame.h>
 #include <MsgParam.h>
+#include <RectMacros.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/ScreenGeometry.h>
 
@@ -66,8 +67,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             RECT wr;
             GetWindowRect(item, &wr);
             POINT pt;
-            pt.x = wr.left;
-            pt.y = wr.top;
+            SET_POINT_COMPONENTS(pt, wr.left, wr.top);
             ScreenToClient(hDlg, &pt);
             i32 dx = pt.x;
             i32 dy = pt.y;

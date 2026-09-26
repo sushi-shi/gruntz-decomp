@@ -29,6 +29,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <RectMacros.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
@@ -72,8 +73,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             if (cue == WWDDRAW_EFFECT_FRAME) {
                 POINT pt;
-                pt.x = px;
-                pt.y = py;
+                SET_POINT_COMPONENTS(pt, px, py);
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                     CreateParticlez(m_world->m_childGroup, px, py, "LEVEL_DIRT", "GAME_DIRT");
                 }
@@ -116,8 +116,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             if (cue == WWDDRAW_EFFECT_FRAME) {
                 POINT pt;
-                pt.x = px;
-                pt.y = py;
+                SET_POINT_COMPONENTS(pt, px, py);
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                     switch (cellType) {
                         case TILEKIND_GAUNTLET_ROCK_A:
@@ -182,8 +181,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
             {
                 POINT pt;
-                pt.x = px;
-                pt.y = py;
+                SET_POINT_COMPONENTS(pt, px, py);
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                     CWwdSpriteObject* particle = m_world->m_childGroup->CreateSprite(
                         0,
