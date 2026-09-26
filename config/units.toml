@@ -1186,11 +1186,38 @@ source = "src/DDrawMgr/Fader.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "fadereffects"
-source = "src/DDrawMgr/FaderEffects.cpp"
+unit = "fadermesh"
+source = "src/DDrawMgr/FaderMesh.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "faderflat"
+source = "src/DDrawMgr/FaderFlat.cpp"
 # NOT cpp-rtti: retail's five CFader* vtables carry no Complete Object Locator at
 # [-4] (0x1f07f8/0x1f0810/0x1f0848/0x1f0870/0x1f0890 hold FP-pool constants there),
-# and retail's .data has no .?AVCFader* type descriptor at all.
+# and retail's .data has no .?AVCFader* type descriptor at all. One TU per effect:
+# each vtable is followed by its own FP pool, which repeats constants (1.570795f,
+# 1.0f) a single TU would pool once.
+flags = "cpp"
+
+[[unit]]
+unit = "faderradial"
+source = "src/DDrawMgr/FaderRadial.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "fadersine"
+source = "src/DDrawMgr/FaderSine.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "faderlight"
+source = "src/DDrawMgr/FaderLight.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "fadershape"
+source = "src/DDrawMgr/FaderShape.cpp"
 flags = "cpp"
 [[unit]]
 unit = "engstrrendertext"
