@@ -1229,16 +1229,14 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_greyShadeTable->Lut16();
             memcpy(g_scratch, dst, count * 2);
-            u8* pd = dst;
-            u8* sc = g_scratch;
+            u16* d = reinterpret_cast<u16*>(dst);        // byte-forced
+            u16* sc = reinterpret_cast<u16*>(g_scratch); // byte-forced
             while (count-- > 0) {
-                u32 idx = pal2[Load16(sc)];
-                sc += 2;
+                u32 idx = pal2[*sc++];
                 u32 hi = *src++;
                 hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
                 idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                Store16(pd, pal1[idx]);
-                pd += 2;
+                *d++ = pal1[idx];
             }
             break;
         }
@@ -1567,17 +1565,17 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_greyShadeTable->Lut16();
             memcpy(g_scratch, dst, count * 2);
-            i32 sc = g_scratch - dst;
+            u16* d = reinterpret_cast<u16*>(dst);        // byte-forced
+            u16* sc = reinterpret_cast<u16*>(g_scratch); // byte-forced
             while (count-- > 0) {
-                i32 rd = rowDelta / 2 * 2;
-                u32 idx = pal2[Load16(dst + sc)];
+                u32 idx = pal2[*sc++];
                 u32 hi = *src++;
                 hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
                 idx += hi << CLUT_ALPHA_INDEX_SHIFT;
                 u16 v = pal1[idx];
-                Store16(dst, v);
-                Store16(dst + rd, v);
-                dst += 2;
+                d[0] = v;
+                d[rowDelta / 2] = v;
+                d++;
             }
             break;
         }
