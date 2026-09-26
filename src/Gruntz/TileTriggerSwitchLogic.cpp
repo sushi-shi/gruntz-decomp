@@ -22,6 +22,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/MapCellInline.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -743,18 +744,13 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             i32 sx = ((i + m_tileX) << TILE_SHIFT_PX) - 0x10;
             i32 sy = ((j + m_tileY) << TILE_SHIFT_PX) - 0x10;
             if (inRect) {
-                CWwdSpriteObject* spr = gameMgr->m_childGroup->CreateSprite(
-                    0,
+                CreateParticlez(
+                    gameMgr->m_childGroup,
                     sx,
                     sy,
-                    SORTKEY_ACTOR_BEHIND,
-                    "Particlez",
-                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    "LEVEL_ROCKBREAK",
+                    "LEVEL_ROCKBREAK"
                 );
-                if (spr != NULL) {
-                    spr->SetImageSetByName("LEVEL_ROCKBREAK");
-                    spr->SetAnimationByName("LEVEL_ROCKBREAK", 0);
-                }
             }
         }
     }

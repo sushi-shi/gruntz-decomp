@@ -21,6 +21,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -618,18 +619,13 @@ i32 CWarlord::BuildFortSplashParticles() {
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
-            CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateParticlez(
+                g_gameReg->m_world->m_childGroup,
                 x - 30,
                 y + 10,
-                SORTKEY_ACTOR_BEHIND,
-                "Particlez",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "LEVEL_FORTSPLASH",
+                "LEVEL_FORTSPLASH"
             );
-            if (fx != NULL) {
-                fx->SetImageSetByName("LEVEL_FORTSPLASH");
-                fx->SetAnimationByName("LEVEL_FORTSPLASH", 0);
-            }
         }
 
         CTriggerMgr* h = g_gameReg->m_triggerMgr;

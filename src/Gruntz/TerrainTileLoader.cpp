@@ -17,6 +17,7 @@
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/MapCellInline.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -73,18 +74,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.x = px;
                 pt.y = py;
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                    CWwdSpriteObject* set = m_world->m_childGroup->CreateSprite(
-                        0,
-                        px,
-                        py,
-                        SORTKEY_ACTOR_BEHIND,
-                        "Particlez",
-                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                    );
-                    if (set != NULL) {
-                        set->SetImageSetByName("LEVEL_DIRT");
-                        set->SetAnimationByName("GAME_DIRT", 0);
-                    }
+                    CreateParticlez(m_world->m_childGroup, px, py, "LEVEL_DIRT", "GAME_DIRT");
                 }
                 return 1;
             }

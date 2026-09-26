@@ -23,6 +23,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MovingDeathTileId.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
@@ -241,19 +242,13 @@ i32 CRollingBall::Update() {
                             i32 px = o->m_screenX;
                             i32 py = o->m_screenY;
                             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-                                CWwdSpriteObject* fx =
-                                    g_gameReg->m_world->m_childGroup->CreateSprite(
-                                        0,
-                                        px,
-                                        py,
-                                        SORTKEY_ACTOR_BEHIND,
-                                        "Particlez",
-                                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                                    );
-                                if (fx != NULL) {
-                                    fx->SetImageSetByName("LEVEL_DEATHSPLASH");
-                                    fx->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
-                                }
+                                CreateParticlez(
+                                    g_gameReg->m_world->m_childGroup,
+                                    px,
+                                    py,
+                                    "LEVEL_DEATHSPLASH",
+                                    "LEVEL_DEATHSPLASH"
+                                );
                             }
                             break;
                         }
@@ -348,18 +343,13 @@ i32 CRollingBall::Update() {
                     i32 px = o->m_screenX;
                     i32 py = o->m_screenY;
                     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-                        CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
-                            0,
+                        CreateParticlez(
+                            g_gameReg->m_world->m_childGroup,
                             px,
                             py,
-                            SORTKEY_ACTOR_BEHIND,
-                            "Particlez",
-                            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            "GAME_WATER",
+                            "GAME_WATER"
                         );
-                        if (fx != NULL) {
-                            fx->SetImageSetByName("GAME_WATER");
-                            fx->SetAnimationByName("GAME_WATER", 0);
-                        }
                     }
                     m_explodeLatch = true;
                     return 0;

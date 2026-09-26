@@ -32,6 +32,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -406,18 +407,13 @@ void CProjectile::AdvanceMotion() {
                         default:
 
                             if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
-                                CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
-                                    0,
+                                CreateParticlez(
+                                    reg->m_world->m_childGroup,
                                     m_targetPxX,
                                     m_targetPxY,
-                                    SORTKEY_ACTOR_BEHIND,
-                                    "Particlez",
-                                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                                    "LEVEL_DEATHSPLASH",
+                                    "LEVEL_DEATHSPLASH"
                                 );
-                                if (fx != NULL) {
-                                    fx->SetImageSetByName("LEVEL_DEATHSPLASH");
-                                    fx->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
-                                }
                             }
                             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             return;
@@ -426,18 +422,13 @@ void CProjectile::AdvanceMotion() {
             }
         } else {
             if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
-                CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
-                    0,
+                CreateParticlez(
+                    reg->m_world->m_childGroup,
                     m_targetPxX,
                     m_targetPxY,
-                    SORTKEY_ACTOR_BEHIND,
-                    "Particlez",
-                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    "GAME_WATER",
+                    "GAME_WATER"
                 );
-                if (fx != NULL) {
-                    fx->SetImageSetByName("GAME_WATER");
-                    fx->SetAnimationByName("GAME_WATER", 0);
-                }
             }
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;

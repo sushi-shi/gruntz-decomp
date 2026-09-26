@@ -3,9 +3,12 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/UserLogic.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 class CParticlez : public CUserLogic, public CWapX {
 public:
@@ -28,5 +31,26 @@ public:
     static void RegisterActs();
     i32 Update();
 };
+
+inline void CreateParticlez(
+    CDDrawChildGroup* group,
+    i32 x,
+    i32 y,
+    const char* imageSetName,
+    const char* animationName
+) {
+    CWwdSpriteObject* sprite = group->CreateSprite(
+        0,
+        x,
+        y,
+        SORTKEY_ACTOR_BEHIND,
+        "Particlez",
+        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+    );
+    if (sprite != NULL) {
+        sprite->SetImageSetByName(imageSetName);
+        sprite->SetAnimationByName(animationName, 0);
+    }
+}
 
 #endif // GRUNTZ_CPARTICLEZ_H
