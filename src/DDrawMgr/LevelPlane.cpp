@@ -235,90 +235,89 @@ void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
 // @early-stop
 RVA(0x00161c90, 0x1e4)
 void CDDrawWorkerHost::UpdatePlaneViewRect() {
-    CDDrawWorkerHost* p = this;
-    WwdPlaneFlags flags = static_cast<WwdPlaneFlags>(p->m_flags);
+    WwdPlaneFlags flags = static_cast<WwdPlaneFlags>(m_flags);
     i32 wrapX, wrapY;
     wrapX = HAS(flags, WWD_PLANE_FLAG_WRAP_X);
 
     if (wrapX) {
-        if (p->m_scrollCenterX < 0.0f) {
+        if (m_scrollCenterX < 0.0f) {
             do {
-                p->m_scrollCenterX += static_cast<float>(p->m_planePixelWidth);
-            } while (p->m_scrollCenterX < 0.0f);
+                m_scrollCenterX += static_cast<float>(m_planePixelWidth);
+            } while (m_scrollCenterX < 0.0f);
         }
-        if (p->m_scrollCenterX >= static_cast<float>(p->m_planePixelWidth)) {
-            float t = p->m_scrollCenterX;
+        if (m_scrollCenterX >= static_cast<float>(m_planePixelWidth)) {
+            float t = m_scrollCenterX;
             do {
-                t -= static_cast<float>(p->m_planePixelWidth);
-            } while (t >= static_cast<float>(p->m_planePixelWidth));
-            p->m_scrollCenterX = t;
+                t -= static_cast<float>(m_planePixelWidth);
+            } while (t >= static_cast<float>(m_planePixelWidth));
+            m_scrollCenterX = t;
         }
     } else {
-        if (p->m_scrollCenterX < 0.0f) {
-            p->m_scrollCenterX = 0;
-        } else if (static_cast<float>(p->m_planePixelWidth) <= p->m_scrollCenterX) {
-            p->m_scrollCenterX = static_cast<float>((p->m_planePixelWidth - 1));
+        if (m_scrollCenterX < 0.0f) {
+            m_scrollCenterX = 0;
+        } else if (static_cast<float>(m_planePixelWidth) <= m_scrollCenterX) {
+            m_scrollCenterX = static_cast<float>((m_planePixelWidth - 1));
         }
     }
 
     wrapY = HAS(flags, WWD_PLANE_FLAG_WRAP_Y);
     if (wrapY) {
-        if (p->m_scrollCenterY < 0.0f) {
+        if (m_scrollCenterY < 0.0f) {
             do {
-                p->m_scrollCenterY += static_cast<float>(p->m_planePixelHeight);
-            } while (p->m_scrollCenterY < 0.0f);
+                m_scrollCenterY += static_cast<float>(m_planePixelHeight);
+            } while (m_scrollCenterY < 0.0f);
         }
-        if (p->m_scrollCenterY >= static_cast<float>(p->m_planePixelHeight)) {
-            float t = p->m_scrollCenterY;
+        if (m_scrollCenterY >= static_cast<float>(m_planePixelHeight)) {
+            float t = m_scrollCenterY;
             do {
-                t -= static_cast<float>(p->m_planePixelHeight);
-            } while (t >= static_cast<float>(p->m_planePixelHeight));
-            p->m_scrollCenterY = t;
+                t -= static_cast<float>(m_planePixelHeight);
+            } while (t >= static_cast<float>(m_planePixelHeight));
+            m_scrollCenterY = t;
         }
     } else {
-        if (p->m_scrollCenterY < 0.0f) {
-            p->m_scrollCenterY = 0;
-        } else if (static_cast<float>(p->m_planePixelHeight) <= p->m_scrollCenterY) {
-            p->m_scrollCenterY = static_cast<float>((p->m_planePixelHeight - 1));
+        if (m_scrollCenterY < 0.0f) {
+            m_scrollCenterY = 0;
+        } else if (static_cast<float>(m_planePixelHeight) <= m_scrollCenterY) {
+            m_scrollCenterY = static_cast<float>((m_planePixelHeight - 1));
         }
     }
 
-    p->m_scrollPixelX = static_cast<i32>(p->m_scrollCenterX);
-    i32 iy = static_cast<i32>(p->m_scrollCenterY);
-    p->m_scrollPixelY = iy;
+    m_scrollPixelX = static_cast<i32>(m_scrollCenterX);
+    i32 iy = static_cast<i32>(m_scrollCenterY);
+    m_scrollPixelY = iy;
 
-    p->m_planeViewRect.left = p->m_scrollPixelX - p->m_viewHalfWidth;
-    if (p->m_planeViewRect.left < 0) {
+    m_planeViewRect.left = m_scrollPixelX - m_viewHalfWidth;
+    if (m_planeViewRect.left < 0) {
         if (wrapX) {
-            p->m_planeViewRect.left = p->m_planePixelWidth + p->m_planeViewRect.left;
+            m_planeViewRect.left = m_planePixelWidth + m_planeViewRect.left;
         } else {
-            p->m_planeViewRect.left = 0;
+            m_planeViewRect.left = 0;
         }
     }
 
-    i32 oy = iy - p->m_viewHalfHeight;
-    p->m_planeViewRect.top = oy;
+    i32 oy = iy - m_viewHalfHeight;
+    m_planeViewRect.top = oy;
     if (oy < 0) {
         if (wrapY) {
-            p->m_planeViewRect.top = p->m_planePixelHeight + oy;
+            m_planeViewRect.top = m_planePixelHeight + oy;
         } else {
-            p->m_planeViewRect.top = 0;
+            m_planeViewRect.top = 0;
         }
     }
 
-    i32 ex = p->m_viewportWidth + p->m_planeViewRect.left - 1;
-    i32 ey = p->m_viewportHeight + p->m_planeViewRect.top - 1;
-    p->m_planeViewRect.right = ex;
-    p->m_planeViewRect.bottom = ey;
-    if (ex >= p->m_planePixelWidth && wrapX == 0) {
-        i32 over = ex - p->m_planePixelWidth + 1;
-        p->m_planeViewRect.right = ex - over;
-        p->m_planeViewRect.left = p->m_planeViewRect.left - over;
+    i32 ex = m_viewportWidth + m_planeViewRect.left - 1;
+    i32 ey = m_viewportHeight + m_planeViewRect.top - 1;
+    m_planeViewRect.right = ex;
+    m_planeViewRect.bottom = ey;
+    if (ex >= m_planePixelWidth && wrapX == 0) {
+        i32 over = ex - m_planePixelWidth + 1;
+        m_planeViewRect.right = ex - over;
+        m_planeViewRect.left = m_planeViewRect.left - over;
     }
-    if (ey >= p->m_planePixelHeight && wrapY == 0) {
-        i32 over = ey - p->m_planePixelHeight + 1;
-        p->m_planeViewRect.bottom = ey - over;
-        p->m_planeViewRect.top = p->m_planeViewRect.top - over;
+    if (ey >= m_planePixelHeight && wrapY == 0) {
+        i32 over = ey - m_planePixelHeight + 1;
+        m_planeViewRect.bottom = ey - over;
+        m_planeViewRect.top = m_planeViewRect.top - over;
     }
 }
 
