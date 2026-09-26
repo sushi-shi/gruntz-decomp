@@ -14,6 +14,7 @@
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/CImage.h>
@@ -376,56 +377,17 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&m_buttonState[0], 8);
     s->Read(&m_buttonIcon[0], 8);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    if (strlen(buf) != 0) {
-        m_normChipSprite = mgr->FindWorker(buf);
-    } else {
-        m_normChipSprite = NULL;
-    }
+    SERIAL_READ_WORKER(s, mgr, buf, m_normChipSprite);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    if (strlen(buf) != 0) {
-        m_highChipSprite = mgr->FindWorker(buf);
-    } else {
-        m_highChipSprite = NULL;
-    }
+    SERIAL_READ_WORKER(s, mgr, buf, m_highChipSprite);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    if (strlen(buf) != 0) {
-        m_greyChipSprite = mgr->FindWorker(buf);
-    } else {
-        m_greyChipSprite = NULL;
-    }
+    SERIAL_READ_WORKER(s, mgr, buf, m_greyChipSprite);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        m_frame = mgr->FindFrame(buf, idx);
-    } else {
-        m_frame = NULL;
-    }
+    SERIAL_READ_FRAME(s, mgr, buf, idx, m_frame);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        m_buttonFrame[0] = mgr->FindFrame(buf, idx);
-    } else {
-        m_buttonFrame[0] = NULL;
-    }
+    SERIAL_READ_FRAME(s, mgr, buf, idx, m_buttonFrame[0]);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        m_buttonFrame[1] = mgr->FindFrame(buf, idx);
-    } else {
-        m_buttonFrame[1] = NULL;
-    }
+    SERIAL_READ_FRAME(s, mgr, buf, idx, m_buttonFrame[1]);
 
     return 1;
 }

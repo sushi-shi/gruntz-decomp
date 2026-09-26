@@ -44,6 +44,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -4317,17 +4318,9 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Read(&m_velocityScale, sizeof(m_velocityScale));
             arc->Read(&m_xDirection, sizeof(m_xDirection));
             arc->Read(&m_yDirection, sizeof(m_yDirection));
-            g_serialCounter++;
-
             char name[SERIAL_NAME_LEN];
             i32 index;
-            arc->Read(name, SERIAL_NAME_LEN);
-            arc->Read(&index, sizeof(index));
-            if (strlen(name) != 0) {
-                m_sprite = lvl->FindFrame(name, index);
-            } else {
-                m_sprite = NULL;
-            }
+            SERIAL_READ_FRAME(arc, lvl, name, index, m_sprite);
             return 1;
         }
         case SERIAL_SAVE: {

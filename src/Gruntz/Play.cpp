@@ -77,6 +77,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockMacros.h>
 #include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
@@ -6600,17 +6601,10 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_lastCueId, sizeof(m_lastCueId));
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
-    g_serialCounter++;
     char nameBuf[SERIAL_NAME_LEN];
-    ar->Read(nameBuf, SERIAL_NAME_LEN);
     {
         i32 idx;
-        ar->Read(&idx, sizeof(idx));
-        if (strlen(nameBuf) != 0) {
-            m_cursorImage = res->FindFrame(nameBuf, idx);
-        } else {
-            m_cursorImage = NULL;
-        }
+        SERIAL_READ_FRAME(ar, res, nameBuf, idx, m_cursorImage);
     }
 
     g_serialCounter++;
