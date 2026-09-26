@@ -245,7 +245,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
             strcpy(p, desc);
             i++;
             p += 0xa0;
-        } while (reinterpret_cast<i32>(p) < last);
+        } while (reinterpret_cast<i32>(p) < last); // byte-evidenced: signed cursor compare
         g_bootyCheatBuilt = true;
     }
 
