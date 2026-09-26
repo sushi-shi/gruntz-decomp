@@ -1325,7 +1325,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
 
     packet.m_networkPlayerId = m_localPlayerId;
     packet.m_active = true;
-    packet.m_color = TINT_BLACK;
+    packet.m_color = TINT_ORANGE;
     packet.m_humanControlled = true;
     packet.m_difficulty = BZDIFF_EASY;
     packet.m_preferredPlayerIndex = NET_PREFERRED_PLAYER_INDEX_ANY;
@@ -2948,7 +2948,7 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = STAT_REGISTER_PLAYER;
     pkt.m_active = true;
-    pkt.m_color = TINT_BLACK;
+    pkt.m_color = TINT_ORANGE;
     pkt.m_humanControlled = true;
     pkt.m_difficulty = BZDIFF_EASY;
 
