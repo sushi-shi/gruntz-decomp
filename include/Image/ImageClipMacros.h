@@ -3,6 +3,13 @@
 
 #include <Wwd/WwdGameObjectFlags.h>
 
+#define DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom)                                      \
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {                                   \
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);                                       \
+    }                                                                                              \
+    i32 right = m_width + x - 1;                                                                   \
+    i32 bottom = m_height + y - 1
+
 #define DECLARE_CLIPPED_IMAGE_RECT(rectType, rect, info, dst, x, y, right, bottom, width, height)  \
     rectType rect;                                                                                 \
     rect.left = x;                                                                                 \
