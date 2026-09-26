@@ -13,6 +13,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileActionEvent.h>
@@ -867,12 +868,7 @@ void* CTileTriggerContainer::DeserializeLogic(
             obj->m_typeTag = id;
 
             CGameLevel* level = g_gameReg->m_world->m_level;
-            i32 x = obj->m_tileX;
-            i32 y = obj->m_tileY;
-            CLAMP_TILE_TO_PLANE(x, y, level->m_mainPlane);
-            i32 cell = level->m_mainPlane->m_tileRowOffsets[y] + x;
-            i32 tile = level->m_mainPlane->m_tileHandles[cell];
-            TileCollisionKind tileKind = level->CollisionAtHandle(tile, 0, 0);
+            TileCollisionKind tileKind = PbResolveCell(level, obj->m_tileX, obj->m_tileY);
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {
                 this->m_latchedLeaf = obj;
             }
