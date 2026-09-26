@@ -2881,8 +2881,8 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
 
+    i32 playerIndex;
     {
-        i32 playerIndex;
         i32 unitIndex;
         if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
@@ -2899,9 +2899,10 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     i32 px;
     i32 py;
     i32 i;
-    i32 area = g_curPlayer;
-    GruntzPlayer* cfg = &g_gameReg->m_players[area];
-    if (cfg == NULL || g_gameReg->m_triggerMgr->m_unitCountByPlayer[area] >= cfg->m_maxGruntz) {
+    playerIndex = g_curPlayer;
+    GruntzPlayer* cfg = &g_gameReg->m_players[playerIndex];
+    if (cfg == NULL
+        || g_gameReg->m_triggerMgr->m_unitCountByPlayer[playerIndex] >= cfg->m_maxGruntz) {
         return 0;
     }
 
