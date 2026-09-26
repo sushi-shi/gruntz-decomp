@@ -126,6 +126,7 @@
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdObjMgrInline.h>
 
 #include <ddraw.h>
 #include <new>
@@ -7032,16 +7033,10 @@ i32 CPlay::ClearPlacedObjects() {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
                 i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                 if (occupantId != 0) {
-                    CGameObject* out = NULL;
-                    b32 found = MapLookupById(
+                    CGameObject* result = LookupObjectById(
                         g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                        occupantId,
-                        out
+                        occupantId
                     );
-                    CGameObject* result = NULL;
-                    if (found) {
-                        result = out;
-                    }
                     if (result == NULL) {
 
                         ReleaseCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
