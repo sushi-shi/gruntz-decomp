@@ -884,7 +884,7 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
         if (rec->Parse(ctx, head.m_swords) == 0) {
             goto fail;
         }
-        m_records.Add(static_cast<CObject*>(rec));
+        m_records.Add(rec);
         cursor += g_aniParsedNameLen + 0x14;
         m_durationMs += rec->GetDurationMs();
     }
