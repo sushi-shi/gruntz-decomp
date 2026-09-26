@@ -1190,9 +1190,9 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) 
         }
     }
 
-    SerBandPair(ar, mode, &m_cueTimer);
-    SerBandPair(ar, mode, &m_gooTimer);
-    SerBandPair(ar, mode, &m_resourceTimer);
+    SerializeClockPair(ar, mode, &m_cueTimer);
+    SerializeClockPair(ar, mode, &m_gooTimer);
+    SerializeClockPair(ar, mode, &m_resourceTimer);
     return 1;
 }
 

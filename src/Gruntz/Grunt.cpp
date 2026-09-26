@@ -57,6 +57,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Projectile.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/RockNeighborMask.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
@@ -371,9 +372,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
 
 RVA(0x00048360, 0x7e)
 void CGrunt::OnObjectRemoved() {
-    if (CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
-    }
+    RecycleGruntCoords(this);
 
     DeleteAllPayloads();
 }
@@ -642,18 +641,18 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     }
 
     bool eq;
-    eq = ANIMATION_ACT_EQUALS("F");
+    eq = IsAnimationAct("F");
     if (eq) {
         return;
     }
     bool ne;
-    ne = ANIMATION_ACT_DIFFERS("D");
+    ne = IsNotAnimationAct("D");
     if (ne) {
-        eq = ANIMATION_ACT_EQUALS("A");
+        eq = IsAnimationAct("A");
         if (!eq) {
-            eq = ANIMATION_ACT_EQUALS("K");
+            eq = IsAnimationAct("K");
             if (!eq) {
-                eq = ANIMATION_ACT_EQUALS("E");
+                eq = IsAnimationAct("E");
                 if (eq) {
 
                     SwitchAnimation(m_poseAttackIdle);
@@ -666,9 +665,9 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     }
                     goto store;
                 }
-                eq = ANIMATION_ACT_EQUALS("I");
+                eq = IsAnimationAct("I");
                 if (!eq) {
-                    eq = ANIMATION_ACT_EQUALS("M");
+                    eq = IsAnimationAct("M");
                     if (!eq) {
                         goto walk;
                     }
@@ -809,7 +808,7 @@ i32 CGrunt::StepArrivalDrop(
     bool eq;
 
     m_pendingTrigger = false;
-    eq = ANIMATION_ACT_DIFFERS("D");
+    eq = IsNotAnimationAct("D");
     if (!eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
         goto commitPhase;
     }
@@ -1360,7 +1359,7 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = true;
     } else {
-        if (ANIMATION_ACT_DIFFERS("L")) {
+        if (IsNotAnimationAct("L")) {
             m_entranceActive = false;
         }
     }
@@ -1881,7 +1880,7 @@ i32 CGrunt::Place(
     if (shade == NULL) {
         shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    SET_DRAW_FILL_ARG_FIRST(m_object, SHADE_PAL_16, shade);
+    m_object->SetDrawFill(SHADE_PAL_16, shade);
     if (entranceMode != GRUNT_ENTRANCE_NONE) {
         BuildEntranceAnimation(entranceMode);
         return 1;

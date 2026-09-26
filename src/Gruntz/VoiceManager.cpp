@@ -17,6 +17,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SpawnList.h>
+#include <Gruntz/SpawnListInline.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezTypeTag.h>
 
@@ -520,20 +521,9 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
         variant = NULL;
     } else {
 
-        CPtrList* nodes = &group->m_list;
-        POSITION& cursor = group->m_cursor;
-        cursor = group->m_list.GetHeadPosition();
-        if (cursor == NULL) {
-            variant = NULL;
-        } else {
-            variant = static_cast<CSpawnEntry*>(nodes->GetNext(cursor));
-        }
+        variant = group->FirstEntry();
         for (i32 i = selectedIndex; i > 0; i--) {
-            if (cursor == NULL) {
-                variant = NULL;
-            } else {
-                variant = static_cast<CSpawnEntry*>(nodes->GetNext(cursor));
-            }
+            variant = group->NextEntry();
         }
     }
     if (variant == NULL) {

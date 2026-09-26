@@ -15,6 +15,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -77,7 +78,7 @@ i32 CGrunt::StepPostGuardBehavior() {
     if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
         return 1;
     }
-    if (!(GRUNT_AT_SAVED_SCREEN_POS(occ))) {
+    if (!IsGruntAtSavedScreenPos(occ)) {
         return 1;
     }
     COMMIT_GRUNT_NEIGHBOR(occ);

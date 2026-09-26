@@ -783,7 +783,7 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     }
     POSITION pos = list->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
         if (obj) {
             obj->m_stateFlags ^= static_cast<SpriteStateFlags>(mask);
         }

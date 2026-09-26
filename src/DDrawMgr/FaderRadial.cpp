@@ -26,17 +26,9 @@ CFaderRadial::~CFaderRadial() {
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
     CRadialFaderConfig* cfg = static_cast<CRadialFaderConfig*>(desc);
-    if (cfg->m_targetSurface == NULL) {
-        m_dstSurface = m_primarySurface;
-    } else {
-        m_dstSurface = cfg->m_targetSurface;
-    }
+    SelectTarget(m_dstSurface, cfg->m_targetSurface);
 
-    if (cfg->m_sourceSurface == NULL) {
-        m_srcSurface = m_secondarySurface;
-    } else {
-        m_srcSurface = cfg->m_sourceSurface;
-    }
+    SelectSource(m_srcSurface, cfg->m_sourceSurface);
 
     if (cfg->m_shadeTable == NULL) {
 

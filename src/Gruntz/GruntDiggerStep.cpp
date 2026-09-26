@@ -42,7 +42,7 @@
 
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
-    bool isI = ANIMATION_ACT_EQUALS("I");
+    bool isI = IsAnimationAct("I");
     if (isI) {
         return 1;
     }

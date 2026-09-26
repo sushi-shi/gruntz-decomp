@@ -122,48 +122,48 @@ RVA_COMPGEN(0x000117c0, 0x1e, ??_GCTileTriggerTransition@@UAEPAXI@Z)
 RVA_COMPGEN(0x000117f0, 0x44, ??1CTileTriggerTransition@@UAE@XZ)
 
 RVA(0x0010cb10, 0xf1)
-i32 DispatchTileTriggerLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CTileTrigger)
+i32 DispatchTileTriggerLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CTileTrigger)
 }
 
 RVA(0x0010cc50, 0xf1)
-i32 DispatchTileTriggerSwitchLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CTileTriggerSwitch)
+i32 DispatchTileTriggerSwitchLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CTileTriggerSwitch)
 }
 
 RVA(0x0010cd90, 0xf1)
-i32 DispatchTileSecretTriggerLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CTileSecretTrigger)
+i32 DispatchTileSecretTriggerLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CTileSecretTrigger)
 }
 
 RVA(0x0010ced0, 0xf1)
-i32 DispatchGiantRockLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CGiantRock)
+i32 DispatchGiantRockLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CGiantRock)
 }
 
 RVA(0x0010d010, 0xf1)
-i32 DispatchCoveredPowerupLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CCoveredPowerup)
+i32 DispatchCoveredPowerupLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CCoveredPowerup)
 }
 
 RVA(0x0010d150, 0xf1)
-i32 DispatchTileTriggerTransitionLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CTileTriggerTransition)
+i32 DispatchTileTriggerTransitionLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CTileTriggerTransition)
 }
 
 RVA(0x0010d290, 0xf4)
-i32 DispatchCheckpointTriggerLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CCheckpointTrigger)
+i32 DispatchCheckpointTriggerLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CCheckpointTrigger)
 }
 
 RVA(0x0010d3d0, 0xf1)
-i32 DispatchBrickzLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CBrickz)
+i32 DispatchBrickzLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CBrickz)
 }
 
 RVA(0x0010d510, 0xf1)
-i32 DispatchWarpStonePadLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CWarpStonePad)
+i32 DispatchWarpStonePadLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CWarpStonePad)
 }
 
 RVA(0x0010d650, 0x16c)

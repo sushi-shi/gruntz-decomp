@@ -370,8 +370,6 @@ public:
     u8 m_dotColor;
 };
 
-#define NEXT_CHILD_FROM_LIST(list, pos) static_cast<CGameObject*>(list.GetNext(pos))
-
 inline CGameObject* CDDrawChildGroup::NextChild(POSITION& pos) {
     return static_cast<CGameObject*>(m_list.GetNext(pos));
 }

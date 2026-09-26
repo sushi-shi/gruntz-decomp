@@ -83,6 +83,6 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId
         == 0) {
         return 0;
     }
-    SerBandPair(arc, mode, &m_timing);
+    SerializeClockPair(arc, mode, &m_timing);
     return 1;
 }

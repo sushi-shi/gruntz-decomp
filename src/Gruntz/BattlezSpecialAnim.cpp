@@ -95,15 +95,15 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
 
     bool eq;
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
+    eq = unit->IsAnimationAct("I");
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
+    eq = unit->IsAnimationAct("G");
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
+    eq = unit->IsAnimationAct("L");
     if (eq) {
         return 0;
     }

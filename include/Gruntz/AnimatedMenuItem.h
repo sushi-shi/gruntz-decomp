@@ -15,8 +15,6 @@ GZ_ENUM_FORWARD(MenuItemState);
 
 class CMenuPage;
 
-#define SET_ANIMATED_MENU_ITEM_FRAME_PERIOD_INLINE(value) m_framePeriodMs = value
-
 class CAnimatedMenuItem : public CMenuItem {
 public:
     CAnimatedMenuItem();

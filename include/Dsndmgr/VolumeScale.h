@@ -18,6 +18,16 @@ inline i32 MidiVolumeToPercent(i32 midiVolume) {
     return midiVolume * VOLUME_PCT_MAX / MIDI_VOLUME_MAX;
 }
 
+inline i32 PercentToMidiVolume(i32 volumePct) {
+    if (volumePct <= 0) {
+        return 0;
+    }
+    if (volumePct >= VOLUME_PCT_MAX) {
+        return MIDI_VOLUME_MAX;
+    }
+    return volumePct * MIDI_VOLUME_MAX / VOLUME_PCT_MAX;
+}
+
 GZ_ENUM_CONST_BEGIN(DSoundFrequency)
     DSOUND_FREQUENCY_MIN = 100,
     DSOUND_FREQUENCY_MAX = 100000

@@ -43,7 +43,7 @@
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepMagicWandGruntBehavior() {
     m_defenderPx = m_lastTilePx;
-    bool eqI = ANIMATION_ACT_EQUALS("I");
+    bool eqI = IsAnimationAct("I");
     if (eqI) {
         return 1;
     }
@@ -64,7 +64,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                     return 1;
                 }
                 if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
-                    && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
+                    && IsGruntAtSavedScreenPos(occ)) {
                     COMMIT_GRUNT_NEIGHBOR(occ);
                     return 1;
                 }
@@ -102,7 +102,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (!(GRUNT_AT_SAVED_SCREEN_POS(occ))) {
+            if (!IsGruntAtSavedScreenPos(occ)) {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(occ);

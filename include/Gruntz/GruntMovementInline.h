@@ -8,12 +8,8 @@
 #include <Wwd/WwdAniDrawValue.h>
 
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
-    CWwdSpriteObject* object = grunt->m_object;
-    i32 x = grunt->m_lastTilePx.m_x;
-    if (object->m_screenX == x && object->m_screenY == grunt->m_lastTilePx.m_y) {
-        return 1;
-    }
-    return 0;
+    return grunt->m_object->m_screenX == grunt->m_lastTilePx.m_x
+           && grunt->m_object->m_screenY == grunt->m_lastTilePx.m_y;
 }
 
 inline void ClearMoveTileFx(CGrunt* grunt) {

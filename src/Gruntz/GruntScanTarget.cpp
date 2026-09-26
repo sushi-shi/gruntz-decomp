@@ -161,7 +161,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
             if (best != NULL) {
                 if (m_poweredUp == false && m_stamina >= STAMINA_FULL
-                    && GRUNT_AT_SAVED_SCREEN_POS(best)) {
+                    && IsGruntAtSavedScreenPos(best)) {
                     i32 pa;
                     PRIO(pa, m_entranceReason);
                     i32 pb;
@@ -258,7 +258,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
                         return 1;
                     }
-                    if (GRUNT_NOT_AT_SAVED_SCREEN_POS(sg)) {
+                    if (!IsGruntAtSavedScreenPos(sg)) {
                         return 1;
                     }
                     COMMIT_GRUNT_NEIGHBOR(sg);
@@ -290,7 +290,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                         }
                         if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY)
                                 != 0
-                            && GRUNT_AT_SAVED_SCREEN_POS(sg)) {
+                            && IsGruntAtSavedScreenPos(sg)) {
                             COMMIT_GRUNT_NEIGHBOR(sg);
                             return 1;
                         }

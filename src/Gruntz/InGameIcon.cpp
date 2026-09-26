@@ -29,6 +29,7 @@
 #include <Gruntz/MapCellInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -82,17 +83,6 @@ RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 
 RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
-
-static inline void SetCellObject(CMapMgr* grid, u32 x, u32 y, i32 objectId) {
-    if (x < grid->m_width && y < grid->m_height) {
-        grid->m_rows[y][x].m_objectId = objectId;
-        if (objectId != 0) {
-            grid->m_rows[y][x].m_flags |= 0x40000;
-        } else {
-            grid->m_rows[y][x].m_flags &= ~0x40000;
-        }
-    }
-}
 
 // @early-stop
 RVA(0x00095b10, 0x15f0)
@@ -442,7 +432,7 @@ i32 CInGameIcon::HandleInput() {
         return 1;
     }
     CWwdSpriteObject* o = m_object;
-    SET_DRAW_FILL(o, SHADE_PAL_16, rec);
+    o->SetDrawFill(SHADE_PAL_16, rec);
     return 1;
 }
 
@@ -511,7 +501,7 @@ i32 CToyPeek::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    SerBandPair(ar, mode, &m_countdownTiming);
+    SerializeClockPair(ar, mode, &m_countdownTiming);
     return 1;
 }
 
@@ -527,7 +517,7 @@ i32 CInGameIcon::PeekCycle() {
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 cell = grid->CellFlagsAt(tileX, tileY);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
-            ReleaseCellObject(grid, tileX, tileY);
+            SetCellObject(grid, tileX, tileY, 0);
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
         return 0;
@@ -541,7 +531,7 @@ i32 CInGameIcon::PeekCycle() {
     if (m_peekTiming.Expired()) {
         CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(GetRandomNumber() % 0x11, 0);
         CWwdSpriteObject* o = m_object;
-        SET_DRAW_FILL(o, SHADE_PAL_16, rec);
+        o->SetDrawFill(SHADE_PAL_16, rec);
         m_peekTiming.Start(0xfa);
     }
     return 0;
@@ -690,7 +680,7 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        ReleaseCellObject(grid, tileX, tileY);
+        SetCellObject(grid, tileX, tileY, 0);
         obj = m_object;
         SetCellObject(
             g_gameReg->m_tileGrid,

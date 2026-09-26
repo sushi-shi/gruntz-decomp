@@ -89,13 +89,13 @@ void ButeParseErrorSink(const char* msg) {
 }
 
 RVA(0x00119620, 0xf1)
-i32 DispatchGruntVoiceLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CGruntVoice)
+i32 DispatchGruntVoiceLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CGruntVoice)
 }
 
 RVA(0x00119760, 0xf1)
-i32 DispatchVoiceTriggerLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CVoiceTrigger)
+i32 DispatchVoiceTriggerLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CVoiceTrigger)
 }
 
 RVA(0x001198a0, 0x195)

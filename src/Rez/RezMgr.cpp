@@ -5,6 +5,7 @@
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Rez/FrameClock.h>
+#include <Rez/FrameCountdown.h>
 #include <Rez/RezSync.h>
 #include <Wap32/GameApp.h>
 
@@ -53,35 +54,15 @@ i32 CGruntzMgr::PerFrameTick() {
 
         u32 v;
         v = (g_period50CountdownMs == 0) ? FRAME_CLOCK_PERIOD_50_MS : g_period50CountdownMs;
-        if (dt >= v) {
-            g_period50CountdownMs = 0;
-        } else {
-            g_period50CountdownMs = v - dt;
-        }
+        g_period50CountdownMs = CountdownRemaining(v, dt);
         v = (g_period100CountdownMs == 0) ? FRAME_CLOCK_PERIOD_100_MS : g_period100CountdownMs;
-        if (dt >= v) {
-            g_period100CountdownMs = 0;
-        } else {
-            g_period100CountdownMs = v - dt;
-        }
+        g_period100CountdownMs = CountdownRemaining(v, dt);
         v = (g_period200CountdownMs == 0) ? FRAME_CLOCK_PERIOD_200_MS : g_period200CountdownMs;
-        if (dt >= v) {
-            g_period200CountdownMs = 0;
-        } else {
-            g_period200CountdownMs = v - dt;
-        }
+        g_period200CountdownMs = CountdownRemaining(v, dt);
         v = (g_period400CountdownMs == 0) ? FRAME_CLOCK_PERIOD_400_MS : g_period400CountdownMs;
-        if (dt >= v) {
-            g_period400CountdownMs = 0;
-        } else {
-            g_period400CountdownMs = v - dt;
-        }
+        g_period400CountdownMs = CountdownRemaining(v, dt);
         v = (g_period500CountdownMs == 0) ? FRAME_CLOCK_PERIOD_500_MS : g_period500CountdownMs;
-        if (dt >= v) {
-            g_period500CountdownMs = 0;
-        } else {
-            g_period500CountdownMs = v - dt;
-        }
+        g_period500CountdownMs = CountdownRemaining(v, dt);
 
         g_frameTicks++;
     }

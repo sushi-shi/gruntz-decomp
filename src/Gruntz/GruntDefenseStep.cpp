@@ -63,7 +63,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     return 1;
                 }
                 if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
-                    && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
+                    && IsGruntAtSavedScreenPos(occ)) {
                     if (m_vehiclePickupType == PICKUP_SCROLL) {
                         g_gameReg->m_triggerMgr->UseToyAt(
                             m_playerIndex,
@@ -114,7 +114,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
-            if (GRUNT_AT_SAVED_SCREEN_POS(occ)) {
+            if (IsGruntAtSavedScreenPos(occ)) {
                 COMMIT_GRUNT_NEIGHBOR(occ);
             }
             m_defenderState = AISTATE_ATTACK;
@@ -124,7 +124,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
         case AISTATE_SEEK:
             occ = m_triggerMgr->FindNearestEnemy(this);
             if (occ != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
-                && GRUNT_AT_SAVED_SCREEN_POS(occ)
+                && IsGruntAtSavedScreenPos(occ)
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_vehiclePickupType == PICKUP_SCROLL) {
                     g_gameReg->m_triggerMgr->UseToyAt(
@@ -135,7 +135,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     );
                     return 1;
                 }
-                if (!(GRUNT_AT_SAVED_SCREEN_POS(occ))) {
+                if (!IsGruntAtSavedScreenPos(occ)) {
                     return 1;
                 }
                 COMMIT_GRUNT_NEIGHBOR(occ);

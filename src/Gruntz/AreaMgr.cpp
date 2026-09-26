@@ -11,6 +11,7 @@
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SpawnList.h>
+#include <Gruntz/SpawnListInline.h>
 #include <Image/CImage.h>
 #include <Rez/RezArchiveDir.h>
 #include <Utils/MapTyped.h>
@@ -305,13 +306,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     toRemove.RemoveAll();
 
     CSpawnList* spawnList = &m_spawnEntryList;
-    spawnList->m_cursor = spawnList->m_list.GetHeadPosition();
-    CSpawnEntry* spawnEntry;
-    if (spawnList->m_cursor == NULL) {
-        spawnEntry = NULL;
-    } else {
-        spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
-    }
+    CSpawnEntry* spawnEntry = spawnList->FirstEntry();
     while (spawnEntry != NULL) {
         if (spawnEntry->m_flag == false) {
             char resourcePath[0x80];
@@ -330,11 +325,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
             g_resourceInstallActive = false;
             spawnEntry->m_flag = true;
         }
-        if (spawnList->m_cursor == NULL) {
-            spawnEntry = NULL;
-        } else {
-            spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
-        }
+        spawnEntry = spawnList->NextEntry();
     }
     return 1;
 }
@@ -389,13 +380,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     toRemove.RemoveAll();
 
     CSpawnList* spawnList = &m_spawnEntryList;
-    spawnList->m_cursor = spawnList->m_list.GetHeadPosition();
-    CSpawnEntry* spawnEntry;
-    if (spawnList->m_cursor == NULL) {
-        spawnEntry = NULL;
-    } else {
-        spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
-    }
+    CSpawnEntry* spawnEntry = spawnList->FirstEntry();
     while (spawnEntry != NULL) {
         if (spawnEntry->m_flag == false) {
             char resourcePath[0x80];
@@ -412,11 +397,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
             TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
             spawnEntry->m_flag = true;
         }
-        if (spawnList->m_cursor == NULL) {
-            spawnEntry = NULL;
-        } else {
-            spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
-        }
+        spawnEntry = spawnList->NextEntry();
     }
     return 1;
 }
@@ -457,13 +438,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
     toRemove.RemoveAll();
 
     CSpawnList* spawnList = &m_spawnEntryList;
-    spawnList->m_cursor = spawnList->m_list.GetHeadPosition();
-    CSpawnEntry* spawnEntry;
-    if (spawnList->m_cursor == NULL) {
-        spawnEntry = NULL;
-    } else {
-        spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
-    }
+    CSpawnEntry* spawnEntry = spawnList->FirstEntry();
     while (spawnEntry != NULL) {
         if (spawnEntry->m_flag == false) {
             char resourcePath[0x80];
@@ -480,11 +455,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
             TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
             spawnEntry->m_flag = true;
         }
-        if (spawnList->m_cursor == NULL) {
-            spawnEntry = NULL;
-        } else {
-            spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
-        }
+        spawnEntry = spawnList->NextEntry();
     }
     return 1;
 }

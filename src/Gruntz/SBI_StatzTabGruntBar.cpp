@@ -11,6 +11,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HealthGlyph.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
@@ -142,14 +143,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         timerVal = -1;
     } else {
 
-        i32 hp = unit->m_health;
-        if (hp >= 0x50) {
-            statusVal = 0x24;
-        } else if (hp >= 0x28) {
-            statusVal = 0x25;
-        } else {
-            statusVal = (hp <= 0 ? 1 : 0) + 0x26;
-        }
+        statusVal = HealthGlyphIndex(unit->m_health);
 
         PickupType level = unit->m_entranceReason;
         abilityVal = -1;

@@ -15,6 +15,7 @@
 #include <Ints.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
+#include <Rez/FrameCountdown.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
@@ -34,11 +35,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     i32 scrollY = v->m_scrollPixelY;
 
     if (g_scrollClock > g_frameTime) {
-        if (g_frameDelta >= g_scrollTimer) {
-            g_scrollTimer = 0;
-        } else {
-            g_scrollTimer -= g_frameDelta;
-        }
+        CountDown(g_scrollTimer, g_frameDelta);
         if (g_scrollTimer == 0) {
             g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
             i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);

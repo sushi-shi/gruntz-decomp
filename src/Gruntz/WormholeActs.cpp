@@ -19,6 +19,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/TriggerMgr.h>
@@ -121,7 +122,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
                         0
                     );
-                    SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
+                    cur->SetDrawFill(SHADE_PAL_16, tbl);
                     if (hitPlayerIndex == g_curPlayer) {
                         Coord* mark = g_coordPool.Pop();
                         mark->m_x = (cur->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -138,7 +139,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
                         0
                     );
-                    SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
+                    cur->SetDrawFill(SHADE_PAL_16, tbl);
                 }
             }
             if (owningPlayer == g_curPlayer) {

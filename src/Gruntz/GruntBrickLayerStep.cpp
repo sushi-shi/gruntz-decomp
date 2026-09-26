@@ -17,6 +17,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -45,7 +46,7 @@
 // @early-stop
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
-    bool eqI = ANIMATION_ACT_EQUALS("I");
+    bool eqI = IsAnimationAct("I");
     if (eqI) {
         return 1;
     }
@@ -104,16 +105,12 @@ i32 CGrunt::StepBrickLayerBehavior() {
         if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
-                if (CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(this)
-                }
+                RecycleGruntCoords(this);
                 return 1;
             }
         } else {
             if (atTarget) {
-                if (CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(this)
-                }
+                RecycleGruntCoords(this);
                 return 1;
             }
         }
@@ -129,7 +126,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     if (m_poweredUp != false) {
         goto L_ed153;
     }
-    if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
+    if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
         m_dwell = 0;

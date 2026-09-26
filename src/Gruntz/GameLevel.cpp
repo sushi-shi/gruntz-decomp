@@ -504,7 +504,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
                 i32 blocked = 0;
                 while (pos != NULL && blocked == 0) {
                     POSITION cur = pos;
-                    CGameObject* pl = static_cast<CGameObject*>(chain->GetNext(pos));
+                    CGameObject* pl = ctx->NextChild(pos);
                     if (pl->m_sortKey < zBound) {
                         pl->Render(visitor);
                     } else {
@@ -519,7 +519,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
         }
 
         while (pos != NULL) {
-            static_cast<CGameObject*>(chain->GetNext(pos))->Render(visitor);
+            ctx->NextChild(pos)->Render(visitor);
         }
         return;
     }

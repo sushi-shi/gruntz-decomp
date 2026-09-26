@@ -22,16 +22,8 @@ RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     CLightFaderConfig* d = static_cast<CLightFaderConfig*>(desc);
     m_previousFrame = 0;
-    if (d->m_targetSurface == NULL) {
-        m_targetSurface = m_primarySurface;
-    } else {
-        m_targetSurface = d->m_targetSurface;
-    }
-    if (d->m_sourceSurface == NULL) {
-        m_restoreSurface = m_secondarySurface;
-    } else {
-        m_restoreSurface = d->m_sourceSurface;
-    }
+    SelectTarget(m_targetSurface, d->m_targetSurface);
+    SelectSource(m_restoreSurface, d->m_sourceSurface);
     m_clearMode = d->m_clearMode;
     m_center = d->m_center;
     m_palette = d->m_palette;
