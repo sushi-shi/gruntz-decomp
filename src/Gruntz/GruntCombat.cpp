@@ -28,8 +28,8 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GruntActRegMacros.h>
 #include <Gruntz/GruntActionInline.h>
+#include <Gruntz/GruntActRegMacros.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>

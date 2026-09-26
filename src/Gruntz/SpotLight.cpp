@@ -198,7 +198,9 @@ int CSpotLight::Update() {
         m_position.Init(m_center.m_x + m_position.m_x, m_center.m_y + m_position.m_y);
         m_angle = dAngle + m_angle;
     }
-    if (g_gameReg->m_triggerMgr->UnitAt(m_targetPlayerIndex, m_targetUnitIndex) == NULL) {
+    if (g_gameReg->m_triggerMgr
+            ->m_units[m_targetUnitIndex + m_targetPlayerIndex * TM_UNITS_PER_PLAYER]
+        == NULL) {
         SET_ANIMATION_ACT("A");
     }
     return 0;
