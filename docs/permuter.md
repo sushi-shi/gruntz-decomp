@@ -2,8 +2,9 @@
 
 `gruntz permute` searches a complete, credible function only after
 `gruntz walls diagnose` identifies a register-allocation/scheduling residue.
-The public command also refuses a function whose historical MAX is already
-100%. It is an evidence generator, not a substitute for reconstruction.
+The public command also refuses a function whose MAX is already 100%; a lost
+match (HIST = 100, MAX < 100) is allowed, since `--record-max` can recover it.
+It is an evidence generator, not a substitute for reconstruction.
 
 Two bounded modes are supported:
 

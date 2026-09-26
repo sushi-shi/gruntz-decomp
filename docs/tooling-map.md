@@ -98,7 +98,8 @@ classified bounded permutation is the evidence generator below.
 | `gruntz permute variants` | `gruntz.permute.match_variants` | reviewed exact-span axes × conservative libclang shapes × every requested TU state |
 
 Both public verbs first run `gruntz walls diagnose` and accept only a
-regalloc/scheduling wall whose historical MAX is below 100. Source is restored
+regalloc/scheduling wall whose MAX is below 100 (lost matches with HIST = 100
+are allowed). Source is restored
 after every compile and checked again byte-for-byte; `state` additionally checks
 the per-function fingerprint.
 Exact means unrounded 100%, retail size, and identical ordered relocation
