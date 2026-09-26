@@ -630,7 +630,6 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000ff850, 0x121)
 i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
@@ -639,12 +638,15 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     }
     r->OnDoubleClick(keyFlags, x, y);
     SbiCommandId cmd = r->m_cmd;
-    if (r->m_tab == TAB_STATZ && m_chatBoxDisabled == false
-        && g_gameReg->m_triggerMgr->m_groupFlag != false && cmd >= SBICMD_CURSOR_TARGET_FIRST
-        && cmd <= SBICMD_CURSOR_TARGET_LAST) {
-        HiCueTimed();
-        PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
-        return 1;
+    switch (r->m_tab) {
+        case TAB_STATZ:
+            if (m_chatBoxDisabled == false && g_gameReg->m_triggerMgr->m_groupFlag != false
+                && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
+                HiCueTimed();
+                PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
+                return 1;
+            }
+            break;
     }
 
     return UpdateStatusBarTabHighlight(keyFlags, x, y);
