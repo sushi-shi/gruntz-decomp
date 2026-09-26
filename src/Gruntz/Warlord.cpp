@@ -519,8 +519,6 @@ void RegisterWarlordActions() {
 }
 
 #undef REGISTER_ACTION
-#undef REGISTER_ACTION_TYPED
-#undef REGISTER_NAME
 
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::FinishIdleAnimation() {
