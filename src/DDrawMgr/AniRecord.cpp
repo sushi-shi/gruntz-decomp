@@ -17,7 +17,6 @@
 #include <Gruntz/SoundCueRegistry.h>
 #include <Ints.h>
 #include <Pix16.h>
-#include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapObj.h>
 
