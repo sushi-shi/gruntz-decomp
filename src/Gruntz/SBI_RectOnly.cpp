@@ -3497,16 +3497,16 @@ i32 CStatusBarMgr::SerializeDispatch(
         }
     }
 
-    SerializeClockPair(s, mode, &m_beltClock.m_start);
-    SerializeClockPair(s, mode, &m_fallClock.m_start);
-    SerializeClockPair(s, mode, &m_rightMachine.m_clock.m_start);
-    SerializeClockPair(s, mode, &m_leftMachine.m_clock.m_start);
-    SerializeClockPair(s, mode, &m_destructWarningClock.m_start);
+    SerializeClockPair(s, mode, &m_beltClock);
+    SerializeClockPair(s, mode, &m_fallClock);
+    SerializeClockPair(s, mode, &m_rightMachine.m_clock);
+    SerializeClockPair(s, mode, &m_leftMachine.m_clock);
+    SerializeClockPair(s, mode, &m_destructWarningClock);
 
     CSbiSlot* p = m_slots;
     i32 n = 5;
     do {
-        SerializeClockPair(s, mode, &p->m_clock.m_start);
+        SerializeClockPair(s, mode, &p->m_clock);
         p++;
         n--;
     } while (n != 0);
@@ -3514,7 +3514,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     n = 3;
     CSbiHlRow* r = m_conveyorSlots;
     do {
-        SerializeClockPair(s, mode, &r->m_clock.m_start);
+        SerializeClockPair(s, mode, &r->m_clock);
         r++;
         n--;
     } while (n != 0);
@@ -3524,15 +3524,15 @@ i32 CStatusBarMgr::SerializeDispatch(
     do {
         n = 4;
         do {
-            SerializeClockPair(s, mode, &g->m_clock.m_start);
+            SerializeClockPair(s, mode, &g->m_clock);
             g++;
             n--;
         } while (n != 0);
         outer--;
     } while (outer != 0);
 
-    SerializeClockPair(s, mode, &m_reserved2a0.m_start);
-    SerializeClockPair(s, mode, &m_reserved2b0.m_start);
+    SerializeClockPair(s, mode, &m_reserved2a0);
+    SerializeClockPair(s, mode, &m_reserved2b0);
     if (mode == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
     }
