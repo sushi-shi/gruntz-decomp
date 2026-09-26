@@ -12,16 +12,7 @@ static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
 
 static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* g = level->m_mainPlane;
-    if (x < 0) {
-        x = 0;
-    } else if (x >= g->m_planePixelWidth) {
-        x = g->m_planePixelWidth - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= g->m_planePixelHeight) {
-        y = g->m_planePixelHeight - 1;
-    }
+    CLAMP_PIXEL_TO_PLANE(x, y, g);
     i32 tx = x >> g->m_shiftX;
     i32 ty = y >> g->m_shiftY;
     i32 subX = x - (tx << g->m_shiftX);
@@ -32,16 +23,7 @@ static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) 
 
 static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* g = level->m_mainPlane;
-    if (x < 0) {
-        x = 0;
-    } else if (x >= g->m_planePixelWidth) {
-        x = g->m_planePixelWidth - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= g->m_planePixelHeight) {
-        y = g->m_planePixelHeight - 1;
-    }
+    CLAMP_PIXEL_TO_PLANE(x, y, g);
     i32 tx = x >> g->m_shiftX;
     i32 ty = y >> g->m_shiftY;
     i32 subX = x - (tx << g->m_shiftX);
@@ -55,32 +37,14 @@ static __inline i32 VtblResolve(CTileImageSet* imageSet) {
 }
 
 static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y) {
-    if (x < 0) {
-        x = 0;
-    } else if (x >= level->m_mainPlane->m_tileColumns) {
-        x = level->m_mainPlane->m_tileColumns - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= level->m_mainPlane->m_tileRows) {
-        y = level->m_mainPlane->m_tileRows - 1;
-    }
+    CLAMP_TILE_TO_PLANE(x, y, level->m_mainPlane);
     CDDrawWorkerHost* plane = level->m_mainPlane;
     i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[y] + x];
     return level->CollisionAtHandle(cell, 0, 0);
 }
 
 static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, i32 y) {
-    if (x < 0) {
-        x = 0;
-    } else if (x >= level->m_mainPlane->m_tileColumns) {
-        x = level->m_mainPlane->m_tileColumns - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= level->m_mainPlane->m_tileRows) {
-        y = level->m_mainPlane->m_tileRows - 1;
-    }
+    CLAMP_TILE_TO_PLANE(x, y, level->m_mainPlane);
     i32 cell = level->m_mainPlane->GetTileHandle(x, y);
     return level->CollisionAtHandle(cell, 0, 0);
 }

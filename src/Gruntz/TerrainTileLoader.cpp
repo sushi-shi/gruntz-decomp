@@ -46,16 +46,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
     i32 cx = tileX;
     i32 cy = tileY;
-    if (tileX < 0) {
-        cx = 0;
-    } else if (tileX >= grid->m_mainPlane->m_tileColumns) {
-        cx = grid->m_mainPlane->m_tileColumns - 1;
-    }
-    if (tileY < 0) {
-        cy = 0;
-    } else if (tileY >= grid->m_mainPlane->m_tileRows) {
-        cy = grid->m_mainPlane->m_tileRows - 1;
-    }
+    CLAMP_TILE_TO_PLANE(cx, cy, grid->m_mainPlane);
 
     TileCollisionKind cellType;
     i32 cell = grid->m_mainPlane->m_tileHandles[grid->m_mainPlane->m_tileRowOffsets[cy] + cx];

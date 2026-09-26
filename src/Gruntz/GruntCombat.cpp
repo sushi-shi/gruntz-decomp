@@ -2139,17 +2139,8 @@ void CGrunt::StepBehavior(char*) {
             i32 pty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
             CGameLevel* level = g_gameReg->m_world->m_level;
             i32 cx = ptx;
-            if (cx < 0) {
-                cx = 0;
-            } else if (cx >= level->m_mainPlane->m_tileColumns) {
-                cx = level->m_mainPlane->m_tileColumns - 1;
-            }
             i32 cy = pty;
-            if (cy < 0) {
-                cy = 0;
-            } else if (cy >= level->m_mainPlane->m_tileRows) {
-                cy = level->m_mainPlane->m_tileRows - 1;
-            }
+            CLAMP_TILE_TO_PLANE(cx, cy, level->m_mainPlane);
             i32 raw =
                 level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
             TileCollisionKind kind;

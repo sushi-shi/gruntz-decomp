@@ -449,17 +449,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
     i32 cx = tx;
-    if (tx < 0) {
-        cx = 0;
-    } else if (tx >= level->m_mainPlane->m_tileColumns) {
-        cx = level->m_mainPlane->m_tileColumns - 1;
-    }
+    CLAMP_TO_EXTENT(cx, level->m_mainPlane->m_tileColumns);
     i32 cy = ty;
-    if (ty < 0) {
-        cy = 0;
-    } else if (ty >= level->m_mainPlane->m_tileRows) {
-        cy = level->m_mainPlane->m_tileRows - 1;
-    }
+    CLAMP_TO_EXTENT(cy, level->m_mainPlane->m_tileRows);
     i32 cval = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
     TileCollisionKind collision = level->CollisionAtHandle(cval, 0, 0);
 

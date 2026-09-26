@@ -469,16 +469,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     CGameLevel* level = m_world->m_level;
     i32 cx = x;
     i32 cy = y;
-    if (cx < 0) {
-        cx = 0;
-    } else if (cx >= level->m_mainPlane->m_planePixelWidth) {
-        cx = level->m_mainPlane->m_planePixelWidth - 1;
-    }
-    if (cy < 0) {
-        cy = 0;
-    } else if (cy >= level->m_mainPlane->m_planePixelHeight) {
-        cy = level->m_mainPlane->m_planePixelHeight - 1;
-    }
+    CLAMP_PIXEL_TO_PLANE(cx, cy, level->m_mainPlane);
     i32 tx = cx >> level->m_mainPlane->m_shiftX;
     i32 ty = cy >> level->m_mainPlane->m_shiftY;
     i32 subX = cx - (tx << level->m_mainPlane->m_shiftX);
