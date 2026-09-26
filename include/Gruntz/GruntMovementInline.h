@@ -15,6 +15,12 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
     return 0;
 }
 
+inline void CGrunt::ResetToSeek() {
+    Coord none;
+    m_arrivalCell = *none.Set(-1, -1);
+    m_defenderState = AISTATE_SEEK;
+}
+
 inline void CGrunt::RepathToward(CGrunt* target) {
     if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
         StepArrivalDrop(

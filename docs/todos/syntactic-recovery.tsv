@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 rva	unit	function	lost_max	cur
 0x153d90	cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.7114	97.9900
 0x153b20	cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.8068	97.3526
@@ -28,3 +29,22 @@ rva	unit	function	lost_max	cur
 0x0e08b0	projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	100.0000	99.9535
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.4317	90.2860
+=======
+rva unit function lost_max cur 0x031610 battlezunitstep ? Step @CBattlezMapConfig @ @QAEHPAVCGrunt
+    @ @ @Z 85.5000 78.4388 0x153d90 cimage
+    ? BlitFlipH @CImage @ @QAEXPAVCResolveNode @ @PAVCDDrawSurfacePair
+    @ @ @Z 98.7114 97.9900 0x153b20 cimage
+    ? BlitFlipV @CImage @ @QAEXPAVCResolveNode @ @PAVCDDrawSurfacePair
+    @ @ @Z 98.8068 97.4010 0x1538c0 cimage
+    ? BlitNorm @CImage @ @QAEXPAVCResolveNode @ @PAVCDDrawSurfacePair
+    @ @ @Z 98.7588 98.6332 0x0c68b0 droppedobject
+    ? ? 0CDroppedObject @ @QAE @PAUCGameObject @ @ @Z 95.1716 94.7239 0x04c170 grunt
+    ? StepGruntMovement @CGrunt @ @QAEHXZ 74.0606 73.7003 0x0ecc90 gruntbricklayerstep
+    ? StepBrickLayerBehavior @CGrunt @ @QAEHXZ 87.6818 80.1788 0x057db0 gruntcombat
+    ? PathScan @CGrunt @ @QAEHXZ 87.0954 83.5442 0x0f36a0 gruntdiggerstep
+    ? StepDiggerBehavior @CGrunt @ @QAEHXZ 90.0266 66.9018 0x065630 gruntentrancearrival
+    ? RunMoveConfig @CGrunt @ @QAEHHH @Z 90.4314 89.9569 0x0f0e20 gruntgoosuckerstep
+    ? StepGooSuckerBehavior @CGrunt @ @QAEHXZ 91.6483 85.3241 0x032ce0 grunttilescan
+    ? ScanRegion @CBattlezMapConfig @ @QAEHPAVCGrunt @ @ @Z 81.9104 80.2577 0x06c130 triggermgrgrid
+    ? WireTileSwitchLogic @CTriggerMgr @ @QAEHPAVCGrunt @ @HH @Z 92.4317 90.2860
+>>>>>>> cc3cc3e37 (helpers: CGrunt::ResetToSeek at 11 open-coded target resets)

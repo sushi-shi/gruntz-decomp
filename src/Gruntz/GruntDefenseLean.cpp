@@ -88,9 +88,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek();
                 return 1;
             }
             if (occ == NULL) {

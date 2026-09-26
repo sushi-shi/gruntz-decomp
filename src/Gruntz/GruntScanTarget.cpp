@@ -243,9 +243,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             CGrunt* sg =
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (best != NULL && best != sg) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek();
                 return 1;
             }
             if (sg != NULL) {

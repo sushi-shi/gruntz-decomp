@@ -186,6 +186,7 @@ public:
     inline i32 GetScreenTileX() const;
     inline void MirrorAcrossArrival();
     inline void RepathToward(CGrunt* target);
+    inline void ResetToSeek();
     inline void ResetArrivalFlags();
     inline void MarkQuestzArrival();
     virtual ~CGrunt() OVERRIDE;

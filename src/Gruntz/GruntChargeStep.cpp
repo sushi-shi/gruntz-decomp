@@ -149,9 +149,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
             CGrunt* cur = m_triggerMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek();
                 return 1;
             }
             if (t == NULL || t->m_entranceCommitted == false

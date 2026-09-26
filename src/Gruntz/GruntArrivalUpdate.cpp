@@ -17,6 +17,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
@@ -184,9 +185,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     }
                 }
             } else {
-                Coord none;
-                this->m_arrivalCell = *none.Set(-1, -1);
-                this->m_defenderState = AISTATE_SEEK;
+                this->ResetToSeek();
             }
             break;
         }
