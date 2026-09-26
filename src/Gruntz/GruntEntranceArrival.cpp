@@ -53,7 +53,6 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
-#include <Lith/ObjectUtilities.h>
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
@@ -178,9 +177,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
         SET_SORT_KEY_IF_CHANGED(h, z)
     }
 
-    CWwdSpriteObject* p = m_wwdObject;
-    m_value = p->m_animationCursor.m_animation;
-    p->m_animationCursor.SetAnimation(m_poseAttack[idx]);
+    SwitchAnimation(m_poseAttack[idx]);
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
@@ -195,9 +192,7 @@ RVA(0x00061bc0, 0xb2)
 i32 CGrunt::StartRangedAttackAnimation() {
     SET_ANIMATION_ACT("F");
 
-    CWwdSpriteObject* p = m_wwdObject;
-    m_value = p->m_animationCursor.m_animation;
-    p->m_animationCursor.SetAnimation(AT(m_poseAttack, GRUNT_ATTACK2));
+    SwitchAnimation(AT(m_poseAttack, GRUNT_ATTACK2));
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
@@ -1271,7 +1266,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         m_coordToggle = (m_coordToggle == false);
     } else if (m_entranceReason == PICKUP_WAND) {
         i32 base;
-        if (IsRandomChance(80)) {
+        if (rand() % 100 < 80) {
             poseIdx = 1;
             base = 0x41a;
         } else {

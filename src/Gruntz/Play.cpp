@@ -1973,9 +1973,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
                 slot = this->CameraBookmarkAt(0);
                 this->m_cameraBookmarks.RemoveAt(0, 1);
-                i32 c = this->m_cameraBookmarkIndex - 1;
-                this->m_cameraBookmarkIndex = c;
-                if (c < 0) {
+                if (--this->m_cameraBookmarkIndex < 0) {
                     this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
                 }
             }
@@ -1993,15 +1991,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)) {
-            i32 c = this->m_cameraBookmarkIndex - 1;
-            this->m_cameraBookmarkIndex = c;
-            if (c < 0) {
+            if (--this->m_cameraBookmarkIndex < 0) {
                 this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
             }
         } else {
-            i32 c = this->m_cameraBookmarkIndex + 1;
-            this->m_cameraBookmarkIndex = c;
-            if (c >= this->CameraBookmarkCount()) {
+            if (++this->m_cameraBookmarkIndex >= this->CameraBookmarkCount()) {
                 this->m_cameraBookmarkIndex = 0;
             }
         }
@@ -2021,9 +2015,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         Coord* coord = this->CameraBookmarkAt(cur);
         this->m_cameraBookmarks.RemoveAt(cur, 1);
         g_coordPool.Push(coord);
-        i32 c = this->m_cameraBookmarkIndex - 1;
-        this->m_cameraBookmarkIndex = c;
-        if (c != -1) {
+        if (--this->m_cameraBookmarkIndex != -1) {
             return 1;
         }
         if (this->CameraBookmarkCount() == 0) {

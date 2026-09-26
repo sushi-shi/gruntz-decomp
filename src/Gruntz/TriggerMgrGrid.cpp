@@ -292,7 +292,7 @@ i32 CTriggerMgr::StartUnitDeathForObject(
         lastPlayerIndex = playerSelector;
     }
     for (i32 playerIndex = playerSelector; playerIndex <= lastPlayerIndex; playerIndex++) {
-        CGrunt** units = &m_units[playerIndex * TM_UNITS_PER_PLAYER];
+        CGrunt** units = PlayerUnits(playerIndex);
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
             if (units[unitIndex] == unit) {
                 return StartUnitDeath(playerIndex, unitIndex, deathType, deathParam);
@@ -338,7 +338,7 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
     }
     ResetAll();
     for (i32 playerIndex = firstPlayerIndex; playerIndex <= lastPlayerIndex; playerIndex++) {
-        CGrunt** units = &m_units[playerIndex * TM_UNITS_PER_PLAYER];
+        CGrunt** units = PlayerUnits(playerIndex);
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
             CGrunt* unit = units[unitIndex];
             if (unit != NULL) {
@@ -390,9 +390,8 @@ CGrunt* CTriggerMgr::CellHitTest(
 
     if (startPlayerIndex <= last) {
         do {
-            CGrunt** cell = &m_units[startPlayerIndex * TM_UNITS_PER_PLAYER];
             for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
-                CGrunt* g = cell[unitIndex];
+                CGrunt* g = PlayerUnits(startPlayerIndex)[unitIndex];
                 if (g != NULL && g->m_entranceCommitted != false) {
                     CWwdSpriteObject* o = g->m_object;
                     if (o->m_frameImage != NULL) {
@@ -407,7 +406,7 @@ CGrunt* CTriggerMgr::CellHitTest(
                             if (outUnitIndex != NULL) {
                                 *outUnitIndex = unitIndex;
                             }
-                            return m_units[startPlayerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+                            return PlayerUnits(startPlayerIndex)[unitIndex];
                         }
                     }
                 }
@@ -1151,8 +1150,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                     if (cand->m_pending == false && cand->m_tileX == argTileX
                         && cand->m_tileY == argTileY) {
                         cell->RunMoveConfig(argTileX, argTileY);
-                        cand->m_value = cand->m_wwdObject->m_animationCursor.m_animation;
-                        cand->m_wwdObject->SetAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
+                        cand->SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                         cand->m_pending = true;
                         return 1;
                     }

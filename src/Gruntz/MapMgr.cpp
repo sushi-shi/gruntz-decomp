@@ -164,12 +164,8 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
         return 0;
     }
     memset(m_cellPool, 0, count * 0x1c);
-    i32 stride = width;
-    i32 off = 0;
-
     for (u32 i = 0; i < static_cast<u32>(height); i++) {
-        m_rows[i] = m_cellPool + off;
-        off += stride;
+        m_rows[i] = &m_cellPool[i * width];
     }
     if (m_nodePool.Allocate(count * 5) == 0) {
         return 0;
@@ -181,8 +177,8 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
 
     RECT a;
     RECT b;
-    SET_RECT_COMPONENTS(a, 0, 0, width, height);
-    SET_RECT_COMPONENTS(b, 0, 0, width, height);
+    SET_RECT_COMPONENTS(a, 0, 0, m_width, m_height);
+    SET_RECT_COMPONENTS(b, 0, 0, m_width, m_height);
     RECT* out = &m_bounds;
     if (!IntersectRect(out, &a, &b)) {
         *out = a;

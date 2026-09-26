@@ -272,6 +272,9 @@ public:
 
     CPtrList m_recList;
 
+    CGrunt** PlayerUnits(i32 playerIndex) {
+        return &m_units[playerIndex * TM_UNITS_PER_PLAYER];
+    }
     Coord* HeadRec() {
         return static_cast<Coord*>(m_recList.GetHead());
     }
