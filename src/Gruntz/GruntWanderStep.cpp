@@ -86,7 +86,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
         case AISTATE_SEEK: {
             Coord c;
             if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
-                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && IsGruntAtSavedScreenPos(g)
                 && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 m_neighborScanEnabled = false;
@@ -131,7 +131,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (!(GRUNT_AT_SAVED_SCREEN_POS(slot))) {
+            if (!IsGruntAtSavedScreenPos(slot)) {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
@@ -163,7 +163,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 goto ph1;
             }
-            if (!(GRUNT_AT_SAVED_SCREEN_POS(slot))) {
+            if (!IsGruntAtSavedScreenPos(slot)) {
                 goto ph1;
             }
             COMMIT_GRUNT_NEIGHBOR(slot);

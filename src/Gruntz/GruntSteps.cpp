@@ -170,7 +170,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
                                                [(m_lastTilePx.m_x >> TILE_SHIFT_PX) * 7 + 4];
     TileCollisionKind tileKind = static_cast<TileCollisionKind>(code);
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
-        if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
+        if (IsGruntAtSavedScreenPos(this)) {
 
             m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);

@@ -1603,7 +1603,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
     if (n != NULL && n->m_entranceCommitted != false) {
         if (validate != 0) {
-            if (!(GRUNT_AT_SAVED_SCREEN_POS(n))) {
+            if (!IsGruntAtSavedScreenPos(n)) {
                 return NULL;
             }
         }
@@ -2412,7 +2412,7 @@ void CGrunt::FinalizeStep(char* name) {
         }
     }
     bool eqO = ANIMATION_ACT_EQUALS("O");
-    if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
+    if (eqO && !IsGruntAtSavedScreenPos(this)) {
         GruntDirectionCell c = m_entranceCell;
         i32 row = OppositeGridIndex(c.m_row);
         i32 column = OppositeGridIndex(c.m_column);
@@ -2446,7 +2446,7 @@ void CGrunt::FinalizeStep(char* name) {
     }
 
     if (ANIMATION_ACT_EQUALS("S")) {
-        if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
+        if (IsGruntAtSavedScreenPos(this)) {
             return;
         }
         double moveDirectionX = EntranceCell()->m_motion.m_direction.m_x;

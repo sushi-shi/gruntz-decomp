@@ -100,7 +100,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         case AISTATE_SEEK: {
             Coord c;
             if (g != NULL && this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
-                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && IsGruntAtSavedScreenPos(g)
                 && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 break;
@@ -172,7 +172,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     );
                     if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
-                        && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
+                        && IsGruntAtSavedScreenPos(slot)) {
                         COMMIT_GRUNT_NEIGHBOR(slot);
                         this->m_defenderState = AISTATE_ATTACK;
                     }
@@ -195,7 +195,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     break;
                 }
                 if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
-                    && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
+                    && IsGruntAtSavedScreenPos(slot)) {
                     COMMIT_GRUNT_NEIGHBOR(slot);
                     break;
                 }

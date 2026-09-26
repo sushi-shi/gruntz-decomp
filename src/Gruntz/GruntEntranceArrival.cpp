@@ -695,7 +695,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
 // @early-stop
 RVA(0x000633e0, 0x2f1)
 i32 CGrunt::ResolveEntranceArrival() {
-    if (m_entranceActive != false && GRUNT_AT_SAVED_SCREEN_POS(this)) {
+    if (m_entranceActive != false && IsGruntAtSavedScreenPos(this)) {
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->m_tileGrid;
         i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
@@ -896,7 +896,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
     i64 elapsed = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
     if (elapsed >= m_toyTiming.m_interval) {
-        if (m_entranceStamped == false && GRUNT_AT_SAVED_SCREEN_POS(this)) {
+        if (m_entranceStamped == false && IsGruntAtSavedScreenPos(this)) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
             SetEntrancePos(1, 1);
             m_entranceStamped = true;

@@ -143,7 +143,7 @@ state0: {
     if (nb->m_entranceCommitted == false) {
         goto common;
     }
-    if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
+    if (m_poweredUp == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(nb)
         && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(nb);
         CWwdSpriteObject* hit = nb->m_object;

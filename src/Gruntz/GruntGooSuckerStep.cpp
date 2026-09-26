@@ -150,7 +150,7 @@ L_ed006b:
     if (m_poweredUp != false) {
         goto L_scanb;
     }
-    if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
+    if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
     }
