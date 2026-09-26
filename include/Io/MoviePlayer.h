@@ -25,11 +25,11 @@ struct DDModeInfo;
 GZ_ENUM_BEGIN(MovieLayout)
     MOVIE_TILE = 0,
 
-    MOVIE_SINGLE = 1,
+    MOVIE_DEST_RECT = 1,
 
-    MOVIE_TILE_OR_STRETCH = 2,
+    MOVIE_SINGLE = 2,
 
-    MOVIE_DEST_RECT = 3
+    MOVIE_TILE_OR_STRETCH = 3
 GZ_ENUM_END(MovieLayout)
 
 GZ_ENUM_FLAGS_BEGIN(MovieOpenFlags, i32)

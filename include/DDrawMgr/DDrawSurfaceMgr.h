@@ -79,6 +79,12 @@ public:
 
     void SetRestoreHandler(SurfaceRestoreFn handler);
 
+    void SetInitError(WorldInitError err) {
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = err;
+        }
+    }
+
     i32 InvokeCallbackInline(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
         return ar != NULL && m_callback != NULL && m_callback(this, ar, mode, typeId, payload) != 0;
     }
