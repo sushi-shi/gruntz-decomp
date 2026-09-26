@@ -29,6 +29,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdObjMgrInline.h>
 #include <ZTools/ZDArray.h>
 
 #include <stddef.h>
@@ -100,15 +101,10 @@ i32 CExitTrigger::AdvanceAnim() {
             }
             GruntzPlayer* claimed = &g_gameReg->m_players[hitPlayerIndex];
             if (claimed != NULL) {
-                CGameObject* found = NULL;
-                CGameObject* warlordObj = NULL;
-                if (MapLookupById(
-                        g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                        claimed->m_warlordObjectId,
-                        found
-                    )) {
-                    warlordObj = found;
-                }
+                CGameObject* warlordObj = LookupObjectById(
+                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    claimed->m_warlordObjectId
+                );
                 CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_logicRecord->m_userLogic);
                 if (wl != NULL) {
                     wl->ResolveJoyAnimation();
