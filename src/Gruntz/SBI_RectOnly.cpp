@@ -439,10 +439,10 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                         if (m_destructWarningState == DESTRUCT_WARNING_INACTIVE) {
                             m_destructWarningState = DESTRUCT_WARNING_FORWARD;
                             m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;
-                            SbiClockPair* clock = &m_destructWarningClock;
+                            ClockInterval* clock = &m_destructWarningClock;
                             clock->m_interval =
                                 g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32);
-                            clock->m_last = static_cast<u32>(g_frameTime);
+                            clock->m_start = static_cast<u32>(g_frameTime);
                             sm->SetDefeatCountdown(true, 0xbb7);
                         } else {
                             CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
@@ -2392,7 +2392,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     i32 n = 5;
     do {
         if (tab->m_state == SLOT_FILLING) {
-            i64 d = static_cast<i64>(g_frameTime) - tab->m_startTime;
+            i64 d = static_cast<i64>(g_frameTime) - tab->m_clock.m_start;
 
             i32 elapsed = (d < 0) ? 0 : static_cast<i32>(d);
             u32 delay = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
@@ -2484,7 +2484,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     }
     sp->m_state = SLOT_FILLING;
 
-    i64* clock = &m_slots[idx].m_startTime;
+    i64* clock = &m_slots[idx].m_clock.m_start;
     clock[1] = INT_MAX;
     clock[0] = g_frameTime;
     PlayTabCue(this, TAB_GRUNTZ, "GAME_GOOCOOKING1");
@@ -2582,7 +2582,7 @@ void CStatusBarMgr::Reset() {
 RVA(0x00105990, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     for (i32 i = 0; i < 3; i++) {
-        i64* clock = &m_conveyorSlots[i].m_last;
+        i64* clock = &m_conveyorSlots[i].m_clock.m_start;
         SbiHlRowState state = static_cast<SbiHlRowState>(m_conveyorSlots[i].m_state);
         switch (state) {
             case HLROW_IDLE_CYCLE:
@@ -2625,7 +2625,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                         m_machinePhase = BELT_FALLING_OFF;
                         m_beltClock.m_interval =
                             g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
-                        m_beltClock.m_last = static_cast<u32>(g_frameTime);
+                        m_beltClock.m_start = static_cast<u32>(g_frameTime);
                     }
                 }
                 break;
@@ -2662,7 +2662,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiMachineRow* leftMachine = &m_leftMachine;
     switch (static_cast<SbiMachineState>(rightMachine->m_state)) {
         case MACHINE_RIGHT_RUNNING:
-            if (static_cast<i64>(g_frameTime) - rightMachine->m_last >= rightMachine->m_interval) {
+            if (static_cast<i64>(g_frameTime) - rightMachine->m_clock.m_start
+                >= rightMachine->m_clock.m_interval) {
                 if (++rightMachine->m_counter > 0x34) {
                     SetRightRezMachineAnimation(
                         0x2b,
@@ -2670,20 +2671,21 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d)
                     );
                 } else {
-                    rightMachine->m_interval =
+                    rightMachine->m_clock.m_interval =
                         g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d);
-                    rightMachine->m_last = static_cast<u32>(g_frameTime);
+                    rightMachine->m_clock.m_start = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case MACHINE_RIGHT_SPEWING:
-            if (static_cast<i64>(g_frameTime) - rightMachine->m_last >= rightMachine->m_interval) {
+            if (static_cast<i64>(g_frameTime) - rightMachine->m_clock.m_start
+                >= rightMachine->m_clock.m_interval) {
                 if (++rightMachine->m_counter > 0x44) {
                     SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
                 } else {
-                    rightMachine->m_interval =
+                    rightMachine->m_clock.m_interval =
                         g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d);
-                    rightMachine->m_last = static_cast<u32>(g_frameTime);
+                    rightMachine->m_clock.m_start = static_cast<u32>(g_frameTime);
                 }
             }
             break;
@@ -2691,7 +2693,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
 
     switch (static_cast<SbiMachineState>(leftMachine->m_state)) {
         case MACHINE_SNOOZING:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+            if (static_cast<i64>(g_frameTime) - leftMachine->m_clock.m_start
+                >= leftMachine->m_clock.m_interval) {
                 if (++leftMachine->m_counter > 8) {
                     SetLeftRezMachineAnimation(
                         1,
@@ -2699,14 +2702,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
                     );
                 } else {
-                    leftMachine->m_interval =
+                    leftMachine->m_clock.m_interval =
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64);
-                    leftMachine->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_clock.m_start = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case MACHINE_WAKING:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+            if (static_cast<i64>(g_frameTime) - leftMachine->m_clock.m_start
+                >= leftMachine->m_clock.m_interval) {
                 if (++leftMachine->m_counter > 0x13) {
                     SetLeftRezMachineAnimation(
                         0x14,
@@ -2723,19 +2727,20 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         m_conveyorSlots[i].m_value = 1;
                     }
                     m_machinePhase = BELT_IN_MACHINE;
-                    i64* belt = &m_beltClock.m_last;
+                    i64* belt = &m_beltClock.m_start;
                     belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
                     belt[0] = static_cast<u32>(g_frameTime);
                     PlayTabCue(this, TAB_RESOURCE, "GAME_REZMACHINE");
                 } else {
-                    leftMachine->m_interval =
+                    leftMachine->m_clock.m_interval =
                         g_buteMgr.GetDword("StatusBar", "LeftMachineWakingDelay", 0x64);
-                    leftMachine->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_clock.m_start = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case MACHINE_TURNING_WHEEL:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+            if (static_cast<i64>(g_frameTime) - leftMachine->m_clock.m_start
+                >= leftMachine->m_clock.m_interval) {
                 if (++leftMachine->m_counter > 0x1d) {
                     SetLeftRezMachineAnimation(
                         0x14,
@@ -2743,14 +2748,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
                     );
                 } else {
-                    leftMachine->m_interval =
+                    leftMachine->m_clock.m_interval =
                         g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64);
-                    leftMachine->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_clock.m_start = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case MACHINE_LEVER:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+            if (static_cast<i64>(g_frameTime) - leftMachine->m_clock.m_start
+                >= leftMachine->m_clock.m_interval) {
                 if (++leftMachine->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
                     b32 found = false;
                     i32 r = 3;
@@ -2780,7 +2786,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         m_conveyorSlots[col].m_counter = 0xa;
                         PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTDROP");
                     }
-                    i64* rowClock = &m_conveyorSlots[col].m_last;
+                    i64* rowClock = &m_conveyorSlots[col].m_clock.m_start;
                     rowClock[1] = g_buteMgr.GetDword("StatusBar", "ConveyorBeltDelay", 0x64);
                     rowClock[0] = static_cast<u32>(g_frameTime);
                 }
@@ -2791,9 +2797,9 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
                     );
                 } else {
-                    leftMachine->m_interval =
+                    leftMachine->m_clock.m_interval =
                         g_buteMgr.GetDword("StatusBar", "LeftMachineLeverDelay", 0x64);
-                    leftMachine->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_clock.m_start = static_cast<u32>(g_frameTime);
                 }
             }
             break;
@@ -2836,7 +2842,7 @@ void CStatusBarMgr::SetLeftRezMachineAnimation(
     SbiMachineState state,
     i32 frameDelayMs
 ) {
-    i64* clock = &m_leftMachine.m_last;
+    i64* clock = &m_leftMachine.m_clock.m_start;
     m_leftMachine.m_counter = initialFrame;
     m_leftMachine.m_state = IDX(state);
     clock[1] = static_cast<u32>(frameDelayMs);
@@ -2849,7 +2855,7 @@ void CStatusBarMgr::SetRightRezMachineAnimation(
     SbiMachineState state,
     i32 frameDelayMs
 ) {
-    i64* clock = &m_rightMachine.m_last;
+    i64* clock = &m_rightMachine.m_clock.m_start;
     m_rightMachine.m_counter = initialFrame;
     m_rightMachine.m_state = IDX(state);
     clock[1] = static_cast<u32>(frameDelayMs);
@@ -2995,7 +3001,7 @@ RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
     i32 rectFlag = 0;
     i32 refreshFlag = 0;
-    i64* belt = &m_beltClock.m_last;
+    i64* belt = &m_beltClock.m_start;
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
@@ -3154,7 +3160,7 @@ RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     m_fallingItem = item;
     m_fallActive = FALLING_ITEM_DESCENDING;
-    i64* clock = &m_fallClock.m_last;
+    i64* clock = &m_fallClock.m_start;
     clock[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
     clock[0] = static_cast<u32>(g_frameTime);
     CSBI_ImageSet* n = m_fallingItemSprite;
@@ -3202,7 +3208,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             speed = g_buteMgr.GetInt("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        i64* clock = &m_fallClock.m_last;
+        i64* clock = &m_fallClock.m_start;
         i64 d = static_cast<i64>(g_frameTime) - clock[0];
         if (d >= clock[1]) {
             OFFSET_RECT_Y_EDGES(m_fallingItemRect, speed, speed);
@@ -3313,7 +3319,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     }
 
     ClearRewardQueue();
-    i64* clock = &m_reserved2b0.m_last;
+    i64* clock = &m_reserved2b0.m_start;
     clock[0] = 0;
     clock[1] = 0;
     m_hlBusy = false;
@@ -3516,16 +3522,16 @@ i32 CStatusBarMgr::SerializeDispatch(
         }
     }
 
-    SerializeClockPair(s, mode, &m_beltClock.m_last);
-    SerializeClockPair(s, mode, &m_fallClock.m_last);
-    SerializeClockPair(s, mode, &m_rightMachine.m_last);
-    SerializeClockPair(s, mode, &m_leftMachine.m_last);
-    SerializeClockPair(s, mode, &m_destructWarningClock.m_last);
+    SerializeClockPair(s, mode, &m_beltClock.m_start);
+    SerializeClockPair(s, mode, &m_fallClock.m_start);
+    SerializeClockPair(s, mode, &m_rightMachine.m_clock.m_start);
+    SerializeClockPair(s, mode, &m_leftMachine.m_clock.m_start);
+    SerializeClockPair(s, mode, &m_destructWarningClock.m_start);
 
     CSbiSlot* p = m_slots;
     i32 n = 5;
     do {
-        SerializeClockPair(s, mode, &p->m_startTime);
+        SerializeClockPair(s, mode, &p->m_clock.m_start);
         p++;
         n--;
     } while (n != 0);
@@ -3533,7 +3539,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     n = 3;
     CSbiHlRow* r = m_conveyorSlots;
     do {
-        SerializeClockPair(s, mode, &r->m_last);
+        SerializeClockPair(s, mode, &r->m_clock.m_start);
         r++;
         n--;
     } while (n != 0);
@@ -3543,15 +3549,15 @@ i32 CStatusBarMgr::SerializeDispatch(
     do {
         n = 4;
         do {
-            SerializeClockPair(s, mode, &g->m_last);
+            SerializeClockPair(s, mode, &g->m_clock.m_start);
             g++;
             n--;
         } while (n != 0);
         outer--;
     } while (outer != 0);
 
-    SerializeClockPair(s, mode, &m_reserved2a0.m_last);
-    SerializeClockPair(s, mode, &m_reserved2b0.m_last);
+    SerializeClockPair(s, mode, &m_reserved2a0.m_start);
+    SerializeClockPair(s, mode, &m_reserved2b0.m_start);
     if (mode == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
     }
@@ -4342,8 +4348,8 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
 
     switch (m_destructWarningState) {
         case DESTRUCT_WARNING_FORWARD: {
-            SbiClockPair* clock = &m_destructWarningClock;
-            i64 d = static_cast<i64>(g_frameTime) - clock->m_last;
+            ClockInterval* clock = &m_destructWarningClock;
+            i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
             if (d >= clock->m_interval) {
                 m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame + 1);
                 if (m_destructButtonFrame >= DESTRUCT_FRAME_WARNING_LAST) {
@@ -4353,7 +4359,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
                 clock->m_interval = static_cast<u32>(
                     g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32)
                 );
-                clock->m_last = static_cast<u32>(g_frameTime);
+                clock->m_start = static_cast<u32>(g_frameTime);
                 CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
                 if (destructButtonImage) {
                     destructButtonImage->Notify(IDX(m_destructButtonFrame));
@@ -4362,8 +4368,8 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
             break;
         }
         case DESTRUCT_WARNING_REVERSE: {
-            SbiClockPair* clock = &m_destructWarningClock;
-            i64 d = static_cast<i64>(g_frameTime) - clock->m_last;
+            ClockInterval* clock = &m_destructWarningClock;
+            i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
             if (d >= clock->m_interval) {
                 m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame - 1);
                 if (m_destructButtonFrame <= DESTRUCT_FRAME_WARNING_FIRST) {
@@ -4373,7 +4379,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
                 clock->m_interval = static_cast<u32>(
                     g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32)
                 );
-                clock->m_last = static_cast<u32>(g_frameTime);
+                clock->m_start = static_cast<u32>(g_frameTime);
                 CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
                 if (destructButtonImage) {
                     destructButtonImage->Notify(IDX(m_destructButtonFrame));
