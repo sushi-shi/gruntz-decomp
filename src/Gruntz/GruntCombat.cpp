@@ -2289,10 +2289,7 @@ afterTile:
             CMapMgr* grid = g_gameReg->m_tileGrid;
 
             RECT rs;
-            rs.left = col5 - reach;
-            rs.top = row5 - reach;
-            rs.right = reach + col5 + 1;
-            rs.bottom = reach + row5 + 1;
+            SET_RECT_COMPONENTS(rs, col5 - reach, row5 - reach, reach + col5 + 1, reach + row5 + 1);
             GRID_CLIP_INL(grid, &rs)
         }
         if (m_arrivalState != AI_NONE) {

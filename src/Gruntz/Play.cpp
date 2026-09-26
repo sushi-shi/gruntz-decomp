@@ -3310,10 +3310,7 @@ void CPlay::DrawDebugStatsFull() {
         RECT* src = &m_world->m_level->m_viewportRect;
         RECT lr = *src;
         RECT dr;
-        dr.left = lr.left;
-        dr.top = lr.bottom - 0x1c;
-        dr.right = lr.right;
-        dr.bottom = lr.bottom;
+        SET_RECT_COMPONENTS(dr, lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
     }
 
@@ -3410,10 +3407,7 @@ void CPlay::DrawDebugStats() {
         reuse.m_chars = scratch;
         CopyRect(&lr, g_gameReg->GetRect(static_cast<RECT*>(reuse.m_rec)));
         RECT dr;
-        dr.left = lr.left;
-        dr.top = lr.bottom - 0x1c;
-        dr.right = lr.right;
-        dr.bottom = lr.bottom;
+        SET_RECT_COMPONENTS(dr, lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         if (lr.left > 0) {
             DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
         } else {

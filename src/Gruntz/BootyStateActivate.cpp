@@ -1531,19 +1531,13 @@ i32 CBootyState::Render() {
             if (m_initOnce != false && g_gameReg->m_gameStats->m_currentAreaComplete != false
                 && g_levelBias100 == false) {
                 RECT rc;
-                rc.left = 0;
-                rc.top = 0x24;
-                rc.right = 0x1ea;
-                rc.bottom = 0x64;
+                SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
                 CString s("World Completed!");
                 m_levelCompleteGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             } else {
                 RECT rc;
-                rc.left = 0;
-                rc.top = 0x24;
-                rc.right = 0x1ea;
-                rc.bottom = 0x64;
+                SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
                 CString s("Level Completed!");
                 m_levelCompleteGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);

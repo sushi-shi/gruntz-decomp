@@ -17,6 +17,7 @@
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 
 #include <stdlib.h>
@@ -40,15 +41,15 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
         if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordCount() == 0) {
             CMapMgr* grid = m_board;
             RECT box;
-            box.left = g->ScanCell().m_x - 5;
-            box.top = g->ScanCell().m_y - 5;
-            box.right = g->ScanCell().m_x + 5;
-            box.bottom = (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5;
+            SET_RECT_COMPONENTS(
+                box,
+                g->ScanCell().m_x - 5,
+                g->ScanCell().m_y - 5,
+                g->ScanCell().m_x + 5,
+                (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5
+            );
             RECT gb;
-            gb.left = 0;
-            gb.top = 0;
-            gb.right = m_board->m_width;
-            gb.bottom = m_board->m_height;
+            SET_RECT_COMPONENTS(gb, 0, 0, m_board->m_width, m_board->m_height);
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
                 u32 hits = 0;
