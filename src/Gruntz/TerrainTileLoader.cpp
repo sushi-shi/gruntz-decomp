@@ -21,6 +21,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -570,7 +571,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (splash != NULL) {
                     splash->SetImageSetByName("GAME_WATER");
                     splash->SetAnimationByName("GAME_WATER", 0);
-                    m_world->m_soundRegistry->PlayCue("GAME_WATERSPLASH");
+                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_WATERSPLASH");
                 }
             }
             return 1;

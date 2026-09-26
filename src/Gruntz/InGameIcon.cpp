@@ -936,13 +936,7 @@ i32 CInGameText::Update() {
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;
         if (::PtInRect(&reg->m_viewBounds, x, y)) {
-            SoundCueRegistry* set = reg->m_world->m_soundRegistry;
-            if (set->m_silentMode == false) {
-                SoundCue* res = MapFind<SoundCue>(set->m_cues, "GAME_HELPBOOK");
-                if (res != NULL) {
-                    PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, false);
-                }
-            }
+            PlayRegistryCueIfElapsed(reg->m_world->m_soundRegistry, "GAME_HELPBOOK");
         }
 
         m_cachedPlayerIndex = playerIndex;

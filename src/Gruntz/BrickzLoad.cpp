@@ -335,13 +335,8 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                 i32 cx = tileX + xo;
                 for (i32 yo = -1; yo < 2; yo++) {
 
-                    Coord* elem = NULL;
-                    if (g_coordPool.m_freeHead->m_next != NULL) {
-                        elem = &g_coordPool.m_freeHead->m_value;
-                        elem->Set(cx, tileY + yo);
-                        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-                    }
-                    m_arr.Add(elem);
+                    Coord cell;
+                    m_arr.Add(g_coordPool.PopCopy(*cell.Set(cx, tileY + yo)));
                 }
             }
             for (i32 k = 0; k < m_arr.GetSize(); k++) {

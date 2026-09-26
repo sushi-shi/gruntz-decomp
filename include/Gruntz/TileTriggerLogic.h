@@ -138,6 +138,17 @@ class CGiantRockLogic : public CTileTriggerLogic {
 public:
     CGiantRockLogic();
 
+    i32 Build(
+        CTileTriggerContainer* owner,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        const i32* matrix,
+        PickupType powerupType,
+        i32 textId,
+        i32 dutyOffSpan
+    );
+
     i32 BuildRockBreakInGameText();
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);

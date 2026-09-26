@@ -340,23 +340,12 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    if (event->m_live == false) {
-        event->m_tileX = tileX;
-        event->m_tileY = tileY;
-        event->m_cellKey = cellKey;
-        event->m_playerFlags[0] = playerFlags.left;
-        event->m_playerFlags[1] = playerFlags.top;
-        event->m_playerFlags[3] = playerFlags.bottom;
-        event->m_actionCode = actionCode;
-        event->m_owner = this;
-        event->m_live = true;
-        event->m_playerFlags[2] = playerFlags.right;
-        event->SetActionCode(actionCode);
-        m_actionEvents.AddTail(event);
-        return event;
+    if (!event->Build(this, actionCode, tileX, tileY, cellKey, playerFlags)) {
+        delete event;
+        return NULL;
     }
-    delete event;
-    return NULL;
+    m_actionEvents.AddTail(event);
+    return event;
 }
 
 RVA(0x00116b80, 0x120)
@@ -371,12 +360,7 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    RECT playerFlags;
-    playerFlags.left = 0;
-    CTileActionEvent* result = NULL;
-    playerFlags.top = 0;
-    playerFlags.right = 0;
-    playerFlags.bottom = 0;
+    RECT playerFlags = {0, 0, 0, 0};
     switch (static_cast<PlayerSlot>(playerSlot)) {
         case PLAYER_SLOT_1:
             playerFlags.top = 1;
@@ -393,24 +377,12 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
             playerFlags.left = 1;
             break;
     }
-    if (event->m_live == false) {
-        event->m_tileX = tileX;
-        event->m_tileY = tileY;
-        event->m_cellKey = cellKey;
-        event->m_playerFlags[2] = playerFlags.right;
-        event->m_actionCode = actionCode;
-        event->m_owner = this;
-        event->m_live = true;
-        event->m_playerFlags[0] = playerFlags.left;
-        event->m_playerFlags[1] = playerFlags.top;
-        event->m_playerFlags[3] = playerFlags.bottom;
-        event->SetActionCode(actionCode);
-        m_actionEvents.AddTail(event);
-        result = event;
-    } else {
+    if (!event->Build(this, actionCode, tileX, tileY, cellKey, playerFlags)) {
         delete event;
+        return NULL;
     }
-    return result;
+    m_actionEvents.AddTail(event);
+    return event;
 }
 
 RVA(0x00116cf0, 0x111)
@@ -427,29 +399,21 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
     if (e == NULL) {
         return NULL;
     }
-    if (e->m_initGate == false) {
-        memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
-        e->m_powerupType = static_cast<PickupType>(powerupType);
-        e->m_textId = textId;
-        e->m_typeTag = TRIGID_GIANT_ROCK_22;
-        e->m_tileX = tileX;
-        e->m_tileY = tileY;
-        e->m_cellKey = cellKey;
-        e->m_owner = this;
-        e->m_initGate = true;
-        e->m_dutyOn = false;
-        e->m_startClock = g_frameTime;
-        e->m_dutyOnSpan = 0;
-        e->m_tileToken = 0;
-        e->m_leadInSpan = 0;
-        e->m_dutyOffSpan = 0;
-        e->m_startClock = g_frameTime;
-        e->m_dutyOffSpan = dutyOffSpan;
-        m_idleLogics.AddTail(e);
-        return e;
+    if (!e->Build(
+            this,
+            tileX,
+            tileY,
+            cellKey,
+            block9,
+            static_cast<PickupType>(powerupType),
+            textId,
+            dutyOffSpan
+        )) {
+        delete e;
+        return NULL;
     }
-    delete e;
-    return NULL;
+    m_idleLogics.AddTail(e);
+    return e;
 }
 
 RVA(0x00116e60, 0x59)

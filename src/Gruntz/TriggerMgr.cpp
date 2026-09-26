@@ -1019,15 +1019,10 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     m_units[idx] = NULL;
     m_unitCountByPlayer[playerIndex] -= 1;
 
-    PickupType k;
     if (exitedLevel != 0) {
         m_unitExited[idx] = 1;
         m_gruntzExitedByPlayer[playerIndex] += 1;
-        k = cell->m_entranceReason;
-        if (k > PICKUP_EQUIPPABLE_LAST) {
-            k = cell->m_toolId;
-        }
-        if (k == PICKUP_WARPSTONE) {
+        if (cell->ArrivalPickup() == PICKUP_WARPSTONE) {
             if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 CWarlord* fx = m_pendingFx;
                 if (fx != NULL) {
@@ -1037,11 +1032,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
             this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_EXIT);
         }
     } else {
-        k = cell->m_entranceReason;
-        if (k > PICKUP_EQUIPPABLE_LAST) {
-            k = cell->m_toolId;
-        }
-        if (k == PICKUP_WARPSTONE) {
+        if (cell->ArrivalPickup() == PICKUP_WARPSTONE) {
             this->ResetSpawnState();
         }
         m_gruntzLostByPlayer[playerIndex] += 1;
