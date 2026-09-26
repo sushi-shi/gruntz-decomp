@@ -76,6 +76,8 @@ RVA_DYNINIT(0x0016dfe0, 0x10, zPTree::ceh)
 DATA(0x002bf480)
 zErrHandler zPTree::ceh("zSymTab: ");
 
+RVA_DYNINIT(0x0016e180, 0x5, zErrHandler::dl)
+RVA_DYNINIT(0x0016e190, 0x1, zErrHandler::dl)
 DATA(0x002bf498)
 _dhandler zErrHandler::dl[32];
 DATA(0x002bf618)

@@ -62,6 +62,11 @@ const i32 MAX_DEDICATED = 32;
 
 class _dhandler {
     friend class zErrHandler;
+
+public:
+    _dhandler() {}
+
+private:
     void* object;
     erf_t handler;
     short lasterr;
