@@ -484,7 +484,6 @@ i32 CWarlord::ResolveMovingAnimation() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
@@ -512,8 +511,9 @@ i32 CWarlord::NotifyFortUnderAttack() {
                         static_cast<u32>(g_buteMgr.GetInt("Warlordz", "NotifyTimer", 0x1770));
                     m_notifyTimer.m_start = static_cast<u32>(g_frameTime);
                 }
-                m_cooldownTimer.m_window = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
-                m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
+                i64* cooldown = &m_cooldownTimer.m_start;
+                cooldown[1] = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
+                cooldown[0] = static_cast<u32>(g_frameTime);
             }
 
             SwitchAnimation(m_animPanic);
