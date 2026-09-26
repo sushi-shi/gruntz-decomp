@@ -505,7 +505,7 @@ void CDDSurface::FlipVertical() {
     }
     u8* tmp = new u8[m_apiDesc.dwWidth];
     if (tmp == NULL) {
-        m_ddSurface->Unlock(NULL);
+        Unlock();
         return;
     }
 
@@ -556,7 +556,7 @@ void CDDSurface::FlipVertical() {
         } while (i < half);
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     delete[] tmp;
 }
 
@@ -587,7 +587,7 @@ i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
             src += this->m_bytesPerRow;
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -827,14 +827,14 @@ i32 CDDSurface::ShadeBlt(
     } else {
         goto reject;
     }
-    m_ddSurface->Unlock(NULL);
-    src->m_ddSurface->Unlock(NULL);
+    Unlock();
+    src->Unlock();
     delete[] temp;
     return 1;
 reject:
     delete[] temp;
-    m_ddSurface->Unlock(NULL);
-    src->m_ddSurface->Unlock(NULL);
+    Unlock();
+    src->Unlock();
     return 0;
 }
 
@@ -929,11 +929,11 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         }
     } else {
         delete[] scratch;
-        m_ddSurface->Unlock(NULL);
+        Unlock();
         return 0;
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     delete[] scratch;
     return 1;
 }
@@ -1147,7 +1147,7 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1178,7 +1178,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1212,7 +1212,7 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1252,7 +1252,7 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1286,7 +1286,7 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1328,7 +1328,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1546,7 +1546,7 @@ i32 CDDSurface::DecodeRun8(u8* src) {
             }
         }
     }
-    this->UnlockThunk();
+    Unlock();
     return 1;
 }
 
@@ -1669,7 +1669,7 @@ i32 CDDSurface::DecodeRun24(u8* src) {
             }
         }
     }
-    this->UnlockThunk();
+    Unlock();
     return 1;
 }
 
@@ -1790,11 +1790,6 @@ i32 CDDSurface::GetHeight() {
 
 RVA_COMPGEN(0x00141330, 0x1e, ??_GCDDSurface@@UAEPAXI@Z)
 RVA_COMPGEN(0x00141350, 0x53, ??1CDDSurface@@UAE@XZ)
-
-RVA(0x001413b0, 0xf)
-void CDDSurface::UnlockThunk() {
-    m_ddSurface->Unlock(NULL);
-}
 
 RVA(0x001413c0, 0xb)
 i32 CDDSurface::Scale(i32 n) {

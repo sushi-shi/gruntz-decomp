@@ -161,7 +161,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
         keyVal,
         palette
     );
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
     return r;
 }
 
@@ -635,7 +635,7 @@ void CDDrawShadeBlit::BlitCopyForward(
         }
     }
 
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
 }
 
 inline void CDDrawShadeBlit::CopyRowFlip(u8* dst, u8* src, i32 bytes) {
@@ -789,7 +789,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
         }
     }
 
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
 }
 
 RVA(0x0014a200, 0x1570)
@@ -973,7 +973,7 @@ void CDDrawShadeBlit::BlitShadedForward(
         }
     }
 
-    src->m_ddSurface->Unlock(NULL);
+    src->Unlock();
 }
 
 RVA(0x0014b770, 0x1280)
@@ -1166,7 +1166,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
         }
     }
 
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
 }
 
 RVA(0x0014c9f0, 0x5d0)
