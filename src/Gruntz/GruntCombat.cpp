@@ -2413,35 +2413,16 @@ void CGrunt::FinalizeStep(char* name) {
     bool eqO = ANIMATION_ACT_EQUALS("O");
     if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
         GruntDirectionCell c = m_entranceCell;
-        i32 row = c.m_row;
-        switch (row) {
-            case GRUNT_DIRECTION_GRID_LOW:
-                row = GRUNT_DIRECTION_GRID_HIGH;
-                break;
-            case GRUNT_DIRECTION_GRID_HIGH:
-                row = GRUNT_DIRECTION_GRID_LOW;
-                break;
-            default:
-                break;
-        }
-        i32 column = c.m_column;
-        switch (column) {
-            case GRUNT_DIRECTION_GRID_LOW:
-                column = GRUNT_DIRECTION_GRID_HIGH;
-                break;
-            case GRUNT_DIRECTION_GRID_HIGH:
-                column = GRUNT_DIRECTION_GRID_LOW;
-                break;
-            default:
-                break;
-        }
-        i32 base = GRUNT_DIRECTION_GRID_WIDTH * row + column;
-        double moveDirectionX = m_cells[base].m_motion.m_direction.m_x;
-        double moveDirectionY = m_cells[base].m_motion.m_direction.m_y;
+        i32 row = OppositeGridIndex(c.m_row);
+        i32 column = OppositeGridIndex(c.m_column);
+        double moveDirectionX = GruntCellAt(this, row, column)->m_motion.m_direction.m_x;
+        double moveDirectionY = GruntCellAt(this, row, column)->m_motion.m_direction.m_y;
         m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
         m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.m_x + m_movePosX));
-        i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.m_y + m_movePosY));
+        i32 nx =
+            static_cast<i32>((GruntCellAt(this, row, column)->m_motion.m_step.m_x + m_movePosX));
+        i32 ny =
+            static_cast<i32>((GruntCellAt(this, row, column)->m_motion.m_step.m_y + m_movePosY));
         if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
