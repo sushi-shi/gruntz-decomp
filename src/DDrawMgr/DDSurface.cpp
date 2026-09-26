@@ -1232,9 +1232,10 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
             u16* dst = Row16(locked, row, m_apiDesc.lPitch);
             for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
-                u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                u8 b = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                u8 r;
+                u8 g;
+                u8 b;
+                UnpackPixel16(px, r, g, b);
                 *dst++ = r;
                 *dst++ = g;
                 *dst++ = b;
@@ -1245,9 +1246,10 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
             u16* dst = Row16(locked, row, m_apiDesc.lPitch);
             for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
-                u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                u8 b = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                u8 r;
+                u8 g;
+                u8 b;
+                UnpackPixel16(px, r, g, b);
                 *dst++ = r;
                 *dst++ = g;
                 *dst++ = b;
@@ -1312,9 +1314,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             u8* dst = locked + row * this->m_apiDesc.lPitch;
             for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
-                red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                UnpackPixel16(px, red, green, blue);
                 *dst++ = static_cast<u8>(FindNearestColor(pal, red, green, blue));
             }
         }
@@ -1323,9 +1323,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             u8* dst = locked + row * this->m_apiDesc.lPitch;
             for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
-                red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                UnpackPixel16(px, red, green, blue);
                 *dst++ = static_cast<u8>(FindNearestColor(pal, red, green, blue));
             }
         }

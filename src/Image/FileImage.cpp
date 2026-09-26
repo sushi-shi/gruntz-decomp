@@ -377,13 +377,12 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         i32 x = 0;
         u8* dst = line;
         while (x < static_cast<i32>(this->m_apiDesc.dwWidth)) {
-            Pix16Ptr sp;
-            sp.m_bytes = src;
-            u16 px = *sp.m_words;
+            u16 px = Load16(src);
             src += 2;
-            u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-            u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-            u8 b = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+            u8 r;
+            u8 g;
+            u8 b;
+            UnpackPixel16(px, r, g, b);
             *dst++ = b;
             *dst++ = g;
             *dst++ = r;
