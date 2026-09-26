@@ -29,7 +29,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntActionInline.h>
-#include <Gruntz/GruntActRegMacros.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>
@@ -1642,25 +1641,25 @@ void CGrunt::FireActivation(i32 id) {
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
     CActReg& registry = CActRegPool<CGrunt>::s_table;
-    REGISTER_GRUNT_ACT_KEY(registry, "A", &CGrunt::ResolveEntranceArrival);
-    REGISTER_GRUNT_ACT_KEY(registry, "B", &CGrunt::StepWarpExit);
-    REGISTER_GRUNT_ACT_KEY(registry, "C", &CGrunt::UpdateDeathAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "D", &CGrunt::StepArrivalReroll);
-    REGISTER_GRUNT_ACT_KEY(registry, "E", &CGrunt::UpdateGruntStatus);
-    REGISTER_GRUNT_ACT_KEY(registry, "F", &CGrunt::StepAttackAction);
-    REGISTER_GRUNT_ACT_KEY(registry, "G", &CGrunt::UpdateToyUseAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "H", &CGrunt::FinishStruckAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "I", &CGrunt::LoadWandGruntItemConfig);
-    REGISTER_GRUNT_ACT_KEY(registry, "J", &CGrunt::RunEntranceMove);
-    REGISTER_GRUNT_ACT_KEY(registry, "K", &CGrunt::LoadEntranceConfig);
-    REGISTER_GRUNT_ACT_KEY(registry, "L", &CGrunt::LoadVehicleGruntAnimations);
-    REGISTER_GRUNT_ACT_KEY(registry, "M", &CGrunt::RearmEntranceDrop);
-    REGISTER_GRUNT_ACT_KEY(registry, "N", &CGrunt::FinishToobMoveAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "O", &CGrunt::FinishKnockbackAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "P", &CGrunt::UpdateEntranceAnim);
-    REGISTER_GRUNT_ACT_KEY(registry, "Q", &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_GRUNT_ACT_KEY(registry, "R", &CGrunt::UpdateDecayFade);
-    REGISTER_GRUNT_ACT_KEY(registry, "S", &CGrunt::FinishEntranceMove);
+    REGISTER_ACT(registry, "A", &CGrunt::ResolveEntranceArrival);
+    REGISTER_ACT(registry, "B", &CGrunt::StepWarpExit);
+    REGISTER_ACT(registry, "C", &CGrunt::UpdateDeathAnimation);
+    REGISTER_ACT(registry, "D", &CGrunt::StepArrivalReroll);
+    REGISTER_ACT(registry, "E", &CGrunt::UpdateGruntStatus);
+    REGISTER_ACT(registry, "F", &CGrunt::StepAttackAction);
+    REGISTER_ACT(registry, "G", &CGrunt::UpdateToyUseAnimation);
+    REGISTER_ACT(registry, "H", &CGrunt::FinishStruckAnimation);
+    REGISTER_ACT(registry, "I", &CGrunt::LoadWandGruntItemConfig);
+    REGISTER_ACT(registry, "J", &CGrunt::RunEntranceMove);
+    REGISTER_ACT(registry, "K", &CGrunt::LoadEntranceConfig);
+    REGISTER_ACT(registry, "L", &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_ACT(registry, "M", &CGrunt::RearmEntranceDrop);
+    REGISTER_ACT(registry, "N", &CGrunt::FinishToobMoveAnimation);
+    REGISTER_ACT(registry, "O", &CGrunt::FinishKnockbackAnimation);
+    REGISTER_ACT(registry, "P", &CGrunt::UpdateEntranceAnim);
+    REGISTER_ACT(registry, "Q", &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_ACT(registry, "R", &CGrunt::UpdateDecayFade);
+    REGISTER_ACT(registry, "S", &CGrunt::FinishEntranceMove);
 }
 
 RVA(0x0005caa0, 0x5e4)
@@ -1788,11 +1787,6 @@ void CGrunt::Activate() {
     m_deathAnimStarted = false;
     m_tileClaimed = false;
 }
-
-#undef REGISTER_GRUNT_ACT_KEY
-#undef BIND_GRUNT_ACT
-#undef STORE_GRUNT_ACT
-#undef ToActHandler
 
 DATA(0x001e999c)
 const float g_quarterScale = 0.25f;

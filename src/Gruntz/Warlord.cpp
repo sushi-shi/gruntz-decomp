@@ -5,6 +5,7 @@
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -36,7 +37,6 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
-#include <Gruntz/WarlordActRegMacros.h>
 #include <Gruntz/WarlordOwner.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
@@ -334,15 +334,14 @@ void CWarlord::FireActivation(i32 key) {
 
 RVA(0x000447a0, 0x333)
 void RegisterWarlordActions() {
-    REGISTER_ACTION("A", &CWarlord::FinishIdleAnimation);
-    REGISTER_ACTION("B", &CWarlord::UpdateMovingState);
-    REGISTER_ACTION("C", &CWarlord::BuildFortSplashParticles);
-    REGISTER_ACTION("D", &CWarlord::UpdatePanicState);
-    REGISTER_ACTION("E", &CWarlord::FinishJoyAnimation);
-    REGISTER_ACTION("F", &CWarlord::FinishBattlecryAnimation);
+    CActReg& registry = CActRegPool<CWarlord>::s_table;
+    REGISTER_ACT(registry, "A", &CWarlord::FinishIdleAnimation);
+    REGISTER_ACT(registry, "B", &CWarlord::UpdateMovingState);
+    REGISTER_ACT(registry, "C", &CWarlord::BuildFortSplashParticles);
+    REGISTER_ACT(registry, "D", &CWarlord::UpdatePanicState);
+    REGISTER_ACT(registry, "E", &CWarlord::FinishJoyAnimation);
+    REGISTER_ACT(registry, "F", &CWarlord::FinishBattlecryAnimation);
 }
-
-#undef REGISTER_ACTION
 
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::FinishIdleAnimation() {
