@@ -8,7 +8,7 @@
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
-#include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Io/FileMem.h>
 
@@ -52,7 +52,6 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             s->Write(&m_timerValue, sizeof(m_timerValue));
             s->Write(&m_playerIndex, sizeof(m_playerIndex));
             s->Write(&m_unitIndex, sizeof(m_unitIndex));
-#undef GS_SUBREC
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
@@ -92,8 +91,6 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             s->Read(&m_unitIndex, sizeof(m_unitIndex));
             GS_NAMEREF(m_glyphMap);
             GS_NAMEREF(m_timerGlyphMap);
-#undef GS_IDXREF
-#undef GS_NAMEREF
             break;
         }
     }

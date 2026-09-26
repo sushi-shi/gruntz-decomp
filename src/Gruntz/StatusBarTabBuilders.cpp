@@ -20,6 +20,7 @@
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarItemInline.h>
@@ -178,100 +179,35 @@ i32 CSBI_GruntMachine::SerializeFields(
             s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            v = 0;
-            if (m_leftFrame != NULL) {
-                reg->m_imageRegistry->AnyValueMatches(m_leftFrame, buf, &v);
-            }
-            s->Write(buf, SERIAL_NAME_LEN);
-            s->Write(&v, sizeof(v));
+            GS_SUBREC(m_leftFrame);
             s->Write(&m_rightFrameIndex, sizeof(m_rightFrameIndex));
 
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            v = 0;
-            if (m_rightFrame != NULL) {
-                reg->m_imageRegistry->AnyValueMatches(m_rightFrame, buf, &v);
-            }
-            s->Write(buf, SERIAL_NAME_LEN);
-            s->Write(&v, sizeof(v));
+            GS_SUBREC(m_rightFrame);
 
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            v = 0;
-            if (m_standaloneFrame != NULL) {
-                reg->m_imageRegistry->AnyValueMatches(m_standaloneFrame, buf, &v);
-            }
-            s->Write(buf, SERIAL_NAME_LEN);
-            s->Write(&v, sizeof(v));
+            GS_SUBREC(m_standaloneFrame);
             break;
         }
 
         case SERIAL_LOAD: {
             CObject* out;
 
-            g_serialCounter++;
-            s->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                out = NULL;
-                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                m_config = static_cast<CDDrawWorker*>(out);
-            } else {
-                m_config = NULL;
-            }
+            GS_NAMEREF(m_config);
             s->Read(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
             {
                 i32 idx;
-                g_serialCounter++;
-                s->Read(buf, SERIAL_NAME_LEN);
-                s->Read(&idx, sizeof(idx));
-                if (strlen(buf) != 0) {
-                    i32 i = idx;
-                    out = NULL;
-                    reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                    CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                    CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
-                    m_leftFrame = r;
-                } else {
-                    m_leftFrame = NULL;
-                }
+                GS_IDXREF(m_leftFrame);
             }
             s->Read(&m_rightFrameIndex, sizeof(m_rightFrameIndex));
 
             {
                 i32 idx;
-                g_serialCounter++;
-                s->Read(buf, SERIAL_NAME_LEN);
-                s->Read(&idx, sizeof(idx));
-                if (strlen(buf) != 0) {
-                    i32 i = idx;
-                    out = NULL;
-                    reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                    CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                    CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
-                    m_rightFrame = r;
-                } else {
-                    m_rightFrame = NULL;
-                }
+                GS_IDXREF(m_rightFrame);
             }
 
             {
                 i32 idx;
-                g_serialCounter++;
-                s->Read(buf, SERIAL_NAME_LEN);
-                s->Read(&idx, sizeof(idx));
-                if (strlen(buf) != 0) {
-                    i32 i = idx;
-                    out = NULL;
-                    reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                    CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                    CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
-                    m_standaloneFrame = r;
-                } else {
-                    m_standaloneFrame = NULL;
-                }
+                GS_IDXREF(m_standaloneFrame);
             }
 
             break;

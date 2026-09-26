@@ -22,6 +22,7 @@
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -178,23 +179,9 @@ i32 CSBI_SideTab::SerializeFields(
         case SERIAL_SAVE: {
             i32 v;
 
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            v = 0;
-            if (m_topFrame != NULL) {
-                reg->m_imageRegistry->AnyValueMatches(m_topFrame, buf, &v);
-            }
-            s->Write(buf, SERIAL_NAME_LEN);
-            s->Write(&v, sizeof(v));
+            GS_SUBREC(m_topFrame);
 
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            v = 0;
-            if (m_bottomFrame != NULL) {
-                reg->m_imageRegistry->AnyValueMatches(m_bottomFrame, buf, &v);
-            }
-            s->Write(buf, SERIAL_NAME_LEN);
-            s->Write(&v, sizeof(v));
+            GS_SUBREC(m_bottomFrame);
 
             s->Write(&m_sampledValue, sizeof(m_sampledValue));
             s->Write(&m_rowIndex, sizeof(m_rowIndex));
@@ -211,33 +198,9 @@ i32 CSBI_SideTab::SerializeFields(
             CObject* out;
             i32 idx;
 
-            g_serialCounter++;
-            s->Read(buf, SERIAL_NAME_LEN);
-            s->Read(&idx, sizeof(idx));
-            if (strlen(buf) != 0) {
-                i32 i = idx;
-                out = NULL;
-                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
-                m_topFrame = r;
-            } else {
-                m_topFrame = NULL;
-            }
+            GS_IDXREF(m_topFrame);
 
-            g_serialCounter++;
-            s->Read(buf, SERIAL_NAME_LEN);
-            s->Read(&idx, sizeof(idx));
-            if (strlen(buf) != 0) {
-                i32 i = idx;
-                out = NULL;
-                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
-                m_bottomFrame = r;
-            } else {
-                m_bottomFrame = NULL;
-            }
+            GS_IDXREF(m_bottomFrame);
 
             s->Read(&m_sampledValue, sizeof(m_sampledValue));
             s->Read(&m_rowIndex, sizeof(m_rowIndex));
