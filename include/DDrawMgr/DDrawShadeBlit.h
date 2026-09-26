@@ -61,13 +61,13 @@ public:
     void BlitShadedForward(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip);
     void BlitShadedMirrored(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
 
-    void ConvertRow(u8* dst, u8* src, i32 count);
+    inline void ConvertRow(u8* dst, u8* src, i32 count);
 
-    void ConvertRowFlip(u8* dst, u8* src, i32 count);
+    inline void ConvertRowFlip(u8* dst, u8* src, i32 count);
 
-    void ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta);
+    inline void ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta);
 
-    void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta);
+    inline void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta);
 
     b32 m_doubleScanlines;
     i32 m_width;
