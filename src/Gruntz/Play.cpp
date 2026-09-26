@@ -1082,35 +1082,32 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         LevelArea page = self->m_levelType;
         switch (page) {
             case AREA_ROCKY_ROADZ:
+            case AREA_GRUNTZICLEZ:
                 g_areaPitDeath = DEATH_SINK;
                 break;
-            case AREA_GRUNTZICLEZ:
-                g_areaPitDeath = DEATH_BURN;
-                g_areaHazardDeath = DEATH_BURN;
-                break;
             case AREA_TROUBLE_IN_THE_TROPICZ:
-                g_areaPitDeath = DEATH_FALL;
+                g_areaPitDeath = DEATH_BURN;
                 g_areaHazardDeath = DEATH_BURN;
                 break;
             case AREA_HIGH_ON_SWEETZ:
                 g_areaPitDeath = DEATH_FALL;
-                g_areaHazardDeath = DEATH_QUICKFALL;
+                g_areaHazardDeath = DEATH_BURN;
                 break;
             case AREA_HIGH_ROLLERZ:
+                g_areaPitDeath = DEATH_FALL;
+                g_areaHazardDeath = DEATH_QUICKFALL;
+                break;
+            case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
                 g_areaPitDeath = DEATH_MELT;
                 g_areaHazardDeath = DEATH_ELECTROCUTE;
                 break;
-            case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
-                g_areaPitDeath = DEATH_SINK;
-                g_areaHazardDeath = DEATH_EXPLODE;
-                break;
             case AREA_MINIATURE_MASTERZ:
-                g_areaPitDeath = DEATH_FALL2;
+                g_areaPitDeath = DEATH_SINK;
                 g_areaHazardDeath = DEATH_EXPLODE;
                 break;
             case AREA_GRUNTZ_IN_SPACE:
-                g_areaPitDeath = DEATH_SINK;
-                g_areaHazardDeath = DEATH_DROP;
+                g_areaPitDeath = DEATH_FALL2;
+                g_areaHazardDeath = DEATH_EXPLODE;
                 break;
             default:
                 g_areaPitDeath = DEATH_SINK;
