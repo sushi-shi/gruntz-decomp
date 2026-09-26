@@ -160,13 +160,13 @@ void CFaderSine::RenderFrame(i32 frame) {
         i32 done = m_fadeRowCount - y + m_height - 1;
         if (done >= 0 && done < m_height) {
             if (m_clearToBlack != false) {
-                u8* clrRow = m_targetBits + m_targetSurface->m_apiDesc.lPitch * done;
-                ClearBytes(clrRow, bpp * m_width);
+                ClearBytes(m_targetBits + m_targetSurface->m_apiDesc.lPitch * done, bpp * m_width);
             } else {
-                u8* restore = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * done;
-                u8* target = m_targetBits + m_targetSurface->m_apiDesc.lPitch * done;
-                i32 span = bpp * m_width;
-                CopyBytes(target, restore, span);
+                CopyBytes(
+                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * done,
+                    m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * done,
+                    bpp * m_width
+                );
             }
         }
         y++;
