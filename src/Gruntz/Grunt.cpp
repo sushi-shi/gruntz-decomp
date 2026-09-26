@@ -52,6 +52,7 @@
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -1404,13 +1405,7 @@ i32 CGrunt::StepGruntMovement() {
     }
 
     if ((flagHead & BRICKZ_CELL_OCCUPIED) && !(flagHead & 0x80)) {
-        i32 owner;
-        if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width)
-            && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_height)) {
-            owner = bd->m_rowInts[tgtTileY][tgtTileX * 7 + 1];
-        } else {
-            owner = -1;
-        }
+        i32 owner = bd->OccupantAt(tgtTileX, tgtTileY);
         m_triggerMgr->StartUnitDeath(
             (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
             owner & GRUNT_IDENTITY_COMPONENT_MASK,
@@ -1588,12 +1583,10 @@ label_4cb4b:
     SetFacing(0x3e8, rec);
     {
         m_commitPx = m_lastTilePx;
-        i32 lastTileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-        i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
-
-        bdl->m_rows[lastTileY][lastTileX].m_flagBytes[3] &= 0xdf;
-        bdl->m_rows[lastTileY][lastTileX].m_occupantId = -1;
+        g_gameReg->m_tileGrid->ReleaseCellOccupancy(
+            m_lastTilePx.m_x >> TILE_SHIFT_PX,
+            m_lastTilePx.m_y >> TILE_SHIFT_PX
+        );
 
         tgtTileX = tgtPxX >> TILE_SHIFT_PX;
         tgtTileY = tgtPxY >> TILE_SHIFT_PX;
@@ -1956,11 +1949,12 @@ i32 CGrunt::Place(
         return 1;
     }
 
-    CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    plane->m_rowInts[ty][tx * 7] |= BRICKZ_CELL_OCCUPIED;
-    plane->m_rowInts[ty][tx * 7 + 1] = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
+    g_gameReg->m_tileGrid->AcquireCellOccupancy(
+        m_lastTilePx.m_x >> TILE_SHIFT_PX,
+        m_lastTilePx.m_y >> TILE_SHIFT_PX,
+        m_playerIndex,
+        m_unitIndex
+    );
     m_entranceActive = false;
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);

@@ -86,7 +86,7 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
 
 RVA(0x00150610, 0x41)
 i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
-    SoundCue* cue = MapFind<SoundCue>(OwnerMgr()->m_soundRegistry->m_cues, name);
+    SoundCue* cue = OwnerMgr()->m_soundRegistry->FindCue(name);
     if (cue == NULL) {
         return 0;
     }

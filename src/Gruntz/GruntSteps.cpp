@@ -295,18 +295,8 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     i32 oldX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 newX = m_commitPx.m_x >> TILE_SHIFT_PX;
     i32 newY = m_commitPx.m_y >> TILE_SHIFT_PX;
-    {
-        CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        board->m_rows[oldY][oldX].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-        board->m_rows[oldY][oldX].m_occupantId = -1;
-    }
-    {
-        CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        i32 unitIndex = m_unitIndex;
-        i32 playerIndex = m_playerIndex;
-        board->m_rows[newY][newX].m_flags |= BRICKZ_CELL_OCCUPIED;
-        board->m_rows[newY][newX].m_occupantId = (playerIndex << 8) | unitIndex;
-    }
+    g_gameReg->m_tileGrid->ReleaseCellOccupancy(oldX, oldY);
+    g_gameReg->m_tileGrid->AcquireCellOccupancy(newX, newY, m_playerIndex, m_unitIndex);
 
     m_lastTilePx = m_commitPx;
     m_commitPx = m_entrancePx;
@@ -690,8 +680,7 @@ commit:
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 nx = moveX >> TILE_SHIFT_PX;
         i32 ny = moveY >> TILE_SHIFT_PX;
-        i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-        b->AcquireCellOccupancy(nx, ny, owner);
+        b->AcquireCellOccupancy(nx, ny, m_playerIndex, m_unitIndex);
     }
     m_lastTilePx.m_x = moveX;
     m_lastTilePx.m_y = moveY;
@@ -742,10 +731,9 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
     }
 
-    CGruntzMapMgr* b = g_gameReg->GetTileGrid();
     i32 tx = nextX >> TILE_SHIFT_PX;
     i32 ty = nextY >> TILE_SHIFT_PX;
-    i32 flags = b->CellFlagsAt(tx, ty);
+    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(tx, ty);
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
     }
@@ -753,16 +741,11 @@ i32 CGrunt::ClaimSwitchTile() {
     m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
     m_commitPx = m_lastTilePx;
-    CGruntzMapMgr* gb = g_gameReg->GetTileGrid();
-    i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    gb->m_rows[oldTy][oldTx].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-    gb->m_rows[oldTy][oldTx].m_occupantId = -1;
-
-    CGruntzMapMgr* nb = g_gameReg->GetTileGrid();
-    i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-    nb->m_rowBytes[ty][tx * 7 * 4 + 3] |= 0x20;
-    nb->m_rowInts[ty][tx * 7 + 1] = owner;
+    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(
+        m_lastTilePx.m_x >> TILE_SHIFT_PX,
+        m_lastTilePx.m_y >> TILE_SHIFT_PX
+    );
+    g_gameReg->GetTileGrid()->AcquireCellOccupancy(tx, ty, m_playerIndex, m_unitIndex);
 
     m_lastTilePx.Set(nextX, nextY);
     ComputeFacing(1.0);
@@ -871,14 +854,11 @@ applyTail:
     {
         DECLARE_TILE_CENTER_PIXEL_PAIR(spawnPx, spawnPy, tileX, tileY)
         SET_SCREEN_POS(m_object, spawnPx, spawnPy);
-        {
-            CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-            i32 gx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-            i32 gy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-            board->m_rowInts[gy][gx * 7] &= BRICKZ_CELL_UNOCCUPIED_MASK;
-            board->m_rowInts[gy][gx * 7 + 1] = -1;
-            m_lastTilePx.Set(-1, -1);
-        }
+        g_gameReg->m_tileGrid->ReleaseCellOccupancy(
+            m_lastTilePx.m_x >> TILE_SHIFT_PX,
+            m_lastTilePx.m_y >> TILE_SHIFT_PX
+        );
+        m_lastTilePx.Set(-1, -1);
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {
             RECYCLE_GRUNT_COORDS(this)

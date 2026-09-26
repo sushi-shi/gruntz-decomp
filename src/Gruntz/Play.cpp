@@ -1175,9 +1175,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     {
-        i32 cached = g_lastLevelNum;
-        i32 eq = g_pAreaMgr->IsSameWorld(cached);
-        reload = !eq;
+        reload = !g_pAreaMgr->IsSameWorld(g_lastLevelNum);
         diff = (level != g_lastLevelNum) ? 1 : 0;
         if (g_pAreaMgr == NULL) {
             return 0;

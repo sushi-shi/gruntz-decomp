@@ -35,7 +35,10 @@ public:
 
     i32 HandleInputChar(i32 charCode, i32 keyData);
 
-    CString GetInputText();
+    RVA(0x00020ef0, 0x20)
+    CString GetInputText() {
+        return m_inputText;
+    }
     void EndInput();
     ~CFontConfig();
 

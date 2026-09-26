@@ -1455,11 +1455,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         oldGrid->ReleaseCellOccupancy(ox, oy);
 
         CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;
-        newGrid->AcquireCellOccupancy(
-            nxt,
-            nyt,
-            (this->m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | this->m_unitIndex
-        );
+        newGrid->AcquireCellOccupancy(nxt, nyt, this->m_playerIndex, this->m_unitIndex);
 
         if (m_coordList.GetCount() != 0) {
             Coord tile;

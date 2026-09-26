@@ -5,6 +5,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/TileGeometry.h>
@@ -64,9 +65,10 @@ inline void CGruntzMapMgr::ReleaseCellOccupancy(i32 tileX, i32 tileY) {
     m_rows[tileY][tileX].m_occupantId = -1;
 }
 
-inline void CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 packedOwner) {
+inline void
+CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 playerIndex, i32 unitIndex) {
     m_rows[tileY][tileX].m_flags |= BRICKZ_CELL_OCCUPIED;
-    m_rows[tileY][tileX].m_occupantId = packedOwner;
+    m_rows[tileY][tileX].m_occupantId = (playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | unitIndex;
 }
 
 static inline void TBombGridClear(CGameObject* obj) {
