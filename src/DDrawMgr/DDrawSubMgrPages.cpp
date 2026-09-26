@@ -122,16 +122,16 @@ i32 CDDrawSubMgrPages::LoadPageImage(CRezItm* src, DDrawPageKind pageIndex) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158b70, 0x1c)
 void CDDrawSubMgrPages::BltDirtyChildrenEx() {
-    OwnerMgr()->m_childGroup->BltDirtyChildrenEx(m_frontSurface, m_backPair, m_overlayPair);
+    OwnerMgr()->ChildGroup()->BltDirtyChildrenEx(m_frontSurface, m_backPair, m_overlayPair);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158b90, 0x28)
 void CDDrawSubMgrPages::FlipAndNotify() {
-    m_frontSurface->m_surface->Flip(NULL);
+    m_frontSurface->GetSurface()->Flip(NULL);
     CDDrawSurfaceMgr* n = OwnerMgr();
-    CDDrawChildGroup* c = n->m_childGroup;
+    CDDrawChildGroup* c = n->ChildGroup();
     CDDrawSubMgrPages* s = n->m_drawTarget;
     c->BltDirtyChildren(s->m_backPair, s->m_overlayPair);
 }
@@ -150,7 +150,7 @@ i32 CDDrawSubMgrPages::PagesReady() {
 RVA(0x00158bf0, 0x7f)
 i32 CDDrawSubMgrPages::ResizePages(i32 w, i32 h, ColorDepth bpp) {
     CDDrawFrontSurface* p = m_frontSurface;
-    if (p->m_width != w || p->m_height != h || p->m_bpp != bpp) {
+    if (p->GetWidth() != w || p->GetHeight() != h || p->m_bpp != bpp) {
         if (!m_frontSurface->SetGeom(w, h, bpp)) {
             return 0;
         }
@@ -171,11 +171,11 @@ i32 CDDrawSubMgrPages::BlitPage(CDDrawSurfacePair* dst) {
     if (!m_frontSurface) {
         return 0;
     }
-    CDDSurface* s = m_frontSurface->m_surface;
+    CDDSurface* s = m_frontSurface->GetSurface();
     if (!s) {
         return 0;
     }
-    CDDSurface* d = dst->m_surface;
+    CDDSurface* d = dst->GetSurface();
     if (!d) {
         return 0;
     }
@@ -189,8 +189,12 @@ i32 CDDrawSubMgrPages::CreateOverlay(i32 copyFromBack, i32 createFlag) {
         return 0;
     }
     CDDrawSurfacePair* backBuffer = m_backPair;
-    if (!m_overlayPair
-             ->Create(backBuffer->m_width, backBuffer->m_height, backBuffer->m_bpp, createFlag)) {
+    if (!m_overlayPair->Create(
+            backBuffer->GetWidth(),
+            backBuffer->GetHeight(),
+            backBuffer->m_bpp,
+            createFlag
+        )) {
         return 0;
     }
     if (copyFromBack) {
@@ -218,13 +222,13 @@ void CDDrawSubMgrPages::UnloadOverlay() {
 
 RVA(0x00158d50, 0x61)
 void CDDrawSubMgrPages::ClearAllPages(u32 color) {
-    m_backPair->m_surface->Fill(color);
-    m_frontSurface->m_surface->Flip(NULL);
-    m_backPair->m_surface->Fill(color);
-    m_frontSurface->m_surface->Flip(NULL);
+    m_backPair->GetSurface()->Fill(color);
+    m_frontSurface->GetSurface()->Flip(NULL);
+    m_backPair->GetSurface()->Fill(color);
+    m_frontSurface->GetSurface()->Flip(NULL);
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
-        m_backPair->m_surface->Fill(color);
-        m_frontSurface->m_surface->Flip(NULL);
+        m_backPair->GetSurface()->Fill(color);
+        m_frontSurface->GetSurface()->Flip(NULL);
     }
 }
 
@@ -236,11 +240,11 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
     if (front == NULL) {
         ok = false;
     } else {
-        CDDSurface* frontBuffer = front->m_surface;
+        CDDSurface* frontBuffer = front->GetSurface();
         if (frontBuffer == NULL) {
             ok = false;
         } else {
-            CDDSurface* backBuffer = back->m_surface;
+            CDDSurface* backBuffer = back->GetSurface();
             if (backBuffer == NULL) {
                 ok = false;
             } else {
@@ -251,17 +255,17 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
     }
     if (ok
         && HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
-        m_frontSurface->m_surface->Flip(NULL);
+        m_frontSurface->GetSurface()->Flip(NULL);
         CDDrawSurfacePair* a = m_backPair;
         CDDrawFrontSurface* b = m_frontSurface;
         if (b == NULL) {
             return 0;
         }
-        CDDSurface* bs = b->m_surface;
+        CDDSurface* bs = b->GetSurface();
         if (bs == NULL) {
             return 0;
         }
-        CDDSurface* as = a->m_surface;
+        CDDSurface* as = a->GetSurface();
         if (as == NULL) {
             return 0;
         }
@@ -291,11 +295,11 @@ i32 CDDrawSubMgrPages::TransEnter() {
     if (!b) {
         return 0;
     }
-    bs = b->m_surface;
+    bs = b->GetSurface();
     if (!bs) {
         return 0;
     }
-    as = a->m_surface;
+    as = a->GetSurface();
     if (!as) {
         return 0;
     }

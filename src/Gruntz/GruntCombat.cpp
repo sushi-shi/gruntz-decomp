@@ -317,7 +317,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     switch (idx) {
         case SPELL_FREEZE: {
             CreateLightFx(
-                g_gameReg->World()->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -336,7 +336,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_HEALTH: {
             CreateLightFx(
-                g_gameReg->World()->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -355,7 +355,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_RESURRECTION: {
             CreateLightFx(
-                g_gameReg->World()->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -372,7 +372,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_RANDOM_TOYZ: {
             CreateLightFx(
-                g_gameReg->World()->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -391,7 +391,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_TELEPORT: {
             CreateLightFx(
-                g_gameReg->World()->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -410,7 +410,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_ROLLING_BALLZ: {
             CreateLightFx(
-                g_gameReg->World()->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -420,7 +420,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 true
             );
 
-            CWwdSpriteObject* n = g_gameReg->World()->m_childGroup->CreateSprite(
+            CWwdSpriteObject* n = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y - 0x20,
@@ -435,7 +435,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->m_smarts = 0;
             n->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* e = g_gameReg->World()->m_childGroup->CreateSprite(
+            CWwdSpriteObject* e = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x + 0x20,
                 m_lastTilePx.m_y,
@@ -450,7 +450,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->m_smarts = 0;
             e->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* s = g_gameReg->World()->m_childGroup->CreateSprite(
+            CWwdSpriteObject* s = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y + 0x20,
@@ -465,7 +465,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->m_smarts = 0;
             s->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* w = g_gameReg->World()->m_childGroup->CreateSprite(
+            CWwdSpriteObject* w = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x - 0x20,
                 m_lastTilePx.m_y,
@@ -509,7 +509,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         return 0;
     }
 
-    CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+    CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY,
@@ -1894,7 +1894,7 @@ void CGrunt::StepBehavior(char*) {
             CGameObject* found = NULL;
             CGameObject* result = NULL;
             if (MapLookupById(
-                    reg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    reg->m_world->ChildGroup()->m_registeredGameObjectsById,
                     cellObj,
                     found
                 )) {

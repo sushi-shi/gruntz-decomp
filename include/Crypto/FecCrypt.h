@@ -16,6 +16,10 @@ GZ_ENUM_CONST_BEGIN(FecFormatSize)
 GZ_ENUM_CONST_END(FecFormatSize)
 
 struct FecEntry {
+    i32 PayloadLength() const {
+        return m_payloadLen;
+    }
+
     i32 m_index;
     u16 m_nameLen;
     char m_name[FEC_ENTRY_NAME_CAPACITY];
@@ -43,6 +47,9 @@ public:
     i32 Init();
     void Close();
     i32 Lookup(u32 idx);
+    const DWORD& EntryOffset(i32 index) {
+        return m_index[index];
+    }
     i32 CreateArchive(const char* name);
     i32 ReadArchive(const char* name);
     i32 OnFail();

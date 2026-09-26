@@ -245,7 +245,7 @@ i32 CRollingBall::Update() {
                             i32 py = o->m_screenY;
                             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
                                 CreateParticlez(
-                                    g_gameReg->World()->m_childGroup,
+                                    g_gameReg->World()->ChildGroup(),
                                     px,
                                     py,
                                     "LEVEL_DEATHSPLASH",
@@ -346,7 +346,7 @@ i32 CRollingBall::Update() {
                     i32 py = o->m_screenY;
                     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
                         CreateParticlez(
-                            g_gameReg->World()->m_childGroup,
+                            g_gameReg->World()->ChildGroup(),
                             px,
                             py,
                             "GAME_WATER",

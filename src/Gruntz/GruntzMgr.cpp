@@ -1261,13 +1261,13 @@ i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
-    CObList* list = &World()->m_childGroup->m_list;
+    CObList* list = &World()->ChildGroup()->m_list;
     if (list == NULL) {
         return;
     }
     POSITION pos = list->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = World()->m_childGroup->NextChild(pos);
+        CGameObject* obj = World()->ChildGroup()->NextChild(pos);
         if (obj) {
             obj->m_stateFlags ^= static_cast<SpriteStateFlags>(mask);
         }
@@ -2180,7 +2180,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     CMoviePlayer player;
     IDirectSound* dsound = NULL;
 
-    CDDSurface* front = World()->m_drawTarget->m_frontSurface->m_surface;
+    CDDSurface* front = World()->m_drawTarget->m_frontSurface->GetSurface();
     IDirectDraw2* dd2 = World()->m_deviceManager->m_device;
 
     if (World()->SoundRegistry()->HasWithPrefix("GAME") == 0) {
@@ -3163,7 +3163,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     }
     i32 r2 = SQR(radius);
     i32 count = 0;
-    CDDrawChildGroup* children = World()->m_childGroup;
+    CDDrawChildGroup* children = World()->ChildGroup();
     POSITION pos = children->m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
@@ -3199,7 +3199,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     box.top = r->top + offY;
     box.bottom = r->bottom + offY;
     i32 count = 0;
-    CDDrawChildGroup* children = World()->m_childGroup;
+    CDDrawChildGroup* children = World()->ChildGroup();
     POSITION pos = children->m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);

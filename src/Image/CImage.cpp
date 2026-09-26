@@ -53,7 +53,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = m_ownerCtx->m_deviceManager->LoadFileSurface(path, surfaceCaps, colorKey);
+    CDDSurface* item = OwnerMgr()->m_deviceManager->LoadFileSurface(path, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -119,7 +119,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
 
     CDDSurface* item =
-        m_ownerCtx->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
+        OwnerMgr()->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -141,8 +141,9 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = m_ownerCtx->m_deviceManager
-                           ->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
+    CDDSurface* item =
+        OwnerMgr()
+            ->m_deviceManager->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -167,7 +168,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
         return 0;
     }
 
-    ColorDepth fmt = m_ownerCtx->m_drawTarget->m_frontSurface->m_bpp;
+    ColorDepth fmt = OwnerMgr()->m_drawTarget->m_frontSurface->m_bpp;
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }
@@ -188,7 +189,7 @@ void CImage::Unload() {
     m_width = 0;
     m_height = 0;
     if (m_surface != NULL) {
-        m_ownerCtx->m_deviceManager->RemoveSurface(m_surface);
+        OwnerMgr()->m_deviceManager->RemoveSurface(m_surface);
         m_surface = NULL;
     }
     CDDrawShadeBlit* owned = m_owned;
@@ -272,7 +273,7 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
     }
 
     return m_surface->Resolve(
-        m_ownerCtx->m_deviceManager,
+        OwnerMgr()->m_deviceManager,
         resolved,
         index,
         static_cast<u32>(src->GetSize()),
@@ -280,7 +281,6 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
     );
 }
 
-// @early-stop
 RVA(0x00153470, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     SpriteStateFlags mode = info->m_stateFlags;
@@ -336,74 +336,67 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
-    i32 dleft = x;
-    i32 dtop = y;
-    i32 dright = right;
-    i32 dbottom = bottom;
+    RECT d;
+    d.left = x;
+    d.top = y;
+    d.right = right;
+    d.bottom = bottom;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        BlitRect srcClip = m_ownerCtx->m_level->m_viewportRect;
+        BlitRect srcClip = OwnerMgr()->m_level->m_viewportRect;
         RECT destClip;
         CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
         if (x < destClip.left) {
-            dleft += destClip.left - x;
+            d.left += destClip.left - x;
         }
         if (right > destClip.right) {
-            dright = destClip.right;
+            d.right = destClip.right;
         }
         if (y < destClip.top) {
-            dtop += destClip.top - y;
+            d.top += destClip.top - y;
         }
         if (bottom > destClip.bottom) {
-            dbottom = destClip.bottom;
+            d.bottom = destClip.bottom;
         }
     } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
-            dleft = 0;
+            d.left = 0;
         }
-        if (right >= dst->m_width) {
-            dright = dst->m_width - 1;
+        if (right >= dst->GetWidth()) {
+            d.right = dst->GetWidth() - 1;
         }
         if (y < 0) {
-            dtop = 0;
+            d.top = 0;
         }
-        if (bottom >= dst->m_height) {
-            dbottom = dst->m_height - 1;
+        if (bottom >= dst->GetHeight()) {
+            d.bottom = dst->GetHeight() - 1;
         }
     } else {
         if (x < info->m_clip.left) {
-            dleft = info->m_clip.left;
+            d.left = info->m_clip.left;
         }
         if (right > info->m_clip.right) {
-            dright = info->m_clip.right;
+            d.right = info->m_clip.right;
         }
         if (y < info->m_clip.top) {
-            dtop = info->m_clip.top;
+            d.top = info->m_clip.top;
         }
         if (bottom > info->m_clip.bottom) {
-            dbottom = info->m_clip.bottom;
+            d.bottom = info->m_clip.bottom;
         }
     }
-    i32 w = dright - dleft + 1;
-    i32 h = dbottom - dtop + 1;
+    i32 w = d.right - d.left + 1;
+    i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
         info->m_dirty.m_armed = -1;
         return;
     }
     RECT s;
-    s.left = dleft - x;
-    s.top = dtop - y;
+    s.left = d.left - x;
+    s.top = d.top - y;
     s.right = s.left + w;
     s.bottom = s.top + h;
-    dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_bltFastFlags);
-    info->m_dirty.m_lastX = dleft;
-    info->m_dirty.m_rect.left = dleft;
-    info->m_dirty.m_lastY = dtop;
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_rect.top = dtop;
-    info->m_dirty.m_h = h;
-    info->m_dirty.m_armed = 0;
-    info->m_dirty.m_rect.right = dright;
-    info->m_dirty.m_rect.bottom = dbottom;
+    dst->GetSurface()->BltFast(d.left, d.top, m_surface, &s, m_bltFastFlags);
+    info->m_dirty.Set(d, w, h);
 }
 
 RVA(0x00153790, 0x6a)
@@ -411,7 +404,7 @@ void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     RVA_DYNINIT(0x00153800, 0x10, s_clip)
     DATA(0x002bf2a0)
     static CResolveNode s_clip;
-    if (s_clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
+    if (s_clip.Init(OwnerMgr(), 0, x, y, flags, 0)) {
         this->RenderImage(&s_clip, target);
     }
 }
@@ -427,7 +420,7 @@ void CImage::RenderFrameClipped(
     RVA_DYNINIT(0x001538b0, 0x10, s_clip)
     DATA(0x002bf228)
     static CResolveNode s_clip;
-    if (s_clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
+    if (s_clip.Init(OwnerMgr(), 0, x, y, flags, 0)) {
         if (clipRect != NULL) {
             s_clip.m_clip = *clipRect;
         }
@@ -435,7 +428,6 @@ void CImage::RenderFrameClipped(
     }
 }
 
-// @early-stop
 RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
@@ -450,13 +442,12 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT | DDBLTFX_MIRRORUPDOWN;
     d.right += 1;
     d.bottom += 1;
-    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
+    dst->GetSurface()->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    SET_DIRTY_RECT(info, &d, w, h);
+    info->m_dirty.Set(d, w, h);
 }
 
-// @early-stop
 RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
@@ -468,13 +459,12 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT;
-    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
+    dst->GetSurface()->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    SET_DIRTY_RECT(info, &d, w, h);
+    info->m_dirty.Set(d, w, h);
 }
 
-// @early-stop
 RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
@@ -486,13 +476,12 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORUPDOWN;
-    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
+    dst->GetSurface()->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    SET_DIRTY_RECT(info, &d, w, h);
+    info->m_dirty.Set(d, w, h);
 }
 
-// @early-stop
 RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
@@ -508,13 +497,8 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
         m_owned->m_light = info->m_fillFraction;
     }
-    m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
-    info->m_dirty.m_armed = 0;
+    m_owned->Blit(&d, dst->GetSurface(), &s, 0, 0);
+    info->m_dirty.Set(d, w, h);
 }
 
 RVA(0x00154270, 0x257)
@@ -531,11 +515,10 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
-    m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
-    SET_DIRTY_RECT(info, &d, w, h);
+    m_owned->Blit(&d, dst->GetSurface(), &s, 1, 1);
+    info->m_dirty.Set(d, w, h);
 }
 
-// @early-stop
 RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
@@ -550,16 +533,10 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
-    m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
-    info->m_dirty.m_armed = 0;
+    m_owned->Blit(&d, dst->GetSurface(), &s, 1, 0);
+    info->m_dirty.Set(d, w, h);
 }
 
-// @early-stop
 RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
@@ -574,6 +551,6 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
-    m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
-    SET_DIRTY_RECT(info, &d, w, h);
+    m_owned->Blit(&d, dst->GetSurface(), &s, 0, 1);
+    info->m_dirty.Set(d, w, h);
 }

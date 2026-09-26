@@ -105,7 +105,7 @@ inline void CNetCmdSlot::QueueRecord(GruntRec* record, u8 entryCount, char* curs
         command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
         remaining -= consumed;
         cursor += consumed;
-        m_owner->m_mgr->m_commandMgr->EnqueueCommand(false, command);
+        m_owner->Mgr()->m_commandMgr->EnqueueCommand(false, command);
     }
 }
 
@@ -182,7 +182,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     if (HasReceivedThrough(sequence)) {
         return 1;
     }
-    if (ContainsSequence(m_receivedAhead, sequence)) {
+    if (ContainsSequence(ReceivedAhead(), sequence)) {
         return 1;
     }
     RecordReceivedSequence(sequence);
@@ -201,14 +201,14 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
 RVA(0x000c0f10, 0x6e)
 void CNetCmdSlot::RecordReceivedSequence(i32 sequence) {
     if (m_contiguousSequence + 1 == sequence) {
-        RemoveSequence(m_receivedAhead, m_contiguousSequence);
+        RemoveSequence(ReceivedAhead(), m_contiguousSequence);
         m_contiguousSequence++;
-        while (ContainsSequence(m_receivedAhead, m_contiguousSequence + 1)) {
+        while (ContainsSequence(ReceivedAhead(), m_contiguousSequence + 1)) {
             m_contiguousSequence++;
-            RemoveSequence(m_receivedAhead, m_contiguousSequence);
+            RemoveSequence(ReceivedAhead(), m_contiguousSequence);
         }
     } else {
-        AddSequence(m_receivedAhead, sequence);
+        AddSequence(ReceivedAhead(), sequence);
     }
 }
 

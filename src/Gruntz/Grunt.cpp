@@ -1584,7 +1584,7 @@ i32 CGrunt::CreateHealthSprite() {
         return 0;
     }
 
-    m_healthSprite = g_gameReg->World()->m_childGroup->CreateSprite(
+    m_healthSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x19,
@@ -1611,7 +1611,7 @@ i32 CGrunt::CreateToySprite() {
         return 0;
     }
 
-    m_toySprite = g_gameReg->World()->m_childGroup->CreateSprite(
+    m_toySprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x19,
@@ -1637,7 +1637,7 @@ i32 CGrunt::CreateStaminaSprite() {
         return 0;
     }
 
-    m_staminaSprite = g_gameReg->World()->m_childGroup->CreateSprite(
+    m_staminaSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x20,
@@ -1667,7 +1667,7 @@ i32 CGrunt::CreateToyTimeSprite() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
 
-    m_toyTimeSprite = g_gameReg->World()->m_childGroup->CreateSprite(
+    m_toyTimeSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x20,
@@ -1696,7 +1696,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
 
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
 
-    m_wingzTimeSprite = g_gameReg->World()->m_childGroup->CreateSprite(
+    m_wingzTimeSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY - 0x26,
@@ -1723,7 +1723,7 @@ i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
         return 0;
     }
 
-    m_powerupSprite = g_gameReg->World()->m_childGroup->CreateSprite(
+    m_powerupSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY,
@@ -1750,7 +1750,7 @@ i32 CGrunt::CreateSelectedSprite() {
         return 0;
     }
 
-    m_selectedSprite = g_gameReg->World()->m_childGroup->CreateSprite(
+    m_selectedSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY,

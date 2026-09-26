@@ -67,7 +67,7 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
         CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
         child->RenderFrame(backBuffer, overlay);
         child->m_refCount--;
-        if ((overlay->m_surface != NULL
+        if ((overlay->GetSurface() != NULL
              && !HAS(
                  static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
                  SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
@@ -113,7 +113,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     if (m_id == IDX(DDRAW_PAGE_BACK)) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = mgr->m_deviceManager->WrapAttachedSurface(
-            mgr->m_drawTarget->m_frontSurface->m_surface,
+            mgr->m_drawTarget->m_frontSurface->GetSurface(),
             DDSCAPS_BACKBUFFER
         );
         if (m_surface == NULL) {
@@ -341,7 +341,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface = mgr->m_deviceManager->WrapAttachedSurface(
-                mgr->m_drawTarget->m_frontSurface->m_surface,
+                mgr->m_drawTarget->m_frontSurface->GetSurface(),
                 DDSCAPS_BACKBUFFER
             );
             if (m_surface == NULL) {
@@ -473,7 +473,11 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
 }
 
 RVA(0x00164650, 0x3)
-void CDDrawSurfacePair::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size) {}
+void CDDrawSurfacePair::BlitDirtyRect(
+    CDDrawSurfacePair* other,
+    const POINT& pos,
+    const SIZE& size
+) {}
 
 RVA(0x00164660, 0x46)
 i32 CDrawSubWorker::Probe() {
@@ -593,7 +597,7 @@ i32 CLogicRecord::SerializeDispatch(
         case SERIAL_POSTLOAD:
             if (m_targetId) {
                 m_target = LookupObjectById(
-                    m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
+                    m_ownerCtx->ChildGroup()->m_registeredGameObjectsById,
                     m_targetId
                 );
             }
@@ -790,7 +794,7 @@ i32 CLogicRecord::ResolveTarget(void* context) {
     }
     if (m_targetId) {
         m_target =
-            LookupObjectById(m_ownerCtx->m_childGroup->m_registeredGameObjectsById, m_targetId);
+            LookupObjectById(m_ownerCtx->ChildGroup()->m_registeredGameObjectsById, m_targetId);
     }
     return 1;
 }
@@ -1169,8 +1173,8 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 
 RVA(0x00165fa0, 0x93)
 void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
-    overlay->m_surface->PutPixel(m_screenX, m_screenY, m_pixelValue);
-    backBuffer->m_surface->PutPixel(m_screenX, m_screenY, m_pixelValue);
+    overlay->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
+    backBuffer->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
 }
 
 RVA(0x00166040, 0x66)
@@ -1184,7 +1188,7 @@ i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
 RVA(0x001660b0, 0x33)
 void CDDrawFrameWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     m_frame->RenderImage(this, backBuffer);
-    if (overlay->m_surface != NULL
+    if (overlay->GetSurface() != NULL
         && !HAS(
             static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
             SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER

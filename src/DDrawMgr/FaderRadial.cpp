@@ -85,7 +85,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
     m_dstSurface->Clear(0);
     m_srcSurface->Lock(NULL);
     u8* base = static_cast<u8*>(m_dstSurface->Lock(NULL));
-    if (m_table->m_data == NULL) {
+    if (m_table->GetData() == NULL) {
         return;
     }
 

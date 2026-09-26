@@ -101,7 +101,7 @@ void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) 
     m_shadow = m_dirty;
     if (m_dirty.m_armed != -1) {
         RECT* r = &m_dirty.m_rect;
-        dst->m_surface->BltFast(r->left, r->top, src->m_surface, r, 0x10);
+        dst->GetSurface()->BltFast(r->left, r->top, src->GetSurface(), r, 0x10);
         m_dirty.m_armed = -1;
     }
 }
@@ -116,22 +116,22 @@ void CWwdSpriteObject::BltDirtyEx(
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            i32 pos[2];
-            i32 size[2];
+            CPoint pos;
+            CSize size;
 
-            pos[0] = ir.left;
-            pos[1] = ir.top;
-            size[0] = ir.right - ir.left + 1;
-            size[1] = ir.bottom - ir.top + 1;
+            pos.x = ir.left;
+            pos.y = ir.top;
+            size.cx = ir.right - ir.left + 1;
+            size.cy = ir.bottom - ir.top + 1;
             dst->BlitDirtyRect(src, pos, size);
         } else {
-            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
-            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
         }
     } else if (m_dirty.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+        dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
     } else if (m_shadow.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+        dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
     }
 }
 
@@ -145,22 +145,22 @@ void CWwdSpriteObject::BltDirtyRegions(
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            i32 pos[2];
-            i32 size[2];
+            CPoint pos;
+            CSize size;
 
-            pos[0] = ir.left;
-            pos[1] = ir.top;
-            size[0] = ir.right - ir.left + 1;
-            size[1] = ir.bottom - ir.top + 1;
+            pos.x = ir.left;
+            pos.y = ir.top;
+            size.cx = ir.right - ir.left + 1;
+            size.cy = ir.bottom - ir.top + 1;
             dst->BlitDirtyRect(src, pos, size);
         } else {
-            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
-            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
         }
     } else if (m_dirty.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+        dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
     } else if (m_shadow.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+        dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
     }
 }
 
@@ -192,8 +192,8 @@ i32 CWwdSpriteObject::IntersectsViewport() {
 
         CDDrawFrontSurface* g = OwnerMgr()->m_drawTarget->m_frontSurface;
 
-        i32 gw = g->m_width;
-        i32 gh = g->m_height;
+        i32 gw = g->GetWidth();
+        i32 gh = g->GetHeight();
         if (right < 0) {
             return 0;
         }
@@ -468,7 +468,7 @@ i32 CGameObject::SerializeDispatch(
             if (node != 0) {
                 CWwdGameObject* found = NULL;
                 if (MapLookup(
-                        OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
+                        OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
                         reinterpret_cast<void*>(node), // API-forced: id-keyed map
                         found
                     )
@@ -679,7 +679,7 @@ i32 CGameObject::ResolveLinkedObject(b32 gate) {
     CWwdGameObject* found;
     if (m_carrierId != 0) {
         if (LookupLinkedObject(
-                OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
+                OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
                 m_carrierId,
                 found
             )

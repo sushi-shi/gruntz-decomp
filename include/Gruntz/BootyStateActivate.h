@@ -36,7 +36,7 @@ i32 DrawTextToBackSurface(
 );
 
 inline CWwdSpriteObject* CreateSimpleAnimationSprite(i32 sortKey) {
-    return g_gameReg->World()->m_childGroup->CreateSprite(
+    return g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         0,
         0,

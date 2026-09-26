@@ -849,10 +849,10 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
         listenerX = OwnerMgr()->m_level->m_mainPlane->m_scrollPixelX;
     }
     if (maxPanOffsetPx <= 0) {
-        maxPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->m_width << 2;
+        maxPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->GetWidth() << 2;
     }
     if (fullPanOffsetPx <= 0) {
-        fullPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->m_width / 3;
+        fullPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->GetWidth() / 3;
     }
 
     i32 panOffsetPx = sourceX - listenerX;

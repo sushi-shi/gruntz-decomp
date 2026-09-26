@@ -81,7 +81,7 @@ i32 LayerBlitFrame(
             return 0;
         }
     }
-    CDDSurface* dst = node->m_surface;
+    CDDSurface* dst = node->GetSurface();
     if (!dst) {
         return 0;
     }
@@ -123,7 +123,7 @@ i32 DrawTextToFrontSurface(
         surfaceMgr,
         text,
         box,
-        frontSurface->m_surface,
+        frontSurface->GetSurface(),
         fontSel,
         shadow,
         r,
@@ -154,7 +154,7 @@ i32 DrawTextToOverlaySurface(
         surfaceMgr,
         text,
         box,
-        overlaySurface->m_surface,
+        overlaySurface->GetSurface(),
         fontSel,
         shadow,
         r,
@@ -183,7 +183,7 @@ i32 DrawTextToBackSurface(
         surfaceMgr,
         text,
         box,
-        backSurface->m_surface,
+        backSurface->GetSurface(),
         fontSel,
         shadow,
         r,

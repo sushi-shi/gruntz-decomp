@@ -70,7 +70,7 @@ BOOL CVoiceManager::CreateVoiceIndicators() {
     i32 i = 0;
     CGruntVoice** slot = m_indicators;
     for (; i < 2; i++, slot++) {
-        CGameObject* spr = m_world->m_childGroup->CreateSprite(
+        CGameObject* spr = m_world->ChildGroup()->CreateSprite(
             0,
             0,
             0,

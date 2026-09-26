@@ -159,8 +159,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_gruntRatio = g_buteMgr.GetDword("Battlez", "GruntRatio", 25);
     m_defenderChance = g_buteMgr.GetDword("Battlez", "DefenderChance", 50);
 
-    for (CGameObject* cur = mgr->m_world->m_childGroup->FirstChild(); cur != NULL;
-         cur = mgr->m_world->m_childGroup->NextChild()) {
+    for (CGameObject* cur = mgr->m_world->ChildGroup()->FirstChild(); cur != NULL;
+         cur = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur->m_logicRecord->m_dispatch == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
@@ -170,8 +170,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         }
     }
 
-    for (CGameObject* cur2 = mgr->m_world->m_childGroup->FirstChild(); cur2 != NULL;
-         cur2 = mgr->m_world->m_childGroup->NextChild()) {
+    for (CGameObject* cur2 = mgr->m_world->ChildGroup()->FirstChild(); cur2 != NULL;
+         cur2 = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur2->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
             m_marker.m_x = cur2->m_screenX / TILE_SIZE_PX;
@@ -180,8 +180,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         }
     }
 
-    for (CGameObject* cur3 = mgr->m_world->m_childGroup->FirstChild(); cur3 != NULL;
-         cur3 = mgr->m_world->m_childGroup->NextChild()) {
+    for (CGameObject* cur3 = mgr->m_world->ChildGroup()->FirstChild(); cur3 != NULL;
+         cur3 = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur3->m_logicRecord->m_dispatch == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
@@ -2108,7 +2108,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         GRID_CLIP(board, &box);
     }
 
-    CDDrawChildGroup* coll = m_ctx->m_world->m_childGroup;
+    CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
     coll->m_scanCursor = coll->m_list.GetHeadPosition();
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != NULL) {
@@ -2184,7 +2184,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
 
-        CDDrawChildGroup* c = m_ctx->m_world->m_childGroup;
+        CDDrawChildGroup* c = m_ctx->m_world->ChildGroup();
         if (c->m_scanCursor == NULL) {
             g = NULL;
         } else {

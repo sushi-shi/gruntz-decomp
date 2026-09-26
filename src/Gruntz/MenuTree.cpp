@@ -52,8 +52,8 @@ i32 CMenuTree::Configure(
         m_bounds,
         0,
         0,
-        world->m_drawTarget->m_frontSurface->m_width - 1,
-        world->m_drawTarget->m_frontSurface->m_height - 1
+        world->m_drawTarget->m_frontSurface->GetWidth() - 1,
+        world->m_drawTarget->m_frontSurface->GetHeight() - 1
     );
     return 1;
 }

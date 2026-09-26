@@ -264,7 +264,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         return 0;
     }
 
-    m_world->m_childGroup->ClearChildren();
+    m_world->ChildGroup()->ClearChildren();
 
     {
         CRezDir* soundz = StateResources()->GetDir("SOUNDZ");
@@ -454,7 +454,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     m_scratchX = 0;
     m_scratchY = 0;
     for (i32 i = 0; i < 4; i++) {
-        CWwdSpriteObject* a = g_gameReg->World()->m_childGroup->CreateSprite(
+        CWwdSpriteObject* a = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             0,
             0,
@@ -756,7 +756,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     m_world->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
 
-    CDDrawChildGroup* f = g_gameReg->World()->m_childGroup;
+    CDDrawChildGroup* f = g_gameReg->World()->ChildGroup();
 
     CWwdSpriteObject* sw = f->CreateSprite(
         0,
@@ -1315,7 +1315,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
 
 RVA(0x0001c070, 0x59)
 i32 CBootyState::BuildBootyPerfectAnimation() {
-    CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+    CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         static_cast<i32>(0xffffff7e),
         0xf0,
@@ -1360,7 +1360,8 @@ i32 CBootyState::CheckPerfectBonus() {
 
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
-    IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
+    IDirectDrawSurface* frameSurf =
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
@@ -1469,8 +1470,8 @@ i32 CBootyState::Render() {
             return 1;
     }
 
-    m_world->m_childGroup->TickKillCues(1);
-    m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
+    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);
     m_world->SoundRegistry()->TickVolumeRamps();
@@ -1642,7 +1643,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 }
                 ShowLevelCompleteMessage();
                 m_world->m_drawTarget->TransExit();
-                m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
+                m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
                 m_world->m_drawTarget->TransTitle();
                 RetireScene(0x50, 0x3e8, 0, true);
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
@@ -1734,7 +1735,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     if (!m_levelResources) {
         return 0;
     }
-    m_world->m_childGroup->ClearChildren();
+    m_world->ChildGroup()->ClearChildren();
     {
         CRezDir* soundz = m_stateResources->GetDir("SOUNDZ");
         if (!soundz) {
@@ -1871,7 +1872,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         tabKey.Format("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD%d", t + 1);
         flagKey.Format("GAME_FORTRESSFLAGZ_%s", static_cast<const char*>(GetWarlordName(t)));
 
-        m_tabSprites[t] = g_gameReg->World()->m_childGroup->CreateSprite(
+        m_tabSprites[t] = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             0,
             0,
@@ -1887,7 +1888,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         (m_tabSprites[t])->SetDrawFill(SHADE_PAL_16, tint);
         m_tabSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-        m_flagSprites[t] = g_gameReg->World()->m_childGroup->CreateSprite(
+        m_flagSprites[t] = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             0,
             0,
@@ -2458,7 +2459,8 @@ void CMultiBootyState::DrawBattleStats() {
 
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
-    IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
+    IDirectDrawSurface* frameSurf =
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
@@ -2469,8 +2471,8 @@ i32 CMultiBootyState::Render() {
         DrawBattleStats();
         m_sequenceState = BOOTYSEQ_PERFECT_BONUS;
     }
-    m_world->m_childGroup->TickKillCues(1);
-    m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
+    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
 
     u32 secs = g_gameReg->m_gameStats->m_elapsedTimeMs / MILLIS_PER_SECOND;
     CString s;

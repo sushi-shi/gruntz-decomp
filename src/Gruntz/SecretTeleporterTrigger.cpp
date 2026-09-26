@@ -184,7 +184,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
                       ->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         o = m_object;
-        CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             (o->m_score << TILE_SHIFT_PX) + TILE_HALF_PX,
             (o->m_points << TILE_SHIFT_PX) + TILE_HALF_PX,

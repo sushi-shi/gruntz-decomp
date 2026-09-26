@@ -102,7 +102,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
             if (MapLookupById(
-                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
+                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                     key,
                     obj
                 )) {
@@ -121,7 +121,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
             if (MapLookupById(
-                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
+                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                     key,
                     obj
                 )) {

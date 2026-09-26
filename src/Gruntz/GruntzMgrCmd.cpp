@@ -249,7 +249,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (_key) {
                             _dr = NULL;
                             if (MapLookupById(
-                                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
+                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                     _key,
                                     _dr
                                 )

@@ -214,7 +214,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_ROCK:
             case GRUNT_WELDER:
             case GRUNT_WINGZ: {
-                CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+                CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -239,7 +239,7 @@ i32 CGrunt::StepAttackFire() {
                 break;
             }
             case GRUNT_BOOMERANG: {
-                CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+                CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -266,7 +266,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_TIMEBOMB: {
                 i32 pos[2];
                 EntranceTileOffset(pos);
-                CGameObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+                CGameObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
                     0,
                     pos[0],
                     pos[1],
@@ -1376,7 +1376,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         return 0;
     }
     CGameObject* found = LookupActiveObject(
-        g->m_world->m_childGroup->m_registeredGameObjectsById,
+        g->m_world->ChildGroup()->m_registeredGameObjectsById,
         static_cast<void*>(cellObj)
     );
     if (found == NULL) {

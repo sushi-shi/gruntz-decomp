@@ -400,7 +400,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
-        m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
+        m_world->m_drawTarget->m_overlayPair->GetSurface()->Fill(0);
         CString s;
         s.LoadString(IDS_PLEASE_WAIT);
         tagSIZE mode = m_mgr->GetModeSize();
@@ -437,7 +437,7 @@ i32 CPlay::Render() {
         g_soundCueTimeMs = g_lastNow;
         g_engineFrameDelta = g_frameDelta;
 
-        m_world->m_childGroup->TickKillCues(0);
+        m_world->ChildGroup()->TickKillCues(0);
         DrawVisibleWorld();
         m_mgr->m_worldSounds->SetListenerPosition(
             m_world->m_level->m_mainPlane->m_scrollPixelX,
@@ -472,7 +472,7 @@ i32 CPlay::Render() {
         m_levelTimer->Draw(back, true);
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(back);
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         m_world->m_level->DeactivateDistantObjectsOnMainPlane();
         return 1;
@@ -496,7 +496,7 @@ i32 CPlay::Render() {
         UpdateAmbientMusic();
 
         if (m_region0Gate != false) {
-            m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+            m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
             m_statusBar->Deactivate();
         }
 
@@ -585,7 +585,7 @@ i32 CPlay::Render() {
                     CGameObject* out = NULL;
                     CGameObject* object = NULL;
                     if (MapLookupById(
-                            g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
+                            g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                             g_gameReg->m_players[0].m_warlordObjectId,
                             out
                         )) {
@@ -629,7 +629,7 @@ i32 CPlay::Render() {
         if (m_worldReady != false) {
             view->DrawBox(&m_hudRect, 0xff);
         }
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         {
             CGameLevel* lvl = m_world->m_level;
@@ -679,7 +679,7 @@ i32 CPlay::Render() {
                 m_stepCountdown = m_stepCountdown - 1;
                 DrawVisibleWorld();
                 m_statusBar->LoadMainStatusBarSprite();
-                back->m_surface->ShadeRect(0x32, NULL);
+                back->GetSurface()->ShadeRect(0x32, NULL);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
             }
@@ -696,7 +696,7 @@ i32 CPlay::Render() {
         }
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(back);
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     }
     return 1;
 }
@@ -713,7 +713,7 @@ void CPlay::UpdateWorldFrame() {
     }
     g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
-    m_world->m_childGroup->TickKillCues(0);
+    m_world->ChildGroup()->TickKillCues(0);
     m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
     if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
 
@@ -764,7 +764,7 @@ i32 CPlay::UpdateWorldFixedSteps() {
                     lvl->m_mainPlane->ActivateVisibleObjects();
                 }
             }
-            m_world->m_childGroup->TickKillCues(0);
+            m_world->ChildGroup()->TickKillCues(0);
             m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
             if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
                 (g_gameReg)->AdvanceComputerPlayerTurns();
@@ -802,7 +802,7 @@ i32 CPlay::ProfileInputFrame() {
     deactMs = static_cast<i32>(tg() - static_cast<u32>(deactMs));
 
     i32 updateMs = static_cast<i32>(tg());
-    m_world->m_childGroup->TickKillCues(1);
+    m_world->ChildGroup()->TickKillCues(1);
     m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
     m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
     updateMs = static_cast<i32>(tg() - static_cast<u32>(updateMs));
@@ -811,7 +811,7 @@ i32 CPlay::ProfileInputFrame() {
     hitTestMs = static_cast<i32>(tg() - static_cast<u32>(hitTestMs));
 
     i32 drawMs = static_cast<i32>(tg());
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
+    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->ChildGroup());
     drawMs = static_cast<i32>(tg() - static_cast<u32>(drawMs));
 
     i32 fixedMs = static_cast<i32>(tg());
@@ -841,7 +841,7 @@ i32 CPlay::ProfileInputFrame() {
 
     DrawDebugStats();
     g_flipProfileMs = static_cast<i32>(tg());
-    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     g_flipProfileMs = static_cast<i32>((tg() - static_cast<u32>(g_flipProfileMs)));
     g_deactivateProfileMs = static_cast<i32>(tg());
     {
@@ -884,7 +884,7 @@ i32 CPlay::ProfileDeltaFrame() {
         updates
     );
     DrawDebugStats();
-    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
 
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != NULL) {
@@ -1341,7 +1341,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
         self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
-        CWwdSpriteObject* scrollSink = self->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* scrollSink = self->m_world->ChildGroup()->CreateSprite(
             0,
             0,
             0,
@@ -1351,7 +1351,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         );
         self->m_cursorSnapSprite = scrollSink;
         if (scrollSink != NULL) {
-            self->m_world->m_childGroup->TickKillCues(0);
+            self->m_world->ChildGroup()->TickKillCues(0);
             if (savedThis == NULL) {
 
                 CStatusBarMgr* statusBar = self->m_statusBar;
@@ -1371,7 +1371,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             {
                 if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
                     && ValidateLevelTiles() && AddLevelGruntz()) {
-                    self->m_world->m_childGroup->TickKillCues(0);
+                    self->m_world->ChildGroup()->TickKillCues(0);
                     self->m_statusBar->StartChipMachineCycle();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                     while (ShowCursor(false) >= 0)
@@ -1412,7 +1412,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         gameReg = g_gameReg;
         if (gameReg->m_loadingSaveGame == false) {
-            CDDSurface* mapHost = self->m_world->m_drawTarget->m_frontSurface->m_surface;
+            CDDSurface* mapHost = self->m_world->m_drawTarget->m_frontSurface->GetSurface();
             mapHost->ShadeRect(0x32, NULL);
             gameReg = g_gameReg;
         }
@@ -1469,7 +1469,7 @@ void CPlay::OnExit() {
     ForwardReady();
     FreeListTeardown();
     if (m_world) {
-        m_world->m_childGroup->ClearChildren();
+        m_world->ChildGroup()->ClearChildren();
     }
     g_gameReg->m_isBuiltInBattlezLevel = false;
     if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
@@ -1504,7 +1504,7 @@ void CPlay::FreeListTeardown() {
     m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
     g_gameReg->m_triggerMgr->DestroyAllAnims();
     m_world->m_level->ReleaseChildren();
-    (m_world->m_childGroup)->PruneList();
+    (m_world->ChildGroup())->PruneList();
     if (m_statusBar != NULL) {
         m_statusBar->ResetWidgets(false);
     }
@@ -1568,7 +1568,7 @@ void CPlay::ModeCleanup() {
         m_world->m_level->ReleaseChildren();
     }
     if (m_world) {
-        m_world->m_childGroup->ClearChildren();
+        m_world->ChildGroup()->ClearChildren();
     }
     if (m_world) {
         m_world->m_workerList->ClearWorkers();
@@ -1611,7 +1611,7 @@ i32 CPlay::InputVirtual() {
     while (ShowCursor(false) >= 0)
         ;
 
-    m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
 
     DrawWorldView();
@@ -1642,7 +1642,7 @@ i32 CPlay::RestoreDisplay() {
     if (m_statusBar != NULL) {
         m_statusBar->Deactivate();
         DrawWorldView();
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     }
     return 1;
 }
@@ -3071,7 +3071,7 @@ i32 CPlay::DrawWorldPresent() {
             lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
-    m_world->m_childGroup->TickKillCues(1);
+    m_world->ChildGroup()->TickKillCues(1);
     {
         CGameLevel* lvl = m_world->m_level;
         if (lvl->m_mainPlane != NULL) {
@@ -3084,7 +3084,7 @@ i32 CPlay::DrawWorldPresent() {
             lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
-    m_world->m_childGroup->TickKillCues(1);
+    m_world->ChildGroup()->TickKillCues(1);
     DrawVisibleWorld();
     m_mgr->RefreshGameClock();
     return 1;
@@ -3107,7 +3107,7 @@ void CPlay::DrawDebugStatsFull() {
     sprintf(fpsScratch, "Fps = %i ", m_mgr->m_fps);
     strcat(buf, fpsScratch);
 
-    CDDrawChildGroup* group = m_world->m_childGroup;
+    CDDrawChildGroup* group = m_world->ChildGroup();
     if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_HIT_RECT)) {
         strcat(buf, " rcHit ");
     }
@@ -3125,7 +3125,7 @@ void CPlay::DrawDebugStatsFull() {
     }
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
-        sprintf(scratch, " Sprites = %i ", m_world->m_childGroup->m_list.GetCount());
+        sprintf(scratch, " Sprites = %i ", m_world->ChildGroup()->m_list.GetCount());
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
@@ -3155,7 +3155,7 @@ void CPlay::DrawDebugStatsFull() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* surface = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_backPair->GetSurface();
     HDC hdc = NULL;
     surface->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
@@ -3219,7 +3219,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
-        sprintf(scratch, " Objs = %i ", m_world->m_childGroup->m_list.GetCount());
+        sprintf(scratch, " Objs = %i ", m_world->ChildGroup()->m_list.GetCount());
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
@@ -3249,7 +3249,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* surface = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_backPair->GetSurface();
     HDC hdc = NULL;
     surface->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
@@ -3331,7 +3331,7 @@ void CPlay::DrawCustomLevelBanner() {
         }
         sprintf(g_customLevelText, "Custom Level: %s", static_cast<const char*>(base));
     }
-    CDDSurface* surface = m_world->m_drawTarget->m_frontSurface->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_frontSurface->GetSurface();
     if (surface == NULL) {
         return;
     }
@@ -3371,7 +3371,7 @@ i32 CPlay::DrawStateMessage() {
         return 0;
     }
     (static_cast<CImage*>(frame))->RenderFrame(surf, surf->m_width / 2, surf->m_height / 2, 0);
-    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(static_cast<CDDSurface*>(0));
+    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(static_cast<CDDSurface*>(0));
     return 1;
 }
 
@@ -3391,14 +3391,14 @@ i32 CPlay::LoadImageBanks() {
 
 RVA(0x000d0050, 0x3a)
 i32 CPlay::CountObjectsByCategory(i32 category) {
-    CObList* container = &m_world->m_childGroup->m_list;
+    CObList* container = &m_world->ChildGroup()->m_list;
     if (container == NULL) {
         return 0;
     }
     POSITION pos = container->GetHeadPosition();
     i32 count = 0;
     while (pos != NULL) {
-        CGameObject* sprite = m_world->m_childGroup->NextChild(pos);
+        CGameObject* sprite = m_world->ChildGroup()->NextChild(pos);
         if (sprite != NULL && sprite->m_objectType == static_cast<u32>(category)) {
             count++;
         }
@@ -3774,7 +3774,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     savedRect->right = screenRect->right - screenRect->left;
     savedRect->bottom = screenRect->bottom - screenRect->top;
 
-    CDDSurface* target = pair->m_surface;
+    CDDSurface* target = pair->GetSurface();
     if (target == NULL) {
         return 0;
     }
@@ -3934,7 +3934,7 @@ i32 CPlay::RestoreCursorSaveUnder() {
         savedRect = &m_cursorSavedRects[1];
     }
 
-    CDDSurface* backSurface = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* backSurface = m_world->m_drawTarget->m_backPair->GetSurface();
     if (backSurface == NULL) {
         return 0;
     }
@@ -4560,7 +4560,7 @@ i32 CPlay::ExecuteCommand(
 RVA(0x000d2b20, 0x21f)
 b32 CPlay::PlaceStartGruntz() {
 
-    CObList* list = &m_world->m_childGroup->m_list;
+    CObList* list = &m_world->ChildGroup()->m_list;
     if (list == NULL) {
         return false;
     }
@@ -4571,7 +4571,7 @@ b32 CPlay::PlaceStartGruntz() {
         entranceMode = GRUNT_ENTRANCE_WORMHOLE;
     }
     while (pos != NULL) {
-        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
+        CGameObject* obj = m_world->ChildGroup()->NextChild(pos);
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
 
@@ -4634,7 +4634,7 @@ i32 CPlay::ValidateLevelTiles() {
         counts[c] = 0;
     }
 
-    CObList* list = &m_world->m_childGroup->m_list;
+    CObList* list = &m_world->ChildGroup()->m_list;
     if (list == NULL) {
         return 0;
     }
@@ -4645,7 +4645,7 @@ i32 CPlay::ValidateLevelTiles() {
 
     b32 ok = true;
     do {
-        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
+        CGameObject* obj = m_world->ChildGroup()->NextChild(pos);
         if (obj == NULL) {
             continue;
         }
@@ -5209,13 +5209,13 @@ i32 CDDrawWorkerHost::GetTileHandle(i32 tileX, i32 tileY) {
 // @early-stop
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
-    CObList* pl = &m_world->m_childGroup->m_list;
+    CObList* pl = &m_world->ChildGroup()->m_list;
     if (pl == NULL) {
         return 0;
     }
     POSITION pos = pl->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* p = m_world->m_childGroup->NextChild(pos);
+        CGameObject* p = m_world->ChildGroup()->NextChild(pos);
         if (p == NULL) {
             continue;
         }
@@ -5321,13 +5321,13 @@ i32 CPlay::ScanBuildTiles() {
 
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
-    CObList* chain = &m_world->m_childGroup->m_list;
+    CObList* chain = &m_world->ChildGroup()->m_list;
     if (chain == NULL) {
         return 0;
     }
     POSITION pos = chain->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* g = m_world->m_childGroup->NextChild(pos);
+        CGameObject* g = m_world->ChildGroup()->NextChild(pos);
         if (g == NULL) {
             continue;
         }
@@ -5674,10 +5674,10 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
         return 1;
     }
 
-    CObList* head = &this->m_world->m_childGroup->m_list;
+    CObList* head = &this->m_world->ChildGroup()->m_list;
     POSITION pos = head == NULL ? NULL : head->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = this->m_world->m_childGroup->NextChild(pos);
+        CGameObject* obj = this->m_world->ChildGroup()->NextChild(pos);
         if (obj) {
             LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
             if (dispatch == DispatchGruntStartingPointLogic) {
@@ -5926,7 +5926,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
 
     if (m_initialFramePending != false) {
         m_initialFramePending = false;
-        m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+        m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         DrawWorldView();
         m_statusBar->Deactivate();
@@ -5941,7 +5941,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
                 return 0;
             }
         } else {
-            m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+            m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
         }
     }
 
@@ -6338,7 +6338,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 id;
         ar->Read(&id, sizeof(id));
         CWwdSpriteObject* sink =
-            LookupSerialRef(res->m_childGroup->m_registeredGameObjectsById, id);
+            LookupSerialRef(res->ChildGroup()->m_registeredGameObjectsById, id);
         m_cursorSnapSprite = sink;
         if (sink == NULL && id != 0) {
             return 0;
@@ -6540,7 +6540,7 @@ i32 CPlay::ShrinkViewport(i32 step) {
     }
 
     m_world->m_level->UpdatePlaneViewports((&resized));
-    m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
     m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
     return 1;
@@ -6592,7 +6592,7 @@ i32 CPlay::ExpandViewport(i32 step) {
     }
 
     m_world->m_level->UpdatePlaneViewports((&resized));
-    m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
     m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
     return 1;
@@ -6603,17 +6603,17 @@ i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
     const LevelCoordRect& vp = v->m_level->m_viewportRect;
     CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
-    CObList& chain = v->m_childGroup->m_list;
+    CObList& chain = v->ChildGroup()->m_list;
 
     RECT r = vp;
     r.right = r.right + 1;
     r.bottom = r.bottom + 1;
-    held->m_surface->Restore(&r, 0);
+    held->GetSurface()->Restore(&r, 0);
 
     POSITION pos = chain.GetHeadPosition();
 
     while (pos != NULL) {
-        CGameObject* o = v->m_childGroup->NextChild(pos);
+        CGameObject* o = v->ChildGroup()->NextChild(pos);
         LogicRecordDispatchFn dispatch = o->m_logicRecord->m_dispatch;
         if (dispatch == DispatchGruntLogic || dispatch == DispatchInGameIconLogic
             || dispatch == DispatchGruntPuddleLogic || dispatch == DispatchGruntToySpriteLogic
@@ -6658,7 +6658,7 @@ RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
 
-    CObList* pl = &v->m_childGroup->m_list;
+    CObList* pl = &v->ChildGroup()->m_list;
     if (pl == NULL) {
         return 0;
     }
@@ -6956,7 +6956,7 @@ i32 CPlay::ClearPlacedObjects() {
                 i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                 if (occupantId != 0) {
                     CGameObject* result = LookupObjectById(
-                        g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
+                        g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                         occupantId
                     );
                     if (result == NULL) {

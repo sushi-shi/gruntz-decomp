@@ -81,8 +81,18 @@ public:
 
     virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp);
 
+    i32 GetWidth() const {
+        return m_width;
+    }
+    i32 GetHeight() const {
+        return m_height;
+    }
+    CDDSurface* const& GetSurface() const {
+        return m_surface;
+    }
+
     i32 Probe();
-    void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
+    void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size);
 
     virtual ~CDrawSubWorker() OVERRIDE {
         m_width = 0;

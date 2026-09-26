@@ -50,7 +50,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     i32 focusY = m_object->m_screenY;
     slot->m_focusX = focusX;
     slot->m_focusY = focusY;
-    CGameObject* e = g_gameReg->World()->m_childGroup->CreateSprite(
+    CGameObject* e = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY,
@@ -95,7 +95,7 @@ i32 CExitTrigger::SerializeDispatch(
             if (key != 0) {
                 found = NULL;
                 CGameObject* obj = NULL;
-                if (MapLookupById(holder->m_childGroup->m_registeredGameObjectsById, key, found)) {
+                if (MapLookupById(holder->ChildGroup()->m_registeredGameObjectsById, key, found)) {
                     obj = found;
                 }
                 m_warlordLogic = static_cast<CWarlord*>(obj->m_logicRecord->m_userLogic);

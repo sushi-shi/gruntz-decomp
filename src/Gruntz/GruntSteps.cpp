@@ -867,7 +867,7 @@ applyTail:
             m_routePassableMask = 0;
         }
         if (spawnWormhole != false) {
-            CWwdSpriteObject* spawned = g_gameReg->World()->m_childGroup->CreateSprite(
+            CWwdSpriteObject* spawned = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 spawnPx,
                 spawnPy,

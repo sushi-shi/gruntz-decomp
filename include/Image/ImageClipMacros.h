@@ -17,7 +17,7 @@
     rect.right = right;                                                                            \
     rect.bottom = bottom;                                                                          \
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {                                   \
-        BlitRect clipA = m_ownerCtx->m_level->m_viewportRect;                                      \
+        BlitRect clipA = OwnerMgr()->m_level->m_viewportRect;                                      \
         RECT clip;                                                                                 \
         CopyRect(&clip, static_cast<const RECT*>(&clipA));                                         \
         if (x < clip.left) {                                                                       \
@@ -36,14 +36,14 @@
         if (x < 0) {                                                                               \
             rect.left = 0;                                                                         \
         }                                                                                          \
-        if (right >= dst->m_width) {                                                               \
-            rect.right = dst->m_width - 1;                                                         \
+        if (right >= dst->GetWidth()) {                                                            \
+            rect.right = dst->GetWidth() - 1;                                                      \
         }                                                                                          \
         if (y < 0) {                                                                               \
             rect.top = 0;                                                                          \
         }                                                                                          \
-        if (bottom >= dst->m_height) {                                                             \
-            rect.bottom = dst->m_height - 1;                                                       \
+        if (bottom >= dst->GetHeight()) {                                                          \
+            rect.bottom = dst->GetHeight() - 1;                                                    \
         }                                                                                          \
     } else {                                                                                       \
         if (x < info->m_clip.left) {                                                               \

@@ -378,7 +378,7 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     RECT rightSrc = {0, 0, rightW, m_tileHeightPx};
     RECT corner;
     RECT dr;
-    CDDSurface* surf = ctx->m_surface;
+    CDDSurface* surf = ctx->GetSurface();
     i32 nCols = colR - colL - 1;
     i32 nRows = rowB - rowT - 1;
 
@@ -491,7 +491,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     SET_RECT_COMPONENTS(rc, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
 
     CDDrawSurfaceMgr* reg = OwnerMgr();
-    CDDrawChildGroup* activeGroup = reg->m_childGroup;
+    CDDrawChildGroup* activeGroup = reg->ChildGroup();
     if (activeGroup == NULL) {
         return 0;
     }
