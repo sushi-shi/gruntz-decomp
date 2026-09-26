@@ -281,7 +281,6 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
     );
 }
 
-// @early-stop
 RVA(0x00153470, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     SpriteStateFlags mode = info->m_stateFlags;
@@ -337,74 +336,67 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
-    i32 dleft = x;
-    i32 dtop = y;
-    i32 dright = right;
-    i32 dbottom = bottom;
+    RECT d;
+    d.left = x;
+    d.top = y;
+    d.right = right;
+    d.bottom = bottom;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         BlitRect srcClip = OwnerMgr()->m_level->m_viewportRect;
         RECT destClip;
         CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
         if (x < destClip.left) {
-            dleft += destClip.left - x;
+            d.left += destClip.left - x;
         }
         if (right > destClip.right) {
-            dright = destClip.right;
+            d.right = destClip.right;
         }
         if (y < destClip.top) {
-            dtop += destClip.top - y;
+            d.top += destClip.top - y;
         }
         if (bottom > destClip.bottom) {
-            dbottom = destClip.bottom;
+            d.bottom = destClip.bottom;
         }
     } else if (info->m_clip.left == COORD_UNSET) {
         if (x < 0) {
-            dleft = 0;
+            d.left = 0;
         }
         if (right >= dst->GetWidth()) {
-            dright = dst->GetWidth() - 1;
+            d.right = dst->GetWidth() - 1;
         }
         if (y < 0) {
-            dtop = 0;
+            d.top = 0;
         }
         if (bottom >= dst->GetHeight()) {
-            dbottom = dst->GetHeight() - 1;
+            d.bottom = dst->GetHeight() - 1;
         }
     } else {
         if (x < info->m_clip.left) {
-            dleft = info->m_clip.left;
+            d.left = info->m_clip.left;
         }
         if (right > info->m_clip.right) {
-            dright = info->m_clip.right;
+            d.right = info->m_clip.right;
         }
         if (y < info->m_clip.top) {
-            dtop = info->m_clip.top;
+            d.top = info->m_clip.top;
         }
         if (bottom > info->m_clip.bottom) {
-            dbottom = info->m_clip.bottom;
+            d.bottom = info->m_clip.bottom;
         }
     }
-    i32 w = dright - dleft + 1;
-    i32 h = dbottom - dtop + 1;
+    i32 w = d.right - d.left + 1;
+    i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
         info->m_dirty.m_armed = -1;
         return;
     }
     RECT s;
-    s.left = dleft - x;
-    s.top = dtop - y;
+    s.left = d.left - x;
+    s.top = d.top - y;
     s.right = s.left + w;
     s.bottom = s.top + h;
-    dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_bltFastFlags);
-    info->m_dirty.m_position.x = dleft;
-    info->m_dirty.m_rect.left = dleft;
-    info->m_dirty.m_position.y = dtop;
-    info->m_dirty.m_size.cx = w;
-    info->m_dirty.m_rect.top = dtop;
-    info->m_dirty.m_size.cy = h;
-    info->m_dirty.m_armed = 0;
-    info->m_dirty.m_rect.right = dright;
-    info->m_dirty.m_rect.bottom = dbottom;
+    dst->m_surface->BltFast(d.left, d.top, m_surface, &s, m_bltFastFlags);
+    info->m_dirty.Set(d, w, h);
 }
 
 RVA(0x00153790, 0x6a)
