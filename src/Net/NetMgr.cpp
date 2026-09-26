@@ -750,6 +750,10 @@ CNetPlayerNode* CNetMgr::GetPlayerNodeData(DPID playerId) {
     return hr ? NULL : player;
 }
 
+static inline DPID PlayerIdOf(CNetPlayerNode* player) {
+    return player ? player->m_playerId : 0;
+}
+
 RVA(0x00178ef0, 0x5c)
 i32 CNetMgr::Send(
     CNetPlayerNode* sender,
@@ -758,8 +762,8 @@ i32 CNetMgr::Send(
     void* message,
     DWORD messageSize
 ) {
-    DPID senderId = sender ? sender->m_playerId : 0;
-    DPID recipientId = recipient ? recipient->m_playerId : 0;
+    DPID senderId = PlayerIdOf(sender);
+    DPID recipientId = PlayerIdOf(recipient);
     i32 hr = m_directPlay->Send(senderId, recipientId, flags, message, messageSize);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x46d, hr, NULL);
@@ -823,8 +827,8 @@ i32 CNetMgr::Receive(
     void* message,
     LPDWORD messageSize
 ) {
-    DPID senderId = sender ? sender->m_playerId : 0;
-    DPID recipientId = recipient ? recipient->m_playerId : 0;
+    DPID senderId = PlayerIdOf(sender);
+    DPID recipientId = PlayerIdOf(recipient);
     i32 hr = m_directPlay->Receive(&senderId, &recipientId, flags, message, messageSize);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4b7, hr, NULL);
@@ -839,7 +843,7 @@ i32 CNetMgr::BroadcastFrom(
     void* message,
     DWORD messageSize
 ) {
-    DPID senderId = sender ? sender->m_playerId : 0;
+    DPID senderId = PlayerIdOf(sender);
     i32 hr = m_directPlay->Send(senderId, DPID_ALLPLAYERS, flags, message, messageSize);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, NULL);
