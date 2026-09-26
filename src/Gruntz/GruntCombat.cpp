@@ -1588,7 +1588,7 @@ RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
 
-        if (ANIMATION_ACT_DIFFERS("F")) {
+        if (!ANIMATION_ACT_EQUALS("F")) {
             if (m_stamina >= STAMINA_FULL) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
