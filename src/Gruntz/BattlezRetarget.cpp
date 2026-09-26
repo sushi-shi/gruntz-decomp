@@ -4,6 +4,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Globals.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/BattlezMapConfig.h>

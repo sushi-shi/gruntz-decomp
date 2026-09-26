@@ -15,6 +15,7 @@
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LogicTypeId.h>

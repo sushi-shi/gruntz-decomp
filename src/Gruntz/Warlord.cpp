@@ -5,6 +5,7 @@
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>

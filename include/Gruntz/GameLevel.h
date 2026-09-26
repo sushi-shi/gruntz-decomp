@@ -7,7 +7,6 @@
 
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
-#include <Globals.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileCollisionKind.h>

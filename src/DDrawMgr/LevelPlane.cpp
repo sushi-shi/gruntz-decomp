@@ -18,6 +18,7 @@
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>

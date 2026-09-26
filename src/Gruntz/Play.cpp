@@ -22,6 +22,7 @@
 #include <Dsndmgr/MidiManager.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/AreaMgr.h>

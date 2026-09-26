@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/GameLevelInline.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/LogicTypeId.h>

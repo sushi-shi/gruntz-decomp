@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/GameMode.h>

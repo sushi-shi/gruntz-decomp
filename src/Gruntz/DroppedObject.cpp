@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>

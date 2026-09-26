@@ -16,6 +16,7 @@
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>

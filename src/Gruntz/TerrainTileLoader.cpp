@@ -5,6 +5,7 @@
 #include <AddrWord.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/LogicRecord.h>
+#include <Globals.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
