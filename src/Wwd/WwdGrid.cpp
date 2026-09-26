@@ -102,32 +102,26 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     cell.m_maxY = (q.m_maxY - m_bounds.m_minY) >> m_shiftX;
     cell.m_maxX = (q.m_maxX - m_bounds.m_minX) >> m_shiftY;
     i32 base = cell.m_minY * m_cols + cell.m_minX;
-    if (cell.m_minY <= cell.m_maxY) {
-        i32 colN = cell.m_maxY - cell.m_minY + 1;
-        do {
-            if (cell.m_minX <= cell.m_maxX) {
-                i32 rowN = cell.m_maxX - cell.m_minX + 1;
-                i32 idx = base;
-                do {
-                    WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].GetFirst());
-                    while (r) {
-                        WwdRegion* next = static_cast<WwdRegion*>(r->Next());
-                        if (q.Contains(r)) {
-                            if (doRemove) {
-                                m_buckets[idx].Delete(r);
-                                r->m_bucket = NULL;
-                                --m_count;
-                            }
-                            OnFound(r);
-                            ++fired;
-                        }
-                        r = next;
+    for (i32 y = cell.m_minY; y <= cell.m_maxY; y++) {
+        i32 idx = base;
+        for (i32 x = cell.m_minX; x <= cell.m_maxX; x++) {
+            WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].GetFirst());
+            while (r) {
+                WwdRegion* next = static_cast<WwdRegion*>(r->Next());
+                if (q.Contains(r)) {
+                    if (doRemove) {
+                        m_buckets[idx].Delete(r);
+                        r->m_bucket = NULL;
+                        --m_count;
                     }
-                    ++idx;
-                } while (--rowN);
+                    OnFound(r);
+                    ++fired;
+                }
+                r = next;
             }
-            base += m_cols;
-        } while (--colN);
+            idx++;
+        }
+        base += m_cols;
     }
     return fired;
 }
