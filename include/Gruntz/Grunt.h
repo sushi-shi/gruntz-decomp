@@ -185,6 +185,8 @@ public:
     inline i32 GetScreenTileY() const;
     inline i32 GetScreenTileX() const;
     inline void MirrorAcrossArrival();
+    inline void ResetArrivalFlags();
+    inline void MarkQuestzArrival();
     virtual ~CGrunt() OVERRIDE;
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)

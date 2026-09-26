@@ -1,8 +1,12 @@
 #ifndef GRUNTZ_GRUNTPICKUPINLINE_H
 #define GRUNTZ_GRUNTPICKUPINLINE_H
 
+#include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BattlezRouteMaskPreset.h>
+#include <Gruntz/EnemyAiType.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
 
 inline PickupType CGrunt::ArrivalPickup() const {
     PickupType pickup = m_entranceReason;
@@ -52,6 +56,22 @@ inline i32 CGrunt::AddBattlezTraversalFlags(i32 flags) const {
         }
     }
     return flags;
+}
+
+inline void CGrunt::ResetArrivalFlags() {
+    if (m_arrivalState == AI_NONE) {
+        m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
+    } else if (m_arrivalState == AI_BATTLEZ_PATH) {
+        m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
+    } else {
+        m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
+    }
+}
+
+inline void CGrunt::MarkQuestzArrival() {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        m_arrivalFlags |= 0x10;
+    }
 }
 
 #endif // GRUNTZ_GRUNTPICKUPINLINE_H
