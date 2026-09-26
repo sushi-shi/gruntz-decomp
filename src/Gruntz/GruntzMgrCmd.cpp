@@ -802,17 +802,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     }
                 }
-                m_frameGate ^= 1;
-                b32 f = m_frameGate;
-                FinishLevel(f, true);
+                FinishLevel(ToggleFrameGate(), true);
             }
             return 1;
         }
         case CMD_FINISH_LEVEL: {
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
-                m_frameGate ^= 1;
-                b32 f = m_frameGate;
-                FinishLevel(f, false);
+                FinishLevel(ToggleFrameGate(), false);
             }
             return 1;
         }

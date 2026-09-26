@@ -413,9 +413,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_QUIT:
                     HiCueLookup();
                     if (g_gameReg->m_frameGate != false) {
-                        b32 gate = !g_gameReg->m_frameGate;
-                        g_gameReg->m_frameGate = gate;
-                        g_gameReg->FinishLevel(gate, true);
+                        g_gameReg->FinishLevel(g_gameReg->ToggleFrameGate(), true);
                     }
                     (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(true);
                     return 1;
