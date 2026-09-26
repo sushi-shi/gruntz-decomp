@@ -126,7 +126,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     i32 playerIndex = m_playerIndex;
     i32 unitIndex = m_unitIndex;
     CTriggerMgr* table = g_gameReg->m_triggerMgr;
-    CGrunt* unit = table->m_units[unitIndex + TM_UNITS_PER_PLAYER * playerIndex];
+    CGrunt* unit = table->UnitAt(playerIndex, unitIndex);
 
     i32 statusVal;
     i32 abilityVal;

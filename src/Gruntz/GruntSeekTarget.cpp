@@ -45,15 +45,14 @@ RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
-        && g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
-               == NULL) {
+        && g_gameReg->m_triggerMgr->UnitAt(0, this->m_arrivalCell.m_x) == NULL) {
         RecycleGruntCoords(this);
         this->m_arrivalCell.m_x = 0;
     }
 
     i32 reason = IDX(this->ArrivalPickup());
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
-        CGrunt* slot = g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + reason];
+        CGrunt* slot = g_gameReg->m_triggerMgr->UnitAt(0, reason);
         if (slot == NULL || slot->m_entranceCommitted == false) {
             if (this->CoordCount() != 0) {
                 RecycleGruntCoords(this);
@@ -228,9 +227,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (static_cast<u32>(this->m_dwell) <= 0x3e8) {
             return 1;
         }
-        CGameObject* base =
-            g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
-                ->m_object;
+        CGameObject* base = g_gameReg->m_triggerMgr->UnitAt(0, this->m_arrivalCell.m_x)->m_object;
         TileSwitch(
             base->m_screenX >> TILE_SHIFT_PX,
             base->m_screenY >> TILE_SHIFT_PX,

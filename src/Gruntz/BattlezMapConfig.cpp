@@ -350,7 +350,7 @@ i32 CBattlezMapConfig::StepBoard() {
     }
     if (mn != 0 && mn != BATTLEZ_QUEUE_POSITION_UNSET) {
         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
-            CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + k];
+            CGrunt* u = m_triggerMgr->UnitAt(m_playerIndex, k);
             if (u != NULL && u->m_defenderState == AISTATE_RETURN) {
                 u->m_defenderQueuePosition -= mn;
             }
@@ -361,7 +361,7 @@ i32 CBattlezMapConfig::StepBoard() {
     CGrunt* forcedUnit = NULL;
     if (m_repickTimer - m_repickLastFire > m_resourceCreationTime) {
         i32 r = rand() % TM_UNITS_PER_PLAYER;
-        CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + r];
+        CGrunt* u = m_triggerMgr->UnitAt(m_playerIndex, r);
         forcedUnit = u;
         forced = 0;
         if (u != NULL && u->m_defenderState == AISTATE_RETURN && u->m_defenderQueuePosition == 0) {
@@ -369,13 +369,13 @@ i32 CBattlezMapConfig::StepBoard() {
         }
         if (!forced && rand() % 10 != 0) {
             i32 r2 = rand() % TM_UNITS_PER_PLAYER;
-            CGrunt* u2 = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + r2];
+            CGrunt* u2 = m_triggerMgr->UnitAt(m_playerIndex, r2);
             if (u2 != NULL) {
                 ChooseIdleBehavior(u2);
             }
         } else {
             for (i32 b = 0; b < TM_UNITS_PER_PLAYER; b++) {
-                CGrunt* unit = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + b];
+                CGrunt* unit = m_triggerMgr->UnitAt(m_playerIndex, b);
                 if (forced) {
                     unit = forcedUnit;
                 }
@@ -458,7 +458,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 }
 
                 for (i32 c = 0; c < TM_UNITS_PER_PLAYER; c++) {
-                    CGrunt* mate = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + c];
+                    CGrunt* mate = m_triggerMgr->UnitAt(m_playerIndex, c);
                     if (mate != NULL && mate->m_defenderState == AISTATE_RETURN) {
                         i32 q = unit->m_defenderQueuePosition - 1;
                         if (q < 0) {
@@ -560,7 +560,7 @@ candidateFound:
         return 0;
     }
 
-    CGrunt* unit = m_ctx->m_triggerMgr->m_units[cell + m_playerIndex * TM_UNITS_PER_PLAYER];
+    CGrunt* unit = m_ctx->m_triggerMgr->UnitAt(m_playerIndex, cell);
     if (unit == NULL) {
         return 0;
     }
@@ -606,7 +606,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
     i32 cell;
     Coord scratch;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-        unit = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + i];
+        unit = m_triggerMgr->UnitAt(m_playerIndex, i);
         if (unit != NULL) {
             if (unit->IsHoldPending()) {
                 return 1;
@@ -811,8 +811,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 for (i32 j = 0; j < 4; j++) {
                                     if (j != m_playerIndex) {
                                         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
-                                            CGrunt* other =
-                                                m_triggerMgr->m_units[j * TM_UNITS_PER_PLAYER + k];
+                                            CGrunt* other = m_triggerMgr->UnitAt(j, k);
                                             if (other != NULL) {
                                                 if (unit->RectContains(
                                                         other->m_object->m_screenX,
@@ -882,9 +881,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     for (i32 j2 = 0; j2 < 4; j2++) {
                                         if (j2 != m_playerIndex) {
                                             for (i32 k2 = 0; k2 < TM_UNITS_PER_PLAYER; k2++) {
-                                                CGrunt* o =
-                                                    m_triggerMgr
-                                                        ->m_units[j2 * TM_UNITS_PER_PLAYER + k2];
+                                                CGrunt* o = m_triggerMgr->UnitAt(j2, k2);
                                                 if (o != NULL) {
                                                     POINT pt;
                                                     pt.x = o->m_object->m_screenX >> TILE_SHIFT_PX;
@@ -1633,7 +1630,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             continue;
         }
         for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-            CGrunt* u = m_triggerMgr->m_units[band * TM_UNITS_PER_PLAYER + i];
+            CGrunt* u = m_triggerMgr->UnitAt(band, i);
             if (u == NULL) {
                 continue;
             }
@@ -1684,7 +1681,7 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     band = band % 4;
     i32 cell = rand() % TM_UNITS_PER_PLAYER;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-        CGrunt* u = m_triggerMgr->m_units[band * TM_UNITS_PER_PLAYER + i];
+        CGrunt* u = m_triggerMgr->UnitAt(band, i);
         if (u != NULL && u->m_entranceDropActive == false) {
             return u;
         }
@@ -3109,7 +3106,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
 
     i32 r = rand() % TM_UNITS_PER_PLAYER;
     for (i32 scanned = 0; scanned < TM_UNITS_PER_PLAYER; scanned++) {
-        CGrunt* cand = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + r];
+        CGrunt* cand = m_triggerMgr->UnitAt(m_playerIndex, r);
         if (cand != NULL) {
             if (IsGruntAtSavedScreenPos(cand) && cand->m_entranceCommitted != false
                 && cand->m_deathAnimStarted == false && cand->m_entranceActive == false
@@ -3326,7 +3323,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 return 1;
             }
             for (i32 b = 0; b < TM_UNITS_PER_PLAYER; b++) {
-                CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + b];
+                CGrunt* u = m_triggerMgr->UnitAt(m_playerIndex, b);
                 if (u == NULL) {
                     continue;
                 }
@@ -3649,7 +3646,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
     if (cellX == m_playerIndex) {
         return 1;
     }
-    CGrunt* src = m_triggerMgr->m_units[cellX * TM_UNITS_PER_PLAYER + cellY];
+    CGrunt* src = m_triggerMgr->UnitAt(cellX, cellY);
     if (src == NULL) {
         return 0;
     }
@@ -3662,7 +3659,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         }
     }
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-        CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + i];
+        CGrunt* u = m_triggerMgr->UnitAt(m_playerIndex, i);
         if (u == NULL) {
             continue;
         }
@@ -3743,7 +3740,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (cell == -1) {
         return 0;
     }
-    CGrunt* unit = m_ctx->m_triggerMgr->m_units[cell + m_playerIndex * TM_UNITS_PER_PLAYER];
+    CGrunt* unit = m_ctx->m_triggerMgr->UnitAt(m_playerIndex, cell);
     if (unit == NULL) {
         return 0;
     }
@@ -3914,7 +3911,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
             Coord cand = *static_cast<Coord*>(arr[r]);
             b32 ok = true;
             for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
-                CGrunt* u = grid->m_units[cell * TM_UNITS_PER_PLAYER + j];
+                CGrunt* u = grid->UnitAt(cell, j);
                 if (u != NULL && u->CoordCount() != 0) {
                     Coord node = *u->GetTailCoord();
                     if (node.m_x == cand.m_x && node.m_y == cand.m_y) {

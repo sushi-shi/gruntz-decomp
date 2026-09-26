@@ -123,7 +123,7 @@ void CNetSession::BuildGruntzCrcInfo() {
     for (i32 player = 0; player < 4; player++) {
         for (i32 g = 0; g < 0xf; g++) {
 
-            CGrunt* grunt = m_owner->Mgr()->m_triggerMgr->m_units[player * 0xf + g];
+            CGrunt* grunt = m_owner->Mgr()->m_triggerMgr->UnitAt(player, g);
             if (grunt == NULL) {
                 continue;
             }
@@ -688,7 +688,7 @@ i32 CNetSession::ComputeChecksum() {
     i32 sum = 0;
     for (i32 player = 0; player < PLAYER_SLOT_COUNT; player++) {
         for (i32 g = 0; g < TM_UNITS_PER_PLAYER; g++) {
-            CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->m_units[player * TM_UNITS_PER_PLAYER + g];
+            CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->UnitAt(player, g);
             if (grunt != NULL) {
                 sum += IDX(grunt->m_entranceCell.m_direction) + grunt->m_stamina + grunt->m_toyTime
                        + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey

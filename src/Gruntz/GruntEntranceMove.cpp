@@ -176,7 +176,7 @@ i32 CGrunt::RunEntranceMove() {
 
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
-    CGrunt* other = m_triggerMgr->m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* other = m_triggerMgr->UnitAt(playerIndex, unitIndex);
     if (other != NULL && other->m_entranceCommitted != false && other->m_gruntKind != GRUNT_GHOST) {
         i32 ox = other->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oy = other->m_lastTilePx.m_y >> TILE_SHIFT_PX;
@@ -223,7 +223,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                     focus = NULL;
                 } else {
                     Coord* rec = tm->HeadRec();
-                    focus = tm->m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
+                    focus = tm->UnitAt(rec->m_x, rec->m_y);
                 }
                 if (this == focus && m_playerIndex == g_curPlayer) {
                     onScreen = 1;

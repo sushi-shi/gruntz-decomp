@@ -109,9 +109,7 @@ i32 CGrunt::UpdateGruntStatus() {
     if (m_stamina >= STAMINA_FULL) {
         if (m_neighborValid != false) {
             m_neighborValid = false;
-            CGrunt* n =
-                m_triggerMgr
-                    ->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
+            CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
             if (n != NULL && n->m_entranceCommitted != false) {
                 if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
                     CommitNeighbor(
@@ -139,8 +137,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
         return 0;
     }
 
-    m_neighborPlayerIndex = targetPlayerIndex;
-    m_neighborUnitIndex = targetUnitIndex;
+    SetGruntNeighbor(this, targetPlayerIndex, targetUnitIndex);
     SET_ANIMATION_ACT("F");
 
     m_combatActive = true;
@@ -283,9 +280,7 @@ i32 CGrunt::StepAttackFire() {
             }
             default: {
 
-                CGrunt* tgt =
-                    m_triggerMgr->m_units
-                        [m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
+                CGrunt* tgt = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
                 if (tgt != NULL) {
                     tgt->StepCombatReaction(
                         m_entranceReason,
@@ -353,8 +348,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
         StopVehicleLoopSound();
         if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B && m_arrivalActive != false) {
-            CGrunt* occ =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 innerY = inner->m_screenY;

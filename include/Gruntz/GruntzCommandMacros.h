@@ -45,16 +45,15 @@
             return 0;                                                                              \
         CGrunt* _cell = m_triggerMgr->m_recList.GetCount() != 1                                    \
                             ? 0                                                                    \
-                            : m_triggerMgr->m_units                                                \
-                                  [m_triggerMgr->HeadRec()->m_y                                    \
-                                   + m_triggerMgr->HeadRec()->m_x * TM_UNITS_PER_PLAYER];          \
+                            : m_triggerMgr->UnitAt(                                                \
+                                  m_triggerMgr->HeadRec()->m_x,                                    \
+                                  m_triggerMgr->HeadRec()->m_y                                     \
+                              );                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_playerIndex != g_curPlayer)                                                   \
             return 0;                                                                              \
-        CGrunt* _c2 =                                                                              \
-            m_triggerMgr                                                                           \
-                ->m_units[_cell->m_unitIndex + _cell->m_playerIndex * TM_UNITS_PER_PLAYER];        \
+        CGrunt* _c2 = m_triggerMgr->UnitAt(_cell->m_playerIndex, _cell->m_unitIndex);              \
         i32 _r = (_c2 && _c2->m_entranceCommitted) ? _c2->LoadPickupSprites(ID, 0, 0, 0, 1) : 0;   \
         if (!_r)                                                                                   \
             return 0;                                                                              \
@@ -69,9 +68,10 @@
             return 0;                                                                              \
         CGrunt* _cell = m_triggerMgr->m_recList.GetCount() != 1                                    \
                             ? 0                                                                    \
-                            : m_triggerMgr->m_units                                                \
-                                  [m_triggerMgr->HeadRec()->m_y                                    \
-                                   + m_triggerMgr->HeadRec()->m_x * TM_UNITS_PER_PLAYER];          \
+                            : m_triggerMgr->UnitAt(                                                \
+                                  m_triggerMgr->HeadRec()->m_x,                                    \
+                                  m_triggerMgr->HeadRec()->m_y                                     \
+                              );                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_playerIndex != g_curPlayer)                                                   \

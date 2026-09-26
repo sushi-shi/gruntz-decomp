@@ -2292,8 +2292,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         return 1;
     }
 
-    i32 slot = idx + TM_UNITS_PER_PLAYER * g_curPlayer;
-    if (g_gameReg->m_triggerMgr->m_units[slot] == NULL) {
+    if (g_gameReg->m_triggerMgr->UnitAt(g_curPlayer, idx) == NULL) {
         return 0;
     }
 
@@ -2534,8 +2533,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;
     if (g_gameReg->m_triggerMgr->ResetCell(playerIndex, unitIndex, 0, 0) != 0) {
 
-        CGrunt* entry =
-            g_gameReg->m_triggerMgr->m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
+        CGrunt* entry = g_gameReg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
             (static_cast<CPlay*>(g_gameReg->m_curState))
                 ->ResetGoals(entry->m_object->m_screenX, entry->m_object->m_screenY);

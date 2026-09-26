@@ -155,9 +155,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             break;
         }
         case AISTATE_CHASE: {
-            CGrunt* slot =
-                m_triggerMgr->m_units
-                    [this->m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_y];
+            CGrunt* slot = m_triggerMgr->UnitAt(this->m_arrivalCell.m_x, this->m_arrivalCell.m_y);
             CGrunt* found = m_triggerMgr->FindNearestEnemy(this);
             if (found == NULL || found == slot) {
                 if (slot == NULL || slot->m_entranceCommitted == false
@@ -189,8 +187,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 m_defenderState = AISTATE_CHASE;
                 break;
             }
-            CGrunt* slot =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
                 && slot->m_entranceCommitted != false) {
                 if (m_neighborValid != false || m_combatActive != false

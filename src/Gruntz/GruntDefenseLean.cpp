@@ -54,8 +54,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
-            occ =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
                 && occ->m_entranceCommitted != false) {
                 if (m_combatActive != false) {
@@ -83,8 +82,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             return 1;
 
         case AISTATE_CHASE: {
-            occ =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
                 ResetToSeek(this);

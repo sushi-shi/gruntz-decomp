@@ -33,6 +33,11 @@ inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
     }
 }
 
+inline void SetGruntNeighbor(CGrunt* grunt, i32 playerIndex, i32 unitIndex) {
+    grunt->m_neighborPlayerIndex = playerIndex;
+    grunt->m_neighborUnitIndex = unitIndex;
+}
+
 inline void ResetToSeek(CGrunt* grunt) {
     UNSET_COORD(grunt->m_arrivalCell);
     grunt->m_defenderState = AISTATE_SEEK;

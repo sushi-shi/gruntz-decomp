@@ -43,7 +43,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     PickupType reason,
     WwdAniDrawValue cue
 ) {
-    CGrunt* unit = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* unit = UnitAt(playerIndex, unitIndex);
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = m_world->m_level;
 

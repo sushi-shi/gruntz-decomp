@@ -509,8 +509,7 @@ i32 CBoomerang::LoadProjectileSprites(
     m_dirY = originY - static_cast<double>(m_launchY);
     m_phase = 0.0;
     m_velScale = d;
-    CGrunt* g =
-        g_gameReg->m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * sourcePlayerIndex + sourceUnitIndex];
+    CGrunt* g = g_gameReg->m_triggerMgr->UnitAt(sourcePlayerIndex, sourceUnitIndex);
     if (g != NULL) {
         g->m_holdTiming.Start(
             static_cast<i32>(

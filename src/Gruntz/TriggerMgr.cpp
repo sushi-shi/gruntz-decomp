@@ -111,7 +111,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
     r.bottom += vp->top - view->m_viewportRect.top;
     for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
         for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
-            CGrunt* g = m_units[i * TM_UNITS_PER_PLAYER + j];
+            CGrunt* g = UnitAt(i, j);
             if (g) {
                 CGameObject* pos = g->m_object;
                 i32 cx = pos->m_screenX;
@@ -165,7 +165,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             if (m_recList.GetCount() == 1) {
                 StopPendingFx();
             }
-            CGrunt* cell = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
+            CGrunt* cell = UnitAt(playerIndex, unitIndex);
             if (cell != NULL) {
                 (static_cast<CGrunt*>(cell))->ClearAllSprites();
             }
@@ -204,8 +204,7 @@ void CTriggerMgr::ResetAll() {
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         Coord* payload = static_cast<Coord*>(m_recList.GetNext(pos));
-        i32 idx = payload->m_y + TM_UNITS_PER_PLAYER * payload->m_x;
-        CGrunt* cell = m_units[idx];
+        CGrunt* cell = UnitAt(payload->m_x, payload->m_y);
         if (cell != NULL) {
             (static_cast<CGrunt*>(cell))->ClearAllSprites();
             g_coordPool.Push(payload);
@@ -243,7 +242,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
-        CGrunt* grunt = m_units[selection->m_y + selection->m_x * TM_UNITS_PER_PLAYER];
+        CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
         if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
@@ -291,7 +290,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
-        CGrunt* grunt = m_units[selection->m_y + selection->m_x * TM_UNITS_PER_PLAYER];
+        CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
         if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
@@ -362,9 +361,7 @@ void CTriggerMgr::ClearRecords() {
 
 RVA(0x000788d0, 0x64)
 i32 CTriggerMgr::ScrollToActiveRecord() {
-    CGameObject* src =
-        m_units[m_cameraTargetIdentity.m_x * TM_UNITS_PER_PLAYER + m_cameraTargetIdentity.m_y]
-            ->m_object;
+    CGameObject* src = UnitAt(m_cameraTargetIdentity.m_x, m_cameraTargetIdentity.m_y)->m_object;
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
@@ -1481,7 +1478,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
         cell = NULL;
     } else {
         Coord* rec = HeadRec();
-        cell = m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
+        cell = UnitAt(rec->m_x, rec->m_y);
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     ActionOptionHit kind = ov->HitHover(x, y);
@@ -1909,7 +1906,7 @@ i32 CTriggerMgr::SpawnGrunt(
     i32 dstPlayerIndex,
     i32 moveIcon
 ) {
-    CGrunt* src = m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
+    CGrunt* src = UnitAt(srcPlayerIndex, srcUnitIndex);
     i32 freeUnitIndex = 0;
     i32 dstBaseIndex = dstPlayerIndex * TM_UNITS_PER_PLAYER;
     if (m_units[dstBaseIndex] != NULL) {
@@ -2292,8 +2289,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     do {
         POSITION cur = pos;
         Coord* payload = static_cast<Coord*>(m_selLists[slot].GetNext(pos));
-        i32 idx = payload->m_y + TM_UNITS_PER_PLAYER * payload->m_x;
-        CGrunt* cell = m_units[idx];
+        CGrunt* cell = UnitAt(payload->m_x, payload->m_y);
         if (cell != NULL) {
             ResetCell(payload->m_x, payload->m_y, 1, 0);
             if (m_selSentinel == slot) {
@@ -2347,7 +2343,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     bbox.bottom = 0;
     do {
         Coord* k = static_cast<Coord*>(m_recList.GetNext(pos));
-        CGrunt* cell = m_units[k->m_x * TM_UNITS_PER_PLAYER + k->m_y];
+        CGrunt* cell = UnitAt(k->m_x, k->m_y);
         if (cell != NULL) {
             count++;
             CGameObject* g = cell->m_object;
@@ -2625,7 +2621,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
         do {
             Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
 
-            CGrunt* cell = m_units[p->m_x * TM_UNITS_PER_PLAYER + p->m_y];
+            CGrunt* cell = UnitAt(p->m_x, p->m_y);
             x = static_cast<char>(p->m_x);
             if (cell->m_playerIndex == magic && cell->m_entranceActive == false) {
                 buf[count] = static_cast<u8>(p->m_y);

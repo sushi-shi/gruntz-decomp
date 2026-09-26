@@ -269,6 +269,9 @@ public:
     CGrunt** PlayerUnits(i32 playerIndex) {
         return &m_units[playerIndex * TM_UNITS_PER_PLAYER];
     }
+    CGrunt* UnitAt(i32 playerIndex, i32 unitIndex) {
+        return PlayerUnits(playerIndex)[unitIndex];
+    }
     Coord* HeadRec() {
         return static_cast<Coord*>(m_recList.GetHead());
     }
@@ -277,7 +280,7 @@ public:
             return NULL;
         }
         Coord* rec = HeadRec();
-        return m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
+        return UnitAt(rec->m_x, rec->m_y);
     }
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;

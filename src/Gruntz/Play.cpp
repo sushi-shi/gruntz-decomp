@@ -2752,7 +2752,7 @@ drag_box: {
             slot = NULL;
         } else {
             i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
-            slot = cg->m_units[sel[0] * TM_UNITS_PER_PLAYER + sel[1]];
+            slot = cg->UnitAt(sel[0], sel[1]);
         }
         if (slot != NULL && slot->m_entranceCommitted != false) {
             g_gameReg->m_voiceManager->PlayVoice(slot, 0x324, -1, 0, -1, -1);
@@ -4224,7 +4224,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_MOVE: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g != NULL && g->m_entranceCommitted != false) {
                 g->m_arrivalActive = false;
             }
@@ -4252,8 +4252,7 @@ i32 CPlay::ExecuteCommand(
 
         case PLAYERCMD_GUARD_BEGIN: {
             CGrunt* g =
-                mgr->m_triggerMgr
-                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
+                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
             if (g != NULL) {
                 if (g->m_tileClaimed != true) {
                     g->m_arrivalRerollTiming.m_startLo = 0;
@@ -4298,8 +4297,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_GUARD_END: {
 
             CGrunt* g =
-                mgr->m_triggerMgr
-                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
+                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
             if (g == NULL || g->m_tileClaimed == false) {
                 return 1;
             }
@@ -4310,7 +4308,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOOL_AT_POINT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false) {
                 return 0;
             }
@@ -4366,7 +4364,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOOL_ON_GRUNT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false) {
                 return 0;
             }
@@ -4375,8 +4373,7 @@ i32 CPlay::ExecuteCommand(
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* g2 = m_mgr->m_triggerMgr
-                             ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
+            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_entranceActive != false) {
                 g->m_arrivalActive = false;
                 return 0;
@@ -4421,7 +4418,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOY_AT_POINT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
@@ -4476,7 +4473,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOY_ON_GRUNT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
@@ -4485,8 +4482,7 @@ i32 CPlay::ExecuteCommand(
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* g2 = m_mgr->m_triggerMgr
-                             ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
+            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_entranceActive != false) {
                 g->m_arrivalActive = false;
                 return 0;
@@ -4534,14 +4530,13 @@ i32 CPlay::ExecuteCommand(
                 m_playerCommandPending = false;
             }
             u32 gi = static_cast<u8>(unitIndex);
-            i32 idx = gi + player * 0xf;
-            CGrunt* g = mgr->m_triggerMgr->m_units[idx];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g != NULL && g->m_entranceCommitted != false && g->m_tileClaimed != false) {
                 END_GUARD(g);
             }
             i32 sel = 0;
             b32 live = (g_gameReg->m_gameMode != GAMEMODE_QUESTZ);
-            CGrunt* g2 = m_mgr->m_triggerMgr->m_units[idx];
+            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(player, gi);
             i32 r;
             if (g2 == NULL || g2->m_entranceCommitted == false) {
                 r = 0;
@@ -4570,8 +4565,7 @@ i32 CPlay::ExecuteCommand(
 
         case PLAYERCMD_STOP: {
             CGrunt* g =
-                mgr->m_triggerMgr
-                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
+                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
