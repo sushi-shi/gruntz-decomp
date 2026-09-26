@@ -310,14 +310,14 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         arcSpan = arc - m_halfWidth;
         i32 tail = m_targetWidth - col - stride;
-        colBase = stride - static_cast<i32>(static_cast<double>(stride) / arcSpan * tail);
+        colBase = stride - static_cast<i32>(static_cast<float>(stride) / arcSpan * tail);
     } else {
         colBase = col;
     }
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false)) {
         arcSpan = arc - m_halfWidth;
-        colBase = static_cast<i32>(static_cast<double>(stride) / arcSpan * col);
+        colBase = static_cast<i32>(static_cast<float>(stride) / arcSpan * col);
     }
     i32 base;
     i32 warpIndex;
