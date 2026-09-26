@@ -35,6 +35,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Minimap.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayInline.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
@@ -613,27 +614,7 @@ i32 CMulti::AdvanceGameFrame() {
     g_frameTime += 0x21;
     g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = 0x21;
-    if (m_ambientInitDone == false) {
-        if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-            >= m_ambientTiming.m_interval.m_v) {
-            char name[0x40];
-            wsprintfA(name, "AMBIENT%d", GetAmbientId());
-            if (g_gameReg->m_musicEnabled != false) {
-                Mgr()->m_midi->PlaySequence(name, true);
-            } else {
-
-                MidiManager* midi = Mgr()->m_midi;
-                MidiSequence* sequence = midi->FindSequence(name);
-                if (sequence) {
-                    midi->m_currentSequence = sequence;
-                }
-                if (Mgr()->m_midi->m_currentSequence) {
-                    Mgr()->m_midi->m_currentSequence->SetLooping(true);
-                }
-            }
-            m_ambientInitDone = true;
-        }
-    }
+    UpdateAmbientMusic();
     Mgr()->m_commandMgr->ExecuteScheduledCommands(m_processedCommandTick % 128);
     m_session->ComputeChecksum();
     g_frameTicks++;

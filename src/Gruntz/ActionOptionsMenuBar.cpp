@@ -14,6 +14,7 @@
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/CImage.h>
@@ -37,13 +38,12 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
     m_active = false;
-    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_ACTIONOPTIONZMENUBAR");
-    m_frame = spr ? spr->GetAt(1) : NULL;
+    m_frame = g_gameReg->m_world->FindFrame("GAME_ACTIONOPTIONZMENUBAR", 1);
     if (!m_frame) {
         return 0;
     }
 
-    spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
+    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
@@ -377,65 +377,17 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&m_buttonState[0], 8);
     s->Read(&m_buttonIcon[0], 8);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    if (strlen(buf) != 0) {
-        m_normChipSprite = mgr->FindWorker(buf);
-    } else {
-        m_normChipSprite = NULL;
-    }
+    SERIAL_READ_WORKER(s, mgr, buf, m_normChipSprite);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    if (strlen(buf) != 0) {
-        m_highChipSprite = mgr->FindWorker(buf);
-    } else {
-        m_highChipSprite = NULL;
-    }
+    SERIAL_READ_WORKER(s, mgr, buf, m_highChipSprite);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    if (strlen(buf) != 0) {
-        m_greyChipSprite = mgr->FindWorker(buf);
-    } else {
-        m_greyChipSprite = NULL;
-    }
+    SERIAL_READ_WORKER(s, mgr, buf, m_greyChipSprite);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = mgr->FindWorker(buf);
-        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
-        m_frame = r;
-    } else {
-        m_frame = NULL;
-    }
+    SERIAL_READ_FRAME(s, mgr, buf, idx, m_frame);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = mgr->FindWorker(buf);
-        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
-        m_buttonFrame[0] = r;
-    } else {
-        m_buttonFrame[0] = NULL;
-    }
+    SERIAL_READ_FRAME(s, mgr, buf, idx, m_buttonFrame[0]);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = mgr->FindWorker(buf);
-        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
-        m_buttonFrame[1] = r;
-    } else {
-        m_buttonFrame[1] = NULL;
-    }
+    SERIAL_READ_FRAME(s, mgr, buf, idx, m_buttonFrame[1]);
 
     return 1;
 }

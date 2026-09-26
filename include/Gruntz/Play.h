@@ -195,6 +195,7 @@ public:
 
     i32 StepViewportResize();
     i32 GetAmbientId();
+    inline void UpdateAmbientMusic();
     void StepScroll();
     i32 SetDarknessCurse(b32 active);
     i32 SetTinyViewportCurse(b32 active);

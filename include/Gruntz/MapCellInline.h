@@ -9,14 +9,11 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    CMapMgr* grid = reg->m_tileGrid;
-    i32 tileX = owner->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = owner->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-        grid->m_rows[tileY][tileX].m_objectId = 0;
-        grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-    }
+    ReleaseCellObject(
+        reg->m_tileGrid,
+        owner->m_screenX >> TILE_SHIFT_PX,
+        owner->m_screenY >> TILE_SHIFT_PX
+    );
 }
 
 static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {

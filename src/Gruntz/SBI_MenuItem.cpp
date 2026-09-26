@@ -18,6 +18,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
@@ -187,13 +188,7 @@ i32 CSBI_MenuItem::SerializeFields(
     switch (mode) {
         case SERIAL_LOAD:
             ar->Read(&m_state, sizeof(m_state));
-            g_serialCounter++;
-            ar->Read(tmp, SERIAL_NAME_LEN);
-            if (strlen(tmp) != 0) {
-                m_record = mgr->FindWorker(tmp);
-            } else {
-                m_record = NULL;
-            }
+            SERIAL_READ_WORKER(ar, mgr, tmp, m_record);
             break;
         case SERIAL_SAVE:
             ar->Write(&m_state, sizeof(m_state));

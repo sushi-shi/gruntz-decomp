@@ -22,6 +22,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -275,17 +276,7 @@ i32 CSpotLight::SerializeDispatch(
             {
                 i32 id;
                 s->Read(&id, sizeof(id));
-                CGameObject* out = NULL;
-                CGameObject* resolved;
-                if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, id, out)
-                    == false) {
-                    resolved = NULL;
-                } else if (out == NULL) {
-                    resolved = NULL;
-                } else {
-                    resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
-                }
-                m_focus = static_cast<CWwdSpriteObject*>(resolved);
+                m_focus = LookupSerialRef(world->m_childGroup->m_registeredGameObjectsById, id);
                 if (m_focus == NULL && id != 0) {
                     return 0;
                 }

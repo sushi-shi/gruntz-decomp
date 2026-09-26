@@ -44,6 +44,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialRefLookup.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -4120,16 +4122,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     i32 seq;
     s->Read(&seq, sizeof(seq));
 
-    CGameObject* obj = NULL;
-    CWwdSpriteObject* barSprite;
-    if (MapLookupById(gm->m_childGroup->m_registeredGameObjectsById, seq, obj) == false) {
-        barSprite = NULL;
-    } else if (obj == NULL) {
-        barSprite = NULL;
-    } else {
-        barSprite =
-            (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdSpriteObject*>(obj) : NULL;
-    }
+    CWwdSpriteObject* barSprite =
+        LookupSerialRef(gm->m_childGroup->m_registeredGameObjectsById, seq);
     m_barSprite = barSprite;
     if (barSprite == NULL && seq != 0) {
         return 0;
@@ -4244,8 +4238,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_owner = owner;
 
     i32 n = IDX(fragment) + 1;
-    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE");
-    CImage* frame = spr ? spr->GetAt(n) : NULL;
+    CImage* frame = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", n);
     m_sprite = frame;
     if (frame == NULL) {
 
@@ -4318,20 +4311,9 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Read(&m_velocityScale, sizeof(m_velocityScale));
             arc->Read(&m_xDirection, sizeof(m_xDirection));
             arc->Read(&m_yDirection, sizeof(m_yDirection));
-            g_serialCounter++;
-
             char name[SERIAL_NAME_LEN];
             i32 index;
-            arc->Read(name, SERIAL_NAME_LEN);
-            arc->Read(&index, sizeof(index));
-            if (strlen(name) != 0) {
-                i32 i = index;
-                CDDrawWorker* rec = lvl->FindWorker(name);
-                CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
-                m_sprite = r;
-            } else {
-                m_sprite = NULL;
-            }
+            SERIAL_READ_FRAME(arc, lvl, name, index, m_sprite);
             return 1;
         }
         case SERIAL_SAVE: {

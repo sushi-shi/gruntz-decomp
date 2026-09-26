@@ -26,6 +26,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
@@ -35,6 +36,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -445,15 +447,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         hitFlag = 1;
     }
 
-    CGameLevel* level = m_world->m_level;
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
-    i32 cx = tx;
-    CLAMP_TO_EXTENT(cx, level->m_mainPlane->m_tileColumns);
-    i32 cy = ty;
-    CLAMP_TO_EXTENT(cy, level->m_mainPlane->m_tileRows);
-    i32 cval = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
-    TileCollisionKind collision = level->CollisionAtHandle(cval, 0, 0);
+    TileCollisionKind collision = PbResolveCell(m_world->m_level, tx, ty);
 
     i32 pfk = m_pendingFxKind;
     if (pfk >= 0xdf) {
@@ -1425,20 +1421,8 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         i32 key;
         ar->Read(&key, sizeof(key));
         if (key != 0) {
-            CGameObject* found = NULL;
-            CGameObject* looked = NULL;
-            if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found)
-                != false) {
-                looked = found;
-            }
-            CWwdSpriteObject* obj;
-            if (looked == NULL) {
-                obj = NULL;
-            } else {
-                obj = (looked->GetClassId() == CLASSID_SERIALREF)
-                          ? static_cast<CWwdSpriteObject*>(looked)
-                          : NULL;
-            }
+            CWwdSpriteObject* obj =
+                LookupSerialRef(world->m_childGroup->m_registeredGameObjectsById, key);
             m_goal = obj;
             if (obj == NULL) {
                 return 0;

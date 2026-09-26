@@ -942,13 +942,7 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
     i32 liveFrames = 0;
     i32 n = m_items.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CImage* el;
-        if (DDRAW_WORKER_FRAME_IN_RANGE(this, i)) {
-            el = DDRAW_WORKER_FRAME_AT_UNCHECKED(this, i);
-        } else {
-            el = NULL;
-        }
-        if (el != NULL) {
+        if (GetAt(i) != NULL) {
             liveFrames++;
         }
     }

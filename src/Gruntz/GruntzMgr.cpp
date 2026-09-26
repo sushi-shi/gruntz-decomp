@@ -1228,8 +1228,7 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
                 sub->m_soundStream->StopAllStreams();
             }
         }
-        MidiManager* midi = m_midi;
-        if ((midi->m_currentSequence ? midi->m_currentSequence->IsPlaying() : 0) && pauseMusic) {
+        if (m_midi->IsCurrentPlaying() && pauseMusic) {
             m_midi->PauseCurrent();
         }
         m_curState->PauseGame();
@@ -1636,7 +1635,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
     if (m_musicEnabled == false) {
         return;
     }
-    if ((m_midi->m_currentSequence ? m_midi->m_currentSequence->IsPlaying() : 0) == false) {
+    if (m_midi->IsCurrentPlaying() == false) {
         return;
     }
     m_midi->PauseCurrent();
@@ -1653,8 +1652,7 @@ void CGruntzMgr::StopAudioPlayback() {
             }
         }
     }
-    MidiManager* midi = m_midi;
-    if (midi && (midi->m_currentSequence ? midi->m_currentSequence->IsPlaying() : 0)) {
+    if (m_midi && m_midi->IsCurrentPlaying()) {
         m_midi->EndCurrent();
     }
 }
@@ -2475,20 +2473,10 @@ void CGruntzMgr::MuteMusicIfActive(i32 durationMs) {
     if (m_musicEnabled == false) {
         return;
     }
-    b32 isPlaying;
-    if (m_midi->m_currentSequence != NULL) {
-        isPlaying = m_midi->m_currentSequence->IsPlaying();
-    } else {
-        isPlaying = false;
-    }
-    if (isPlaying == false) {
+    if (m_midi->IsCurrentPlaying() == false) {
         return;
     }
-
-    MidiManager* midi = m_midi;
-    if (midi->m_currentSequence) {
-        midi->m_currentSequence->SetVolumePercent(0, durationMs);
-    }
+    m_midi->SetCurrentVolumePercent(0, durationMs);
 }
 
 // @dead-code
@@ -2501,20 +2489,10 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 durationMs) {
     if (m_musicEnabled == false) {
         return;
     }
-    b32 isPlaying;
-    if (m_midi->m_currentSequence != NULL) {
-        isPlaying = m_midi->m_currentSequence->IsPlaying();
-    } else {
-        isPlaying = false;
-    }
-    if (isPlaying == false) {
+    if (m_midi->IsCurrentPlaying() == false) {
         return;
     }
-
-    MidiManager* midi = m_midi;
-    if (midi->m_currentSequence) {
-        midi->m_currentSequence->SetVolumePercent(kSoundVolumeMax, durationMs);
-    }
+    m_midi->SetCurrentVolumePercent(kSoundVolumeMax, durationMs);
 }
 
 RVA(0x00091670, 0x2ac)

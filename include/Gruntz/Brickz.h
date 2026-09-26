@@ -73,4 +73,18 @@ inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
     return 1;
 }
 
+inline i32 CellObjectIdAt(CMapMgr* grid, u32 x, u32 y) {
+    if (x < grid->m_width && y < grid->m_height) {
+        return grid->m_rows[y][x].m_objectId;
+    }
+    return 0;
+}
+
+inline void ReleaseCellObject(CMapMgr* grid, u32 x, u32 y) {
+    if (x < grid->m_width && y < grid->m_height) {
+        grid->m_rows[y][x].m_objectId = 0;
+        grid->m_rows[y][x].m_flags &= ~0x40000;
+    }
+}
+
 #endif // GRUNTZ_BRICKZ_H

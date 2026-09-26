@@ -14,6 +14,7 @@
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDSurfaceCaps.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <DinMgr2/DirectInputMgr2.h>
@@ -77,6 +78,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockMacros.h>
 #include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialRefLookup.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
@@ -502,27 +505,7 @@ i32 CPlay::Render() {
         RestoreCursorSaveUnder();
         StepViewportResize();
 
-        if (m_ambientInitDone == false) {
-            if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-                >= m_ambientTiming.m_interval.m_v) {
-                i32 ambientId = GetAmbientId();
-                char sequenceName[0x40];
-                wsprintfA(sequenceName, "AMBIENT%d", ambientId);
-                if (g_gameReg->m_musicEnabled != false) {
-                    m_mgr->m_midi->PlaySequence(sequenceName, true);
-                } else {
-                    MidiManager* midi = m_mgr->m_midi;
-                    MidiSequence* sequence = midi->FindSequence(sequenceName);
-                    if (sequence != NULL) {
-                        midi->m_currentSequence = sequence;
-                    }
-                    if (m_mgr->m_midi->m_currentSequence != NULL) {
-                        m_mgr->m_midi->m_currentSequence->SetLooping(true);
-                    }
-                }
-                m_ambientInitDone = true;
-            }
-        }
+        UpdateAmbientMusic();
 
         if (m_region0Gate != false) {
             m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
@@ -746,27 +729,7 @@ i32 CPlay::Render() {
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
             }
-            if (m_ambientInitDone == false) {
-                if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-                    >= m_ambientTiming.m_interval.m_v) {
-                    i32 ambientId = GetAmbientId();
-                    char sequenceName[0x40];
-                    wsprintfA(sequenceName, "AMBIENT%d", ambientId);
-                    if (g_gameReg->m_musicEnabled != false) {
-                        m_mgr->m_midi->PlaySequence(sequenceName, true);
-                    } else {
-                        MidiManager* midi = m_mgr->m_midi;
-                        MidiSequence* sequence = midi->FindSequence(sequenceName);
-                        if (sequence != NULL) {
-                            midi->m_currentSequence = sequence;
-                        }
-                        if (m_mgr->m_midi->m_currentSequence != NULL) {
-                            m_mgr->m_midi->m_currentSequence->SetLooping(true);
-                        }
-                    }
-                    m_ambientInitDone = true;
-                }
-            }
+            UpdateAmbientMusic();
         } else {
 
             m_world->m_level->VisitVisible(
@@ -3840,13 +3803,7 @@ i32 CPlay::LoadCursorAnimation(
         m_cursorSprite->SetAllTypes(SHADE_PAL_16);
         m_cursorSprite->SetAllFormats(spr);
     }
-    CDDrawWorker* g = m_cursorSprite;
-    CImage* frame;
-    if (DDRAW_WORKER_FRAME_IN_RANGE(g, initialFrame)) {
-        frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, initialFrame);
-    } else {
-        frame = NULL;
-    }
+    CImage* frame = m_cursorSprite->GetAt(initialFrame);
     m_cursorImage = frame;
     if (frame == NULL) {
         return 0;
@@ -3870,12 +3827,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         m_cursorFrameIndex = m_cursorFrameIndex + 1;
         i32 idx = m_cursorFrameIndex;
         CDDrawWorker* g = m_cursorSprite;
-        CImage* frame;
-        if (DDRAW_WORKER_FRAME_IN_RANGE(g, idx)) {
-            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, idx);
-        } else {
-            frame = NULL;
-        }
+        CImage* frame = g->GetAt(idx);
         m_cursorImage = frame;
         if (frame == NULL) {
             m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->m_minIndex);
@@ -3951,14 +3903,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
 
     m_cursorImage->RenderFrame(pair, x, y, 0);
 
-    DDSCAPS caps;
-    i32 inSysMem;
-    if (target->m_ddSurface->GetCaps(&caps) == 0) {
-        inSysMem = caps.dwCaps & DDSCAPS_SYSTEMMEMORY;
-    } else {
-        inSysMem = 0;
-    }
-    if (inSysMem == 0) {
+    if (SurfaceCaps(target, DDSCAPS_SYSTEMMEMORY) == 0) {
         m_cursorBufferIndex = m_cursorBufferIndex == 0;
     }
     return 1;
@@ -5756,14 +5701,8 @@ i32 CPlay::ResetPlayState() {
         m_ambientInitDone = false;
     } else {
         wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
-        MidiManager* midi = m_mgr->m_midi;
-        MidiSequence* sequence = midi->FindSequence(sequenceName);
-        if (sequence != NULL) {
-            midi->m_currentSequence = sequence;
-        }
-        if (m_mgr->m_midi->m_currentSequence != NULL) {
-            m_mgr->m_midi->m_currentSequence->SetLooping(true);
-        }
+        m_mgr->m_midi->SelectSequence(sequenceName);
+        m_mgr->m_midi->SetCurrentLooping(true);
         CGruntzMgr* gameManager = g_gameReg;
         if (gameManager->m_musicEnabled != false && gameManager->m_gameMode == GAMEMODE_BATTLEZ) {
             m_mgr->m_midi->PlaySequence(sequenceName, true);
@@ -6331,12 +6270,9 @@ i32 CPlay::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_revealCapStart =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 1) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1) : NULL;
-    m_revealCapMid =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 2) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 2) : NULL;
-    m_revealCapEnd =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 3) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 3) : NULL;
+    m_revealCapStart = spr->GetAt(1);
+    m_revealCapMid = spr->GetAt(2);
+    m_revealCapEnd = spr->GetAt(3);
     m_revealFrame = 1;
     return 1;
 }
@@ -6614,22 +6550,10 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_lastCueId, sizeof(m_lastCueId));
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
-    g_serialCounter++;
     char nameBuf[SERIAL_NAME_LEN];
-    ar->Read(nameBuf, SERIAL_NAME_LEN);
     {
         i32 idx;
-        ar->Read(&idx, sizeof(idx));
-        if (strlen(nameBuf) != 0) {
-            CDDrawWorker* set = res->FindWorker(static_cast<const char*>(nameBuf));
-            if (set == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(set, idx)) {
-                m_cursorImage = NULL;
-            } else {
-                m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, idx);
-            }
-        } else {
-            m_cursorImage = NULL;
-        }
+        SERIAL_READ_FRAME(ar, res, nameBuf, idx, m_cursorImage);
     }
 
     g_serialCounter++;
@@ -6647,26 +6571,12 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         ar->Read(&m_cursorFrameCountdownMs, sizeof(m_cursorFrameCountdownMs));
         ar->Read(&m_cursorFrameIndex, sizeof(m_cursorFrameIndex));
         g_serialCounter++;
-        ar->Read(&found, sizeof(found));
-
-        CGameObject* oe = NULL;
-        CWwdSpriteObject* sink;
-        if (MapLookup(
-                res->m_childGroup->m_registeredGameObjectsById,
-                static_cast<void*>(found),
-                oe
-            )) {
-            if (oe == NULL) {
-                sink = NULL;
-            } else {
-                sink = oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(oe)
-                                                             : NULL;
-            }
-        } else {
-            sink = NULL;
-        }
+        i32 id;
+        ar->Read(&id, sizeof(id));
+        CWwdSpriteObject* sink =
+            LookupSerialRef(res->m_childGroup->m_registeredGameObjectsById, id);
         m_cursorSnapSprite = sink;
-        if (sink == NULL && found != NULL) {
+        if (sink == NULL && id != 0) {
             return 0;
         }
     }
@@ -7289,17 +7199,7 @@ i32 CPlay::ClearPlacedObjects() {
         while (!done) {
             if (i < PlacedObjectCellCount(blockIdx)) {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
-                CMapMgr* grid = g_gameReg->m_tileGrid;
-
-                i32 occupantId;
-                i32 cellX = obj->m_x;
-                i32 cellY = obj->m_y;
-                if (static_cast<u32>(cellX) < static_cast<u32>(grid->m_width)
-                    && static_cast<u32>(cellY) < static_cast<u32>(grid->m_height)) {
-                    occupantId = grid->m_rows[cellY][cellX].m_objectId;
-                } else {
-                    occupantId = 0;
-                }
+                i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                 if (occupantId != 0) {
                     CGameObject* out = NULL;
                     b32 found = MapLookupById(
@@ -7313,14 +7213,7 @@ i32 CPlay::ClearPlacedObjects() {
                     }
                     if (result == NULL) {
 
-                        CMapMgr* g = g_gameReg->m_tileGrid;
-                        i32 freeX = obj->m_x;
-                        i32 freeY = obj->m_y;
-                        if (static_cast<u32>(freeX) < static_cast<u32>(g->m_width)
-                            && static_cast<u32>(freeY) < static_cast<u32>(g->m_height)) {
-                            g->m_rows[freeY][freeX].m_objectId = 0;
-                            g->m_rows[freeY][freeX].m_flags &= 0xfffbffff;
-                        }
+                        ReleaseCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                         g_coordPool.Push(obj);

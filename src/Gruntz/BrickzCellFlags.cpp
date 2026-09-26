@@ -8,6 +8,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntNeighborhoodInline.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
@@ -22,13 +23,7 @@ RVA(0x00077790, 0x4f0)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
 
     BrickzCell* cell = &m_rows[y][x];
-    CGameLevel* level = m_attrMgr->m_level;
-
-    i32 cx = x;
-    i32 cy = y;
-    CLAMP_TILE_TO_PLANE(cx, cy, level->m_mainPlane);
-    i32 id = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
-    TileCollisionKind typeCode = level->CollisionAtHandle(id, 0, 0);
+    TileCollisionKind typeCode = PbResolveCell(m_attrMgr->m_level, x, y);
     i32 oldFlags = cell->m_flags;
     i32 edgeBit = oldFlags & BRICKZ_CELL_OCCUPIED;
     i32 keep = oldFlags & 0x1bf40000;
