@@ -1503,16 +1503,7 @@ i32 CMulti::PollSession() {
         return 0;
     }
 
-    i32 count;
-    if (LocalPlayer() == NULL) {
-        count = 0;
-    } else {
-        IDirectPlay4A* directPlay = Network()->m_directPlay;
-
-        DWORD messageCount;
-        i32 hr = directPlay->GetMessageCount(LocalPlayer()->m_playerId, &messageCount);
-        count = hr ? 0 : messageCount;
-    }
+    i32 count = Network()->GetMessageCount(LocalPlayer());
     if (count <= 0) {
         return 0;
     }
@@ -1529,14 +1520,8 @@ i32 CMulti::PollSession() {
         }
 
         DWORD messageSize = sizeof(g_recvBuffer);
-        DPID recipient = LocalPlayer()->m_playerId;
-        IDirectPlay4A* directPlay = Network()->m_directPlay;
-
-        hr = directPlay->Receive(&sender, &recipient, DPRECEIVE_ALL, g_recvBuffer, &messageSize);
-
-        if (hr) {
-            CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, NULL);
-        } else {
+        hr = Network()->ReceiveMessage(&sender, LocalPlayer(), g_recvBuffer, &messageSize);
+        if (hr == 0) {
             count--;
             if (sender != LocalPlayer()->m_playerId) {
                 DispatchRecvMsg(sender, g_recvBuffer, messageSize);
