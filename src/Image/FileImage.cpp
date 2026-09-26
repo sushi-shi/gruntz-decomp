@@ -130,11 +130,7 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
                 COPY_BGRX_PALETTE(s_palBmp, src, i, 0x100)
                 palette = s_palBmp;
             } else if (remap && palBpp == BPP_PALETTED_8) {
-                if (manager->m_hasPalette != false) {
-                    palette = manager->m_palette;
-                } else {
-                    palette = NULL;
-                }
+                palette = manager->GetActivePalette();
             }
 
             RecordBytes<BmpFileImage> data;
@@ -381,13 +377,12 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         i32 x = 0;
         u8* dst = line;
         while (x < static_cast<i32>(this->m_apiDesc.dwWidth)) {
-            Pix16Ptr sp;
-            sp.m_bytes = src;
-            u16 px = *sp.m_words;
+            u16 px = Load16(src);
             src += 2;
-            u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-            u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-            u8 b = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+            u8 r;
+            u8 g;
+            u8 b;
+            UnpackPixel16(px, r, g, b);
             *dst++ = b;
             *dst++ = g;
             *dst++ = r;
@@ -885,7 +880,6 @@ i32 CDDSurface::DecodePcxEx(
     return result;
 }
 
-// @early-stop
 RVA(0x00145b10, 0x1b5)
 i32 CDDSurface::DecodePid(
     CDDrawDeviceManager* manager,
@@ -905,12 +899,9 @@ i32 CDDSurface::DecodePid(
     u8* pPacked = static_cast<u8*>(static_cast<void*>(pDWord));
 
     if (!(width & 3) && m_apiDesc.dwWidth == width && m_apiDesc.dwHeight == height) {
-        PALETTEENTRY* palette = NULL;
         i32 remap = 0;
+        PALETTEENTRY* palette = manager->GetActivePalette();
         b32 hasPalette = manager->HasPalette();
-        if (hasPalette != false) {
-            palette = manager->GetPaletteEntries();
-        }
         ColorDepth displayBitDepth = manager->GetDisplayColorDepth();
         if (displayBitDepth != BPP_PALETTED_8) {
             remap = 1;
