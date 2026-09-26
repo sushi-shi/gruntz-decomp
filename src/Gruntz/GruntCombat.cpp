@@ -41,6 +41,7 @@
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -1529,10 +1530,7 @@ i32 CGrunt::CommitNeighbor(
     }
 
     i32 flag = 0;
-    PickupType v = m_entranceReason;
-    if (v > PICKUP_EQUIPPABLE_LAST) {
-        v = m_toolId;
-    }
+    PickupType v = ArrivalPickup();
     if (v == PICKUP_BOMB) {
         flag = IDX(v);
     }
@@ -2073,11 +2071,7 @@ void CGrunt::StepBehavior(char*) {
     tileKindDone:
         if (flags & 0x400) {
             PickupType reason = m_entranceReason;
-            PickupType pose = reason;
-            if (reason > PICKUP_EQUIPPABLE_LAST) {
-                pose = m_toolId;
-            }
-            if (pose == PICKUP_GRAVITYBOOTZ) {
+            if (ArrivalPickupOf(reason) == PICKUP_GRAVITYBOOTZ) {
                 goto afterTile;
             }
             if (reason == PICKUP_SPRING || reason == PICKUP_TOOB) {
