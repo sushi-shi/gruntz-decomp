@@ -1365,9 +1365,9 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         }
         case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
-            u16* d = reinterpret_cast<u16*>(dst);
-            u16* s = reinterpret_cast<u16*>(src);
+            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]); // byte-forced
+            u16* d = reinterpret_cast<u16*>(dst);                        // byte-forced
+            u16* s = reinterpret_cast<u16*>(src);                        // byte-forced
             if (m_blendVariant) {
                 while (count-- > 0) {
                     u32 b = *sc;
