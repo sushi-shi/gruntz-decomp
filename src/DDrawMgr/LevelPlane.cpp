@@ -831,8 +831,8 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
     spatialMgr->m_smallRegionHalfHeight = smallSize.m_h / 2;
 
     spatialMgr = m_spatialMgr;
-    spatialMgr->m_activeCenterX = -22222;
-    spatialMgr->m_activeCenterY = -22222;
+    spatialMgr->m_activeCenter.m_x = -22222;
+    spatialMgr->m_activeCenter.m_y = -22222;
 }
 
 // @early-stop
