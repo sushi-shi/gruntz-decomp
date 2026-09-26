@@ -502,15 +502,7 @@ i32 CInGameIcon::RefreshCell() {
     i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
     if (delta < m_driftThresh.m_v) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        i32 cell;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            BrickzCell* row = grid->m_rows[tileY];
-            cell = row[tileX].m_objectId;
-        } else {
-            cell = 0;
-        }
-        if (cell != 0) {
+        if (CellObjectIdAt(grid, tileX, tileY) != 0) {
             return 0;
         }
     }
