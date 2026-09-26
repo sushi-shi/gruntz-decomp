@@ -63,10 +63,8 @@ public:
         Clock64 m_interval;
 
         ClockInterval() {
-            m_start.m_lo = 0;
-            m_interval.m_lo = 0;
-            m_start.m_hi = 0;
-            m_interval.m_hi = 0;
+            m_start.m_v = 0;
+            m_interval.m_v = 0;
         }
     };
 
@@ -475,7 +473,6 @@ inline CPlay::~CPlay() {
     CPlay::ReleaseResources();
 }
 
-// @early-stop
 inline CPlay::CPlay() {
     m_returnToMenuOnComplete = false;
     m_completedFinalLevel = false;

@@ -996,7 +996,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
         if (g_gameReg->m_frameGate != false) {
-            g_gameReg->m_frameGate = !g_gameReg->m_frameGate;
+            g_gameReg->m_frameGate ^= 1;
             g_gameReg->FinishLevel(g_gameReg->m_frameGate, true);
         }
     }
@@ -1912,7 +1912,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
         if (g_gameReg->m_frameGate != false) {
-            g_gameReg->m_frameGate = !g_gameReg->m_frameGate;
+            g_gameReg->m_frameGate ^= 1;
             g_gameReg->FinishLevel(g_gameReg->m_frameGate, true);
         }
         this->OpenLevelOverlay(true);
@@ -1986,7 +1986,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         if (h->m_frameGate != false) {
-            h->m_frameGate = !h->m_frameGate;
+            h->m_frameGate ^= 1;
             this->m_mgr->FinishLevel(h->m_frameGate, true);
         }
         CLEAR_TAB_HINT(this->m_mgr->m_world->m_soundRegistry);

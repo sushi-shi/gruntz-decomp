@@ -323,7 +323,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     g_caretBlinkMs = t;
     if (t == 0) {
         g_caretBlinkMs = 0xc8;
-        g_caretBlinkOn = !g_caretBlinkOn;
+        g_caretBlinkOn ^= 1;
     }
     if (g_caretBlinkOn != false && text.GetLength() == 0) {
         MeasureLabel(hdc, rect);

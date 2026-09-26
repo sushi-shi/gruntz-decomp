@@ -184,9 +184,12 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             }
             CActionOptionsMenuBar* ov = m_overlay;
             if (ov != NULL) {
+                i32 selectedPlayerIndex = p->m_x;
                 i32 overlayPlayerIndex = ov->m_playerIndex;
+                i32 selectedUnitIndex = p->m_y;
                 i32 overlayUnitIndex = ov->m_unitIndex;
-                if (overlayPlayerIndex == p->m_x && overlayUnitIndex == p->m_y) {
+                if (overlayPlayerIndex == selectedPlayerIndex
+                    && overlayUnitIndex == selectedUnitIndex) {
                     CloseActionOptionsMenu();
                 }
             }
