@@ -18,7 +18,6 @@ CFaderLight::~CFaderLight() {
     ReleaseBuffers();
 }
 
-// @early-stop
 RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     CLightFaderConfig* d = static_cast<CLightFaderConfig*>(desc);
@@ -46,14 +45,10 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     if (m_restoreSurface == NULL && m_clearMode == false) {
         return 0;
     }
-    RECT rect;
-    m_width = m_targetSurface->m_apiDesc.dwWidth;
-    rect.right = m_width;
-    m_height = m_targetSurface->m_apiDesc.dwHeight;
-    rect.bottom = m_height;
-    rect.left = 0;
-    rect.top = 0;
-    if (PtInRect(&rect, m_center) == false) {
+    m_width = m_targetSurface->GetWidth();
+    m_height = m_targetSurface->GetHeight();
+    CRect rect(0, 0, m_width, m_height);
+    if (!rect.PtInRect(m_center)) {
         return 0;
     }
     if (m_clearMode != false) {
@@ -69,7 +64,8 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     }
     if (m_spanCount > 0) {
         if (d->m_shadeTable == NULL) {
-            m_table = m_cache.HueRampTable(m_palette->m_entries, m_spanCount, 0);
+            PALETTEENTRY* entries = m_palette->m_entries;
+            m_table = m_cache.HueRampTable(entries, m_spanCount, 0);
             m_ownsTable = true;
         } else {
             m_table = d->m_shadeTable;
@@ -135,7 +131,7 @@ void CFaderLight::RenderFrame(i32 frame) {
             row++;
         }
         if (m_overlay != NULL) {
-            m_overlay->m_ddSurface->Unlock(NULL);
+            m_overlay->Unlock();
         }
     } else {
         i32 fr2 = SQR(frame);
@@ -176,10 +172,10 @@ void CFaderLight::RenderFrame(i32 frame) {
     }
     m_previousFrame = frame;
     if (m_targetSurface != NULL) {
-        m_targetSurface->m_ddSurface->Unlock(NULL);
+        m_targetSurface->Unlock();
     }
     if (m_restoreSurface != NULL) {
-        m_restoreSurface->m_ddSurface->Unlock(NULL);
+        m_restoreSurface->Unlock();
     }
 }
 

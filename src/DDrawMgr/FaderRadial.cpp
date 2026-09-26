@@ -87,7 +87,6 @@ void CFaderRadial::FreeBuffer() {
     }
 }
 
-// @early-stop
 RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
     u8* scratch = new u8[m_dstSurface->m_apiDesc.dwWidth];
@@ -114,7 +113,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
     }
 
     m_srcSurface->m_ddSurface->Unlock(NULL);
-    m_dstSurface->m_ddSurface->Unlock(NULL);
+    m_dstSurface->Unlock();
     delete[] scratch;
 }
 RVA(0x0017fda0, 0x8)

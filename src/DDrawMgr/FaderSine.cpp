@@ -44,13 +44,9 @@ RVA_COMPGEN(0x0017fdd0, 0x1e, ??_GCFaderSine@@UAEPAXI@Z)
 RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
-// @early-stop
 RVA(0x0017fe00, 0x12d)
 i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
     CSineFaderConfig* cfg = static_cast<CSineFaderConfig*>(desc);
-    i32 w;
-    i32 p;
-    i32 i;
     m_previousFrame = 0;
     m_clearToBlack = cfg->m_clearToBlack;
     if (cfg->m_targetSurface == NULL) {
@@ -58,28 +54,27 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
     } else {
         m_targetSurface = cfg->m_targetSurface;
     }
-    CDDSurface* dst = cfg->m_sourceSurface;
-    if (dst == NULL) {
-        dst = m_secondarySurface;
+    if (cfg->m_sourceSurface == NULL) {
+        m_restoreSurface = m_secondarySurface;
+    } else {
+        m_restoreSurface = cfg->m_sourceSurface;
     }
-    m_restoreSurface = dst;
     if (!m_targetSurface) {
-        goto fail;
+        return 0;
     }
     if (!m_restoreSurface) {
         m_clearToBlack = true;
     }
-    m_width = m_targetSurface->m_apiDesc.dwWidth;
-    w = m_targetSurface->m_apiDesc.dwHeight;
+    m_width = m_targetSurface->GetWidth();
+    i32 w = m_targetSurface->GetHeight();
     m_height = w;
-    p = cfg->m_intensityPercent;
-
+    i32 p = cfg->m_intensityPercent;
     if (p < 0 || p > 100) {
-        goto fail;
+        return 0;
     }
     m_intensityPercent = p;
     m_fadeRowCount = static_cast<i32>(w * (static_cast<float>(p) * 0.01f));
-    for (i = 0; i < 2000; i++) {
+    for (i32 i = 0; i < 2000; i++) {
         m_appliedCounts[i] = 0;
         m_fractionalCounts[i] = 0;
         m_sampleOrder[i] = 0;
@@ -87,8 +82,6 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
     }
     ScatterSamples(m_sampleOrder, 0, m_width, 1);
     return 1;
-fail:
-    return 0;
 }
 
 // @early-stop
@@ -173,10 +166,10 @@ void CFaderSine::RenderFrame(i32 frame) {
     }
     m_previousFrame = frame;
     if (m_targetSurface != NULL) {
-        m_targetSurface->m_ddSurface->Unlock(NULL);
+        m_targetSurface->Unlock();
     }
     if (m_restoreSurface != NULL) {
-        m_restoreSurface->m_ddSurface->Unlock(NULL);
+        m_restoreSurface->Unlock();
     }
 }
 
