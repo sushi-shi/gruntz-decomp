@@ -32,10 +32,12 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialRefLookup.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -406,18 +408,13 @@ void CProjectile::AdvanceMotion() {
                         default:
 
                             if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
-                                CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
-                                    0,
+                                CreateParticlez(
+                                    reg->m_world->m_childGroup,
                                     m_targetPxX,
                                     m_targetPxY,
-                                    SORTKEY_ACTOR_BEHIND,
-                                    "Particlez",
-                                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                                    "LEVEL_DEATHSPLASH",
+                                    "LEVEL_DEATHSPLASH"
                                 );
-                                if (fx != NULL) {
-                                    fx->SetImageSetByName("LEVEL_DEATHSPLASH");
-                                    fx->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
-                                }
                             }
                             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             return;
@@ -426,18 +423,13 @@ void CProjectile::AdvanceMotion() {
             }
         } else {
             if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
-                CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
-                    0,
+                CreateParticlez(
+                    reg->m_world->m_childGroup,
                     m_targetPxX,
                     m_targetPxY,
-                    SORTKEY_ACTOR_BEHIND,
-                    "Particlez",
-                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    "GAME_WATER",
+                    "GAME_WATER"
                 );
-                if (fx != NULL) {
-                    fx->SetImageSetByName("GAME_WATER");
-                    fx->SetAnimationByName("GAME_WATER", 0);
-                }
             }
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
@@ -539,11 +531,9 @@ void CBoomerang::AdvanceMotion() {
     double s;
     double c;
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
-        m_object->m_screenX = m_targetPxX;
-        m_object->m_screenY = m_targetPxY;
+        SET_SCREEN_POS(m_object, m_targetPxX, m_targetPxY);
         if (m_shadow != NULL) {
-            m_shadow->m_screenX = m_targetPxX;
-            m_shadow->m_screenY = m_targetPxY;
+            SET_SCREEN_POS(m_shadow, m_targetPxX, m_targetPxY);
         }
         m_launched = true;
     } else if (m_phase > g_boomerangFullTurnRadians && m_launched != false) {
@@ -571,11 +561,9 @@ void CBoomerang::AdvanceMotion() {
     m_posX = m_originX + m_posX;
     m_posY = m_originY + m_posY;
     m_phase = phaseDelta + m_phase;
-    m_object->m_screenX = static_cast<i32>(m_posX);
-    m_object->m_screenY = static_cast<i32>(m_posY);
+    SET_SCREEN_POS(m_object, static_cast<i32>(m_posX), static_cast<i32>(m_posY));
     if (m_shadow != NULL) {
-        m_shadow->m_screenX = static_cast<i32>(m_posX);
-        m_shadow->m_screenY = static_cast<i32>(m_posY);
+        SET_SCREEN_POS(m_shadow, static_cast<i32>(m_posX), static_cast<i32>(m_posY));
     }
 }
 
@@ -703,13 +691,7 @@ i32 CProjectile::SerializeDispatch(
             s->Read(&m_sourcePxY, sizeof(m_sourcePxY));
 
             for (i32 ni = 0; ni < 7; ni++) {
-                g_serialCounter++;
-                s->Read(buf, SERIAL_NAME_LEN);
-                if (strlen(buf) != 0) {
-                    m_frames[ni] = MapFind<CAniElement>(reg->m_animRegistry->m_animations, buf);
-                } else {
-                    m_frames[ni] = NULL;
-                }
+                SERIAL_READ_ANIMATION(s, reg, buf, m_frames[ni]);
             }
 
             g_serialCounter++;
@@ -758,12 +740,7 @@ i32 CProjectile::SerializeDispatch(
 
             CAniElement** fp = m_frames;
             for (i32 fi = 0; fi < 7; fi++) {
-                g_serialCounter++;
-                memset(buf, 0, sizeof(buf));
-                if (*fp != NULL) {
-                    strcpy(buf, reg->m_animRegistry->FindAnimationKey(*fp));
-                }
-                s->Write(buf, SERIAL_NAME_LEN);
+                SERIAL_WRITE_ANIMATION(s, reg, buf, *fp);
                 fp++;
             }
 

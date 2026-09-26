@@ -54,6 +54,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/GameApp.h>
@@ -279,10 +280,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    if (m_resourceArchive) {
-        delete m_resourceArchive;
-        m_resourceArchive = NULL;
-    }
+    SAFE_DELETE(m_resourceArchive);
     m_resourceArchive = new CRezMgr;
     bool parseFailed = m_resourceArchive->Open(
                            const_cast<char*>(static_cast<const char*>(GetRezPath())),
@@ -332,10 +330,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_midi->m_midiAvailable = false;
     }
 
-    if (m_worldSounds) {
-        delete m_worldSounds;
-        m_worldSounds = NULL;
-    }
+    SAFE_DELETE(m_worldSounds);
     m_worldSounds = new CWorldSoundSet;
     if (!m_worldSounds->Init(m_world->m_soundRegistry, soundVolume)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40d);
@@ -353,10 +348,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_owner->m_hInstance,
             IDX(DIN_CREATE_ASYNC_KEYBOARD | DIN_CREATE_NO_MOUSE | DIN_CREATE_NO_JOYSTICKS)
         )) {
-        if (g_inputMgr) {
-            delete g_inputMgr;
-            g_inputMgr = NULL;
-        }
+        SAFE_DELETE(g_inputMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40e);
         return 0;
     }
@@ -394,19 +386,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_lightFxMgr = new CLightFxMgr;
     if (!m_lightFxMgr->Init(this, NULL)) {
-        if (m_lightFxMgr) {
-            delete m_lightFxMgr;
-            m_lightFxMgr = NULL;
-        }
+        SAFE_DELETE(m_lightFxMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x411);
         return 0;
     }
     m_saveGame = new CSaveGame;
     if (!m_saveGame->InitializeSaveDirectory("")) {
-        if (m_saveGame) {
-            delete m_saveGame;
-            m_saveGame = NULL;
-        }
+        SAFE_DELETE(m_saveGame);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x412);
         return 0;
     }
@@ -430,10 +416,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_commandMgr = new CGruntzCmdMgr;
 
     if (!m_commandMgr->SetManager(this)) {
-        if (m_commandMgr) {
-            delete m_commandMgr;
-            m_commandMgr = NULL;
-        }
+        SAFE_DELETE(m_commandMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x414);
         return 0;
     }
@@ -445,10 +428,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_spriteFactory = new CSpriteRefTable;
 
     if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
-        if (m_spriteFactory) {
-            delete m_spriteFactory;
-            m_spriteFactory = NULL;
-        }
+        SAFE_DELETE(m_spriteFactory);
 
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x416);
     }
@@ -485,10 +465,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_triggerMgr = new CTriggerMgr;
     if (!m_triggerMgr->SetLevel(m_world)) {
-        if (m_triggerMgr) {
-            delete m_triggerMgr;
-            m_triggerMgr = NULL;
-        }
+        SAFE_DELETE(m_triggerMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x41b);
         return 0;
     }

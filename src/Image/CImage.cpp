@@ -335,11 +335,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 
     LONG x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     i32 dleft = x;
     i32 dtop = y;
     i32 dright = right;
@@ -444,11 +440,7 @@ RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
     s.left = right - d.right;
@@ -469,11 +461,7 @@ RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
     SET_RECT_COMPONENTS(s, right - d.right, d.top - y, s.left + w, s.top + h);
@@ -491,11 +479,7 @@ RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
     SET_RECT_COMPONENTS(s, d.left - x, bottom - d.bottom, s.left + w, s.top + h);
@@ -513,11 +497,7 @@ RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
     LONG y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;
@@ -541,11 +521,7 @@ RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = right - d.right;
@@ -564,11 +540,7 @@ RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
     LONG y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;
@@ -592,11 +564,7 @@ RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;

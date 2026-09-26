@@ -5,6 +5,7 @@
 #include <Dsndmgr/SoundBankLoad.h>
 #include <Dsndmgr/VolumeScale.h>
 #include <Enums.h>
+#include <SafeDelete.h>
 
 #include <mss.h>
 #include <stdio.h>
@@ -371,10 +372,7 @@ void MidiSequence::Unload() {
         AIL_release_sequence_handle(m_sequenceHandle);
         m_sequenceHandle = NULL;
     }
-    if (m_ownedData != NULL) {
-        delete[] m_ownedData;
-        m_ownedData = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_ownedData);
 }
 
 RVA(0x00138e10, 0x4a)

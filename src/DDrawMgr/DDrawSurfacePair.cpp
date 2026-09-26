@@ -276,7 +276,7 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
         }
     }
 
-    m_surface->m_ddSurface->Unlock(NULL);
+    m_surface->Unlock();
 }
 
 // @early-stop
@@ -323,7 +323,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
         down += m_surface->m_apiDesc.lPitch;
     }
 
-    m_surface->m_ddSurface->Unlock(NULL);
+    m_surface->Unlock();
 }
 
 RVA(0x00164250, 0x12b)
@@ -1178,29 +1178,8 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 
 RVA(0x00165fa0, 0x93)
 void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
-    {
-
-        char c = m_pixelValue;
-        i32 y = m_screenY;
-        i32 x = m_screenX;
-        CDDSurface* s = overlay->m_surface;
-        char* base = static_cast<char*>(s->Lock(NULL));
-        if (base != NULL) {
-            base[s->m_bytesPerPixel * x + s->m_apiDesc.lPitch * y] = c;
-            s->m_ddSurface->Unlock(NULL);
-        }
-    }
-    {
-        char c = m_pixelValue;
-        i32 y = m_screenY;
-        i32 x = m_screenX;
-        CDDSurface* s = backBuffer->m_surface;
-        char* base = static_cast<char*>(s->Lock(NULL));
-        if (base != NULL) {
-            base[s->m_bytesPerPixel * x + y * s->m_apiDesc.lPitch] = c;
-            s->m_ddSurface->Unlock(NULL);
-        }
-    }
+    overlay->m_surface->PutPixel(m_screenX, m_screenY, m_pixelValue);
+    backBuffer->m_surface->PutPixel(m_screenX, m_screenY, m_pixelValue);
 }
 
 RVA(0x00166040, 0x66)

@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/ShadeTableCache.h>
+#include <SafeDelete.h>
 
 RVA(0x00150180, 0xd)
 CShadeTable::CShadeTable() {
@@ -71,10 +72,7 @@ i32 CShadeTable::LoadFromMem(u8* buf, u32 len, i32 id) {
 RVA(0x001503c0, 0x2e)
 void CShadeTable::Free() {
     if (m_alloc != false) {
-        if (m_data) {
-            delete[] m_data;
-            m_data = NULL;
-        }
+        SAFE_DELETE_ARRAY(m_data);
         m_size = 0;
     }
     m_alloc = false;

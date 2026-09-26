@@ -1,7 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_MAPCELLINLINE_H
 #define GRUNTZ_GRUNTZ_MAPCELLINLINE_H
 
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -15,6 +17,13 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
         owner->m_screenY >> TILE_SHIFT_PX
     );
 }
+
+#define SET_MAIN_PLANE_TILE(reg, tileX, tileY, tile)                                               \
+    {                                                                                              \
+        CDDrawWorkerHost* plane = (reg)->m_world->m_level->m_mainPlane;                            \
+        SET_WORKER_HOST_CELL(plane, tileX, tileY, tile);                                           \
+        (reg)->m_tileGrid->ComputeCellFlags(tileX, tileY, tile);                                   \
+    }
 
 static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {
     BrickzCellNode* node = freeList;

@@ -1208,11 +1208,9 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     i32 by;
     CGrunt* hit;
     i32 moveKind;
-    CString* typeRec;
     bool isG;
     bool isL;
     bool isP;
-    bool isI2;
     CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
     if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
         return 0;
@@ -1259,9 +1257,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             return 0;
         }
 
-        const char* name = g_typeColl[cell->m_logicRecord->m_eventCode];
-        bool isI = (strcmp(name, "I") == 0);
-        if (isI) {
+        if (ANIMATION_ACT_EQUALS_FOR(cell, "I")) {
             LoadTileArrivalFx(
                 playerIndex,
                 unitIndex,
@@ -1310,9 +1306,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         RESET_GRUNT_POWERED_STATE(cell)
     }
 
-    typeRec = &g_typeColl[cell->m_logicRecord->m_eventCode];
-    isI2 = (strcmp(*typeRec, "I") == 0);
-    if (isI2) {
+    if (ANIMATION_ACT_EQUALS_FOR(cell, "I")) {
         LoadTileArrivalFx(
             playerIndex,
             unitIndex,
@@ -1373,9 +1367,7 @@ i32 CTriggerMgr::ClearCell(
     if (cell->m_entranceActive != false) {
         return 0;
     }
-    CString* typeRec = &g_typeColl[cell->m_logicRecord->m_eventCode];
-    bool isI = (strcmp(*typeRec, "I") == 0);
-    if (isI) {
+    if (ANIMATION_ACT_EQUALS_FOR(cell, "I")) {
         this->LoadTileArrivalFx(
             playerIndex,
             unitIndex,
@@ -1399,9 +1391,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    const char* name = g_typeColl[cell->m_logicRecord->m_eventCode];
-    bool differ = strcmp(name, "B") != 0;
-    if (!differ) {
+    if (ANIMATION_ACT_EQUALS_FOR(cell, "B")) {
         return;
     }
     PickupType k = cell->ArrivalPickup();

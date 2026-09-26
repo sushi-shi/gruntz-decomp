@@ -291,13 +291,13 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (!file.Open(path, 0x1001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
     }
@@ -310,7 +310,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
         file.Write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth);
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -360,14 +360,14 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     CFile file;
     if (flag != 0) {
         if (file.Open(path, 0x2001, NULL) == false) {
-            this->m_ddSurface->Unlock(NULL);
+            Unlock();
             delete[] line;
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (file.Open(path, 0x1001, NULL) == false) {
-            this->m_ddSurface->Unlock(NULL);
+            Unlock();
             delete[] line;
             return 0;
         }
@@ -396,7 +396,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         file.Write(line, 3 * this->m_apiDesc.dwWidth);
     }
 
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     delete[] line;
     return 1;
 }
@@ -442,13 +442,13 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (!file.Open(path, 0x1001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
     }
@@ -466,7 +466,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
         }
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -726,36 +726,7 @@ i32 CDDSurface::DecodeByteRun1Plane(u8* dstBuf, u8* src, i32 width, i32 height) 
     for (y = 0; y < height; y++) {
         dstp = dstBuf + width * y;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp++;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp++;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp++;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 1);
     }
     return 1;
 }
@@ -784,100 +755,13 @@ i32 CDDSurface::DecodeByteRun3Planes(u8* dstBuf, u8* src, i32 width, i32 height)
         base = y * width * 3;
         dstp = dstBuf + base;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
         dstp = dstBuf + base + 1;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
         dstp = dstBuf + base + 2;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
     }
     return 1;
 }

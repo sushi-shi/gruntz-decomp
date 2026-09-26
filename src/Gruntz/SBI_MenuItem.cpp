@@ -20,6 +20,7 @@
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
@@ -122,22 +123,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
         m_owner->Deactivate();
     } else if (state == MENUITEM_HIGHLIGHT && playHighlightSound) {
 
-        SoundCueRegistry* mh = g_gameReg->m_world->m_soundRegistry;
-        if (mh->m_silentMode == false) {
-            SoundCue* found = MapFind<SoundCue>(mh->m_cues, "GAME_TABHIGHLIGHT2");
-            if (found) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    SoundCue* p = found;
-                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                        >= static_cast<u32>(p->m_replayDelayMs)) {
-                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_TABHIGHLIGHT2");
     }
     CDDrawWorker* r = m_record;
     CImage* frame = r->GetAt(IDX(state));

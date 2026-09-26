@@ -1515,36 +1515,7 @@ i32 CDDSurface::DecodeRun8(u8* src) {
     for (y = 0; y < height; y++) {
         dstp = (pbits + this->Scale(y));
         nleft = w;
-        if (hold > 0) {
-            for (kj = 0; kj < hold; kj++) {
-                *dstp = tok;
-                dstp++;
-            }
-            nleft -= hold;
-            hold = 0;
-        }
-        while (nleft > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                runx = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (runx > nleft) {
-                    hold = runx - nleft;
-                    runx = nleft;
-                }
-                for (kj = 0; kj < runx; kj++) {
-                    *dstp = tok;
-                    dstp++;
-                }
-                nleft -= runx;
-            } else {
-                *dstp = tok;
-                dstp++;
-                nleft--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, nleft, hold, tok, runx, kj, 1);
     }
     Unlock();
     return 1;
@@ -1574,100 +1545,13 @@ i32 CDDSurface::DecodeRun24(u8* src) {
     for (nrow = 0; nrow < this->GetHeight(); nrow++) {
         dst = (ln + this->Scale(nrow) + 2);
         cols = this->GetWidth();
-        if (rest > 0) {
-            for (k = 0; k < rest; k++) {
-                *dst = pm;
-                dst += 3;
-            }
-            cols -= rest;
-            rest = 0;
-        }
-        while (cols > 0) {
-            pm = *inp;
-            inp++;
-            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                cnt = pm & BYTE_RUN_LENGTH_MASK;
-                pm = *inp;
-                inp++;
-                if (cnt > cols) {
-                    rest = cnt - cols;
-                    cnt = cols;
-                }
-                for (k = 0; k < cnt; k++) {
-                    *dst = pm;
-                    dst += 3;
-                }
-                cols -= cnt;
-            } else {
-                *dst = pm;
-                dst += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
         dst = (ln + this->Scale(nrow) + 1);
         cols = this->GetWidth();
-        if (rest > 0) {
-            for (k = 0; k < rest; k++) {
-                *dst = pm;
-                dst += 3;
-            }
-            cols -= rest;
-            rest = 0;
-        }
-        while (cols > 0) {
-            pm = *inp;
-            inp++;
-            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                cnt = pm & BYTE_RUN_LENGTH_MASK;
-                pm = *inp;
-                inp++;
-                if (cnt > cols) {
-                    rest = cnt - cols;
-                    cnt = cols;
-                }
-                for (k = 0; k < cnt; k++) {
-                    *dst = pm;
-                    dst += 3;
-                }
-                cols -= cnt;
-            } else {
-                *dst = pm;
-                dst += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
         dst = (ln + this->Scale(nrow));
         cols = this->GetWidth();
-        if (rest > 0) {
-            for (k = 0; k < rest; k++) {
-                *dst = pm;
-                dst += 3;
-            }
-            cols -= rest;
-            rest = 0;
-        }
-        while (cols > 0) {
-            pm = *inp;
-            inp++;
-            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                cnt = pm & BYTE_RUN_LENGTH_MASK;
-                pm = *inp;
-                inp++;
-                if (cnt > cols) {
-                    rest = cnt - cols;
-                    cnt = cols;
-                }
-                for (k = 0; k < cnt; k++) {
-                    *dst = pm;
-                    dst += 3;
-                }
-                cols -= cnt;
-            } else {
-                *dst = pm;
-                dst += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
     }
     Unlock();
     return 1;

@@ -16,6 +16,8 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/MapCellInline.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -72,18 +74,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.x = px;
                 pt.y = py;
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                    CWwdSpriteObject* set = m_world->m_childGroup->CreateSprite(
-                        0,
-                        px,
-                        py,
-                        SORTKEY_ACTOR_BEHIND,
-                        "Particlez",
-                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                    );
-                    if (set != NULL) {
-                        set->SetImageSetByName("LEVEL_DIRT");
-                        set->SetAnimationByName("GAME_DIRT", 0);
-                    }
+                    CreateParticlez(m_world->m_childGroup, px, py, "LEVEL_DIRT", "GAME_DIRT");
                 }
                 return 1;
             }
@@ -113,9 +104,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 i32 recovered = m_world->m_level->m_mainPlane->m_tileHandles
                                     [m_world->m_level->m_mainPlane->m_tileRowOffsets[tileY] + tileX]
                                 - 1;
-                CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(dst, tileX, tileY, recovered);
-                g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, recovered);
+                SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, recovered);
                 return 1;
             }
             return 0;
@@ -158,13 +147,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     found->ApplyMove(cellType);
                     state->m_tileTriggers->RemoveIdleLogic(found);
                 } else if (cellType == TILEKIND_GAUNTLET_ROCK_A) {
-                    CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                    SET_WORKER_HOST_CELL(dst, tileX, tileY, 0x5a);
-                    g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, 0x5a);
+                    SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, 0x5a);
                 } else {
-                    CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                    SET_WORKER_HOST_CELL(dst, tileX, tileY, 0x5b);
-                    g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, 0x5b);
+                    SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, 0x5b);
                 }
             } else if (cellType == TILEKIND_GIANT_ROCK) {
                 CGiantRockLogic* rock = state->m_tileTriggers->ScanNeighborhood(tileX, tileY);
@@ -257,39 +242,28 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = topY * 0x20 + 0x10;
-                            CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
-                                0,
+                            CreateLightFx(
+                                m_world->m_childGroup,
                                 fxX,
                                 fxY,
                                 1000000,
-                                "LightFx",
-                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                                "GAME_LIGHTING_HIDDENITEM",
+                                "GAME_HIDDENITEM",
+                                2,
+                                true
                             );
-                            light->m_logicRecord->m_dispatch(light);
-                            static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
-                        AddrWord<char> objectKey;
-                        objectKey.m_word = 0;
-                        if (static_cast<u32>(scanX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(topY) < g_gameReg->m_tileGrid->m_height) {
-                            objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[topY][scanX].m_objectId;
-                        }
-                        if (objectKey.m_word != 0) {
+                        i32 objectId = CellObjectIdAt(g_gameReg->m_tileGrid, scanX, topY);
+                        if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
-                            MapLookup(
+                            MapLookupById(
                                 g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                                objectKey.m_addr,
+                                objectId,
                                 mapped
                             );
                             if (mapped == NULL) {
-                                if (static_cast<u32>(tileX) < g_gameReg->m_tileGrid->m_width
-                                    && static_cast<u32>(tileY) < g_gameReg->m_tileGrid->m_height) {
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-                                }
+                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -299,23 +273,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
                                         i32 fxY = topY * 0x20 + 0x10;
-                                        CWwdSpriteObject* light =
-                                            m_world->m_childGroup->CreateSprite(
-                                                0,
-                                                fxX,
-                                                fxY,
-                                                1000000,
-                                                "LightFx",
-                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                                            );
-                                        light->m_logicRecord->m_dispatch(light);
-                                        static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                            ->Activate(
-                                                "GAME_LIGHTING_HIDDENITEM",
-                                                "GAME_HIDDENITEM",
-                                                2,
-                                                true
-                                            );
+                                        CreateLightFx(
+                                            m_world->m_childGroup,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "GAME_LIGHTING_HIDDENITEM",
+                                            "GAME_HIDDENITEM",
+                                            2,
+                                            true
+                                        );
                                         CWwdSpriteObject* peek =
                                             m_world->m_childGroup->CreateSprite(
                                                 0,
@@ -337,38 +304,28 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = bottomY * 0x20 + 0x10;
-                            CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
-                                0,
+                            CreateLightFx(
+                                m_world->m_childGroup,
                                 fxX,
                                 fxY,
                                 1000000,
-                                "LightFx",
-                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                                "GAME_LIGHTING_HIDDENITEM",
+                                "GAME_HIDDENITEM",
+                                2,
+                                true
                             );
-                            light->m_logicRecord->m_dispatch(light);
-                            static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
-                        objectKey.m_word = 0;
-                        if (static_cast<u32>(scanX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(bottomY) < g_gameReg->m_tileGrid->m_height) {
-                            objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[bottomY][scanX].m_objectId;
-                        }
-                        if (objectKey.m_word != 0) {
+                        objectId = CellObjectIdAt(g_gameReg->m_tileGrid, scanX, bottomY);
+                        if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
-                            MapLookup(
+                            MapLookupById(
                                 g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                                objectKey.m_addr,
+                                objectId,
                                 mapped
                             );
                             if (mapped == NULL) {
-                                if (static_cast<u32>(tileX) < g_gameReg->m_tileGrid->m_width
-                                    && static_cast<u32>(tileY) < g_gameReg->m_tileGrid->m_height) {
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-                                }
+                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -378,23 +335,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
                                         i32 fxY = bottomY * 0x20 + 0x10;
-                                        CWwdSpriteObject* light =
-                                            m_world->m_childGroup->CreateSprite(
-                                                0,
-                                                fxX,
-                                                fxY,
-                                                1000000,
-                                                "LightFx",
-                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                                            );
-                                        light->m_logicRecord->m_dispatch(light);
-                                        static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                            ->Activate(
-                                                "GAME_LIGHTING_HIDDENITEM",
-                                                "GAME_HIDDENITEM",
-                                                2,
-                                                true
-                                            );
+                                        CreateLightFx(
+                                            m_world->m_childGroup,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "GAME_LIGHTING_HIDDENITEM",
+                                            "GAME_HIDDENITEM",
+                                            2,
+                                            true
+                                        );
                                         CWwdSpriteObject* peek =
                                             m_world->m_childGroup->CreateSprite(
                                                 0,
@@ -420,39 +370,28 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             && g_curPlayer == playerIndex) {
                             i32 fxX = leftX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
-                            CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
-                                0,
+                            CreateLightFx(
+                                m_world->m_childGroup,
                                 fxX,
                                 fxY,
                                 900000,
-                                "LightFx",
-                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                                "GAME_LIGHTING_HIDDENITEM",
+                                "GAME_HIDDENITEM",
+                                2,
+                                true
                             );
-                            light->m_logicRecord->m_dispatch(light);
-                            static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
-                        AddrWord<char> objectKey;
-                        objectKey.m_word = 0;
-                        if (static_cast<u32>(leftX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(scanY) < g_gameReg->m_tileGrid->m_height) {
-                            objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[scanY][leftX].m_objectId;
-                        }
-                        if (objectKey.m_word != 0) {
+                        i32 objectId = CellObjectIdAt(g_gameReg->m_tileGrid, leftX, scanY);
+                        if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
-                            MapLookup(
+                            MapLookupById(
                                 g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                                objectKey.m_addr,
+                                objectId,
                                 mapped
                             );
                             if (mapped == NULL) {
-                                if (static_cast<u32>(tileX) < g_gameReg->m_tileGrid->m_width
-                                    && static_cast<u32>(tileY) < g_gameReg->m_tileGrid->m_height) {
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-                                }
+                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -462,23 +401,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = leftX * 0x20 + 0x10;
                                         i32 fxY = scanY * 0x20 + 0x10;
-                                        CWwdSpriteObject* light =
-                                            m_world->m_childGroup->CreateSprite(
-                                                0,
-                                                fxX,
-                                                fxY,
-                                                1000000,
-                                                "LightFx",
-                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                                            );
-                                        light->m_logicRecord->m_dispatch(light);
-                                        static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                            ->Activate(
-                                                "GAME_LIGHTING_HIDDENITEM",
-                                                "GAME_HIDDENITEM",
-                                                2,
-                                                true
-                                            );
+                                        CreateLightFx(
+                                            m_world->m_childGroup,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "GAME_LIGHTING_HIDDENITEM",
+                                            "GAME_HIDDENITEM",
+                                            2,
+                                            true
+                                        );
                                         CWwdSpriteObject* peek =
                                             m_world->m_childGroup->CreateSprite(
                                                 0,
@@ -500,38 +432,28 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             && playerIndex == g_curPlayer) {
                             i32 fxX = rightX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
-                            CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
-                                0,
+                            CreateLightFx(
+                                m_world->m_childGroup,
                                 fxX,
                                 fxY,
                                 1000000,
-                                "LightFx",
-                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                                "GAME_LIGHTING_HIDDENITEM",
+                                "GAME_HIDDENITEM",
+                                2,
+                                true
                             );
-                            light->m_logicRecord->m_dispatch(light);
-                            static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
-                        objectKey.m_word = 0;
-                        if (static_cast<u32>(rightX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(scanY) < g_gameReg->m_tileGrid->m_height) {
-                            objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[scanY][rightX].m_objectId;
-                        }
-                        if (objectKey.m_word != 0) {
+                        objectId = CellObjectIdAt(g_gameReg->m_tileGrid, rightX, scanY);
+                        if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
-                            MapLookup(
+                            MapLookupById(
                                 g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                                objectKey.m_addr,
+                                objectId,
                                 mapped
                             );
                             if (mapped == NULL) {
-                                if (static_cast<u32>(tileX) < g_gameReg->m_tileGrid->m_width
-                                    && static_cast<u32>(tileY) < g_gameReg->m_tileGrid->m_height) {
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-                                }
+                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -541,23 +463,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = rightX * 0x20 + 0x10;
                                         i32 fxY = scanY * 0x20 + 0x10;
-                                        CWwdSpriteObject* light =
-                                            m_world->m_childGroup->CreateSprite(
-                                                0,
-                                                fxX,
-                                                fxY,
-                                                1000000,
-                                                "LightFx",
-                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                                            );
-                                        light->m_logicRecord->m_dispatch(light);
-                                        static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                            ->Activate(
-                                                "GAME_LIGHTING_HIDDENITEM",
-                                                "GAME_HIDDENITEM",
-                                                2,
-                                                true
-                                            );
+                                        CreateLightFx(
+                                            m_world->m_childGroup,
+                                            fxX,
+                                            fxY,
+                                            1000000,
+                                            "GAME_LIGHTING_HIDDENITEM",
+                                            "GAME_HIDDENITEM",
+                                            2,
+                                            true
+                                        );
                                         CWwdSpriteObject* peek =
                                             m_world->m_childGroup->CreateSprite(
                                                 0,

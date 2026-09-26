@@ -3,11 +3,14 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/LogicRecord.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 class CLightFx : public CUserLogic, public CWapX {
 public:
@@ -39,5 +42,22 @@ public:
     i32 m_shadeTableIndex;
     b32 m_deleteWhenComplete;
 };
+
+inline void CreateLightFx(
+    CDDrawChildGroup* group,
+    i32 x,
+    i32 y,
+    i32 sortKey,
+    const char* imageSetName,
+    const char* animationName,
+    i32 shadeTableIndex,
+    b32 deleteWhenComplete
+) {
+    CWwdSpriteObject* sprite =
+        group->CreateSprite(0, x, y, sortKey, "LightFx", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
+    sprite->m_logicRecord->m_dispatch(sprite);
+    static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic)
+        ->Activate(imageSetName, animationName, shadeTableIndex, deleteWhenComplete);
+}
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

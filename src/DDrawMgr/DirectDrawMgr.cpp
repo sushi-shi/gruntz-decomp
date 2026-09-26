@@ -12,6 +12,7 @@
 #include <Dsndmgr/SoundBankLoad.h>
 #include <Image/Image.h>
 #include <Io/FileStream.h>
+#include <SafeDelete.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -436,14 +437,8 @@ void CDDrawDeviceManager::Clear(i32 restoreDisplayMode) {
     ClearSurfaces();
     ClearPalettes();
     g_directDrawMgr = NULL;
-    if (m_device) {
-        m_device->Release();
-        m_device = NULL;
-    }
-    if (m_directDraw1) {
-        m_directDraw1->Release();
-        m_directDraw1 = NULL;
-    }
+    SAFE_RELEASE(m_device);
+    SAFE_RELEASE(m_directDraw1);
     m_bankSwitchedCaps = 0;
 }
 

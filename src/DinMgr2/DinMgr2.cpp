@@ -2,6 +2,7 @@
 
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputDeviceGroup.h>
+#include <SafeDelete.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -64,14 +65,8 @@ void DirectInputMgr2::Shutdown() {
     if (m_directInput == NULL) {
         return;
     }
-    if (m_mouse != NULL) {
-        delete m_mouse;
-        m_mouse = NULL;
-    }
-    if (m_keyboard != NULL) {
-        delete m_keyboard;
-        m_keyboard = NULL;
-    }
+    SAFE_DELETE(m_mouse);
+    SAFE_DELETE(m_keyboard);
     i32 n = m_joysticks.GetSize();
     for (i32 i = 0; i < n; i++) {
         CJoystickDevice* d = GetJoystick(i);

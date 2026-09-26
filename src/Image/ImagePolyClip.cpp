@@ -675,8 +675,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         }
     }
 
-    src->m_ddSurface->Unlock(NULL);
-    dst->m_ddSurface->Unlock(NULL);
+    src->Unlock();
+    dst->Unlock();
     return 1;
 }
 
@@ -750,7 +750,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             }
         }
     }
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
     return 1;
 }
 

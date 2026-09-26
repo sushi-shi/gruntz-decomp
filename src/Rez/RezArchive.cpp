@@ -14,6 +14,7 @@
 #include <Rez/RezFile.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezTypeTag.h>
+#include <SafeDelete.h>
 #include <Utils/PackedReadWrite.h>
 
 #include <io.h>
@@ -182,10 +183,7 @@ u8* CRezItm::Load() {
 
 RVA(0x001399d0, 0x21)
 i32 CRezItm::UnLoad() {
-    if (m_pData != NULL) {
-        delete[] m_pData;
-        m_pData = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_pData);
     return 1;
 }
 
@@ -929,14 +927,8 @@ CRezMgr::~CRezMgr() {
         delete rootDirectory;
         m_pRootDir = NULL;
     }
-    if (m_sFileName) {
-        delete[] m_sFileName;
-        m_sFileName = NULL;
-    }
-    if (m_sDirSeparators) {
-        delete[] m_sDirSeparators;
-        m_sDirSeparators = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_sFileName);
+    SAFE_DELETE_ARRAY(m_sDirSeparators);
     CRezItmChunk* block = m_lstRezItmChunks.GetFirst();
     m_bFileOpened = false;
     m_pPrimaryRezFile = NULL;
@@ -1253,14 +1245,8 @@ i32 CRezMgr::Close(b32 unusedFinal) {
         m_nNumRezFiles--;
         delete storage;
     }
-    if (m_pRootDir) {
-        delete m_pRootDir;
-        m_pRootDir = NULL;
-    }
-    if (m_sFileName) {
-        delete[] m_sFileName;
-        m_sFileName = NULL;
-    }
+    SAFE_DELETE(m_pRootDir);
+    SAFE_DELETE_ARRAY(m_sFileName);
     m_bFileOpened = false;
     return result;
 }

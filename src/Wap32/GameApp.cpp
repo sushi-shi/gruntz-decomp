@@ -3,6 +3,7 @@
 #include <Wap32/GameApp.h>
 
 #include <Gruntz/GruntzCommandId.h>
+#include <SafeDelete.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Wap32.h>
 
@@ -164,10 +165,7 @@ void CGameApp::CloseResources() {
         m_hAccel = NULL;
     }
     FREE_GAME_MANAGER
-    if (m_gameWnd) {
-        delete m_gameWnd;
-        m_gameWnd = NULL;
-    }
+    SAFE_DELETE(m_gameWnd);
 }
 
 RVA(0x0013d910, 0x9f)

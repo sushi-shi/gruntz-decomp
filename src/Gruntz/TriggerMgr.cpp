@@ -39,6 +39,7 @@
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteStateFlags.h>
@@ -57,6 +58,7 @@
 #include <Gruntz/Warlord.h>
 #include <Io/FileMem.h>
 #include <RectMacros.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
@@ -730,24 +732,22 @@ i32 CTriggerMgr::HandleTargetSelection(
         targetKind = (hit != NULL) ? TARGET_SELECTION_GRUNT : TARGET_SELECTION_POINT;
     }
 
-    CGameObject* sprite;
     switch (targetKind) {
         case TARGET_SELECTION_POINT:
             this->EnqueueSelectedMove(true, targetX, targetY);
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                m_world->m_childGroup,
                 targetX,
                 targetY,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_TARGETCURSOR",
+                "GAME_TARGETCURSOR",
+                2,
+                true
             );
-            sprite->m_logicRecord->m_dispatch(sprite);
-            (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 2, true);
             return 1;
         case TARGET_SELECTION_GRUNT:
             if (hit != NULL) {
@@ -771,17 +771,16 @@ i32 CTriggerMgr::HandleTargetSelection(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                m_world->m_childGroup,
                 targetX,
                 targetY,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_TARGETCURSOR",
+                "GAME_TARGETCURSOR",
+                1,
+                true
             );
-            sprite->m_logicRecord->m_dispatch(sprite);
-            (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 1, true);
             return 1;
         case TARGET_SELECTION_TOY:
             if (hit != NULL) {
@@ -820,17 +819,16 @@ i32 CTriggerMgr::HandleTargetSelection(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                m_world->m_childGroup,
                 targetX,
                 targetY,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_TARGETCURSOR",
+                "GAME_TARGETCURSOR",
+                3,
+                true
             );
-            sprite->m_logicRecord->m_dispatch(sprite);
-            (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 3, true);
             return 1;
         default:
             return 1;
@@ -966,10 +964,7 @@ void CTriggerMgr::ResetSpawnState() {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     CStatusBarMgr* st = world->m_statusBar;
-    if (st->m_retabNotify != NULL) {
-        delete st->m_retabNotify;
-        st->m_retabNotify = NULL;
-    }
+    SAFE_DELETE(st->m_retabNotify);
     world->m_statusBar->m_hlBusy = false;
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);
@@ -1682,23 +1677,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             spr->SetImageSetByName("LEVEL_ROCKBREAK");
             spr->SetAnimationByName("LEVEL_ROCKBREAK", 0);
 
-            SoundCueRegistry* registry = m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-
-                SoundCue* found = registry->FindCue("LEVEL_ROCKBREAK");
-                SoundCue* cue = found;
-                if (cue != NULL) {
-                    b32 soundEnabled = g_soundEnabled;
-                    i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != false) {
-                        u32 cueTimeMs = g_soundCueTimeMs;
-                        if (cueTimeMs - cue->m_lastPlayTimeMs >= cue->m_replayDelayMs) {
-                            cue->m_lastPlayTimeMs = cueTimeMs;
-                            cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
-            }
+            PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "LEVEL_ROCKBREAK");
         }
     }
     return 1;
@@ -1797,17 +1776,16 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         grunt->m_health = HEALTH_FULL;
                         grunt->CreateHealthSprite();
                         ArmGruntCombatTimeout(grunt);
-                        CGameObject* flashObject = g_gameReg->m_world->m_childGroup->CreateSprite(
-                            0,
+                        CreateLightFx(
+                            g_gameReg->m_world->m_childGroup,
                             gruntX,
                             gruntY,
                             SORTKEY_OVERLAY,
-                            "LightFx",
-                            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            "GAME_LIGHTING_FLASH",
+                            "GAME_FLASH",
+                            2,
+                            true
                         );
-                        flashObject->m_logicRecord->m_dispatch(flashObject);
-                        (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
-                            ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, true);
                         break;
                     }
                     case GRUNT_AREA_EFFECT_GIVE_TOY: {
@@ -1820,17 +1798,16 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                             toy = PICKUP_YOYO;
                         }
                         grunt->LoadGruntTypeTable(toy, 1, 0, 0);
-                        CGameObject* flashObject = g_gameReg->m_world->m_childGroup->CreateSprite(
-                            0,
+                        CreateLightFx(
+                            g_gameReg->m_world->m_childGroup,
                             gruntX,
                             gruntY,
                             SORTKEY_OVERLAY,
-                            "LightFx",
-                            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            "GAME_LIGHTING_FLASH",
+                            "GAME_FLASH",
+                            7,
+                            true
                         );
-                        flashObject->m_logicRecord->m_dispatch(flashObject);
-                        (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
-                            ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, true);
                         break;
                     }
                     case GRUNT_AREA_EFFECT_FREEZE: {
@@ -1839,18 +1816,16 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         }
                         grunt->StepArrivalCommit();
                         CGameObject* object = grunt->m_object;
-                        CWwdSpriteObject* flashObject =
-                            g_gameReg->m_world->m_childGroup->CreateSprite(
-                                0,
-                                object->m_screenX,
-                                object->m_screenY,
-                                SORTKEY_OVERLAY,
-                                "LightFx",
-                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                            );
-                        flashObject->m_logicRecord->m_dispatch(flashObject);
-                        (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
-                            ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, true);
+                        CreateLightFx(
+                            g_gameReg->m_world->m_childGroup,
+                            object->m_screenX,
+                            object->m_screenY,
+                            SORTKEY_OVERLAY,
+                            "GAME_LIGHTING_FLASH",
+                            "GAME_FLASH",
+                            9,
+                            true
+                        );
                         break;
                     }
                 }
@@ -1953,17 +1928,16 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             g->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
 
             m_baseList.RemoveAt(cur);
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                8,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, true);
         }
     }
     return 1;
@@ -2073,19 +2047,7 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                     MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                 m_cueTimer.m_window = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_cueTimer.m_base = g_frameTime;
-                if (m_world->m_soundRegistry->m_silentMode == false) {
-                    SoundCue* cue =
-                        MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
-                    if (cue != NULL) {
-                        i32 volumePercent = g_soundVolumePercent;
-                        if (g_soundEnabled != false
-                            && static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
-                                   >= static_cast<u32>(cue->m_replayDelayMs)) {
-                            cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
+                PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_FINISHLEVEL");
                 m_phase = FINISH_STATE_VICTORY;
                 m_groupFlag = false;
                 m_finishReasonFrame = state;

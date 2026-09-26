@@ -40,6 +40,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
@@ -76,18 +77,9 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
 RVA(0x00158ac0, 0x44)
 void CDDrawSubMgrPages::Unload() {
-    if (m_frontSurface != NULL) {
-        delete m_frontSurface;
-        m_frontSurface = NULL;
-    }
-    if (m_backPair != NULL) {
-        delete m_backPair;
-        m_backPair = NULL;
-    }
-    if (m_overlayPair != NULL) {
-        delete m_overlayPair;
-        m_overlayPair = NULL;
-    }
+    SAFE_DELETE(m_frontSurface);
+    SAFE_DELETE(m_backPair);
+    SAFE_DELETE(m_overlayPair);
 }
 
 // @dead-code

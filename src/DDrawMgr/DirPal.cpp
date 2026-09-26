@@ -9,6 +9,7 @@
 #include <DDrawMgr/PixelShift.h>
 #include <Image/FileImageRecords.h>
 #include <Io/FileStream.h>
+#include <SafeDelete.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -61,18 +62,9 @@ void CDDPalette::Destroy() {
     if (m_palette != NULL) {
         m_palette = NULL;
     }
-    if (m_entries != NULL) {
-        delete[] m_entries;
-        m_entries = NULL;
-    }
-    if (m_readbackEntries != NULL) {
-        delete[] m_readbackEntries;
-        m_readbackEntries = NULL;
-    }
-    if (m_sourcePalette != NULL) {
-        delete[] m_sourcePalette;
-        m_sourcePalette = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_entries);
+    SAFE_DELETE_ARRAY(m_readbackEntries);
+    SAFE_DELETE_ARRAY(m_sourcePalette);
     m_active = false;
 }
 

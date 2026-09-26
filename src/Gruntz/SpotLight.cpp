@@ -139,8 +139,7 @@ i32 CSpotLight::Tick() {
         if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
             && !(m_storyMode != false && m_targetPlayerIndex != 0)) {
             SET_ANIMATION_ACT("B");
-            m_object->m_screenX = tgt->m_object->m_screenX;
-            m_object->m_screenY = tgt->m_object->m_screenY;
+            SET_SCREEN_POS(m_object, tgt->m_object->m_screenX, tgt->m_object->m_screenY);
             if (m_object->m_score == 1) {
                 g_gameReg->m_triggerMgr
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);
@@ -189,8 +188,7 @@ i32 CSpotLight::Tick() {
     m_position.m_x = m_center.m_x + rotatedX;
     m_position.m_y = m_center.m_y + rotatedY;
     m_angle = dAngle + m_angle;
-    m_object->m_screenX = static_cast<i32>(m_position.m_x);
-    m_object->m_screenY = static_cast<i32>(m_position.m_y);
+    SET_SCREEN_POS(m_object, static_cast<i32>(m_position.m_x), static_cast<i32>(m_position.m_y));
     return 0;
 }
 
