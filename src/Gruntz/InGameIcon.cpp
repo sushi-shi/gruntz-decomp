@@ -544,11 +544,7 @@ i32 CInGameIcon::PeekCycle() {
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 cell = grid->CellFlagsAt(tileX, tileY);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
-            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-                grid->m_rows[tileY][tileX].m_objectId = 0;
-                grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-            }
+            ReleaseCellObject(grid, tileX, tileY);
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
         return 0;
@@ -702,13 +698,7 @@ i32 CInGameIcon::Reposition() {
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
-        i32 cellVal;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            cellVal = grid->m_rowInts[tileY][tileX * 7 + 2];
-        } else {
-            cellVal = 0;
-        }
+        i32 cellVal = CellObjectIdAt(grid, tileX, tileY);
         if (cellVal != 0) {
 
             CGameObject* found = NULL;
@@ -723,11 +713,7 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[tileY][tileX * 7 + 2] = 0;
-            grid->m_rowInts[tileY][tileX * 7] &= ~0x40000;
-        }
+        ReleaseCellObject(grid, tileX, tileY);
         obj = m_object;
         grid = g_gameReg->m_tileGrid;
         i32 tileX2 = obj->m_screenX >> TILE_SHIFT_PX;

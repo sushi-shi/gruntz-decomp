@@ -1441,13 +1441,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
     }
     if (found == NULL) {
         grid = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
-            ((grid->m_rowInts[ty]))[tx * 7 + 2] = 0;
-            i32 flags = ((grid->m_rowInts[ty]))[tx * 7];
-            flags &= ~0x40000;
-            ((grid->m_rowInts[ty]))[tx * 7] = flags;
-        }
+        ReleaseCellObject(grid, tx, ty);
         return 0;
     }
     CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_logicRecord->m_userLogic);
