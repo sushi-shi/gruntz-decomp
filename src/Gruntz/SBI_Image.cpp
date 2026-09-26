@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>

@@ -2,6 +2,7 @@
 
 #include <Gruntz/GruntPowerupSprite.h>
 
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>

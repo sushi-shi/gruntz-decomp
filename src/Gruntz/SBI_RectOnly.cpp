@@ -13,6 +13,7 @@
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>

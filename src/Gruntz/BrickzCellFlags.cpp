@@ -2,6 +2,7 @@
 
 #include <Mfc.h>
 
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BrickzNeighborMacros.h>
 #include <Gruntz/GameLevel.h>

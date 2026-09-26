@@ -6,6 +6,7 @@
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/StreamVoice.h>
+#include <Globals.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>

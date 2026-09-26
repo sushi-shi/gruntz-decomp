@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BridgeTileId.h>

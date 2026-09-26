@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>

@@ -3,6 +3,7 @@
 #include <Gruntz/SecretTeleporterTrigger.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>

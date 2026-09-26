@@ -9,6 +9,7 @@
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <Globals.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/BattlezGruntInline.h>

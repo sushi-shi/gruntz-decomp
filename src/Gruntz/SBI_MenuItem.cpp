@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
+#include <Globals.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
