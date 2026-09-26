@@ -447,11 +447,9 @@ RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (enable != false) {
         m_wingzEnabled = true;
-        m_wingzTiming.m_intervalLo =
-            static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias));
-        m_wingzTiming.m_intervalHi = 0;
-        m_wingzTiming.m_startLo = static_cast<i32>(g_frameTime);
-        m_wingzTiming.m_startHi = 0;
+        m_wingzTiming.Start(
+            static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias))
+        );
         CreateWingzTimeSprite();
 
         m_cells[0].IdleName() = s_nwItem;
@@ -689,8 +687,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             return 0;
         }
         SwitchAnimationByName(s_gruntzDeathzSparkle, 0);
-        m_idleDelayTiming.m_interval = g_buteMgr.GetDword("Spellz", s_freezeDelay, 0x2710);
-        m_idleDelayTiming.m_start = g_frameTime;
+        m_idleDelayTiming.Start(g_buteMgr.GetDword("Spellz", s_freezeDelay, 0x2710));
         m_freezeDelayDone = false;
     }
     if (m_freezeDelayDone == false) {

@@ -1897,10 +1897,7 @@ void CGrunt::StepBehavior(char*) {
             if (flash < 0x1e) {
                 flash = 0x1e;
             }
-            m_flashTiming.m_intervalLo = flash;
-            m_flashTiming.m_intervalHi = 0;
-            m_flashTiming.m_startLo = static_cast<i32>(g_frameTime);
-            m_flashTiming.m_startHi = 0;
+            m_flashTiming.Start(flash);
         }
     }
 
@@ -2106,10 +2103,7 @@ void CGrunt::StepBehavior(char*) {
                 }
             }
             PLAY_VOICE_IN_VIEW(0x348);
-            m_entranceTiming.m_intervalLo = 0x3e8;
-            m_entranceTiming.m_intervalHi = 0;
-            m_entranceTiming.m_startLo = static_cast<i32>(g_frameTime);
-            m_entranceTiming.m_startHi = 0;
+            m_entranceTiming.Start(0x3e8);
         } else if (flags & 0x2000000) {
             if (m_entranceReason == PICKUP_TOOB) {
                 bool nameDiffers = IsNotAnimationAct("N");
@@ -2306,11 +2300,7 @@ kindDispatch:
                 m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 return;
             }
-            m_conversionTiming.m_intervalLo =
-                static_cast<i32>(g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4));
-            m_conversionTiming.m_intervalHi = 0;
-            m_conversionTiming.m_startLo = static_cast<i32>(g_frameTime);
-            m_conversionTiming.m_startHi = 0;
+            m_conversionTiming.Start(g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4));
             return;
         }
         if (m_gruntKind == GRUNT_INVULNERABLE) {

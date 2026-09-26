@@ -508,10 +508,7 @@ public:
         m_arrivalRerollTiming.m_intervalLo = 0;
         m_arrivalRerollTiming.m_startHi = 0;
         m_arrivalRerollTiming.m_intervalHi = 0;
-        m_arrivalRerollTiming.m_intervalLo = rand() % 30000 + 30000;
-        m_arrivalRerollTiming.m_intervalHi = 0;
-        m_arrivalRerollTiming.m_startLo = static_cast<i32>(g_frameTime);
-        m_arrivalRerollTiming.m_startHi = 0;
+        m_arrivalRerollTiming.Start(rand() % 30000 + 30000);
     }
     i32 ResolveEntranceArrival();
     void ClearAllSprites();

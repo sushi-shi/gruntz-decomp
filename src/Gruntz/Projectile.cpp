@@ -512,12 +512,11 @@ i32 CBoomerang::LoadProjectileSprites(
     CGrunt* g =
         g_gameReg->m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * sourcePlayerIndex + sourceUnitIndex];
     if (g != NULL) {
-        g->m_holdTiming.m_intervalLo = static_cast<i32>(
-            (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
+        g->m_holdTiming.Start(
+            static_cast<i32>(
+                (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
+            )
         );
-        g->m_holdTiming.m_intervalHi = 0;
-        g->m_holdTiming.m_startLo = g_frameTime;
-        g->m_holdTiming.m_startHi = 0;
         if (g->CoordCount() != 0) {
             RECYCLE_GRUNT_COORDS(g)
         }
@@ -863,13 +862,11 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     m_value = m_wwdObject->m_animationCursor.m_animation;
     if (m_object->m_damage > 0) {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
-        m_timing.m_interval = static_cast<u32>(m_object->m_damage);
-        m_timing.m_start = static_cast<u32>(g_frameTime);
+        m_timing.Start(m_object->m_damage);
         m_fastPhase = true;
     } else {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBSLOW", 0);
-        m_timing.m_interval = g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0);
-        m_timing.m_start = static_cast<u32>(g_frameTime);
+        m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0));
         m_fastPhase = false;
     }
     i32 cx = m_object->m_screenX >> TILE_SHIFT_PX;

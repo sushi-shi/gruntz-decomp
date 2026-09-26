@@ -162,10 +162,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 return 1;
             }
             ResetEntranceAnimation(1, 1, 0);
-            m_arrivalRerollTiming.m_intervalLo = rand() % 0x7530 + 0x7530;
-            m_arrivalRerollTiming.m_intervalHi = 0;
-            m_arrivalRerollTiming.m_startLo = static_cast<i32>(g_frameTime);
-            m_arrivalRerollTiming.m_startHi = 0;
+            m_arrivalRerollTiming.Start(rand() % 0x7530 + 0x7530);
             m_dwell = 0;
             return 1;
 

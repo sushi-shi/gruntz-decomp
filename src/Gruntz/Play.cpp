@@ -1452,10 +1452,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_paused = false;
         self->m_playerCommandPending = false;
         self->m_winLoseBanner = false;
-        self->m_cueTiming.m_intervalLo = 0x1f4;
-        self->m_cueTiming.m_intervalHi = 0;
-        self->m_cueTiming.m_startLo = g_frameTime;
-        self->m_cueTiming.m_startHi = 0;
+        self->m_cueTiming.Start(0x1f4);
         self->m_cueToggle = true;
         self->m_cueText = "";
         self->m_lastCueId = 0;
@@ -5529,10 +5526,7 @@ RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char sequenceName[0x40];
     if (m_mgr->m_musicEnabled != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        m_ambientTiming.m_intervalLo = AMBIENT_INTRO_INTERVAL_MS;
-        m_ambientTiming.m_intervalHi = 0;
-        m_ambientTiming.m_startLo = g_frameTime;
-        m_ambientTiming.m_startHi = 0;
+        m_ambientTiming.Start(AMBIENT_INTRO_INTERVAL_MS);
         wsprintfA(sequenceName, "INTRO%d", GetAmbientId());
         if (g_gameReg->m_musicEnabled != false) {
             m_mgr->m_midi->PlaySequence(sequenceName, false);

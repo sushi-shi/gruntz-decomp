@@ -206,9 +206,9 @@ i32 CObjectDropper::Update() {
                             );
                             m_lastDropPlayerIndex = playerIndex;
                             m_lastDropUnitIndex = unitIndex;
-                            m_dropTiming.m_interval =
-                                g_buteMgr.GetDword("Hazardz", "ObjectDropperDelay", 1000);
-                            m_dropTiming.m_start = g_frameTime;
+                            m_dropTiming.Start(
+                                g_buteMgr.GetDword("Hazardz", "ObjectDropperDelay", 1000)
+                            );
                         }
                     }
                 }

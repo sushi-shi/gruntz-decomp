@@ -419,8 +419,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             return 0;
         } else {
             DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
-            m_toyTiming.m_interval = static_cast<u32>(tt);
-            m_toyTiming.m_start = static_cast<u32>(g_frameTime);
+            m_toyTiming.Start(tt);
             m_toyTime = 0x64;
             CreateToyTimeSprite();
         }
@@ -441,8 +440,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         SetImageSetByName(nm);
 
         DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
-        m_idleDelayTiming.m_interval = tt >> 1;
-        m_idleDelayTiming.m_start = g_frameTime;
+        m_idleDelayTiming.Start(tt >> 1);
         return 0;
     }
 
@@ -620,11 +618,9 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
     if (ANIMATION_ACT_DIFFERS("A") && chooseIdleVariant == 0) {
 
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
-        m_idleWindowTiming.m_interval = static_cast<u32>(0x3a98);
-        m_idleWindowTiming.m_start = g_frameTime;
+        m_idleWindowTiming.Start(0x3a98);
         i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
-        m_idleDelayTiming.m_interval = static_cast<u32>(0x7530 + GetRandom(0, d));
-        m_idleDelayTiming.m_start = g_frameTime;
+        m_idleDelayTiming.Start(0x7530 + GetRandom(0, d));
         applied = 1;
     } else if (AT(m_poseIdle, GRUNT_IDLE2) != NULL) {
         if (chooseIdleVariant != 0) {
@@ -662,8 +658,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
                 {
                     i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
                     applied = 1;
-                    m_idleDelayTiming.m_interval = static_cast<u32>(GetRandom(0x4e20, d));
-                    m_idleDelayTiming.m_start = g_frameTime;
+                    m_idleDelayTiming.Start(GetRandom(0x4e20, d));
                 }
             }
         }
@@ -800,10 +795,7 @@ i32 CGrunt::StepEntranceReinit() {
         return 0;
     }
 
-    m_arrivalVoiceTiming.m_intervalLo = 0x7530;
-    m_arrivalVoiceTiming.m_intervalHi = 0;
-    m_arrivalVoiceTiming.m_startLo = static_cast<i32>(g_frameTime);
-    m_arrivalVoiceTiming.m_startHi = 0;
+    m_arrivalVoiceTiming.Start(0x7530);
     m_neighborScanEnabled = false;
 
     eq = ANIMATION_ACT_EQUALS("I");
