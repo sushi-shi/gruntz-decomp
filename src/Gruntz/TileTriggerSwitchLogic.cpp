@@ -879,13 +879,13 @@ i32 CTileSecretTriggerLogic::Tick() {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x451);
         return 0;
     }
-    i32 idx = m_tileY;
     CGruntzMgr* mgr = g_gameReg;
-    CDDrawWorkerHost* layer = mgr->m_world->m_level->m_mainPlane;
     i32 grp = m_tileX;
-    i32 newTok = layer->m_tileHandles[grp + layer->m_tileRowOffsets[idx]];
-    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, grp, idx, oldTok);
+    i32 idx = m_tileY;
+    i32 newTok =
+        mgr->m_world->m_level->m_mainPlane
+            ->m_tileHandles[mgr->m_world->m_level->m_mainPlane->m_tileRowOffsets[idx] + grp];
+    SET_WORKER_HOST_CELL(g_gameReg->m_world->m_level->m_mainPlane, grp, idx, oldTok);
     mgr->m_tileGrid->ComputeCellFlags(grp, idx, oldTok);
     m_tileToken = newTok;
     return 1;
