@@ -2601,56 +2601,103 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
 RVA(0x0002d800, 0x605)
 void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
-    while (g_stepRun != false) {
-
-        i32 word = m_board->m_rows[row][col].m_flags;
-        if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
-            CPtrList list(10);
-            CGameObject* lvl = unit->m_object;
-            if ((m_board)->FindPathWithEndpointOverrides(
-                    lvl->m_screenX >> TILE_SHIFT_PX,
-                    lvl->m_screenY >> TILE_SHIFT_PX,
-                    col,
-                    row,
-                    &list,
-                    1,
-                    0x4903,
-                    0
-                )
-                != 0) {
-                POSITION head = list.GetHeadPosition();
-                g_stepRun = false;
-                g_stepCol = col;
-                g_stepRow = row;
-                if (head != NULL) {
-                    POSITION n = head;
-                    while (n != NULL) {
-                        POSITION cur = n;
-                        list.GetNext(n);
-                        g_coordPool.Push(static_cast<Coord*>(list.GetAt(cur)));
+    if (g_stepRun == false) {
+        return;
+    }
+    i32 word = m_board->m_rows[row][col].m_flags;
+    if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
+        CPtrList list(10);
+        CGameObject* lvl = unit->m_object;
+        if ((m_board)->FindPathWithEndpointOverrides(
+                lvl->m_screenX >> TILE_SHIFT_PX,
+                lvl->m_screenY >> TILE_SHIFT_PX,
+                col,
+                row,
+                &list,
+                1,
+                0x4903,
+                0
+            )
+            != 0) {
+            POSITION head = list.GetHeadPosition();
+            g_stepRun = false;
+            g_stepCol = col;
+            g_stepRow = row;
+            if (head != NULL) {
+                POSITION n = head;
+                while (n != NULL) {
+                    POSITION cur = n;
+                    list.GetNext(n);
+                    g_coordPool.Push(static_cast<Coord*>(list.GetAt(cur)));
+                }
+            }
+            return;
+        }
+    }
+    if (word & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
+        CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
+        if (requireUnoccupied != 0) {
+            if (cell != NULL && cell->m_playerFlags[m_playerIndex] == 0) {
+                CPtrList list2(10);
+                CGameObject* lvl = unit->m_object;
+                if ((m_board)->FindPathWithEndpointOverrides(
+                        lvl->m_screenX >> TILE_SHIFT_PX,
+                        lvl->m_screenY >> TILE_SHIFT_PX,
+                        col,
+                        row,
+                        &list2,
+                        1,
+                        0x4003,
+                        0
+                    )
+                    != 0) {
+                    POSITION head = list2.GetHeadPosition();
+                    g_stepRun = false;
+                    g_stepCol = col;
+                    g_stepRow = row;
+                    if (head != NULL) {
+                        POSITION n = head;
+                        while (n != NULL) {
+                            POSITION cur = n;
+                            list2.GetNext(n);
+                            g_coordPool.Push(static_cast<Coord*>(list2.GetAt(cur)));
+                        }
                     }
                 }
-                break;
             }
-        }
-        if (word & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
-            CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
-            if (requireUnoccupied != 0) {
-                if (cell != NULL && cell->m_playerFlags[m_playerIndex] == 0) {
-                    CPtrList list2(10);
-                    CGameObject* lvl = unit->m_object;
-                    if ((m_board)->FindPathWithEndpointOverrides(
-                            lvl->m_screenX >> TILE_SHIFT_PX,
-                            lvl->m_screenY >> TILE_SHIFT_PX,
-                            col,
-                            row,
-                            &list2,
-                            1,
-                            0x4003,
-                            0
-                        )
-                        != 0) {
-                        POSITION head = list2.GetHeadPosition();
+        } else if (cell != NULL) {
+            BrickTileId id = static_cast<BrickTileId>(cell->m_actionCode);
+            i32 occ = cell->m_playerFlags[m_playerIndex];
+            i32 special = 0;
+            if (occ == 0) {
+                special = 1;
+            }
+            if (occ != 0) {
+                if (id == BRICKTILE_RED_1 || id == BRICKTILE_RED_2_TOP || id == BRICKTILE_RED_3_TOP
+                    || id == BRICKTILE_BLACK_1 || id == BRICKTILE_BLACK_2_TOP
+                    || id == BRICKTILE_BLACK_3_TOP || id == BRICKTILE_BLUE_1
+                    || id == BRICKTILE_BLUE_2_TOP || id == BRICKTILE_BLUE_3_TOP
+                    || id == BRICKTILE_BROWN_1 || id == BRICKTILE_BROWN_2
+                    || id == BRICKTILE_BROWN_3) {
+                    special = 1;
+                }
+            }
+            if (special != 0) {
+                CPtrList list3(10);
+                CGameObject* lvl = unit->m_object;
+                if ((m_board)->FindPathWithEndpointOverrides(
+                        lvl->m_screenX >> TILE_SHIFT_PX,
+                        lvl->m_screenY >> TILE_SHIFT_PX,
+                        col,
+                        row,
+                        &list3,
+                        1,
+                        0x4003,
+                        0
+                    )
+                    != 0) {
+                    if (list3.GetCount() != 0) {
+                        POSITION head = list3.GetHeadPosition();
                         g_stepRun = false;
                         g_stepCol = col;
                         g_stepRow = row;
@@ -2658,150 +2705,100 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                             POSITION n = head;
                             while (n != NULL) {
                                 POSITION cur = n;
-                                list2.GetNext(n);
-                                g_coordPool.Push(static_cast<Coord*>(list2.GetAt(cur)));
-                            }
-                        }
-                    }
-                }
-            } else if (cell != NULL) {
-                BrickTileId id = static_cast<BrickTileId>(cell->m_actionCode);
-                i32 occ = cell->m_playerFlags[m_playerIndex];
-                i32 special = 0;
-                if (occ == 0) {
-                    special = 1;
-                }
-                if (occ != 0) {
-                    if (id == BRICKTILE_RED_1 || id == BRICKTILE_RED_2_TOP
-                        || id == BRICKTILE_RED_3_TOP || id == BRICKTILE_BLACK_1
-                        || id == BRICKTILE_BLACK_2_TOP || id == BRICKTILE_BLACK_3_TOP
-                        || id == BRICKTILE_BLUE_1 || id == BRICKTILE_BLUE_2_TOP
-                        || id == BRICKTILE_BLUE_3_TOP || id == BRICKTILE_BROWN_1
-                        || id == BRICKTILE_BROWN_2 || id == BRICKTILE_BROWN_3) {
-                        special = 1;
-                    }
-                }
-                if (special != 0) {
-                    CPtrList list3(10);
-                    CGameObject* lvl = unit->m_object;
-                    if ((m_board)->FindPathWithEndpointOverrides(
-                            lvl->m_screenX >> TILE_SHIFT_PX,
-                            lvl->m_screenY >> TILE_SHIFT_PX,
-                            col,
-                            row,
-                            &list3,
-                            1,
-                            0x4003,
-                            0
-                        )
-                        != 0) {
-                        if (list3.GetCount() != 0) {
-                            POSITION head = list3.GetHeadPosition();
-                            g_stepRun = false;
-                            g_stepCol = col;
-                            g_stepRow = row;
-                            if (head != NULL) {
-                                POSITION n = head;
-                                while (n != NULL) {
-                                    POSITION cur = n;
-                                    list3.GetNext(n);
-                                    g_coordPool.Push(static_cast<Coord*>(list3.GetAt(cur)));
-                                }
+                                list3.GetNext(n);
+                                g_coordPool.Push(static_cast<Coord*>(list3.GetAt(cur)));
                             }
                         }
                     }
                 }
             }
         }
+    }
 
-        m_board->m_rows[row][col].m_flags |= IDX(CELL_FLAG_CLAIM_VISITED);
-        i32 cm = col - 1;
-        i32 cp = col + 1;
-        i32 rm = row - 1;
-        i32 rp = row + 1;
-        CMapMgr* b;
-        i32 nw;
+    m_board->m_rows[row][col].m_flags |= IDX(CELL_FLAG_CLAIM_VISITED);
+    i32 cm = col - 1;
+    i32 cp = col + 1;
+    i32 rm = row - 1;
+    i32 rp = row + 1;
+    CMapMgr* b;
+    i32 nw;
 
-        b = m_board;
-        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
-            nw = b->m_rows[row][cm].m_flags;
-            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                    || b->m_rows[row][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
-                ClaimTilesAround(unit, cm, row, requireUnoccupied);
-            }
+    b = m_board;
+    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
+        nw = b->m_rows[row][cm].m_flags;
+        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                || b->m_rows[row][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            ClaimTilesAround(unit, cm, row, requireUnoccupied);
         }
-        b = m_board;
-        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
-            nw = b->m_rows[row][cp].m_flags;
-            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                    || b->m_rows[row][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
-                ClaimTilesAround(unit, cp, row, requireUnoccupied);
-            }
+    }
+    b = m_board;
+    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
+        nw = b->m_rows[row][cp].m_flags;
+        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                || b->m_rows[row][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            ClaimTilesAround(unit, cp, row, requireUnoccupied);
         }
-        b = m_board;
-        if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
-            nw = b->m_rows[rm][col].m_flags;
-            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                    || b->m_rows[rm][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
-                ClaimTilesAround(unit, col, rm, requireUnoccupied);
-            }
+    }
+    b = m_board;
+    if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
+        nw = b->m_rows[rm][col].m_flags;
+        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                || b->m_rows[rm][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            ClaimTilesAround(unit, col, rm, requireUnoccupied);
         }
-        b = m_board;
-        if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
-            nw = b->m_rows[rp][col].m_flags;
-            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                    || b->m_rows[rp][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
-                ClaimTilesAround(unit, col, rp, requireUnoccupied);
-            }
+    }
+    b = m_board;
+    if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
+        nw = b->m_rows[rp][col].m_flags;
+        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                || b->m_rows[rp][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            ClaimTilesAround(unit, col, rp, requireUnoccupied);
         }
-        b = m_board;
-        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
-            && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
-            nw = b->m_rows[rm][cp].m_flags;
-            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                    || b->m_rows[rm][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
-                ClaimTilesAround(unit, cp, rm, requireUnoccupied);
-            }
+    }
+    b = m_board;
+    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
+        && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
+        nw = b->m_rows[rm][cp].m_flags;
+        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                || b->m_rows[rm][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            ClaimTilesAround(unit, cp, rm, requireUnoccupied);
         }
-        b = m_board;
-        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
-            && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-            nw = b->m_rows[rp][cp].m_flags;
-            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                    || b->m_rows[rp][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
-                ClaimTilesAround(unit, cp, rp, requireUnoccupied);
-            }
+    }
+    b = m_board;
+    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
+        && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
+        nw = b->m_rows[rp][cp].m_flags;
+        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                || b->m_rows[rp][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            ClaimTilesAround(unit, cp, rp, requireUnoccupied);
         }
-        b = m_board;
-        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
-            && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-            nw = b->m_rows[rp][cm].m_flags;
-            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                    || b->m_rows[rp][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
-                ClaimTilesAround(unit, cm, rp, requireUnoccupied);
-            }
+    }
+    b = m_board;
+    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
+        && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
+        nw = b->m_rows[rp][cm].m_flags;
+        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                || b->m_rows[rp][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            ClaimTilesAround(unit, cm, rp, requireUnoccupied);
         }
+    }
 
-        b = m_board;
-        if (static_cast<u32>(cm) >= static_cast<u32>(b->m_width)
-            || static_cast<u32>(rm) >= static_cast<u32>(b->m_height)) {
-            break;
-        }
+    b = m_board;
+    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
+        && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
         nw = b->m_rows[rm][cm].m_flags;
-        if ((nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            || (!(nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                && b->m_rows[rm][cm].m_typeCode != TILEKIND_AI_PATH_BLOCKER)) {
-            break;
+        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                || b->m_rows[rm][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            ClaimTilesAround(unit, cm, rm, requireUnoccupied);
         }
-        row = rm;
-        col = cm;
     }
 }
 
