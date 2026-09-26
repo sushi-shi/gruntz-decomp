@@ -684,15 +684,12 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
     if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
         switch (m_entranceCell.m_direction) {
             case DIR_NORTHEAST:
-            case DIR_EAST:
                 cell = g_gruntDirEast;
                 break;
             case DIR_SOUTHEAST:
-            case DIR_SOUTH:
+            case DIR_SOUTHWEST:
                 cell = g_gruntDirSouth;
                 break;
-            case DIR_SOUTHWEST:
-            case DIR_WEST:
             case DIR_NORTHWEST:
                 cell = g_gruntDirWest;
                 break;
