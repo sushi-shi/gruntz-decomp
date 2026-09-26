@@ -459,7 +459,6 @@ void SoundCueRegistry::Unload() {
     m_soundStream = NULL;
 }
 
-// @early-stop
 RVA(0x00157b00, 0xb2)
 void SoundCueRegistry::RemoveCue(SoundCue* cue) {
     if (cue == NULL) {
@@ -468,12 +467,12 @@ void SoundCueRegistry::RemoveCue(SoundCue* cue) {
     POSITION pos = m_cues.GetStartPosition();
     CString key;
     SoundCue* mappedCue = NULL;
-    while (pos != static_cast<POSITION>(0)) {
+    while (pos != NULL) {
         MapGetNext(m_cues, pos, key, mappedCue);
         if (cue == mappedCue) {
             m_cues.RemoveKey(key);
             delete cue;
-            break;
+            return;
         }
     }
 }
