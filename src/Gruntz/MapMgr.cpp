@@ -515,13 +515,12 @@ void CMapMgr::LinkClosedNode(BrickzNode* node) {
         slot->m_cellPrev = NULL;
         slot->m_cellNext = NULL;
         slot->m_searchNode = node;
-        node->m_cellLink = slot;
     } else {
         slot->m_cellPrev = old;
         slot->m_cellNext = (*head)->m_cellNext;
         *head = slot;
-        node->m_cellLink = slot;
     }
+    node->m_cellLink = slot;
 }
 
 RVA(0x0009f500, 0x24)
