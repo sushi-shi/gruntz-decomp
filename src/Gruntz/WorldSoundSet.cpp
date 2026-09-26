@@ -464,15 +464,12 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
             m_volumeLevel = volumeLevel;
             i32 v = ScaleVolume(volumeLevel);
             m_sound->SetVolumePercent(v);
+        } else {
+            m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
             m_volumeLevel = volumeLevel;
-            m_isPlaying = true;
-            return;
+            i32 v = ScaleVolume(volumeLevel);
+            m_sound->RampVolumeTo(v, rampMs, false);
         }
-
-        m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
-        m_volumeLevel = volumeLevel;
-        i32 v = ScaleVolume(volumeLevel);
-        m_sound->RampVolumeTo(v, rampMs, false);
         m_volumeLevel = volumeLevel;
         m_isPlaying = true;
         return;
@@ -487,7 +484,8 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
         return;
     }
     m_volumeLevel = 0;
-    m_sound->RampVolumeTo(0, rampMs, true);
+    i32 v = ScaleVolume(m_volumeLevel);
+    m_sound->RampVolumeTo(v, rampMs, true);
     m_isPlaying = false;
 }
 

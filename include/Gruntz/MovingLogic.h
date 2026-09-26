@@ -77,7 +77,9 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     InitOwner(0.001);
     CMotionState* m = Motion();
     double z = static_cast<double>(g_defaultZ);
-    m->m_maxStep.Init(z, z, z);
+    m->m_maxStep.m_x = z;
+    m->m_maxStep.m_y = z;
+    m->m_maxStep.m_z = z;
     BeginMotion();
 }
 

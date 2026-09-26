@@ -97,37 +97,33 @@ i32 CGrunt::StepGauntletGruntBehavior() {
     }
 
     switch (this->m_defenderState) {
-        case AISTATE_SEEK:
-            if (g != NULL) {
-                if (this->m_stamina >= STAMINA_FULL) {
-                    i32 x = g->m_object->m_screenX;
-                    if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
-                        && RectContains(x, g->m_object->m_screenY) != 0) {
-                        COMMIT_GRUNT_NEIGHBOR(g);
-                        break;
+        case AISTATE_SEEK: {
+            Coord c;
+            if (g != NULL && this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
+                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                COMMIT_GRUNT_NEIGHBOR(g);
+                break;
+            }
+            if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
+                if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
+                    g->GetScreenPos(&c);
+                    if (TileSwitch(
+                            c.m_x >> TILE_SHIFT_PX,
+                            c.m_y >> TILE_SHIFT_PX,
+                            0,
+                            this->m_arrivalFlags,
+                            0,
+                            0x20
+                        )
+                        != 0) {
+                        SET_GRUNT_ARRIVAL_TARGET(g);
+                        this->m_defenderState = AISTATE_CHASE;
+                        PLAY_VOICE_IF_VISIBLE(0x366);
                     }
                 }
-                if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
-                    if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
-                        Coord c[2];
-                        g->GetScreenPos(c);
-                        if (TileSwitch(
-                                c[0].m_x >> TILE_SHIFT_PX,
-                                c[0].m_y >> TILE_SHIFT_PX,
-                                0,
-                                this->m_arrivalFlags,
-                                0,
-                                0x20
-                            )
-                            != 0) {
-                            SET_GRUNT_ARRIVAL_TARGET(g);
-                            this->m_defenderState = AISTATE_CHASE;
-                            PLAY_VOICE_IF_VISIBLE(0x366);
-                        }
-                    }
-                    this->m_dwell = 0;
-                    break;
-                }
+                this->m_dwell = 0;
+                break;
             }
             if (this->m_resetApplied == false && this->m_hasExtent != false
                 && static_cast<u32>(this->m_dwell) > 3000) {
@@ -157,6 +153,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 this->m_dwell = 0;
             }
             break;
+        }
         case AISTATE_CHASE: {
             CGrunt* slot =
                 m_triggerMgr->m_units
@@ -188,31 +185,29 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             break;
         }
         case AISTATE_ATTACK: {
-            if (m_poweredUp != false) {
-                CGrunt* slot =
-                    m_triggerMgr
-                        ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
-                if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
-                    && slot->m_entranceCommitted != false) {
-                    if (m_neighborValid != false || m_combatActive != false
-                        || m_stamina < STAMINA_FULL) {
-                        break;
-                    }
-                    if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
-                        && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
-                        COMMIT_GRUNT_NEIGHBOR(slot);
-                        break;
-                    }
-                }
-                if (slot == NULL) {
-                    m_defenderState = AISTATE_SEEK;
+            if (m_poweredUp == false) {
+                m_defenderState = AISTATE_CHASE;
+                break;
+            }
+            CGrunt* slot =
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
+                && slot->m_entranceCommitted != false) {
+                if (m_neighborValid != false || m_combatActive != false
+                    || m_stamina < STAMINA_FULL) {
                     break;
                 }
-                m_defenderState = AISTATE_CHASE;
-                PLAY_VOICE_IN_VIEW(0x366);
+                if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                    && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
+                    COMMIT_GRUNT_NEIGHBOR(slot);
+                    break;
+                }
+            } else if (slot == NULL) {
+                m_defenderState = AISTATE_SEEK;
                 break;
             }
             m_defenderState = AISTATE_CHASE;
+            PLAY_VOICE_IN_VIEW(0x366);
             break;
         }
     }

@@ -100,31 +100,11 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
                 }
                 UNSET_COORD(g->m_arrivalCell);
-                {
-                    if (g == NULL) {
-                        goto seek;
-                    }
-                    if (!g->IsAtSavedScreenPos()) {
-                        goto seek;
-                    }
-                    if (g->m_entranceCommitted == false) {
-                        goto seek;
-                    }
-                    if (g->m_deathAnimStarted != false) {
-                        goto seek;
-                    }
-                    if (g->m_entranceActive != false) {
-                        goto seek;
-                    }
-                    if (g->m_poweredUp != false) {
-                        goto seek;
-                    }
-                    if (!BattlezActDiffersFromIGLPJCR(g)) {
-                        goto seek;
-                    }
+                if (g != NULL && g->IsAtSavedScreenPos() && g->m_entranceCommitted != false
+                    && g->m_deathAnimStarted == false && g->m_entranceActive == false
+                    && g->m_poweredUp == false && BattlezActDiffersFromIGLPJCR(g)) {
                     HandleUnitContact(g, cur);
                 }
-            seek:
                 g->m_defenderState = AISTATE_SEEK;
                 goto tail;
             }

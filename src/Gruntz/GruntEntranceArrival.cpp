@@ -622,10 +622,9 @@ RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue) {
     m_resetApplied = false;
 
-    bool notIdle = ANIMATION_ACT_DIFFERS("A");
     i32 applied = 0;
 
-    if (notIdle && chooseIdleVariant == 0) {
+    if (ANIMATION_ACT_DIFFERS("A") && chooseIdleVariant == 0) {
 
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindow = static_cast<u32>(0x3a98);

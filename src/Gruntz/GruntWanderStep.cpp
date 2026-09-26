@@ -83,32 +83,31 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
     }
 
     switch (m_defenderState) {
-        case AISTATE_SEEK:
-            if (g != NULL) {
-                if (m_poweredUp == false && m_stamina >= STAMINA_FULL
-                    && GRUNT_AT_SAVED_SCREEN_POS(g)
-                    && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-                    COMMIT_GRUNT_NEIGHBOR(g);
-                    m_neighborScanEnabled = false;
-                    RecycleGruntCoords(this);
-                    m_defenderState = AISTATE_RETREAT;
-                    return 1;
-                }
-                if (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                    if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
-                        Coord c[2];
-                        g->GetScreenTile(c);
-                        if (TileSwitch(c[0].m_x, c[0].m_y, 0, m_arrivalFlags, 1, 0) != 0) {
-                            SET_GRUNT_ARRIVAL_TARGET(g);
-                            m_defenderState = AISTATE_CHASE;
-                            PLAY_VOICE_IF_VISIBLE(0x366);
-                        }
+        case AISTATE_SEEK: {
+            Coord c;
+            if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
+                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                COMMIT_GRUNT_NEIGHBOR(g);
+                m_neighborScanEnabled = false;
+                RecycleGruntCoords(this);
+                m_defenderState = AISTATE_RETREAT;
+                return 1;
+            }
+            if (g != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
+                if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
+                    g->GetScreenTile(&c);
+                    if (TileSwitch(c.m_x, c.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
+                        SET_GRUNT_ARRIVAL_TARGET(g);
+                        m_defenderState = AISTATE_CHASE;
+                        PLAY_VOICE_IF_VISIBLE(0x366);
                     }
-                    m_dwell = 0;
-                    return 1;
                 }
+                m_dwell = 0;
+                return 1;
             }
             break;
+        }
 
         case AISTATE_CHASE: {
             CGrunt* slot =

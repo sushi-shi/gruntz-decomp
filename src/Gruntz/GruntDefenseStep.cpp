@@ -52,10 +52,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             }
             occ =
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
-            if (occ == NULL) {
-                goto seek;
-            }
-            if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
+            if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
                 && occ->m_entranceCommitted != false) {
                 if (m_neighborValid != false) {
                     return 1;
@@ -95,13 +92,8 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 ResetToSeek(this);
                 return 1;
             }
-            if (occ == NULL) {
-                goto seek;
-            }
-            if (occ->m_entranceCommitted == false) {
-                goto seek;
-            }
-            if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
+            if (occ == NULL || occ->m_entranceCommitted == false
+                || GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
             RepathToward(this, occ);
@@ -133,10 +125,8 @@ i32 CGrunt::StepScrollGruntBehavior() {
 
         case AISTATE_SEEK:
             occ = m_triggerMgr->FindNearestEnemy(this);
-            if (occ == NULL) {
-                goto L_f308a;
-            }
-            if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
+            if (occ != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
+                && GRUNT_AT_SAVED_SCREEN_POS(occ)
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_vehiclePickupType == PICKUP_SCROLL) {
                     g_gameReg->m_triggerMgr->UseToyAt(
@@ -154,26 +144,20 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 return 1;
             }
             if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
-                    goto L_f318a;
-                }
-                {
+                if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
                     Coord sp;
                     occ->GetScreenPos(&sp);
-                    sp.m_y >>= TILE_SHIFT_PX;
                     sp.m_x >>= TILE_SHIFT_PX;
-                    if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) == 0) {
-                        goto L_f318a;
+                    sp.m_y >>= TILE_SHIFT_PX;
+                    if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
+                        SET_GRUNT_ARRIVAL_TARGET(occ);
+                        m_defenderState = AISTATE_CHASE;
+                        PLAY_VOICE_IF_VISIBLE(0x366);
                     }
-                    SET_GRUNT_ARRIVAL_TARGET(occ);
-                    m_defenderState = AISTATE_CHASE;
-                    PLAY_VOICE_IF_VISIBLE(0x366);
                 }
-            L_f318a:
                 m_dwell = 0;
                 return 1;
             }
-        L_f308a:
             if (m_resetApplied != false) {
                 return 1;
             }
@@ -185,7 +169,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             }
             if (IsArrivalRerollPending() != 0) {
                 CWwdSpriteObject* h = m_object;
-                SELECT_RANDOM_EXTENT_POINT(h, outX, spanX, outY, spanY)
+                SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(h, baseX, spanX, baseY, spanY, outX, outY)
                 if (outX < g_gameReg->m_tileGrid->m_width
                     && outY < g_gameReg->m_tileGrid->m_height) {
                     TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);

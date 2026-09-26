@@ -55,7 +55,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
 
     b32 powered = m_poweredUp;
     if (powered != false) {
-        if (m_neighborValid == false) {
+        b32 neighborValid = m_neighborValid;
+        if (neighborValid == false) {
             if (m_combatActive != false) {
                 return 1;
             }
@@ -94,35 +95,31 @@ i32 CGrunt::StepDumbChaserBehavior() {
     switch (m_defenderState) {
         case AISTATE_SEEK: {
 
-            if (g != NULL) {
-                if (hitGate != false && m_stamina >= STAMINA_FULL) {
-                    CGameObject* gp = g->m_object;
-                    if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
-                        && RectContains(gp->m_screenX, gp->m_screenY)) {
-                        COMMIT_GRUNT_NEIGHBOR(g);
-                        return 1;
-                    }
-                }
-                if (static_cast<u32>(m_dwell) > 500) {
-                    if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
-                        return 1;
-                    }
-                    if (TileSwitch(
-                            g->m_object->m_screenX >> TILE_SHIFT_PX,
-                            g->m_object->m_screenY >> TILE_SHIFT_PX,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        )
-                        != 0) {
-                        SET_GRUNT_ARRIVAL_TARGET(g);
-                        m_defenderState = AISTATE_CHASE;
-                        PLAY_VOICE_IF_VISIBLE(0x366);
-                    }
-                    m_dwell = 0;
+            if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
+                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                COMMIT_GRUNT_NEIGHBOR(g);
+                return 1;
+            }
+            if (g != NULL && static_cast<u32>(m_dwell) > 500) {
+                if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
                     return 1;
                 }
+                if (TileSwitch(
+                        g->m_object->m_screenX >> TILE_SHIFT_PX,
+                        g->m_object->m_screenY >> TILE_SHIFT_PX,
+                        0,
+                        m_arrivalFlags,
+                        1,
+                        0
+                    )
+                    != 0) {
+                    SET_GRUNT_ARRIVAL_TARGET(g);
+                    m_defenderState = AISTATE_CHASE;
+                    PLAY_VOICE_IF_VISIBLE(0x366);
+                }
+                m_dwell = 0;
+                return 1;
             }
             if (m_resetApplied == false && m_hasExtent != false
                 && static_cast<u32>(m_dwell) > 3000) {

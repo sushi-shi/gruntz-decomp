@@ -191,37 +191,14 @@ i32 CNetSession::Poll(i32 elapsedMs) {
     }
 
     i32 status = 0;
-    i32 availableCount;
-    CNetPlayerNode* localPlayer = m_localPlayer;
-    CNetMgr* netMgr = m_netMgr;
-    if (localPlayer == NULL) {
-        availableCount = 0;
-    } else {
-        DWORD messageCount;
-
-        IDirectPlay4A* directPlay = netMgr->m_directPlay;
-        i32 result = directPlay->GetMessageCount(localPlayer->m_playerId, &messageCount);
-        availableCount = (result == 0) ? messageCount : 0;
-    }
+    i32 availableCount = m_netMgr->GetMessageCount(m_localPlayer);
 
     DPID senderId = 0;
     DWORD messageSize = sizeof(g_lobbyRecvBuf);
     i32 received = 0;
     while (status == 0 && availableCount > 0 && m_owner->m_pollAbort == false) {
         messageSize = sizeof(g_lobbyRecvBuf);
-        IDirectPlay4A* directPlay = m_netMgr->m_directPlay;
-        DPID recipientId = m_localPlayer->m_playerId;
-        status =
-            directPlay
-                ->Receive(&senderId, &recipientId, DPRECEIVE_ALL, g_lobbyRecvBuf, &messageSize);
-        if (status != 0) {
-            CNetMgr::ReportError(
-                const_cast<char*>("c:\\proj\\incs\\netmgr.h"),
-                0x141,
-                status,
-                NULL
-            );
-        }
+        status = m_netMgr->ReceiveMessage(&senderId, m_localPlayer, g_lobbyRecvBuf, &messageSize);
         if (status == 0) {
             availableCount--;
             received++;
