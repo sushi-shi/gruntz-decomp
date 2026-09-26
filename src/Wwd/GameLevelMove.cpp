@@ -25,8 +25,7 @@ i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFla
     if (moveMode > MOVE_NONE) {
         if (moveMode > MOVE_GROUNDED_LAST) {
             if (moveMode == MOVE_DIRECT) {
-                target->m_screenX = destX;
-                target->m_screenY = destY;
+                SET_SCREEN_POS(target, destX, destY);
             }
         } else {
             result = MoveAxisAligned(target, destX, destY, moveFlags);
@@ -109,8 +108,7 @@ i32 CGameLevel::MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags) {
     } else if (y < curY) {
         result |= MoveStepYLo(t, x, y, &y, flags);
     }
-    t->m_screenX = x;
-    t->m_screenY = y;
+    SET_SCREEN_POS(t, x, y);
     return result;
 }
 

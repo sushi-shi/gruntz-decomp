@@ -105,6 +105,10 @@ public:
     RECT m_clip;
 };
 
+#define SET_SCREEN_POS(node, x, y)                                                                 \
+    (node)->m_screenX = (x);                                                                       \
+    (node)->m_screenY = (y)
+
 #define SET_DRAW_FILL(node, mode, table)                                                           \
     node->m_drawActive = true;                                                                     \
     node->m_drawFillCmd = mode;                                                                    \

@@ -319,8 +319,7 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     if (m_barSprite == NULL) {
         return 0;
     }
-    m_barSprite->m_screenX = x;
-    m_barSprite->m_screenY = y;
+    SET_SCREEN_POS(m_barSprite, x, y);
     m_barX = x;
     m_barY = y;
     return 1;

@@ -445,17 +445,18 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 i32 dy = pd->m_positionDeltaY;
                 i32 dx = pd->m_positionDeltaX;
                 if (HAS(c->m_stateFlags, SPRITE_STATE_MIRROR_X)) {
-                    c->m_screenX = x - dx;
-                    c->m_screenY = c->m_screenY + dy;
+                    SET_SCREEN_POS(c, x - dx, c->m_screenY + dy);
                 } else {
-                    c->m_screenX = x + dx;
-                    c->m_screenY = c->m_screenY + dy;
+                    SET_SCREEN_POS(c, x + dx, c->m_screenY + dy);
                 }
                 break;
             }
             case WWDPOS_MOVE_ABSOLUTE:
-                m_boundObject->m_screenX = m_element->m_positionDeltaX;
-                m_boundObject->m_screenY = m_element->m_positionDeltaY;
+                SET_SCREEN_POS(
+                    m_boundObject,
+                    m_element->m_positionDeltaX,
+                    m_element->m_positionDeltaY
+                );
                 break;
             default:
                 break;

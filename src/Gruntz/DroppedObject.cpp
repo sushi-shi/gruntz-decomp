@@ -255,8 +255,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    m_object->m_screenX = static_cast<i32>(m_posX);
-    m_object->m_screenY = static_cast<i32>(m_posY);
+    SET_SCREEN_POS(m_object, static_cast<i32>(m_posX), static_cast<i32>(m_posY));
     return 0;
 }
 
@@ -313,8 +312,11 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     i32 adjY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 adjX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_landY = adjY;
-    m_object->m_screenX = adjX;
-    m_object->m_screenY = adjY - g_buteMgr.GetInt("Hazardz", "DroppedObjectYOffset", 0x140);
+    SET_SCREEN_POS(
+        m_object,
+        adjX,
+        adjY - g_buteMgr.GetInt("Hazardz", "DroppedObjectYOffset", 0x140)
+    );
     CWwdSpriteObject* o = m_object;
     m_fallY = static_cast<double>(o->m_screenY);
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)

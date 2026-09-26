@@ -73,8 +73,7 @@ i32 CGruntPowerupSprite::Update() {
         g_gameReg->m_triggerMgr->m_units
             [m_gruntIdentity.m_playerIndex * TM_UNITS_PER_PLAYER + m_gruntIdentity.m_unitIndex];
     if (e != NULL) {
-        m_object->m_screenX = e->m_object->m_screenX;
-        m_object->m_screenY = e->m_object->m_screenY;
+        SET_SCREEN_POS(m_object, e->m_object->m_screenX, e->m_object->m_screenY);
     }
     return 0;
 }

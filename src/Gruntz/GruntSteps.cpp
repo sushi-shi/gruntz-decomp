@@ -281,8 +281,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         m_coordList.AddHead(coord);
     }
 
-    m_object->m_screenX = m_commitPx.m_x;
-    m_object->m_screenY = m_commitPx.m_y;
+    SET_SCREEN_POS(m_object, m_commitPx.m_x, m_commitPx.m_y);
     object = m_object;
     if (object->m_sortKey != object->m_screenY + 0x186a0) {
         object->m_sortKey = object->m_screenY + 0x186a0;
@@ -321,8 +320,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
 
 RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 clearArrivalState) {
-    m_object->m_screenX = m_lastTilePx.m_x;
-    m_object->m_screenY = m_lastTilePx.m_y;
+    SET_SCREEN_POS(m_object, m_lastTilePx.m_x, m_lastTilePx.m_y);
     CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
     SetEntrancePos(clearArrivalState, 1);
@@ -889,8 +887,7 @@ applyTail:
     m_triggerMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
     {
         DECLARE_TILE_CENTER_PIXEL_PAIR(spawnPx, spawnPy, tileX, tileY)
-        m_object->m_screenX = spawnPx;
-        m_object->m_screenY = spawnPy;
+        SET_SCREEN_POS(m_object, spawnPx, spawnPy);
         {
             CGruntzMapMgr* board = g_gameReg->m_tileGrid;
             i32 gx = m_lastTilePx.m_x >> TILE_SHIFT_PX;

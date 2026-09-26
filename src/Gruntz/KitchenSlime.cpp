@@ -188,8 +188,7 @@ i32 CKitchenSlime::Tick() {
         i32 ty = m_tilePosition.m_y;
         m_stepMag = fabs(m_posY - static_cast<double>(ty));
         if (newY > ty) {
-            Level()->m_screenX = newX;
-            Level()->m_screenY = ty;
+            SET_SCREEN_POS(Level(), newX, ty);
             return 0;
         }
     } else if (m_dirY < 0.0) {
@@ -198,16 +197,14 @@ i32 CKitchenSlime::Tick() {
         i32 ty = m_tilePosition.m_y;
         m_stepMag = fabs(m_posY - static_cast<double>(ty));
         if (newY < ty) {
-            Level()->m_screenX = newX;
-            Level()->m_screenY = ty;
+            SET_SCREEN_POS(Level(), newX, ty);
             return 0;
         }
     } else {
         newY = static_cast<i32>(floor(m_posY));
     }
 
-    Level()->m_screenX = newX;
-    Level()->m_screenY = newY;
+    SET_SCREEN_POS(Level(), newX, newY);
     return 0;
 }
 

@@ -50,8 +50,7 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     centerY += origin.y;
     centerX += origin.x;
     CWwdSpriteObject* object = m_object;
-    object->m_screenX = centerX;
-    object->m_screenY = centerY;
+    SET_SCREEN_POS(object, centerX, centerY);
 }
 
 RVA(0x000ab5b0, 0x102)

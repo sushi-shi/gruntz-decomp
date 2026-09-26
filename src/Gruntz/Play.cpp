@@ -4311,8 +4311,7 @@ void CPlay::StepScroll() {
     y = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
     x = (x & ~TILE_MASK_PX) + TILE_HALF_PX;
 
-    m_cursorSnapSprite->m_screenX = x;
-    m_cursorSnapSprite->m_screenY = y;
+    SET_SCREEN_POS(m_cursorSnapSprite, x, y);
 }
 
 RVA(0x000d1b30, 0x20)

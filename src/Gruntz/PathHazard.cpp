@@ -210,8 +210,7 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    m_object->m_screenX = newX;
-    m_object->m_screenY = newY;
+    SET_SCREEN_POS(m_object, newX, newY);
     return 0;
 }
 

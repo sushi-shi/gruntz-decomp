@@ -2622,8 +2622,7 @@ void CGrunt::FinalizeStep(char* name) {
         } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
-        m_object->m_screenX = nx;
-        m_object->m_screenY = ny;
+        SET_SCREEN_POS(m_object, nx, ny);
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
         SET_SORT_KEY_IF_CHANGED(h, v)
@@ -2656,8 +2655,7 @@ void CGrunt::FinalizeStep(char* name) {
         } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
-        m_object->m_screenX = nx;
-        m_object->m_screenY = ny;
+        SET_SCREEN_POS(m_object, nx, ny);
     }
     return;
 }

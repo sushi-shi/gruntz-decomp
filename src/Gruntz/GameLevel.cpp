@@ -627,8 +627,7 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
             result = MoveClimbing(target, destX, destY, moveFlags);
             break;
         case MOVE_DIRECT:
-            target->m_screenX = destX;
-            target->m_screenY = destY;
+            SET_SCREEN_POS(target, destX, destY);
             break;
     }
 
@@ -718,8 +717,7 @@ rebracket:
     t->m_moveMode = MOVE_CLIMBING;
 
 commit:
-    t->m_screenX = destX;
-    t->m_screenY = destY;
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -779,8 +777,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
         }
     }
 
-    t->m_screenX = destX;
-    t->m_screenY = destY;
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -816,8 +813,7 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
         }
     }
 
-    t->m_screenX = destX;
-    t->m_screenY = destY;
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -858,8 +854,7 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         result = StepAxisHi(t, coord, cursor, &coord, moveFlags);
     }
 
-    t->m_screenX = coord;
-    t->m_screenY = cursor;
+    SET_SCREEN_POS(t, coord, cursor);
     return result;
 }
 
