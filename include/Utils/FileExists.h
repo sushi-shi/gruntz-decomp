@@ -1,8 +1,6 @@
 #ifndef UTILS_FILEEXISTS_H
 #define UTILS_FILEEXISTS_H
 
-#include <Win32.h>
-
 #include <Ints.h>
 
 // Defined, not declared: Gruntz/Utils.cpp includes it at file scope for the shared

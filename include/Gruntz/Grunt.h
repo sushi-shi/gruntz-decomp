@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
 #include <Gruntz/ActReg.h>

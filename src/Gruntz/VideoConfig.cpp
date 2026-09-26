@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/VideoConfig.h>
-
-#include <Mfc.h>
 
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -26,7 +26,6 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/ScreenGeometry.h>
 
-#include <afxcmn.h>
 #include <string.h>
 
 typedef enum VideoConfigDlgId {

@@ -1,8 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SerialObjectFactory.h>
 
-#include <AddrWord.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/ActionArea.h>
 #include <Gruntz/AniCycle.h>
@@ -335,9 +336,9 @@ i32 __cdecl GameSerializationCallback(
             return 0;
     }
 
-    AddrWord<char> payloadWord;
-    payloadWord.m_addr = static_cast<char*>(payload);
-    return g_gameReg->SerializeGameState(archive, mode, typeId, payloadWord.m_word) != 0;
+    // API-forced: the serializer callback carries its payload as an integer.
+    return g_gameReg->SerializeGameState(archive, mode, typeId, reinterpret_cast<i32>(payload))
+           != 0;
 }
 
 RVA_COMPGEN(0x0000f6b0, 0x6, ?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@XZ)

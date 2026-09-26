@@ -1,9 +1,6 @@
 #ifndef GRUNTZ_UTILS_MAPTYPED_H
 #define GRUNTZ_UTILS_MAPTYPED_H
 
-#include <Mfc.h>
-
-#include <AddrWord.h>
 #include <Ints.h>
 
 // The MFC maps write pointer values through their native void*& output parameters.
@@ -35,9 +32,8 @@ inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, T*& out) {
 }
 
 template<class T> inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, T*& out) {
-    AddrWord<char> k;
-    k.m_word = id;
-    return map.Lookup(k.m_addr, reinterpret_cast<void*&>(out));
+    // API-forced: CMapPtrToPtr keys an integer id through its void* key.
+    return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
 }
 
 #endif // GRUNTZ_UTILS_MAPTYPED_H

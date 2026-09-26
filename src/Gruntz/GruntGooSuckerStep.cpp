@@ -1,8 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcNoInline.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Gruntz/Brickz.h>
@@ -66,7 +64,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
 
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
-    bool eqI = ANIMATION_ACT_EQUALS("I");
+    bool eqI = IsAnimationAct("I");
     if (eqI) {
         return 1;
     }
@@ -129,16 +127,12 @@ i32 CGrunt::StepGooSuckerBehavior() {
         if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
-                if (CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(this)
-                }
+                RecycleGruntCoords(this);
                 return 1;
             }
         } else {
             if (atTarget) {
-                if (CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(this)
-                }
+                RecycleGruntCoords(this);
                 return 1;
             }
         }
@@ -154,7 +148,7 @@ L_ed006b:
     if (m_poweredUp != false) {
         goto L_scanb;
     }
-    if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
+    if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
         && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
                != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);

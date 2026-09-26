@@ -66,7 +66,7 @@ def main(argv=None) -> int:
         print(f"library-overlap: FATAL - {len(bad)} double-claim(s). Each "
               f"retail RVA is a src reconstruction XOR a library carve-out: "
               f"prune the false table row, or carve the copied body and call "
-              f"the real routine via <Mfc.h>.", file=sys.stderr)
+              f"the real routine through the <StdAfx.h> prelude.", file=sys.stderr)
         return 1
     print(f"library-overlap: OK - {n} src claims, 0 static-libs overlap")
     return 0

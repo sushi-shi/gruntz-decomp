@@ -20,7 +20,7 @@ class MessageMapControls(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             path = root / "Probe.cpp"
-            path.write_text('#include <rva.h>\n#include <MfcWin.h>\n' + body)
+            path.write_text('#include <StdAfx.h>\n#include <rva.h>\n' + body)
             with mock.patch.object(source, "REPO", root):
                 return source.extract_unit("probe", "Probe.cpp", {str(path): self.flags})
 

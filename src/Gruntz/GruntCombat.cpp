@@ -1,10 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntCombat.h>
-
-#include <Mfc.h>
-#include <MfcNoInline.h>
-#include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -12,6 +10,7 @@
 #include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>
@@ -29,7 +28,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntActionInline.h>
-#include <Gruntz/GruntActRegMacros.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>
@@ -59,6 +57,7 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -501,7 +500,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
     CShadeTable* sel =
         g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
     CWwdSpriteObject* h = m_object;
-    SET_DRAW_FILL(h, SHADE_PAL_16, sel);
+    h->SetDrawFill(SHADE_PAL_16, sel);
 }
 
 RVA(0x00057890, 0x19c)
@@ -1010,9 +1009,9 @@ i32 CGrunt::HandleCombatContact(
     } else {
         FaceTowardPixel(otherPxX, otherPxY);
 
-        if (ANIMATION_ACT_DIFFERS("H")) {
-            if (ANIMATION_ACT_DIFFERS(DATA_COMPGEN(0x0020d2e8, "F"))) {
-                if (ANIMATION_ACT_DIFFERS("O")) {
+        if (IsNotAnimationAct("H")) {
+            if (IsNotAnimationAct(DATA_COMPGEN(0x0020d2e8, "F"))) {
+                if (IsNotAnimationAct("O")) {
                     ResetGeometry();
                 }
             }
@@ -1287,7 +1286,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    if (ANIMATION_ACT_EQUALS("O")) {
+    if (IsAnimationAct("O")) {
         return 1;
     }
 
@@ -1523,7 +1522,7 @@ i32 CGrunt::CommitNeighbor(
     }
 
     bool eq;
-    eq = ANIMATION_ACT_EQUALS("F");
+    eq = IsAnimationAct("F");
     if (eq) {
         return 0;
     }
@@ -1538,11 +1537,11 @@ i32 CGrunt::CommitNeighbor(
         return 1;
     }
 
-    eq = ANIMATION_ACT_EQUALS("I");
+    eq = IsAnimationAct("I");
     if (eq) {
         ClearMoveTileFx(this);
     } else {
-        eq = ANIMATION_ACT_EQUALS("N");
+        eq = IsAnimationAct("N");
         if (eq) {
             SettleTubeMove();
         }
@@ -1583,7 +1582,7 @@ RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
 
-        if (!ANIMATION_ACT_EQUALS("F")) {
+        if (!IsAnimationAct("F")) {
             if (m_stamina >= STAMINA_FULL) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
@@ -1614,7 +1613,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
     if (n != NULL && n->m_entranceCommitted != false) {
         if (validate != 0) {
-            if (!(GRUNT_AT_SAVED_SCREEN_POS(n))) {
+            if (!IsGruntAtSavedScreenPos(n)) {
                 return NULL;
             }
         }
@@ -1653,25 +1652,25 @@ void CGrunt::FireActivation(i32 id) {
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
     CActReg& registry = CActRegPool<CGrunt>::s_table;
-    REGISTER_GRUNT_ACT_KEY(registry, "A", &CGrunt::ResolveEntranceArrival);
-    REGISTER_GRUNT_ACT_KEY(registry, "B", &CGrunt::StepWarpExit);
-    REGISTER_GRUNT_ACT_KEY(registry, "C", &CGrunt::UpdateDeathAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "D", &CGrunt::StepArrivalReroll);
-    REGISTER_GRUNT_ACT_KEY(registry, "E", &CGrunt::UpdateGruntStatus);
-    REGISTER_GRUNT_ACT_KEY(registry, "F", &CGrunt::StepAttackAction);
-    REGISTER_GRUNT_ACT_KEY(registry, "G", &CGrunt::UpdateToyUseAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "H", &CGrunt::FinishStruckAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "I", &CGrunt::LoadWandGruntItemConfig);
-    REGISTER_GRUNT_ACT_KEY(registry, "J", &CGrunt::RunEntranceMove);
-    REGISTER_GRUNT_ACT_KEY(registry, "K", &CGrunt::LoadEntranceConfig);
-    REGISTER_GRUNT_ACT_KEY(registry, "L", &CGrunt::LoadVehicleGruntAnimations);
-    REGISTER_GRUNT_ACT_KEY(registry, "M", &CGrunt::RearmEntranceDrop);
-    REGISTER_GRUNT_ACT_KEY(registry, "N", &CGrunt::FinishToobMoveAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "O", &CGrunt::FinishKnockbackAnimation);
-    REGISTER_GRUNT_ACT_KEY(registry, "P", &CGrunt::UpdateEntranceAnim);
-    REGISTER_GRUNT_ACT_KEY(registry, "Q", &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_GRUNT_ACT_KEY(registry, "R", &CGrunt::UpdateDecayFade);
-    REGISTER_GRUNT_ACT_KEY(registry, "S", &CGrunt::FinishEntranceMove);
+    REGISTER_ACT(registry, "A", &CGrunt::ResolveEntranceArrival);
+    REGISTER_ACT(registry, "B", &CGrunt::StepWarpExit);
+    REGISTER_ACT(registry, "C", &CGrunt::UpdateDeathAnimation);
+    REGISTER_ACT(registry, "D", &CGrunt::StepArrivalReroll);
+    REGISTER_ACT(registry, "E", &CGrunt::UpdateGruntStatus);
+    REGISTER_ACT(registry, "F", &CGrunt::StepAttackAction);
+    REGISTER_ACT(registry, "G", &CGrunt::UpdateToyUseAnimation);
+    REGISTER_ACT(registry, "H", &CGrunt::FinishStruckAnimation);
+    REGISTER_ACT(registry, "I", &CGrunt::LoadWandGruntItemConfig);
+    REGISTER_ACT(registry, "J", &CGrunt::RunEntranceMove);
+    REGISTER_ACT(registry, "K", &CGrunt::LoadEntranceConfig);
+    REGISTER_ACT(registry, "L", &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_ACT(registry, "M", &CGrunt::RearmEntranceDrop);
+    REGISTER_ACT(registry, "N", &CGrunt::FinishToobMoveAnimation);
+    REGISTER_ACT(registry, "O", &CGrunt::FinishKnockbackAnimation);
+    REGISTER_ACT(registry, "P", &CGrunt::UpdateEntranceAnim);
+    REGISTER_ACT(registry, "Q", &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_ACT(registry, "R", &CGrunt::UpdateDecayFade);
+    REGISTER_ACT(registry, "S", &CGrunt::FinishEntranceMove);
 }
 
 RVA(0x0005caa0, 0x5e4)
@@ -1800,11 +1799,6 @@ void CGrunt::Activate() {
     m_tileClaimed = false;
 }
 
-#undef REGISTER_GRUNT_ACT_KEY
-#undef BIND_GRUNT_ACT
-#undef STORE_GRUNT_ACT
-#undef ToActHandler
-
 DATA(0x001e999c)
 const float g_quarterScale = 0.25f;
 
@@ -1849,9 +1843,9 @@ void CGrunt::StepBehavior(char*) {
     m_dwell += g_frameDelta;
 
     if (m_entranceDropActive != false) {
-        bool differs = ANIMATION_ACT_DIFFERS("A");
+        bool differs = IsNotAnimationAct("A");
         if (differs) {
-            differs = ANIMATION_ACT_DIFFERS("K");
+            differs = IsNotAnimationAct("K");
             if (differs) {
                 goto dropExpire;
             }
@@ -1919,7 +1913,7 @@ void CGrunt::StepBehavior(char*) {
                 result = found;
             }
             if (result == NULL) {
-                ReleaseCellObject(g_gameReg->m_tileGrid, tx, ty);
+                SetCellObject(g_gameReg->m_tileGrid, tx, ty, 0);
             } else {
 
                 CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_logicRecord->m_userLogic);
@@ -2066,7 +2060,7 @@ void CGrunt::StepBehavior(char*) {
                 goto afterTile;
             }
             if (m_entranceReason == PICKUP_BOMB) {
-                bool nameDiffers = ANIMATION_ACT_DIFFERS("M");
+                bool nameDiffers = IsNotAnimationAct("M");
                 if (!nameDiffers) {
                     goto afterTile;
                 }
@@ -2300,7 +2294,7 @@ kindDispatch:
                     g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
                 CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
-                SET_DRAW_FILL(obj, cmd, sel);
+                obj->SetDrawFill(cmd, sel);
             }
         }
         i64 left = m_conversionTiming.m_interval + m_conversionTiming.m_start
@@ -2402,9 +2396,9 @@ void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
     AdvanceMotion();
     if (m_vehicleLoopSound != NULL) {
-        bool neL = ANIMATION_ACT_DIFFERS("L");
+        bool neL = IsNotAnimationAct("L");
         if (neL) {
-            bool neG = ANIMATION_ACT_DIFFERS("G");
+            bool neG = IsNotAnimationAct("G");
             if (neG) {
                 StopVehicleLoopSound();
             }
@@ -2422,8 +2416,8 @@ void CGrunt::FinalizeStep(char* name) {
             }
         }
     }
-    bool eqO = ANIMATION_ACT_EQUALS("O");
-    if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
+    bool eqO = IsAnimationAct("O");
+    if (eqO && !IsGruntAtSavedScreenPos(this)) {
         GruntDirectionCell c = m_entranceCell;
         i32 row = OppositeGridIndex(c.m_row);
         i32 column = OppositeGridIndex(c.m_column);
@@ -2460,8 +2454,8 @@ void CGrunt::FinalizeStep(char* name) {
         return;
     }
 
-    if (ANIMATION_ACT_EQUALS("S")) {
-        if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
+    if (IsAnimationAct("S")) {
+        if (IsGruntAtSavedScreenPos(this)) {
             return;
         }
         double moveDirectionX = EntranceCell()->m_motion.m_direction.m_x;
@@ -2496,7 +2490,7 @@ RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
         bool eq;
-        eq = ANIMATION_ACT_EQUALS("A");
+        eq = IsAnimationAct("A");
         if (eq && CoordCount() != 0) {
             Coord* co = GetHeadCoord();
             i32 fl = g_gameReg->m_tileGrid->m_rows[co->m_y][co->m_x].m_flags;
@@ -2525,10 +2519,10 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    if (ANIMATION_ACT_DIFFERS("D")) {
-        if (ANIMATION_ACT_DIFFERS("N")) {
-            if (ANIMATION_ACT_DIFFERS("L")) {
-                if (ANIMATION_ACT_DIFFERS("M")) {
+    if (IsNotAnimationAct("D")) {
+        if (IsNotAnimationAct("N")) {
+            if (IsNotAnimationAct("L")) {
+                if (IsNotAnimationAct("M")) {
                     return;
                 }
                 if (m_bombRunActive != false) {
@@ -2646,17 +2640,17 @@ void CGrunt::AdvanceMotion() {
             }
         }
 
-        if (ANIMATION_ACT_EQUALS("N")) {
+        if (IsAnimationAct("N")) {
             return;
         }
-        if (ANIMATION_ACT_EQUALS("L")) {
+        if (IsAnimationAct("L")) {
             if (StepCompassMove() != 0) {
                 return;
             }
             m_toyTiming.m_interval = 0;
             return;
         }
-        if (ANIMATION_ACT_EQUALS("M")) {
+        if (IsAnimationAct("M")) {
             if (ClaimSwitchTile() != 0) {
                 return;
             }

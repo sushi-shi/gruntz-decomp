@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -11,6 +13,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
@@ -236,9 +239,9 @@ i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typ
         }
     }
 
-    SerBandPair(ar, mode, &m_countdown);
+    SerializeClockPair(ar, mode, &m_countdown);
 
-    SerBandPair(ar, mode, &m_stamp);
+    SerializeClockPair(ar, mode, &m_stamp);
     return 1;
 }
 
@@ -257,68 +260,33 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
 
     char tmp[SERIAL_NAME_LEN];
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
-    if (m_sprite) {
-        strcpy(tmp, m_sprite->m_name);
-    }
-    ar->Write(tmp, SERIAL_NAME_LEN);
+    SERIAL_WRITE_WORKER(ar, tmp, m_sprite);
 
     ar->Write(&m_active, sizeof(m_active));
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
     {
-        i32 zero = 0;
-        if (m_frameMinTens) {
-            mgr->m_imageRegistry->AnyValueMatches(m_frameMinTens, tmp, &zero);
-        }
-        ar->Write(tmp, SERIAL_NAME_LEN);
-        ar->Write(&zero, sizeof(zero));
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameMinTens);
     }
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
     {
-        i32 zero = 0;
-        if (m_frameMinOnes) {
-            mgr->m_imageRegistry->AnyValueMatches(m_frameMinOnes, tmp, &zero);
-        }
-        ar->Write(tmp, SERIAL_NAME_LEN);
-        ar->Write(&zero, sizeof(zero));
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameMinOnes);
     }
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
     {
-        i32 zero = 0;
-        if (m_frameSecTens) {
-            mgr->m_imageRegistry->AnyValueMatches(m_frameSecTens, tmp, &zero);
-        }
-        ar->Write(tmp, SERIAL_NAME_LEN);
-        ar->Write(&zero, sizeof(zero));
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameSecTens);
     }
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
     {
-        i32 zero = 0;
-        if (m_frameSecOnes) {
-            mgr->m_imageRegistry->AnyValueMatches(m_frameSecOnes, tmp, &zero);
-        }
-        ar->Write(tmp, SERIAL_NAME_LEN);
-        ar->Write(&zero, sizeof(zero));
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameSecOnes);
     }
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
     {
-        i32 zero = 0;
-        if (m_frameColon) {
-            mgr->m_imageRegistry->AnyValueMatches(m_frameColon, tmp, &zero);
-        }
-        ar->Write(tmp, SERIAL_NAME_LEN);
-        ar->Write(&zero, sizeof(zero));
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameColon);
     }
 
     ar->Write(&m_running, sizeof(m_running));

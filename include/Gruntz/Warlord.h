@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ClockInterval.h>
 #include <Gruntz/GameRegistry.h>

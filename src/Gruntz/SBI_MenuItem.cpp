@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SBI_MenuItem.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -11,6 +10,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
+#include <Globals.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
@@ -178,12 +178,7 @@ i32 CSBI_MenuItem::SerializeFields(
             break;
         case SERIAL_SAVE:
             ar->Write(&m_state, sizeof(m_state));
-            g_serialCounter++;
-            memset(tmp, 0, sizeof(tmp));
-            if (m_record) {
-                strcpy(tmp, m_record->m_name);
-            }
-            ar->Write(tmp, SERIAL_NAME_LEN);
+            SERIAL_WRITE_WORKER(ar, tmp, m_record);
             break;
     }
 

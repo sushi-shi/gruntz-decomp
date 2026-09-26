@@ -1,12 +1,13 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SBI_WarlordHead.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Globals.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>

@@ -1,8 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcNoInline.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Gruntz/Brickz.h>
@@ -45,7 +43,7 @@
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::StepTimeBomberBehavior() {
     m_neighborScanEnabled = false;
-    bool isFlag = ANIMATION_ACT_EQUALS("F");
+    bool isFlag = IsAnimationAct("F");
     if (isFlag) {
         return 1;
     }
@@ -77,7 +75,7 @@ i32 CGrunt::StepTimeBomberBehavior() {
     goto common;
 
 state2: {
-    bool isFlagObj = ANIMATION_ACT_EQUALS("F");
+    bool isFlagObj = IsAnimationAct("F");
     if (isFlagObj) {
         goto common;
     }
@@ -144,7 +142,7 @@ state0: {
     if (nb->m_entranceCommitted == false) {
         goto common;
     }
-    if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
+    if (m_poweredUp == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(nb)
         && RectContains(nb->m_object->m_screenPosition.m_x, nb->m_object->m_screenPosition.m_y)
                != 0) {
         COMMIT_GRUNT_NEIGHBOR(nb);
@@ -204,9 +202,7 @@ common: {
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
         if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
-            if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(this)
-            }
+            RecycleGruntCoords(this);
             g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
@@ -226,9 +222,7 @@ common: {
         return 1;
     }
     m_arrivalCell = *head;
-    if (CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS(this)
-    }
+    RecycleGruntCoords(this);
     m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;
 }

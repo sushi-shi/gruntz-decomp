@@ -1,8 +1,6 @@
 #ifndef INCLUDE_GRUNTZ_SCANGRIDMACROS_H
 #define INCLUDE_GRUNTZ_SCANGRIDMACROS_H
 
-#include <MfcWin.h>
-
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
 

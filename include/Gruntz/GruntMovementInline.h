@@ -3,8 +3,8 @@
 
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GruntDirectionOffset.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntDirectionOffset.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Wwd/WwdAniDrawValue.h>
 

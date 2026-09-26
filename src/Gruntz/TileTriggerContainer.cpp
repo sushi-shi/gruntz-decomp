@@ -1,15 +1,14 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/TileTriggerContainer.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <DDrawMgr/DDSurface.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>

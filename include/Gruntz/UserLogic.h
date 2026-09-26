@@ -145,14 +145,6 @@ typedef i32 (CUserLogic::*CActHandler)();
     m_previousAnimationActId = m_logicRecord->m_eventCode;                                         \
     m_logicRecord->m_eventCode = ActFindId(key)
 
-#define ANIMATION_ACT_EQUALS(key) (IsAnimationAct(key))
-
-#define ANIMATION_ACT_DIFFERS(key) (IsNotAnimationAct(key))
-
-#define ANIMATION_ACT_EQUALS_FOR(logic, key) ((logic)->IsAnimationAct(key))
-
-#define ANIMATION_ACT_DIFFERS_FOR(logic, key) ((logic)->IsNotAnimationAct(key))
-
 #define APPLY_NAME_INLINE(name) m_wwdObject->SetImageSetByName(name)
 
 #define APPLY_LOOKUP_SPRITE_INLINE(name, frame) m_wwdObject->SetImageFrameByName(name, frame)

@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Globals.h>
@@ -102,8 +101,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         Coord bp;
         best->GetScreenPos(&bp);
         POINT pt;
-        pt.x = bp.m_x >> TILE_SHIFT_PX;
-        pt.y = bp.m_y >> TILE_SHIFT_PX;
+        SET_POINT_COMPONENTS(pt, bp.m_x >> TILE_SHIFT_PX, bp.m_y >> TILE_SHIFT_PX);
         if (!PtInRect(&box, pt)) {
             best = NULL;
         }
@@ -162,7 +160,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
             if (best != NULL) {
                 if (m_poweredUp == false && m_stamina >= STAMINA_FULL
-                    && GRUNT_AT_SAVED_SCREEN_POS(best)) {
+                    && IsGruntAtSavedScreenPos(best)) {
                     i32 pa;
                     PRIO(pa, m_entranceReason);
                     i32 pb;
@@ -265,7 +263,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                         == 0) {
                         return 1;
                     }
-                    if (GRUNT_NOT_AT_SAVED_SCREEN_POS(sg)) {
+                    if (!IsGruntAtSavedScreenPos(sg)) {
                         return 1;
                     }
                     COMMIT_GRUNT_NEIGHBOR(sg);
@@ -299,7 +297,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                                 sg->m_object->m_screenPosition.m_x,
                                 sg->m_object->m_screenPosition.m_y
                             ) != 0
-                            && GRUNT_AT_SAVED_SCREEN_POS(sg)) {
+                            && IsGruntAtSavedScreenPos(sg)) {
                             COMMIT_GRUNT_NEIGHBOR(sg);
                             return 1;
                         }

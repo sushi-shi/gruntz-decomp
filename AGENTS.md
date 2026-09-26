@@ -94,10 +94,11 @@ Matching rules that are easy to get wrong:
   RTTI, and offsets; else leave `@identity-TODO`. Never fabricate.
 - Names are semantic: no address-derived names, compiler ordinals, or
   `local_10`-style names.
-- Platform headers come only from `<Win32.h>`, `<Mfc.h>`, `<MfcNoInline.h>`,
-  `<MfcWin.h>` (MFC order: `Mfc.h`, `MfcNoInline.h`, `MfcWin.h`; MFC roots and
-  `Win32.h` are mutually exclusive). Never include `<afx*.h>` or
-  `<windows.h>` directly or hand-roll SDK declarations.
+- Every `.cpp` includes `<StdAfx.h>` first: the project-wide prelude (MFC
+  with its release inline default), as Monolith's `stdafx.h` did. Headers never
+  include it and rely on the including `.cpp`; no other file includes
+  `<afx*.h>` or `<windows.h>` directly, and SDK declarations are never
+  hand-rolled.
 - Use typed enums for proven numeric domains; retyping a parameter changes
   mangling.
 - Prove aggregates (`RECT`/`CRect`, `Coord`/`POINT`) from whole-object use; do

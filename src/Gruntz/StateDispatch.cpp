@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/StateDispatch.h>
@@ -12,8 +14,8 @@ RVA_COMPGEN(0x00011a20, 0x1e, ??_GCLevelTime@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 
 RVA(0x0009b770, 0xf1)
-i32 DispatchLevelTimeLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CLevelTime)
+i32 DispatchLevelTimeLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CLevelTime)
 }
 
 RVA(0x0009b8b0, 0x18f)

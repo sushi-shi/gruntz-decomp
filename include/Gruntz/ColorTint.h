@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_COLORTINT_H
 #define GRUNTZ_GRUNTZ_COLORTINT_H
 
-#include <Mfc.h>
-
 #include <Enums.h>
 
 GZ_ENUM_BEGIN_SPLIT(ColorTint, u8)

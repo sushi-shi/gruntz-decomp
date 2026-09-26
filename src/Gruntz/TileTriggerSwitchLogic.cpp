@@ -1,13 +1,13 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/TileTriggerSwitchLogic.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BridgeTileId.h>
@@ -267,8 +267,7 @@ i32 CTileTriggerLogic::Tick() {
     {
         DECLARE_TILE_CENTER_PIXEL_PAIR_Y_FIRST(sy, sx, m_tile.m_y, m_tile.m_x)
         POINT pt;
-        pt.x = sx;
-        pt.y = sy;
+        SET_POINT_COMPONENTS(pt, sx, sy);
         if (PtInRect(&g_gameReg->m_viewBounds, pt) && srcId != TILEKIND_REDPYRAMID_UP
             && srcId != TILEKIND_REDPYRAMID_DOWN) {
             CGameObject* trig = world->m_childGroup->CreateSprite(
@@ -358,8 +357,7 @@ i32 CTileTriggerLogic::Tick() {
                     }
                     if (hit != 0) {
                         POINT pt;
-                        pt.x = pxX;
-                        pt.y = pxY;
+                        SET_POINT_COMPONENTS(pt, pxX, pxY);
                         if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                             CGameObject* o = world->m_childGroup->CreateSprite(
                                 0,
@@ -733,8 +731,11 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     i32 inRect = 0;
     POINT pt;
-    pt.x = (m_tile.m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
-    pt.y = (m_tile.m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
+    SET_POINT_COMPONENTS(
+        pt,
+        (m_tile.m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
+        (m_tile.m_y << TILE_SHIFT_PX) + TILE_HALF_PX
+    );
     if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
         inRect = 1;
     }

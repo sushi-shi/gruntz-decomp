@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Win32.h>
-
 #include <Enums.h>
 
 GZ_ENUM_CONST_BEGIN(SoundFontDeviceRating)

@@ -1,8 +1,5 @@
-#ifndef GRUNTZ_TEXTBOUNDS_H
-#define GRUNTZ_TEXTBOUNDS_H
-
-#include <Mfc.h>
-#include <MfcWin.h>
+#ifndef GRUNTZ_GRUNTZ_TEXTBOUNDS_H
+#define GRUNTZ_GRUNTZ_TEXTBOUNDS_H
 
 #include <Bute/ButeMgr.h>
 
@@ -13,15 +10,4 @@
     i32 left = (bounds).left + g_buteMgr.GetInt("Font", "TextLeftEdge");                           \
     SetRect(&(result), left, top, right, bottom)
 
-inline CRect GetTextBounds(const RECT& bounds) {
-    CRect insets;
-    insets.bottom = g_buteMgr.GetInt("Font", "TextBottomEdge");
-    insets.right = g_buteMgr.GetInt("Font", "TextRightEdge");
-    insets.top = g_buteMgr.GetInt("Font", "TextTopEdge");
-    insets.left = g_buteMgr.GetInt("Font", "TextLeftEdge");
-    CRect result(bounds);
-    result.DeflateRect(&insets);
-    return result;
-}
-
-#endif // GRUNTZ_TEXTBOUNDS_H
+#endif // GRUNTZ_GRUNTZ_TEXTBOUNDS_H

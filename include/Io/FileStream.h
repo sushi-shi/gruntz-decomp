@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 class CFileLog {
 public:
     void ReopenSharedFile(char* path);

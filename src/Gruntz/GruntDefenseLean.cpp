@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Globals.h>
@@ -44,7 +43,7 @@
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepMagicWandGruntBehavior() {
     m_defenderPx = m_lastTilePx;
-    bool eqI = ANIMATION_ACT_EQUALS("I");
+    bool eqI = IsAnimationAct("I");
     if (eqI) {
         return 1;
     }
@@ -68,7 +67,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                         occ->m_object->m_screenPosition.m_x,
                         occ->m_object->m_screenPosition.m_y
                     ) != 0
-                    && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
+                    && IsGruntAtSavedScreenPos(occ)) {
                     COMMIT_GRUNT_NEIGHBOR(occ);
                     return 1;
                 }
@@ -110,7 +109,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 == 0) {
                 return 1;
             }
-            if (!(GRUNT_AT_SAVED_SCREEN_POS(occ))) {
+            if (!IsGruntAtSavedScreenPos(occ)) {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(occ);

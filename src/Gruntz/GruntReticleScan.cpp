@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Globals.h>
@@ -232,15 +231,11 @@ i32 CGrunt::StepDefenderBehavior() {
                                     }
                                 } else {
                                     SetEntrancePos(1, 1);
-                                    if (CoordCount() != 0) {
-                                        RECYCLE_GRUNT_COORDS(this)
-                                    }
+                                    RecycleGruntCoords(this);
                                 }
                             } else {
                                 SetEntrancePos(1, 1);
-                                if (CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS(this)
-                                }
+                                RecycleGruntCoords(this);
                             }
                             return 1;
                         }

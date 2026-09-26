@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Globals.h>
@@ -67,7 +66,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                         occ->m_object->m_screenPosition.m_x,
                         occ->m_object->m_screenPosition.m_y
                     ) != 0
-                    && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
+                    && IsGruntAtSavedScreenPos(occ)) {
                     if (m_vehiclePickupType == PICKUP_SCROLL) {
                         g_gameReg->m_triggerMgr->UseToyAt(
                             m_playerIndex,
@@ -122,7 +121,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
-            if (GRUNT_AT_SAVED_SCREEN_POS(occ)) {
+            if (IsGruntAtSavedScreenPos(occ)) {
                 COMMIT_GRUNT_NEIGHBOR(occ);
             }
             m_defenderState = AISTATE_ATTACK;
@@ -132,7 +131,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
         case AISTATE_SEEK:
             occ = m_triggerMgr->FindNearestEnemy(this);
             if (occ != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
-                && GRUNT_AT_SAVED_SCREEN_POS(occ)
+                && IsGruntAtSavedScreenPos(occ)
                 && RectContains(
                        occ->m_object->m_screenPosition.m_x,
                        occ->m_object->m_screenPosition.m_y
@@ -146,7 +145,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     );
                     return 1;
                 }
-                if (!(GRUNT_AT_SAVED_SCREEN_POS(occ))) {
+                if (!IsGruntAtSavedScreenPos(occ)) {
                     return 1;
                 }
                 COMMIT_GRUNT_NEIGHBOR(occ);
@@ -156,8 +155,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
                     Coord sp;
                     occ->GetScreenPos(&sp);
-                    sp.m_x >>= TILE_SHIFT_PX;
-                    sp.m_y >>= TILE_SHIFT_PX;
+                    ScreenTile(&sp);
                     if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(occ);
                         m_defenderState = AISTATE_CHASE;

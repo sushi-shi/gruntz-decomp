@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/PathHazard.h>
@@ -5,6 +7,7 @@
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/SoundBuffer.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -21,7 +24,7 @@
 #include <Gruntz/RainCloud.h>
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialClockInline.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -255,7 +258,7 @@ i32 CPathHazard::SiblingTick() {
         }
         CShadeTable* frame = g_gameReg->m_lightFxMgr->m_tables[sel];
         CWwdSpriteObject* o = m_object;
-        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
+        o->SetDrawFill(SHADE_DST_BY_SRC_16, frame);
     }
 
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -298,7 +301,7 @@ i32 CPathHazard::SiblingTick() {
     if (legElapsed >= m_leg.m_interval) {
         CShadeTable* frame = tableReg->m_lightFxMgr->m_tables[5];
         CWwdSpriteObject* o = m_object;
-        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
+        o->SetDrawFill(SHADE_DST_BY_SRC_16, frame);
         this->BeginLeg();
         SET_ANIMATION_ACT("A");
         m_strikeArmed = false;
@@ -365,7 +368,7 @@ RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdSpriteObject* o = m_object;
     CShadeTable* n = g_gameReg->m_lightFxMgr->m_tables[5];
-    SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, n);
+    o->SetDrawFill(SHADE_DST_BY_SRC_16, n);
     SwitchAnimationByName("LEVEL_RAINCLOUD", 0);
     SET_OBJECT_AREA(1);
 }
@@ -430,7 +433,7 @@ i32 CRainCloud::SerializeDispatch(
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* x = g_gameReg->m_lightFxMgr->m_tables[5];
         CWwdSpriteObject* o = m_object;
-        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, x);
+        o->SetDrawFill(SHADE_DST_BY_SRC_16, x);
     }
     return 1;
 }

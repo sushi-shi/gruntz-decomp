@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntzCmdMgr.h>
-
-#include <Mfc.h>
 
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>

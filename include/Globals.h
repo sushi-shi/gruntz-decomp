@@ -1,8 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include <Win32.h>
-
 #include <math.h>
 
 inline BOOL PtInRect(const RECT* pRect, int x, int y) {

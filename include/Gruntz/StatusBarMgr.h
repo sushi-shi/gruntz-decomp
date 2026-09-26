@@ -3,12 +3,10 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
-#include <Gruntz/CoordNode.h>
 #include <Gruntz/ClockInterval.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/DestructWarningState.h>
 #include <Gruntz/GameRegistry.h>

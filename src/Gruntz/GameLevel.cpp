@@ -1,13 +1,14 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GameLevel.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameLevelInline.h>
 #include <Gruntz/ImageSets.h>
@@ -503,7 +504,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
                 i32 blocked = 0;
                 while (pos != NULL && blocked == 0) {
                     POSITION cur = pos;
-                    CGameObject* pl = static_cast<CGameObject*>(chain->GetNext(pos));
+                    CGameObject* pl = ctx->NextChild(pos);
                     if (pl->m_sortKey < zBound) {
                         pl->Render(visitor);
                     } else {
@@ -518,7 +519,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
         }
 
         while (pos != NULL) {
-            static_cast<CGameObject*>(chain->GetNext(pos))->Render(visitor);
+            ctx->NextChild(pos)->Render(visitor);
         }
         return;
     }

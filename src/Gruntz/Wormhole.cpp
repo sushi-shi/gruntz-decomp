@@ -1,12 +1,13 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/Wormhole.h>
 
-#include <Mfc.h>
-
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -89,7 +90,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
         color = g_gameReg->m_lightFxMgr->m_tables[kind];
     }
     CWwdSpriteObject* s = m_object;
-    SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
+    s->SetDrawFill(SHADE_DST_BY_SRC_16, color);
 }
 
 RVA(0x0003fed0, 0xa9)
@@ -113,7 +114,7 @@ i32 CWormhole::SerializeDispatch(
         }
 
         CWwdSpriteObject* s = m_object;
-        SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
+        s->SetDrawFill(SHADE_DST_BY_SRC_16, color);
     }
     return 1;
 }
@@ -156,7 +157,7 @@ i32 CWormhole::SpawnPartners() {
         return 0;
     }
     do {
-        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        CGameObject* obj = g_gameReg->m_world->m_childGroup->NextChild(pos);
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
             if (record->m_dispatch == &DispatchTeleporterLogic && obj->m_screenPosition.m_x == tx
@@ -217,7 +218,7 @@ i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32
     m_moveIcon = moveIcon;
     CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(moveIcon, 0);
     CWwdSpriteObject* sprite = m_object;
-    SET_DRAW_FILL(sprite, SHADE_PAL_16, shade);
+    sprite->SetDrawFill(SHADE_PAL_16, shade);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     SET_ANIMATION_ACT("B");
     if (animatePlacement == false) {
@@ -338,7 +339,7 @@ void CTeleporter::LoadColors() {
 
     CWwdSpriteObject* s = m_object;
     CShadeTable* colorEntry = g_gameReg->m_lightFxMgr->m_tables[s->m_health];
-    SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, colorEntry);
+    s->SetDrawFill(SHADE_DST_BY_SRC_16, colorEntry);
 }
 
 RVA(0x000412c0, 0x63)

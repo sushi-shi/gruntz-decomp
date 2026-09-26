@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/Demo.h>
@@ -33,6 +35,7 @@
 #include <Gruntz/Wormhole.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Rez/FrameCountdown.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezTypeTag.h>
 #include <Wwd/LogicRecordEvent.h>
@@ -103,11 +106,7 @@ i32 CDemo::Render() {
             break;
         }
     }
-    if (g_frameDelta >= static_cast<u32>(m_demoCountdown)) {
-        m_demoCountdown = 0;
-    } else {
-        m_demoCountdown -= g_frameDelta;
-    }
+    CountDown(m_demoCountdown, g_frameDelta);
     if (m_demoCountdown == 0) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
     }

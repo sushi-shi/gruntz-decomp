@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Globals.h>
@@ -46,7 +45,7 @@
 
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
-    if (ANIMATION_ACT_EQUALS("I")) {
+    if (IsAnimationAct("I")) {
         return 1;
     }
     this->m_defenderPx = this->m_lastTilePx;
@@ -103,7 +102,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         case AISTATE_SEEK: {
             Coord c;
             if (g != NULL && this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
-                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && IsGruntAtSavedScreenPos(g)
                 && RectContains(
                        g->m_object->m_screenPosition.m_x,
                        g->m_object->m_screenPosition.m_y
@@ -181,7 +180,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                                slot->m_object->m_screenPosition.m_x,
                                slot->m_object->m_screenPosition.m_y
                            ) != 0
-                        && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
+                        && IsGruntAtSavedScreenPos(slot)) {
                         COMMIT_GRUNT_NEIGHBOR(slot);
                         this->m_defenderState = AISTATE_ATTACK;
                     }
@@ -207,7 +206,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         slot->m_object->m_screenPosition.m_x,
                         slot->m_object->m_screenPosition.m_y
                     ) != 0
-                    && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
+                    && IsGruntAtSavedScreenPos(slot)) {
                     COMMIT_GRUNT_NEIGHBOR(slot);
                     break;
                 }

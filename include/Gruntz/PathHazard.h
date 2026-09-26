@@ -4,9 +4,9 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/DoubleVector.h>
-#include <Gruntz/ClockInterval.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LogicTypeId.h>

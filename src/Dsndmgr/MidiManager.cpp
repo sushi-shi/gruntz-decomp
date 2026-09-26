@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Dsndmgr/MidiManager.h>
@@ -249,15 +251,7 @@ i32 MidiManager::SetMasterVolume(i32 volumePct) {
     if (g_ailMidiDriver == NULL) {
         return 0;
     }
-    i32 scaled;
-    if (volumePct <= 0) {
-        scaled = 0;
-    } else if (volumePct >= VOLUME_PCT_MAX) {
-        scaled = MIDI_VOLUME_MAX;
-    } else {
-        scaled = volumePct * MIDI_VOLUME_MAX / VOLUME_PCT_MAX;
-    }
-    AIL_set_XMIDI_master_volume(g_ailMidiDriver, scaled);
+    AIL_set_XMIDI_master_volume(g_ailMidiDriver, PercentToMidiVolume(volumePct));
     return 1;
 }
 
@@ -477,15 +471,7 @@ i32 MidiSequence::SetVolumePercent(i32 volumePct, i32 durationMs) {
     if (IsLoaded() == 0) {
         return 0;
     }
-    i32 scaled;
-    if (volumePct <= 0) {
-        scaled = 0;
-    } else if (volumePct >= VOLUME_PCT_MAX) {
-        scaled = MIDI_VOLUME_MAX;
-    } else {
-        scaled = volumePct * MIDI_VOLUME_MAX / VOLUME_PCT_MAX;
-    }
-    AIL_set_sequence_volume(m_sequenceHandle, scaled, durationMs);
+    AIL_set_sequence_volume(m_sequenceHandle, PercentToMidiVolume(volumePct), durationMs);
     m_volumePct = volumePct;
     return 1;
 }

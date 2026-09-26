@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/Warlord.h>
@@ -5,6 +7,8 @@
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
+#include <Globals.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -23,6 +27,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
@@ -34,7 +39,6 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
-#include <Gruntz/WarlordActRegMacros.h>
 #include <Gruntz/WarlordOwner.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
@@ -100,7 +104,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
     CWwdSpriteObject* d = m_object;
-    SET_DRAW_FILL(d, SHADE_PAL_16, sel);
+    d->SetDrawFill(SHADE_PAL_16, sel);
 
     switch (owner) {
         case WARLORDZ_KING:
@@ -289,7 +293,7 @@ i32 CWarlord::SerializeDispatch(
             }
 
             CWwdSpriteObject* sprite = m_object;
-            SET_DRAW_FILL(sprite, SHADE_PAL_16, sel);
+            sprite->SetDrawFill(SHADE_PAL_16, sel);
             break;
         }
     }
@@ -334,15 +338,14 @@ void CWarlord::FireActivation(i32 key) {
 
 RVA(0x000447a0, 0x333)
 void RegisterWarlordActions() {
-    REGISTER_ACTION("A", &CWarlord::FinishIdleAnimation);
-    REGISTER_ACTION("B", &CWarlord::UpdateMovingState);
-    REGISTER_ACTION("C", &CWarlord::BuildFortSplashParticles);
-    REGISTER_ACTION("D", &CWarlord::UpdatePanicState);
-    REGISTER_ACTION("E", &CWarlord::FinishJoyAnimation);
-    REGISTER_ACTION("F", &CWarlord::FinishBattlecryAnimation);
+    CActReg& registry = CActRegPool<CWarlord>::s_table;
+    REGISTER_ACT(registry, "A", &CWarlord::FinishIdleAnimation);
+    REGISTER_ACT(registry, "B", &CWarlord::UpdateMovingState);
+    REGISTER_ACT(registry, "C", &CWarlord::BuildFortSplashParticles);
+    REGISTER_ACT(registry, "D", &CWarlord::UpdatePanicState);
+    REGISTER_ACT(registry, "E", &CWarlord::FinishJoyAnimation);
+    REGISTER_ACT(registry, "F", &CWarlord::FinishBattlecryAnimation);
 }
-
-#undef REGISTER_ACTION
 
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::FinishIdleAnimation() {
@@ -493,7 +496,7 @@ RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
     if (m_deathStarted == false) {
-        if (!ANIMATION_ACT_EQUALS("D")) {
+        if (!IsAnimationAct("D")) {
             if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
                 m_cooldownTimer.m_interval = 0x7530;

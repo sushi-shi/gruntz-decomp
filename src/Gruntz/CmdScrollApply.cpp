@@ -1,6 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -19,6 +19,7 @@
 #include <Ints.h>
 #include <MakeRect.h>
 #include <Rez/FrameClock.h>
+#include <Rez/FrameCountdown.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
@@ -38,11 +39,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     i32 scrollY = v->m_scrollPixel.m_y;
 
     if (g_scrollClock > g_frameTime) {
-        if (g_frameDelta >= g_scrollTimer) {
-            g_scrollTimer = 0;
-        } else {
-            g_scrollTimer -= g_frameDelta;
-        }
+        CountDown(g_scrollTimer, g_frameDelta);
         if (g_scrollTimer == 0) {
             g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
             i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);

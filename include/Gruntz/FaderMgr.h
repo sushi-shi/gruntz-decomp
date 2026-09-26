@@ -3,13 +3,9 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/Fader.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
-
-#include <afxtempl.h>
 
 GZ_ENUM_FORWARD(FaderKind);
 

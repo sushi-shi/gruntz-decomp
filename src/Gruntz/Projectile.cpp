@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/Projectile.h>
-
-#include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -529,9 +529,7 @@ i32 CBoomerang::LoadProjectileSprites(
                 (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
             )
         );
-        if (g->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(g)
-        }
+        RecycleGruntCoords(g);
     }
     m_launched = false;
     return 1;
@@ -938,7 +936,7 @@ i32 CTimeBomb::SerializeDispatch(
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    SerBandPair(sa, mode, &m_timing);
+    SerializeClockPair(sa, mode, &m_timing);
     switch (mode) {
         case SERIAL_LOAD:
             sa->Read(&m_fastPhase, sizeof(m_fastPhase));

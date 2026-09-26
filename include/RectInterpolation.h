@@ -1,9 +1,6 @@
 #ifndef GRUNTZ_RECTINTERPOLATION_H
 #define GRUNTZ_RECTINTERPOLATION_H
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <Ints.h>
 
 inline i32 InterpolateRectCoord(i32 first, i32 last, float amount) {

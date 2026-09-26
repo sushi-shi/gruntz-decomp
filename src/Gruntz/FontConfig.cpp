@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/FontConfig.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>

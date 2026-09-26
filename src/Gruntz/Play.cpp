@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/Play.h>
-
-#include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -22,6 +22,7 @@
 #include <Dsndmgr/MidiManager.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/AreaMgr.h>
@@ -79,8 +80,8 @@
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialClockMacros.h>
 #include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -1726,19 +1727,19 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                    CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                    mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                     return 1;
                 }
-                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                 mgr->FinalizeLevelAndShowResults();
                 return 1;
             }
             if (vk == 'N' || vk == VK_ESCAPE) {
-                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                 this->CloseLevelOverlay(0);
                 return 1;
             }
@@ -1747,7 +1748,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Q') {
                 if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                    CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                    mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
@@ -1757,13 +1758,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
 
             if (vk == 'S' && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                 mgr->FinalizeLevelAndShowResults();
             }
             if (vk == 'R') {
                 if (mgr->m_gameMode == GAMEMODE_QUESTZ
                     && g_gameReg->m_triggerMgr->m_phase != FINISH_STATE_VICTORY) {
-                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
+                    g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->m_hwnd, WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
                 }
@@ -1772,7 +1773,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'N') {
                 if (mgr->m_gameMode == GAMEMODE_QUESTZ
                     && g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
+                    g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
                 }
                 return 1;
@@ -1780,7 +1781,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'O') {
                 if (mgr->m_gameMode != GAMEMODE_QUESTZ
                     && this->m_statusBar->m_observerTabAvailable != false) {
-                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
+                    g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     this->CloseLevelOverlay(0);
                 }
                 return 1;
@@ -1818,7 +1819,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (this->FlushPendingOps() != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
+        g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         if (g_gameReg->m_frameGate != false) {
             g_gameReg->m_frameGate ^= 1;
             g_gameReg->FinishLevel(g_gameReg->m_frameGate, true);
@@ -1897,7 +1898,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             h->m_frameGate ^= 1;
             this->m_mgr->FinishLevel(h->m_frameGate, true);
         }
-        CLEAR_TAB_HINT(this->m_mgr->m_world->m_soundRegistry);
+        this->m_mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         this->OpenLevelOverlay(true);
         return 1;
     }
@@ -2002,7 +2003,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2027,7 +2028,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2048,7 +2049,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2072,7 +2073,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         this->m_statusBar->AdvanceTab(g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0));
         return 1;
     }
@@ -2081,7 +2082,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2488,8 +2489,6 @@ tail_default2:
     }
     return 1;
 }
-
-#undef CLEAR_TAB_HINT
 
 RVA(0x000cda70, 0x7a)
 i32 CPlay::OnKeyUp(i32 key, i32 flags) {
@@ -3411,7 +3410,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
     POSITION pos = container->GetHeadPosition();
     i32 count = 0;
     while (pos != NULL) {
-        CGameObject* sprite = static_cast<CGameObject*>(container->GetNext(pos));
+        CGameObject* sprite = m_world->m_childGroup->NextChild(pos);
         if (sprite != NULL && sprite->m_objectType == static_cast<u32>(category)) {
             count++;
         }
@@ -4581,7 +4580,7 @@ b32 CPlay::PlaceStartGruntz() {
         entranceMode = GRUNT_ENTRANCE_WORMHOLE;
     }
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
 
@@ -4655,7 +4654,7 @@ i32 CPlay::ValidateLevelTiles() {
 
     b32 ok = true;
     do {
-        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
         if (obj == NULL) {
             continue;
         }
@@ -5278,7 +5277,7 @@ i32 CPlay::ScanBuildTiles() {
     }
     POSITION pos = pl->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* p = static_cast<CGameObject*>(pl->GetNext(pos));
+        CGameObject* p = m_world->m_childGroup->NextChild(pos);
         if (p == NULL) {
             continue;
         }
@@ -5398,7 +5397,7 @@ i32 CPlay::AddLevelGruntz() {
     }
     POSITION pos = chain->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* g = static_cast<CGameObject*>(chain->GetNext(pos));
+        CGameObject* g = m_world->m_childGroup->NextChild(pos);
         if (g == NULL) {
             continue;
         }
@@ -5741,7 +5740,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     CObList* head = &this->m_world->m_childGroup->m_list;
     POSITION pos = head == NULL ? NULL : head->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(head->GetNext(pos));
+        CGameObject* obj = this->m_world->m_childGroup->NextChild(pos);
         if (obj) {
             LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
             if (dispatch == DispatchGruntStartingPointLogic) {
@@ -6157,32 +6156,23 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
         }
     }
 
-    ClockInterval* p;
-    p = &m_syncTiming;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    SerializeClockPair(ar, mode, &m_syncTiming);
     if (!m_statusBar->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
     if (!m_levelTimer->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
-    p = &m_cueTiming;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    SerializeClockPair(ar, mode, &m_cueTiming);
     if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
-    p = &m_region0Timing;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_region1Timing;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_defeatCountdownTiming;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_region2Timing;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_region3Timing;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_bootyTiming;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    SerializeClockPair(ar, mode, &m_region0Timing);
+    SerializeClockPair(ar, mode, &m_region1Timing);
+    SerializeClockPair(ar, mode, &m_defeatCountdownTiming);
+    SerializeClockPair(ar, mode, &m_region2Timing);
+    SerializeClockPair(ar, mode, &m_region3Timing);
+    SerializeClockPair(ar, mode, &m_bootyTiming);
     return 1;
 }
 
@@ -6684,7 +6674,7 @@ i32 CPlay::NotifyVisibleEntities() {
     POSITION pos = chain.GetHeadPosition();
 
     while (pos != NULL) {
-        CGameObject* o = NEXT_CHILD_FROM_LIST(chain, pos);
+        CGameObject* o = v->m_childGroup->NextChild(pos);
         LogicRecordDispatchFn dispatch = o->m_logicRecord->m_dispatch;
         if (dispatch == DispatchGruntLogic || dispatch == DispatchInGameIconLogic
             || dispatch == DispatchGruntPuddleLogic || dispatch == DispatchGruntToySpriteLogic
@@ -7032,7 +7022,7 @@ i32 CPlay::ClearPlacedObjects() {
                     );
                     if (result == NULL) {
 
-                        ReleaseCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
+                        SetCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y, 0);
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                         g_coordPool.Push(obj);

@@ -1,8 +1,6 @@
 #ifndef NET_DPLAYSESSIONFLAGS_H
 #define NET_DPLAYSESSIONFLAGS_H
 
-#include <Win32.h>
-
 #include <dplay.h>
 
 #ifndef DPSESSION_MIGRATEHOST

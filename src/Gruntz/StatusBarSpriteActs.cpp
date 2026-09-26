@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/StatusBarSpriteActs.h>
@@ -31,8 +33,8 @@ RVA_COMPGEN(0x00011b50, 0x1e, ??_GCStatusBarSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 
 RVA(0x0010c0f0, 0xf1)
-i32 DispatchStatusBarSpriteLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CStatusBarSprite)
+i32 DispatchStatusBarSpriteLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CStatusBarSprite)
 }
 
 RVA(0x0010c230, 0x178)

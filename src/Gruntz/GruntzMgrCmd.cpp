@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntzMgrCmd.h>
-
-#include <Mfc.h>
 
 #include <Dsndmgr/MidiManager.h>
 #include <Dsndmgr/SoundStream.h>

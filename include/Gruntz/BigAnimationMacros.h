@@ -1,9 +1,6 @@
 #ifndef GRUNTZ_BIGANIMATIONMACROS_H
 #define GRUNTZ_BIGANIMATIONMACROS_H
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/LogicRecordFlags.h>
 #include <Image/CImage.h>

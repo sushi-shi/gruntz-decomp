@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -14,6 +13,7 @@
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
@@ -43,9 +43,9 @@
 #include <Gruntz/SbiMachineState.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>

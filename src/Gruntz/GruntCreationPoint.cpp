@@ -1,8 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntCreationPoint.h>
 
-#include <AddrWord.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -14,6 +15,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -47,14 +49,13 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
 
-            AddrWord<CGameObject> handle;
-            handle.m_addr = obj;
-            idx = handle.m_word;
+            // byte-evidenced: the shade-table selector is keyed by the object address.
+            idx = reinterpret_cast<i32>(obj);
         }
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 
-    SET_DRAW_FILL(m_object, SHADE_PAL_16, sel);
+    m_object->SetDrawFill(SHADE_PAL_16, sel);
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     SET_ANIMATION_ACT("A");
 }
@@ -90,7 +91,7 @@ i32 CGruntCreationPoint::SerializeDispatch(
             sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
         CWwdSpriteObject* obj = m_object;
-        SET_DRAW_FILL(obj, SHADE_PAL_16, sel);
+        obj->SetDrawFill(SHADE_PAL_16, sel);
     }
     return 1;
 }

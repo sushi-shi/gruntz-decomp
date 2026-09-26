@@ -1,17 +1,16 @@
 #ifndef GRUNTZ_WWD_WWDOBJMGRINLINE_H
 #define GRUNTZ_WWD_WWDOBJMGRINLINE_H
 
-#include <AddrWord.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <Ints.h>
 #include <Utils/MapTyped.h>
 #include <Wwd/WwdGameObjectFamily.h>
 #include <Wwd/WwdObjMgr.h>
 
 inline void* WwdKey(CGameObject* o) {
-    AddrWord<char> k;
-    k.m_word = o->m_objectId;
-    return k.m_addr;
+    // API-forced: CMapPtrToPtr keys an integer id through its void* key.
+    return reinterpret_cast<void*>(o->m_objectId);
 }
 
 static inline i32 WorldSpaceDifference(i32 leftFlags, i32 rightFlags) {

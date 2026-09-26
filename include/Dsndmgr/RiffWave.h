@@ -1,8 +1,6 @@
 #ifndef DSNDMGR_RIFFWAVE_H
 #define DSNDMGR_RIFFWAVE_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 #include <mmsystem.h>

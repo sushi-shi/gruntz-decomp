@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Utils/WinAPICdRom.h>
-
-#include <Mfc.h>
 
 #include <Utils/RegMgr.h>
 

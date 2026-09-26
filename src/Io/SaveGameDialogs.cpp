@@ -1,6 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>

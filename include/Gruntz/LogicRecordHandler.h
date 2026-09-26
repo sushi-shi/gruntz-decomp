@@ -39,42 +39,6 @@
         case ACT_LIVE:                                                                             \
             break;                                                                                 \
         default:                                                                                   \
-            DispatchUnhandledLogicEvent(record->m_userLogic);                                      \
-            break;                                                                                 \
-    }                                                                                              \
-    return 1;
-
-#define TILE_LOGIC_RECORD_DISPATCH(LEAF)                                                           \
-    CLogicRecord* record = obj->m_logicRecord;                                                     \
-    switch (record->LogicEvent()) {                                                                \
-        case ACT_UNINITIALISED: {                                                                  \
-            record->SetLogicEvent(ACT_LIVE);                                                       \
-            CUserLogic* t = new LEAF(obj);                                                         \
-            t->Activate();                                                                         \
-            record->m_userLogic = t;                                                               \
-            break;                                                                                 \
-        }                                                                                          \
-        case ACT_OBJECT_REMOVED:                                                                   \
-            record->m_userLogic->OnObjectRemoved();                                                \
-            break;                                                                                 \
-        case ACT_LEAVE_ACTIVE_REGION:                                                              \
-            record->m_userLogic->OnLeaveActiveRegion();                                            \
-            break;                                                                                 \
-        case ACT_PREPARE_SAVE:                                                                     \
-            record->m_userLogic->PrepareSave();                                                    \
-            break;                                                                                 \
-        case ACT_AFTER_SAVE:                                                                       \
-            record->m_userLogic->AfterSave();                                                      \
-            break;                                                                                 \
-        case ACT_AFTER_LOAD:                                                                       \
-            record->m_userLogic->AfterLoad();                                                      \
-            break;                                                                                 \
-        case ACT_AFTER_LOAD_REFERENCES:                                                            \
-            record->m_userLogic->AfterLoadReferences();                                            \
-            break;                                                                                 \
-        case ACT_LIVE:                                                                             \
-            break;                                                                                 \
-        default:                                                                                   \
             DispatchLogicEvent(record->m_userLogic);                                               \
             break;                                                                                 \
     }                                                                                              \

@@ -1,6 +1,8 @@
 // @identity-TODO
 // This isolated contribution has no file anchor or data reference proving its owner TU.
 
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntPuddle.h>

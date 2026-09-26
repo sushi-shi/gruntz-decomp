@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Rez/DebugPrintf.h>
-
-#include <Win32.h>
 
 #include <Rez/DebugPrintfInternals.h>
 

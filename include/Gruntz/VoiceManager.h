@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SpawnList.h>

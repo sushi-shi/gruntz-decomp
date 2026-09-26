@@ -1,8 +1,6 @@
 #ifndef UTILS_REGMGR_H
 #define UTILS_REGMGR_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 class CRegMgr {

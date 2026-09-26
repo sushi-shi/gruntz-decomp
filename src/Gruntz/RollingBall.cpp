@@ -1,9 +1,12 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/RollingBall.h>
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>

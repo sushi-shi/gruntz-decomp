@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
@@ -58,16 +57,8 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         return 0;
     }
 
-    if (pInit->m_targetSurface == NULL) {
-        m_targetSurface = m_primarySurface;
-    } else {
-        m_targetSurface = pInit->m_targetSurface;
-    }
-    if (pInit->m_sourceSurface == NULL) {
-        m_sourceSurface = m_secondarySurface;
-    } else {
-        m_sourceSurface = pInit->m_sourceSurface;
-    }
+    SelectTarget(m_targetSurface, pInit->m_targetSurface);
+    SelectSource(m_sourceSurface, pInit->m_sourceSurface);
     if (m_targetSurface == NULL) {
         return 0;
     }

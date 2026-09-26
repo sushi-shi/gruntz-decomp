@@ -10,12 +10,10 @@
 
 #define FADER_MAX0(v) ((v) < 0 ? 0 : (v))
 
-#define FADER_CLAMPW(v, w) (FADER_MAX0(v) < (w) ? FADER_MAX0(v) : (w))
-
 inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32& right, i32& left) {
     i32 dy = row - m_center.y;
     i32 dx = -static_cast<i32>(sqrt(static_cast<double>(radiusSq - SQR(dy))));
-    right = FADER_CLAMPW(m_center.x - dx, m_width);
+    right = min(FADER_MAX0(m_center.x - dx), m_width);
     i32 x = dx + m_center.x + edgeOffset;
     left = (x < 0) ? 0 : x;
     if (left >= m_width) {

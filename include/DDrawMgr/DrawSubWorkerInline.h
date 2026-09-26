@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_DRAWSUBWORKERINLINE_H
 #define GRUNTZ_DDRAWMGR_DRAWSUBWORKERINLINE_H
 
-#include <MfcWin.h>
-
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>

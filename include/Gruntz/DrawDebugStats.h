@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 #endif // GRUNTZ_DRAWDEBUGSTATS_H

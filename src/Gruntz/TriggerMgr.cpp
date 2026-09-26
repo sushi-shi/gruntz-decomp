@@ -1,12 +1,13 @@
-#include <Gruntz/TriggerMgr.h>
+#include <StdAfx.h>
 
-#include <MfcWin.h>
+#include <Gruntz/TriggerMgr.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
@@ -1202,9 +1203,9 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) 
         }
     }
 
-    SerBandPair(ar, mode, &m_cueTimer);
-    SerBandPair(ar, mode, &m_gooTimer);
-    SerBandPair(ar, mode, &m_resourceTimer);
+    SerializeClockPair(ar, mode, &m_cueTimer);
+    SerializeClockPair(ar, mode, &m_gooTimer);
+    SerializeClockPair(ar, mode, &m_resourceTimer);
     return 1;
 }
 
@@ -1625,8 +1626,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             }
 
             POINT pt;
-            pt.x = pxX;
-            pt.y = pxY;
+            SET_POINT_COMPONENTS(pt, pxX, pxY);
             if (!PtInRect(&g_gameReg->m_viewBounds, pt)) {
                 continue;
             }
@@ -1830,8 +1830,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         i32 tx = g->m_tile.m_x;
         i32 ty = g->m_tile.m_y;
         POINT pt;
-        pt.x = tx;
-        pt.y = ty;
+        SET_POINT_COMPONENTS(pt, tx, ty);
         if (!PtInRect(&rect, pt)) {
             continue;
         }

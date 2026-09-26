@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDSurface.h>

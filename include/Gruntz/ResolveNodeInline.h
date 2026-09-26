@@ -11,11 +11,15 @@ inline void CResolveNode::ResetDrawFill() {
 }
 
 inline void CResolveNode::SetDrawFill(ShadeMode mode, CShadeTable* table) {
-    SET_DRAW_FILL(this, mode, table);
+    m_drawActive = true;
+    m_drawFillCmd = mode;
+    m_drawFillArg = table;
 }
 
 inline void CResolveNode::SetDrawFillReversed(ShadeMode mode, CShadeTable* table) {
-    SET_DRAW_FILL_REVERSED(this, mode, table);
+    m_drawActive = true;
+    m_drawFillArg = table;
+    m_drawFillCmd = mode;
 }
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODEINLINE_H

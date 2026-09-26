@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/PixelShift.h>
 #include <Image/Image.h>

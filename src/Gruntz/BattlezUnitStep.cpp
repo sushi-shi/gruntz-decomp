@@ -1,8 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcNoInline.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -136,9 +134,7 @@ inflight: {
         goto L_clear;
     }
     if (nb != NULL && cur != nb) {
-        if (g->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(g);
-        }
+        RecycleGruntCoords(g);
         g->m_arrivalCell.m_x = nb->m_playerIndex;
         g->m_arrivalCell.m_y = nb->m_unitIndex;
         g->m_defenderState = AISTATE_ATTACK;
@@ -165,9 +161,7 @@ inflight: {
             CGameObject* s = cur->m_object;
             if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
 
-                if (g->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(g);
-                }
+                RecycleGruntCoords(g);
                 UNSET_COORD(g->m_arrivalCell);
                 HandleUnitContact(g, cur);
                 g->m_defenderState = AISTATE_SEEK;
@@ -191,14 +185,10 @@ inflight: {
             i32 ady = abs(dy);
             i32 dist = static_cast<i32>(sqrt(static_cast<double>(SquaredDistance(adx, ady))));
             if (dist > m_assignedTargetMaxDistance) {
-                if (g->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(g);
-                }
+                RecycleGruntCoords(g);
                 goto L_clearAt;
             }
-            if (g->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(g);
-            }
+            RecycleGruntCoords(g);
             CGameObject* s = cur->m_object;
             if (g->TileSwitch(
                     s->m_screenPosition.m_x >> TILE_SHIFT_PX,
@@ -246,9 +236,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             if ((static_cast<CGrunt*>(unit))
                     ->RectContains(lvl->m_screenPosition.m_x, lvl->m_screenPosition.m_y)
                 != 0) {
-                if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-                }
+                RecycleGruntCoords(unit);
                 UNSET_COORD(unit->m_arrivalCell);
                 HandleUnitContact(unit, target);
                 return 1;
@@ -277,9 +265,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         UNSET_COORD(unit->m_defenderPx);
         unit->m_defenderState = AISTATE_SEEK;
         unit->m_battleState = BZTASK_ADVANCE;
-        if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(unit)
-        }
+        RecycleGruntCoords(unit);
         return 1;
     }
 
@@ -287,9 +273,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     UNSET_COORD(unit->m_defenderPx);
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_battleState = BZTASK_ADVANCE;
-    if (unit->CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-    }
+    RecycleGruntCoords(unit);
     return 1;
 }
 
@@ -319,9 +303,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         GruntzPlayer* slot = &m_ctx->m_players[band];
         if (slot->m_clearedRound != false || slot->m_active == false) {
 
-            if (unit->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-            }
+            RecycleGruntCoords(unit);
             UNSET_COORD(unit->m_arrivalCell);
             UNSET_COORD(unit->m_defenderPx);
             unit->m_targetTeam = -1;
@@ -378,9 +360,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 if (gx == -1 || gy == -1) {
 
                     unit->m_defenderState = AISTATE_SEEK;
-                    if (unit->CoordCount() != 0) {
-                        RECYCLE_GRUNT_COORDS(unit)
-                    }
+                    RecycleGruntCoords(unit);
                     UNSET_COORD(unit->m_defenderPx);
                     return 1;
                 }
@@ -446,9 +426,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (gx == -1 || gy == -1) {
 
         unit->m_defenderState = AISTATE_SEEK;
-        if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(unit)
-        }
+        RecycleGruntCoords(unit);
         UNSET_COORD(unit->m_defenderPx);
         return 1;
     }

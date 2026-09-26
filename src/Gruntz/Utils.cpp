@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/Utils.h>
-
-#include <Mfc.h>
 
 #include <Enums.h>
 #include <Gruntz/GruntDirStatics.h>

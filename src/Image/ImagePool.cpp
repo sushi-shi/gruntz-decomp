@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Image/ImagePool.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <ComOutRef.h>
 #include <DDrawMgr/ColorDepth.h>

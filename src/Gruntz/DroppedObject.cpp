@@ -1,9 +1,12 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/DroppedObject.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
@@ -30,6 +33,7 @@
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/Particlez.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
@@ -84,18 +88,18 @@ RVA_COMPGEN(0x00012640, 0x1e, ??_GCDroppedObjectShadow@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 
 RVA(0x000c5630, 0xf4)
-i32 DispatchObjectDropperLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CObjectDropper)
+i32 DispatchObjectDropperLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CObjectDropper)
 }
 
 RVA(0x000c5770, 0xf1)
-i32 DispatchDroppedObjectLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CDroppedObject)
+i32 DispatchDroppedObjectLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CDroppedObject)
 }
 
 RVA(0x000c58b0, 0xf1)
-i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CDroppedObjectShadow)
+i32 DispatchDroppedObjectShadowLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CDroppedObjectShadow)
 }
 
 // @early-stop
@@ -143,7 +147,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
         m_scrollMode = OBJECT_DROP_PLAYER_ZERO_ONLY;
     }
     CShadeTable* sel = g_gameReg->m_lightFxMgr->m_tables[5];
-    SET_DRAW_FILL(m_object, SHADE_DST_BY_SRC_16, sel);
+    m_object->SetDrawFill(SHADE_DST_BY_SRC_16, sel);
     m_dropTiming.m_start = 0;
     m_dropTiming.m_interval = 0;
     SET_OBJECT_AREA(1)
@@ -268,7 +272,7 @@ i32 CObjectDropper::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    SerBandPair(ar, mode, &m_dropTiming);
+    SerializeClockPair(ar, mode, &m_dropTiming);
 
     switch (mode) {
         case SERIAL_SAVE:
@@ -294,7 +298,7 @@ i32 CObjectDropper::SerializeDispatch(
         case SERIAL_POSTLOAD: {
             CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
             CWwdSpriteObject* o = m_object;
-            SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, fill);
+            o->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
             break;
         }
     }
@@ -449,7 +453,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
     CWwdSpriteObject* draw = m_object;
-    SET_DRAW_FILL(draw, SHADE_DST_BY_SRC_16, fill);
+    draw->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND);
 }
@@ -495,7 +499,7 @@ i32 CDroppedObjectShadow::SerializeDispatch(
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
         CWwdSpriteObject* o = m_object;
-        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, fill);
+        o->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
     }
     return 1;
 }

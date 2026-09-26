@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Image/CImage.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -36,9 +35,21 @@ b32 g_resourceInstallActive = false;
 DATA(0x002bf380)
 i32 g_surfaceColorKey = 0;
 
+static inline i32 SurfaceColorKey(i32 keyed) {
+    return (keyed != 0) ? g_surfaceColorKey : -1;
+}
+
+inline void CImage::SetBltFastFlags(CDDSurface* surface) {
+    if (surface->m_hasColorKey != false) {
+        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
+    } else {
+        m_bltFastFlags = DDBLTFAST_WAIT;
+    }
+}
+
 RVA(0x00152e90, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
-    i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
+    i32 colorKey = SurfaceColorKey(keyed);
     i32 surfaceCaps = 0;
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
@@ -52,11 +63,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     m_width = item->m_apiDesc.dwWidth;
     m_height = item->m_apiDesc.dwHeight;
     SET_POINT_COMPONENTS(m_anchor, m_width >> 1, m_height >> 1);
-    if (item->m_hasColorKey != false) {
-        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-    } else {
-        m_bltFastFlags = DDBLTFAST_WAIT;
-    }
+    SetBltFastFlags(item);
     SET_POINT_COMPONENTS(m_origin, 0, 0);
     return 1;
 }
@@ -95,7 +102,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         }
         return 1;
     }
-    i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
+    i32 colorKey = SurfaceColorKey(keyed);
     if (mode == FMT_PID || mode == FMT_RID) {
         i32 imageOffsetX = desc->m_offsetX;
         i32 imageOffsetY = desc->m_offsetY;
@@ -119,17 +126,13 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     i32 h = item->m_apiDesc.dwHeight;
     m_height = h;
     SET_POINT_COMPONENTS(m_anchor, w >> 1, h >> 1);
-    if (item->m_hasColorKey != false) {
-        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-        return 1;
-    }
-    m_bltFastFlags = DDBLTFAST_WAIT;
+    SetBltFastFlags(item);
     return 1;
 }
 
 RVA(0x001530e0, 0x92)
 i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
-    i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
+    i32 colorKey = SurfaceColorKey(keyed);
     i32 surfaceCaps = 0;
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
@@ -145,11 +148,7 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     i32 h = item->m_apiDesc.dwHeight;
     m_height = h;
     SET_POINT_COMPONENTS(m_anchor, w >> 1, h >> 1);
-    if (item->m_hasColorKey != false) {
-        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-    } else {
-        m_bltFastFlags = DDBLTFAST_WAIT;
-    }
+    SetBltFastFlags(item);
     SET_POINT_COMPONENTS(m_origin, 0, 0);
     return 1;
 }

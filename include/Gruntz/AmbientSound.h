@@ -9,8 +9,6 @@ GZ_ENUM_CONST_BEGIN(AmbientSoundActState)
     AMBIENT_SOUND_ACTIVE = 0x1e
 GZ_ENUM_CONST_END(AmbientSoundActState)
 
-#include <Mfc.h>
-
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>

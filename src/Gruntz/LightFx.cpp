@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/LightFx.h>
@@ -40,8 +42,8 @@ RVA_COMPGEN(0x00012400, 0x1e, ??_GCLightFx@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
 RVA(0x0009cdc0, 0xf1)
-i32 DispatchLightFxLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CLightFx)
+i32 DispatchLightFxLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CLightFx)
 }
 
 // @early-stop

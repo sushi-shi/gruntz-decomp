@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Enums.h>
 #include <Ints.h>
 
@@ -40,6 +38,8 @@ public:
     CSpawnEntry* NextEntry(POSITION& pos) {
         return static_cast<CSpawnEntry*>(m_list.GetNext(pos));
     }
+    CSpawnEntry* FirstEntry();
+    CSpawnEntry* NextEntry();
     POSITION m_cursor;
     i32 m_lastPicked;
 };

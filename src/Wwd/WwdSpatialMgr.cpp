@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Wwd/WwdSpatialMgr.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/CoordNode.h>

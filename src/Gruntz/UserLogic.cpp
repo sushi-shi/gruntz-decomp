@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/UserLogic.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>

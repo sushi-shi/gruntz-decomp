@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <MfcWin.h>
-
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
 #include <Lith/BaseList.h>

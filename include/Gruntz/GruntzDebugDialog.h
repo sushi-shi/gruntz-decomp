@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_GRUNTZDEBUGDIALOG_H
 #define GRUNTZ_GRUNTZ_GRUNTZDEBUGDIALOG_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 BOOL CALLBACK DebugGruntTypeDialogProc(HWND, UINT, WPARAM, LPARAM);

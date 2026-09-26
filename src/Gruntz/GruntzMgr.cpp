@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntzMgr.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <Crypto/FecCrypt.h>
 #include <DDrawMgr/ColorDepth.h>
@@ -784,7 +783,7 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     }
     POSITION pos = list->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
         if (obj) {
             obj->m_stateFlags ^= static_cast<SpriteStateFlags>(mask);
         }

@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Ints.h>
@@ -89,17 +87,6 @@ public:
     b32 m_silentMode;
     i32 m_defaultReplayDelayMs;
 };
-
-#define CLEAR_TAB_HINT(sndHost)                                                                    \
-    do {                                                                                           \
-        SoundCueRegistry* _s = (sndHost);                                                          \
-        if (_s->m_silentMode == false) {                                                           \
-            SoundCue* found = NULL;                                                                \
-            MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
-            if (found != NULL)                                                                     \
-                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                               \
-        }                                                                                          \
-    } while (0)
 
 #define ADD_SOUND_CUE_ENTRY(cue, key)                                                              \
     m_cues[key] = cue;                                                                             \

@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDrawChildGroupFlags.h>
 #include <Enums.h>
 #include <Gruntz/LogicTypeId.h>

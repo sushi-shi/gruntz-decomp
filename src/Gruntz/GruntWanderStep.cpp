@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Globals.h>
@@ -34,6 +33,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
 
@@ -87,7 +87,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
         case AISTATE_SEEK: {
             Coord c;
             if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
-                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && IsGruntAtSavedScreenPos(g)
                 && RectContains(
                        g->m_object->m_screenPosition.m_x,
                        g->m_object->m_screenPosition.m_y
@@ -139,7 +139,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 == 0) {
                 return 1;
             }
-            if (!(GRUNT_AT_SAVED_SCREEN_POS(slot))) {
+            if (!IsGruntAtSavedScreenPos(slot)) {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
@@ -175,14 +175,12 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 == 0) {
                 goto ph1;
             }
-            if (!(GRUNT_AT_SAVED_SCREEN_POS(slot))) {
+            if (!IsGruntAtSavedScreenPos(slot)) {
                 goto ph1;
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
             m_neighborScanEnabled = false;
-            if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(this)
-            }
+            RecycleGruntCoords(this);
             m_defenderState = AISTATE_RETREAT;
             m_dwell = DWELL_REPATH_MS;
             return 1;
@@ -222,8 +220,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                         (candidateObject->m_screenPosition.m_y >> TILE_SHIFT_PX) + 3
                     );
                     POINT pt;
-                    pt.x = px;
-                    pt.y = py;
+                    SET_POINT_COMPONENTS(pt, px, py);
                     if (PtInRect(&rc, pt)) {
                         clip = 0;
                     }

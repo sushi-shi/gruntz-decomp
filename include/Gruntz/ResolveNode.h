@@ -120,25 +120,10 @@ public:
     (node)->m_screenPosition.m_x = (x);                                                            \
     (node)->m_screenPosition.m_y = (y)
 
-#define SET_DRAW_FILL(node, mode, table)                                                           \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillCmd = mode;                                                                    \
-    node->m_drawFillArg = table
-
-#define SET_DRAW_FILL_REVERSED(node, mode, table)                                                  \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillArg = table;                                                                   \
-    node->m_drawFillCmd = mode
-
 #define SET_DRAW_FILL_SPLIT(activeNode, node, mode, table)                                         \
     activeNode->m_drawActive = true;                                                               \
     node->m_drawFillCmd = mode;                                                                    \
     node->m_drawFillArg = table
-
-#define SET_DRAW_FILL_ARG_FIRST(node, mode, table)                                                 \
-    node->m_drawFillArg = table;                                                                   \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillCmd = mode
 
 #define SET_DRAW_FILL_FRACTION(node, mode, fraction)                                               \
     node->m_drawActive = true;                                                                     \

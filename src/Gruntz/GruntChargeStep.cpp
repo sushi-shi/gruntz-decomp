@@ -1,7 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Enums.h>
 #include <Globals.h>
@@ -98,7 +97,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
         case AISTATE_SEEK: {
 
             if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
-                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && IsGruntAtSavedScreenPos(g)
                 && RectContains(
                        g->m_object->m_screenPosition.m_x,
                        g->m_object->m_screenPosition.m_y
@@ -164,7 +163,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                        t->m_object->m_screenPosition.m_x,
                        t->m_object->m_screenPosition.m_y
                    ) != 0
-                && GRUNT_AT_SAVED_SCREEN_POS(t)) {
+                && IsGruntAtSavedScreenPos(t)) {
                 COMMIT_GRUNT_NEIGHBOR(t);
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
@@ -189,7 +188,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                         t->m_object->m_screenPosition.m_x,
                         t->m_object->m_screenPosition.m_y
                     ) == 0
-                    || GRUNT_NOT_AT_SAVED_SCREEN_POS(t)) {
+                    || !IsGruntAtSavedScreenPos(t)) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;
                     return 1;

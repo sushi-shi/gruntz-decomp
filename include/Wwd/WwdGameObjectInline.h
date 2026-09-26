@@ -1,8 +1,8 @@
 #ifndef GRUNTZ_WWD_WWDGAMEOBJECTINLINE_H
 #define GRUNTZ_WWD_WWDGAMEOBJECTINLINE_H
 
-#include <AddrWord.h>
 #include <DDrawMgr/LogicRecord.h>
+#include <Ints.h>
 #include <Utils/MapTyped.h>
 #include <Wwd/WwdGameObjectFamily.h>
 

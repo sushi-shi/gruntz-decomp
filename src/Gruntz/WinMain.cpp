@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/WinMain.h>
-
-#include <Mfc.h>
 
 #include <ComOutRef.h>
 #include <Enums.h>

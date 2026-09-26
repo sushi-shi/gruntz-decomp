@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Enums.h>
 #include <Gruntz/LevelArea.h>
 #include <Ints.h>
@@ -59,6 +57,7 @@ public:
     i32 BuildSpacePalette();
 
     void FillSpan(u32 x1, u32 x2, u16 color);
+    void GetTileColor(i32 tileId, u16& color);
 
     i32 BeginMinimapPan(i32 unusedFlags, i32 cursorX, i32 cursorY);
 

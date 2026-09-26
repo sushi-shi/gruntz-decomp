@@ -1,12 +1,11 @@
 #ifndef GRUNTZ_DDRAWMGR_PALETTECOLORINLINE_H
 #define GRUNTZ_DDRAWMGR_PALETTECOLORINLINE_H
 
-#include <Mfc.h>
-
 #include <DDrawMgr/PaletteSize.h>
 #include <Lith/BDefs.h>
 
-static inline i32 PaletteColorDistanceSquared(const PALETTEENTRY& color, u8 red, u8 green, u8 blue) {
+static inline i32
+PaletteColorDistanceSquared(const PALETTEENTRY& color, u8 red, u8 green, u8 blue) {
     return SQR(red - color.peRed) + SQR(green - color.peGreen) + SQR(blue - color.peBlue);
 }
 

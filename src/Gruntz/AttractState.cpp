@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -23,6 +25,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/String.h>
 #include <Rez/FrameClock.h>
+#include <Rez/FrameCountdown.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
@@ -152,11 +155,7 @@ i32 CAttract::Render() {
 
     (menuRoot()->m_soundRegistry)->TickVolumeRamps();
 
-    if (g_frameDelta >= m_titleCountdownMs) {
-        m_titleCountdownMs = 0;
-    } else {
-        m_titleCountdownMs -= g_frameDelta;
-    }
+    CountDown(m_titleCountdownMs, g_frameDelta);
 
     CInputDeviceGroup* list = g_actorList;
     i32 i;

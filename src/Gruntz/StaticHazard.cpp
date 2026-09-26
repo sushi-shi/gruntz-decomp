@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/StaticHazard.h>
@@ -23,7 +25,7 @@
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LogicEventDispatch.h>
-#include <Gruntz/LogicRecordState.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/Play.h>
@@ -56,41 +58,7 @@ struct CString;
 
 RVA(0x000fb660, 0xf1)
 i32 DispatchStaticHazardLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (static_cast<u32>(record->EventCode())) {
-        case LOGICREC_INIT:
-            record->SetEventCode(LOGICREC_BUILT);
-            {
-                CUserLogic* obj = new CStaticHazard(owner);
-                obj->Activate();
-                record->m_userLogic = obj;
-            }
-            break;
-        case LOGICREC_OP_1D:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case LOGICREC_OP_1E:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case LOGICREC_OP_50:
-            record->m_userLogic->PrepareSave();
-            break;
-        case LOGICREC_OP_51:
-            record->m_userLogic->AfterSave();
-            break;
-        case LOGICREC_OP_52:
-            record->m_userLogic->AfterLoad();
-            break;
-        case LOGICREC_OP_53:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case LOGICREC_BUILT:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
+    LOGIC_RECORD_DISPATCH(CStaticHazard)
 }
 
 // @early-stop

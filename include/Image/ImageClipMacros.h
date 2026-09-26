@@ -1,8 +1,6 @@
 #ifndef IMAGE_IMAGECLIPMACROS_H
 #define IMAGE_IMAGECLIPMACROS_H
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <Globals.h>

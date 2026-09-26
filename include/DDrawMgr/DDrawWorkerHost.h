@@ -3,9 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <DDrawMgr/DDrawWorker.h>
 #include <Enums.h>
 #include <Gruntz/CoordNode.h>

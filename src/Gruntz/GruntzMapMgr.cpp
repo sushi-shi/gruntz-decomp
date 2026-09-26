@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <Gruntz/GruntzMapMgr.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>

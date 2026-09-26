@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_MAKERECT_H
 #define GRUNTZ_MAKERECT_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 #include <RectMacros.h>
 

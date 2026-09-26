@@ -1,6 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -73,14 +73,10 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
         }
         unit->m_battleState = BZTASK_ADVANCE;
 
-        if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(unit)
-        }
+        RecycleGruntCoords(unit);
     } else {
         unit->m_battleState = BZTASK_ADVANCE;
-        if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(unit)
-        }
+        RecycleGruntCoords(unit);
     }
     ResetToSeek(unit);
     unit->m_dwell = 0;

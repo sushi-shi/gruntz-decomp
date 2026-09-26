@@ -1,11 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/BootyStateActivate.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
-#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -241,9 +239,8 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         CString desc;
         i32 i = 0;
 
-        AddrWord<char> cur;
-        AddrWord<char> last;
-        last.m_addr = g_secretMsgRows[24].m_strB + sizeof(SecretMsgRow);
+        // byte-evidenced: retail compares the row cursor as a signed integer.
+        i32 last = reinterpret_cast<i32>(g_secretMsgRows[24].m_strB + sizeof(SecretMsgRow));
         char* p = g_secretMsgRows[0].m_strB;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
@@ -255,8 +252,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
             strcpy(p, desc);
             i++;
             p += 0xa0;
-            cur.m_addr = p;
-        } while (cur.m_word < last.m_word);
+        } while (reinterpret_cast<i32>(p) < last); // byte-evidenced: signed cursor compare
         g_bootyCheatBuilt = true;
     }
 
@@ -1967,10 +1963,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     SET_SORT_KEY_IF_CHANGED(sorted, SORTKEY_BOOTY_WARLORD)
     m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
-    AddrWord<const Coord> flagPos;
-    AddrWord<const Coord> flagEnd;
-    flagPos.m_addr = g_bootyFlagPos;
-    flagEnd.m_addr = g_bootyTabPos;
+    const Coord* flagPos = g_bootyFlagPos;
     i32 w = 0;
     do {
         i32 held = g_gameReg->m_gameStats->CountAllFlagCaptures(w);
@@ -1989,16 +1982,17 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 spread[2][2] = 2;
                 SET_SCREEN_POS(
                     m_flagSprites[c],
-                    (spread[held - 1][placed] << 4) + flagPos.m_addr->m_x,
-                    flagPos.m_addr->m_y
+                    (spread[held - 1][placed] << 4) + flagPos->m_x,
+                    flagPos->m_y
                 );
                 m_flagSprites[c]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                 placed++;
             }
         }
         w++;
-        flagPos.m_addr++;
-    } while (flagPos.m_word < flagEnd.m_word);
+        flagPos++;
+        // byte-evidenced: retail compares the table cursor as a signed integer.
+    } while (reinterpret_cast<i32>(flagPos) < reinterpret_cast<i32>(g_bootyTabPos));
     return 1;
 }
 

@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Win32.h>
-
 #include <Image/PcxFormat.h>
 #include <Ints.h>
 

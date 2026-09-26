@@ -3,15 +3,12 @@
 
 #include <rva.h>
 
-#include <MfcWin.h>
-
 #include <Crypto/FecCrypt.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
 
-#include <afxtempl.h>
 #include <ddraw.h>
 #include <stddef.h>
 

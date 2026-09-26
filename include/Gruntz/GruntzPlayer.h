@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/ColorTint.h>

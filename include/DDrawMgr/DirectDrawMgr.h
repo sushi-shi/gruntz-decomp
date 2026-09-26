@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDSurface.h>

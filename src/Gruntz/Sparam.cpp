@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/Sparam.h>
-
-#include <Win32.h>
 
 #include <stdio.h>
 #include <string.h>

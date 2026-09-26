@@ -1,7 +1,6 @@
-#include <Image/FileImage.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
+#include <Image/FileImage.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>

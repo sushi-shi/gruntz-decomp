@@ -1,7 +1,10 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniElement.h>

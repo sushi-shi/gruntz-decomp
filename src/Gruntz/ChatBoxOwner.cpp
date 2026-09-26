@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/ChatBoxOwner.h>
-
-#include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
 #include <Crypto/BitStreamBlowfish.h>

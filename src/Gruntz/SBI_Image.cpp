@@ -1,15 +1,15 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SBI_Image.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>

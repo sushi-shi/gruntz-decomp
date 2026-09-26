@@ -9,8 +9,4 @@ class CUserLogic;
 
 i32 DispatchLogicEvent(CUserLogic* logic);
 
-inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
-    DispatchLogicEvent(sub);
-}
-
 #endif // GRUNTZ_LOGICEVENTDISPATCH_H

@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_GAMERAND_H
 #define GRUNTZ_GAMERAND_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 #include <stdlib.h>

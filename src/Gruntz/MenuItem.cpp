@@ -1,5 +1,6 @@
-#include <RectMacros.h>
 #define GRUNTZ_MENUITEM_TU
+
+#include <StdAfx.h>
 
 #include <rva.h>
 
@@ -16,6 +17,7 @@
 #include <Gruntz/MenuPage.h>
 #include <Gruntz/MenuTree.h>
 #include <Image/CImage.h>
+#include <RectMacros.h>
 #include <Wap32/CoordUnset.h>
 
 #include <stdio.h>
@@ -190,7 +192,7 @@ i32 CAnimatedMenuItem::Init(
     }
     m_frameIndex = 0;
     m_frameTimerMs = 0;
-    SET_ANIMATED_MENU_ITEM_FRAME_PERIOD_INLINE(0x64);
+    m_framePeriodMs = 0x64;
 
     char animationName[0x80];
 

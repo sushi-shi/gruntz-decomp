@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
@@ -39,7 +41,6 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyMacros.h>
@@ -172,7 +173,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     ScreenTile(&tile);
     TileCollisionKind tileKind = g_gameReg->m_tileGrid->m_rows[tile.m_y][tile.m_x].m_typeCode;
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
-        if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
+        if (IsGruntAtSavedScreenPos(this)) {
 
             m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -799,15 +800,15 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     }
 
     bool eq;
-    eq = ANIMATION_ACT_DIFFERS("A");
+    eq = IsNotAnimationAct("A");
     if (!eq) {
         goto applyTail;
     }
-    eq = ANIMATION_ACT_DIFFERS("D");
+    eq = IsNotAnimationAct("D");
     if (!eq) {
         goto applyTail;
     }
-    eq = ANIMATION_ACT_EQUALS("I");
+    eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
@@ -825,7 +826,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     if (SettleActiveKnockback()) {
         goto applyTail;
     }
-    eq = ANIMATION_ACT_EQUALS("Q");
+    eq = IsAnimationAct("Q");
     if (eq) {
         return 1;
     }
@@ -861,9 +862,7 @@ applyTail:
         );
         m_lastTilePx.Set(-1, -1);
         SetEntrancePos(1, 1);
-        if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(this)
-        }
+        RecycleGruntCoords(this);
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;
             m_routePassableMask = 0;

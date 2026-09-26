@@ -1,14 +1,14 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/Minimap.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
@@ -93,6 +93,14 @@ i32 CMinimap::AllocSurface() {
     return 1;
 }
 
+inline void CMinimap::GetTileColor(i32 tileId, u16& color) {
+    if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
+        color = 0;
+    } else {
+        color = m_tileColors[tileId];
+    }
+}
+
 RVA(0x000a3460, 0x2f3)
 i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
     if (forceRefresh == false) {
@@ -168,12 +176,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                 } else if (static_cast<u32>(g_period100CountdownMs)
                            < MINIMAP_COMBAT_BLINK_PHASE_MS) {
 
-                    i32 tileId = m_mapMgr->TileIdAt(x, y);
-                    if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
-                        *pixel = 0;
-                    } else {
-                        *pixel = m_tileColors[tileId];
-                    }
+                    GetTileColor(m_mapMgr->TileIdAt(x, y), *pixel);
                 } else {
                     CSpriteRef* spriteRef =
                         m_gameMgr->m_spriteFactory->GetTool(IDX(grunt->m_moveIcon));
@@ -184,13 +187,8 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                     *pixel = spriteRef->m_teamColor2;
                 }
             } else {
-                i32 tileId = m_mapMgr->TileIdAt(x, y);
                 u16 color;
-                if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
-                    color = 0;
-                } else {
-                    color = m_tileColors[tileId];
-                }
+                GetTileColor(m_mapMgr->TileIdAt(x, y), color);
                 *pixel = color;
             }
         }

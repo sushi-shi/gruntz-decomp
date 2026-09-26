@@ -1,9 +1,6 @@
 #ifndef GRUNTZ_FONT_FONTBLENDINLINE_H
 #define GRUNTZ_FONT_FONTBLENDINLINE_H
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <DDrawMgr/PixelShift.h>
 
 static inline LONG RunRightEdge(const CRect& rc, i32 x) {

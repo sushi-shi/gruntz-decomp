@@ -27,6 +27,9 @@
 #define SET_SIZE_COMPONENTS(size, w, h)                                                            \
     (size).cx = (w);                                                                               \
     (size).cy = (h)
+#define SET_POINT_COMPONENTS(point, xValue, yValue)                                                \
+    (point).x = (xValue);                                                                          \
+    (point).y = (yValue)
 #define OFFSET_RECT_COMPONENTS(rect, dx, dy)                                                       \
     (rect).left += (dx);                                                                           \
     (rect).top += (dy);                                                                            \

@@ -3,9 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
 #include <Enums.h>
 #include <Ints.h>
 

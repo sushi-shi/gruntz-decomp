@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
@@ -24,6 +26,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -1231,7 +1234,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
 
 #define CANCEL_UNIT_ARRIVAL_FX(unit, player, index)                                                \
     {                                                                                              \
-        if (ANIMATION_ACT_EQUALS_FOR((unit), "I")) {                                               \
+        if ((unit)->IsAnimationAct("I")) {                                                         \
             LoadTileArrivalFx(                                                                     \
                 (player),                                                                          \
                 (index),                                                                           \
@@ -1318,15 +1321,15 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         }
     }
 
-    isG = (ANIMATION_ACT_EQUALS_FOR(hit, "G"));
+    isG = hit->IsAnimationAct("G");
     if (isG) {
         return 0;
     }
-    isL = (ANIMATION_ACT_EQUALS_FOR(hit, "L"));
+    isL = hit->IsAnimationAct("L");
     if (isL) {
         return 0;
     }
-    isP = (ANIMATION_ACT_EQUALS_FOR(hit, "P"));
+    isP = hit->IsAnimationAct("P");
     if (isP) {
         return 0;
     }
@@ -1392,7 +1395,6 @@ i32 CTriggerMgr::ClearCell(
     return cell->StepArrivalDrop(bx, by, arrivalPhase, -1, 1, 0) != 0;
 }
 
-// @early-stop
 RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
 
@@ -1400,7 +1402,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    if (ANIMATION_ACT_DIFFERS_FOR(cell, "B") && cell->ArrivalPickup() == PICKUP_WARPSTONE) {
+    if (cell->IsNotAnimationAct("B") && cell->ArrivalPickup() == PICKUP_WARPSTONE) {
         CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
         g_gameReg->m_gameStats->m_elapsedTimeMs += world->m_levelTimer->m_stamp.Elapsed();
         world->m_levelTimer->Stop();

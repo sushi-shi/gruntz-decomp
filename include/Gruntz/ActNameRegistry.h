@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>
@@ -21,5 +19,19 @@ struct CString;
         g_typeColl[g_typeCounter] = (key);                                                         \
         g_typeCounter++;                                                                           \
     }
+
+// clang-format off
+#define REGISTER_ACT(registry, key, handler)                                                       \
+    {                                                                                              \
+        ACT_NAME_ID(id, key)                                                                       \
+        {                                                                                          \
+            CActHandler converted = static_cast<CActHandler>(handler);                             \
+            {                                                                                      \
+                CActHandler& slot = (registry)[id];                                                \
+                slot = converted;                                                                  \
+            }                                                                                      \
+        }                                                                                          \
+    }
+// clang-format on
 
 #endif // GRUNTZ_ACTNAMEREGISTRY_H

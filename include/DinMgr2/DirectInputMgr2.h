@@ -11,7 +11,6 @@
 #include <Utils/AsyncKeyState.h>
 
 #include <DinMgr2/InputDeviceGroup.h>
-#include <Mfc.h>
 #include <dinput.h>
 
 class CInputDevBase;

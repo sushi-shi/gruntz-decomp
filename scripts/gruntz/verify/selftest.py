@@ -785,6 +785,21 @@ class IncludeOrderControls(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 io.assert_conserved(p, before, butchered, [])
 
+    def test_the_stdafx_prelude_contract(self):
+        from gruntz.verify import include_order as io
+        cpp, hdr = Path("Probe.cpp"), Path("Probe.h")
+        self.assertEqual(io.prelude_violations(cpp, ["StdAfx.h", "rva.h"]), [])
+        self.assertEqual(io.prelude_violations(cpp, ["rva.h"]),
+                         ["missing <StdAfx.h>"])
+        self.assertEqual(io.prelude_violations(hdr, ["StdAfx.h"]),
+                         ["header includes <StdAfx.h>"])
+        self.assertEqual(io.prelude_violations(hdr, ["afxtempl.h", "Ints.h"]),
+                         ["direct <afxtempl.h>"])
+        self.assertEqual(io.prelude_violations(cpp, ["StdAfx.h", "windows.h"]),
+                         ["direct <windows.h>"])
+        self.assertEqual(io.classify("StdAfx.h", None), io.G_PRELUDE)
+        self.assertLess(io.GROUPS.index(io.G_PRELUDE), io.GROUPS.index(io.G_RVA))
+
     def test_a_library_header_reaching_a_consumer_is_caught(self):
         from gruntz.verify import include_order as io
         with tempfile.TemporaryDirectory() as td:

@@ -1,10 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
-#include <Mfc.h>
-#include <MfcNoInline.h>
-#include <MfcWin.h>
-
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
@@ -43,7 +42,7 @@
 
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
-    bool isI = ANIMATION_ACT_EQUALS("I");
+    bool isI = IsAnimationAct("I");
     if (isI) {
         return 1;
     }

@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/ToobSpikez.h>
@@ -22,8 +24,8 @@ RVA_COMPGEN(0x00012c30, 0x1e, ??_GCToobSpikez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
 RVA(0x00114480, 0xf1)
-i32 DispatchToobSpikezLogic(CGameObject* obj) {
-    TILE_LOGIC_RECORD_DISPATCH(CToobSpikez)
+i32 DispatchToobSpikezLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CToobSpikez)
 }
 
 RVA_DYNINIT(0x001147c0, 0xa, CActRegPool<CToobSpikez>::s_table)

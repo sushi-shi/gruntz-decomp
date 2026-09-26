@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SBI_WellGoo.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -190,22 +190,8 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Write(&m_dstRect, sizeof(m_dstRect));
             char buf[SERIAL_NAME_LEN];
             i32 idx;
-            g_serialCounter++;
-            memset(buf, 0, SERIAL_NAME_LEN);
-            idx = 0;
-            if (m_fgFrame != NULL) {
-                mgr->m_imageRegistry->AnyValueMatches(m_fgFrame, buf, &idx);
-            }
-            arc->Write(buf, SERIAL_NAME_LEN);
-            arc->Write(&idx, sizeof(idx));
-            g_serialCounter++;
-            memset(buf, 0, SERIAL_NAME_LEN);
-            idx = 0;
-            if (m_baseFrame != NULL) {
-                mgr->m_imageRegistry->AnyValueMatches(m_baseFrame, buf, &idx);
-            }
-            arc->Write(buf, SERIAL_NAME_LEN);
-            arc->Write(&idx, sizeof(idx));
+            SERIAL_WRITE_FRAME(arc, mgr, buf, idx, m_fgFrame);
+            SERIAL_WRITE_FRAME(arc, mgr, buf, idx, m_baseFrame);
             return 1;
         }
         case SERIAL_LOAD: {

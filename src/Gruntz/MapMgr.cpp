@@ -1,9 +1,10 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/MapMgr.h>
 
-#include <Mfc.h>
-
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/GameMode.h>

@@ -1,11 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Wwd/WwdObjMgr.h>
 
-#include <Mfc.h>
-#include <MfcWin.h>
-
-#include <AddrWord.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -16,6 +14,7 @@
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LogicTypeId.h>
