@@ -27,6 +27,7 @@
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayDefeatCountdown.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -1372,8 +1373,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
         CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
         g_gameReg->m_gameStats->m_elapsedTimeMs += world->m_levelTimer->m_stamp.Elapsed();
         world->m_levelTimer->Stop();
-        world->SetDefeatCountdown(false, 0xbb7);
-        world->m_statusBar->LockDestructButton(1);
+        world->CancelDefeatCountdown();
         StartPlayerVictorySequence(g_curPlayer);
     }
 }

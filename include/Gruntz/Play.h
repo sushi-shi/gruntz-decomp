@@ -254,6 +254,7 @@ public:
     i32 FlushPendingOps();
 
     i32 SetDefeatCountdown(b32 active, i32 durationMs);
+    inline void CancelDefeatCountdown();
     i32 CanQuickSave();
     i32 PostHudRect();
 
