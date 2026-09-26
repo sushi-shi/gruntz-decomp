@@ -1186,6 +1186,11 @@ source = "src/DDrawMgr/Fader.cpp"
 flags = "cpp"
 
 [[unit]]
+unit = "fadermesh"
+source = "src/DDrawMgr/FaderMesh.cpp"
+flags = "cpp"
+
+[[unit]]
 unit = "faderflat"
 source = "src/DDrawMgr/FaderFlat.cpp"
 # NOT cpp-rtti: retail's five CFader* vtables carry no Complete Object Locator at
