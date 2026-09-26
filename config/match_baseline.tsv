@@ -4671,7 +4671,7 @@ wwdgameobjectrender	?Clear@CWwdGameObject@@QAEXXZ	100.0000	100.0000	2	da94c201af
 wwdgameobjectrender	?CreateNamed@CWwdGameObject@@QAEPAV1@HHHHPBDH@Z	100.0000	100.0000	6	4b23d9d9b6ea	0x166780	100.0000	
 wwdgameobjectrender	?CreateObject@CWwdGameObject@@QAEPAV1@HHHHPAUCLogicRecord@@H@Z	87.4000	87.4000	5	359de1a0d3b3	0x166640	87.4000	
 wwdgameobjectrender	?RemoveChild@CWwdGameObject@@QAEHPAUCGameObject@@@Z	100.0000	100.0000	1	bf1b351123f0	0x166850	100.0000	
-wwdgameobjectrender	?Render@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@@Z	99.8378	99.8378	8	08b85fa90f4b	0x1660f0	100.0000	
+wwdgameobjectrender	?Render@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	99.8378	8	08b85fa90f4b	0x1660f0	100.0000	
 wwdgameobjectrender	?Render@CWwdGameObject@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	1	1315cf5b6d52	0x1668b0	100.0000	
 wwdgameobjectrender	?Setup@CWwdGameObject@@UAEHHHHPAUCLogicRecord@@@Z	100.0000	100.0000	3	3b9da86f92d7	0x1665e0	100.0000	
 wwdgameobjectrender	?WalkChildWorkers@CWwdGameObject@@QAEHXZ	100.0000	100.0000	6	cf90a21460f3	0x166880	100.0000	
