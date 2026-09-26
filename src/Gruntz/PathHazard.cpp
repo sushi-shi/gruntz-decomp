@@ -135,7 +135,6 @@ void RegisterPathHazardActions() {
         static_cast<CActHandler>(&CPathHazard::ForwardSiblingTick);
 }
 
-// @early-stop
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -179,8 +178,9 @@ i32 CPathHazard::Tick() {
             this->Arrive();
             i32 segs = m_object->m_damage;
             if (segs > 0) {
-                m_leg.m_window = static_cast<u32>(segs);
-                m_leg.m_deadline = static_cast<u32>(g_frameTime);
+                i64* leg = &m_leg.m_deadline;
+                leg[1] = static_cast<u32>(segs);
+                leg[0] = static_cast<u32>(g_frameTime);
                 SET_ANIMATION_ACT("B");
                 return 0;
             }
