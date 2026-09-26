@@ -203,7 +203,6 @@ i32 CMultiStartDlg::BuildLatencyOptions() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c1fd0, 0x99)
 i32 CMultiStartDlg::RefreshLatencyControl() {
     CWnd* latencyCombo = GetDlgItem(IDX(IDC_MULTI_LATENCY));
@@ -218,15 +217,14 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
         latencyCombo->EnableWindow(false);
     }
     HWND dialogHwnd = GetSafeHwnd();
-    CMulti* currentMulti = g_multiState;
-    if (currentMulti->m_autoCommandDelay) {
+    if (g_multiState->m_autoCommandDelay) {
         m_latencyOptions->SelectItem(dialogHwnd, IDX(IDC_MULTI_LATENCY), 0, 0);
     } else {
         m_latencyOptions->SelectItem(
             dialogHwnd,
             IDX(IDC_MULTI_LATENCY),
-            currentMulti->m_commandDelay,
-            currentMulti->m_resendInterval
+            g_multiState->m_commandDelay,
+            g_multiState->m_resendInterval
         );
     }
     return 1;
