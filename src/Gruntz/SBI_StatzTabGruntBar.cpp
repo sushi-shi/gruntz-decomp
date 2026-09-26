@@ -177,7 +177,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
 
         timerVal = m_timerValue;
         if (unit->m_arrived != false) {
-            if (static_cast<i64>(g_frameTime) - m_timerAnchor.m_v >= m_timerWindow.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_timerTiming.m_start >= m_timerTiming.m_interval) {
                 if (timerVal > 0) {
                     timerVal++;
                     if (timerVal > 0xa) {
@@ -186,10 +186,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
                 } else {
                     timerVal = 1;
                 }
-                m_timerWindowLo = 0x32;
-                m_timerWindowHi = 0;
-                m_timerAnchorLo = g_frameTime;
-                m_timerAnchorHi = 0;
+                m_timerTiming.Start(0x32);
             }
         } else {
             timerVal = -1;

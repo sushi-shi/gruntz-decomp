@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Clock64.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarItem.h>
@@ -21,10 +21,6 @@ class CDDrawWorker;
 class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
     CSBI_StatzTabGruntBar() {
-        m_timerAnchorLo = 0;
-        m_timerWindowLo = 0;
-        m_timerAnchorHi = 0;
-        m_timerWindowHi = 0;
         m_kind = SBI_KIND_STATZ_TAB_GRUNT_BAR;
         m_statusGlyphLatched = NULL;
         m_abilityGlyphLatched = NULL;
@@ -84,20 +80,7 @@ public:
     i32 m_timerValue;
     CDDrawWorker* m_glyphMap;
 
-    union {
-        Clock64 m_timerAnchor;
-        struct {
-            i32 m_timerAnchorLo;
-            i32 m_timerAnchorHi;
-        };
-    };
-    union {
-        Clock64 m_timerWindow;
-        struct {
-            i32 m_timerWindowLo;
-            i32 m_timerWindowHi;
-        };
-    };
+    ClockInterval m_timerTiming;
 };
 
 #endif // SBI_STATZTABGRUNTBAR_H
