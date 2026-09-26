@@ -40,8 +40,7 @@ i32 CAniPlayer::Start(
         == SBICMD_NONE) {
         return 0;
     }
-    m_window64 = static_cast<u32>(m_interval);
-    m_start64 = g_frameTime;
+    m_timing.Start(m_interval);
     return 1;
 }
 
@@ -50,12 +49,9 @@ i32 CAniPlayer::Start(
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 unused) {
-    if (static_cast<__int64>(g_frameTime) - m_start64 >= m_window64) {
+    if (static_cast<__int64>(g_frameTime) - m_timing.m_start >= m_timing.m_interval) {
         m_frameIndex = (m_frameIndex == m_frameStart) ? m_frameEnd : m_frameStart;
-        m_windowLo = m_interval;
-        m_windowHi = 0;
-        m_startLo = g_frameTime;
-        m_startHi = 0;
+        m_timing.Start(m_interval);
     }
     return 1;
 }
@@ -87,6 +83,6 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId
         == 0) {
         return 0;
     }
-    SerBandPair(arc, mode, &m_start64);
+    SerBandPair(arc, mode, &m_timing);
     return 1;
 }
