@@ -36,10 +36,10 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     m_vehicleLoopSound = NULL;
     m_powerupLoopSound = NULL;
     m_struckCount = 0;
-    m_struckTiming.m_start.m_lo = 0;
-    m_struckTiming.m_interval.m_lo = 0;
-    m_struckTiming.m_start.m_hi = 0;
-    m_struckTiming.m_interval.m_hi = 0;
+    m_struckTiming.m_startLo = 0;
+    m_struckTiming.m_intervalLo = 0;
+    m_struckTiming.m_startHi = 0;
+    m_struckTiming.m_intervalHi = 0;
 
     SERIALREF(m_selectedSprite);
     SERIALREF(m_toySprite);

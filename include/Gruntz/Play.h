@@ -321,12 +321,10 @@ public:
     RECT m_hudRect;
 
     CMinimap* m_minimap;
-    char m_pad324[0x328 - 0x324];
     ClockInterval m_bootyTiming;
 
     ClockInterval m_ambientTiming;
     b32 m_ambientInitDone;
-    char m_pad34c[0x350 - 0x34c];
     ClockInterval m_syncTiming;
     Coord m_tileClick;
     b32 m_dragInhibit1;
@@ -351,7 +349,6 @@ public:
     POINT m_pathPreviewSource;
     POINT m_pathPreviewDestination;
     i16 m_pathPreviewColor;
-    char m_pad42a[0x430 - 0x42a];
 
     ClockInterval m_region0Timing;
     ClockInterval m_region1Timing;

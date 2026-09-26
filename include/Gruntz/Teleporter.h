@@ -5,6 +5,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -20,10 +21,7 @@ GZ_ENUM_END(TeleporterKind)
 class CTeleporter : public CUserLogic, public CWapX {
 public:
 public:
-    CTeleporter() {
-        m_armClock = 0;
-        m_interval = 0;
-    }
+    CTeleporter() {}
     CTeleporter(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;
@@ -43,8 +41,7 @@ public:
 
     b32 m_armed;
 
-    i64 m_armClock;
-    i64 m_interval;
+    ClockInterval m_armTiming;
     b32 m_tickHandled;
 };
 

@@ -3,7 +3,6 @@
 
 #include <rva.h>
 
-#include <Clock64.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
@@ -13,21 +12,33 @@ class CFileMemBase;
 struct CGameObject;
 
 struct ClockInterval {
-    Clock64 m_start;
-    Clock64 m_interval;
+    union {
+        i64 m_start;
+        struct {
+            i32 m_startLo;
+            i32 m_startHi;
+        };
+    };
+    union {
+        i64 m_interval;
+        struct {
+            i32 m_intervalLo;
+            i32 m_intervalHi;
+        };
+    };
 
     ClockInterval() {
-        m_start.m_v = 0;
-        m_interval.m_v = 0;
+        m_start = 0;
+        m_interval = 0;
     }
 
     void Start(u32 interval) {
-        m_interval.m_v = interval;
-        m_start.m_v = g_frameTime;
+        m_interval = interval;
+        m_start = g_frameTime;
     }
 
     i64 Deadline() const {
-        return m_interval.m_v + m_start.m_v;
+        return m_interval + m_start;
     }
 
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);

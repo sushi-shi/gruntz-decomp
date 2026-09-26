@@ -101,10 +101,10 @@ i32 CTimer::Tick(i32 elapsedMs) {
         m_currentMs = 0;
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
         ls->m_winLoseBanner = true;
-        ls->m_cueTiming.m_interval.m_lo = 0x1f4;
-        ls->m_cueTiming.m_interval.m_hi = 0;
-        ls->m_cueTiming.m_start.m_lo = g_frameTime;
-        ls->m_cueTiming.m_start.m_hi = 0;
+        ls->m_cueTiming.m_intervalLo = 0x1f4;
+        ls->m_cueTiming.m_intervalHi = 0;
+        ls->m_cueTiming.m_startLo = g_frameTime;
+        ls->m_cueTiming.m_startHi = 0;
         g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {

@@ -178,7 +178,7 @@ i32 CPathHazard::Tick() {
             this->Arrive();
             i32 segs = m_object->m_damage;
             if (segs > 0) {
-                i64* leg = &m_leg.m_deadline;
+                i64* leg = &m_leg.m_start;
                 leg[1] = static_cast<u32>(segs);
                 leg[0] = static_cast<u32>(g_frameTime);
                 SET_ANIMATION_ACT("B");
@@ -225,7 +225,7 @@ RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != false) {
         i32 idx = 5;
-        if (static_cast<i64>(g_frameTime) - m_strike.m_deadline < m_strike.m_window) {
+        if (static_cast<i64>(g_frameTime) - m_strike.m_start < m_strike.m_interval) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 idx = 0;
             }
@@ -244,9 +244,9 @@ RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != false) {
         i32 sel = 5;
-        i64 elapsed = static_cast<i64>(g_frameTime) - m_strike.m_deadline;
+        i64 elapsed = static_cast<i64>(g_frameTime) - m_strike.m_start;
 
-        if (elapsed < m_strike.m_window) {
+        if (elapsed < m_strike.m_interval) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 sel = 0;
             }
@@ -291,8 +291,8 @@ i32 CPathHazard::SiblingTick() {
     }
 
     CGruntzMgr* tableReg = g_gameReg;
-    i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_deadline;
-    if (legElapsed >= m_leg.m_window) {
+    i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_start;
+    if (legElapsed >= m_leg.m_interval) {
         CShadeTable* frame = tableReg->m_lightFxMgr->m_tables[5];
         CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
@@ -306,9 +306,9 @@ i32 CPathHazard::SiblingTick() {
 RVA(0x000b4640, 0x104)
 i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     m_strikeArmed = true;
-    m_strike.m_window =
+    m_strike.m_interval =
         static_cast<i64>(g_buteMgr.GetDword("Hazardz", "RainCloudFlashTime", 0x7d0));
-    m_strike.m_deadline = static_cast<i64>(g_frameTime);
+    m_strike.m_start = static_cast<i64>(g_frameTime);
     g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_ELECTROCUTE, -1);
 
     CWwdSpriteObject* obj = m_object;

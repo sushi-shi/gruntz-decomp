@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/BootySeqPhase.h>
 #include <Gruntz/BootyStatRow.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GlyphStringDraw.h>
@@ -138,10 +139,6 @@ public:
 class CBootyState : public CState {
 public:
     CBootyState() {
-        m_frameStampLo = 0;
-        m_frameIntervalLo = 0;
-        m_frameStampHi = 0;
-        m_frameIntervalHi = 0;
         m_secretHudHandled = false;
         m_activation = BOOTYSEQ_WARP_CUE;
         m_slot = 0;
@@ -205,20 +202,7 @@ public:
     b32 m_secretHudHandled;
     BootySeqPhase m_activation;
 
-    union {
-        i64 m_frameStamp64;
-        struct {
-            i32 m_frameStampLo;
-            i32 m_frameStampHi;
-        };
-    };
-    union {
-        i64 m_frameInterval64;
-        struct {
-            i32 m_frameIntervalLo;
-            i32 m_frameIntervalHi;
-        };
-    };
+    ClockInterval m_frameTiming;
     b32 m_initOnce;
     b32 m_secretBannerOnce;
 

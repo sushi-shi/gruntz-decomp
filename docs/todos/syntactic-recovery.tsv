@@ -37,3 +37,4 @@ rva	unit	function	lost_max	cur
 0x07d450	triggermgr	?ToggleToolTargeting@CTriggerMgr@@QAEHXZ	100.0000	91.3976
 0x06dae0	triggermgrgrid	?UseEquippedToolAt@CTriggerMgr@@QAEHHHHH@Z	88.1407	88.1297
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.4317	90.2860
+0x041aa0	wormhole	?Update@CTeleporter@@QAEHXZ	100.0000	98.9103

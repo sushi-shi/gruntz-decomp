@@ -494,25 +494,24 @@ public:
     void ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
 
     i32 IsArrivalRerollPending() {
-        return static_cast<i64>(g_frameTime) - m_arrivalRerollTiming.m_start.m_v
-               < m_arrivalRerollTiming.m_interval.m_v;
+        return static_cast<i64>(g_frameTime) - m_arrivalRerollTiming.m_start
+               < m_arrivalRerollTiming.m_interval;
     }
 
     i32 IsHoldPending() {
-        return static_cast<i64>(g_frameTime) - m_holdTiming.m_start.m_v
-               < m_holdTiming.m_interval.m_v;
+        return static_cast<i64>(g_frameTime) - m_holdTiming.m_start < m_holdTiming.m_interval;
     }
 
     void ResetArrivalReroll() {
         ResetEntranceAnimation(1, 1, 0);
-        m_arrivalRerollTiming.m_start.m_lo = 0;
-        m_arrivalRerollTiming.m_interval.m_lo = 0;
-        m_arrivalRerollTiming.m_start.m_hi = 0;
-        m_arrivalRerollTiming.m_interval.m_hi = 0;
-        m_arrivalRerollTiming.m_interval.m_lo = rand() % 30000 + 30000;
-        m_arrivalRerollTiming.m_interval.m_hi = 0;
-        m_arrivalRerollTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
-        m_arrivalRerollTiming.m_start.m_hi = 0;
+        m_arrivalRerollTiming.m_startLo = 0;
+        m_arrivalRerollTiming.m_intervalLo = 0;
+        m_arrivalRerollTiming.m_startHi = 0;
+        m_arrivalRerollTiming.m_intervalHi = 0;
+        m_arrivalRerollTiming.m_intervalLo = rand() % 30000 + 30000;
+        m_arrivalRerollTiming.m_intervalHi = 0;
+        m_arrivalRerollTiming.m_startLo = static_cast<i32>(g_frameTime);
+        m_arrivalRerollTiming.m_startHi = 0;
     }
     i32 ResolveEntranceArrival();
     void ClearAllSprites();

@@ -46,7 +46,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTION_AREA)
     m_phase = 1;
-    m_timing.m_interval.m_v = 0;
+    m_timing.m_interval = 0;
     Hide();
 }
 
@@ -67,11 +67,11 @@ void CProjActObj::RegisterType() {
 
 RVA(0x00008440, 0xfe)
 i32 CActionArea::Tick() {
-    i64* ts = &m_timing.m_start.m_v;
+    i64* ts = &m_timing.m_start;
     i32* phase = &m_phase;
-    if (static_cast<i64>(g_frameTime) - *ts >= m_timing.m_interval.m_v) {
+    if (static_cast<i64>(g_frameTime) - *ts >= m_timing.m_interval) {
         *phase = (*phase == 0);
-        m_timing.m_interval.m_v = 0x1f4;
+        m_timing.m_interval = 0x1f4;
         *ts = static_cast<u32>(g_frameTime);
     }
     if (*phase != 0) {

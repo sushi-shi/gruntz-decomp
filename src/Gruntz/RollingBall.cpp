@@ -53,7 +53,7 @@ RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 
 RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_explodeStart(0), m_explodeWindow(0) {
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SwitchAnimationByName("GAME_CYCLE100", 0);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
@@ -94,8 +94,8 @@ CRollingBall::CRollingBall(CGameObject* obj)
         && m_object->m_smarts != 1) {
         time += 1000;
     }
-    m_explodeWindow = static_cast<u32>(m_object->m_points);
-    m_explodeStart = static_cast<u32>(g_frameTime);
+    m_explodeTiming.m_interval = static_cast<u32>(m_object->m_points);
+    m_explodeTiming.m_start = static_cast<u32>(g_frameTime);
     m_target.Set(snapX, snapY);
     m_explodeLatch = false;
     m_fallLatch = 0;
@@ -131,7 +131,7 @@ i32 CRollingBall::Update() {
 
     CWwdSpriteObject* logic = m_object;
     if (logic->m_points > 0) {
-        if (static_cast<i64>(g_frameTime) - m_explodeStart >= m_explodeWindow) {
+        if (static_cast<i64>(g_frameTime) - m_explodeTiming.m_start >= m_explodeTiming.m_interval) {
             SetImageSetByName("LEVEL_ROLLINGBALL_EXPLOSION");
             SwitchAnimationByName("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
@@ -551,7 +551,7 @@ i32 CRollingBall::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    i64* explode = &m_explodeStart;
+    i64* explode = &m_explodeTiming.m_start;
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(explode, sizeof(*explode));
