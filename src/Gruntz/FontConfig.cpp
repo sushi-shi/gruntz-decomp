@@ -7,6 +7,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/ColorTintRef.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -270,7 +271,6 @@ void CFontConfig::EndInput() {
     }
 }
 
-// @early-stop
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == NULL) {
@@ -284,10 +284,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
         DrawTextA(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
         i32 textW = rc.right - rc.left;
         i32 provW = rect->right - rect->left;
-        g_chatTextWidth = provW;
-        if (provW >= textW) {
-            g_chatTextWidth = textW;
-        }
+        g_chatTextWidth = Min(provW, textW);
     }
 
     CDC* dc = CDC::FromHandle(hdc);
