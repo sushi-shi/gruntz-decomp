@@ -13,7 +13,7 @@
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
-#include <Gruntz/SoundCueRegistryInline.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <Gruntz/State.h>

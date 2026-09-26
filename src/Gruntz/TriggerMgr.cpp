@@ -40,7 +40,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
-#include <Gruntz/SoundCueRegistryInline.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarDock.h>

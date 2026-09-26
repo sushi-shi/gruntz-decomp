@@ -21,7 +21,7 @@
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
-#include <Gruntz/SoundCueRegistryInline.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarMgr.h>
