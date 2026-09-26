@@ -1727,19 +1727,19 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                    CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                    mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                     return 1;
                 }
-                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                 mgr->FinalizeLevelAndShowResults();
                 return 1;
             }
             if (vk == 'N' || vk == VK_ESCAPE) {
-                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                 this->CloseLevelOverlay(0);
                 return 1;
             }
@@ -1748,7 +1748,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Q') {
                 if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                    CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                    mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
@@ -1758,13 +1758,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
 
             if (vk == 'S' && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                 mgr->FinalizeLevelAndShowResults();
             }
             if (vk == 'R') {
                 if (mgr->m_gameMode == GAMEMODE_QUESTZ
                     && g_gameReg->m_triggerMgr->m_phase != FINISH_STATE_VICTORY) {
-                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
+                    g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->m_hwnd, WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
                 }
@@ -1773,7 +1773,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'N') {
                 if (mgr->m_gameMode == GAMEMODE_QUESTZ
                     && g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
+                    g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
                 }
                 return 1;
@@ -1781,7 +1781,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'O') {
                 if (mgr->m_gameMode != GAMEMODE_QUESTZ
                     && this->m_statusBar->m_observerTabAvailable != false) {
-                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
+                    g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
                     this->CloseLevelOverlay(0);
                 }
                 return 1;
@@ -1819,7 +1819,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (this->FlushPendingOps() != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
+        g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         if (g_gameReg->m_frameGate != false) {
             g_gameReg->m_frameGate ^= 1;
             g_gameReg->FinishLevel(g_gameReg->m_frameGate, true);
@@ -1898,7 +1898,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             h->m_frameGate ^= 1;
             this->m_mgr->FinishLevel(h->m_frameGate, true);
         }
-        CLEAR_TAB_HINT(this->m_mgr->m_world->m_soundRegistry);
+        this->m_mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         this->OpenLevelOverlay(true);
         return 1;
     }
@@ -2003,7 +2003,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2028,7 +2028,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2049,7 +2049,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2073,7 +2073,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         this->m_statusBar->AdvanceTab(g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0));
         return 1;
     }
@@ -2082,7 +2082,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+        mgr->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2488,8 +2488,6 @@ tail_default2:
     }
     return 1;
 }
-
-#undef CLEAR_TAB_HINT
 
 RVA(0x000cda70, 0x7a)
 i32 CPlay::OnKeyUp(i32 key, i32 flags) {

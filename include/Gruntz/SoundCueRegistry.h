@@ -90,17 +90,6 @@ public:
     i32 m_defaultReplayDelayMs;
 };
 
-#define CLEAR_TAB_HINT(sndHost)                                                                    \
-    do {                                                                                           \
-        SoundCueRegistry* _s = (sndHost);                                                          \
-        if (_s->m_silentMode == false) {                                                           \
-            SoundCue* found = NULL;                                                                \
-            MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
-            if (found != NULL)                                                                     \
-                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                               \
-        }                                                                                          \
-    } while (0)
-
 #define ADD_SOUND_CUE_ENTRY(cue, key)                                                              \
     m_cues[key] = cue;                                                                             \
     cue->m_replayDelayMs = m_defaultReplayDelayMs
