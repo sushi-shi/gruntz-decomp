@@ -359,7 +359,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
 
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId nextState) {
-    SoundCue* found = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
+    SoundCue* found = m_world->m_soundRegistry->FindCue("BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, true);
         while (found->m_sound->IsPlaying()) {
@@ -2036,7 +2036,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId nextState) {
-    SoundCue* found = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
+    SoundCue* found = m_world->m_soundRegistry->FindCue("BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, true);
         while (found->m_sound->IsPlaying()) {

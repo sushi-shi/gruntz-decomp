@@ -1503,10 +1503,10 @@ void CGruntzMgr::DelayedQuit() {
         return;
     }
     m_delayedQuitPending = true;
-    SoundCue* out = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+    SoundCue* out = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
     i32 base;
     if (out != NULL) {
-        out = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        out = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
         base = out->m_sound->m_durationMs + 0x1f4;
     } else {
         base = 0;

@@ -2010,8 +2010,7 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
     switch (state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
-                SoundCue* p =
-                    MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                SoundCue* p = m_world->m_soundRegistry->FindCue("GAME_FINISHLEVEL");
                 m_cueTimer.m_window = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_cueTimer.m_base = g_frameTime;
                 PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_FINISHLEVEL");

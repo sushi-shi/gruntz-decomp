@@ -379,134 +379,131 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
 RVA(0x000dc060, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
     SoundCue* d;
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_PYRAMIDMOVE");
+    d = m_world->m_soundRegistry->FindCue("GAME_PYRAMIDMOVE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_TELEPORTEROPEN");
+    d = m_world->m_soundRegistry->FindCue("GAME_TELEPORTEROPEN");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_TELEPORTERCLOSE");
+    d = m_world->m_soundRegistry->FindCue("GAME_TELEPORTERCLOSE");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_TELEPORTERALL");
+    d = m_world->m_soundRegistry->FindCue("GAME_TELEPORTERALL");
     if (d != NULL) {
         d->m_replayDelayMs = 4000;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_BRICKBREAK");
+    d = m_world->m_soundRegistry->FindCue("GAME_BRICKBREAK");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_DEATHBRIDGEMOVE");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_DEATHBRIDGEMOVE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_WATERBRIDGEMOVE");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_WATERBRIDGEMOVE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_ROCKBREAK");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_ROCKBREAK");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_LAVAGEYSER");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_LAVAGEYSER");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_TRAPDOORCLOSE");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_TRAPDOORCLOSE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_TRAPDOOROPEN");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_TRAPDOOROPEN");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_CANDLEIGNITE");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_CANDLEIGNITE");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_CANDLEUP");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_CANDLEUP");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_CANDLEDOWN");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_CANDLEDOWN");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_GOLFBALLAIR2");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_GOLFBALLAIR2");
     if (d != NULL) {
         d->m_replayDelayMs = 250;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_GOLFBALLHOLE");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_GOLFBALLHOLE");
     if (d != NULL) {
         d->m_replayDelayMs = 250;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_GOLFBALLSINK");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_GOLFBALLSINK");
     if (d != NULL) {
         d->m_replayDelayMs = 250;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_EXPLOSION1");
+    d = m_world->m_soundRegistry->FindCue("GAME_EXPLOSION1");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_OUTLETHAZARD");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_OUTLETHAZARD");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_DEATHZ_DEATHZFREEZE1A");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZFREEZE1A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_DEATHZ_DEATHZFREEZE2A");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZFREEZE2A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_DEATHZ_DEATHZUNFREEZE1A");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_DEATHZ_DEATHZUNFREEZE1A");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_DEATHZ_RESSURECT");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_RESSURECT");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_DEATHZ_DEATHZSQUASH1A");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZSQUASH1A");
     if (d != NULL) {
         d->m_replayDelayMs = 100;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_CLOUDHAZARDMOVE");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_CLOUDHAZARDMOVE");
     if (d != NULL) {
         d->m_replayDelayMs = 10000;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_CLOUDHAZARDKILL");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_CLOUDHAZARDKILL");
     if (d != NULL) {
         d->m_replayDelayMs = 3000;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = MapFind<SoundCue>(
-        m_world->m_soundRegistry->m_cues,
-        "GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1"
-    );
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1");
+    d = m_world->m_soundRegistry->FindCue("GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1");
     if (d != NULL) {
         d->m_replayDelayMs = 1000;
     }
-    d = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "LEVEL_PLANEHAZARDFLY");
+    d = m_world->m_soundRegistry->FindCue("LEVEL_PLANEHAZARDFLY");
     if (d != NULL) {
         d->m_replayDelayMs = 5000;
     }
