@@ -23,6 +23,7 @@ rva	unit	function	lost_max	cur
 0x13f460	ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	84.7773	78.1182
 0x0c68b0	droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	95.1716	94.7239
 0x180640	faderlight	?RenderFrame@CFaderLight@@UAEXH@Z	95.0099	94.9913
+0x17b5f0	feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.0114
 0x045d30	fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	97.0000	94.2786
 0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	73.7003
 0x0ecc90	gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	87.6818	80.1788
