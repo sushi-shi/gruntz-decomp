@@ -6,8 +6,7 @@
 #include <Gruntz/TriggerMgr.h>
 
 inline CGrunt* FindGruntByIdentity(CGruntzMgr* reg, const GruntIdentity& identity) {
-    return reg->m_triggerMgr
-        ->m_units[identity.m_unitIndex + identity.m_playerIndex * TM_UNITS_PER_PLAYER];
+    return reg->m_triggerMgr->UnitAt(identity.m_playerIndex, identity.m_unitIndex);
 }
 
 #endif // GRUNTZ_GRUNTZ_GRUNTCELLINLINE_H

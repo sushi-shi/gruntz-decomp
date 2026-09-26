@@ -1035,7 +1035,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
     }
     i32 playerIndex = (attr >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
     i32 unitIndex = attr & GRUNT_IDENTITY_COMPONENT_MASK;
-    CGrunt* cell = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return NULL;
     }
@@ -1109,7 +1109,7 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 i32 playerIndex =
                     (val >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
                 i32 unitIndex = val & GRUNT_IDENTITY_COMPONENT_MASK;
-                CGrunt* g = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
+                CGrunt* g = UnitAt(playerIndex, unitIndex);
                 if (!g) {
                     continue;
                 }

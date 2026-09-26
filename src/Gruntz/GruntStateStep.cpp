@@ -90,8 +90,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     {
         i32 targetPlayerIndex = g->m_arrivalCell.m_x;
         i32 targetUnitIndex = g->m_arrivalCell.m_y;
-        CGrunt* cur =
-            m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * targetPlayerIndex + targetUnitIndex];
+        CGrunt* cur = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
         if (cur != NULL) {
             CGameObject* s = cur->m_object;
             if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {

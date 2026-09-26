@@ -974,8 +974,7 @@ i32 CGrunt::HandleCombatContact(
         i32 phase = m_arrivalPhase;
         if ((phase == ARRIVAL_TAG_TRIGGER_B || phase == ARRIVAL_TAG_TRIGGER_A)
             && m_arrivalActive != false) {
-            CGrunt* occ =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 sx = inner->m_screenX;
@@ -1189,7 +1188,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     if (attackerGruntKind == GRUNT_CONVERSION) {
-        CGrunt* enemy = m_triggerMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
+        CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
         if (enemy != NULL
             && m_triggerMgr->SpawnGrunt(
                    this->m_playerIndex,
@@ -1227,8 +1226,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     } else if (this->m_gruntKind == GRUNT_REACTIVEARMOR) {
         hit = static_cast<i32>((static_cast<float>(hit) * g_quarterScale));
         if (fromProjectile == 0) {
-            CGrunt* enemy =
-                m_triggerMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
+            CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
             if (enemy != NULL && enemy->m_entranceCommitted != false) {
                 i32 nh = enemy->m_health - hit * 3;
                 nh = (nh < 0) ? 0 : nh;
@@ -1510,7 +1508,7 @@ i32 CGrunt::CommitNeighbor(
     ArmGruntCombatTimeout(this);
     m_neighborScanEnabled = true;
 
-    CGrunt* nb = m_triggerMgr->m_units[targetPlayerIndex * TM_UNITS_PER_PLAYER + targetUnitIndex];
+    CGrunt* nb = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
     if (nb == NULL || nb->m_entranceCommitted == false || m_entranceCommitted == false) {
         return 0;
     }
@@ -1616,8 +1614,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         return NULL;
     }
 
-    CGrunt* n =
-        m_triggerMgr->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
+    CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
     if (n != NULL && n->m_entranceCommitted != false) {
         if (validate != 0) {
             if (!(GRUNT_AT_SAVED_SCREEN_POS(n))) {
@@ -2567,9 +2564,7 @@ void CGrunt::AdvanceMotion() {
                 i32 result = -1;
                 if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_A) {
                     if (m_arrivalActive != false) {
-                        CGrunt* other =
-                            m_triggerMgr->m_units
-                                [m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                        CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
                             i32 otherPxY = other->m_object->m_screenY;
@@ -2615,9 +2610,7 @@ void CGrunt::AdvanceMotion() {
                     }
                 } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
                     if (m_arrivalActive != false) {
-                        CGrunt* other =
-                            m_triggerMgr->m_units
-                                [m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                        CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
                             i32 otherPxY = other->m_object->m_screenY;

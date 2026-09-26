@@ -142,8 +142,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
         }
         case AISTATE_CHASE: {
 
-            CGrunt* t =
-                m_triggerMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
+            CGrunt* t = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* cur = m_triggerMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
                 ResetToSeek(this);
@@ -167,9 +166,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
         case AISTATE_ATTACK: {
 
             if (m_poweredUp != false) {
-                CGrunt* t =
-                    m_triggerMgr
-                        ->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
+                CGrunt* t = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (t == NULL || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0
                     || t->m_entranceCommitted == false) {
                     m_defenderState = AISTATE_CHASE;

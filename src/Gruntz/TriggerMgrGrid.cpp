@@ -309,7 +309,7 @@ i32 CTriggerMgr::StartUnitDeath(
     GruntDeathType deathType,
     i32 deathParam
 ) {
-    CGrunt* unit = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* unit = UnitAt(playerIndex, unitIndex);
     if (unit == NULL) {
         return 0;
     }
@@ -419,8 +419,7 @@ CGrunt* CTriggerMgr::CellHitTest(
 
 RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) {
-    i32 idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
-    CGrunt* cell = m_units[idx];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
@@ -1062,7 +1061,7 @@ RVA(0x0006dae0, 0x4f9)
 i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
-    CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
@@ -1224,7 +1223,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     bool isG;
     bool isL;
     bool isP;
-    CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
         return 0;
     }
@@ -1344,8 +1343,7 @@ i32 CTriggerMgr::ClearCell(
     i32 worldY,
     i32 arrivalPhase
 ) {
-    i32 idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
-    CGrunt* cell = m_units[idx];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }

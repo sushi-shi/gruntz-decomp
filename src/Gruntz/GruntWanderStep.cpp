@@ -110,8 +110,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
         }
 
         case AISTATE_CHASE: {
-            CGrunt* slot =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* active = m_triggerMgr->FindNearestEnemy(this);
             if (active != NULL && active != slot) {
                 ResetToSeek(this);
@@ -147,8 +146,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            CGrunt* slot =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (slot == NULL || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0
                 || slot->m_entranceCommitted == false) {
                 goto ph1;
@@ -202,8 +200,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
                 CGrunt* entry =
-                    g_gameReg->m_triggerMgr
-                        ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                    g_gameReg->m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (entry != NULL) {
                     CGameObject* candidateObject = entry->m_object;
                     CRect rc(

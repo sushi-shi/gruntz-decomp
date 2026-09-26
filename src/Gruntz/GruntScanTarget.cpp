@@ -59,8 +59,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         for (i32 candidateUnitIndex = 0; candidateUnitIndex < TM_UNITS_PER_PLAYER;
              candidateUnitIndex++) {
             CGrunt* cand =
-                g_gameReg->m_triggerMgr
-                    ->m_units[candidatePlayerIndex * TM_UNITS_PER_PLAYER + candidateUnitIndex];
+                g_gameReg->m_triggerMgr->UnitAt(candidatePlayerIndex, candidateUnitIndex);
             if (cand != NULL && cand->m_entranceCommitted != false
                 && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
@@ -240,8 +239,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             return 1;
         }
         case AISTATE_CHASE: {
-            CGrunt* sg =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* sg = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (best != NULL && best != sg) {
                 ResetToSeek(this);
                 return 1;
@@ -278,9 +276,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 return 1;
             }
             {
-                CGrunt* sg =
-                    m_triggerMgr
-                        ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                CGrunt* sg = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (sg != NULL) {
                     i32 pa;
                     PRIO(pa, m_entranceReason);

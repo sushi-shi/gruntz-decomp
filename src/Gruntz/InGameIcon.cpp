@@ -564,7 +564,6 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     b32 matchActive;
     b32 flag;
     i32 sub;
-    i32 idx;
     b32 ok;
     PickupType pickup;
     CGruntzMgr* reg = g_gameReg;
@@ -584,8 +583,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
             flag = false;
         }
         sub = obj->m_faceDirection;
-        idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
-        cell = reg->m_triggerMgr->m_units[idx];
+        cell = reg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
         if (cell == NULL || cell->m_entranceCommitted == false) {
             ok = false;
         } else if (matchActive) {
@@ -613,8 +611,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
 
     sub = obj->m_faceDirection;
     cmd = static_cast<PickupType>(obj->m_smarts);
-    idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
-    cell = reg->m_triggerMgr->m_units[idx];
+    cell = reg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         ok = false;
     } else {
@@ -623,7 +620,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     reg = g_gameReg;
     if (ok != false) {
         if (cmd == PICKUP_WARPSTONE) {
-            placed = reg->m_triggerMgr->m_units[idx];
+            placed = reg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
             if (placed != NULL) {
                 placed->m_warpstoneAnchorIndex = m_object->m_health;
                 reg = g_gameReg;
