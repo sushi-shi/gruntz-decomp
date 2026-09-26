@@ -99,6 +99,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezSync.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/GameApp.h>
@@ -328,101 +329,33 @@ void CGruntzMgr::Close() {
         m_settings->Set("Enable TrueColor", static_cast<DWORD>(0));
     }
     ClearStateStack();
-    if (m_curState) {
-        delete m_curState;
-        m_curState = NULL;
-    }
-    if (m_spriteFactory) {
-        delete m_spriteFactory;
-        m_spriteFactory = NULL;
-    }
-    if (m_triggerMgr) {
-        delete m_triggerMgr;
-        m_triggerMgr = NULL;
-    }
-    if (m_tileGrid) {
-
-        delete m_tileGrid;
-        m_tileGrid = NULL;
-    }
+    SAFE_DELETE(m_curState)
+    SAFE_DELETE(m_spriteFactory)
+    SAFE_DELETE(m_triggerMgr)
+    SAFE_DELETE(m_tileGrid)
     CGameStats* gameStats = m_gameStats;
     if (gameStats) {
         delete gameStats;
         m_gameStats = NULL;
     }
-    if (m_commandMgr) {
-
-        delete m_commandMgr;
-        m_commandMgr = NULL;
-    }
-    if (g_gameplayInput) {
-        delete g_gameplayInput;
-        g_gameplayInput = NULL;
-    }
-    if (g_inputMgr) {
-
-        delete g_inputMgr;
-        g_inputMgr = NULL;
-    }
-    if (m_cheatMgr) {
-        delete m_cheatMgr;
-        m_cheatMgr = NULL;
-    }
-    if (m_midi) {
-        delete m_midi;
-        m_midi = NULL;
-    }
-    if (m_worldSounds) {
-        delete m_worldSounds;
-        m_worldSounds = NULL;
-    }
-    if (m_faderMgr) {
-        delete m_faderMgr;
-        m_faderMgr = NULL;
-    }
-    if (m_chatLog) {
-        delete m_chatLog;
-        m_chatLog = NULL;
-    }
-    if (m_voiceManager) {
-        delete m_voiceManager;
-        m_voiceManager = NULL;
-    }
-    if (m_world) {
-        delete m_world;
-        m_world = NULL;
-    }
-    if (m_resourceArchive) {
-        delete m_resourceArchive;
-        m_resourceArchive = NULL;
-    }
-    if (m_settings) {
-
-        delete m_settings;
-        m_settings = NULL;
-    }
-    if (m_reserved3c) {
-        delete m_reserved3c;
-        m_reserved3c = NULL;
-    }
-    if (m_shadeCache) {
-        delete m_shadeCache;
-        m_shadeCache = NULL;
-    }
-    if (m_saveGame) {
-
-        delete m_saveGame;
-        m_saveGame = NULL;
-    }
-    if (m_lightFxMgr) {
-        delete m_lightFxMgr;
-        m_lightFxMgr = NULL;
-    }
+    SAFE_DELETE(m_commandMgr)
+    SAFE_DELETE(g_gameplayInput)
+    SAFE_DELETE(g_inputMgr)
+    SAFE_DELETE(m_cheatMgr)
+    SAFE_DELETE(m_midi)
+    SAFE_DELETE(m_worldSounds)
+    SAFE_DELETE(m_faderMgr)
+    SAFE_DELETE(m_chatLog)
+    SAFE_DELETE(m_voiceManager)
+    SAFE_DELETE(m_world)
+    SAFE_DELETE(m_resourceArchive)
+    SAFE_DELETE(m_settings)
+    SAFE_DELETE(m_reserved3c)
+    SAFE_DELETE(m_shadeCache)
+    SAFE_DELETE(m_saveGame)
+    SAFE_DELETE(m_lightFxMgr)
     CloseSoundFontDevice();
-    if (m_lobby) {
-        m_lobby->Release();
-        m_lobby = NULL;
-    }
+    SAFE_RELEASE(m_lobby)
     if (m_connSettings) {
         RecordBytes<DPLCONNECTION> settings;
         settings.m_rec = m_connSettings;
@@ -1303,10 +1236,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     m_lobbyProbed = true;
     m_lobbyResult = 0;
 
-    if (m_lobby) {
-        m_lobby->Release();
-        m_lobby = NULL;
-    }
+    SAFE_RELEASE(m_lobby)
 
     i32 hr = DirectPlayLobbyCreate(NULL, &m_lobby, NULL, NULL, 0);
     if (hr) {
@@ -2559,10 +2489,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    if (m_worldSounds != NULL) {
-        delete m_worldSounds;
-        m_worldSounds = NULL;
-    }
+    SAFE_DELETE(m_worldSounds)
 
     CRezMgr* surf = m_resourceArchive;
     if (surf) {
@@ -2617,10 +2544,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     SetColorDepth(m_colorDepth);
 
-    if (m_worldSounds != NULL) {
-        delete m_worldSounds;
-        m_worldSounds = NULL;
-    }
+    SAFE_DELETE(m_worldSounds)
 
     CWorldSoundSet* ni = new CWorldSoundSet();
     m_worldSounds = ni;

@@ -115,6 +115,7 @@
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/MillisPer.h>
 #include <Wap32/CoordUnset.h>
@@ -316,20 +317,14 @@ void CPlay::ReleaseResources() {
     if (m_mgr && m_mgr->m_chatLog) {
         m_mgr->m_chatLog->FreeNodes();
     }
-    if (m_statusBar) {
-        delete m_statusBar;
-        m_statusBar = NULL;
-    }
+    SAFE_DELETE(m_statusBar)
     CChatBoxOwner* hit = m_chatBox;
     if (hit) {
         hit->Deactivate();
         delete hit;
         m_chatBox = NULL;
     }
-    if (m_tileTriggers) {
-        delete m_tileTriggers;
-        m_tileTriggers = NULL;
-    }
+    SAFE_DELETE(m_tileTriggers)
     CTimer* fm = m_levelTimer;
     if (fm) {
         fm->Reset();

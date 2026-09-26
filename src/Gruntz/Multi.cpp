@@ -65,6 +65,7 @@
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezSync.h>
+#include <SafeDelete.h>
 #include <Utils/DebugTiming.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
@@ -355,10 +356,7 @@ void CMulti::ReleaseResources() {
         delete session;
         m_session = NULL;
     }
-    if (m_netMgr) {
-        delete m_netMgr;
-        m_netMgr = NULL;
-    }
+    SAFE_DELETE(m_netMgr)
 
     CMinimap* minimap = m_minimap;
     if (minimap) {
