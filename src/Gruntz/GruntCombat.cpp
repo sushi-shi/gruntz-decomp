@@ -314,17 +314,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
     switch (idx) {
         case SPELL_FREEZE: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                9,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -334,17 +333,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_HEALTH: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                2,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -354,17 +352,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_RESURRECTION: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                8,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, true);
             return m_triggerMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -372,17 +369,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_RANDOM_TOYZ: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                7,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -392,17 +388,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_TELEPORT: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                3,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -412,17 +407,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_ROLLING_BALLZ: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                1,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 1, true);
 
             CWwdSpriteObject* n = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
