@@ -1124,7 +1124,7 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     }
 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        g_lut16[i] = PACK_PIXEL16(pal[i].peRed, pal[i].peGreen, pal[i].peBlue);
+        g_lut16[i] = PackPalEntry16(pal[i].peRed, pal[i].peGreen, pal[i].peBlue);
     }
     u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
@@ -1164,7 +1164,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
                 u8 b = *srcv++;
                 u8 g = *srcv++;
                 u8 r = *srcv++;
-                *dst++ = PACK_PIXEL16(r, g, b);
+                *dst++ = PackPalEntry16(r, g, b);
             }
         }
     } else {
@@ -1174,7 +1174,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
                 u8 r = *srcv++;
                 u8 g = *srcv++;
                 u8 b = *srcv++;
-                *dst++ = PACK_PIXEL16(r, g, b);
+                *dst++ = PackPalEntry16(r, g, b);
             }
         }
     }
