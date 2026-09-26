@@ -318,7 +318,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     m_midi = new MidiManager;
-    g_ailMidiDriver = NULL;
     if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->m_hwnd, false)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40c);
         return 0;
@@ -377,8 +376,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_shadeCache = new CShadeTableCache;
     if (!m_shadeCache->Init()) {
-        delete m_shadeCache;
-        m_shadeCache = NULL;
+        SAFE_DELETE(m_shadeCache);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x410);
         return 0;
     }
@@ -403,11 +401,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     g_gameplayInput = new CInputState;
     if (!g_gameplayInput->Init(g_inputMgr, INPUTDEV_KEYBOARD_JOYSTICK1)) {
-        CInputState* dead = g_gameplayInput;
-        if (dead) {
-            delete dead;
-            g_gameplayInput = NULL;
-        }
+        SAFE_DELETE(g_gameplayInput);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x413);
         return 0;
     }
@@ -499,7 +493,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     CheckMovieFileExists();
     if (!InitializeLobbyConnectionSettings()) {
         if (m_numMovies > 0 && m_numRuns > 1) {
-            if (m_settings->Get("Skip Logo Movies", 0) == 0 && noLogo == 0) {
+            i32 skipLogo = m_settings->Get("Skip Logo Movies", 0);
+            if (skipLogo == 0 && noLogo == 0) {
                 PlayLogoMovie();
             }
         } else {
@@ -515,9 +510,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         g_attractStateCount = 0;
         CString title;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        while (attract->GetRezFromPath(static_cast<const char*>(title), IMGTAG_XCP)) {
+        CRezItm* titleImage = attract->GetRezFromPath(static_cast<const char*>(title), IMGTAG_XCP);
+        while (titleImage != NULL) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
+            titleImage = attract->GetRezFromPath(static_cast<const char*>(title), IMGTAG_XCP);
         }
         if (!TransitionState(mode, 1, false, 0)) {
             if (mode == GAMESTATE_MULTI) {
