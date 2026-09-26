@@ -54,7 +54,7 @@ void CDibMgr::RemoveDib(CDib* dib) {
     CDibPal* palette = dib->GetPalette();
     if (palette != NULL && dib->IsPaletteOwner()) {
         RemovePal(palette);
-        dib->SetPalette(NULL, false);
+        SetPalette(NULL, FALSE);
     }
     POSITION pos = dib->GetPos();
     if (pos != NULL) {
