@@ -348,15 +348,13 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 } else {
                     COPY_WARP_SEGMENTS(STRAIGHT, ssrc, WARP, gsrc, colBase, stride);
                 }
-                i32 cnt = bpp * stride;
-                CopyBytes(dstLine, m_lineBuf, cnt);
+                CopyBytes(dstLine, m_lineBuf, bpp * stride);
                 if (m_stripCopy != false) {
-                    i32 c2 = bpp * stripWidth;
-                    dstLine -= c2;
+                    dstLine -= bpp * stripWidth;
                     u8* s2 = (col - stripWidth) * bpp + m_sourceRowOffsets[row] + m_straightBase;
-                    CopyBytes(dstLine, s2, c2);
+                    CopyBytes(dstLine, s2, bpp * stripWidth);
                 } else {
-                    ClearBytes(dstLine + cnt, bpp * stripWidth);
+                    ClearBytes(dstLine + bpp * stride, bpp * stripWidth);
                 }
                 row++;
             } while (row < m_targetHeight);
@@ -387,13 +385,11 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 } else {
                     COPY_WARP_SEGMENTS(WARP, gsrc, STRAIGHT, ssrc, colBase, stride);
                 }
-                i32 cnt = bpp * stride;
-                CopyBytes(dstLine, m_lineBuf, cnt);
+                CopyBytes(dstLine, m_lineBuf, bpp * stride);
                 if (m_stripCopy != false) {
-                    i32 c2 = bpp * stripWidth;
                     u8* s2 = (col + stride) * bpp + m_sourceRowOffsets[row] + m_straightBase;
-                    dstLine += cnt;
-                    CopyBytes(dstLine, s2, c2);
+                    dstLine += bpp * stride;
+                    CopyBytes(dstLine, s2, bpp * stripWidth);
                 } else {
                     ClearBytes(dstLine - bpp * stripWidth, bpp * stripWidth);
                 }
