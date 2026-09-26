@@ -675,8 +675,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             s2.m_x >>= 5;
                             i32 tile = m_board->CellFlagsAt(s2.m_x, qy);
                             if (!(tile & 4)) {
-                                Coord none;
-                                unit->m_arrivalCell = *none.Set(-1, -1);
+                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->m_battleState = BZTASK_ADVANCE;
                                 if (unit->CoordCount() != 0) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
@@ -688,8 +687,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             PickupType st = unit->ArrivalPickup();
                             if (st != PICKUP_SPY && unit->m_battleState == BZTASK_CARRY_SPY) {
-                                Coord none;
-                                unit->m_arrivalCell = *none.Set(-1, -1);
+                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->m_battleState = BZTASK_ADVANCE;
                                 if (unit->CoordCount() != 0) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
@@ -707,8 +705,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     if (unit->CoordCount() != 0) {
                                         RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                     }
-                                    Coord none;
-                                    unit->m_arrivalCell = *none.Set(-1, -1);
+                                    UNSET_COORD(unit->m_arrivalCell);
                                     unit->m_battleState = BZTASK_CARRY_GOOBER;
                                 }
                             }
@@ -716,8 +713,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             PickupType st = unit->ArrivalPickup();
                             if (st != PICKUP_GOOBER && unit->m_battleState == BZTASK_CARRY_GOOBER) {
-                                Coord none;
-                                unit->m_arrivalCell = *none.Set(-1, -1);
+                                UNSET_COORD(unit->m_arrivalCell);
                                 unit->m_battleState = BZTASK_ADVANCE;
                                 if (unit->CoordCount() != 0) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
@@ -908,8 +904,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             return 1;
                         }
                         if (unit->CoordCount() == 0 && unit->m_defenderState == AISTATE_COOLDOWN) {
-                            Coord none;
-                            unit->m_unusedBattleCell = *none.Set(-1, -1);
+                            UNSET_COORD(unit->m_unusedBattleCell);
                             unit->m_defenderState = AISTATE_SEEK;
                         }
                         {

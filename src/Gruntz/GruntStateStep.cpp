@@ -99,8 +99,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 if (g->CoordCount() != 0) {
                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
                 }
-                Coord none;
-                g->m_arrivalCell = *none.Set(-1, -1);
+                UNSET_COORD(g->m_arrivalCell);
                 {
                     if (g == NULL) {
                         goto seek;
@@ -143,8 +142,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
                     g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
                 }
-                Coord none;
-                g->m_arrivalCell = *none.Set(-1, -1);
+                UNSET_COORD(g->m_arrivalCell);
                 g->m_dwell = 0;
                 g->m_defenderState = AISTATE_SEEK;
                 if (g->CoordCount() != 0) {

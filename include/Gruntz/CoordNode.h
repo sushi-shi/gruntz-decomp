@@ -15,4 +15,10 @@ struct Coord {
     }
 };
 
+#define UNSET_COORD(dst)                                                                           \
+    {                                                                                              \
+        Coord none;                                                                                \
+        (dst) = *none.Set(-1, -1);                                                                 \
+    }
+
 #endif // GRUNTZ_GRUNTZ_COORDNODE_H

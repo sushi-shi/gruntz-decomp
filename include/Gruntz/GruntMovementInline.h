@@ -34,8 +34,7 @@ inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
 }
 
 inline void ResetToSeek(CGrunt* grunt) {
-    Coord none;
-    grunt->m_arrivalCell = *none.Set(-1, -1);
+    UNSET_COORD(grunt->m_arrivalCell);
     grunt->m_defenderState = AISTATE_SEEK;
 }
 
