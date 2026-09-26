@@ -465,7 +465,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
     CGameLevel* level = m_world->m_level;
     TileCollisionKind tag;
-    tag = LookupTileTypeDirect(level, x, y);
+    PROBE_TILE(level, x, y, tag);
 
     if (static_cast<u32>((IDX(tag) - 0xb)) > 0x65) {
         return 0;
