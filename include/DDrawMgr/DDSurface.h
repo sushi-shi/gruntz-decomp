@@ -239,9 +239,24 @@ public:
     b32 m_hasColorKey;
 };
 
+RVA(0x00141310, 0x4)
+inline i32 CDDSurface::GetWidth() {
+    return m_apiDesc.dwWidth;
+}
+
+RVA(0x00141320, 0x4)
+inline i32 CDDSurface::GetHeight() {
+    return m_apiDesc.dwHeight;
+}
+
 RVA(0x001413b0, 0xf)
 inline void CDDSurface::Unlock() {
     m_ddSurface->Unlock(NULL);
+}
+
+RVA(0x001413c0, 0xb)
+inline i32 CDDSurface::Scale(i32 n) {
+    return m_apiDesc.lPitch * n;
 }
 
 inline u8 CDDSurface::GetPixel(i32 x, i32 y) {

@@ -1778,20 +1778,5 @@ DDSurfacePoolKind CDDSurface::GetPoolKind() {
     return POOLKIND_PLAIN;
 }
 
-RVA(0x00141310, 0x4)
-i32 CDDSurface::GetWidth() {
-    return m_apiDesc.dwWidth;
-}
-
-RVA(0x00141320, 0x4)
-i32 CDDSurface::GetHeight() {
-    return m_apiDesc.dwHeight;
-}
-
 RVA_COMPGEN(0x00141330, 0x1e, ??_GCDDSurface@@UAEPAXI@Z)
 RVA_COMPGEN(0x00141350, 0x53, ??1CDDSurface@@UAE@XZ)
-
-RVA(0x001413c0, 0xb)
-i32 CDDSurface::Scale(i32 n) {
-    return m_apiDesc.lPitch * n;
-}
