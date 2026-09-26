@@ -85,12 +85,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
 
     if (v == 0) {
 
-        m_stamp.m_intervalLo = 0;
-        m_stamp.m_intervalHi = 0;
-        m_countdown.m_intervalLo = 0;
-        m_countdown.m_intervalHi = 0;
-        m_running = false;
-        m_currentMs = 0;
+        Stop();
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
         ls->m_winLoseBanner = true;
         ls->m_cueTiming.Start(0x1f4);

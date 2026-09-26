@@ -270,13 +270,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        CTimer* _t = _g->m_levelTimer;
-                        _t->m_stamp.m_intervalLo = 0;
-                        _t->m_stamp.m_intervalHi = 0;
-                        _t->m_countdown.m_intervalLo = 0;
-                        _t->m_countdown.m_intervalHi = 0;
-                        _t->m_running = false;
-                        _t->m_currentMs = 0;
+                        _g->m_levelTimer->Stop();
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Ah, who needed that stupid timer anyway?");
                         return 1;
