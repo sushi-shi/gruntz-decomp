@@ -567,8 +567,7 @@ i32 CPlay::Render() {
         }
 
         if (m_defeatCountdownActive != false) {
-            i64 deadline =
-                m_defeatCountdownTiming.m_interval.m_v + m_defeatCountdownTiming.m_start.m_v;
+            i64 deadline = m_defeatCountdownTiming.Deadline();
             i64 left = deadline - static_cast<i64>(g_frameTime);
             u32 leftMs = static_cast<u32>(left);
             if (left < 0) {

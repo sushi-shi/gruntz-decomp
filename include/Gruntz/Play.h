@@ -66,6 +66,10 @@ public:
             m_start.m_v = 0;
             m_interval.m_v = 0;
         }
+
+        i64 Deadline() const {
+            return m_interval.m_v + m_start.m_v;
+        }
     };
 
     QuestLevel CurrentQuestLevel() const {
