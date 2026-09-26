@@ -25,6 +25,15 @@ public:
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
 
+    void Stop() {
+        m_stamp.m_intervalLo = 0;
+        m_stamp.m_intervalHi = 0;
+        m_countdown.m_intervalLo = 0;
+        m_countdown.m_intervalHi = 0;
+        m_running = false;
+        m_currentMs = 0;
+    }
+
     i32 m_baseX;
     i32 m_baseY;
     CDDrawWorker* m_sprite;

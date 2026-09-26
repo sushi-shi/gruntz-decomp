@@ -27,6 +27,7 @@
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayDefeatCountdown.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -1368,23 +1369,11 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    if (ANIMATION_ACT_EQUALS_FOR(cell, "B")) {
-        return;
+    if (ANIMATION_ACT_DIFFERS_FOR(cell, "B") && cell->ArrivalPickup() == PICKUP_WARPSTONE) {
+        CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+        g_gameReg->m_gameStats->m_elapsedTimeMs += world->m_levelTimer->m_stamp.Elapsed();
+        world->m_levelTimer->Stop();
+        world->CancelDefeatCountdown();
+        StartPlayerVictorySequence(g_curPlayer);
     }
-    PickupType k = cell->ArrivalPickup();
-    if (k != PICKUP_WARPSTONE) {
-        return;
-    }
-    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-
-    i64 diff = static_cast<i64>(g_frameTime) - world->m_levelTimer->m_stamp.m_start;
-    g_gameReg->m_gameStats->m_elapsedTimeMs += (diff < 0) ? 0 : static_cast<i32>(diff);
-    CTimer* sub = world->m_levelTimer;
-    sub->m_stamp.m_interval = 0;
-    sub->m_countdown.m_interval = 0;
-    sub->m_running = false;
-    sub->m_currentMs = 0;
-    world->SetDefeatCountdown(false, 0xbb7);
-    world->m_statusBar->LockDestructButton(1);
-    this->StartPlayerVictorySequence(g_curPlayer);
 }

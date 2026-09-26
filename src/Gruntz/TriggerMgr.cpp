@@ -32,6 +32,7 @@
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayDefeatCountdown.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
@@ -1167,8 +1168,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
 
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     world->FlushPendingOps();
-    world->SetDefeatCountdown(false, 0xbb7);
-    (static_cast<CStatusBarMgr*>(world->m_statusBar))->LockDestructButton(1);
+    world->CancelDefeatCountdown();
     return 1;
 }
 

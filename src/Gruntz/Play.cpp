@@ -575,13 +575,7 @@ i32 CPlay::Render() {
                     g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(row);
                 }
 
-                CTimer* marker = m_levelTimer;
-                marker->m_stamp.m_intervalLo = 0;
-                marker->m_stamp.m_intervalHi = 0;
-                marker->m_countdown.m_intervalLo = 0;
-                marker->m_countdown.m_intervalHi = 0;
-                marker->m_running = false;
-                marker->m_currentMs = 0;
+                m_levelTimer->Stop();
                 m_statusBar->LockDestructButton(0);
                 m_defeatCountdownActive = false;
 
@@ -922,12 +916,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CTimer* worker = self->m_levelTimer;
     if (worker != NULL) {
-        worker->m_stamp.m_intervalLo = 0;
-        worker->m_stamp.m_intervalHi = 0;
-        worker->m_countdown.m_intervalLo = 0;
-        worker->m_countdown.m_intervalHi = 0;
-        worker->m_running = false;
-        worker->m_currentMs = 0;
+        worker->Stop();
     }
 
     SoundStream* grid = self->m_world->m_soundRegistry->m_soundStream;
