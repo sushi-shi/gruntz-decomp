@@ -81,11 +81,7 @@ i32 CSBI_ImageSetAni::Init(
     m_frameIndex = m_frameStart;
 
     CImage* cel;
-    if (DDRAW_WORKER_FRAME_OUT_OF_RANGE(tbl, m_frameStart)) {
-        cel = NULL;
-    } else {
-        cel = DDRAW_WORKER_FRAME_AT_UNCHECKED(tbl, m_frameStart);
-    }
+    cel = tbl->GetAt(m_frameStart);
     SetFrame(cel);
     return cel != NULL;
 fail:

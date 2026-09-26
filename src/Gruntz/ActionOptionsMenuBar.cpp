@@ -37,13 +37,12 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
     m_active = false;
-    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_ACTIONOPTIONZMENUBAR");
-    m_frame = spr ? spr->GetAt(1) : NULL;
+    m_frame = g_gameReg->m_world->FindFrame("GAME_ACTIONOPTIONZMENUBAR", 1);
     if (!m_frame) {
         return 0;
     }
 
-    spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
+    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
@@ -405,10 +404,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = mgr->FindWorker(buf);
-        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
-        m_frame = r;
+        m_frame = mgr->FindFrame(buf, idx);
     } else {
         m_frame = NULL;
     }
@@ -417,10 +413,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = mgr->FindWorker(buf);
-        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
-        m_buttonFrame[0] = r;
+        m_buttonFrame[0] = mgr->FindFrame(buf, idx);
     } else {
         m_buttonFrame[0] = NULL;
     }
@@ -429,10 +422,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = mgr->FindWorker(buf);
-        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
-        m_buttonFrame[1] = r;
+        m_buttonFrame[1] = mgr->FindFrame(buf, idx);
     } else {
         m_buttonFrame[1] = NULL;
     }

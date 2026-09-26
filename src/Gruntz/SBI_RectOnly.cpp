@@ -4244,8 +4244,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_owner = owner;
 
     i32 n = IDX(fragment) + 1;
-    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE");
-    CImage* frame = spr ? spr->GetAt(n) : NULL;
+    CImage* frame = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", n);
     m_sprite = frame;
     if (frame == NULL) {
 
@@ -4325,10 +4324,7 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Read(name, SERIAL_NAME_LEN);
             arc->Read(&index, sizeof(index));
             if (strlen(name) != 0) {
-                i32 i = index;
-                CDDrawWorker* rec = lvl->FindWorker(name);
-                CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
-                m_sprite = r;
+                m_sprite = lvl->FindFrame(name, index);
             } else {
                 m_sprite = NULL;
             }

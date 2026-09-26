@@ -46,15 +46,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameMinTens = r;
+        m_frameMinTens = reg->FindFrame(buf, idx);
     } else {
         m_frameMinTens = NULL;
     }
@@ -63,15 +55,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameMinOnes = r;
+        m_frameMinOnes = reg->FindFrame(buf, idx);
     } else {
         m_frameMinOnes = NULL;
     }
@@ -80,15 +64,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameSecTens = r;
+        m_frameSecTens = reg->FindFrame(buf, idx);
     } else {
         m_frameSecTens = NULL;
     }
@@ -97,15 +73,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameSecOnes = r;
+        m_frameSecOnes = reg->FindFrame(buf, idx);
     } else {
         m_frameSecOnes = NULL;
     }
@@ -114,15 +82,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameColon = r;
+        m_frameColon = reg->FindFrame(buf, idx);
     } else {
         m_frameColon = NULL;
     }

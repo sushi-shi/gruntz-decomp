@@ -3840,13 +3840,7 @@ i32 CPlay::LoadCursorAnimation(
         m_cursorSprite->SetAllTypes(SHADE_PAL_16);
         m_cursorSprite->SetAllFormats(spr);
     }
-    CDDrawWorker* g = m_cursorSprite;
-    CImage* frame;
-    if (DDRAW_WORKER_FRAME_IN_RANGE(g, initialFrame)) {
-        frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, initialFrame);
-    } else {
-        frame = NULL;
-    }
+    CImage* frame = m_cursorSprite->GetAt(initialFrame);
     m_cursorImage = frame;
     if (frame == NULL) {
         return 0;
@@ -3870,12 +3864,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         m_cursorFrameIndex = m_cursorFrameIndex + 1;
         i32 idx = m_cursorFrameIndex;
         CDDrawWorker* g = m_cursorSprite;
-        CImage* frame;
-        if (DDRAW_WORKER_FRAME_IN_RANGE(g, idx)) {
-            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, idx);
-        } else {
-            frame = NULL;
-        }
+        CImage* frame = g->GetAt(idx);
         m_cursorImage = frame;
         if (frame == NULL) {
             m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->m_minIndex);
@@ -6331,12 +6320,9 @@ i32 CPlay::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_revealCapStart =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 1) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1) : NULL;
-    m_revealCapMid =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 2) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 2) : NULL;
-    m_revealCapEnd =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 3) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 3) : NULL;
+    m_revealCapStart = spr->GetAt(1);
+    m_revealCapMid = spr->GetAt(2);
+    m_revealCapEnd = spr->GetAt(3);
     m_revealFrame = 1;
     return 1;
 }
@@ -6621,12 +6607,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 idx;
         ar->Read(&idx, sizeof(idx));
         if (strlen(nameBuf) != 0) {
-            CDDrawWorker* set = res->FindWorker(static_cast<const char*>(nameBuf));
-            if (set == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(set, idx)) {
-                m_cursorImage = NULL;
-            } else {
-                m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, idx);
-            }
+            m_cursorImage = res->FindFrame(nameBuf, idx);
         } else {
             m_cursorImage = NULL;
         }

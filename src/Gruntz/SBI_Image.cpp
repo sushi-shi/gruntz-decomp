@@ -45,13 +45,7 @@ i32 CSBI_Image::SetupImage(
         m_rect = rc;
         m_cmd = cmd;
         if (key != NULL) {
-            CDDrawWorker* rec = host->FindWorker(key);
-            CImage* val;
-            if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
-                val = NULL;
-            } else {
-                val = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, 1);
-            }
+            CImage* val = host->FindFrame(key, 1);
             SetFrame(val);
             return val != NULL;
         }
@@ -109,13 +103,7 @@ i32 CSBI_Image::SerializeFields(
             ar->Read(name, SERIAL_NAME_LEN);
             ar->Read(&idx, sizeof(idx));
             if (strlen(name) != 0) {
-                i32 frameIndex = idx;
-                CDDrawWorker* r = mgr->FindWorker(name);
-                if (r && DDRAW_WORKER_FRAME_IN_RANGE(r, frameIndex)) {
-                    SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(r, frameIndex));
-                } else {
-                    SetFrame(NULL);
-                }
+                SetFrame(mgr->FindFrame(name, idx));
             } else {
                 SetFrame(NULL);
             }
