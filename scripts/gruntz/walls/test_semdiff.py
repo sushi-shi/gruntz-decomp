@@ -46,5 +46,18 @@ class JumpTableControls(unittest.TestCase):
         self.assertEqual(_keys(la, lb), set())
 
 
+class WidthMirrorControls(unittest.TestCase):
+    def test_narrow_logic_equals_its_32_bit_mirror(self):
+        self.assertEqual(_keys(_lines(["and al,0xe0", "or ah,0xc"]),
+                               _lines(["and ecx,0xffffffe0", "or eax,0xc00"])),
+                         set())
+
+    def test_a_different_mask_is_still_flagged(self):
+        """`and al,0x1f` keeps the upper bytes; `and eax,0x1f` clears them."""
+        self.assertEqual(_keys(_lines(["and al,0x1f"]),
+                               _lines(["and eax,0x1f"])),
+                         {("imm", "0xffffff1f"), ("imm", "0x1f")})
+
+
 if __name__ == "__main__":
     unittest.main()

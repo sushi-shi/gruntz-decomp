@@ -38,10 +38,14 @@ FALSE-POSITIVE TAXONOMY. Every one of these was observed producing a
 difference on a pair whose semantics are identical; the filters that can be
 applied mechanically are applied, the rest are for the reader:
 
-  * register mirrors        `cmp a,b/jge` == `cmp b,a/jle`; `and al,0xe0` ==
-                            `and ecx,0xffffffe0` (cl uses the 2-byte AL form
-                            when the value lands in EAX); `cdq` == `sar 31`
+  * register mirrors        `cmp a,b/jge` == `cmp b,a/jle`; `cdq` == `sar 31`
                             for the signed-modulo sign mask. FILTERED: no.
+  * register-width mirror   `and al,0xe0` == `and ecx,0xffffffe0` (cl uses
+                            the 2-byte AL form when the value lands in EAX).
+                            FILTERED: yes - an 8/16-bit AND/OR/XOR immediate
+                            is keyed as the 32-bit operation it performs
+                            (AND fills the untouched bytes with ones, OR/XOR
+                            with zeros; an AH-class register shifts by 8).
   * cross-jump merge degree one side shares a cleanup/call site the other
                             duplicates. Changes call-SITE counts, never the
                             set of paths that reach the call. FILTERED: no.
@@ -115,6 +119,10 @@ MEM = re.compile(r"\[(e[a-d]x|e[sd]i|ebx|ecx|ebp)(?:\+e[a-z]{2}\*\d)?"
 EBP_MEM = re.compile(r"\[ebp(?:\+e[a-z]{2}(?:\*\d)?)?([+-]0x[0-9a-f]+)?\]")
 EBP_FRAME = re.compile(
     r"^(?:mov\s+ebp,esp|lea\s+ebp,\[esp(?:[+-]0x[0-9a-f]+)?\])$")
+#: an 8/16-bit AND/OR/XOR with an immediate: the register-width mirror
+NARROW_LOGIC = re.compile(
+    r"^(and|or|xor)\s+(?:([a-d][lhx]|[sd]i|[sb]p)|"
+    r"(BYTE|WORD) PTR [^,]+),(0x[0-9a-f]+)$")
 #: a function's own jump table (`jmp [r*4+T]`) and byte index table
 #: (`mov dl,[r+I]`); both operands carry a relocation naming the function
 TABLE_OPERAND = re.compile(
@@ -236,6 +244,26 @@ def pair_lines(token: str):
     return b, _decode(bb, brel, b.name), _decode(tb, trel, b.name)
 
 
+def value_immediates(asm: str) -> list[str]:
+    """The immediates of one instruction as the 32-bit values they act as.
+
+    An 8/16-bit AND/OR/XOR is the register-width mirror of the 32-bit
+    operation on the whole register: `and al,0xe0` IS `and eax,0xffffffe0`,
+    `or ah,0xc` IS `or eax,0xc00`."""
+    m = NARROW_LOGIC.match(asm)
+    if not m:
+        return IMM.findall(asm)
+    op, reg, ptr, imm = m.groups()
+    width = 16 if (ptr == "WORD" or (reg and len(reg) == 2
+                                     and reg[1] in "xip")) else 8
+    shift = 8 if reg in ("ah", "bh", "ch", "dh") else 0
+    mask = ((1 << width) - 1) << shift
+    v = (int(imm, 16) << shift) & mask
+    if op == "and":
+        v |= 0xFFFFFFFF & ~mask
+    return IMM.findall(asm[:m.start(4)]) + [f"0x{v:x}"]
+
+
 def features(lines: list[Line], self_name: str = "",
              ebp_frame: bool | None = None) -> dict[str, Counter]:
     """The five multisets, with the mechanical filters applied.
@@ -246,7 +274,8 @@ def features(lines: list[Line], self_name: str = "",
     functions cl gives an ebp frame - the `[ebp+-N]` operands, which are
     stack slots there and not member displacements. Pass `ebp_frame` from
     BOTH sides (`ebp_is_frame(base, target)`); reading it off one side masks
-    asymmetrically.
+    asymmetrically. Narrow AND/OR/XOR immediates are keyed as the 32-bit
+    operation (`value_immediates`).
     """
     if ebp_frame is None:
         ebp_frame = ebp_is_frame(lines)
@@ -273,7 +302,7 @@ def features(lines: list[Line], self_name: str = "",
             for _reg, d in MEM.findall(dst):
                 store[d or "+0x0"] += 1
         if not NOT_A_VALUE.match(op):
-            for v in IMM.findall(asm):
+            for v in value_immediates(asm):
                 if int(v, 16) > 3:
                     imm[v] += 1
     return dict(fp=fp, disp=disp, store=store, imm=imm, mnem=mnem)
