@@ -538,7 +538,7 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_faceDirection != 0) {
         return 0;
     }
-    if (static_cast<i64>(g_frameTime) - m_peekTiming.m_start >= m_peekTiming.m_interval) {
+    if (m_peekTiming.Expired()) {
         CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(GetRandomNumber() % 0x11, 0);
         CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_PAL_16, rec);

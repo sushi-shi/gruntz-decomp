@@ -691,8 +691,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         m_freezeDelayDone = false;
     }
     if (m_freezeDelayDone == false) {
-        if (static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start
-            >= m_idleDelayTiming.m_interval) {
+        if (m_idleDelayTiming.Expired()) {
             SwitchAnimationByName(s_gruntzDeathzUnfreeze, 0);
             PLAY_VOICE_IN_VIEW(0x35c);
             m_freezeUnfrozen = true;

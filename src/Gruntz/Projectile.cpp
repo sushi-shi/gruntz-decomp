@@ -892,7 +892,7 @@ i32 CTimeBomb::UpdateCountdown() {
     }
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
-    if (static_cast<i64>(g_frameTime) - m_timing.m_start >= m_timing.m_interval) {
+    if (m_timing.Expired()) {
         if (m_fastPhase == false) {
             SwitchAnimationByName("GAME_TIMEBOMBFAST", 0);
             m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8));

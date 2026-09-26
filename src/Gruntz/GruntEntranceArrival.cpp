@@ -716,8 +716,7 @@ i32 CGrunt::ResolveEntranceArrival() {
 
     b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (static_cast<i64>(g_frameTime) - m_idleWindowTiming.m_start
-        >= m_idleWindowTiming.m_interval) {
+    if (m_idleWindowTiming.Expired()) {
         CGruntzMgr* g = g_gameReg;
         GameModeId mode = g->m_gameMode;
         if (mode != GAMEMODE_QUESTZ) {
@@ -775,8 +774,7 @@ tail:
         }
         return 0;
     }
-    if (static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start >= m_idleDelayTiming.m_interval
-        && ready == true) {
+    if (m_idleDelayTiming.Expired() && ready == true) {
         ResetEntranceAnimation(0, 1, 1);
     }
     return 0;

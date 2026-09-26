@@ -130,7 +130,7 @@ i32 CRollingBall::Update() {
 
     CWwdSpriteObject* logic = m_object;
     if (logic->m_points > 0) {
-        if (static_cast<i64>(g_frameTime) - m_explodeTiming.m_start >= m_explodeTiming.m_interval) {
+        if (m_explodeTiming.Expired()) {
             SetImageSetByName("LEVEL_ROLLINGBALL_EXPLOSION");
             SwitchAnimationByName("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;

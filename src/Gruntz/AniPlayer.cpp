@@ -49,7 +49,7 @@ i32 CAniPlayer::Start(
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 unused) {
-    if (static_cast<__int64>(g_frameTime) - m_timing.m_start >= m_timing.m_interval) {
+    if (m_timing.Expired()) {
         m_frameIndex = (m_frameIndex == m_frameStart) ? m_frameEnd : m_frameStart;
         m_timing.Start(m_interval);
     }

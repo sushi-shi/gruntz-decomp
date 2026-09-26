@@ -177,7 +177,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
 
         timerVal = m_timerValue;
         if (unit->m_arrived != false) {
-            if (static_cast<i64>(g_frameTime) - m_timerTiming.m_start >= m_timerTiming.m_interval) {
+            if (m_timerTiming.Expired()) {
                 if (timerVal > 0) {
                     timerVal++;
                     if (timerVal > 0xa) {

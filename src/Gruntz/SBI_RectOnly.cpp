@@ -2588,7 +2588,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_UP_LOW:
-                if (static_cast<i64>(g_frameTime) - clock->m_start >= clock->m_interval) {
+                if (clock->Expired()) {
                     if (++m_conveyorSlots[i].m_counter >= 0x12) {
                         m_conveyorSlots[i].m_counter = 0x12;
                         m_conveyorSlots[i].m_state = IDX(HLROW_HOLD_LOW);
@@ -2605,7 +2605,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_DOWN_LOW:
-                if (static_cast<i64>(g_frameTime) - clock->m_start >= clock->m_interval) {
+                if (clock->Expired()) {
                     if (--m_conveyorSlots[i].m_counter < 0xa) {
                         m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
                         m_conveyorSlots[i].m_counter = 1;
@@ -2613,7 +2613,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_UP_HIGH:
-                if (static_cast<i64>(g_frameTime) - clock->m_start >= clock->m_interval) {
+                if (clock->Expired()) {
                     if (++m_conveyorSlots[i].m_counter >= 0x18) {
                         m_conveyorSlots[i].m_counter = 0x18;
                         m_conveyorSlots[i].m_state = IDX(HLROW_HOLD_HIGH);
@@ -2628,7 +2628,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_DOWN_HIGH:
-                if (static_cast<i64>(g_frameTime) - clock->m_start >= clock->m_interval) {
+                if (clock->Expired()) {
                     if (--m_conveyorSlots[i].m_counter < 0x13) {
                         m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
                         m_conveyorSlots[i].m_counter = 1;
@@ -2636,13 +2636,13 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_HOLD_HIGH:
-                if (static_cast<i64>(g_frameTime) - clock->m_start >= clock->m_interval) {
+                if (clock->Expired()) {
                     PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETURN");
                     m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_HIGH);
                 }
                 break;
             case HLROW_HOLD_LOW:
-                if (static_cast<i64>(g_frameTime) - clock->m_start >= clock->m_interval) {
+                if (clock->Expired()) {
                     PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTBACKUP");
                     m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_LOW);
                 }
@@ -2660,8 +2660,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiMachineRow* leftMachine = &m_leftMachine;
     switch (static_cast<SbiMachineState>(rightMachine->m_state)) {
         case MACHINE_RIGHT_RUNNING:
-            if (static_cast<i64>(g_frameTime) - rightMachine->m_clock.m_start
-                >= rightMachine->m_clock.m_interval) {
+            if (rightMachine->m_clock.Expired()) {
                 if (++rightMachine->m_counter > 0x34) {
                     SetRightRezMachineAnimation(
                         0x2b,
@@ -2676,8 +2675,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
             }
             break;
         case MACHINE_RIGHT_SPEWING:
-            if (static_cast<i64>(g_frameTime) - rightMachine->m_clock.m_start
-                >= rightMachine->m_clock.m_interval) {
+            if (rightMachine->m_clock.Expired()) {
                 if (++rightMachine->m_counter > 0x44) {
                     SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
                 } else {
@@ -2691,8 +2689,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
 
     switch (static_cast<SbiMachineState>(leftMachine->m_state)) {
         case MACHINE_SNOOZING:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_clock.m_start
-                >= leftMachine->m_clock.m_interval) {
+            if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 8) {
                     SetLeftRezMachineAnimation(
                         1,
@@ -2707,8 +2704,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
             }
             break;
         case MACHINE_WAKING:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_clock.m_start
-                >= leftMachine->m_clock.m_interval) {
+            if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 0x13) {
                     SetLeftRezMachineAnimation(
                         0x14,
@@ -2735,8 +2731,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
             }
             break;
         case MACHINE_TURNING_WHEEL:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_clock.m_start
-                >= leftMachine->m_clock.m_interval) {
+            if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 0x1d) {
                     SetLeftRezMachineAnimation(
                         0x14,
@@ -2751,8 +2746,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
             }
             break;
         case MACHINE_LEVER:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_clock.m_start
-                >= leftMachine->m_clock.m_interval) {
+            if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
                     b32 found = false;
                     i32 r = 3;
@@ -2996,7 +2990,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     ClockInterval* belt = &m_beltClock;
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
-            if (static_cast<i64>(g_frameTime) - belt->m_start >= belt->m_interval) {
+            if (belt->Expired()) {
                 OFFSET_RECT_X_EDGES(
                     m_machineItemRect,
                     g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
@@ -3015,7 +3009,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case BELT_SPEWING:
-            if (static_cast<i64>(g_frameTime) - belt->m_start >= belt->m_interval) {
+            if (belt->Expired()) {
                 SetRightRezMachineAnimation(
                     0x35,
                     MACHINE_RIGHT_SPEWING,
@@ -3026,14 +3020,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             }
             break;
         case BELT_DROP_START:
-            if (static_cast<i64>(g_frameTime) - belt->m_start >= belt->m_interval) {
+            if (belt->Expired()) {
                 m_machinePhase = BELT_FALLING;
                 PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPFALLOUT");
                 belt->Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
             }
             break;
         case BELT_FALLING:
-            if (static_cast<i64>(g_frameTime) - belt->m_start >= belt->m_interval) {
+            if (belt->Expired()) {
                 OFFSET_RECT_Y_EDGES(
                     m_machineItemRect,
                     g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
@@ -3061,7 +3055,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case BELT_TRAVELLING:
-            if (static_cast<i64>(g_frameTime) - belt->m_start >= belt->m_interval) {
+            if (belt->Expired()) {
                 OFFSET_RECT_X_EDGES(
                     m_machineItemRect,
                     -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
@@ -3085,7 +3079,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case BELT_FALLING_OFF: {
-            if (static_cast<i64>(g_frameTime) - belt->m_start >= belt->m_interval) {
+            if (belt->Expired()) {
                 OFFSET_RECT_Y_EDGES(
                     m_machineItemRect,
                     g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),

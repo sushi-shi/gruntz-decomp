@@ -741,12 +741,12 @@ void CMulti::RenderGameFrame() {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();
     }
     if (m_region0Gate != false) {
-        if (static_cast<i64>(g_frameTime) - m_region0Timing.m_start >= m_region0Timing.m_interval) {
+        if (m_region0Timing.Expired()) {
             SetTinyViewportCurse(false);
         }
     }
     if (m_region1Gate != false) {
-        if (static_cast<i64>(g_frameTime) - m_region1Timing.m_start >= m_region1Timing.m_interval) {
+        if (m_region1Timing.Expired()) {
             SetDarknessCurse(false);
         }
     }

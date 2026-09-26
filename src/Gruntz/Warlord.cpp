@@ -369,7 +369,7 @@ i32 CWarlord::UpdateMovingState() {
         }
     }
 
-    if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_interval) {
+    if (m_cooldownTimer.Expired()) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -399,7 +399,7 @@ i32 CWarlord::UpdatePanicState() {
             ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_interval) {
+        if (m_cooldownTimer.Expired()) {
             g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
             m_cooldownTimer.m_interval = 0x7530;
             m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
@@ -492,9 +492,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 m_cooldownTimer.m_interval = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
-                if (static_cast<i64>(g_frameTime) - m_notifyTimer.m_start
-                        >= m_notifyTimer.m_interval
-                    && g_gameReg->m_triggerMgr->m_pendingFx == this) {
+                if (m_notifyTimer.Expired() && g_gameReg->m_triggerMgr->m_pendingFx == this) {
                     g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)

@@ -69,7 +69,7 @@ RVA(0x00008440, 0xfe)
 i32 CActionArea::Tick() {
     ClockInterval* timing = &m_timing;
     i32* phase = &m_phase;
-    if (static_cast<i64>(g_frameTime) - timing->m_start >= timing->m_interval) {
+    if (timing->Expired()) {
         *phase = (*phase == 0);
         timing->Start(0x1f4);
     }

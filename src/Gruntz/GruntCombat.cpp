@@ -1849,7 +1849,7 @@ static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
 
 RVA(0x0005d210, 0x1554)
 void CGrunt::StepBehavior(char*) {
-    if (static_cast<i64>(g_frameTime) - m_struckTiming.m_start >= m_struckTiming.m_interval) {
+    if (m_struckTiming.Expired()) {
         m_struckCount = 0;
     }
     m_dwell += g_frameDelta;
@@ -1863,8 +1863,7 @@ void CGrunt::StepBehavior(char*) {
             }
         }
 
-        if (static_cast<i64>(g_frameTime) - m_entranceTiming.m_start
-            >= m_entranceTiming.m_interval) {
+        if (m_entranceTiming.Expired()) {
         dropExpire: {
             CWwdSpriteObject* obj = m_object;
             m_entranceDropActive = false;
@@ -1873,8 +1872,7 @@ void CGrunt::StepBehavior(char*) {
         }
             m_entranceTiming.m_intervalLo = 0;
             m_entranceTiming.m_intervalHi = 0;
-        } else if (static_cast<i64>(g_frameTime) - m_flashTiming.m_start
-                   >= m_flashTiming.m_interval) {
+        } else if (m_flashTiming.Expired()) {
             CWwdSpriteObject* obj = m_object;
             if (obj->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
                 obj->m_drawActive = true;
@@ -2080,8 +2078,7 @@ void CGrunt::StepBehavior(char*) {
                     goto afterTile;
                 }
             }
-            if (static_cast<i64>(g_frameTime) - m_entranceTiming.m_start
-                < m_entranceTiming.m_interval) {
+            if (!m_entranceTiming.Expired()) {
                 goto afterTile;
             }
             {
@@ -2270,13 +2267,11 @@ afterArrival:
     if (m_arrivalState == AI_BATTLEZ_PATH) {
         ExpireBattlezPoweredState(this);
     } else {
-        if (static_cast<i64>(g_frameTime) - m_combatTiming.m_start >= m_combatTiming.m_interval) {
+        if (m_combatTiming.Expired()) {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
-            if (m_arrived == false
-                && static_cast<i64>(g_frameTime) - m_hudRetireTiming.m_start
-                       >= m_hudRetireTiming.m_interval) {
+            if (m_arrived == false && m_hudRetireTiming.Expired()) {
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
@@ -2288,8 +2283,7 @@ kindDispatch:
     if (m_gruntKind != GRUNT_NORMAL) {
         if (m_gruntKind == GRUNT_CONVERSION) {
 
-            if (static_cast<i64>(g_frameTime) - m_conversionTiming.m_start
-                < m_conversionTiming.m_interval) {
+            if (!m_conversionTiming.Expired()) {
                 return;
             }
             i32 bite = m_health - 5;
@@ -2305,8 +2299,7 @@ kindDispatch:
         }
         if (m_gruntKind == GRUNT_INVULNERABLE) {
 
-            if (static_cast<i64>(g_frameTime) - m_shimmerTiming.m_start
-                >= m_shimmerTiming.m_interval) {
+            if (m_shimmerTiming.Expired()) {
                 i32 pick = rand() % 16;
                 if (pick == IDX(m_moveIcon)) {
                     pick = 0x10;

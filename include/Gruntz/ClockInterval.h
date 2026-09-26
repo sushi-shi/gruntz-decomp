@@ -37,6 +37,10 @@ struct ClockInterval {
         m_start = g_frameTime;
     }
 
+    b32 Expired() const {
+        return static_cast<i64>(g_frameTime) - m_start >= m_interval;
+    }
+
     i64 Deadline() const {
         return m_interval + m_start;
     }

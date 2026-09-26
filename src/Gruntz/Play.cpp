@@ -451,7 +451,7 @@ i32 CPlay::Render() {
         m_statusBar->LoadMainStatusBarSprite();
 
         {
-            if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start >= m_cueTiming.m_interval) {
+            if (m_cueTiming.Expired()) {
                 m_cueToggle = (m_cueToggle == false);
                 m_cueTiming.Start(CUE_INTERVAL_MS);
             }
@@ -482,7 +482,7 @@ i32 CPlay::Render() {
         m_mgr->m_commandMgr->ExecuteScheduledCommands(0);
 
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
-            if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start >= m_bootyTiming.m_interval) {
+            if (m_bootyTiming.Expired()) {
                 g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
                 m_bootyTiming.Start(BOOTY_INTERVAL_MS);
             }
@@ -566,8 +566,7 @@ i32 CPlay::Render() {
                 leftMs = 0;
             }
             i32 secsLeft = static_cast<i32>(leftMs / MILLIS_PER_SECOND) + 1;
-            if (static_cast<i64>(g_frameTime) - m_defeatCountdownTiming.m_start
-                >= m_defeatCountdownTiming.m_interval) {
+            if (m_defeatCountdownTiming.Expired()) {
 
                 if (m_statusBar->m_destructButtonLocked != false) {
                     g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(5);
@@ -620,7 +619,7 @@ i32 CPlay::Render() {
         if (m_winLoseBanner != false && m_statusBar->m_levelOverlayActive == false
             && m_statusBar->m_quitConfirmationActive == false) {
 
-            if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start >= m_cueTiming.m_interval) {
+            if (m_cueTiming.Expired()) {
                 m_cueToggle = (m_cueToggle == false);
                 m_cueTiming.Start(CUE_INTERVAL_MS);
             }
@@ -644,26 +643,22 @@ i32 CPlay::Render() {
         }
 
         if (m_region0Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region0Timing.m_start
-                >= m_region0Timing.m_interval) {
+            if (m_region0Timing.Expired()) {
                 SetTinyViewportCurse(false);
             }
         }
         if (m_region1Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region1Timing.m_start
-                >= m_region1Timing.m_interval) {
+            if (m_region1Timing.Expired()) {
                 SetDarknessCurse(false);
             }
         }
         if (m_region2Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region2Timing.m_start
-                >= m_region2Timing.m_interval) {
+            if (m_region2Timing.Expired()) {
                 SetMonitorCurse(false);
             }
         }
         if (m_region3Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region3Timing.m_start
-                >= m_region3Timing.m_interval) {
+            if (m_region3Timing.Expired()) {
                 SetRandomMoveIconsCurse(false);
             }
         }

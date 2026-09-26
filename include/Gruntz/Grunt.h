@@ -494,12 +494,11 @@ public:
     void ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
 
     i32 IsArrivalRerollPending() {
-        return static_cast<i64>(g_frameTime) - m_arrivalRerollTiming.m_start
-               < m_arrivalRerollTiming.m_interval;
+        return !m_arrivalRerollTiming.Expired();
     }
 
     i32 IsHoldPending() {
-        return static_cast<i64>(g_frameTime) - m_holdTiming.m_start < m_holdTiming.m_interval;
+        return !m_holdTiming.Expired();
     }
 
     void ResetArrivalReroll() {

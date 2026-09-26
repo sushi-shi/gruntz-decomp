@@ -223,7 +223,7 @@ RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != false) {
         i32 idx = 5;
-        if (static_cast<i64>(g_frameTime) - m_strike.m_start < m_strike.m_interval) {
+        if (!m_strike.Expired()) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 idx = 0;
             }

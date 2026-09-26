@@ -222,9 +222,7 @@ i32 CGruntVoice::HideIndicator() {
 
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::UpdateIndicator() {
-    if (m_stream == NULL
-        || static_cast<i64>(g_frameTime) - m_playbackTiming.m_start
-               >= m_playbackTiming.m_interval) {
+    if (m_stream == NULL || m_playbackTiming.Expired()) {
         m_stream = NULL;
         m_sourceObjectId = 0;
         m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;

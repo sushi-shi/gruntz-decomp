@@ -142,9 +142,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                     teamColor = SPRITE_TEAM_COLOR_SECONDARY;
                 }
 
-                if (static_cast<i64>(g_frameTime) - grunt->m_combatTiming.m_start
-                        >= grunt->m_combatTiming.m_interval
-                    || grunt->m_playerIndex != g_curPlayer) {
+                if (grunt->m_combatTiming.Expired() || grunt->m_playerIndex != g_curPlayer) {
                     CSpriteRef* spriteRef =
                         m_gameMgr->m_spriteFactory->GetTool(IDX(grunt->m_moveIcon));
                     if (spriteRef == NULL) {
