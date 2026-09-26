@@ -3,6 +3,7 @@
 
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/TriggerMgr.h>
 
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
@@ -12,6 +13,20 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
         return 1;
     }
     return 0;
+}
+
+inline void CGrunt::RepathToward(CGrunt* target) {
+    if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
+        StepArrivalDrop(
+            target->m_lastTilePx.m_x,
+            target->m_lastTilePx.m_y,
+            0,
+            m_arrivalFlags,
+            1,
+            0
+        );
+        m_dwell = 0;
+    }
 }
 
 inline void CGrunt::MirrorAcrossArrival() {

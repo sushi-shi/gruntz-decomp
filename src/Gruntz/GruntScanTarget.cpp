@@ -255,17 +255,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 PRIO(pb, sg->m_entranceReason);
                 if (pa <= pb && sg->m_entranceCommitted != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
-                    if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-                        StepArrivalDrop(
-                            sg->m_lastTilePx.m_x,
-                            sg->m_lastTilePx.m_y,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        );
-                        m_dwell = 0;
-                    }
+                    RepathToward(sg);
                     if (m_poweredUp != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }

@@ -16,6 +16,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -158,10 +159,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (static_cast<u32>(m_dwell) > 500) {
-                StepArrivalDrop(t->m_lastTilePx.m_x, t->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
-                m_dwell = 0;
-            }
+            RepathToward(t);
             if (m_poweredUp == false && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && GRUNT_AT_SAVED_SCREEN_POS(t)) {

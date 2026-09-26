@@ -16,6 +16,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
@@ -105,17 +106,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
-            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-                StepArrivalDrop(
-                    occ->m_lastTilePx.m_x,
-                    occ->m_lastTilePx.m_y,
-                    0,
-                    m_arrivalFlags,
-                    1,
-                    0
-                );
-                m_dwell = 0;
-            }
+            RepathToward(occ);
             if (m_poweredUp != false) {
                 return 1;
             }
