@@ -1573,19 +1573,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 || ty >= board->m_mainPlane->m_planePixelHeight) {
                 continue;
             }
-            i32 col = tx;
-            i32 row = ty;
-            if (pxX < 0x10) {
-                col = 0;
-            } else if (tx >= board->m_mainPlane->m_tileColumns) {
-                col = board->m_mainPlane->m_tileColumns - 1;
-            }
-            if (ty >= board->m_mainPlane->m_tileRows) {
-                row = board->m_mainPlane->m_tileRows - 1;
-            }
-            i32 cell =
-                board->m_mainPlane->m_tileHandles[board->m_mainPlane->m_tileRowOffsets[row] + col];
-            TileCollisionKind type = board->CollisionAtHandle(cell, 0, 0);
+            TileCollisionKind type = PbResolveCell(board, tx, ty);
 
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {
