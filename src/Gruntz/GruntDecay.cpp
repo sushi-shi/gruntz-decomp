@@ -46,15 +46,15 @@ i32 CGrunt::UpdateDeathAnimation() {
         UnregisterFromBoard(this, 0);
         i32 dt = static_cast<i32>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8));
         i32 epoch;
-        i64* clock = &m_idleWindowTiming.m_start;
+        ClockInterval* clock = &m_idleWindowTiming;
         if (m_object->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
             epoch = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
-            clock[1] = static_cast<u32>(dt);
-            clock[0] = static_cast<u32>(epoch);
+            clock->m_interval = static_cast<u32>(dt);
+            clock->m_start = static_cast<u32>(epoch);
         } else {
-            clock[1] = static_cast<u32>(dt);
+            clock->m_interval = static_cast<u32>(dt);
             epoch = static_cast<i32>(g_frameTime);
-            clock[0] = static_cast<u32>(epoch);
+            clock->m_start = static_cast<u32>(epoch);
         }
         i64 e = static_cast<i64>(g_frameTime) - m_idleWindowTiming.m_start;
         u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);

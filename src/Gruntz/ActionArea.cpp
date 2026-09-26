@@ -67,21 +67,20 @@ void CProjActObj::RegisterType() {
 
 RVA(0x00008440, 0xfe)
 i32 CActionArea::Tick() {
-    i64* ts = &m_timing.m_start;
+    ClockInterval* timing = &m_timing;
     i32* phase = &m_phase;
-    if (static_cast<i64>(g_frameTime) - *ts >= m_timing.m_interval) {
+    if (static_cast<i64>(g_frameTime) - timing->m_start >= timing->m_interval) {
         *phase = (*phase == 0);
-        m_timing.m_interval = 0x1f4;
-        *ts = static_cast<u32>(g_frameTime);
+        timing->Start(0x1f4);
     }
     if (*phase != 0) {
-        i64 d2 = static_cast<i64>(g_frameTime) - *ts;
+        i64 d2 = static_cast<i64>(g_frameTime) - timing->m_start;
         double t = static_cast<double>((d2 < 0 ? 0 : static_cast<u32>(d2)));
         m_wwdObject->m_imageSet->SetAllLightLevels(
             static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
         );
     } else {
-        i64 d2 = static_cast<i64>(g_frameTime) - *ts;
+        i64 d2 = static_cast<i64>(g_frameTime) - timing->m_start;
         double t = static_cast<double>((d2 < 0 ? 0 : static_cast<u32>(d2)));
         m_wwdObject->m_imageSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
     }
