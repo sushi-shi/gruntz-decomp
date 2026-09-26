@@ -122,7 +122,7 @@ i32 CDDrawSubMgrPages::LoadPageImage(CRezItm* src, DDrawPageKind pageIndex) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158b70, 0x1c)
 void CDDrawSubMgrPages::BltDirtyChildrenEx() {
-    OwnerMgr()->m_childGroup->BltDirtyChildrenEx(m_frontSurface, m_backPair, m_overlayPair);
+    OwnerMgr()->ChildGroup()->BltDirtyChildrenEx(m_frontSurface, m_backPair, m_overlayPair);
 }
 
 // @dead-code
@@ -131,7 +131,7 @@ RVA(0x00158b90, 0x28)
 void CDDrawSubMgrPages::FlipAndNotify() {
     m_frontSurface->m_surface->Flip(NULL);
     CDDrawSurfaceMgr* n = OwnerMgr();
-    CDDrawChildGroup* c = n->m_childGroup;
+    CDDrawChildGroup* c = n->ChildGroup();
     CDDrawSubMgrPages* s = n->m_drawTarget;
     c->BltDirtyChildren(s->m_backPair, s->m_overlayPair);
 }

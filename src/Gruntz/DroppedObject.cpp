@@ -198,7 +198,7 @@ i32 CObjectDropper::Update() {
                         i32 cy = fy >> TILE_SHIFT_PX;
                         u32 flags = plane->CellFlagsAt(cx, cy);
                         if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
-                            g_gameReg->World()->m_childGroup->CreateSprite(
+                            g_gameReg->World()->ChildGroup()->CreateSprite(
                                 0,
                                 fx,
                                 fy,
@@ -374,7 +374,7 @@ i32 CDroppedObject::AdvanceFall() {
                         default:
                             if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
                                 CreateParticlez(
-                                    g_gameReg->World()->m_childGroup,
+                                    g_gameReg->World()->ChildGroup(),
                                     x,
                                     m_landY,
                                     "LEVEL_DEATHSPLASH",
@@ -390,7 +390,7 @@ i32 CDroppedObject::AdvanceFall() {
         } else {
             if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
                 CreateParticlez(
-                    g_gameReg->World()->m_childGroup,
+                    g_gameReg->World()->ChildGroup(),
                     x,
                     m_landY,
                     "GAME_WATER",
@@ -469,7 +469,7 @@ RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         CWwdSpriteObject* o = m_object;
-        g_gameReg->World()->m_childGroup->CreateSprite(
+        g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             o->m_screenX,
             o->m_screenY,

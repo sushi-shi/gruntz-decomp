@@ -74,6 +74,10 @@ public:
     virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual void Cleanup();
 
+    CDDrawChildGroup* ChildGroup() {
+        return m_childGroup;
+    }
+
     SoundCueRegistry* SoundRegistry() {
         return m_soundRegistry;
     }
@@ -90,9 +94,19 @@ public:
         }
     }
 
-    i32 InvokeCallbackInline(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
-        return ar != NULL && m_callback != NULL && m_callback(this, ar, mode, typeId, payload) != 0;
+    HP_Callback SerializationCallback() {
+        return m_callback;
     }
+
+    void SetSerializationCallback(HP_Callback callback) {
+        m_callback = callback;
+    }
+
+    i32 InvokeCallbackInline(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
+        return ar != NULL && SerializationCallback() != NULL
+               && SerializationCallback()(this, ar, mode, typeId, payload) != 0;
+    }
+
     i32 DispatchSerializationCallback(
         CFileMemBase* ar,
         SerialMode mode,

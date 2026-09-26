@@ -239,7 +239,7 @@ i32 CProjectile::LoadProjectileSprites(
     m_curY = m_object->m_screenY;
     m_arrived = false;
 
-    CDDrawChildGroup* factory = g_gameReg->World()->m_childGroup;
+    CDDrawChildGroup* factory = g_gameReg->World()->ChildGroup();
     m_shadow = (factory->CreateSprite(
         0,
         m_object->m_screenX,
@@ -410,7 +410,7 @@ void CProjectile::AdvanceMotion() {
 
                             if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
                                 CreateParticlez(
-                                    reg->m_world->m_childGroup,
+                                    reg->m_world->ChildGroup(),
                                     m_targetPxX,
                                     m_targetPxY,
                                     "LEVEL_DEATHSPLASH",
@@ -425,7 +425,7 @@ void CProjectile::AdvanceMotion() {
         } else {
             if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
                 CreateParticlez(
-                    reg->m_world->m_childGroup,
+                    reg->m_world->ChildGroup(),
                     m_targetPxX,
                     m_targetPxY,
                     "GAME_WATER",
@@ -694,7 +694,7 @@ i32 CProjectile::SerializeDispatch(
             g_serialCounter++;
             i32 count;
             s->Read(&count, sizeof(count));
-            m_shadow = LookupSerialRef(reg->m_childGroup->m_registeredGameObjectsById, count);
+            m_shadow = LookupSerialRef(reg->ChildGroup()->m_registeredGameObjectsById, count);
             if (m_shadow == NULL && count != 0) {
                 return 0;
             }

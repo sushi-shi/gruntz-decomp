@@ -143,7 +143,7 @@ i32 CTriggerMgr::PlaceObject(
         }
 
         CWwdSpriteObject* sprite =
-            m_world->m_childGroup
+            m_world->ChildGroup()
                 ->CreateSprite(0, x, y, z, "Grunt", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (sprite == NULL) {
             goto fail;
@@ -249,7 +249,7 @@ i32 CTriggerMgr::PlaceObject(
 
             if (mode == GRUNT_ENTRANCE_WORMHOLE) {
                 CWwdSpriteObject* hole =
-                    m_world->m_childGroup
+                    m_world->ChildGroup()
                         ->CreateSprite(0, x, y, 0, "Wormhole", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
                 if (hole == NULL) {
                     logic->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

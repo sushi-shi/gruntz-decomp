@@ -649,8 +649,8 @@ i32 CMulti::AdvanceGameFrame() {
     } else {
         g_period500CountdownMs = t5 - g_frameDelta;
     }
-    m_world->m_childGroup->TickKillCues(0);
-    m_world->m_childGroup->CollideBroadcast();
+    m_world->ChildGroup()->TickKillCues(0);
+    m_world->ChildGroup()->CollideBroadcast();
     Mgr()->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
     m_statusBar->UpdateStatusBar(g_frameDelta);
     SoundStream* win = m_world->m_soundStream;

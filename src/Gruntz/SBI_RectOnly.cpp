@@ -2276,7 +2276,7 @@ i32 CStatusBarMgr::Activate() {
     if (m_barY > d - 9) {
         m_barY = d - 0x22;
     }
-    m_barSprite = (m_world)->m_childGroup->CreateSprite(
+    m_barSprite = (m_world)->ChildGroup()->CreateSprite(
         0,
         m_barX,
         m_barY,

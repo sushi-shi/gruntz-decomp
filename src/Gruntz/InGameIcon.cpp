@@ -349,7 +349,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     if (glitter != ICON_GLITTER_NONE) {
-        CWwdSpriteObject* fx = g_gameReg->World()->m_childGroup->CreateSprite(
+        CWwdSpriteObject* fx = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             m_object->m_screenX,
             m_object->m_screenY,
@@ -671,7 +671,7 @@ i32 CInGameIcon::Reposition() {
 
             CGameObject* found = NULL;
             if (MapLookupById(
-                    reg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    reg->m_world->ChildGroup()->m_registeredGameObjectsById,
                     cellVal,
                     found
                 )
@@ -805,7 +805,7 @@ i32 CInGameIcon::SerializeDispatch(
             i32 id;
             ar->Read(&id, sizeof(id));
             CWwdSpriteObject* sprite = LookupSerialRef(
-                m_ownerLogicRecord->m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
+                m_ownerLogicRecord->m_ownerCtx->ChildGroup()->m_registeredGameObjectsById,
                 id
             );
             m_glitterSprite = sprite;

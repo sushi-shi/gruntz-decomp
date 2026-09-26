@@ -8,7 +8,7 @@
         i32 id;                                                                                    \
         ++g_serialCounter;                                                                         \
         ar->Read(&id, 4);                                                                          \
-        CWwdSpriteObject* r = LookupSerialRef(dir->m_childGroup->m_registeredGameObjectsById, id); \
+        CWwdSpriteObject* r = LookupSerialRef(dir->ChildGroup()->m_registeredGameObjectsById, id); \
         (field) = r;                                                                               \
         if (r == NULL && id != 0) {                                                                \
             return 0;                                                                              \

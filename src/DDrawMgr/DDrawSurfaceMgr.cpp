@@ -16,6 +16,7 @@
 #include <Enums.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -43,7 +44,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_animRegistry = NULL;
     m_flags = 0;
     m_lastError = WORLDERR_NONE;
-    m_callback = NULL;
+    SetSerializationCallback(NULL);
     g_soundCueTimeMs = 0;
     g_engineFrameDelta = 0;
 }
@@ -144,14 +145,14 @@ void CDDrawSurfaceMgr::Cleanup() {
     SAFE_DELETE(m_paletteRegistry);
     SAFE_DELETE(m_animRegistry);
     SAFE_DELETE(m_deviceManager);
-    m_callback = NULL;
+    SetSerializationCallback(NULL);
 }
 
 RVA(0x00155f00, 0x41)
 b32 CDDrawSurfaceMgr::IsReady() {
     CDDrawSubMgrPages* first = m_drawTarget;
 
-    return first != NULL && m_childGroup != NULL && m_workerList != NULL && m_imageRegistry != NULL
+    return first != NULL && ChildGroup() != NULL && m_workerList != NULL && m_imageRegistry != NULL
            && m_logicRegistry != NULL && first->IsLoaded() != 0 && m_level != NULL;
 }
 
@@ -210,7 +211,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (path == NULL) {
         return 0;
     }
-    m_callback = cb;
+    SetSerializationCallback(cb);
 
     CFileMem S;
 
@@ -230,42 +231,41 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     header.m_day = now.GetDay();
     header.m_year = now.GetYear();
     strcpy(header.m_name, name);
-    i32 probe = m_childGroup->CountActive();
+    header.m_childCount = ChildGroup()->CountActive();
     header.m_objIdCounter = g_wwdObjIdCounter;
-    header.m_childCount = probe;
     S.Write(&header, sizeof(header));
 
     if (!InvokeCallbackInline(&S, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!m_childGroup->WriteObjectSnapshots(&S, typeId)) {
+    if (!ChildGroup()->WriteObjectSnapshots(&S, typeId)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_PRESAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!m_childGroup->DispatchSerializationToObjects(&S, SERIAL_PRESAVE, typeId)) {
+    if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_PRESAVE, typeId)) {
         return 0;
     }
-    if (!m_level->SerializeDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0)) {
+    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_SAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!m_childGroup->SerializeObjects(&S, typeId)) {
+    if (!ChildGroup()->SerializeObjects(&S, typeId)) {
         return 0;
     }
-    if (!m_level->SerializeDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0)) {
+    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_POSTSAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!m_childGroup->DispatchSerializationToObjects(&S, SERIAL_POSTSAVE, typeId)) {
+    if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_POSTSAVE, typeId)) {
         return 0;
     }
-    if (!m_level->SerializeDispatch(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0)) {
+    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
 
@@ -273,13 +273,12 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     return 1;
 }
 
-// @early-stop
 RVA(0x00156530, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
     if (name == NULL) {
         return 0;
     }
-    m_callback = cb;
+    SetSerializationCallback(cb);
 
     CFileMem S;
 
@@ -297,40 +296,40 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
-    m_childGroup->ClearChildren();
-    if (!m_childGroup->LoadObjects(&S, header.m_childCount, typeId)) {
+    ChildGroup()->ClearChildren();
+    if (!ChildGroup()->LoadObjects(&S, header.m_childCount, typeId)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_PRELOAD, typeId, &header)) {
         return 0;
     }
-    if (!m_childGroup->DispatchSerializationToObjects(&S, SERIAL_PRELOAD, typeId)) {
+    if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_PRELOAD, typeId)) {
         return 0;
     }
-    if (!m_level->SerializeDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0)) {
+    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_LOAD, typeId, &header)) {
         return 0;
     }
-    if (!m_childGroup->DeserializeObjects(&S, header.m_childCount, typeId)) {
+    if (!ChildGroup()->DeserializeObjects(&S, header.m_childCount, typeId)) {
         return 0;
     }
-    if (!m_level->SerializeDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0)) {
+    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_POSTLOAD, typeId, &header)) {
         return 0;
     }
-    if (!m_childGroup->DispatchSerializationToObjects(&S, SERIAL_POSTLOAD, typeId)) {
+    if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_POSTLOAD, typeId)) {
         return 0;
     }
-    if (!m_level->SerializeDispatch(&S, SERIAL_POSTLOAD, LOGIC_UNSET, 0)) {
+    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_POSTLOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
 
     S.Ready();
-    m_level->DeactivateDistantObjectsOnMainPlane();
+    LevelOf(this)->DeactivateDistantObjectsOnMainPlane();
     return 1;
 }
 
@@ -344,10 +343,10 @@ i32 CDDrawSurfaceMgr::DispatchSerializationCallback(
     if (!ar) {
         return 0;
     }
-    if (!m_callback) {
+    if (!SerializationCallback()) {
         return 0;
     }
-    return m_callback(this, ar, mode, typeId, payload) != 0;
+    return SerializationCallback()(this, ar, mode, typeId, payload) != 0;
 }
 
 // @dead-code

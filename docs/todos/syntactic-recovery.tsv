@@ -5,6 +5,7 @@ rva	unit	function	lost_max	cur
 0x02a570	battlezmapconfig	?RepathAroundBlockedTiles@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	77.1948	65.3896
 0x02c690	battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	83.4378	79.3302
 0x02e3a0	battlezmapconfig	?RouteToNearbyEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.0284	76.6404
+0x02c140	battlezmapconfig	?RouteToNearbyPickup@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	94.8459	70.8052
 0x031610	battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
 0x153d90	cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.7114	97.9900
 0x153b20	cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.8068	97.3526
@@ -44,6 +45,7 @@ rva	unit	function	lost_max	cur
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
 0x075e90	terraintileloader	?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	84.1791	83.9946
 0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.8053	93.6726
+0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.3390
 0x078430	triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	91.2597

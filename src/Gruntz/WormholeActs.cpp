@@ -106,7 +106,7 @@ i32 CExitTrigger::AdvanceAnim() {
             GruntzPlayer* claimed = &g_gameReg->m_players[hitPlayerIndex];
             if (claimed != NULL) {
                 CGameObject* warlordObj = LookupObjectById(
-                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
+                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                     claimed->m_warlordObjectId
                 );
                 CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_logicRecord->m_userLogic);
@@ -114,7 +114,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     wl->ResolveJoyAnimation();
                 }
             }
-            CDDrawChildGroup* grp = g_gameReg->World()->m_childGroup;
+            CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
@@ -175,7 +175,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 m_warlordLogic->ResolveDeathAnimation();
                 m_warlordLogic = NULL;
             }
-            CDDrawChildGroup* grp = g_gameReg->World()->m_childGroup;
+            CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
@@ -186,7 +186,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;
                         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
-                            CWwdSpriteObject* fx = g_gameReg->World()->m_childGroup->CreateSprite(
+                            CWwdSpriteObject* fx = g_gameReg->World()->ChildGroup()->CreateSprite(
                                 0,
                                 x,
                                 y,

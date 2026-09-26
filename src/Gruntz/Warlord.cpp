@@ -444,7 +444,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         i32 x = o->m_screenX;
         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
             CreateParticlez(
-                g_gameReg->World()->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 x - 30,
                 y + 10,
                 "LEVEL_FORTSPLASH",

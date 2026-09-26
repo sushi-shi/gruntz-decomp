@@ -593,7 +593,7 @@ i32 CLogicRecord::SerializeDispatch(
         case SERIAL_POSTLOAD:
             if (m_targetId) {
                 m_target = LookupObjectById(
-                    m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
+                    m_ownerCtx->ChildGroup()->m_registeredGameObjectsById,
                     m_targetId
                 );
             }
@@ -790,7 +790,7 @@ i32 CLogicRecord::ResolveTarget(void* context) {
     }
     if (m_targetId) {
         m_target =
-            LookupObjectById(m_ownerCtx->m_childGroup->m_registeredGameObjectsById, m_targetId);
+            LookupObjectById(m_ownerCtx->ChildGroup()->m_registeredGameObjectsById, m_targetId);
     }
     return 1;
 }

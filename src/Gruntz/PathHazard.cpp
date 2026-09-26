@@ -373,14 +373,10 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     i32 sy = m_object->m_screenY;
     SwitchAnimationByName("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CWwdSpriteObject* sl = g_gameReg->World()->m_childGroup->CreateSprite(
-            0,
-            sx,
-            sy,
-            0,
-            "SpotLight",
-            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-        );
+        CWwdSpriteObject* sl =
+            g_gameReg->World()
+                ->ChildGroup()
+                ->CreateSprite(0, sx, sy, 0, "SpotLight", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (sl != NULL) {
             sl->SetImageSetByName("LEVEL_SPOTLIGHT");
             CLogicRecord* sub = sl->m_logicRecord;

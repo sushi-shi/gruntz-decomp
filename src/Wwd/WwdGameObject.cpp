@@ -468,7 +468,7 @@ i32 CGameObject::SerializeDispatch(
             if (node != 0) {
                 CWwdGameObject* found = NULL;
                 if (MapLookup(
-                        OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
+                        OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
                         reinterpret_cast<void*>(node), // API-forced: id-keyed map
                         found
                     )
@@ -679,7 +679,7 @@ i32 CGameObject::ResolveLinkedObject(b32 gate) {
     CWwdGameObject* found;
     if (m_carrierId != 0) {
         if (LookupLinkedObject(
-                OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
+                OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
                 m_carrierId,
                 found
             )

@@ -271,7 +271,7 @@ i32 CTileTriggerLogic::Tick() {
         SET_POINT_COMPONENTS(pt, sx, sy);
         if (PtInRect(&g_gameReg->m_viewBounds, pt) && srcId != TILEKIND_REDPYRAMID_UP
             && srcId != TILEKIND_REDPYRAMID_DOWN) {
-            CGameObject* trig = world->m_childGroup->CreateSprite(
+            CGameObject* trig = world->ChildGroup()->CreateSprite(
                 0,
                 sx,
                 sy,
@@ -358,7 +358,7 @@ i32 CTileTriggerLogic::Tick() {
                         POINT pt;
                         SET_POINT_COMPONENTS(pt, pxX, pxY);
                         if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                            CGameObject* o = world->m_childGroup->CreateSprite(
+                            CGameObject* o = world->ChildGroup()->CreateSprite(
                                 0,
                                 pxX,
                                 pxY,
@@ -748,7 +748,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             i32 sy = ((j + m_tileY) << TILE_SHIFT_PX) - 0x10;
             if (inRect) {
                 CreateParticlez(
-                    gameMgr->m_childGroup,
+                    gameMgr->ChildGroup(),
                     sx,
                     sy,
                     "LEVEL_ROCKBREAK",
@@ -763,7 +763,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         ->SpawnPowerupIcon(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
-        CGameObject* txt = g_gameReg->World()->m_childGroup->CreateSprite(
+        CGameObject* txt = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             cx,
             cy,
@@ -830,14 +830,10 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     reg->m_triggerMgr
         ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
-        CGameObject* rec = g_gameReg->World()->m_childGroup->CreateSprite(
-            0,
-            px,
-            py,
-            95000,
-            "InGameText",
-            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-        );
+        CGameObject* rec =
+            g_gameReg->World()
+                ->ChildGroup()
+                ->CreateSprite(0, px, py, 95000, "InGameText", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (rec == NULL) {
             return 0;
         }
@@ -975,7 +971,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     }
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, tileX, tileY)
     if (checkpointType != 0) {
-        CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             px,
             py,
@@ -1283,7 +1279,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-        CWwdSpriteObject* spr = g_gameReg->World()->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             px,
             py,
