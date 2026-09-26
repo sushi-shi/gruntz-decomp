@@ -58,7 +58,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         return 0;
     }
 
-    menuRoot()->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
+    menuRoot()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(false) >= 0) {
         do {
@@ -77,11 +77,11 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
-    SoundCueRegistry* reg = menuRoot()->m_soundRegistry;
+    SoundCueRegistry* reg = menuRoot()->SoundRegistry();
     if (reg->m_soundStream) {
         reg->m_soundStream->StopAllStreams();
     }
-    menuRoot()->m_soundRegistry->RemoveWithPrefix("ATTRACT", "_");
+    menuRoot()->SoundRegistry()->RemoveWithPrefix("ATTRACT", "_");
 
     CState::ReleaseResources();
 }
@@ -107,7 +107,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    SoundCue* found = menuRoot()->m_soundRegistry->FindCue(buf);
+    SoundCue* found = menuRoot()->SoundRegistry()->FindCue(buf);
     m_titleCue = found;
     if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {
@@ -138,7 +138,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
         return 1;
     }
     do {
-        (menuRoot()->m_soundRegistry)->TickVolumeRamps();
+        (menuRoot()->SoundRegistry())->TickVolumeRamps();
     } while (m_titleCue->m_sound->IsPlaying());
     return 1;
 }
@@ -153,7 +153,7 @@ i32 CAttract::Render() {
         }
     }
 
-    (menuRoot()->m_soundRegistry)->TickVolumeRamps();
+    (menuRoot()->SoundRegistry())->TickVolumeRamps();
 
     CountDown(m_titleCountdownMs, g_frameDelta);
 

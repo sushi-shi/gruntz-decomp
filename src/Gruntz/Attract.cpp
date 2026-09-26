@@ -530,7 +530,7 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     ar->Read(&m_levelIndex, sizeof(m_levelIndex));

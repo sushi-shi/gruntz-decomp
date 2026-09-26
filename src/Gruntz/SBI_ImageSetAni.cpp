@@ -99,7 +99,7 @@ i32 CSBI_ImageSetAni::Render() {
         CImage* cel = m_frameSet->GetAt(m_frameIndex);
         SetFrame(cel);
         if (cel != NULL) {
-            CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
+            CDDrawSurfacePair* surfaceCtx = g_gameReg->World()->m_drawTarget->m_backPair;
             cel->RenderFrame(
                 surfaceCtx,
                 cel->m_anchorX + m_rect.left,
@@ -180,7 +180,7 @@ i32 CSBI_ImageSetAni::SerializeFields(
     if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     switch (mode) {

@@ -91,4 +91,9 @@ inline void SetCellObject(CMapMgr* grid, u32 x, u32 y, i32 objectId) {
     }
 }
 
+RVA(0x000853f0, 0x46)
+inline i32 CMapMgr::IsCellClear(i32 x, i32 y) {
+    return CellFlagsAt(x, y) == 0;
+}
+
 #endif // GRUNTZ_BRICKZ_H

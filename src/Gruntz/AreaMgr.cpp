@@ -351,7 +351,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToPtr* registryMap = &surfaceMgr->m_soundRegistry->m_cues;
+    CMapStringToPtr* registryMap = &surfaceMgr->SoundRegistry()->m_cues;
     if (registryMap == NULL) {
         return 0;
     }
@@ -375,7 +375,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
         SoundCue* cue = static_cast<SoundCue*>(toRemove.GetNext(pos));
-        surfaceMgr->m_soundRegistry->RemoveCue(cue);
+        surfaceMgr->SoundRegistry()->RemoveCue(cue);
     }
     toRemove.RemoveAll();
 
@@ -389,7 +389,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
             if (resourceTree == NULL) {
                 return 0;
             }
-            surfaceMgr->m_soundRegistry->LoadFromTree(
+            surfaceMgr->SoundRegistry()->LoadFromTree(
                 resourceTree,
                 const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
                 "_"

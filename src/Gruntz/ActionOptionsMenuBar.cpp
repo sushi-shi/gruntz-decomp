@@ -40,24 +40,24 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
     m_active = false;
-    m_frame = g_gameReg->m_world->FindFrame("GAME_ACTIONOPTIONZMENUBAR", 1);
+    m_frame = g_gameReg->World()->FindFrame("GAME_ACTIONOPTIONZMENUBAR", 1);
     if (!m_frame) {
         return 0;
     }
 
-    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
+    CDDrawWorker* spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_HIGHCHIPZ");
+    spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_HIGHCHIPZ");
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_GREYCHIPZ");
+    spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_GREYCHIPZ");
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
@@ -82,7 +82,7 @@ i32 CActionOptionsMenuBar::Init(
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = (g_gameReg->m_world->m_level->m_mainPlane)->m_planePixelWidth;
+        i32 limit = (g_gameReg->World()->m_level->m_mainPlane)->m_planePixelWidth;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -176,21 +176,21 @@ i32 CActionOptionsMenuBar::Render() {
     if (!m_active) {
         return 1;
     }
-    CGameLevel* level = g_gameReg->m_world->m_level;
+    CGameLevel* level = g_gameReg->World()->m_level;
     LONG sx = m_screenX;
     LONG sy = m_screenY;
     level->m_mainPlane->WorldToViewport(&sx, &sy);
 
-    CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
-    LevelCoordRect r = g_gameReg->m_world->m_level->m_viewportRect;
+    CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->m_backPair;
+    LevelCoordRect r = g_gameReg->World()->m_level->m_viewportRect;
     m_frame->RenderFrameClipped(ctx, sx, sy, &r, 0);
 
     if (m_buttonFrame[0]) {
-        r = g_gameReg->m_world->m_level->m_viewportRect;
+        r = g_gameReg->World()->m_level->m_viewportRect;
         m_buttonFrame[0]->RenderFrameClipped(ctx, sx - 0xc, sy + 2, &r, 0);
     }
     if (m_buttonFrame[1]) {
-        r = g_gameReg->m_world->m_level->m_viewportRect;
+        r = g_gameReg->World()->m_level->m_viewportRect;
         m_buttonFrame[1]->RenderFrameClipped(ctx, sx + 0x10, sy + 2, &r, 0);
     }
     return 1;

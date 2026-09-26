@@ -315,7 +315,7 @@ inline void CGrunt::ResolveEntranceOccupant() {
         );                                                                                         \
         if (found == cached) {                                                                     \
             if (m_playerIndex == g_curPlayer) {                                                    \
-                g_gameReg->m_voiceManager->PlayVoice(this, 0x33f, -1, 0, -1, -1);                  \
+                g_gameReg->VoiceMgr()->PlayVoice(this, 0x33f, -1, 0, -1, -1);                      \
                 m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                         \
             }                                                                                      \
             m_entranceDropActive = true;                                                           \
@@ -612,7 +612,7 @@ i32 CGrunt::StepArrivalCommit() {
     eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
+            g_gameReg->VoiceMgr()->StopVoice(m_object->m_objectId);
         }
         ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {

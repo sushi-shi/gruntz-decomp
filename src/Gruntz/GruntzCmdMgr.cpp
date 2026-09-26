@@ -536,7 +536,7 @@ i32 CGruntzSingleCommand::Save(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_world) {
+    if (!g_gameReg->World()) {
         return 0;
     }
     s->Write(&m_playerIndex, sizeof(m_playerIndex));
@@ -555,7 +555,7 @@ i32 CGruntzSingleCommand::Load(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_world) {
+    if (!g_gameReg->World()) {
         return 0;
     }
     s->Read(&m_playerIndex, sizeof(m_playerIndex));
@@ -594,7 +594,7 @@ i32 CGruntzMultiCommand::Save(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_world) {
+    if (!g_gameReg->World()) {
         return 0;
     }
     s->Write(&m_playerIndex, sizeof(m_playerIndex));
@@ -612,7 +612,7 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_world) {
+    if (!g_gameReg->World()) {
         return 0;
     }
     s->Read(&m_playerIndex, sizeof(m_playerIndex));
@@ -695,7 +695,7 @@ i32 CGruntzCmdMgr::CanSaveCommands(CFileMemBase* stream) {
     if (!stream) {
         return 0;
     }
-    return g_gameReg->m_world != NULL;
+    return g_gameReg->World() != NULL;
 }
 
 RVA(0x00024ac0, 0x20)
@@ -703,5 +703,5 @@ i32 CGruntzCmdMgr::CanLoadCommands(CFileMemBase* stream) {
     if (stream == NULL) {
         return 0;
     }
-    return g_gameReg->m_world != NULL;
+    return g_gameReg->World() != NULL;
 }

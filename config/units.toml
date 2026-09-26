@@ -481,11 +481,6 @@ source = "src/Gruntz/SerializeSyncMarker.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "rezsync"
-source = "src/Rez/RezSync.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "statemgrbz"
 source = "src/Gruntz/InputState.cpp"
 flags = "cpp-rtti"

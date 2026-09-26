@@ -147,7 +147,7 @@ i32 CSpotLight::Tick() {
                 i32 laser = GetRandomNumber() % 2 + 1;
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
-                PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, name);
+                PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), name);
                 return 0;
             } else {
                 tgt->SnapToLastTile(1);

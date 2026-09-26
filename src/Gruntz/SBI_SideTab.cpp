@@ -71,11 +71,11 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_onLeft = onLeft;
 
     if (onLeft != 0) {
-        m_topFrame = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", 1);
+        m_topFrame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", 1);
         m_drawPosition.m_x = parent->m_barRect.left - (rc.right - rc.left) / 2;
         m_bottomFrameDy = 1;
     } else {
-        m_topFrame = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", 1);
+        m_topFrame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", 1);
         m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->m_barRect.right;
         m_bottomFrameDy = -1;
     }
@@ -141,7 +141,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_sampledValue == val) {
         return 1;
     }
-    CImage* glyph = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", val);
+    CImage* glyph = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", val);
     m_sampledValue = val;
     m_bottomFrame = glyph;
     return 1;
@@ -150,7 +150,7 @@ i32 CSBI_SideTab::BuildHandle() {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_drawGate) {
-        CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
+        CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->m_backPair;
         m_topFrame->RenderFrame(ctx, m_drawPosition.m_x, m_drawPosition.m_y, 0);
         m_bottomFrame
             ->RenderFrame(ctx, m_drawPosition.m_x + m_bottomFrameDy, m_drawPosition.m_y, 0);
@@ -168,7 +168,7 @@ i32 CSBI_SideTab::SerializeFields(
     if (s == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
+    CDDrawSurfaceMgr* reg = g_gameReg->World();
     if (reg == NULL) {
         return 0;
     }

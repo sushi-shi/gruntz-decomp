@@ -239,7 +239,7 @@ i32 CProjectile::LoadProjectileSprites(
     m_curY = m_object->m_screenY;
     m_arrived = false;
 
-    CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
+    CDDrawChildGroup* factory = g_gameReg->World()->m_childGroup;
     m_shadow = (factory->CreateSprite(
         0,
         m_object->m_screenX,
@@ -656,7 +656,7 @@ i32 CProjectile::SerializeDispatch(
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
+    CDDrawSurfaceMgr* reg = g_gameReg->World();
     if (reg == NULL) {
         return 0;
     }
@@ -809,7 +809,7 @@ i32 CBoomerang::SerializeDispatch(
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     switch (mode) {
@@ -916,7 +916,7 @@ i32 CTimeBomb::SerializeDispatch(
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
@@ -946,7 +946,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     }
     world = gameMgr->m_world;
     cue = NULL;
-    MapLookup(world->m_soundRegistry->m_cues, key, cue);
+    MapLookup(world->SoundRegistry()->m_cues, key, cue);
     if (cue == NULL) {
         goto fail;
     }

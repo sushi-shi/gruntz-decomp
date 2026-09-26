@@ -88,7 +88,7 @@ i32 CSBI_Image::SerializeFields(
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->World();
     if (mgr == NULL) {
         return 0;
     }

@@ -54,7 +54,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (g_disableAudio == false && g_disableSound == false) {
         CRezDir* set = StateResources()->GetDir("SOUNDZ");
         if (set != NULL) {
-            m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(set), "PREVIEW", "_");
+            m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(set), "PREVIEW", "_");
         }
     }
     m_previewName = "PREVIEW0";
@@ -67,11 +67,11 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de140, 0x33)
 void CPreviewState::ResetPreview() {
-    SoundCueRegistry* reg = m_world->m_soundRegistry;
+    SoundCueRegistry* reg = m_world->SoundRegistry();
     if (reg->m_soundStream != NULL) {
         reg->m_soundStream->StopAllStreams();
     }
-    m_world->m_soundRegistry->RemoveWithPrefix("PREVIEW", "_");
+    m_world->SoundRegistry()->RemoveWithPrefix("PREVIEW", "_");
     CState::ReleaseResources();
 }
 
@@ -105,7 +105,7 @@ i32 CPreviewState::Tick() {
             return 0;
         }
     }
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
     if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_previewCountdownMs) {
         m_previewCountdownMs = 0;
     } else {
@@ -179,7 +179,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
         == 0) {
         failed = true;
     } else {
-        PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_TELEPORTEROPEN");
+        PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_TELEPORTEROPEN");
         RetireScene(0x50, 0x3e8, 0, true);
     }
     m_previewCountdownMs = 60000;

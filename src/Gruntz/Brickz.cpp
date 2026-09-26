@@ -178,8 +178,3 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     }
     return 1;
 }
-
-RVA(0x000853f0, 0x46)
-i32 CMapMgr::IsCellClear(i32 x, i32 y) {
-    return CellFlagsAt(x, y) == 0;
-}

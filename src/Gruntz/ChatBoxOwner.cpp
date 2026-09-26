@@ -82,7 +82,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                 CString text;
                 text.Format("STATEZ_CREDITZ_PALETTEZ_%s", static_cast<const char*>(resourceName));
 
-                CRezItm* source = g_gameReg->m_resourceArchive->GetRezFromPath(
+                CRezItm* source = g_gameReg->ResourceArchive()->GetRezFromPath(
                     static_cast<const char*>(text),
                     REZ_TAG_TXT
                 );

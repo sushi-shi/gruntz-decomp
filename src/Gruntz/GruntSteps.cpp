@@ -810,7 +810,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
+            g_gameReg->VoiceMgr()->StopVoice(m_object->m_objectId);
         }
         ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {
@@ -867,7 +867,7 @@ applyTail:
             m_routePassableMask = 0;
         }
         if (spawnWormhole != false) {
-            CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* spawned = g_gameReg->World()->m_childGroup->CreateSprite(
                 0,
                 spawnPx,
                 spawnPy,

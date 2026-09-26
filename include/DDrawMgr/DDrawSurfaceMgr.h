@@ -74,6 +74,10 @@ public:
     virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual void Cleanup();
 
+    SoundCueRegistry* SoundRegistry() {
+        return m_soundRegistry;
+    }
+
     void FreeContext();
     i32 EnsureSoundInitialized();
     i32 SetDimensions(i32 x, i32 y, ColorDepth bpp);

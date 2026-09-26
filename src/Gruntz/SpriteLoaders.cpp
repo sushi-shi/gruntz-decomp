@@ -35,7 +35,7 @@ CTimer::CTimer() {
 
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
-    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_TIMER");
+    CDDrawWorker* spr = g_gameReg->World()->FindWorker("GAME_TIMER");
     m_sprite = spr;
     if (!spr) {
         return 0;
@@ -102,7 +102,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
             if (MapLookupById(
-                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                     key,
                     obj
                 )) {
@@ -121,7 +121,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
             if (MapLookupById(
-                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                     key,
                     obj
                 )) {
@@ -255,7 +255,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->World();
     if (mgr == NULL) {
         return 0;
     }

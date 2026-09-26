@@ -124,7 +124,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
         m_owner->Deactivate();
     } else if (state == MENUITEM_HIGHLIGHT && playHighlightSound) {
 
-        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_TABHIGHLIGHT2");
+        PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_TABHIGHLIGHT2");
     }
     CDDrawWorker* r = m_record;
     CImage* frame = r->GetAt(IDX(state));
@@ -166,7 +166,7 @@ i32 CSBI_MenuItem::SerializeFields(
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->World();
     if (mgr == NULL) {
         return 0;
     }
@@ -199,7 +199,7 @@ i32 CStatusBarItem::SerializeFields(
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->World();
     if (mgr == NULL) {
         return 0;
     }

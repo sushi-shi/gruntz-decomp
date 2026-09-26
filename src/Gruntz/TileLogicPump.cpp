@@ -393,7 +393,7 @@ i32 CCheckpointTrigger::Act() {
         play->m_levelTimer->AddTime(minutes, seconds);
     }
 
-    CObject* cue = m_wwdObject->OwnerMgr()->m_soundRegistry->Lookup("GAME_FLAGRISE");
+    CObject* cue = m_wwdObject->OwnerMgr()->SoundRegistry()->Lookup("GAME_FLAGRISE");
     if (cue != NULL) {
         static_cast<SoundCue*>(cue)->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
     }
@@ -445,11 +445,11 @@ i32 CCheckpointTrigger::Act() {
 
     i32 sy = g->m_object->m_screenY;
     i32 sx = g->m_object->m_screenX;
-    const RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
+    const RECT* view = &g_gameReg->World()->m_level->m_mainPlane->m_planeViewRect;
     if (!PtInRect(view, sx, sy)) {
         return 0;
     }
-    g_gameReg->m_voiceManager->PlayVoice(g, 0x334, -1, 0, -1, -1);
+    g_gameReg->VoiceMgr()->PlayVoice(g, 0x334, -1, 0, -1, -1);
     return 0;
 }
 

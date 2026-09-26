@@ -15,7 +15,7 @@
 #include <Gruntz/StatusBarMgr.h>
 
 static __inline void HiCueFind() {
-    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
+    SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
     if (registry->m_silentMode == false) {
         CObject* obj = registry->Lookup("GAME_TABHIGHLIGHT1");
         if (obj) {
@@ -25,16 +25,16 @@ static __inline void HiCueFind() {
 }
 
 static __inline void HiCueLookup() {
-    g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
+    g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
 }
 
 static __inline void HiCueTimed() {
-    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_TABHIGHLIGHT1");
+    PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_TABHIGHLIGHT1");
 }
 
 static __inline void PlayTabCue(CStatusBarMgr* statusBar, StatusBarTab tab, const char* cueKey) {
     if (statusBar->m_activeTab == tab && statusBar->m_position != STATUSBAR_HIDDEN) {
-        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, cueKey);
+        PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), cueKey);
     }
 }
 

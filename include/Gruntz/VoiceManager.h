@@ -30,6 +30,10 @@ public:
         memset(m_streamVoices, 0, sizeof(m_streamVoices));
     }
 
+    void SetVolume(i32 volume) {
+        m_voiceVolume = volume;
+    }
+
     BOOL Init(CGruntzMgr* game);
     void Clear();
     BOOL CreateVoiceIndicators();

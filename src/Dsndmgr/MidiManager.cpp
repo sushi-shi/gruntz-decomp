@@ -29,14 +29,14 @@ i32 MidiManager::Initialize(HINSTANCE instanceHandle, HWND ownerWindow, b32 disa
     m_instanceHandle = instanceHandle;
     m_ownerWindow = ownerWindow;
     m_currentSequence = NULL;
-    m_midiAvailable = true;
+    SetEnabled(true);
     g_midiResourceModule = instanceHandle;
     if (disableMidi != false) {
-        m_midiAvailable = false;
+        SetEnabled(false);
     } else {
         AIL_startup();
         if (AIL_midiOutOpen(&g_ailMidiDriver, NULL, -1) != 0 || g_ailMidiDriver == NULL) {
-            m_midiAvailable = false;
+            SetEnabled(false);
         }
     }
     return 1;

@@ -32,7 +32,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
 
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
-                SoundCue* out = g_gameReg->m_world->m_soundRegistry->FindCue("LEVEL_ROLLINGBALL");
+                SoundCue* out = g_gameReg->World()->SoundRegistry()->FindCue("LEVEL_ROLLINGBALL");
                 if (out && out->m_sound) {
                     m_rollingballLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
                     if (m_rollingballLoop) {
@@ -47,7 +47,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
 
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
-                SoundCue* out = g_gameReg->m_world->m_soundRegistry->FindCue("GAME_TELEPORTLOOP");
+                SoundCue* out = g_gameReg->World()->SoundRegistry()->FindCue("GAME_TELEPORTLOOP");
                 if (out && out->m_sound) {
                     m_teleportLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
                     if (m_teleportLoop) {
@@ -130,7 +130,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                             slot->m_clearedRound = true;
                             CGameObject* out = NULL;
                             if (MapLookupById(
-                                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                                     slot->m_warlordObjectId,
                                     out
                                 )
@@ -152,7 +152,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                             && !lastSlot->m_clearedRound) {
                             CGameObject* out = NULL;
                             if (MapLookupById(
-                                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                    g_gameReg->World()->m_childGroup->m_registeredGameObjectsById,
                                     lastSlot->m_warlordObjectId,
                                     out
                                 )
