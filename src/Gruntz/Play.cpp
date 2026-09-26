@@ -25,6 +25,7 @@
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/AreaMgr.h>
+#include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/BrickTileId.h>
@@ -4334,14 +4335,7 @@ i32 CPlay::ExecuteCommand(
             if (g == NULL || g->m_tileClaimed == false) {
                 return 1;
             }
-            g->m_arrivalRerollLo = 0;
-            g->m_arrivalRerollWindowLo = 0;
-            g->m_arrivalRerollHi = 0;
-            g->m_arrivalRerollWindowHi = 0;
-            g->m_tileClaimed = false;
-            g->m_arrivalState = AI_NONE;
-            g->m_arrivalFlags &= 0xe7fbfbfd;
-            g->SetEntrancePos(1, 1);
+            END_GUARD(g);
             return 1;
         }
 
@@ -4353,14 +4347,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
@@ -4416,14 +4403,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
@@ -4478,14 +4458,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
@@ -4540,14 +4513,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
@@ -4603,14 +4569,7 @@ i32 CPlay::ExecuteCommand(
             i32 idx = gi + player * 0xf;
             CGrunt* g = mgr->m_triggerMgr->m_units[idx];
             if (g != NULL && g->m_entranceCommitted != false && g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 sel = 0;
             b32 live = (g_gameReg->m_gameMode != GAMEMODE_QUESTZ);
@@ -4650,14 +4609,7 @@ i32 CPlay::ExecuteCommand(
             }
             g->SetEntrancePos(1, 1);
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             return 1;
         }

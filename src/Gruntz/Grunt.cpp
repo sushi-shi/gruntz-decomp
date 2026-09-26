@@ -783,12 +783,7 @@ i32 CGrunt::CommitArrival() {
     if (m_tileClaimed != false && g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
         m_triggerMgr->EnqueueGuardEnd(m_playerIndex, m_unitIndex);
     } else if (m_tileClaimed != false) {
-        m_arrivalReroll64 = 0;
-        m_arrivalRerollWindow64 = 0;
-        m_tileClaimed = false;
-        m_arrivalState = AI_NONE;
-        m_arrivalFlags &= 0xe7fbfbfd;
-        SetEntrancePos(1, 1);
+        END_GUARD(this);
     }
     CreateSelectedSprite();
     CreateHealthSprite();

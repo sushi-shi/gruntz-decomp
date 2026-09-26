@@ -4,6 +4,7 @@
 #include <Globals.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BattlezUnitKind.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
@@ -1355,14 +1356,7 @@ i32 CTriggerMgr::ClearCell(
         return 0;
     }
     if (cell->m_tileClaimed != false) {
-        cell->m_arrivalRerollLo = 0;
-        cell->m_arrivalRerollWindowLo = 0;
-        cell->m_arrivalRerollHi = 0;
-        cell->m_arrivalRerollWindowHi = 0;
-        cell->m_arrivalFlags &= 0xe7fbfbfd;
-        cell->m_tileClaimed = false;
-        cell->m_arrivalState = AI_NONE;
-        cell->SetEntrancePos(1, 1);
+        END_GUARD(cell);
     }
     if (cell->m_entranceActive != false) {
         return 0;
