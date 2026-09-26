@@ -52,29 +52,26 @@ i32 CGrunt::StepObjectGuardBehavior() {
     b32 powered = m_poweredUp;
     if (powered != false) {
         b32 neighborValid = m_neighborValid;
-        if (neighborValid != false) {
-            m_neighborValid = false;
-            return 1;
-        }
-        if (m_combatActive != false) {
-            return 1;
-        }
-        if (m_stamina >= STAMINA_FULL) {
-            if (FindGridNeighbor(1) != NULL) {
+        if (neighborValid == false) {
+            if (m_combatActive != false) {
                 return 1;
             }
-            if (inRange != 0 && occ == NULL) {
+            if (m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    return 1;
+                }
+                if (inRange != 0 && occ == NULL) {
+                    return 1;
+                }
+                if (m_poweredUp == false) {
+                    return 1;
+                }
+                if (m_neighborValid != false) {
+                    return 1;
+                }
+                RESET_GRUNT_POWERED_STATE(this)
                 return 1;
             }
-            if (m_poweredUp == false) {
-                return 1;
-            }
-            if (m_neighborValid != false) {
-                return 1;
-            }
-            RESET_GRUNT_POWERED_STATE(this)
-            return 1;
-        } else {
             if (inRange != 0) {
                 return 1;
             }
@@ -87,6 +84,8 @@ i32 CGrunt::StepObjectGuardBehavior() {
             RESET_GRUNT_POWERED_STATE(this)
             return 1;
         }
+        m_neighborValid = false;
+        return 1;
     }
 
     switch (m_defenderState) {
@@ -113,10 +112,10 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 }
             }
             {
-                i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-                i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
                 i32 gx = m_defenderPx.m_x >> TILE_SHIFT_PX;
                 i32 gy = m_defenderPx.m_y >> TILE_SHIFT_PX;
+                i32 tx = LastTilePx().m_x >> TILE_SHIFT_PX;
+                i32 ty = LastTilePx().m_y >> TILE_SHIFT_PX;
                 if (tx < gx && ty < gy) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x + 0x40,
@@ -173,16 +172,9 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 ResetToSeek(this);
                 return 1;
             }
-            if (o == NULL) {
-                goto resetState;
-            }
-            if (o->m_entranceCommitted == false) {
-                goto resetState;
-            }
-            if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
-                goto resetState;
-            }
-            if (GruntInRadius(m_arrivalCell.m_x, m_arrivalCell.m_y) == 0) {
+            if (o == NULL || o->m_entranceCommitted == false
+                || GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0
+                || GruntInRadius(m_arrivalCell.m_x, m_arrivalCell.m_y) == 0) {
                 goto resetState;
             }
             StepArrivalDrop(o->m_lastTilePx.m_x, o->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
