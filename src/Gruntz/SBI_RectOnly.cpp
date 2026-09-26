@@ -2982,11 +2982,10 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
-    i32 rectFlag = 0;
     i32 refreshFlag = 0;
+    i32 rectFlag = 0;
     ClockInterval* belt = &m_beltClock;
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
