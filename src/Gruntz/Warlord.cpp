@@ -489,8 +489,7 @@ RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
     if (m_deathStarted == false) {
-        bool alreadyPanicking = ANIMATION_ACT_EQUALS("D");
-        if (!alreadyPanicking) {
+        if (!ANIMATION_ACT_EQUALS("D")) {
             if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
                 m_cooldownTimer.m_window = 0x7530;
