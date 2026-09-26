@@ -59,7 +59,7 @@ RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* gameManager, CWnd* pParent)
     : CDialog(0xc5, pParent), m_reserved74(0xa) {
     m_gameManager = gameManager;
-    m_customMapSelection = CUSTOM_MAP_STANDARD;
+    m_usesCustomMap = false;
     m_latencyOptions = NULL;
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
@@ -156,9 +156,8 @@ i32 CMultiStartDlg::RefreshWorldControls() {
         return 0;
     }
     worldCombo->SendMessageA(CB_SETCURSEL, static_cast<WPARAM>(-1), 0);
-    m_customMapSelection =
-        g_multiState->m_usesCustomLevel != false ? CUSTOM_MAP_SELECTED : CUSTOM_MAP_STANDARD;
-    if (m_customMapSelection != CUSTOM_MAP_STANDARD) {
+    m_usesCustomMap = g_multiState->m_usesCustomLevel;
+    if (m_usesCustomMap != false) {
         worldEdit->SetWindowTextA(g_multiState->CustomLevelName());
     } else {
         CString currentName;
@@ -276,7 +275,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             char mapName[0x100];
             DWORD size = 0x100;
             reg->Get("LastMultiMap", mapName, size, "");
-            m_customMapSelection = customFlag;
+            m_usesCustomMap = customFlag;
             if (customFlag != CUSTOM_MAP_STANDARD) {
                 char path[0x100];
                 sprintf(path, "custom\\%s", mapName);
@@ -328,7 +327,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         child->GetWindowTextA(m_worldName);
         if (g_multiState->m_isHost != false) {
             reg->Set("LastMultiMap", m_worldName);
-            reg->Set("CustomMultiMap", IDX(m_customMapSelection));
+            reg->Set("CustomMultiMap", m_usesCustomMap);
         }
         for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
             CWnd* nameControl = GetPlayerNameControl(i);
@@ -810,7 +809,7 @@ void CMultiStartDlg::OnCustomWorld() {
         }
         dlg.m_customName.MakeUpper();
         worldEdit->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
-        m_customMapSelection = CUSTOM_MAP_SELECTED;
+        m_usesCustomMap = true;
         g_multiState->m_usesCustomLevel = true;
         g_multiState->m_customLevelName = static_cast<LPCTSTR>(dlg.m_customName);
         g_multiState->m_builtInLevelName = "";
@@ -828,7 +827,7 @@ void CMultiStartDlg::CommitWorldSelection() {
                 CString worldName;
                 (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
                 if (worldName.GetLength() != 0) {
-                    m_customMapSelection = CUSTOM_MAP_STANDARD;
+                    m_usesCustomMap = false;
                 }
                 g_multiState->m_usesCustomLevel = false;
                 g_multiState->m_customLevelName = "";
