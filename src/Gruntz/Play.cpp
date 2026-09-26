@@ -3396,7 +3396,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
     POSITION pos = container->GetHeadPosition();
     i32 count = 0;
     while (pos != NULL) {
-        CGameObject* sprite = static_cast<CGameObject*>(container->GetNext(pos));
+        CGameObject* sprite = m_world->m_childGroup->NextChild(pos);
         if (sprite != NULL && sprite->m_objectType == static_cast<u32>(category)) {
             count++;
         }
@@ -4581,7 +4581,7 @@ b32 CPlay::PlaceStartGruntz() {
         entranceMode = GRUNT_ENTRANCE_WORMHOLE;
     }
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
 
@@ -4655,7 +4655,7 @@ i32 CPlay::ValidateLevelTiles() {
 
     b32 ok = true;
     do {
-        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        CGameObject* obj = m_world->m_childGroup->NextChild(pos);
         if (obj == NULL) {
             continue;
         }
@@ -5225,7 +5225,7 @@ i32 CPlay::ScanBuildTiles() {
     }
     POSITION pos = pl->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* p = static_cast<CGameObject*>(pl->GetNext(pos));
+        CGameObject* p = m_world->m_childGroup->NextChild(pos);
         if (p == NULL) {
             continue;
         }
@@ -5337,7 +5337,7 @@ i32 CPlay::AddLevelGruntz() {
     }
     POSITION pos = chain->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* g = static_cast<CGameObject*>(chain->GetNext(pos));
+        CGameObject* g = m_world->m_childGroup->NextChild(pos);
         if (g == NULL) {
             continue;
         }
@@ -5687,7 +5687,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     CObList* head = &this->m_world->m_childGroup->m_list;
     POSITION pos = head == NULL ? NULL : head->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(head->GetNext(pos));
+        CGameObject* obj = this->m_world->m_childGroup->NextChild(pos);
         if (obj) {
             LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
             if (dispatch == DispatchGruntStartingPointLogic) {
