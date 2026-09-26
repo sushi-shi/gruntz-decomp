@@ -44,6 +44,14 @@
         (ar)->Write(name, SERIAL_NAME_LEN);                                                        \
     } while (0)
 
+#define SERIAL_WRITE_WORKER(ar, name, field)                                                       \
+    g_serialCounter++;                                                                             \
+    memset(name, 0, sizeof(name));                                                                 \
+    if ((field) != NULL) {                                                                         \
+        strcpy(name, (field)->m_name);                                                             \
+    }                                                                                              \
+    (ar)->Write(name, SERIAL_NAME_LEN)
+
 #define SERIAL_WRITE_FRAME(ar, mgr, name, index, field)                                            \
     g_serialCounter++;                                                                             \
     memset(name, 0, sizeof(name));                                                                 \

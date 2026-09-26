@@ -263,12 +263,7 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
 
     char tmp[SERIAL_NAME_LEN];
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
-    if (m_sprite) {
-        strcpy(tmp, m_sprite->m_name);
-    }
-    ar->Write(tmp, SERIAL_NAME_LEN);
+    SERIAL_WRITE_WORKER(ar, tmp, m_sprite);
 
     ar->Write(&m_active, sizeof(m_active));
 

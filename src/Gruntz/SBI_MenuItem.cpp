@@ -178,12 +178,7 @@ i32 CSBI_MenuItem::SerializeFields(
             break;
         case SERIAL_SAVE:
             ar->Write(&m_state, sizeof(m_state));
-            g_serialCounter++;
-            memset(tmp, 0, sizeof(tmp));
-            if (m_record) {
-                strcpy(tmp, m_record->m_name);
-            }
-            ar->Write(tmp, SERIAL_NAME_LEN);
+            SERIAL_WRITE_WORKER(ar, tmp, m_record);
             break;
     }
 

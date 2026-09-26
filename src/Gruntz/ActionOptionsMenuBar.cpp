@@ -291,26 +291,11 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
 
     char tmp[SERIAL_NAME_LEN];
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
-    if (m_normChipSprite) {
-        strcpy(tmp, m_normChipSprite->m_name);
-    }
-    ar->Write(tmp, SERIAL_NAME_LEN);
+    SERIAL_WRITE_WORKER(ar, tmp, m_normChipSprite);
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
-    if (m_highChipSprite) {
-        strcpy(tmp, m_highChipSprite->m_name);
-    }
-    ar->Write(tmp, SERIAL_NAME_LEN);
+    SERIAL_WRITE_WORKER(ar, tmp, m_highChipSprite);
 
-    g_serialCounter++;
-    memset(tmp, 0, sizeof(tmp));
-    if (m_greyChipSprite) {
-        strcpy(tmp, m_greyChipSprite->m_name);
-    }
-    ar->Write(tmp, SERIAL_NAME_LEN);
+    SERIAL_WRITE_WORKER(ar, tmp, m_greyChipSprite);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));

@@ -53,19 +53,9 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             s->Write(&m_playerIndex, sizeof(m_playerIndex));
             s->Write(&m_unitIndex, sizeof(m_unitIndex));
 
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_glyphMap != NULL) {
-                strcpy(buf, m_glyphMap->m_name);
-            }
-            s->Write(buf, SERIAL_NAME_LEN);
+            SERIAL_WRITE_WORKER(s, buf, m_glyphMap);
 
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_timerGlyphMap != NULL) {
-                strcpy(buf, m_timerGlyphMap->m_name);
-            }
-            s->Write(buf, SERIAL_NAME_LEN);
+            SERIAL_WRITE_WORKER(s, buf, m_timerGlyphMap);
             break;
         }
 

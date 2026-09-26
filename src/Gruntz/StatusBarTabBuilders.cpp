@@ -171,12 +171,7 @@ i32 CSBI_GruntMachine::SerializeFields(
         case SERIAL_SAVE: {
             i32 v;
 
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_config != NULL) {
-                strcpy(buf, m_config->m_name);
-            }
-            s->Write(buf, SERIAL_NAME_LEN);
+            SERIAL_WRITE_WORKER(s, buf, m_config);
             s->Write(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
             SERIAL_WRITE_FRAME(s, reg, buf, v, m_leftFrame);
