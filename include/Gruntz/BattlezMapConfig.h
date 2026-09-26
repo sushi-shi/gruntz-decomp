@@ -5,8 +5,8 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/ClockInterval.h>
 #include <Gruntz/BattlezDifficulty.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>

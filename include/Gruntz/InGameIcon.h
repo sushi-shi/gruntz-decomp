@@ -5,8 +5,8 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/ClockInterval.h>
 #include <Enums.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>

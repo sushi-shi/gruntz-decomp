@@ -4,9 +4,9 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/ClockInterval.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/UserLogic.h>
 
