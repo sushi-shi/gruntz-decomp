@@ -203,7 +203,6 @@ i32 CGrunt::StartRangedAttackAnimation() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00061cb0, 0x380)
 i32 CGrunt::StepAttackFire() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -315,14 +314,13 @@ i32 CGrunt::StepAttackFire() {
         }
 
         m_entranceActive = true;
-        i32 dt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "AttackDowntime");
+        u32 dt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "AttackDowntime");
         if (m_gruntKind == GRUNT_ROIDZ) {
             dt = 0;
         }
-        m_attackDowntimeLo = dt;
-        m_attackDowntimeHi = 0;
-        m_attackClockLo = static_cast<i32>(g_frameTime);
-        m_attackClockHi = 0;
+        i64* clock = &m_attackClock64;
+        clock[1] = dt;
+        clock[0] = g_frameTime;
         m_lowStaminaCued = false;
         m_stamina = 0;
         if (m_healthSprite != NULL) {
@@ -1316,10 +1314,9 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_gruntKind == GRUNT_ROIDZ) {
                 downtime = 0;
             }
-            m_attackDowntimeLo = downtime;
-            m_attackDowntimeHi = 0;
-            m_attackClockLo = g_frameTime;
-            m_attackClockHi = 0;
+            i64* clock = &m_attackClock64;
+            clock[1] = downtime;
+            clock[0] = g_frameTime;
             m_lowStaminaCued = false;
             m_stamina = 0;
             if (m_healthSprite != NULL) {
