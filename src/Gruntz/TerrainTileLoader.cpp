@@ -263,7 +263,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped
                             );
                             if (mapped == NULL) {
-                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
+                                SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -325,7 +325,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped
                             );
                             if (mapped == NULL) {
-                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
+                                SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -391,7 +391,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped
                             );
                             if (mapped == NULL) {
-                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
+                                SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -453,7 +453,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped
                             );
                             if (mapped == NULL) {
-                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
+                                SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);

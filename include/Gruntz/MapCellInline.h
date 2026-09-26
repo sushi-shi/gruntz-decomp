@@ -12,10 +12,11 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    ReleaseCellObject(
+    SetCellObject(
         reg->m_tileGrid,
         owner->m_screenX >> TILE_SHIFT_PX,
-        owner->m_screenY >> TILE_SHIFT_PX
+        owner->m_screenY >> TILE_SHIFT_PX,
+        0
     );
 }
 

@@ -80,10 +80,14 @@ inline i32 CellObjectIdAt(CMapMgr* grid, u32 x, u32 y) {
     return 0;
 }
 
-inline void ReleaseCellObject(CMapMgr* grid, u32 x, u32 y) {
+inline void SetCellObject(CMapMgr* grid, u32 x, u32 y, i32 objectId) {
     if (x < grid->m_width && y < grid->m_height) {
-        grid->m_rows[y][x].m_objectId = 0;
-        grid->m_rows[y][x].m_flags &= ~0x40000;
+        grid->m_rows[y][x].m_objectId = objectId;
+        if (objectId != 0) {
+            grid->m_rows[y][x].m_flags |= 0x40000;
+        } else {
+            grid->m_rows[y][x].m_flags &= ~0x40000;
+        }
     }
 }
 

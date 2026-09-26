@@ -1383,7 +1383,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
     );
     if (found == NULL) {
         grid = g_gameReg->m_tileGrid;
-        ReleaseCellObject(grid, tx, ty);
+        SetCellObject(grid, tx, ty, 0);
         return 0;
     }
     CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_logicRecord->m_userLogic);
