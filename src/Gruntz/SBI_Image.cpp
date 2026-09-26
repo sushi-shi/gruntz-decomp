@@ -77,7 +77,6 @@ i32 CSBI_Image::Render() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000e6e40, 0x17c)
 i32 CSBI_Image::SerializeFields(
     CFileMemBase* ar,
@@ -94,11 +93,9 @@ i32 CSBI_Image::SerializeFields(
     }
 
     char name[SERIAL_NAME_LEN];
-    i32 idx;
-    i32 v;
     switch (mode) {
-        case SERIAL_LOAD:
-
+        case SERIAL_LOAD: {
+            i32 idx;
             g_serialCounter++;
             ar->Read(name, SERIAL_NAME_LEN);
             ar->Read(&idx, sizeof(idx));
@@ -108,9 +105,9 @@ i32 CSBI_Image::SerializeFields(
                 SetFrame(NULL);
             }
             break;
-        case SERIAL_SAVE:
-
-            v = 0;
+        }
+        case SERIAL_SAVE: {
+            i32 v = 0;
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_frame) {
@@ -119,6 +116,7 @@ i32 CSBI_Image::SerializeFields(
             ar->Write(name, SERIAL_NAME_LEN);
             ar->Write(&v, sizeof(v));
             break;
+        }
     }
 
     return CStatusBarItem::SerializeFields(ar, mode, typeId, payload) != 0;
