@@ -18,7 +18,6 @@ CFaderLight::~CFaderLight() {
     ReleaseBuffers();
 }
 
-// @early-stop
 RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     CLightFaderConfig* d = static_cast<CLightFaderConfig*>(desc);
@@ -65,7 +64,8 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     }
     if (m_spanCount > 0) {
         if (d->m_shadeTable == NULL) {
-            m_table = m_cache.HueRampTable(m_palette->m_entries, m_spanCount, 0);
+            PALETTEENTRY* entries = m_palette->m_entries;
+            m_table = m_cache.HueRampTable(entries, m_spanCount, 0);
             m_ownsTable = true;
         } else {
             m_table = d->m_shadeTable;
