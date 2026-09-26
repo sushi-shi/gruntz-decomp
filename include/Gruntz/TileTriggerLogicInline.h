@@ -62,10 +62,10 @@ __inline i32 CTileTriggerLogic::Setup(
     m_dutyOn = false;
     m_dutyOnSpan = dutyOnSpan;
     m_dutyOffSpan = dutyOffSpan;
-    if (typeTag != TRIGID_COVERED_POWERUP_26 && dutyOffSpan == 0) {
+    if (typeTag != TRIGID_COVERED_POWERUP_26 && m_dutyOffSpan == 0) {
         m_dutyOffSpan = dutyOnSpan;
-        m_startClock = g_frameTime;
     }
+    m_startClock = g_frameTime;
     return 1;
 }
 
