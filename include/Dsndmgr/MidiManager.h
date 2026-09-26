@@ -92,6 +92,26 @@ public:
     i32 EndCurrent();
     i32 RestartCurrentIfIdle();
 
+    i32 IsCurrentPlaying() {
+        return m_currentSequence ? m_currentSequence->IsPlaying() : 0;
+    }
+    void SelectSequence(const char* name) {
+        MidiSequence* sequence = FindSequence(name);
+        if (sequence != NULL) {
+            m_currentSequence = sequence;
+        }
+    }
+    void SetCurrentLooping(b32 looping) {
+        if (m_currentSequence != NULL) {
+            m_currentSequence->SetLooping(looping);
+        }
+    }
+    void SetCurrentVolumePercent(i32 volumePct, i32 durationMs) {
+        if (m_currentSequence != NULL) {
+            m_currentSequence->SetVolumePercent(volumePct, durationMs);
+        }
+    }
+
     CMapStringToOb m_sequences;
     MidiSequence* m_currentSequence;
     HWND m_ownerWindow;

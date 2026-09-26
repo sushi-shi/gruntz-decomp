@@ -512,14 +512,8 @@ i32 CPlay::Render() {
                 if (g_gameReg->m_musicEnabled != false) {
                     m_mgr->m_midi->PlaySequence(sequenceName, true);
                 } else {
-                    MidiManager* midi = m_mgr->m_midi;
-                    MidiSequence* sequence = midi->FindSequence(sequenceName);
-                    if (sequence != NULL) {
-                        midi->m_currentSequence = sequence;
-                    }
-                    if (m_mgr->m_midi->m_currentSequence != NULL) {
-                        m_mgr->m_midi->m_currentSequence->SetLooping(true);
-                    }
+                    m_mgr->m_midi->SelectSequence(sequenceName);
+                    m_mgr->m_midi->SetCurrentLooping(true);
                 }
                 m_ambientInitDone = true;
             }
@@ -756,14 +750,8 @@ i32 CPlay::Render() {
                     if (g_gameReg->m_musicEnabled != false) {
                         m_mgr->m_midi->PlaySequence(sequenceName, true);
                     } else {
-                        MidiManager* midi = m_mgr->m_midi;
-                        MidiSequence* sequence = midi->FindSequence(sequenceName);
-                        if (sequence != NULL) {
-                            midi->m_currentSequence = sequence;
-                        }
-                        if (m_mgr->m_midi->m_currentSequence != NULL) {
-                            m_mgr->m_midi->m_currentSequence->SetLooping(true);
-                        }
+                        m_mgr->m_midi->SelectSequence(sequenceName);
+                        m_mgr->m_midi->SetCurrentLooping(true);
                     }
                     m_ambientInitDone = true;
                 }
@@ -5746,14 +5734,8 @@ i32 CPlay::ResetPlayState() {
         m_ambientInitDone = false;
     } else {
         wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
-        MidiManager* midi = m_mgr->m_midi;
-        MidiSequence* sequence = midi->FindSequence(sequenceName);
-        if (sequence != NULL) {
-            midi->m_currentSequence = sequence;
-        }
-        if (m_mgr->m_midi->m_currentSequence != NULL) {
-            m_mgr->m_midi->m_currentSequence->SetLooping(true);
-        }
+        m_mgr->m_midi->SelectSequence(sequenceName);
+        m_mgr->m_midi->SetCurrentLooping(true);
         CGruntzMgr* gameManager = g_gameReg;
         if (gameManager->m_musicEnabled != false && gameManager->m_gameMode == GAMEMODE_BATTLEZ) {
             m_mgr->m_midi->PlaySequence(sequenceName, true);

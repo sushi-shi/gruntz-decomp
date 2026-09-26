@@ -622,14 +622,8 @@ i32 CMulti::AdvanceGameFrame() {
                 Mgr()->m_midi->PlaySequence(name, true);
             } else {
 
-                MidiManager* midi = Mgr()->m_midi;
-                MidiSequence* sequence = midi->FindSequence(name);
-                if (sequence) {
-                    midi->m_currentSequence = sequence;
-                }
-                if (Mgr()->m_midi->m_currentSequence) {
-                    Mgr()->m_midi->m_currentSequence->SetLooping(true);
-                }
+                Mgr()->m_midi->SelectSequence(name);
+                Mgr()->m_midi->SetCurrentLooping(true);
             }
             m_ambientInitDone = true;
         }
