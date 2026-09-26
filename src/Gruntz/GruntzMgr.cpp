@@ -68,6 +68,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundFont.h>
 #include <Gruntz/SoundState.h>
@@ -2365,14 +2366,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                         SoundCue* found = registry->FindCue("GAME_MINORCHEAT");
                         SoundCue* cue = found;
                         if (cue) {
-                            i32 volumePercent = g_soundVolumePercent;
-                            if (g_soundEnabled) {
-                                if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
-                                    >= static_cast<u32>(cue->m_replayDelayMs)) {
-                                    cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                }
-                            }
+                            PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
                         }
                     }
                 }
@@ -2411,14 +2405,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                         SoundCue* found = registry->FindCue("GAME_MINORCHEAT");
                         SoundCue* cue = found;
                         if (cue) {
-                            i32 volumePercent = g_soundVolumePercent;
-                            if (g_soundEnabled) {
-                                if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
-                                    >= static_cast<u32>(cue->m_replayDelayMs)) {
-                                    cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                }
-                            }
+                            PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
                         }
                     }
                 }

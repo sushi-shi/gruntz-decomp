@@ -37,6 +37,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayInline.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sparam.h>
@@ -1213,16 +1214,7 @@ i32 CMulti::ShowMultiStartDlg() {
             SoundCue* found = reg->FindCue(g_gameKey);
             SoundCue* rec = found;
             if (rec != NULL) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    i32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - rec->m_lastPlayTimeMs))
-                        >= static_cast<u32>(rec->m_replayDelayMs)) {
-                        rec->m_lastPlayTimeMs = cueTimeMs;
-                        rec->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
+                PlaySoundCueIfElapsed(rec, g_soundVolumePercent, 0, 0, false);
             }
         }
         ActiveWait(0xfa);
@@ -2047,16 +2039,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
             SoundCue* found = registry->FindCue("GAME_MENUS_SELECT");
             SoundCue* cue = found;
             if (cue != NULL) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
-                        >= cue->m_replayDelayMs) {
-                        cue->m_lastPlayTimeMs = cueTimeMs;
-                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
+                PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
             }
         }
         return 1;

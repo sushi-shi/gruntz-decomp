@@ -61,6 +61,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpellId.h>
@@ -1285,16 +1286,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         SelectCombatHitCue(reg, cue, attackKind, struckPose, attackerGruntKind);
 
         if (cue != NULL) {
-            b32 soundEnabled = g_soundEnabled;
-            i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != false) {
-                i32 cueTimeMs = g_soundCueTimeMs;
-                if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
-                    >= static_cast<u32>(cue->m_replayDelayMs)) {
-                    cue->m_lastPlayTimeMs = cueTimeMs;
-                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                }
-            }
+            PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
         }
     }
 

@@ -16,6 +16,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PreviewState.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
@@ -183,13 +184,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
             SoundCue* found = h->FindCue("GAME_TELEPORTEROPEN");
             SoundCue* p = found;
             if (p != NULL) {
-                i32 volumePercent = g_soundVolumePercent;
-                if (g_soundEnabled != false
-                    && static_cast<u32>((g_soundCueTimeMs - p->m_lastPlayTimeMs))
-                           >= static_cast<u32>(p->m_replayDelayMs)) {
-                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                }
+                PlaySoundCueIfElapsed(p, g_soundVolumePercent, 0, 0, false);
             }
         }
         RetireScene(0x50, 0x3e8, 0, true);
