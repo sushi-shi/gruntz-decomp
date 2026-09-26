@@ -64,6 +64,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                     if (m_poweredUp == false || m_neighborValid != false) {
                         goto retreat;
                     }
+                    RESET_GRUNT_POWERED_STATE(this)
                 } else {
                     if (flag != 0) {
                         goto retreat;
@@ -71,8 +72,8 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                     if (m_poweredUp == false || m_neighborValid != false) {
                         goto retreat;
                     }
+                    RESET_GRUNT_POWERED_STATE(this)
                 }
-                RESET_GRUNT_POWERED_STATE(this)
             }
         } else {
             m_neighborValid = false;
