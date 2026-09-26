@@ -1376,11 +1376,11 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
 
-    i64 diff = static_cast<i64>(g_frameTime) - world->m_levelTimer->m_startStamp.m_v;
+    i64 diff = static_cast<i64>(g_frameTime) - world->m_levelTimer->m_stamp.m_start;
     g_gameReg->m_gameStats->m_elapsedTimeMs += (diff < 0) ? 0 : static_cast<i32>(diff);
     CTimer* sub = world->m_levelTimer;
-    sub->m_unusedStamp.m_v = 0;
-    sub->m_accum.m_v = 0;
+    sub->m_stamp.m_interval = 0;
+    sub->m_countdown.m_interval = 0;
     sub->m_running = false;
     sub->m_currentMs = 0;
     world->SetDefeatCountdown(false, 0xbb7);

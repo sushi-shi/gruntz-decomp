@@ -271,10 +271,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 0;
                         }
                         CTimer* _t = _g->m_levelTimer;
-                        _t->m_unusedStamp.m_lo = 0;
-                        _t->m_unusedStamp.m_hi = 0;
-                        _t->m_accum.m_lo = 0;
-                        _t->m_accum.m_hi = 0;
+                        _t->m_stamp.m_intervalLo = 0;
+                        _t->m_stamp.m_intervalHi = 0;
+                        _t->m_countdown.m_intervalLo = 0;
+                        _t->m_countdown.m_intervalHi = 0;
                         _t->m_running = false;
                         _t->m_currentMs = 0;
                         PLAYCUE("GAME_MAJORCHEAT");

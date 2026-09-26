@@ -26,14 +26,6 @@
 
 RVA(0x0009bab0, 0x35)
 CTimer::CTimer() {
-    m_baseTime.m_lo = 0;
-    m_accum.m_lo = 0;
-    m_baseTime.m_hi = 0;
-    m_accum.m_hi = 0;
-    m_startStamp.m_lo = 0;
-    m_unusedStamp.m_lo = 0;
-    m_startStamp.m_hi = 0;
-    m_unusedStamp.m_hi = 0;
     RESET_TIMER_SPRITES;
     m_running = false;
 }
@@ -87,16 +79,16 @@ i32 CTimer::Tick(i32 elapsedMs) {
         return 1;
     }
 
-    i64 rem = m_accum.m_v - static_cast<u32>(g_frameTime) + m_baseTime.m_v;
+    i64 rem = m_countdown.m_interval - static_cast<u32>(g_frameTime) + m_countdown.m_start;
     i32 v = (rem < 0) ? 0 : static_cast<i32>(rem);
     m_currentMs = v;
 
     if (v == 0) {
 
-        m_unusedStamp.m_lo = 0;
-        m_unusedStamp.m_hi = 0;
-        m_accum.m_lo = 0;
-        m_accum.m_hi = 0;
+        m_stamp.m_intervalLo = 0;
+        m_stamp.m_intervalHi = 0;
+        m_countdown.m_intervalLo = 0;
+        m_countdown.m_intervalHi = 0;
         m_running = false;
         m_currentMs = 0;
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -228,7 +220,7 @@ void CTimer::AddTime(i32 minutes, i32 seconds) {
         mins = 0x63 - onClock - carry;
     }
     u32 total = (secs + mins * 60) * MILLIS_PER_SECOND;
-    m_accum.m_v += total;
+    m_countdown.m_interval += total;
 }
 
 // @early-stop
@@ -254,9 +246,9 @@ i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typ
         }
     }
 
-    SerBandPair(ar, mode, &m_baseTime);
+    SerBandPair(ar, mode, &m_countdown);
 
-    SerBandPair(ar, mode, &m_startStamp);
+    SerBandPair(ar, mode, &m_stamp);
     return 1;
 }
 

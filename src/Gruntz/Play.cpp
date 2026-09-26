@@ -576,10 +576,10 @@ i32 CPlay::Render() {
                 }
 
                 CTimer* marker = m_levelTimer;
-                marker->m_unusedStamp.m_lo = 0;
-                marker->m_unusedStamp.m_hi = 0;
-                marker->m_accum.m_lo = 0;
-                marker->m_accum.m_hi = 0;
+                marker->m_stamp.m_intervalLo = 0;
+                marker->m_stamp.m_intervalHi = 0;
+                marker->m_countdown.m_intervalLo = 0;
+                marker->m_countdown.m_intervalHi = 0;
                 marker->m_running = false;
                 marker->m_currentMs = 0;
                 m_statusBar->LockDestructButton(0);
@@ -922,10 +922,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CTimer* worker = self->m_levelTimer;
     if (worker != NULL) {
-        worker->m_unusedStamp.m_lo = 0;
-        worker->m_unusedStamp.m_hi = 0;
-        worker->m_accum.m_lo = 0;
-        worker->m_accum.m_hi = 0;
+        worker->m_stamp.m_intervalLo = 0;
+        worker->m_stamp.m_intervalHi = 0;
+        worker->m_countdown.m_intervalLo = 0;
+        worker->m_countdown.m_intervalHi = 0;
         worker->m_running = false;
         worker->m_currentMs = 0;
     }
@@ -5582,14 +5582,14 @@ i32 CPlay::ResetPlayState() {
     m_winLoseBanner = false;
     CTimer* fm = m_levelTimer;
     if (fm != NULL) {
-        fm->m_unusedStamp.m_v = 0xffffffff;
+        fm->m_stamp.m_interval = 0xffffffff;
         if (fm->m_currentMs != 0) {
             fm->m_running = true;
-            fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
-            fm->m_accum.m_v = static_cast<u32>(fm->m_currentMs);
-            fm->m_baseTime.m_v = static_cast<u32>(g_frameTime);
+            fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
+            fm->m_countdown.m_interval = static_cast<u32>(fm->m_currentMs);
+            fm->m_countdown.m_start = static_cast<u32>(g_frameTime);
         } else {
-            fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
+            fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
         }
     }
     CTriggerMgr* tl = m_mgr->m_triggerMgr;
