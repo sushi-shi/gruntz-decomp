@@ -428,35 +428,35 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         ctx = m_boundObject;
-        ctx->m_plotDX = 0;
-        ctx->m_plotDY = 0;
+        ctx->m_plotOffset.m_x = 0;
+        ctx->m_plotOffset.m_y = 0;
         switch (m_element->m_positionMode) {
             case WWDPOS_PLOT_OFFSET: {
                 CAniRecordView* pd = m_element;
                 CWwdSpriteObject* c = m_boundObject;
-                c->m_plotDX = pd->m_positionDeltaX;
-                c->m_plotDY = pd->m_positionDeltaY;
+                c->m_plotOffset.m_x = pd->m_positionDelta.m_x;
+                c->m_plotOffset.m_y = pd->m_positionDelta.m_y;
                 break;
             }
             case WWDPOS_MOVE_RELATIVE: {
                 CAniRecordView* pd = m_element;
                 CWwdSpriteObject* c = m_boundObject;
-                i32 x = c->m_screenX;
-                i32 dy = pd->m_positionDeltaY;
-                i32 dx = pd->m_positionDeltaX;
+                i32 x = c->m_screenPosition.m_x;
+                i32 dy = pd->m_positionDelta.m_y;
+                i32 dx = pd->m_positionDelta.m_x;
                 if (HAS(c->m_stateFlags, SPRITE_STATE_MIRROR_X)) {
-                    c->m_screenX = x - dx;
+                    c->m_screenPosition.m_x = x - dx;
                 } else {
-                    c->m_screenX = x + dx;
+                    c->m_screenPosition.m_x = x + dx;
                 }
-                c->m_screenY = c->m_screenY + dy;
+                c->m_screenPosition.m_y = c->m_screenPosition.m_y + dy;
                 break;
             }
             case WWDPOS_MOVE_ABSOLUTE:
                 SET_SCREEN_POS(
                     m_boundObject,
-                    m_element->m_positionDeltaX,
-                    m_element->m_positionDeltaY
+                    m_element->m_positionDelta.m_x,
+                    m_element->m_positionDelta.m_y
                 );
                 break;
             default:
@@ -475,7 +475,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         if (shouldPlayCue) {
             CAniRecordView* dd = m_element;
             if (HAS(dd->m_flags, ANI_RECORD_FLAG_POSITIONAL_CUE)) {
-                i32 sourceX = c->m_screenX;
+                i32 sourceX = c->m_screenPosition.m_x;
                 SoundCue* soundCue = dd->PickCue();
                 if (soundCue != NULL) {
                     soundCue->PlaySpatialized(sourceX, 0, 0, 0);

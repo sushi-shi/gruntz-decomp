@@ -38,7 +38,7 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj)
     SwitchAnimationByName("GAME_GRUNTSELECTEDSPRITE", 0);
     SET_ANIMATION_ACT("A");
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_SELECTED)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_SELECTED);
 }
 
 RVA(0x0007e660, 0x102)
@@ -66,8 +66,7 @@ i32 CGruntSelectedSprite::Update() {
         g_gameReg->m_triggerMgr->UnitAt(m_gruntIdentity.m_playerIndex, m_gruntIdentity.m_unitIndex);
     if (e != NULL && e->m_arrived != false) {
         m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-        m_object->m_screenX = e->m_object->m_screenX;
-        m_object->m_screenY = e->m_object->m_screenY;
+        m_object->SetScreenPos(e->m_object->ScreenPos());
     }
     return 0;
 }

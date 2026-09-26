@@ -10,7 +10,7 @@
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/ColorTintRef.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 
 #include <string.h>
@@ -334,9 +334,9 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         MeasureLabel(hdc, rect);
     }
     int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
-    RECT rc = *rect;
+    CRect rc = *rect;
     pDraw(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
-    i32 fmt = ((rc.right - rc.left) > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
+    i32 fmt = (rc.Width() > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
     g_lastDrawTextFormat = fmt;
     pDraw(hdc, text, text.GetLength(), rect, fmt);
     if (prev) {
@@ -388,9 +388,9 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (n <= 0) {
         return 0;
     }
-    RECT calc;
-    RECT cur = *rect;
-    RECT work = *rect;
+    CRect calc;
+    CRect cur = *rect;
+    CRect work = *rect;
     for (i32 i = 0; i < n; i++) {
         HGDIOBJ savedFont = NULL;
         if (m_arialFont) {
@@ -400,7 +400,8 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (item != NULL) {
             if (HAS(item->m_flags, FONT_ITEM_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
-                SET_RECT_XY_EXTENTS(work, cur.left + 1, cur.right + 1, cur.top + 1, cur.bottom + 1);
+                work = cur;
+                work.OffsetRect(1, 1);
                 DrawTextA(hdc, item->m_name, strlen(item->m_name), &work, format);
             }
             if (HAS(item->m_flags, FONT_ITEM_COLORED)) {
@@ -413,14 +414,12 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             calc = cur;
             DrawTextA(hdc, item->m_name, strlen(item->m_name), &calc, format | DT_CALCRECT);
             DrawTextA(hdc, item->m_name, strlen(item->m_name), &cur, format);
-            i32 measuredBottom = calc.bottom;
-            i32 measuredLeft = calc.left;
-            i32 rr = rect->right;
-            i32 rb = rect->bottom;
-            calc.top = measuredBottom;
-            calc.bottom = rb;
-            calc.right = rr;
-            SET_RECT_COMPONENTS(cur, measuredLeft, measuredBottom, rr, rb);
+            CPoint measuredCorner(calc.left, calc.bottom);
+            CPoint farCorner(rect->right, rect->bottom);
+            calc.top = measuredCorner.y;
+            calc.bottom = farCorner.y;
+            calc.right = farCorner.x;
+            cur = calc;
             SetTextColor(hdc, TCLR_WHITE);
         }
         if (savedFont) {

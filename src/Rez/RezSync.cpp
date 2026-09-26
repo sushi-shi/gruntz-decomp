@@ -47,6 +47,7 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Ints.h>
 #include <Io/SaveGame.h>
+#include <MakeRect.h>
 #include <Net/NetMgr.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
@@ -270,8 +271,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     SET_SIZE_COMPONENTS(m_modeSize, SCREEN_W_PX, SCREEN_H_PX);
     m_world->SetRestoreHandler(&PumpIdleFrame);
     CGameLevel* view = m_world->m_level;
-    view->m_maxStepX = 0xe;
-    view->m_maxStepY = 0xe;
+    view->m_maxStep.m_x = 0xe;
+    view->m_maxStep.m_y = 0xe;
     m_world->m_drawTarget->CreateOverlay(0, 0x30000);
     RecomputeViewScale();
     RegisterGameObjectLogicTypes(m_world);

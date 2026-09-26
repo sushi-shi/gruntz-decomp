@@ -11,6 +11,7 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeColl.h>
@@ -39,8 +40,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             nb = FindIdleGruntInBox(
                 tp.m_x,
                 tp.m_y,
-                m_defenderSearchRadiusX,
-                m_defenderSearchRadiusY
+                m_defenderSearchRadius.m_x,
+                m_defenderSearchRadius.m_y
             );
         }
         if (nb != NULL) {
@@ -89,7 +90,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         CGrunt* cur = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
         if (cur != NULL) {
             CGameObject* s = cur->m_object;
-            if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
+            if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
 
                 RecycleGruntCoords(g);
                 UNSET_COORD(g->m_arrivalCell);

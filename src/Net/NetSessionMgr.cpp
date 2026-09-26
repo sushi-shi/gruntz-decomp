@@ -143,8 +143,8 @@ void CNetSession::BuildGruntzCrcInfo() {
                 player,
                 g,
                 grunt->m_health,
-                grunt->m_object->m_screenX,
-                grunt->m_object->m_screenY,
+                grunt->m_object->m_screenPosition.m_x,
+                grunt->m_object->m_screenPosition.m_y,
                 grunt->m_entranceCell.m_direction,
                 grunt->m_stamina,
                 grunt->m_toyTime,
@@ -693,9 +693,9 @@ i32 CNetSession::ComputeChecksum() {
             CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->UnitAt(player, g);
             if (grunt != NULL) {
                 sum += IDX(grunt->m_entranceCell.m_direction) + grunt->m_stamina + grunt->m_toyTime
-                       + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
-                       + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
-                       + grunt->LastTilePx().m_y;
+                       + grunt->m_health + grunt->m_object->m_screenPosition.m_y
+                       + grunt->m_object->m_sortKey + grunt->m_object->m_screenPosition.m_x
+                       + grunt->LastTilePx().m_x + grunt->LastTilePx().m_y;
 
                 PickupType carried = grunt->m_entranceReason;
                 PickupType effective = grunt->ArrivalPickupOf(carried);

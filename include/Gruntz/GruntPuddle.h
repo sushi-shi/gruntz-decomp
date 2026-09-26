@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -33,8 +34,7 @@ public:
 
     virtual void FireActivation(i32 id) OVERRIDE;
 
-    i32 m_tileX;
-    i32 m_tileY;
+    Coord m_tile;
     b32 m_pending;
 
     b32 m_placed;

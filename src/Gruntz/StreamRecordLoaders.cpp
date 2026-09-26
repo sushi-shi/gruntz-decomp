@@ -28,8 +28,8 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     char buf[SERIAL_NAME_LEN];
     i32 idx;
 
-    s->Read(&m_baseX, sizeof(m_baseX));
-    s->Read(&m_baseY, sizeof(m_baseY));
+    s->Read(&m_basePosition.m_x, sizeof(m_basePosition.m_x));
+    s->Read(&m_basePosition.m_y, sizeof(m_basePosition.m_y));
 
     SERIAL_READ_WORKER(s, reg, buf, m_sprite);
 

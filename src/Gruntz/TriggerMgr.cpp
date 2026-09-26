@@ -61,6 +61,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/Warlord.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <RectMacros.h>
 #include <SafeDelete.h>
 #include <Utils/MapTyped.h>
@@ -89,8 +90,8 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
         CGrunt* candidate = *units;
         if (candidate != NULL) {
             CGameObject* o = candidate->m_object;
-            i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
-            i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
+            i32 dx = (o->m_screenPosition.m_x >> TILE_SHIFT_PX) - tx;
+            i32 dy = (o->m_screenPosition.m_y >> TILE_SHIFT_PX) - ty;
             i32 d = SquaredDistance(dx, dy);
             if (d < bestDist && d < g->m_defenderRadius * 2) {
                 best = candidate;
@@ -118,8 +119,8 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
             CGrunt* g = UnitAt(i, j);
             if (g) {
                 CGameObject* pos = g->m_object;
-                i32 cx = pos->m_screenX;
-                i32 cy = pos->m_screenY;
+                i32 cx = pos->m_screenPosition.m_x;
+                i32 cy = pos->m_screenPosition.m_y;
                 RECT box;
                 SetRect(&box, cx - 0xf, cy - 0xf, cx + 0xf, cy + 0xf);
                 if (r.left <= box.right && r.right >= box.left && r.top <= box.bottom
@@ -228,7 +229,7 @@ i32 CTriggerMgr::RecordListHas(i32 playerIndex, i32 unitIndex) {
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
-        if (p->m_x == playerIndex && p->m_y == unitIndex) {
+        if (COORD_EQUALS_COMPONENTS(*p, playerIndex, unitIndex)) {
             return 1;
         }
     }
@@ -366,8 +367,8 @@ void CTriggerMgr::ClearRecords() {
 RVA(0x000788d0, 0x64)
 i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src = UnitAt(m_cameraTargetIdentity.m_x, m_cameraTargetIdentity.m_y)->m_object;
-    i32 y = src->m_screenY;
-    i32 x = src->m_screenX;
+    i32 y = src->m_screenPosition.m_y;
+    i32 x = src->m_screenPosition.m_x;
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
     SET_SCROLL_POSITION_RAW_FIRST(t, x, y);
     return 1;
@@ -417,7 +418,6 @@ void CTriggerMgr::CloseActionOptionsMenu() {
     }
 }
 
-// @early-stop
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -481,7 +481,10 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 return 1;
             }
 
-            POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+            POINT source = {
+                cell->m_object->m_screenPosition.m_x,
+                cell->m_object->m_screenPosition.m_y
+            };
             m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
             m_world->m_level->m_mainPlane->WorldToViewport(
                 reinterpret_cast<LONG*>(&x), // PROVEN: i32/LONG argument-slot alias.
@@ -526,7 +529,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 POSITION pos = m_baseList.GetHeadPosition();
                 while (pos != NULL) {
                     CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                    if (cand->m_tileX == tx && cand->m_tileY == ty && cand->m_pending == false) {
+                    if (cand->m_tile.m_x == tx && cand->m_tile.m_y == ty
+                        && cand->m_pending == false) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
                         return 1;
                     }
@@ -600,14 +604,17 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             case PICKUP_WELDER:
             case PICKUP_WINGZ:
                 if (pfk != 0) {
-                    POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+                    POINT source = {
+                        cell->m_object->m_screenPosition.m_x,
+                        cell->m_object->m_screenPosition.m_y
+                    };
                     m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
                     CDDrawWorkerHost* plane = m_world->m_level->m_mainPlane;
                     i32 dx = x;
                     i32 dy = y;
                     WwdPlaneFlags wflags = static_cast<WwdPlaneFlags>(plane->m_flags);
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_X)) {
-                        i32 w = plane->m_planePixelWidth;
+                        i32 w = plane->m_planePixelSize.cx;
                         if (dx < 0) {
                             dx = dx + w;
                         } else if (dx >= w) {
@@ -619,7 +626,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         }
                     }
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_Y)) {
-                        i32 h = plane->m_planePixelHeight;
+                        i32 h = plane->m_planePixelSize.cy;
                         if (dy < 0) {
                             dy = dy + h;
                         } else if (dy >= h) {
@@ -700,8 +707,8 @@ i32 CTriggerMgr::HandleTargetSelection(
                 CGameObject* sprite = hit->m_object;
 
                 this->OpenActionOptionsMenu(
-                    sprite->m_screenX,
-                    sprite->m_screenY,
+                    sprite->m_screenPosition.m_x,
+                    sprite->m_screenPosition.m_y,
                     pointerX,
                     pointerY
                 );
@@ -739,10 +746,10 @@ i32 CTriggerMgr::HandleTargetSelection(
                     if (selectedGrunt != hit) {
                         goto reportError;
                     }
-                    PickupType v = ARRIVAL_PICKUP_TERNARY_LE(hit);
+                    PickupType v = hit->ArrivalPickup();
                     if (v != PICKUP_SPY) {
-                        PickupType pickupType = ARRIVAL_PICKUP_TERNARY_LE(hit);
-                        if (pickupType != PICKUP_WAND) {
+                        PickupType v2 = hit->ArrivalPickup();
+                        if (v2 != PICKUP_WAND) {
                             goto reportError;
                         }
                     }
@@ -865,9 +872,11 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     }
     CGameLevel* view = m_world->m_level;
     RECT* vr = &view->m_mainPlane->m_planeViewRect;
-    i32 worldX = vr->left - view->m_viewportRect.left + pointerX;
-    i32 worldY = vr->top - view->m_viewportRect.top + pointerY;
-    this->PlaceObjectFull(worldX, worldY);
+    Coord worldPosition(
+        vr->left - view->m_viewportRect.left + pointerX,
+        vr->top - view->m_viewportRect.top + pointerY
+    );
+    this->PlaceObjectFull(worldPosition.m_x, worldPosition.m_y);
     return 1;
 }
 
@@ -1004,10 +1013,10 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
         this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
     }
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
-    i32 rowIdx = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
-    i32 cellCol = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
-    tg->m_rows[rowIdx][cellCol].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-    tg->m_rows[rowIdx][cellCol].m_occupantId = -1;
+    Coord tile = cell->LastTilePx();
+    ScreenTile(&tile);
+    tg->m_rows[tile.m_y][tile.m_x].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
+    tg->m_rows[tile.m_y][tile.m_x].m_occupantId = -1;
     m_units[idx] = NULL;
     m_unitCountByPlayer[playerIndex] -= 1;
 
@@ -1078,7 +1087,8 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     while (pos != NULL && stop == 0) {
         POSITION cur = pos;
         CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-        if (existing->m_tileX == puddle->m_tileX && existing->m_tileY == puddle->m_tileY) {
+        if (existing->m_tile.m_x == puddle->m_tile.m_x
+            && existing->m_tile.m_y == puddle->m_tile.m_y) {
             if (existing->m_pending != false) {
                 puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return 0;
@@ -1117,8 +1127,8 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
         CGameObject* obj = fac->NextChild(pos);
         LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
         if (dispatch == DispatchInGameIconLogic || dispatch == DispatchInGameTextLogic) {
-            i32 ox = obj->m_screenX >> TILE_SHIFT_PX;
-            i32 oy = obj->m_screenY >> TILE_SHIFT_PX;
+            i32 ox = SCREEN_TILE_COMPONENT(obj->m_screenPosition.m_x);
+            i32 oy = SCREEN_TILE_COMPONENT(obj->m_screenPosition.m_y);
             if (tx == ox && ty == oy) {
                 return 0;
             }
@@ -1508,8 +1518,8 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
         if (alt == PICKUP_SCROLL) {
             CGameObject* o = cell->m_object;
             g_gameReg->m_triggerMgr->HandleTargetSelection(
-                o->m_screenX,
-                o->m_screenY,
+                o->m_screenPosition.m_x,
+                o->m_screenPosition.m_y,
                 0,
                 0,
                 0,
@@ -1563,8 +1573,8 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 continue;
             }
             CGameLevel* board = m_world->m_level;
-            if (tx >= board->m_mainPlane->m_planePixelWidth
-                || ty >= board->m_mainPlane->m_planePixelHeight) {
+            if (tx >= board->m_mainPlane->m_planePixelSize.cx
+                || ty >= board->m_mainPlane->m_planePixelSize.cy) {
                 continue;
             }
             TileCollisionKind type = PbResolveCell(board, tx, ty);
@@ -1658,8 +1668,8 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
         y - radiusPx - 7,
         y + radiusPx + 7
     );
-    i32 maxTileX = m_world->m_level->m_mainPlane->m_tileColumns - 2;
-    i32 maxTileY = m_world->m_level->m_mainPlane->m_tileRows - 2;
+    i32 maxTileX = m_world->m_level->m_mainPlane->m_tileGridSize.cx - 2;
+    i32 maxTileY = m_world->m_level->m_mainPlane->m_tileGridSize.cy - 2;
 
     CGrunt** units = m_units;
     for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {
@@ -1674,8 +1684,8 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
             if (grunt->m_entranceDropActive != false) {
                 continue;
             }
-            i32 gruntX = grunt->m_object->m_screenX;
-            i32 gruntY = grunt->m_object->m_screenY;
+            i32 gruntX = grunt->m_object->m_screenPosition.m_x;
+            i32 gruntY = grunt->m_object->m_screenPosition.m_y;
             i32 gruntLeft = gruntX - 7;
             i32 gruntTop = gruntY - 7;
             i32 gruntRight = gruntLeft + 14;
@@ -1775,8 +1785,8 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         CGameObject* object = grunt->m_object;
                         CreateLightFx(
                             g_gameReg->m_world->m_childGroup,
-                            object->m_screenX,
-                            object->m_screenY,
+                            object->m_screenPosition.m_x,
+                            object->m_screenPosition.m_y,
                             SORTKEY_OVERLAY,
                             "GAME_LIGHTING_FLASH",
                             "GAME_FLASH",
@@ -1817,8 +1827,8 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         if (g->m_pending != false) {
             continue;
         }
-        i32 tx = g->m_tileX;
-        i32 ty = g->m_tileY;
+        i32 tx = g->m_tile.m_x;
+        i32 ty = g->m_tile.m_y;
         POINT pt;
         SET_POINT_COMPONENTS(pt, tx, ty);
         if (!PtInRect(&rect, pt)) {
@@ -2285,8 +2295,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     bbox.right = 0;
     bbox.bottom = 0;
     CDDrawWorkerHost* grid = g_gameReg->m_world->m_level->m_mainPlane;
-    bbox.left = grid->m_planePixelWidth - 1;
-    bbox.top = grid->m_planePixelHeight - 1;
+    bbox.left = grid->m_planePixelSize.cx - 1;
+    bbox.top = grid->m_planePixelSize.cy - 1;
     do {
         POSITION cur = pos;
         Coord* payload = static_cast<Coord*>(m_selLists[slot].GetNext(pos));
@@ -2295,8 +2305,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
             ResetCell(payload->m_x, payload->m_y, 1, 0);
             if (m_selSentinel == slot) {
                 CGameObject* disp = cell->m_object;
-                i32 x = disp->m_screenX;
-                i32 y = disp->m_screenY;
+                i32 x = disp->m_screenPosition.m_x;
+                i32 y = disp->m_screenPosition.m_y;
                 if (x < bbox.left) {
                     bbox.left = x;
                 }
@@ -2317,10 +2327,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     } while (pos != NULL);
     if (m_selSentinel == slot) {
         (static_cast<CPlay*>(g_gameReg->m_curState))
-            ->ResetGoals(
-                bbox.left + (bbox.right - bbox.left) / 2,
-                bbox.top + (bbox.bottom - bbox.top) / 2
-            );
+            ->ResetGoals(RECT_CENTER_X(bbox), RECT_CENTER_Y(bbox));
         m_selSentinel = -1;
         return 1;
     }
@@ -2335,46 +2342,29 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     if (pos == NULL) {
         return 0;
     }
-    RECT bbox;
     i32 count = 0;
     CDDrawWorkerHost* dims = g_gameReg->m_world->m_level->m_mainPlane;
-    bbox.left = dims->m_planePixelWidth - 1;
-    bbox.top = dims->m_planePixelHeight - 1;
-    bbox.right = 0;
-    bbox.bottom = 0;
+    Coord boundsLo(dims->m_planePixelSize.cx - 1, dims->m_planePixelSize.cy - 1);
+    Coord boundsHi(0, 0);
     do {
         Coord* k = static_cast<Coord*>(m_recList.GetNext(pos));
         CGrunt* cell = UnitAt(k->m_x, k->m_y);
         if (cell != NULL) {
             count++;
-            CGameObject* g = cell->m_object;
-            i32 gx = g->m_screenX;
-            i32 gy = g->m_screenY;
-            if (gx < bbox.left) {
-                bbox.left = gx;
-            }
-            if (gx > bbox.right) {
-                bbox.right = gx;
-            }
-            if (gy < bbox.top) {
-                bbox.top = gy;
-            }
-            if (gy > bbox.bottom) {
-                bbox.bottom = gy;
-            }
+            Coord position = cell->m_object->ScreenPos();
+            boundsLo.Min(position);
+            boundsHi.Max(position);
         }
     } while (pos != NULL);
-    i32 cy = bbox.top + (bbox.bottom - bbox.top) / 2;
-    i32 cx = bbox.left + (bbox.right - bbox.left) / 2;
-    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(cx, cy);
+    Coord center = boundsLo + (boundsHi - boundsLo) / 2;
+    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(center.m_x, center.m_y);
     if (doSelect != 0 && count == 1) {
         CGrunt* cell2 = SoleSelectedGrunt();
         if (cell2 != NULL) {
             i32 playerIndex = cell2->m_playerIndex;
             i32 unitIndex = cell2->m_unitIndex;
             if (RecordListHas(playerIndex, unitIndex)) {
-                m_cameraTargetIdentity.m_x = playerIndex;
-                m_cameraTargetIdentity.m_y = unitIndex;
+                m_cameraTargetIdentity = Coord(playerIndex, unitIndex);
                 m_armed = true;
                 LoadCameraSprite();
             }
@@ -2438,8 +2428,8 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
                 CGrunt* g = *units;
                 if (g != NULL && g->m_entranceCommitted != false) {
                     CGameObject* o = g->m_object;
-                    i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
-                    i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
+                    i32 dx = (o->m_screenPosition.m_x >> TILE_SHIFT_PX) - tx;
+                    i32 dy = (o->m_screenPosition.m_y >> TILE_SHIFT_PX) - ty;
                     i32 d = abs(SquaredDistance(dx, dy));
                     if (d < best) {
                         best = d;
@@ -2466,7 +2456,7 @@ i32 CTriggerMgr::SelectionListFind(i32 playerIndex, i32 unitIndex) {
         POSITION pos = list->GetHeadPosition();
         while (pos != NULL) {
             Coord* payload = static_cast<Coord*>(list->GetNext(pos));
-            if (payload->m_x == playerIndex && payload->m_y == unitIndex) {
+            if (COORD_EQUALS_COMPONENTS(*payload, playerIndex, unitIndex)) {
                 if (result != 0) {
                     return 10;
                 }
@@ -2588,8 +2578,8 @@ i32 CTriggerMgr::ToggleToyTargeting() {
             if (kind == PICKUP_SCROLL) {
                 CGameObject* o = cell->m_object;
                 g_gameReg->m_triggerMgr->HandleTargetSelection(
-                    o->m_screenX,
-                    o->m_screenY,
+                    o->m_screenPosition.m_x,
+                    o->m_screenPosition.m_y,
                     0,
                     0,
                     0,

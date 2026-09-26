@@ -12,11 +12,13 @@
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Image/ByteRunEncoding.h>
 #include <Image/FileImageRecords.h>
 #include <Image/Image.h>
 #include <Image/ImagePaletteNode.h>
 #include <Image/RezDecodeKind.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/RezMgr.h>
@@ -476,15 +478,14 @@ i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
         return 0;
     }
 
-    i32 height = ih.biHeight;
-    i32 width = ih.biWidth;
+    CSize imageSize(ih.biWidth, ih.biHeight);
     ColorDepth bitcount = static_cast<ColorDepth>(ih.biBitCount & 0xffff);
-    if (!Init(dc, width, height, bitcount, ctrl)) {
+    if (!Init(dc, imageSize.cx, imageSize.cy, bitcount, ctrl)) {
         return 0;
     }
 
     file.Seek(fh.bfOffBits, 0);
-    u32 size = (IDX(bitcount) / 8) * m_nPitch * height;
+    u32 size = (IDX(bitcount) / 8) * m_nPitch * imageSize.cy;
     if (file.Read(m_pBytes, size) != size) {
         return 0;
     }
@@ -587,13 +588,14 @@ i32 CDib::InitRid(u8* buf, HDC dc, u32 ctrl) {
     RecordBytes<PidHeader> p;
     p.m_bytes = static_cast<u8*>(buf);
     p.m_bytes += 2 * sizeof(u32);
-    i32 width = *p.m_dwords;
+    CSize imageSize;
+    imageSize.cx = *p.m_dwords;
     p.m_bytes += sizeof(u32);
-    i32 height = *p.m_dwords;
+    imageSize.cy = *p.m_dwords;
     p.m_bytes += sizeof(u32);
     p.m_bytes += 4 * sizeof(u32);
-    i32 ok = Init(p.m_bytes, dc, width, height, BPP_PALETTED_8, ctrl);
-    if (!(ctrl & 1)) {
+    i32 ok = Init(p.m_bytes, dc, imageSize.cx, imageSize.cy, BPP_PALETTED_8, ctrl);
+    if (!(ctrl & IDX(DIB_INIT_KEEP_TRANSPARENCY))) {
         m_bTransparent = false;
     }
     return ok;
@@ -930,7 +932,7 @@ i32 CDib::Save8(const char* filename, CDibPal* paletteObj) {
 
 RVA(0x00176d20, 0x71)
 void CDib::FillRect(RECT* r, u32 color) {
-    i32 width = r->right - r->left;
+    i32 width = RECT_WIDTH(*r);
     for (i32 y = r->top; y <= r->bottom; ++y) {
         i32 off = m_pLines[y] + r->left;
         memset(m_pBytes + off, color, width);
@@ -942,7 +944,10 @@ void CDib::FillRect(RECT* r, u32 color) {
 RVA(0x00176da0, 0x4b)
 void CDib::FillRect(i32 dx, i32 dy, RECT* src, u32 color) {
     RECT r;
-    SET_RECT_COMPONENTS(r, dx, dy, src->right + dx - src->left, src->bottom - src->top + dy);
+    r.left = dx;
+    r.top = dy;
+    r.right = src->right + dx - src->left;
+    r.bottom = RECT_HEIGHT(*src) + dy;
     FillRect(&r, color);
 }
 

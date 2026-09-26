@@ -100,9 +100,8 @@ i32 CSBI_MenuItem::Render() {
         m_redrawFrames--;
         CImage* f = m_frame;
         if (f) {
-            i32 y = m_rect.top + f->m_anchorY;
-            i32 x = m_rect.left + f->m_anchorX;
-            f->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
+            CPoint position(m_rect.left + f->m_anchor.x, m_rect.top + f->m_anchor.y);
+            f->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, position.x, position.y, 0);
         }
     }
     return 1;

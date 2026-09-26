@@ -31,6 +31,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
@@ -44,6 +45,7 @@
 RVA(0x000f0db0, 0x48)
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
+    Coord tile(tileX, tileY);
     CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
     POSITION pos = list.GetHeadPosition();
 
@@ -51,9 +53,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
         do {
             CGruntPuddle* p = static_cast<CGruntPuddle*>(list.GetNext(pos));
             if (p->m_pending == false) {
-                i32 puddleX = p->m_tileX;
-                i32 puddleY = p->m_tileY;
-                if (puddleX == tileX && puddleY == tileY) {
+                if (p->m_tile == tile) {
                     return 1;
                 }
             }
@@ -149,7 +149,8 @@ L_ed006b:
         goto L_scanb;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
+               != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
     }
     if (m_poweredUp != false) {
@@ -199,8 +200,8 @@ L_scanb:
         while (pos != NULL) {
             CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
             if (gg->m_pending == false) {
-                i32 gx = gg->m_tileX;
-                i32 gy = gg->m_tileY;
+                i32 gx = gg->m_tile.m_x;
+                i32 gy = gg->m_tile.m_y;
                 if (RectContains(
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
@@ -215,8 +216,8 @@ L_scanb:
                     GRID_CLIP_INL(grid, NULL);
                     return 1;
                 }
-                i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
-                i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
+                i32 dx = gx - (m_object->m_screenPosition.m_x >> TILE_SHIFT_PX);
+                i32 dy = gy - (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX);
                 i32 dist = abs(dx) + abs(dy);
                 if (dist < best) {
                     POINT pt;

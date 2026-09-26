@@ -13,6 +13,7 @@
 #include <Io/FileStream.h>
 #include <Io/MoviePlayer.h>
 #include <Io/MoviePlayerInline.h>
+#include <MakeRect.h>
 #include <RectMacros.h>
 #include <SafeDelete.h>
 #include <Wap32/ScreenGeometry.h>
@@ -552,8 +553,8 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     } else {
         SET_RECT_COMPONENTS(
             dst,
-            col * m_tilesAcross + m_originX,
-            row * m_tilesDown + m_originY,
+            col * m_tilesAcross + m_origin.x,
+            row * m_tilesDown + m_origin.y,
             nCols * m_tilesAcross + dst.left,
             nRows * m_tilesDown + dst.top
         );
@@ -650,11 +651,11 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                 if (!origin) {
                     return 0;
                 }
-                m_originX = origin->x;
-                m_originY = origin->y;
+                m_origin.x = origin->x;
+                m_origin.y = origin->y;
             } else {
-                m_originX = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
-                m_originY = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
+                m_origin.x = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
+                m_origin.y = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
             }
             break;
         case MOVIE_SINGLE:
@@ -664,11 +665,11 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                 if (!origin) {
                     return 0;
                 }
-                m_originX = origin->x;
-                m_originY = origin->y;
+                m_origin.x = origin->x;
+                m_origin.y = origin->y;
             } else {
-                m_originX = (m_screenWidth - m_smackHandle->Width) >> 1;
-                m_originY = (m_screenHeight - m_smackHandle->Height) >> 1;
+                m_origin.x = (m_screenWidth - m_smackHandle->Width) >> 1;
+                m_origin.y = (m_screenHeight - m_smackHandle->Height) >> 1;
             }
             break;
         case MOVIE_TILE_OR_STRETCH:
@@ -680,17 +681,17 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                     if (!origin) {
                         return 0;
                     }
-                    m_originX = origin->x;
-                    m_originY = origin->y;
+                    m_origin.x = origin->x;
+                    m_origin.y = origin->y;
                 } else {
-                    m_originX = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
-                    m_originY = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
+                    m_origin.x = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
+                    m_origin.y = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
                 }
             } else {
                 m_tilesAcross = 1;
                 m_tilesDown = 1;
-                m_originX = 0;
-                m_originY = 0;
+                m_origin.x = 0;
+                m_origin.y = 0;
                 m_destRect = new RECT;
                 m_destRect->top = 0;
                 m_destRect->left = 0;
@@ -702,8 +703,8 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
         case MOVIE_DEST_RECT: {
             m_tilesAcross = 1;
             m_tilesDown = 1;
-            m_originX = 0;
-            m_originY = 0;
+            m_origin.x = 0;
+            m_origin.y = 0;
             if (!rect) {
                 return 0;
             }

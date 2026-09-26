@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuItemState.h>
 #include <Gruntz/MenuTree.h>
@@ -43,8 +44,7 @@ i32 CMenuPage::Configure(
     m_headerGap = menuTree->m_headerGap;
     m_flags = flags;
     m_bounds = menuTree->m_bounds;
-    m_contentOffsetX = 0;
-    m_contentOffsetY = 0;
+    SET_VECTOR2_COMPONENTS(m_contentOffset, 0, 0);
     RESOLVE_MENU_HEADER_ANIMATION(headerAnimationKey, headerAnimation);
 }
 
@@ -260,16 +260,16 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
     }
     i32 left = m_bounds.left;
     i32 right = m_bounds.right;
-    i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;
-    i32 drawY = m_contentOffsetY + m_bounds.top;
+    i32 centerX = (((right - left + 1) / 2)) + m_contentOffset.m_x + left;
+    i32 drawY = m_contentOffset.m_y + m_bounds.top;
     CDDrawWorker* headerAnimation = m_headerAnimation;
     if (headerAnimation) {
         CImage* headerFrame =
             DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->m_minIndex);
         if (headerFrame) {
-            drawY += headerFrame->m_anchorY;
+            drawY += headerFrame->m_anchor.y;
             headerFrame->RenderFrame(target, centerX, drawY, 0);
-            drawY += m_headerGap + headerFrame->m_anchorY;
+            drawY += m_headerGap + headerFrame->m_anchor.y;
         }
     }
     POSITION position = m_items.GetHeadPosition();
@@ -443,16 +443,16 @@ RVA(0x00183e50, 0x11c)
 i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
     i32 left = m_bounds.left;
     i32 right = m_bounds.right;
-    i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;
-    i32 drawY = m_contentOffsetY + m_bounds.top;
+    i32 centerX = (((right - left + 1) / 2)) + m_contentOffset.m_x + left;
+    i32 drawY = m_contentOffset.m_y + m_bounds.top;
     CDDrawWorker* headerAnimation = m_headerAnimation;
     if (headerAnimation) {
         CImage* headerFrame =
             DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->m_minIndex);
         if (headerFrame) {
-            drawY += headerFrame->m_anchorY;
+            drawY += headerFrame->m_anchor.y;
             headerFrame->RenderFrame(target, centerX, drawY, 0);
-            drawY += m_headerGap + headerFrame->m_anchorY;
+            drawY += m_headerGap + headerFrame->m_anchor.y;
         }
     }
     i32 columnX = ((m_columnWidth / 2)) + m_bounds.left + m_columnOffsetX;

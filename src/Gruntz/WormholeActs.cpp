@@ -64,14 +64,15 @@ i32 CExitTrigger::AdvanceAnim() {
         CWwdSpriteObject* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;
-        g_gameReg->m_triggerMgr->HitTestApply(trig->m_screenX, trig->m_screenY, span);
+        g_gameReg->m_triggerMgr
+            ->HitTestApply(trig->m_screenPosition.m_x, trig->m_screenPosition.m_y, span);
     } else if (m_resolved != false) {
         i32 hitPlayerIndex;
         i32 hitUnitIndex;
         CWwdSpriteObject* obj = m_object;
         if (g_gameReg->m_triggerMgr->FindGruntAt(
-                obj->m_screenX,
-                obj->m_screenY,
+                obj->m_screenPosition.m_x,
+                obj->m_screenPosition.m_y,
                 &obj->m_area,
                 &hitPlayerIndex,
                 &hitUnitIndex,
@@ -128,8 +129,8 @@ i32 CExitTrigger::AdvanceAnim() {
                     cur->SetDrawFill(SHADE_PAL_16, tbl);
                     if (hitPlayerIndex == g_curPlayer) {
                         Coord* mark = g_coordPool.Pop();
-                        mark->m_x = (cur->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                        mark->m_y = (cur->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                        mark->m_x = (cur->m_screenPosition.m_x & ~TILE_MASK_PX) + TILE_HALF_PX;
+                        mark->m_y = (cur->m_screenPosition.m_y & ~TILE_MASK_PX) + TILE_HALF_PX;
                         CPtrArray& marks =
                             static_cast<CPlay*>(g_gameReg->m_curState)->m_startMarkers;
                         marks.Add(mark);
@@ -183,8 +184,8 @@ i32 CExitTrigger::AdvanceAnim() {
                 if (dispatch == DispatchGruntCreationPointLogic
                     || dispatch == DispatchFortressFlagLogic) {
                     if (cur->m_smarts == m_object->m_smarts) {
-                        i32 x = cur->m_screenX;
-                        i32 y = cur->m_screenY;
+                        i32 x = cur->m_screenPosition.m_x;
+                        i32 y = cur->m_screenPosition.m_y;
                         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
                             CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
                                 0,

@@ -4,6 +4,7 @@
 
 #include <Gruntz/WwdGrid.h>
 #include <Gruntz/WwdGridIter.h>
+#include <RectMacros.h>
 #include <Wwd/WwdGridShell.h>
 
 #include <math.h>
@@ -14,25 +15,26 @@ RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
     memcpy(&m_bounds, &rect, sizeof(m_bounds));
-    if (rect.right < rect.left) {
-        i32 t = rect.left;
-        rect.left = rect.right;
-        rect.right = t;
-    }
-    if (rect.bottom < rect.top) {
-        i32 t = rect.top;
-        rect.top = rect.bottom;
-        rect.bottom = t;
-    }
-    m_width = rect.right - rect.left;
-    m_height = rect.bottom - rect.top;
-    m_shiftY = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
-    m_shiftX = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
-    m_cellH = static_cast<i32>(pow(DATA_COMPGEN(0x001f0ab0, 2.0), static_cast<double>(m_shiftY)));
-    m_cellW = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftX)));
-    m_cols = m_width / m_cellH + 1;
-    m_rows = m_height / m_cellW + 1;
-    m_cellCount = m_rows * m_cols;
+    NORMALIZE_RECT_COMPONENTS(rect)
+    SET_SIZE_COMPONENTS(m_extent, rect.right - rect.left, rect.bottom - rect.top);
+    SET_SIZE_COMPONENTS(
+        m_cellShift,
+        static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0))),
+        static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)))
+    );
+    SET_SIZE_COMPONENTS(
+        m_cellSize,
+        static_cast<i32>(
+            pow(DATA_COMPGEN(0x001f0ab0, 2.0), static_cast<double>(m_cellShift.cx))
+            ),
+            static_cast<i32>(pow(2.0, static_cast<double>(m_cellShift.cy)))
+        );
+    SET_SIZE_COMPONENTS(
+        m_gridSize,
+        m_extent.cx / m_cellSize.cx + 1,
+        m_extent.cy / m_cellSize.cy + 1
+    );
+    m_cellCount = m_gridSize.cy * m_gridSize.cx;
     BucketHead* arr = new BucketHead[m_cellCount];
     m_buckets = arr;
     if (arr == NULL) {
@@ -49,13 +51,13 @@ RVA(0x00191770, 0x8d)
 i32 CWwdGrid::Setup(RECT rect) {
     i32 cellW;
     if (rect.right > rect.left) {
-        cellW = (rect.right - rect.left) / 10;
+        cellW = (RECT_WIDTH(rect)) / 10;
     } else {
         cellW = (rect.left - rect.right) / 10;
     }
     i32 cellH;
     if (rect.bottom > rect.top) {
-        cellH = (rect.bottom - rect.top) / 10;
+        cellH = (RECT_HEIGHT(rect)) / 10;
     } else {
         cellH = (rect.top - rect.bottom) / 10;
     }
@@ -73,9 +75,9 @@ void CWwdGrid::FreeBuckets() {
 
 RVA(0x00191840, 0x48)
 i32 CWwdGrid::Add(WwdRegion* r) {
-    i32 col = (r->m_y - m_bounds.m_minY) >> m_shiftX;
-    i32 row = (r->m_x - m_bounds.m_minX) >> m_shiftY;
-    BucketHead* bucket = m_buckets + (col * m_cols + row);
+    i32 col = (r->m_position.m_y - m_bounds.m_minY) >> m_cellShift.cy;
+    i32 row = (r->m_position.m_x - m_bounds.m_minX) >> m_cellShift.cx;
+    BucketHead* bucket = m_buckets + (col * m_gridSize.cx + row);
     r->m_bucket = bucket;
     bucket->InsertFirst(r);
     ++m_count;
@@ -97,11 +99,11 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     WWD_RECT_RETURN_IF_DISJOINT(q, m_bounds, 0)
     WWD_RECT_CLAMP_COMPONENTS(q, m_bounds)
     WwdRect cell;
-    cell.m_minY = (q.m_minY - m_bounds.m_minY) >> m_shiftX;
-    cell.m_minX = (q.m_minX - m_bounds.m_minX) >> m_shiftY;
-    cell.m_maxY = (q.m_maxY - m_bounds.m_minY) >> m_shiftX;
-    cell.m_maxX = (q.m_maxX - m_bounds.m_minX) >> m_shiftY;
-    i32 base = cell.m_minY * m_cols + cell.m_minX;
+    cell.m_minY = (q.m_minY - m_bounds.m_minY) >> m_cellShift.cy;
+    cell.m_minX = (q.m_minX - m_bounds.m_minX) >> m_cellShift.cx;
+    cell.m_maxY = (q.m_maxY - m_bounds.m_minY) >> m_cellShift.cy;
+    cell.m_maxX = (q.m_maxX - m_bounds.m_minX) >> m_cellShift.cx;
+    i32 base = cell.m_minY * m_gridSize.cx + cell.m_minX;
     for (i32 y = cell.m_minY; y <= cell.m_maxY; y++) {
         i32 idx = base;
         for (i32 x = cell.m_minX; x <= cell.m_maxX; x++) {
@@ -121,7 +123,7 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
             }
             idx++;
         }
-        base += m_cols;
+        base += m_gridSize.cx;
     }
     return fired;
 }
@@ -157,13 +159,13 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_remove = remove;
     WWD_RECT_RETURN_IF_DISJOINT(m_rect, grid->m_bounds, NULL)
     WWD_RECT_CLAMP_COMPONENTS(m_rect, grid->m_bounds)
-    m_colStart = (m_rect.m_minY - grid->m_bounds.m_minY) >> grid->m_shiftX;
-    m_rowStart = (m_rect.m_minX - grid->m_bounds.m_minX) >> grid->m_shiftY;
-    m_colEnd = (m_rect.m_maxY - grid->m_bounds.m_minY) >> grid->m_shiftX;
-    m_rowEnd = (m_rect.m_maxX - grid->m_bounds.m_minX) >> grid->m_shiftY;
-    i32 base = m_colStart * grid->m_cols + m_rowStart;
-    m_col = m_colStart;
+    m_rowStart = (m_rect.m_minY - grid->m_bounds.m_minY) >> grid->m_cellShift.cy;
+    m_colStart = (m_rect.m_minX - grid->m_bounds.m_minX) >> grid->m_cellShift.cx;
+    m_rowEnd = (m_rect.m_maxY - grid->m_bounds.m_minY) >> grid->m_cellShift.cy;
+    m_colEnd = (m_rect.m_maxX - grid->m_bounds.m_minX) >> grid->m_cellShift.cx;
+    i32 base = m_rowStart * grid->m_gridSize.cx + m_colStart;
     m_row = m_rowStart;
+    m_col = m_colStart;
     m_rowBase = base;
     m_cell = base;
     m_next = static_cast<WwdRegion*>(grid->m_buckets[base].GetFirst());
@@ -176,17 +178,17 @@ WwdRegion* CWwdGridIter::GetNext() {
     for (;;) {
         m_cur = m_next;
         while (m_cur == NULL) {
-            if (m_row < m_rowEnd) {
+            if (m_col < m_colEnd) {
                 ++m_cell;
-                ++m_row;
+                ++m_col;
             } else {
-                if (m_col >= m_colEnd) {
+                if (m_row >= m_rowEnd) {
                     return NULL;
                 }
-                m_rowBase += m_grid->m_cols;
+                m_rowBase += m_grid->m_gridSize.cx;
                 m_cell = m_rowBase;
-                m_row = m_rowStart;
-                ++m_col;
+                m_col = m_colStart;
+                ++m_row;
             }
             m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].GetFirst());
         }

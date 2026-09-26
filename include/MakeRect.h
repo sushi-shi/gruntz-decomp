@@ -2,6 +2,7 @@
 #define GRUNTZ_MAKERECT_H
 
 #include <Ints.h>
+#include <RectMacros.h>
 
 inline RECT MakeRect(i32 l, i32 t, i32 r, i32 b) {
     RECT rc;

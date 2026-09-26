@@ -23,6 +23,7 @@
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
@@ -32,7 +33,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
 
@@ -123,8 +124,8 @@ i32 CGrunt::StepDefenderBehavior() {
     }
 
     if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-        i32 occTX = occ->m_object->m_screenX >> TILE_SHIFT_PX;
-        i32 occTY = occ->m_object->m_screenY >> TILE_SHIFT_PX;
+        i32 occTX = occ->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 occTY = occ->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX;
         i32 dx = abs(occTX - defenderTile.m_x);
         i32 dy = abs(occTY - defenderTile.m_y);
         i32 radius = Max(dx, dy);
@@ -240,20 +241,21 @@ i32 CGrunt::StepDefenderBehavior() {
                         }
                         previous = trimCoord;
                     }
-                } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
-                           || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y) {
+                } else if ((m_object->m_screenPosition.m_x >> TILE_SHIFT_PX) != defenderTile.m_x
+                           || (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX)
+                                  != defenderTile.m_y) {
                     TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
                     m_dwell = 0;
                 }
             }
-        } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
-                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y) {
+        } else if ((m_object->m_screenPosition.m_x >> TILE_SHIFT_PX) != defenderTile.m_x
+                   || (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX) != defenderTile.m_y) {
             TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
         }
         m_dwell = 0;
     } else if (occ == NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS
-               && ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
-                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y)) {
+               && ((m_object->m_screenPosition.m_x >> TILE_SHIFT_PX) != defenderTile.m_x
+                   || (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX) != defenderTile.m_y)) {
         TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
     }
 

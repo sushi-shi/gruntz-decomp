@@ -4,10 +4,11 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/LevelArea.h>
 #include <Ints.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 
 class CDDrawSurfaceMgr;
 class CRezMgr;
@@ -208,10 +209,8 @@ public:
 
     char m_versionString[0x100];
     i32 m_reserved14c;
-    i32 m_cursorX;
-    i32 m_cursorY;
-    i32 m_snapOriginX;
-    i32 m_snapOriginY;
+    Coord m_cursorPosition;
+    Coord m_snapOrigin;
 
     CDDSurface* m_cursorSavedSurfaces[2];
 
@@ -240,8 +239,7 @@ inline CState::CState() {
     SET_RECT_XY_EXTENTS(m_cursorSavedRects[1], 0, 0x40, 0, 0x40);
     SET_RECT_XY_EXTENTS(m_cursorScreenRects[0], 0, 0, 0, 0);
     SET_RECT_XY_EXTENTS(m_cursorScreenRects[1], 0, 0, 0, 0);
-    m_cursorX = 0;
-    m_cursorY = 0;
+    SET_VECTOR2_COMPONENTS(m_cursorPosition, 0, 0);
 }
 
 #endif // GRUNTZ_GRUNTZ_CSTATE_H

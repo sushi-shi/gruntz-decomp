@@ -8,14 +8,15 @@
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     SetCellObject(
         reg->m_tileGrid,
-        owner->m_screenX >> TILE_SHIFT_PX,
-        owner->m_screenY >> TILE_SHIFT_PX,
+        owner->m_screenPosition.m_x >> TILE_SHIFT_PX,
+        owner->m_screenPosition.m_y >> TILE_SHIFT_PX,
         0
     );
 }
@@ -74,11 +75,11 @@ CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 playerIndex, i32 u
 
 static inline void TBombGridClear(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
+    i32 cy = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
+    i32 cx = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        g->m_rowInts[cy][cx * 7] &= ~0x1000000;
+        g->m_rows[cy][cx].m_flags &= ~IDX(CELL_FLAG_TIME_BOMB);
     }
 }
 

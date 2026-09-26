@@ -28,6 +28,7 @@
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <RectMacros.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezTypeTag.h>
@@ -424,13 +425,10 @@ i32 CState::InputVirtual() {
     }
     if (g_playActive == false) {
         CString text;
-        RECT rect;
+        CRect rect;
         text.LoadString(0x81a9);
-        tagSIZE mode = m_mgr->GetModeSize();
-        rect.right = mode.cx;
-        rect.bottom = mode.cy;
-        rect.left = 0;
-        rect.top = 0;
+        CSize mode = m_mgr->GetModeSize();
+        rect = MakeRect(0, 0, mode.cx, mode.cy);
         DrawTextToFrontSurface(m_world, &text, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     }
     while (ShowCursor(false) >= 0)
@@ -511,10 +509,10 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     ar->Write(&m_reserved48, sizeof(m_reserved48));
     ar->Write(m_versionString, 0x100);
     ar->Write(&m_reserved14c, sizeof(m_reserved14c));
-    ar->Write(&m_cursorX, sizeof(m_cursorX));
-    ar->Write(&m_cursorY, sizeof(m_cursorY));
-    ar->Write(&m_snapOriginX, sizeof(m_snapOriginX));
-    ar->Write(&m_snapOriginY, sizeof(m_snapOriginY));
+    ar->Write(&m_cursorPosition.m_x, sizeof(m_cursorPosition.m_x));
+    ar->Write(&m_cursorPosition.m_y, sizeof(m_cursorPosition.m_y));
+    ar->Write(&m_snapOrigin.m_x, sizeof(m_snapOrigin.m_x));
+    ar->Write(&m_snapOrigin.m_y, sizeof(m_snapOrigin.m_y));
     ar->Write(&m_cursorSavedRects[0], sizeof(m_cursorSavedRects[0]));
     ar->Write(&m_cursorSavedRects[1], sizeof(m_cursorSavedRects[1]));
     ar->Write(&m_cursorScreenRects[0], sizeof(m_cursorScreenRects[0]));
@@ -543,10 +541,10 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     ar->Read(&m_reserved48, sizeof(m_reserved48));
     ar->Read(m_versionString, 0x100);
     ar->Read(&m_reserved14c, sizeof(m_reserved14c));
-    ar->Read(&m_cursorX, sizeof(m_cursorX));
-    ar->Read(&m_cursorY, sizeof(m_cursorY));
-    ar->Read(&m_snapOriginX, sizeof(m_snapOriginX));
-    ar->Read(&m_snapOriginY, sizeof(m_snapOriginY));
+    ar->Read(&m_cursorPosition.m_x, sizeof(m_cursorPosition.m_x));
+    ar->Read(&m_cursorPosition.m_y, sizeof(m_cursorPosition.m_y));
+    ar->Read(&m_snapOrigin.m_x, sizeof(m_snapOrigin.m_x));
+    ar->Read(&m_snapOrigin.m_y, sizeof(m_snapOrigin.m_y));
     ar->Read(&m_cursorSavedRects[0], sizeof(m_cursorSavedRects[0]));
     ar->Read(&m_cursorSavedRects[1], sizeof(m_cursorSavedRects[1]));
     ar->Read(&m_cursorScreenRects[0], sizeof(m_cursorScreenRects[0]));

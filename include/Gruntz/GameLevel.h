@@ -5,6 +5,7 @@
 
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -25,12 +26,12 @@ static const i32 s_tileClear = -1;
         i32 px_ = (X);                                                                             \
         CLAMP_PIXEL_TO_PLANE(px_, py_, (LVL)->m_mainPlane);                                        \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
-        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
-        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
+        i32 qx_ = px_ >> pl_->m_tileShift.m_x;                                                     \
+        i32 qy_ = py_ >> pl_->m_tileShift.m_y;                                                     \
         i32 col_ = qx_;                                                                            \
-        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
+        i32 subX_ = px_ - (qx_ << pl_->m_tileShift.m_x);                                           \
         i32 idx_ = pl_->m_tileRowOffsets[qy_] + col_;                                              \
-        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
+        i32 subY_ = py_ - (qy_ << pl_->m_tileShift.m_y);                                           \
         i32 tile_ = pl_->m_tileHandles[idx_];                                                      \
         (RESULT) = (LVL)->CollisionAtHandle(tile_, subX_, subY_);                                  \
     } while (0)
@@ -41,11 +42,11 @@ static const i32 s_tileClear = -1;
         i32 px_ = (X);                                                                             \
         CLAMP_PIXEL_TO_PLANE(px_, py_, (LVL)->m_mainPlane);                                        \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
-        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
-        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
+        i32 qx_ = px_ >> pl_->m_tileShift.m_x;                                                     \
+        i32 qy_ = py_ >> pl_->m_tileShift.m_y;                                                     \
         i32 col_ = qx_;                                                                            \
-        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
-        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
+        i32 subX_ = px_ - (qx_ << pl_->m_tileShift.m_x);                                           \
+        i32 subY_ = py_ - (qy_ << pl_->m_tileShift.m_y);                                           \
         i32 tile_ = pl_->GetTileHandle(col_, qy_);                                                 \
         (RESULT) = (LVL)->CollisionAtHandle(tile_, subX_, subY_);                                  \
     } while (0)
@@ -59,7 +60,16 @@ struct CGameObject;
 class CDDrawChildGroup;
 class CDDrawSurfaceMgr;
 
+#define SET_LEVEL_DIMS(dims, width, height)                                                        \
+    (dims).m_w = (width);                                                                          \
+    (dims).m_h = (height)
+
 struct LevelDims {
+    void Init(i32 width, i32 height) {
+        m_w = width;
+        m_h = height;
+    }
+
     i32 m_w;
     i32 m_h;
 };
@@ -93,6 +103,46 @@ public:
     virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_GAMELEVEL;
     }
+
+    TileCollisionKind ProbeTile(i32 x, i32 y) {
+        Coord pixel(x, y);
+        pixel.Clamp(
+            Coord(0, 0),
+            Coord(m_mainPlane->m_planePixelSize.cx - 1, m_mainPlane->m_planePixelSize.cy - 1)
+        );
+        CDDrawWorkerHost* plane = m_mainPlane;
+        Coord tile(pixel.m_x >> plane->m_tileShift.m_x, pixel.m_y >> plane->m_tileShift.m_y);
+        Coord cellOrigin(tile.m_x << plane->m_tileShift.m_x, tile.m_y << plane->m_tileShift.m_y);
+        Coord subPixel = pixel - cellOrigin;
+        i32 index = plane->m_tileRowOffsets[tile.m_y] + tile.m_x;
+        i32 tileHandle = plane->m_tileHandles[index];
+        if (tileHandle == UNINIT_FILL || tileHandle == WWD_TILE_CLEAR) {
+            return TILEKIND_PASSABLE;
+        }
+        CTileImageSet* set =
+            static_cast<CTileImageSet*>(m_imageSets[tileHandle & WWD_TILE_IMAGE_SET_INDEX_MASK]);
+        return set->GetCollisionAt(subPixel.m_x, subPixel.m_y);
+    }
+
+    TileCollisionKind ProbeTileViaHandle(i32 x, i32 y) {
+        Coord pixel(x, y);
+        pixel.Clamp(
+            Coord(0, 0),
+            Coord(m_mainPlane->m_planePixelSize.cx - 1, m_mainPlane->m_planePixelSize.cy - 1)
+        );
+        CDDrawWorkerHost* plane = m_mainPlane;
+        Coord tile(pixel.m_x >> plane->m_tileShift.m_x, pixel.m_y >> plane->m_tileShift.m_y);
+        Coord cellOrigin(tile.m_x << plane->m_tileShift.m_x, tile.m_y << plane->m_tileShift.m_y);
+        Coord subPixel = pixel - cellOrigin;
+        i32 tileHandle = plane->GetTileHandle(tile.m_x, tile.m_y);
+        if (tileHandle == UNINIT_FILL || tileHandle == WWD_TILE_CLEAR) {
+            return TILEKIND_PASSABLE;
+        }
+        CTileImageSet* set =
+            static_cast<CTileImageSet*>(m_imageSets[tileHandle & WWD_TILE_IMAGE_SET_INDEX_MASK]);
+        return set->GetCollisionAt(subPixel.m_x, subPixel.m_y);
+    }
+
     virtual i32 LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords);
     virtual i32 LoadSourceWithCoords(CRezItm* src, LevelCoordRect* coords);
     virtual i32 LoadFileWithCoords(const char* path, LevelCoordRect* coords);
@@ -106,18 +156,12 @@ public:
     CGameLevel(class CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     void SetSpatialDefaults() {
-        m_defaultActiveGridCellSize[0] = 500;
-        m_defaultActiveGridCellSize[1] = 250;
-        m_largeActiveGridCellSize[0] = 1000;
-        m_largeActiveGridCellSize[1] = 1000;
-        m_smallActiveGridCellSize[0] = 250;
-        m_smallActiveGridCellSize[1] = 125;
-        m_defaultActiveRegionSize.m_w = 1600;
-        m_defaultActiveRegionSize.m_h = 1200;
-        m_largeActiveRegionSize.m_w = 2560;
-        m_largeActiveRegionSize.m_h = 1920;
-        m_smallActiveRegionSize.m_w = 768;
-        m_smallActiveRegionSize.m_h = 576;
+        SET_LEVEL_DIMS(m_defaultActiveGridCellSize, 500, 250);
+        SET_LEVEL_DIMS(m_largeActiveGridCellSize, 1000, 1000);
+        SET_LEVEL_DIMS(m_smallActiveGridCellSize, 250, 125);
+        SET_LEVEL_DIMS(m_defaultActiveRegionSize, 1600, 1200);
+        SET_LEVEL_DIMS(m_largeActiveRegionSize, 2560, 1920);
+        SET_LEVEL_DIMS(m_smallActiveRegionSize, 768, 576);
     }
 
     void ResetSpatialDefaults();
@@ -256,14 +300,13 @@ public:
     CObArray m_imageSets;
     CDDrawWorkerHost* m_mainPlane;
     i32 m_mainIndex;
-    i32 m_maxStepX;
-    i32 m_maxStepY;
+    Coord m_maxStep;
     char m_levelName[0xac - 0x6c];
     u32 m_checksum;
 
-    i32 m_defaultActiveGridCellSize[2];
-    i32 m_largeActiveGridCellSize[2];
-    i32 m_smallActiveGridCellSize[2];
+    LevelDims m_defaultActiveGridCellSize;
+    LevelDims m_largeActiveGridCellSize;
+    LevelDims m_smallActiveGridCellSize;
 
     LevelDims m_defaultActiveRegionSize;
     LevelDims m_largeActiveRegionSize;

@@ -24,6 +24,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -32,7 +33,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
 
@@ -108,9 +109,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
     i32 atTarget = 0;
     if (best != NULL) {
-        i32 x = best->m_object->m_screenX;
-        if (GRUNT_X_AT_SAVED_POS(x, best) && best->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, best)
-            && this->RectContains(x, best->m_object->m_screenY) != 0) {
+        i32 x = best->m_object->m_screenPosition.m_x;
+        if (GRUNT_X_AT_SAVED_POS(x, best) && GRUNT_SCREEN_Y_AT_SAVED_POS(best->m_object, best)
+            && this->RectContains(x, best->m_object->m_screenPosition.m_y) != 0) {
             atTarget = 1;
         }
     }
@@ -165,8 +166,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     i32 pb;
                     PRIO(pb, best->m_entranceReason);
                     if (pa <= pb
-                        && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
-                               != 0) {
+                        && this->RectContains(
+                               best->m_object->m_screenPosition.m_x,
+                               best->m_object->m_screenPosition.m_y
+                           ) != 0) {
                         COMMIT_GRUNT_NEIGHBOR(best);
                         return 1;
                     }
@@ -253,7 +256,11 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     if (m_poweredUp != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }
-                    if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
+                    if (this->RectContains(
+                            sg->m_object->m_screenPosition.m_x,
+                            sg->m_object->m_screenPosition.m_y
+                        )
+                        == 0) {
                         return 1;
                     }
                     if (!IsGruntAtSavedScreenPos(sg)) {
@@ -286,8 +293,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                             || m_stamina < STAMINA_FULL) {
                             return 1;
                         }
-                        if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY)
-                                != 0
+                        if (this->RectContains(
+                                sg->m_object->m_screenPosition.m_x,
+                                sg->m_object->m_screenPosition.m_y
+                            ) != 0
                             && IsGruntAtSavedScreenPos(sg)) {
                             COMMIT_GRUNT_NEIGHBOR(sg);
                             return 1;

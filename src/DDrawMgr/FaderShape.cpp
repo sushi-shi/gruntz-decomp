@@ -75,28 +75,14 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         return 0;
     }
 
-    m_targetHeight = m_targetSurface->m_apiDesc.dwHeight;
-    m_targetWidth = m_targetSurface->m_apiDesc.dwWidth;
-    m_sourceHeight = m_sourceSurface->m_apiDesc.dwHeight;
-    m_sourceWidth = m_sourceSurface->m_apiDesc.dwWidth;
-    m_warpHeight = m_warpSourceSurface->m_apiDesc.dwHeight;
-    m_warpWidth = m_warpSourceSurface->m_apiDesc.dwWidth;
-    if (m_targetHeight != m_sourceHeight) {
-        return 0;
-    }
-    if (m_targetWidth != m_sourceWidth) {
-        return 0;
-    }
-    if (m_targetHeight != m_warpHeight) {
-        return 0;
-    }
-    if (m_targetWidth != m_warpWidth) {
-        return 0;
-    }
-    if (m_warpHeight != m_sourceHeight) {
-        return 0;
-    }
-    if (m_warpWidth != m_sourceWidth) {
+    m_targetSize = CSize(m_targetSurface->m_apiDesc.dwWidth, m_targetSurface->m_apiDesc.dwHeight);
+    m_sourceSize = CSize(m_sourceSurface->m_apiDesc.dwWidth, m_sourceSurface->m_apiDesc.dwHeight);
+    m_warpSize =
+        CSize(m_warpSourceSurface->m_apiDesc.dwWidth, m_warpSourceSurface->m_apiDesc.dwHeight);
+    CSize targetSize(m_targetSize);
+    CSize sourceSize(m_sourceSize);
+    CSize warpSize(m_warpSize);
+    if (targetSize != sourceSize || targetSize != warpSize || warpSize != sourceSize) {
         return 0;
     }
 
@@ -108,7 +94,7 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
     m_halfWidth = pInit->m_halfWidth;
 
     if (m_mode == FADER_SWEEP_FORWARD || m_mode == FADER_SWEEP_REVERSE) {
-        if (m_targetWidth < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159))) {
+        if (m_targetSize.cx < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159))) {
             return 0;
         }
     }
@@ -159,18 +145,18 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         }
     }
 
-    m_targetRowOffsets = new i32[m_targetHeight];
-    m_sourceRowOffsets = new i32[m_sourceHeight];
-    m_warpRowOffsets = new i32[m_warpHeight];
-    for (i = 0; i < m_targetHeight; i++) {
+    m_targetRowOffsets = new i32[m_targetSize.cy];
+    m_sourceRowOffsets = new i32[m_sourceSize.cy];
+    m_warpRowOffsets = new i32[m_warpSize.cy];
+    for (i = 0; i < m_targetSize.cy; i++) {
         m_targetRowOffsets[i] = m_targetSurface->m_apiDesc.lPitch * i;
         m_sourceRowOffsets[i] = m_sourceSurface->m_apiDesc.lPitch * i;
         m_warpRowOffsets[i] = m_warpSourceSurface->m_apiDesc.lPitch * i;
     }
 
-    mx = m_targetWidth;
-    if (m_targetHeight > m_targetWidth) {
-        mx = m_targetHeight;
+    mx = m_targetSize.cx;
+    if (m_targetSize.cy > m_targetSize.cx) {
+        mx = m_targetSize.cy;
     }
     m_lineBuf = new u8[m_targetSurface->m_bytesPerPixel * mx];
     return 1;
@@ -191,14 +177,14 @@ void CFaderShape::RenderFrame(i32 frame) {
     i32 arc = static_cast<i32>(static_cast<double>(m_halfWidth) * 3.14159);
     u32 seam = 0;
     if (m_mode == FADER_SPLIT_FROM_CENTER && m_stripCopy != false) {
-        seam = m_targetWidth / 2;
+        seam = m_targetSize.cx / 2;
     }
     if (m_stripCopy == false && frame == 0) {
         i32 targetPitch = m_targetSurface->m_apiDesc.lPitch;
         i32 sourcePitch = m_sourceSurface->m_apiDesc.lPitch;
         i32 n = (targetPitch < sourcePitch) ? targetPitch : sourcePitch;
         i32 row = 0;
-        while (row < m_targetHeight) {
+        while (row < m_targetSize.cy) {
             u8* src = m_straightBase + m_sourceRowOffsets[row];
             u8* dst = m_dstBase + m_targetRowOffsets[row];
             CopyBytes(dst, src, n);
@@ -206,19 +192,19 @@ void CFaderShape::RenderFrame(i32 frame) {
         }
     }
     if (m_stripCopy != false) {
-        if (seam + frame <= static_cast<u32>(m_targetWidth - arc - m_halfWidth)) {
+        if (seam + frame <= static_cast<u32>(m_targetSize.cx - arc - m_halfWidth)) {
             switch (m_mode) {
                 case FADER_SWEEP_FORWARD:
                     RenderTile(frame, frame - m_previousFrame);
                     break;
                 case FADER_SWEEP_REVERSE:
-                    RenderTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     break;
                 case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
-                    RenderTile(m_targetWidth / 2 + frame, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx / 2 + frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
-                    RenderTile(m_targetWidth / 2 - frame - stride, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx / 2 - frame - stride, frame - m_previousFrame);
                     m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
@@ -228,14 +214,14 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderWarpTile(frame, frame - m_previousFrame);
                     break;
                 case FADER_SWEEP_REVERSE:
-                    RenderWarpTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderWarpTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     break;
                 case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
-                    RenderWarpTile(m_targetWidth / 2 + frame, frame - m_previousFrame);
+                    RenderWarpTile(m_targetSize.cx / 2 + frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
                     RenderWarpTile(
-                        m_targetWidth - m_targetWidth / 2 - frame - stride,
+                        m_targetSize.cx - m_targetSize.cx / 2 - frame - stride,
                         frame - m_previousFrame
                     );
                     m_mode = FADER_SPLIT_FROM_CENTER;
@@ -250,13 +236,13 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderTile(frame, frame - m_previousFrame);
                     break;
                 case FADER_SWEEP_REVERSE:
-                    RenderTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     break;
                 case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
                     RenderTile(frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
-                    RenderTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
@@ -266,13 +252,13 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderWarpTile(frame, frame - m_previousFrame);
                     break;
                 case FADER_SWEEP_REVERSE:
-                    RenderWarpTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderWarpTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     break;
                 case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
                     RenderWarpTile(frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
-                    RenderWarpTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderWarpTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
@@ -301,7 +287,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         arcSpan = arc - m_halfWidth;
-        i32 tail = m_targetWidth - col - stride;
+        i32 tail = m_targetSize.cx - col - stride;
         colBase = stride - static_cast<i32>(static_cast<float>(stride) / arcSpan * tail);
     } else {
         colBase = col;
@@ -317,7 +303,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         i32 row = 0;
-        if (m_targetHeight > 0) {
+        if (m_targetSize.cy > 0) {
             base = bpp * col;
             do {
                 u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
@@ -349,12 +335,12 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     ClearBytes(dstLine + bpp * stride, bpp * stripWidth);
                 }
                 row++;
-            } while (row < m_targetHeight);
+            } while (row < m_targetSize.cy);
         }
     } else if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == false)
                || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false)) {
         i32 row = 0;
-        if (m_targetHeight > 0) {
+        if (m_targetSize.cy > 0) {
             base = bpp * col;
             do {
                 u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
@@ -386,7 +372,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     ClearBytes(dstLine - bpp * stripWidth, bpp * stripWidth);
                 }
                 row++;
-            } while (row < m_targetHeight);
+            } while (row < m_targetSize.cy);
         }
     }
 }
@@ -431,7 +417,7 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
     u8* targetColumnBase = m_dstBase + (col - x0) * bpp;
     u8* warpColumnBase = m_gatherBase + (col - x0) * bpp;
 
-    for (i32 j = 0; j < m_targetHeight; j++) {
+    for (i32 j = 0; j < m_targetSize.cy; j++) {
         u8* targetRow = targetColumnBase + m_targetRowOffsets[j];
         u8* warpRow = warpColumnBase + m_warpRowOffsets[j];
 
@@ -476,10 +462,10 @@ RVA(0x00182900, 0x35)
 i32 CFaderShape::GetFrameCount() {
     GZ_ENUM_STORAGE(FaderMode, u32) mode = m_mode;
     if (mode == FADER_SWEEP_FORWARD || mode == FADER_SWEEP_REVERSE) {
-        return m_targetWidth - m_halfWidth * 2;
+        return m_targetSize.cx - m_halfWidth * 2;
     }
     if (mode == FADER_SPLIT_FROM_CENTER) {
-        return (m_targetWidth - m_halfWidth * 4) / 2;
+        return (m_targetSize.cx - m_halfWidth * 4) / 2;
     }
     return 0;
 }

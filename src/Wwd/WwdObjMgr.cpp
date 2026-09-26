@@ -585,7 +585,6 @@ i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj)
     PLACE_OBJECT_RECT(rb, switchObj, m_switchRect);
     return CDDrawRectsOverlap(&ra, &rb);
 }
-#undef PLACE_OBJECT_RECT
 
 DATA(0x0021ab30)
 static char s_dbgRle[] = "RLE";
@@ -645,13 +644,13 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                i32 x = obj->m_screenX;
+                i32 x = obj->m_screenPosition.m_x;
                 if (x != COORD_UNSET) {
 
                     WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
-                    i32 y = obj->m_screenY;
+                    i32 y = obj->m_screenPosition.m_y;
                     if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-                        i32 w = view->m_planePixelWidth;
+                        i32 w = view->m_planePixelSize.cx;
                         if (x < 0) {
                             x = x + w;
                         } else if (x >= w) {
@@ -663,7 +662,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         }
                     }
                     if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-                        i32 h = view->m_planePixelHeight;
+                        i32 h = view->m_planePixelSize.cy;
                         if (y < 0) {
                             y = y + h;
                         } else if (y >= h) {
@@ -689,7 +688,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                if (obj->m_screenX == COORD_UNSET) {
+                if (obj->m_screenPosition.m_x == COORD_UNSET) {
                     continue;
                 }
                 if (obj->GetClassId() != CLASSID_SERIALREF) {
@@ -699,8 +698,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 if (fr == NULL) {
                     continue;
                 }
-                i32 x = obj->m_screenX;
-                i32 y = obj->m_screenY;
+                i32 x = obj->m_screenPosition.m_x;
+                i32 y = obj->m_screenPosition.m_y;
                 RECT box;
                 SetRect(&box, x - 0x20, y + 8, x + 0x20, y + 0x20);
                 RECT rc = box;
@@ -739,8 +738,8 @@ void CDDrawChildGroup::DrawObjectCounts() {
     }
     do {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-        i32 oy = obj->m_screenY;
-        i32 ox = obj->m_screenX;
+        i32 oy = obj->m_screenPosition.m_y;
+        i32 ox = obj->m_screenPosition.m_x;
         RECT box;
         SetRect(&box, ox - 0x20, oy - 8, ox + 0x20, oy + 8);
         RECT rc;
@@ -750,7 +749,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
         rc.bottom = box.bottom;
         WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-            w = view->m_planePixelWidth;
+            w = view->m_planePixelSize.cx;
             if (box.left < 0) {
                 wl = box.left + w;
             } else if (box.left >= w) {
@@ -762,7 +761,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
             }
         }
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-            h = view->m_planePixelHeight;
+            h = view->m_planePixelSize.cy;
             if (box.top < 0) {
                 wt = box.top + h;
             } else if (box.top >= h) {
@@ -992,7 +991,9 @@ i32 CDDrawChildGroup::SumWeighted() {
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);
+        sum +=
+            i
+            * (obj->m_screenPosition.m_x + obj->m_sortKey + obj->m_screenPosition.m_y + obj->m_id);
         ++i;
     }
     return sum;
@@ -1122,8 +1123,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
             }
             case CLASSID_WWD_SPRITE_OBJECT: {
                 i32 sortKey = desc.m_sortKey;
-                i32 y = desc.m_screenY;
-                i32 x = desc.m_screenX;
+                Coord position = desc.m_screenPosition;
                 i32 id = desc.m_id;
                 CLogicRecord* logicTemplate = MapFind<CLogicRecord>(
                     OwnerMgr()->m_logicRegistry->m_templatesByName,
@@ -1132,14 +1132,20 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 if (logicTemplate == NULL) {
                     createdObj = NULL;
                 } else {
-                    createdObj = CreateSpriteObject(id, x, y, sortKey, logicTemplate, 0);
+                    createdObj = CreateSpriteObject(
+                        id,
+                        position.m_x,
+                        position.m_y,
+                        sortKey,
+                        logicTemplate,
+                        0
+                    );
                 }
                 break;
             }
             case CLASSID_WWD_CONTAINER_OBJECT: {
                 i32 sortKey = desc.m_sortKey;
-                i32 y = desc.m_screenY;
-                i32 x = desc.m_screenX;
+                Coord position = desc.m_screenPosition;
                 i32 id = desc.m_id;
                 CLogicRecord* logicTemplate = MapFind<CLogicRecord>(
                     OwnerMgr()->m_logicRegistry->m_templatesByName,
@@ -1148,7 +1154,14 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 if (logicTemplate == NULL) {
                     createdObj = NULL;
                 } else {
-                    createdObj = CreateContainerObject(id, x, y, sortKey, logicTemplate, 0);
+                    createdObj = CreateContainerObject(
+                        id,
+                        position.m_x,
+                        position.m_y,
+                        sortKey,
+                        logicTemplate,
+                        0
+                    );
                 }
                 break;
             }
@@ -1171,8 +1184,8 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
 
                 if (AttachSprite(
                         rec,
-                        desc.m_screenX,
-                        desc.m_screenY,
+                        desc.m_screenPosition.m_x,
+                        desc.m_screenPosition.m_y,
                         desc.m_sortKey,
                         desc.m_logicTypeName,
                         0
@@ -1311,7 +1324,7 @@ WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
-    m_screenX = COORD_UNSET;
+    m_screenPosition.m_x = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;
     m_stateFlags = SPRITE_STATE_NONE;

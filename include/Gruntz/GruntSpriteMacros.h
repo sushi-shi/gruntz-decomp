@@ -23,8 +23,8 @@
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (CGameLevel::PointInBounds(                                                             \
                 &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
-                m_object->m_screenX,                                                               \
-                m_object->m_screenY                                                                \
+                m_object->m_screenPosition.m_x,                                                    \
+                m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
             _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
         }                                                                                          \
@@ -35,8 +35,8 @@
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (CGameLevel::PointInBounds(                                                             \
                 &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
-                m_object->m_screenX,                                                               \
-                m_object->m_screenY                                                                \
+                m_object->m_screenPosition.m_x,                                                    \
+                m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
             _g->m_voiceManager->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                        \
         }                                                                                          \
@@ -47,8 +47,8 @@
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (::PtInRect(                                                                            \
                 &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
-                m_object->m_screenX,                                                               \
-                m_object->m_screenY                                                                \
+                m_object->m_screenPosition.m_x,                                                    \
+                m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
             _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
         }                                                                                          \
@@ -59,8 +59,8 @@
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (::PtInRect(                                                                            \
                 &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
-                m_object->m_screenX,                                                               \
-                m_object->m_screenY                                                                \
+                m_object->m_screenPosition.m_x,                                                    \
+                m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
             _g->m_voiceManager->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                        \
         }                                                                                          \

@@ -5,6 +5,7 @@
 
 #include <Enums.h>
 #include <Gruntz/AnimatedMenuItem.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItemState.h>
 #include <Ints.h>
@@ -132,8 +133,7 @@ public:
     i32 m_columnWidth;
     i32 m_rowsPerColumn;
     i32 m_columnOffsetX;
-    i32 m_contentOffsetX;
-    i32 m_contentOffsetY;
+    Coord m_contentOffset;
     CDDrawWorker* m_headerAnimation;
 
     CMenuItem* m_focusedItem;

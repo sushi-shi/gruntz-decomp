@@ -38,8 +38,7 @@ i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 masterVolume) {
     m_cueRegistry = cueRegistry;
     m_masterVolume = masterVolume;
     m_enabled = true;
-    m_listenerX = 0;
-    m_listenerY = 0;
+    m_listenerPosition.Set(0, 0);
     return 1;
 }
 
@@ -257,7 +256,7 @@ void CWorldSoundSet::Resume() {
         CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (sound != NULL) {
             sound->m_isPlaying = false;
-            sound->Update(m_listenerX, m_listenerY, true);
+            sound->Update(m_listenerPosition.m_x, m_listenerPosition.m_y, true);
         }
     }
 
@@ -266,8 +265,7 @@ void CWorldSoundSet::Resume() {
 
 RVA(0x0000bd60, 0x4b)
 void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
-    m_listenerX = x;
-    m_listenerY = y;
+    m_listenerPosition.Set(x, y);
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
@@ -610,10 +608,9 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
         }
         SoundCue* layer = sprite->m_soundCue;
         if (layer && g_gameReg) {
-            RECT rc;
-            CopyRect(&rc, &obj->m_area);
+            CRect rc = obj->m_area;
             if (record->m_minX > 0 || record->m_maxX > 0) {
-                SetRect(&rc, record->m_minX, record->m_minY, record->m_maxX, record->m_maxY);
+                rc.SetRect(record->m_minX, record->m_minY, record->m_maxX, record->m_maxY);
             }
             if (g_gameReg->m_worldSounds) {
                 CAmbientSound* placed;
@@ -691,9 +688,7 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
 
         CWorldSoundSet* set = g_gameReg->m_worldSounds;
         if (set != NULL) {
-            AmbientPoint pt;
-            pt.m_x = obj->m_screenX;
-            pt.m_y = obj->m_screenY;
+            AmbientPoint pt(obj->m_screenPosition.m_x, obj->m_screenPosition.m_y);
 
             CAmbientPosSound* v =
                 set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_damage, 0);

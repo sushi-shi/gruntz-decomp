@@ -6,6 +6,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -32,10 +33,8 @@ public:
 
     double m_moveSpeed;
 
-    double m_subX;
-    double m_subY;
-    i32 m_stepDirX;
-    i32 m_stepDirY;
+    DoubleVector2 m_subPosition;
+    Coord m_stepDirection;
     Coord m_target;
     b32 m_explodeLatch;
     i32 m_fallLatch;

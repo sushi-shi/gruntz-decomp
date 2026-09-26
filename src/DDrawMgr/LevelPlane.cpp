@@ -19,6 +19,7 @@
 #include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Globals.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
@@ -45,8 +46,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     m_tileHandles = NULL;
     m_tileRowOffsets = NULL;
     m_spatialMgr = NULL;
-    m_scrollScaleX = 1.0f;
-    m_scrollScaleY = 1.0f;
+    SET_VECTOR2_COMPONENTS(m_scrollScale, 1.0f, 1.0f);
     m_viewportRect.left = -1;
     memset(&m_fillFx, 0, sizeof(m_fillFx));
     m_fillFx.dwSize = sizeof(DDBLTFX);
@@ -84,20 +84,26 @@ i32 CDDrawWorkerHost::Read(
     }
 
     m_flags = IDX(pd->m_flags);
-    m_movementXPercent = pd->m_movementXPercent;
-    m_movementYPercent = pd->m_movementYPercent;
-    m_scrollCenterX = 0;
-    m_scrollCenterY = 0;
+    m_movementPercent.m_x = pd->m_movementXPercent;
+    m_movementPercent.m_y = pd->m_movementYPercent;
+    m_scrollCenter.m_x = 0;
+    m_scrollCenter.m_y = 0;
     m_zCoord = -999999;
-    m_tileColumns = pd->m_tilesWide;
-    m_tileRows = pd->m_tilesHigh;
-    m_tileWidthPx = pd->m_tilePixelWidth;
-    m_tileHeightPx = pd->m_tilePixelHeight;
+    m_tileGridSize.cx = pd->m_tilesWide;
+    m_tileGridSize.cy = pd->m_tilesHigh;
+    m_tilePixelSize.cx = pd->m_tilePixelWidth;
+    m_tilePixelSize.cy = pd->m_tilePixelHeight;
     m_zCoord = pd->m_zCoord;
-    SET_RECT_COMPONENTS(m_viewportRect, bounds->left, bounds->top, bounds->right, bounds->bottom);
-    SET_RECT_COMPONENTS(m_tileRect, 0, 0, m_tileWidthPx, m_tileHeightPx);
-    m_planePixelWidth = m_tileWidthPx * m_tileColumns;
-    m_planePixelHeight = m_tileHeightPx * m_tileRows;
+    m_viewportRect.left = bounds->left;
+    m_viewportRect.top = bounds->top;
+    m_viewportRect.right = bounds->right;
+    m_viewportRect.bottom = bounds->bottom;
+    m_tileRect.left = 0;
+    m_tileRect.top = 0;
+    m_tileRect.right = m_tilePixelSize.cx;
+    m_tileRect.bottom = m_tilePixelSize.cy;
+    m_planePixelSize.cx = m_tilePixelSize.cx * m_tileGridSize.cx;
+    m_planePixelSize.cy = m_tilePixelSize.cy * m_tileGridSize.cy;
 
     if (m_flags & IDX(WWD_PLANE_FLAG_AUTO_TILE_SIZE)) {
 
@@ -119,21 +125,21 @@ i32 CDDrawWorkerHost::Read(
 
     APPLY_WORKER_HOST_BOUNDS(bounds);
 
-    m_scrollScaleX = static_cast<float>(m_movementXPercent) * 0.01f;
-    m_scrollScaleY = static_cast<float>(m_movementYPercent) * 0.01f;
+    m_scrollScale.m_x = static_cast<float>(m_movementPercent.m_x) * 0.01f;
+    m_scrollScale.m_y = static_cast<float>(m_movementPercent.m_y) * 0.01f;
 
-    m_tileHandles = new i32[m_tileRows * m_tileColumns];
+    m_tileHandles = new i32[m_tileGridSize.cy * m_tileGridSize.cx];
     // Byte-forced view of packed WWD storage.
 
     const i32* cell = reinterpret_cast<const i32*>(blockBase + pd->m_tilesOffset);
-    for (u32 t = 0; t < static_cast<u32>(m_tileRows * m_tileColumns); t++) {
+    for (u32 t = 0; t < static_cast<u32>(m_tileGridSize.cy * m_tileGridSize.cx); t++) {
         m_tileHandles[t] = *cell;
         cell++;
     }
 
-    m_tileRowOffsets = new i32[m_tileRows];
-    for (i32 c = 0; c < m_tileRows; c++) {
-        m_tileRowOffsets[c] = c * m_tileColumns;
+    m_tileRowOffsets = new i32[m_tileGridSize.cy];
+    for (i32 c = 0; c < m_tileGridSize.cy; c++) {
+        m_tileRowOffsets[c] = c * m_tileGridSize.cx;
     }
 
     i32 originY = pd->m_scrollY;
@@ -141,11 +147,11 @@ i32 CDDrawWorkerHost::Read(
     float sy = static_cast<float>(originY);
     float sx = static_cast<float>(originX);
     if ((m_flags & IDX(WWD_PLANE_FLAG_MAIN)) == 0) {
-        sx *= m_scrollScaleX;
-        sy *= m_scrollScaleY;
+        sx *= m_scrollScale.m_x;
+        sy *= m_scrollScale.m_y;
     }
-    m_scrollCenterX = sx;
-    m_scrollCenterY = sy;
+    m_scrollCenter.m_x = sx;
+    m_scrollCenter.m_y = sy;
     UpdatePlaneViewRect();
 
     if (pd->m_objectsOffset != 0) {
@@ -168,10 +174,10 @@ i32 CDDrawWorkerHost::InitGeometry(
     LevelCoordRect* viewportRect,
     char* planeName
 ) {
-    m_tileColumns = tileColumns;
-    m_tileRows = tileRows;
-    m_tileWidthPx = tileWidthPx;
-    m_tileHeightPx = tileHeightPx;
+    m_tileGridSize.cx = tileColumns;
+    m_tileGridSize.cy = tileRows;
+    m_tilePixelSize.cx = tileWidthPx;
+    m_tilePixelSize.cy = tileHeightPx;
     SET_RECT_COMPONENTS(
         m_viewportRect,
         viewportRect->left,
@@ -179,31 +185,31 @@ i32 CDDrawWorkerHost::InitGeometry(
         viewportRect->right,
         viewportRect->bottom
     );
-    m_movementXPercent = movementXPercent;
-    m_movementYPercent = movementYPercent;
+    m_movementPercent.m_x = movementXPercent;
+    m_movementPercent.m_y = movementYPercent;
     m_tileRect.left = 0;
     m_tileRect.top = 0;
     m_tileRect.bottom = tileHeightPx;
-    m_planePixelWidth = tileWidthPx * tileColumns;
-    m_planePixelHeight = tileHeightPx * tileRows;
+    m_planePixelSize.cx = tileWidthPx * tileColumns;
+    m_planePixelSize.cy = tileHeightPx * tileRows;
     m_tileRect.right = tileWidthPx;
-    m_viewportWidth = m_viewportRect.right - m_viewportRect.left + 1;
-    m_viewportHeight = m_viewportRect.bottom - m_viewportRect.top + 1;
-    m_viewHalfWidth = m_viewportWidth / 2;
-    m_viewHalfHeight = m_viewportHeight / 2;
+    m_viewportSize.cx = m_viewportRect.right - m_viewportRect.left + 1;
+    m_viewportSize.cy = m_viewportRect.bottom - m_viewportRect.top + 1;
+    m_viewHalfSize.cx = m_viewportSize.cx / 2;
+    m_viewHalfSize.cy = m_viewportSize.cy / 2;
     i32 v;
-    TILE_SHIFT_INTO(m_shiftX, v, tileWidthPx);
-    TILE_SHIFT_INTO(m_shiftY, v, tileWidthPx);
+    TILE_SHIFT_INTO(m_tileShift.m_x, v, tileWidthPx);
+    TILE_SHIFT_INTO(m_tileShift.m_y, v, tileWidthPx);
     if (planeName != NULL) {
         strcpy(m_planeName, planeName);
     }
     APPLY_WORKER_HOST_BOUNDS(viewportRect);
-    m_scrollScaleX = static_cast<float>(m_movementXPercent) * 0.01f;
-    m_scrollScaleY = static_cast<float>(m_movementYPercent) * 0.01f;
-    m_tileHandles = new i32[m_tileColumns * m_tileRows];
-    m_tileRowOffsets = new i32[m_tileRows];
-    for (i32 i = 0; i < m_tileRows; i++) {
-        m_tileRowOffsets[i] = i * m_tileColumns;
+    m_scrollScale.m_x = static_cast<float>(m_movementPercent.m_x) * 0.01f;
+    m_scrollScale.m_y = static_cast<float>(m_movementPercent.m_y) * 0.01f;
+    m_tileHandles = new i32[m_tileGridSize.cx * m_tileGridSize.cy];
+    m_tileRowOffsets = new i32[m_tileGridSize.cy];
+    for (i32 i = 0; i < m_tileGridSize.cy; i++) {
+        m_tileRowOffsets[i] = i * m_tileGridSize.cx;
     }
     SET_SCROLL_POSITION_ZERO(this);
     return 1;
@@ -241,83 +247,82 @@ void CDDrawWorkerHost::UpdatePlaneViewRect() {
     wrapX = HAS(flags, WWD_PLANE_FLAG_WRAP_X);
 
     if (wrapX) {
-        if (m_scrollCenterX < 0.0f) {
+        if (m_scrollCenter.m_x < 0.0f) {
             do {
-                m_scrollCenterX += static_cast<float>(m_planePixelWidth);
-            } while (m_scrollCenterX < 0.0f);
+                m_scrollCenter.m_x += static_cast<float>(m_planePixelSize.cx);
+            } while (m_scrollCenter.m_x < 0.0f);
         }
-        if (m_scrollCenterX >= static_cast<float>(m_planePixelWidth)) {
-            float t = m_scrollCenterX;
+        if (m_scrollCenter.m_x >= static_cast<float>(m_planePixelSize.cx)) {
+            float t = m_scrollCenter.m_x;
             do {
-                t -= static_cast<float>(m_planePixelWidth);
-            } while (t >= static_cast<float>(m_planePixelWidth));
-            m_scrollCenterX = t;
+                t -= static_cast<float>(m_planePixelSize.cx);
+            } while (t >= static_cast<float>(m_planePixelSize.cx));
+            m_scrollCenter.m_x = t;
         }
     } else {
-        if (m_scrollCenterX < 0.0f) {
-            m_scrollCenterX = 0;
-        } else if (static_cast<float>(m_planePixelWidth) <= m_scrollCenterX) {
-            m_scrollCenterX = static_cast<float>((m_planePixelWidth - 1));
+        if (m_scrollCenter.m_x < 0.0f) {
+            m_scrollCenter.m_x = 0;
+        } else if (static_cast<float>(m_planePixelSize.cx) <= m_scrollCenter.m_x) {
+            m_scrollCenter.m_x = static_cast<float>((m_planePixelSize.cx - 1));
         }
     }
 
     wrapY = HAS(flags, WWD_PLANE_FLAG_WRAP_Y);
     if (wrapY) {
-        if (m_scrollCenterY < 0.0f) {
+        if (m_scrollCenter.m_y < 0.0f) {
             do {
-                m_scrollCenterY += static_cast<float>(m_planePixelHeight);
-            } while (m_scrollCenterY < 0.0f);
+                m_scrollCenter.m_y += static_cast<float>(m_planePixelSize.cy);
+            } while (m_scrollCenter.m_y < 0.0f);
         }
-        if (m_scrollCenterY >= static_cast<float>(m_planePixelHeight)) {
-            float t = m_scrollCenterY;
+        if (m_scrollCenter.m_y >= static_cast<float>(m_planePixelSize.cy)) {
+            float t = m_scrollCenter.m_y;
             do {
-                t -= static_cast<float>(m_planePixelHeight);
-            } while (t >= static_cast<float>(m_planePixelHeight));
-            m_scrollCenterY = t;
+                t -= static_cast<float>(m_planePixelSize.cy);
+            } while (t >= static_cast<float>(m_planePixelSize.cy));
+            m_scrollCenter.m_y = t;
         }
     } else {
-        if (m_scrollCenterY < 0.0f) {
-            m_scrollCenterY = 0;
-        } else if (static_cast<float>(m_planePixelHeight) <= m_scrollCenterY) {
-            m_scrollCenterY = static_cast<float>((m_planePixelHeight - 1));
+        if (m_scrollCenter.m_y < 0.0f) {
+            m_scrollCenter.m_y = 0;
+        } else if (static_cast<float>(m_planePixelSize.cy) <= m_scrollCenter.m_y) {
+            m_scrollCenter.m_y = static_cast<float>((m_planePixelSize.cy - 1));
         }
     }
 
-    m_scrollPixelX = static_cast<i32>(m_scrollCenterX);
-    i32 iy = static_cast<i32>(m_scrollCenterY);
-    m_scrollPixelY = iy;
+    m_scrollPixel = m_scrollCenter.ToCoord();
+    i32 iy = m_scrollPixel.m_y;
 
-    m_planeViewRect.left = m_scrollPixelX - m_viewHalfWidth;
+    m_planeViewRect.left = m_scrollPixel.m_x - m_viewHalfSize.cx;
     if (m_planeViewRect.left < 0) {
         if (wrapX) {
-            m_planeViewRect.left = m_planePixelWidth + m_planeViewRect.left;
+            m_planeViewRect.left = m_planePixelSize.cx + m_planeViewRect.left;
         } else {
             m_planeViewRect.left = 0;
         }
     }
 
-    i32 oy = iy - m_viewHalfHeight;
+    i32 oy = iy - m_viewHalfSize.cy;
     m_planeViewRect.top = oy;
     if (oy < 0) {
         if (wrapY) {
-            m_planeViewRect.top = m_planePixelHeight + oy;
+            m_planeViewRect.top = m_planePixelSize.cy + oy;
         } else {
             m_planeViewRect.top = 0;
         }
     }
 
-    i32 ex = m_viewportWidth + m_planeViewRect.left - 1;
-    i32 ey = m_viewportHeight + m_planeViewRect.top - 1;
-    m_planeViewRect.right = ex;
-    m_planeViewRect.bottom = ey;
-    if (ex >= m_planePixelWidth && wrapX == 0) {
-        i32 over = ex - m_planePixelWidth + 1;
-        m_planeViewRect.right = ex - over;
+    CPoint farCorner = CPoint(m_planeViewRect.left, m_planeViewRect.top)
+                       + CSize(m_viewportSize.cx - 1, m_viewportSize.cy - 1);
+    m_planeViewRect.right = farCorner.x;
+    m_planeViewRect.bottom = farCorner.y;
+    if (farCorner.x >= m_planePixelSize.cx && wrapX == 0) {
+        i32 over = farCorner.x - m_planePixelSize.cx + 1;
+        m_planeViewRect.right = farCorner.x - over;
         m_planeViewRect.left = m_planeViewRect.left - over;
     }
-    if (ey >= m_planePixelHeight && wrapY == 0) {
-        i32 over = ey - m_planePixelHeight + 1;
-        m_planeViewRect.bottom = ey - over;
+    if (farCorner.y >= m_planePixelSize.cy && wrapY == 0) {
+        i32 over = farCorner.y - m_planePixelSize.cy + 1;
+        m_planeViewRect.bottom = farCorner.y - over;
         m_planeViewRect.top = m_planeViewRect.top - over;
     }
 }
@@ -329,14 +334,14 @@ void CDDrawWorkerHost::SetViewportRect(LevelCoordRect* coords) {
 
 RVA(0x00161f00, 0x75)
 void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
-    m_tileWidthPx = tileWidthPx;
-    m_tileHeightPx = tileHeightPx;
+    m_tilePixelSize.cx = tileWidthPx;
+    m_tilePixelSize.cy = tileHeightPx;
     SET_RECT_COMPONENTS(m_tileRect, 0, 0, tileWidthPx, tileHeightPx);
-    m_planePixelWidth = m_tileColumns * tileWidthPx;
-    m_planePixelHeight = m_tileRows * tileHeightPx;
+    m_planePixelSize.cx = m_tileGridSize.cx * tileWidthPx;
+    m_planePixelSize.cy = m_tileGridSize.cy * tileHeightPx;
     i32 v;
-    TILE_SHIFT_INTO(m_shiftX, v, tileWidthPx);
-    TILE_SHIFT_INTO(m_shiftY, v, tileWidthPx);
+    TILE_SHIFT_INTO(m_tileShift.m_x, v, tileWidthPx);
+    TILE_SHIFT_INTO(m_tileShift.m_y, v, tileWidthPx);
 }
 
 // @dead-code
@@ -359,23 +364,22 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     }
 }
 
-// @early-stop
 RVA(0x00162010, 0x8bd)
 void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
     }
-    i32 colL = m_planeViewRect.left >> m_shiftX;
-    i32 leftW = ((colL + 1) << m_shiftX) - m_planeViewRect.left;
-    i32 rowT = m_planeViewRect.top >> m_shiftY;
-    i32 topH = ((rowT + 1) << m_shiftY) - m_planeViewRect.top;
-    i32 colR = m_planeViewRect.right >> m_shiftX;
-    i32 rightW = m_planeViewRect.right - (colR << m_shiftX) + 1;
-    i32 rowB = m_planeViewRect.bottom >> m_shiftY;
-    i32 botH = m_planeViewRect.bottom - (rowB << m_shiftY) + 1;
-    RECT topSrc = MakeRect(0, m_tileHeightPx - topH, m_tileWidthPx, m_tileHeightPx);
-    RECT leftSrc = MakeRect(m_tileWidthPx - leftW, 0, m_tileWidthPx, m_tileHeightPx);
-    RECT rightSrc = {0, 0, rightW, m_tileHeightPx};
+    i32 colL = m_planeViewRect.left >> m_tileShift.m_x;
+    i32 leftW = ((colL + 1) << m_tileShift.m_x) - m_planeViewRect.left;
+    i32 rowT = m_planeViewRect.top >> m_tileShift.m_y;
+    i32 topH = ((rowT + 1) << m_tileShift.m_y) - m_planeViewRect.top;
+    i32 colR = m_planeViewRect.right >> m_tileShift.m_x;
+    i32 rightW = m_planeViewRect.right - (colR << m_tileShift.m_x) + 1;
+    i32 rowB = m_planeViewRect.bottom >> m_tileShift.m_y;
+    i32 botH = m_planeViewRect.bottom - (rowB << m_tileShift.m_y) + 1;
+    RECT topSrc = MakeRect(0, m_tilePixelSize.cy - topH, m_tilePixelSize.cx, m_tilePixelSize.cy);
+    RECT leftSrc = MakeRect(m_tilePixelSize.cx - leftW, 0, m_tilePixelSize.cx, m_tilePixelSize.cy);
+    RECT rightSrc = {0, 0, rightW, m_tilePixelSize.cy};
     RECT corner;
     RECT dr;
     CDDSurface* surf = ctx->m_surface;
@@ -388,32 +392,32 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     rowBase = m_tileRowOffsets[rowT];
     y = m_viewportRect.top;
     x = m_viewportRect.left;
-    corner.left = m_tileWidthPx - leftW;
-    corner.top = m_tileHeightPx - topH;
-    corner.right = m_tileWidthPx;
-    corner.bottom = m_tileHeightPx;
+    corner.left = m_tilePixelSize.cx - leftW;
+    corner.top = m_tilePixelSize.cy - topH;
+    corner.right = m_tilePixelSize.cx;
+    corner.bottom = m_tilePixelSize.cy;
     DRAW_CELL(m_tileHandles[rowBase + colL], x, y, &corner);
     x += leftW;
     col = colL + 1;
-    if (col >= m_tileColumns) {
+    if (col >= m_tileGridSize.cx) {
         col = 0;
     }
     for (i = nCols; i > 0; i--) {
         DRAW_CELL(m_tileHandles[rowBase + col], x, y, &topSrc);
-        x += m_tileWidthPx;
-        if (++col >= m_tileColumns) {
+        x += m_tilePixelSize.cx;
+        if (++col >= m_tileGridSize.cx) {
             col = 0;
         }
     }
     corner.left = 0;
-    corner.top = m_tileHeightPx - topH;
+    corner.top = m_tilePixelSize.cy - topH;
     corner.right = rightW;
-    corner.bottom = m_tileHeightPx;
+    corner.bottom = m_tilePixelSize.cy;
     DRAW_CELL(m_tileHandles[rowBase + col], x, y, &corner);
 
     y += topH;
     row = rowT + 1;
-    if (row >= m_tileRows) {
+    if (row >= m_tileGridSize.cy) {
         row = 0;
     }
     for (i32 r = nRows; r > 0; r--) {
@@ -422,40 +426,40 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
         DRAW_CELL(m_tileHandles[rowBase + colL], x, y, &leftSrc);
         x += leftW;
         col = colL + 1;
-        if (col >= m_tileColumns) {
+        if (col >= m_tileGridSize.cx) {
             col = 0;
         }
         for (i = nCols; i > 0; i--) {
             DRAW_CELL(m_tileHandles[rowBase + col], x, y, &m_tileRect);
-            x += m_tileWidthPx;
-            if (++col >= m_tileColumns) {
+            x += m_tilePixelSize.cx;
+            if (++col >= m_tileGridSize.cx) {
                 col = 0;
             }
         }
         DRAW_CELL(m_tileHandles[rowBase + col], x, y, &rightSrc);
-        y += m_tileHeightPx;
-        if (++row >= m_tileRows) {
+        y += m_tilePixelSize.cy;
+        if (++row >= m_tileGridSize.cy) {
             row = 0;
         }
     }
 
-    RECT botSrc = {0, 0, m_tileWidthPx, botH};
+    RECT botSrc = {0, 0, m_tilePixelSize.cx, botH};
     x = m_viewportRect.left;
     rowBase = m_tileRowOffsets[row];
-    corner.left = m_tileWidthPx - leftW;
+    corner.left = m_tilePixelSize.cx - leftW;
     corner.top = 0;
-    corner.right = m_tileWidthPx;
+    corner.right = m_tilePixelSize.cx;
     corner.bottom = botH;
     DRAW_CELL(m_tileHandles[rowBase + colL], x, y, &corner);
     x += leftW;
     col = colL + 1;
-    if (col >= m_tileColumns) {
+    if (col >= m_tileGridSize.cx) {
         col = 0;
     }
     for (i = nCols; i > 0; i--) {
         DRAW_CELL(m_tileHandles[rowBase + col], x, y, &botSrc);
-        x += m_tileWidthPx;
-        if (++col >= m_tileColumns) {
+        x += m_tilePixelSize.cx;
+        if (++col >= m_tileGridSize.cx) {
             col = 0;
         }
     }
@@ -465,7 +469,6 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     corner.bottom = botH;
     DRAW_CELL(m_tileHandles[rowBase + col], x, y, &corner);
 }
-#undef DRAW_CELL
 
 RVA(0x001628d0, 0x12)
 i32 CDDrawWorkerHost::Prune() {
@@ -487,8 +490,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         m_spatialMgr = NULL;
     }
 
-    RECT rc;
-    SET_RECT_COMPONENTS(rc, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
+    CRect rc = MakeRect(0, 0, m_planePixelSize.cx - 1, m_planePixelSize.cy - 1);
 
     CDDrawSurfaceMgr* reg = OwnerMgr();
     CDDrawChildGroup* activeGroup = reg->m_childGroup;
@@ -500,42 +502,24 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         return 0;
     }
 
-    i32 defaultCellSize[2] = {
-        level->m_defaultActiveGridCellSize[0],
-        level->m_defaultActiveGridCellSize[1]
-    };
-    i32 largeCellSize[2] = {
-        level->m_largeActiveGridCellSize[0],
-        level->m_largeActiveGridCellSize[1]
-    };
-    i32 smallCellSize[2] = {
-        level->m_smallActiveGridCellSize[0],
-        level->m_smallActiveGridCellSize[1]
-    };
-    i32 defaultRegionSize[2] = {
-        level->m_defaultActiveRegionSize.m_w,
-        level->m_defaultActiveRegionSize.m_h
-    };
-    i32 largeRegionSize[2] = {
-        level->m_largeActiveRegionSize.m_w,
-        level->m_largeActiveRegionSize.m_h
-    };
-    i32 smallRegionSize[2] = {
-        level->m_smallActiveRegionSize.m_w,
-        level->m_smallActiveRegionSize.m_h
-    };
+    LevelDims defaultCellSize = level->m_defaultActiveGridCellSize;
+    LevelDims largeCellSize = level->m_largeActiveGridCellSize;
+    LevelDims smallCellSize = level->m_smallActiveGridCellSize;
+    LevelDims defaultRegionSize = level->m_defaultActiveRegionSize;
+    LevelDims largeRegionSize = level->m_largeActiveRegionSize;
+    LevelDims smallRegionSize = level->m_smallActiveRegionSize;
 
     CWwdSpatialMgr* newSpatialMgr = new CWwdSpatialMgr;
     m_spatialMgr = newSpatialMgr;
     if (newSpatialMgr->Init(
             activeGroup,
             &rc,
-            defaultCellSize,
-            largeCellSize,
-            smallCellSize,
-            defaultRegionSize,
-            largeRegionSize,
-            smallRegionSize
+            &defaultCellSize.m_w,
+            &largeCellSize.m_w,
+            &smallCellSize.m_w,
+            &defaultRegionSize.m_w,
+            &largeRegionSize.m_w,
+            &smallRegionSize.m_w
         )
         == 0) {
         delete m_spatialMgr;
@@ -604,7 +588,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     ReadPlaneString(buf, strCursor, soundLen);
     CString sound(buf);
 
-    if (x < 0 || x >= m_planePixelWidth || y < 0 || y >= m_planePixelHeight) {
+    if (x < 0 || x >= m_planePixelSize.cx || y < 0 || y >= m_planePixelSize.cy) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
         return used;
@@ -698,14 +682,14 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     anim->m_minY = *p++;
     anim->m_maxX = *p++;
     anim->m_maxY = *p++;
-    obj->m_speedX = *p++;
-    obj->m_speedY = *p++;
-    anim->m_tweakX = *p++;
-    anim->m_tweakY = *p++;
+    obj->m_speed.m_x = *p++;
+    obj->m_speed.m_y = *p++;
+    anim->m_tweak.m_x = *p++;
+    anim->m_tweak.m_y = *p++;
     anim->m_counter = *p++;
     anim->m_speed = *p++;
-    anim->m_width = *p++;
-    anim->m_height = *p++;
+    anim->m_size.cx = *p++;
+    anim->m_size.cy = *p++;
     obj->m_direction = *p++;
     obj->m_faceDirection = *p++;
     anim->m_timeDelay = *p++;
@@ -715,11 +699,11 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     u32 w = static_cast<u32>(*p++);
     if (w > 0) {
-        obj->m_strideX = static_cast<i32>(w);
+        obj->m_stride.m_x = static_cast<i32>(w);
     }
     u32 h = static_cast<u32>(*p++);
     if (h > 0) {
-        obj->m_strideY = static_cast<i32>(h);
+        obj->m_stride.m_y = static_cast<i32>(h);
     }
 
     m_spatialMgr->ParkObject(static_cast<CWwdGameObject*>(obj));
@@ -738,13 +722,13 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
 
     i32 x, y;
     if (flags & IDX(WWD_PLANE_FLAG_WRAP_X)) {
-        x = static_cast<i32>(m_scrollCenterX);
+        x = static_cast<i32>(m_scrollCenter.m_x);
     } else {
         i32 right = m_planeViewRect.right;
         x = (right + m_planeViewRect.left) / 2 + 1;
     }
     if (flags & IDX(WWD_PLANE_FLAG_WRAP_Y)) {
-        y = static_cast<i32>(m_scrollCenterY);
+        y = static_cast<i32>(m_scrollCenter.m_y);
     } else {
         i32 bottom = m_planeViewRect.bottom;
         y = (bottom + m_planeViewRect.top) / 2 + 1;
@@ -763,13 +747,13 @@ i32 CDDrawWorkerHost::DeactivateDistantObjects() {
 
     i32 x, y;
     if (flags & IDX(WWD_PLANE_FLAG_WRAP_X)) {
-        x = static_cast<i32>(m_scrollCenterX);
+        x = static_cast<i32>(m_scrollCenter.m_x);
     } else {
         i32 right = m_planeViewRect.right;
         x = (right + m_planeViewRect.left) / 2 + 1;
     }
     if (flags & IDX(WWD_PLANE_FLAG_WRAP_Y)) {
-        y = static_cast<i32>(m_scrollCenterY);
+        y = static_cast<i32>(m_scrollCenter.m_y);
     } else {
         i32 bottom = m_planeViewRect.bottom;
         y = (bottom + m_planeViewRect.top) / 2 + 1;
@@ -817,18 +801,18 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
 
     CWwdSpatialMgr* spatialMgr = m_spatialMgr;
     SET_RECT_COMPONENTS(spatialMgr->m_defaultRegionRect, 0, 0, defaultWidth - 1, defaultHeight - 1);
-    spatialMgr->m_defaultRegionHalfWidth = defaultWidth / 2;
-    spatialMgr->m_defaultRegionHalfHeight = defaultHeight / 2;
+    spatialMgr->m_defaultRegionHalfSize.cx = defaultWidth / 2;
+    spatialMgr->m_defaultRegionHalfSize.cy = defaultHeight / 2;
 
     spatialMgr = m_spatialMgr;
     SET_RECT_COMPONENTS(spatialMgr->m_largeRegionRect, 0, 0, largeSize.m_w - 1, largeSize.m_h - 1);
-    spatialMgr->m_largeRegionHalfWidth = largeSize.m_w / 2;
-    spatialMgr->m_largeRegionHalfHeight = largeSize.m_h / 2;
+    spatialMgr->m_largeRegionHalfSize.cx = largeSize.m_w / 2;
+    spatialMgr->m_largeRegionHalfSize.cy = largeSize.m_h / 2;
 
     spatialMgr = m_spatialMgr;
     SET_RECT_COMPONENTS(spatialMgr->m_smallRegionRect, 0, 0, smallSize.m_w - 1, smallSize.m_h - 1);
-    spatialMgr->m_smallRegionHalfWidth = smallSize.m_w / 2;
-    spatialMgr->m_smallRegionHalfHeight = smallSize.m_h / 2;
+    spatialMgr->m_smallRegionHalfSize.cx = smallSize.m_w / 2;
+    spatialMgr->m_smallRegionHalfSize.cy = smallSize.m_h / 2;
 
     spatialMgr = m_spatialMgr;
     spatialMgr->m_activeCenter.m_x = -22222;
@@ -844,8 +828,8 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
 
     char msg[0x80];
     i32 result = 1;
-    for (i32 row = 0; row < m_tileRows; row++) {
-        for (i32 col = 0; col < m_tileColumns; col++) {
+    for (i32 row = 0; row < m_tileGridSize.cy; row++) {
+        for (i32 col = 0; col < m_tileGridSize.cx; col++) {
             i32 handle = m_tileHandles[m_tileRowOffsets[row] + col];
             if (handle == s_tileClear || static_cast<u32>(handle) == UNINIT_FILL) {
                 continue;
@@ -960,18 +944,18 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
         return 0;
     }
 
-    s->Write(&m_scrollCenterX, sizeof(m_scrollCenterX));
-    s->Write(&m_scrollCenterY, sizeof(m_scrollCenterY));
-    s->Write(&m_scrollScaleX, sizeof(m_scrollScaleX));
-    s->Write(&m_scrollScaleY, sizeof(m_scrollScaleY));
+    s->Write(&m_scrollCenter.m_x, sizeof(m_scrollCenter.m_x));
+    s->Write(&m_scrollCenter.m_y, sizeof(m_scrollCenter.m_y));
+    s->Write(&m_scrollScale.m_x, sizeof(m_scrollScale.m_x));
+    s->Write(&m_scrollScale.m_y, sizeof(m_scrollScale.m_y));
     s->Write(&m_planeViewRect.left, sizeof(m_planeViewRect));
     s->Write(&m_zCoord, sizeof(m_zCoord));
-    s->Write(&m_scrollPixelX, sizeof(m_scrollPixelX));
-    s->Write(&m_scrollPixelY, sizeof(m_scrollPixelY));
-    s->Write(&m_movementXPercent, sizeof(m_movementXPercent));
-    s->Write(&m_movementYPercent, sizeof(m_movementYPercent));
+    s->Write(&m_scrollPixel.m_x, sizeof(m_scrollPixel.m_x));
+    s->Write(&m_scrollPixel.m_y, sizeof(m_scrollPixel.m_y));
+    s->Write(&m_movementPercent.m_x, sizeof(m_movementPercent.m_x));
+    s->Write(&m_movementPercent.m_y, sizeof(m_movementPercent.m_y));
 
-    i32 gridSize = m_tileColumns * m_tileRows * 4;
+    i32 gridSize = m_tileGridSize.cx * m_tileGridSize.cy * 4;
     s->Write(&gridSize, sizeof(gridSize));
     s->Write(m_tileHandles, gridSize);
 
@@ -988,20 +972,20 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
         return 0;
     }
 
-    s->Read(&m_scrollCenterX, sizeof(m_scrollCenterX));
-    s->Read(&m_scrollCenterY, sizeof(m_scrollCenterY));
-    s->Read(&m_scrollScaleX, sizeof(m_scrollScaleX));
-    s->Read(&m_scrollScaleY, sizeof(m_scrollScaleY));
+    s->Read(&m_scrollCenter.m_x, sizeof(m_scrollCenter.m_x));
+    s->Read(&m_scrollCenter.m_y, sizeof(m_scrollCenter.m_y));
+    s->Read(&m_scrollScale.m_x, sizeof(m_scrollScale.m_x));
+    s->Read(&m_scrollScale.m_y, sizeof(m_scrollScale.m_y));
     s->Read(&m_planeViewRect.left, sizeof(m_planeViewRect));
     s->Read(&m_zCoord, sizeof(m_zCoord));
-    s->Read(&m_scrollPixelX, sizeof(m_scrollPixelX));
-    s->Read(&m_scrollPixelY, sizeof(m_scrollPixelY));
-    s->Read(&m_movementXPercent, sizeof(m_movementXPercent));
-    s->Read(&m_movementYPercent, sizeof(m_movementYPercent));
+    s->Read(&m_scrollPixel.m_x, sizeof(m_scrollPixel.m_x));
+    s->Read(&m_scrollPixel.m_y, sizeof(m_scrollPixel.m_y));
+    s->Read(&m_movementPercent.m_x, sizeof(m_movementPercent.m_x));
+    s->Read(&m_movementPercent.m_y, sizeof(m_movementPercent.m_y));
 
     i32 gridSize = 0;
     s->Read(&gridSize, sizeof(gridSize));
-    if (gridSize != m_tileRows * m_tileColumns * 4) {
+    if (gridSize != m_tileGridSize.cy * m_tileGridSize.cx * 4) {
         return 0;
     }
     s->Read(m_tileHandles, gridSize);

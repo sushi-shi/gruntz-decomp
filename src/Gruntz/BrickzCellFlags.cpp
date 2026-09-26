@@ -239,8 +239,8 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
                 CGrunt* cell = *colPtr;
                 if (cell && cell->m_entranceCommitted != false
                     && cell->m_gruntKind != GRUNT_GHOST) {
-                    i32 dx = (cell->m_object->m_screenX >> TILE_SHIFT_PX) - tileX;
-                    i32 dy = (cell->m_object->m_screenY >> TILE_SHIFT_PX) - tileY;
+                    i32 dx = (cell->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX) - tileX;
+                    i32 dy = (cell->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX) - tileY;
                     i32 dist = SquaredDistance(dx, dy);
                     if (dist < bestDist) {
                         best = cell;

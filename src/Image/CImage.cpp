@@ -15,6 +15,7 @@
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/State.h>
 #include <Image/ImageClipMacros.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
@@ -61,11 +62,9 @@ i32 CImage::Create(char* path, i32 keyed) {
 
     m_width = item->m_apiDesc.dwWidth;
     m_height = item->m_apiDesc.dwHeight;
-    m_anchorX = m_width >> 1;
-    m_anchorY = m_height >> 1;
+    SET_POINT_COMPONENTS(m_anchor, m_width >> 1, m_height >> 1);
     SetBltFastFlags(item);
-    m_originX = 0;
-    m_originY = 0;
+    SET_POINT_COMPONENTS(m_origin, 0, 0);
     return 1;
 }
 
@@ -107,11 +106,9 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     if (mode == FMT_PID || mode == FMT_RID) {
         i32 imageOffsetX = desc->m_offsetX;
         i32 imageOffsetY = desc->m_offsetY;
-        m_originX = imageOffsetX;
-        m_originY = imageOffsetY;
+        SET_POINT_COMPONENTS(m_origin, imageOffsetX, imageOffsetY);
     } else {
-        m_originX = 0;
-        m_originY = 0;
+        SET_POINT_COMPONENTS(m_origin, 0, 0);
     }
     i32 surfaceCaps = 0;
     if (g_resourceInstallActive != false) {
@@ -128,8 +125,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     m_width = w;
     i32 h = item->m_apiDesc.dwHeight;
     m_height = h;
-    m_anchorX = w >> 1;
-    m_anchorY = h >> 1;
+    SET_POINT_COMPONENTS(m_anchor, w >> 1, h >> 1);
     SetBltFastFlags(item);
     return 1;
 }
@@ -151,11 +147,9 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     m_width = w;
     i32 h = item->m_apiDesc.dwHeight;
     m_height = h;
-    m_anchorX = w >> 1;
-    m_anchorY = h >> 1;
+    SET_POINT_COMPONENTS(m_anchor, w >> 1, h >> 1);
     SetBltFastFlags(item);
-    m_originX = 0;
-    m_originY = 0;
+    SET_POINT_COMPONENTS(m_origin, 0, 0);
     return 1;
 }
 
@@ -176,10 +170,8 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     i32 h = m_owned->m_height;
     m_height = h;
     m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-    m_anchorX = w >> 1;
-    m_anchorY = h >> 1;
-    m_originX = desc->m_offsetX;
-    m_originY = desc->m_offsetY;
+    SET_POINT_COMPONENTS(m_anchor, w >> 1, h >> 1);
+    SET_POINT_COMPONENTS(m_origin, desc->m_offsetX, desc->m_offsetY);
     return 1;
 }
 
@@ -231,11 +223,9 @@ i32 CImage::SetOrigin(PidHeader* desc, FileImageFormat mode) {
     if (mode == FMT_PID || mode == FMT_RID) {
         i32 oy = desc->m_offsetY;
         i32 ox = desc->m_offsetX;
-        m_originX = ox;
-        m_originY = oy;
+        SET_POINT_COMPONENTS(m_origin, ox, oy);
     } else {
-        m_originX = 0;
-        m_originY = 0;
+        SET_POINT_COMPONENTS(m_origin, 0, 0);
     }
     return 1;
 }
@@ -333,8 +323,18 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         return;
     }
 
-    LONG x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
-    LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
+    LONG x = IMAGE_POSITION_COMPONENT(
+        m_origin.x,
+        m_anchor.x,
+        info->m_plotOffset.m_x,
+        info->m_screenPosition.m_x
+    );
+    LONG y = IMAGE_POSITION_COMPONENT(
+        m_origin.y,
+        m_anchor.y,
+        info->m_plotOffset.m_y,
+        info->m_screenPosition.m_y
+    );
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     i32 dleft = x;
     i32 dtop = y;
@@ -395,12 +395,12 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.right = s.left + w;
     s.bottom = s.top + h;
     dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_bltFastFlags);
-    info->m_dirty.m_lastX = dleft;
+    info->m_dirty.m_lastPosition.x = dleft;
     info->m_dirty.m_rect.left = dleft;
-    info->m_dirty.m_lastY = dtop;
-    info->m_dirty.m_w = w;
+    info->m_dirty.m_lastPosition.y = dtop;
+    info->m_dirty.m_size.cx = w;
     info->m_dirty.m_rect.top = dtop;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_size.cy = h;
     info->m_dirty.m_armed = 0;
     info->m_dirty.m_rect.right = dright;
     info->m_dirty.m_rect.bottom = dbottom;
@@ -438,8 +438,18 @@ void CImage::RenderFrameClipped(
 // @early-stop
 RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
-    LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
+    LONG x = IMAGE_MIRROR_COMPONENT(
+        info->m_screenPosition.m_x,
+        m_origin.x,
+        info->m_plotOffset.m_x,
+        m_anchor.x
+    );
+    LONG y = IMAGE_MIRROR_COMPONENT(
+        info->m_screenPosition.m_y,
+        m_origin.y,
+        info->m_plotOffset.m_y,
+        m_anchor.y
+    );
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
@@ -459,8 +469,13 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 // @early-stop
 RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
-    LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
+    LONG x = info->m_screenPosition.m_x - info->m_plotOffset.m_x - m_anchor.x - m_origin.x;
+    LONG y = IMAGE_POSITION_COMPONENT(
+        m_origin.y,
+        m_anchor.y,
+        info->m_plotOffset.m_y,
+        info->m_screenPosition.m_y
+    );
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
@@ -477,8 +492,8 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 // @early-stop
 RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
-    LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
+    LONG x = info->m_plotOffset.m_x - m_anchor.x + m_origin.x + info->m_screenPosition.m_x;
+    LONG y = info->m_screenPosition.m_y - m_origin.y - m_anchor.y - info->m_plotOffset.m_y;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
@@ -495,8 +510,8 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
 // @early-stop
 RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
-    LONG y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
+    LONG x = info->m_screenPosition.m_x - m_anchor.x + m_origin.x + info->m_plotOffset.m_x;
+    LONG y = info->m_screenPosition.m_y - m_anchor.y + m_origin.y + info->m_plotOffset.m_y;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
@@ -509,18 +524,18 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->m_light = info->m_fillFraction;
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_lastPosition.x = d.left;
+    info->m_dirty.m_lastPosition.y = d.top;
     info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_size.cx = w;
+    info->m_dirty.m_size.cy = h;
     info->m_dirty.m_armed = 0;
 }
 
 RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
-    LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
+    LONG x = info->m_screenPosition.m_x - m_origin.x - m_anchor.x - info->m_plotOffset.m_x;
+    LONG y = info->m_screenPosition.m_y - m_origin.y - m_anchor.y - info->m_plotOffset.m_y;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
@@ -538,8 +553,8 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 // @early-stop
 RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
-    LONG y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
+    LONG x = info->m_screenPosition.m_x - m_anchor.x - info->m_plotOffset.m_x - m_origin.x;
+    LONG y = m_origin.y + info->m_plotOffset.m_y + info->m_screenPosition.m_y - m_anchor.y;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
@@ -551,19 +566,24 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_lastPosition.x = d.left;
+    info->m_dirty.m_lastPosition.y = d.top;
     info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_size.cx = w;
+    info->m_dirty.m_size.cy = h;
     info->m_dirty.m_armed = 0;
 }
 
 // @early-stop
 RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
-    LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
+    LONG x = info->m_plotOffset.m_x + m_origin.x + info->m_screenPosition.m_x - m_anchor.x;
+    LONG y = IMAGE_MIRROR_COMPONENT(
+        info->m_screenPosition.m_y,
+        m_origin.y,
+        info->m_plotOffset.m_y,
+        m_anchor.y
+    );
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;

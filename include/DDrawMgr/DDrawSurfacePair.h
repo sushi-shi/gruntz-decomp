@@ -52,7 +52,14 @@ public:
     void DrawBox(RECT* rect, i32 color);
     void DrawCross(i32 x, i32 y);
 
-    void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
+    void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& position, const SIZE& size);
+
+    void BlitDirtyRect(CDDrawSurfacePair* other, const Coord& position, const SIZE& size) {
+        POINT point;
+        point.x = position.m_x;
+        point.y = position.m_y;
+        BlitDirtyRect(other, point, size);
+    }
 
     b32 m_ownsSurface;
 };

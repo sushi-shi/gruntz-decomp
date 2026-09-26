@@ -109,11 +109,11 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(
         Motion()->m_maxBounds.m_y = static_cast<double>(hi1);
     }
     m_motion.SetParams(
-        static_cast<double>(m_object->m_screenX),
-        static_cast<double>(m_object->m_screenY),
+        static_cast<double>(m_object->m_screenPosition.m_x),
+        static_cast<double>(m_object->m_screenPosition.m_y),
         0.0,
-        static_cast<double>(m_object->m_speedX),
-        static_cast<double>(m_object->m_speedY),
+        static_cast<double>(m_object->m_speed.m_x),
+        static_cast<double>(m_object->m_speed.m_y),
         0.0,
         0.0,
         0.0,
@@ -151,11 +151,11 @@ inline void CMovingLogic::InitOwner(const double& timeScale) {
         Motion()->m_maxBounds.m_y = static_cast<double>(hi1);
     }
     m_motion.SetParams(
-        static_cast<double>(m_object->m_screenX),
-        static_cast<double>(m_object->m_screenY),
+        static_cast<double>(m_object->m_screenPosition.m_x),
+        static_cast<double>(m_object->m_screenPosition.m_y),
         0.0,
-        static_cast<double>(m_object->m_speedX),
-        static_cast<double>(m_object->m_speedY),
+        static_cast<double>(m_object->m_speed.m_x),
+        static_cast<double>(m_object->m_speed.m_y),
         0.0,
         0.0,
         0.0,

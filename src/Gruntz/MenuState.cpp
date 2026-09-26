@@ -43,7 +43,7 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>

@@ -11,6 +11,7 @@
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Ints.h>
 #include <Lith/BDefs.h>
 #include <Pix16.h>
@@ -375,28 +376,23 @@ CShadeTable* CShadeTableCache::GreyTable() {
     }
 
     m_arr.Add(t);
-    if (PIXEL_FORMAT_IS_RGB555) {
-        u16* out = Pix16(t->m_data);
+    u16* out = Pix16(t->m_data);
+    if (PixelFormatIsRgb555()) {
         for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
-            u8 r = static_cast<u8>(v >> RGB555_RED_TO_4_SHIFT);
-            u8 g = static_cast<u8>((v >> RGB555_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
-            u8 b = static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
+            i32 acc = static_cast<u8>((v >> RGB555_RED_TO_4_SHIFT)) << PIXEL_NIBBLE_BITS;
+            acc = (acc + static_cast<u8>((v >> RGB555_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK))
+                  << PIXEL_NIBBLE_BITS;
             *out++ = static_cast<u16>(
-                (((static_cast<u16>(r) << PIXEL_NIBBLE_BITS) + static_cast<u16>(g))
-                 << PIXEL_NIBBLE_BITS)
-                + static_cast<u16>(b)
+                acc + static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK)
             );
         }
     } else {
-        u16* out = Pix16(t->m_data);
         for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
-            u8 r = static_cast<u8>(v >> RGB565_RED_TO_4_SHIFT);
-            u8 g = static_cast<u8>((v >> RGB565_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
-            u8 b = static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
+            i32 acc = static_cast<u8>((v >> RGB565_RED_TO_4_SHIFT)) << PIXEL_NIBBLE_BITS;
+            acc = (acc + static_cast<u8>((v >> RGB565_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK))
+                  << PIXEL_NIBBLE_BITS;
             *out++ = static_cast<u16>(
-                (((static_cast<u16>(r) << PIXEL_NIBBLE_BITS) + static_cast<u16>(g))
-                 << PIXEL_NIBBLE_BITS)
-                + static_cast<u16>(b)
+                acc + static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK)
             );
         }
     }
@@ -426,15 +422,15 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
             for (i32 ng = PIXEL_NIBBLE_VALUE_COUNT; ng != 0; ng--) {
                 i32 b = PIXEL_NIBBLE_MIDPOINT;
                 for (i32 nb = PIXEL_NIBBLE_VALUE_COUNT; nb != 0; nb--) {
-                    u8 rc = static_cast<u8>((r < PIXEL_BYTE_MASK ? r : PIXEL_BYTE_MASK));
-                    u8 gc = static_cast<u8>((g < PIXEL_BYTE_MASK ? g : PIXEL_BYTE_MASK));
-                    u8 bc = static_cast<u8>((b < PIXEL_BYTE_MASK ? b : PIXEL_BYTE_MASK));
+                    u8 rc = static_cast<u8>(Min(r, static_cast<i32>(PIXEL_BYTE_MASK)));
+                    u8 gc = static_cast<u8>(Min(g, static_cast<i32>(PIXEL_BYTE_MASK)));
+                    u8 bc = static_cast<u8>(Min(b, static_cast<i32>(PIXEL_BYTE_MASK)));
 
                     float f = static_cast<float>(v) * (scale * g_inv255) - s_negone;
 
-                    u8 rn = static_cast<u8>(min(static_cast<float>(rc) * f, g_colorChannelMax));
-                    u8 gn = static_cast<u8>(min(static_cast<float>(gc) * f, g_colorChannelMax));
-                    u8 bn = static_cast<u8>(min(static_cast<float>(bc) * f, g_colorChannelMax));
+                    u8 rn = static_cast<u8>(Min(static_cast<float>(rc) * f, g_colorChannelMax));
+                    u8 gn = static_cast<u8>(Min(static_cast<float>(gc) * f, g_colorChannelMax));
+                    u8 bn = static_cast<u8>(Min(static_cast<float>(bc) * f, g_colorChannelMax));
                     *out++ = static_cast<u16>(
                         ((static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown)))
                           << g_rUp)

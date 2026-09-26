@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/SoundDevice.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/SoundCueRegistry.h>
 
 class CAmbientSound;
@@ -87,8 +88,7 @@ public:
     CPtrList m_list;
     b32 m_enabled;
 
-    i32 m_listenerX;
-    i32 m_listenerY;
+    Coord m_listenerPosition;
 };
 
 inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {

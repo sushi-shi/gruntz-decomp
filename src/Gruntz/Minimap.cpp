@@ -23,6 +23,7 @@
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteTeamColorVariant.h>
 #include <Gruntz/TriggerMgr.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
@@ -83,8 +84,7 @@ i32 CMinimap::AllocSurface() {
     CGruntzMapMgr* mapMgr = m_mapMgr;
     CDDrawSurfaceMgr* world = m_world;
 
-    SIZE
-    size = mapMgr->GetGridSize();
+    CSize size(mapMgr->GetGridSize());
     m_surface = world->m_deviceManager->CreateOffscreenSurface(size.cx, size.cy, BPP_UNSET, 0, -1);
     if (m_surface == NULL) {
         return 0;
@@ -267,7 +267,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000a3a20, 0xe2)
 void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
-    i32 width = rect->right - rect->left + 1;
+    i32 width = RECT_WIDTH(*rect) + 1;
 
     u16* topPixels = Pix16(pixels + m_surface->PixelOffset(rect->left, rect->top));
     for (i32 topX = 0; topX < width; topX++) {
@@ -279,7 +279,7 @@ void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
         bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
-    i32 height = rect->bottom - rect->top + 1;
+    i32 height = RECT_HEIGHT(*rect) + 1;
     i32 leftOffset = m_surface->PixelOffset(rect->left, rect->top);
     i32 rightOffset = m_surface->PixelOffset(rect->right, rect->top);
     i32 rowStride = m_surface->m_apiDesc.lPitch;
@@ -305,7 +305,7 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
     if (pixels == NULL) {
         return;
     }
-    i32 width = rect->right - rect->left + 1;
+    i32 width = RECT_WIDTH(*rect) + 1;
 
     u16* topPixels = Pix16(
         pixels + rect->top * surface->m_apiDesc.lPitch + rect->left * surface->m_bytesPerPixel
@@ -321,7 +321,7 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
         bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
-    i32 height = rect->bottom - rect->top + 1;
+    i32 height = RECT_HEIGHT(*rect) + 1;
     i32 leftOffset = rect->left * surface->m_bytesPerPixel + rect->top * surface->m_apiDesc.lPitch;
     i32 rightOffset =
         rect->right * surface->m_bytesPerPixel + rect->top * surface->m_apiDesc.lPitch;

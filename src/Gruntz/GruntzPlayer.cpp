@@ -120,8 +120,7 @@ GruntzPlayer::GruntzPlayer() {
     m_name = "";
     m_color = TINT_ORANGE;
     m_difficulty = BZDIFF_EASY;
-    m_focusX = 0;
-    m_focusY = 0;
+    m_focus.Set(0, 0);
     m_maxGruntz = 0xf;
     m_doneFlag = false;
     m_optionsPresenceCounted = false;
@@ -139,8 +138,7 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
 
     m_color = static_cast<ColorTint>(index);
     m_difficulty = BZDIFF_EASY;
-    m_focusX = 0;
-    m_focusY = 0;
+    SET_VECTOR2_COMPONENTS(m_focus, 0, 0);
     m_maxGruntz = 0xf;
     m_doneFlag = false;
     m_optionsPresenceCounted = false;
@@ -246,8 +244,8 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
             g_serialCounter++;
             ar->Read(tmp, SERIAL_NAME_LEN);
             m_name = tmp;
-            ar->Read(&m_focusX, sizeof(m_focusX));
-            ar->Read(&m_focusY, sizeof(m_focusY));
+            ar->Read(&m_focus.m_x, sizeof(m_focus.m_x));
+            ar->Read(&m_focus.m_y, sizeof(m_focus.m_y));
             ar->Read(&m_maxGruntz, sizeof(m_maxGruntz));
         }
     } else {
@@ -266,8 +264,8 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
         memset(tmp, 0, sizeof(tmp));
         strcpy(tmp, static_cast<const char*>(m_name));
         ar->Write(tmp, SERIAL_NAME_LEN);
-        ar->Write(&m_focusX, sizeof(m_focusX));
-        ar->Write(&m_focusY, sizeof(m_focusY));
+        ar->Write(&m_focus.m_x, sizeof(m_focus.m_x));
+        ar->Write(&m_focus.m_y, sizeof(m_focus.m_y));
         ar->Write(&m_maxGruntz, sizeof(m_maxGruntz));
     }
     return (static_cast<CBattlezMapConfig*>(&m_battlezConfig))

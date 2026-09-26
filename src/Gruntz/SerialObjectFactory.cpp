@@ -372,7 +372,7 @@ RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
 
 RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
 CMotionState::CMotionState() {
-    InitBounds();
+    INITIALIZE_MOTION_BOUNDS(*this);
 }
 
 RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ)

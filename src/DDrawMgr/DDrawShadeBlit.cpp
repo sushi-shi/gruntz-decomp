@@ -12,6 +12,7 @@
 #include <Enums.h>
 #include <Ints.h>
 #include <Io/FileStream.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/RezMgr.h>
@@ -439,7 +440,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     i32 mode = src->m_bytesPerPixel;
     m_dstBpp = static_cast<u8>(mode);
     if (static_cast<u8>(mode) == PIXEL16_BYTES_PER_PIXEL) {
-        if (PIXEL_FORMAT_IS_RGB555) {
+        if (PixelFormatIsRgb555()) {
             m_blendVariant = true;
         } else {
             m_blendVariant = false;

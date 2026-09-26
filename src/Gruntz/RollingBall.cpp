@@ -13,6 +13,7 @@
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CardinalDir.h>
+#include <Gruntz/CardinalDirectionOffset.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -30,7 +31,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -61,9 +61,12 @@ CRollingBall::CRollingBall(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
-    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_subX, m_subY)
+    Coord snappedPosition = m_object->ScreenPos();
+    SnapTileCenter(&snappedPosition);
+    m_object->SetScreenPos(snappedPosition);
+    m_subPosition.Init(snappedPosition);
     CWwdSpriteObject* snapped = m_object;
-    SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_ROLLING_BALL_BASE + snapY)
+    SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_ROLLING_BALL_BASE + snappedPosition.m_y);
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
         CString name;
@@ -71,20 +74,16 @@ CRollingBall::CRollingBall(CGameObject* obj)
         const char* s = name;
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
-            m_stepDirX = 0;
-            m_stepDirY = -1;
+            m_stepDirection.Set(0, -1);
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
             m_object->m_direction = IDX(CARDINAL_EAST);
-            m_stepDirX = 1;
-            m_stepDirY = 0;
+            m_stepDirection.Set(1, 0);
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_SOUTH);
-            m_stepDirX = 0;
-            m_stepDirY = 1;
+            m_stepDirection.Set(0, 1);
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
             m_object->m_direction = IDX(CARDINAL_WEST);
-            m_stepDirX = -1;
-            m_stepDirY = 0;
+            m_stepDirection.Set(-1, 0);
         }
     }
 
@@ -98,7 +97,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
         time += 1000;
     }
     m_explodeTiming.Start(m_object->m_points);
-    m_target.Set(snapX, snapY);
+    m_target = snappedPosition;
     m_explodeLatch = false;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<u32>(time));
@@ -138,10 +137,10 @@ i32 CRollingBall::Update() {
             SwitchAnimationByName("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
             CWwdSpriteObject* lg = m_object;
-            i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
-            i32 cy = lg->m_screenY >> TILE_SHIFT_PX;
+            i32 cx = lg->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            i32 cy = lg->m_screenPosition.m_y >> TILE_SHIFT_PX;
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
-                map->m_rowInts[cy][cx * 7] &= 0xefffffff;
+                map->m_rows[cy][cx].m_flags &= 0xefffffff;
             }
             m_explodeLatch = true;
         }
@@ -149,8 +148,8 @@ i32 CRollingBall::Update() {
 
     if (m_fallLatch == 0) {
         CWwdSpriteObject* lg = m_object;
-        i32 sx = lg->m_screenX;
-        i32 sy = lg->m_screenY;
+        i32 sx = lg->m_screenPosition.m_x;
+        i32 sy = lg->m_screenPosition.m_y;
         if (::PtInRect(&g_gameReg->m_viewBounds, sx, sy)) {
             g_gameReg->m_triggerMgr->m_rollingballWanted = true;
         }
@@ -158,8 +157,8 @@ i32 CRollingBall::Update() {
         i32 playerIndex;
         i32 unitIndex;
         if (g_gameReg->m_triggerMgr->FindGruntAt(
-                lg2->m_screenX,
-                lg2->m_screenY,
+                lg2->m_screenPosition.m_x,
+                lg2->m_screenPosition.m_y,
                 &lg2->m_area,
                 &playerIndex,
                 &unitIndex,
@@ -170,7 +169,7 @@ i32 CRollingBall::Update() {
     }
 
     CWwdSpriteObject* cur = m_object;
-    if (cur->m_screenX == m_target.m_x && cur->m_screenY == m_target.m_y) {
+    if (cur->m_screenPosition.m_x == m_target.m_x && cur->m_screenPosition.m_y == m_target.m_y) {
 
         g_gameReg->m_triggerMgr->WireTileSwitchLogic(NULL, m_target.m_x, m_target.m_y);
         g_gameReg->m_triggerMgr->ApplySwitch(NULL, m_target.m_x, m_target.m_y);
@@ -179,7 +178,7 @@ i32 CRollingBall::Update() {
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;
         CMapMgr* map = g_gameReg->m_tileGrid;
         if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
-            map->m_rowInts[ty][tx * 7] &= 0xefffffff;
+            map->m_rows[ty][tx].m_flags &= 0xefffffff;
         }
         CMapMgr* map2 = g_gameReg->m_tileGrid;
         i32 terrain = map2->CellFlagsAt(tx, ty);
@@ -194,7 +193,7 @@ i32 CRollingBall::Update() {
             if (tileX < 0) {
                 tileX = 0;
             } else {
-                i32 w = lvl->m_mainPlane->m_tileColumns;
+                i32 w = lvl->m_mainPlane->m_tileGridSize.cx;
                 if (tileX >= w) {
                     tileX = w - 1;
                 }
@@ -202,7 +201,7 @@ i32 CRollingBall::Update() {
             if (tileY < 0) {
                 tileY = 0;
             } else {
-                i32 h = lvl->m_mainPlane->m_tileRows;
+                i32 h = lvl->m_mainPlane->m_tileGridSize.cy;
                 if (tileY >= h) {
                     tileY = h - 1;
                 }
@@ -241,8 +240,8 @@ i32 CRollingBall::Update() {
                             fall = "LEVEL_ROLLINGBALL_SINK";
                             explosion = "LEVEL_ROLLINGBALLSINKDEATH";
                             CWwdSpriteObject* o = m_object;
-                            i32 px = o->m_screenX;
-                            i32 py = o->m_screenY;
+                            i32 px = o->m_screenPosition.m_x;
+                            i32 py = o->m_screenPosition.m_y;
                             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
                                 CreateParticlez(
                                     g_gameReg->m_world->m_childGroup,
@@ -266,12 +265,12 @@ i32 CRollingBall::Update() {
 
                     CMapMgr* board = g_gameReg->m_tileGrid;
                     CWwdSpriteObject* o2 = m_object;
-                    i32 bx = o2->m_screenX >> TILE_SHIFT_PX;
-                    i32 by = o2->m_screenY >> TILE_SHIFT_PX;
+                    i32 bx = o2->m_screenPosition.m_x >> TILE_SHIFT_PX;
+                    i32 by = o2->m_screenPosition.m_y >> TILE_SHIFT_PX;
                     i32 sink;
                     if (static_cast<u32>(bx) < board->m_width
                         && static_cast<u32>(by) < board->m_height) {
-                        sink = board->m_rowInts[by][bx * 7 + 3];
+                        sink = board->m_rows[by][bx].m_tileId;
                     } else {
                         sink = 0;
                     }
@@ -342,8 +341,8 @@ i32 CRollingBall::Update() {
                     SetImageSetByName("LEVEL_ROLLINGBALL_SINK");
                     SwitchAnimationByName("LEVEL_ROLLINGBALLSINKWATER", 0);
                     CWwdSpriteObject* o = m_object;
-                    i32 px = o->m_screenX;
-                    i32 py = o->m_screenY;
+                    i32 px = o->m_screenPosition.m_x;
+                    i32 py = o->m_screenPosition.m_y;
                     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
                         CreateParticlez(
                             g_gameReg->m_world->m_childGroup,
@@ -392,7 +391,7 @@ i32 CRollingBall::Update() {
             if (tileX2 < 0) {
                 tileX2 = 0;
             } else {
-                i32 w = lvl2->m_mainPlane->m_tileColumns;
+                i32 w = lvl2->m_mainPlane->m_tileGridSize.cx;
                 if (tileX2 >= w) {
                     tileX2 = w - 1;
                 }
@@ -400,7 +399,7 @@ i32 CRollingBall::Update() {
             if (tileY2 < 0) {
                 tileY2 = 0;
             } else {
-                i32 h = lvl2->m_mainPlane->m_tileRows;
+                i32 h = lvl2->m_mainPlane->m_tileGridSize.cy;
                 if (tileY2 >= h) {
                     tileY2 = h - 1;
                 }
@@ -438,40 +437,40 @@ i32 CRollingBall::Update() {
         }
 
         CWwdSpriteObject* dirObj2 = m_object;
-        m_subX = 0.0;
-        m_subY = 0.0;
+        m_subPosition.m_x = 0.0;
+        m_subPosition.m_y = 0.0;
         switch (static_cast<CardinalDir>(dirObj2->m_direction)) {
             case CARDINAL_NORTH:
-                m_subY = -m_moveDelta;
-                m_stepDirX = 0;
-                m_stepDirY = -1;
+                m_subPosition.m_y = -m_moveDelta;
+                m_stepDirection.m_x = 0;
+                m_stepDirection.m_y = -1;
                 m_target.Set(m_target.m_x, m_target.m_y - 0x20);
                 if (oldDir != dirObj2->m_direction) {
                     SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
                 }
                 break;
             case CARDINAL_EAST:
-                m_subX = m_moveDelta;
-                m_stepDirX = 1;
-                m_stepDirY = 0;
+                m_subPosition.m_x = m_moveDelta;
+                m_stepDirection.m_x = 1;
+                m_stepDirection.m_y = 0;
                 m_target.Set(m_target.m_x + 0x20, m_target.m_y);
                 if (oldDir != dirObj2->m_direction) {
                     SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
                 }
                 break;
             case CARDINAL_WEST:
-                m_subX = -m_moveDelta;
-                m_stepDirX = -1;
-                m_stepDirY = 0;
+                m_subPosition.m_x = -m_moveDelta;
+                m_stepDirection.m_x = -1;
+                m_stepDirection.m_y = 0;
                 m_target.Set(m_target.m_x - 0x20, m_target.m_y);
                 if (oldDir != dirObj2->m_direction) {
                     SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
                 }
                 break;
             default:
-                m_subY = m_moveDelta;
-                m_stepDirX = 0;
-                m_stepDirY = 1;
+                m_subPosition.m_y = m_moveDelta;
+                m_stepDirection.m_x = 0;
+                m_stepDirection.m_y = 1;
                 m_target.Set(m_target.m_x, m_target.m_y + 0x20);
                 if (oldDir != dirObj2->m_direction) {
                     SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
@@ -480,66 +479,66 @@ i32 CRollingBall::Update() {
         }
 
         CWwdSpriteObject* out = m_object;
-        m_subX = static_cast<double>(out->m_screenX) + m_subX;
+        m_subPosition.m_x = static_cast<double>(out->m_screenPosition.m_x) + m_subPosition.m_x;
         m_moveDelta = 0.0;
-        m_subY = static_cast<double>(out->m_screenY) + m_subY;
+        m_subPosition.m_y = static_cast<double>(out->m_screenPosition.m_y) + m_subPosition.m_y;
         CMapMgr* board2 = g_gameReg->m_tileGrid;
         i32 mtx = m_target.m_x >> TILE_SHIFT_PX;
         i32 mty = m_target.m_y >> TILE_SHIFT_PX;
         if (static_cast<u32>(mtx) < board2->m_width && static_cast<u32>(mty) < board2->m_height) {
-            board2->m_rowInts[mty][mtx * 7] |= 0x10000000;
+            board2->m_rows[mty][mtx].m_flags |= 0x10000000;
         }
     }
 
     double dt = static_cast<double>(g_frameDelta) * m_moveSpeed;
     i32 nx;
-    if (m_stepDirX > 0) {
-        double v = dt + m_subX;
-        m_subX = v;
+    if (m_stepDirection.m_x > 0) {
+        double v = dt + m_subPosition.m_x;
+        m_subPosition.m_x = v;
         nx = static_cast<i32>(floor(v));
         m_moveDelta = fabs(static_cast<double>(nx) - static_cast<double>(m_target.m_x));
         if (nx > m_target.m_x) {
             nx = m_target.m_x;
         }
-    } else if (m_stepDirX < 0) {
-        double v = m_subX - dt;
-        m_subX = v;
+    } else if (m_stepDirection.m_x < 0) {
+        double v = m_subPosition.m_x - dt;
+        m_subPosition.m_x = v;
         nx = static_cast<i32>(ceil(v));
         m_moveDelta = fabs(static_cast<double>(nx) - static_cast<double>(m_target.m_x));
         if (nx < m_target.m_x) {
             nx = m_target.m_x;
         }
     } else {
-        nx = static_cast<i32>(floor(m_subX));
+        nx = static_cast<i32>(floor(m_subPosition.m_x));
     }
 
     i32 ny;
-    if (m_stepDirY > 0) {
-        double v = dt + m_subY;
-        m_subY = v;
+    if (m_stepDirection.m_y > 0) {
+        double v = dt + m_subPosition.m_y;
+        m_subPosition.m_y = v;
         ny = static_cast<i32>(floor(v));
         m_moveDelta = fabs(static_cast<double>(ny) - static_cast<double>(m_target.m_y));
         if (ny > m_target.m_y) {
             ny = m_target.m_y;
         }
-    } else if (m_stepDirY < 0) {
-        double v = m_subY - dt;
-        m_subY = v;
+    } else if (m_stepDirection.m_y < 0) {
+        double v = m_subPosition.m_y - dt;
+        m_subPosition.m_y = v;
         ny = static_cast<i32>(ceil(v));
         m_moveDelta = fabs(static_cast<double>(ny) - static_cast<double>(m_target.m_y));
         if (ny < m_target.m_y) {
             ny = m_target.m_y;
         }
     } else {
-        ny = static_cast<i32>(floor(m_subY));
+        ny = static_cast<i32>(floor(m_subPosition.m_y));
     }
 
     CWwdSpriteObject* fin = m_object;
-    fin->m_screenX = nx;
+    fin->m_screenPosition.m_x = nx;
     CWwdSpriteObject* fin2 = m_object;
-    fin2->m_screenY = ny;
+    fin2->m_screenPosition.m_y = ny;
     CWwdSpriteObject* fin3 = m_object;
-    i32 next = fin3->m_screenY + 0x186a0;
+    i32 next = fin3->m_screenPosition.m_y + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(fin3, next)
     return 0;
 }
@@ -570,10 +569,10 @@ i32 CRollingBall::SerializeDispatch(
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_moveSpeed, sizeof(m_moveSpeed));
-            ar->Write(&m_subX, sizeof(m_subX));
-            ar->Write(&m_subY, sizeof(m_subY));
-            ar->Write(&m_stepDirX, sizeof(m_stepDirX));
-            ar->Write(&m_stepDirY, sizeof(m_stepDirY));
+            ar->Write(&m_subPosition.m_x, sizeof(m_subPosition.m_x));
+            ar->Write(&m_subPosition.m_y, sizeof(m_subPosition.m_y));
+            ar->Write(&m_stepDirection.m_x, sizeof(m_stepDirection.m_x));
+            ar->Write(&m_stepDirection.m_y, sizeof(m_stepDirection.m_y));
             ar->Write(&m_target, sizeof(m_target));
             ar->Write(&m_explodeLatch, sizeof(m_explodeLatch));
             ar->Write(&m_fallLatch, sizeof(m_fallLatch));
@@ -581,10 +580,10 @@ i32 CRollingBall::SerializeDispatch(
             break;
         case SERIAL_LOAD:
             ar->Read(&m_moveSpeed, sizeof(m_moveSpeed));
-            ar->Read(&m_subX, sizeof(m_subX));
-            ar->Read(&m_subY, sizeof(m_subY));
-            ar->Read(&m_stepDirX, sizeof(m_stepDirX));
-            ar->Read(&m_stepDirY, sizeof(m_stepDirY));
+            ar->Read(&m_subPosition.m_x, sizeof(m_subPosition.m_x));
+            ar->Read(&m_subPosition.m_y, sizeof(m_subPosition.m_y));
+            ar->Read(&m_stepDirection.m_x, sizeof(m_stepDirection.m_x));
+            ar->Read(&m_stepDirection.m_y, sizeof(m_stepDirection.m_y));
             ar->Read(&m_target, sizeof(m_target));
             ar->Read(&m_explodeLatch, sizeof(m_explodeLatch));
             ar->Read(&m_fallLatch, sizeof(m_fallLatch));

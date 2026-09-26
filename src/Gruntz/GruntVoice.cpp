@@ -103,7 +103,7 @@ RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_EXCLAMATION");
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE);
     m_stream = NULL;
     m_playbackTiming.m_startLo = 0;
     m_playbackTiming.m_intervalLo = 0;
@@ -128,11 +128,14 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
     Hide();
     SET_ANIMATION_ACT("A");
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    m_object->m_area.left = m_object->m_screenX - (m_object->m_extent.left << TILE_SHIFT_PX) - 7;
-    m_object->m_area.right = m_object->m_screenX + (m_object->m_extent.right << TILE_SHIFT_PX) + 7;
-    m_object->m_area.top = m_object->m_screenY - (m_object->m_extent.top << TILE_SHIFT_PX) - 7;
+    m_object->m_area.left =
+        m_object->m_screenPosition.m_x - (m_object->m_extent.left << TILE_SHIFT_PX) - 7;
+    m_object->m_area.right =
+        m_object->m_screenPosition.m_x + (m_object->m_extent.right << TILE_SHIFT_PX) + 7;
+    m_object->m_area.top =
+        m_object->m_screenPosition.m_y - (m_object->m_extent.top << TILE_SHIFT_PX) - 7;
     m_object->m_area.bottom =
-        m_object->m_screenY + (m_object->m_extent.bottom << TILE_SHIFT_PX) + 7;
+        m_object->m_screenPosition.m_y + (m_object->m_extent.bottom << TILE_SHIFT_PX) + 7;
 }
 
 RVA(0x00119e40, 0x102)
@@ -166,8 +169,8 @@ RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 playerIndex, unitIndex;
     CGrunt* hit = g_gameReg->m_triggerMgr->FindGruntAt(
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         &m_object->m_extent,
         &playerIndex,
         &unitIndex,
@@ -175,8 +178,8 @@ i32 CVoiceTrigger::Tick() {
     );
     if (hit && playerIndex == g_curPlayer) {
         CGameObject* hs = hit->m_object;
-        i32 hy = hs->m_screenY;
-        i32 hx = hs->m_screenX;
+        i32 hy = hs->m_screenPosition.m_y;
+        i32 hx = hs->m_screenPosition.m_x;
         if (::PtInRect(&g_gameReg->m_viewBounds, hx, hy)) {
             if (g_gameReg->m_voiceManager
                     ->PlayVoice(hit, m_object->m_smarts, m_object->m_health, 0, -1, -1)) {

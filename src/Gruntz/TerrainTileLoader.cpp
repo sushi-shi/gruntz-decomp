@@ -3,6 +3,7 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <Globals.h>
 #include <Gruntz/BrickTileId.h>
@@ -16,6 +17,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/PickupType.h>
@@ -208,7 +210,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 while (pos != NULL && removed == 0) {
                     POSITION current = pos;
                     CGruntPuddle* puddle = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                    if (puddle->m_tileX == tileX && puddle->m_tileY == tileY) {
+                    if (puddle->m_tile.m_x == tileX && puddle->m_tile.m_y == tileY) {
                         if (cue == WWDDRAW_NO_ANIMATION) {
                             puddle->m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                             puddle->SetBute("B");
@@ -554,8 +556,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cue != WWDDRAW_TOOL_APPLIES) {
                 return 1;
             }
-            i32 waterX = unit->m_object->m_screenX;
-            i32 waterY = unit->m_object->m_screenY;
+            i32 waterX = unit->m_object->m_screenPosition.m_x;
+            i32 waterY = unit->m_object->m_screenPosition.m_y;
             if (::PtInRect(&g_gameReg->m_viewBounds, waterX, waterY)) {
                 CWwdSpriteObject* splash = m_world->m_childGroup->CreateSprite(
                     0,

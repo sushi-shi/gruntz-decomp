@@ -19,8 +19,8 @@
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+        (grid)->m_gridSize.cx = (grid)->m_bounds.right - (grid)->m_bounds.left;                    \
+        (grid)->m_gridSize.cy = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                    \
     }
 
 #define GRID_CLIP_INL(grid, srcRect)                                                               \
@@ -43,8 +43,8 @@
         if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
             *clipBounds = ra;                                                                      \
         }                                                                                          \
-        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
-        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
+        (grid)->m_gridSize.cx = clipBounds->right - clipBounds->left;                              \
+        (grid)->m_gridSize.cy = clipBounds->bottom - clipBounds->top;                              \
     }
 
 #define GRID_CLIP_INL_FIELDS(grid, srcRect)                                                        \
@@ -70,8 +70,8 @@
         if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
             *clipBounds = ra;                                                                      \
         }                                                                                          \
-        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
-        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
+        (grid)->m_gridSize.cx = clipBounds->right - clipBounds->left;                              \
+        (grid)->m_gridSize.cy = clipBounds->bottom - clipBounds->top;                              \
     }
 
 #define GRID_CLIP_NULL(grid)                                                                       \
@@ -83,8 +83,8 @@
         if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
             *clipBounds = ra;                                                                      \
         }                                                                                          \
-        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
-        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
+        (grid)->m_gridSize.cx = clipBounds->right - clipBounds->left;                              \
+        (grid)->m_gridSize.cy = clipBounds->bottom - clipBounds->top;                              \
     }
 
 #define GRID_RECT_INLINE(grid)                                                                     \
@@ -102,8 +102,8 @@
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+        (grid)->m_gridSize.cx = (grid)->m_bounds.right - (grid)->m_bounds.left;                    \
+        (grid)->m_gridSize.cy = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                    \
     }
 
 #define GRID_RECT_INLINE_LOCAL(grid)                                                               \
@@ -121,8 +121,8 @@
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = ra.right - ra.left;                                                      \
-        (grid)->m_gridH = ra.bottom - ra.top;                                                      \
+        (grid)->m_gridSize.cx = ra.right - ra.left;                                                \
+        (grid)->m_gridSize.cy = ra.bottom - ra.top;                                                \
     }
 
 #define PRIO(dst, r)                                                                               \
@@ -208,8 +208,8 @@
         if (!IntersectRect(rd, &ra, &rb)) {                                                        \
             *rd = ra;                                                                              \
         }                                                                                          \
-        (grid)->m_gridW = rd->right - rd->left;                                                    \
-        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
+        (grid)->m_gridSize.cx = rd->right - rd->left;                                              \
+        (grid)->m_gridSize.cy = rd->bottom - rd->top;                                              \
     }
 
 #endif // INCLUDE_GRUNTZ_SCANGRIDMACROS_H

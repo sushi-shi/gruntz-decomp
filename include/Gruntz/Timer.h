@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/ClockInterval.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
@@ -34,8 +35,7 @@ public:
         m_currentMs = 0;
     }
 
-    i32 m_baseX;
-    i32 m_baseY;
+    Coord m_basePosition;
     CDDrawWorker* m_sprite;
     b32 m_active;
 

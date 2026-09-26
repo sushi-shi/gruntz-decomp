@@ -99,12 +99,10 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_world = world;
     m_restorePosition = STATUSBAR_DOCK_RIGHT;
     m_position = STATUSBAR_DOCK_RIGHT;
-    i32 vx = g_gameReg->m_modeSize.cx;
-    i32 vy = g_gameReg->m_modeSize.cy;
-    SetRect(&m_barRect, vx - 0xa0, 0, vx, SCREEN_H_PX);
+    CSize screenSize = g_gameReg->m_modeSize;
+    SetRect(&m_barRect, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
     m_redrawFrames = 0;
-    m_barX = vx - 0x45;
-    m_barY = vy - 0x30;
+    m_barPosition.Set(screenSize.cx - 0x45, screenSize.cy - 0x30);
     m_itemKind = GAME_TAB_MENU;
     m_tabCycle = g_curPlayer;
     Reset();
@@ -218,7 +216,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     }
     ResetWidgets(true);
 
-    tagSIZE screenSize = g_gameReg->m_modeSize;
+    CSize screenSize = g_gameReg->m_modeSize;
     SetRect(&m_barRect, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
@@ -265,11 +263,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             if (v > SCREEN_H_PX) {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
 
-                RECT below;
-                below.left = m_barRect.left;
-                below.top = m_barRect.bottom;
-                below.right = m_barRect.right;
-                below.bottom = v;
+                CRect below = MakeRect(m_barRect.left, m_barRect.bottom, m_barRect.right, v);
                 tgt->Restore(&below, 0);
             }
             CDDrawWorker* cfg = m_world->FindWorker("GAME_STATUSBAR_MAINBAR");
@@ -279,8 +273,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                     CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
                     entry->RenderFrame(
                         l1->m_backPair,
-                        entry->m_anchorX + m_barRect.left,
-                        entry->m_anchorY + m_barRect.top,
+                        entry->m_anchor.x + m_barRect.left,
+                        entry->m_anchor.y + m_barRect.top,
                         0
                     );
                 }
@@ -325,8 +319,8 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
         return 0;
     }
     SET_SCREEN_POS(m_barSprite, x, y);
-    m_barX = x;
-    m_barY = y;
+    m_barPosition.m_x = x;
+    m_barPosition.m_y = y;
     return 1;
 }
 
@@ -334,8 +328,8 @@ RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CWwdSpriteObject* r = m_barSprite;
     CImage* L = r->m_frameImage;
-    i32 xlo = r->m_screenX - L->m_anchorX;
-    i32 ylo = r->m_screenY - L->m_anchorY;
+    i32 xlo = r->m_screenPosition.m_x - L->m_anchor.x;
+    i32 ylo = r->m_screenPosition.m_y - L->m_anchor.y;
     i32 xhi = L->m_width + xlo;
     i32 yhi = L->m_height + ylo;
     if (x >= xhi || x < xlo || y >= yhi || y < ylo) {
@@ -1115,8 +1109,8 @@ i32 CStatusBarMgr::Deactivate() {
 
         i32 w = g_gameReg->m_modeSize.cx;
         i32 h = g_gameReg->m_modeSize.cy;
-        m_barX = w - 0x45;
-        m_barY = h - 0x30;
+        m_barPosition.m_x = w - 0x45;
+        m_barPosition.m_y = h - 0x30;
         SetSpritePos(w - 0x45, h - 0x30);
     }
 
@@ -2270,16 +2264,17 @@ i32 CStatusBarMgr::Activate() {
     if (m_barSprite != NULL) {
         return 0;
     }
-    i32 w = g_gameReg->m_modeSize.cx;
-    i32 d = g_gameReg->m_modeSize.cy;
-    CLAMP_UPPER_INPLACE(m_barX, w - 0x22);
-    if (m_barY > d - 9) {
-        m_barY = d - 0x22;
+    CSize screenSize = g_gameReg->m_modeSize;
+    if (m_barPosition.m_x > screenSize.cx - 0x22) {
+        m_barPosition.m_x = screenSize.cx - 0x22;
+    }
+    if (m_barPosition.m_y > screenSize.cy - 9) {
+        m_barPosition.m_y = screenSize.cy - 0x22;
     }
     m_barSprite = (m_world)->m_childGroup->CreateSprite(
         0,
-        m_barX,
-        m_barY,
+        m_barPosition.m_x,
+        m_barPosition.m_y,
         SORTKEY_OVERLAY,
         "StatusBarSprite",
         IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)
@@ -2331,16 +2326,16 @@ RVA(0x00105070, 0x10e)
 i32 CStatusBarMgr::BuildSideTabs() {
     i32 i = 0;
     for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
-        RECT rc;
+        i32 left;
+        i32 right;
         if (m_position == STATUSBAR_DOCK_RIGHT) {
-            rc.left = m_barRect.left - 0x1c;
-            rc.right = m_barRect.left;
+            left = m_barRect.left - 0x1c;
+            right = m_barRect.left;
         } else {
-            rc.left = m_barRect.right;
-            rc.right = m_barRect.right + 0x1c;
+            left = m_barRect.right;
+            right = m_barRect.right + 0x1c;
         }
-        rc.top = strid - 0x11;
-        rc.bottom = strid;
+        CRect rc(left, strid - 0x11, right, strid);
         CSBI_SideTab* newobj = new CSBI_SideTab;
 
         b32 ok = newobj->BuildStatzTabStatusBar(
@@ -2537,11 +2532,14 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
         CGrunt* entry = g_gameReg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
             (static_cast<CPlay*>(g_gameReg->m_curState))
-                ->ResetGoals(entry->m_object->m_screenX, entry->m_object->m_screenY);
+                ->ResetGoals(
+                    entry->m_object->m_screenPosition.m_x,
+                    entry->m_object->m_screenPosition.m_y
+                );
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->m_triggerMgr;
                 if (obj->RecordListHas(playerIndex, unitIndex)) {
-                    obj->m_cameraTargetIdentity.Set(playerIndex, unitIndex);
+                    obj->m_cameraTargetIdentity = Coord(playerIndex, unitIndex);
                     obj->m_armed = true;
                     obj->LoadCameraSprite();
                 }
@@ -3144,7 +3142,6 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     i32 b = y + 0xc;
     SET_RECT_COMPONENTS(m_fallingItemRect, l, t, rr, b);
     if (n) {
-
         RECT rc;
         i32 x = m_barRect.left;
         rc.left = l + x;
@@ -3401,16 +3398,8 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     m_machinePhase = BELT_IDLE;
     SetRect(&m_machineItemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_machineItemSprite) {
-        RECT rc;
-        i32 x = m_barRect.left;
-        i32 y = m_barRect.top;
-        SET_RECT_COMPONENTS(
-            rc,
-            m_machineItemRect.left + x,
-            m_machineItemRect.top + y,
-            m_machineItemRect.right + x,
-            m_machineItemRect.bottom + y
-        );
+        CRect rc = m_machineItemRect;
+        rc.OffsetRect(m_barRect.left, m_barRect.top);
         m_machineItemSprite->m_rect = rc;
     }
     NotifyAllSlots();
@@ -3425,14 +3414,25 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
-    Coord reward = {pickupValue, score};
-    Coord* node = g_coordPool.PopCopy(reward);
+    Coord reward(pickupValue, score);
+    Coord* node = NULL;
+    if (g_coordPool.m_freeHead->m_next != NULL) {
+        node = &g_coordPool.m_freeHead->m_value;
+        *node = reward;
+        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
+    }
     i32 n = m_rewardQueue.GetSize();
-    for (i32 i = 0; i < n; i++) {
-        Coord* e = GetReward(i);
-        if (e != NULL && score < e->m_y) {
-            m_rewardQueue.InsertAt(i, node, 1);
-            return 1;
+    i32 i = 0;
+    if (i < n) {
+        void** t = m_rewardQueue.GetData();
+        while (i < n) {
+            Coord* e = static_cast<Coord*>(*t);
+            if (e != NULL && score < e->m_y) {
+                m_rewardQueue.InsertAt(i, node, 1);
+                return 1;
+            }
+            i++;
+            t++;
         }
     }
     m_rewardQueue.Add(node);
@@ -3642,8 +3642,8 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 
     s->Write(&m_barRect.left, sizeof(m_barRect));
     s->Write(&m_redrawFrames, sizeof(m_redrawFrames));
-    s->Write(&m_barX, sizeof(m_barX));
-    s->Write(&m_barY, sizeof(m_barY));
+    s->Write(&m_barPosition.m_x, sizeof(m_barPosition.m_x));
+    s->Write(&m_barPosition.m_y, sizeof(m_barPosition.m_y));
     s->Write(&m_itemKind, sizeof(m_itemKind));
     s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
@@ -3730,8 +3730,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
 
     ar->Read(&m_barRect.left, sizeof(m_barRect));
     ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
-    ar->Read(&m_barX, sizeof(m_barX));
-    ar->Read(&m_barY, sizeof(m_barY));
+    ar->Read(&m_barPosition.m_x, sizeof(m_barPosition.m_x));
+    ar->Read(&m_barPosition.m_y, sizeof(m_barPosition.m_y));
     ar->Read(&m_itemKind, sizeof(m_itemKind));
     ar->Read(&m_tabCycle, sizeof(m_tabCycle));
 
@@ -3862,26 +3862,20 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     }
 
     CStatusBarMgr* base = m_owner;
-    i32 tx = base->m_barRect.left + targetOffset.m_x;
-    m_targetX = tx;
-    i32 ty = base->m_barRect.top + targetOffset.m_y;
-    m_targetY = ty;
+    m_target = Coord(base->m_barRect.left, base->m_barRect.top) + targetOffset;
 
-    i32 deltaX = tx - srcX;
-    i32 dyv = ty - srcY;
-    i32 dist2 = SquaredDistance(deltaX, dyv);
-    double dist = sqrt(static_cast<double>(dist2));
+    DoubleVector2 delta(m_target - Coord(srcX, srcY));
+    double dist = delta.Mag();
     u32 flyTime = g_buteMgr.GetDword("WarpStone", "FlyTime", 0x5dc);
 
     m_velocityScale = dist / static_cast<double>(flyTime);
-    m_xDirection = static_cast<double>(deltaX) / dist;
-    m_yDirection = static_cast<double>(dyv) / dist;
+    delta /= dist;
+    m_direction = delta;
 
     SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
     PlayRegistryCueIfElapsed(h, "GAME_WARPSTONEFLY");
 
-    m_currentX = static_cast<double>(srcX);
-    m_currentY = static_cast<double>(srcY);
+    m_current.Init(static_cast<double>(srcX), static_cast<double>(srcY));
     return 1;
 }
 
@@ -3903,13 +3897,13 @@ i32 CWarpStoneFly::SerializeDispatch(
         case SERIAL_LOAD: {
 
             arc->Read(&m_arrivalMode, sizeof(m_arrivalMode));
-            arc->Read(&m_targetX, sizeof(m_targetX));
-            arc->Read(&m_targetY, sizeof(m_targetY));
-            arc->Read(&m_currentX, sizeof(m_currentX));
-            arc->Read(&m_currentY, sizeof(m_currentY));
+            arc->Read(&m_target.m_x, sizeof(m_target.m_x));
+            arc->Read(&m_target.m_y, sizeof(m_target.m_y));
+            arc->Read(&m_current.m_x, sizeof(m_current.m_x));
+            arc->Read(&m_current.m_y, sizeof(m_current.m_y));
             arc->Read(&m_velocityScale, sizeof(m_velocityScale));
-            arc->Read(&m_xDirection, sizeof(m_xDirection));
-            arc->Read(&m_yDirection, sizeof(m_yDirection));
+            arc->Read(&m_direction.m_x, sizeof(m_direction.m_x));
+            arc->Read(&m_direction.m_y, sizeof(m_direction.m_y));
             char name[SERIAL_NAME_LEN];
             i32 index;
             SERIAL_READ_FRAME(arc, lvl, name, index, m_sprite);
@@ -3918,13 +3912,13 @@ i32 CWarpStoneFly::SerializeDispatch(
         case SERIAL_SAVE: {
 
             arc->Write(&m_arrivalMode, sizeof(m_arrivalMode));
-            arc->Write(&m_targetX, sizeof(m_targetX));
-            arc->Write(&m_targetY, sizeof(m_targetY));
-            arc->Write(&m_currentX, sizeof(m_currentX));
-            arc->Write(&m_currentY, sizeof(m_currentY));
+            arc->Write(&m_target.m_x, sizeof(m_target.m_x));
+            arc->Write(&m_target.m_y, sizeof(m_target.m_y));
+            arc->Write(&m_current.m_x, sizeof(m_current.m_x));
+            arc->Write(&m_current.m_y, sizeof(m_current.m_y));
             arc->Write(&m_velocityScale, sizeof(m_velocityScale));
-            arc->Write(&m_xDirection, sizeof(m_xDirection));
-            arc->Write(&m_yDirection, sizeof(m_yDirection));
+            arc->Write(&m_direction.m_x, sizeof(m_direction.m_x));
+            arc->Write(&m_direction.m_y, sizeof(m_direction.m_y));
             g_serialCounter++;
 
             CImage* obj = m_sprite;
@@ -3945,9 +3939,9 @@ i32 CWarpStoneFly::SerializeDispatch(
 // @early-stop
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(u32 dt) {
-    i32 cellY = static_cast<i32>(m_currentY);
-    i32 cellX = static_cast<i32>(m_currentX);
-    if (cellX == m_targetX && cellY == m_targetY) {
+    i32 cellY = static_cast<i32>(m_current.m_y);
+    i32 cellX = static_cast<i32>(m_current.m_x);
+    if (cellX == m_target.m_x && cellY == m_target.m_y) {
         i32 mode = m_arrivalMode;
         CByteArray* arr = &g_gameReg->m_triggerMgr->m_byteArr;
         arr->Add(static_cast<BYTE>(mode));
@@ -3962,28 +3956,28 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     }
 
     double t = static_cast<double>(dt);
-    double newX = m_currentX + (t * m_velocityScale) * m_xDirection;
-    double newY = m_currentY + (t * m_yDirection) * m_velocityScale;
-    m_currentX = newX;
-    m_currentY = newY;
+    double newX = VECTOR_ADVANCE_VALUE(m_current.m_x, t, m_velocityScale, m_direction.m_x);
+    double newY = VECTOR_ADVANCE_VALUE(m_current.m_y, t, m_direction.m_y, m_velocityScale);
+    m_current.m_x = newX;
+    m_current.m_y = newY;
 
-    if (m_xDirection > 0.0) {
-        if (static_cast<i32>(newX) > m_targetX) {
-            m_currentX = static_cast<double>(m_targetX);
+    if (m_direction.m_x > 0.0) {
+        if (static_cast<i32>(newX) > m_target.m_x) {
+            m_current.m_x = static_cast<double>(m_target.m_x);
         }
-    } else if (m_xDirection < 0.0) {
-        if (static_cast<i32>(newX) < m_targetX) {
-            m_currentX = static_cast<double>(m_targetX);
+    } else if (m_direction.m_x < 0.0) {
+        if (static_cast<i32>(newX) < m_target.m_x) {
+            m_current.m_x = static_cast<double>(m_target.m_x);
         }
     }
 
-    if (m_yDirection > 0.0) {
-        if (static_cast<i32>(newY) > m_targetY) {
-            m_currentY = static_cast<double>(m_targetY);
+    if (m_direction.m_y > 0.0) {
+        if (static_cast<i32>(newY) > m_target.m_y) {
+            m_current.m_y = static_cast<double>(m_target.m_y);
         }
-    } else if (m_yDirection < 0.0) {
-        if (static_cast<i32>(newY) < m_targetY) {
-            m_currentY = static_cast<double>(m_targetY);
+    } else if (m_direction.m_y < 0.0) {
+        if (static_cast<i32>(newY) < m_target.m_y) {
+            m_current.m_y = static_cast<double>(m_target.m_y);
         }
     }
     return 1;
@@ -3993,8 +3987,8 @@ RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->RenderFrame(
         g_gameReg->m_world->m_drawTarget->m_backPair,
-        static_cast<i32>(m_currentX),
-        static_cast<i32>(m_currentY),
+        static_cast<i32>(m_current.m_x),
+        static_cast<i32>(m_current.m_y),
         0
     );
     return 1;

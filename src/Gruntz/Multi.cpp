@@ -53,6 +53,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Io/FileStream.h>
+#include <MakeRect.h>
 #include <MsgParam.h>
 #include <Net/LobbyDialogs.h>
 #include <Net/NetCmdSlotInline.h>
@@ -523,7 +524,7 @@ i32 CMulti::Connect(i32 mode) {
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Render() {
     m_drewThisFrame = false;
-    HandleDragMove(0, m_cursorX, m_cursorY);
+    HandleDragMove(0, m_cursorPosition.m_x, m_cursorPosition.m_y);
     i32 oldT = m_lastTime;
     i32 t = timeGetTime();
     m_lastTime = t;
@@ -698,8 +699,8 @@ void CMulti::RenderGameFrame() {
     }
     StepScroll();
     Mgr()->m_worldSounds->SetListenerPosition(
-        (m_world->m_level->m_mainPlane)->m_scrollPixelX,
-        (m_world->m_level->m_mainPlane)->m_scrollPixelY
+        (m_world->m_level->m_mainPlane)->m_scrollPixel.m_x,
+        (m_world->m_level->m_mainPlane)->m_scrollPixel.m_y
     );
     DrawWorldView();
     m_statusBar->LoadMainStatusBarSprite();

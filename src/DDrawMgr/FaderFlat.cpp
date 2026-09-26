@@ -42,15 +42,14 @@ RVA(0x0017f660, 0x2e6)
 void CFaderFlat::RenderFrame(i32 frame) {
     u16* srcBits = static_cast<u16*>(m_srcSurface->Lock(NULL));
     u16* dstBits = static_cast<u16*>(m_dstSurface->Lock(NULL));
-    i32 h = m_srcSurface->m_apiDesc.dwHeight;
-    i32 w = m_srcSurface->m_apiDesc.dwWidth;
-    i32 base = h - frame - 1;
-    i32 span = m_durationPercent * h / 100;
-    if (span + base > h) {
-        span = h - base;
+    CSize surfaceSize(m_srcSurface->m_apiDesc.dwWidth, m_srcSurface->m_apiDesc.dwHeight);
+    i32 base = surfaceSize.cy - frame - 1;
+    i32 span = m_durationPercent * surfaceSize.cy / 100;
+    if (span + base > surfaceSize.cy) {
+        span = surfaceSize.cy - base;
     }
-    i32 half = (m_splitPercent * w / 100) / 2 + w / 2;
-    i32 rest = w - half;
+    i32 half = (m_splitPercent * surfaceSize.cx / 100) / 2 + surfaceSize.cx / 2;
+    i32 rest = surfaceSize.cx - half;
     i32 end = span + base;
     i32 y = (base < 0) ? 0 : base;
     while (y < end) {
@@ -63,7 +62,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
             n1 * 2
         );
         memcpy(
-            dstBits + m_dstSurface->m_apiDesc.lPitch * y / 2 + w - n2,
+            dstBits + m_dstSurface->m_apiDesc.lPitch * y / 2 + surfaceSize.cx - n2,
             srcBits + m_srcSurface->m_apiDesc.lPitch * y / 2 + half,
             n2 * 2
         );
@@ -74,13 +73,13 @@ void CFaderFlat::RenderFrame(i32 frame) {
             n2 * 2
         );
         memcpy(
-            dstBits + m_dstSurface->m_apiDesc.lPitch * y / 2 + w - n1,
+            dstBits + m_dstSurface->m_apiDesc.lPitch * y / 2 + surfaceSize.cx - n1,
             srcBits + m_srcSurface->m_apiDesc.lPitch * y / 2 + rest,
             n1 * 2
         );
         y++;
     }
-    i32 lastRow = h - 1;
+    i32 lastRow = surfaceSize.cy - 1;
     i32 y0 = lastRow;
     if (y0 >= end) {
         y0 = end;
@@ -97,7 +96,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
         memcpy(
             dstBits + m_dstSurface->m_apiDesc.lPitch * y2 / 2,
             srcBits + m_srcSurface->m_apiDesc.lPitch * y2 / 2,
-            w * 2
+            surfaceSize.cx * 2
         );
         y2++;
     }

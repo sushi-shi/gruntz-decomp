@@ -21,9 +21,12 @@ struct CWwdSpatialMgr {
     RECT m_defaultRegionRect;
     RECT m_smallRegionRect;
     RECT m_largeRegionRect;
-    i32 m_defaultRegionHalfWidth, m_defaultRegionHalfHeight;
-    i32 m_largeRegionHalfWidth, m_largeRegionHalfHeight;
-    i32 m_smallRegionHalfWidth, m_smallRegionHalfHeight;
+    SIZE
+    m_defaultRegionHalfSize;
+    SIZE
+    m_largeRegionHalfSize;
+    SIZE
+    m_smallRegionHalfSize;
     RECT m_levelBounds;
     Coord m_activeCenter;
     CWwdGridIter m_iter;

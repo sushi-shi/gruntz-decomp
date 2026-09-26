@@ -31,6 +31,7 @@ inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32&
     static_cast<i32>(sqrt(static_cast<double>(SQR((x) - (center)) + (dySquared))))
 
 RVA(0x00180fb0, 0x534)
+
 inline void
 CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
     if (m_spanCount <= 0) {

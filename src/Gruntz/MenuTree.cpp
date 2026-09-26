@@ -19,7 +19,7 @@
 #include <Gruntz/SoundState.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>

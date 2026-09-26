@@ -1,7 +1,7 @@
 #ifndef GRUNTZ_SORTKEYMACROS_H
 #define GRUNTZ_SORTKEYMACROS_H
 
-#include <Wwd/WwdGameObjectFlags.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 #define SET_SORT_KEY_IF_CHANGED(object, key)                                                       \
     if (object->m_sortKey != key) {                                                                \

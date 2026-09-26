@@ -130,8 +130,8 @@ RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         CGrunt* tgt = g_gameReg->m_triggerMgr->FindGruntAt(
-            m_object->m_screenX,
-            m_object->m_screenY,
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y,
             &m_object->m_area,
             &m_targetPlayerIndex,
             &m_targetUnitIndex,
@@ -140,7 +140,11 @@ i32 CSpotLight::Tick() {
         if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
             && !(m_storyMode != false && m_targetPlayerIndex != 0)) {
             SET_ANIMATION_ACT("B");
-            SET_SCREEN_POS(m_object, tgt->m_object->m_screenX, tgt->m_object->m_screenY);
+            SET_SCREEN_POS(
+                m_object,
+                tgt->m_object->m_screenPosition.m_x,
+                tgt->m_object->m_screenPosition.m_y
+            );
             if (m_object->m_score == 1) {
                 g_gameReg->m_triggerMgr
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);
@@ -168,7 +172,11 @@ i32 CSpotLight::Tick() {
     double rotatedY = ox * s - oy * c;
     m_position.Init(rotatedX, rotatedY);
     if (mv != NULL) {
-        VEC2_SET(m_center, static_cast<double>(mv->m_screenX), static_cast<double>(mv->m_screenY));
+        VEC2_SET(
+            m_center,
+            static_cast<double>(mv->m_screenPosition.m_x),
+            static_cast<double>(mv->m_screenPosition.m_y)
+        );
     }
     m_position.m_x = m_center.m_x + rotatedX;
     m_position.m_y = m_center.m_y + rotatedY;
@@ -182,20 +190,19 @@ int CSpotLight::Update() {
     if (m_object->m_score == 1) {
         double c = cos(m_angle);
         double s = sin(m_angle);
-        double ox = m_offset.m_x;
-        double oy = -m_offset.m_y;
+        DoubleVector2 offset(m_offset.m_x, -m_offset.m_y);
 
         double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
         CWwdSpriteObject* focus = m_focus;
-        VEC2_SET(m_position, oy * s - ox * c, ox * s + oy * c);
+        DoubleVector2 rotated(offset.m_y * s - offset.m_x * c, offset.m_x * s + offset.m_y * c);
         if (focus) {
             VEC2_SET(
                 m_center,
-                static_cast<double>(focus->m_screenX),
-                static_cast<double>(focus->m_screenY)
+                static_cast<double>(focus->m_screenPosition.m_x),
+                static_cast<double>(focus->m_screenPosition.m_y)
             );
         }
-        m_position.Init(m_center.m_x + m_position.m_x, m_center.m_y + m_position.m_y);
+        m_position = m_center + rotated;
         m_angle = dAngle + m_angle;
     }
     if (g_gameReg->m_triggerMgr

@@ -1023,14 +1023,15 @@ GruntDirectionCell __stdcall TmDeflectStep(
 // @early-stop
 RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact) {
-    i32 ix = x >> TILE_SHIFT_PX;
-    i32 iy = y >> TILE_SHIFT_PX;
+    Coord position(x, y);
+    Coord tile = position;
+    ScreenTile(&tile);
     CMapMgr* plane = g_gameReg->m_tileGrid;
     i32 attr;
-    if (ix >= plane->m_width || iy >= plane->m_height) {
+    if (tile.m_x >= plane->m_width || tile.m_y >= plane->m_height) {
         attr = -1;
     } else {
-        attr = plane->m_rowInts[iy][ix * 7 + 1];
+        attr = plane->m_rows[tile.m_y][tile.m_x].m_occupantId;
     }
     if (attr == -1) {
         return NULL;
@@ -1044,14 +1045,11 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
 
     if (exact == 0) {
         CGameObject* o = cell->m_object;
-        RECT box;
-        box.top = y - 7;
-        box.bottom = y + 7;
-        box.left = x - 7;
-        box.right = x + 7;
-        i32 ox = o->m_screenX - 7;
-        i32 oy = o->m_screenY - 7;
-        if (box.left > ox + 14 || box.right < ox || box.top > oy + 14 || box.bottom < oy) {
+        CRect box(position.m_x - 7, position.m_y - 7, position.m_x + 7, position.m_y + 7);
+        Coord objectLo = o->ScreenPos();
+        objectLo -= Coord(7, 7);
+        if (box.left > objectLo.m_x + 14 || box.right < objectLo.m_x || box.top > objectLo.m_y + 14
+            || box.bottom < objectLo.m_y) {
             return NULL;
         }
         *outPlayerIndex = playerIndex;
@@ -1059,7 +1057,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
         return cell;
     }
     CGameObject* o = cell->m_object;
-    if (o->m_screenX != x || o->m_screenY != y) {
+    if (o->ScreenPos() != position) {
         return NULL;
     }
     *outPlayerIndex = playerIndex;
@@ -1077,27 +1075,34 @@ CGrunt* CTriggerMgr::FindGruntAt(
     i32* outUnitIndex,
     RECT* src
 ) {
-    i32 tcol = px >> TILE_SHIFT_PX;
-    i32 trow = py >> TILE_SHIFT_PX;
-    RECT rc;
+    Coord position(px, py);
+    Coord tile = position;
+    ScreenTile(&tile);
+    CRect rc;
     if (src) {
-        CopyRect(&rc, src);
+        rc = *src;
     } else {
-        SetRect(
-            &rc,
-            px - span->left * TILE_SIZE_PX - 7,
-            py - span->top * TILE_SIZE_PX - 7,
-            span->right * TILE_SIZE_PX + px + 7,
-            span->bottom * TILE_SIZE_PX + py + 7
-        );
+        Coord nearExtent(span->left, span->top);
+        nearExtent *= TILE_SIZE_PX;
+        Coord farExtent(span->right, span->bottom);
+        farExtent *= TILE_SIZE_PX;
+        Coord margin(7, 7);
+        Coord low = position - nearExtent - margin;
+        Coord high = position + farExtent + margin;
+        rc.SetRect(low.m_x, low.m_y, high.m_x, high.m_y);
     }
-    i32 x = tcol - span->left - 1;
-    i32 xEnd = span->right + tcol + 1;
+    CRect tileBounds(
+        tile.m_x - span->left - 1,
+        tile.m_y - span->top - 1,
+        span->right + tile.m_x + 1,
+        span->bottom + tile.m_y + 1
+    );
+    i32 x = tileBounds.left;
 
-    if (static_cast<u32>(x) <= static_cast<u32>(xEnd)) {
+    if (static_cast<u32>(x) <= static_cast<u32>(tileBounds.right)) {
         do {
-            i32 yEnd = span->bottom + trow + 1;
-            for (i32 y = trow - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
+            for (i32 y = tileBounds.top; static_cast<u32>(y) <= static_cast<u32>(tileBounds.bottom);
+                 y++) {
                 if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
                     continue;
                 }
@@ -1118,18 +1123,18 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 if (!g->m_entranceCommitted) {
                     continue;
                 }
-                i32 sx = g->m_object->m_screenX - 7;
-                i32 sy = g->m_object->m_screenY - 7;
-                i32 sx2 = sx + 0xe;
-                i32 sy2 = sy + 0xe;
-                if (rc.left <= sx2 && rc.right >= sx && rc.top <= sy2 && rc.bottom >= sy) {
+                Coord spriteLo = g->m_object->ScreenPos();
+                spriteLo -= Coord(7, 7);
+                Coord spriteHi = spriteLo + Coord(0xe, 0xe);
+                if (rc.left <= spriteHi.m_x && rc.right >= spriteLo.m_x && rc.top <= spriteHi.m_y
+                    && rc.bottom >= spriteLo.m_y) {
                     *outPlayerIndex = playerIndex;
                     *outUnitIndex = unitIndex;
                     return g;
                 }
             }
             x++;
-        } while (static_cast<u32>(x) <= static_cast<u32>(xEnd));
+        } while (static_cast<u32>(x) <= static_cast<u32>(tileBounds.right));
     }
     return NULL;
 }

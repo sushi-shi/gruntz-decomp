@@ -100,7 +100,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         return 0;
     }
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_DIRECT_OBJECT_MOVEMENT)) {
-        m_level->m_flags |= 4;
+        m_level->m_flags |= WWD_LEVEL_FLAG_DIRECT_MOVEMENT;
     }
     if (!m_drawTarget->CreateChildren(w, h, bpp, flags)) {
         SetInitError(WORLDERR_CREATE_PAGES);

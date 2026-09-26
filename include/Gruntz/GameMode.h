@@ -206,8 +206,7 @@ public:
     i32 m_letterIdx;
     i32 m_radius;
     i32 m_angleStep;
-    i32 m_scratchX;
-    i32 m_scratchY;
+    Coord m_scratchPosition;
     CWwdSpriteObject* m_trailSprites[4];
 
     CWwdSpriteObject* m_cursorLetter;

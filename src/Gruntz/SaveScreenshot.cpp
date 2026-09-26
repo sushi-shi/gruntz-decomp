@@ -8,7 +8,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Utils/RegMgr.h>
 
 RVA(0x00114ff0, 0x1b3)

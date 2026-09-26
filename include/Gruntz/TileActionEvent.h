@@ -4,9 +4,11 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerSlot.h>
+#include <Gruntz/PlayerSlotFlags.h>
 #include <Gruntz/SerialArchive.h>
 
 GZ_ENUM_FORWARD(BrickTileId);
@@ -34,8 +36,8 @@ public:
             return 0;
         }
         m_actionCode = code;
-        m_tileX = tileX;
-        m_tileY = tileY;
+        m_tile.m_x = tileX;
+        m_tile.m_y = tileY;
         m_cellKey = cellKey;
         m_owner = owner;
         m_live = true;
@@ -60,13 +62,12 @@ public:
     i32 SerializeFields(CFileMemBase* ar);
 
     BrickTileId m_actionCode;
-    i32 m_tileX;
-    i32 m_tileY;
+    Coord m_tile;
     i32 m_cellKey;
     b32 m_live;
 
     CTileTriggerContainer* m_owner;
-    i32 m_playerFlags[4];
+    PlayerSlotFlags m_playerFlags;
 };
 
 #endif // GRUNTZ_TILEACTIONEVENT_H

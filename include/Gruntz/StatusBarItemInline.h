@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_STATUSBARITEMINLINE_H
 #define GRUNTZ_STATUSBARITEMINLINE_H
 
+#include <Gruntz/StatusBarItem.h>
+
 #define INITIALIZE_STATUS_BAR_ITEM(owner, tab, host)                                               \
     m_owner = owner;                                                                               \
     m_tab = tab;                                                                                   \

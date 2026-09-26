@@ -4,7 +4,8 @@
 #include <Enums.h>
 
 GZ_ENUM_CONST_BEGIN(WwdTileHandle)
-    WWD_TILE_IMAGE_SET_INDEX_MASK = 0xffff
+    WWD_TILE_IMAGE_SET_INDEX_MASK = 0xffff,
+    WWD_TILE_CLEAR = -1
 GZ_ENUM_CONST_END(WwdTileHandle)
 
 #endif // GRUNTZ_WWD_WWDTILEHANDLE_H

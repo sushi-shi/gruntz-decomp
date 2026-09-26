@@ -24,6 +24,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -87,7 +88,10 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             Coord c;
             if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
-                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                && RectContains(
+                       g->m_object->m_screenPosition.m_x,
+                       g->m_object->m_screenPosition.m_y
+                   ) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 m_neighborScanEnabled = false;
                 RecycleGruntCoords(this);
@@ -128,7 +132,11 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
+            if (RectContains(
+                    slot->m_object->m_screenPosition.m_x,
+                    slot->m_object->m_screenPosition.m_y
+                )
+                == 0) {
                 return 1;
             }
             if (!IsGruntAtSavedScreenPos(slot)) {
@@ -160,7 +168,11 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
+            if (RectContains(
+                    slot->m_object->m_screenPosition.m_x,
+                    slot->m_object->m_screenPosition.m_y
+                )
+                == 0) {
                 goto ph1;
             }
             if (!IsGruntAtSavedScreenPos(slot)) {
@@ -191,8 +203,8 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             }
             CWwdSpriteObject* base = m_object;
             i32 clip = 1;
-            i32 baseTileY = base->m_screenY >> TILE_SHIFT_PX;
-            i32 baseTileX = base->m_screenX >> TILE_SHIFT_PX;
+            i32 baseTileY = base->m_screenPosition.m_y >> TILE_SHIFT_PX;
+            i32 baseTileX = base->m_screenPosition.m_x >> TILE_SHIFT_PX;
             i32 py = rand() % 4 + baseTileY - 2;
             i32 px = rand() % 4 + baseTileX - 2;
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
@@ -202,10 +214,10 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 if (entry != NULL) {
                     CGameObject* candidateObject = entry->m_object;
                     CRect rc(
-                        (candidateObject->m_screenX >> TILE_SHIFT_PX) - 2,
-                        (candidateObject->m_screenY >> TILE_SHIFT_PX) - 2,
-                        (candidateObject->m_screenX >> TILE_SHIFT_PX) + 3,
-                        (candidateObject->m_screenY >> TILE_SHIFT_PX) + 3
+                        (candidateObject->m_screenPosition.m_x >> TILE_SHIFT_PX) - 2,
+                        (candidateObject->m_screenPosition.m_y >> TILE_SHIFT_PX) - 2,
+                        (candidateObject->m_screenPosition.m_x >> TILE_SHIFT_PX) + 3,
+                        (candidateObject->m_screenPosition.m_y >> TILE_SHIFT_PX) + 3
                     );
                     POINT pt;
                     SET_POINT_COMPONENTS(pt, px, py);

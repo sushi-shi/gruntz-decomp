@@ -18,15 +18,15 @@ i32 CGrunt::UpdateDeathAnimation() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
         if (m_entranceReason == PICKUP_BOMB && m_deathType != DEATH_MELT) {
             m_triggerMgr->BuildRockBreakParticles(
-                m_object->m_screenX,
-                m_object->m_screenY,
+                m_object->m_screenPosition.m_x,
+                m_object->m_screenPosition.m_y,
                 1,
                 m_playerIndex
             );
         } else {
             m_triggerMgr->SpawnPuddle(
-                m_object->m_screenX,
-                m_object->m_screenY,
+                m_object->m_screenPosition.m_x,
+                m_object->m_screenPosition.m_y,
                 m_playerIndex,
                 IDX(m_moveIcon),
                 m_deathType != DEATH_MELT,
@@ -90,6 +90,6 @@ i32 CGrunt::UpdateDecayFade() {
         (static_cast<double>(elapsed) * 256.0
          / static_cast<double>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8)))
     );
-    SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
+    o->SetDrawFillFraction(SHADE_PAL_ALPHA_16, r);
     return 0;
 }

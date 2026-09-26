@@ -5,6 +5,7 @@
 #include <Wwd/WwdSpatialMgr.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Gruntz/WwdGrid.h>
 #include <Gruntz/WwdGridIter.h>
@@ -31,26 +32,26 @@ i32 CWwdSpatialMgr::ActivateAt(i32 centerX, i32 centerY) {
 
     WwdRect r;
     r.Init(
-        centerX - m_defaultRegionHalfWidth,
-        centerY - m_defaultRegionHalfHeight,
-        m_defaultRegionHalfWidth + centerX,
-        m_defaultRegionHalfHeight + centerY
+        centerX - m_defaultRegionHalfSize.cx,
+        centerY - m_defaultRegionHalfSize.cy,
+        m_defaultRegionHalfSize.cx + centerX,
+        m_defaultRegionHalfSize.cy + centerY
     );
     i32 n0 = m_defaultRegionGrid->Query(r, 1);
 
     r.Init(
-        centerX - m_largeRegionHalfWidth,
-        centerY - m_largeRegionHalfHeight,
-        m_largeRegionHalfWidth + centerX,
-        m_largeRegionHalfHeight + centerY
+        centerX - m_largeRegionHalfSize.cx,
+        centerY - m_largeRegionHalfSize.cy,
+        m_largeRegionHalfSize.cx + centerX,
+        m_largeRegionHalfSize.cy + centerY
     );
     i32 n1 = m_largeRegionGrid->Query(r, 1);
 
     r.Init(
-        centerX - m_smallRegionHalfWidth,
-        centerY - m_smallRegionHalfHeight,
-        m_smallRegionHalfWidth + centerX,
-        m_smallRegionHalfHeight + centerY
+        centerX - m_smallRegionHalfSize.cx,
+        centerY - m_smallRegionHalfSize.cy,
+        m_smallRegionHalfSize.cx + centerX,
+        m_smallRegionHalfSize.cy + centerY
     );
     i32 n2 = m_smallRegionGrid->Query(r, 1);
 
@@ -90,24 +91,24 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
     i32 count = 0;
     WwdRect defaultBounds;
     defaultBounds.Init(
-        centerX - m_defaultRegionHalfWidth,
-        centerY - m_defaultRegionHalfHeight,
-        m_defaultRegionHalfWidth + centerX,
-        m_defaultRegionHalfHeight + centerY
+        centerX - m_defaultRegionHalfSize.cx,
+        centerY - m_defaultRegionHalfSize.cy,
+        m_defaultRegionHalfSize.cx + centerX,
+        m_defaultRegionHalfSize.cy + centerY
     );
     WwdRect largeBounds;
     largeBounds.Init(
-        centerX - m_largeRegionHalfWidth,
-        centerY - m_largeRegionHalfHeight,
-        centerX + m_largeRegionHalfWidth,
-        centerY + m_largeRegionHalfHeight
+        centerX - m_largeRegionHalfSize.cx,
+        centerY - m_largeRegionHalfSize.cy,
+        centerX + m_largeRegionHalfSize.cx,
+        centerY + m_largeRegionHalfSize.cy
     );
     WwdRect smallBounds;
     smallBounds.Init(
-        centerX - m_smallRegionHalfWidth,
-        centerY - m_smallRegionHalfHeight,
-        centerX + m_smallRegionHalfWidth,
-        centerY + m_smallRegionHalfHeight
+        centerX - m_smallRegionHalfSize.cx,
+        centerY - m_smallRegionHalfSize.cy,
+        centerX + m_smallRegionHalfSize.cx,
+        centerY + m_smallRegionHalfSize.cy
     );
 
     POSITION pos = m_activeGroup->m_list.GetHeadPosition();
@@ -138,8 +139,8 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
                 static_cast<WwdGameObjectFlags>(obj->m_flags),
                 WWD_GAME_OBJECT_FLAG_WORLD_SPACE
             )) {
-            i32 x = obj->m_screenX;
-            i32 y = obj->m_screenY;
+            i32 x = obj->m_screenPosition.m_x;
+            i32 y = obj->m_screenPosition.m_y;
             WwdRegion* r = &obj->m_region;
             if (x < m_levelBounds.left) {
                 x = m_levelBounds.left;
@@ -153,8 +154,7 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
             if (y >= m_levelBounds.bottom) {
                 y = m_levelBounds.bottom;
             }
-            r->m_x = x;
-            r->m_y = y;
+            SET_VECTOR2_COMPONENTS(r->m_position, x, y);
             WwdGameObjectFlags flags = static_cast<WwdGameObjectFlags>(obj->m_flags);
             i32 result;
             if (HAS(flags, WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION)) {
