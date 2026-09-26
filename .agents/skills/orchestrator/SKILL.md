@@ -65,16 +65,20 @@ In the lane's slot:
    confirm the lane's reported MAX values are in the baseline before banking.
    If another merge already landed the same fix, drop the duplicate commit
    (or cherry-pick only the lane's unique commits onto `origin/main`).
-2. `gruntz match <edited units>` records byte-neutral MAX resets into
-   `docs/todos/syntactic-recovery.tsv`; commit that file if it changed.
-3. `gruntz build`, `gruntz verify bank`, commit the baseline and README.
-4. `gruntz build verify`: only `REGRESS` (an edited function whose score
-   fell) blocks; `RESET` and `DIP` are informational. Run
+2. `gruntz build verify` BEFORE banking, so the MAX gate compares the lane
+   with main's baseline (after a bank it compares the lane with itself and
+   cannot see a drop). Only `REGRESS` (an edited function whose CUR fell)
+   blocks; `RESET` and `DIP` are informational. A REGRESS is either fixed in
+   the lane or adjudicated by the user before merging. Run
    `gruntz verify selftest` only if the lane touched `scripts/`.
+3. `gruntz match <edited units>` records byte-neutral MAX resets into
+   `docs/todos/syntactic-recovery.tsv`; commit that file if it changed.
+4. `gruntz verify bank`, commit the baseline and README.
 5. Push, open a PR that lists each function's change, squash-merge, delete the
    remote branch, park the slot at `origin/main`.
 
-Never commit or build in a half-finished rebase.
+Never commit or build in a half-finished rebase: check `git status` for
+unmerged paths before every build.
 
 ## Ledgers and rulings
 
