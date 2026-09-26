@@ -43,9 +43,7 @@
 
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
-    const char* name = g_typeColl[m_logicRecord->m_eventCode];
-    bool eqI = (strcmp(name, "I") == 0);
-    if (eqI) {
+    if (ANIMATION_ACT_EQUALS("I")) {
         return 1;
     }
     this->m_defenderPx = this->m_lastTilePx;

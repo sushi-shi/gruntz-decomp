@@ -923,10 +923,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        CString* node = &g_typeColl[found->m_logicRecord->EventCode()];
-
-        bool eq = (strcmp(*node, "K") == 0);
-        if (eq) {
+        if (ANIMATION_ACT_EQUALS_FOR(found, "K")) {
             return 0;
         }
 

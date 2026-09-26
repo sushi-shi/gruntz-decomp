@@ -528,9 +528,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
             MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
     }
 
-    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-    bool eqWalk = (strcmp(*rec, "D") == 0);
-    if (eqWalk) {
+    if (ANIMATION_ACT_EQUALS("D")) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* buf = EntranceCell()->WalkName().GetBuffer(0);
@@ -538,9 +536,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         return 1;
     }
 
-    CString* rec2 = &g_typeColl[m_logicRecord->m_eventCode];
-    bool eqIdle = (strcmp(*rec2, "A") == 0);
-    if (eqIdle) {
+    if (ANIMATION_ACT_EQUALS("A")) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* buf = EntranceCell()->IdleName().GetBuffer(0);

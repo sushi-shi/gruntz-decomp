@@ -1432,10 +1432,7 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = true;
     } else {
-        CString* r = &g_typeColl[m_logicRecord->m_eventCode];
-        bool ne;
-        ne = (strcmp(*r, "L") != 0);
-        if (ne) {
+        if (ANIMATION_ACT_DIFFERS("L")) {
             m_entranceActive = false;
         }
     }

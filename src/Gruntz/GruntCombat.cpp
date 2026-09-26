@@ -1006,17 +1006,9 @@ i32 CGrunt::HandleCombatContact(
     } else {
         FaceTowardPixel(otherPxX, otherPxY);
 
-        CString* rec0 = &g_typeColl[m_logicRecord->m_eventCode];
-        bool neH = (strcmp(*rec0, "H") != 0);
-        if (neH) {
-            i32 keyF = m_logicRecord->m_eventCode;
-            CString* recF = &g_typeColl[keyF];
-            bool neF = (strcmp(*recF, DATA_COMPGEN(0x0020d2e8, "F")) != 0);
-            if (neF) {
-                i32 keyO = m_logicRecord->m_eventCode;
-                CString* recO = &g_typeColl[keyO];
-                bool neO = (strcmp(*recO, "O") != 0);
-                if (neO) {
+        if (ANIMATION_ACT_DIFFERS("H")) {
+            if (ANIMATION_ACT_DIFFERS(DATA_COMPGEN(0x0020d2e8, "F"))) {
+                if (ANIMATION_ACT_DIFFERS("O")) {
                     ResetGeometry();
                 }
             }
@@ -1292,9 +1284,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    CString* typeRec = &g_typeColl[this->m_logicRecord->m_eventCode];
-    bool isCodeO = (strcmp(*typeRec, "O") == 0);
-    if (isCodeO) {
+    if (ANIMATION_ACT_EQUALS("O")) {
         return 1;
     }
 
@@ -1618,9 +1608,7 @@ RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
 
-        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        bool eq = (strcmp(*rec, "F") == 0);
-        if (!eq) {
+        if (ANIMATION_ACT_DIFFERS("F")) {
             if (m_stamina >= STAMINA_FULL) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
@@ -2525,9 +2513,7 @@ void CGrunt::FinalizeStep(char* name) {
         return;
     }
 
-    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-    bool eqPos = (strcmp(*rec, "S") == 0);
-    if (eqPos) {
+    if (ANIMATION_ACT_EQUALS("S")) {
         if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
             return;
         }
@@ -2590,18 +2576,10 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    CString* code = &g_typeColl[m_logicRecord->m_eventCode];
-    bool different = strcmp(*code, "D");
-    if (different) {
-        code = &g_typeColl[m_logicRecord->m_eventCode];
-        different = strcmp(*code, "N");
-        if (different) {
-            code = &g_typeColl[m_logicRecord->m_eventCode];
-            different = strcmp(*code, "L");
-            if (different) {
-                code = &g_typeColl[m_logicRecord->m_eventCode];
-                different = strcmp(*code, "M");
-                if (different) {
+    if (ANIMATION_ACT_DIFFERS("D")) {
+        if (ANIMATION_ACT_DIFFERS("N")) {
+            if (ANIMATION_ACT_DIFFERS("L")) {
+                if (ANIMATION_ACT_DIFFERS("M")) {
                     return;
                 }
                 if (m_bombRunActive != false) {
@@ -2723,23 +2701,17 @@ void CGrunt::AdvanceMotion() {
             }
         }
 
-        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        bool hit = (strcmp(*rec, "N") == 0);
-        if (hit) {
+        if (ANIMATION_ACT_EQUALS("N")) {
             return;
         }
-        rec = &g_typeColl[m_logicRecord->m_eventCode];
-        hit = (strcmp(*rec, "L") == 0);
-        if (hit) {
+        if (ANIMATION_ACT_EQUALS("L")) {
             if (StepCompassMove() != 0) {
                 return;
             }
             m_toyDuration = 0;
             return;
         }
-        rec = &g_typeColl[m_logicRecord->m_eventCode];
-        hit = (strcmp(*rec, "M") == 0);
-        if (hit) {
+        if (ANIMATION_ACT_EQUALS("M")) {
             if (ClaimSwitchTile() != 0) {
                 return;
             }

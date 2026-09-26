@@ -40,11 +40,7 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
         RESET_GRUNT_POWERED_STATE(this)
     }
 
-    CString* node = &g_typeColl[m_logicRecord->EventCode()];
-
-    bool eq;
-    eq = (strcmp(*node, "D") == 0);
-    if (eq) {
+    if (ANIMATION_ACT_EQUALS("D")) {
         GruntDirectionCell cell = m_entranceCell;
         i32 col = cell.m_column + cell.m_row * 2;
         i32 base = cell.m_row + col;
