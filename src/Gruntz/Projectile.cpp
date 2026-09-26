@@ -885,7 +885,10 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
 // @early-stop
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::UpdateCountdown() {
-    i32 cell = TBombGridCell(m_object);
+    i32 cell = g_gameReg->m_tileGrid->CellFlagsAt(
+        m_object->m_screenX >> TILE_SHIFT_PX,
+        m_object->m_screenY >> TILE_SHIFT_PX
+    );
     if ((cell & BRICKZ_BLOCKED_MASK) || (cell & IDX(CELL_FLAG_SPECIAL))) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         TBombGridClear(m_object);
@@ -896,8 +899,9 @@ i32 CTimeBomb::UpdateCountdown() {
     if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
         if (m_fastPhase == false) {
             SwitchAnimationByName("GAME_TIMEBOMBFAST", 0);
-            m_duration = g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8);
-            m_startTime = g_frameTime;
+            i64* clock = &m_startTime;
+            clock[1] = g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8);
+            clock[0] = g_frameTime;
             m_fastPhase = true;
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
