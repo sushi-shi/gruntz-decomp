@@ -107,14 +107,11 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
         return 0;
     }
-    DDrawPageKind kind = static_cast<DDrawPageKind>(m_id);
-
     m_width = w;
     m_height = h;
     m_bpp = bpp;
-    RECT* rect = &m_srcRect;
-    SET_RECT_COMPONENTS(*rect, 0, 0, w, h);
-    if (kind == DDRAW_PAGE_BACK) {
+    SET_RECT_COMPONENTS(m_srcRect, 0, 0, w, h);
+    if (m_id == IDX(DDRAW_PAGE_BACK)) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = mgr->m_deviceManager->WrapAttachedSurface(
             mgr->m_drawTarget->m_frontSurface->m_surface,
