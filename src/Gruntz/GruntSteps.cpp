@@ -38,7 +38,6 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyMacros.h>

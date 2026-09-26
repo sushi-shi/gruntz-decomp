@@ -267,7 +267,7 @@ i32 CObjectDropper::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    SerBandPair(ar, mode, &m_dropTiming);
+    SerializeClockPair(ar, mode, &m_dropTiming);
 
     switch (mode) {
         case SERIAL_SAVE:

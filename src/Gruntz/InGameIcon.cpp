@@ -511,7 +511,7 @@ i32 CToyPeek::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    SerBandPair(ar, mode, &m_countdownTiming);
+    SerializeClockPair(ar, mode, &m_countdownTiming);
     return 1;
 }
 

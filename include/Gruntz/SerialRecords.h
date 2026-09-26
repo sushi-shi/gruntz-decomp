@@ -9,15 +9,15 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 
-inline void SerBandPair(CFileMemBase* ar, SerialMode mode, ClockInterval* band) {
+inline void SerializeClockPair(CFileMemBase* ar, SerialMode mode, ClockInterval* timer) {
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
-            ar->Read(&band->m_start, sizeof(band->m_start));
-            ar->Read(&band->m_interval, sizeof(band->m_interval));
+            ar->Read(&timer->m_start, sizeof(timer->m_start));
+            ar->Read(&timer->m_interval, sizeof(timer->m_interval));
         }
     } else {
-        ar->Write(&band->m_start, sizeof(band->m_start));
-        ar->Write(&band->m_interval, sizeof(band->m_interval));
+        ar->Write(&timer->m_start, sizeof(timer->m_start));
+        ar->Write(&timer->m_interval, sizeof(timer->m_interval));
     }
 }
 

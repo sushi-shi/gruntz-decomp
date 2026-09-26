@@ -42,7 +42,7 @@
 #include <Gruntz/SbiMachineState.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialClockInline.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialRecordMacros.h>
 #include <Gruntz/SerialRefLookup.h>

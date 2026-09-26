@@ -20,7 +20,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/RainCloud.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialClockInline.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>

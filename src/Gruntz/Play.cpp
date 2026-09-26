@@ -78,8 +78,8 @@
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialClockMacros.h>
 #include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -6103,32 +6103,23 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
         }
     }
 
-    ClockInterval* p;
-    p = &m_syncTiming;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    SerializeClockPair(ar, mode, &m_syncTiming);
     if (!m_statusBar->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
     if (!m_levelTimer->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
-    p = &m_cueTiming;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    SerializeClockPair(ar, mode, &m_cueTiming);
     if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
-    p = &m_region0Timing;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_region1Timing;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_defeatCountdownTiming;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_region2Timing;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_region3Timing;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
-    p = &m_bootyTiming;
-    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    SerializeClockPair(ar, mode, &m_region0Timing);
+    SerializeClockPair(ar, mode, &m_region1Timing);
+    SerializeClockPair(ar, mode, &m_defeatCountdownTiming);
+    SerializeClockPair(ar, mode, &m_region2Timing);
+    SerializeClockPair(ar, mode, &m_region3Timing);
+    SerializeClockPair(ar, mode, &m_bootyTiming);
     return 1;
 }
 

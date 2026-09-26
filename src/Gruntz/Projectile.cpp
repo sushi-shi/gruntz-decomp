@@ -921,7 +921,7 @@ i32 CTimeBomb::SerializeDispatch(
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    SerBandPair(sa, mode, &m_timing);
+    SerializeClockPair(sa, mode, &m_timing);
     switch (mode) {
         case SERIAL_LOAD:
             sa->Read(&m_fastPhase, sizeof(m_fastPhase));

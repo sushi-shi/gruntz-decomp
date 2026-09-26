@@ -241,9 +241,9 @@ i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typ
         }
     }
 
-    SerBandPair(ar, mode, &m_countdown);
+    SerializeClockPair(ar, mode, &m_countdown);
 
-    SerBandPair(ar, mode, &m_stamp);
+    SerializeClockPair(ar, mode, &m_stamp);
     return 1;
 }
 
