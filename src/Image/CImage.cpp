@@ -53,7 +53,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = m_ownerCtx->m_deviceManager->LoadFileSurface(path, surfaceCaps, colorKey);
+    CDDSurface* item = OwnerMgr()->m_deviceManager->LoadFileSurface(path, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -119,7 +119,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
 
     CDDSurface* item =
-        m_ownerCtx->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
+        OwnerMgr()->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -141,8 +141,9 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = m_ownerCtx->m_deviceManager
-                           ->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
+    CDDSurface* item =
+        OwnerMgr()
+            ->m_deviceManager->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -167,7 +168,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
         return 0;
     }
 
-    ColorDepth fmt = m_ownerCtx->m_drawTarget->m_frontSurface->m_bpp;
+    ColorDepth fmt = OwnerMgr()->m_drawTarget->m_frontSurface->m_bpp;
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }
@@ -188,7 +189,7 @@ void CImage::Unload() {
     m_width = 0;
     m_height = 0;
     if (m_surface != NULL) {
-        m_ownerCtx->m_deviceManager->RemoveSurface(m_surface);
+        OwnerMgr()->m_deviceManager->RemoveSurface(m_surface);
         m_surface = NULL;
     }
     CDDrawShadeBlit* owned = m_owned;
@@ -272,7 +273,7 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
     }
 
     return m_surface->Resolve(
-        m_ownerCtx->m_deviceManager,
+        OwnerMgr()->m_deviceManager,
         resolved,
         index,
         static_cast<u32>(src->GetSize()),
@@ -341,7 +342,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 dright = right;
     i32 dbottom = bottom;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        BlitRect srcClip = m_ownerCtx->m_level->m_viewportRect;
+        BlitRect srcClip = OwnerMgr()->m_level->m_viewportRect;
         RECT destClip;
         CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
         if (x < destClip.left) {
@@ -411,7 +412,7 @@ void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     RVA_DYNINIT(0x00153800, 0x10, s_clip)
     DATA(0x002bf2a0)
     static CResolveNode s_clip;
-    if (s_clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
+    if (s_clip.Init(OwnerMgr(), 0, x, y, flags, 0)) {
         this->RenderImage(&s_clip, target);
     }
 }
@@ -427,7 +428,7 @@ void CImage::RenderFrameClipped(
     RVA_DYNINIT(0x001538b0, 0x10, s_clip)
     DATA(0x002bf228)
     static CResolveNode s_clip;
-    if (s_clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
+    if (s_clip.Init(OwnerMgr(), 0, x, y, flags, 0)) {
         if (clipRect != NULL) {
             s_clip.m_clip = *clipRect;
         }
@@ -492,7 +493,6 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     SET_DIRTY_RECT(info, &d, w, h);
 }
 
-// @early-stop
 RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
@@ -535,7 +535,6 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     SET_DIRTY_RECT(info, &d, w, h);
 }
 
-// @early-stop
 RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
