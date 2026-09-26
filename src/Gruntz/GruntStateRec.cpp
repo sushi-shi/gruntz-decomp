@@ -35,20 +35,20 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
         case SERIAL_SAVE: {
             i32 v;
 
-            GS_SUBREC(m_statusGlyph);
-            GS_SUBREC(m_statusGlyphLatched);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_statusGlyph);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_statusGlyphLatched);
             s->Write(&m_statusValue, sizeof(m_statusValue));
 
-            GS_SUBREC(m_abilityGlyph);
-            GS_SUBREC(m_abilityGlyphLatched);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_abilityGlyph);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_abilityGlyphLatched);
             s->Write(&m_abilityValue, sizeof(m_abilityValue));
-            GS_SUBREC(m_overrideGlyph);
-            GS_SUBREC(m_overrideGlyphLatched);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_overrideGlyph);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_overrideGlyphLatched);
             s->Write(&m_overrideValue, sizeof(m_overrideValue));
-            GS_SUBREC(m_selectKey);
-            GS_SUBREC(m_selectGlyph);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_selectKey);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_selectGlyph);
             s->Write(&m_selectValue, sizeof(m_selectValue));
-            GS_SUBREC(m_timerGlyph);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_timerGlyph);
             s->Write(&m_timerValue, sizeof(m_timerValue));
             s->Write(&m_playerIndex, sizeof(m_playerIndex));
             s->Write(&m_unitIndex, sizeof(m_unitIndex));

@@ -44,6 +44,16 @@
         (ar)->Write(name, SERIAL_NAME_LEN);                                                        \
     } while (0)
 
+#define SERIAL_WRITE_FRAME(ar, mgr, name, index, field)                                            \
+    g_serialCounter++;                                                                             \
+    memset(name, 0, sizeof(name));                                                                 \
+    index = 0;                                                                                     \
+    if ((field) != NULL) {                                                                         \
+        (mgr)->m_imageRegistry->AnyValueMatches(field, name, &(index));                            \
+    }                                                                                              \
+    (ar)->Write(name, SERIAL_NAME_LEN);                                                            \
+    (ar)->Write(&(index), sizeof(index))
+
 #define SERIAL_READ_ANIMATION(ar, mgr, name, field)                                                \
     do {                                                                                           \
         g_serialCounter++;                                                                         \
@@ -54,16 +64,6 @@
             (field) = NULL;                                                                        \
         }                                                                                          \
     } while (0)
-
-#define GS_SUBREC(field)                                                                           \
-    g_serialCounter++;                                                                             \
-    memset(buf, 0, sizeof(buf));                                                                   \
-    v = 0;                                                                                         \
-    if (field != 0) {                                                                              \
-        reg->m_imageRegistry->AnyValueMatches(field, buf, &v);                                     \
-    }                                                                                              \
-    s->Write(buf, SERIAL_NAME_LEN);                                                                \
-    s->Write(&v, 4)
 
 #define GS_IDXREF(field)                                                                           \
     g_serialCounter++;                                                                             \

@@ -179,9 +179,9 @@ i32 CSBI_SideTab::SerializeFields(
         case SERIAL_SAVE: {
             i32 v;
 
-            GS_SUBREC(m_topFrame);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_topFrame);
 
-            GS_SUBREC(m_bottomFrame);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_bottomFrame);
 
             s->Write(&m_sampledValue, sizeof(m_sampledValue));
             s->Write(&m_rowIndex, sizeof(m_rowIndex));

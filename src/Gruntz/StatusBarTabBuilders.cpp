@@ -179,12 +179,12 @@ i32 CSBI_GruntMachine::SerializeFields(
             s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
-            GS_SUBREC(m_leftFrame);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_leftFrame);
             s->Write(&m_rightFrameIndex, sizeof(m_rightFrameIndex));
 
-            GS_SUBREC(m_rightFrame);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_rightFrame);
 
-            GS_SUBREC(m_standaloneFrame);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_standaloneFrame);
             break;
         }
 
