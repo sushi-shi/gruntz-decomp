@@ -3014,21 +3014,14 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             CAniRecordView* first;
             first = el->RecordAt(0);
             i32 handle = first->m_param;
-            GruntDirectionCell cell = m_entranceCell;
-            SetImageFrameByName(
-                m_cells[cell.m_row * 3 + cell.m_column].m_names[1].GetBuffer(0),
-                handle
-            );
+            SetImageFrameByName(EntranceCell()->StruckName().GetBuffer(0), handle);
         } else {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
             eq = IsAnimationAct("D");
             if (eq) {
-                GruntDirectionCell cell2 = m_entranceCell;
-                SetImageSetByName(
-                    m_cells[cell2.m_row * 3 + cell2.m_column].m_names[2].GetBuffer(0)
-                );
+                SetImageSetByName(EntranceCell()->WalkName().GetBuffer(0));
                 SwitchAnimation(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);

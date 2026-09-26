@@ -89,12 +89,7 @@ i32 CGrunt::ResetGeometry() {
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-    GruntDirectionCell cell = m_entranceCell;
-    i32 row = cell.m_row;
-    i32 column = cell.m_column;
-    i32 index = 3 * row + column;
-
-    const char* name = m_cells[index].AttackName().GetBuffer(0);
+    const char* name = EntranceCell()->AttackName().GetBuffer(0);
     SetImageFrameByName(name, frame);
 
     SET_ANIMATION_ACT("E");
@@ -204,11 +199,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
-    GruntDirectionCell cell = m_entranceCell;
-    i32 cellRow = cell.m_row;
-    i32 cellColumn = cell.m_column;
-    i32 base = cellRow + (cellColumn + 2 * cellRow);
-    char* buf = m_cells[base].AttackName().GetBuffer(0);
+    char* buf = EntranceCell()->AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
     m_struckPose = 1;
     return 0;
@@ -225,11 +216,7 @@ i32 CGrunt::StartRangedAttackAnimation() {
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
-    GruntDirectionCell cell = m_entranceCell;
-    i32 row = cell.m_row;
-    i32 column = cell.m_column;
-    i32 base = row + (column + 2 * row);
-    char* buf = m_cells[base].AttackName().GetBuffer(0);
+    char* buf = EntranceCell()->AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
     m_struckPose = 1;
     return 0;
