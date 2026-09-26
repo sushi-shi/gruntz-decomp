@@ -18,6 +18,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -63,14 +64,7 @@ i32 CGrunt::StepBomberBehavior() {
                     == -1) {
                     m_dwell = 0;
                     if (m_blockedVoicePending != false) {
-                        CWwdSpriteObject* h = m_object;
-                        i32 vx = h->m_screenX;
-                        i32 vy = h->m_screenY;
-                        const RECT* rect =
-                            &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                        if (::PtInRect(rect, vx, vy)) {
-                            g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                        }
+                        PLAY_VOICE_IN_VIEW(0x366);
                         m_blockedVoicePending = false;
                         m_dwell = 0;
                         return 1;

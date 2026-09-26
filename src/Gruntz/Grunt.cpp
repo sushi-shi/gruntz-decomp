@@ -1483,12 +1483,7 @@ label_4c6e4:
                 m_coordList.AddHead(co);
             }
         }
-        i32 hudY = m_object->m_screenY;
-        i32 hudX = m_object->m_screenX;
-        CCueRect* rr = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(rr, hudX, hudY)) {
-            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
-        }
+        PLAY_GRUNT_CUE_IN_VIEW(8);
         tgtPxX = beyondPxX;
         tgtPxY = beyondPxY;
     }

@@ -19,6 +19,7 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -185,13 +186,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     }
                     SET_GRUNT_ARRIVAL_TARGET(occ);
                     m_defenderState = AISTATE_CHASE;
-                    CWwdSpriteObject* h = m_object;
-                    CGruntzMgr* reg = g_gameReg;
-                    const RECT* rect = &reg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (CGameLevel::PointInBounds(rect, h->m_screenX, h->m_screenY) == 0) {
-                        goto L_f318a;
-                    }
-                    reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
+                    PLAY_VOICE_IF_VISIBLE(0x366);
                 }
             L_f318a:
                 m_dwell = 0;

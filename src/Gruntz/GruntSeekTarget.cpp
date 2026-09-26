@@ -20,6 +20,7 @@
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -161,15 +162,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (this->m_blockedVoicePending != false) {
-            CGruntzMgr* gameReg = g_gameReg;
-            i32 r = CGameLevel::PointInBounds(
-                &gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                this->m_object->m_screenX,
-                this->m_object->m_screenY
-            );
-            if (r != 0) {
-                gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-            }
+            PLAY_VOICE_IF_VISIBLE(0x366);
             this->m_blockedVoicePending = false;
             this->m_dwell = 0;
             return 1;
@@ -202,8 +195,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                             i32 ddx = ex - this->GetScreenTileX();
                             i32 ey = sv->GetScreenTileY() - this->GetScreenTileY();
                             i32 dist = abs(SQR(ddx)) + abs(SQR(ey));
-                            if (dist < best
-                                && dist <= SQR(this->m_defenderRadius)) {
+                            if (dist < best && dist <= SQR(this->m_defenderRadius)) {
                                 best = dist;
                                 bestIdx = i;
                             }
@@ -224,12 +216,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                         0
                     )
                     != 0) {
-                    i32 by = this->m_object->m_screenY;
-                    i32 bx = this->m_object->m_screenX;
-                    CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (::PtInRect(board, bx, by)) {
-                        g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                    }
+                    PLAY_VOICE_IN_VIEW(0x366);
                 }
             }
             this->m_dwell = 0;

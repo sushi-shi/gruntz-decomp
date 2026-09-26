@@ -523,13 +523,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix);
     spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix, 0);
 
-    CGruntzMgr* g = g_gameReg;
-    i32 y = m_object->m_screenY;
-    i32 x = m_object->m_screenX;
-    CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-    if (::PtInRect(rc, x, y)) {
-        g->m_voiceManager->PlayGruntVoiceCue(this, 0xe, -1, -1, -1);
-    }
+    PLAY_GRUNT_CUE_IN_VIEW(0xe);
 
     LoadGruntTypeTable(PICKUP_NONE, 1, 0, 1);
     m_entranceActive = false;
@@ -873,55 +867,25 @@ void CGrunt::OnStruck(b32 wasHit) {
         if (m_gruntKind == GRUNT_GHOST) {
             return;
         }
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
         if (c < 5) {
-            CGruntzMgr* g = g_gameReg;
-            const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-            if (::PtInRect(vr, x, y)) {
-                g->m_voiceManager->PlayVoice(this, 0x370, -1, 0, -1, -1);
-            }
+            PLAY_VOICE_IN_VIEW(0x370);
             return;
         }
-        CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(vr, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x371, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x371);
         m_struckCount = 0;
         return;
     }
 
     if (c < 5) {
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
-        CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(vr, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x320, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x320);
         return;
     }
     if (c < 0xa) {
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
-        CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(vr, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x321, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x321);
         return;
     }
-    {
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
-        m_struckCount = 0;
-        CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(vr, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x322, -1, 0, -1, -1);
-        }
-    }
+    m_struckCount = 0;
+    PLAY_VOICE_IN_VIEW(0x322);
 }
 
 RVA(0x00058b60, 0x2d)
@@ -2197,16 +2161,7 @@ void CGrunt::StepBehavior(char*) {
                     return;
                 }
             }
-            {
-                CWwdSpriteObject* obj = m_object;
-                CGruntzMgr* reg3 = g_gameReg;
-                i32 sy = obj->m_screenY;
-                i32 sx = obj->m_screenX;
-                const RECT* vr = &reg3->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (::PtInRect(vr, sx, sy)) {
-                    reg3->m_voiceManager->PlayVoice(this, 0x348, -1, 0, -1, -1);
-                }
-            }
+            PLAY_VOICE_IN_VIEW(0x348);
             m_entranceSafeTimeLo = 0x3e8;
             m_entranceSafeTimeHi = 0;
             m_entranceClockLo = static_cast<i32>(g_frameTime);

@@ -20,6 +20,7 @@
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -116,17 +117,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                         != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(g);
                         m_defenderState = AISTATE_CHASE;
-                        CWwdSpriteObject* mp = m_object;
-                        CGruntzMgr* mgr = g_gameReg;
-
-                        i32 los = CGameLevel::PointInBounds(
-                            &mgr->m_world->m_level->m_mainPlane->m_planeViewRect,
-                            mp->m_screenX,
-                            mp->m_screenY
-                        );
-                        if (los != 0) {
-                            mgr->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                        }
+                        PLAY_VOICE_IF_VISIBLE(0x366);
                     }
                     m_dwell = 0;
                     return 1;

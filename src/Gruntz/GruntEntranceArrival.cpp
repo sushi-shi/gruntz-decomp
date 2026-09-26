@@ -124,13 +124,7 @@ i32 CGrunt::UpdateGruntStatus() {
         }
     } else if (m_stamina > STAMINA_HALF) {
         if (m_lowStaminaCued == false) {
-            CGruntzMgr* g = g_gameReg;
-            i32 y = m_object->m_screenY;
-            i32 x = m_object->m_screenX;
-            const RECT& vr = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-            if (::PtInRect(&vr, x, y)) {
-                g->m_voiceManager->PlayGruntVoiceCue(this, 2, -1, -1, -1);
-            }
+            PLAY_GRUNT_CUE_IN_VIEW(2);
             m_lowStaminaCued = true;
         }
     }
@@ -176,16 +170,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 
     ArmGruntCombatTimeout(this);
 
-    {
-        CWwdSpriteObject* h = m_object;
-        CGruntzMgr* g = g_gameReg;
-        i32 yy = h->m_screenY;
-        i32 xx = h->m_screenX;
-        const RECT* rect = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(rect, xx, yy)) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 1, -1, -1, -1);
-        }
-    }
+    PLAY_GRUNT_CUE_IN_VIEW(1);
 
     {
         CWwdSpriteObject* h = m_object;
@@ -563,14 +548,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         char* nm = (&m_frameSetName)->GetBuffer(0);
         SetImageFrameByName(nm, frame);
         m_entranceStamped = true;
-        CWwdSpriteObject* h = m_object;
-        CGruntzMgr* g = g_gameReg;
-        i32 y = h->m_screenY;
-        i32 x = h->m_screenX;
-        const RECT& r = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(&r, x, y)) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
-        }
+        PLAY_GRUNT_CUE_IN_VIEW(0xc);
         return 0;
     }
     StopVehicleLoopSound();
@@ -668,41 +646,15 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
                 g_gameReg->Rand();
                 b32 focused = (m_playerIndex == g_curPlayer);
                 if (focused && idx > 0x5a) {
-                    CGruntzMgr* g = g_gameReg;
-                    if (CGameLevel::PointInBounds(
-                            &g->m_world->m_level->m_mainPlane->m_planeViewRect,
-                            m_object->m_screenX,
-                            m_object->m_screenY
-                        )) {
-
-                        g->m_voiceManager->PlayGruntVoiceCue(this, 4, -1, -1, -1);
-                    }
+                    PLAY_GRUNT_CUE_IF_VISIBLE(4);
                 } else if (focused || m_entranceReason != PICKUP_NONE) {
                     switch (idx) {
-                        case GRUNT_IDLE_VARIANT_PRIMARY: {
-                            CGruntzMgr* g = g_gameReg;
-                            if (CGameLevel::PointInBounds(
-                                    &g->m_world->m_level->m_mainPlane->m_planeViewRect,
-                                    m_object->m_screenX,
-                                    m_object->m_screenY
-                                )) {
-
-                                g->m_voiceManager->PlayGruntVoiceCue(this, 5, -1, -1, -1);
-                            }
+                        case GRUNT_IDLE_VARIANT_PRIMARY:
+                            PLAY_GRUNT_CUE_IF_VISIBLE(5);
                             break;
-                        }
-                        case GRUNT_IDLE_VARIANT_SECONDARY: {
-                            CGruntzMgr* g = g_gameReg;
-                            if (CGameLevel::PointInBounds(
-                                    &g->m_world->m_level->m_mainPlane->m_planeViewRect,
-                                    m_object->m_screenX,
-                                    m_object->m_screenY
-                                )) {
-
-                                g->m_voiceManager->PlayGruntVoiceCue(this, 6, -1, -1, -1);
-                            }
+                        case GRUNT_IDLE_VARIANT_SECONDARY:
+                            PLAY_GRUNT_CUE_IF_VISIBLE(6);
                             break;
-                        }
                         default:
                             break;
                     }
@@ -945,17 +897,10 @@ i32 CGrunt::StepArrivalReroll() {
         return 0;
     }
     i32 pick = GetRandomNumber() % 0x65;
-    CWwdSpriteObject* h = m_object;
-    i32 y = h->m_screenY;
-    i32 xp = h->m_screenX;
     if (pick > 0x19) {
-        if (::PtInRect(&g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect, xp, y)) {
-            g_gameReg->m_voiceManager->PlayVoice(this, 0x15d, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x15d);
     } else {
-        if (::PtInRect(&g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect, xp, y)) {
-            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 9, -1, -1, -1);
-        }
+        PLAY_GRUNT_CUE_IN_VIEW(9);
     }
     return 0;
 }
@@ -1013,14 +958,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
     i64 elapsed2 = static_cast<i64>(g_frameTime) - m_idleAnchor;
     if (elapsed2 >= m_idleDelay) {
-        CWwdSpriteObject* h = m_object;
-        CGruntzMgr* g = g_gameReg;
-        i32 y = h->m_screenY;
-        i32 x = h->m_screenX;
-        const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(&rect, x, y)) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 0xd, -1, -1, -1);
-        }
+        PLAY_GRUNT_CUE_IN_VIEW(0xd);
     }
 
     CWwdSpriteObject* h2 = m_object;
@@ -1076,34 +1014,13 @@ i32 CGrunt::BuildGruntExitAnimation() {
     i32 r = rand() % 0x1e1;
     if (r > 0x140) {
         found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzOne);
-        CGruntzMgr* g = g_gameReg;
-        if (CGameLevel::PointInBounds(
-                &g->m_world->m_level->m_mainPlane->m_planeViewRect,
-                m_object->m_screenX,
-                m_object->m_screenY
-            )) {
-            g->m_voiceManager->PlayVoice(this, 0x384, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IF_VISIBLE(0x384);
     } else if (r > 0xa0) {
         found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzTwo);
-        CGruntzMgr* g = g_gameReg;
-        if (CGameLevel::PointInBounds(
-                &g->m_world->m_level->m_mainPlane->m_planeViewRect,
-                m_object->m_screenX,
-                m_object->m_screenY
-            )) {
-            g->m_voiceManager->PlayVoice(this, 0x385, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IF_VISIBLE(0x385);
     } else {
         found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzThree);
-        CGruntzMgr* g = g_gameReg;
-        if (CGameLevel::PointInBounds(
-                &g->m_world->m_level->m_mainPlane->m_planeViewRect,
-                m_object->m_screenX,
-                m_object->m_screenY
-            )) {
-            g->m_voiceManager->PlayVoice(this, 0x386, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IF_VISIBLE(0x386);
     }
 
     CWapX::ApplyAnimation(found, 0);
@@ -1270,15 +1187,7 @@ tail:
         char* cn = EntranceCell()->StruckName().GetBuffer(0);
         SetImageFrameByName(cn, frame);
     }
-    {
-        CWwdSpriteObject* h = m_object;
-        i32 vx = h->m_screenX;
-        i32 vy = h->m_screenY;
-        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(rect, vx, vy)) {
-            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 7, -1, -1, -1);
-        }
-    }
+    PLAY_GRUNT_CUE_IN_VIEW(7);
     return 0;
 }
 
@@ -1363,12 +1272,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
             WWDDRAW_NO_ANIMATION
         );
     } else {
-        CWwdSpriteObject* h = m_object;
-        CGruntzMgr* g = g_gameReg;
-        const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInBounds(bounds, h->m_screenX, h->m_screenY)) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
-        }
+        PLAY_GRUNT_CUE_IF_VISIBLE(8);
     }
 
     FaceTowardTile(tileX, tileY);
@@ -1411,14 +1315,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         }
 
         i32 cueId = base + m_moveVariant - 1;
-        CWwdSpriteObject* h = m_object;
-        CGruntzMgr* g = g_gameReg;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(&rect, x, y)) {
-            g->m_voiceManager->PlayVoice(this, cueId, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(cueId);
 
         SET_ANIMATION_ACT("I");
         m_entranceActive = true;

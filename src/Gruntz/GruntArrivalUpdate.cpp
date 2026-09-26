@@ -20,6 +20,7 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -122,15 +123,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                             != 0) {
                             SET_GRUNT_ARRIVAL_TARGET(g);
                             this->m_defenderState = AISTATE_CHASE;
-                            CGruntzMgr* reg = g_gameReg;
-                            i32 r = CGameLevel::PointInBounds(
-                                &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                                this->m_object->m_screenX,
-                                this->m_object->m_screenY
-                            );
-                            if (r != 0) {
-                                reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                            }
+                            PLAY_VOICE_IF_VISIBLE(0x366);
                         }
                     }
                     this->m_dwell = 0;
@@ -219,15 +212,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     break;
                 }
                 m_defenderState = AISTATE_CHASE;
-                {
-                    CGruntzMgr* reg = g_gameReg;
-                    const RECT& view = reg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    i32 px = m_object->m_screenX;
-                    i32 py = m_object->m_screenY;
-                    if (::PtInRect(&view, px, py)) {
-                        reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                    }
-                }
+                PLAY_VOICE_IN_VIEW(0x366);
                 break;
             }
             m_defenderState = AISTATE_CHASE;

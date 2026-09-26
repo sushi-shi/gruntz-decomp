@@ -109,7 +109,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzSquash);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzSquash, DEATH_FRAME());
-            DEATH_CUE(0x35b);
+            PLAY_VOICE_IF_VISIBLE(0x35b);
             goto finalize;
 
         case DEATH_DROP:
@@ -121,7 +121,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzSink);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzSink, DEATH_FRAME());
-            DEATH_CUE(0x35a);
+            PLAY_VOICE_IF_VISIBLE(0x35a);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
@@ -130,21 +130,21 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzHole);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzHole, DEATH_FRAME());
-            DEATH_CUE(0x357);
+            PLAY_VOICE_IF_VISIBLE(0x357);
             goto finalize;
 
         case DEATH_SHATTER:
             m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzShatter);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_FREEZE", DEATH_FRAME());
-            DEATH_CUE(0x354);
+            PLAY_VOICE_IF_VISIBLE(0x354);
             goto finalize;
 
         case DEATH_BURN:
             m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzBurn);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzBurn, DEATH_FRAME());
-            DEATH_CUE(0x352);
+            PLAY_VOICE_IF_VISIBLE(0x352);
             goto finalize;
 
         case DEATH_QUICKFALL:
@@ -156,7 +156,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 CWwdSpriteObject* o = m_object;
                 SET_SORT_KEY_IF_CHANGED(o, -1)
             }
-            DEATH_CUE(0x357);
+            PLAY_VOICE_IF_VISIBLE(0x357);
             goto finalize;
 
         case DEATH_FALL: {
@@ -179,7 +179,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             }
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
-            DEATH_CUE(tag);
+            PLAY_VOICE_IF_VISIBLE(tag);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
@@ -208,7 +208,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             }
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
-            DEATH_CUE(tag);
+            PLAY_VOICE_IF_VISIBLE(tag);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
@@ -221,7 +221,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             );
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzElectrocute, DEATH_FRAME());
-            DEATH_CUE(0x353);
+            PLAY_VOICE_IF_VISIBLE(0x353);
             goto finalize;
         }
 
@@ -233,7 +233,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             );
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_MELT", DEATH_FRAME());
-            DEATH_CUE(0x359);
+            PLAY_VOICE_IF_VISIBLE(0x359);
             goto finalize;
         }
 
@@ -244,7 +244,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             );
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzKaroke, DEATH_FRAME());
-            DEATH_CUE(0x358);
+            PLAY_VOICE_IF_VISIBLE(0x358);
             goto tail;
         }
 
@@ -259,7 +259,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             );
             SwitchAnimation(m_poseDeath);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzExplode, DEATH_FRAME());
-            DEATH_CUE(0x354);
+            PLAY_VOICE_IF_VISIBLE(0x354);
             goto finalize;
         }
 
@@ -277,15 +277,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         default:
             SwitchAnimation(m_poseDeath);
             APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
-            {
-                CGruntzMgr* g = g_gameReg;
-                CCueRect* r = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-                i32 x = m_object->m_screenX;
-                i32 y = m_object->m_screenY;
-                if (::PtInRect(r, x, y)) {
-                    g->m_voiceManager->PlayGruntVoiceCue(this, 3, -1, -1, -1);
-                }
-            }
+            PLAY_GRUNT_CUE_IN_VIEW(3);
 
             if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
                 SwitchAnimationByName("GRUNTZ_NORMALGRUNT_DEATH", 0);
@@ -296,16 +288,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
 pathA:
     APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
-    {
-        CGruntzMgr* g = g_gameReg;
-        if (CGameLevel::PointInBounds(
-                &g->m_world->m_level->m_mainPlane->m_planeViewRect,
-                m_object->m_screenX,
-                m_object->m_screenY
-            )) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 3, -1, -1, -1);
-        }
-    }
+    PLAY_GRUNT_CUE_IF_VISIBLE(3);
     deathType = DEATH_NORMAL;
     goto tail;
 
@@ -326,4 +309,3 @@ tail:
 }
 
 #undef DEATH_FRAME
-#undef DEATH_CUE
