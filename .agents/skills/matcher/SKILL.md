@@ -88,6 +88,43 @@ the form inapplicable. Do not mix several independent levers in one
 experiment. Do not retain probes, unused declarations, artificial locals, or
 distorted source.
 
+## Recover lifetimes — mandatory alongside inline helpers
+
+Before treating stack or register differences as compiler-state residue,
+recover the ownership and lifetime of each value around the first divergence.
+Read the caller and expanded helpers together: their named locals, parameters,
+references, returned aggregates, and unnamed temporaries all contribute to the
+caller's allocation.
+
+1. Map stack accesses to real values, accounting for pushes. Distinguish an
+   aggregate home from a scalar spill, a reused argument slot, and a hidden
+   return buffer. A frame-size difference alone does not identify the cause.
+2. Trace each value from creation through its last use, including calls and
+   branches. Check declaration versus assignment, sibling versus nested
+   scopes, and whether storage belongs to the caller or an inline helper.
+3. Check full-expression boundaries. Passing a returned aggregate directly,
+   naming a copy, and binding a local const reference can give its temporary
+   different lifetimes. Two expansions of the same helper can acquire
+   separate homes even when neither returns an aggregate.
+4. Check parameter and result boundaries. By-value coordinates are evaluated
+   before the helper body; references can defer loads until their uses. A
+   returned aggregate, a void output helper, and a helper returning a reference
+   to caller-owned output are separate controls: they can preserve different
+   temporary homes and load/store sequences after inlining. A
+   named callback pointer can change register allocation even when the final
+   call and its semantics are unchanged. Test these as separate source A/Bs.
+5. Compare the emitted loads, stores, stack slots, and call/branch structure.
+   Shorter lexical scope does not guarantee slot reuse in MSVC 5. Reusing one
+   caller-owned aggregate may shrink the frame while losing retail's load
+   reuse or store sequence; compose the next justified lever instead of
+   judging only frame size or fuzzy score.
+
+Use meaningful ownership and natural scopes, never dummy locals or arbitrary
+blocks to force allocation. Record which lifetime controls were compiled and
+what changed before routing the remaining residue to the permuter. See
+[Scopes and stack slots](../../../docs/patterns/switch-arm-locals-overlay-only-when-scoped.md)
+and the local-census section of [the lever catalog](references/levers.md).
+
 ## Classify the plateau
 
 Route in this order; do not call a wall class N while class N-1 still diverges:

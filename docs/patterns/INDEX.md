@@ -12,6 +12,7 @@ Short observations, not a wall database. [Scope and admission rules](README.md).
 - [Local-static guards](function-local-static-dynamic-init-guard.md) — recognize dynamic initialization without inventing flag globals.
 - [Scopes and stack slots](switch-arm-locals-overlay-only-when-scoped.md) — sibling scopes can change stack reuse.
 - [Store scheduling](emitted-store-order-is-not-the-source-order.md) — emitted order need not be source order.
+- [Statement sequencing and LEA](statement-sequencing-can-change-lea-encoding.md) — initialization followed by addition can change base/index encoding without changing the surrounding instructions.
 - [Constant hoisting before tail merging](constant-hoisting-precedes-tail-merging.md) — a statement duplicated per arm and merged later can hoist a constant that the same statement after the join does not.
 - [Translation-unit context](tu-state-probe-family-decides-reachability.md) — unchanged function text can emit different code.
 - [Signed remainder](signed-modulo-pow2-abs-restore.md) — sign correction around a power-of-two mask.
