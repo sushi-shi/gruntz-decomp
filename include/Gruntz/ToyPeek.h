@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Clock64.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -20,16 +20,10 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
 
 public:
-    CToyPeek() {
-        m_startClock.m_v = 0;
-        m_countdown.m_v = 0;
-    }
+    CToyPeek() {}
     CToyPeek(CGameObject* obj);
 
-    char m_pad54[0x58 - 0x54];
-
-    Clock64 m_startClock;
-    Clock64 m_countdown;
+    ClockInterval m_countdownTiming;
 };
 
 #endif // GRUNTZ_CTOYPEEK_H

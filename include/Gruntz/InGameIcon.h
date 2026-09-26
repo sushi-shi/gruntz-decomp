@@ -5,7 +5,7 @@
 
 #include <Mfc.h>
 
-#include <Clock64.h>
+#include <Gruntz/ClockInterval.h>
 #include <Enums.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegistry.h>
@@ -40,12 +40,7 @@ public:
     }
 
 public:
-    CInGameIcon() {
-        m_driftPos.m_v = 0;
-        m_driftThresh.m_v = 0;
-        m_peekTimer.m_v = 0;
-        m_peekWindow.m_v = 0;
-    }
+    CInGameIcon() {}
     CInGameIcon(CGameObject* obj);
 
     void SetupSprite(const char* cat);
@@ -59,10 +54,8 @@ public:
     i32 Reposition();
 
     SoundCue* m_cue;
-    Clock64 m_driftPos;
-    Clock64 m_driftThresh;
-    Clock64 m_peekTimer;
-    Clock64 m_peekWindow;
+    ClockInterval m_driftTiming;
+    ClockInterval m_peekTiming;
     CWwdSpriteObject* m_glitterSprite;
     i32 m_reserved7c; // retail news 0x80 (push in DispatchInGameIconLogic); position unproven
 };

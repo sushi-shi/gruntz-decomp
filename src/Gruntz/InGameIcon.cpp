@@ -97,16 +97,6 @@ static inline void SetCellObject(CMapMgr* grid, u32 x, u32 y, i32 objectId) {
 // @early-stop
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-
-    m_driftPos.m_lo = 0;
-    m_driftThresh.m_lo = 0;
-    m_driftPos.m_hi = 0;
-    m_driftThresh.m_hi = 0;
-    m_peekTimer.m_lo = 0;
-    m_peekWindow.m_lo = 0;
-    m_peekTimer.m_hi = 0;
-    m_peekWindow.m_hi = 0;
-
     SNAP_OBJECT_TO_TILE_CENTER_COPY(m_object, snapX, snapY)
 
     CWwdSpriteObject* snapped = m_object;
@@ -119,10 +109,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetupSprite(NULL);
 
     m_glitterSprite = NULL;
-    m_peekTimer.m_lo = 0;
-    m_peekWindow.m_lo = 0;
-    m_peekTimer.m_hi = 0;
-    m_peekWindow.m_hi = 0;
+    m_peekTiming.m_startLo = 0;
+    m_peekTiming.m_intervalLo = 0;
+    m_peekTiming.m_startHi = 0;
+    m_peekTiming.m_intervalHi = 0;
 
     InGameIconGlitter glitter = ICON_GLITTER_NONE;
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
@@ -487,14 +477,11 @@ void RegisterIconState() {
 // @early-stop
 RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_startClock.m_v = 0;
-    m_countdown.m_v = 0;
     m_object->m_screenY -= 0x18;
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
-    m_countdown.m_v = 0x1388;
-    m_startClock.m_v = static_cast<u32>(g_frameTime);
+    m_countdownTiming.Start(0x1388);
     SET_ANIMATION_ACT("A");
 }
 
@@ -503,8 +490,8 @@ i32 CInGameIcon::RefreshCell() {
     CWwdSpriteObject* obj = m_object;
     i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
-    i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
-    if (delta < m_driftThresh.m_v) {
+    i64 delta = static_cast<i64>(g_frameTime) - m_driftTiming.m_start;
+    if (delta < m_driftTiming.m_interval) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         if (CellObjectIdAt(grid, tileX, tileY) != 0) {
             return 0;
@@ -524,7 +511,7 @@ i32 CToyPeek::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    SerBandPair(ar, mode, &m_startClock);
+    SerBandPair(ar, mode, &m_countdownTiming);
     return 1;
 }
 
@@ -551,14 +538,11 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_faceDirection != 0) {
         return 0;
     }
-    if (static_cast<i64>(g_frameTime) - m_peekTimer.m_v >= m_peekWindow.m_v) {
+    if (static_cast<i64>(g_frameTime) - m_peekTiming.m_start >= m_peekTiming.m_interval) {
         CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(GetRandomNumber() % 0x11, 0);
         CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_PAL_16, rec);
-        m_peekWindow.m_lo = 0xfa;
-        m_peekWindow.m_hi = 0;
-        m_peekTimer.m_lo = g_frameTime;
-        m_peekTimer.m_hi = 0;
+        m_peekTiming.Start(0xfa);
     }
     return 0;
 }
@@ -660,10 +644,10 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
             logicRecord = m_logicRecord;
             SET_ANIMATION_ACT("B");
             owner = m_wwdObject;
-            m_driftPos.m_lo = g_frameTime;
-            m_driftPos.m_hi = 0;
-            m_driftThresh.m_lo = owner->m_damage;
-            m_driftThresh.m_hi = 0;
+            m_driftTiming.m_startLo = g_frameTime;
+            m_driftTiming.m_startHi = 0;
+            m_driftTiming.m_intervalLo = owner->m_damage;
+            m_driftTiming.m_intervalHi = 0;
             return 1;
         }
         rend = m_glitterSprite;
@@ -683,8 +667,8 @@ fail:
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
-    if (delta >= m_driftThresh.m_v) {
+    i64 delta = static_cast<i64>(g_frameTime) - m_driftTiming.m_start;
+    if (delta >= m_driftTiming.m_interval) {
         CWwdSpriteObject* r = m_wwdObject;
         r->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         SET_ANIMATION_ACT("A");
@@ -771,7 +755,7 @@ i32 CInGameIcon::SerializeDispatch(
         }
     }
 
-    Clock64* drift = &m_driftPos;
+    i64* drift = &m_driftTiming.m_start;
     switch (mode) {
         case SERIAL_LOAD:
             ar->Read(drift, sizeof(*drift));
@@ -784,7 +768,7 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Write(drift, sizeof(*drift));
             break;
     }
-    Clock64* idle = &m_peekTimer;
+    i64* idle = &m_peekTiming.m_start;
     switch (mode) {
         case SERIAL_LOAD:
             ar->Read(idle, sizeof(*idle));
