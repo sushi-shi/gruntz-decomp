@@ -5,8 +5,13 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
+#include <Wwd/WwdGameObjectFlags.h>
 
 class CDDrawSurfaceMgr;
 
@@ -31,5 +36,16 @@ i32 DrawTextToBackSurface(
     i32 b,
     i32 flag
 );
+
+inline CWwdSpriteObject* CreateSimpleAnimationSprite(i32 sortKey) {
+    return g_gameReg->m_world->m_childGroup->CreateSprite(
+        0,
+        0,
+        0,
+        sortKey,
+        "SimpleAnimation",
+        WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE
+    );
+}
 
 #endif // GRUNTZ_BOOTYSTATEACTIVATE_H
