@@ -21,6 +21,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelCollisionInline.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -296,9 +297,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tx, ty, 0xca);
-            reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xca);
+            SET_MAIN_PLANE_TILE(reg, tx, ty, 0xca);
             break;
         }
         case TILEKIND_ARROW_DOWN_B: {
@@ -309,9 +308,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tx, ty, 0xc9);
-            reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xc9);
+            SET_MAIN_PLANE_TILE(reg, tx, ty, 0xc9);
             break;
         }
         case TILEKIND_ARROW_LEFT_B: {
@@ -322,9 +319,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tx, ty, 0xcc);
-            reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xcc);
+            SET_MAIN_PLANE_TILE(reg, tx, ty, 0xcc);
             break;
         }
         case TILEKIND_ARROW_RIGHT_B: {
@@ -335,9 +330,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tx, ty, 0xcb);
-            reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xcb);
+            SET_MAIN_PLANE_TILE(reg, tx, ty, 0xcb);
             break;
         }
 
@@ -350,16 +343,12 @@ i32 CTileTriggerLogic::Tick() {
                     i32 hit = 0;
                     if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
-                        CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-                        SET_WORKER_HOST_CELL(pl, gx, gy, 0xfd);
-                        reg->m_tileGrid->ComputeCellFlags(gx, gy, 0xfd);
+                        SET_MAIN_PLANE_TILE(reg, gx, gy, 0xfd);
                         anim = "GAME_PYRAMIDUP";
                         hit = 1;
                     } else if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_DOWN) {
                         CGruntzMgr* reg = g_gameReg;
-                        CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-                        SET_WORKER_HOST_CELL(pl, gx, gy, 0xfe);
-                        reg->m_tileGrid->ComputeCellFlags(gx, gy, 0xfe);
+                        SET_MAIN_PLANE_TILE(reg, gx, gy, 0xfe);
                         anim = "GAME_PYRAMIDDOWN";
                         hit = 1;
                     }
@@ -750,9 +739,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             i32 py = j + m_tileY - 1;
             i32 px = i + m_tileX - 1;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* plane = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(plane, px, py, value);
-            reg->m_tileGrid->ComputeCellFlags(px, py, value);
+            SET_MAIN_PLANE_TILE(reg, px, py, value);
             i32 sx = ((i + m_tileX) << TILE_SHIFT_PX) - 0x10;
             i32 sy = ((j + m_tileY) << TILE_SHIFT_PX) - 0x10;
             if (inRect) {
@@ -807,9 +794,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         CGruntzMgr* reg = g_gameReg;
         i32 ty = m_tileY;
         i32 tx = m_tileX;
-        CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-        SET_WORKER_HOST_CELL(L, tx, ty, tok);
-        (reg->m_tileGrid)->ComputeCellFlags(tx, ty, tok);
+        SET_MAIN_PLANE_TILE(reg, tx, ty, tok);
     } else {
         switch (verb) {
             case TILEKIND_COVERED_POWERUP: {
@@ -827,18 +812,14 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 CGruntzMgr* reg = g_gameReg;
                 i32 ty = m_tileY;
                 i32 tx = m_tileX;
-                CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L, tx, ty, 0x5b);
-                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
+                SET_MAIN_PLANE_TILE(reg, tx, ty, 0x5b);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_A: {
                 CGruntzMgr* reg = g_gameReg;
                 i32 ty = m_tileY;
                 i32 tx = m_tileX;
-                CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L, tx, ty, 0x5a);
-                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
+                SET_MAIN_PLANE_TILE(reg, tx, ty, 0x5a);
                 break;
             }
             default:

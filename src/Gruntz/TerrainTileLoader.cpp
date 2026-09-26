@@ -16,6 +16,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -113,9 +114,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 i32 recovered = m_world->m_level->m_mainPlane->m_tileHandles
                                     [m_world->m_level->m_mainPlane->m_tileRowOffsets[tileY] + tileX]
                                 - 1;
-                CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(dst, tileX, tileY, recovered);
-                g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, recovered);
+                SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, recovered);
                 return 1;
             }
             return 0;
@@ -158,13 +157,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     found->ApplyMove(cellType);
                     state->m_tileTriggers->RemoveIdleLogic(found);
                 } else if (cellType == TILEKIND_GAUNTLET_ROCK_A) {
-                    CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                    SET_WORKER_HOST_CELL(dst, tileX, tileY, 0x5a);
-                    g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, 0x5a);
+                    SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, 0x5a);
                 } else {
-                    CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                    SET_WORKER_HOST_CELL(dst, tileX, tileY, 0x5b);
-                    g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, 0x5b);
+                    SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, 0x5b);
                 }
             } else if (cellType == TILEKIND_GIANT_ROCK) {
                 CGiantRockLogic* rock = state->m_tileTriggers->ScanNeighborhood(tileX, tileY);
