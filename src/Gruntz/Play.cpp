@@ -6623,7 +6623,7 @@ i32 CPlay::NotifyVisibleEntities() {
     POSITION pos = chain.GetHeadPosition();
 
     while (pos != NULL) {
-        CGameObject* o = NEXT_CHILD_FROM_LIST(chain, pos);
+        CGameObject* o = v->m_childGroup->NextChild(pos);
         LogicRecordDispatchFn dispatch = o->m_logicRecord->m_dispatch;
         if (dispatch == DispatchGruntLogic || dispatch == DispatchInGameIconLogic
             || dispatch == DispatchGruntPuddleLogic || dispatch == DispatchGruntToySpriteLogic
