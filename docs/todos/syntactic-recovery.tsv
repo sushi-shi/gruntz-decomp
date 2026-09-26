@@ -7,10 +7,6 @@ rva	unit	function	lost_max	cur
 0x02e3a0	battlezmapconfig	?RouteToNearbyEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.0284	76.6404
 0x02c140	battlezmapconfig	?RouteToNearbyPickup@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	94.8459	70.8052
 0x031610	battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
-0x153d90	cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.7114	97.9900
-0x153b20	cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.8068	97.3526
-0x1538c0	cimage	?BlitNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.7588	98.6332
-0x154750	cimage	?BlitShadeFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	99.2584
 0x153470	cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.1333	99.0500
 0x14b770	ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.4881	77.0728
 0x14c9f0	ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	82.0433	80.9266

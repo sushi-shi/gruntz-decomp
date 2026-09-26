@@ -36,6 +36,14 @@ struct WwdDirtyRect {
         m_rect.left = COORD_UNSET;
         m_armed = -1;
     }
+    void Set(const RECT& rect, i32 width, i32 height) {
+        m_position.x = rect.left;
+        m_position.y = rect.top;
+        m_size.cx = width;
+        m_size.cy = height;
+        m_rect = rect;
+        m_armed = 0;
+    }
     POINT m_position;
     RECT m_rect;
     SIZE
@@ -117,13 +125,5 @@ public:
     node->m_drawActive = true;                                                                     \
     node->m_drawFillCmd = mode;                                                                    \
     node->m_fillFraction = fraction
-
-#define SET_DIRTY_RECT(node, rect, width, height)                                                  \
-    node->m_dirty.m_position.x = (rect)->left;                                                     \
-    node->m_dirty.m_position.y = (rect)->top;                                                      \
-    node->m_dirty.m_rect = *(rect);                                                                \
-    node->m_dirty.m_size.cx = width;                                                               \
-    node->m_dirty.m_size.cy = height;                                                              \
-    node->m_dirty.m_armed = 0
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

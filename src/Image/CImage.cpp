@@ -436,7 +436,6 @@ void CImage::RenderFrameClipped(
     }
 }
 
-// @early-stop
 RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
@@ -454,10 +453,9 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    SET_DIRTY_RECT(info, &d, w, h);
+    info->m_dirty.Set(d, w, h);
 }
 
-// @early-stop
 RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
@@ -472,10 +470,9 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    SET_DIRTY_RECT(info, &d, w, h);
+    info->m_dirty.Set(d, w, h);
 }
 
-// @early-stop
 RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
@@ -490,7 +487,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    SET_DIRTY_RECT(info, &d, w, h);
+    info->m_dirty.Set(d, w, h);
 }
 
 RVA(0x00153ff0, 0x280)
@@ -509,12 +506,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->m_light = info->m_fillFraction;
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
-    info->m_dirty.m_position.x = d.left;
-    info->m_dirty.m_position.y = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_size.cx = w;
-    info->m_dirty.m_size.cy = h;
-    info->m_dirty.m_armed = 0;
+    info->m_dirty.Set(d, w, h);
 }
 
 RVA(0x00154270, 0x257)
@@ -532,7 +524,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
-    SET_DIRTY_RECT(info, &d, w, h);
+    info->m_dirty.Set(d, w, h);
 }
 
 RVA(0x001544d0, 0x275)
@@ -550,15 +542,9 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
-    info->m_dirty.m_position.x = d.left;
-    info->m_dirty.m_position.y = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_size.cx = w;
-    info->m_dirty.m_size.cy = h;
-    info->m_dirty.m_armed = 0;
+    info->m_dirty.Set(d, w, h);
 }
 
-// @early-stop
 RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
@@ -574,5 +560,5 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
-    SET_DIRTY_RECT(info, &d, w, h);
+    info->m_dirty.Set(d, w, h);
 }
