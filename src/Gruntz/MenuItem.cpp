@@ -186,7 +186,7 @@ i32 CAnimatedMenuItem::Init(
     }
     m_frameIndex = 0;
     m_frameTimerMs = 0;
-    SET_ANIMATED_MENU_ITEM_FRAME_PERIOD_INLINE(0x64);
+    m_framePeriodMs = 0x64;
 
     char animationName[0x80];
 
