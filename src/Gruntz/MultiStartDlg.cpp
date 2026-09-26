@@ -966,12 +966,13 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                     CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
                     ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, selection + 1, 0);
                 }
+                this->ApplyPlayerTypeSelection(slotIndex);
             } else {
                 GetPlayerNameControl(slotIndex)->SetWindowTextA("");
                 CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
                 ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, 0, 0);
+                this->ApplyPlayerTypeSelection(slotIndex);
             }
-            this->ApplyPlayerTypeSelection(slotIndex);
         }
     }
     if (g_multiState->m_isHost) {

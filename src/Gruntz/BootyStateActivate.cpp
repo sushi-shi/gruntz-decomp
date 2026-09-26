@@ -1796,6 +1796,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_EXITZ");
             m_gruntSprites[i]->SetAnimationByName("GAME_GRUNTFLEX", 0);
             (m_gruntSprites[i])->SetDrawFillReversed(SHADE_PAL_16, tint);
+            m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         } else {
             key.Format("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
             m_gruntSprites[i] = CreateSimpleAnimationSprite(0);
@@ -1805,8 +1806,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
             m_gruntSprites[i]->SetAnimationByName(key, 0);
             (m_gruntSprites[i])->SetDrawFill(SHADE_PAL_16, tint);
+            m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
-        m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         BuildPowerupIconKeys(
             &key,

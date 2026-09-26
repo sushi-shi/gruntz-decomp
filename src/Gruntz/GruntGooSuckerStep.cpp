@@ -99,6 +99,9 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (m_poweredUp == false) {
                     goto L_yes;
                 }
+                if (m_neighborValid != false) {
+                    goto L_yes;
+                }
             } else {
                 if (atTarget) {
                     goto L_yes;
@@ -106,9 +109,9 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (m_poweredUp == false) {
                     goto L_yes;
                 }
-            }
-            if (m_neighborValid != false) {
-                goto L_yes;
+                if (m_neighborValid != false) {
+                    goto L_yes;
+                }
             }
             RESET_GRUNT_POWERED_STATE(this)
         } else {

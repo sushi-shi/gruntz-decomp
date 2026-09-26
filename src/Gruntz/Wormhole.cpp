@@ -499,15 +499,7 @@ i32 CTeleporter::Update() {
     m_armed = false;
     m_tickHandled = true;
     mgr = g_gameReg;
-    CGrunt* current;
-    if ((static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_recList.GetCount() != 1) {
-        current = NULL;
-    } else {
-        Coord* rec = (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->HeadRec();
-        current = (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))
-                      ->m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
-    }
-    if (found == current && playerIndex == g_curPlayer) {
+    if (found == mgr->m_triggerMgr->SoleSelectedGrunt() && playerIndex == g_curPlayer) {
         CGameObject* g = found->m_object;
         (static_cast<CPlay*>(mgr->m_curState))->ResetGoals(g->m_screenX, g->m_screenY);
     }

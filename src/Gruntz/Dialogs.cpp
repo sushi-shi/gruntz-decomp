@@ -112,13 +112,14 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             entry = static_cast<CRezItm*>(worlds->GetNextItem(entry));
         }
         combo->SendMessageA(CB_SETCURSEL, 0, 0);
+        HWND editHwnd = comboChild->m_hWnd;
         MsgParam prev;
-        prev.m_long = GetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC);
+        prev.m_long = GetWindowLongA(editHwnd, GWL_WNDPROC);
         g_savedDlgWndProc = prev.m_wndproc;
 
         MsgParam proc;
         proc.m_intProc = BattlezMapComboEditProc;
-        SetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC, proc.m_long);
+        SetWindowLongA(editHwnd, GWL_WNDPROC, proc.m_long);
 
         GetDlgItem(0x512)->SetWindowTextA("Battlez Setup");
         NetLobby::g_curDlg = GetSafeHwnd();
@@ -297,18 +298,19 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         if (g_battlezResetOptions != false) {
             g_battlezResetOptions = false;
         }
+        CRegMgr* settings = g_gameReg->m_settings;
         g_buteMgr.GetDword("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
-            reg->Set(key, GetMaxGruntzSelection(i));
+            settings->Set(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
             if (m_gameManager->m_players[i].m_active != false) {
-                reg->Set(key, IDX(m_gameManager->m_players[i].m_difficulty));
+                settings->Set(key, IDX(m_gameManager->m_players[i].m_difficulty));
             } else {
-                reg->Set(key, -1);
+                settings->Set(key, -1);
             }
             sprintf(key, "LastColour%d", i);
-            reg->Set(key, IDX(g_gameReg->m_players[i].m_color));
+            settings->Set(key, IDX(g_gameReg->m_players[i].m_color));
         }
         NetLobby::g_curDlg = NULL;
     }

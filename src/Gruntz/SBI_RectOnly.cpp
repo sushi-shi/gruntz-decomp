@@ -1511,6 +1511,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             1,
             0
         );
+        AddTabItem(5, status);
     } else {
         NEW_STATUS_BAR_ITEM(
             status,
@@ -1523,8 +1524,8 @@ i32 CStatusBarMgr::BuildGameMenu() {
             2,
             0
         );
+        AddTabItem(5, status);
     }
-    AddTabItem(5, status);
     return 1;
 }
 
@@ -4181,6 +4182,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             );
             AddTabItem(6, quit);
             m_endSecondaryButton = quit;
+            return 1;
         } else {
             CSBI_MenuItem* statz;
             NEW_STATUS_BAR_ITEM(
@@ -4196,8 +4198,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             );
             AddTabItem(6, statz);
             m_endSecondaryButton = statz;
+            return 1;
         }
-        return 1;
     }
 
     CSBI_ImageSet* status;

@@ -57,8 +57,8 @@ i32 CSBI_ImageSetAni::Init(
         goto fail;
     }
     m_interval = intervalMs;
-    m_loop = loop;
     m_step = step;
+    m_loop = loop;
 
     if (frameStart == -1) {
         if (step >= 0) {
