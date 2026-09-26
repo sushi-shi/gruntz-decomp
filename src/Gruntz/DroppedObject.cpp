@@ -101,8 +101,6 @@ i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
 RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_dropTiming.m_start = 0;
-    m_dropTiming.m_interval = 0;
     SwitchAnimationByName("LEVEL_OBJECTDROPPER", 0);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
