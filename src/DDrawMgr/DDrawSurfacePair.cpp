@@ -1106,7 +1106,7 @@ i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {
 
 RVA(0x00165e60, 0x82)
 i32 CFileMem::Open() {
-    if (m_name.GetLength() == 0) {
+    if (m_name.IsEmpty()) {
         return 0;
     }
 

@@ -274,7 +274,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         NetGameMgr()->m_isBuiltInMultiplayerLevel = true;
         NetGameMgr()->m_strWorldFile = BuiltInLevelName();
     }
-    if (Mgr()->GetWorldFileName().GetLength() == 0) {
+    if (Mgr()->GetWorldFileName().IsEmpty()) {
         return 0;
     }
 
@@ -535,7 +535,7 @@ i32 CMulti::Render() {
         m_processedCommandTick = newId;
         CGruntzCmdMgr* mgr = Mgr()->m_commandMgr;
         CGruntzCommand* node;
-        if (mgr->m_pendingLocalCommands.GetCount() == 0) {
+        if (mgr->m_pendingLocalCommands.IsEmpty()) {
             node = NULL;
         } else {
             node = static_cast<CGruntzCommand*>(mgr->m_pendingLocalCommands.RemoveHead());
@@ -2511,7 +2511,7 @@ void CMulti::RecordPlayerReady(CNetPlayerNode* unusedPlayer, i32 playerId) {
 RVA(0x000bb700, 0x265)
 i32 CMulti::WaitForOtherPlayers() {
     CDWordArray* votes = &m_readyPlayerIds;
-    votes->SetSize(0, -1);
+    votes->RemoveAll();
     for (i32 k = 3; k != 0; k--) {
         votes->Add(0);
     }

@@ -129,7 +129,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                            < static_cast<u32>(g_gameReg->m_tileGrid->m_height)) {
                     TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
-                if (m_coordList.GetCount() != 0) {
+                if (!m_coordList.IsEmpty()) {
                     spanX = Max(spanX, spanY);
                     if (m_coordList.GetCount() > spanX) {
                         SetEntrancePos(1, 1);

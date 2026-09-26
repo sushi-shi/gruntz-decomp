@@ -383,7 +383,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
     m_gameStats->m_gruntzExited += m_triggerMgr->m_gruntzExitedByPlayer[g_curPlayer];
     m_gameStats->m_gruntzLost += m_triggerMgr->m_gruntzLostByPlayer[g_curPlayer];
 
-    if (m_strWorldFile.GetLength() != 0) {
+    if (!m_strWorldFile.IsEmpty()) {
         m_gameStats->SetLevelNumber(1);
         m_gameStats->m_isCustomLevel = true;
         return;
@@ -1459,7 +1459,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
         return 0;
     }
     CString name = RunCustomWorldDialog(m_gameWnd->m_hwnd, NULL);
-    if (name.GetLength() == 0) {
+    if (name.IsEmpty()) {
         return 0;
     }
     m_strWorldFile = name;
@@ -1768,7 +1768,7 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
             break;
     }
 
-    if (name.GetLength() == 0) {
+    if (name.IsEmpty()) {
         return name;
     }
 
@@ -1782,9 +1782,9 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
         }
     }
 
-    if (path.GetLength() == 0) {
+    if (path.IsEmpty()) {
         path.Format("%c:\\Movies\\%s", GetGruntzDriveLetter(), static_cast<const char*>(name));
-        if (path.GetLength() == 0) {
+        if (path.IsEmpty()) {
             return path;
         }
     }
@@ -2016,7 +2016,7 @@ CState* CGruntzMgr::TopState() {
     if (m_stateStack.GetSize() <= 0) {
         return NULL;
     }
-    return static_cast<CState*>(m_stateStack.GetAt(m_stateStack.GetSize() - 1));
+    return static_cast<CState*>(m_stateStack.GetAt(m_stateStack.GetUpperBound()));
 }
 
 RVA(0x000909b0, 0x1b)
@@ -2049,7 +2049,7 @@ void CGruntzMgr::ClearStateStack() {
             delete s;
         }
     }
-    m_stateStack.SetSize(0, -1);
+    m_stateStack.RemoveAll();
 }
 
 RVA(0x00090aa0, 0x10)
@@ -3074,7 +3074,7 @@ i32 CGruntzMgr::OpenBattlezSetup() {
         m_isBuiltInBattlezLevel = true;
         m_strWorldFile = dlg.m_worldName;
     }
-    if (m_strWorldFile.GetLength() == 0) {
+    if (m_strWorldFile.IsEmpty()) {
         return 0;
     }
     PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_START_BATTLEZ_GAME), 0);

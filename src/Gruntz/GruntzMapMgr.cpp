@@ -36,7 +36,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
                     g_coordPool.Push(elem);
                 }
             }
-            m_arr.SetSize(0, -1);
+            m_arr.RemoveAll();
             m_arr.SetSize(count, -1);
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
                 Coord* elem = g_coordPool.Pop();
@@ -80,7 +80,7 @@ void CGruntzMapMgr::Reset() {
             g_coordPool.Push(elem);
         }
     }
-    m_arr.SetSize(0, -1);
+    m_arr.RemoveAll();
     CMapMgr::Reset();
 }
 
@@ -92,6 +92,6 @@ CGruntzMapMgr::~CGruntzMapMgr() {
             g_coordPool.Push(elem);
         }
     }
-    m_arr.SetSize(0, -1);
+    m_arr.RemoveAll();
     CMapMgr::Reset();
 }

@@ -79,7 +79,7 @@ void CNetSession::Shutdown() {
         m_commandRecords[k].m_checksum = 0;
     }
     CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
-    while (freeList.GetCount() != 0) {
+    while (!freeList.IsEmpty()) {
         GruntRec* p = static_cast<GruntRec*>(freeList.RemoveTail());
         if (p) {
             delete p;

@@ -944,7 +944,7 @@ void CTriggerMgr::ResetSpawnState() {
     SAFE_DELETE(st->m_retabNotify);
     world->m_statusBar->m_hlBusy = false;
     if (m_byteArr.GetSize() > 0) {
-        m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);
+        m_byteArr.RemoveAt(m_byteArr.GetUpperBound(), 1);
         CStatusBarMgr* ctx = world->m_statusBar;
         if (ctx->m_position != STATUSBAR_HIDDEN && ctx->m_activeTab == TAB_GAME) {
             ctx->ResetWidgets(false);
@@ -1352,7 +1352,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     u32 ci;
     ar->Read(&count, sizeof(count));
     CByteArray* arr = &m_byteArr;
-    arr->SetSize(0, -1);
+    arr->RemoveAll();
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 b;
         ar->Read(&b, 1);

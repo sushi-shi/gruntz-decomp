@@ -288,7 +288,7 @@ i32 CMenuTree::DrawFocusCursors(
 
 RVA(0x00183030, 0x7b)
 i32 CMenuTree::PlayFocusSound() {
-    if (m_focusSoundKey.GetLength() == 0) {
+    if (m_focusSoundKey.IsEmpty()) {
         return 0;
     }
     return PlayRegistryCueIfElapsed(m_world->m_soundRegistry, m_focusSoundKey);
@@ -296,7 +296,7 @@ i32 CMenuTree::PlayFocusSound() {
 
 RVA(0x001830b0, 0x7b)
 i32 CMenuTree::PlayActivationSound() {
-    if (m_activationSoundKey.GetLength() == 0) {
+    if (m_activationSoundKey.IsEmpty()) {
         return 0;
     }
     return PlayRegistryCueIfElapsed(m_world->m_soundRegistry, m_activationSoundKey);

@@ -637,7 +637,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    if (imageSet.GetLength() != 0) {
+    if (!imageSet.IsEmpty()) {
         if (gridIndex != -1) {
             obj->SetImageFrameByName(static_cast<const char*>(imageSet), gridIndex);
         } else {
@@ -645,12 +645,12 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         }
     }
 
-    if (sound.GetLength() != 0) {
+    if (!sound.IsEmpty()) {
         obj->SetAnimationByName(static_cast<const char*>(sound), 0);
         obj->SetSoundCueByName(static_cast<const char*>(sound));
     }
 
-    if (name.GetLength() != 0) {
+    if (!name.IsEmpty()) {
         obj->m_name = static_cast<const char*>(name);
     }
 

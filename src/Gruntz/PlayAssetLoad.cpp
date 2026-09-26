@@ -327,7 +327,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 RVA(0x000dbc80, 0x309)
 i32 CPlay::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
-    if (m_mgr->m_strWorldFile.GetLength() != 0) {
+    if (!m_mgr->m_strWorldFile.IsEmpty()) {
         if (m_mgr->m_isBuiltInBattlezLevel != false) {
             CString key = "BATTLEZ_" + m_mgr->GetWorldFileName();
             CRezItm* node = m_gameResources->GetRezFromPath(key, REZ_TAG_WWD);

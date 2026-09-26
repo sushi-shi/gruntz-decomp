@@ -76,7 +76,7 @@ void DirectInputMgr2::Shutdown() {
             delete d;
         }
     }
-    m_joysticks.SetSize(0, -1);
+    m_joysticks.RemoveAll();
     FreeDeviceGroups();
     m_directInput->Release();
     m_directInput = NULL;

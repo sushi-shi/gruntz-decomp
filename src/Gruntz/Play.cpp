@@ -346,7 +346,7 @@ void CPlay::ReleaseResources() {
         }
     }
     m_cameraBookmarkIndex = -1;
-    m_cameraBookmarks.SetSize(0, -1);
+    m_cameraBookmarks.RemoveAll();
     CState::ReleaseResources();
 }
 
@@ -987,7 +987,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_mgr->m_isCustomLevel = false;
 
     CGruntzMgr* mgr = self->m_mgr;
-    if (mgr->m_strWorldFile.GetLength() != 0) {
+    if (!mgr->m_strWorldFile.IsEmpty()) {
         CRezItm* ins;
         char* desc;
         char* p;
@@ -1113,7 +1113,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         UpdateWindow(self->m_mgr->m_gameWnd->m_hwnd);
 
         mgr = self->m_mgr;
-        if (mgr->m_strWorldFile.GetLength() != 0) {
+        if (!mgr->m_strWorldFile.IsEmpty()) {
             if (mgr->m_isBuiltInBattlezLevel == false
                 && mgr->m_isBuiltInMultiplayerLevel == false) {
                 sprintf(nameBuf, "CUSTOMLEVEL");
@@ -1337,7 +1337,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             key.Format("Level%i", i);
             CTriggerMgr* bm = g_gameReg->m_triggerMgr;
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
-            bm->m_byteArr.SetAtGrow(bm->m_byteArr.GetSize(), static_cast<u8>(v));
+            bm->m_byteArr.Add(static_cast<u8>(v));
         }
         self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
@@ -1518,7 +1518,7 @@ void CPlay::FreeListTeardown() {
     m_mgr->m_triggerMgr->CloseActionOptionsMenu();
     CTriggerMgr* triggerManager = m_mgr->m_triggerMgr;
 
-    triggerManager->m_byteArr.SetSize(0, -1);
+    triggerManager->m_byteArr.RemoveAll();
     triggerManager->m_groupInitialized = false;
     m_mgr->m_triggerMgr->m_baseList.RemoveAll();
     m_mgr->m_triggerMgr->m_pendingFx = NULL;
@@ -1533,7 +1533,7 @@ void CPlay::FreeListTeardown() {
             g_coordPool.Push(node);
         }
     }
-    m_cameraBookmarks.SetSize(0, -1);
+    m_cameraBookmarks.RemoveAll();
     for (i = 0; i < 4; i++) {
         m_mgr->m_players[i].m_battlezConfig.FreeArrays();
         m_mgr->m_players[i].m_battlezConfig.Clear();
@@ -2962,7 +2962,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         w->m_armed = false;
         return 1;
     }
-    if (m_mgr->m_triggerMgr->m_recList.GetCount() == 0) {
+    if (m_mgr->m_triggerMgr->m_recList.IsEmpty()) {
         return 1;
     }
     CGameLevel* ph = m_mgr->m_world->m_level;
@@ -3176,28 +3176,28 @@ void CPlay::DrawDebugStatsFull() {
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_PROFILE_TEXT)) {
         SetBkMode(hdc, OPAQUE);
-        if (g_brickText1.GetLength() != 0) {
+        if (!g_brickText1.IsEmpty()) {
             TextOutA(hdc, 0, 0x00, g_brickText1, g_brickText1.GetLength());
         }
-        if (g_brickText2.GetLength() != 0) {
+        if (!g_brickText2.IsEmpty()) {
             TextOutA(hdc, 0, 0x10, g_brickText2, g_brickText2.GetLength());
         }
-        if (g_brickText3.GetLength() != 0) {
+        if (!g_brickText3.IsEmpty()) {
             TextOutA(hdc, 0, 0x20, g_brickText3, g_brickText3.GetLength());
         }
-        if (g_brickText4.GetLength() != 0) {
+        if (!g_brickText4.IsEmpty()) {
             TextOutA(hdc, 0, 0x30, g_brickText4, g_brickText4.GetLength());
         }
-        if (g_brickText5.GetLength() != 0) {
+        if (!g_brickText5.IsEmpty()) {
             TextOutA(hdc, 0, 0x40, g_brickText5, g_brickText5.GetLength());
         }
-        if (g_brickText6.GetLength() != 0) {
+        if (!g_brickText6.IsEmpty()) {
             TextOutA(hdc, 0, 0x50, g_brickText6, g_brickText6.GetLength());
         }
-        if (g_brickText7.GetLength() != 0) {
+        if (!g_brickText7.IsEmpty()) {
             TextOutA(hdc, 0, 0x60, g_brickText7, g_brickText7.GetLength());
         }
-        if (g_brickText8.GetLength() != 0) {
+        if (!g_brickText8.IsEmpty()) {
             TextOutA(hdc, 0, 0x70, g_brickText8, g_brickText8.GetLength());
         }
     }
@@ -5512,7 +5512,7 @@ i32 CPlay::ResetPlayState() {
     if (m_mgr->m_gameMode == GAMEMODE_QUESTZ) {
         CGruntzMgr* reg = g_gameReg;
 
-        if (reg->m_strWorldFile.GetLength() == 0) {
+        if (reg->m_strWorldFile.IsEmpty()) {
             m_mgr->m_gameStats->UpdateLevelRecord(m_levelIndex, true);
             reg = g_gameReg;
 
@@ -6381,7 +6381,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                 g_coordPool.Push(node);
             }
         }
-        m_cameraBookmarks.SetSize(0, -1);
+        m_cameraBookmarks.RemoveAll();
         m_cameraBookmarks.SetSize(cameraBookmarkCount, -1);
         for (u32 j = 0; j < static_cast<u32>(cameraBookmarkCount); j++) {
             Coord* node = g_coordPool.Pop();
@@ -6915,7 +6915,7 @@ i32 CPlay::DrawLevelInfoText() {
         s1.Format("");
     }
 
-    if ((g_gameReg)->GetWorldFileName().GetLength() != 0) {
+    if (!(g_gameReg)->GetWorldFileName().IsEmpty()) {
         char buf[128];
         wsprintfA(buf, (g_gameReg)->GetWorldFileName());
         if (strchr(buf, '.')) {
