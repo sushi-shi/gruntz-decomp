@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/AniRecordView.h>
 #include <Ints.h>
 #include <Utils/MapTyped.h>

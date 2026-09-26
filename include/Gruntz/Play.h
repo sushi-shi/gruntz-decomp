@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/ClockInterval.h>
 #include <Gruntz/ColorTint.h>

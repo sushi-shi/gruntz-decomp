@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SerialArchive.h>

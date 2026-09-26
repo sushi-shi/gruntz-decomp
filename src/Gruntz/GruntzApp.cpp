@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntzApp.h>
-
-#include <Mfc.h>
 
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GruntDirStatics.h>

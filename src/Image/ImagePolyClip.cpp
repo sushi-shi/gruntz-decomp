@@ -1,6 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
+#include <rva.h>
 
 #include <DDrawMgr/DDrawPolyFill.h>
 #include <DDrawMgr/DDSurface.h>

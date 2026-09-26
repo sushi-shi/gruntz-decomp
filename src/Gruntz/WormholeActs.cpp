@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/WormholeActs.h>

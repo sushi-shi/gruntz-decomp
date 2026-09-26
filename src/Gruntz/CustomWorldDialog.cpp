@@ -1,10 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/CustomWorldDialog.h>
-
-#include <Mfc.h>
-#include <MfcNoInline.h>
-#include <MfcWin.h>
 
 #include <Enums.h>
 #include <Gruntz/CustomWorldInfoDlg.h>

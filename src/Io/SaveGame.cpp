@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Io/SaveGame.h>
-
-#include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>

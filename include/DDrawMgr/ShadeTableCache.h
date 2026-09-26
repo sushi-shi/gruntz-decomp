@@ -3,13 +3,9 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/ShadeMode.h>
 #include <Enums.h>
 #include <Wap32/Object.h>
-
-#include <afxtempl.h>
 
 class CFile;
 class CString;

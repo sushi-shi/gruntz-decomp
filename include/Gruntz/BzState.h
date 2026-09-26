@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStats.h>

@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Dsndmgr/SoundBuffer.h>
-
-#include <Mfc.h>
 
 #include <ComOutRef.h>
 #include <Dsndmgr/SoundDevice.h>

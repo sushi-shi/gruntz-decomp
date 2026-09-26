@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Dsndmgr/RiffWave.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundTask.h>

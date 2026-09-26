@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/PaletteSize.h>
 #include <Ints.h>
 

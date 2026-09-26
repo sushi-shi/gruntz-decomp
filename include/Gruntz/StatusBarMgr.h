@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
 #include <Gruntz/ClockInterval.h>

@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DinMgr2/DirectInputMgr2.h>

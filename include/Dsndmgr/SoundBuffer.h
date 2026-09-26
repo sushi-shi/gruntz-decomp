@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Lith/TypedList.h>
 
 #include <mmsystem.h>

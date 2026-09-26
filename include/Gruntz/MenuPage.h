@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Enums.h>
 #include <Gruntz/AnimatedMenuItem.h>
 #include <Gruntz/MenuItem.h>

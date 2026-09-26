@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/LogicRecordFlags.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>

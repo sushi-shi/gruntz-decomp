@@ -1,10 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Wwd/WwdObjMgr.h>
 
-#include <Mfc.h>
-
-#include <AddrWord.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>

@@ -1,5 +1,7 @@
 #define GRUNTZ_MENUITEM_TU
 
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/MenuItem.h>

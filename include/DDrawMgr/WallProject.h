@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_WALLPROJECT_H
 #define GRUNTZ_DDRAWMGR_WALLPROJECT_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 extern const float g_rasterZero;

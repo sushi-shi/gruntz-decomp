@@ -1,8 +1,6 @@
 #ifndef SRC_BUTE_BUTEVALUE_H
 #define SRC_BUTE_BUTEVALUE_H
 
-#include <Mfc.h>
-
 #include <Bute/ARange.h>
 #include <Bute/AVector.h>
 #include <Ints.h>

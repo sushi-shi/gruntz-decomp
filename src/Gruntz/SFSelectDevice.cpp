@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SFSelectDevice.h>
@@ -6,7 +8,6 @@
 #include <Gruntz/PathBuffer.h>
 #include <Gruntz/SoundFont.h>
 #include <Gruntz/SoundFontPath.h>
-#include <ProcAddr.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -81,9 +82,9 @@ i32 SFManager_SelectBestDevice() {
         return 0;
     }
 
-    ProcAddr<SfManagerFactory*> mgrProc;
-    mgrProc.m_raw = GetProcAddress(g_sfDll, "SFManager");
-    SfManagerFactory* fn = mgrProc.m_fn;
+    // API-forced: GetProcAddress returns FARPROC.
+    SfManagerFactory* fn =
+        reinterpret_cast<SfManagerFactory*>(GetProcAddress(g_sfDll, "SFManager"));
     g_sfManagerFactory = fn;
     if (fn == NULL) {
         FreeLibrary(g_sfDll);

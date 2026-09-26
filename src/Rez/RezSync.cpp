@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Rez/RezSync.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
 #include <Crypto/BitStreamBlowfish.h>

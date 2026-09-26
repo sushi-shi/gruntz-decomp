@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Image/RezDecodeKind.h>

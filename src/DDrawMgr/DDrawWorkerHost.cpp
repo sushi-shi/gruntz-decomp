@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>
-
-#include <Mfc.h>
 
 #include <SafeDelete.h>
 #include <Wap32/WapObj.h>

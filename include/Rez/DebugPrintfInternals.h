@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_REZ_DEBUGPRINTFINTERNALS_H
 #define GRUNTZ_REZ_DEBUGPRINTFINTERNALS_H
 
-#include <Win32.h>
-
 #include <Enums.h>
 #include <Ints.h>
 

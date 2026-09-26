@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GameStateRecordLoad.h>
-
-#include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
 #include <Gruntz/AnimationRegistry.h>

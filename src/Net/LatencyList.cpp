@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Net/LatencyList.h>
-
-#include <Mfc.h>
 
 #include <Enums.h>
 #include <MsgParam.h>

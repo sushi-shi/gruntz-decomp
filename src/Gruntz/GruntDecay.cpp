@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/Grunt.h>

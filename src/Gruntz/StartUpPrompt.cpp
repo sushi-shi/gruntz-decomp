@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/StartUpPrompt.h>
-
-#include <Mfc.h>
-#include <MfcWin.h>
 
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PathBuffer.h>

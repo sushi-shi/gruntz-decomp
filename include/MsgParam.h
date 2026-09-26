@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_MSGPARAM_H
 #define GRUNTZ_MSGPARAM_H
 
-#include <Win32.h>
-
 struct CNetProviderNode;
 struct SaveSlot;
 class CNetSessionListNode;

@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/HelpState.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>

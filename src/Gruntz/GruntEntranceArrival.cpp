@@ -1,8 +1,9 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GruntEntranceArrival.h>
 
-#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -1368,9 +1369,8 @@ i32 CGrunt::FinishToobMoveAnimation() {
         cellObj = NULL;
     } else {
 
-        AddrWord<char> slot;
-        slot.m_word = ((grid->m_rowInts[ty]))[tx * 7 + 2];
-        cellObj = slot.m_addr;
+        // byte-evidenced: the cell word holds the object key.
+        cellObj = reinterpret_cast<char*>(grid->m_rowInts[ty][tx * 7 + 2]);
     }
     if (cellObj == NULL) {
         return 0;

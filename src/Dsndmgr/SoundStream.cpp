@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Dsndmgr/SoundStream.h>
-
-#include <Mfc.h>
 
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/StreamVoice.h>

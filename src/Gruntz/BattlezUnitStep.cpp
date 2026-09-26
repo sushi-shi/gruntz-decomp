@@ -1,8 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
-#include <MfcNoInline.h>
-#include <MfcWin.h>
+#include <rva.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>

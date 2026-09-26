@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <DDrawMgr/AniRecord.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>

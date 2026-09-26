@@ -1,9 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Font/Font.h>
-
-#include <Mfc.h>
-#include <MfcNoInline.h>
 
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>

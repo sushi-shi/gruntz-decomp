@@ -1,8 +1,6 @@
 #ifndef GRUNTZ_MAKERECT_H
 #define GRUNTZ_MAKERECT_H
 
-#include <Mfc.h>
-
 #include <Ints.h>
 
 inline RECT MakeRect(i32 l, i32 t, i32 r, i32 b) {

@@ -1,6 +1,6 @@
-#include <rva.h>
+#include <StdAfx.h>
 
-#include <Mfc.h>
+#include <rva.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -466,12 +466,10 @@ i32 CGameObject::SerializeDispatch(
         case SERIAL_POSTLOAD: {
             i32 node = m_carrierId;
             if (node != 0) {
-                AddrWord<char> key;
-                key.m_word = node;
                 CWwdGameObject* found = NULL;
                 if (MapLookup(
                         OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
-                        key.m_addr,
+                        reinterpret_cast<void*>(node), // API-forced: id-keyed map
                         found
                     )
                     == false) {

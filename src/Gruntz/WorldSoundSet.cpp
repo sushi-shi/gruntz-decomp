@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/WorldSoundSet.h>
-
-#include <Mfc.h>
 
 #include <Dsndmgr/SoundStream.h>
 #include <Globals.h>

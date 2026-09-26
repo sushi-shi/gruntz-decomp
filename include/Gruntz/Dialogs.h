@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <MfcWin.h>
-
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/ObList.h>

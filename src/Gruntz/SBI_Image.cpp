@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/SBI_Image.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>

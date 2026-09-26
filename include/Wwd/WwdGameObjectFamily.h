@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <Enums.h>

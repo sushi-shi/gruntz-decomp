@@ -1,10 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/BattlezMapConfig.h>
-
-#include <Mfc.h>
-#include <MfcNoInline.h>
-#include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>

@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/AdvancedOptions.h>
-
-#include <Mfc.h>
 
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/StartUpPrompt.h>

@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>

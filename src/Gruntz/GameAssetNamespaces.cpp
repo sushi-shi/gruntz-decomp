@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/GameAssetNamespaces.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>

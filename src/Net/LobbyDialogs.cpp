@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Net/LobbyDialogs.h>
-
-#include <Mfc.h>
 
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegistry.h>

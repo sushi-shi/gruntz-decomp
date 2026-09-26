@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <MfcWin.h>
-
 #include <Ints.h>
 #include <Wap32/Object.h>
 

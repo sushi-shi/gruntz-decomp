@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Gruntz/ActReg.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LogicTypeId.h>

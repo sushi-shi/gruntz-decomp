@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <Gruntz/CursorSnapActReg.h>
 
 #include <Gruntz/ActNameRegistry.h>

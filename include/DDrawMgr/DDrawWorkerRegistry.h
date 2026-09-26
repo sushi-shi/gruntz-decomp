@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/StateId.h>
 #include <Ints.h>

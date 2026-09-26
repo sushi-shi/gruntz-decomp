@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-#include <MfcWin.h>
-
 class Font {
 public:
     Font();

@@ -1,8 +1,8 @@
+#include <StdAfx.h>
+
 #include <rva.h>
 
 #include <Gruntz/TileTriggerSwitchLogic.h>
-
-#include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/SoundBuffer.h>

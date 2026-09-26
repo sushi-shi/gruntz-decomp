@@ -1,3 +1,5 @@
+#include <StdAfx.h>
+
 #include <Gruntz/TriggerMgr.h>
 
 #include <Bute/ButeMgr.h>
