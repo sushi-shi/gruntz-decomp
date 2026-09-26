@@ -270,26 +270,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
-                        AddrWord<char> objectKey;
-                        objectKey.m_word = 0;
-                        if (static_cast<u32>(scanX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(topY) < g_gameReg->m_tileGrid->m_height) {
-                            objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[topY][scanX].m_objectId;
-                        }
-                        if (objectKey.m_word != 0) {
+                        i32 objectId = CellObjectIdAt(g_gameReg->m_tileGrid, scanX, topY);
+                        if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
-                            MapLookup(
+                            MapLookupById(
                                 g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                                objectKey.m_addr,
+                                objectId,
                                 mapped
                             );
                             if (mapped == NULL) {
-                                if (static_cast<u32>(tileX) < g_gameReg->m_tileGrid->m_width
-                                    && static_cast<u32>(tileY) < g_gameReg->m_tileGrid->m_height) {
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-                                }
+                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -350,25 +340,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
-                        objectKey.m_word = 0;
-                        if (static_cast<u32>(scanX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(bottomY) < g_gameReg->m_tileGrid->m_height) {
-                            objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[bottomY][scanX].m_objectId;
-                        }
-                        if (objectKey.m_word != 0) {
+                        objectId = CellObjectIdAt(g_gameReg->m_tileGrid, scanX, bottomY);
+                        if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
-                            MapLookup(
+                            MapLookupById(
                                 g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                                objectKey.m_addr,
+                                objectId,
                                 mapped
                             );
                             if (mapped == NULL) {
-                                if (static_cast<u32>(tileX) < g_gameReg->m_tileGrid->m_width
-                                    && static_cast<u32>(tileY) < g_gameReg->m_tileGrid->m_height) {
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-                                }
+                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -433,26 +414,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
-                        AddrWord<char> objectKey;
-                        objectKey.m_word = 0;
-                        if (static_cast<u32>(leftX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(scanY) < g_gameReg->m_tileGrid->m_height) {
-                            objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[scanY][leftX].m_objectId;
-                        }
-                        if (objectKey.m_word != 0) {
+                        i32 objectId = CellObjectIdAt(g_gameReg->m_tileGrid, leftX, scanY);
+                        if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
-                            MapLookup(
+                            MapLookupById(
                                 g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                                objectKey.m_addr,
+                                objectId,
                                 mapped
                             );
                             if (mapped == NULL) {
-                                if (static_cast<u32>(tileX) < g_gameReg->m_tileGrid->m_width
-                                    && static_cast<u32>(tileY) < g_gameReg->m_tileGrid->m_height) {
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-                                }
+                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
@@ -513,25 +484,16 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
-                        objectKey.m_word = 0;
-                        if (static_cast<u32>(rightX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(scanY) < g_gameReg->m_tileGrid->m_height) {
-                            objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[scanY][rightX].m_objectId;
-                        }
-                        if (objectKey.m_word != 0) {
+                        objectId = CellObjectIdAt(g_gameReg->m_tileGrid, rightX, scanY);
+                        if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
-                            MapLookup(
+                            MapLookupById(
                                 g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                                objectKey.m_addr,
+                                objectId,
                                 mapped
                             );
                             if (mapped == NULL) {
-                                if (static_cast<u32>(tileX) < g_gameReg->m_tileGrid->m_width
-                                    && static_cast<u32>(tileY) < g_gameReg->m_tileGrid->m_height) {
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_objectId = 0;
-                                    g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-                                }
+                                ReleaseCellObject(g_gameReg->m_tileGrid, tileX, tileY);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
