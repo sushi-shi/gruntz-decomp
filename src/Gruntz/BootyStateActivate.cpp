@@ -292,10 +292,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         m_world->m_imageRegistry->InstallTree(imagez, "BOOTY", "_");
     }
 
-    {
-        int(WINAPI * sc)(BOOL) = ShowCursor;
-        while (sc(0) >= 0) {
-        }
+    while (ShowCursor(false) >= 0) {
     }
 
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
@@ -1497,10 +1494,7 @@ i32 CBootyState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }
-    int(WINAPI * sc)(BOOL) = ShowCursor;
-    i32 r = sc(0);
-    while (r >= 0) {
-        r = sc(0);
+    while (ShowCursor(false) >= 0) {
     }
     CRezDir* booty = StateResources()->GetDirFromPath("IMAGEZ");
     if (booty == NULL) {
@@ -1760,10 +1754,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundz), "BOOTY", "_");
     }
-    {
-        int(WINAPI * sc)(BOOL) = ShowCursor;
-        while (sc(0) >= 0) {
-        }
+    while (ShowCursor(false) >= 0) {
     }
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
 

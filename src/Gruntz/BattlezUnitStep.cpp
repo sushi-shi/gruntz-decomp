@@ -166,8 +166,7 @@ inflight: {
                 if (g->CoordCount() != 0) {
                     RECYCLE_GRUNT_COORDS(g);
                 }
-                Coord none;
-                g->m_arrivalCell = *none.Set(-1, -1);
+                UNSET_COORD(g->m_arrivalCell);
                 HandleUnitContact(g, cur);
                 g->m_defenderState = AISTATE_SEEK;
                 return 1;
@@ -249,8 +248,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                 if (unit->CoordCount() != 0) {
                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                 }
-                Coord none;
-                unit->m_arrivalCell = *none.Set(-1, -1);
+                UNSET_COORD(unit->m_arrivalCell);
                 HandleUnitContact(unit, target);
                 return 1;
             }
@@ -274,10 +272,8 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             return 1;
         }
 
-        Coord noCell;
-        unit->m_arrivalCell = *noCell.Set(-1, -1);
-        Coord noPx;
-        unit->m_defenderPx = *noPx.Set(-1, -1);
+        UNSET_COORD(unit->m_arrivalCell);
+        UNSET_COORD(unit->m_defenderPx);
         unit->m_defenderState = AISTATE_SEEK;
         unit->m_battleState = BZTASK_ADVANCE;
         if (unit->CoordCount() != 0) {
@@ -286,10 +282,8 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         return 1;
     }
 
-    Coord noCell;
-    unit->m_arrivalCell = *noCell.Set(-1, -1);
-    Coord noPx;
-    unit->m_defenderPx = *noPx.Set(-1, -1);
+    UNSET_COORD(unit->m_arrivalCell);
+    UNSET_COORD(unit->m_defenderPx);
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_battleState = BZTASK_ADVANCE;
     if (unit->CoordCount() != 0) {
@@ -319,8 +313,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             return 1;
         }
         unit->m_targetTeam = band;
-        Coord noPx;
-        unit->m_defenderPx = *noPx.Set(-1, -1);
+        UNSET_COORD(unit->m_defenderPx);
     } else {
         GruntzPlayer* slot = &m_ctx->m_players[band];
         if (slot->m_clearedRound != false || slot->m_active == false) {
@@ -328,10 +321,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             if (unit->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
             }
-            Coord noCell;
-            unit->m_arrivalCell = *noCell.Set(-1, -1);
-            Coord noPx;
-            unit->m_defenderPx = *noPx.Set(-1, -1);
+            UNSET_COORD(unit->m_arrivalCell);
+            UNSET_COORD(unit->m_defenderPx);
             unit->m_targetTeam = -1;
             unit->m_defenderState = AISTATE_SEEK;
             unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
@@ -389,8 +380,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     if (unit->CoordCount() != 0) {
                         RECYCLE_GRUNT_COORDS(unit)
                     }
-                    Coord noPx;
-                    unit->m_defenderPx = *noPx.Set(-1, -1);
+                    UNSET_COORD(unit->m_defenderPx);
                     return 1;
                 }
                 CGameObject* lvl = unit->m_object;
@@ -458,8 +448,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         if (unit->CoordCount() != 0) {
             RECYCLE_GRUNT_COORDS(unit)
         }
-        Coord noPx;
-        unit->m_defenderPx = *noPx.Set(-1, -1);
+        UNSET_COORD(unit->m_defenderPx);
         return 1;
     }
     CGameObject* lvl = unit->m_object;

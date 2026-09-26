@@ -105,14 +105,12 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     if (recA == NULL || cfgB == NULL) {
-        Coord none;
-        unit->m_arrivalCell = *none.Set(-1, -1);
+        UNSET_COORD(unit->m_arrivalCell);
         return 1;
     }
     if (recA->m_humanControlled == false && cfgB->m_active == false) {
         RECYCLE_GRUNT_COORDS(unit)
-        Coord none;
-        unit->m_arrivalCell = *none.Set(-1, -1);
+        UNSET_COORD(unit->m_arrivalCell);
         return 1;
     }
     if (unit->ArrivalCell().m_y == 1) {

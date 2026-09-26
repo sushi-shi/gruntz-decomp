@@ -2403,13 +2403,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     i32 cx = bbox.left + (bbox.right - bbox.left) / 2;
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(cx, cy);
     if (doSelect != 0 && count == 1) {
-        CGrunt* cell2;
-        if (m_recList.GetCount() != 1) {
-            cell2 = NULL;
-        } else {
-            Coord* head = HeadRec();
-            cell2 = m_units[head->m_x * TM_UNITS_PER_PLAYER + head->m_y];
-        }
+        CGrunt* cell2 = SoleSelectedGrunt();
         if (cell2 != NULL) {
             i32 playerIndex = cell2->m_playerIndex;
             i32 unitIndex = cell2->m_unitIndex;
@@ -2585,13 +2579,7 @@ i32 CTriggerMgr::ToggleToolTargeting() {
     }
     m_pendingFxKind = 0;
 
-    CGrunt* cell;
-    if (m_recList.GetCount() != 1) {
-        cell = NULL;
-    } else {
-        Coord* rec = HeadRec();
-        cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
-    }
+    CGrunt* cell = SoleSelectedGrunt();
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
         if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
             CloseActionOptionsMenu();
@@ -2626,13 +2614,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
         return 0;
     }
     m_pendingFxKind = 0;
-    CGrunt* cell;
-    if (m_recList.GetCount() != 1) {
-        cell = NULL;
-    } else {
-        Coord* rec = HeadRec();
-        cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
-    }
+    CGrunt* cell = SoleSelectedGrunt();
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
         if (cell->m_entranceReason >= PICKUP_TOYZ_FIRST) {
             CloseActionOptionsMenu();

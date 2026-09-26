@@ -527,6 +527,22 @@ i32 CWarlord::NotifyFortUnderAttack() {
     return 0;
 }
 
+#define PLAY_WARLORD_VOICE(questzCue, otherCue)                                                    \
+    {                                                                                              \
+        CGruntzMgr* g = g_gameReg;                                                                 \
+        if (g->m_gameMode == GAMEMODE_QUESTZ) {                                                    \
+            CWwdSpriteObject* h = m_object;                                                        \
+            i32 cue = (questzCue);                                                                 \
+            i32 x = h->m_screenX;                                                                  \
+            i32 y = h->m_screenY;                                                                  \
+            if (::PtInRect(&g->m_viewBounds, x, y)) {                                              \
+                g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);                      \
+            }                                                                                      \
+        } else {                                                                                   \
+            g->m_voiceManager->PlayVoice(m_object->m_objectId, (otherCue), -1, -1, -1);            \
+        }                                                                                          \
+    }
+
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {
     if (m_deathStarted != false) {
@@ -560,17 +576,7 @@ i32 CWarlord::ResolveJoyAnimation() {
         return 0;
     }
 
-    CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdSpriteObject* h = m_object;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
-            g->m_voiceManager->PlayVoice(h->m_objectId, 0x435, -1, -1, -1);
-        }
-    } else {
-        g->m_voiceManager->PlayVoice(m_object->m_objectId, 0x43f, -1, -1, -1);
-    }
+    PLAY_WARLORD_VOICE(0x435, 0x43f);
 
     CAniElement* anim = m_animJoy;
     SwitchAnimation(anim);
@@ -589,19 +595,7 @@ i32 CWarlord::ResolveIdleAnimation() {
 
     i32 idx = GetRandom(1, 3);
 
-    CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdSpriteObject* h = m_object;
-
-        i32 cue = idx + 0x431;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
-            g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
-        }
-    } else {
-        g->m_voiceManager->PlayVoice(m_object->m_objectId, idx + 0x43b, -1, -1, -1);
-    }
+    PLAY_WARLORD_VOICE(idx + 0x431, idx + 0x43b);
 
     CAniElement* anim = m_idleAnims[idx];
     SwitchAnimation(anim);
@@ -622,18 +616,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
 
     i32 idx = GetRandom(0, 2);
 
-    CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdSpriteObject* h = m_object;
-        i32 cue = idx + 0x42e;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
-            g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
-        }
-    } else {
-        g->m_voiceManager->PlayVoice(m_object->m_objectId, idx + 0x438, -1, -1, -1);
-    }
+    PLAY_WARLORD_VOICE(idx + 0x42e, idx + 0x438);
 
     CAniElement* anim = m_battlecryAnims[idx];
     SwitchAnimation(anim);
