@@ -1952,7 +1952,8 @@ i32 CGrunt::Place(
     g_gameReg->m_tileGrid->AcquireCellOccupancy(
         m_lastTilePx.m_x >> TILE_SHIFT_PX,
         m_lastTilePx.m_y >> TILE_SHIFT_PX,
-        (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex
+        m_playerIndex,
+        m_unitIndex
     );
     m_entranceActive = false;
     ReadConfigFromButeMgr();

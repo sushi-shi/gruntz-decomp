@@ -351,11 +351,7 @@ i32 CGrunt::LoadEntranceConfig() {
         }
         {
             CGruntzMapMgr* ng = g_gameReg->m_tileGrid;
-            ng->AcquireCellOccupancy(
-                newTileX,
-                newTileY,
-                (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex
-            );
+            ng->AcquireCellOccupancy(newTileX, newTileY, m_playerIndex, m_unitIndex);
         }
         m_lastTilePx.m_x = newPxX;
         m_lastTilePx.m_y = newPxY;
@@ -869,11 +865,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
             oldGrid->ReleaseCellOccupancy(oldTx, oldTy);                                           \
         }                                                                                          \
         CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;                                            \
-        newGrid->AcquireCellOccupancy(                                                             \
-            newTx,                                                                                 \
-            newTy,                                                                                 \
-            (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex                           \
-        );                                                                                         \
+        newGrid->AcquireCellOccupancy(newTx, newTy, m_playerIndex, m_unitIndex);                   \
         m_lastTilePx.m_x = newX;                                                                   \
         m_lastTilePx.m_y = newY;                                                                   \
         m_triggerMgr->WireTileSwitchLogic(this, newX, newY);                                       \

@@ -24,6 +24,7 @@ rva	unit	function	lost_max	cur
 0x0f36a0	gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	66.9018
 0x065630	gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	90.4314	89.9569
 0x0f0e20	gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	91.6483	85.3241
+0x051c00	gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.1106	62.4042
 0x032ce0	grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	80.2577
 0x0a3b50	lightfxrender	?DrawBorder@CMinimap@@QAEXPAUtagRECT@@PAVCDDrawSurfacePair@@H@Z	100.0000	88.0968
 0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.3193
