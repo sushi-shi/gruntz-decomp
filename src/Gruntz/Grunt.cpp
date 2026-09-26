@@ -2437,7 +2437,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_gruntKind = GRUNT_CONVERSION;
-            m_conversionTiming.Start(g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4));
+            m_conversionTiming.m_interval = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
+            m_conversionTiming.m_start = g_frameTime;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_CONVERSIONLOOP");
             break;
@@ -2455,7 +2456,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "DeathTouchTime", 0x4e20);
             }
-            m_conversionTiming.Start(m_powerupDuration);
+            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_conversionTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2469,7 +2471,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }
-            m_conversionTiming.Start(m_powerupDuration);
+            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_conversionTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2481,7 +2484,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
-            m_conversionTiming.Start(m_powerupDuration);
+            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_conversionTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2494,7 +2498,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
-            m_conversionTiming.Start(m_powerupDuration);
+            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_conversionTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2507,7 +2512,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "RoidzTime", 0x4e20);
             }
-            m_conversionTiming.Start(m_powerupDuration);
+            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_conversionTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2520,7 +2526,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "SuperSpeedTime", 0x4e20);
             }
-            m_conversionTiming.Start(m_powerupDuration);
+            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_conversionTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             ReadConfigFromButeMgr();
