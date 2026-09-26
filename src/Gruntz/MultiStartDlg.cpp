@@ -988,7 +988,6 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c46b0, 0x384)
 void CMultiStartDlg::Watchdog() {
     if (g_watchdogBusy != false) {
@@ -1002,8 +1001,7 @@ void CMultiStartDlg::Watchdog() {
     g_multiState->m_netMgr->EnumerateSessionPlayers(session, 0);
     g_multiState->ResolveLocalPlayer();
     if (g_netStatsTick == 0) {
-        u32 timestamp = timeGetTime();
-        g_multiState->BroadcastValueMessage(NETMSG_LATENCY_PROBE, static_cast<i32>(timestamp), 0);
+        g_multiState->BroadcastValueMessage(NETMSG_LATENCY_PROBE, timeGetTime(), 0);
     }
     if (g_multiState->m_isHost == false) {
         if (g_netStatsTick == 0) {
@@ -1024,9 +1022,7 @@ void CMultiStartDlg::Watchdog() {
             g_multiState->AutoTuneCmdDelay();
         }
     }
-    i32 nextNetStatsTick = g_netStatsTick + 1;
-    g_netStatsTick = nextNetStatsTick;
-    if (nextNetStatsTick > 3) {
+    if (++g_netStatsTick > 3) {
         g_netStatsTick = 0;
     }
     if (g_latencyDisplayTick == 0) {
@@ -1063,9 +1059,7 @@ void CMultiStartDlg::Watchdog() {
             }
         }
     }
-    i32 nextLatencyDisplayTick = g_latencyDisplayTick + 1;
-    g_latencyDisplayTick = nextLatencyDisplayTick;
-    if (nextLatencyDisplayTick > 0x31) {
+    if (++g_latencyDisplayTick > 0x31) {
         g_latencyDisplayTick = 0;
     }
     if (g_multiState->m_sessionTerminated != false) {
@@ -1080,19 +1074,21 @@ void CMultiStartDlg::Watchdog() {
         g_watchdogBusy = false;
         return;
     }
-    char* errorMessage;
     if (g_multiState->m_removedByHost != false) {
         KillTimer(1);
-        errorMessage = "You have been removed from the game by the host.";
+        g_multiState->ReportVersionMsg("You have been removed from the game by the host.", 0);
     } else if (g_multiState->m_gameClosed != false) {
         KillTimer(1);
-        errorMessage = "This game is closed.";
+        g_multiState->ReportVersionMsg("This game is closed.", 0);
     } else if (g_multiState->m_gameFull != false) {
         KillTimer(1);
-        errorMessage = "This game is already full.";
+        g_multiState->ReportVersionMsg("This game is already full.", 0);
     } else if (g_multiState->m_versionMismatch != false) {
         KillTimer(1);
-        errorMessage = "This version is not the same as the host computer's version of the game.";
+        g_multiState->ReportVersionMsg(
+            "This version is not the same as the host computer's version of the game.",
+            0
+        );
     } else {
         if (g_playerRosterChanged != false) {
             RefreshPlayerControls(1);
@@ -1110,7 +1106,6 @@ void CMultiStartDlg::Watchdog() {
         g_watchdogBusy = false;
         return;
     }
-    g_multiState->ReportVersionMsg(errorMessage, 0);
     EndDialog(0);
     g_watchdogBusy = false;
 }
