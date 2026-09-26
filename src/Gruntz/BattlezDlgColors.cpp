@@ -90,60 +90,9 @@ void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         CDC dc;
         dc.Attach(lpdis->hDC);
         COLORREF color;
-        switch (static_cast<ColorTint>(colorList->SendMessageA(LB_GETITEMDATA, lpdis->itemID, 0))) {
-            case TINT_DKBLUE:
-                color = 0x800000;
-                break;
-            case TINT_DKGREEN:
-                color = 0x008000;
-                break;
-            case TINT_TURQ:
-                color = 0x808000;
-                break;
-            case TINT_DKRED:
-                color = 0x000080;
-                break;
-            case TINT_PURPLE:
-                color = 0x800080;
-                break;
-            case TINT_DKYELLOW:
-                color = 0x008080;
-                break;
-            case TINT_GREY:
-                color = 0x808080;
-                break;
-            case TINT_BLUE:
-                color = 0xff0000;
-                break;
-            case TINT_GREEN:
-                color = 0x00ff00;
-                break;
-            case TINT_CYAN:
-                color = 0xffff00;
-                break;
-            case TINT_RED:
-                color = 0x0000ff;
-                break;
-            case TINT_PINK:
-                color = 0xff00ff;
-                break;
-            case TINT_YELLOW:
-                color = 0x00ffff;
-                break;
-            case TINT_WHITE:
-                color = 0xffffff;
-                break;
-            case TINT_ORANGE:
-                color = 0x0080ff;
-                break;
-            case TINT_HOTPINK:
-                color = 0x8000ff;
-                break;
-            case TINT_BLACK:
-            default:
-                color = 0;
-                break;
-        }
+        color = TintColorRef(
+            static_cast<ColorTint>(colorList->SendMessageA(LB_GETITEMDATA, lpdis->itemID, 0))
+        );
         CBrush brush(color);
         FillRect(dc.m_hDC, &lpdis->rcItem, brush);
         dc.Detach();

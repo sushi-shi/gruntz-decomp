@@ -688,60 +688,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[0].m_color) {
-                    case TINT_DKBLUE:
-                        color = 0x800000;
-                        break;
-                    case TINT_DKGREEN:
-                        color = 0x008000;
-                        break;
-                    case TINT_TURQ:
-                        color = 0x808000;
-                        break;
-                    case TINT_DKRED:
-                        color = 0x000080;
-                        break;
-                    case TINT_PURPLE:
-                        color = 0x800080;
-                        break;
-                    case TINT_DKYELLOW:
-                        color = 0x008080;
-                        break;
-                    case TINT_GREY:
-                        color = 0x808080;
-                        break;
-                    case TINT_BLUE:
-                        color = 0xff0000;
-                        break;
-                    case TINT_GREEN:
-                        color = 0x00ff00;
-                        break;
-                    case TINT_CYAN:
-                        color = 0xffff00;
-                        break;
-                    case TINT_RED:
-                        color = 0x0000ff;
-                        break;
-                    case TINT_PINK:
-                        color = 0xff00ff;
-                        break;
-                    case TINT_YELLOW:
-                        color = 0x00ffff;
-                        break;
-                    case TINT_WHITE:
-                        color = 0xffffff;
-                        break;
-                    case TINT_ORANGE:
-                        color = 0x0080ff;
-                        break;
-                    case TINT_HOTPINK:
-                        color = 0x8000ff;
-                        break;
-                    case TINT_BLACK:
-                    default:
-                        color = 0;
-                        break;
-                }
+                color = TintColorRef(m_gameManager->m_players[0].m_color);
             } else {
                 color = 0xc8c8c8;
             }
@@ -749,60 +696,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[1].m_color) {
-                    case TINT_DKBLUE:
-                        color = 0x800000;
-                        break;
-                    case TINT_DKGREEN:
-                        color = 0x008000;
-                        break;
-                    case TINT_TURQ:
-                        color = 0x808000;
-                        break;
-                    case TINT_DKRED:
-                        color = 0x000080;
-                        break;
-                    case TINT_PURPLE:
-                        color = 0x800080;
-                        break;
-                    case TINT_DKYELLOW:
-                        color = 0x008080;
-                        break;
-                    case TINT_GREY:
-                        color = 0x808080;
-                        break;
-                    case TINT_BLUE:
-                        color = 0xff0000;
-                        break;
-                    case TINT_GREEN:
-                        color = 0x00ff00;
-                        break;
-                    case TINT_CYAN:
-                        color = 0xffff00;
-                        break;
-                    case TINT_RED:
-                        color = 0x0000ff;
-                        break;
-                    case TINT_PINK:
-                        color = 0xff00ff;
-                        break;
-                    case TINT_YELLOW:
-                        color = 0x00ffff;
-                        break;
-                    case TINT_WHITE:
-                        color = 0xffffff;
-                        break;
-                    case TINT_ORANGE:
-                        color = 0x0080ff;
-                        break;
-                    case TINT_HOTPINK:
-                        color = 0x8000ff;
-                        break;
-                    case TINT_BLACK:
-                    default:
-                        color = 0;
-                        break;
-                }
+                color = TintColorRef(m_gameManager->m_players[1].m_color);
             } else {
                 color = 0xc8c8c8;
             }
@@ -810,60 +704,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[2].m_color) {
-                    case TINT_DKBLUE:
-                        color = 0x800000;
-                        break;
-                    case TINT_DKGREEN:
-                        color = 0x008000;
-                        break;
-                    case TINT_TURQ:
-                        color = 0x808000;
-                        break;
-                    case TINT_DKRED:
-                        color = 0x000080;
-                        break;
-                    case TINT_PURPLE:
-                        color = 0x800080;
-                        break;
-                    case TINT_DKYELLOW:
-                        color = 0x008080;
-                        break;
-                    case TINT_GREY:
-                        color = 0x808080;
-                        break;
-                    case TINT_BLUE:
-                        color = 0xff0000;
-                        break;
-                    case TINT_GREEN:
-                        color = 0x00ff00;
-                        break;
-                    case TINT_CYAN:
-                        color = 0xffff00;
-                        break;
-                    case TINT_RED:
-                        color = 0x0000ff;
-                        break;
-                    case TINT_PINK:
-                        color = 0xff00ff;
-                        break;
-                    case TINT_YELLOW:
-                        color = 0x00ffff;
-                        break;
-                    case TINT_WHITE:
-                        color = 0xffffff;
-                        break;
-                    case TINT_ORANGE:
-                        color = 0x0080ff;
-                        break;
-                    case TINT_HOTPINK:
-                        color = 0x8000ff;
-                        break;
-                    case TINT_BLACK:
-                    default:
-                        color = 0;
-                        break;
-                }
+                color = TintColorRef(m_gameManager->m_players[2].m_color);
             } else {
                 color = 0xc8c8c8;
             }
@@ -871,60 +712,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[3].m_color) {
-                    case TINT_DKBLUE:
-                        color = 0x800000;
-                        break;
-                    case TINT_DKGREEN:
-                        color = 0x008000;
-                        break;
-                    case TINT_TURQ:
-                        color = 0x808000;
-                        break;
-                    case TINT_DKRED:
-                        color = 0x000080;
-                        break;
-                    case TINT_PURPLE:
-                        color = 0x800080;
-                        break;
-                    case TINT_DKYELLOW:
-                        color = 0x008080;
-                        break;
-                    case TINT_GREY:
-                        color = 0x808080;
-                        break;
-                    case TINT_BLUE:
-                        color = 0xff0000;
-                        break;
-                    case TINT_GREEN:
-                        color = 0x00ff00;
-                        break;
-                    case TINT_CYAN:
-                        color = 0xffff00;
-                        break;
-                    case TINT_RED:
-                        color = 0x0000ff;
-                        break;
-                    case TINT_PINK:
-                        color = 0xff00ff;
-                        break;
-                    case TINT_YELLOW:
-                        color = 0x00ffff;
-                        break;
-                    case TINT_WHITE:
-                        color = 0xffffff;
-                        break;
-                    case TINT_ORANGE:
-                        color = 0x0080ff;
-                        break;
-                    case TINT_HOTPINK:
-                        color = 0x8000ff;
-                        break;
-                    case TINT_BLACK:
-                    default:
-                        color = 0;
-                        break;
-                }
+                color = TintColorRef(m_gameManager->m_players[3].m_color);
             } else {
                 color = 0xc8c8c8;
             }
