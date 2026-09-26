@@ -81,7 +81,7 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
             RECYCLE_GRUNT_COORDS(unit)
         }
     }
-    unit->ResetToSeek();
+    ResetToSeek(unit);
     unit->m_dwell = 0;
     return 1;
 }

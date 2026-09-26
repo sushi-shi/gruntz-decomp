@@ -15,23 +15,23 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
     return 0;
 }
 
-inline void CGrunt::ResetToSeek() {
+inline void ResetToSeek(CGrunt* grunt) {
     Coord none;
-    m_arrivalCell = *none.Set(-1, -1);
-    m_defenderState = AISTATE_SEEK;
+    grunt->m_arrivalCell = *none.Set(-1, -1);
+    grunt->m_defenderState = AISTATE_SEEK;
 }
 
-inline void CGrunt::RepathToward(CGrunt* target) {
-    if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-        StepArrivalDrop(
+inline void RepathToward(CGrunt* grunt, CGrunt* target) {
+    if (static_cast<u32>(grunt->m_dwell) > DWELL_REPATH_MS) {
+        grunt->StepArrivalDrop(
             target->m_lastTilePx.m_x,
             target->m_lastTilePx.m_y,
             0,
-            m_arrivalFlags,
+            grunt->m_arrivalFlags,
             1,
             0
         );
-        m_dwell = 0;
+        grunt->m_dwell = 0;
     }
 }
 

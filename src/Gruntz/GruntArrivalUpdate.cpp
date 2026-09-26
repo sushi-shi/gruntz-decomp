@@ -185,7 +185,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     }
                 }
             } else {
-                this->ResetToSeek();
+                ResetToSeek(this);
             }
             break;
         }

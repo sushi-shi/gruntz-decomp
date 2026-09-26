@@ -149,7 +149,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
             CGrunt* cur = m_triggerMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
-                ResetToSeek();
+                ResetToSeek(this);
                 return 1;
             }
             if (t == NULL || t->m_entranceCommitted == false
@@ -157,7 +157,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            RepathToward(t);
+            RepathToward(this, t);
             if (m_poweredUp == false && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && GRUNT_AT_SAVED_SCREEN_POS(t)) {

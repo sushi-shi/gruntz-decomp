@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 rva	unit	function	lost_max	cur
 0x153d90	cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.7114	97.9900
 0x153b20	cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.8068	97.3526
@@ -48,3 +49,9 @@ rva unit function lost_max cur 0x031610 battlezunitstep ? Step @CBattlezMapConfi
     ? ScanRegion @CBattlezMapConfig @ @QAEHPAVCGrunt @ @ @Z 81.9104 80.2577 0x06c130 triggermgrgrid
     ? WireTileSwitchLogic @CTriggerMgr @ @QAEHPAVCGrunt @ @HH @Z 92.4317 90.2860
 >>>>>>> cc3cc3e37 (helpers: CGrunt::ResetToSeek at 11 open-coded target resets)
+=======
+rva	unit	function	lost_max	cur
+0x031610	battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.5000	78.4337
+0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	73.9843	73.7003
+0x065630	gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	90.4314	89.9569
+>>>>>>> e489fcb7f (helpers: keep new grunt helpers out of widely included headers)

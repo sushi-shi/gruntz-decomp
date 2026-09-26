@@ -1596,7 +1596,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 flags
             ) != 0
             && list.GetCount() != 0) {
-            RecycleHeadCoord(list);
+            RECYCLE_HEAD_COORD(list)
             if (list.GetCount() != 0) {
                 while (node != NULL) {
                     POSITION remaining = node;
@@ -2351,7 +2351,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                     0
                                 ) != 0
                                 && path.GetCount() != 0) {
-                                RecycleHeadCoord(path);
+                                RECYCLE_HEAD_COORD(path)
                                 if (path.GetCount() != 0) {
                                     ARR_RECYCLE(g);
                                     POSITION qp = path.GetHeadPosition();
@@ -3198,7 +3198,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                             )
                             != 0) {
                             if (list.GetHeadPosition() != NULL) {
-                                RecycleHeadCoord(list);
+                                RECYCLE_HEAD_COORD(list)
                             }
                             if (list.GetHeadPosition() != NULL) {
                                 if (unit->CoordCount() != 0) {
@@ -3477,7 +3477,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
             )
             != 0) {
             if (list.GetCount() != 0) {
-                RecycleHeadCoord(list);
+                RECYCLE_HEAD_COORD(list)
                 if (list.GetCount() != 0) {
                     if (unit->CoordCount() != 0) {
                         RECYCLE_GRUNT_COORDS(unit)
@@ -3891,7 +3891,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         )
         != 0) {
         if (list.GetCount() != 0) {
-            RecycleHeadCoord(list);
+            RECYCLE_HEAD_COORD(list)
             if (list.GetCount() != 0) {
 
                 if (unit->CoordCount() != 0) {

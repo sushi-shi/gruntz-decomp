@@ -729,7 +729,7 @@ i32 CGrunt::PathScan() {
                                 }
                             } while (p != NULL);
                         }
-                        RecycleHeadCoord(s);
+                        RECYCLE_HEAD_COORD(s)
                         s.RemoveAll();
                         SCAN_BOUNDS_PLAINCLIP(grid);
                         return 1;
@@ -784,7 +784,7 @@ i32 CGrunt::PathScan() {
                 if (res != 0) {
 
                     if (s.GetCount() != 0) {
-                        RecycleHeadCoord(s);
+                        RECYCLE_HEAD_COORD(s)
                         if (s.GetCount() != 0) {
 
                             if (CoordCount() != 0) {
@@ -820,7 +820,7 @@ i32 CGrunt::PathScan() {
                                 )
                                 != 0) {
                                 if (s.GetCount() != 0) {
-                                    RecycleHeadCoord(s);
+                                    RECYCLE_HEAD_COORD(s)
                                     if (s.GetCount() != 0) {
                                         POSITION q = s.GetHeadPosition();
                                         if (q != NULL) {

@@ -170,7 +170,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != o) {
-                ResetToSeek();
+                ResetToSeek(this);
                 return 1;
             }
             if (o == NULL) {

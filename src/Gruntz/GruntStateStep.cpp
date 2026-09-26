@@ -188,7 +188,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                         0,
                         0
                     )) {
-                    g->ResetToSeek();
+                    ResetToSeek(g);
                 }
             }
             if (dist2 <= 0xa) {
@@ -197,7 +197,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->m_dwell = 0;
             goto tail;
         }
-        g->ResetToSeek();
+        ResetToSeek(g);
         g->RecycleCoords();
     }
 

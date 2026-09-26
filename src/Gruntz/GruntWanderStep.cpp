@@ -114,7 +114,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* active = m_triggerMgr->FindNearestEnemy(this);
             if (active != NULL && active != slot) {
-                ResetToSeek();
+                ResetToSeek(this);
                 return 1;
             }
             if (slot == NULL || slot->m_entranceCommitted == false
@@ -122,7 +122,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            RepathToward(slot);
+            RepathToward(this, slot);
             if (m_poweredUp != false) {
                 return 1;
             }

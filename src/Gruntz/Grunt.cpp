@@ -41,7 +41,6 @@
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
-#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
@@ -2069,8 +2068,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2080,8 +2079,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2091,11 +2090,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
+            ResetArrivalFlags(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
-            MarkQuestzArrival();
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2105,8 +2104,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2116,8 +2115,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2127,8 +2126,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2138,8 +2137,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2149,8 +2148,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             if (m_arrivalState == AI_BATTLEZ_PATH) {
@@ -2178,8 +2177,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0x400;
             m_toolConfigured = true;
             break;
@@ -2189,11 +2188,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
+            ResetArrivalFlags(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
-            MarkQuestzArrival();
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2203,8 +2202,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -2217,8 +2216,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -2231,8 +2230,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2242,8 +2241,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2253,8 +2252,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0x1000;
             m_toolConfigured = true;
             break;
@@ -2264,8 +2263,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2275,8 +2274,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2286,8 +2285,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2298,8 +2297,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachRect = MakeRect(-r, -r, r, r);
             m_coordToggle = false;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0x100;
             m_toolConfigured = true;
             break;
@@ -2309,8 +2308,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2320,7 +2319,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
+            ResetArrivalFlags(this);
             m_passableMask = 0;
             m_toolConfigured = false;
             break;
@@ -2330,8 +2329,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -2344,8 +2343,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -2356,8 +2355,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BABYWALKER: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
             eq = IsAnimationAct("D");
@@ -2369,8 +2368,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BEACHBALL: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
             eq = IsAnimationAct("D");
@@ -2381,8 +2380,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BIGWHEEL: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
             eq = IsAnimationAct("D");
@@ -2394,8 +2393,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_GOKART: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
             eq = IsAnimationAct("D");
@@ -2407,8 +2406,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_JACKINTHEBOX: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
             eq = IsAnimationAct("D");
@@ -2419,8 +2418,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_JUMPROPE: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
             eq = IsAnimationAct("D");
@@ -2431,8 +2430,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_POGOSTICK: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
             eq = IsAnimationAct("D");
@@ -2444,8 +2443,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_SCROLL: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_moveVariant = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
@@ -2457,8 +2456,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_SQUEAKTOY: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
             eq = IsAnimationAct("D");
@@ -2469,8 +2468,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_YOYO: {
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
             eq = IsAnimationAct("D");
@@ -2510,8 +2509,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
             m_animSetName = "HAREKRISHNAGRUNT";
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_gruntKind = GRUNT_CONVERSION;
             m_convertTimeLo = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
@@ -2528,8 +2527,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
             m_animSetName = "REAPERGRUNT";
-            ResetArrivalFlags();
-            MarkQuestzArrival();
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_gruntKind = GRUNT_DEATHTOUCH;
             if (m_powerupDuration == 0) {

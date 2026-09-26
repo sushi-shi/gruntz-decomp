@@ -243,7 +243,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             CGrunt* sg =
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (best != NULL && best != sg) {
-                ResetToSeek();
+                ResetToSeek(this);
                 return 1;
             }
             if (sg != NULL) {
@@ -253,7 +253,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 PRIO(pb, sg->m_entranceReason);
                 if (pa <= pb && sg->m_entranceCommitted != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
-                    RepathToward(sg);
+                    RepathToward(this, sg);
                     if (m_poweredUp != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }

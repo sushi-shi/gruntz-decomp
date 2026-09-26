@@ -211,7 +211,8 @@ inflight: {
                 goto L_done;
             }
         }
-    L_clearAt: { g->ResetToSeek(); }
+    L_clearAt:
+        ResetToSeek(g);
     L_done:
         g->m_dwell = 0;
         return 1;

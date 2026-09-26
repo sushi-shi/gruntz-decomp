@@ -92,7 +92,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
-                ResetToSeek();
+                ResetToSeek(this);
                 return 1;
             }
             if (occ == NULL) {
@@ -104,7 +104,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
-            RepathToward(occ);
+            RepathToward(this, occ);
             if (m_poweredUp != false) {
                 return 1;
             }
