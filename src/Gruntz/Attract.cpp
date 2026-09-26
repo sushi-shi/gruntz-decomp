@@ -197,8 +197,8 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     }
 
     CLightFaderConfig t;
-    t.m_center.x = centerX;
     t.m_clearMode = false;
+    t.m_center.x = centerX;
     t.m_center.y = centerY;
     t.m_targetSurface = targetSurface;
     t.m_sourceSurface = sourceSurface;
