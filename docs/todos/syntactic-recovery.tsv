@@ -1,4 +1,5 @@
 rva	unit	function	lost_max	cur
+0x02e3a0	battlezmapconfig	?RouteToNearbyEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.0284	76.6404
 0x031610	battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
 0x153d90	cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.7114	97.9900
 0x153b20	cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.8068	97.3526
@@ -18,6 +19,7 @@ rva	unit	function	lost_max	cur
 0x1817e0	fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFaderConfig@@@Z	91.8740	91.8425
 0x180640	faderlight	?RenderFrame@CFaderLight@@UAEXH@Z	95.0099	94.9913
 0x047a10	grunt	??0CGrunt@@QAE@PAUCGameObject@@@Z	92.7946	72.6832
+0x04dd50	grunt	?LoadGruntTypeTable@CGrunt@@QAEHW4PickupType@@HHH@Z	95.7511	92.7319
 0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	73.7003
 0x0ecc90	gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	87.6818	80.1788
 0x05b050	gruntcombat	?CommitNeighbor@CGrunt@@QAEHHHHH@Z	95.3511	74.5110
