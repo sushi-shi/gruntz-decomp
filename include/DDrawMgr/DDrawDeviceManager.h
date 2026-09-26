@@ -62,6 +62,13 @@ public:
         return m_palette;
     }
 
+    PALETTEENTRY* GetActivePalette() {
+        if (m_hasPalette) {
+            return m_palette;
+        }
+        return NULL;
+    }
+
     ColorDepth GetDisplayColorDepth() const {
         return m_displayColorDepth;
     }

@@ -65,11 +65,7 @@ i32 CDDSurface::CreateFromBmpData(
         COPY_BGRX_PALETTE(g_paletteRampBuf, sourcePalette, i, PALETTE_ENTRY_COUNT)
         pal = g_paletteRampBuf;
     } else if (convert && displayBitDepth == BPP_PALETTED_8) {
-        if (manager->m_hasPalette != false) {
-            pal = manager->m_palette;
-        } else {
-            pal = NULL;
-        }
+        pal = manager->GetActivePalette();
     }
 
     if (CDDSurface::BlitSurf(manager, width, height, BPP_UNSET, surfaceCaps) == BPP_UNSET) {
@@ -516,11 +512,7 @@ i32 CDDSurface::CreateFromPcxData(
         COPY_RGB_PALETTE(g_grayRamp, p, i, 0x100)
         palette = g_grayRamp;
     } else if (convert && displayBitDepth == BPP_PALETTED_8) {
-        if (manager->m_hasPalette != false) {
-            palette = manager->m_palette;
-        } else {
-            palette = NULL;
-        }
+        palette = manager->GetActivePalette();
     }
 
     if (this->BlitSurf(manager, width, height, BPP_UNSET, surfaceCaps) == BPP_UNSET) {
@@ -629,11 +621,7 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
                     COPY_RGB_PALETTE_DO(s_palPcx, src, i, 0x100)
                     palette = s_palPcx;
                 } else if (remap && palBpp == BPP_PALETTED_8) {
-                    if (manager->m_hasPalette != false) {
-                        palette = manager->m_palette;
-                    } else {
-                        palette = NULL;
-                    }
+                    palette = manager->GetActivePalette();
                 }
 
                 u8* pixels = static_cast<u8*>(static_cast<void*>(image)) + sizeof(PcxHeader);
@@ -923,12 +911,7 @@ i32 CDDSurface::DecodePcxData(
     }
 
     i32 remap = 0;
-    PALETTEENTRY* palette;
-    if (manager->m_hasPalette) {
-        palette = manager->m_palette;
-    } else {
-        palette = NULL;
-    }
+    PALETTEENTRY* palette = manager->GetActivePalette();
     ColorDepth displayBitDepth = manager->m_displayColorDepth;
     if (displayBitDepth != BPP_PALETTED_8) {
         remap = 1;
