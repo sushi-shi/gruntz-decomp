@@ -12,7 +12,7 @@
 inline void
 CDrawSubWorker::BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size) {
     CRect rc(CPoint(pos.x, pos.y), CSize(size.cx, size.cy));
-    m_surface->BltEx(&rc, other->m_surface, &rc, DDBLT_WAIT, NULL);
+    m_surface->BltEx(&rc, other->GetSurface(), &rc, DDBLT_WAIT, NULL);
 }
 
 #endif // GRUNTZ_DDRAWMGR_DRAWSUBWORKERINLINE_H

@@ -87,6 +87,9 @@ public:
     i32 GetHeight() const {
         return m_height;
     }
+    CDDSurface* const& GetSurface() const {
+        return m_surface;
+    }
 
     i32 Probe();
     void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size);

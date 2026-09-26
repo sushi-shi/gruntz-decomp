@@ -400,7 +400,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
-        m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
+        m_world->m_drawTarget->m_overlayPair->GetSurface()->Fill(0);
         CString s;
         s.LoadString(IDS_PLEASE_WAIT);
         tagSIZE mode = m_mgr->GetModeSize();
@@ -472,7 +472,7 @@ i32 CPlay::Render() {
         m_levelTimer->Draw(back, true);
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(back);
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         m_world->m_level->DeactivateDistantObjectsOnMainPlane();
         return 1;
@@ -496,7 +496,7 @@ i32 CPlay::Render() {
         UpdateAmbientMusic();
 
         if (m_region0Gate != false) {
-            m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+            m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
             m_statusBar->Deactivate();
         }
 
@@ -629,7 +629,7 @@ i32 CPlay::Render() {
         if (m_worldReady != false) {
             view->DrawBox(&m_hudRect, 0xff);
         }
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         {
             CGameLevel* lvl = m_world->m_level;
@@ -679,7 +679,7 @@ i32 CPlay::Render() {
                 m_stepCountdown = m_stepCountdown - 1;
                 DrawVisibleWorld();
                 m_statusBar->LoadMainStatusBarSprite();
-                back->m_surface->ShadeRect(0x32, NULL);
+                back->GetSurface()->ShadeRect(0x32, NULL);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
             }
@@ -696,7 +696,7 @@ i32 CPlay::Render() {
         }
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(back);
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     }
     return 1;
 }
@@ -841,7 +841,7 @@ i32 CPlay::ProfileInputFrame() {
 
     DrawDebugStats();
     g_flipProfileMs = static_cast<i32>(tg());
-    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     g_flipProfileMs = static_cast<i32>((tg() - static_cast<u32>(g_flipProfileMs)));
     g_deactivateProfileMs = static_cast<i32>(tg());
     {
@@ -884,7 +884,7 @@ i32 CPlay::ProfileDeltaFrame() {
         updates
     );
     DrawDebugStats();
-    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
 
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != NULL) {
@@ -1412,7 +1412,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         gameReg = g_gameReg;
         if (gameReg->m_loadingSaveGame == false) {
-            CDDSurface* mapHost = self->m_world->m_drawTarget->m_frontSurface->m_surface;
+            CDDSurface* mapHost = self->m_world->m_drawTarget->m_frontSurface->GetSurface();
             mapHost->ShadeRect(0x32, NULL);
             gameReg = g_gameReg;
         }
@@ -1611,7 +1611,7 @@ i32 CPlay::InputVirtual() {
     while (ShowCursor(false) >= 0)
         ;
 
-    m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
 
     DrawWorldView();
@@ -1642,7 +1642,7 @@ i32 CPlay::RestoreDisplay() {
     if (m_statusBar != NULL) {
         m_statusBar->Deactivate();
         DrawWorldView();
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     }
     return 1;
 }
@@ -3155,7 +3155,7 @@ void CPlay::DrawDebugStatsFull() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* surface = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_backPair->GetSurface();
     HDC hdc = NULL;
     surface->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
@@ -3249,7 +3249,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* surface = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_backPair->GetSurface();
     HDC hdc = NULL;
     surface->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
@@ -3331,7 +3331,7 @@ void CPlay::DrawCustomLevelBanner() {
         }
         sprintf(g_customLevelText, "Custom Level: %s", static_cast<const char*>(base));
     }
-    CDDSurface* surface = m_world->m_drawTarget->m_frontSurface->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_frontSurface->GetSurface();
     if (surface == NULL) {
         return;
     }
@@ -3371,7 +3371,7 @@ i32 CPlay::DrawStateMessage() {
         return 0;
     }
     (static_cast<CImage*>(frame))->RenderFrame(surf, surf->m_width / 2, surf->m_height / 2, 0);
-    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(static_cast<CDDSurface*>(0));
+    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(static_cast<CDDSurface*>(0));
     return 1;
 }
 
@@ -3774,7 +3774,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     savedRect->right = screenRect->right - screenRect->left;
     savedRect->bottom = screenRect->bottom - screenRect->top;
 
-    CDDSurface* target = pair->m_surface;
+    CDDSurface* target = pair->GetSurface();
     if (target == NULL) {
         return 0;
     }
@@ -3934,7 +3934,7 @@ i32 CPlay::RestoreCursorSaveUnder() {
         savedRect = &m_cursorSavedRects[1];
     }
 
-    CDDSurface* backSurface = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* backSurface = m_world->m_drawTarget->m_backPair->GetSurface();
     if (backSurface == NULL) {
         return 0;
     }
@@ -5926,7 +5926,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
 
     if (m_initialFramePending != false) {
         m_initialFramePending = false;
-        m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+        m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         DrawWorldView();
         m_statusBar->Deactivate();
@@ -5941,7 +5941,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
                 return 0;
             }
         } else {
-            m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+            m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
         }
     }
 
@@ -6540,7 +6540,7 @@ i32 CPlay::ShrinkViewport(i32 step) {
     }
 
     m_world->m_level->UpdatePlaneViewports((&resized));
-    m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
     m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
     return 1;
@@ -6592,7 +6592,7 @@ i32 CPlay::ExpandViewport(i32 step) {
     }
 
     m_world->m_level->UpdatePlaneViewports((&resized));
-    m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
+    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
     m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
     return 1;
@@ -6608,7 +6608,7 @@ i32 CPlay::NotifyVisibleEntities() {
     RECT r = vp;
     r.right = r.right + 1;
     r.bottom = r.bottom + 1;
-    held->m_surface->Restore(&r, 0);
+    held->GetSurface()->Restore(&r, 0);
 
     POSITION pos = chain.GetHeadPosition();
 

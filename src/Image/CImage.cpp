@@ -395,7 +395,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.top = d.top - y;
     s.right = s.left + w;
     s.bottom = s.top + h;
-    dst->m_surface->BltFast(d.left, d.top, m_surface, &s, m_bltFastFlags);
+    dst->GetSurface()->BltFast(d.left, d.top, m_surface, &s, m_bltFastFlags);
     info->m_dirty.Set(d, w, h);
 }
 
@@ -442,7 +442,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT | DDBLTFX_MIRRORUPDOWN;
     d.right += 1;
     d.bottom += 1;
-    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
+    dst->GetSurface()->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_dirty.Set(d, w, h);
@@ -459,7 +459,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT;
-    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
+    dst->GetSurface()->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_dirty.Set(d, w, h);
@@ -476,7 +476,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORUPDOWN;
-    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
+    dst->GetSurface()->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_dirty.Set(d, w, h);
@@ -497,7 +497,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
         m_owned->m_light = info->m_fillFraction;
     }
-    m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
+    m_owned->Blit(&d, dst->GetSurface(), &s, 0, 0);
     info->m_dirty.Set(d, w, h);
 }
 
@@ -515,7 +515,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
-    m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
+    m_owned->Blit(&d, dst->GetSurface(), &s, 1, 1);
     info->m_dirty.Set(d, w, h);
 }
 
@@ -533,7 +533,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
-    m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
+    m_owned->Blit(&d, dst->GetSurface(), &s, 1, 0);
     info->m_dirty.Set(d, w, h);
 }
 
@@ -551,6 +551,6 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
-    m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
+    m_owned->Blit(&d, dst->GetSurface(), &s, 0, 1);
     info->m_dirty.Set(d, w, h);
 }

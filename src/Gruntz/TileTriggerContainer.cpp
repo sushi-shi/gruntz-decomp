@@ -74,7 +74,7 @@ i32 DrawPageDebugText(
             return 0;
         }
     }
-    CDDSurface* surf = page->m_surface;
+    CDDSurface* surf = page->GetSurface();
     if (surf == NULL) {
         return 0;
     }

@@ -37,7 +37,7 @@ void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
         }
     }
 
-    dst->m_surface->PutPixel(m_screenX, m_screenY, m_dotColor);
+    dst->GetSurface()->PutPixel(m_screenX, m_screenY, m_dotColor);
     m_dirty.m_position.x = m_screenX;
     m_dirty.m_position.y = m_screenY;
     m_dirty.m_size.cx = 1;
@@ -50,8 +50,8 @@ void CWwdDotObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
     if (m_shadow.m_armed != -1) {
-        u8 pixel = src->m_surface->GetPixel(m_shadow.m_position.x, m_shadow.m_position.y);
-        dst->m_surface->PutPixel(m_shadow.m_position.x, m_shadow.m_position.y, pixel);
+        u8 pixel = src->GetSurface()->GetPixel(m_shadow.m_position.x, m_shadow.m_position.y);
+        dst->GetSurface()->PutPixel(m_shadow.m_position.x, m_shadow.m_position.y, pixel);
         m_dirty.m_armed = -1;
     }
 }

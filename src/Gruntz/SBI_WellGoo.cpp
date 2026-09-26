@@ -152,7 +152,7 @@ i32 CSBI_WellGoo::Render() {
 
     m_srcRect.right++;
     m_srcRect.bottom++;
-    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, DDBLT_WAIT, NULL);
+    ctx->GetSurface()->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, DDBLT_WAIT, NULL);
     m_srcRect.right--;
     m_srcRect.bottom--;
 

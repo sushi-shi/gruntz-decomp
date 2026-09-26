@@ -378,7 +378,7 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     RECT rightSrc = {0, 0, rightW, m_tileHeightPx};
     RECT corner;
     RECT dr;
-    CDDSurface* surf = ctx->m_surface;
+    CDDSurface* surf = ctx->GetSurface();
     i32 nCols = colR - colL - 1;
     i32 nRows = rowB - rowT - 1;
 

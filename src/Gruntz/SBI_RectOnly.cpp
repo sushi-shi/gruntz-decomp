@@ -263,7 +263,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             m_redrawFrames--;
             i32 v = m_barFrameGate;
             if (v > SCREEN_H_PX) {
-                CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
+                CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->GetSurface();
 
                 RECT below;
                 below.left = m_barRect.left;

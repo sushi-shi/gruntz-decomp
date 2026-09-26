@@ -149,7 +149,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         return 1;
     }
 
-    CDDSurface* surface = target->m_surface;
+    CDDSurface* surface = target->GetSurface();
     if (!surface) {
         return 0;
     }

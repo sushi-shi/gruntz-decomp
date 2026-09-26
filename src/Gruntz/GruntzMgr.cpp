@@ -2180,7 +2180,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     CMoviePlayer player;
     IDirectSound* dsound = NULL;
 
-    CDDSurface* front = World()->m_drawTarget->m_frontSurface->m_surface;
+    CDDSurface* front = World()->m_drawTarget->m_frontSurface->GetSurface();
     IDirectDraw2* dd2 = World()->m_deviceManager->m_device;
 
     if (World()->SoundRegistry()->HasWithPrefix("GAME") == 0) {

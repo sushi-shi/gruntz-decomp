@@ -416,7 +416,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
-        m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
+        m_world->m_drawTarget->m_overlayPair->GetSurface()->Fill(0);
         CString s;
         s.LoadString(0x81a9);
         tagSIZE mode = m_mgr->GetModeSize();
@@ -680,13 +680,13 @@ void CMulti::RenderGameFrame() {
         }
         AdvanceCursorAnimation(g_frameDelta);
         SaveUnderAndDrawCursor(h);
-        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
         return;
     }
     RestoreCursorSaveUnder();
     StepViewportResize();
     if (m_region0Gate != false) {
-        (static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair))->m_surface->Fill(0);
+        (static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair))->GetSurface()->Fill(0);
         m_statusBar->Deactivate();
     }
     if (m_worldReady == false) {
@@ -733,7 +733,7 @@ void CMulti::RenderGameFrame() {
     if (m_worldReady != false) {
         h->DrawBox(&m_hudRect, 0xff);
     }
-    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
     if (m_world->m_level->m_mainPlane != NULL) {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();

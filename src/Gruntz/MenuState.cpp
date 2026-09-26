@@ -202,7 +202,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         }
         m_stateResources = (saved);
 
-        CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
+        CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
@@ -211,7 +211,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         menuRoot()->m_drawTarget->TransTitle();
     } else {
         menuRoot()->m_drawTarget->TransEnter();
-        CDDSurface* tgt = menuRoot()->m_drawTarget->m_overlayPair->m_surface;
+        CDDSurface* tgt = menuRoot()->m_drawTarget->m_overlayPair->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
@@ -270,7 +270,7 @@ void CMenuState::StopMusicChain() {
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::LeaveState(GameStateId) {
     m_world->m_drawTarget->TransExit();
-    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_activateCueDurationMs)
@@ -328,7 +328,7 @@ i32 CMenuState::RestoreDisplay() {
         return gate;
     }
 
-    menuRoot()->m_drawTarget->m_backPair->m_surface->Fill(0);
+    menuRoot()->m_drawTarget->m_backPair->GetSurface()->Fill(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
@@ -348,7 +348,7 @@ i32 CMenuState::RestoreDisplay() {
     }
     m_stateResources = (saved);
 
-    CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
     menuRoot()->m_drawTarget->TransTitle();
 

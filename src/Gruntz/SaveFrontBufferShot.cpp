@@ -26,9 +26,9 @@ i32 SaveFrontBufferShotImpl(CRegMgr* reg, CGruntzMgr* mgr, i32 w, i32 h, char* n
     if (pair == NULL) {
         return 0;
     }
-    if (pair->m_surface == NULL) {
+    if (pair->GetSurface() == NULL) {
         return 0;
     }
 
-    return SaveScreenshot(pair->m_surface, reg, mgr, w, h, name, saveFlag);
+    return SaveScreenshot(pair->GetSurface(), reg, mgr, w, h, name, saveFlag);
 }
