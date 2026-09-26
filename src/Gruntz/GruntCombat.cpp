@@ -39,6 +39,7 @@
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntIdentity.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -1546,14 +1547,7 @@ i32 CGrunt::CommitNeighbor(
 
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
     } else {
         eq = ANIMATION_ACT_EQUALS("N");
         if (eq) {

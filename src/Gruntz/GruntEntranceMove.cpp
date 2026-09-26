@@ -618,14 +618,7 @@ i32 CGrunt::StepArrivalCommit() {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {
             goto finalize;
         }

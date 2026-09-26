@@ -5,6 +5,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Wwd/WwdAniDrawValue.h>
 
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
     CWwdSpriteObject* object = grunt->m_object;
@@ -13,6 +14,17 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
         return 1;
     }
     return 0;
+}
+
+inline void ClearMoveTileFx(CGrunt* grunt) {
+    grunt->m_triggerMgr->LoadTileArrivalFx(
+        grunt->m_playerIndex,
+        grunt->m_unitIndex,
+        grunt->m_moveTile.m_x,
+        grunt->m_moveTile.m_y,
+        grunt->m_entranceReason,
+        WWDDRAW_NO_ANIMATION
+    );
 }
 
 inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {

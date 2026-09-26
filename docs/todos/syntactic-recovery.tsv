@@ -19,6 +19,7 @@ rva	unit	function	lost_max	cur
 0x180640	faderlight	?RenderFrame@CFaderLight@@UAEXH@Z	95.0099	94.9913
 0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	73.9843
 0x0ecc90	gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	87.6818	80.1788
+0x05b050	gruntcombat	?CommitNeighbor@CGrunt@@QAEHHHHH@Z	95.3511	74.5110
 0x057db0	gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	83.5442
 0x0f36a0	gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	66.9018
 0x065630	gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	90.4314	89.9569

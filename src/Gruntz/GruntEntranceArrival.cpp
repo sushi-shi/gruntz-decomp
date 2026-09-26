@@ -817,15 +817,7 @@ i32 CGrunt::StepEntranceReinit() {
 
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
-
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
     }
     if (m_poweredUp != false && m_neighborValid == false) {
         RESET_GRUNT_POWERED_STATE(this)
@@ -1261,14 +1253,7 @@ RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     bool eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
     } else {
         PLAY_GRUNT_CUE_IF_VISIBLE(8);
     }
