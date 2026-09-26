@@ -630,7 +630,6 @@ i32 CGruntzMgr::SwitchToNextState() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0008d780, 0x95)
 i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused) {
     b32 inPlay = false;
