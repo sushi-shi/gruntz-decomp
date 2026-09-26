@@ -21,6 +21,11 @@ struct ClockInterval {
         m_interval.m_v = 0;
     }
 
+    void Start(u32 interval) {
+        m_interval.m_v = interval;
+        m_start.m_v = g_frameTime;
+    }
+
     i64 Deadline() const {
         return m_interval.m_v + m_start.m_v;
     }

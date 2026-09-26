@@ -2437,9 +2437,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_gruntKind = GRUNT_CONVERSION;
-            i64* clock = &m_conversionTiming.m_start.m_v;
-            clock[1] = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
-            clock[0] = g_frameTime;
+            m_conversionTiming.Start(g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4));
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_CONVERSIONLOOP");
             break;
@@ -2457,9 +2455,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "DeathTouchTime", 0x4e20);
             }
-            i64* clock = &m_conversionTiming.m_start.m_v;
-            clock[1] = m_powerupDuration;
-            clock[0] = g_frameTime;
+            m_conversionTiming.Start(m_powerupDuration);
             m_shimmerTiming.m_interval.m_lo = 0;
             m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
@@ -2473,9 +2469,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }
-            i64* clock = &m_conversionTiming.m_start.m_v;
-            clock[1] = m_powerupDuration;
-            clock[0] = g_frameTime;
+            m_conversionTiming.Start(m_powerupDuration);
             m_shimmerTiming.m_interval.m_lo = 0;
             m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
@@ -2487,9 +2481,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
-            i64* clock = &m_conversionTiming.m_start.m_v;
-            clock[1] = m_powerupDuration;
-            clock[0] = g_frameTime;
+            m_conversionTiming.Start(m_powerupDuration);
             m_shimmerTiming.m_interval.m_lo = 0;
             m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
@@ -2502,9 +2494,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
-            i64* clock = &m_conversionTiming.m_start.m_v;
-            clock[1] = m_powerupDuration;
-            clock[0] = g_frameTime;
+            m_conversionTiming.Start(m_powerupDuration);
             m_shimmerTiming.m_interval.m_lo = 0;
             m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
@@ -2517,9 +2507,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "RoidzTime", 0x4e20);
             }
-            i64* clock = &m_conversionTiming.m_start.m_v;
-            clock[1] = m_powerupDuration;
-            clock[0] = g_frameTime;
+            m_conversionTiming.Start(m_powerupDuration);
             m_shimmerTiming.m_interval.m_lo = 0;
             m_shimmerTiming.m_interval.m_hi = 0;
             StopPowerupLoopSound();
@@ -2532,9 +2520,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "SuperSpeedTime", 0x4e20);
             }
-            i64* clock = &m_conversionTiming.m_start.m_v;
-            clock[1] = m_powerupDuration;
-            clock[0] = g_frameTime;
+            m_conversionTiming.Start(m_powerupDuration);
             m_shimmerTiming.m_interval.m_lo = 0;
             m_shimmerTiming.m_interval.m_hi = 0;
             ReadConfigFromButeMgr();

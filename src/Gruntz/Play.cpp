@@ -454,9 +454,7 @@ i32 CPlay::Render() {
             if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
                 >= m_cueTiming.m_interval.m_v) {
                 m_cueToggle = (m_cueToggle == false);
-                i64* clock = &m_cueTiming.m_start.m_v;
-                clock[1] = CUE_INTERVAL_MS;
-                clock[0] = g_frameTime;
+                m_cueTiming.Start(CUE_INTERVAL_MS);
             }
             if (m_cueToggle != false) {
                 PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -488,9 +486,7 @@ i32 CPlay::Render() {
             if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
                 >= m_bootyTiming.m_interval.m_v) {
                 g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-                i64* clock = &m_bootyTiming.m_start.m_v;
-                clock[1] = BOOTY_INTERVAL_MS;
-                clock[0] = g_frameTime;
+                m_bootyTiming.Start(BOOTY_INTERVAL_MS);
             }
         }
 
@@ -629,9 +625,7 @@ i32 CPlay::Render() {
             if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
                 >= m_cueTiming.m_interval.m_v) {
                 m_cueToggle = (m_cueToggle == false);
-                i64* clock = &m_cueTiming.m_start.m_v;
-                clock[1] = CUE_INTERVAL_MS;
-                clock[0] = g_frameTime;
+                m_cueTiming.Start(CUE_INTERVAL_MS);
             }
             if (m_cueToggle != false) {
                 PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);

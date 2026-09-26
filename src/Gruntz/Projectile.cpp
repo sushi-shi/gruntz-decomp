@@ -898,9 +898,7 @@ i32 CTimeBomb::UpdateCountdown() {
     if (static_cast<i64>(g_frameTime) - m_timing.m_start.m_v >= m_timing.m_interval.m_v) {
         if (m_fastPhase == false) {
             SwitchAnimationByName("GAME_TIMEBOMBFAST", 0);
-            i64* clock = &m_timing.m_start.m_v;
-            clock[1] = g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8);
-            clock[0] = g_frameTime;
+            m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8));
             m_fastPhase = true;
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

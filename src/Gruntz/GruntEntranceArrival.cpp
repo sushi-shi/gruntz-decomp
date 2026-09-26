@@ -319,9 +319,7 @@ i32 CGrunt::StepAttackFire() {
         if (m_gruntKind == GRUNT_ROIDZ) {
             dt = 0;
         }
-        i64* clock = &m_attackTiming.m_start.m_v;
-        clock[1] = dt;
-        clock[0] = g_frameTime;
+        m_attackTiming.Start(dt);
         m_lowStaminaCued = false;
         m_stamina = 0;
         if (m_healthSprite != NULL) {
@@ -1315,9 +1313,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_gruntKind == GRUNT_ROIDZ) {
                 downtime = 0;
             }
-            i64* clock = &m_attackTiming.m_start.m_v;
-            clock[1] = downtime;
-            clock[0] = g_frameTime;
+            m_attackTiming.Start(downtime);
             m_lowStaminaCued = false;
             m_stamina = 0;
             if (m_healthSprite != NULL) {
