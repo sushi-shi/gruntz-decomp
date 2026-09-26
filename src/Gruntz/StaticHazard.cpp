@@ -182,7 +182,6 @@ i32 CStaticHazard::UpdateIdleState() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::UpdateActiveState() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_points);
@@ -229,9 +228,14 @@ i32 CStaticHazard::UpdateActiveState() {
 
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
-        if (g_gameReg->m_triggerMgr
-                ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 0)
-            != NULL) {
+        CGrunt* victim = g_gameReg->m_triggerMgr->HitTestCell(
+            m_object->m_screenX,
+            m_object->m_screenY,
+            &playerIndex,
+            &unitIndex,
+            0
+        );
+        if (victim != NULL) {
             g_gameReg->m_triggerMgr->StartUnitDeath(
                 playerIndex,
                 unitIndex,
