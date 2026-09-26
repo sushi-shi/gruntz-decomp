@@ -39,6 +39,7 @@
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntIdentity.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -61,6 +62,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpellId.h>
@@ -313,17 +315,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
     switch (idx) {
         case SPELL_FREEZE: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                9,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -333,17 +334,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_HEALTH: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                2,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -353,17 +353,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_RESURRECTION: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                8,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, true);
             return m_triggerMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -371,17 +370,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_RANDOM_TOYZ: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                7,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -391,17 +389,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_TELEPORT: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                3,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -411,17 +408,16 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELL_ROLLING_BALLZ: {
-            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateLightFx(
+                g_gameReg->m_world->m_childGroup,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
-                "LightFx",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "GAME_LIGHTING_FLASH",
+                "GAME_FLASH",
+                1,
+                true
             );
-            spr->m_logicRecord->m_dispatch(spr);
-            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 1, true);
 
             CWwdSpriteObject* n = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -523,13 +519,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix);
     spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix, 0);
 
-    CGruntzMgr* g = g_gameReg;
-    i32 y = m_object->m_screenY;
-    i32 x = m_object->m_screenX;
-    CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-    if (::PtInRect(rc, x, y)) {
-        g->m_voiceManager->PlayGruntVoiceCue(this, 0xe, -1, -1, -1);
-    }
+    PLAY_GRUNT_CUE_IN_VIEW(0xe);
 
     LoadGruntTypeTable(PICKUP_NONE, 1, 0, 1);
     m_entranceActive = false;
@@ -734,10 +724,7 @@ i32 CGrunt::PathScan() {
                                 }
                             } while (p != NULL);
                         }
-                        Coord* elem = static_cast<Coord*>(s.RemoveHead());
-                        if (elem != NULL) {
-                            g_coordPool.Push(elem);
-                        }
+                        RECYCLE_HEAD_COORD(s)
                         s.RemoveAll();
                         SCAN_BOUNDS_PLAINCLIP(grid);
                         return 1;
@@ -792,10 +779,7 @@ i32 CGrunt::PathScan() {
                 if (res != 0) {
 
                     if (s.GetCount() != 0) {
-                        Coord* elem = static_cast<Coord*>(s.RemoveHead());
-                        if (elem != NULL) {
-                            g_coordPool.Push(elem);
-                        }
+                        RECYCLE_HEAD_COORD(s)
                         if (s.GetCount() != 0) {
 
                             if (CoordCount() != 0) {
@@ -831,10 +815,7 @@ i32 CGrunt::PathScan() {
                                 )
                                 != 0) {
                                 if (s.GetCount() != 0) {
-                                    Coord* e2 = static_cast<Coord*>(s.RemoveHead());
-                                    if (e2 != NULL) {
-                                        g_coordPool.Push(e2);
-                                    }
+                                    RECYCLE_HEAD_COORD(s)
                                     if (s.GetCount() != 0) {
                                         POSITION q = s.GetHeadPosition();
                                         if (q != NULL) {
@@ -873,55 +854,25 @@ void CGrunt::OnStruck(b32 wasHit) {
         if (m_gruntKind == GRUNT_GHOST) {
             return;
         }
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
         if (c < 5) {
-            CGruntzMgr* g = g_gameReg;
-            const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-            if (::PtInRect(vr, x, y)) {
-                g->m_voiceManager->PlayVoice(this, 0x370, -1, 0, -1, -1);
-            }
+            PLAY_VOICE_IN_VIEW(0x370);
             return;
         }
-        CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(vr, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x371, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x371);
         m_struckCount = 0;
         return;
     }
 
     if (c < 5) {
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
-        CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(vr, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x320, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x320);
         return;
     }
     if (c < 0xa) {
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
-        CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(vr, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x321, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x321);
         return;
     }
-    {
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
-        m_struckCount = 0;
-        CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(vr, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x322, -1, 0, -1, -1);
-        }
-    }
+    m_struckCount = 0;
+    PLAY_VOICE_IN_VIEW(0x322);
 }
 
 RVA(0x00058b60, 0x2d)
@@ -1056,17 +1007,9 @@ i32 CGrunt::HandleCombatContact(
     } else {
         FaceTowardPixel(otherPxX, otherPxY);
 
-        CString* rec0 = &g_typeColl[m_logicRecord->m_eventCode];
-        bool neH = (strcmp(*rec0, "H") != 0);
-        if (neH) {
-            i32 keyF = m_logicRecord->m_eventCode;
-            CString* recF = &g_typeColl[keyF];
-            bool neF = (strcmp(*recF, DATA_COMPGEN(0x0020d2e8, "F")) != 0);
-            if (neF) {
-                i32 keyO = m_logicRecord->m_eventCode;
-                CString* recO = &g_typeColl[keyO];
-                bool neO = (strcmp(*recO, "O") != 0);
-                if (neO) {
+        if (ANIMATION_ACT_DIFFERS("H")) {
+            if (ANIMATION_ACT_DIFFERS(DATA_COMPGEN(0x0020d2e8, "F"))) {
+                if (ANIMATION_ACT_DIFFERS("O")) {
                     ResetGeometry();
                 }
             }
@@ -1321,16 +1264,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         SelectCombatHitCue(reg, cue, attackKind, struckPose, attackerGruntKind);
 
         if (cue != NULL) {
-            b32 soundEnabled = g_soundEnabled;
-            i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != false) {
-                i32 cueTimeMs = g_soundCueTimeMs;
-                if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
-                    >= static_cast<u32>(cue->m_replayDelayMs)) {
-                    cue->m_lastPlayTimeMs = cueTimeMs;
-                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                }
-            }
+            PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
         }
     }
 
@@ -1351,9 +1285,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    CString* typeRec = &g_typeColl[this->m_logicRecord->m_eventCode];
-    bool isCodeO = (strcmp(*typeRec, "O") == 0);
-    if (isCodeO) {
+    if (ANIMATION_ACT_EQUALS("O")) {
         return 1;
     }
 
@@ -1615,14 +1547,7 @@ i32 CGrunt::CommitNeighbor(
 
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
     } else {
         eq = ANIMATION_ACT_EQUALS("N");
         if (eq) {
@@ -1677,9 +1602,7 @@ RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
 
-        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        bool eq = (strcmp(*rec, "F") == 0);
-        if (!eq) {
+        if (ANIMATION_ACT_DIFFERS("F")) {
             if (m_stamina >= STAMINA_FULL) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
@@ -2197,16 +2120,7 @@ void CGrunt::StepBehavior(char*) {
                     return;
                 }
             }
-            {
-                CWwdSpriteObject* obj = m_object;
-                CGruntzMgr* reg3 = g_gameReg;
-                i32 sy = obj->m_screenY;
-                i32 sx = obj->m_screenX;
-                const RECT* vr = &reg3->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (::PtInRect(vr, sx, sy)) {
-                    reg3->m_voiceManager->PlayVoice(this, 0x348, -1, 0, -1, -1);
-                }
-            }
+            PLAY_VOICE_IN_VIEW(0x348);
             m_entranceSafeTimeLo = 0x3e8;
             m_entranceSafeTimeHi = 0;
             m_entranceClockLo = static_cast<i32>(g_frameTime);
@@ -2593,9 +2507,7 @@ void CGrunt::FinalizeStep(char* name) {
         return;
     }
 
-    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-    bool eqPos = (strcmp(*rec, "S") == 0);
-    if (eqPos) {
+    if (ANIMATION_ACT_EQUALS("S")) {
         if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
             return;
         }
@@ -2658,18 +2570,10 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    CString* code = &g_typeColl[m_logicRecord->m_eventCode];
-    bool different = strcmp(*code, "D");
-    if (different) {
-        code = &g_typeColl[m_logicRecord->m_eventCode];
-        different = strcmp(*code, "N");
-        if (different) {
-            code = &g_typeColl[m_logicRecord->m_eventCode];
-            different = strcmp(*code, "L");
-            if (different) {
-                code = &g_typeColl[m_logicRecord->m_eventCode];
-                different = strcmp(*code, "M");
-                if (different) {
+    if (ANIMATION_ACT_DIFFERS("D")) {
+        if (ANIMATION_ACT_DIFFERS("N")) {
+            if (ANIMATION_ACT_DIFFERS("L")) {
+                if (ANIMATION_ACT_DIFFERS("M")) {
                     return;
                 }
                 if (m_bombRunActive != false) {
@@ -2791,23 +2695,17 @@ void CGrunt::AdvanceMotion() {
             }
         }
 
-        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        bool hit = (strcmp(*rec, "N") == 0);
-        if (hit) {
+        if (ANIMATION_ACT_EQUALS("N")) {
             return;
         }
-        rec = &g_typeColl[m_logicRecord->m_eventCode];
-        hit = (strcmp(*rec, "L") == 0);
-        if (hit) {
+        if (ANIMATION_ACT_EQUALS("L")) {
             if (StepCompassMove() != 0) {
                 return;
             }
             m_toyDuration = 0;
             return;
         }
-        rec = &g_typeColl[m_logicRecord->m_eventCode];
-        hit = (strcmp(*rec, "M") == 0);
-        if (hit) {
+        if (ANIMATION_ACT_EQUALS("M")) {
             if (ClaimSwitchTile() != 0) {
                 return;
             }

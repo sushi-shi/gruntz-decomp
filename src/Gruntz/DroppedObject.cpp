@@ -28,6 +28,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ObjectDropper.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
@@ -370,19 +371,13 @@ i32 CDroppedObject::AdvanceFall() {
                         case AREA_MINIATURE_MASTERZ:
                         default:
                             if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
-                                CWwdSpriteObject* s =
-                                    g_gameReg->m_world->m_childGroup->CreateSprite(
-                                        0,
-                                        x,
-                                        m_landY,
-                                        SORTKEY_ACTOR_BEHIND,
-                                        "Particlez",
-                                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                                    );
-                                if (s != NULL) {
-                                    s->SetImageSetByName("LEVEL_DEATHSPLASH");
-                                    s->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
-                                }
+                                CreateParticlez(
+                                    g_gameReg->m_world->m_childGroup,
+                                    x,
+                                    m_landY,
+                                    "LEVEL_DEATHSPLASH",
+                                    "LEVEL_DEATHSPLASH"
+                                );
                             }
                             break;
                         case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
@@ -392,18 +387,13 @@ i32 CDroppedObject::AdvanceFall() {
             }
         } else {
             if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
-                CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
-                    0,
+                CreateParticlez(
+                    g_gameReg->m_world->m_childGroup,
                     x,
                     m_landY,
-                    SORTKEY_ACTOR_BEHIND,
-                    "Particlez",
-                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    "GAME_WATER",
+                    "GAME_WATER"
                 );
-                if (s != NULL) {
-                    s->SetImageSetByName("GAME_WATER");
-                    s->SetAnimationByName("GAME_WATER", 0);
-                }
             }
         }
         SwitchAnimationByName("LEVEL_DROPPEDOBJECTHIT", 0);

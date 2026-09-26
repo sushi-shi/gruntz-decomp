@@ -24,6 +24,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLight.h>
@@ -313,23 +314,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     CWwdSpriteObject* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
-        SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* found = registry->FindCue("LEVEL_CLOUDHAZARDKILL");
-            SoundCue* cue = found;
-            if (cue != NULL) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
-                        >= cue->m_replayDelayMs) {
-                        cue->m_lastPlayTimeMs = cueTimeMs;
-                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(reg->m_world->m_soundRegistry, "LEVEL_CLOUDHAZARDKILL");
     }
     return 1;
 }

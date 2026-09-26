@@ -56,6 +56,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzMgrMacros.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
@@ -114,6 +115,7 @@
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/MillisPer.h>
 #include <Wap32/CoordUnset.h>
@@ -315,20 +317,14 @@ void CPlay::ReleaseResources() {
     if (m_mgr && m_mgr->m_chatLog) {
         m_mgr->m_chatLog->FreeNodes();
     }
-    if (m_statusBar) {
-        delete m_statusBar;
-        m_statusBar = NULL;
-    }
+    SAFE_DELETE(m_statusBar)
     CChatBoxOwner* hit = m_chatBox;
     if (hit) {
         hit->Deactivate();
         delete hit;
         m_chatBox = NULL;
     }
-    if (m_tileTriggers) {
-        delete m_tileTriggers;
-        m_tileTriggers = NULL;
-    }
+    SAFE_DELETE(m_tileTriggers)
     CTimer* fm = m_levelTimer;
     if (fm) {
         fm->Reset();
@@ -438,11 +434,7 @@ i32 CPlay::Render() {
         g_engineFrameDelta = g_frameDelta;
 
         m_world->m_childGroup->TickKillCues(0);
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
+        DrawVisibleWorld();
         m_mgr->m_worldSounds->SetListenerPosition(
             m_world->m_level->m_mainPlane->m_scrollPixelX,
             m_world->m_level->m_mainPlane->m_scrollPixelY
@@ -542,18 +534,7 @@ i32 CPlay::Render() {
                 stream->TickStreams(t);
             }
         }
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
         m_statusBar->LoadMainStatusBarSprite();
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
@@ -716,14 +697,7 @@ i32 CPlay::Render() {
 
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
-                m_world->m_level->VisitVisible(
-                    m_world->m_drawTarget->m_backPair,
-                    m_world->m_childGroup
-                );
-                m_world->m_workerList->RenderAndPruneWorkers(
-                    m_world->m_drawTarget->m_backPair,
-                    m_world->m_drawTarget->m_overlayPair
-                );
+                DrawVisibleWorld();
                 m_statusBar->LoadMainStatusBarSprite();
                 back->m_surface->ShadeRect(0x32, NULL);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -732,14 +706,7 @@ i32 CPlay::Render() {
             UpdateAmbientMusic();
         } else {
 
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
+            DrawVisibleWorld();
             m_statusBar->LoadMainStatusBarSprite();
             if (m_statusBar->m_levelOverlayActive == false
                 && m_statusBar->m_quitConfirmationActive == false) {
@@ -927,11 +894,7 @@ i32 CPlay::ProfileDeltaFrame() {
         m_world->m_level->m_mainPlane->m_scrollPixelY
     );
     u32 t2 = tg();
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    m_world->m_workerList->RenderAndPruneWorkers(
-        m_world->m_drawTarget->m_backPair,
-        m_world->m_drawTarget->m_overlayPair
-    );
+    DrawVisibleWorld();
     i32 presentMs = static_cast<i32>((tg() - t2));
     g_brickText1.Format(
         "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
@@ -1684,15 +1647,7 @@ i32 CPlay::InputVirtual() {
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
 
-    if (m_region1Gate != false) {
-        NotifyVisibleEntities();
-    } else {
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
-    }
+    DrawWorldView();
 
     m_statusBar->Deactivate();
     m_statusBar->LoadMainStatusBarSprite();
@@ -1719,18 +1674,7 @@ i32 CPlay::RestoreDisplay() {
     }
     if (m_statusBar != NULL) {
         m_statusBar->Deactivate();
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     }
     return 1;
@@ -3183,11 +3127,7 @@ i32 CPlay::DrawWorldPresent() {
         }
     }
     m_world->m_childGroup->TickKillCues(1);
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    m_world->m_workerList->RenderAndPruneWorkers(
-        m_world->m_drawTarget->m_backPair,
-        m_world->m_drawTarget->m_overlayPair
-    );
+    DrawVisibleWorld();
     m_mgr->RefreshGameClock();
     return 1;
 }
@@ -4848,18 +4788,14 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                 }
                 if (found == false) {
-                    CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 i32 rel = (obj->m_speedY - row) * 3 - col + obj->m_speedX;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 type =
@@ -4872,16 +4808,12 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* r =
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
-                    CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 type =
@@ -4906,9 +4838,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format("Bad multi switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        MODAL_REPORT_AT(
+                            "Bad multi switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
                         return 0;
                     }
                     validCount++;
@@ -4931,13 +4865,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad up-down switch at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -4962,13 +4894,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad secret switch at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -4991,9 +4921,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format("Bad time switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        MODAL_REPORT_AT(
+                            "Bad time switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
                         return 0;
                     }
                     validCount++;
@@ -5016,13 +4948,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             obj->m_smarts
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad pressure plate at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5047,13 +4977,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad toggle switch at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5078,9 +5006,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format("Bad hold switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        MODAL_REPORT_AT(
+                            "Bad hold switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
                         return 0;
                     }
                     validCount++;
@@ -5105,26 +5035,22 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad once-only switch at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
                     obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 default: {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Switch on an unknown tile at: x=%d, y=%d",
                         obj->m_screenX,
                         obj->m_screenY
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
             }
@@ -5155,18 +5081,14 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                 }
                 if (found == false) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 i32 rel = (obj->m_speedX - col) * 3 - row + obj->m_speedY;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 type =
@@ -5178,16 +5100,12 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* r =
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 type =
@@ -5212,13 +5130,11 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_points,
                         obj->m_health
                     )) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad toggle-bridge trigger at: x=%d, y=%d",
                         obj->m_screenX,
                         obj->m_screenY
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 validCount++;
@@ -5241,9 +5157,7 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_points,
                         0
                     )) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 validCount++;
@@ -5269,9 +5183,11 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_points,
                     0
                 )) {
-                CString s;
-                s.Format("Bad secret trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                MODAL_REPORT_AT(
+                    "Bad secret trigger at: x=%d, y=%d",
+                    obj->m_screenX,
+                    obj->m_screenY
+                );
                 return 0;
             }
             validCount++;
@@ -5316,17 +5232,13 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_extent
                     )
                     == NULL) {
-                    CString s;
-                    s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 validCount++;
                 obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             } else {
-                CString s;
-                s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                MODAL_REPORT_AT("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                 return 0;
             }
         } else if (dispatch == DispatchGruntPuddleLogic) {
@@ -5450,9 +5362,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_faceDirection
                 )
                 == NULL) {
-                CString s;
-                s.Format("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
-                g_gameReg->EnterModalUI(s);
+                MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
@@ -5506,9 +5416,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_faceDirection
                 )
                 == NULL) {
-                CString s;
-                s.Format("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
-                g_gameReg->EnterModalUI(s);
+                MODAL_REPORT_AT("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
@@ -6133,33 +6041,11 @@ i32 CPlay::EnterMode(GameStateId mode) {
         m_initialFramePending = false;
         m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
     } else {
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
         if (mode == GAMESTATE_HELP) {

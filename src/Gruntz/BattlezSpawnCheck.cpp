@@ -22,6 +22,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -80,9 +81,7 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
             RECYCLE_GRUNT_COORDS(unit)
         }
     }
-    Coord none;
-    unit->m_arrivalCell = *none.Set(-1, -1);
-    unit->m_defenderState = AISTATE_SEEK;
+    ResetToSeek(unit);
     unit->m_dwell = 0;
     return 1;
 }

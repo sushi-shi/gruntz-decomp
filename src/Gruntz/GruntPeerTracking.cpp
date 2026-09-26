@@ -17,6 +17,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -77,14 +78,7 @@ i32 CGrunt::StepToyerBehavior() {
         if (m_blockedVoicePending == false) {
             return 1;
         }
-        CWwdSpriteObject* c = m_object;
-        CGruntzMgr* g = g_gameReg;
-        i32 y = c->m_screenY;
-        i32 x = c->m_screenX;
-        CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
-        if (::PtInRect(&r->m_planeViewRect, x, y)) {
-            g->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x366);
     }
     m_blockedVoicePending = false;
     return 1;

@@ -7,6 +7,7 @@
 #include <Gruntz/BrickStackInline.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/BrickzNeighborMacros.h>
 #include <Gruntz/BridgeTileId.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
@@ -314,46 +315,8 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     if ((nf & 0x100) == 0) {
                         continue;
                     }
-                    BrickzCell* up = NULL;
-                    BrickzCell* down = NULL;
-                    BrickzCell* right = NULL;
-                    BrickzCell* left = NULL;
-                    BrickzCell* ur = NULL;
-                    BrickzCell* ul = NULL;
-                    BrickzCell* dr = NULL;
-                    BrickzCell* dl = NULL;
-                    if (neighborTileY > 0) {
-                        up = nc - m_width;
-                    }
-                    if (static_cast<u32>(neighborTileY) < static_cast<u32>(m_height - 1)) {
-                        down = nc + m_width;
-                    }
-                    if (static_cast<u32>(neighborTileX) < static_cast<u32>(m_width - 1)) {
-                        right = nc + 1;
-                    }
-                    if (neighborTileX > 0) {
-                        left = nc - 1;
-                    }
-                    if (up != NULL && right != NULL) {
-                        ur = up + 1;
-                    }
-                    if (up != NULL && left != NULL) {
-                        ul = up - 1;
-                    }
-                    if (down != NULL && right != NULL) {
-                        dr = down + 1;
-                    }
-                    if (down != NULL && left != NULL) {
-                        dl = down - 1;
-                    }
-                    if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
-                         && !(down->m_flags & BRICKZ_BLOCKED_MASK))
-                        || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
-                            && !(left->m_flags & BRICKZ_BLOCKED_MASK))
-                        || (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
-                            && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
-                        || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
-                            && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
+                    DECLARE_BRICKZ_NEIGHBORS(nc, neighborTileX, neighborTileY)
+                    if (BRICKZ_OPPOSITE_NEIGHBORS_OPEN) {
                         nc->m_flags = nf | 0x1000;
                     }
                 }

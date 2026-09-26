@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/Brickz.h>
+#include <Gruntz/BrickzNeighborMacros.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
@@ -207,46 +208,8 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
             if ((nf & 0x100) == 0) {
                 continue;
             }
-            BrickzCell* up = NULL;
-            BrickzCell* down = NULL;
-            BrickzCell* right = NULL;
-            BrickzCell* left = NULL;
-            BrickzCell* ur = NULL;
-            BrickzCell* ul = NULL;
-            BrickzCell* dr = NULL;
-            BrickzCell* dl = NULL;
-            if (r > 0) {
-                up = nc - m_width;
-            }
-            if (static_cast<u32>(r) < m_height - 1) {
-                down = nc + m_width;
-            }
-            if (static_cast<u32>(c) < m_width - 1) {
-                right = nc + 1;
-            }
-            if (c > 0) {
-                left = nc - 1;
-            }
-            if (up && right) {
-                ur = up + 1;
-            }
-            if (up && left) {
-                ul = up - 1;
-            }
-            if (down && right) {
-                dr = down + 1;
-            }
-            if (down && left) {
-                dl = down - 1;
-            }
-            if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
-                 && !(down->m_flags & BRICKZ_BLOCKED_MASK))
-                || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
-                    && !(left->m_flags & BRICKZ_BLOCKED_MASK))
-                || (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
-                    && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
-                || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
-                    && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
+            DECLARE_BRICKZ_NEIGHBORS(nc, c, r)
+            if (BRICKZ_OPPOSITE_NEIGHBORS_OPEN) {
                 nc->m_flags = nf | 0x1000;
             }
         }

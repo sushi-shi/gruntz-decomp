@@ -12,6 +12,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeColl.h>
@@ -187,9 +188,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                         0,
                         0
                     )) {
-                    Coord none;
-                    g->m_arrivalCell = *none.Set(-1, -1);
-                    g->m_defenderState = AISTATE_SEEK;
+                    ResetToSeek(g);
                 }
             }
             if (dist2 <= 0xa) {
@@ -198,9 +197,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->m_dwell = 0;
             goto tail;
         }
-        Coord none;
-        g->m_arrivalCell = *none.Set(-1, -1);
-        g->m_defenderState = AISTATE_SEEK;
+        ResetToSeek(g);
         g->RecycleCoords();
     }
 

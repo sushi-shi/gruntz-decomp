@@ -21,6 +21,7 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -131,12 +132,7 @@ i32 CGrunt::StepDefenderBehavior() {
 
         if (radius < m_defenderRadius + m_reachRect.right) {
             if (m_blockedVoicePending != false) {
-                CGruntzMgr* gameMgr = g_gameReg;
-                const RECT* view = &gameMgr->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (CGameLevel::PointInBounds(view, m_object->m_screenX, m_object->m_screenY)
-                    != 0) {
-                    gameMgr->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                }
+                PLAY_VOICE_IF_VISIBLE(0x366);
                 m_blockedVoicePending = false;
             }
 

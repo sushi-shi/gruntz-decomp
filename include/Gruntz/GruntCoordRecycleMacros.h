@@ -26,4 +26,12 @@
         (grunt)->m_coordList.RemoveAll();                                                          \
     }
 
+#define RECYCLE_HEAD_COORD(list)                                                                   \
+    {                                                                                              \
+        Coord* head = static_cast<Coord*>((list).RemoveHead());                                    \
+        if (head != NULL) {                                                                        \
+            g_coordPool.Push(head);                                                                \
+        }                                                                                          \
+    }
+
 #endif // GRUNTZ_GRUNTCOORDRECYCLEMACROS_H

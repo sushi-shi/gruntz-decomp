@@ -211,11 +211,8 @@ inflight: {
                 goto L_done;
             }
         }
-    L_clearAt: {
-        Coord none;
-        g->m_arrivalCell = *none.Set(-1, -1);
-        g->m_defenderState = AISTATE_SEEK;
-    }
+    L_clearAt:
+        ResetToSeek(g);
     L_done:
         g->m_dwell = 0;
         return 1;

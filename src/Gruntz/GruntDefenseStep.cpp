@@ -16,9 +16,11 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -82,15 +84,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 goto seek;
             }
             m_defenderState = AISTATE_CHASE;
-            {
-                CWwdSpriteObject* h = m_object;
-                i32 vx = h->m_screenX;
-                i32 vy = h->m_screenY;
-                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (::PtInRect(rect, vx, vy)) {
-                    g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                }
-            }
+            PLAY_VOICE_IN_VIEW(0x366);
             return 1;
 
         case AISTATE_CHASE: {
@@ -98,9 +92,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek(this);
                 return 1;
             }
             if (occ == NULL) {
@@ -112,17 +104,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
-            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-                StepArrivalDrop(
-                    occ->m_lastTilePx.m_x,
-                    occ->m_lastTilePx.m_y,
-                    0,
-                    m_arrivalFlags,
-                    1,
-                    0
-                );
-                m_dwell = 0;
-            }
+            RepathToward(this, occ);
             if (m_poweredUp != false) {
                 return 1;
             }
@@ -185,13 +167,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     }
                     SET_GRUNT_ARRIVAL_TARGET(occ);
                     m_defenderState = AISTATE_CHASE;
-                    CWwdSpriteObject* h = m_object;
-                    CGruntzMgr* reg = g_gameReg;
-                    const RECT* rect = &reg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (CGameLevel::PointInBounds(rect, h->m_screenX, h->m_screenY) == 0) {
-                        goto L_f318a;
-                    }
-                    reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
+                    PLAY_VOICE_IF_VISIBLE(0x366);
                 }
             L_f318a:
                 m_dwell = 0;

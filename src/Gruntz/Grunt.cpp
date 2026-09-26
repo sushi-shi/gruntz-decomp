@@ -1432,10 +1432,7 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = true;
     } else {
-        CString* r = &g_typeColl[m_logicRecord->m_eventCode];
-        bool ne;
-        ne = (strcmp(*r, "L") != 0);
-        if (ne) {
+        if (ANIMATION_ACT_DIFFERS("L")) {
             m_entranceActive = false;
         }
     }
@@ -1483,12 +1480,7 @@ label_4c6e4:
                 m_coordList.AddHead(co);
             }
         }
-        i32 hudY = m_object->m_screenY;
-        i32 hudX = m_object->m_screenX;
-        CCueRect* rr = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(rr, hudX, hudY)) {
-            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
-        }
+        PLAY_GRUNT_CUE_IN_VIEW(8);
         tgtPxX = beyondPxX;
         tgtPxY = beyondPxY;
     }
@@ -2073,16 +2065,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2092,16 +2076,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2111,19 +2087,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
+            ResetArrivalFlags(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2133,16 +2101,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2152,16 +2112,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2171,16 +2123,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2190,16 +2134,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2209,16 +2145,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             if (m_arrivalState == AI_BATTLEZ_PATH) {
@@ -2246,16 +2174,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0x400;
             m_toolConfigured = true;
             break;
@@ -2265,19 +2185,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
+            ResetArrivalFlags(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2287,16 +2199,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -2309,16 +2213,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -2331,16 +2227,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2350,16 +2238,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2369,16 +2249,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0x1000;
             m_toolConfigured = true;
             break;
@@ -2388,16 +2260,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2407,16 +2271,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2426,16 +2282,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2446,16 +2294,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachRect = MakeRect(-r, -r, r, r);
             m_coordToggle = false;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0x100;
             m_toolConfigured = true;
             break;
@@ -2465,16 +2305,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
             break;
@@ -2484,13 +2316,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
+            ResetArrivalFlags(this);
             m_passableMask = 0;
             m_toolConfigured = false;
             break;
@@ -2500,16 +2326,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -2522,16 +2340,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -2542,16 +2352,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BABYWALKER: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
             eq = IsAnimationAct("D");
@@ -2563,16 +2365,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BEACHBALL: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
             eq = IsAnimationAct("D");
@@ -2583,16 +2377,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BIGWHEEL: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
             eq = IsAnimationAct("D");
@@ -2604,16 +2390,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_GOKART: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
             eq = IsAnimationAct("D");
@@ -2625,16 +2403,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_JACKINTHEBOX: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
             eq = IsAnimationAct("D");
@@ -2645,16 +2415,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_JUMPROPE: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
             eq = IsAnimationAct("D");
@@ -2665,16 +2427,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_POGOSTICK: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
             eq = IsAnimationAct("D");
@@ -2686,16 +2440,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_SCROLL: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_moveVariant = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
@@ -2707,16 +2453,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_SQUEAKTOY: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
             eq = IsAnimationAct("D");
@@ -2727,16 +2465,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_YOYO: {
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
             eq = IsAnimationAct("D");
@@ -2776,16 +2506,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
             m_animSetName = "HAREKRISHNAGRUNT";
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_gruntKind = GRUNT_CONVERSION;
             m_convertTimeLo = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
@@ -2802,16 +2524,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
             m_animSetName = "REAPERGRUNT";
-            if (m_arrivalState == AI_NONE) {
-                m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-            } else if (m_arrivalState == AI_BATTLEZ_PATH) {
-                m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
-            } else {
-                m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
-            }
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                m_arrivalFlags |= 0x10;
-            }
+            ResetArrivalFlags(this);
+            MarkQuestzArrival(this);
             m_passableMask = 0;
             m_gruntKind = GRUNT_DEATHTOUCH;
             if (m_powerupDuration == 0) {

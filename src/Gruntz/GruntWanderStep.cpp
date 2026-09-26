@@ -21,6 +21,7 @@
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -99,15 +100,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                         if (TileSwitch(c[0].m_x, c[0].m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                             SET_GRUNT_ARRIVAL_TARGET(g);
                             m_defenderState = AISTATE_CHASE;
-                            CGruntzMgr* reg = g_gameReg;
-                            if (CGameLevel::PointInBounds(
-                                    &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                                    m_object->m_screenX,
-                                    m_object->m_screenY
-                                )
-                                != 0) {
-                                reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                            }
+                            PLAY_VOICE_IF_VISIBLE(0x366);
                         }
                     }
                     m_dwell = 0;
@@ -121,9 +114,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* active = m_triggerMgr->FindNearestEnemy(this);
             if (active != NULL && active != slot) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek(this);
                 return 1;
             }
             if (slot == NULL || slot->m_entranceCommitted == false
@@ -131,17 +122,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-                StepArrivalDrop(
-                    slot->m_lastTilePx.m_x,
-                    slot->m_lastTilePx.m_y,
-                    0,
-                    m_arrivalFlags,
-                    1,
-                    0
-                );
-                m_dwell = 0;
-            }
+            RepathToward(this, slot);
             if (m_poweredUp != false) {
                 return 1;
             }

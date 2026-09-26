@@ -15,9 +15,11 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -168,9 +170,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != o) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek(this);
                 return 1;
             }
             if (o == NULL) {
@@ -236,15 +236,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             m_arrivalCell.m_x = o->m_playerIndex;
             m_arrivalCell.m_y = o->m_unitIndex;
             m_defenderState = AISTATE_CHASE;
-            {
-                CWwdSpriteObject* h = m_object;
-                i32 x = h->m_screenX;
-                i32 y = h->m_screenY;
-                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (::PtInRect(rect, x, y)) {
-                    g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                }
-            }
+            PLAY_VOICE_IN_VIEW(0x366);
             return 1;
         }
 

@@ -440,15 +440,7 @@ i32 CGrunt::StartBombGruntRun() {
     SET_ANIMATION_ACT("M");
     m_timePerTile = static_cast<i32>(g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64));
     m_bombRunActive = true;
-    {
-        CWwdSpriteObject* h = m_object;
-        i32 vx = h->m_screenX;
-        i32 vy = h->m_screenY;
-        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(rect, vx, vy)) {
-            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
-        }
-    }
+    PLAY_GRUNT_CUE_IN_VIEW(8);
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
     char* cn = EntranceCell()->ItemName().GetBuffer(0);
     SetImageSetByName(cn);
@@ -496,13 +488,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         AT(m_poseIdle, GRUNT_IDLE4) = NULL;
         AT(m_poseIdle, GRUNT_IDLE5) = NULL;
 
-        CGruntzMgr* g = g_gameReg;
-        i32 y = m_object->m_screenY;
-        i32 x = m_object->m_screenX;
-        CCueRect* r = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(r, x, y)) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
-        }
+        PLAY_GRUNT_CUE_IN_VIEW(8);
     } else {
         m_wingzEnabled = false;
         m_wingzDurationLo = 0;
@@ -542,9 +528,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
             MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
     }
 
-    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-    bool eqWalk = (strcmp(*rec, "D") == 0);
-    if (eqWalk) {
+    if (ANIMATION_ACT_EQUALS("D")) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* buf = EntranceCell()->WalkName().GetBuffer(0);
@@ -552,9 +536,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         return 1;
     }
 
-    CString* rec2 = &g_typeColl[m_logicRecord->m_eventCode];
-    bool eqIdle = (strcmp(*rec2, "A") == 0);
-    if (eqIdle) {
+    if (ANIMATION_ACT_EQUALS("A")) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* buf = EntranceCell()->IdleName().GetBuffer(0);
@@ -636,14 +618,7 @@ i32 CGrunt::StepArrivalCommit() {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {
             goto finalize;
         }
@@ -726,13 +701,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
     if (m_freezeDelayDone == false) {
         if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay) {
             SwitchAnimationByName(s_gruntzDeathzUnfreeze, 0);
-            CWwdSpriteObject* h = m_object;
-            i32 vx = h->m_screenX;
-            i32 vy = h->m_screenY;
-            const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-            if (::PtInRect(rect, vx, vy)) {
-                g_gameReg->m_voiceManager->PlayVoice(this, 0x35c, -1, 0, -1, -1);
-            }
+            PLAY_VOICE_IN_VIEW(0x35c);
             m_freezeUnfrozen = true;
             m_freezeDelayDone = true;
         }
@@ -747,10 +716,7 @@ i32 CGrunt::FinishEntranceMove() {
     if (!cur->IsComplete()) {
         return 0;
     }
-    if (m_cellRemovalNotified == false) {
-
-        m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-    }
+    UnregisterFromBoard(this, 0);
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }

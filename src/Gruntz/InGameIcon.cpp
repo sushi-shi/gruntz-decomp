@@ -502,15 +502,7 @@ i32 CInGameIcon::RefreshCell() {
     i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
     if (delta < m_driftThresh.m_v) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        i32 cell;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            BrickzCell* row = grid->m_rows[tileY];
-            cell = row[tileX].m_objectId;
-        } else {
-            cell = 0;
-        }
-        if (cell != 0) {
+        if (CellObjectIdAt(grid, tileX, tileY) != 0) {
             return 0;
         }
     }
@@ -544,11 +536,7 @@ i32 CInGameIcon::PeekCycle() {
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 cell = grid->CellFlagsAt(tileX, tileY);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
-            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-                grid->m_rows[tileY][tileX].m_objectId = 0;
-                grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-            }
+            ReleaseCellObject(grid, tileX, tileY);
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
         return 0;
@@ -702,13 +690,7 @@ i32 CInGameIcon::Reposition() {
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
-        i32 cellVal;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            cellVal = grid->m_rowInts[tileY][tileX * 7 + 2];
-        } else {
-            cellVal = 0;
-        }
+        i32 cellVal = CellObjectIdAt(grid, tileX, tileY);
         if (cellVal != 0) {
 
             CGameObject* found = NULL;
@@ -723,11 +705,7 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[tileY][tileX * 7 + 2] = 0;
-            grid->m_rowInts[tileY][tileX * 7] &= ~0x40000;
-        }
+        ReleaseCellObject(grid, tileX, tileY);
         obj = m_object;
         grid = g_gameReg->m_tileGrid;
         i32 tileX2 = obj->m_screenX >> TILE_SHIFT_PX;
@@ -945,10 +923,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        CString* node = &g_typeColl[found->m_logicRecord->EventCode()];
-
-        bool eq = (strcmp(*node, "K") == 0);
-        if (eq) {
+        if (ANIMATION_ACT_EQUALS_FOR(found, "K")) {
             return 0;
         }
 

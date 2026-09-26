@@ -2,6 +2,7 @@
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/ImageSet.h>
@@ -43,9 +44,7 @@ i32 CGrunt::UpdateDeathAnimation() {
     if (mode == DEATH_NORMAL || mode == DEATH_SQUASH || mode == DEATH_EXPLODE
         || mode == DEATH_SHATTER) {
         SET_ANIMATION_ACT("R");
-        if (m_cellRemovalNotified == false) {
-            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-        }
+        UnregisterFromBoard(this, 0);
         i32 dt = static_cast<i32>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8));
         i32 epoch;
         if (m_object->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
@@ -69,9 +68,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
         return 0;
     }
-    if (m_cellRemovalNotified == false) {
-        m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-    }
+    UnregisterFromBoard(this, 0);
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
@@ -83,9 +80,7 @@ i32 CGrunt::UpdateDecayFade() {
     if (now - m_idleTimer >= m_idleWindow) {
         Hide();
         m_wwdObject->m_imageSet->SetAllTypes(SHADE_COPY);
-        if (m_cellRemovalNotified == false) {
-            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-        }
+        UnregisterFromBoard(this, 0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }

@@ -37,11 +37,11 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
         }
 
-        bool eqA = (strcmp(g_typeColl[m_logicRecord->EventCode()], "A") == 0);
+        bool eqA = ANIMATION_ACT_EQUALS("A");
         if (!eqA) {
-            bool eqD = (strcmp(g_typeColl[m_logicRecord->EventCode()], "D") == 0);
+            bool eqD = ANIMATION_ACT_EQUALS("D");
             if (!eqD) {
-                bool eqE = (strcmp(g_typeColl[m_logicRecord->EventCode()], "E") == 0);
+                bool eqE = ANIMATION_ACT_EQUALS("E");
                 if (!eqE) {
                     return 0;
                 }

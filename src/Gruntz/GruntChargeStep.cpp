@@ -16,10 +16,12 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -116,17 +118,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                         != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(g);
                         m_defenderState = AISTATE_CHASE;
-                        CWwdSpriteObject* mp = m_object;
-                        CGruntzMgr* mgr = g_gameReg;
-
-                        i32 los = CGameLevel::PointInBounds(
-                            &mgr->m_world->m_level->m_mainPlane->m_planeViewRect,
-                            mp->m_screenX,
-                            mp->m_screenY
-                        );
-                        if (los != 0) {
-                            mgr->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                        }
+                        PLAY_VOICE_IF_VISIBLE(0x366);
                     }
                     m_dwell = 0;
                     return 1;
@@ -157,9 +149,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
             CGrunt* cur = m_triggerMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek(this);
                 return 1;
             }
             if (t == NULL || t->m_entranceCommitted == false
@@ -167,10 +157,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (static_cast<u32>(m_dwell) > 500) {
-                StepArrivalDrop(t->m_lastTilePx.m_x, t->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
-                m_dwell = 0;
-            }
+            RepathToward(this, t);
             if (m_poweredUp == false && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && GRUNT_AT_SAVED_SCREEN_POS(t)) {

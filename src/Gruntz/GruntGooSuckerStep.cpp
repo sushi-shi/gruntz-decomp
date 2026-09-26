@@ -20,6 +20,7 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -165,17 +166,7 @@ L_ed006b:
         if (TileSwitch(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
             != 0) {
             if (m_blockedVoicePending != false) {
-                i32 x = m_object->m_screenX;
-                i32 y = m_object->m_screenY;
-                CGruntzMgr* game = g_gameReg;
-                if (CGameLevel::PointInBounds(
-                        &game->m_world->m_level->m_mainPlane->m_planeViewRect,
-                        x,
-                        y
-                    )
-                    != 0) {
-                    game->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                }
+                PLAY_VOICE_IF_VISIBLE(0x366);
                 m_blockedVoicePending = false;
             }
             m_dwell = 0;

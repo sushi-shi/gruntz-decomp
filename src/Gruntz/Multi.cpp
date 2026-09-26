@@ -37,6 +37,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayInline.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sparam.h>
@@ -64,6 +65,7 @@
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezSync.h>
+#include <SafeDelete.h>
 #include <Utils/DebugTiming.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
@@ -354,10 +356,7 @@ void CMulti::ReleaseResources() {
         delete session;
         m_session = NULL;
     }
-    if (m_netMgr) {
-        delete m_netMgr;
-        m_netMgr = NULL;
-    }
+    SAFE_DELETE(m_netMgr)
 
     CMinimap* minimap = m_minimap;
     if (minimap) {
@@ -672,11 +671,7 @@ RVA(0x000b6e90, 0x34d)
 void CMulti::RenderGameFrame() {
     if (m_roundComplete == false && Mgr()->m_frameGate != false) {
         RestoreCursorSaveUnder();
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
+        DrawVisibleWorld();
         m_statusBar->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
         if (h == NULL) {
@@ -705,15 +700,7 @@ void CMulti::RenderGameFrame() {
         (m_world->m_level->m_mainPlane)->m_scrollPixelX,
         (m_world->m_level->m_mainPlane)->m_scrollPixelY
     );
-    if (m_region1Gate != false) {
-        NotifyVisibleEntities();
-    } else {
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
-    }
+    DrawWorldView();
     m_statusBar->LoadMainStatusBarSprite();
     if (m_minimap != NULL) {
         CStatusBarMgr* statusBar = m_statusBar;
@@ -1220,23 +1207,7 @@ i32 CMulti::ShowMultiStartDlg() {
     if (m_isHost != false) {
         ApplyCmdDelayDefaults();
     } else {
-        SoundCueRegistry* reg = m_world->m_soundRegistry;
-        if (reg->m_silentMode == false) {
-            SoundCue* found = reg->FindCue(g_gameKey);
-            SoundCue* rec = found;
-            if (rec != NULL) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    i32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - rec->m_lastPlayTimeMs))
-                        >= static_cast<u32>(rec->m_replayDelayMs)) {
-                        rec->m_lastPlayTimeMs = cueTimeMs;
-                        rec->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(m_world->m_soundRegistry, g_gameKey);
         ActiveWait(0xfa);
     }
     return 1;
@@ -2054,23 +2025,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
                 SendVersionCheck(player);
             }
         }
-        SoundCueRegistry* registry = m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* found = registry->FindCue("GAME_MENUS_SELECT");
-            SoundCue* cue = found;
-            if (cue != NULL) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
-                        >= cue->m_replayDelayMs) {
-                        cue->m_lastPlayTimeMs = cueTimeMs;
-                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MENUS_SELECT");
         return 1;
     }
     SendPlayerIdMessageToId(message->dpId, NETMSG_GAME_CLOSED, DPSEND_GUARANTEED);
