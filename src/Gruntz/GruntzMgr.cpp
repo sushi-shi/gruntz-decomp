@@ -2081,7 +2081,6 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_engineFrameDelta = delta;
 }
 
-// @early-stop
 RVA(0x0008f7f0, 0x131)
 void CGruntzMgr::RecomputeViewScale() {
     if (m_world == NULL) {
@@ -2091,21 +2090,19 @@ void CGruntzMgr::RecomputeViewScale() {
     LevelCoordRect ext = view->m_viewportRect;
     i32 iw = ext.right - ext.left + 1;
     i32 ih = ext.bottom - ext.top + 1;
-    float fw = static_cast<float>(iw);
-    float fh = static_cast<float>(ih);
 
-    view->m_defaultActiveRegionSize.m_w = static_cast<i32>((fw * 1.4f));
-    view->m_defaultActiveRegionSize.m_h = static_cast<i32>((fh * 1.4f));
+    view->m_defaultActiveRegionSize.m_w = static_cast<i32>((static_cast<float>(iw) * 1.4f));
+    view->m_defaultActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 1.4f));
     view->MainPlaneNotify();
 
     view = LevelOf(World());
-    view->m_largeActiveRegionSize.m_w = static_cast<i32>((fw * 5.3f));
-    view->m_largeActiveRegionSize.m_h = static_cast<i32>((fh * 5.3f));
+    view->m_largeActiveRegionSize.m_w = static_cast<i32>((static_cast<float>(iw) * 5.3f));
+    view->m_largeActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 5.3f));
     view->MainPlaneNotify();
 
     view = LevelOf(World());
-    view->m_smallActiveRegionSize.m_w = static_cast<i32>((fw * 1.12f));
-    view->m_smallActiveRegionSize.m_h = static_cast<i32>((fh * 1.12f));
+    view->m_smallActiveRegionSize.m_w = static_cast<i32>((static_cast<float>(iw) * 1.12f));
+    view->m_smallActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 1.12f));
     view->MainPlaneNotify();
 
     CGameLevel* v = LevelOf(World());
@@ -2114,7 +2111,7 @@ void CGruntzMgr::RecomputeViewScale() {
     }
     SET_RECT_COMPONENTS(
         m_viewBounds,
-        (v->m_mainPlane)->m_planeViewRect.left - 0x60,
+        (LevelOf(World())->m_mainPlane)->m_planeViewRect.left - 0x60,
         (LevelOf(World())->m_mainPlane)->m_planeViewRect.top - 0x60,
         (LevelOf(World())->m_mainPlane)->m_planeViewRect.right + 0x60,
         (LevelOf(World())->m_mainPlane)->m_planeViewRect.bottom + 0x60

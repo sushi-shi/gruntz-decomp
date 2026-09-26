@@ -141,7 +141,6 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
     m_inputActive = false;
 }
 
-// @early-stop
 RVA(0x00020f40, 0x188)
 i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     CChatBoxOwner* self = this;
@@ -182,22 +181,19 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetTextColor(hdc, 0);
     SetBkColor(hdc, 0);
 
-    RECT rect;
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        SET_RECT_XY_EXTENTS(
-            rect,
+        CRect rect(
             self->m_originX + 0x4c,
-            self->m_originX + 0x267,
             self->m_originY + 0x2b,
+            self->m_originX + 0x267,
             self->m_originY + 0x37
         );
         self->m_fontConfig->RenderInputText(hdc, 0x21b, &rect);
     } else {
-        SET_RECT_XY_EXTENTS(
-            rect,
+        CRect rect(
             self->m_originX + 0x4c,
-            self->m_originX + 0x1c7,
             self->m_originY + 0x2b,
+            self->m_originX + 0x1c7,
             self->m_originY + 0x37
         );
         self->m_fontConfig->RenderInputText(hdc, 0x17b, &rect);
