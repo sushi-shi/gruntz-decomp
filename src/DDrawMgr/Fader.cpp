@@ -159,13 +159,12 @@ CShapeFaderConfig::CShapeFaderConfig() {
 
 RVA(0x0017e840, 0x37)
 CLightFaderConfig::CLightFaderConfig() {
-    m_centerX = SCREEN_HALF_W_PX;
     m_kind = FADER_CONFIG_LIGHT;
-    m_sourceSurface = NULL;
     m_targetSurface = NULL;
+    m_sourceSurface = NULL;
     m_clearMode = true;
     m_spanCount = 0;
-    m_centerY = SCREEN_HALF_H_PX;
+    m_center = CPoint(SCREEN_HALF_W_PX, SCREEN_HALF_H_PX);
     m_shadeTable = NULL;
 }
 

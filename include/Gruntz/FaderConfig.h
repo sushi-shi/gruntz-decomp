@@ -3,6 +3,9 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+#include <MfcWin.h>
+
 #include <Gruntz/FaderConfigKind.h>
 #include <Ints.h>
 
@@ -21,8 +24,7 @@ public:
     class CDDPalette* m_palette;
     b32 m_clearMode;
     i32 m_spanCount;
-    i32 m_centerX;
-    i32 m_centerY;
+    CPoint m_center;
     class CShadeTable* m_shadeTable;
 };
 

@@ -154,8 +154,8 @@ i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadM
 
     CLightFaderConfig t;
     t.m_clearMode = true;
-    t.m_centerX = centerX;
-    t.m_centerY = centerY;
+    t.m_center.x = centerX;
+    t.m_center.y = centerY;
     t.m_targetSurface = surface;
     t.m_sourceSurface = NULL;
     CFader* f = mgr->Add(FADERKIND_LIGHT, &t);
@@ -197,9 +197,9 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     }
 
     CLightFaderConfig t;
-    t.m_centerX = centerX;
+    t.m_center.x = centerX;
     t.m_clearMode = false;
-    t.m_centerY = centerY;
+    t.m_center.y = centerY;
     t.m_targetSurface = targetSurface;
     t.m_sourceSurface = sourceSurface;
     CFader* f = mgr->Add(FADERKIND_LIGHT, &t);
