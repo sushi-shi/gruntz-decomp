@@ -117,21 +117,20 @@ void CFaderLight::RenderFrame(i32 frame) {
                 i32 right;
                 i32 left;
                 ComputeSpan(row, rr, 1, right, left);
-                i32 oldStart = m_spanStarts[row];
-                u8* clrL = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldStart * bpp;
-                i32 n1 = (left - oldStart) * bpp;
-                ClearBytes(clrL, n1);
-                i32 oldEnd = m_spanEnds[row];
-                u8* clrR = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + right * bpp;
-                i32 n2 = (oldEnd - right) * bpp;
-                ClearBytes(clrR, n2);
-                u8* bits = m_targetBits;
-                Render(row, rr, r, lut, bits, ovlBits);
+                ClearBytes(
+                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * row
+                        + m_spanStarts[row] * bpp,
+                    (left - m_spanStarts[row]) * bpp
+                );
+                ClearBytes(
+                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + right * bpp,
+                    (m_spanEnds[row] - right) * bpp
+                );
+                Render(row, rr, r, lut, m_targetBits, ovlBits);
                 m_spanStarts[row] = left;
                 m_spanEnds[row] = right;
             } else {
-                u8* clrRow = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row;
-                ClearBytes(clrRow, m_width);
+                ClearBytes(m_targetBits + m_targetSurface->m_apiDesc.lPitch * row, m_width);
             }
             row++;
         }
@@ -154,15 +153,17 @@ void CFaderLight::RenderFrame(i32 frame) {
                 i32 right;
                 i32 left;
                 ComputeSpan(row, fr2, -1, right, left);
-                i32 n1 = (m_spanStarts[row] - left) * bpp;
-                u8* src = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row + left * bpp;
-                u8* dst = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + left * bpp;
-                CopyBytes(dst, src, n1);
-                i32 oldEnd = m_spanEnds[row];
-                i32 n2 = (right - oldEnd) * bpp;
-                src = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row + oldEnd * bpp;
-                dst = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldEnd * bpp;
-                CopyBytes(dst, src, n2);
+                CopyBytes(
+                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + left * bpp,
+                    m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row + left * bpp,
+                    (m_spanStarts[row] - left) * bpp
+                );
+                CopyBytes(
+                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + m_spanEnds[row] * bpp,
+                    m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row
+                        + m_spanEnds[row] * bpp,
+                    (right - m_spanEnds[row]) * bpp
+                );
                 m_spanStarts[row] = left;
                 m_spanEnds[row] = right;
             }
