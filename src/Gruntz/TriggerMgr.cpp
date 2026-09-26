@@ -1613,8 +1613,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             }
 
             POINT pt;
-            pt.x = pxX;
-            pt.y = pxY;
+            SET_POINT_COMPONENTS(pt, pxX, pxY);
             if (!PtInRect(&g_gameReg->m_viewBounds, pt)) {
                 continue;
             }
@@ -1818,8 +1817,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         i32 tx = g->m_tileX;
         i32 ty = g->m_tileY;
         POINT pt;
-        pt.x = tx;
-        pt.y = ty;
+        SET_POINT_COMPONENTS(pt, tx, ty);
         if (!PtInRect(&rect, pt)) {
             continue;
         }

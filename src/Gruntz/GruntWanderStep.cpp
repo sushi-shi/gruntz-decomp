@@ -33,6 +33,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
 
@@ -208,8 +209,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                         (candidateObject->m_screenY >> TILE_SHIFT_PX) + 3
                     );
                     POINT pt;
-                    pt.x = px;
-                    pt.y = py;
+                    SET_POINT_COMPONENTS(pt, px, py);
                     if (PtInRect(&rc, pt)) {
                         clip = 0;
                     }

@@ -883,8 +883,11 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 CGrunt* o = m_triggerMgr->UnitAt(j2, k2);
                                                 if (o != NULL) {
                                                     POINT pt;
-                                                    pt.x = o->m_object->m_screenX >> TILE_SHIFT_PX;
-                                                    pt.y = o->m_object->m_screenY >> TILE_SHIFT_PX;
+                                                    SET_POINT_COMPONENTS(
+                                                        pt,
+                                                        o->m_object->m_screenX >> TILE_SHIFT_PX,
+                                                        o->m_object->m_screenY >> TILE_SHIFT_PX
+                                                    );
                                                     if (PtInRect(&spell, pt) != false) {
                                                         goto spellHit;
                                                     }
@@ -2161,8 +2164,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             i32 gx = g->m_screenX >> TILE_SHIFT_PX;
             i32 gy = g->m_screenY >> TILE_SHIFT_PX;
             POINT wpt;
-            wpt.x = gx;
-            wpt.y = gy;
+            SET_POINT_COMPONENTS(wpt, gx, gy);
             if (PtInRect(&box, wpt)) {
                 if (special != 0 && unit->m_gruntKind == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
@@ -2901,8 +2903,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             Coord c;
             u->GetScreenTile(&c);
             POINT wpt;
-            wpt.x = c.m_x;
-            wpt.y = c.m_y;
+            SET_POINT_COMPONENTS(wpt, c.m_x, c.m_y);
             if (!PtInRect(&box, wpt)) {
                 continue;
             }
