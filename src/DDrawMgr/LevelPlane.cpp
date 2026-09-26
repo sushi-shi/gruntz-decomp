@@ -555,6 +555,16 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     return 1;
 }
 
+static inline void ReadPlaneString(char* buf, const char*& cursor, i32 len) {
+    i32 n = 0;
+    if (len > 0) {
+        memcpy(buf, cursor, len);
+        cursor += len;
+        n = len;
+    }
+    buf[n] = 0;
+}
+
 // @early-stop
 RVA(0x00162af0, 0x806)
 
@@ -582,40 +592,16 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     const char* strCursor = src->m_strings;
     char buf[0x400];
 
-    i32 n = 0;
-    if (nameLen > 0) {
-        memcpy(buf, strCursor, nameLen);
-        strCursor += nameLen;
-        n = nameLen;
-    }
-    buf[n] = 0;
+    ReadPlaneString(buf, strCursor, nameLen);
     CString name(buf);
 
-    n = 0;
-    if (logicLen > 0) {
-        memcpy(buf, strCursor, logicLen);
-        strCursor += logicLen;
-        n = logicLen;
-    }
-    buf[n] = 0;
+    ReadPlaneString(buf, strCursor, logicLen);
     CString logic(buf);
 
-    n = 0;
-    if (imageSetLen > 0) {
-        memcpy(buf, strCursor, imageSetLen);
-        strCursor += imageSetLen;
-        n = imageSetLen;
-    }
-    buf[n] = 0;
+    ReadPlaneString(buf, strCursor, imageSetLen);
     CString imageSet(buf);
 
-    n = 0;
-    if (soundLen > 0) {
-        memcpy(buf, strCursor, soundLen);
-        strCursor += soundLen;
-        n = soundLen;
-    }
-    buf[n] = 0;
+    ReadPlaneString(buf, strCursor, soundLen);
     CString sound(buf);
 
     if (x < 0 || x >= m_planePixelWidth || y < 0 || y >= m_planePixelHeight) {
