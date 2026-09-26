@@ -46,6 +46,10 @@ applied mechanically are applied, the rest are for the reader:
                             is keyed as the 32-bit operation it performs
                             (AND fills the untouched bytes with ones, OR/XOR
                             with zeros; an AH-class register shifts by 8).
+  * EH state stores         `mov [esp+N],state` into the /GX unwind-state
+                            slot numbers the destructible objects, not a
+                            constant of the function. FILTERED: yes (the
+                            `walls eh-frame` slot rule).
   * cross-jump merge degree one side shares a cleanup/call site the other
                             duplicates. Changes call-SITE counts, never the
                             set of paths that reach the call. FILTERED: no.
@@ -244,6 +248,17 @@ def pair_lines(token: str):
     return b, _decode(bb, brel, b.name), _decode(tb, trel, b.name)
 
 
+def eh_state_lines(lines: list[Line]) -> set[int]:
+    """Addresses of the stores into the /GX unwind-state slot (the `walls
+    eh-frame` slot rule); their immediates number objects, not values."""
+    from gruntz.walls import eh_frame
+    insns = [(ln.addr, *(ln.asm.split(None, 1) + [""])[:2]) for ln in lines]
+    if not eh_frame.has_eh(insns):
+        return set()
+    _slot, states = eh_frame.eh_states(insns)
+    return {off for off, _state in states}
+
+
 def value_immediates(asm: str) -> list[str]:
     """The immediates of one instruction as the 32-bit values they act as.
 
@@ -270,15 +285,17 @@ def features(lines: list[Line], self_name: str = "",
 
     Dropped here: the operands of the function's own table references
     (self-referent lines keep only their mnemonic), byte-continuation lines,
-    the frame-size and callee-cleanup immediates, and - in the handful of
-    functions cl gives an ebp frame - the `[ebp+-N]` operands, which are
-    stack slots there and not member displacements. Pass `ebp_frame` from
-    BOTH sides (`ebp_is_frame(base, target)`); reading it off one side masks
+    the frame-size and callee-cleanup immediates, the /GX unwind-state
+    stores' immediates, and - in the handful of functions cl gives an ebp
+    frame - the `[ebp+-N]` operands, which are stack slots there and not
+    member displacements. Pass `ebp_frame` from BOTH sides
+    (`ebp_is_frame(base, target)`); reading it off one side masks
     asymmetrically. Narrow AND/OR/XOR immediates are keyed as the 32-bit
     operation (`value_immediates`).
     """
     if ebp_frame is None:
         ebp_frame = ebp_is_frame(lines)
+    eh_states = eh_state_lines(lines)
     disp, imm, mnem, fp, store = (Counter() for _ in range(5))
     for ln in lines:
         asm = ln.asm
@@ -301,7 +318,7 @@ def features(lines: list[Line], self_name: str = "",
             dst = asm.split(",", 1)[0]
             for _reg, d in MEM.findall(dst):
                 store[d or "+0x0"] += 1
-        if not NOT_A_VALUE.match(op):
+        if not NOT_A_VALUE.match(op) and ln.addr not in eh_states:
             for v in value_immediates(asm):
                 if int(v, 16) > 3:
                     imm[v] += 1

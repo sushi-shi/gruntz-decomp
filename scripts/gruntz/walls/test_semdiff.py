@@ -59,5 +59,23 @@ class WidthMirrorControls(unittest.TestCase):
                          {("imm", "0xffffff1f"), ("imm", "0x1f")})
 
 
+PROLOGUE = ["push 0xffffffff", "push 0x0", "mov eax,fs:0x0", "push eax",
+            "mov DWORD PTR fs:0x0,esp", "sub esp,0x8", "push esi"]
+
+
+class EhStateControls(unittest.TestCase):
+    def test_state_numbering_is_not_a_constant(self):
+        self.assertEqual(
+            _keys(_lines(PROLOGUE + ["mov DWORD PTR [esp+0x14],0x5"]),
+                  _lines(PROLOGUE + ["mov DWORD PTR [esp+0x14],0x6"])),
+            set())
+
+    def test_a_local_store_keeps_its_constant(self):
+        self.assertEqual(
+            _keys(_lines(PROLOGUE + ["mov DWORD PTR [esp+0x4],0x5"]),
+                  _lines(PROLOGUE + ["mov DWORD PTR [esp+0x4],0x6"])),
+            {("imm", "0x5"), ("imm", "0x6")})
+
+
 if __name__ == "__main__":
     unittest.main()
