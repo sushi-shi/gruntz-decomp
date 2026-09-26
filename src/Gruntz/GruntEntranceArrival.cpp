@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>
@@ -1301,7 +1302,6 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00065a60, 0x159)
 i32 CGrunt::LoadWandGruntItemConfig() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -1325,7 +1325,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_entranceReason == PICKUP_WAND) {
                 LoadGruntAbilityTuning(m_moveVariant);
                 i32 hp = m_health - g_buteMgr.GetInt("WANDGRUNT", "HealthLoss", 0x19);
-                m_health = hp < 0 ? 0 : hp;
+                m_health = Max(0, hp);
                 if (m_health <= 0) {
                     m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 }
