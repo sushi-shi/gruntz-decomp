@@ -63,6 +63,7 @@
 #include <Wap32/Object.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/Wap32.h>
+#include <Wwd/WwdObjMgrInline.h>
 
 #include <math.h>
 #include <new>
@@ -1400,15 +1401,10 @@ i32 CGrunt::FinishToobMoveAnimation() {
     if (cellObj == NULL) {
         return 0;
     }
-    CGameObject* found = NULL;
-    if (MapLookup(
-            g->m_world->m_childGroup->m_registeredGameObjectsById,
-            static_cast<void*>(cellObj),
-            found
-        )
-        == false) {
-        found = NULL;
-    }
+    CGameObject* found = LookupActiveObject(
+        g->m_world->m_childGroup->m_registeredGameObjectsById,
+        static_cast<void*>(cellObj)
+    );
     if (found == NULL) {
         grid = g_gameReg->m_tileGrid;
         ReleaseCellObject(grid, tx, ty);
