@@ -44,6 +44,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialRecordMacros.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -3732,89 +3733,79 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 }
 
 RVA(0x00109520, 0x44c)
-i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
-    if (s == NULL) {
+i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
+    if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* gm = g_gameReg->m_world;
-    if (gm == NULL) {
+    CDDrawSurfaceMgr* dir = g_gameReg->m_world;
+    if (dir == NULL) {
         return 0;
     }
     m_destructWarningSound = NULL;
     ResetWidgets(false);
 
-    s->Read(this, 4);
-    s->Read(&m_restorePosition, sizeof(m_restorePosition));
+    ar->Read(this, 4);
+    ar->Read(&m_restorePosition, sizeof(m_restorePosition));
 
-    g_serialCounter++;
+    SERIALREF(m_barSprite);
 
-    i32 seq;
-    s->Read(&seq, sizeof(seq));
-
-    CWwdSpriteObject* barSprite =
-        LookupSerialRef(gm->m_childGroup->m_registeredGameObjectsById, seq);
-    m_barSprite = barSprite;
-    if (barSprite == NULL && seq != 0) {
-        return 0;
-    }
-
-    s->Read(&m_barRect.left, sizeof(m_barRect));
-    s->Read(&m_redrawFrames, sizeof(m_redrawFrames));
-    s->Read(&m_barX, sizeof(m_barX));
-    s->Read(&m_barY, sizeof(m_barY));
-    s->Read(&m_itemKind, sizeof(m_itemKind));
-    s->Read(&m_tabCycle, sizeof(m_tabCycle));
+    ar->Read(&m_barRect.left, sizeof(m_barRect));
+    ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
+    ar->Read(&m_barX, sizeof(m_barX));
+    ar->Read(&m_barY, sizeof(m_barY));
+    ar->Read(&m_itemKind, sizeof(m_itemKind));
+    ar->Read(&m_tabCycle, sizeof(m_tabCycle));
 
     StatusSampleMode* p = m_statFlags;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-        s->Read(p, sizeof(*p));
+        ar->Read(p, sizeof(*p));
         p += 1;
     }
 
-    s->Read(&m_reserved34c, sizeof(m_reserved34c));
-    s->Read(&m_reserved350, sizeof(m_reserved350));
-    s->Read(&m_chatBoxDisabled, sizeof(m_chatBoxDisabled));
-    s->Read(&m_activeSlot, sizeof(m_activeSlot));
-    s->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
-    s->Read(&m_activeTab, sizeof(m_activeTab));
-    s->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
-    s->Read(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
-    s->Read(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
-    s->Read(&m_rezTick, sizeof(m_rezTick));
-    s->Read(&m_rezActive, sizeof(m_rezActive));
-    s->Read(&m_reserved544, sizeof(m_reserved544));
-    s->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
-    s->Read(&m_machineItemRect, sizeof(m_machineItemRect));
-    s->Read(&m_hlBusy, sizeof(m_hlBusy));
-    s->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
-    s->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
-    s->Read(&m_machinePhase, sizeof(m_machinePhase));
-    s->Read(&m_machineItem, sizeof(m_machineItem));
-    s->Read(&m_fallActive, sizeof(m_fallActive));
-    s->Read(&m_fallingItem, sizeof(m_fallingItem));
-    s->Read(&m_rightMachine, 4);
-    s->Read(&m_rightMachine.m_value, sizeof(m_rightMachine.m_value));
-    s->Read(&m_leftMachine, 4);
-    s->Read(&m_leftMachine.m_value, sizeof(m_leftMachine.m_value));
-    s->Read(&m_destructWarningState, sizeof(m_destructWarningState));
-    s->Read(&m_destructButtonFrame, sizeof(m_destructButtonFrame));
-    s->Read(&m_destructButtonLocked, sizeof(m_destructButtonLocked));
-    s->Read(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
+    ar->Read(&m_reserved34c, sizeof(m_reserved34c));
+    ar->Read(&m_reserved350, sizeof(m_reserved350));
+    ar->Read(&m_chatBoxDisabled, sizeof(m_chatBoxDisabled));
+    ar->Read(&m_activeSlot, sizeof(m_activeSlot));
+    ar->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
+    ar->Read(&m_activeTab, sizeof(m_activeTab));
+    ar->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
+    ar->Read(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
+    ar->Read(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
+    ar->Read(&m_rezTick, sizeof(m_rezTick));
+    ar->Read(&m_rezActive, sizeof(m_rezActive));
+    ar->Read(&m_reserved544, sizeof(m_reserved544));
+    ar->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
+    ar->Read(&m_machineItemRect, sizeof(m_machineItemRect));
+    ar->Read(&m_hlBusy, sizeof(m_hlBusy));
+    ar->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
+    ar->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
+    ar->Read(&m_machinePhase, sizeof(m_machinePhase));
+    ar->Read(&m_machineItem, sizeof(m_machineItem));
+    ar->Read(&m_fallActive, sizeof(m_fallActive));
+    ar->Read(&m_fallingItem, sizeof(m_fallingItem));
+    ar->Read(&m_rightMachine, 4);
+    ar->Read(&m_rightMachine.m_value, sizeof(m_rightMachine.m_value));
+    ar->Read(&m_leftMachine, 4);
+    ar->Read(&m_leftMachine.m_value, sizeof(m_leftMachine.m_value));
+    ar->Read(&m_destructWarningState, sizeof(m_destructWarningState));
+    ar->Read(&m_destructButtonFrame, sizeof(m_destructButtonFrame));
+    ar->Read(&m_destructButtonLocked, sizeof(m_destructButtonLocked));
+    ar->Read(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
 
     for (i32 j = 0; j < 5; j++) {
-        s->Read(&m_slots[j].m_state, sizeof(m_slots[j].m_state));
-        s->Read(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
+        ar->Read(&m_slots[j].m_state, sizeof(m_slots[j].m_state));
+        ar->Read(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
     }
     for (i32 k = 0; k < 3; k++) {
-        s->Read(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
-        s->Read(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
+        ar->Read(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
+        ar->Read(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
     }
     CSbiHlRow* nb = m_resourceSlots;
-    seq = 3;
+    i32 seq = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Read(&nb[m].m_state, sizeof(nb[m].m_state));
-            s->Read(&nb[m].m_value, sizeof(nb[m].m_value));
+            ar->Read(&nb[m].m_state, sizeof(nb[m].m_state));
+            ar->Read(&nb[m].m_value, sizeof(nb[m].m_value));
         }
         nb += 4;
     } while (--seq);
@@ -3822,11 +3813,11 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     ClearRewardQueue();
 
     i32 cnt;
-    s->Read(&cnt, sizeof(cnt));
+    ar->Read(&cnt, sizeof(cnt));
     m_rewardQueue.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         Coord* node = g_coordPool.Pop();
-        s->Read(node, sizeof(Coord));
+        ar->Read(node, sizeof(Coord));
         m_rewardQueue.SetAt(n, node);
     }
     return 1;
