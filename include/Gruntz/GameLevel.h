@@ -267,6 +267,10 @@ private:
     i32 ResolveLeftX(CGameObject* t, i32 x, i32 y);
     i32 ResolveBottomY(CGameObject* t, i32 x, i32 y);
     i32 ResolveTopY(CGameObject* t, i32 x, i32 y);
+    i32 BacktrackRightX(CGameObject* t, i32 x, i32 y);
+    i32 BacktrackLeftX(CGameObject* t, i32 x, i32 y);
+    i32 BacktrackBottomY(CGameObject* t, i32 x, i32 y);
+    i32 BacktrackTopY(CGameObject* t, i32 x, i32 y);
 
 public:
     CDDrawWorkerHost* GetPlane(i32 index) {
