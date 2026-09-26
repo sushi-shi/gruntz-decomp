@@ -642,7 +642,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unuse
     }
     if (inPlay && forceTransition == false) {
         CState* st = m_curState;
-        m_curState->LeaveState(st->Update());
+        m_curState->LeaveState(m_curState->Update());
         if (static_cast<CPlay*>(st)->LoadByMode(areaArg, unused) == 0) {
             return 0;
         }
