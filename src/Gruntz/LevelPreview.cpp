@@ -179,14 +179,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
         == 0) {
         failed = true;
     } else {
-        SoundCueRegistry* h = m_world->m_soundRegistry;
-        if (h->m_silentMode == false) {
-            SoundCue* found = h->FindCue("GAME_TELEPORTEROPEN");
-            SoundCue* p = found;
-            if (p != NULL) {
-                PlaySoundCueIfElapsed(p, g_soundVolumePercent, 0, 0, false);
-            }
-        }
+        PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_TELEPORTEROPEN");
         RetireScene(0x50, 0x3e8, 0, true);
     }
     m_previewCountdownMs = 60000;

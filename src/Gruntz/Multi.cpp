@@ -1209,14 +1209,7 @@ i32 CMulti::ShowMultiStartDlg() {
     if (m_isHost != false) {
         ApplyCmdDelayDefaults();
     } else {
-        SoundCueRegistry* reg = m_world->m_soundRegistry;
-        if (reg->m_silentMode == false) {
-            SoundCue* found = reg->FindCue(g_gameKey);
-            SoundCue* rec = found;
-            if (rec != NULL) {
-                PlaySoundCueIfElapsed(rec, g_soundVolumePercent, 0, 0, false);
-            }
-        }
+        PlayRegistryCueIfElapsed(m_world->m_soundRegistry, g_gameKey);
         ActiveWait(0xfa);
     }
     return 1;
@@ -2034,14 +2027,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
                 SendVersionCheck(player);
             }
         }
-        SoundCueRegistry* registry = m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* found = registry->FindCue("GAME_MENUS_SELECT");
-            SoundCue* cue = found;
-            if (cue != NULL) {
-                PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
-            }
-        }
+        PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MENUS_SELECT");
         return 1;
     }
     SendPlayerIdMessageToId(message->dpId, NETMSG_GAME_CLOSED, DPSEND_GUARANTEED);

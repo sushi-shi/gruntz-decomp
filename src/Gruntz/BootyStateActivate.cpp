@@ -1031,14 +1031,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_slot++;
-            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-                SoundCue* found = registry->FindCue("GAME_EXPLOSION1");
-                SoundCue* cue = found;
-                if (cue != NULL) {
-                    PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
-                }
-            }
+            PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_EXPLOSION1");
             if (m_slot >= 8) {
                 return 1;
             }
@@ -1271,13 +1264,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
             if (sel != NULL) {
                 if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
-                    SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
-                    if (ss->m_silentMode == false) {
-                        SoundCue* res = ss->FindCue("GAME_FLAGRISE");
-                        if (res != NULL) {
-                            PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, false);
-                        }
-                    }
+                    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_FLAGRISE");
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
                     m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
                     CWwdSpriteObject* g = m_animSprites[m_stepIndex];

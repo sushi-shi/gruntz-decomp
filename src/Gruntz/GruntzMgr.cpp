@@ -2360,15 +2360,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                             AppendChatMessage(const_cast<char*>("You're scaring me..."));
                             break;
                     }
-                    SoundCueRegistry* registry = m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-
-                        SoundCue* found = registry->FindCue("GAME_MINORCHEAT");
-                        SoundCue* cue = found;
-                        if (cue) {
-                            PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
-                        }
-                    }
+                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MINORCHEAT");
                 }
             }
         }
@@ -2399,15 +2391,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                         set->SetAllTypes(SHADE_COPY);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
-                    SoundCueRegistry* registry = m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-
-                        SoundCue* found = registry->FindCue("GAME_MINORCHEAT");
-                        SoundCue* cue = found;
-                        if (cue) {
-                            PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
-                        }
-                    }
+                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MINORCHEAT");
                 }
             }
         }
