@@ -2071,8 +2071,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
                 }
             }
-            slot->m_x = bookmarkScrollX;
-            slot->m_y = bookmarkScrollY;
+            slot->Set(bookmarkScrollX, bookmarkScrollY);
             if (this->m_cameraBookmarkIndex != this->CameraBookmarkCount() - 1) {
                 this->m_cameraBookmarks.InsertAt(this->m_cameraBookmarkIndex + 1, slot, 1);
                 this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;

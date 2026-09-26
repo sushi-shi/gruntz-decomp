@@ -630,8 +630,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 unit->m_brickPickupType = PICKUP_BROWNBRICK;
                 unit->m_entrancePickup = PICKUP_INVALID;
                 if (cellType == TILEKIND_GAUNTLET_BRICK_A) {
-                    unit->m_pendingTriggerPx.m_x = px;
-                    unit->m_pendingTriggerPx.m_y = py;
+                    unit->m_pendingTriggerPx.Set(px, py);
                     unit->m_pendingTrigger = true;
                 }
                 return 1;

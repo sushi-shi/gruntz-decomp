@@ -415,8 +415,7 @@ CGrunt::CGrunt(CGameObject* owner)
     m_arrivalRerollWindowLo = 0;
     m_arrivalRerollHi = 0;
     m_arrivalRerollWindowHi = 0;
-    m_unusedBattleCell.m_x = -1;
-    m_unusedBattleCell.m_y = -1;
+    m_unusedBattleCell.Set(-1, -1);
     m_arrivalNotified = false;
     m_defenderState = AISTATE_SEEK;
     m_battleState = BZTASK_UNASSIGNED;
@@ -1335,8 +1334,7 @@ i32 CGrunt::StepGruntMovement() {
             }
             {
                 Coord* node = g_coordPool.Pop();
-                node->m_x = tgtTileX;
-                node->m_y = tgtTileY;
+                node->Set(tgtTileX, tgtTileY);
                 m_coordList.AddHead(node);
             }
             if (PathScan() == 0) {
@@ -1617,8 +1615,7 @@ label_4cb4b:
         bd2->m_rows[tgtTileY][tgtTileX].m_occupantId =
             (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
 
-        m_lastTilePx.m_x = tgtPxX;
-        m_lastTilePx.m_y = tgtPxY;
+        m_lastTilePx.Set(tgtPxX, tgtPxY);
         ComputeFacing(1.0);
     }
     m_arrivalPending = true;

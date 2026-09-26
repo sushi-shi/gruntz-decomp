@@ -275,8 +275,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         i32 coordY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (node->m_next != NULL) {
             coord = &node->m_value;
-            coord->m_x = coordX;
-            coord->m_y = coordY;
+            coord->Set(coordX, coordY);
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
         m_coordList.AddHead(coord);
@@ -763,8 +762,7 @@ i32 CGrunt::ClaimSwitchTile() {
     nb->m_rowBytes[ty][tx * 7 * 4 + 3] |= 0x20;
     nb->m_rowInts[ty][tx * 7 + 1] = owner;
 
-    m_lastTilePx.m_x = nextX;
-    m_lastTilePx.m_y = nextY;
+    m_lastTilePx.Set(nextX, nextY);
     ComputeFacing(1.0);
     m_arrivalPending = true;
     return 1;
@@ -781,8 +779,10 @@ i32 CGrunt::SetArrivalTarget(
     cell.Set(targetPlayerIndex, targetUnitIndex);
     m_arrivalCell = cell;
     m_arrivalActive = true;
-    m_defenderPx.m_x = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_defenderPx.m_y = (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_defenderPx.Set(
+        (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX,
+        (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX
+    );
     return 1;
 }
 
@@ -883,8 +883,7 @@ applyTail:
             i32 gy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
             board->m_rowInts[gy][gx * 7] &= BRICKZ_CELL_UNOCCUPIED_MASK;
             board->m_rowInts[gy][gx * 7 + 1] = -1;
-            m_lastTilePx.m_x = -1;
-            m_lastTilePx.m_y = -1;
+            m_lastTilePx.Set(-1, -1);
         }
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {

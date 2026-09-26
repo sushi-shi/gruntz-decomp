@@ -447,8 +447,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
     Coord* slot = NULL;
     if (node->m_next != NULL) {
         slot = &node->m_value;
-        slot->m_x = playerIndex;
-        slot->m_y = unitIndex;
+        slot->Set(playerIndex, unitIndex);
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     m_recList.AddTail(slot);

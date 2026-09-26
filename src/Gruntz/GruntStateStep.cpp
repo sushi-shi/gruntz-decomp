@@ -75,8 +75,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 nb->GetScreenTile(&p);
                 if (g->TileSwitch(p.m_x, p.m_y, 0, arrivalMask, 0, 0)) {
                     g->m_defenderState = AISTATE_ATTACK;
-                    g->m_arrivalCell.m_x = nb->m_playerIndex;
-                    g->m_arrivalCell.m_y = nb->m_unitIndex;
+                    g->m_arrivalCell.Set(nb->m_playerIndex, nb->m_unitIndex);
                     g->m_dwell = 0;
                 }
             }

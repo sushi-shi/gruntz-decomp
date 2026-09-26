@@ -639,8 +639,7 @@ void CProjectile::ScanTargets(i32 impact) {
             CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
                 slot = &p->m_value;
-                slot->m_x = hitPlayerIndex;
-                slot->m_y = hitUnitIndex;
+                slot->Set(hitPlayerIndex, hitUnitIndex);
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_hitList.AddTail(slot);

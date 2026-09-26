@@ -375,8 +375,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     Coord* elem = NULL;
                     if (g_coordPool.m_freeHead->m_next != NULL) {
                         elem = &g_coordPool.m_freeHead->m_value;
-                        elem->m_x = cx;
-                        elem->m_y = tileY + yo;
+                        elem->Set(cx, tileY + yo);
                         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                     }
                     m_arr.Add(elem);

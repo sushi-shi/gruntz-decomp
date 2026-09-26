@@ -660,8 +660,7 @@ i32 CGrunt::PathScan() {
     POSITION node = coordz->GetHeadPosition();
 
     Coord start;
-    start.m_x = m_object->m_screenX >> TILE_SHIFT_PX;
-    start.m_y = m_object->m_screenY >> TILE_SHIFT_PX;
+    start.Set(m_object->m_screenX >> TILE_SHIFT_PX, m_object->m_screenY >> TILE_SHIFT_PX);
 
     {
         RECT gb;
@@ -1544,8 +1543,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 ry = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
             if (g_coordPool.m_freeHead->m_next != NULL) {
                 node = &g_coordPool.m_freeHead->m_value;
-                node->m_x = rx;
-                node->m_y = ry;
+                node->Set(rx, ry);
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_coordList.AddHead(node);
@@ -1698,8 +1696,7 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
 
                 ArmGruntCombatTimeout(this);
                 m_neighborScanEnabled = true;
-                m_attackTargetPx.m_x = targetPxX;
-                m_attackTargetPx.m_y = targetPxY;
+                m_attackTargetPx.Set(targetPxX, targetPxY);
                 StartRangedAttackAnimation();
                 return 1;
             }
@@ -1894,8 +1891,7 @@ void CGrunt::Activate() {
     m_commitPx.m_y = py;
     m_lastTilePx.m_y = py;
     m_entrancePx.m_y = py;
-    m_reserved1dc.m_x = 0;
-    m_reserved1dc.m_y = 0;
+    m_reserved1dc.Set(0, 0);
     m_health = HEALTH_FULL;
     m_stamina = STAMINA_FULL;
     m_toyTime = 0;
@@ -2731,8 +2727,7 @@ void CGrunt::AdvanceMotion() {
                             i32 x = (otherPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
-                                m_defenderPx.m_x = x;
-                                m_defenderPx.m_y = y;
+                                m_defenderPx.Set(x, y);
                                 if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_A, -1, 1, 0)
                                     == ARRIVAL_TAG_NONE) {
                                     m_arrivalPhase = ARRIVAL_TAG_NONE;
@@ -2780,8 +2775,7 @@ void CGrunt::AdvanceMotion() {
                             i32 x = (otherPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
-                                m_defenderPx.m_x = x;
-                                m_defenderPx.m_y = y;
+                                m_defenderPx.Set(x, y);
                                 if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_B, -1, 1, 0)
                                     == ARRIVAL_TAG_NONE) {
                                     m_arrivalPhase = ARRIVAL_TAG_NONE;

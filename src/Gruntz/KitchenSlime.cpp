@@ -249,29 +249,25 @@ i32 CKitchenSlime::LoadSprites() {
         switch (static_cast<CardinalDir>(sw)) {
             case CARDINAL_NORTH: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x;
-                step.m_y = m_tilePosition.m_y - 0x20;
+                step.Set(m_tilePosition.m_x, m_tilePosition.m_y - 0x20);
                 tile = step;
                 break;
             }
             case CARDINAL_EAST: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x + 0x20;
-                step.m_y = m_tilePosition.m_y;
+                step.Set(m_tilePosition.m_x + 0x20, m_tilePosition.m_y);
                 tile = step;
                 break;
             }
             case CARDINAL_SOUTH: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x;
-                step.m_y = m_tilePosition.m_y + 0x20;
+                step.Set(m_tilePosition.m_x, m_tilePosition.m_y + 0x20);
                 tile = step;
                 break;
             }
             case CARDINAL_WEST: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x - 0x20;
-                step.m_y = m_tilePosition.m_y;
+                step.Set(m_tilePosition.m_x - 0x20, m_tilePosition.m_y);
                 tile = step;
                 break;
             }

@@ -235,8 +235,7 @@ RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {
     Coord out;
     CWwdSpriteObject* object = m_object;
-    out.m_x = object->m_screenX;
-    out.m_y = object->m_screenY;
+    out.Set(object->m_screenX, object->m_screenY);
     ScreenTile(&out);
     return out;
 }

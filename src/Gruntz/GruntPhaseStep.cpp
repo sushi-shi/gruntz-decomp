@@ -147,8 +147,7 @@ state0: {
         && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(nb);
         CWwdSpriteObject* hit = nb->m_object;
-        m_arrivalCell.m_x = hit->m_screenX >> TILE_SHIFT_PX;
-        m_arrivalCell.m_y = hit->m_screenY >> TILE_SHIFT_PX;
+        m_arrivalCell.Set(hit->m_screenX >> TILE_SHIFT_PX, hit->m_screenY >> TILE_SHIFT_PX);
         m_defenderState = AISTATE_ATTACK;
         goto common;
     }
@@ -218,8 +217,7 @@ common: {
                 (bx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (by << TILE_SHIFT_PX) + TILE_HALF_PX
             );
-            m_arrivalCell.m_x = bx;
-            m_arrivalCell.m_y = by;
+            m_arrivalCell.Set(bx, by);
             m_defenderState = AISTATE_PHASE_MIRROR_THEN_COOLDOWN;
             return 1;
         }

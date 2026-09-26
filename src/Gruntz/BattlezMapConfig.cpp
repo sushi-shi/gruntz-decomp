@@ -1220,8 +1220,7 @@ void CUserLogic::GetScreenPos(Coord* out) {
     CWwdSpriteObject* o = m_object;
     i32 y = o->m_screenY;
     i32 x = o->m_screenX;
-    out->m_x = x;
-    out->m_y = y;
+    out->Set(x, y);
 }
 
 RVA(0x00029a80, 0x29)
@@ -3945,8 +3944,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
         CGameObject* lvl = unit->m_object;
         i32 sx = lvl->m_screenX >> TILE_SHIFT_PX;
         i32 sy = lvl->m_screenY >> TILE_SHIFT_PX;
-        o->m_x = sx;
-        o->m_y = sy;
+        o->Set(sx, sy);
         return o;
     }
     CGameObject* lvl = unit->m_object;
@@ -3982,8 +3980,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
         rx = cand->m_x;
         ry = cand->m_y;
     }
-    o->m_x = rx;
-    o->m_y = ry;
+    o->Set(rx, ry);
     return o;
 }
 
@@ -3998,8 +3995,7 @@ void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     Coord result;
     i32 sx = m_shiftX;
     i32 sy = m_shiftY;
-    result.m_x = x >> sx;
-    result.m_y = y >> sy;
+    result.Set(x >> sx, y >> sy);
     result.m_x <<= sx;
     result.m_y <<= sy;
     result.m_x += m_tileWidthPx / 2;
