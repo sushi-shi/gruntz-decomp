@@ -91,13 +91,8 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 ResetToSeek(this);
                 return 1;
             }
-            if (occ == NULL) {
-                goto seek;
-            }
-            if (occ->m_entranceCommitted == false) {
-                goto seek;
-            }
-            if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
+            if (occ == NULL || occ->m_entranceCommitted == false
+                || GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
             RepathToward(this, occ);
