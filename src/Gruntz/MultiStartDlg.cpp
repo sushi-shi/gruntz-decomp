@@ -379,40 +379,40 @@ BEGIN_MESSAGE_MAP(CMultiStartDlg, CDialog)
 END_MESSAGE_MAP()
 
 RVA(0x000c2640, 0x60)
-CWnd* CMultiStartDlg::GetPlayerTypeControl(i32 slot) {
-    CWnd* result = NULL;
+CComboBox* CMultiStartDlg::GetPlayerTypeControl(i32 slot) {
+    CComboBox* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_TYPE0);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_TYPE1);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_TYPE2);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_TYPE3);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE3));
             break;
     }
     return result;
 }
 
 RVA(0x000c26c0, 0x60)
-CWnd* CMultiStartDlg::GetReadyControl(i32 slot) {
-    CWnd* result = NULL;
+CButton* CMultiStartDlg::GetReadyControl(i32 slot) {
+    CButton* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_READY0);
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_READY1);
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_READY2);
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_READY3);
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY3));
             break;
     }
     return result;
@@ -919,7 +919,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             } else {
                 typeControl->EnableWindow(false);
             }
-            CWnd* readyControl = GetReadyControl(slotIndex);
+            CButton* readyControl = GetReadyControl(slotIndex);
             if (player->m_networkPlayerId == g_multiState->m_localPlayerId) {
                 readyControl->EnableWindow(true);
             } else {
@@ -927,15 +927,15 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             }
             if (player->m_ready == false) {
                 if (player->m_active) {
-                    ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
+                    readyControl->SetCheck(0);
                     allLivePlayersReady = false;
                 } else {
-                    ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
+                    readyControl->SetCheck(0);
                 }
             } else if (player->m_active) {
-                ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 1, 0);
+                readyControl->SetCheck(1);
             } else {
-                ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
+                readyControl->SetCheck(0);
             }
             CWnd* maxGruntzControl = GetMaxGruntzControl(slotIndex);
             maxGruntzControl->EnableWindow(
@@ -956,18 +956,18 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                     GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
                 }
                 if (player->m_humanControlled) {
-                    CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
-                    ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, 4, 0);
+                    CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                    typeCombo->SetCurSel(4);
                 } else {
                     i32 selection = IDX(player->m_difficulty);
-                    CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
-                    ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, selection + 1, 0);
+                    CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                    typeCombo->SetCurSel(selection + 1);
                 }
                 this->ApplyPlayerTypeSelection(slotIndex);
             } else {
                 GetPlayerNameControl(slotIndex)->SetWindowTextA("");
-                CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
-                ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, 0, 0);
+                CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                typeCombo->SetCurSel(0);
                 this->ApplyPlayerTypeSelection(slotIndex);
             }
         }

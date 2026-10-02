@@ -241,11 +241,11 @@ public:
 
     void Watchdog();
 
-    CWnd* GetReadyControl(i32 slot);
+    CButton* GetReadyControl(i32 slot);
     CWnd* GetPlayerNameControl(i32 slot);
     CWnd* GetMaxGruntzControl(i32 slot);
     CWnd* GetPlayerColorControl(i32 slot);
-    CWnd* GetPlayerTypeControl(i32 slot);
+    CComboBox* GetPlayerTypeControl(i32 slot);
     void SetPlayerTypeSelection(i32 slot, i32 selection);
     i32 GetPlayerTypeSelection(i32 slot);
     i32 GetMaxGruntzSelection(i32 slot);

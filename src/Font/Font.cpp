@@ -224,10 +224,10 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     if (RunRightEdge(rc, x) > static_cast<i32>(surf->m_apiDesc.dwWidth)) {
-        rc.right = rc.right + rc.right - rc.left + x - surf->m_apiDesc.dwWidth;
+        rc.right = rc.right + rc.Width() + x - surf->m_apiDesc.dwWidth;
     }
     if (y - rc.top + rc.bottom > static_cast<i32>(surf->m_apiDesc.dwHeight)) {
-        rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_apiDesc.dwHeight;
+        rc.bottom = rc.bottom + rc.Height() + y - surf->m_apiDesc.dwHeight;
     }
 
     CSize m = MeasureText(text);
@@ -350,7 +350,7 @@ void FontRenderer::DrawWrapped(
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
         CSize m = MeasureWrapped(text, rc);
-        rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.cy / 2;
+        rc.top = rc.top + rc.Height() / 2 - m.cy / 2;
     }
 
     i32 y = rc.top;
@@ -412,7 +412,7 @@ void FontRenderer::DrawWrapped(
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
                     DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
@@ -553,7 +553,7 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 CSize lw = MeasureText(line);
                 i32 w = lw.cx;
                 if (maxExtent.cx <= w) {
@@ -656,7 +656,7 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 totalChars += line.GetLength();
                 y = y + m_font->GetMaxHeight();
                 x = rc.left;

@@ -15,6 +15,8 @@ rva	unit	function	lost_max	cur
 0x0c68b0	droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	95.1716	94.7239
 0x180640	faderlight	?RenderFrame@CFaderLight@@UAEXH@Z	95.6062	93.3553
 0x17b5f0	feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.0114
+0x179e70	font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	99.9583	94.3796
+0x17a460	font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	99.4530
 0x045d30	fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	97.0000	94.2786
 0x04b370	grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	32.5807	0.0000
 0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	73.7003
