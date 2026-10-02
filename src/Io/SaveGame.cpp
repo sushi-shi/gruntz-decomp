@@ -175,7 +175,7 @@ i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* 
     if (reg->CheatMgr()->m_cheatsUsed != false) {
         dst->m_type = SAVESLOT_PRESENT | SAVESLOT_CHEATS_USED;
     }
-    strncpy(dst->m_name, name, sizeof(dst->m_name));
+    strncpy(dst->m_name, name, sizeof(dst->m_name) - 1);
     dst->m_checksum = Register(dst);
     return 1;
 }

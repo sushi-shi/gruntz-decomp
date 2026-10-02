@@ -199,14 +199,20 @@ public:
     }
     CRezDir* m_gruntResources;
     CRezDir* m_gameResources;
+    // @identity-TODO: initialized to zero and round-tripped by HeaderRead/Write;
+    // no state operation consumes its value. Keep the individual archive field.
     i32 m_reserved38;
     b32 m_ready;
     b32 m_notifyLatch;
 
+    // @identity-TODO: LoadGameAssetNamespaces initializes both words to -1;
+    // HeaderRead/Write preserve them independently, with no other consumer.
     i32 m_reserved44;
     i32 m_reserved48;
 
     char m_versionString[0x100];
+    // @identity-TODO: zeroed by LoadGameAssetNamespaces and round-tripped after
+    // the version string; no cursor operation consumes it.
     i32 m_reserved14c;
     i32 m_cursorX;
     i32 m_cursorY;
