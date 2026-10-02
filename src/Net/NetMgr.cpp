@@ -795,7 +795,7 @@ i32 CNetMgr::SendEx(
         context,
         messageId
     );
-    if (hr && hr != static_cast<i32>(0x8000000a)) {
+    if (hr && hr != DPERR_PENDING) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, NULL);
     }
     return hr;

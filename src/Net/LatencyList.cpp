@@ -182,8 +182,8 @@ i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
     while (searching) {
         i32 data = pSend(list, CB_GETITEMDATA, i, 0);
         if (data != -1) {
-            i32 itemLo = data & 0xffff;
-            i32 itemHi = static_cast<u32>(data) >> 0x10;
+            i32 itemLo = LOWORD(data);
+            i32 itemHi = HIWORD(data);
             if (itemLo == lo && itemHi == hi) {
                 if (pSend(list, CB_GETCURSEL, 0, 0) != i) {
                     pSend(list, CB_SETCURSEL, i, 0);
@@ -212,7 +212,7 @@ i32 CLatencyList::GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     if (data == -1) {
         return 0;
     }
-    *outLo = data & 0xffff;
-    *outHi = static_cast<u32>(data) >> 0x10;
+    *outLo = LOWORD(data);
+    *outHi = HIWORD(data);
     return 1;
 }

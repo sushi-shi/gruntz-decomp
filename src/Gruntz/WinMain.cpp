@@ -112,7 +112,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (bAdvanced != 0) {
         i32 nDlgResult =
-            DialogBoxParamA(g_appResHandle, "CONFIG_ADVANCED", NULL, &AdvancedOptionsDialogProc, 0);
+            DialogBoxA(g_appResHandle, "CONFIG_ADVANCED", NULL, &AdvancedOptionsDialogProc);
         if (nDlgResult == 0) {
             if (g_pApp != NULL) {
                 delete g_pApp;

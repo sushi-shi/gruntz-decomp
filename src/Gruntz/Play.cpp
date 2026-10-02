@@ -2090,7 +2090,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (lparam & 0x1000000) {
+    if (lparam & (KF_EXTENDED << 16)) {
         if (vk == VK_LEFT) {
             this->m_scrollEdgeLock |= 1;
             return 1;
@@ -2483,7 +2483,7 @@ tail_default2:
 
 RVA(0x000cda70, 0x7a)
 i32 CPlay::OnKeyUp(i32 key, i32 flags) {
-    if (flags & 0x01000000) {
+    if (flags & (KF_EXTENDED << 16)) {
         if (key == VK_LEFT) {
             m_scrollEdgeLock &= ~1;
         } else if (key == VK_RIGHT) {
@@ -3769,7 +3769,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         return 0;
     }
 
-    i32 result = savedPixels->BltFast(0, 0, target, screenRect, 0x10);
+    i32 result = savedPixels->BltFast(0, 0, target, screenRect, DDBLTFAST_WAIT);
     if (result != 0) {
         CDDrawDeviceManager::ReportError(NULL, 0, result);
     }
@@ -3930,7 +3930,8 @@ i32 CPlay::RestoreCursorSaveUnder() {
     }
 
     i32 result =
-        backSurface->BltFast(screenRect->left, screenRect->top, savedPixels, savedRect, 0x10);
+        backSurface
+            ->BltFast(screenRect->left, screenRect->top, savedPixels, savedRect, DDBLTFAST_WAIT);
     if (result != 0) {
         CDDrawDeviceManager::ReportError(NULL, 0, result);
     }

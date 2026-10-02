@@ -163,7 +163,7 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unuse
     }
     if (g_directDrawMgr != NULL) {
         IDirectDraw2* dd = g_directDrawMgr->m_device;
-        dd->WaitForVerticalBlank(1, NULL);
+        dd->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
     }
     return m_palette->SetEntries(0, start, count, data);
 }
@@ -174,7 +174,7 @@ RVA(0x00147b10, 0x8b)
 i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused) {
     PALETTEENTRY* buf = new PALETTEENTRY[count];
     if (buf == NULL) {
-        return 0x80070057;
+        return DDERR_INVALIDPARAMS;
     }
 
     COPY_BGRX_PALETTE(buf, quads, i, count)
@@ -189,7 +189,7 @@ RVA(0x00147ba0, 0x82)
 i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
     PALETTEENTRY* buf = new PALETTEENTRY[count];
     if (buf == NULL) {
-        return 0x80070057;
+        return DDERR_INVALIDPARAMS;
     }
 
     COPY_RGB_PALETTE(buf, rgb, i, count)
@@ -228,7 +228,7 @@ void CDDPalette::Apply(i32 unused) {
     }
     if (g_directDrawMgr != NULL) {
         IDirectDraw2* dd = g_directDrawMgr->m_device;
-        dd->WaitForVerticalBlank(1, NULL);
+        dd->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
     }
     m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, readback);
 }

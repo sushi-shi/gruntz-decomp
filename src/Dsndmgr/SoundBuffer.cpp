@@ -46,10 +46,10 @@ i32 g_volumeTable[VOLUME_PCT_MAX + 1];
 RVA(0x001350b0, 0x5d)
 i32 SoundDevice::VolumeToAttenuation(i32 volumePct) {
     if (volumePct == VOLUME_PCT_MAX) {
-        return 0;
+        return DSBVOLUME_MAX;
     }
     if (volumePct == 0) {
-        return -10000;
+        return DSBVOLUME_MIN;
     }
 
     double ratio = acos(pow(g_volumeCurveUnit / (volumePct / g_volumePercentScale), g_decibelScale))
@@ -123,7 +123,7 @@ SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
             ReportError(DSNDMGR_FILE, 0x60, hr);
         }
     } else {
-        m_pan = 0;
+        m_pan = DSBPAN_CENTER;
     }
 
     if ((m_caps & DSBCAPS_CTRLVOLUME) == DSBCAPS_CTRLVOLUME) {
@@ -132,7 +132,7 @@ SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
             ReportError(DSNDMGR_FILE, 0x68, hr);
         }
     } else {
-        m_volume = 0;
+        m_volume = DSBVOLUME_MAX;
     }
 }
 
@@ -242,9 +242,9 @@ void SoundBuffer::SetLooping(b32 enabled) {
         return;
     }
     if (enabled) {
-        m_playFlags |= 1;
+        m_playFlags |= DSBPLAY_LOOPING;
     } else {
-        m_playFlags &= ~1;
+        m_playFlags &= ~DSBPLAY_LOOPING;
     }
 }
 
@@ -255,7 +255,7 @@ i32 SoundBuffer::IsLoopingEnabled() {
     if (m_owner->m_initialized == false) {
         return 0;
     }
-    if ((m_playFlags & 1) == 1) {
+    if ((m_playFlags & DSBPLAY_LOOPING) == DSBPLAY_LOOPING) {
         return 1;
     }
     return 0;
@@ -437,11 +437,11 @@ i32 SoundBuffer::SetFrequencyOffsetPercent(i32 percentOffset) {
     }
     i32 frequency =
         percentOffset * static_cast<i32>(m_baseFrequency) / 100 + static_cast<i32>(m_baseFrequency);
-    if (static_cast<u32>(frequency) >= DSOUND_FREQUENCY_MAX) {
-        frequency = DSOUND_FREQUENCY_MAX - 1;
+    if (static_cast<u32>(frequency) >= DSBFREQUENCY_MAX) {
+        frequency = DSBFREQUENCY_MAX - 1;
     }
-    if (static_cast<u32>(frequency) <= DSOUND_FREQUENCY_MIN) {
-        frequency = DSOUND_FREQUENCY_MIN + 1;
+    if (static_cast<u32>(frequency) <= DSBFREQUENCY_MIN) {
+        frequency = DSBFREQUENCY_MIN + 1;
     }
     i32 result = SetFrequency(frequency);
     m_sampleRate = percentOffset * m_baseSampleRate / 100 + m_baseSampleRate;

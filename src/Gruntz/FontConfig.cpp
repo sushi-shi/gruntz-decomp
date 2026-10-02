@@ -32,10 +32,39 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     m_inputScrollTotal = 0;
     m_inputActive = false;
 
-    m_arialFont = CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, "ARIAL");
+    m_arialFont = CreateFontA(
+        0xc,
+        8,
+        0,
+        0,
+        FW_BOLD,
+        0,
+        0,
+        0,
+        DEFAULT_CHARSET,
+        OUT_DEFAULT_PRECIS,
+        CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY,
+        DEFAULT_PITCH | FF_DONTCARE,
+        "ARIAL"
+    );
     if (!m_arialFont) {
-        m_arialFont =
-            CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, NULL);
+        m_arialFont = CreateFontA(
+            0xc,
+            8,
+            0,
+            0,
+            FW_BOLD,
+            0,
+            0,
+            0,
+            DEFAULT_CHARSET,
+            OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE,
+            NULL
+        );
     }
 
     CString arial("ARIAL");
@@ -53,10 +82,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         0,
         0,
         DEFAULT_CHARSET,
-        0,
-        0,
-        0,
-        0,
+        OUT_DEFAULT_PRECIS,
+        CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY,
+        DEFAULT_PITCH | FF_DONTCARE,
         faceTF
     );
     if (!m_trainingFont) {
@@ -70,10 +99,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
             0,
             0,
             DEFAULT_CHARSET,
-            0,
-            0,
-            0,
-            0,
+            OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE,
             NULL
         );
     }
@@ -91,10 +120,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         0,
         0,
         DEFAULT_CHARSET,
-        0,
-        0,
-        0,
-        0,
+        OUT_DEFAULT_PRECIS,
+        CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY,
+        DEFAULT_PITCH | FF_DONTCARE,
         faceMF
     );
     if (!m_messageFont) {
@@ -108,10 +137,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
             0,
             0,
             DEFAULT_CHARSET,
-            0,
-            0,
-            0,
-            0,
+            OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE,
             NULL
         );
     }

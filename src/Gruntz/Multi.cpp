@@ -1014,7 +1014,7 @@ void CMulti::ReportStatusId(u32 strId, i32 level) {
 RVA(0x000b7f60, 0x52)
 void CMulti::ReportNetError(i32 level) {
     char buf[512];
-    if (Mgr() && g_code != (DPERR_USERCANCEL & 0xffff)) {
+    if (Mgr() && g_code != HRESULT_CODE(DPERR_USERCANCEL)) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
         ReportVersionMsg(buf, level);
     }
@@ -1078,7 +1078,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
             {
                 i32 sel = static_cast<i32>(SendMessageA(g_sessionListHwnd, LB_GETCURSEL, 0, 0));
                 i32 hr = g_netMgr->EnumerateSessions(0, 0);
-                if (hr == static_cast<i32>(0x88770118)) {
+                if (hr == DPERR_USERCANCEL) {
                     goto close;
                 }
                 if (hr != 0) {
@@ -2546,7 +2546,7 @@ i32 CMulti::WaitForOtherPlayers() {
                 u32 start = timeGetTime();
                 Sleep(0x32);
                 PollSession();
-                if (GetAsyncKeyState(0x1b) & 0x80000000) {
+                if (GetAsyncKeyState(VK_ESCAPE) & 0x80000000) {
                     return 0;
                 }
                 u32 elapsed = timeGetTime() - start;

@@ -310,7 +310,7 @@ i32 CDDSurface::SetPalette(CDDPalette* palette, i32 unused) {
 
 RVA(0x0013e6d0, 0x88)
 void* CDDSurface::Lock(RECT* rect) {
-    i32 hr = m_ddSurface->Lock(rect, &m_apiDesc, 1, NULL);
+    i32 hr = m_ddSurface->Lock(rect, &m_apiDesc, DDLOCK_WAIT, NULL);
     if (hr == 0) {
         return m_apiDesc.lpSurface;
     }
@@ -318,7 +318,7 @@ void* CDDSurface::Lock(RECT* rect) {
         if (RestoreLost() == 0) {
             return NULL;
         }
-        hr = m_ddSurface->Lock(NULL, &m_apiDesc, 1, NULL);
+        hr = m_ddSurface->Lock(NULL, &m_apiDesc, DDLOCK_WAIT, NULL);
         if (hr == 0) {
             return m_apiDesc.lpSurface;
         }

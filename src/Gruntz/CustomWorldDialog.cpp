@@ -318,13 +318,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
         g_pathStr.Empty();
         return 0;
     }
-    DialogBoxParamA(
-        g_customWorldInst,
-        "CUSTOM_WORLDINFO",
-        g_customWorldParent,
-        CustomWorldInfoDlgProc,
-        0
-    );
+    DialogBoxA(g_customWorldInst, "CUSTOM_WORLDINFO", g_customWorldParent, CustomWorldInfoDlgProc);
     return 1;
 }
 

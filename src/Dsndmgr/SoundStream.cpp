@@ -616,7 +616,7 @@ void SoundBuffer::ReportError(char* file, i32 line, i32 hr) {
         return;
     }
 
-    i32 code = hr & 0xffff;
+    i32 code = HRESULT_CODE(hr);
 
     strcpy(szMsg, "Unknown Error Message");
     sprintf(szCode, "Unknown Error Code");
