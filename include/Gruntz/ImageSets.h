@@ -21,7 +21,7 @@ struct WwdTileImageRecord {
     i32 m_reserved4;
     i32 m_width;
     i32 m_height;
-    i32 m_fields[1];
+    i32 m_collisionData[1];
 };
 
 class CTileImageSet : public CObject {
@@ -111,7 +111,7 @@ struct CRectTileImageSet : public CTileImageSet {
     }
     RVA(0x001614a0, 0x6)
     virtual i32 GetStride() OVERRIDE {
-        return offsetof(WwdTileImageRecord, m_fields) + 6 * sizeof(i32);
+        return offsetof(WwdTileImageRecord, m_collisionData) + 6 * sizeof(i32);
     }
 
     virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue);

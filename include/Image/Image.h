@@ -333,6 +333,9 @@ public:
     );
 };
 
+// @identity-TODO
+// SaveBmp proves the palette-entry pointer only. SaveScreenshot passes NULL through
+// the sole SaveFile call site, so the prefix and possible CDDPalette identity remain unproven.
 class CFileImagePal {
 public:
     char m_reserved[0x0c];
