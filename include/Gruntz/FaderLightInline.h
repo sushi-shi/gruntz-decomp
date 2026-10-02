@@ -15,7 +15,7 @@ inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32&
     i32 dx = -static_cast<i32>(sqrt(static_cast<double>(radiusSq - SQR(dy))));
     right = min(FADER_MAX0(m_center.x - dx), m_width);
     i32 x = dx + m_center.x + edgeOffset;
-    left = (x < 0) ? 0 : x;
+    left = max(0, x);
     if (left >= m_width) {
         left = m_width;
     }

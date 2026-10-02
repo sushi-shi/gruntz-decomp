@@ -200,7 +200,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
     if (format == NULL) {
         return NULL;
     }
-    if (format->wFormatTag != 1) {
+    if (format->wFormatTag != WAVE_FORMAT_PCM) {
         return NULL;
     }
 

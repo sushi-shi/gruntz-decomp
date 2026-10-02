@@ -551,7 +551,7 @@ void CBattlezDlg::PaintPlayerColorControls() {
             i32 shade = (GetRandomNumber() % 0xff) & 0xff;
             brush.CreateSolidBrush((shade << 8 | shade) << 8 | shade);
         } else {
-            brush.CreateSolidBrush(0x808080);
+            brush.CreateSolidBrush(RGB(128, 128, 128));
         }
         rect.left += 2;
         rect.top += 2;

@@ -1017,7 +1017,7 @@ SoundSample* SoundDevice::CreateSample(WAVEFORMATEX* format, u32 bytes, u32 flag
         result = NULL;
         goto done;
     }
-    if (format->wFormatTag != 1) {
+    if (format->wFormatTag != WAVE_FORMAT_PCM) {
         result = NULL;
         goto done;
     }
@@ -1160,7 +1160,7 @@ i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WAVEFORMATEX* format, u32 
     if (format == NULL) {
         return 0;
     }
-    if (format->wFormatTag != 1) {
+    if (format->wFormatTag != WAVE_FORMAT_PCM) {
         return 0;
     }
     return buffer->Restore() != 0;

@@ -650,7 +650,7 @@ i32 CMultiStartDlg::PaintPlayerColorControls() {
             i32 shade = (GetRandomNumber() % 0xff) & 0xff;
             brush.CreateSolidBrush((shade << 8 | shade) << 8 | shade);
         } else {
-            brush.CreateSolidBrush(0x808080);
+            brush.CreateSolidBrush(RGB(128, 128, 128));
         }
         dc.FillRect(&rect, &brush);
     }

@@ -188,13 +188,13 @@ RVA(0x00179d10, 0x15c)
 void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
     i32 savedColor = m_color;
     if (m_clip) {
-        SetColor(0xffffff);
+        SetColor(RGB(255, 255, 255));
         DrawGlyphRun(text, surf, rc, x, y, z);
         x++;
         y++;
     }
     if (m_surface) {
-        SetColor(0);
+        SetColor(RGB(0, 0, 0));
         x += 2;
         DrawGlyphRun(text, surf, rc, x, y, z);
         x -= 2;

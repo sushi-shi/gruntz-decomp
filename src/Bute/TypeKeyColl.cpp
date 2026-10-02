@@ -748,7 +748,7 @@ void zMinErr::catcher(const char* prefix, i32 errNum) {
     *q++ = '\n';
     *q = 0;
 
-    MessageBeep(0);
+    MessageBeep(MB_OK);
     MessageBoxA(NULL, msg, "C++ Tools error handler", MB_TASKMODAL | MB_ICONHAND);
     FatalAppExitA(0, "The error handler terminated the application");
     exit(1);

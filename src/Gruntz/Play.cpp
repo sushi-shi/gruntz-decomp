@@ -3331,7 +3331,7 @@ void CPlay::DrawCustomLevelBanner() {
         return;
     }
     SetBkMode(hdc, TRANSPARENT);
-    SetTextColor(hdc, 0);
+    SetTextColor(hdc, RGB(0, 0, 0));
     RECT rc;
     SET_RECT_COMPONENTS(rc, 0, 0x1b8, 0x27f, 0x1d6);
     DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
@@ -6623,15 +6623,15 @@ i32 CPlay::NotifyVisibleEntities() {
 
 RVA(0x000d9160, 0xac)
 i32 CPlay::RegisterInputBindings() {
-    m_mgr->m_gameWnd->PumpMessages(0x102, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x200, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x201, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x202, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x203, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x204, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x205, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x206, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_CHAR, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_MOUSEMOVE, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONDOWN, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONUP, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONDBLCLK, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONDOWN, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONUP, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONDBLCLK, 0x40);
     return 1;
 }
 

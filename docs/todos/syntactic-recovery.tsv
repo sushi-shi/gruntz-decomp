@@ -14,6 +14,7 @@ rva	unit	function	lost_max	cur
 0x140420	ddsurface	?Blit816@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	92.5259	85.9185
 0x13f460	ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	84.7773	78.1182
 0x0c68b0	droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	95.1716	94.7239
+0x17f660	faderflat	?RenderFrame@CFaderFlat@@UAEXH@Z	93.6582	90.9745
 0x180640	faderlight	?RenderFrame@CFaderLight@@UAEXH@Z	95.6062	93.3553
 0x17b5f0	feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.0114
 0x179e70	font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	99.9583	94.3796

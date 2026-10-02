@@ -1074,7 +1074,7 @@ void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
 RVA(0x0013fa60, 0x40)
 i32 CDDSurface::GetColorKey() {
     DDCOLORKEY key;
-    i32 hr = m_ddSurface->GetColorKey(8, &key);
+    i32 hr = m_ddSurface->GetColorKey(DDCKEY_SRCBLT, &key);
     if (hr != static_cast<i32>(DDERR_NOCOLORKEY)) {
         if (hr == 0) {
             return key.dwColorSpaceLowValue;

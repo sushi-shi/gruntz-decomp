@@ -177,9 +177,9 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     if (!hdc) {
         return 1;
     }
-    SetBkMode(hdc, 1);
-    SetTextColor(hdc, 0);
-    SetBkColor(hdc, 0);
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, RGB(0, 0, 0));
+    SetBkColor(hdc, RGB(0, 0, 0));
 
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         CRect rect(

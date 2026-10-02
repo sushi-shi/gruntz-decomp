@@ -375,23 +375,23 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
 }
 
 typedef enum TextColorRef {
-    TCLR_ORANGE = 0x0080ff,
-    TCLR_GREEN = 0x00ff00,
-    TCLR_BLUE = 0xff0000,
-    TCLR_RED = 0x0000ff,
-    TCLR_PURPLE = 0x800080,
-    TCLR_YELLOW = 0x00ffff,
-    TCLR_ROSE = 0x8000ff,
-    TCLR_BLACK = 0x000000,
-    TCLR_NAVY = 0x800000,
-    TCLR_DKGREEN = 0x008000,
-    TCLR_TEAL = 0x808000,
-    TCLR_MAROON = 0x000080,
-    TCLR_MAGENTA = 0xff00ff,
-    TCLR_OLIVE = 0x008080,
-    TCLR_GRAY = 0x808080,
-    TCLR_CYAN = 0xffff00,
-    TCLR_WHITE = 0xffffff,
+    TCLR_ORANGE = RGB(255, 128, 0),
+    TCLR_GREEN = RGB(0, 255, 0),
+    TCLR_BLUE = RGB(0, 0, 255),
+    TCLR_RED = RGB(255, 0, 0),
+    TCLR_PURPLE = RGB(128, 0, 128),
+    TCLR_YELLOW = RGB(255, 255, 0),
+    TCLR_ROSE = RGB(255, 0, 128),
+    TCLR_BLACK = RGB(0, 0, 0),
+    TCLR_NAVY = RGB(0, 0, 128),
+    TCLR_DKGREEN = RGB(0, 128, 0),
+    TCLR_TEAL = RGB(0, 128, 128),
+    TCLR_MAROON = RGB(128, 0, 0),
+    TCLR_MAGENTA = RGB(255, 0, 255),
+    TCLR_OLIVE = RGB(128, 128, 0),
+    TCLR_GRAY = RGB(128, 128, 128),
+    TCLR_CYAN = RGB(0, 255, 255),
+    TCLR_WHITE = RGB(255, 255, 255),
 } TextColorRef;
 
 // @early-stop
@@ -414,7 +414,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             delete dead;
         }
     }
-    i32 n = (count < m_list.GetCount()) ? count : m_list.GetCount();
+    i32 n = min(count, m_list.GetCount());
     if (n <= 0) {
         return 0;
     }

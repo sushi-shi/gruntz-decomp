@@ -201,8 +201,8 @@ i32 CDDSurface::Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfa
     }
     memset(&m_apiDesc, 0, sizeof(m_apiDesc));
     m_apiDesc.dwSize = sizeof(DDSURFACEDESC);
-    m_apiDesc.ddsCaps.dwCaps = surfaceCaps | 0x40;
-    m_apiDesc.dwFlags = 7;
+    m_apiDesc.ddsCaps.dwCaps = surfaceCaps | DDSCAPS_OFFSCREENPLAIN;
+    m_apiDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
     m_apiDesc.dwWidth = width;
     m_apiDesc.dwHeight = height;
     if (!CDDSurface::CreateFromDesc(manager, NULL)) {
@@ -259,7 +259,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     info.m_bmiHeader.biHeight = height;
     info.m_bmiHeader.biPlanes = 1;
     info.m_bmiHeader.biBitCount = 8;
-    info.m_bmiHeader.biCompression = 0;
+    info.m_bmiHeader.biCompression = BI_RGB;
     info.m_bmiHeader.biSizeImage = 0;
 
     PALETTEENTRY* spal = src->m_srcPalette;
@@ -331,7 +331,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     i32 width = this->m_apiDesc.dwWidth;
     BmpFileHeaderStamp bfh;
     memset(&bfh, 0, sizeof(bfh));
-    bi.bmiHeader.biCompression = 0;
+    bi.bmiHeader.biCompression = BI_RGB;
     bi.bmiHeader.biSizeImage = 0;
     i32 height = this->m_apiDesc.dwHeight;
     strcpy(bfh.m_bytes, g_bmpHeaderTemplate);
@@ -420,7 +420,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
     i32 height = m_apiDesc.dwHeight;
-    bi.bmiHeader.biCompression = 0;
+    bi.bmiHeader.biCompression = BI_RGB;
     bi.bmiHeader.biSizeImage = 0;
     strcpy(fh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = height;

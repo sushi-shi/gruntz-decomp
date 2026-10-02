@@ -960,7 +960,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
         GetDlgItemTextA(hDlg, 0x51b, gameBuf, 0xa);
         if (gameBuf[0] == 0) {
-            MessageBeep(0);
+            MessageBeep(MB_OK);
             return wParam;
         }
         g_connectRptMgr->SetPlayerName(CString(gameBuf));
@@ -968,7 +968,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         if (g_hostServicesMode != false) {
             GetDlgItemTextA(hDlg, 0x51c, gameBuf, 0x40);
             if (gameBuf[0] == 0) {
-                MessageBeep(0);
+                MessageBeep(MB_OK);
                 return true;
             }
             g_connectRptMgr->SetGameName(CString(gameBuf));
@@ -1060,7 +1060,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                 KillTimer(hDlg, 1);
 
                 if ((static_cast<CMulti*>(g_connectRptMgr))->OnJoinConfirm(hDlg) == 0) {
-                    MessageBeep(0);
+                    MessageBeep(MB_OK);
                     i32 t = 0x7d0;
                     CNetProviderNode* provider = g_netMgr->m_selectedProvider;
                     if (provider && provider->IsTcpIpProvider()) {

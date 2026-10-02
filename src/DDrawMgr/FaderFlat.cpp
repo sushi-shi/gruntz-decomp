@@ -52,7 +52,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
     i32 half = (m_splitPercent * w / 100) / 2 + w / 2;
     i32 rest = w - half;
     i32 end = span + base;
-    i32 y = (base < 0) ? 0 : base;
+    i32 y = max(0, base);
     while (y < end) {
         double s = sin(static_cast<float>(y - base) / span * 1.570795f);
         i32 n1 = static_cast<i32>(s * half);
