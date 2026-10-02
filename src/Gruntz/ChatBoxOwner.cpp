@@ -82,7 +82,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                 CString text;
                 text.Format("STATEZ_CREDITZ_PALETTEZ_%s", static_cast<const char*>(resourceName));
 
-                CRezItm* source = g_gameReg->m_resourceArchive->GetRezFromPath(
+                CRezItm* source = g_gameReg->ResourceArchive()->GetRezFromPath(
                     static_cast<const char*>(text),
                     REZ_TAG_TXT
                 );
@@ -101,7 +101,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                             continue;
                         }
                         code = *bute.GetString(text, "Text", &noText);
-                        if (code.GetLength() == 0) {
+                        if (code.IsEmpty()) {
                             continue;
                         }
                         if (bute.GetInt(text, "NonCheat", 0) == 1) {
@@ -141,7 +141,6 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
     m_inputActive = false;
 }
 
-// @early-stop
 RVA(0x00020f40, 0x188)
 i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     CChatBoxOwner* self = this;
@@ -149,7 +148,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         return 1;
     }
 
-    CDDSurface* surface = target->m_surface;
+    CDDSurface* surface = target->GetSurface();
     if (!surface) {
         return 0;
     }
@@ -186,9 +185,8 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetTextColor(hdc, 0);
     SetBkColor(hdc, 0);
 
-    CRect rect;
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        rect.SetRect(
+        CRect rect(
             self->m_origin.x + 0x4c,
             self->m_origin.y + 0x2b,
             self->m_origin.x + 0x267,
@@ -196,7 +194,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         );
         self->m_fontConfig->RenderInputText(hdc, 0x21b, &rect);
     } else {
-        rect.SetRect(
+        CRect rect(
             self->m_origin.x + 0x4c,
             self->m_origin.y + 0x2b,
             self->m_origin.x + 0x1c7,

@@ -49,7 +49,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     }
     Coord focus = m_object->ScreenPos();
     slot->m_focus = focus;
-    CGameObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
+    CGameObject* e = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y,
@@ -84,7 +84,7 @@ i32 CExitTrigger::SerializeDispatch(
     CFileMemBase* arc = ar;
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(ar, arc, mode, typeId, object)
 
-    CDDrawSurfaceMgr* holder = g_gameReg->m_world;
+    CDDrawSurfaceMgr* holder = g_gameReg->World();
     switch (mode) {
         case SERIAL_LOAD: {
             CGameObject* found;
@@ -94,7 +94,7 @@ i32 CExitTrigger::SerializeDispatch(
             if (key != 0) {
                 found = NULL;
                 CGameObject* obj = NULL;
-                if (MapLookupById(holder->m_childGroup->m_registeredGameObjectsById, key, found)) {
+                if (MapLookupById(holder->ChildGroup()->m_registeredGameObjectsById, key, found)) {
                     obj = found;
                 }
                 m_warlordLogic = static_cast<CWarlord*>(obj->m_logicRecord->m_userLogic);

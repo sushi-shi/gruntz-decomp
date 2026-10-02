@@ -330,7 +330,7 @@ namespace NetLobby {
     void InitializeDropWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             CString banner;
-            if (g_sessionName.GetLength() != 0) {
+            if (!g_sessionName.IsEmpty()) {
                 banner.Format(
                     "Not Receiving Data From Client: %s",
                     static_cast<LPCTSTR>(g_sessionName)

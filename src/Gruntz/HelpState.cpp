@@ -98,7 +98,7 @@ i32 CHelpState::LeaveState(GameStateId nextState) {
 
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
-    IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
+    IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
     if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x445);
@@ -106,7 +106,7 @@ i32 CHelpState::Render() {
         }
     }
 
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
 
     CInputDeviceGroup* list = g_actorList;
     i32 i;

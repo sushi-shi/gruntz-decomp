@@ -310,7 +310,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
                 u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
                 if (m_useLut != false) {
-                    u8* lut = m_table->m_data;
+                    u8* lut = m_table->GetData();
                     i32 i = 0;
                     if (colBase > 0) {
                         do {
@@ -347,7 +347,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
                 u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
                 if (m_useLut != false) {
-                    u8* lut = m_table->m_data;
+                    u8* lut = m_table->GetData();
                     i32 i = 0;
                     if (colBase > 0) {
                         do {
@@ -422,7 +422,7 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
         u8* warpRow = warpColumnBase + m_warpRowOffsets[j];
 
         if (m_useLut) {
-            u8* lut = m_table->m_data;
+            u8* lut = m_table->GetData();
             for (i32 k = 0; k < stride; k++) {
                 u8 b = warpRow[m_warpTable[k]];
                 m_lineBuf[x0 + k] = lut[(b << 6) + m_shadeRamp[k]];

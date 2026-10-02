@@ -83,7 +83,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     if (!sounds) {
         return 0;
     }
-    m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(sounds), "CREDITZ", "_");
+    m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sounds), "CREDITZ", "_");
 
     CRezDir* midiTable = StateResources()->GetDirFromPath("MIDIZ");
     if (midiTable) {
@@ -122,11 +122,11 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_world) {
-        SoundCueRegistry* reg = m_world->m_soundRegistry;
+        SoundCueRegistry* reg = m_world->SoundRegistry();
         if (reg->m_soundStream) {
             reg->m_soundStream->StopAllStreams();
         }
-        m_world->m_soundRegistry->RemoveWithPrefix("CREDITZ", "_");
+        m_world->SoundRegistry()->RemoveWithPrefix("CREDITZ", "_");
         m_world->m_imageRegistry->RemoveWithPrefix("CREDITZ", "_");
 
         m_world->m_animRegistry->RemoveWithPrefix("CREDITZ", "_");
@@ -164,7 +164,7 @@ i32 CCreditsState::LeaveState(GameStateId nextState) {
 
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
-    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
+    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
@@ -172,7 +172,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
 
     {
         CInputDeviceGroup* L = g_actorList;
@@ -202,7 +202,7 @@ i32 CCreditsState::Render() {
     DrawScrollingCredits();
 
     CDDrawSubMgrPages* drawPages = m_world->m_drawTarget;
-    drawPages->m_frontSurface->m_surface->Flip(NULL);
+    drawPages->m_frontSurface->GetSurface()->Flip(NULL);
     drawPages->m_backPair->BltSelf(drawPages->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
@@ -279,7 +279,7 @@ i32 CCreditsState::InitAttractTitle() {
         (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->PresentBackPage();
         (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
         (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->ClearAllPages(0);
-        m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
+        m_world->m_drawTarget->m_overlayPair->GetSurface()->Fill(0);
         return 1;
     }
     char stateName[0x20];
@@ -299,7 +299,7 @@ i32 CCreditsState::InitAttractTitle() {
         return 0;
     }
     m_stateResources = saved;
-    CDDSurface* tgt = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* tgt = m_world->m_drawTarget->m_backPair->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
     (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
     RetireScene(0x50, 0x3e8, 0, true);
@@ -313,7 +313,7 @@ i32 CCreditsState::DrawScrollingCredits() {
         return 0;
     }
 
-    CDDSurface* prov = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* prov = m_world->m_drawTarget->m_backPair->GetSurface();
 
     CountDown(m_scrollReseedTimer, g_frameDelta);
     if (m_fxEnabled != false) {
@@ -380,7 +380,7 @@ i32 CCreditsState::SetupTitle() {
         delete[] buf;
     }
     m_clipRegion.Attach(CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX));
-    CDDSurface* prov = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* prov = m_world->m_drawTarget->m_backPair->GetSurface();
     HDC hdc = NULL;
     prov->m_ddSurface->GetDC(&hdc);
     if (hdc) {
@@ -411,7 +411,7 @@ i32 CCreditsState::StepVideo() {
         CDDrawSubMgrPages* v = m_world->m_drawTarget;
         CDDrawSurfacePair* dst = v->m_overlayPair;
         CDDrawSurfacePair* src = v->m_backPair;
-        if (!m_videoHandle->Advance(dst->m_surface->m_ddSurface, -1)) {
+        if (!m_videoHandle->Advance(dst->GetSurface()->m_ddSurface, -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();
         }

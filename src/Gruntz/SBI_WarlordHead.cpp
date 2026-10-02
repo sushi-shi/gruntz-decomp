@@ -117,7 +117,7 @@ i32 CSBI_WarlordHead::SerializeFields(
     if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     switch (mode) {

@@ -439,7 +439,7 @@ i32 CGrunt::LoadPickupSprites(
                 object->m_screenPosition.m_y
             ))
             || forced != 0) {
-            g->m_voiceManager->PlayVoice(this, id, -1, 0, -1, -1);
+            g->VoiceMgr()->PlayVoice(this, id, -1, 0, -1, -1);
         }
     }
     m_entranceActive = true;

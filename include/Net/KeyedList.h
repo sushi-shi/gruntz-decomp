@@ -14,6 +14,12 @@ struct CKeyedNode {
     i32 m_commandDelay;
     i32 m_resendInterval;
     CString GetName();
+    i32 GetCommandDelay() const {
+        return m_commandDelay;
+    }
+    i32 GetResendInterval() const {
+        return m_resendInterval;
+    }
     ~CKeyedNode();
 };
 

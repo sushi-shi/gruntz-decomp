@@ -37,6 +37,14 @@ struct WwdDirtyRect {
         m_rect.left = COORD_UNSET;
         m_armed = -1;
     }
+    void Set(const RECT& rect, i32 width, i32 height) {
+        m_lastPosition.x = rect.left;
+        m_lastPosition.y = rect.top;
+        m_size.cx = width;
+        m_size.cy = height;
+        m_rect = rect;
+        m_armed = 0;
+    }
     POINT m_lastPosition;
     RECT m_rect;
     SIZE

@@ -117,6 +117,11 @@ arithmetic was handwritten.
 - Test one expression versus sequenced assignments, and direct member stores
   versus a reused result passed through setters. VC5's front end retains
   statement boundaries after the machine body appears folded.
+- For an otherwise identical unscaled LEA with reversed base/index inputs,
+  test natural initialization followed by addition; the
+  [measured sequencing control](../../../../docs/patterns/statement-sequencing-can-change-lea-encoding.md)
+  changes the SIB encoding without changing register assignments. It is not a
+  general rule for which operand becomes the base.
 - Put computations in the statement where retail emits them. Naming an outer
   call argument, moving `+K` into an initializer, or grouping constructor
   arguments changed scheduling and closed exact functions.

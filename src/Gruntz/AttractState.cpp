@@ -58,7 +58,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         return 0;
     }
 
-    menuRoot()->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
+    menuRoot()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(false) >= 0) {
         do {
@@ -77,11 +77,11 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
-    SoundCueRegistry* reg = menuRoot()->m_soundRegistry;
+    SoundCueRegistry* reg = menuRoot()->SoundRegistry();
     if (reg->m_soundStream) {
         reg->m_soundStream->StopAllStreams();
     }
-    menuRoot()->m_soundRegistry->RemoveWithPrefix("ATTRACT", "_");
+    menuRoot()->SoundRegistry()->RemoveWithPrefix("ATTRACT", "_");
 
     CState::ReleaseResources();
 }
@@ -107,7 +107,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    SoundCue* found = menuRoot()->m_soundRegistry->FindCue(buf);
+    SoundCue* found = menuRoot()->SoundRegistry()->FindCue(buf);
     m_titleCue = found;
     if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {
@@ -138,14 +138,14 @@ i32 CAttract::LeaveState(GameStateId nextState) {
         return 1;
     }
     do {
-        (menuRoot()->m_soundRegistry)->TickVolumeRamps();
+        (menuRoot()->SoundRegistry())->TickVolumeRamps();
     } while (m_titleCue->m_sound->IsPlaying());
     return 1;
 }
 
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
-    IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
+    IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
     if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
@@ -153,7 +153,7 @@ i32 CAttract::Render() {
         }
     }
 
-    (menuRoot()->m_soundRegistry)->TickVolumeRamps();
+    (menuRoot()->SoundRegistry())->TickVolumeRamps();
 
     CountDown(m_titleCountdownMs, g_frameDelta);
 
@@ -237,7 +237,7 @@ i32 CAttract::OnPaint() {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    menuRoot()->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
+    menuRoot()->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
     menuRoot()->m_drawTarget->BlitPage(menuRoot()->m_drawTarget->m_backPair);
     return 1;
 }

@@ -87,7 +87,7 @@ i32 CExitTrigger::AdvanceAnim() {
             GruntzPlayer* loser = &g_gameReg->m_players[owningPlayer];
             GruntzPlayer* winner = &g_gameReg->m_players[hitPlayerIndex];
             if (loser != NULL) {
-                g_gameReg->m_chatLog->AddItem(
+                g_gameReg->ChatLog()->AddItem(
                     static_cast<const char*>(
                         loser->GetName() + " was conquered by " + winner->GetName()
                             + DATA_COMPGEN(0x0020d168, "!")
@@ -107,7 +107,7 @@ i32 CExitTrigger::AdvanceAnim() {
             GruntzPlayer* claimed = &g_gameReg->m_players[hitPlayerIndex];
             if (claimed != NULL) {
                 CGameObject* warlordObj = LookupObjectById(
-                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                     claimed->m_warlordObjectId
                 );
                 CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_logicRecord->m_userLogic);
@@ -115,7 +115,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     wl->ResolveJoyAnimation();
                 }
             }
-            CDDrawChildGroup* grp = g_gameReg->m_world->m_childGroup;
+            CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
@@ -176,7 +176,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 m_warlordLogic->ResolveDeathAnimation();
                 m_warlordLogic = NULL;
             }
-            CDDrawChildGroup* grp = g_gameReg->m_world->m_childGroup;
+            CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
@@ -187,7 +187,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         i32 x = cur->m_screenPosition.m_x;
                         i32 y = cur->m_screenPosition.m_y;
                         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
-                            CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
+                            CWwdSpriteObject* fx = g_gameReg->World()->ChildGroup()->CreateSprite(
                                 0,
                                 x,
                                 y,

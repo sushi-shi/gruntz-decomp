@@ -890,7 +890,7 @@ i32 CGrunt::StepArrivalDrop(
                     blockedMask | BRICKZ_CELL_OCCUPIED,
                     passableMask
                 ) != 0
-                && probe.GetCount() != 0) {
+                && !probe.IsEmpty()) {
                 if (probe.GetCount() <= cnt + 3) {
                     g_coordPool.Push(probe.RemoveHead());
                     RecycleGruntCoords(this);
@@ -1606,7 +1606,7 @@ i32 CGrunt::CreateHealthSprite() {
         return 0;
     }
 
-    m_healthSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
+    m_healthSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y - 0x19,
@@ -1633,7 +1633,7 @@ i32 CGrunt::CreateToySprite() {
         return 0;
     }
 
-    m_toySprite = g_gameReg->m_world->m_childGroup->CreateSprite(
+    m_toySprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y - 0x19,
@@ -1659,7 +1659,7 @@ i32 CGrunt::CreateStaminaSprite() {
         return 0;
     }
 
-    m_staminaSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
+    m_staminaSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y - 0x20,
@@ -1692,7 +1692,7 @@ i32 CGrunt::CreateToyTimeSprite() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
 
-    m_toyTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
+    m_toyTimeSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y - 0x20,
@@ -1721,7 +1721,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
 
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
 
-    m_wingzTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
+    m_wingzTimeSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y - 0x26,
@@ -1748,7 +1748,7 @@ i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
         return 0;
     }
 
-    m_powerupSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
+    m_powerupSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y,
@@ -1775,7 +1775,7 @@ i32 CGrunt::CreateSelectedSprite() {
         return 0;
     }
 
-    m_selectedSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
+    m_selectedSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y,

@@ -274,7 +274,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         }
     }
 
-    if (m_coordList.GetCount() != 0) {
+    if (!m_coordList.IsEmpty()) {
         Coord* coord = NULL;
         CoordPoolNode* node = g_coordPool.m_freeHead;
         i32 coordX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -811,7 +811,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
+            g_gameReg->VoiceMgr()->StopVoice(m_object->m_objectId);
         }
         ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {
@@ -868,7 +868,7 @@ applyTail:
             m_routePassableMask = 0;
         }
         if (spawnWormhole != false) {
-            CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* spawned = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 spawnPx,
                 spawnPy,

@@ -85,7 +85,7 @@ CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm
     if (animation == NULL) {
         return NULL;
     }
-    if (animation->Configure(OwnerMgr()->m_soundRegistry, source, 0) == 0) {
+    if (animation->Configure(OwnerMgr()->SoundRegistry(), source, 0) == 0) {
 
         delete animation;
         return NULL;
@@ -102,7 +102,7 @@ CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const cha
     if (animation == NULL) {
         return NULL;
     }
-    if (animation->LoadFile(OwnerMgr()->m_soundRegistry, path, 0) == 0) {
+    if (animation->LoadFile(OwnerMgr()->SoundRegistry(), path, 0) == 0) {
 
         delete animation;
         return NULL;

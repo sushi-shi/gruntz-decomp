@@ -684,7 +684,7 @@ RVA(0x00017030, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
     CBattlezDlgCustom dlg(NULL);
     if (dlg.DoModal() == 1) {
-        if (dlg.m_customName.GetLength() != 0) {
+        if (!dlg.m_customName.IsEmpty()) {
             dlg.m_customName.MakeUpper();
             CWnd* item = GetDlgItem(0x4ff);
             CWnd* child = item->GetWindow(GW_CHILD);
@@ -710,7 +710,7 @@ void CBattlezDlg::OnWorldSelectionChange() {
     }
     CString worldName;
     (static_cast<CComboBox*>(combo))->GetLBText(selection, worldName);
-    if (worldName.GetLength() != 0) {
+    if (!worldName.IsEmpty()) {
         CWnd* owner = GetDlgItem(0x4ff);
         CWnd* child = owner->GetWindow(GW_CHILD);
         if (child != NULL) {

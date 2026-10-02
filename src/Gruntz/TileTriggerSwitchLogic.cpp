@@ -111,13 +111,13 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tile.m_x;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
-    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_SWITCHDOWN");
+        PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_SWITCHDOWN");
     }
     m_linkGate = true;
     return 1;
@@ -130,13 +130,13 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tile.m_x;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
-    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_SWITCHUP");
+        PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_SWITCHUP");
     }
     m_linkGate = false;
     return 1;
@@ -190,7 +190,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = TILE_CENTER_COMPONENT(m_tile.m_x);
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                registry = gameMgr->m_world->m_soundRegistry;
+                registry = gameMgr->m_world->SoundRegistry();
                 if (registry->m_silentMode == false) {
                     SoundCue* cue = static_cast<SoundCue*>(registry->Lookup("GAME_PYRAMIDMOVE"));
                     if (cue) {
@@ -205,7 +205,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = TILE_CENTER_COMPONENT(m_tile.m_x);
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                registry = gameMgr->m_world->m_soundRegistry;
+                registry = gameMgr->m_world->SoundRegistry();
                 if (registry->m_silentMode == false) {
                     SoundCue* cue =
                         static_cast<SoundCue*>(registry->Lookup("LEVEL_WATERBRIDGEMOVE"));
@@ -221,7 +221,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = TILE_CENTER_COMPONENT(m_tile.m_x);
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_WATERBRIDGEMOVE");
+                gameMgr->m_world->SoundRegistry()->PlayCueIfElapsed("LEVEL_WATERBRIDGEMOVE");
             }
             return;
         case TILEKIND_DEATHBRIDGE_DOWN:
@@ -230,7 +230,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = TILE_CENTER_COMPONENT(m_tile.m_x);
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
+                gameMgr->m_world->SoundRegistry()->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case TILEKIND_TOGGLEDEATHBRIDGE_DOWN:
@@ -239,7 +239,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = TILE_CENTER_COMPONENT(m_tile.m_x);
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
+                gameMgr->m_world->SoundRegistry()->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case TILEKIND_CRUMBLEWATERBRIDGE:
@@ -248,7 +248,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = TILE_CENTER_COMPONENT(m_tile.m_x);
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_CRUMBLE");
+                gameMgr->m_world->SoundRegistry()->PlayCueIfElapsed("LEVEL_CRUMBLE");
             }
             return;
     }
@@ -259,7 +259,7 @@ done:
 // @early-stop
 RVA(0x00110c10, 0xeee)
 i32 CTileTriggerLogic::Tick() {
-    CDDrawSurfaceMgr* world = g_gameReg->m_world;
+    CDDrawSurfaceMgr* world = g_gameReg->World();
     CTileTriggerTransition* trans = NULL;
 
     TileCollisionKind srcId = PbResolveCell(world->m_level, m_tile.m_x, m_tile.m_y);
@@ -270,7 +270,7 @@ i32 CTileTriggerLogic::Tick() {
         SET_POINT_COMPONENTS(pt, sx, sy);
         if (PtInRect(&g_gameReg->m_viewBounds, pt) && srcId != TILEKIND_REDPYRAMID_UP
             && srcId != TILEKIND_REDPYRAMID_DOWN) {
-            CGameObject* trig = world->m_childGroup->CreateSprite(
+            CGameObject* trig = world->ChildGroup()->CreateSprite(
                 0,
                 sx,
                 sy,
@@ -359,7 +359,7 @@ i32 CTileTriggerLogic::Tick() {
                         POINT pt;
                         SET_POINT_COMPONENTS(pt, pxX, pxY);
                         if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                            CGameObject* o = world->m_childGroup->CreateSprite(
+                            CGameObject* o = world->ChildGroup()->CreateSprite(
                                 0,
                                 pxX,
                                 pxY,
@@ -727,7 +727,7 @@ CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 RVA(0x001122a0, 0x241)
 i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
-    CDDrawSurfaceMgr* gameMgr = g_gameReg->m_world;
+    CDDrawSurfaceMgr* gameMgr = g_gameReg->World();
 
     i32 inRect = 0;
     POINT pt;
@@ -751,7 +751,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             i32 sy = ((j + m_tile.m_y) << TILE_SHIFT_PX) - 0x10;
             if (inRect) {
                 CreateParticlez(
-                    gameMgr->m_childGroup,
+                    gameMgr->ChildGroup(),
                     sx,
                     sy,
                     "LEVEL_ROCKBREAK",
@@ -766,7 +766,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         ->SpawnPowerupIcon(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
-        CGameObject* txt = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CGameObject* txt = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             cx,
             cy,
@@ -784,7 +784,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     if (!::PtInRect(&g_gameReg->m_viewBounds, bx, by)) {
         return 0;
     }
-    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "LEVEL_ROCKBREAK");
+    PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "LEVEL_ROCKBREAK");
     return 0;
 }
 
@@ -805,7 +805,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
                 i32 tx = m_tile.m_x;
                 i32 v = L->m_tileHandles[tx + L->m_tileRowOffsets[ty]] + 1;
-                CDDrawWorkerHost* L2 = g_gameReg->m_world->m_level->m_mainPlane;
+                CDDrawWorkerHost* L2 = g_gameReg->World()->m_level->m_mainPlane;
                 SET_WORKER_HOST_CELL(L2, tx, ty, v);
                 (reg->m_tileGrid)->ComputeCellFlags(tx, ty, v);
                 break;
@@ -834,7 +834,8 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
         CGameObject* rec =
-            g_gameReg->m_world->m_childGroup
+            g_gameReg->World()
+                ->ChildGroup()
                 ->CreateSprite(0, px, py, 95000, "InGameText", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (rec == NULL) {
             return 0;
@@ -889,7 +890,7 @@ i32 CTileSecretTriggerLogic::Tick() {
     CGruntzMgr* mgr = g_gameReg;
     CDDrawWorkerHost* layer = mgr->m_world->m_level->m_mainPlane;
     i32 newTok = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]];
-    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, oldTok);
     mgr->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, oldTok);
     m_tileToken = newTok;
@@ -973,7 +974,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     Coord position(tileX, tileY);
     TileCenter(&position);
     if (checkpointType != 0) {
-        CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             position.m_x,
             position.m_y,
@@ -1000,7 +1001,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] + 1;
-    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, v);
     reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, v);
     m_linkGate = true;
@@ -1014,7 +1015,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] - 1;
-    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, v);
     reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, v);
     m_linkGate = false;
@@ -1111,7 +1112,7 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     }
 
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = g_gameReg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer = g_gameReg->World()->m_level->m_mainPlane;
     Coord tile = m_tile;
     if (layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] == IDX(code)) {
         return 0;
@@ -1245,9 +1246,9 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
         } else if (brickEffect == BRICKTILE_GOLD_1) {
             DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)
-                && g_gameReg->m_world->m_soundRegistry->m_silentMode == false) {
+                && g_gameReg->World()->SoundRegistry()->m_silentMode == false) {
                 SoundCue* snd = static_cast<SoundCue*>(
-                    g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
+                    g_gameReg->World()->SoundRegistry()->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
                 );
                 if (snd != NULL) {
                     snd->PlayIfElapsed(static_cast<i32>(g_soundVolumePercent), 0, 0, false);
@@ -1274,7 +1275,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-        CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             px,
             py,
@@ -1500,7 +1501,7 @@ i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     ar->Write(&m_tile.m_x, sizeof(m_tile.m_x));
@@ -1525,7 +1526,7 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     s->Read(&m_tile.m_x, sizeof(m_tile.m_x));
@@ -1574,7 +1575,7 @@ i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     s->Write(&m_tile.m_x, sizeof(m_tile.m_x));
@@ -1602,7 +1603,7 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     s->Read(&m_tile.m_x, sizeof(m_tile.m_x));
@@ -1658,7 +1659,7 @@ i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     s->Write(&m_powerupType, sizeof(m_powerupType));
@@ -1677,7 +1678,7 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     s->Read(&m_powerupType, sizeof(m_powerupType));
@@ -1721,7 +1722,7 @@ i32 CTileActionEvent::SerializeFields(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     ar->Write(&m_actionCode, sizeof(m_actionCode));
@@ -1741,7 +1742,7 @@ i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     ar->Read(&m_actionCode, sizeof(m_actionCode));

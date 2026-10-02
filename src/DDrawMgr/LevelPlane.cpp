@@ -382,7 +382,7 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     RECT rightSrc = {0, 0, rightW, m_tilePixelSize.cy};
     RECT corner;
     RECT dr;
-    CDDSurface* surf = ctx->m_surface;
+    CDDSurface* surf = ctx->GetSurface();
     i32 nCols = colR - colL - 1;
     i32 nRows = rowB - rowT - 1;
 
@@ -493,7 +493,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     CRect rc = MakeRect(0, 0, m_planePixelSize.cx - 1, m_planePixelSize.cy - 1);
 
     CDDrawSurfaceMgr* reg = OwnerMgr();
-    CDDrawChildGroup* activeGroup = reg->m_childGroup;
+    CDDrawChildGroup* activeGroup = reg->ChildGroup();
     if (activeGroup == NULL) {
         return 0;
     }
@@ -621,7 +621,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    if (imageSet.GetLength() != 0) {
+    if (!imageSet.IsEmpty()) {
         if (gridIndex != -1) {
             obj->SetImageFrameByName(static_cast<const char*>(imageSet), gridIndex);
         } else {
@@ -629,12 +629,12 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         }
     }
 
-    if (sound.GetLength() != 0) {
+    if (!sound.IsEmpty()) {
         obj->SetAnimationByName(static_cast<const char*>(sound), 0);
         obj->SetSoundCueByName(static_cast<const char*>(sound));
     }
 
-    if (name.GetLength() != 0) {
+    if (!name.IsEmpty()) {
         obj->m_name = static_cast<const char*>(name);
     }
 

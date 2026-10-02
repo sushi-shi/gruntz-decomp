@@ -235,7 +235,7 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
             m_inputScrollTotal = 0;
             m_inputText = static_cast<const char*>("");
         } else {
-            if (m_inputText.GetLength() == 0) {
+            if (m_inputText.IsEmpty()) {
                 return 0;
             }
             m_inputActive = false;
@@ -276,7 +276,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
         return 0;
     }
     CString text(m_inputText);
-    if (text.GetLength() == 0) {
+    if (text.IsEmpty()) {
         g_chatTextWidth = 0;
     } else {
         RECT rc = *rect;
@@ -322,7 +322,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         g_caretBlinkMs = 0xc8;
         g_caretBlinkOn ^= 1;
     }
-    if (g_caretBlinkOn != false && text.GetLength() == 0) {
+    if (g_caretBlinkOn != false && text.IsEmpty()) {
         MeasureLabel(hdc, rect);
         return 1;
     }

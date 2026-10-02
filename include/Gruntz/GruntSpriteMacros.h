@@ -26,7 +26,7 @@
                 m_object->m_screenPosition.m_x,                                                    \
                 m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
-            _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
+            _g->VoiceMgr()->PlayVoice(this, (tag), -1, 0, -1, -1);                                 \
         }                                                                                          \
     } while (0)
 
@@ -38,7 +38,7 @@
                 m_object->m_screenPosition.m_x,                                                    \
                 m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
-            _g->m_voiceManager->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                        \
+            _g->VoiceMgr()->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                            \
         }                                                                                          \
     } while (0)
 
@@ -50,7 +50,7 @@
                 m_object->m_screenPosition.m_x,                                                    \
                 m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
-            _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
+            _g->VoiceMgr()->PlayVoice(this, (tag), -1, 0, -1, -1);                                 \
         }                                                                                          \
     } while (0)
 
@@ -62,7 +62,7 @@
                 m_object->m_screenPosition.m_x,                                                    \
                 m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
-            _g->m_voiceManager->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                        \
+            _g->VoiceMgr()->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                            \
         }                                                                                          \
     } while (0)
 

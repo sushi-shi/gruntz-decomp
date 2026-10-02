@@ -29,7 +29,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* dir = g_gameReg->m_world;
+    CDDrawSurfaceMgr* dir = g_gameReg->World();
     if (dir == NULL) {
         return 0;
     }

@@ -148,7 +148,7 @@ i32 CWormhole::SpawnPartners() {
         return 0;
     }
 
-    CObList* list = &g_gameReg->m_world->m_childGroup->m_list;
+    CObList* list = &g_gameReg->World()->ChildGroup()->m_list;
     if (list == NULL) {
         return 0;
     }
@@ -157,7 +157,7 @@ i32 CWormhole::SpawnPartners() {
         return 0;
     }
     do {
-        CGameObject* obj = g_gameReg->m_world->m_childGroup->NextChild(pos);
+        CGameObject* obj = g_gameReg->World()->ChildGroup()->NextChild(pos);
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
             if (record->m_dispatch == &DispatchTeleporterLogic && obj->m_screenPosition.m_x == tx
@@ -475,7 +475,7 @@ i32 CTeleporter::Update() {
         CWwdSpriteObject* s = m_object;
         Coord spawnPosition(s->m_powerup, s->m_damage);
         TileCenter(&spawnPosition);
-        CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spawned = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             spawnPosition.m_x,
             spawnPosition.m_y,
@@ -493,7 +493,7 @@ i32 CTeleporter::Update() {
         CWwdSpriteObject* s = m_object;
         Coord spawnPosition = s->m_speed;
         TileCenter(&spawnPosition);
-        CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spawned = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             spawnPosition.m_x,
             spawnPosition.m_y,

@@ -149,7 +149,7 @@ i32 CTriggerMgr::PlaceObject(
         }
 
         CWwdSpriteObject* sprite =
-            m_world->m_childGroup
+            m_world->ChildGroup()
                 ->CreateSprite(0, x, y, z, "Grunt", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (sprite == NULL) {
             goto fail;
@@ -255,7 +255,7 @@ i32 CTriggerMgr::PlaceObject(
 
             if (mode == GRUNT_ENTRANCE_WORMHOLE) {
                 CWwdSpriteObject* hole =
-                    m_world->m_childGroup
+                    m_world->ChildGroup()
                         ->CreateSprite(0, x, y, 0, "Wormhole", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
                 if (hole == NULL) {
                     logic->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -1352,9 +1352,9 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             CGameObject* obj = cell->m_object;
             i32 sy = obj->m_screenPosition.m_y;
             i32 sx = obj->m_screenPosition.m_x;
-            RECT* vr = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
+            RECT* vr = &g_gameReg->World()->m_level->m_mainPlane->m_planeViewRect;
             if (::PtInRect(vr, sx, sy)) {
-                g_gameReg->m_voiceManager->PlayVoice(cell, 0x38e, -1, 0, -1, -1);
+                g_gameReg->VoiceMgr()->PlayVoice(cell, 0x38e, -1, 0, -1, -1);
             }
         }
         return 1;

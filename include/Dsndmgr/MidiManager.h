@@ -64,6 +64,7 @@ public:
     MidiManager() {
         m_currentSequence = NULL;
         m_ownerWindow = NULL;
+        g_ailMidiDriver = NULL;
     }
 
     ~MidiManager() {
@@ -75,6 +76,9 @@ public:
     void ClearSequences();
 
     i32 SetMasterVolume(i32 volumePct);
+    void SetEnabled(b32 enabled) {
+        m_midiAvailable = enabled;
+    }
     i32 GetMasterVolume();
     MidiSequence* LoadFile(const char* path, const char* name);
     MidiSequence* LoadBuffer(const void* data, u32 dataBytes, const char* name);

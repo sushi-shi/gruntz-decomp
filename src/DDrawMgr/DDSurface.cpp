@@ -226,7 +226,7 @@ void CDDSurface::FreeSurfaces() {
         CDDSurface* e = static_cast<CDDSurface*>(m_elements[i]);
         delete e;
     }
-    m_elements.SetSize(0, -1);
+    m_elements.RemoveAll();
     if (this->m_ddSurface != NULL) {
         if ((this->m_dontOwn & 1) == 0) {
             this->m_ddSurface->Release();
@@ -397,8 +397,8 @@ void CDDSurface::ReloadImageCache() {
             i++;
         } while (i < static_cast<u32>(m_elements.GetSize()));
     }
-    m_elements.SetSize(0, -1);
-    g_imageCache.SetSize(0, -1);
+    m_elements.RemoveAll();
+    g_imageCache.RemoveAll();
     i32 hr = m_ddSurface->EnumAttachedSurfaces(NULL, &EnumSurfacesCallback);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x2dd, hr);
@@ -411,7 +411,7 @@ void CDDSurface::ReloadImageCache() {
             j++;
         } while (j < static_cast<u32>(g_imageCache.GetSize()));
     }
-    g_imageCache.SetSize(0, -1);
+    g_imageCache.RemoveAll();
 }
 
 RVA(0x0013e9a0, 0xcc)
@@ -1225,9 +1225,10 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
             u16* dst = Row16(locked, row, m_apiDesc.lPitch);
             for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
-                u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                u8 b = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                u8 r;
+                u8 g;
+                u8 b;
+                UnpackPixel16(px, r, g, b);
                 *dst++ = r;
                 *dst++ = g;
                 *dst++ = b;
@@ -1238,9 +1239,10 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
             u16* dst = Row16(locked, row, m_apiDesc.lPitch);
             for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
-                u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                u8 b = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                u8 r;
+                u8 g;
+                u8 b;
+                UnpackPixel16(px, r, g, b);
                 *dst++ = r;
                 *dst++ = g;
                 *dst++ = b;
@@ -1305,9 +1307,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             u8* dst = locked + row * this->m_apiDesc.lPitch;
             for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
-                red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                UnpackPixel16(px, red, green, blue);
                 *dst++ = static_cast<u8>(FindNearestColor(pal, red, green, blue));
             }
         }
@@ -1316,9 +1316,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             u8* dst = locked + row * this->m_apiDesc.lPitch;
             for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
-                red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                UnpackPixel16(px, red, green, blue);
                 *dst++ = static_cast<u8>(FindNearestColor(pal, red, green, blue));
             }
         }

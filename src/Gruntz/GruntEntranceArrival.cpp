@@ -217,7 +217,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_ROCK:
             case GRUNT_WELDER:
             case GRUNT_WINGZ: {
-                CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
                     0,
                     m_object->m_screenPosition.m_x,
                     m_object->m_screenPosition.m_y,
@@ -242,7 +242,7 @@ i32 CGrunt::StepAttackFire() {
                 break;
             }
             case GRUNT_BOOMERANG: {
-                CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
                     0,
                     m_object->m_screenPosition.m_x,
                     m_object->m_screenPosition.m_y,
@@ -269,7 +269,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_TIMEBOMB: {
                 Coord position;
                 EntranceTileOffset(&position.m_x);
-                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                CGameObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
                     0,
                     position.m_x,
                     position.m_y,
@@ -397,7 +397,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                         m_object->m_screenPosition.m_y
                     )
                     != 0) {
-                    g->m_voiceManager->PlayVoice(this, tier, 0, -1, -1, -1);
+                    g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
             } else {
                 if (m_moveKind == 0) {
@@ -416,7 +416,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                         m_object->m_screenPosition.m_y
                     )
                     != 0) {
-                    g->m_voiceManager->PlayVoice(this, tier, 0, -1, -1, -1);
+                    g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
             }
             return 0;
@@ -495,7 +495,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 position.m_x,
                 position.m_y
             )) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
+            g->VoiceMgr()->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
         }
     } else {
         if (::PtInRect(
@@ -503,7 +503,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 position.m_x,
                 position.m_y
             )) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
+            g->VoiceMgr()->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
         }
     }
     return 0;
@@ -923,7 +923,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             i32 x = h->m_screenPosition.m_x;
             const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
             if (::PtInRect(&rect, x, y)) {
-                g->m_voiceManager->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
+                g->VoiceMgr()->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
                 StopVehicleLoopSound();
                 return 0;
             }
@@ -1386,7 +1386,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         return 0;
     }
     CGameObject* found = LookupActiveObject(
-        g->m_world->m_childGroup->m_registeredGameObjectsById,
+        g->m_world->ChildGroup()->m_registeredGameObjectsById,
         static_cast<void*>(cellObj)
     );
     if (found == NULL) {

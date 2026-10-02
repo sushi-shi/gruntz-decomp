@@ -243,7 +243,7 @@ i32 CProjectile::LoadProjectileSprites(
     m_currentPx.m_y = m_object->m_screenPosition.m_y;
     m_arrived = false;
 
-    CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
+    CDDrawChildGroup* factory = g_gameReg->World()->ChildGroup();
     m_shadow = (factory->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
@@ -420,7 +420,7 @@ void CProjectile::AdvanceMotion() {
 
                             if (::PtInRect(&reg->m_viewBounds, m_targetPx.m_x, m_targetPx.m_y)) {
                                 CreateParticlez(
-                                    reg->m_world->m_childGroup,
+                                    reg->m_world->ChildGroup(),
                                     m_targetPx.m_x,
                                     m_targetPx.m_y,
                                     "LEVEL_DEATHSPLASH",
@@ -435,7 +435,7 @@ void CProjectile::AdvanceMotion() {
         } else {
             if (::PtInRect(&reg->m_viewBounds, m_targetPx.m_x, m_targetPx.m_y)) {
                 CreateParticlez(
-                    reg->m_world->m_childGroup,
+                    reg->m_world->ChildGroup(),
                     m_targetPx.m_x,
                     m_targetPx.m_y,
                     "GAME_WATER",
@@ -672,7 +672,7 @@ i32 CProjectile::SerializeDispatch(
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
+    CDDrawSurfaceMgr* reg = g_gameReg->World();
     if (reg == NULL) {
         return 0;
     }
@@ -710,7 +710,7 @@ i32 CProjectile::SerializeDispatch(
             g_serialCounter++;
             i32 count;
             s->Read(&count, sizeof(count));
-            m_shadow = LookupSerialRef(reg->m_childGroup->m_registeredGameObjectsById, count);
+            m_shadow = LookupSerialRef(reg->ChildGroup()->m_registeredGameObjectsById, count);
             if (m_shadow == NULL && count != 0) {
                 return 0;
             }
@@ -825,7 +825,7 @@ i32 CBoomerang::SerializeDispatch(
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     switch (mode) {
@@ -932,7 +932,7 @@ i32 CTimeBomb::SerializeDispatch(
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
@@ -962,7 +962,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     }
     world = gameMgr->m_world;
     cue = NULL;
-    MapLookup(world->m_soundRegistry->m_cues, key, cue);
+    MapLookup(world->SoundRegistry()->m_cues, key, cue);
     if (cue == NULL) {
         goto fail;
     }

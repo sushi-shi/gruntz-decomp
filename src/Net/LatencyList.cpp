@@ -5,7 +5,6 @@
 #include <Net/LatencyList.h>
 
 #include <Enums.h>
-#include <MsgParam.h>
 
 #include <stddef.h>
 
@@ -151,17 +150,13 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
-        i32 data = ((rec->m_resendInterval & 0xffff) * 0x10000) | (rec->m_commandDelay & 0xffff);
-        i32 idx;
-        {
-            MsgParam name;
-            idx = SendMessageA(
-                combo,
-                CB_ADDSTRING,
-                0,
-                (name.m_str = static_cast<LPCTSTR>(rec->GetName()), name.m_lparam)
-            );
-        }
+        i32 data = MAKELONG(rec->GetCommandDelay(), rec->GetResendInterval());
+        i32 idx = SendMessageA(
+            combo,
+            CB_ADDSTRING,
+            0,
+            reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(rec->GetName()))
+        );
         if (idx != -1) {
             SendMessageA(combo, CB_SETITEMDATA, idx, data);
         }

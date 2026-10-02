@@ -197,7 +197,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     );
     if (hit) {
         o = m_object;
-        CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             TILE_CENTER_COMPONENT(o->m_score),
             TILE_CENTER_COMPONENT(o->m_points),
@@ -220,7 +220,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             i32 ex = eo->m_screenPosition.m_x;
             CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
             if (::PtInRect(&rc->m_planeViewRect, ex, ey)) {
-                g->m_voiceManager->PlayVoice(hit, 0x3fc, -1, 0, -1, -1);
+                g->VoiceMgr()->PlayVoice(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

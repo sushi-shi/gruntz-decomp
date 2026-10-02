@@ -77,7 +77,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 POINT pt;
                 SET_POINT_COMPONENTS(pt, px, py);
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                    CreateParticlez(m_world->m_childGroup, px, py, "LEVEL_DIRT", "GAME_DIRT");
+                    CreateParticlez(m_world->ChildGroup(), px, py, "LEVEL_DIRT", "GAME_DIRT");
                 }
                 return 1;
             }
@@ -124,12 +124,12 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         case TILEKIND_GAUNTLET_ROCK_A:
                         case TILEKIND_GAUNTLET_ROCK_B:
                         case TILEKIND_GIANT_ROCK:
-                            m_world->m_soundRegistry->PlayCue("LEVEL_GAUNTLETROCK1");
+                            m_world->SoundRegistry()->PlayCue("LEVEL_GAUNTLETROCK1");
                             return 1;
                         case TILEKIND_GAUNTLET_BRICK_A:
                         case TILEKIND_GAUNTLET_BRICK_B:
                         case TILEKIND_GAUNTLET_BRICK_C:
-                            m_world->m_soundRegistry->PlayCue("GAME_GAUNTLETBRICK1");
+                            m_world->SoundRegistry()->PlayCue("GAME_GAUNTLETBRICK1");
                             return 1;
                     }
                     return 0;
@@ -185,7 +185,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 POINT pt;
                 SET_POINT_COMPONENTS(pt, px, py);
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                    CWwdSpriteObject* particle = m_world->m_childGroup->CreateSprite(
+                    CWwdSpriteObject* particle = m_world->ChildGroup()->CreateSprite(
                         0,
                         px,
                         py,
@@ -196,7 +196,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     if (particle != NULL) {
                         particle->SetImageSetByName("LEVEL_ROCKBREAK");
                         particle->SetAnimationByName("LEVEL_ROCKBREAK", 0);
-                        m_world->m_soundRegistry->PlayCue("LEVEL_ROCKBREAK");
+                        m_world->SoundRegistry()->PlayCue("LEVEL_ROCKBREAK");
                     }
                 }
             }
@@ -243,7 +243,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = topY * 0x20 + 0x10;
                             CreateLightFx(
-                                m_world->m_childGroup,
+                                m_world->ChildGroup(),
                                 fxX,
                                 fxY,
                                 1000000,
@@ -258,7 +258,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookupById(
-                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                 objectId,
                                 mapped
                             );
@@ -274,7 +274,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                         i32 fxX = scanX * 0x20 + 0x10;
                                         i32 fxY = topY * 0x20 + 0x10;
                                         CreateLightFx(
-                                            m_world->m_childGroup,
+                                            m_world->ChildGroup(),
                                             fxX,
                                             fxY,
                                             1000000,
@@ -284,7 +284,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             true
                                         );
                                         CWwdSpriteObject* peek =
-                                            m_world->m_childGroup->CreateSprite(
+                                            m_world->ChildGroup()->CreateSprite(
                                                 0,
                                                 fxX,
                                                 fxY,
@@ -305,7 +305,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = bottomY * 0x20 + 0x10;
                             CreateLightFx(
-                                m_world->m_childGroup,
+                                m_world->ChildGroup(),
                                 fxX,
                                 fxY,
                                 1000000,
@@ -320,7 +320,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookupById(
-                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                 objectId,
                                 mapped
                             );
@@ -336,7 +336,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                         i32 fxX = scanX * 0x20 + 0x10;
                                         i32 fxY = bottomY * 0x20 + 0x10;
                                         CreateLightFx(
-                                            m_world->m_childGroup,
+                                            m_world->ChildGroup(),
                                             fxX,
                                             fxY,
                                             1000000,
@@ -346,7 +346,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             true
                                         );
                                         CWwdSpriteObject* peek =
-                                            m_world->m_childGroup->CreateSprite(
+                                            m_world->ChildGroup()->CreateSprite(
                                                 0,
                                                 fxX,
                                                 fxY,
@@ -371,7 +371,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             i32 fxX = leftX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
                             CreateLightFx(
-                                m_world->m_childGroup,
+                                m_world->ChildGroup(),
                                 fxX,
                                 fxY,
                                 900000,
@@ -386,7 +386,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookupById(
-                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                 objectId,
                                 mapped
                             );
@@ -402,7 +402,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                         i32 fxX = leftX * 0x20 + 0x10;
                                         i32 fxY = scanY * 0x20 + 0x10;
                                         CreateLightFx(
-                                            m_world->m_childGroup,
+                                            m_world->ChildGroup(),
                                             fxX,
                                             fxY,
                                             1000000,
@@ -412,7 +412,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             true
                                         );
                                         CWwdSpriteObject* peek =
-                                            m_world->m_childGroup->CreateSprite(
+                                            m_world->ChildGroup()->CreateSprite(
                                                 0,
                                                 fxX,
                                                 fxY,
@@ -433,7 +433,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             i32 fxX = rightX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
                             CreateLightFx(
-                                m_world->m_childGroup,
+                                m_world->ChildGroup(),
                                 fxX,
                                 fxY,
                                 1000000,
@@ -448,7 +448,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectId != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookupById(
-                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                                g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                 objectId,
                                 mapped
                             );
@@ -464,7 +464,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                         i32 fxX = rightX * 0x20 + 0x10;
                                         i32 fxY = scanY * 0x20 + 0x10;
                                         CreateLightFx(
-                                            m_world->m_childGroup,
+                                            m_world->ChildGroup(),
                                             fxX,
                                             fxY,
                                             1000000,
@@ -474,7 +474,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             true
                                         );
                                         CWwdSpriteObject* peek =
-                                            m_world->m_childGroup->CreateSprite(
+                                            m_world->ChildGroup()->CreateSprite(
                                                 0,
                                                 fxX,
                                                 fxY,
@@ -559,7 +559,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             i32 waterX = unit->m_object->m_screenPosition.m_x;
             i32 waterY = unit->m_object->m_screenPosition.m_y;
             if (::PtInRect(&g_gameReg->m_viewBounds, waterX, waterY)) {
-                CWwdSpriteObject* splash = m_world->m_childGroup->CreateSprite(
+                CWwdSpriteObject* splash = m_world->ChildGroup()->CreateSprite(
                     0,
                     waterX,
                     waterY,
@@ -570,7 +570,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (splash != NULL) {
                     splash->SetImageSetByName("GAME_WATER");
                     splash->SetAnimationByName("GAME_WATER", 0);
-                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_WATERSPLASH");
+                    PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_WATERSPLASH");
                 }
             }
             return 1;

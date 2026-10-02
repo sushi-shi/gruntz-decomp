@@ -158,8 +158,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_gruntRatio = g_buteMgr.GetDword("Battlez", "GruntRatio", 25);
     m_defenderChance = g_buteMgr.GetDword("Battlez", "DefenderChance", 50);
 
-    for (CGameObject* cur = mgr->m_world->m_childGroup->FirstChild(); cur != NULL;
-         cur = mgr->m_world->m_childGroup->NextChild()) {
+    for (CGameObject* cur = mgr->m_world->ChildGroup()->FirstChild(); cur != NULL;
+         cur = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur->m_logicRecord->m_dispatch == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
@@ -169,8 +169,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         }
     }
 
-    for (CGameObject* cur2 = mgr->m_world->m_childGroup->FirstChild(); cur2 != NULL;
-         cur2 = mgr->m_world->m_childGroup->NextChild()) {
+    for (CGameObject* cur2 = mgr->m_world->ChildGroup()->FirstChild(); cur2 != NULL;
+         cur2 = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur2->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
             m_marker.m_x = cur2->m_screenPosition.m_x / TILE_SIZE_PX;
@@ -179,8 +179,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         }
     }
 
-    for (CGameObject* cur3 = mgr->m_world->m_childGroup->FirstChild(); cur3 != NULL;
-         cur3 = mgr->m_world->m_childGroup->NextChild()) {
+    for (CGameObject* cur3 = mgr->m_world->ChildGroup()->FirstChild(); cur3 != NULL;
+         cur3 = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur3->m_logicRecord->m_dispatch == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
@@ -311,15 +311,15 @@ void CBattlezMapConfig::FreeArrays() {
             g_coordPool.Push(p);
         }
     }
-    m_candArray.SetSize(0, -1);
+    m_candArray.RemoveAll();
 
     for (i = 0; i < m_attackWaypoints.GetSize(); i++) {
         g_coordPool.Push(m_attackWaypoints[i]);
     }
-    m_attackWaypoints.SetSize(0, -1);
+    m_attackWaypoints.RemoveAll();
 
-    m_reserved104.SetSize(0, -1);
-    m_reserved118.SetSize(0, -1);
+    m_reserved104.RemoveAll();
+    m_reserved118.RemoveAll();
     m_reserved13c = 0;
 }
 
@@ -1295,7 +1295,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             memset(&pathHeadCell, 1, sizeof(pathHeadCell));
             pathHeadCellSource = &pathHeadCell;
         }
-        if (coordList->GetCount() == 0) {
+        if (coordList->IsEmpty()) {
             goto returnZero;
         }
         Coord* pathHead = unit->GetHeadCoord();
@@ -1526,7 +1526,7 @@ returnZero:
 RVA(0x0002a570, 0x4c6)
 i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     CPtrList* coordList = &unit->m_coordList;
-    if (coordList->GetCount() == 0) {
+    if (coordList->IsEmpty()) {
         return 1;
     }
     POSITION node = coordList->GetHeadPosition();
@@ -1578,9 +1578,9 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 0x2000098f,
                 flags
             ) != 0
-            && list.GetCount() != 0) {
+            && !list.IsEmpty()) {
             RECYCLE_HEAD_COORD(list)
-            if (list.GetCount() != 0) {
+            if (!list.IsEmpty()) {
                 while (node != NULL) {
                     POSITION remaining = node;
                     unit->m_coordList.GetNext(node);
@@ -1971,7 +1971,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     DWORD tmp;
 
     ar->Read(&count, sizeof(count));
-    m_reserved104.SetSize(0, -1);
+    m_reserved104.RemoveAll();
     m_reserved104.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         ar->Read(&tmp, sizeof(tmp));
@@ -1979,7 +1979,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     }
 
     ar->Read(&count, sizeof(count));
-    m_reserved118.SetSize(0, -1);
+    m_reserved118.RemoveAll();
     m_reserved118.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         ar->Read(&tmp, sizeof(tmp));
@@ -1996,7 +1996,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
             g_coordPool.Push(q);
         }
     }
-    m_attackWaypoints.SetSize(0, -1);
+    m_attackWaypoints.RemoveAll();
     ar->Read(&count, sizeof(count));
     m_attackWaypoints.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
@@ -2011,7 +2011,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
             g_coordPool.Push(q);
         }
     }
-    m_candArray.SetSize(0, -1);
+    m_candArray.RemoveAll();
     ar->Read(&count, sizeof(count));
     m_candArray.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
@@ -2114,7 +2114,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         GRID_CLIP(board, &box);
     }
 
-    CDDrawChildGroup* coll = m_ctx->m_world->m_childGroup;
+    CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
     coll->m_scanCursor = coll->m_list.GetHeadPosition();
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != NULL) {
@@ -2190,7 +2190,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
 
-        CDDrawChildGroup* c = m_ctx->m_world->m_childGroup;
+        CDDrawChildGroup* c = m_ctx->m_world->ChildGroup();
         if (c->m_scanCursor == NULL) {
             g = NULL;
         } else {
@@ -2222,7 +2222,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (RepathAroundBlockedTiles(g)) {
         return 1;
     }
-    if (coordList->GetCount() == 0) {
+    if (coordList->IsEmpty()) {
         return 0;
     }
 
@@ -2317,9 +2317,9 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                     0x20004d03,
                                     0
                                 ) != 0
-                                && path.GetCount() != 0) {
+                                && !path.IsEmpty()) {
                                 RECYCLE_HEAD_COORD(path)
-                                if (path.GetCount() != 0) {
+                                if (!path.IsEmpty()) {
                                     RecycleGruntCoords(g);
                                     POSITION qp = path.GetHeadPosition();
                                     while (qp != NULL) {
@@ -2666,7 +2666,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         0
                     )
                     != 0) {
-                    if (list3.GetCount() != 0) {
+                    if (!list3.IsEmpty()) {
                         POSITION head = list3.GetHeadPosition();
                         g_stepRun = false;
                         g_stepCol = col;
@@ -3424,9 +3424,9 @@ i32 CBattlezMapConfig::RouteUnitTo(
                 passableMask
             )
             != 0) {
-            if (list.GetCount() != 0) {
+            if (!list.IsEmpty()) {
                 RECYCLE_HEAD_COORD(list)
-                if (list.GetCount() != 0) {
+                if (!list.IsEmpty()) {
                     RecycleGruntCoords(unit);
 
                     POSITION pp = list.GetHeadPosition();
@@ -3500,14 +3500,14 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
         == 0) {
         goto fail;
     }
-    if (list.GetCount() == 0) {
+    if (list.IsEmpty()) {
         goto fail;
     }
     head = static_cast<Coord*>(list.RemoveHead());
     if (head != NULL) {
         g_coordPool.Push(head);
     }
-    if (list.GetCount() != 0) {
+    if (!list.IsEmpty()) {
         if (n != NULL) {
             POSITION h = unit->CoordHead();
             if (h != NULL) {
@@ -3830,9 +3830,9 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             flags
         )
         != 0) {
-        if (list.GetCount() != 0) {
+        if (!list.IsEmpty()) {
             RECYCLE_HEAD_COORD(list)
-            if (list.GetCount() != 0) {
+            if (!list.IsEmpty()) {
 
                 RecycleGruntCoords(unit);
 

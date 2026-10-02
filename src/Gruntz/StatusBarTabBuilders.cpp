@@ -160,7 +160,7 @@ i32 CSBI_GruntMachine::SerializeFields(
     if (s == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
+    CDDrawSurfaceMgr* reg = g_gameReg->World();
     if (reg == NULL) {
         return 0;
     }

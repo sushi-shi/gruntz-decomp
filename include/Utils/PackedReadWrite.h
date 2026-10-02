@@ -11,6 +11,12 @@ static inline i16 PeekI16(const char* p) {
     return value;
 }
 
+static inline i32 PeekI32(const char* p) {
+    i32 value;
+    memcpy(&value, p, sizeof(value));
+    return value;
+}
+
 static inline void PokeI16(char* p, i16 v) {
     memcpy(p, &v, sizeof(v));
 }

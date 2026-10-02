@@ -29,7 +29,7 @@ i32 SaveBackBufferShot(
     if (pair == NULL) {
         return 0;
     }
-    CDDSurface* leaf = pair->m_surface;
+    CDDSurface* leaf = pair->GetSurface();
     if (leaf == NULL) {
         return 0;
     }
@@ -49,7 +49,7 @@ i32 SaveOverlayBufferShot(
     if (pair == NULL) {
         return 0;
     }
-    CDDSurface* leaf = pair->m_surface;
+    CDDSurface* leaf = pair->GetSurface();
     if (leaf == NULL) {
         return 0;
     }

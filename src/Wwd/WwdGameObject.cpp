@@ -89,7 +89,7 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
 
 RVA(0x00150610, 0x41)
 i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
-    SoundCue* cue = OwnerMgr()->m_soundRegistry->FindCue(name);
+    SoundCue* cue = OwnerMgr()->SoundRegistry()->FindCue(name);
     if (cue == NULL) {
         return 0;
     }
@@ -103,7 +103,7 @@ void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) 
     m_shadow = m_dirty;
     if (m_dirty.m_armed != -1) {
         RECT* r = &m_dirty.m_rect;
-        dst->m_surface->BltFast(r->left, r->top, src->m_surface, r, 0x10);
+        dst->GetSurface()->BltFast(r->left, r->top, src->GetSurface(), r, 0x10);
         m_dirty.m_armed = -1;
     }
 }
@@ -188,8 +188,8 @@ i32 CWwdSpriteObject::IntersectsViewport() {
 
         CDDrawFrontSurface* g = OwnerMgr()->m_drawTarget->m_frontSurface;
 
-        i32 gw = g->m_width;
-        i32 gh = g->m_height;
+        i32 gw = g->GetWidth();
+        i32 gh = g->GetHeight();
         if (right < 0) {
             return 0;
         }
@@ -254,7 +254,7 @@ i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
 
     memset(tmp, 0, SERIAL_NAME_LEN);
     {
-        strcpy(tmp, OwnerMgr()->m_soundRegistry->FindCueKey(m_soundCue));
+        strcpy(tmp, OwnerMgr()->SoundRegistry()->FindCueKey(m_soundCue));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -291,7 +291,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
 
         SoundCue* found = NULL;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        MapLookup(mgr->m_soundRegistry->m_cues, name, found);
+        MapLookup(mgr->SoundRegistry()->m_cues, name, found);
         m_soundCue = found;
     }
     return 1;
@@ -459,7 +459,7 @@ i32 CGameObject::SerializeDispatch(
             if (node != 0) {
                 CWwdGameObject* found = NULL;
                 if (MapLookup(
-                        OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
+                        OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
                         reinterpret_cast<void*>(node), // API-forced: id-keyed map
                         found
                     )
@@ -670,7 +670,7 @@ i32 CGameObject::ResolveLinkedObject(b32 gate) {
     CWwdGameObject* found;
     if (m_carrierId != 0) {
         if (LookupLinkedObject(
-                OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
+                OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
                 m_carrierId,
                 found
             )
@@ -802,7 +802,7 @@ void CDDrawWorker::Unload() {
             delete el;
         }
     }
-    m_items.SetSize(0, -1);
+    m_items.RemoveAll();
 
     m_minIndex = 99999;
     m_maxIndex = 0;

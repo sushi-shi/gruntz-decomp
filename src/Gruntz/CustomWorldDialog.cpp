@@ -67,7 +67,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     if (parent == NULL) {
         v = g_gameReg->m_gameWnd->m_hwnd;
     }
-    CDDrawSurfaceMgr* world = g_gameReg->m_world;
+    CDDrawSurfaceMgr* world = g_gameReg->World();
     g_customWorldParent = v;
     g_customWorldSurfaceMgr = world;
 
@@ -173,7 +173,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = SetDlgItemTextA;
-    if (g_gameReg->m_world->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+    if (g_gameReg->World()->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
         char* p = info.m_levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
@@ -228,11 +228,11 @@ RVA(0x0003b470, 0x13a)
 i32 WwdFile::ValidateMainBlock(CString name) {
     char header[0x100];
 
-    if (name.GetLength() == 0) {
+    if (name.IsEmpty()) {
         return -1;
     }
 
-    CGameLevel* lvl = g_gameReg->m_world->m_level;
+    CGameLevel* lvl = g_gameReg->World()->m_level;
     if (lvl == NULL) {
         return -1;
     }
@@ -332,7 +332,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003b940, 0x19d)
 CString BuildCustomWwdPath(CString name) {
-    if (name.GetLength() == 0) {
+    if (name.IsEmpty()) {
         return name;
     }
     if (strstr(name, "\\") != NULL) {

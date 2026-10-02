@@ -19,6 +19,7 @@
 #include <Net/NetSlotState.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
+#include <Utils/PackedReadWrite.h>
 
 #include <dplay.h>
 #include <limits.h>
@@ -105,7 +106,7 @@ inline void CNetCmdSlot::QueueRecord(GruntRec* record, u8 entryCount, char* curs
         command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
         remaining -= consumed;
         cursor += consumed;
-        m_owner->m_mgr->m_commandMgr->EnqueueCommand(false, command);
+        m_owner->Mgr()->m_commandMgr->EnqueueCommand(false, command);
     }
 }
 
@@ -140,17 +141,13 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
         remaining--;
     }
 
-    CNetWireMsg wire;
-    wire.m_bytes = cursor;
-    i32 sequence = *wire.m_dwords;
+    i32 sequence = PeekI32(cursor);
     cursor += 4;
     remaining -= 4;
-    wire.m_bytes = cursor;
-    i32 windowBase = *wire.m_dwords;
+    i32 windowBase = PeekI32(cursor);
     cursor += 4;
     remaining -= 4;
-    wire.m_bytes = cursor;
-    i32 checksum = *wire.m_dwords;
+    i32 checksum = PeekI32(cursor);
     cursor += 4;
     remaining -= 4;
     u8 entryCount = *cursor;
@@ -173,16 +170,16 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
 
     RecordPeerWindowBase(windowBase);
     if (opcode & IDX(NET_CMD_RECEIVED_WINDOW_BASE_PLUS_TWO)) {
-        AddSequence(m_peerReceivedAhead, windowBase + 2);
+        AddSequence(PeerReceivedAhead(), windowBase + 2);
     } else if (opcode & IDX(NET_CMD_RECEIVED_WINDOW_BASE_PLUS_THREE)) {
-        AddSequence(m_peerReceivedAhead, windowBase + 3);
+        AddSequence(PeerReceivedAhead(), windowBase + 3);
     }
-    RemoveSequence(m_peerReceivedAhead, windowBase + 1);
+    RemoveSequence(PeerReceivedAhead(), windowBase + 1);
 
     if (HasReceivedThrough(sequence)) {
         return 1;
     }
-    if (ContainsSequence(m_receivedAhead, sequence)) {
+    if (ContainsSequence(ReceivedAhead(), sequence)) {
         return 1;
     }
     RecordReceivedSequence(sequence);
@@ -201,14 +198,14 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
 RVA(0x000c0f10, 0x6e)
 void CNetCmdSlot::RecordReceivedSequence(i32 sequence) {
     if (m_contiguousSequence + 1 == sequence) {
-        RemoveSequence(m_receivedAhead, m_contiguousSequence);
+        RemoveSequence(ReceivedAhead(), m_contiguousSequence);
         m_contiguousSequence++;
-        while (ContainsSequence(m_receivedAhead, m_contiguousSequence + 1)) {
+        while (ContainsSequence(ReceivedAhead(), m_contiguousSequence + 1)) {
             m_contiguousSequence++;
-            RemoveSequence(m_receivedAhead, m_contiguousSequence);
+            RemoveSequence(ReceivedAhead(), m_contiguousSequence);
         }
     } else {
-        AddSequence(m_receivedAhead, sequence);
+        AddSequence(ReceivedAhead(), sequence);
     }
 }
 
@@ -341,7 +338,7 @@ GruntRec* CNetCmdSlot::FindRecord(i32 sequence) {
 
 RVA(0x000c12e0, 0x2c)
 void CNetCmdSlot::ClearRecords() {
-    while (m_records.GetCount() != 0) {
+    while (!m_records.IsEmpty()) {
         GruntRec* record = static_cast<GruntRec*>(m_records.RemoveHead());
         if (record != NULL) {
             RecycleGruntRecord(record);

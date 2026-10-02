@@ -12,9 +12,10 @@ static inline u8 BlendChannel(u8 dest, i32 source, u8 cover) {
 }
 
 static inline u16 BlendPixel16(u16 pixel, u8 cover, i32 red, i32 green, i32 blue) {
-    u8 dr = static_cast<u8>((static_cast<u8>((pixel >> g_rUp)) << g_rDown));
-    u8 dg = static_cast<u8>((static_cast<u8>((pixel >> g_gUp)) << g_gDown));
-    u8 db = static_cast<u8>((static_cast<u8>(pixel) << g_bDown));
+    u8 dr;
+    u8 dg;
+    u8 db;
+    UnpackPixel16(pixel, dr, dg, db);
     return PackPixel16(
         BlendChannel(dr, red, cover),
         BlendChannel(dg, green, cover),

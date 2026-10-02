@@ -240,7 +240,7 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 #define LK(key)                                                                                    \
     do {                                                                                           \
         SoundCue* out = NULL;                                                                      \
-        MapLookup(reg->m_world->m_soundRegistry->m_cues, (key), out);                              \
+        MapLookup(reg->m_world->SoundRegistry()->m_cues, (key), out);                              \
         cue = out;                                                                                 \
     } while (0)
 
@@ -313,13 +313,13 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     SoundCueRegistry* slot =
-        (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
+        (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->SoundRegistry();
     slot->PlayCue(s_gameAttack);
 
     switch (idx) {
         case SPELL_FREEZE: {
             CreateLightFx(
-                g_gameReg->m_world->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -338,7 +338,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_HEALTH: {
             CreateLightFx(
-                g_gameReg->m_world->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -357,7 +357,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_RESURRECTION: {
             CreateLightFx(
-                g_gameReg->m_world->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -374,7 +374,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_RANDOM_TOYZ: {
             CreateLightFx(
-                g_gameReg->m_world->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -393,7 +393,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_TELEPORT: {
             CreateLightFx(
-                g_gameReg->m_world->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -412,7 +412,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELL_ROLLING_BALLZ: {
             CreateLightFx(
-                g_gameReg->m_world->m_childGroup,
+                g_gameReg->World()->ChildGroup(),
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
@@ -422,7 +422,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 true
             );
 
-            CWwdSpriteObject* n = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* n = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y - 0x20,
@@ -437,7 +437,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->m_smarts = 0;
             n->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* e = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x + 0x20,
                 m_lastTilePx.m_y,
@@ -452,7 +452,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->m_smarts = 0;
             e->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* s = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y + 0x20,
@@ -467,7 +467,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->m_smarts = 0;
             s->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
-            CWwdSpriteObject* w = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* w = g_gameReg->World()->ChildGroup()->CreateSprite(
                 0,
                 m_lastTilePx.m_x - 0x20,
                 m_lastTilePx.m_y,
@@ -511,7 +511,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         return 0;
     }
 
-    CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+    CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenPosition.m_x,
         m_object->m_screenPosition.m_y,
@@ -559,8 +559,8 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
     if (g_gameReg->m_soundEnabled == false) {
         return;
     }
-    CDDrawSurfaceMgr* world = g_gameReg->m_world;
-    SoundCue* cue = world->m_soundRegistry->FindCue(key);
+    CDDrawSurfaceMgr* world = g_gameReg->World();
+    SoundCue* cue = world->SoundRegistry()->FindCue(key);
     if (cue == NULL) {
         return;
     }
@@ -589,7 +589,7 @@ void CGrunt::EnsurePowerupLoopSound(const char* key) {
     if (sound != NULL) {
         return;
     }
-    SoundCue* cue = g_gameReg->m_world->m_soundRegistry->FindCue(key);
+    SoundCue* cue = g_gameReg->World()->SoundRegistry()->FindCue(key);
     if (cue == NULL) {
         return;
     }
@@ -695,7 +695,7 @@ i32 CGrunt::PathScan() {
                     m_passableMask
                 );
                 if (res != 0) {
-                    if (s.GetCount() != 0) {
+                    if (!s.IsEmpty()) {
 
                         while (node != NULL) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
@@ -784,9 +784,9 @@ i32 CGrunt::PathScan() {
                 );
                 if (res != 0) {
 
-                    if (s.GetCount() != 0) {
+                    if (!s.IsEmpty()) {
                         RECYCLE_HEAD_COORD(s)
-                        if (s.GetCount() != 0) {
+                        if (!s.IsEmpty()) {
 
                             if (CoordCount() != 0) {
                                 POSITION pos = m_coordList.GetHeadPosition();
@@ -820,9 +820,9 @@ i32 CGrunt::PathScan() {
                                     m_passableMask
                                 )
                                 != 0) {
-                                if (s.GetCount() != 0) {
+                                if (!s.IsEmpty()) {
                                     RECYCLE_HEAD_COORD(s)
-                                    if (s.GetCount() != 0) {
+                                    if (!s.IsEmpty()) {
                                         POSITION q = s.GetHeadPosition();
                                         if (q != NULL) {
                                             do {
@@ -1209,7 +1209,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             enemy->m_health = h;
 
             SoundCueRegistry* registry =
-                (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
+                (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->SoundRegistry();
             if (registry->m_silentMode == false) {
                 SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {
@@ -1459,7 +1459,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;
         newGrid->AcquireCellOccupancy(nxt, nyt, this->m_playerIndex, this->m_unitIndex);
 
-        if (m_coordList.GetCount() != 0) {
+        if (!m_coordList.IsEmpty()) {
             Coord tile;
             m_coordList.AddHead(g_coordPool.PopCopy(*tile.Set(
                 this->m_lastTilePx.m_x >> TILE_SHIFT_PX,
@@ -1478,7 +1478,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_movePosition.m_x = static_cast<double>((this->m_object->m_screenPosition.m_x));
         m_movePosition.m_y = static_cast<double>((this->m_object->m_screenPosition.m_y));
 
-        if (m_coordList.GetCount() != 0) {
+        if (!m_coordList.IsEmpty()) {
             RECYCLE_GRUNT_COORDS(this)
         }
         this->m_arrivalPending = false;
@@ -1906,7 +1906,7 @@ void CGrunt::StepBehavior(char*) {
             CGameObject* found = NULL;
             CGameObject* result = NULL;
             if (MapLookupById(
-                    reg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    reg->m_world->ChildGroup()->m_registeredGameObjectsById,
                     cellObj,
                     found
                 )) {
@@ -1989,7 +1989,7 @@ void CGrunt::StepBehavior(char*) {
 
             i32 ptx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 pty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-            CGameLevel* level = g_gameReg->m_world->m_level;
+            CGameLevel* level = g_gameReg->World()->m_level;
             i32 cx = ptx;
             i32 cy = pty;
             CLAMP_TILE_TO_PLANE(cx, cy, level->m_mainPlane);

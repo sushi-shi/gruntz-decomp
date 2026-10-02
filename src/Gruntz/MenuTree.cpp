@@ -52,8 +52,8 @@ i32 CMenuTree::Configure(
         m_bounds,
         0,
         0,
-        world->m_drawTarget->m_frontSurface->m_width - 1,
-        world->m_drawTarget->m_frontSurface->m_height - 1
+        world->m_drawTarget->m_frontSurface->GetWidth() - 1,
+        world->m_drawTarget->m_frontSurface->GetHeight() - 1
     );
     return 1;
 }
@@ -288,18 +288,18 @@ i32 CMenuTree::DrawFocusCursors(
 
 RVA(0x00183030, 0x7b)
 i32 CMenuTree::PlayFocusSound() {
-    if (m_focusSoundKey.GetLength() == 0) {
+    if (m_focusSoundKey.IsEmpty()) {
         return 0;
     }
-    return PlayRegistryCueIfElapsed(m_world->m_soundRegistry, m_focusSoundKey);
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), m_focusSoundKey);
 }
 
 RVA(0x001830b0, 0x7b)
 i32 CMenuTree::PlayActivationSound() {
-    if (m_activationSoundKey.GetLength() == 0) {
+    if (m_activationSoundKey.IsEmpty()) {
         return 0;
     }
-    return PlayRegistryCueIfElapsed(m_world->m_soundRegistry, m_activationSoundKey);
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), m_activationSoundKey);
 }
 
 RVA(0x00183130, 0x16)

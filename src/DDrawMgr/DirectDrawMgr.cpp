@@ -820,7 +820,7 @@ CDDPalette* CDDrawDeviceManager::LoadTrailingRgbPalette(const char* path, i32 z)
 RVA(0x00143240, 0x143)
 void CDDrawDeviceManager::EnumerateDisplayModes() {
     FreeDisplayModes();
-    g_modeArray.SetSize(0, -1);
+    g_modeArray.RemoveAll();
     DdModeEnumFn modeCb;
     modeCb.m_body = DdEnumModesCallback;
     i32 hr = m_device->EnumDisplayModes(0, NULL, NULL, modeCb.m_sdk);
@@ -831,7 +831,7 @@ void CDDrawDeviceManager::EnumerateDisplayModes() {
     for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
         m_displayModes.Add(g_modeArray.GetAt(j));
     }
-    g_modeArray.SetSize(0, -1);
+    g_modeArray.RemoveAll();
     i32 modeCount = m_displayModes.GetSize();
     if (modeCount > 1) {
         for (i32 firstIndex = 0; firstIndex < modeCount - 1; firstIndex++) {
@@ -899,7 +899,7 @@ i32 CDDrawDeviceManager::FindFirstFittingResolutionIndex(
     i32 colorDepth
 ) {
     i32 result = -1;
-    for (i32 i = m_displayModes.GetSize() - 1; i >= 0; i--) {
+    for (i32 i = m_displayModes.GetUpperBound(); i >= 0; i--) {
         DDSURFACEDESC* mode = GetModeDesc(i);
         if (mode->dwWidth >= minWidth && mode->dwHeight >= minHeight
             && mode->ddpfPixelFormat.dwRGBBitCount == colorDepth) {

@@ -72,19 +72,16 @@ i32 CGrunt::UpdateDeathAnimation() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00061570, 0x11d)
 i32 CGrunt::UpdateDecayFade() {
-    i64 now = static_cast<i64>(g_frameTime);
-    if (now - m_idleWindowTiming.m_start >= m_idleWindowTiming.m_interval) {
+    if (m_idleWindowTiming.Expired()) {
         Hide();
         m_wwdObject->m_imageSet->SetAllTypes(SHADE_COPY);
         UnregisterFromBoard(this, 0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
-    i64 e = now - m_idleWindowTiming.m_start;
-    u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
+    u32 elapsed = m_idleWindowTiming.Elapsed();
     CWwdSpriteObject* o = m_object;
     i32 r = static_cast<i32>(
         (static_cast<double>(elapsed) * 256.0

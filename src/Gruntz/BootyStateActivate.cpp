@@ -271,20 +271,20 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         return 0;
     }
 
-    m_world->m_childGroup->ClearChildren();
+    m_world->ChildGroup()->ClearChildren();
 
     {
         CRezDir* soundz = StateResources()->GetDir("SOUNDZ");
         if (!soundz) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundz), "BOOTY", "_");
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundz), "BOOTY", "_");
 
         CRezDir* wand = m_gruntResources->GetDirFromPath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             return 0;
         }
-        m_world->m_soundRegistry
+        m_world->SoundRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(wand), "GRUNTZ_WANDGRUNT", "_");
 
         CRezDir* imagez = StateResources()->GetDir("IMAGEZ");
@@ -324,12 +324,12 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 // @early-stop
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
-    SoundStream* r = m_world->m_soundRegistry->m_soundStream;
+    SoundStream* r = m_world->SoundRegistry()->m_soundStream;
     if (r) {
         r->StopAllStreams();
     }
-    m_world->m_soundRegistry->RemoveWithPrefix("BOOTY", "_");
-    m_world->m_soundRegistry->RemoveWithPrefix("GRUNTZ_WANDGRUNT", "_");
+    m_world->SoundRegistry()->RemoveWithPrefix("BOOTY", "_");
+    m_world->SoundRegistry()->RemoveWithPrefix("GRUNTZ_WANDGRUNT", "_");
     m_world->m_imageRegistry->RemoveWithPrefix("BOOTY", "_");
     m_world->m_imageRegistry->RemoveWithPrefix("GRUNTZ_GOKARTGRUNT", "_");
     CState::ReleaseResources();
@@ -347,7 +347,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
     RetireScene(0x50, 0x3e8, 0, true);
 
     CGruntzMgr* reg = g_gameReg;
-    SoundCueRegistry* set = reg->m_world->m_soundRegistry;
+    SoundCueRegistry* set = reg->m_world->SoundRegistry();
     i32 token = reg->m_soundVolume;
     if (set->m_silentMode == false) {
         SoundCue* found = set->FindCue("BOOTY_LOOP");
@@ -360,11 +360,11 @@ i32 CBootyState::EnterState(GameStateId previousState) {
 
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId nextState) {
-    SoundCue* found = m_world->m_soundRegistry->FindCue("BOOTY_LOOP");
+    SoundCue* found = m_world->SoundRegistry()->FindCue("BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, true);
         while (found->m_sound->IsPlaying()) {
-            m_world->m_soundRegistry->TickVolumeRamps();
+            m_world->SoundRegistry()->TickVolumeRamps();
         }
     }
     return 1;
@@ -460,7 +460,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     m_angleStep = 0;
     m_scratchPosition.Set(0, 0);
     for (i32 i = 0; i < 4; i++) {
-        CWwdSpriteObject* a = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* a = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             0,
             0,
@@ -762,7 +762,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     m_world->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
 
-    CDDrawChildGroup* f = g_gameReg->m_world->m_childGroup;
+    CDDrawChildGroup* f = g_gameReg->World()->ChildGroup();
 
     CWwdSpriteObject* sw = f->CreateSprite(
         0,
@@ -961,7 +961,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                     (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
                 if (shown == 0) {
 
-                    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
+                    SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
                     registry->PlayCue("GAME_EXPLOSION1");
                     shown = 1;
                 }
@@ -1028,7 +1028,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_slot++;
-            PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_EXPLOSION1");
+            PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_EXPLOSION1");
             if (m_slot >= 8) {
                 return 1;
             }
@@ -1223,13 +1223,13 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     if (m_soundStarted == false && m_animSprites[m_stepIndex]->m_screenPosition.m_y <= 0x195) {
         if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) == 0) {
             m_soundStarted = true;
-            SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
+            SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
             ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D");
         }
     }
 
     if (m_soundStarted != false) {
-        SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
+        SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
         SoundCue* res = ss->FindCue("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D");
         if (res == NULL) {
             return 1;
@@ -1261,7 +1261,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
             if (sel != NULL) {
                 if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
-                    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_FLAGRISE");
+                    PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_FLAGRISE");
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
                     m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
                     CWwdSpriteObject* g = m_animSprites[m_stepIndex];
@@ -1269,7 +1269,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
-                    g_gameReg->m_voiceManager
+                    g_gameReg->VoiceMgr()
                         ->PlayVoice(NULL, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
                     m_walkStarted = true;
                 } else {
@@ -1281,7 +1281,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     m_stepIndex++;
-                    g_gameReg->m_voiceManager->PlayVoice(NULL, 0x441, 0, 1, -1, -1);
+                    g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x441, 0, 1, -1, -1);
                     if (m_stepIndex == g_gameReg->m_gameStats->m_levelNumber % 4) {
                         m_stepIndex = 4;
                         return 1;
@@ -1323,7 +1323,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
 
 RVA(0x0001c070, 0x59)
 i32 CBootyState::BuildBootyPerfectAnimation() {
-    CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+    CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         static_cast<i32>(0xffffff7e),
         0xf0,
@@ -1348,9 +1348,9 @@ i32 CBootyState::CheckPerfectBonus() {
     CWwdSpriteObject* st = m_bootyPerfectSprite;
     i32 phase = st->m_screenPosition.m_x;
     if (phase == static_cast<i32>(0xffffff7e)) {
-        CDDrawSurfaceMgr* host = g_gameReg->m_world;
+        CDDrawSurfaceMgr* host = g_gameReg->World();
         i32 item = g_gameReg->m_soundVolume;
-        SoundCueRegistry* cueRegistry = host->m_soundRegistry;
+        SoundCueRegistry* cueRegistry = host->SoundRegistry();
         if (cueRegistry->m_silentMode == false) {
             SoundCue* found = cueRegistry->FindCue("BOOTY_PERFECT");
             if (found) {
@@ -1368,7 +1368,8 @@ i32 CBootyState::CheckPerfectBonus() {
 
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
-    IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
+    IDirectDrawSurface* frameSurf =
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
@@ -1391,7 +1392,7 @@ i32 CBootyState::Render() {
     switch (m_activation) {
         case BOOTYSEQ_WARP_CUE: {
             m_activation = BOOTYSEQ_GLITTER;
-            SoundCueRegistry* set = g_gameReg->m_world->m_soundRegistry;
+            SoundCueRegistry* set = g_gameReg->World()->SoundRegistry();
             set->PlayCue("BOOTY_WARP");
         }
             // FALL THROUGH
@@ -1401,7 +1402,7 @@ i32 CBootyState::Render() {
                 break;
             }
             m_activation = BOOTYSEQ_LETTERS;
-            SoundCueRegistry* set = g_gameReg->m_world->m_soundRegistry;
+            SoundCueRegistry* set = g_gameReg->World()->SoundRegistry();
             set->PlayCue("BOOTY_BOOM");
             if (m_initOnce != false && g_gameReg->m_gameStats->m_currentAreaComplete != false
                 && g_levelBias100 == false) {
@@ -1477,11 +1478,11 @@ i32 CBootyState::Render() {
             return 1;
     }
 
-    m_world->m_childGroup->TickKillCues(1);
-    m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
+    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
     return 1;
 }
 
@@ -1606,7 +1607,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (m_initOnce == false) {
             if (gameStats->m_currentAreaComplete != false) {
                 m_initOnce = true;
-                SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
+                SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
                 ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A");
                 if (g_gameReg->m_gameStats->m_levelNumber < 0x24) {
                     for (i32 p = 0; p < 4; p++) {
@@ -1648,7 +1649,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 }
                 ShowLevelCompleteMessage();
                 m_world->m_drawTarget->TransExit();
-                m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
+                m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
                 m_world->m_drawTarget->TransTitle();
                 RetireScene(0x50, 0x3e8, 0, true);
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
@@ -1684,7 +1685,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
 
         CGameStats* nextLevelStats = g_gameReg->m_gameStats;
         if (nextLevelStats->m_levelNumber == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
-            SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
+            SoundStream* sub = m_world->SoundRegistry()->m_soundStream;
             if (sub != NULL) {
                 sub->StopAllStreams();
             }
@@ -1740,13 +1741,13 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     if (!m_levelResources) {
         return 0;
     }
-    m_world->m_childGroup->ClearChildren();
+    m_world->ChildGroup()->ClearChildren();
     {
         CRezDir* soundz = m_stateResources->GetDir("SOUNDZ");
         if (!soundz) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundz), "BOOTY", "_");
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundz), "BOOTY", "_");
     }
     while (ShowCursor(false) >= 0) {
     }
@@ -1877,7 +1878,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         tabKey.Format("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD%d", t + 1);
         flagKey.Format("GAME_FORTRESSFLAGZ_%s", static_cast<const char*>(GetWarlordName(t)));
 
-        m_tabSprites[t] = g_gameReg->m_world->m_childGroup->CreateSprite(
+        m_tabSprites[t] = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             0,
             0,
@@ -1893,7 +1894,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         (m_tabSprites[t])->SetDrawFill(SHADE_PAL_16, tint);
         m_tabSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-        m_flagSprites[t] = g_gameReg->m_world->m_childGroup->CreateSprite(
+        m_flagSprites[t] = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             0,
             0,
@@ -1999,13 +2000,13 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
 
-    SoundCueRegistry* reg = m_world->m_soundRegistry;
+    SoundCueRegistry* reg = m_world->SoundRegistry();
     if (reg->m_soundStream) {
         reg->m_soundStream->StopAllStreams();
     }
-    m_world->m_soundRegistry->RemoveWithPrefix("BOOTY", "_");
+    m_world->SoundRegistry()->RemoveWithPrefix("BOOTY", "_");
 
-    m_mgr->m_voiceManager->PauseAllVoices();
+    m_mgr->VoiceMgr()->PauseAllVoices();
     CState::ReleaseResources();
 }
 
@@ -2018,9 +2019,9 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
     m_world->m_drawTarget->TransExit();
     RetireScene(0x50, 0x3e8, 0, true);
 
-    CDDrawSurfaceMgr* host = g_gameReg->m_world;
+    CDDrawSurfaceMgr* host = g_gameReg->World();
     i32 item = g_gameReg->m_soundVolume;
-    SoundCueRegistry* cueRegistry = host->m_soundRegistry;
+    SoundCueRegistry* cueRegistry = host->SoundRegistry();
     if (cueRegistry->m_silentMode == false) {
         SoundCue* found = cueRegistry->FindCue("BOOTY_LOOP");
         if (found) {
@@ -2032,11 +2033,11 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId nextState) {
-    SoundCue* found = m_world->m_soundRegistry->FindCue("BOOTY_LOOP");
+    SoundCue* found = m_world->SoundRegistry()->FindCue("BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, true);
         while (found->m_sound->IsPlaying()) {
-            m_world->m_soundRegistry->TickVolumeRamps();
+            m_world->SoundRegistry()->TickVolumeRamps();
         }
     }
     return 1;
@@ -2464,7 +2465,8 @@ void CMultiBootyState::DrawBattleStats() {
 
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
-    IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
+    IDirectDrawSurface* frameSurf =
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
@@ -2475,8 +2477,8 @@ i32 CMultiBootyState::Render() {
         DrawBattleStats();
         m_sequenceState = BOOTYSEQ_PERFECT_BONUS;
     }
-    m_world->m_childGroup->TickKillCues(1);
-    m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
+    m_world->ChildGroup()->TickKillCues(1);
+    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
 
     u32 secs = g_gameReg->m_gameStats->m_elapsedTimeMs / MILLIS_PER_SECOND;
     CString s;
@@ -2491,7 +2493,7 @@ i32 CMultiBootyState::Render() {
 
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
     return 1;
 }
 

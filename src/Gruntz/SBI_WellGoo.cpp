@@ -65,7 +65,7 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
     m_gooSrc =
-        g_gameReg->m_world->m_deviceManager->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
+        g_gameReg->World()->m_deviceManager->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
     if (m_gooSrc == NULL) {
         goto fail;
     }
@@ -141,7 +141,7 @@ i32 CSBI_WellGoo::Render() {
         return 1;
     }
 
-    CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->m_backPair;
     m_baseFrame->RenderFrame(ctx, m_drawX, m_rect.bottom + 3, 0);
 
     double fill = static_cast<float>(RECT_HEIGHT(m_rect)) * m_fillScale * 0.01f - 3.0f;
@@ -154,7 +154,7 @@ i32 CSBI_WellGoo::Render() {
 
     m_srcRect.right++;
     m_srcRect.bottom++;
-    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, DDBLT_WAIT, NULL);
+    ctx->GetSurface()->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, DDBLT_WAIT, NULL);
     m_srcRect.right--;
     m_srcRect.bottom--;
 
@@ -173,7 +173,7 @@ i32 CSBI_WellGoo::SerializeFields(
     if (arc == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->World();
     if (mgr == NULL) {
         return 0;
     }
@@ -208,8 +208,8 @@ i32 CSBI_WellGoo::SerializeFields(
         }
         case SERIAL_POSTLOAD: {
 
-            m_gooSrc = g_gameReg->m_world->m_deviceManager
-                           ->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
+            m_gooSrc = g_gameReg->World()
+                           ->m_deviceManager->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
             if (m_gooSrc == NULL) {
                 return 0;
             }

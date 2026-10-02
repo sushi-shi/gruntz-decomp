@@ -243,13 +243,13 @@ void CFaderMgr::Remove(CFader* pFader) {
 RVA(0x0017e1d0, 0x4d)
 void CFaderMgr::DeleteAll() {
     i32 i = 0;
-    i32 last = m_arr.GetSize() - 1;
+    i32 last = m_arr.GetUpperBound();
     if (last >= 0) {
         do {
             CFader* p = m_arr[i];
             delete p;
             i++;
-            last = m_arr.GetSize() - 1;
+            last = m_arr.GetUpperBound();
         } while (i <= last);
     }
     m_arr.RemoveAll();

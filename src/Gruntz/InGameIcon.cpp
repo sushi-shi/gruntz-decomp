@@ -349,7 +349,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     if (glitter != ICON_GLITTER_NONE) {
-        CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* fx = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             m_object->m_screenPosition.m_x,
             m_object->m_screenPosition.m_y,
@@ -671,7 +671,7 @@ i32 CInGameIcon::Reposition() {
 
             CGameObject* found = NULL;
             if (MapLookupById(
-                    reg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    reg->m_world->ChildGroup()->m_registeredGameObjectsById,
                     cellVal,
                     found
                 )
@@ -805,7 +805,7 @@ i32 CInGameIcon::SerializeDispatch(
             i32 id;
             ar->Read(&id, sizeof(id));
             CWwdSpriteObject* sprite = LookupSerialRef(
-                m_ownerLogicRecord->m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
+                m_ownerLogicRecord->m_ownerCtx->ChildGroup()->m_registeredGameObjectsById,
                 id
             );
             m_glitterSprite = sprite;
@@ -908,7 +908,7 @@ i32 CInGameText::Update() {
         i32 x = o->m_screenPosition.m_x;
         CGruntzMgr* reg = g_gameReg;
         if (::PtInRect(&reg->m_viewBounds, x, y)) {
-            PlayRegistryCueIfElapsed(reg->m_world->m_soundRegistry, "GAME_HELPBOOK");
+            PlayRegistryCueIfElapsed(reg->m_world->SoundRegistry(), "GAME_HELPBOOK");
         }
 
         m_cachedPlayerIndex = playerIndex;
@@ -950,7 +950,7 @@ void CInGameIcon::SetupSprite(const char* category) {
     SoundCue* found = NULL;
     if (category != NULL) {
         found = NULL;
-        MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, category, found);
+        MapLookup(g_gameReg->World()->SoundRegistry()->m_cues, category, found);
     }
     m_cue = found;
 }

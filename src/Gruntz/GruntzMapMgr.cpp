@@ -36,7 +36,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
                     g_coordPool.Push(elem);
                 }
             }
-            m_arr.SetSize(0, -1);
+            m_arr.RemoveAll();
             m_arr.SetSize(count, -1);
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
                 Coord* elem = g_coordPool.Pop();
@@ -72,18 +72,6 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     return CollisionAtHandle(tile, 0, 0);
 }
 
-RVA(0x00085480, 0x52)
-void CGruntzMapMgr::Reset() {
-    for (i32 i = 0; i < m_arr.GetSize(); i++) {
-        Coord* elem = static_cast<Coord*>(m_arr.GetData()[i]);
-        if (elem != NULL) {
-            g_coordPool.Push(elem);
-        }
-    }
-    m_arr.SetSize(0, -1);
-    CMapMgr::Reset();
-}
-
 RVA(0x00085d10, 0xa7)
 CGruntzMapMgr::~CGruntzMapMgr() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
@@ -92,6 +80,6 @@ CGruntzMapMgr::~CGruntzMapMgr() {
             g_coordPool.Push(elem);
         }
     }
-    m_arr.SetSize(0, -1);
+    m_arr.RemoveAll();
     CMapMgr::Reset();
 }

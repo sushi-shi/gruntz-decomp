@@ -183,5 +183,5 @@ i32 CDDrawPaletteResource::ApplyToFrontSurface() {
     if (sd->m_bpp != BPP_PALETTED_8) {
         return 1;
     }
-    return sd->m_surface->SetPalette(m_palette, 0);
+    return sd->GetSurface()->SetPalette(m_palette, 0);
 }

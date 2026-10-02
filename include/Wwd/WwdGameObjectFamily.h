@@ -85,8 +85,38 @@ public:
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
 
     void Notify(CGameObject* p);
+    i32 NotifyCollision(CGameObject* other) {
+        m_hitOther = other;
+        LogicRecordDispatchFn dispatch = m_collisionLogic->m_dispatch;
+        return dispatch(this);
+    }
 
     i32 AttackBits(CGameObject* target) const;
+    i32 CollisionBits(CGameObject* target) const {
+        return static_cast<i32>(target->m_objectType) & m_collMask;
+    }
+    RECT& ExtentAt(const i32& x, const i32& y, RECT& bounds) const {
+        i32 left = m_extent.left + x;
+        i32 top = y;
+        top += m_extent.top;
+        i32 right = x + m_extent.right;
+        i32 bottom = m_extent.bottom + y;
+        bounds.left = left;
+        bounds.top = top;
+        bounds.right = right;
+        bounds.bottom = bottom;
+        return bounds;
+    }
+
+    BOOL ExtentsOverlapAt(const i32& x, const i32& y, CGameObject* b, RECT& bounds) const {
+        const RECT& aBounds = ExtentAt(x, y, bounds);
+        i32 bLeft = b->m_screenPosition.m_x + b->m_extent.left;
+        i32 bTop = b->m_extent.top + b->m_screenPosition.m_y;
+        i32 bBottom = b->m_screenPosition.m_y + b->m_extent.bottom;
+        i32 bRight = b->m_screenPosition.m_x + b->m_extent.right;
+        return aBounds.left <= bRight && aBounds.right >= bLeft && aBounds.top <= bBottom
+               && aBounds.bottom >= bTop;
+    }
 
     i32 PrepareSave(CFileMemBase* ar);
     i32 Serialize(CFileMemBase* ar);

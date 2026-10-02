@@ -41,7 +41,7 @@ CString CStringStaticPool<CAssetRootTag>::s_value;
 
 RVA(0x000f9780, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    if (CAssetRootStorage::s_value.GetLength() == 0) {
+    if (CAssetRootStorage::s_value.IsEmpty()) {
         return 0;
     }
 
@@ -58,18 +58,18 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prev
 
     CRezDir* soundz = StateResources()->GetDir("SOUNDZ");
     if (soundz) {
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundz), "", "_");
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundz), "", "_");
     }
     return 1;
 }
 
 RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
-    SoundCueRegistry* reg = m_world->m_soundRegistry;
+    SoundCueRegistry* reg = m_world->SoundRegistry();
     if (reg->m_soundStream != NULL) {
         reg->m_soundStream->StopAllStreams();
     }
-    m_world->m_soundRegistry->ClearCues();
+    m_world->SoundRegistry()->ClearCues();
     CState::ReleaseResources();
 }
 
@@ -91,7 +91,7 @@ i32 CSplashState::LeaveState(GameStateId nextState) {
 
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
-    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
+    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x447);
@@ -99,7 +99,7 @@ i32 CSplashState::Render() {
         }
     }
 
-    m_world->m_soundRegistry->TickVolumeRamps();
+    m_world->SoundRegistry()->TickVolumeRamps();
 
     if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_splashCountdownMs) {
         m_splashCountdownMs = 0;

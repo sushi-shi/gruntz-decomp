@@ -151,7 +151,7 @@ i32 CSpotLight::Tick() {
                 i32 laser = GetRandomNumber() % 2 + 1;
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
-                PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, name);
+                PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), name);
                 return 0;
             } else {
                 tgt->SnapToLastTile(1);
@@ -266,7 +266,7 @@ i32 CSpotLight::SerializeDispatch(
             {
                 i32 id;
                 s->Read(&id, sizeof(id));
-                m_focus = LookupSerialRef(world->m_childGroup->m_registeredGameObjectsById, id);
+                m_focus = LookupSerialRef(world->ChildGroup()->m_registeredGameObjectsById, id);
                 if (m_focus == NULL && id != 0) {
                     return 0;
                 }

@@ -66,8 +66,8 @@ void CNetSession::Shutdown() {
         slot->m_owner = NULL;
         slot->ClearRecords();
         slot->ClearDrainAcks();
-        slot->ClearSequenceSet(slot->m_receivedAhead);
-        slot->ClearSequenceSet(slot->m_peerReceivedAhead);
+        slot->ClearSequenceSet(slot->ReceivedAhead());
+        slot->ClearSequenceSet(slot->PeerReceivedAhead());
     }
     for (i32 j = 0; j < 0x80; j++) {
         m_commandByTick[j] = NULL;
@@ -79,7 +79,7 @@ void CNetSession::Shutdown() {
         m_commandRecords[k].m_checksum = 0;
     }
     CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
-    while (freeList.GetCount() != 0) {
+    while (!freeList.IsEmpty()) {
         GruntRec* p = static_cast<GruntRec*>(freeList.RemoveTail());
         if (p) {
             delete p;
@@ -399,28 +399,28 @@ i32 CNetSession::SendPendingRecords() {
             }
             candidateSequence = m_sequence + 1;
             if (slot->m_peerWindowBase < candidateSequence
-                && slot->ContainsSequence(slot->m_peerReceivedAhead, candidateSequence) == 0) {
+                && slot->ContainsSequence(slot->PeerReceivedAhead(), candidateSequence) == 0) {
                 if (SendRecord(slot, candidateSequence)) {
                     count++;
                 }
             }
             candidateSequence = m_sequence;
             if (slot->m_peerWindowBase < candidateSequence
-                && slot->ContainsSequence(slot->m_peerReceivedAhead, candidateSequence) == 0) {
+                && slot->ContainsSequence(slot->PeerReceivedAhead(), candidateSequence) == 0) {
                 if (SendRecord(slot, candidateSequence)) {
                     count++;
                 }
             }
             candidateSequence = m_sequence - 1;
             if (slot->m_peerWindowBase < candidateSequence
-                && slot->ContainsSequence(slot->m_peerReceivedAhead, candidateSequence) == 0) {
+                && slot->ContainsSequence(slot->PeerReceivedAhead(), candidateSequence) == 0) {
                 if (SendRecord(slot, candidateSequence)) {
                     count++;
                 }
             }
             candidateSequence = m_sequence - 2;
             if (slot->m_peerWindowBase < candidateSequence
-                && slot->ContainsSequence(slot->m_peerReceivedAhead, candidateSequence) == 0) {
+                && slot->ContainsSequence(slot->PeerReceivedAhead(), candidateSequence) == 0) {
                 if (SendRecord(slot, candidateSequence)) {
                     count++;
                 }
@@ -441,10 +441,10 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     }
     unsigned char flags = 0;
     i32 baseSeq = slot->m_contiguousSequence;
-    if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 2)) {
+    if (slot->ContainsSequence(slot->ReceivedAhead(), baseSeq + 2)) {
         flags = 0x10;
     }
-    if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 3)) {
+    if (slot->ContainsSequence(slot->ReceivedAhead(), baseSeq + 3)) {
         flags |= 0x20;
     }
     GruntRec* entry = &m_commandRecords[sequence % 0x80];
@@ -690,7 +690,7 @@ i32 CNetSession::ComputeChecksum() {
     i32 sum = 0;
     for (i32 player = 0; player < PLAYER_SLOT_COUNT; player++) {
         for (i32 g = 0; g < TM_UNITS_PER_PLAYER; g++) {
-            CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->UnitAt(player, g);
+            CGrunt* grunt = m_owner->Mgr()->m_triggerMgr->UnitAt(player, g);
             if (grunt != NULL) {
                 sum += IDX(grunt->m_entranceCell.m_direction) + grunt->m_stamina + grunt->m_toyTime
                        + grunt->m_health + grunt->m_object->m_screenPosition.m_y
@@ -702,79 +702,12 @@ i32 CNetSession::ComputeChecksum() {
                 sum += IDX(grunt->m_vehiclePickupType) + grunt->m_entranceCommitted
                        + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);
 
-                PickupType next;
-                switch (carried) {
-                    case PICKUP_BOMB:
-                        next = PICKUP_BOOMERANG;
-                        break;
-                    case PICKUP_WELDER:
-                        next = PICKUP_BRICK;
-                        break;
-                    case PICKUP_SWORD:
-                        next = PICKUP_CLUB;
-                        break;
-                    case PICKUP_GUNHAT:
-                        next = PICKUP_GAUNTLETZ;
-                        break;
-                    case PICKUP_CLUB:
-                        next = PICKUP_GLOVEZ;
-                        break;
-                    case PICKUP_ROCK:
-                        next = PICKUP_GOOBER;
-                        break;
-                    case PICKUP_SHOVEL:
-                        next = PICKUP_GRAVITYBOOTZ;
-                        break;
-                    case PICKUP_BOOMERANG:
-                        next = PICKUP_GUNHAT;
-                        break;
-                    case PICKUP_SPRING:
-                        next = PICKUP_NERFGUN;
-                        break;
-                    case PICKUP_GAUNTLETZ:
-                        next = PICKUP_ROCK;
-                        break;
-                    case PICKUP_WINGZ:
-                        next = PICKUP_SHIELD;
-                        break;
-                    case PICKUP_SPY:
-                        next = PICKUP_SHOVEL;
-                        break;
-                    case PICKUP_BRICK:
-                        next = PICKUP_SPRING;
-                        break;
-                    case PICKUP_GRAVITYBOOTZ:
-                        next = PICKUP_SPY;
-                        break;
-                    case PICKUP_SHIELD:
-                        next = PICKUP_SWORD;
-                        break;
-                    case PICKUP_GOOBER:
-                        next = PICKUP_TIMEBOMB;
-                        break;
-                    case PICKUP_TOOB:
-                        next = PICKUP_TOOB;
-                        break;
-                    case PICKUP_GLOVEZ:
-                        next = PICKUP_WAND;
-                        break;
-                    case PICKUP_TIMEBOMB:
-                        next = PICKUP_WARPSTONE;
-                        break;
-                    case PICKUP_NERFGUN:
-                        next = PICKUP_WELDER;
-                        break;
-                    case PICKUP_WAND:
-                        next = PICKUP_WINGZ;
-                        break;
-                    default:
-                        next = PICKUP_BABYWALKER;
-                        break;
-                }
+                i32 priority;
+                PRIO(priority, carried);
 
                 sum += grunt->m_arrivalPhase + grunt->m_neighborScanEnabled + grunt->m_combatActive
                        + grunt->m_neighborValid + grunt->m_poweredUp + static_cast<i32>(g_frameTime)
-                       + IDX(next);
+                       + priority;
                 sum += rand();
             }
         }

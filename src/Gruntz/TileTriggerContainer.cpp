@@ -75,14 +75,14 @@ i32 DrawPageDebugText(
             return 0;
         }
     }
-    CDDSurface* surf = page->m_surface;
+    CDDSurface* surf = page->GetSurface();
     if (surf == NULL) {
         return 0;
     }
 
     HDC hdc = NULL;
     surf->m_ddSurface->GetDC(&hdc);
-    g_gameReg->m_chatLog->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
+    g_gameReg->ChatLog()->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
     surf->m_ddSurface->ReleaseDC(hdc);
     return 1;
 }
@@ -868,7 +868,7 @@ void* CTileTriggerContainer::DeserializeLogic(
             obj->m_owner = this;
             obj->m_typeTag = id;
 
-            CGameLevel* level = g_gameReg->m_world->m_level;
+            CGameLevel* level = g_gameReg->World()->m_level;
             TileCollisionKind tileKind = PbResolveCell(level, obj->m_tile.m_x, obj->m_tile.m_y);
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {
                 this->m_latchedLeaf = obj;
@@ -895,7 +895,7 @@ i32 CTileTriggerContainer::SaveInitialized(CFileMemBase* archive) {
     if (archive == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     archive->Write(&m_initialized, sizeof(m_initialized));
@@ -907,7 +907,7 @@ i32 CTileTriggerContainer::LoadInitialized(CFileMemBase* archive) {
     if (archive == NULL) {
         return 0;
     }
-    if (g_gameReg->m_world == NULL) {
+    if (g_gameReg->World() == NULL) {
         return 0;
     }
     archive->Read(&m_initialized, sizeof(m_initialized));

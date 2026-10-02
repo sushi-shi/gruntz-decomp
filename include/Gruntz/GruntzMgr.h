@@ -279,6 +279,22 @@ public:
         return m_cheatMgr;
     }
 
+    CDDrawSurfaceMgr* World() {
+        return m_world;
+    }
+
+    CVoiceManager* VoiceMgr() {
+        return m_voiceManager;
+    }
+
+    CRezMgr* ResourceArchive() {
+        return m_resourceArchive;
+    }
+
+    CFontConfig* ChatLog() {
+        return m_chatLog;
+    }
+
     CState* m_curState;
     CDDrawSurfaceMgr* m_world;
 
