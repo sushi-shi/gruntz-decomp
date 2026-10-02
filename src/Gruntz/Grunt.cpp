@@ -507,7 +507,6 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 
 #undef LOAD_POSE
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0004a780, 0x1ec)

@@ -593,7 +593,6 @@ static char s_dbgVid[] = "VID";
 DATA(0x0021ab28)
 static char s_dbgSys[] = "SYS";
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a210, 0x432)
