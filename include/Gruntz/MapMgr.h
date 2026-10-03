@@ -23,6 +23,8 @@ public:
     ~CBrickzNodePool();
     i32 Allocate(u32 count);
     void Free();
+    inline BrickzNode* Pop();
+    inline void Push(BrickzNode* node);
 
     BrickzNode* m_freeList;
     BrickzNode* m_storage;
@@ -35,6 +37,8 @@ public:
     ~CBrickzCellNodePool();
     i32 Allocate(u32 count);
     void Free();
+    inline BrickzCellNode* Pop();
+    inline void Push(BrickzCellNode* node);
 
     BrickzCellNode* m_storage;
     BrickzCellNode* m_freeList;
@@ -66,6 +70,7 @@ public:
     virtual i32 IsCellClear(i32 x, i32 y);
 
     void Clip(const tagRECT* src);
+    inline i32 InSearchBounds(i32 x, i32 y) const;
     void ComputeCellFlags(i32 x, i32 y, i32 tileId);
     i32 AllocGrid(i32 width, i32 height, void (*callback)());
     i32 FindPathWithEndpointOverrides(
@@ -97,6 +102,7 @@ public:
     BrickzCell CellAt(i32 x, i32 y);
     TileCollisionKind CellTypeAt(i32 x, i32 y) const;
     i32 ObjectIdAt(u32 x, u32 y) const;
+    void SetObjectIdAt(u32 x, u32 y, i32 objectId);
     i32 CanStepBetween(
         i32 sourceX,
         i32 sourceY,

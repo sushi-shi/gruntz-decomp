@@ -147,8 +147,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     }
     CShadeTable* sel = g_gameReg->m_lightFxMgr->m_tables[5];
     m_object->SetDrawFill(SHADE_DST_BY_SRC_16, sel);
-    m_dropTiming.m_start = 0;
-    m_dropTiming.m_interval = 0;
+    m_dropTiming.Clear();
     SET_OBJECT_AREA(1)
 }
 

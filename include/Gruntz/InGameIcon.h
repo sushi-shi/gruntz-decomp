@@ -10,6 +10,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundState.h>
@@ -40,6 +41,22 @@ public:
 public:
     CInGameIcon() {}
     CInGameIcon(CGameObject* obj);
+
+    PickupType GetPickupType() const {
+        return static_cast<PickupType>(m_object->m_smarts);
+    }
+
+    PickupType GetToyType() const {
+        return static_cast<PickupType>(m_object->m_points);
+    }
+
+    i32 GetPlayerIndex() const {
+        return m_object->m_score;
+    }
+
+    void SetPlayerIndex(i32 playerIndex) {
+        m_object->m_score = playerIndex;
+    }
 
     void SetupSprite(const char* cat);
 

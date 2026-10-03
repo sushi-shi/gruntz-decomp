@@ -254,12 +254,12 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped = found;
                             }
                             if (mapped == NULL) {
-                                SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
+                                g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
-                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
-                                    icon->m_object->m_score = playerIndex;
+                                if (icon->GetPickupType() == PICKUP_TOYBOX) {
+                                    icon->SetPlayerIndex(playerIndex);
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
@@ -284,7 +284,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         if (peek != NULL) {
-                                            peek->m_smarts = icon->m_object->m_points;
+                                            peek->m_smarts = IDX(icon->GetToyType());
                                         }
                                     }
                                 }
@@ -319,12 +319,12 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped = found;
                             }
                             if (mapped == NULL) {
-                                SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
+                                g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
-                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
-                                    icon->m_object->m_score = playerIndex;
+                                if (icon->GetPickupType() == PICKUP_TOYBOX) {
+                                    icon->SetPlayerIndex(playerIndex);
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
@@ -349,7 +349,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         if (peek != NULL) {
-                                            peek->m_smarts = icon->m_object->m_points;
+                                            peek->m_smarts = IDX(icon->GetToyType());
                                         }
                                     }
                                 }
@@ -388,12 +388,12 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped = found;
                             }
                             if (mapped == NULL) {
-                                SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
+                                g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
-                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
-                                    icon->m_object->m_score = playerIndex;
+                                if (icon->GetPickupType() == PICKUP_TOYBOX) {
+                                    icon->SetPlayerIndex(playerIndex);
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = leftX * 0x20 + 0x10;
@@ -418,7 +418,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         if (peek != NULL) {
-                                            peek->m_smarts = icon->m_object->m_points;
+                                            peek->m_smarts = IDX(icon->GetToyType());
                                         }
                                     }
                                 }
@@ -453,12 +453,12 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped = found;
                             }
                             if (mapped == NULL) {
-                                SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
+                                g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
-                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
-                                    icon->m_object->m_score = playerIndex;
+                                if (icon->GetPickupType() == PICKUP_TOYBOX) {
+                                    icon->SetPlayerIndex(playerIndex);
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = rightX * 0x20 + 0x10;
@@ -483,7 +483,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         if (peek != NULL) {
-                                            peek->m_smarts = icon->m_object->m_points;
+                                            peek->m_smarts = IDX(icon->GetToyType());
                                         }
                                     }
                                 }

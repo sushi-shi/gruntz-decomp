@@ -201,7 +201,6 @@ void CMapMgr::Reset() {
     m_reserved1c = 0;
 }
 
-// @early-stop
 RVA(0x0009eca0, 0x2bd)
 i32 CMapMgr::FindPath(
     i32 startX,
@@ -215,18 +214,10 @@ i32 CMapMgr::FindPath(
 ) {
     Coord start(startX, startY);
     Coord goal(goalX, goalY);
-    Coord bounds(m_bounds.left, m_bounds.top);
-    if (static_cast<u32>(start.m_x - bounds.m_x) >= static_cast<u32>(m_gridSize.cx)) {
+    if (!InSearchBounds(start.m_x, start.m_y)) {
         return 0;
     }
-    i32 gridHeight = m_gridSize.cy;
-    if (static_cast<u32>(start.m_y - bounds.m_y) >= static_cast<u32>(gridHeight)) {
-        return 0;
-    }
-    if (static_cast<u32>(goal.m_x - bounds.m_x) >= static_cast<u32>(m_gridSize.cx)) {
-        return 0;
-    }
-    if (static_cast<u32>(goal.m_y - bounds.m_y) >= static_cast<u32>(gridHeight)) {
+    if (!InSearchBounds(goal.m_x, goal.m_y)) {
         return 0;
     }
     m_passableMask = passableMask;
@@ -246,14 +237,7 @@ i32 CMapMgr::FindPath(
     m_goal = goal;
     m_start = start;
 
-    BrickzNode* seed = m_nodePool.m_freeList;
-    BrickzNode* slot = seed->m_openNext;
-    if (slot == NULL) {
-        seed = NULL;
-    } else {
-        m_nodePool.m_freeList = slot;
-        slot->m_openPrev = NULL;
-    }
+    BrickzNode* seed = m_nodePool.Pop();
     if (seed == NULL) {
         return 0;
     }
@@ -299,15 +283,8 @@ i32 CMapMgr::FindPath(
 reached:
     BrickzNode* p = node;
     while (p != NULL) {
-        CoordPoolNode* rec = g_coordPool.m_freeHead;
-        Coord cell(p->m_col, p->m_row);
-        Coord* slot = NULL;
-        if (rec->m_next != NULL) {
-            slot = &rec->m_value;
-            slot->m_x = cell.m_x;
-            slot->m_y = cell.m_y;
-            g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-        }
+        Coord position;
+        Coord* slot = g_coordPool.PopCopy(*position.Set(p->m_col, p->m_row));
 
         outPath->AddHead(slot);
         p = p->m_parent;
@@ -315,10 +292,7 @@ reached:
     if (m_stepCb != NULL) {
         m_stepCb();
     }
-    node->m_openPrev = NULL;
-    node->m_openNext = m_nodePool.m_freeList;
-    m_nodePool.m_freeList->m_openPrev = node;
-    m_nodePool.m_freeList = node;
+    m_nodePool.Push(node);
     RecycleOpenNodes();
     RecycleClosedNodes();
     return 1;
@@ -328,10 +302,7 @@ RVA(0x0009f010, 0x2a1)
 i32 CMapMgr::ExpandNeighbor(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diagonal) {
     i32 ng = node->m_gCost + cost;
     Coord neighbor(node->m_col + dx, node->m_row + dy);
-    if (static_cast<u32>((neighbor.m_x - m_bounds.left)) >= static_cast<u32>(m_gridSize.cx)) {
-        return 1;
-    }
-    if (static_cast<u32>((neighbor.m_y - m_bounds.top)) >= static_cast<u32>(m_gridSize.cy)) {
+    if (!InSearchBounds(neighbor.m_x, neighbor.m_y)) {
         return 1;
     }
     BrickzCell* ncell = &m_rows[neighbor.m_y][neighbor.m_x];
@@ -411,14 +382,7 @@ relax:
     if (open != NULL) {
         return 1;
     }
-    BrickzNode* rec = m_nodePool.m_freeList;
-    BrickzNode* nx = rec->m_openNext;
-    if (nx == NULL) {
-        rec = NULL;
-    } else {
-        m_nodePool.m_freeList = nx;
-        nx->m_openPrev = NULL;
-    }
+    BrickzNode* rec = m_nodePool.Pop();
     if (rec == NULL) {
         return 0;
     }
@@ -494,7 +458,7 @@ BrickzNode* CMapMgr::PopBestOpenNode() {
 RVA(0x0009f470, 0x62)
 void CMapMgr::LinkClosedNode(BrickzNode* node) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
-    BrickzCellNode* slot = PopFreeCellNode(m_cellNodePool.m_freeList);
+    BrickzCellNode* slot = m_cellNodePool.Pop();
     BrickzCellNode* old = *head;
     if (old == NULL) {
         *head = slot;
@@ -546,10 +510,7 @@ void CMapMgr::RecycleOpenNodes() {
         do {
             BrickzNode* cur = p;
             p = cur->m_openNext;
-            cur->m_openNext = m_nodePool.m_freeList;
-            cur->m_openPrev = NULL;
-            m_nodePool.m_freeList->m_openPrev = cur;
-            m_nodePool.m_freeList = cur;
+            m_nodePool.Push(cur);
         } while (p != NULL);
     }
     m_openList = NULL;
@@ -565,15 +526,8 @@ void CMapMgr::RecycleClosedNodes() {
             BrickzCellNode** link = &cur->m_cellNext;
             node = *link;
             BrickzNode* child = cur->m_searchNode;
-            child->m_openNext = m_nodePool.m_freeList;
-            child->m_openPrev = NULL;
-            m_nodePool.m_freeList->m_openPrev = child;
-            m_nodePool.m_freeList = child;
-            BrickzCellNode* freeHead = m_cellNodePool.m_freeList;
-            cur->m_cellPrev = NULL;
-            *link = freeHead;
-            m_cellNodePool.m_freeList->m_cellPrev = cur;
-            m_cellNodePool.m_freeList = cur;
+            m_nodePool.Push(child);
+            m_cellNodePool.Push(cur);
         }
         cell->m_head = NULL;
         cell++;
@@ -621,15 +575,9 @@ void CMapMgr::UnlinkClosedNode(BrickzNode* node, i32 recycleSearchNode) {
     node->m_openPrev = NULL;
     node->m_openNext = NULL;
     node->m_cellLink = NULL;
-    slot->m_cellNext = m_cellNodePool.m_freeList;
-    slot->m_cellPrev = NULL;
-    m_cellNodePool.m_freeList->m_cellPrev = slot;
-    m_cellNodePool.m_freeList = slot;
+    m_cellNodePool.Push(slot);
     if (recycleSearchNode != 0) {
-        node->m_openNext = m_nodePool.m_freeList;
-        node->m_openPrev = NULL;
-        m_nodePool.m_freeList->m_openPrev = node;
-        m_nodePool.m_freeList = node;
+        m_nodePool.Push(node);
     }
 }
 

@@ -1666,10 +1666,8 @@ i32 CGrunt::Place(
     m_arrivalCell.Set(-1, -1);
     m_defenderPickupType = static_cast<PickupType>(defenderPickupType);
     m_defenderRadius = defenderRadiusMinusOne + 1;
-    m_arrivalRerollTiming.m_start = 0;
-    m_arrivalRerollTiming.m_interval = 0;
-    m_holdTiming.m_start = 0;
-    m_holdTiming.m_interval = 0;
+    m_arrivalRerollTiming.Clear();
+    m_holdTiming.Clear();
     m_moveIcon = moveIcon;
     m_triggerMgr = board;
     m_daFlag = 1;

@@ -285,10 +285,9 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_welderzPct = m_wandzPct + g_buteMgr.GetInt("Battlez", "Welderz");
     m_wingzPct = m_welderzPct + g_buteMgr.GetInt("Battlez", "Wingz");
 
-    m_routeTiming.m_startLo = 0;
-    m_routeTiming.m_intervalLo = 0;
-    m_routeTiming.m_startHi = 0;
-    m_routeTiming.m_intervalHi = 0;
+    // Keep the timer reset in the accumulator caller's store sequence.
+    m_routeTiming.m_start = 0;
+    m_routeTiming.m_interval = 0;
     return 1;
 }
 
@@ -1102,6 +1101,7 @@ perimSweep: {
     }
 }
 
+// These four reset/start expansions share the caller's nested inline population.
 topRowProbeHit: {
     unit->m_arrivalRerollTiming.m_startLo = 0;
     unit->m_arrivalRerollTiming.m_intervalLo = 0;
@@ -2808,8 +2808,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                         if (::PtInRect(hit, lvl->m_screenPosition.m_x, lvl->m_screenPosition.m_y)) {
                             g_gameReg->m_voiceManager->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }
-                        m_routeTiming.m_start = 0;
-                        m_routeTiming.m_interval = 0;
+                        m_routeTiming.Clear();
                         m_routeTiming.m_intervalLo = BLOCKED_VOICE_INTERVAL_MS;
                         m_routeTiming.m_intervalHi = 0;
                         m_routeTiming.m_start = g_frameTime;
