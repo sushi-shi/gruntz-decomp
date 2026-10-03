@@ -95,7 +95,7 @@ CWwdDotObject* CDDrawChildGroup::CreateDotObject(
     if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
 
-        result->m_logicRecord->m_dispatch(result);
+        result->GetLogicRecord()->m_dispatch(result);
     }
     return result;
 }
@@ -140,7 +140,7 @@ CWwdDeferredObject* CDDrawChildGroup::CreateDeferredObject(
     InsertSorted(result, 1);
     if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
-        result->m_logicRecord->m_dispatch(result);
+        result->GetLogicRecord()->m_dispatch(result);
     }
     return result;
 }
@@ -242,7 +242,7 @@ i32 CDDrawChildGroup::AttachSprite(
     if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
 
-        obj->m_logicRecord->m_dispatch(static_cast<CGameObject*>(obj));
+        obj->GetLogicRecord()->m_dispatch(static_cast<CGameObject*>(obj));
     }
     return 1;
 }
@@ -266,7 +266,7 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     InsertSorted(result, 1);
     if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
-        result->m_logicRecord->m_dispatch(result);
+        result->GetLogicRecord()->m_dispatch(result);
     }
     return result;
 }
@@ -311,7 +311,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-        CLogicRecord* record = obj->m_logicRecord;
+        CLogicRecord* record = obj->GetLogicRecord();
         if (record->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
             i32* refc = &record->m_frameDelay;
             if (*refc != 0) {
@@ -333,7 +333,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_killQueue.GetAt(i));
         if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
                 WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
-            CLogicRecord* record = obj->m_logicRecord;
+            CLogicRecord* record = obj->GetLogicRecord();
             record->SetLogicEvent(ACT_OBJECT_REMOVED);
             record->m_dispatch(static_cast<CGameObject*>(obj));
         }
@@ -530,7 +530,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     & IDX(WWD_GAME_OBJECT_FLAG_DAMAGE_HEALTH_DIRECTLY)) {
                                     if ((oi->m_health = oi->m_health - oj->m_damage) <= 0) {
 
-                                        oi->m_logicRecord->SetLogicEvent(ACT_HEALTH_DEPLETED);
+                                        oi->GetLogicRecord()->SetLogicEvent(ACT_HEALTH_DEPLETED);
                                     }
                                 } else {
                                     CLogicRecord* hitLogic = oi->m_hitLogic;
@@ -857,7 +857,7 @@ CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicR
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id) {
 
-            CLogicRecord* record = obj->m_logicRecord;
+            CLogicRecord* record = obj->GetLogicRecord();
             if (record->GetDispatch() == logicRecord->GetDispatch()) {
                 return obj;
             }
@@ -877,7 +877,7 @@ CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
         CGameObject* obj = NextChild(pos);
         LoadableClassId tag = obj->GetClassId();
         if (tag == CLASSID_WWD_SPRITE_OBJECT && obj->m_id == id
-            && obj->m_logicRecord->GetDispatch() == logicTemplate->GetDispatch()) {
+            && obj->GetLogicRecord()->GetDispatch() == logicTemplate->GetDispatch()) {
             return obj;
         }
     }
@@ -1204,7 +1204,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         if (createdObj == NULL) {
             return 0;
         }
-        if (createdObj->m_logicRecord == NULL) {
+        if (createdObj->GetLogicRecord() == NULL) {
             return 0;
         }
         if (desc.m_logicTypeId != LOGIC_UNSET) {
@@ -1223,7 +1223,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 return 0;
             }
 
-            createdObj->m_logicRecord->m_userLogic = child;
+            createdObj->GetLogicRecord()->m_userLogic = child;
         }
     }
     return 1;
@@ -1269,7 +1269,7 @@ i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeI
         if (obj == NULL) {
             return 0;
         }
-        if (obj->m_logicRecord == NULL) {
+        if (obj->GetLogicRecord() == NULL) {
             return 0;
         }
         if ((typeId & 1) != LOGIC_UNSET) {

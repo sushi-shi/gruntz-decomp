@@ -492,7 +492,7 @@ void CGameLevel::ResetMainPlane(){RESET_MAIN_PLANE_SELECTION(i)}
 RVA(0x0015dc90, 0x141)
 void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx) {
 
-    CObList* chain = &ctx->m_list;
+    CObList* chain = ctx->GetList();
 
     if ((m_flags & WWD_LEVEL_FLAG_USE_Z_COORDS) && chain != NULL && GetPlane(0) != NULL) {
         GetPlane(0)->Draw(visitor);
@@ -1269,7 +1269,7 @@ i32 CGameLevel::TryLandOnPlatform(
     }
 
     CDDrawChildGroup* children = OwnerMgr()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
+    POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* platform = children->NextChild(pos);
         if (platform->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {

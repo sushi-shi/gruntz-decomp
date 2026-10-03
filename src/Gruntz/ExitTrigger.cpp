@@ -59,9 +59,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     );
     if (e != NULL) {
         e->m_smarts = m_object->m_smarts;
-        e->m_logicRecord->m_dispatch(e);
+        e->GetLogicRecord()->m_dispatch(e);
 
-        m_warlordLogic = static_cast<CWarlord*>(e->m_logicRecord->m_userLogic);
+        m_warlordLogic = static_cast<CWarlord*>(e->GetLogicRecord()->m_userLogic);
         if (m_object->m_smarts == g_curPlayer) {
             g_gameReg->GetTriggerMgr()->m_pendingFx = m_warlordLogic;
         }
@@ -97,7 +97,7 @@ i32 CExitTrigger::SerializeDispatch(
                 if (MapLookupById(holder->ChildGroup()->m_registeredGameObjectsById, key, found)) {
                     obj = found;
                 }
-                m_warlordLogic = static_cast<CWarlord*>(obj->m_logicRecord->m_userLogic);
+                m_warlordLogic = static_cast<CWarlord*>(obj->GetLogicRecord()->m_userLogic);
                 if (m_warlordLogic == NULL) {
                     return 0;
                 }

@@ -1438,9 +1438,9 @@ i32 CGrunt::CreateHealthSprite() {
         "GruntHealthSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    m_healthSprite->m_logicRecord->Dispatch(m_healthSprite);
+    m_healthSprite->GetLogicRecord()->Dispatch(m_healthSprite);
 
-    CLogicRecord* inner = m_healthSprite->m_logicRecord;
+    CLogicRecord* inner = m_healthSprite->GetLogicRecord();
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->UserLogic());
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_health)) {
         reg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -1465,9 +1465,10 @@ i32 CGrunt::CreateToySprite() {
         "GruntToySprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    m_toySprite->m_logicRecord->Dispatch(m_toySprite);
+    m_toySprite->GetLogicRecord()->Dispatch(m_toySprite);
 
-    CGruntToySprite* reg = static_cast<CGruntToySprite*>(m_toySprite->m_logicRecord->UserLogic());
+    CGruntToySprite* reg =
+        static_cast<CGruntToySprite*>(m_toySprite->GetLogicRecord()->UserLogic());
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex)) {
         reg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         m_toySprite = NULL;
@@ -1491,9 +1492,9 @@ i32 CGrunt::CreateStaminaSprite() {
         "GruntStaminaSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    m_staminaSprite->m_logicRecord->Dispatch(m_staminaSprite);
+    m_staminaSprite->GetLogicRecord()->Dispatch(m_staminaSprite);
 
-    CLogicRecord* inner = m_staminaSprite->m_logicRecord;
+    CLogicRecord* inner = m_staminaSprite->GetLogicRecord();
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->UserLogic());
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_stamina)) {
         reg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -1524,9 +1525,9 @@ i32 CGrunt::CreateToyTimeSprite() {
         "GruntToyTimeSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    m_toyTimeSprite->m_logicRecord->Dispatch(m_toyTimeSprite);
+    m_toyTimeSprite->GetLogicRecord()->Dispatch(m_toyTimeSprite);
 
-    CLogicRecord* inner = m_toyTimeSprite->m_logicRecord;
+    CLogicRecord* inner = m_toyTimeSprite->GetLogicRecord();
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->UserLogic());
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_toyTime)) {
         reg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -1553,9 +1554,9 @@ i32 CGrunt::CreateWingzTimeSprite() {
         "GruntWingzTimeSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    m_wingzTimeSprite->m_logicRecord->Dispatch(m_wingzTimeSprite);
+    m_wingzTimeSprite->GetLogicRecord()->Dispatch(m_wingzTimeSprite);
 
-    CLogicRecord* inner = m_wingzTimeSprite->m_logicRecord;
+    CLogicRecord* inner = m_wingzTimeSprite->GetLogicRecord();
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->UserLogic());
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_wingzTime)) {
         reg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -1580,9 +1581,9 @@ i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
         "GruntPowerupSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    m_powerupSprite->m_logicRecord->Dispatch(m_powerupSprite);
+    m_powerupSprite->GetLogicRecord()->Dispatch(m_powerupSprite);
 
-    CLogicRecord* inner = m_powerupSprite->m_logicRecord;
+    CLogicRecord* inner = m_powerupSprite->GetLogicRecord();
     CGruntPowerupSprite* reg = static_cast<CGruntPowerupSprite*>(inner->UserLogic());
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, powerupId)) {
         reg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -1607,10 +1608,10 @@ i32 CGrunt::CreateSelectedSprite() {
         "GruntSelectedSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    m_selectedSprite->m_logicRecord->Dispatch(m_selectedSprite);
+    m_selectedSprite->GetLogicRecord()->Dispatch(m_selectedSprite);
 
     CGruntSelectedSprite* reg =
-        static_cast<CGruntSelectedSprite*>(m_selectedSprite->m_logicRecord->UserLogic());
+        static_cast<CGruntSelectedSprite*>(m_selectedSprite->GetLogicRecord()->UserLogic());
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex)) {
         reg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         m_selectedSprite = NULL;

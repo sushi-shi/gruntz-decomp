@@ -148,7 +148,7 @@ i32 CWormhole::SpawnPartners() {
         return 0;
     }
 
-    CObList* list = &g_gameReg->World()->ChildGroup()->m_list;
+    CObList* list = g_gameReg->World()->ChildGroup()->GetList();
     if (list == NULL) {
         return 0;
     }
@@ -159,7 +159,7 @@ i32 CWormhole::SpawnPartners() {
     do {
         CGameObject* obj = g_gameReg->World()->ChildGroup()->NextChild(pos);
         if (obj != NULL) {
-            CLogicRecord* record = obj->m_logicRecord;
+            CLogicRecord* record = obj->GetLogicRecord();
             if (record->GetDispatch() == &DispatchTeleporterLogic && obj->m_screenPosition.m_x == tx
                 && obj->m_screenPosition.m_y == ty && record->m_userLogic != NULL) {
                 static_cast<CTeleporter*>(record->m_userLogic)->ReapplyConfig();
@@ -411,7 +411,7 @@ i32 CTeleporter::Begin() {
         return 0;
     }
 
-    m_armTiming.Start(m_object->m_logicRecord->m_speed);
+    m_armTiming.Start(m_object->GetLogicRecord()->m_speed);
     SwitchAnimationByName("GAME_TELEPORTER", 0);
     SET_ANIMATION_ACT("B");
     return 0;
@@ -445,11 +445,11 @@ i32 CTeleporter::Update() {
     }
 
     CWwdSpriteObject* o = m_object;
-    if (o->m_logicRecord->m_speed != 0) {
+    if (o->GetLogicRecord()->m_speed != 0) {
         i64 delta = static_cast<i64>(g_frameTime) - m_armTiming.m_start;
         if (delta >= m_armTiming.m_interval) {
             SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
-            m_object->m_logicRecord->m_speed = 0;
+            m_object->GetLogicRecord()->m_speed = 0;
             m_tickHandled = true;
             return 0;
         }
@@ -487,7 +487,7 @@ i32 CTeleporter::Update() {
             spawned->m_smarts = IDX(TELEPORTER_SINGLE_USE);
             spawned->m_health = m_object->m_health;
             spawned->m_speed.Set(m_object->m_score, m_object->m_points);
-            spawned->m_logicRecord->m_speed = 0;
+            spawned->GetLogicRecord()->m_speed = 0;
         }
     } else {
         CWwdSpriteObject* s = m_object;

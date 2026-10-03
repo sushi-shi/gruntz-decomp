@@ -53,7 +53,7 @@ i32 CUserLogic::SerializeDispatch(
             ar->Read(&m_previousAnimationActId, sizeof(m_previousAnimationActId));
             m_logicObject = object;
             m_object = static_cast<CWwdSpriteObject*>(object);
-            m_logicRecord = object->m_logicRecord;
+            m_logicRecord = object->GetLogicRecord();
             m_deferredCallback = NULL;
             m_gatedCallback = NULL;
             m_gatedCallbackCode = IDX(ACT_NONE);

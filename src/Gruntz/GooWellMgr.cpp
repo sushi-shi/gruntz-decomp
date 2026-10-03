@@ -135,8 +135,8 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                                     out
                                 )
                                 && out) {
-                                if (out->m_logicRecord->m_userLogic) {
-                                    (static_cast<CWarlord*>(out->m_logicRecord->m_userLogic))
+                                if (out->GetLogicRecord()->m_userLogic) {
+                                    (static_cast<CWarlord*>(out->GetLogicRecord()->m_userLogic))
                                         ->ResolveDeathAnimation();
                                 }
                             }
@@ -157,8 +157,8 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                                     out
                                 )
                                 && out) {
-                                if (out->m_logicRecord->m_userLogic) {
-                                    (static_cast<CWarlord*>(out->m_logicRecord->m_userLogic))
+                                if (out->GetLogicRecord()->m_userLogic) {
+                                    (static_cast<CWarlord*>(out->GetLogicRecord()->m_userLogic))
                                         ->ResolveJoyAnimation();
                                 }
                             }

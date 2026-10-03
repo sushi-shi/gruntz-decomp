@@ -9,7 +9,7 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 #define LOGIC_RECORD_DISPATCH(LEAF)                                                                \
-    CLogicRecord* record = owner->m_logicRecord;                                                   \
+    CLogicRecord* record = owner->GetLogicRecord();                                                \
     switch (record->LogicEvent()) {                                                                \
         case ACT_UNINITIALISED: {                                                                  \
             record->SetLogicEvent(ACT_LIVE);                                                       \

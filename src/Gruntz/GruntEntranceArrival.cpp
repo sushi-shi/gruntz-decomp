@@ -225,8 +225,8 @@ i32 CGrunt::StepAttackFire() {
                     "Projectile",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
-                spr->m_logicRecord->m_dispatch(spr);
-                CProjectile* s = static_cast<CProjectile*>(spr->m_logicRecord->m_userLogic);
+                spr->GetLogicRecord()->m_dispatch(spr);
+                CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->m_userLogic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_playerIndex,
@@ -250,8 +250,8 @@ i32 CGrunt::StepAttackFire() {
                     "Boomerang",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
-                spr->m_logicRecord->m_dispatch(spr);
-                CProjectile* s = static_cast<CProjectile*>(spr->m_logicRecord->m_userLogic);
+                spr->GetLogicRecord()->m_dispatch(spr);
+                CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->m_userLogic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_playerIndex,
@@ -278,7 +278,7 @@ i32 CGrunt::StepAttackFire() {
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
                 spr->m_damage = 0;
-                spr->m_logicRecord->m_dispatch(spr);
+                spr->GetLogicRecord()->m_dispatch(spr);
                 spr->m_smarts = m_playerIndex;
                 break;
             }
@@ -1371,7 +1371,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         grid->SetObjectIdAt(tx, ty, 0);
         return 0;
     }
-    CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_logicRecord->m_userLogic);
+    CInGameIcon* icon = static_cast<CInGameIcon*>(found->GetLogicRecord()->m_userLogic);
     icon->PlaceAt(m_playerIndex, m_unitIndex);
     return 0;
 }

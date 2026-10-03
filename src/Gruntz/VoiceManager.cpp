@@ -80,8 +80,8 @@ BOOL CVoiceManager::CreateVoiceIndicators() {
             "GruntVoice",
             WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_WORLD_SPRITE
         );
-        spr->m_logicRecord->m_dispatch(spr);
-        CGruntVoice* got = static_cast<CGruntVoice*>(spr->m_logicRecord->m_userLogic);
+        spr->GetLogicRecord()->m_dispatch(spr);
+        CGruntVoice* got = static_cast<CGruntVoice*>(spr->GetLogicRecord()->m_userLogic);
         *slot = got;
         if (got == NULL) {
             return false;

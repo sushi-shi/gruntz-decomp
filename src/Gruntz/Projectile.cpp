@@ -241,8 +241,8 @@ i32 CProjectile::LoadProjectileSprites(
         WWD_GAME_OBJECT_FLAGS_CULL_SOUND_WORLD_SPRITE
     ));
     if (m_shadow != NULL) {
-        m_shadow->m_logicRecord->m_dispatch(m_shadow);
-        (static_cast<CLightFx*>(m_shadow->m_logicRecord->m_userLogic))
+        m_shadow->GetLogicRecord()->m_dispatch(m_shadow);
+        (static_cast<CLightFx*>(m_shadow->GetLogicRecord()->m_userLogic))
             ->Activate(
                 static_cast<const char*>(key + "_SHADOW"),
                 static_cast<const char*>(key + "1"),
@@ -763,7 +763,7 @@ i32 CProjectile::SerializeDispatch(
             CGameObject* obj = object;
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
-            m_ownerLogicRecord = obj->m_logicRecord;
+            m_ownerLogicRecord = obj->GetLogicRecord();
             if (strlen(buf) == 0) {
                 m_value = NULL;
                 return 1;

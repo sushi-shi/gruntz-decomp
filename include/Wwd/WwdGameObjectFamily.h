@@ -156,6 +156,10 @@ public:
 
     POSITION m_posCache;
 
+    CLogicRecord* const& GetLogicRecord() const {
+        return m_logicRecord;
+    }
+
     CLogicRecord* m_logicRecord;
     CLogicRecord* m_hitLogic;
     CGameObject* m_hitSource;

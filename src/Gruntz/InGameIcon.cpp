@@ -703,7 +703,7 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
-            m_ownerLogicRecord = obj->m_logicRecord;
+            m_ownerLogicRecord = obj->GetLogicRecord();
             if (strlen(aniName) == 0) {
                 m_value = NULL;
             } else {

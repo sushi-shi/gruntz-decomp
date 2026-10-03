@@ -205,7 +205,7 @@ i32 CWarlord::SerializeDispatch(
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
-            m_ownerLogicRecord = obj->m_logicRecord;
+            m_ownerLogicRecord = obj->GetLogicRecord();
             if (strlen(hdr) == 0) {
                 m_value = NULL;
             } else {

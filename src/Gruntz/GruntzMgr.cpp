@@ -1262,7 +1262,7 @@ i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
-    CObList* list = &World()->ChildGroup()->m_list;
+    CObList* list = World()->ChildGroup()->GetList();
     if (list == NULL) {
         return;
     }
@@ -3174,7 +3174,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     i32 r2 = SQR(radius);
     i32 count = 0;
     CDDrawChildGroup* children = World()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
+    POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {
@@ -3199,20 +3199,13 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     if (cb == NULL) {
         return 0;
     }
-    RECT* r = rect;
-    if (r == NULL) {
+    if (rect == NULL) {
         return 0;
     }
-    Coord offset(offX, offY);
-    CRect box(
-        r->left + offset.m_x,
-        r->top + offset.m_y,
-        r->right + offset.m_x,
-        r->bottom + offset.m_y
-    );
+    CRect box(rect->left + offX, rect->top + offY, rect->right + offX, rect->bottom + offY);
     i32 count = 0;
-    CDDrawChildGroup* children = m_world->m_childGroup;
-    POSITION pos = children->m_list.GetHeadPosition();
+    CDDrawChildGroup* children = World()->ChildGroup();
+    POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {
