@@ -222,7 +222,7 @@ i32 CGrunt::StepAttackFire() {
                     "Projectile",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
-                spr->GetLogicRecord()->m_dispatch(spr);
+                spr->GetLogicRecord()->Dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->m_userLogic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
@@ -247,7 +247,7 @@ i32 CGrunt::StepAttackFire() {
                     "Boomerang",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
-                spr->GetLogicRecord()->m_dispatch(spr);
+                spr->GetLogicRecord()->Dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->m_userLogic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
@@ -275,7 +275,7 @@ i32 CGrunt::StepAttackFire() {
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
                 spr->m_damage = 0;
-                spr->GetLogicRecord()->m_dispatch(spr);
+                spr->GetLogicRecord()->Dispatch(spr);
                 spr->m_smarts = m_playerIndex;
                 break;
             }

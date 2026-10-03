@@ -95,7 +95,7 @@ CWwdDotObject* CDDrawChildGroup::CreateDotObject(
     if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
 
-        result->GetLogicRecord()->m_dispatch(result);
+        result->GetLogicRecord()->Dispatch(result);
     }
     return result;
 }
@@ -140,7 +140,7 @@ CWwdDeferredObject* CDDrawChildGroup::CreateDeferredObject(
     InsertSorted(result, 1);
     if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
-        result->GetLogicRecord()->m_dispatch(result);
+        result->GetLogicRecord()->Dispatch(result);
     }
     return result;
 }
@@ -242,7 +242,7 @@ i32 CDDrawChildGroup::AttachSprite(
     if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
 
-        obj->GetLogicRecord()->m_dispatch(static_cast<CGameObject*>(obj));
+        obj->GetLogicRecord()->Dispatch(static_cast<CGameObject*>(obj));
     }
     return 1;
 }
@@ -266,7 +266,7 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     InsertSorted(result, 1);
     if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
-        result->GetLogicRecord()->m_dispatch(result);
+        result->GetLogicRecord()->Dispatch(result);
     }
     return result;
 }
@@ -317,7 +317,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
             if (*refc != 0) {
                 --*refc;
             } else {
-                record->m_dispatch(static_cast<CGameObject*>(obj));
+                record->Dispatch(static_cast<CGameObject*>(obj));
             }
         }
         WwdGameObjectFlags objectFlags = static_cast<WwdGameObjectFlags>(obj->m_flags);
@@ -335,7 +335,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
                 WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
             CLogicRecord* record = obj->GetLogicRecord();
             record->SetLogicEvent(ACT_OBJECT_REMOVED);
-            record->m_dispatch(static_cast<CGameObject*>(obj));
+            record->Dispatch(static_cast<CGameObject*>(obj));
         }
         if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_UNREGISTERED)) {
             if (obj != NULL) {
@@ -522,7 +522,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                 if (attackLogic != NULL) {
                                     oj->m_attackTarget = oi;
 
-                                    attackLogic->m_dispatch(oj);
+                                    attackLogic->Dispatch(oj);
                                 }
                             }
                             if (mask1) {
@@ -536,7 +536,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     CLogicRecord* hitLogic = oi->m_hitLogic;
                                     if (hitLogic != NULL) {
                                         oi->m_hitSource = oj;
-                                        hitLogic->m_dispatch(oi);
+                                        hitLogic->Dispatch(oi);
                                     }
                                 }
                             }
@@ -557,7 +557,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                         CLogicRecord* attackLogic = oi->m_attackLogic;
                         if (attackLogic != NULL) {
                             oi->m_attackTarget = oj;
-                            attackLogic->m_dispatch(oi);
+                            attackLogic->Dispatch(oi);
                         }
                     }
                     if (mask1) {

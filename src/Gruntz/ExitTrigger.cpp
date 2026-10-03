@@ -60,7 +60,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     );
     if (e != NULL) {
         e->m_smarts = m_object->m_smarts;
-        e->GetLogicRecord()->m_dispatch(e);
+        e->GetLogicRecord()->Dispatch(e);
 
         m_warlordLogic = static_cast<CWarlord*>(e->GetLogicRecord()->m_userLogic);
         if (m_object->m_smarts == g_curPlayer) {
