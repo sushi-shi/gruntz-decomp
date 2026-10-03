@@ -34,6 +34,7 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntDirectionOffset.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
@@ -285,12 +286,13 @@ Coord* CGrunt::EntranceTileOffset(Coord* out) {
 RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
     CWwdSpriteObject* h = m_object;
-    double dx = static_cast<double>(m_lastTilePx.m_x) - static_cast<double>(h->m_screenX);
-    double dy = static_cast<double>(m_lastTilePx.m_y) - static_cast<double>(h->m_screenY);
-
-    m_moveSpeed = (sqrt(SQR(dx) + SQR(dy)) / static_cast<double>(m_timePerTile)) * dt;
-    m_movePosX = static_cast<double>(h->m_screenX);
-    m_movePosY = static_cast<double>(h->m_screenY);
+    double dx =
+        static_cast<double>(m_lastTilePx.m_x) - static_cast<double>(h->m_screenPosition.m_x);
+    double dy =
+        static_cast<double>(m_lastTilePx.m_y) - static_cast<double>(h->m_screenPosition.m_y);
+    m_moveSpeed = (VECTOR2_MAG_COMPONENTS(dx, dy) / static_cast<double>(m_timePerTile)) * dt;
+    m_movePosition.m_x = static_cast<double>(h->m_screenPosition.m_x);
+    m_movePosition.m_y = static_cast<double>(h->m_screenPosition.m_y);
 }
 
 RVA(0x00057100, 0x590)
@@ -510,8 +512,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 
     CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         SORTKEY_ACTOR,
         "SingleAnimation",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -533,8 +535,8 @@ i32 CGrunt::TryPowerupAtTile() {
         return 0;
     }
     CWwdSpriteObject* h = m_object;
-    i32 mx = h->m_screenX;
-    i32 my = h->m_screenY;
+    i32 mx = h->m_screenPosition.m_x;
+    i32 my = h->m_screenPosition.m_y;
     i32 px = (mx & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 py = (my & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 tx = px >> TILE_SHIFT_PX;
@@ -927,21 +929,27 @@ i32 CGrunt::HandleCombatContact(
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
-                i32 sx = inner->m_screenX;
-                i32 sy = inner->m_screenY;
-                i32 xMasked = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 yMasked = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
+                Coord position = inner->ScreenPos();
+                Coord snapped = position;
+                SnapTileCenter(&snapped);
                 i32 applied;
                 if (phase == ARRIVAL_TAG_TRIGGER_B) {
-                    if (VehicleContactContains(xMasked, yMasked) != 0) {
+                    if (VehicleContactContains(snapped.m_x, snapped.m_y) != 0) {
                         FinishActiveAction();
                     }
-                    applied = m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, sx, sy);
+                    applied =
+                        m_triggerMgr
+                            ->UseToyAt(m_playerIndex, m_unitIndex, position.m_x, position.m_y);
                 } else {
-                    if (RectContains(xMasked, yMasked) != 0) {
+                    if (RectContains(snapped.m_x, snapped.m_y) != 0) {
                         FinishActiveAction();
                     }
-                    applied = m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, sx, sy);
+                    applied = m_triggerMgr->UseEquippedToolAt(
+                        m_playerIndex,
+                        m_unitIndex,
+                        position.m_x,
+                        position.m_y
+                    );
                 }
                 if (applied == 0 || applied == 1) {
                     if (applied == 1) {
@@ -1199,8 +1207,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     SoundCue* cue = NULL;
-    i32 vx = this->m_object->m_screenX;
-    i32 vy = this->m_object->m_screenY;
+    i32 vx = this->m_object->m_screenPosition.m_x;
+    i32 vy = this->m_object->m_screenPosition.m_y;
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, vx, vy)) {
         SelectCombatHitCue(reg, cue, attackKind, struckPose, attackerGruntKind);
@@ -1231,8 +1239,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    i32 dy = srcPxY - this->m_object->m_screenY;
-    i32 dx = srcPxX - this->m_object->m_screenX;
+    i32 dy = srcPxY - this->m_object->m_screenPosition.m_y;
+    i32 dx = srcPxX - this->m_object->m_screenPosition.m_x;
     Coord newPos;
     if (attackKind == PICKUP_WINGZ) {
         switch (static_cast<WingzKnockbackChoice>(rand() % 8 - 1)) {
@@ -1278,22 +1286,22 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 break;
         }
     } else if (dx == 0) {
-        if (srcPxY > this->m_object->m_screenY) {
+        if (srcPxY > this->m_object->m_screenPosition.m_y) {
             SETDIR(s_gruntDirSouth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
-        } else if (srcPxY < this->m_object->m_screenY) {
+        } else if (srcPxY < this->m_object->m_screenPosition.m_y) {
             SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
         }
     } else {
         float slope = static_cast<float>(dy) / dx;
         if (slope > 2.0f || slope < -2.0f) {
-            if (srcPxY > this->m_object->m_screenY) {
+            if (srcPxY > this->m_object->m_screenPosition.m_y) {
                 SETDIR(s_gruntDirSouth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
             } else {
                 SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
             }
         } else if (slope > 0.5 || slope < -0.5) {
             if (slope > 0.5) {
-                if (srcPxX > this->m_object->m_screenX) {
+                if (srcPxX > this->m_object->m_screenPosition.m_x) {
                     SETDIR(
                         s_gruntDirSouthEast,
                         this->m_lastTilePx.m_x - 0x20,
@@ -1307,7 +1315,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                     );
                 }
             } else if (slope < -0.5) {
-                if (srcPxX > this->m_object->m_screenX) {
+                if (srcPxX > this->m_object->m_screenPosition.m_x) {
                     SETDIR(
                         s_gruntDirNorthEast,
                         this->m_lastTilePx.m_x - 0x20,
@@ -1322,7 +1330,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 }
             }
         } else {
-            if (srcPxX > this->m_object->m_screenX) {
+            if (srcPxX > this->m_object->m_screenPosition.m_x) {
                 SETDIR(s_gruntDirEast, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y);
             } else {
                 SETDIR(s_gruntDirWest, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y);
@@ -1332,7 +1340,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     {
         i32 flags = this->m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
-        CMapMgr* grid = g_gameReg->GetTileGrid();
+        CMapMgr* grid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
         i32 nyt = newPos.m_y >> TILE_SHIFT_PX;
         i32 nxt = newPos.m_x >> TILE_SHIFT_PX;
         i32 oxt = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -1363,13 +1371,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_lastTilePx = newPos;
         SET_ANIMATION_ACT("O");
         double ddx = static_cast<double>(this->m_lastTilePx.m_x);
-        ddx -= this->m_object->m_screenX;
+        ddx -= this->m_object->m_screenPosition.m_x;
         double ddy = static_cast<double>(this->m_lastTilePx.m_y);
-        ddy -= this->m_object->m_screenY;
+        ddy -= this->m_object->m_screenPosition.m_y;
         double dist = sqrt(SQR(ddx) + SQR(ddy));
         m_moveSpeed = dist / static_cast<double>(g_buteMgr.GetDword("Grunt", s_knockKey, 200));
-        m_movePosX = static_cast<double>((this->m_object->m_screenX));
-        m_movePosY = static_cast<double>((this->m_object->m_screenY));
+        m_movePosition.m_x = static_cast<double>((this->m_object->m_screenPosition.m_x));
+        m_movePosition.m_y = static_cast<double>((this->m_object->m_screenPosition.m_y));
 
         if (!m_coordList.IsEmpty()) {
             this->RecycleCoords();
@@ -1440,7 +1448,11 @@ i32 CGrunt::CommitNeighbor(
     }
 
     if (m_arrivalPending != false) {
-        m_triggerMgr->WireTileSwitchLogic(this, m_object->m_screenX, m_object->m_screenY);
+        m_triggerMgr->WireTileSwitchLogic(
+            this,
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y
+        );
         m_arrivalPending = false;
     }
     m_poweredUp = true;
@@ -1455,8 +1467,8 @@ i32 CGrunt::CommitNeighbor(
     }
     m_neighborValid = false;
     nb->HandleCombatContact(
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         false,
         m_playerIndex,
         m_unitIndex
@@ -1504,12 +1516,12 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
                 return NULL;
             }
         }
-        if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
+        if (RectContains(n->m_object->m_screenPosition.m_x, n->m_object->m_screenPosition.m_y)) {
             CommitNeighbor(
                 m_neighborPlayerIndex,
                 m_neighborUnitIndex,
-                n->m_object->m_screenX,
-                n->m_object->m_screenY
+                n->m_object->m_screenPosition.m_x,
+                n->m_object->m_screenPosition.m_y
             );
             return n;
         }
@@ -1662,11 +1674,11 @@ void CGrunt::Activate() {
     );
 
     CWwdSpriteObject* h = m_object;
-    i32 px = h->m_screenX;
+    i32 px = h->m_screenPosition.m_x;
     m_commitPx.m_x = px;
     m_lastTilePx.m_x = px;
     m_entrancePx.m_x = px;
-    i32 py = h->m_screenY;
+    i32 py = h->m_screenPosition.m_y;
     m_commitPx.m_y = py;
     m_lastTilePx.m_y = py;
     m_entrancePx.m_y = py;
@@ -1958,11 +1970,11 @@ void CGrunt::StepBehavior(char*) {
 afterTile:
     if (m_entranceActive == false && m_entranceCommitted != false) {
         CWwdSpriteObject* obj = m_object;
-        i32 sx = obj->m_screenX;
+        i32 sx = obj->m_screenPosition.m_x;
         if (sx != m_lastTilePx.m_x) {
             goto afterArrival;
         }
-        i32 sy = obj->m_screenY;
+        i32 sy = obj->m_screenPosition.m_y;
         if (sy != m_lastTilePx.m_y) {
             goto afterArrival;
         }
@@ -2249,8 +2261,8 @@ void CGrunt::FinalizeStep(char* name) {
             StopPowerupLoopSound();
         } else {
             CGruntzMgr* g = g_gameReg;
-            i32 y = m_object->m_screenY;
-            i32 x = m_object->m_screenX;
+            i32 y = m_object->m_screenPosition.m_y;
+            i32 x = m_object->m_screenPosition.m_x;
             if (!::PtInRect(&g->m_viewBounds, x, y)) {
                 StopPowerupLoopSound();
             }
@@ -2263,12 +2275,16 @@ void CGrunt::FinalizeStep(char* name) {
         i32 column = OppositeGridIndex(c.m_column);
         double moveDirectionX = GruntCellAt(this, row, column)->m_motion.m_direction.m_x;
         double moveDirectionY = GruntCellAt(this, row, column)->m_motion.m_direction.m_y;
-        m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
-        m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
-        i32 nx =
-            static_cast<i32>((GruntCellAt(this, row, column)->m_motion.m_step.m_x + m_movePosX));
-        i32 ny =
-            static_cast<i32>((GruntCellAt(this, row, column)->m_motion.m_step.m_y + m_movePosY));
+        m_movePosition.m_x =
+            static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosition.m_x;
+        m_movePosition.m_y =
+            static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosition.m_y;
+        i32 nx = static_cast<i32>(
+            (GruntCellAt(this, row, column)->m_motion.m_step.m_x + m_movePosition.m_x)
+        );
+        i32 ny = static_cast<i32>(
+            (GruntCellAt(this, row, column)->m_motion.m_step.m_y + m_movePosition.m_y)
+        );
         if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
@@ -2285,7 +2301,7 @@ void CGrunt::FinalizeStep(char* name) {
         }
         SET_SCREEN_POS(m_object, nx, ny);
         CWwdSpriteObject* h = m_object;
-        i32 v = h->m_screenY + 0x186a0;
+        i32 v = h->m_screenPosition.m_y + 0x186a0;
         SET_SORT_KEY_IF_CHANGED(h, v)
         return;
     }
@@ -2296,10 +2312,12 @@ void CGrunt::FinalizeStep(char* name) {
         }
         double moveDirectionX = EntranceCell()->m_motion.m_direction.m_x;
         double moveDirectionY = EntranceCell()->m_motion.m_direction.m_y;
-        m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
-        m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.m_x + m_movePosX));
-        i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.m_y + m_movePosY));
+        m_movePosition.m_x =
+            static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosition.m_x;
+        m_movePosition.m_y =
+            static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosition.m_y;
+        i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.m_x + m_movePosition.m_x));
+        i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.m_y + m_movePosition.m_y));
         if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
@@ -2384,8 +2402,8 @@ void CGrunt::AdvanceMotion() {
                     if (m_arrivalActive != false) {
                         CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
-                            i32 otherPxX = other->m_object->m_screenX;
-                            i32 otherPxY = other->m_object->m_screenY;
+                            i32 otherPxX = other->m_object->m_screenPosition.m_x;
+                            i32 otherPxY = other->m_object->m_screenPosition.m_y;
                             i32 x = (otherPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
@@ -2427,8 +2445,8 @@ void CGrunt::AdvanceMotion() {
                     if (m_arrivalActive != false) {
                         CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
-                            i32 otherPxX = other->m_object->m_screenX;
-                            i32 otherPxY = other->m_object->m_screenY;
+                            i32 otherPxX = other->m_object->m_screenPosition.m_x;
+                            i32 otherPxY = other->m_object->m_screenPosition.m_y;
                             i32 x = (otherPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
@@ -2505,10 +2523,12 @@ void CGrunt::AdvanceMotion() {
 
     double dirX = EntranceCell()->m_motion.m_direction.m_x;
     double dirY = EntranceCell()->m_motion.m_direction.m_y;
-    m_movePosX = static_cast<double>(g_frameDelta) * dirX * m_moveSpeed + m_movePosX;
-    m_movePosY = static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosY;
-    i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.m_x + m_movePosX);
-    i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.m_y + m_movePosY);
+    m_movePosition.m_x =
+        static_cast<double>(g_frameDelta) * dirX * m_moveSpeed + m_movePosition.m_x;
+    m_movePosition.m_y =
+        static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosition.m_y;
+    i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.m_x + m_movePosition.m_x);
+    i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.m_y + m_movePosition.m_y);
     if (dirX > s_fpZero) {
         CLAMP_UPPER_INPLACE(x, m_lastTilePx.m_x);
     } else if (dirX < s_fpZero && x < m_lastTilePx.m_x) {
@@ -2519,9 +2539,9 @@ void CGrunt::AdvanceMotion() {
     } else if (dirY < s_fpZero && y < m_lastTilePx.m_y) {
         y = m_lastTilePx.m_y;
     }
-    m_object->m_screenX = x;
-    m_object->m_screenY = y;
+    m_object->m_screenPosition.m_x = x;
+    m_object->m_screenPosition.m_y = y;
     CWwdSpriteObject* o = m_object;
-    i32 sortKey = o->m_screenY + 0x186a0;
+    i32 sortKey = o->m_screenPosition.m_y + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(o, sortKey)
 }

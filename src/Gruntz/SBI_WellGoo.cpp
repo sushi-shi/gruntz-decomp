@@ -22,6 +22,8 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
+#include <Utils/MapTyped.h>
 
 #include <string.h>
 
@@ -48,7 +50,7 @@ i32 CSBI_WellGoo::Setup(
     if (owner == NULL) {
         goto fail;
     }
-    Initialize(owner, tab, host);
+    InitializeBase(owner, tab, host);
     m_rect = rc;
     m_cmd = cmd;
     m_fillScale = fillScale;
@@ -113,7 +115,7 @@ i32 CSBI_WellGoo::Setup(
         SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
         m_srcRect = rc;
 
-        m_drawX = m_rect.left + ((m_rect.right - m_rect.left) >> 1) + 1;
+        m_drawX = m_rect.left + ((RECT_WIDTH(m_rect)) >> 1) + 1;
         return 1;
     }
 fail:
@@ -138,7 +140,7 @@ i32 CSBI_WellGoo::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->m_backPair;
     m_baseFrame->RenderFrame(ctx, m_drawX, m_rect.bottom + 3, 0);
 
-    double fill = static_cast<float>((m_rect.bottom - m_rect.top)) * m_fillScale * 0.01f - 3.0f;
+    double fill = static_cast<float>(RECT_HEIGHT(m_rect)) * m_fillScale * 0.01f - 3.0f;
     if (fill <= 1.0) {
         fill = 1.0;
     }

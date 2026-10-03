@@ -14,6 +14,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <Enums.h>
 #include <Gruntz/AniRecordView.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Ints.h>
 #include <Pix16.h>
@@ -35,8 +36,7 @@ i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
     m_param = *p++;
     m_duration = *p++;
     m_drawValue = *p++;
-    m_positionDeltaX = *p++;
-    m_positionDeltaY = *p++;
+    SET_VECTOR2_COMPONENTS(m_positionDelta, *p++, *p++);
     m_reserved28 = static_cast<u16>(*p++);
     m_cues = NULL;
     m_cueCount = 0;
@@ -111,8 +111,8 @@ i32 CDDrawPaletteResource::LoadPaletteFromFile(char* path, i32 flag) {
     if (buf == NULL) {
         return 0;
     }
-    if (flag & 0x1) {
-        m_flags |= 0x1;
+    if (flag & IDX(PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE)) {
+        m_flags |= IDX(PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE);
         buf->CaptureSystemPalette();
     }
     return 1;
@@ -126,8 +126,8 @@ i32 CDDrawPaletteResource::CreatePaletteFromRgb(u8* data, i32 flag) {
     if (buf == NULL) {
         return 0;
     }
-    if (flag & 0x1) {
-        m_flags |= 0x1;
+    if (flag & IDX(PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE)) {
+        m_flags |= IDX(PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE);
         buf->CaptureSystemPalette();
     }
     return 1;
@@ -143,8 +143,8 @@ i32 CDDrawPaletteResource::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 f
     if (buf == NULL) {
         return 0;
     }
-    if (flag & 0x1) {
-        m_flags |= 0x1;
+    if (flag & IDX(PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE)) {
+        m_flags |= IDX(PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE);
         buf->CaptureSystemPalette();
     }
     return 1;
@@ -161,8 +161,8 @@ i32 CDDrawPaletteResource::CreatePaletteFromTrailingData(void* data, i32 size, i
     if (buf == NULL) {
         return 0;
     }
-    if (flag & 0x1) {
-        m_flags |= 0x1;
+    if (flag & IDX(PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE)) {
+        m_flags |= IDX(PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE);
         buf->CaptureSystemPalette();
     }
     return 1;

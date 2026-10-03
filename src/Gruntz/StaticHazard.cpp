@@ -15,6 +15,7 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -26,15 +27,15 @@
 #include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TileGrid.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Io/FileMem.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
@@ -68,28 +69,26 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
     {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)}
 
-    SNAP_OBJECT_TO_TILE_CENTER(m_object) CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0)
-    m_tileCol = m_object->m_screenX >> TILE_SHIFT_PX;
-    m_tileRow = m_object->m_screenY >> TILE_SHIFT_PX;
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
+    CWwdSpriteObject* o = m_object;
+    SET_SORT_KEY_IF_CHANGED(o, 0);
+    m_tile = position;
+    ScreenTile(&m_tile);
     m_object->m_health = 0;
     switch (g_gameReg->m_curState->m_levelType) {
         case AREA_TROUBLE_IN_THE_TROPICZ:
         case AREA_HIGH_ON_SWEETZ:
         case AREA_MINIATURE_MASTERZ:
         case AREA_GRUNTZ_IN_SPACE:
-            m_object->m_health = m_object->m_screenY + 0x186b0;
+            m_object->m_health = m_object->m_screenPosition.m_y + 0x186b0;
             break;
         default:
             break;
     }
-    SET_RECT_XY_EXTENTS(
-        m_object->m_area,
-        m_object->m_screenX - 7,
-        m_object->m_area.left + 14,
-        m_object->m_screenY - 7,
-        m_object->m_area.top + 14
-    );
+    m_object->m_area =
+        MakeRect(position.m_x - 7, position.m_y - 7, position.m_x + 7, position.m_y + 7);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     m_object->m_animationCursor.m_consumeDraw = 0;
@@ -176,11 +175,11 @@ i32 CStaticHazard::UpdateActiveState() {
             SET_SORT_KEY_IF_CHANGED(o, 0)
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            i32 row = m_tileRow;
-            i32 col = m_tileCol;
+            i32 row = m_tile.m_y;
+            i32 col = m_tile.m_x;
             if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-                grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
+                grid->m_rows[row][col].m_flags &= 0xf7ffffff;
             }
             return 0;
         }
@@ -197,8 +196,8 @@ i32 CStaticHazard::UpdateActiveState() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
         CGrunt* victim = g_gameReg->m_triggerMgr->HitTestCell(
-            m_object->m_screenX,
-            m_object->m_screenY,
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y,
             &playerIndex,
             &unitIndex,
             0
@@ -214,19 +213,19 @@ i32 CStaticHazard::UpdateActiveState() {
         CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, o->m_health)
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        i32 row = m_tileRow;
-        i32 col = m_tileCol;
+        i32 row = m_tile.m_y;
+        i32 col = m_tile.m_x;
         if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[row][col * 7] |= 0x8000000;
+            grid->m_rows[row][col].m_flags |= 0x8000000;
         }
     } else {
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        i32 row = m_tileRow;
-        i32 col = m_tileCol;
+        i32 row = m_tile.m_y;
+        i32 col = m_tile.m_x;
         if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
+            grid->m_rows[row][col].m_flags &= 0xf7ffffff;
         }
         CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
@@ -237,11 +236,11 @@ i32 CStaticHazard::UpdateActiveState() {
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
             {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CMapMgr* grid =
                 g_gameReg->m_tileGrid;
-            i32 row = m_tileRow;
-            i32 col = m_tileCol;
+            i32 row = m_tile.m_y;
+            i32 col = m_tile.m_x;
             if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-                grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
+                grid->m_rows[row][col].m_flags &= 0xf7ffffff;
             }
         }
     }
@@ -262,16 +261,16 @@ i32 CStaticHazard::SerializeDispatch(
             arc->Write(&m_activeWindow, sizeof(m_activeWindow));
             arc->Write(&m_idleWindow, sizeof(m_idleWindow));
             arc->Write(&m_fired, sizeof(m_fired));
-            arc->Write(&m_tileCol, sizeof(m_tileCol));
-            arc->Write(&m_tileRow, sizeof(m_tileRow));
+            arc->Write(&m_tile.m_x, sizeof(m_tile.m_x));
+            arc->Write(&m_tile.m_y, sizeof(m_tile.m_y));
             break;
         case SERIAL_LOAD:
             arc->Read(&m_pulseEpoch, sizeof(m_pulseEpoch));
             arc->Read(&m_activeWindow, sizeof(m_activeWindow));
             arc->Read(&m_idleWindow, sizeof(m_idleWindow));
             arc->Read(&m_fired, sizeof(m_fired));
-            arc->Read(&m_tileCol, sizeof(m_tileCol));
-            arc->Read(&m_tileRow, sizeof(m_tileRow));
+            arc->Read(&m_tile.m_x, sizeof(m_tile.m_x));
+            arc->Read(&m_tile.m_y, sizeof(m_tile.m_y));
             break;
     }
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(ar, arc, mode, typeId, object)

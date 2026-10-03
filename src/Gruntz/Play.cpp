@@ -65,6 +65,7 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Minimap.h>
 #include <Gruntz/MovieEntryId.h>
@@ -111,6 +112,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Io/SaveGame.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
@@ -352,10 +354,9 @@ void CPlay::ReleaseResources() {
 
 RVA(0x000c8a10, 0x119)
 i32 CPlay::EnterState(GameStateId previousState) {
-    POINT pt;
+    CPoint pt;
     GetCursorPos(&pt);
-    m_cursorX = pt.x;
-    m_cursorY = pt.y;
+    m_cursorPosition.Set(pt.x, pt.y);
     if (ShowCursor(false) >= 0) {
         do {
         } while (ShowCursor(false) >= 0);
@@ -421,7 +422,7 @@ RVA(0x000c8cf0, 0xc14)
 i32 CPlay::Render() {
 
     m_drewThisFrame = false;
-    HandleDragMove(0, m_cursorX, m_cursorY);
+    HandleDragMove(0, m_cursorPosition.m_x, m_cursorPosition.m_y);
 
     if (m_renderDisabled != false) {
         return 1;
@@ -439,8 +440,8 @@ i32 CPlay::Render() {
         m_world->ChildGroup()->TickKillCues(0);
         DrawVisibleWorld();
         m_mgr->m_worldSounds->SetListenerPosition(
-            m_world->m_level->m_mainPlane->m_scrollPixelX,
-            m_world->m_level->m_mainPlane->m_scrollPixelY
+            m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
+            m_world->m_level->m_mainPlane->m_scrollPixel.m_y
         );
         SoundStream* stream = m_world->GetSoundStream();
         if (stream != NULL) {
@@ -518,8 +519,8 @@ i32 CPlay::Render() {
         }
 
         m_mgr->m_worldSounds->SetListenerPosition(
-            m_world->m_level->m_mainPlane->m_scrollPixelX,
-            m_world->m_level->m_mainPlane->m_scrollPixelY
+            m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
+            m_world->m_level->m_mainPlane->m_scrollPixel.m_y
         );
         {
             SoundStream* stream = m_world->GetSoundStream();
@@ -536,12 +537,11 @@ i32 CPlay::Render() {
 
         if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
             && m_statusBar->m_activeTab != TAB_GAME) {
-            RECT rc;
+            CRect rc;
             if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
-                SetRect(&rc, 20, 5, 140, 125);
+                rc.SetRect(20, 5, 140, 125);
             } else {
-                SetRect(
-                    &rc,
+                rc.SetRect(
                     g_gameReg->GetModeSize().cx - 140,
                     5,
                     g_gameReg->GetModeSize().cx - 20,
@@ -594,9 +594,8 @@ i32 CPlay::Render() {
 
                 CString tmp;
                 tmp.Format("%d", secsLeft);
-                RECT lvl = g_gameReg->World()->m_level->m_viewportRect;
-                RECT box;
-                CopyRect(&box, &lvl);
+                CRect lvl = g_gameReg->World()->m_level->m_viewportRect;
+                CRect box = lvl;
                 DrawTextToBackSurface(g_gameReg->World(), &tmp, &box, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
@@ -776,8 +775,8 @@ i32 CPlay::UpdateWorldFixedSteps() {
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_mgr->m_worldSounds->SetListenerPosition(
-        m_world->m_level->m_mainPlane->m_scrollPixelX,
-        m_world->m_level->m_mainPlane->m_scrollPixelY
+        m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
+        m_world->m_level->m_mainPlane->m_scrollPixel.m_y
     );
     DWORD(WINAPI * tg)(void) = timeGetTime;
 
@@ -864,8 +863,8 @@ i32 CPlay::ProfileDeltaFrame() {
     }
     i32 renderMs = static_cast<i32>((tg() - t0));
     m_mgr->m_worldSounds->SetListenerPosition(
-        m_world->m_level->m_mainPlane->m_scrollPixelX,
-        m_world->m_level->m_mainPlane->m_scrollPixelY
+        m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
+        m_world->m_level->m_mainPlane->m_scrollPixel.m_y
     );
     u32 t2 = tg();
     DrawVisibleWorld();
@@ -934,8 +933,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     for (i32 a = 0; a < 4; ++a) {
-        self->m_anchors[a].m_x = -1;
-        self->m_anchors[a].m_y = -1;
+        self->m_anchors[a] = Coord(-1, -1);
     }
 
     g_soundCueTimeMs = g_lastNow;
@@ -1280,7 +1278,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CDDrawWorkerHost* mainPlane =
             static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
         CGruntzMapMgr* tileGrid = self->m_mgr->m_tileGrid;
-        if (!tileGrid->BuildCellAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
+        if (!tileGrid->BuildCellAttributes(
+                mainPlane->m_tileGridSize.cx,
+                mainPlane->m_tileGridSize.cy
+            )) {
             goto fail0;
         }
     }
@@ -1411,8 +1412,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             CString scr;
             self->m_inGame = true;
             self->m_hudSuppressed = false;
-            RECT rect;
-            SET_RECT_COMPONENTS(rect, 0, 0, SCREEN_W_PX, SCREEN_H_PX);
+            CRect rect = MakeRect(0, 0, SCREEN_W_PX, SCREEN_H_PX);
             if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
                 DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
@@ -1620,12 +1620,10 @@ i32 CPlay::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
-    i32 savedW = m_mgr->m_savedModeSize.cx;
-    i32 liveW = m_mgr->m_modeSize.cx;
-    i32 savedH = m_mgr->m_savedModeSize.cy;
-    i32 liveH = m_mgr->m_modeSize.cy;
-    if (savedW != liveW || savedH != liveH) {
-        if (m_mgr->SetVideoMode(savedW, savedH, true) == 0) {
+    CSize savedMode = m_mgr->m_savedModeSize;
+    CSize liveMode = m_mgr->m_modeSize;
+    if (savedMode != liveMode) {
+        if (m_mgr->SetVideoMode(savedMode.cx, savedMode.cy, true) == 0) {
             return 0;
         }
     }
@@ -1868,7 +1866,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         if (area->m_joined != false && area->m_doneFlag == false && area->m_clearedRound == false) {
             this->m_focusPlayerIndex = pick;
-            this->ResetGoals(area->m_focusX, area->m_focusY);
+            this->ResetGoals(area->m_focus.m_x, area->m_focus.m_y);
         }
     }
 
@@ -1877,7 +1875,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        this->ResetGoals(a->m_focusX, a->m_focusY);
+        this->ResetGoals(a->m_focus.m_x, a->m_focus.m_y);
         return 1;
     }
 
@@ -1920,8 +1918,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (vk == VK_SPACE) {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
             CDDrawWorkerHost* obj = this->m_world->m_level->m_mainPlane;
-            i32 bookmarkScrollX = obj->m_scrollPixelX;
-            i32 bookmarkScrollY = obj->m_scrollPixelY;
+            i32 bookmarkScrollX = obj->m_scrollPixel.m_x;
+            i32 bookmarkScrollY = obj->m_scrollPixel.m_y;
             Coord* slot;
             if (this->CameraBookmarkCount() < 4) {
                 slot = g_coordPool.Pop();
@@ -2134,13 +2132,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        i32 my = this->m_cursorY;
+        i32 my = this->m_cursorPosition.m_y;
         LevelCoordRect* r = &h->m_world->m_level->m_viewportRect;
         i32 x0 = r->left;
         i32 y0 = r->top;
         i32 x1 = r->right;
         i32 y1 = r->bottom;
-        i32 mx = this->m_cursorX;
+        i32 mx = this->m_cursorPosition.m_x;
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
@@ -2156,14 +2154,14 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        i32 mx = this->m_cursorX;
+        i32 mx = this->m_cursorPosition.m_x;
         CGameLevel* q = h->m_world->m_level;
         LevelCoordRect* r = &q->m_viewportRect;
         i32 x0 = r->left;
         i32 y0 = r->top;
         i32 x1 = r->right;
         i32 y1 = r->bottom;
-        i32 my = this->m_cursorY;
+        i32 my = this->m_cursorPosition.m_y;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
             CDDrawWorkerHost* g = q->m_mainPlane;
             RECT* view = &g->m_planeViewRect;
@@ -2178,13 +2176,14 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        i32 my = this->m_cursorY;
+        i32 my = this->m_cursorPosition.m_y;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
         RECT* view = &g->m_planeViewRect;
         i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 bx = ((this->m_cursorX - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
-                 + TILE_HALF_PX;
+        i32 bx =
+            ((this->m_cursorPosition.m_x - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
+            + TILE_HALF_PX;
         g_gameReg->m_triggerMgr->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
@@ -2196,8 +2195,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 playerIndex;
         i32 unitIndex;
         CGrunt* r = mgr->m_triggerMgr->ScreenToCell(
-            this->m_cursorX,
-            this->m_cursorY,
+            this->m_cursorPosition.m_x,
+            this->m_cursorPosition.m_y,
             &playerIndex,
             &unitIndex,
             PLAYER_SLOT_ALL
@@ -2501,8 +2500,7 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     i32 xr;
-    i32 sx;
-    i32 sy;
+    Coord worldPosition;
 
     if (m_hudSuppressed != false) {
         return 1;
@@ -2542,8 +2540,10 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         CGameLevel* geom = m_mgr->m_world->m_level;
         CDDrawWorkerHost* cam = geom->m_mainPlane;
         RECT* view = &cam->m_planeViewRect;
-        sx = view->left - geom->m_viewportRect.left + xr;
-        sy = view->top - geom->m_viewportRect.top + y;
+        worldPosition.Set(
+            view->left - geom->m_viewportRect.left + xr,
+            view->top - geom->m_viewportRect.top + y
+        );
 
         if (m_dragInhibit1 != false && m_playerCommandPending == false) {
             eventArg = 0;
@@ -2552,7 +2552,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
             } else {
                 if (::PtInRect(&geom->m_viewportRect, xr, y)) {
-                    if (FindStartPointAt(sx, sy, &x, &y)) {
+                    if (FindStartPointAt(worldPosition.m_x, worldPosition.m_y, &x, &y)) {
                         m_mgr->m_commandMgr->EnqueueSingle(
                             true,
                             static_cast<char>(g_curPlayer),
@@ -2595,9 +2595,17 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
                 CGameLevel* ds = m_world->m_level;
                 LevelCoordRect* vr2 = &ds->m_mainPlane->m_planeViewRect;
-                i32 wx = vr2->left - ds->m_viewportRect.left + xr;
-                i32 wy = vr2->top - ds->m_viewportRect.top + y;
-                if (g_gameReg->m_triggerMgr->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer)
+                Coord dropPosition(
+                    vr2->left - ds->m_viewportRect.left + xr,
+                    vr2->top - ds->m_viewportRect.top + y
+                );
+                if (g_gameReg->m_triggerMgr->CellHitTest(
+                        dropPosition.m_x,
+                        dropPosition.m_y,
+                        &eventArg,
+                        &y,
+                        g_curPlayer
+                    )
                     != NULL) {
                     m_mgr->m_commandMgr->EnqueueSingle(
                         true,
@@ -2613,15 +2621,22 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                     return 1;
                 }
 
-                RECT box;
-                box.left = wx - 0xf;
-                box.top = wy - 0xf;
-                box.right = wx + 0xf;
-                box.bottom = wy + 0xf;
+                CRect box(
+                    dropPosition.m_x - 0xf,
+                    dropPosition.m_y - 0xf,
+                    dropPosition.m_x + 0xf,
+                    dropPosition.m_y + 0xf
+                );
 
-                RECT span = {0, 0, 0, 0};
-                CGrunt* p =
-                    g_gameReg->m_triggerMgr->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
+                CRect span(0, 0, 0, 0);
+                CGrunt* p = g_gameReg->m_triggerMgr->FindGruntAt(
+                    dropPosition.m_x,
+                    dropPosition.m_y,
+                    &span,
+                    &eventArg,
+                    &y,
+                    &box
+                );
                 if (p == NULL || g_curPlayer != p->m_playerIndex) {
                     goto waypoint_cancel;
                 }
@@ -2645,8 +2660,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             return 1;
         }
     } else {
-        sx = y;
-        sy = y;
+        worldPosition = Coord(y, y);
     }
 
     {
@@ -2658,18 +2672,12 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (m_statusBar->HitTestLayer(xr, y)) {
                 m_dragSnapActive = true;
 
-                CGameObject* xAnchorSprite = m_statusBar->m_barSprite;
-                i32 dx = 0;
-                if (xAnchorSprite != NULL) {
-                    dx = xAnchorSprite->m_screenX - xr;
-                }
-                m_snapOriginX = dx;
-                CGameObject* yAnchorSprite = m_statusBar->m_barSprite;
-                if (yAnchorSprite == NULL) {
-                    m_snapOriginY = 0;
+                CGameObject* barSprite = m_statusBar->m_barSprite;
+                if (barSprite == NULL) {
+                    m_snapOrigin = Coord(0, 0);
                     return 1;
                 }
-                m_snapOriginY = yAnchorSprite->m_screenY - y;
+                m_snapOrigin = barSprite->ScreenPos() - Coord(xr, y);
                 return 1;
             }
             goto drag_box;
@@ -2698,29 +2706,32 @@ drag_box: {
     }
 
     if (m_cursorTargetValid != false) {
-        i32 ex = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 ey = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
+        Coord snapped = worldPosition;
+        SnapTileCenter(&snapped);
         i32 lv = m_cursorId - IDX(CURSOR_TOOL_HANDZ);
         PickupType item = static_cast<PickupType>(lv);
         if (item <= PICKUP_EQUIPPABLE_LAST) {
-            g_gameReg->m_triggerMgr
-                ->HandleTargetSelection(ex, ey, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
+            g_gameReg->m_triggerMgr->HandleTargetSelection(
+                snapped.m_x,
+                snapped.m_y,
+                0,
+                0,
+                0,
+                TARGET_SELECTION_GRUNT,
+                1
+            );
         } else if (item >= PICKUP_TOYZ_FIRST && item <= PICKUP_TOYZ_LAST) {
             g_gameReg->m_triggerMgr
-                ->HandleTargetSelection(ex, ey, 0, 0, 0, TARGET_SELECTION_TOY, 1);
+                ->HandleTargetSelection(snapped.m_x, snapped.m_y, 0, 0, 0, TARGET_SELECTION_TOY, 1);
         }
         g_gameReg->m_triggerMgr->m_pendingFxKind = 0;
         LoadCursorSprites(0, false);
-        m_dragClampMaxX = xr;
-        m_dragClampMaxY = y;
-        m_hudRect.left = xr;
-        m_hudRect.top = y;
-        m_hudRect.right = xr;
-        m_hudRect.bottom = y;
+        m_dragClampMax.Set(xr, y);
+        m_hudRect = MakeRect(xr, y, xr, y);
         m_worldReady = true;
         return 1;
     }
-    if (g_gameReg->m_triggerMgr->HandleActionOptionsPointer(sx, sy)) {
+    if (g_gameReg->m_triggerMgr->HandleActionOptionsPointer(worldPosition.m_x, worldPosition.m_y)) {
         return 1;
     }
 
@@ -2760,12 +2771,8 @@ drag_box: {
         picked->OnStruck(false);
         return 1;
     }
-    m_dragClampMaxX = xr;
-    m_dragClampMaxY = y;
-    m_hudRect.left = xr;
-    m_hudRect.right = xr;
-    m_hudRect.top = y;
-    m_hudRect.bottom = y;
+    m_dragClampMax.Set(xr, y);
+    m_hudRect = MakeRect(xr, y, xr, y);
     m_worldReady = true;
     goto ret1;
 }
@@ -2830,7 +2837,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
 
-    RECT rc = m_world->m_level->m_viewportRect;
+    CRect rc = m_world->m_level->m_viewportRect;
     if (x < rc.left || x > rc.right || y < rc.top || y > rc.bottom) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
@@ -2850,8 +2857,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
     CGameLevel* h;
     RECT* vr;
-    i32 px;
-    i32 py;
+    Coord position;
     i32 i;
     playerIndex = g_curPlayer;
     GruntzPlayer* cfg = &g_gameReg->m_players[playerIndex];
@@ -2862,29 +2868,26 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
 
     h = m_mgr->m_world->m_level;
     vr = &h->m_mainPlane->m_planeViewRect;
-    px = vr->left - h->m_viewportRect.left + x;
-    py = vr->top - h->m_viewportRect.top + y;
+    position.Set(vr->left - h->m_viewportRect.left + x, vr->top - h->m_viewportRect.top + y);
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* e = StartMarkerAt(i);
         if (e == NULL) {
             continue;
         }
-        RECT er;
-        SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
-        if (::PtInRect(&er, px, py)) {
+        CRect er(e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
+        if (::PtInRect(&er, position.m_x, position.m_y)) {
             if (!m_statusBar->FindReadySlot()) {
                 return 1;
             }
             char ab = static_cast<char>(g_curPlayer);
-            px = (px & 0xffe0) + 0x10;
-            py = (py & 0xffe0) + 0x10;
+            SnapTileCenter(&position);
             m_mgr->m_commandMgr->EnqueueSingle(
                 true,
                 ab,
                 0,
                 static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
-                px,
-                py,
+                position.m_x,
+                position.m_y,
                 0,
                 0
             );
@@ -2960,18 +2963,27 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (::PtInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
-        i32 rawX = geom->m_planeViewRect.left - ds->m_viewportRect.left + x;
-        i32 rawY = geom->m_planeViewRect.top - ds->m_viewportRect.top + y;
-        i32 snapX = (rawX & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 snapY = (rawY & ~TILE_MASK_PX) + TILE_HALF_PX;
-        m_tileClick.m_x = snapX;
-        m_tileClick.m_y = snapY;
+        Coord rawPosition(
+            geom->m_planeViewRect.left - ds->m_viewportRect.left + x,
+            geom->m_planeViewRect.top - ds->m_viewportRect.top + y
+        );
+        Coord snapped = rawPosition;
+        SnapTileCenter(&snapped);
+        m_tileClick = snapped;
         CTriggerMgr* w = m_mgr->m_triggerMgr;
         if (w->m_overlay != NULL && w->m_overlay->m_active != false) {
             w->CloseActionOptionsMenu();
             return 1;
         }
-        w->HandleTargetSelection(snapX, snapY, rawX, rawY, 1, TARGET_SELECTION_AUTO, 1);
+        w->HandleTargetSelection(
+            snapped.m_x,
+            snapped.m_y,
+            rawPosition.m_x,
+            rawPosition.m_y,
+            1,
+            TARGET_SELECTION_AUTO,
+            1
+        );
     }
     return 1;
 }
@@ -3120,7 +3132,7 @@ void CPlay::DrawDebugStatsFull() {
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
-        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
+        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixel.m_x, p->m_scrollPixel.m_y);
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
@@ -3215,7 +3227,7 @@ void CPlay::DrawDebugStats() {
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
 
-        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
+        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixel.m_x, p->m_scrollPixel.m_y);
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_TIMING)) {
@@ -3419,8 +3431,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         if (this->m_cursorSnapSprite != NULL) {
             this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
-        this->m_cursorOffset.m_x = 0;
-        this->m_cursorOffset.m_y = 0;
+        this->m_cursorOffset = Coord(0, 0);
         this->m_dragInhibit2 = true;
         this->m_cursorTargetValid = false;
         this->m_cursorId = cursorId;
@@ -3433,8 +3444,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         if (this->m_cursorSnapSprite != NULL) {
             this->m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         }
-        this->m_cursorOffset.m_x = 0x10;
-        this->m_cursorOffset.m_y = 0x10;
+        this->m_cursorOffset = Coord(0x10, 0x10);
         this->m_cursorTargetValid = false;
         this->m_cursorId = cursorId;
         return 1;
@@ -3446,8 +3456,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         if (this->m_cursorSnapSprite != NULL) {
             this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
-        this->m_cursorOffset.m_x = 0;
-        this->m_cursorOffset.m_y = 0;
+        this->m_cursorOffset = Coord(0, 0);
         this->m_dragInhibit1 = true;
         this->m_cursorTargetValid = false;
         g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
@@ -3657,8 +3666,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
     if (this->m_cursorSnapSprite != NULL) {
         this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
-    this->m_cursorOffset.m_x = 0;
-    this->m_cursorOffset.m_y = 0;
+    this->m_cursorOffset = Coord(0, 0);
     this->m_cursorTargetValid = targetValid;
     this->m_cursorId = cursorId;
     return 1;
@@ -3728,8 +3736,8 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
 // @early-stop
 RVA(0x000d0b30, 0x200)
 i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
-    i32 x = m_cursorX + m_cursorOffset.m_x;
-    i32 y = m_cursorY + m_cursorOffset.m_y;
+    i32 x = m_cursorPosition.m_x + m_cursorOffset.m_x;
+    i32 y = m_cursorPosition.m_y + m_cursorOffset.m_y;
 
     CDDSurface* savedPixels;
     RECT* screenRect;
@@ -3744,9 +3752,9 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         savedRect = &m_cursorSavedRects[1];
     }
 
-    screenRect->left = x - m_cursorImage->m_anchorX;
+    screenRect->left = x - m_cursorImage->m_anchor.x;
     screenRect->right = m_cursorImage->m_width + screenRect->left;
-    screenRect->top = y - m_cursorImage->m_anchorY;
+    screenRect->top = y - m_cursorImage->m_anchor.y;
     screenRect->bottom = m_cursorImage->m_height + screenRect->top;
     tagSIZE mode = m_mgr->GetModeSize();
     if (screenRect->left < 0) {
@@ -3817,7 +3825,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         if (m_statusBar == NULL) {
             return 1;
         }
-        m_statusBar->SetSpritePos(m_snapOriginX + x, m_snapOriginY + y);
+        m_statusBar->SetSpritePos(m_snapOrigin.m_x + x, m_snapOrigin.m_y + y);
         goto rearm;
     }
 
@@ -3835,12 +3843,12 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         if (m_worldReady != false) {
 
             {
-                i32 anchorX = m_dragClampMaxX;
-                i32 curX = m_cursorX;
+                i32 anchorX = m_dragClampMax.m_x;
+                i32 curX = m_cursorPosition.m_x;
                 m_hudRect.left = min(curX, anchorX);
                 m_hudRect.right = max(curX, anchorX);
-                i32 anchorY = m_dragClampMaxY;
-                i32 curY = m_cursorY;
+                i32 anchorY = m_dragClampMax.m_y;
+                i32 curY = m_cursorPosition.m_y;
                 m_hudRect.top = min(curY, anchorY);
                 m_hudRect.bottom = max(curY, anchorY);
             }
@@ -3885,14 +3893,14 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     m_statusBar->HandlePointerDrag(keyFlags, x, y);
     if (m_worldReady != false) {
 
-        m_hudRect.left = max(m_cursorX, box.left);
-        m_hudRect.left = min(m_hudRect.left, m_dragClampMaxX);
-        m_hudRect.right = min(m_cursorX, box.right);
-        m_hudRect.right = max(m_hudRect.right, m_dragClampMaxX);
-        m_hudRect.top = max(m_cursorY, box.top);
-        m_hudRect.top = min(m_hudRect.top, m_dragClampMaxY);
-        m_hudRect.bottom = min(m_cursorY, box.bottom);
-        m_hudRect.bottom = max(m_hudRect.bottom, m_dragClampMaxY);
+        m_hudRect.left = max(m_cursorPosition.m_x, box.left);
+        m_hudRect.left = min(m_hudRect.left, m_dragClampMax.m_x);
+        m_hudRect.right = min(m_cursorPosition.m_x, box.right);
+        m_hudRect.right = max(m_hudRect.right, m_dragClampMax.m_x);
+        m_hudRect.top = max(m_cursorPosition.m_y, box.top);
+        m_hudRect.top = min(m_hudRect.top, m_dragClampMax.m_y);
+        m_hudRect.bottom = min(m_cursorPosition.m_y, box.bottom);
+        m_hudRect.bottom = max(m_hudRect.bottom, m_dragClampMax.m_y);
     }
     if (m_cursorTargetValid != false && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
         FlushPendingOps();
@@ -3955,87 +3963,86 @@ i32 CPlay::LoadScrollSpeedOptions() {
     b32 changed = false;
     CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
 
-    i32 sx = g->m_scrollPixelX;
-    i32 sy = g->m_scrollPixelY;
+    Coord scrollPosition = g->m_scrollPixel;
     double frac = static_cast<double>(w->m_scrollSpeed) * 0.01;
     i32 speed = static_cast<i32>(frac * s_scrollSpeedRange + s_minScrollSpeed);
 
-    SIZE
-    extent;
-    SET_SIZE_COMPONENTS(extent, w->m_modeSize.cx, w->m_modeSize.cy);
+    CSize extent = w->m_modeSize;
 
-    if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
-        if (self->m_scrollEdgeActive & 1) {
+    if (self->m_cursorPosition.m_x < 0xc || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_LEFT)) {
+        if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_LEFT)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
                 d = min(0x64, d);
-                sx -= d;
+                scrollPosition.m_x -= d;
                 self->m_lastScrollTimeX = timeGetTime();
                 changed = true;
             }
         } else {
-            self->m_scrollEdgeActive |= 1;
+            self->m_scrollEdgeActive |= SCROLL_EDGE_LEFT;
             self->m_lastScrollTimeX = timeGetTime();
         }
     } else {
-        self->m_scrollEdgeActive &= ~1;
+        self->m_scrollEdgeActive &= ~SCROLL_EDGE_LEFT;
     }
 
-    if (self->m_cursorX > extent.cx - 0xc || (self->m_scrollEdgeLock & 4)) {
-        if (self->m_scrollEdgeActive & 4) {
+    if (self->m_cursorPosition.m_x > extent.cx - 0xc
+        || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_RIGHT)) {
+        if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_RIGHT)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
                 d = min(0x64, d);
-                sx += d;
+                scrollPosition.m_x += d;
                 self->m_lastScrollTimeX = timeGetTime();
                 changed = true;
             }
         } else {
-            self->m_scrollEdgeActive |= 4;
+            self->m_scrollEdgeActive |= SCROLL_EDGE_RIGHT;
             self->m_lastScrollTimeX = timeGetTime();
         }
     } else {
-        self->m_scrollEdgeActive &= ~4;
+        self->m_scrollEdgeActive &= ~SCROLL_EDGE_RIGHT;
     }
 
-    if (self->m_cursorY < 0xf || (self->m_scrollEdgeLock & 2)) {
-        if (self->m_scrollEdgeActive & 2) {
+    if (self->m_cursorPosition.m_y < 0xf || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_UP)) {
+        if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_UP)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
                 d = min(0x64, d);
-                sy -= d;
+                scrollPosition.m_y -= d;
                 self->m_lastScrollTimeY = timeGetTime();
                 changed = true;
             }
         } else {
-            self->m_scrollEdgeActive |= 2;
+            self->m_scrollEdgeActive |= SCROLL_EDGE_UP;
             self->m_lastScrollTimeY = timeGetTime();
 
             changed = true;
         }
     } else {
-        self->m_scrollEdgeActive &= ~2;
+        self->m_scrollEdgeActive &= ~SCROLL_EDGE_UP;
     }
 
-    if (self->m_cursorY > extent.cy - 0xf || (self->m_scrollEdgeLock & 8)) {
-        if (self->m_scrollEdgeActive & 8) {
+    if (self->m_cursorPosition.m_y > extent.cy - 0xf
+        || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_DOWN)) {
+        if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_DOWN)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
                 d = min(0x64, d);
-                sy += d;
+                scrollPosition.m_y += d;
                 self->m_lastScrollTimeY = timeGetTime();
                 changed = true;
             }
         } else {
-            self->m_scrollEdgeActive |= 8;
+            self->m_scrollEdgeActive |= SCROLL_EDGE_DOWN;
             self->m_lastScrollTimeY = timeGetTime();
         }
     } else {
-        self->m_scrollEdgeActive &= ~8;
+        self->m_scrollEdgeActive &= ~SCROLL_EDGE_DOWN;
     }
 
     if (changed) {
-        self->ResetGoals(sx, sy);
+        self->ResetGoals(scrollPosition.m_x, scrollPosition.m_y);
     }
     return 1;
 }
@@ -4049,8 +4056,8 @@ void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
             LevelCoordRect vp = m_world->m_level->m_viewportRect;
-            i32 cx = vp.left + (vp.right - vp.left) / 2;
-            i32 cy = vp.top + (vp.bottom - vp.top) / 2;
+            i32 cx = RECT_CENTER_X(vp);
+            i32 cy = RECT_CENTER_Y(vp);
             LayerBlitFrame(m_world, frame, cx, cy, useFront, true);
         }
     }
@@ -4112,8 +4119,8 @@ void CPlay::StepScroll() {
 
     RECT* vr = &v->m_mainPlane->m_planeViewRect;
 
-    i32 y = m_cursorY + (vr->top - v->m_viewportRect.top);
-    i32 x = vr->left + (m_cursorX - v->m_viewportRect.left);
+    i32 y = m_cursorPosition.m_y + (vr->top - v->m_viewportRect.top);
+    i32 x = vr->left + (m_cursorPosition.m_x - v->m_viewportRect.left);
 
     y = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
     x = (x & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -4280,8 +4287,8 @@ i32 CPlay::ExecuteCommand(
                 g->SetArrivalTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
-                    node->m_object->m_screenX,
-                    node->m_object->m_screenY
+                    node->m_object->m_screenPosition.m_x,
+                    node->m_object->m_screenPosition.m_y
                 );
             } else {
                 g->m_arrivalActive = false;
@@ -4333,8 +4340,8 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalActive = false;
                 return 0;
             }
-            i32 sx = g2->m_object->m_screenX;
-            i32 sy = g2->m_object->m_screenY;
+            i32 sx = g2->m_object->m_screenPosition.m_x;
+            i32 sy = g2->m_object->m_screenPosition.m_y;
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
@@ -4389,8 +4396,8 @@ i32 CPlay::ExecuteCommand(
                 g->SetArrivalTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
-                    node->m_object->m_screenX,
-                    node->m_object->m_screenY
+                    node->m_object->m_screenPosition.m_x,
+                    node->m_object->m_screenPosition.m_y
                 );
             } else {
                 g->m_arrivalActive = false;
@@ -4442,8 +4449,8 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalActive = false;
                 return 0;
             }
-            i32 sx = g2->m_object->m_screenX;
-            i32 sy = g2->m_object->m_screenY;
+            i32 sx = g2->m_object->m_screenPosition.m_x;
+            i32 sy = g2->m_object->m_screenPosition.m_y;
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->m_triggerMgr->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
@@ -4631,18 +4638,21 @@ i32 CPlay::ValidateLevelTiles() {
         LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
 
         if (dispatch == DispatchTileTriggerSwitchLogic) {
-            TileCollisionKind type =
-                LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type = LookupTileType(
+                LevelOf(m_world),
+                obj->m_screenPosition.m_x,
+                obj->m_screenPosition.m_y
+            );
             if (type == TILEKIND_GIANT_ROCK) {
 
                 CTileTriggerLogic* hit;
-                i32 col = obj->m_speedX - 1;
-                i32 row = obj->m_speedY - 1;
+                i32 col = obj->m_speed.m_x - 1;
+                i32 row = obj->m_speed.m_y - 1;
                 b32 found = false;
                 i32 colOff = col << 8;
-                while (found == false && col < obj->m_speedX + 2) {
-                    row = obj->m_speedY - 1;
-                    while (found == false && row < obj->m_speedY + 2) {
+                while (found == false && col < obj->m_speed.m_x + 2) {
+                    row = obj->m_speed.m_y - 1;
+                    while (found == false && row < obj->m_speed.m_y + 2) {
                         hit = m_tileTriggers->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
                             found = true;
@@ -4657,14 +4667,22 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                 }
                 if (found == false) {
-                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad switch at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
-                i32 rel = (obj->m_speedY - row) * 3 - col + obj->m_speedX;
+                i32 rel = (obj->m_speed.m_y - row) * 3 - col + obj->m_speed.m_x;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
-                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad switch at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
                 type =
@@ -4677,12 +4695,20 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* r =
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
-                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad switch at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
-                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad switch at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
                 type =
@@ -4694,8 +4720,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_MULTI_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_MULTI_SWITCH_3,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -4709,8 +4735,8 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         MODAL_REPORT_AT(
                             "Bad multi switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         return 0;
                     }
@@ -4721,8 +4747,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_EXCLUSIVE_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_EXCLUSIVE_SWITCH_4,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -4736,8 +4762,8 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         MODAL_REPORT_AT(
                             "Bad up-down switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         return 0;
                     }
@@ -4750,8 +4776,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_SECRET_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SECRET_SWITCH_6,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -4765,8 +4791,8 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         MODAL_REPORT_AT(
                             "Bad secret switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         return 0;
                     }
@@ -4777,8 +4803,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_TIME_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_TIME_SWITCH_7,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -4792,8 +4818,8 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         MODAL_REPORT_AT(
                             "Bad time switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         return 0;
                     }
@@ -4804,8 +4830,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_CHECKPOINT_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_CHECKPOINT_SWITCH_8,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -4819,8 +4845,8 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         MODAL_REPORT_AT(
                             "Bad pressure plate at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         return 0;
                     }
@@ -4831,8 +4857,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_SWITCH_A_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_1,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -4848,8 +4874,8 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         MODAL_REPORT_AT(
                             "Bad toggle switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         return 0;
                     }
@@ -4860,8 +4886,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_SWITCH_B_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_2,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -4877,8 +4903,8 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         MODAL_REPORT_AT(
                             "Bad hold switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         return 0;
                     }
@@ -4889,8 +4915,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_SWITCH_C_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_5,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -4906,8 +4932,8 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         MODAL_REPORT_AT(
                             "Bad once-only switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         return 0;
                     }
@@ -4917,25 +4943,28 @@ i32 CPlay::ValidateLevelTiles() {
                 default: {
                     MODAL_REPORT_AT(
                         "Switch on an unknown tile at: x=%d, y=%d",
-                        obj->m_screenX,
-                        obj->m_screenY
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
                     );
                     return 0;
                 }
             }
         } else if (dispatch == DispatchTileTriggerLogic) {
-            TileCollisionKind type =
-                LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type = LookupTileTypeDirect(
+                LevelOf(m_world),
+                obj->m_screenPosition.m_x,
+                obj->m_screenPosition.m_y
+            );
             if (type == TILEKIND_GIANT_ROCK) {
 
                 CTileTriggerLogic* hit;
-                i32 col = obj->m_speedX - 1;
-                i32 row = obj->m_speedY - 1;
+                i32 col = obj->m_speed.m_x - 1;
+                i32 row = obj->m_speed.m_y - 1;
                 b32 found = false;
                 i32 colOff = col << 8;
-                while (found == false && col < obj->m_speedX + 2) {
-                    row = obj->m_speedY - 1;
-                    while (found == false && row < obj->m_speedY + 2) {
+                while (found == false && col < obj->m_speed.m_x + 2) {
+                    row = obj->m_speed.m_y - 1;
+                    while (found == false && row < obj->m_speed.m_y + 2) {
                         hit = m_tileTriggers->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
                             found = true;
@@ -4950,14 +4979,22 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                 }
                 if (found == false) {
-                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
-                i32 rel = (obj->m_speedX - col) * 3 - row + obj->m_speedY;
+                i32 rel = (obj->m_speed.m_x - col) * 3 - row + obj->m_speed.m_y;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
-                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
                 type =
@@ -4969,12 +5006,20 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* r =
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
-                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
-                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
                 type =
@@ -4985,8 +5030,8 @@ i32 CPlay::ValidateLevelTiles() {
                 if (!m_tileTriggers->AddLogic(
                         static_cast<TileCollisionKind>(type),
                         TRIGID_TIME_TRIGGER_23,
-                        obj->m_speedX,
-                        obj->m_speedY,
+                        obj->m_speed.m_x,
+                        obj->m_speed.m_y,
                         obj->m_id,
                         obj->m_extent,
                         obj->m_area,
@@ -5001,8 +5046,8 @@ i32 CPlay::ValidateLevelTiles() {
                     )) {
                     MODAL_REPORT_AT(
                         "Bad toggle-bridge trigger at: x=%d, y=%d",
-                        obj->m_screenX,
-                        obj->m_screenY
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
                     );
                     return 0;
                 }
@@ -5012,8 +5057,8 @@ i32 CPlay::ValidateLevelTiles() {
                 if (!m_tileTriggers->AddLogic(
                         static_cast<TileCollisionKind>(type),
                         TRIGID_TILE_TRIGGER_21,
-                        obj->m_speedX,
-                        obj->m_speedY,
+                        obj->m_speed.m_x,
+                        obj->m_speed.m_y,
                         obj->m_id,
                         obj->m_extent,
                         obj->m_area,
@@ -5026,20 +5071,27 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_points,
                         0
                     )) {
-                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
                 validCount++;
                 obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             }
         } else if (dispatch == DispatchTileSecretTriggerLogic) {
-            TileCollisionKind type =
-                LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type = LookupTileTypeDirect(
+                LevelOf(m_world),
+                obj->m_screenPosition.m_x,
+                obj->m_screenPosition.m_y
+            );
             if (!m_tileTriggers->AddLogic(
                     type,
                     TRIGID_SECRET_TRIGGER_25,
-                    obj->m_speedX,
-                    obj->m_speedY,
+                    obj->m_speed.m_x,
+                    obj->m_speed.m_y,
                     obj->m_id,
                     obj->m_extent,
                     obj->m_area,
@@ -5054,8 +5106,8 @@ i32 CPlay::ValidateLevelTiles() {
                 )) {
                 MODAL_REPORT_AT(
                     "Bad secret trigger at: x=%d, y=%d",
-                    obj->m_screenX,
-                    obj->m_screenY
+                    obj->m_screenPosition.m_x,
+                    obj->m_screenPosition.m_y
                 );
                 return 0;
             }
@@ -5084,30 +5136,38 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (dispatch == DispatchGruntCreationPointLogic) {
             if (obj->m_smarts == g_curPlayer) {
                 Coord* slot = g_coordPool.Pop();
-                slot->m_x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                slot->m_y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                slot->m_x = (obj->m_screenPosition.m_x & ~TILE_MASK_PX) + TILE_HALF_PX;
+                slot->m_y = (obj->m_screenPosition.m_y & ~TILE_MASK_PX) + TILE_HALF_PX;
                 m_startMarkers.Add(slot);
             }
         } else if (dispatch == DispatchBrickzLogic) {
 
             CDDrawWorkerHost* pl = m_world->m_level->m_mainPlane;
-            i32 tile = pl->m_tileHandles[pl->m_tileRowOffsets[obj->m_speedY] + obj->m_speedX];
+            i32 tile = pl->m_tileHandles[pl->m_tileRowOffsets[obj->m_speed.m_y] + obj->m_speed.m_x];
             if (tile >= 0x12f && tile <= 0x149) {
                 if (m_tileTriggers->AddActionEvent(
                         static_cast<BrickTileId>(tile),
-                        obj->m_speedX,
-                        obj->m_speedY,
+                        obj->m_speed.m_x,
+                        obj->m_speed.m_y,
                         obj->m_id,
                         obj->m_extent
                     )
                     == NULL) {
-                    MODAL_REPORT_AT("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    MODAL_REPORT_AT(
+                        "Bad brickz at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     return 0;
                 }
                 validCount++;
                 obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             } else {
-                MODAL_REPORT_AT("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                MODAL_REPORT_AT(
+                    "Bad brickz at: x=%d, y=%d",
+                    obj->m_screenPosition.m_x,
+                    obj->m_screenPosition.m_y
+                );
                 return 0;
             }
         } else if (dispatch == DispatchGruntPuddleLogic) {
@@ -5115,8 +5175,8 @@ i32 CPlay::ValidateLevelTiles() {
             m_mgr->m_triggerMgr->PlacePuddle(obj, false);
         } else if (dispatch == DispatchGuardPointLogic) {
 
-            i32 col = obj->m_screenX >> TILE_SHIFT_PX;
-            i32 rowBase = obj->m_screenY >> TILE_SHIFT_PX;
+            i32 col = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            i32 rowBase = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
             i32 stride = (col << 3) - col;
 
             i32 guardColumnOffset = stride - 7;
@@ -5153,22 +5213,22 @@ i32 CPlay::ValidateLevelTiles() {
                         || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
-                    i32* cellRow = gg->m_rowInts[ofs];
-                    cellRow[guardColumnOffset] |= bit;
+                    BrickzCell* cellRow = gg->m_rows[ofs];
+                    cellRow[gx].m_flags |= bit;
                 }
             }
         } else if (dispatch == DispatchToobSpikezLogic) {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-            i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
-            i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
+            i32 tileX = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            i32 tileY = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
             if (static_cast<u32>(tileX) < gg->m_width && static_cast<u32>(tileY) < gg->m_height) {
-                gg->m_rowInts[tileY][tileX * 7] |= 0x2000000;
+                gg->m_rows[tileY][tileX].m_flags |= 0x2000000;
             }
         } else if (dispatch == DispatchWarpStonePadLogic) {
             if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
                 Coord* slot = g_coordPool.Pop();
-                slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
-                slot->m_y = obj->m_screenY >> TILE_SHIFT_PX;
+                slot->m_x = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+                slot->m_y = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
                 CPtrArray* cells = &m_placedObjectCells[obj->m_score];
                 cells->Add(slot);
             }
@@ -5222,8 +5282,8 @@ i32 CPlay::ScanBuildTiles() {
             buf[7] = p->m_switchRect.top;
             buf[8] = p->m_switchRect.right;
             if (m_tileTriggers->AddGiantRockLogic(
-                    p->m_speedX,
-                    p->m_speedY,
+                    p->m_speed.m_x,
+                    p->m_speed.m_y,
                     p->m_id,
                     buf,
                     p->m_powerup,
@@ -5231,7 +5291,11 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_faceDirection
                 )
                 == NULL) {
-                MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                MODAL_REPORT_AT(
+                    "Bad rock at: x=%d, y=%d",
+                    p->m_screenPosition.m_x,
+                    p->m_screenPosition.m_y
+                );
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
@@ -5240,12 +5304,12 @@ i32 CPlay::ScanBuildTiles() {
             p->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->m_level;
-            i32 x = p->m_screenX;
-            i32 y = p->m_screenY;
+            i32 x = p->m_screenPosition.m_x;
+            i32 y = p->m_screenPosition.m_y;
             if (x < 0) {
                 x = 0;
             } else {
-                i32 lim = ds->m_mainPlane->m_planePixelWidth;
+                i32 lim = ds->m_mainPlane->m_planePixelSize.cx;
                 if (x >= lim) {
                     x = lim - 1;
                 }
@@ -5253,15 +5317,15 @@ i32 CPlay::ScanBuildTiles() {
             if (y < 0) {
                 y = 0;
             } else {
-                i32 lim = ds->m_mainPlane->m_planePixelHeight;
+                i32 lim = ds->m_mainPlane->m_planePixelSize.cy;
                 if (y >= lim) {
                     y = lim - 1;
                 }
             }
             CDDrawWorkerHost* g = ds->m_mainPlane;
-            i32 shX = g->m_shiftX;
+            i32 shX = g->m_tileShift.m_x;
             i32 tileX = x >> shX;
-            i32 shY = g->m_shiftY;
+            i32 shY = g->m_tileShift.m_y;
             i32 tileY = y >> shY;
             i32 subX = x - (tileX << shX);
             i32 subY = y - (tileY << shY);
@@ -5270,8 +5334,8 @@ i32 CPlay::ScanBuildTiles() {
             if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,
-                    p->m_speedX,
-                    p->m_speedY,
+                    p->m_speed.m_x,
+                    p->m_speed.m_y,
                     p->m_id,
                     p->m_extent,
                     p->m_area,
@@ -5285,7 +5349,11 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_faceDirection
                 )
                 == NULL) {
-                MODAL_REPORT_AT("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                MODAL_REPORT_AT(
+                    "Bad covered powerup at: x=%d, y=%d",
+                    p->m_screenPosition.m_x,
+                    p->m_screenPosition.m_y
+                );
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
@@ -5315,8 +5383,8 @@ i32 CPlay::AddLevelGruntz() {
         if (g->m_smarts == g_curPlayer) {
             continue;
         }
-        i32 x = ((g->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX);
-        i32 y = ((g->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX);
+        i32 x = (SNAP_TILE_CENTER_COMPONENT(g->m_screenPosition.m_x));
+        i32 y = (SNAP_TILE_CENTER_COMPONENT(g->m_screenPosition.m_y));
 
         if (m_mgr->m_triggerMgr->PlaceObject(
                 g->m_smarts,
@@ -5349,35 +5417,28 @@ i32 CPlay::AddLevelGruntz() {
 RVA(0x000d5b20, 0xbb)
 i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     CGruntzMgr* w = m_mgr;
-    i32 ex = w->m_modeSize.cx;
-    i32 ey = w->m_modeSize.cy;
+    Coord timerPosition(w->m_modeSize.cx, w->m_modeSize.cy);
     CTimer* pt;
     if (mode == STATUSBAR_DOCK_LEFT) {
         m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         pt = m_levelTimer;
         if (pt != NULL) {
-            ex -= 0x37;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+            timerPosition -= Coord(0x37, 0x16);
+            pt->m_basePosition = timerPosition;
         }
     } else if (mode == STATUSBAR_DOCK_RIGHT) {
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
         pt = m_levelTimer;
         if (pt != NULL) {
-            ex -= 0xd7;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+            timerPosition -= Coord(0xd7, 0x16);
+            pt->m_basePosition = timerPosition;
         }
     } else {
         m_chatBox->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
         pt = m_levelTimer;
         if (pt != NULL) {
-            ex -= 0x37;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+            timerPosition -= Coord(0x37, 0x16);
+            pt->m_basePosition = timerPosition;
         }
     }
 
@@ -5506,7 +5567,7 @@ i32 CPlay::ResetPlayState() {
     } else {
         GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {
-            ResetGoals(slot->m_focusX, slot->m_focusY);
+            ResetGoals(slot->m_focus.m_x, slot->m_focus.m_y);
         } else {
             CGameLevel* g = m_mgr->m_world->m_level;
             ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
@@ -6498,13 +6559,11 @@ i32 CPlay::ShrinkViewport(i32 step) {
     RECT resized = *viewport;
 
     if (resized.right - resized.left > 0xc0) {
-        resized.left += step;
-        resized.right -= step;
+        DEFLATE_RECT_X(resized, step);
         changed = true;
     }
     if (resized.bottom - resized.top > 0xc0) {
-        resized.top += step;
-        resized.bottom -= step;
+        DEFLATE_RECT_Y(resized, step);
         changed = true;
     }
     if (changed == false) {
@@ -6685,7 +6744,7 @@ i32 CPlay::ScanShuffleQuads() {
             scatter[perm[1]] = p->m_extent.top;
             scatter[perm[2]] = p->m_extent.right;
             scatter[perm[3]] = p->m_extent.bottom;
-            SET_RECT_COMPONENTS(p->m_extent, scatter[0], scatter[1], scatter[2], scatter[3]);
+            p->m_extent = MakeRect(scatter[0], scatter[1], scatter[2], scatter[3]);
         }
     }
     return 1;

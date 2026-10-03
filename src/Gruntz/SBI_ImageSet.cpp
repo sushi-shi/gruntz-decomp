@@ -42,7 +42,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (owner == NULL) {
         goto fail;
     }
-    Initialize(owner, obj, host);
+    InitializeBase(owner, obj, host);
 
     m_rect = rect;
     m_cmd = cmd;
@@ -87,8 +87,8 @@ i32 CSBI_ImageSet::Render() {
         CImage* cel = tbl->GetAt(idx);
         SetFrame(cel);
         if (cel != NULL) {
-            i32 y = cel->m_anchorY + m_rect.top;
-            i32 x = cel->m_anchorX + m_rect.left;
+            i32 y = cel->m_anchor.y + m_rect.top;
+            i32 x = cel->m_anchor.x + m_rect.left;
             cel->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
         }
     }

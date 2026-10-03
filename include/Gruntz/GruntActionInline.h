@@ -104,7 +104,7 @@ inline void CGrunt::RestoreToolAfterToyUse(i32 defer) {
     }
     LoadGruntTypeTable(m_toolId, 1, 0, defer);
     {
-        i32 sortKey = m_object->m_screenY + 0x186a0;
+        i32 sortKey = m_object->m_screenPosition.m_y + 0x186a0;
         CWwdSpriteObject* object = m_object;
         SET_SORT_KEY_IF_CHANGED(object, sortKey)
     }

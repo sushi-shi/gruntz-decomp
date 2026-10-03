@@ -24,6 +24,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -47,7 +48,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
     b32 hitGate = false;
     if (g != NULL) {
         CGameObject* gp = g->m_object;
-        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g) && RectContains(gp->m_screenX, gp->m_screenY)) {
+        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
+            && RectContains(gp->m_screenPosition.m_x, gp->m_screenPosition.m_y)) {
             hitGate = true;
         }
     }
@@ -96,7 +98,10 @@ i32 CGrunt::StepDumbChaserBehavior() {
 
             if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
-                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                && RectContains(
+                       g->m_object->m_screenPosition.m_x,
+                       g->m_object->m_screenPosition.m_y
+                   ) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 return 1;
             }
@@ -105,8 +110,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     return 1;
                 }
                 if (TileSwitch(
-                        g->m_object->m_screenX >> TILE_SHIFT_PX,
-                        g->m_object->m_screenY >> TILE_SHIFT_PX,
+                        g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                        g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
                         0,
                         m_arrivalFlags,
                         1,
@@ -154,7 +159,10 @@ i32 CGrunt::StepDumbChaserBehavior() {
             }
             RepathToward(this, t);
             if (m_poweredUp == false && m_stamina >= STAMINA_FULL
-                && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
+                && RectContains(
+                       t->m_object->m_screenPosition.m_x,
+                       t->m_object->m_screenPosition.m_y
+                   ) != 0
                 && IsGruntAtSavedScreenPos(t)) {
                 COMMIT_GRUNT_NEIGHBOR(t);
                 m_defenderState = AISTATE_ATTACK;
@@ -176,7 +184,10 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     || m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
+                if (RectContains(
+                        t->m_object->m_screenPosition.m_x,
+                        t->m_object->m_screenPosition.m_y
+                    ) == 0
                     || !IsGruntAtSavedScreenPos(t)) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;

@@ -31,6 +31,8 @@
 #include <Image/ImageSet.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <RectMacros.h>
+#include <Utils/MapTyped.h>
 
 #include <string.h>
 

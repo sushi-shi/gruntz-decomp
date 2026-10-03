@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTRANDOMPOINTMACROS_H
 #define GRUNTZ_GRUNTRANDOMPOINTMACROS_H
 
+#include <Gruntz/RandomExtentPoint.h>
+
 #define SELECT_RANDOM_EXTENT_POINT(object, outX, spanX, outY, spanY)                               \
     i32 outX = object->m_extent.left;                                                              \
     i32 spanX = abs(object->m_extent.right - outX);                                                \

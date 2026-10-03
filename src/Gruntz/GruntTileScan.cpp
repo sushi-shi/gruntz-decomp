@@ -15,12 +15,12 @@
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 
 #include <stdlib.h>
 
-// @early-stop
 RVA(0x00032ce0, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= STAMINA_FULL) {

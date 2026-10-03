@@ -21,6 +21,7 @@
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
@@ -142,10 +143,14 @@ state0: {
         goto common;
     }
     if (m_poweredUp == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(nb)
-        && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
+        && RectContains(nb->m_object->m_screenPosition.m_x, nb->m_object->m_screenPosition.m_y)
+               != 0) {
         COMMIT_GRUNT_NEIGHBOR(nb);
         CWwdSpriteObject* hit = nb->m_object;
-        m_arrivalCell.Set(hit->m_screenX >> TILE_SHIFT_PX, hit->m_screenY >> TILE_SHIFT_PX);
+        m_arrivalCell.Set(
+            hit->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            hit->m_screenPosition.m_y >> TILE_SHIFT_PX
+        );
         m_defenderState = AISTATE_ATTACK;
         goto common;
     }
@@ -156,8 +161,8 @@ state0: {
         goto s0_reset;
     }
     if (TileSwitch(
-            nb->m_object->m_screenX >> TILE_SHIFT_PX,
-            nb->m_object->m_screenY >> TILE_SHIFT_PX,
+            nb->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            nb->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,
@@ -166,8 +171,8 @@ state0: {
         == 0) {
         m_passableMask |= 0x4020;
         TileSwitch(
-            nb->m_object->m_screenX >> TILE_SHIFT_PX,
-            nb->m_object->m_screenY >> TILE_SHIFT_PX,
+            nb->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            nb->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,

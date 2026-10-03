@@ -12,7 +12,9 @@ inline void CGrunt::RecycleCoords() {
     POSITION n = CoordHead();
     if (n != NULL) {
         do {
-            Coord* coord = static_cast<Coord*>(m_coordList.GetNext(n));
+            POSITION cur = n;
+            m_coordList.GetNext(n);
+            Coord* coord = static_cast<Coord*>(m_coordList.GetAt(cur));
             if (coord != NULL) {
                 g_coordPool.Push(coord);
             }

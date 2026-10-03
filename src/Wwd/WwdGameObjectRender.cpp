@@ -10,6 +10,7 @@
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
 #include <Utils/MapTyped.h>
@@ -24,24 +25,23 @@
 RVA(0x001660f0, 0xd1)
 void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
     if (m_clip.left == COORD_UNSET) {
-        if (m_screenX < 0 || m_screenY < 0 || m_screenX >= dst->GetWidth()
-            || m_screenY >= dst->GetHeight()) {
+        if (m_screenPosition.m_x < 0 || m_screenPosition.m_y < 0
+            || m_screenPosition.m_x >= dst->m_width || m_screenPosition.m_y >= dst->m_height) {
             m_dirty.m_armed = -1;
             return;
         }
     } else {
-        if (m_screenX < m_clip.left || m_screenY < m_clip.top || m_screenX > m_clip.right
-            || m_screenY > m_clip.bottom) {
+        if (m_screenPosition.m_x < m_clip.left || m_screenPosition.m_y < m_clip.top
+            || m_screenPosition.m_x > m_clip.right || m_screenPosition.m_y > m_clip.bottom) {
             m_dirty.m_armed = -1;
             return;
         }
     }
 
-    dst->GetSurface()->PutPixel(m_screenX, m_screenY, m_dotColor);
-    m_dirty.m_position.x = m_screenX;
-    m_dirty.m_position.y = m_screenY;
-    m_dirty.m_size.cx = 1;
-    m_dirty.m_size.cy = 1;
+    dst->GetSurface()->PutPixel(m_screenPosition.m_x, m_screenPosition.m_y, m_dotColor);
+    m_dirty.m_lastPosition.x = m_screenPosition.m_x;
+    m_dirty.m_lastPosition.y = m_screenPosition.m_y;
+    m_dirty.m_size = CSize(1, 1);
     m_dirty.m_armed = 0;
 }
 
@@ -50,8 +50,9 @@ void CWwdDotObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
     if (m_shadow.m_armed != -1) {
-        u8 pixel = src->GetSurface()->GetPixel(m_shadow.m_position.x, m_shadow.m_position.y);
-        dst->GetSurface()->PutPixel(m_shadow.m_position.x, m_shadow.m_position.y, pixel);
+        u8 pixel =
+            src->GetSurface()->GetPixel(m_shadow.m_lastPosition.x, m_shadow.m_lastPosition.y);
+        dst->GetSurface()->PutPixel(m_shadow.m_lastPosition.x, m_shadow.m_lastPosition.y, pixel);
         m_dirty.m_armed = -1;
     }
 }
@@ -63,22 +64,25 @@ void CWwdDotObject::BltDirtyEx(
     CDDrawSurfacePair* restoreSrc
 ) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
-        i32 dx = abs(m_dirty.m_position.x - m_shadow.m_position.x) + 1;
-        i32 dy = abs(m_dirty.m_position.y - m_shadow.m_position.y) + 1;
-        if (dx > 0x20 || dy > 0x20) {
-            dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
-            dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
+        Coord delta(
+            abs(m_dirty.m_lastPosition.x - m_shadow.m_lastPosition.x),
+            abs(m_dirty.m_lastPosition.y - m_shadow.m_lastPosition.y)
+        );
+        CSize span(delta.m_x + 1, delta.m_y + 1);
+        if (span.cx > 0x20 || span.cy > 0x20) {
+            dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_lastPosition, m_shadow.m_size);
         } else {
-            i32 left = min(m_dirty.m_position.x, m_shadow.m_position.x);
-            i32 top = min(m_dirty.m_position.y, m_shadow.m_position.y);
-            CPoint pos(left, top);
-            CSize size(dx, dy);
-            dst->BlitDirtyRect(src, pos, size);
+            CPoint position(
+                Min(m_dirty.m_lastPosition.x, m_shadow.m_lastPosition.x),
+                Min(m_dirty.m_lastPosition.y, m_shadow.m_lastPosition.y)
+            );
+            dst->BlitDirtyRect(src, position, span);
         }
     } else if (m_dirty.m_armed != -1) {
-        dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+        dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
     } else if (m_shadow.m_armed != -1) {
-        dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
+        dst->BlitDirtyRect(src, m_shadow.m_lastPosition, m_shadow.m_size);
     }
 }
 
@@ -89,24 +93,24 @@ void CWwdDotObject::BltDirtyRegions(
     CDDrawSurfacePair* restoreSrc
 ) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
-        const POINT& dirtyPos = m_dirty.m_position;
-        const POINT& shadowPos = m_shadow.m_position;
-        i32 dx = abs(m_dirty.m_position.x - m_shadow.m_position.x) + 1;
-        i32 dy = abs(m_dirty.m_position.y - m_shadow.m_position.y) + 1;
+        const POINT& dirtyPos = m_dirty.m_lastPosition;
+        const POINT& shadowPos = m_shadow.m_lastPosition;
+        i32 dx = abs(dirtyPos.x - shadowPos.x) + 1;
+        i32 dy = abs(dirtyPos.y - shadowPos.y) + 1;
         if (dx > 0x20 || dy > 0x20) {
             dst->BlitDirtyRect(src, dirtyPos, m_dirty.m_size);
             dst->BlitDirtyRect(src, shadowPos, m_shadow.m_size);
         } else {
-            i32 left = min(m_dirty.m_position.x, m_shadow.m_position.x);
-            i32 top = min(m_dirty.m_position.y, m_shadow.m_position.y);
+            i32 left = min(m_dirty.m_lastPosition.x, m_shadow.m_lastPosition.x);
+            i32 top = min(m_dirty.m_lastPosition.y, m_shadow.m_lastPosition.y);
             CPoint pos(left, top);
             CSize size(dx, dy);
             dst->BlitDirtyRect(src, pos, size);
         }
     } else if (m_dirty.m_armed != -1) {
-        dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+        dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
     } else if (m_shadow.m_armed != -1) {
-        dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
+        dst->BlitDirtyRect(src, m_shadow.m_lastPosition, m_shadow.m_size);
     }
 }
 

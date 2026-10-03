@@ -21,6 +21,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -45,8 +46,8 @@ i32 CGrunt::StepBomberBehavior() {
         if (static_cast<u32>(m_dwell) > 0xfa) {
             CGameObject* oh = occ->m_object;
             if (TileSwitch(
-                    oh->m_screenX >> TILE_SHIFT_PX,
-                    oh->m_screenY >> TILE_SHIFT_PX,
+                    oh->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                    oh->m_screenPosition.m_y >> TILE_SHIFT_PX,
                     0,
                     m_arrivalFlags,
                     1,
@@ -57,8 +58,8 @@ i32 CGrunt::StepBomberBehavior() {
                 if (m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
                         m_unitIndex,
-                        oh2->m_screenX,
-                        oh2->m_screenY
+                        oh2->m_screenPosition.m_x,
+                        oh2->m_screenPosition.m_y
                     )
                     == -1) {
                     m_dwell = 0;

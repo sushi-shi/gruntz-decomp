@@ -22,6 +22,7 @@
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
@@ -45,7 +46,8 @@ i32 CGrunt::StepObjectGuardBehavior() {
     CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     i32 inRange = 0;
     if (occ != NULL && IsGruntAtSavedScreenPos(occ)
-        && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
+        && RectContains(occ->m_object->m_screenPosition.m_x, occ->m_object->m_screenPosition.m_y)
+               != 0) {
         inRange = 1;
     }
 
@@ -96,7 +98,10 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     return 1;
                 }
                 if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
-                    && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
+                    && RectContains(
+                           o->m_object->m_screenPosition.m_x,
+                           o->m_object->m_screenPosition.m_y
+                       ) != 0) {
                     COMMIT_GRUNT_NEIGHBOR(o);
                     return 1;
                 }
@@ -183,7 +188,8 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
+            if (RectContains(o->m_object->m_screenPosition.m_x, o->m_object->m_screenPosition.m_y)
+                == 0) {
                 return 1;
             }
             if (!IsGruntAtSavedScreenPos(o)) {
@@ -207,8 +213,8 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 1,
                 0
             );
-            if (m_object->m_screenX == m_defenderPx.m_x - 0x20
-                && m_object->m_screenY == m_defenderPx.m_y - 0x20) {
+            if (m_object->m_screenPosition.m_x == m_defenderPx.m_x - 0x20
+                && m_object->m_screenPosition.m_y == m_defenderPx.m_y - 0x20) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -217,7 +223,10 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 return 1;
             }
             if (m_poweredUp == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
-                && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
+                && RectContains(
+                       o->m_object->m_screenPosition.m_x,
+                       o->m_object->m_screenPosition.m_y
+                   ) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(o);
                 m_defenderState = AISTATE_ATTACK;
             }

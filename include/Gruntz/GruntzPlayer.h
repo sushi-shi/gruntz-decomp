@@ -6,6 +6,7 @@
 #include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 
@@ -74,8 +75,7 @@ public:
     b32 m_optionsPresenceCounted;
 
     CBattlezMapConfig m_battlezConfig;
-    i32 m_focusX;
-    i32 m_focusY;
+    Coord m_focus;
     i32 m_maxGruntz;
 
     PlayerLatency m_latency;
@@ -89,8 +89,8 @@ public:
     m_name = "";                                                                                   \
     m_color = TINT_ORANGE;                                                                         \
     m_difficulty = BZDIFF_EASY;                                                                    \
-    m_focusX = 0;                                                                                  \
-    m_focusY = 0;                                                                                  \
+    m_focus.m_x = 0;                                                                               \
+    m_focus.m_y = 0;                                                                               \
     m_maxGruntz = 0xf;                                                                             \
     m_doneFlag = false;                                                                            \
     m_optionsPresenceCounted = false;                                                              \

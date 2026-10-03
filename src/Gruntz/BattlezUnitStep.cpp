@@ -28,6 +28,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -46,6 +47,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
+#include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 #include <ZTools/BitVec.h>
@@ -92,8 +94,9 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         if (static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleRerouteDelay)) {
             Coord here;
             g->GetScreenTile(&here);
-            RerouteIdleUnit(g, here.m_x, here.m_y, m_idleBurnRandX, m_idleBurnRandY, -1);
-            if (g->CoordCount() > m_idleRouteLimitY + m_idleRouteLimitX && g->CoordCount() != 0) {
+            RerouteIdleUnit(g, here.m_x, here.m_y, m_idleBurnRand.m_x, m_idleBurnRand.m_y, -1);
+            if (g->CoordCount() > m_idleRouteLimit.m_y + m_idleRouteLimit.m_x
+                && g->CoordCount() != 0) {
                 g->RecycleCoords();
             }
             g->m_dwell = 0;
@@ -137,7 +140,7 @@ inflight: {
     if (cur != NULL) {
         {
             CGameObject* s = cur->m_object;
-            if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
+            if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
 
                 g->RecycleCoords();
                 UNSET_COORD(g->m_arrivalCell);
@@ -186,13 +189,12 @@ L_clear: {
 }
 }
 }
-#undef MOVE_RECYCLE
 
 RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {
     Coord out;
     CWwdSpriteObject* object = m_object;
-    out.Set(object->m_screenX, object->m_screenY);
+    out.Set(object->m_screenPosition.m_x, object->m_screenPosition.m_y);
     ScreenTile(&out);
     return out;
 }
@@ -203,7 +205,9 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         CGrunt* target = m_triggerMgr->UnitAt(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y);
         if (target != NULL) {
             CGameObject* lvl = target->m_object;
-            if ((static_cast<CGrunt*>(unit))->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {
+            if ((static_cast<CGrunt*>(unit))
+                    ->RectContains(lvl->m_screenPosition.m_x, lvl->m_screenPosition.m_y)
+                != 0) {
                 unit->RecycleCoords();
                 UNSET_COORD(unit->m_arrivalCell);
                 HandleUnitContact(unit, target);
@@ -217,8 +221,8 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                 unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
                 CGameObject* tl = target->m_object;
                 unit->TileSwitch(
-                    tl->m_screenX >> TILE_SHIFT_PX,
-                    tl->m_screenY >> TILE_SHIFT_PX,
+                    tl->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                    tl->m_screenPosition.m_y >> TILE_SHIFT_PX,
                     0,
                     flags,
                     0,

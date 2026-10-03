@@ -7,38 +7,38 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MotionInline.h>
 #include <Gruntz/MotionMacros.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/MotionStateInline.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
+#include <Lith/BDefs.h>
 #include <Wwd/MoveFlags.h>
 
 #include <math.h>
 #include <stddef.h>
 #include <strstrea.h>
 
-// @early-stop
 RVA(0x0016ea90, 0x234)
 void CMovingLogic::AdvanceMotion() {
 
-    m_previousScreenPosition.m_x = static_cast<i32>(Motion()->m_position.m_x);
-    m_previousScreenPosition.m_y = static_cast<i32>(Motion()->m_position.m_y);
+    m_previousScreenPosition = Motion()->m_position.ToCoord();
     Motion()->Step(static_cast<double>(g_frameTime) * 0.001 - Motion()->m_time);
 
     if ((m_object->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) && m_object->m_carrier != NULL) {
-        m_object->m_screenX += m_object->m_carrier->m_deltaX;
-        Motion()->m_position.m_x = static_cast<double>(m_object->m_screenX);
-        m_object->m_screenY += m_object->m_carrier->m_deltaY;
-        Motion()->m_position.m_y = static_cast<double>(m_object->m_screenY);
+        Coord position = m_object->ScreenPos();
+        position += m_object->m_carrier->m_delta;
+        m_object->SetScreenPos(position);
+        Motion()->m_position.SetXY(position);
     }
 
     if (m_object->m_moveMode == MOVE_GROUNDED) {
         m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
             static_cast<i32>(Motion()->m_position.m_x),
-            m_object->m_screenY,
+            m_object->m_screenPosition.m_y,
             IDX(m_moveFlags)
         );
         Motion()->m_velocity.m_y = 0.0;
@@ -53,15 +53,14 @@ void CMovingLogic::AdvanceMotion() {
     }
 
     CMotionState* ms = Motion();
-    i32 sx = m_object->m_screenX;
-    if (static_cast<i32>(Motion()->m_position.m_x) != sx) {
-        double d = static_cast<double>(sx);
+    Coord screenPosition = m_object->ScreenPos();
+    if (static_cast<i32>(Motion()->m_position.m_x) != screenPosition.m_x) {
+        double d = static_cast<double>(screenPosition.m_x);
         ms->CorrectX(d);
     }
 
-    i32 sy = m_object->m_screenY;
-    if (static_cast<i32>(Motion()->m_position.m_y) != sy) {
-        double d = static_cast<double>(sy);
+    if (static_cast<i32>(Motion()->m_position.m_y) != screenPosition.m_y) {
+        double d = static_cast<double>(screenPosition.m_y);
         ms->CorrectY(d);
     }
 

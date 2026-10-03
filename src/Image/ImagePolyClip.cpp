@@ -6,6 +6,8 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WallProject.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Image/PolygonWinding.h>
 #include <Image/RasterVtx.h>
 #include <Image/WarpTextureBlit.h>

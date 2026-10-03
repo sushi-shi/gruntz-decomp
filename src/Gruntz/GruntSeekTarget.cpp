@@ -139,10 +139,10 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL) {
-            i32 x = g->m_object->m_screenX;
-            if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
+            i32 x = g->m_object->m_screenPosition.m_x;
+            if (GRUNT_X_AT_SAVED_POS(x, g) && GRUNT_SCREEN_Y_AT_SAVED_POS(g->m_object, g)
 
-                && RectContains(x, g->m_object->m_screenY) != 0) {
+                && RectContains(x, g->m_object->m_screenPosition.m_y) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
             }
         }
@@ -150,8 +150,8 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (TileSwitch(
-                g->m_object->m_screenX >> TILE_SHIFT_PX,
-                g->m_object->m_screenY >> TILE_SHIFT_PX,
+                g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
                 0,
                 this->m_arrivalFlags,
                 1,
@@ -207,8 +207,8 @@ i32 CGrunt::StepToolThiefBehavior() {
                 this->m_arrivalCell.m_x = bestIdx;
                 CGameObject* base = g_gameReg->m_triggerMgr->m_units[bestIdx]->m_object;
                 if (TileSwitch(
-                        base->m_screenX >> TILE_SHIFT_PX,
-                        base->m_screenY >> TILE_SHIFT_PX,
+                        base->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                        base->m_screenPosition.m_y >> TILE_SHIFT_PX,
                         0,
                         this->m_arrivalFlags,
                         1,
@@ -229,8 +229,8 @@ i32 CGrunt::StepToolThiefBehavior() {
         }
         CGameObject* base = g_gameReg->m_triggerMgr->UnitAt(0, this->m_arrivalCell.m_x)->m_object;
         TileSwitch(
-            base->m_screenX >> TILE_SHIFT_PX,
-            base->m_screenY >> TILE_SHIFT_PX,
+            base->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            base->m_screenPosition.m_y >> TILE_SHIFT_PX,
             0,
             this->m_arrivalFlags,
             1,

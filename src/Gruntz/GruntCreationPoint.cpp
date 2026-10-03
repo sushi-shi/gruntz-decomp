@@ -37,7 +37,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     if (o->m_sortKey != SORTKEY_GRUNT_CREATION) {
         o->m_sortKey = SORTKEY_GRUNT_CREATION;
         i32 f = o->m_flags;
-        f |= 0x20000;
+        f |= IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
         o->m_flags = f;
     }
     SwitchAnimationByName("GAME_CYCLE100", 0);

@@ -14,6 +14,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -113,9 +114,10 @@ i32 CGrunt::StepDiggerBehavior() {
     if (m_poweredUp != false) {
         goto L_tailc;
     }
-    if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
-        && g->m_object->m_screenY == g->m_lastTilePx.m_y
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+    if (m_stamina >= STAMINA_FULL && g->m_object->m_screenPosition.m_x == g->m_lastTilePx.m_x
+        && g->m_object->m_screenPosition.m_y == g->m_lastTilePx.m_y
+        && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
+               != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
         m_dwell = 0;
         return 1;
@@ -127,8 +129,8 @@ i32 CGrunt::StepDiggerBehavior() {
         goto L_tailc;
     }
     if (TileSwitch(
-            g->m_object->m_screenX >> TILE_SHIFT_PX,
-            g->m_object->m_screenY >> TILE_SHIFT_PX,
+            g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,

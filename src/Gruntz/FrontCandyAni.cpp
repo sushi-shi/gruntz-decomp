@@ -44,7 +44,7 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY);
 }
 
 RVA(0x000ad1b0, 0x102)

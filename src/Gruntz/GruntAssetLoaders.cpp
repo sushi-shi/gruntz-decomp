@@ -10,6 +10,7 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -164,9 +165,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_FALL: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            TileCollisionKind attr = static_cast<TileCollisionKind>((
-                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
-            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
+            TileCollisionKind attr = grid->m_rows[m_object->m_screenPosition.m_y >> TILE_SHIFT_PX]
+                                                 [m_object->m_screenPosition.m_x >> TILE_SHIFT_PX]
+                                                     .m_typeCode;
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath =
@@ -190,9 +191,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_FALL2: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            TileCollisionKind attr = static_cast<TileCollisionKind>((
-                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
-            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
+            TileCollisionKind attr = grid->m_rows[m_object->m_screenPosition.m_y >> TILE_SHIFT_PX]
+                                                 [m_object->m_screenPosition.m_x >> TILE_SHIFT_PX]
+                                                     .m_typeCode;
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath =
@@ -301,7 +302,11 @@ finalize:
 tail:
 
     if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
-        m_triggerMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
+        m_triggerMgr->SpawnTileFx(
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y,
+            m_warpstoneAnchorIndex
+        );
     }
     if (m_arrivalState == AI_TOOLTHIEF) {
         TryPowerupAtTile();

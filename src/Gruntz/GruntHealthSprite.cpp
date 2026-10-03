@@ -6,6 +6,7 @@
 
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCellInline.h>
@@ -41,7 +42,7 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     m_displayedValue = HEALTH_FULL;
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD);
     m_yOffset = -0x19;
 }
 
@@ -97,8 +98,11 @@ i32 CGruntHealthSprite::HealthUpdate() {
         }
         m_displayedValue = result;
     }
-    m_object->m_screenX = e->m_object->m_screenX;
-    m_object->m_screenY = m_yOffset + e->m_object->m_screenY;
+    SET_VECTOR2_COMPONENTS(
+        m_object->m_screenPosition,
+        e->m_object->m_screenPosition.m_x,
+        m_yOffset + e->m_object->m_screenPosition.m_y
+    );
     return 0;
 }
 

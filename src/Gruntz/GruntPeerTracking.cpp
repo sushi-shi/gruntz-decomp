@@ -56,9 +56,14 @@ i32 CGrunt::StepToyerBehavior() {
     }
     CGameObject* a = p->m_object;
     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p)
-        && VehicleContactContains(a->m_screenX, a->m_screenY)) {
+        && VehicleContactContains(a->m_screenPosition.m_x, a->m_screenPosition.m_y)) {
         CGameObject* b = p->m_object;
-        g_gameReg->m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, b->m_screenX, b->m_screenY);
+        g_gameReg->m_triggerMgr->UseToyAt(
+            m_playerIndex,
+            m_unitIndex,
+            b->m_screenPosition.m_x,
+            b->m_screenPosition.m_y
+        );
         return 1;
     }
     if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
@@ -67,8 +72,8 @@ i32 CGrunt::StepToyerBehavior() {
     if (GruntInRadius(p->m_playerIndex, p->m_unitIndex)) {
         CGameObject* b = p->m_object;
         TileSwitch(
-            b->m_screenX >> TILE_SHIFT_PX,
-            b->m_screenY >> TILE_SHIFT_PX,
+            b->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            b->m_screenPosition.m_y >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,

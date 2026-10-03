@@ -26,6 +26,7 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntDirectionOffset.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -112,7 +113,6 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
     return r;
 }
 
-// @early-stop
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
@@ -168,10 +168,9 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, NULL);
 
-    TileCollisionKind tileKind = g_gameReg->m_tileGrid->CellTypeAt(
-        m_lastTilePx.m_x >> TILE_SHIFT_PX,
-        m_lastTilePx.m_y >> TILE_SHIFT_PX
-    );
+    Coord tile = m_lastTilePx;
+    ScreenTile(&tile);
+    TileCollisionKind tileKind = g_gameReg->m_tileGrid->CellTypeAt(tile.m_x, tile.m_y);
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
         if (IsGruntAtSavedScreenPos(this)) {
             Coord tile = LastTilePx();
@@ -184,14 +183,14 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 RVA(0x000511b0, 0x246)
 void CGrunt::FaceTowardPixel(i32 x, i32 y) {
     CWwdSpriteObject* h = m_object;
-    i32 dy = y - h->m_screenY;
-    i32 dx = x - h->m_screenX;
-    i32 cx = h->m_screenX;
+    i32 dy = y - h->m_screenPosition.m_y;
+    i32 dx = x - h->m_screenPosition.m_x;
+    i32 cx = h->m_screenPosition.m_x;
 
     if (dx == 0) {
-        if (y > h->m_screenY) {
+        if (y > h->m_screenPosition.m_y) {
             SetFacing(1000, g_gruntMoveDirSouth);
-        } else if (y < h->m_screenY) {
+        } else if (y < h->m_screenPosition.m_y) {
             SetFacing(1000, g_gruntMoveDirNorth);
         }
         return;
@@ -199,7 +198,7 @@ void CGrunt::FaceTowardPixel(i32 x, i32 y) {
 
     float ratio = static_cast<float>(dy) / dx;
     if (ratio > 2.0f || ratio < -2.0f) {
-        if (y > h->m_screenY) {
+        if (y > h->m_screenPosition.m_y) {
             SetFacing(1000, g_gruntMoveDirSouth);
         } else {
             SetFacing(1000, g_gruntMoveDirNorth);
@@ -241,7 +240,9 @@ i32 CGrunt::CanShowStamina() {
 
 RVA(0x000514e0, 0x1e)
 void CGrunt::FaceTowardTile(i32 tileX, i32 tileY) {
-    FaceTowardPixel(tileX * 0x20 + 0x10, tileY * 0x20 + 0x10);
+    Coord tile(tileX, tileY);
+    TileCenter(&tile);
+    FaceTowardPixel(tile.m_x, tile.m_y);
 }
 
 RVA(0x00051510, 0x20f)
@@ -258,9 +259,9 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
 
     CWwdSpriteObject* object = m_object;
     i32 lastX = m_lastTilePx.m_x;
-    if (object->m_screenX == lastX) {
+    if (object->m_screenPosition.m_x == lastX) {
         i32 lastY = m_lastTilePx.m_y;
-        if (object->m_screenY == lastY) {
+        if (object->m_screenPosition.m_y == lastY) {
             return 0;
         }
     }
@@ -273,8 +274,8 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
 
     SET_SCREEN_POS(m_object, m_commitPx.m_x, m_commitPx.m_y);
     object = m_object;
-    if (object->m_sortKey != object->m_screenY + 0x186a0) {
-        object->m_sortKey = object->m_screenY + 0x186a0;
+    if (object->m_sortKey != object->m_screenPosition.m_y + 0x186a0) {
+        object->m_sortKey = object->m_screenPosition.m_y + 0x186a0;
         i32 flags = object->m_flags;
         object->m_flags = flags | IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
     }
@@ -302,7 +303,7 @@ RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     SET_SCREEN_POS(m_object, m_lastTilePx.m_x, m_lastTilePx.m_y);
     CWwdSpriteObject* h = m_object;
-    SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
+    SET_SORT_KEY_IF_CHANGED(h, h->m_screenPosition.m_y + 0x186a0)
     SetEntrancePos(clearArrivalState, 1);
     if (m_arrivalPending != false) {
 
@@ -735,7 +736,6 @@ i32 CGrunt::SetArrivalTarget(
     return 1;
 }
 
-// @early-stop
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     CWwdSpriteObject* h = m_object;
@@ -743,7 +743,7 @@ void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     i32 tx = tile.m_x;
     i32 ty = tile.m_y;
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
-    if (PIXEL_PAIR_NOT_AT_POSITION(px, py, tx, ty)) {
+    if ((px != tx || py != ty)) {
         if (IsDropReady(clearArrivalState)) {
             return;
         }
@@ -817,7 +817,7 @@ applyTail:
     if (m_poweredUp != false && m_neighborValid == false) {
         RESET_GRUNT_POWERED_STATE(this)
     }
-    m_triggerMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
+    m_triggerMgr->ApplySwitch(this, m_object->m_screenPosition.m_x, m_object->m_screenPosition.m_y);
     {
         DECLARE_TILE_CENTER_PIXEL_PAIR(spawnPx, spawnPy, tileX, tileY)
         SET_SCREEN_POS(m_object, spawnPx, spawnPy);
@@ -1075,8 +1075,8 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_moveTile, sizeof(m_moveTile));
     ar->Write(&m_arrivalPhase, sizeof(m_arrivalPhase));
     ar->Write(&m_timePerTile, sizeof(m_timePerTile));
-    ar->Write(&m_movePosX, sizeof(m_movePosX));
-    ar->Write(&m_movePosY, sizeof(m_movePosY));
+    ar->Write(&m_movePosition.m_x, sizeof(m_movePosition.m_x));
+    ar->Write(&m_movePosition.m_y, sizeof(m_movePosition.m_y));
     ar->Write(&m_reserved8d0, sizeof(m_reserved8d0));
     ar->Write(&m_coordToggle, sizeof(m_coordToggle));
     ar->Write(&m_wingzEnabled, sizeof(m_wingzEnabled));

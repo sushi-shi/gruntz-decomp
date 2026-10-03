@@ -110,10 +110,10 @@ public:
 
     BOOL ExtentsOverlapAt(const i32& x, const i32& y, CGameObject* b, RECT& bounds) const {
         const RECT& aBounds = ExtentAt(x, y, bounds);
-        i32 bLeft = b->m_screenX + b->m_extent.left;
-        i32 bTop = b->m_extent.top + b->m_screenY;
-        i32 bBottom = b->m_screenY + b->m_extent.bottom;
-        i32 bRight = b->m_screenX + b->m_extent.right;
+        i32 bLeft = b->m_screenPosition.m_x + b->m_extent.left;
+        i32 bTop = b->m_extent.top + b->m_screenPosition.m_y;
+        i32 bBottom = b->m_screenPosition.m_y + b->m_extent.bottom;
+        i32 bRight = b->m_screenPosition.m_x + b->m_extent.right;
         return aBounds.left <= bRight && aBounds.right >= bLeft && aBounds.top <= bBottom
                && aBounds.bottom >= bTop;
     }
@@ -133,6 +133,13 @@ public:
     i32 NotifyForEventCode(i32 eventCode);
 
     void AttachToOwner(CDDrawSurfaceMgr* owner, i32 id);
+
+    inline void SetSortKey(i32 sortKey) {
+        if (m_sortKey != sortKey) {
+            m_sortKey = sortKey;
+            m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
+        }
+    }
 
     i32 m_sortKey;
 
@@ -165,11 +172,9 @@ public:
     i32 m_attackTypeMask;
 
     u32 m_collMask;
-    i32 m_strideX;
-    i32 m_strideY;
+    Coord m_stride;
     i32 m_reserved100;
-    i32 m_spawnX;
-    i32 m_spawnY;
+    Coord m_spawnPosition;
     i32 m_spawnSortKey;
     i32 m_reserved110;
     i32 m_score;
@@ -189,12 +194,10 @@ public:
 
     RECT m_switchRect;
 
-    i32 m_speedX;
-    i32 m_speedY;
+    Coord m_speed;
     i32 m_reserved16c;
     i32 m_reserved170;
-    i32 m_deltaX;
-    i32 m_deltaY;
+    Coord m_delta;
     i32 m_reserved17c;
     i32 m_reserved180;
     i32 m_carrierId;
@@ -207,7 +210,7 @@ inline i32 CGameObject::AttackBits(CGameObject* target) const {
 }
 
 inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
-    m_screenX = COORD_UNSET;
+    m_screenPosition.m_x = COORD_UNSET;
     m_posCache = NULL;
     m_logicRecord = new CLogicRecord(owner, id, 0);
     m_carrier = NULL;

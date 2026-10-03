@@ -106,10 +106,7 @@ public:
     POSITION m_listPosition;
 
     i32 m_commandParam;
-    i32 m_hitLeft;
-    i32 m_hitTop;
-    i32 m_hitRight;
-    i32 m_hitBottom;
+    RECT m_hitRect;
     Coord m_fixedCenter;
     CString m_leftItemName;
     CString m_rightItemName;
@@ -127,7 +124,7 @@ inline void CMenuItem::Reset() {
     m_animation = NULL;
     m_world = NULL;
     m_listPosition = NULL;
-    m_hitLeft = UNINIT_FILL;
+    m_hitRect.left = UNINIT_FILL;
     m_fixedCenter.m_x = UNINIT_FILL;
     m_leftItemName.Empty();
     m_rightItemName.Empty();

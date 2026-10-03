@@ -126,7 +126,8 @@ i32 CGrunt::StepBrickLayerBehavior() {
         goto L_ed153;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
+               != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
         m_dwell = 0;
         return 1;
@@ -135,8 +136,8 @@ i32 CGrunt::StepBrickLayerBehavior() {
         goto L_ed153;
     }
     if (TileSwitch(
-            g->m_object->m_screenX >> TILE_SHIFT_PX,
-            g->m_object->m_screenY >> TILE_SHIFT_PX,
+            g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
             0,
             m_arrivalFlags,
             1,
