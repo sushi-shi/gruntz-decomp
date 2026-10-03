@@ -108,7 +108,7 @@ i32 CSBI_Image::SerializeFields(
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_frame) {
-                mgr->m_imageRegistry->AnyValueMatches(m_frame, name, &v);
+                mgr->GetImageRegistry()->AnyValueMatches(m_frame, name, &v);
             }
             ar->Write(name, SERIAL_NAME_LEN);
             ar->Write(&v, sizeof(v));

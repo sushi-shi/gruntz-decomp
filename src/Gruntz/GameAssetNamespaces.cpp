@@ -45,13 +45,13 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (node == NULL) {
         return 0;
     }
-    if (m_world->m_imageRegistry->HasWithPrefix("GAME") == 0) {
+    if (m_world->GetImageRegistry()->HasWithPrefix("GAME") == 0) {
         CRezDir* img = m_resourceArchive->GetDirFromPath("GAME_IMAGEZ");
         if (img == NULL) {
             return 0;
         }
         g_resourceInstallActive = true;
-        m_world->m_imageRegistry->InstallTree(img, "GAME", "_");
+        m_world->GetImageRegistry()->InstallTree(img, "GAME", "_");
         g_resourceInstallActive = false;
     }
     if (m_world->SoundRegistry()->HasWithPrefix("GAME") == 0) {

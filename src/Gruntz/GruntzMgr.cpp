@@ -925,7 +925,7 @@ i32 PumpIdleFrame() {
     if (world == NULL) {
         return 0;
     }
-    if (world->m_imageRegistry == NULL) {
+    if (world->GetImageRegistry() == NULL) {
         return 0;
     }
     if (g_gameReg->m_curState == NULL) {
@@ -1292,15 +1292,15 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     }
 
     SoundCueRegistry* snd = w->SoundRegistry();
-    w->m_imageRegistry->SumSizesEqual(NULL, 1);
+    w->GetImageRegistry()->SumSizesEqual(NULL, 1);
     snd->SumAudioBytes(NULL);
     w->GetDeviceManager()->GetCapsChecked();
     w->GetDeviceManager()->GetCapsChecked();
-    w->m_imageRegistry->SumSizesEqual(NULL, 1);
-    w->m_imageRegistry->SumSizesEqual("GRUNTZ", 1);
-    w->m_imageRegistry->SumSizesEqual("GAME", 1);
-    w->m_imageRegistry->SumSizesEqual("LEVEL", 1);
-    w->m_imageRegistry->SumSizesEqual("ACTION", 1);
+    w->GetImageRegistry()->SumSizesEqual(NULL, 1);
+    w->GetImageRegistry()->SumSizesEqual("GRUNTZ", 1);
+    w->GetImageRegistry()->SumSizesEqual("GAME", 1);
+    w->GetImageRegistry()->SumSizesEqual("LEVEL", 1);
+    w->GetImageRegistry()->SumSizesEqual("ACTION", 1);
     w->SoundRegistry()->SumAudioBytes(NULL);
     w->SoundRegistry()->SumAudioBytes("GRUNTZ");
     w->SoundRegistry()->SumAudioBytes("GAME");

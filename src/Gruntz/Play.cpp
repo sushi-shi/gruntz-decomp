@@ -1548,7 +1548,7 @@ void CPlay::ModeCleanup() {
         m_mgr->m_worldSounds->Teardown();
     }
     if (m_world) {
-        m_world->m_imageRegistry->MapTeardown();
+        m_world->GetImageRegistry()->MapTeardown();
     }
     if (m_world) {
         m_world->GetAnimationRegistry()->ClearAnimations();
@@ -1576,7 +1576,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(h, "", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(h, "", "_") == -1) {
         return 0;
     }
 
@@ -1584,7 +1584,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(h, "LEVEL", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(h, "LEVEL", "_") == -1) {
         return 0;
     }
 
@@ -1592,7 +1592,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(h, "GRUNTZ", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -6131,7 +6131,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         CImage* frame = m_cursorImage;
         i32 v = 0;
         if (frame != NULL) {
-            mc->m_imageRegistry->AnyValueMatches(frame, buf, &v);
+            mc->GetImageRegistry()->AnyValueMatches(frame, buf, &v);
         }
         s->Write(buf, SERIAL_NAME_LEN);
         s->Write(&v, sizeof(v));
@@ -6277,7 +6277,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     {
         CObject* found = NULL;
         if (strlen(nameBuf) != 0) {
-            res->m_imageRegistry->m_workersByName.Lookup(nameBuf, found);
+            res->GetImageRegistry()->m_workersByName.Lookup(nameBuf, found);
             m_cursorSprite = static_cast<CDDrawWorker*>(found);
         } else {
             m_cursorSprite = NULL;

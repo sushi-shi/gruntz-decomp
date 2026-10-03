@@ -277,7 +277,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToOb* registryMap = &surfaceMgr->m_imageRegistry->m_workersByName;
+    CMapStringToOb* registryMap = &surfaceMgr->GetImageRegistry()->m_workersByName;
     if (registryMap == NULL) {
         return 0;
     }
@@ -301,7 +301,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
         CDDrawWorker* worker = static_cast<CDDrawWorker*>(toRemove.GetNext(pos));
-        surfaceMgr->m_imageRegistry->RemoveWorker(worker);
+        surfaceMgr->GetImageRegistry()->RemoveWorker(worker);
     }
     toRemove.RemoveAll();
 
@@ -316,7 +316,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
             if (resourceTree == NULL) {
                 return 0;
             }
-            surfaceMgr->m_imageRegistry->InstallTree(
+            surfaceMgr->GetImageRegistry()->InstallTree(
                 resourceTree,
                 const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
                 "_"
