@@ -809,7 +809,7 @@ void CMultiStartDlg::CommitWorldSelection() {
         CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
         if (worldCombo != NULL) {
             i32 selection = worldCombo->GetCurSel();
-            if (selection != -1) {
+            if (selection != CB_ERR) {
                 CString worldName;
                 (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
                 if (!worldName.IsEmpty()) {
@@ -911,15 +911,15 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             }
             if (player->m_ready == false) {
                 if (player->m_active) {
-                    readyControl->SetCheck(0);
+                    readyControl->SetCheck(BST_UNCHECKED);
                     allLivePlayersReady = false;
                 } else {
-                    readyControl->SetCheck(0);
+                    readyControl->SetCheck(BST_UNCHECKED);
                 }
             } else if (player->m_active) {
-                readyControl->SetCheck(1);
+                readyControl->SetCheck(BST_CHECKED);
             } else {
-                readyControl->SetCheck(0);
+                readyControl->SetCheck(BST_UNCHECKED);
             }
             CComboBox* maxGruntzControl = GetMaxGruntzControl(slotIndex);
             maxGruntzControl->EnableWindow(

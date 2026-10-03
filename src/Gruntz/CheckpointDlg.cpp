@@ -33,7 +33,7 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
     if (pDX->m_bSaveAndValidate == false) {
         NetLobby::g_curDlg = GetSafeHwnd();
         CButton* item = static_cast<CButton*>(GetDlgItem(0x53a));
-        item->SetCheck(0);
+        item->SetCheck(BST_UNCHECKED);
     }
 }
 
@@ -48,5 +48,5 @@ void CCheckpointDlg::OnToggleCheckpointPrompts() {
     CButton* c = static_cast<CButton*>(GetDlgItem(0x53a));
     i32 checked = c->GetCheck();
     CGruntzMgr* reg = g_gameReg;
-    reg->m_isCheckpointPrompts = checked == 0;
+    reg->m_isCheckpointPrompts = checked == BST_UNCHECKED;
 }

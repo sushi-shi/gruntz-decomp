@@ -692,7 +692,7 @@ void CBattlezDlg::OnWorldSelectionChange() {
         return;
     }
     long selection = combo->GetCurSel();
-    if (selection == -1) {
+    if (selection == CB_ERR) {
         return;
     }
     CString worldName;

@@ -16,6 +16,7 @@
 
 #include <dplay.h>
 #include <dplobby.h>
+#include <objbase.h>
 #include <string.h>
 #include <windowsx.h>
 
@@ -24,20 +25,20 @@ b32 g_validateProviders = false;
 
 // clang-format off
 DATA(0x00224d58)
-u8 g_directPlayIpxProviderGuid[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
-                                   0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
+GUID g_directPlayIpxProviderGuid = {
+    0x685bc400, 0x9d2c, 0x11cf, {0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3}};
 DATA(0x00224d68)
-u8 g_directPlayTcpIpProviderGuid[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
-                                   0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82};
+GUID g_directPlayTcpIpProviderGuid = {
+    0x36e95ee0, 0x8577, 0x11cf, {0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82}};
 DATA(0x00224d78)
-u8 g_directPlayModemProviderGuid[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
-                                   0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
+GUID g_directPlayModemProviderGuid = {
+    0x44eaa760, 0xcb68, 0x11cf, {0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e}};
 DATA(0x00224d88)
-u8 g_directPlaySerialProviderGuid[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
-                                   0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
+GUID g_directPlaySerialProviderGuid = {
+    0x0f1d6860, 0x88d9, 0x11cf, {0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e}};
 DATA(0x00224d98)
-u8 g_unclassifiedProviderGuid[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
-                                   0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
+GUID g_unclassifiedProviderGuid = {
+    0xd223b400, 0x0a7d, 0x11d1, {0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40}};
 
 
 
@@ -1008,7 +1009,7 @@ i32 CNetProviderNode::IsIpxProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_directPlayIpxProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_directPlayIpxProviderGuid);
 }
 
 RVA(0x001794e0, 0x21)
@@ -1016,7 +1017,7 @@ i32 CNetProviderNode::IsTcpIpProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_directPlayTcpIpProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_directPlayTcpIpProviderGuid);
 }
 
 RVA(0x00179510, 0x21)
@@ -1024,7 +1025,7 @@ i32 CNetProviderNode::IsModemProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_directPlayModemProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_directPlayModemProviderGuid);
 }
 
 RVA(0x00179540, 0x21)
@@ -1032,7 +1033,7 @@ i32 CNetProviderNode::IsSerialProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_directPlaySerialProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_directPlaySerialProviderGuid);
 }
 
 RVA(0x00179570, 0x21)
@@ -1040,7 +1041,7 @@ i32 CNetProviderNode::MatchesUnclassifiedProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_unclassifiedProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_unclassifiedProviderGuid);
 }
 
 RVA(0x001795a0, 0xdb)
