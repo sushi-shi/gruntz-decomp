@@ -955,8 +955,8 @@ i32 CGrunt::StepArrivalDrop(
 
     for (sy = tileY - 1; sy < tileY + 2; sy++) {
         for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            saved[sx - tileX + 1][sy - tileY + 1] = grid->m_rowInts[sy][sx * 7 + 7];
-            grid->m_rowInts[sy][sx * 7 + 7] = 0;
+            saved[sx - tileX + 1][sy - tileY + 1] = grid->m_rows[sy][sx].m_flags;
+            grid->m_rows[sy][sx].m_flags = 0;
         }
     }
     grid = g_gameReg->m_tileGrid;
@@ -984,7 +984,7 @@ i32 CGrunt::StepArrivalDrop(
     }
     for (sy = tileY - 1; sy < tileY + 2; sy++) {
         for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            grid->m_rowInts[sy][sx * 7 + 7] = saved[sx - tileX + 1][sy - tileY + 1];
+            grid->m_rows[sy][sx].m_flags = saved[sx - tileX + 1][sy - tileY + 1];
         }
     }
     if (0 != nudged) {
