@@ -3,6 +3,7 @@
 #include <rva.h>
 
 #include <Gruntz/MapMgr.h>
+#include <Gruntz/MapClipInline.h>
 
 #include <Globals.h>
 #include <Gruntz/Brickz.h>
@@ -176,16 +177,7 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     }
     m_stepCb = callback;
 
-    RECT a;
-    RECT b;
-    SET_RECT_COMPONENTS(a, 0, 0, m_width, m_height);
-    SET_RECT_COMPONENTS(b, 0, 0, m_width, m_height);
-    RECT* out = &m_bounds;
-    if (!IntersectRect(out, &a, &b)) {
-        *out = a;
-    }
-    m_gridW = out->right - out->left;
-    m_gridH = out->bottom - out->top;
+    Clip(NULL);
     return 1;
 }
 

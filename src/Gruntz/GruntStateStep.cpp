@@ -65,7 +65,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 g->BuildUnitSearchBox(&box, 5);
                 CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
-                GRID_CLIP(grid, &box);
+                grid->Clip(&box);
             }
             {
                 Coord p;
@@ -77,7 +77,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 }
             }
             if (dist <= 0xa) {
-                GRID_CLIP_NULL(m_board);
+                m_board->Clip(NULL);
             }
         }
         goto tail;
@@ -142,7 +142,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 g->BuildUnitSearchBox(&box, 5);
                 CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
-                GRID_CLIP(grid, &box);
+                grid->Clip(&box);
             }
             {
                 Coord cp;

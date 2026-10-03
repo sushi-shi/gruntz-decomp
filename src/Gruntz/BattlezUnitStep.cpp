@@ -239,7 +239,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             }
 
             CMapMgr* board = m_board;
-            GRID_CLIP_NULL(board);
+            board->Clip(NULL);
             if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordCount() == 0) {
                 i32 flags = unit->m_routeBlockedMask;
                 unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
@@ -394,7 +394,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             }
             case AISTATE_BATTLEZ_FINAL_ROUTE: {
                 CMapMgr* board = m_board;
-                SCAN_BOUNDS_PLAINCLIP(board);
+                board->Clip(NULL);
                 i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
                 if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     goto routeSuccess;

@@ -753,7 +753,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     i32 rowBeg = c7.m_y - 1;
                                     i32 colBeg = c8.m_x - 1;
                                     CMapMgr* board = m_board;
-                                    GRID_CLIP(board, &box);
+                                    board->Clip(&box);
                                     for (i32 row = rowBeg; row < rowEnd; row++) {
                                         CMapMgr* b = m_board;
                                         for (i32 col = colBeg; col < colEnd; col++) {
@@ -770,7 +770,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                     reclampJoin: {
                         CMapMgr* bd = m_board;
-                        GRID_CLIP_NULL(bd)
+                        bd->Clip(NULL);
                     }
                         {
                             i32 special = 1;
@@ -927,7 +927,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         continue;
     dispatch: {
         CMapMgr* bd2 = m_board;
-        SCAN_BOUNDS_PLAINCLIP(bd2)
+        bd2->Clip(NULL);
         PickupType stX = unit->m_entranceReason;
         if (hit == 0) {
             switch (unit->m_battleState) {
@@ -1095,7 +1095,7 @@ perimSweep: {
     }
     {
         CMapMgr* fb = m_board;
-        GRID_CLIP_NULL(fb);
+        fb->Clip(NULL);
         return 1;
     }
 }
@@ -1110,7 +1110,7 @@ topRowProbeHit: {
     unit->m_arrivalRerollTiming.m_startLo = g_frameTime;
     unit->m_arrivalRerollTiming.m_startHi = 0;
     CMapMgr* hb = m_board;
-    GRID_CLIP_NULL(hb);
+    hb->Clip(NULL);
     return 1;
 }
 
@@ -1124,7 +1124,7 @@ bottomRowProbeHit: {
     unit->m_arrivalRerollTiming.m_startLo = g_frameTime;
     unit->m_arrivalRerollTiming.m_startHi = 0;
     CMapMgr* hb = m_board;
-    GRID_CLIP_NULL(hb);
+    hb->Clip(NULL);
     return 1;
 }
 
@@ -1185,7 +1185,7 @@ firstColumnProbeHit: {
     unit->m_arrivalRerollTiming.m_startLo = g_frameTime;
     unit->m_arrivalRerollTiming.m_startHi = 0;
     CMapMgr* hb = m_board;
-    GRID_CLIP_NULL(hb);
+    hb->Clip(NULL);
     return 1;
 }
 
@@ -1199,7 +1199,7 @@ secondColumnProbeHit: {
     unit->m_arrivalRerollTiming.m_startLo = g_frameTime;
     unit->m_arrivalRerollTiming.m_startHi = 0;
     CMapMgr* hb = m_board;
-    GRID_CLIP_NULL(hb);
+    hb->Clip(NULL);
     return 1;
 }
 }
@@ -1529,7 +1529,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     {
         RECT box;
         SET_RECT_COMPONENTS(box, center.m_x - 6, center.m_y - 6, center.m_x + 6, center.m_y + 6);
-        GRID_CLIP(board, &box);
+        board->Clip(&box);
     }
     Coord* tailCoord = unit->GetTailCoord();
     i32 tx = tailCoord->m_x;
@@ -1590,7 +1590,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     }
                 }
 
-                SCAN_BOUNDS_PLAINCLIP(board);
+                board->Clip(NULL);
                 Coord* nt = unit->GetTailCoord();
                 SET_TILE_CENTER_PIXEL_PAIR(
                     unit->m_entrancePx.m_x,
@@ -1605,7 +1605,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     }
 
     {
-        GRID_CLIP_NULL(board);
+        board->Clip(NULL);
     }
     return 0;
 }
@@ -1763,55 +1763,12 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     box.bottom = (tl2->m_screenY >> TILE_SHIFT_PX) + 5;
     box.top = (tl2->m_screenY >> TILE_SHIFT_PX) - 5;
 
-    const RECT* src = &box;
-    RECT a, bounds;
-    i32 w = board->m_width;
-    i32 h = board->m_height;
-    bounds.left = 0;
-    bounds.top = 0;
-    bounds.right = w;
-    bounds.bottom = h;
-    if (src) {
-        a = *src;
-        a.right++;
-        a.bottom++;
-    } else {
-        a = bounds;
-    }
-    RECT* aDst = &board->m_bounds;
-    if (!IntersectRect(aDst, &a, &bounds)) {
-        *aDst = a;
-    }
-    board->m_gridW = aDst->right - aDst->left;
-    board->m_gridH = aDst->bottom - aDst->top;
+    board->Clip(&box);
     RouteUnitTo(actor, xcoord, ycoord, 0x20000d87, 0, 0);
     m_board->Clip(static_cast<const RECT*>(0));
     return 1;
 }
 
-// @early-stop
-RVA(0x0002b340, 0xaa)
-void CMapMgr::Clip(const RECT* src) {
-    RECT a, b;
-    i32 w = m_width;
-    i32 h = m_height;
-    SET_RECT_COMPONENTS(b, 0, 0, w, h);
-    if (src) {
-        a = *src;
-        a.right++;
-        a.bottom++;
-    } else {
-        a.left = a.top = 0;
-        a.right = w;
-        a.bottom = h;
-    }
-    RECT* dst = &m_bounds;
-    if (!IntersectRect(dst, &a, &b)) {
-        *dst = a;
-    }
-    m_gridW = dst->right - dst->left;
-    m_gridH = dst->bottom - dst->top;
-}
 RVA(0x0002b420, 0x419)
 i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -2103,7 +2060,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     SET_RECT_COMPONENTS(box, left - 3, top - 3, right + 4, bottom + 4);
     {
         CMapMgr* board = m_board;
-        GRID_CLIP(board, &box);
+        board->Clip(&box);
     }
 
     CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
@@ -2166,7 +2123,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                 if (special != 0 && unit->m_gruntKind == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                         CMapMgr* bd = m_board;
-                        SCAN_BOUNDS_PLAINCLIP(bd);
+                        bd->Clip(NULL);
                         return 1;
                     }
                 } else {
@@ -2174,7 +2131,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                     if (entranceMode == PICKUP_NONE) {
                         if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                             CMapMgr* bd = m_board;
-                            GRID_CLIP_NULL(bd);
+                            bd->Clip(NULL);
                             return 1;
                         }
                     }
@@ -2278,7 +2235,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
                 {
                     CMapMgr* board = m_board;
-                    GRID_CLIP(board, &box);
+                    board->Clip(&box);
                 }
             }
 
@@ -2326,7 +2283,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                         nt->m_y
                                     )
                                     CMapMgr* bd = m_board;
-                                    SCAN_BOUNDS_PLAINCLIP(bd);
+                                    bd->Clip(NULL);
                                     return 1;
                                 }
                             }
@@ -2338,7 +2295,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
         {
             CMapMgr* bd = m_board;
-            GRID_CLIP_NULL(bd);
+            bd->Clip(NULL);
         }
     }
 
@@ -2785,7 +2742,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     SET_RECT_COMPONENTS(box, left - 8, top - 8, right + 8, bottom + 8);
     {
         CMapMgr* board = m_board;
-        GRID_CLIP(board, &box);
+        board->Clip(&box);
     }
     ClaimTilesAround(unit, col, row, requireUnoccupied);
     if (g_stepRun == false) {
@@ -2818,17 +2775,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     }
 
     {
-        CMapMgr* board = m_board;
-        RECT b;
-        SET_RECT_COMPONENTS(b, 0, 0, board->m_width, board->m_height);
-        RECT a;
-        a = b;
-        RECT* aDst = &board->m_bounds;
-        if (!IntersectRect(aDst, &a, &b)) {
-            *aDst = a;
-        }
-        board->m_gridW = aDst->right - aDst->left;
-        board->m_gridH = aDst->bottom - aDst->top;
+        m_board->Clip(NULL);
     }
     return 1;
 }
@@ -2914,23 +2861,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     if (best != NULL) {
         if (static_cast<u32>(unit->m_dwell) > 0x64) {
             {
-                const RECT* src = &box;
-                CMapMgr* board = m_board;
-                CRect b(0, 0, board->m_width, board->m_height);
-                RECT a;
-                if (src != NULL) {
-                    a = *src;
-                    a.right++;
-                    a.bottom++;
-                } else {
-                    a = CRect(0, 0, board->m_width, board->m_height);
-                }
-                RECT* aDst = &board->m_bounds;
-                if (!IntersectRect(aDst, &a, &b)) {
-                    *aDst = a;
-                }
-                board->m_gridW = aDst->right - aDst->left;
-                board->m_gridH = aDst->bottom - aDst->top;
+                m_board->Clip(&box);
             }
 
             i32 flags = 0;
@@ -2978,29 +2909,11 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                 }
 
                 {
-                    CMapMgr* board = m_board;
-                    CRect gb(0, 0, board->m_width, board->m_height);
-                    RECT grc;
-                    grc = gb;
-                    RECT* grcDst = &board->m_bounds;
-                    if (!IntersectRect(grcDst, &grc, &gb)) {
-                        *grcDst = grc;
-                    }
-                    board->m_gridW = grcDst->right - grcDst->left;
-                    board->m_gridH = grcDst->bottom - grcDst->top;
+                    m_board->Clip(NULL);
                 }
                 unit->m_dwell = 0;
             } else {
-                CMapMgr* board = m_board;
-                CRect b(0, 0, board->m_width, board->m_height);
-                RECT a;
-                a = CRect(0, 0, board->m_width, board->m_height);
-                RECT* aDst = &board->m_bounds;
-                if (!IntersectRect(aDst, &a, &b)) {
-                    *aDst = a;
-                }
-                board->m_gridW = aDst->right - aDst->left;
-                board->m_gridH = aDst->bottom - aDst->top;
+                m_board->Clip(NULL);
                 unit->m_dwell = 0;
                 return 0;
             }

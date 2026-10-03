@@ -46,7 +46,7 @@ i32 CGrunt::StepDiggerBehavior() {
         return 1;
     }
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_CLIP_NULL(grid);
+    grid->Clip(NULL);
 
     Coord c1;
     GetScreenPos(&c1);
@@ -160,7 +160,7 @@ L_tailc:
             i32 best = INT_MAX;
             i32 bestCol = -1;
             i32 bestRow = -1;
-            GRID_CLIP_INL(grid, &isect);
+            grid->Clip(&isect);
             for (i32 row = isect.top; row < isect.bottom; row++) {
                 BrickzCell* cell = &grid->m_rows[row][isect.left];
                 for (i32 col = isect.left; col < isect.right; col++) {
@@ -196,7 +196,7 @@ L_tailc:
                     TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
                 }
             }
-            GRID_RECT_INLINE(grid);
+            grid->Clip(NULL);
             m_dwell = 0;
         }
         return 1;

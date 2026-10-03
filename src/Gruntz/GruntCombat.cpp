@@ -647,25 +647,9 @@ i32 CGrunt::PathScan() {
     start.Set(m_object->m_screenX >> TILE_SHIFT_PX, m_object->m_screenY >> TILE_SHIFT_PX);
 
     {
-        RECT gb;
-        SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
         RECT rs;
         SET_RECT_COMPONENTS(rs, start.m_x - 2, start.m_y - 2, start.m_x + 2, start.m_y + 2);
-        RECT box;
-        const RECT* pr = &rs;
-        if (pr != NULL) {
-
-            box = *pr;
-            box.right++;
-            box.bottom++;
-        } else {
-            box = CRect(0, 0, grid->m_width, grid->m_height);
-        }
-        if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
-            grid->m_bounds = box;
-        }
-        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
-        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
+        grid->Clip(&rs);
     }
 
     Coord target = *GetTailCoord();
@@ -727,7 +711,7 @@ i32 CGrunt::PathScan() {
                         }
                         RECYCLE_HEAD_COORD(s)
                         s.RemoveAll();
-                        SCAN_BOUNDS_PLAINCLIP(grid);
+                        grid->Clip(NULL);
                         return 1;
                     }
                 } else {
@@ -737,18 +721,18 @@ i32 CGrunt::PathScan() {
         }
 
         if (hits == GRUNT_COMBAT_FULL_SCAN_HITS) {
-            GRID_CLIP_NULL(grid);
+            grid->Clip(NULL);
             break;
         }
     }
 
-    GRID_CLIP_NULL(grid);
+    grid->Clip(NULL);
 
     RECT nb;
     SET_RECT_COMPONENTS(nb, target.m_x - 4, target.m_y - 4, target.m_x + 4, target.m_y + 4);
     if (::PtInRect(&nb, start.m_x, start.m_y)) {
 
-        GRID_CLIP(grid, &nb);
+        grid->Clip(&nb);
 
         for (i32 dy = -1; dy < 2; dy++) {
             for (i32 dx = -1; dx < 2; dx++) {
@@ -828,7 +812,7 @@ i32 CGrunt::PathScan() {
                                     }
                                 }
                             }
-                            GRID_CLIP_NULL(grid);
+                            grid->Clip(NULL);
                             return 1;
                         }
                     }
@@ -2124,7 +2108,7 @@ afterTile:
 
             RECT rs;
             SET_RECT_COMPONENTS(rs, col5 - reach, row5 - reach, reach + col5 + 1, reach + row5 + 1);
-            GRID_CLIP_INL(grid, &rs)
+            grid->Clip(&rs);
         }
         if (m_arrivalState != AI_NONE) {
             if (!IsHoldPending()) {
@@ -2186,7 +2170,7 @@ afterTile:
         {
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            SCAN_BOUNDS_PLAINCLIP(grid)
+            grid->Clip(NULL);
         }
     }
 

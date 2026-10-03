@@ -86,7 +86,7 @@ state2: {
             m_arrivalCell.m_y + 5
         );
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        GRID_CLIP_INL(grid, &box);
+        grid->Clip(&box);
     }
 
     CDWordArray acc;
@@ -120,7 +120,7 @@ state2: {
                     m_defenderState = AISTATE_COOLDOWN;
                     m_dwell = 0;
                     CMapMgr* hit = g_gameReg->m_tileGrid;
-                    GRID_CLIP_INL(hit, NULL);
+                    hit->Clip(NULL);
                     return 1;
                 }
             }
@@ -128,7 +128,7 @@ state2: {
         acc.RemoveAt(sel, 1);
     }
     CMapMgr* spent = g_gameReg->m_tileGrid;
-    GRID_CLIP_INL(spent, NULL);
+    spent->Clip(NULL);
     m_defenderState = AISTATE_SEEK;
     goto common;
 }

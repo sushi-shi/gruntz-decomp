@@ -255,7 +255,7 @@ i32 CGrunt::StepDefenderBehavior() {
     }
 
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_CLIP_INL_FIELDS(grid, NULL);
+    grid->Clip(NULL);
 
     return 1;
 }
