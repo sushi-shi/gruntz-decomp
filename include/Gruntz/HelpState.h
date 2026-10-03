@@ -22,6 +22,7 @@ public:
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
+    // @identity-TODO: unaccessed tail retained for TransitionState's CHelpState allocation.
     char m_pad1b4[0x1b8 - 0x1b4];
 };
 

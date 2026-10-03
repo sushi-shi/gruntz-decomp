@@ -32,7 +32,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
         } else {
             path = levelName;
         }
-        if (file.Open(path, 0, NULL)) {
+        if (file.Open(path, CFile::modeRead, NULL)) {
             if (file.GetLength() < 0x5f4) {
                 file.Close();
             } else {

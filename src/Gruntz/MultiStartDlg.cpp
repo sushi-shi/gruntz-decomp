@@ -70,7 +70,7 @@ RVA_COMPGEN(0x000c1810, 0x1e, ??_GCMultiStartDlg@@UAEPAXI@Z)
 
 RVA(0x000c1840, 0x16e)
 i32 CMultiStartDlg::InitializeWorldCombo() {
-    CWnd* combo = GetDlgItem(IDX(IDC_MULTI_WORLD));
+    CComboBox* combo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
     if (combo == NULL) {
         return 0;
     }
@@ -82,22 +82,17 @@ i32 CMultiStartDlg::InitializeWorldCombo() {
     while (entry != NULL) {
         CString name(entry->GetName());
         name.MakeUpper();
-        MsgParam text;
-        combo->SendMessageA(
-            CB_ADDSTRING,
-            0,
-            (text.m_str = static_cast<LPCTSTR>(name), text.m_lparam)
-        );
+        combo->AddString(name);
         entry = worlds->GetNextItem(entry);
     }
     CWnd* reloadedCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
-    CWnd* editControl = reloadedCombo->GetWindow(GW_CHILD);
+    CEdit* editControl = static_cast<CEdit*>(reloadedCombo->GetWindow(GW_CHILD));
     if (editControl == NULL) {
         return 0;
     }
-    editControl->SendMessageA(EM_SETREADONLY, 1, 0);
-    combo->SendMessageA(CB_SETCURSEL, 0, 0);
-    HWND__* editHwnd = editControl->m_hWnd;
+    editControl->SetReadOnly(1);
+    combo->SetCurSel(0);
+    HWND editHwnd = editControl->GetSafeHwnd();
     g_savedMultiWndProc = reinterpret_cast<WNDPROC>(GetWindowLongA(editHwnd, GWL_WNDPROC));
     SetWindowLongA(editHwnd, GWL_WNDPROC, reinterpret_cast<LONG>(MultiMapComboEditProc));
     CommitWorldSelection();
@@ -118,7 +113,7 @@ LRESULT CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 RVA(0x000c1aa0, 0x2f8)
 i32 CMultiStartDlg::RefreshWorldControls() {
     if (g_multiState->m_isHost != false) {
-        CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
+        CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
         CWnd* worldEdit = GetDlgItem(IDX(IDC_MULTI_WORLD))->GetWindow(GW_CHILD);
         CWnd* customWorldButton = GetDlgItem(IDX(IDC_MULTI_CUSTOM_WORLD));
         CWnd* echoLatencyButton = GetDlgItem(IDX(IDC_MULTI_ECHO_LATENCY));
@@ -141,7 +136,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
         echoLatencyButton->EnableWindow(false);
         return 1;
     }
-    CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
+    CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
     CWnd* worldEdit = GetDlgItem(IDX(IDC_MULTI_WORLD))->GetWindow(GW_CHILD);
     CWnd* customWorldButton = GetDlgItem(IDX(IDC_MULTI_CUSTOM_WORLD));
     CWnd* echoLatencyButton = GetDlgItem(IDX(IDC_MULTI_ECHO_LATENCY));
@@ -157,14 +152,14 @@ i32 CMultiStartDlg::RefreshWorldControls() {
     if (!echoLatencyButton) {
         return 0;
     }
-    worldCombo->SendMessageA(CB_SETCURSEL, static_cast<WPARAM>(-1), 0);
+    worldCombo->SetCurSel(-1);
     m_usesCustomMap = g_multiState->m_usesCustomLevel;
     if (m_usesCustomMap != false) {
         worldEdit->SetWindowTextA(g_multiState->CustomLevelName());
     } else {
         CString currentName;
         worldEdit->GetWindowTextA(currentName);
-        if (strcmp(currentName, g_multiState->BuiltInLevelName())) {
+        if (currentName.Compare(g_multiState->BuiltInLevelName())) {
             worldEdit->SetWindowTextA(g_multiState->BuiltInLevelName());
         }
     }
@@ -244,32 +239,25 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             return;
         }
         i32 i;
-
-        MsgParam item;
         for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
-            CWnd* typeCombo = GetPlayerTypeControl(i);
-            item.m_str = "None";
-            typeCombo->SendMessageA(CB_ADDSTRING, 0, item.m_lparam);
+            CComboBox* typeCombo = GetPlayerTypeControl(i);
+            typeCombo->AddString("None");
             typeCombo = GetPlayerTypeControl(i);
-            item.m_str = "Computer (easy)";
-            typeCombo->SendMessageA(CB_ADDSTRING, 0, item.m_lparam);
+            typeCombo->AddString("Computer (easy)");
             typeCombo = GetPlayerTypeControl(i);
-            item.m_str = "Computer (normal)";
-            typeCombo->SendMessageA(CB_ADDSTRING, 0, item.m_lparam);
+            typeCombo->AddString("Computer (normal)");
             typeCombo = GetPlayerTypeControl(i);
-            item.m_str = "Computer (difficult)";
-            typeCombo->SendMessageA(CB_ADDSTRING, 0, item.m_lparam);
+            typeCombo->AddString("Computer (difficult)");
             typeCombo = GetPlayerTypeControl(i);
-            item.m_str = "Human";
-            typeCombo->SendMessageA(CB_ADDSTRING, 0, item.m_lparam);
+            typeCombo->AddString("Human");
         }
         for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
-            CWnd* nameControl = GetPlayerNameControl(i);
+            CEdit* nameControl = GetPlayerNameControl(i);
             if (nameControl != NULL) {
-                nameControl->SendMessageA(EM_LIMITTEXT, 9, 0);
+                nameControl->LimitText(9);
             }
         }
-        GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT))->SendMessageA(EM_LIMITTEXT, 100, 0);
+        static_cast<CEdit*>(GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT)))->LimitText(100);
         CustomMapSelection customFlag = static_cast<CustomMapSelection>(
             reg->Get("CustomMultiMap", IDX(CUSTOM_MAP_UNINITIALIZED))
         );
@@ -283,7 +271,8 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                 sprintf(path, "custom\\%s", mapName);
                 FILE* file = fopen(path, "rb");
                 if (file != NULL) {
-                    CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
+                    CComboBox* worldCombo =
+                        static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
                     CWnd* child = worldCombo->GetWindow(GW_CHILD);
                     if (child == NULL) {
                         return;
@@ -307,7 +296,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         {
             CWnd* chatLog = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
-            g_netMessageEditHwnd = (chatLog == NULL) ? NULL : chatLog->m_hWnd;
+            g_netMessageEditHwnd = chatLog->GetSafeHwnd();
         }
         g_multiState->m_netMgr->m_selectedPlayer = NULL;
         g_multiState->PollSession();
@@ -321,7 +310,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             return;
         }
     } else {
-        CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
+        CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
         CWnd* child = worldCombo->GetWindow(GW_CHILD);
         if (child == NULL) {
             return;
@@ -332,7 +321,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             reg->Set("CustomMultiMap", m_usesCustomMap);
         }
         for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
-            CWnd* nameControl = GetPlayerNameControl(i);
+            CEdit* nameControl = GetPlayerNameControl(i);
             if (nameControl != NULL) {
                 CString name;
                 nameControl->GetWindowTextA(name);
@@ -379,80 +368,80 @@ BEGIN_MESSAGE_MAP(CMultiStartDlg, CDialog)
 END_MESSAGE_MAP()
 
 RVA(0x000c2640, 0x60)
-CWnd* CMultiStartDlg::GetPlayerTypeControl(i32 slot) {
-    CWnd* result = NULL;
+CComboBox* CMultiStartDlg::GetPlayerTypeControl(i32 slot) {
+    CComboBox* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_TYPE0);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_TYPE1);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_TYPE2);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_TYPE3);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE3));
             break;
     }
     return result;
 }
 
 RVA(0x000c26c0, 0x60)
-CWnd* CMultiStartDlg::GetReadyControl(i32 slot) {
-    CWnd* result = NULL;
+CButton* CMultiStartDlg::GetReadyControl(i32 slot) {
+    CButton* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_READY0);
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_READY1);
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_READY2);
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_READY3);
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY3));
             break;
     }
     return result;
 }
 
 RVA(0x000c2740, 0x60)
-CWnd* CMultiStartDlg::GetPlayerNameControl(i32 slot) {
-    CWnd* result = NULL;
+CEdit* CMultiStartDlg::GetPlayerNameControl(i32 slot) {
+    CEdit* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_NAME0);
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_NAME1);
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_NAME2);
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_NAME3);
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME3));
             break;
     }
     return result;
 }
 
 RVA(0x000c27c0, 0x60)
-CWnd* CMultiStartDlg::GetMaxGruntzControl(i32 slot) {
-    CWnd* result = NULL;
+CComboBox* CMultiStartDlg::GetMaxGruntzControl(i32 slot) {
+    CComboBox* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ0);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ1);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ2);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ3);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ3));
             break;
     }
     return result;
@@ -482,9 +471,9 @@ CWnd* CMultiStartDlg::GetPlayerColorControl(i32 slot) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c28c0, 0x27)
 void CMultiStartDlg::SetPlayerTypeSelection(i32 slot, i32 selection) {
-    CWnd* control = GetPlayerTypeControl(slot);
+    CComboBox* control = GetPlayerTypeControl(slot);
     if (control != NULL) {
-        control->SendMessageA(CB_SETCURSEL, selection, 0);
+        control->SetCurSel(selection);
     }
 }
 
@@ -492,29 +481,29 @@ void CMultiStartDlg::SetPlayerTypeSelection(i32 slot, i32 selection) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c2900, 0x2a)
 i32 CMultiStartDlg::GetPlayerTypeSelection(i32 slot) {
-    CWnd* control = GetPlayerTypeControl(slot);
+    CComboBox* control = GetPlayerTypeControl(slot);
     if (control == NULL) {
         return -1;
     }
-    return control->SendMessageA(CB_GETCURSEL, 0, 0);
+    return control->GetCurSel();
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c2940, 0x2b)
 i32 CMultiStartDlg::GetMaxGruntzSelection(i32 slot) {
-    CWnd* control = GetMaxGruntzControl(slot);
+    CComboBox* control = GetMaxGruntzControl(slot);
     if (control == NULL) {
         return -1;
     }
-    return control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    return control->GetCurSel() + 1;
 }
 
 RVA(0x000c2980, 0x28)
 void CMultiStartDlg::SetMaxGruntzSelection(i32 slot, i32 count) {
-    CWnd* control = GetMaxGruntzControl(slot);
+    CComboBox* control = GetMaxGruntzControl(slot);
     if (control) {
-        control->SendMessageA(CB_SETCURSEL, count - 1, 0);
+        control->SetCurSel(count - 1);
     }
 }
 
@@ -522,7 +511,7 @@ void CMultiStartDlg::SetMaxGruntzSelection(i32 slot, i32 count) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c29c0, 0x1d)
 void CMultiStartDlg::SetPlayerName(i32 slot, const char* name) {
-    CWnd* control = GetPlayerNameControl(slot);
+    CEdit* control = GetPlayerNameControl(slot);
     if (control != NULL) {
         control->SetWindowTextA(name);
     }
@@ -554,13 +543,13 @@ void CMultiStartDlg::OnPlayerTypeSelection3() {
 
 RVA(0x000c2ab0, 0x161)
 void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
-    CWnd* typeControl = GetPlayerTypeControl(slot);
-    CWnd* nameControl = GetPlayerNameControl(slot);
+    CComboBox* typeControl = GetPlayerTypeControl(slot);
+    CEdit* nameControl = GetPlayerNameControl(slot);
     CWnd* colorControl = GetPlayerColorControl(slot);
     GetMaxGruntzControl(slot);
     GetReadyControl(slot);
     GruntzPlayer* player = &m_gameManager->m_players[slot];
-    if (typeControl->SendMessageA(CB_GETCURSEL, 0, 0) == 0) {
+    if (typeControl->GetCurSel() == 0) {
         if (player->m_humanControlled && player->m_active) {
             g_multiState->DropLobbyPlayer(player->m_playerIndex);
         } else if (!player->m_humanControlled && player->m_active) {
@@ -571,8 +560,7 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
         nameControl->EnableWindow(false);
         colorControl->EnableWindow(false);
     } else {
-        if (static_cast<MultiplayerPlayerKind>(typeControl->SendMessageA(CB_GETCURSEL, 0, 0))
-            != MULTI_PLAYER_HUMAN) {
+        if (static_cast<MultiplayerPlayerKind>(typeControl->GetCurSel()) != MULTI_PLAYER_HUMAN) {
             if (player->m_humanControlled != false) {
                 if (player->m_active != false) {
                     g_multiState->DropLobbyPlayer(player->m_playerIndex);
@@ -587,9 +575,8 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
             }
             player->m_ready = true;
             player->m_humanControlled = false;
-            player->m_difficulty = static_cast<BattlezDifficulty>(
-                static_cast<i32>(typeControl->SendMessageA(CB_GETCURSEL, 0, 0)) - 1
-            );
+            player->m_difficulty =
+                static_cast<BattlezDifficulty>(static_cast<i32>(typeControl->GetCurSel()) - 1);
             player->m_active = true;
             player->m_name = g_defaultPlayerNames[slot];
         }
@@ -618,12 +605,8 @@ i32 CMultiStartDlg::OnInitDialog() {
 RVA(0x000c2ce0, 0xf3)
 void CMultiStartDlg::AppendChatLine(char* line) {
     CWnd* item = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
-    HWND edit;
-    if (!item) {
-        edit = NULL;
-    } else {
-        edit = item->m_hWnd;
-    }
+    // Keep the cached handle: CEdit helpers reload m_hWnd across message sends.
+    HWND edit = item->GetSafeHwnd();
     if (!edit || !line || !line[0]) {
         return;
     }
@@ -665,11 +648,11 @@ i32 CMultiStartDlg::PaintPlayerColorControls() {
             GetRandomNumber();
             GetRandomNumber();
             i32 shade = (GetRandomNumber() % 0xff) & 0xff;
-            brush.Attach(CreateSolidBrush((shade << 8 | shade) << 8 | shade));
+            brush.CreateSolidBrush((shade << 8 | shade) << 8 | shade);
         } else {
-            brush.Attach(CreateSolidBrush(0x808080));
+            brush.CreateSolidBrush(0x808080);
         }
-        FillRect(dc.m_hDC, &rect, brush);
+        dc.FillRect(&rect, &brush);
     }
     return 1;
 }
@@ -721,7 +704,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         CDC dc;
         dc.Attach(lpdis->hDC);
         CBrush brush(color);
-        FillRect(dc.m_hDC, &lpdis->rcItem, brush);
+        dc.FillRect(&lpdis->rcItem, &brush);
         dc.Detach();
     }
     CWnd::OnDrawItem(nIDCtl, lpdis);
@@ -803,7 +786,7 @@ void CMultiStartDlg::OnCustomWorld() {
     CBattlezDlgCustom dlg(NULL);
     if (dlg.DoModal() == 1 && !dlg.m_customName.IsEmpty()) {
 
-        CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
+        CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
         CWnd* worldEdit = worldCombo->GetWindow(GW_CHILD);
 
         if (worldEdit == NULL) {
@@ -822,9 +805,9 @@ void CMultiStartDlg::OnCustomWorld() {
 RVA(0x000c3e30, 0xfe)
 void CMultiStartDlg::CommitWorldSelection() {
     if (g_multiState->m_isHost != false) {
-        CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
+        CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
         if (worldCombo != NULL) {
-            i32 selection = worldCombo->SendMessageA(CB_GETCURSEL, 0, 0);
+            i32 selection = worldCombo->GetCurSel();
             if (selection != -1) {
                 CString worldName;
                 (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
@@ -905,21 +888,21 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                 && player->m_humanControlled && player->m_active) {
                 hasRemoteHumanPlayer = true;
             }
-            CWnd* nameControl = GetPlayerNameControl(slotIndex);
+            CEdit* nameControl = GetPlayerNameControl(slotIndex);
             if ((g_multiState->m_isHost && player->m_humanControlled == false)
                 || player->m_networkPlayerId == g_multiState->m_localPlayerId) {
                 nameControl->EnableWindow(true);
             } else {
                 nameControl->EnableWindow(false);
             }
-            CWnd* typeControl = GetPlayerTypeControl(slotIndex);
+            CComboBox* typeControl = GetPlayerTypeControl(slotIndex);
             if (g_multiState->m_isHost && localReadyFlag == false
                 && player->m_networkPlayerId != g_multiState->m_localPlayerId) {
                 typeControl->EnableWindow(true);
             } else {
                 typeControl->EnableWindow(false);
             }
-            CWnd* readyControl = GetReadyControl(slotIndex);
+            CButton* readyControl = GetReadyControl(slotIndex);
             if (player->m_networkPlayerId == g_multiState->m_localPlayerId) {
                 readyControl->EnableWindow(true);
             } else {
@@ -927,17 +910,17 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             }
             if (player->m_ready == false) {
                 if (player->m_active) {
-                    ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
+                    readyControl->SetCheck(0);
                     allLivePlayersReady = false;
                 } else {
-                    ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
+                    readyControl->SetCheck(0);
                 }
             } else if (player->m_active) {
-                ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 1, 0);
+                readyControl->SetCheck(1);
             } else {
-                ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
+                readyControl->SetCheck(0);
             }
-            CWnd* maxGruntzControl = GetMaxGruntzControl(slotIndex);
+            CComboBox* maxGruntzControl = GetMaxGruntzControl(slotIndex);
             maxGruntzControl->EnableWindow(
                 g_multiState->m_isHost && player->m_active && localReadyFlag == false
             );
@@ -956,18 +939,18 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                     GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
                 }
                 if (player->m_humanControlled) {
-                    CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
-                    ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, 4, 0);
+                    CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                    typeCombo->SetCurSel(4);
                 } else {
                     i32 selection = IDX(player->m_difficulty);
-                    CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
-                    ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, selection + 1, 0);
+                    CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                    typeCombo->SetCurSel(selection + 1);
                 }
                 this->ApplyPlayerTypeSelection(slotIndex);
             } else {
                 GetPlayerNameControl(slotIndex)->SetWindowTextA("");
-                CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
-                ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, 0, 0);
+                CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                typeCombo->SetCurSel(0);
                 this->ApplyPlayerTypeSelection(slotIndex);
             }
         }
@@ -979,6 +962,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
         }
         ok->EnableWindow(hasRemoteHumanPlayer & allLivePlayersReady);
     }
+    // HWND temporaries preserve the handle-register allocation across invalidation calls.
     HWND color0 = this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd;
     ::InvalidateRect(color0, NULL, true);
     HWND color1 = this->GetDlgItem(CTRL_PLAYER_COLOR1)->m_hWnd;
@@ -1211,29 +1195,29 @@ void CMultiStartDlg::HandlePlayerNameChange(i32 slot) {}
 
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection0() {
-    CWnd* combo = GetMaxGruntzControl(0);
-    g_gameReg->m_players[0].m_maxGruntz = combo->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* combo = GetMaxGruntzControl(0);
+    g_gameReg->m_players[0].m_maxGruntz = combo->GetCurSel() + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4f30, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection1() {
-    CWnd* combo = GetMaxGruntzControl(1);
-    g_gameReg->m_players[1].m_maxGruntz = combo->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* combo = GetMaxGruntzControl(1);
+    g_gameReg->m_players[1].m_maxGruntz = combo->GetCurSel() + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4f80, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection2() {
-    CWnd* combo = GetMaxGruntzControl(2);
-    g_gameReg->m_players[2].m_maxGruntz = combo->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* combo = GetMaxGruntzControl(2);
+    g_gameReg->m_players[2].m_maxGruntz = combo->GetCurSel() + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4fd0, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection3() {
-    CWnd* combo = GetMaxGruntzControl(3);
-    g_gameReg->m_players[3].m_maxGruntz = combo->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* combo = GetMaxGruntzControl(3);
+    g_gameReg->m_players[3].m_maxGruntz = combo->GetCurSel() + 1;
     BroadcastPlayerSlotChanges();
 }
 
@@ -1258,11 +1242,11 @@ void CMultiStartDlg::CommitLatencySelection() {
 
 RVA(0x000c50f0, 0x9b)
 void CMultiStartDlg::CommitReadySelection(i32 slotIndex) {
-    CWnd* readyControl = GetReadyControl(slotIndex);
+    CButton* readyControl = GetReadyControl(slotIndex);
     if (!readyControl) {
         return;
     }
-    i32 checked = readyControl->SendMessageA(BM_GETCHECK, 0, 0);
+    i32 checked = readyControl->GetCheck();
     GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
     if (!player) {
         return;

@@ -157,6 +157,8 @@ public:
 
     IDirectInputDeviceA* m_device;
     IDirectInputDevice2A* m_device2;
+    // @identity-TODO: m_deviceInfo's retail offset requires this unaccessed span;
+    // Create forwards the GUID argument without storing a GUID here.
     char m_padc[0x1c - 0x0c];
     DIDEVICEINSTANCEA m_deviceInfo;
     DIDEVCAPS m_caps;
@@ -227,6 +229,8 @@ public:
     i32 IsReady();
 
     i32 m_createFlags;
+    // @identity-TODO: retained for the mouse allocation size. CreateDevice allocates
+    // DIMOUSESTATE through m_stateBuffer; Poll does not use this tail as mouse state.
     char m_pad2b8[0x2c8 - 0x2b8];
 };
 

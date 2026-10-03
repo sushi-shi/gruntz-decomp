@@ -468,7 +468,7 @@ i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
 
-    if (!file.Open(name, 0, NULL)) {
+    if (!file.Open(name, CFile::modeRead, NULL)) {
         return 0;
     }
     if (file.Read(&fh, sizeof(fh)) == 0) {
@@ -484,7 +484,7 @@ i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
         return 0;
     }
 
-    file.Seek(fh.bfOffBits, 0);
+    file.Seek(fh.bfOffBits, CFile::begin);
     u8* bytes = GetBytes();
     u32 size = (IDX(bitcount) / 8) * m_nPitch * imageSize.cy;
     if (file.Read(bytes, size) != size) {
@@ -567,7 +567,7 @@ RVA(0x00176190, 0x126)
 i32 CDib::InitPcx(const char* name, HDC dc, u32 ctrl) {
     CFile file;
 
-    if (!file.Open(name, 0, NULL)) {
+    if (!file.Open(name, CFile::modeRead, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -606,7 +606,7 @@ RVA(0x00176310, 0x126)
 i32 CDib::InitRid(const char* name, HDC dc, u32 ctrl) {
     CFile file;
 
-    if (!file.Open(name, 0, NULL)) {
+    if (!file.Open(name, CFile::modeRead, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -717,7 +717,7 @@ RVA(0x001766a0, 0x126)
 i32 CDib::InitPid(const char* name, HDC dc, u32 ctrl) {
     CFile file;
 
-    if (!file.Open(name, 0, NULL)) {
+    if (!file.Open(name, CFile::modeRead, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -1098,7 +1098,7 @@ i32 CDibPal::InitPal(const char* path, u32 flags) {
     CFile file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
     if (file.GetLength() != PALETTE_RGB_BYTE_COUNT) {
@@ -1115,10 +1115,10 @@ i32 CDibPal::InitPcx(const char* path, u32 flags) {
 
     PALETTEENTRY rgbq[PALETTE_ENTRY_COUNT];
 
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
-    file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
+    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
     if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) == 0) {
         return 0;
     }

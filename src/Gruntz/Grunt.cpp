@@ -970,8 +970,8 @@ i32 CGrunt::StepArrivalDrop(
     for (scan.m_y = tile.m_y - 1; scan.m_y < tile.m_y + 2; scan.m_y++) {
         for (scan.m_x = tile.m_x - 1; scan.m_x < tile.m_x + 2; scan.m_x++) {
             saved[scan.m_x - tile.m_x + 1][scan.m_y - tile.m_y + 1] =
-                grid->m_rows[scan.m_y][scan.m_x + 1].m_flags;
-            grid->m_rows[scan.m_y][scan.m_x + 1].m_flags = 0;
+                grid->m_rows[scan.m_y][scan.m_x].m_flags;
+            grid->m_rows[scan.m_y][scan.m_x].m_flags = 0;
         }
     }
     grid = g_gameReg->m_tileGrid;
@@ -999,7 +999,7 @@ i32 CGrunt::StepArrivalDrop(
     }
     for (scan.m_y = tile.m_y - 1; scan.m_y < tile.m_y + 2; scan.m_y++) {
         for (scan.m_x = tile.m_x - 1; scan.m_x < tile.m_x + 2; scan.m_x++) {
-            grid->m_rows[scan.m_y][scan.m_x + 1].m_flags =
+            grid->m_rows[scan.m_y][scan.m_x].m_flags =
                 saved[scan.m_x - tile.m_x + 1][scan.m_y - tile.m_y + 1];
         }
     }

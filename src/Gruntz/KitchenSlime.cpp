@@ -100,14 +100,13 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
-        const char* s = static_cast<LPCTSTR>(name);
-        if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
+        if (name.Compare("LEVEL_KITCHENSLIME_NORTH") == 0) {
             m_object->m_smarts = IDX(CARDINAL_NORTH);
-        } else if (strcmp(s, "LEVEL_KITCHENSLIME_EAST") == 0) {
+        } else if (name.Compare("LEVEL_KITCHENSLIME_EAST") == 0) {
             m_object->m_smarts = IDX(CARDINAL_EAST);
-        } else if (strcmp(s, "LEVEL_KITCHENSLIME_SOUTH") == 0) {
+        } else if (name.Compare("LEVEL_KITCHENSLIME_SOUTH") == 0) {
             m_object->m_smarts = IDX(CARDINAL_SOUTH);
-        } else if (strcmp(s, "LEVEL_KITCHENSLIME_WEST") == 0) {
+        } else if (name.Compare("LEVEL_KITCHENSLIME_WEST") == 0) {
             m_object->m_smarts = IDX(CARDINAL_WEST);
         }
     }

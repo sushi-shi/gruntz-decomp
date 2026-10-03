@@ -1244,7 +1244,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     u32 n = static_cast<u32>(m_byteArr.GetSize());
     ar->Write(&n, sizeof(n));
     for (u32 i = 0; i < n; i++) {
-        u8 b = m_byteArr.GetData()[i];
+        u8 b = m_byteArr.GetAt(i);
         ar->Write(&b, sizeof(b));
     }
     n = static_cast<u32>(m_recList.GetCount());

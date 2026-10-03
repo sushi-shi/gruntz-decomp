@@ -126,7 +126,7 @@ i32 CDDrawShadeBlit::BuildRle(
     m_rleLen = ba.GetSize();
     m_rleData = new u8[ba.GetSize()];
     for (i32 k = 0; k < static_cast<i32>(m_rleLen); k++) {
-        m_rleData[k] = ba.GetData()[k];
+        m_rleData[k] = ba.GetAt(k);
     }
 
     if (palette != NULL) {

@@ -221,7 +221,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                     );
                     POINT pt;
                     SET_POINT_COMPONENTS(pt, px, py);
-                    if (PtInRect(&rc, pt)) {
+                    if (rc.PtInRect(pt)) {
                         clip = 0;
                     }
                 }

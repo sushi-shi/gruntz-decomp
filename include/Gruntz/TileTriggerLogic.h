@@ -120,6 +120,8 @@ public:
     TrigLogicId m_typeTag;
     Coord m_tile;
     i32 m_cellKey;
+    // @identity-TODO: these words are separate Serialize/Deserialize records;
+    // trigger initialization and updates do not reveal their original roles.
     i32 m_reserved14;
     i32 m_reserved18;
     b32 m_initGate;

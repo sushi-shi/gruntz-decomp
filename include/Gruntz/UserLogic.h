@@ -134,6 +134,8 @@ public:
     CLogicRecord* m_logicRecord;
     zBitVec m_actBits;
     i32 m_gatedCallbackCode;
+    // @identity-TODO: initialized to 2 and save-streamed; callback dispatch does
+    // not read it, so the neighboring callback state does not establish its role.
     i32 m_reserved2c;
 
     i32 m_previousAnimationActId;

@@ -268,6 +268,8 @@ public:
     i32 m_gruntWellLevel;
     i32 m_gruntWellTargetLevel;
 
+    // @identity-TODO: constructor and SerializeClockPair prove both clock objects;
+    // only m_reserved2b0 is additionally reset, and neither drives a status-bar action.
     ClockInterval m_reserved2a0;
     ClockInterval m_reserved2b0;
 
@@ -277,6 +279,7 @@ public:
     CSbiMachineRow m_rightMachine;
     CSbiMachineRow m_leftMachine;
     CSBI_GruntMachine* m_machineDisplay;
+    // @identity-TODO: both words are save-streamed without a status-bar consumer.
     i32 m_reserved34c;
     i32 m_reserved350;
     b32 m_chatBoxDisabled;
@@ -293,6 +296,7 @@ public:
     i32 m_machineItem;
     ClockInterval m_beltClock;
     CSBI_ImageSet* m_machineItemSprite;
+    // @identity-TODO: unaccessed word required by m_fallActive's retail offset.
     char m_pad4e4[0x4e8 - 0x4e4];
     SbiFallingItemState m_fallActive;
     i32 m_fallingItem;
@@ -305,6 +309,7 @@ public:
     i32 m_rezTick;
 
     CPtrArray m_rewardQueue;
+    // @identity-TODO: initialized to 1 and save-streamed; reward processing never reads it.
     i32 m_reserved544;
 
     Coord* GetReward(i32 index) const {
@@ -317,7 +322,7 @@ public:
                 g_coordPool.Push(reward);
             }
         }
-        m_rewardQueue.SetSize(0, -1);
+        m_rewardQueue.RemoveAll();
     }
 
     b32 m_hlBusy;

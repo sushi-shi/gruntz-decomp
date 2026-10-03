@@ -282,6 +282,8 @@ public:
     }
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;
+    // @identity-TODO: ScanGroup and Load transfer this complete span; no trigger
+    // operation accesses its components to prove a scalar array or aggregate type.
     char m_reserved274[0x10];
     b32 m_groupInitialized;
 

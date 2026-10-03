@@ -47,7 +47,7 @@ void CVoiceManager::Clear() {
 
         delete group;
     }
-    m_voiceGroups.SetSize(0, -1);
+    m_voiceGroups.RemoveAll();
     if (m_world != NULL && m_world->m_soundStream != NULL) {
         StreamVoice** stream = m_streamVoices;
         for (i32 k = 0; k < 2; k++) {
@@ -537,7 +537,7 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
 
 RVA(0x0011c1a0, 0x46)
 BOOL CVoiceManager::BuildVoiceGroups() {
-    m_voiceGroups.SetSize(0, -1);
+    m_voiceGroups.RemoveAll();
     m_voiceGroups.SetAtGrow(0, NULL);
     for (i32 i = 1; i < 0x4b0; i++) {
         m_voiceGroups.SetAtGrow(i, BuildVoiceGroup(i));

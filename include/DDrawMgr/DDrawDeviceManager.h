@@ -173,6 +173,8 @@ public:
 
     DDCAPS m_driverCaps;
     DDCAPS m_helCaps;
+    // @identity-TODO: no separate access identifies this span; m_surfaces' retail
+    // offset requires it. GetCapsChecked uses m_driverCaps and m_helCaps only.
     char m_pad300[0x47c - 0x300];
     CPtrList m_surfaces;
     CPtrList m_palettes;
@@ -185,7 +187,7 @@ public:
         for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
             delete GetModeDesc(i);
         }
-        m_displayModes.SetSize(0, -1);
+        m_displayModes.RemoveAll();
     }
     DDSURFACEDESC m_surfaceDesc;
     i32 m_bankSwitchedCaps;

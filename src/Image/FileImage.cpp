@@ -88,7 +88,7 @@ i32 CDDSurface::CreateFromBmpData(
 RVA(0x00143e60, 0x15b)
 i32 CDDSurface::CreateFromBmpFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
     CFile file;
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -153,7 +153,7 @@ RVA(0x00144110, 0x156)
 i32 CDDSurface::LoadBmp(CDDrawDeviceManager* manager, char* path) {
     CFile file;
 
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
 
@@ -285,13 +285,14 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
 
     CFile file;
     if (mode != 0) {
-        if (!file.Open(path, 0x2001, NULL)) {
+        if (!file.Open(path, CFile::modeNoTruncate | CFile::modeWrite, NULL)) {
             Unlock();
             return 0;
         }
-        file.Seek(0, 2);
+        // SeekToEnd introduces virtual dispatch instead of the direct CFile call.
+        file.Seek(0, CFile::end);
     } else {
-        if (!file.Open(path, 0x1001, NULL)) {
+        if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, NULL)) {
             Unlock();
             return 0;
         }
@@ -353,14 +354,15 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
 
     CFile file;
     if (flag != 0) {
-        if (file.Open(path, 0x2001, NULL) == false) {
+        if (file.Open(path, CFile::modeNoTruncate | CFile::modeWrite, NULL) == false) {
             Unlock();
             delete[] line;
             return 0;
         }
-        file.Seek(0, 2);
+        // SeekToEnd introduces virtual dispatch instead of the direct CFile call.
+        file.Seek(0, CFile::end);
     } else {
-        if (file.Open(path, 0x1001, NULL) == false) {
+        if (file.Open(path, CFile::modeCreate | CFile::modeWrite, NULL) == false) {
             Unlock();
             delete[] line;
             return 0;
@@ -433,13 +435,14 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
 
     CFile file;
     if (mode != 0) {
-        if (!file.Open(path, 0x2001, NULL)) {
+        if (!file.Open(path, CFile::modeNoTruncate | CFile::modeWrite, NULL)) {
             Unlock();
             return 0;
         }
-        file.Seek(0, 2);
+        // SeekToEnd introduces virtual dispatch instead of the direct CFile call.
+        file.Seek(0, CFile::end);
     } else {
-        if (!file.Open(path, 0x1001, NULL)) {
+        if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, NULL)) {
             Unlock();
             return 0;
         }
@@ -566,7 +569,7 @@ i32 CDDSurface::CreateFromPcxData(
 RVA(0x00144d80, 0x15b)
 i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
     CFile file;
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -669,7 +672,7 @@ RVA(0x00145110, 0x156)
 i32 CDDSurface::LoadPcx(CDDrawDeviceManager* manager, char* path) {
     CFile file;
 
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
 
@@ -856,7 +859,7 @@ i32 CDDSurface::DecodePcxEx(
 ) {
     CFile file;
 
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
 
@@ -957,7 +960,7 @@ RVA(0x00145cd0, 0x130)
 i32 CDDSurface::LoadPid(CDDrawDeviceManager* manager, char* path, u32 colorKey) {
     CFile file;
 
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
 

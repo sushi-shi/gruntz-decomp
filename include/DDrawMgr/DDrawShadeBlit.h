@@ -32,6 +32,8 @@ struct PidWriteHeader {
     i32 m_offsetX;
     i32 m_offsetY;
     i32 m_fill;
+    // @identity-TODO: SavePid writes zero; WritePidFile includes the word in its
+    // complete header write, but the PID decoders assign it no meaning.
     i32 m_reserved1c;
 };
 

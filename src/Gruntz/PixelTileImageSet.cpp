@@ -26,7 +26,7 @@ TileCollisionKind CPixelTileImageSet::GetCollisionAt(i32 x, i32 y) {
 
 RVA(0x00161590, 0xb)
 i32 CPixelTileImageSet::GetStride() {
-    return m_height * m_width + offsetof(WwdTileImageRecord, m_fields);
+    return m_height * m_width + offsetof(WwdTileImageRecord, m_collisionData);
 }
 
 RVA(0x00166d70, 0x8d)

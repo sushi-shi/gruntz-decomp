@@ -305,6 +305,8 @@ public:
     Coord m_entrancePx;
     Coord m_lastTilePx;
     Coord m_commitPx;
+    // @identity-TODO: reserved members in this layout are save-streamed, with
+    // some also reset during initialization; no gameplay read identifies their roles.
     i32 m_reserved18c;
     i32 m_toyBlendPct;
     PickupType m_brickPickupType;

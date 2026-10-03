@@ -239,7 +239,7 @@ RVA(0x0015d500, 0x127)
 i32 CGameLevel::LoadFromFile(const char* path) {
     CFile file;
 
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
 
@@ -297,7 +297,7 @@ i32 CGameLevel::SetViewportSizeAndUpdatePlanes(i32 w, i32 h) {
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->SetViewportRect(&rect);
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(i)))->SetViewportRect(&rect);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -370,6 +370,7 @@ CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RE
         return NULL;
     }
 
+    // Keep the size read at the call site; Add's local changes register lifetimes.
     m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
 
     if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
@@ -409,6 +410,7 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
         return NULL;
     }
 
+    // Keep the size read at the call site; Add's local changes register lifetimes.
     m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
 
     if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
@@ -1467,7 +1469,7 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
 
     CFile stream;
 
-    if (stream.Open(name, 0, NULL) == false) {
+    if (stream.Open(name, CFile::modeRead, NULL) == false) {
         return 0;
     }
 
@@ -1495,7 +1497,7 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
 
     CFile stream;
 
-    if (stream.Open(name, 0, NULL) == false) {
+    if (stream.Open(name, CFile::modeRead, NULL) == false) {
         return 0;
     }
 

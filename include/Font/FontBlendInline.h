@@ -4,7 +4,7 @@
 #include <DDrawMgr/PixelShift.h>
 
 static inline LONG RunRightEdge(const CRect& rc, i32 x) {
-    return x - rc.left + rc.right;
+    return x + rc.Width();
 }
 
 static inline u8 BlendChannel(u8 dest, i32 source, u8 cover) {

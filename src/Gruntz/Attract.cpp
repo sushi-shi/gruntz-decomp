@@ -158,6 +158,7 @@ i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadM
 
     CLightFaderConfig t;
     t.m_clearMode = true;
+    // Component stores preserve argument-load scheduling without a CPoint temporary.
     SET_POINT_COMPONENTS(t.m_center, centerX, centerY);
     t.m_targetSurface = surface;
     t.m_sourceSurface = NULL;
@@ -201,6 +202,7 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
 
     CLightFaderConfig t;
     t.m_clearMode = false;
+    // Component stores preserve argument-load scheduling without a CPoint temporary.
     SET_POINT_COMPONENTS(t.m_center, centerX, centerY);
     t.m_targetSurface = targetSurface;
     t.m_sourceSurface = sourceSurface;

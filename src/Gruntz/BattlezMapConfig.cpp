@@ -3875,10 +3875,9 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     if (count != 0) {
         i32 r = rand() % count;
         for (i32 k = 0; k < count; k++) {
-            void** arr = coords->GetData();
             CTriggerMgr* grid = m_triggerMgr;
             i32 cell = m_playerIndex;
-            Coord cand = *static_cast<Coord*>(arr[r]);
+            Coord cand = *static_cast<Coord*>(coords->GetAt(r));
             b32 ok = true;
             for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
                 CGrunt* u = grid->UnitAt(cell, j);

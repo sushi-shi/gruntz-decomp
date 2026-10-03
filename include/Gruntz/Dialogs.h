@@ -69,13 +69,15 @@ public:
     virtual void OnOK() OVERRIDE;
 
     class CGruntzMgr* m_gameManager;
+    // @identity-TODO: unaccessed span required by m_customNameFlag's retail offset;
+    // dialog initialization and data exchange do not identify its members.
     char m_pad60[8];
     b32 m_customNameFlag;
     CString m_worldName;
 
-    CWnd* GetPlayerTypeControl(i32 slot);
-    CWnd* GetPlayerNameControl(i32 slot);
-    CWnd* GetMaxGruntzControl(i32 slot);
+    CComboBox* GetPlayerTypeControl(i32 slot);
+    CEdit* GetPlayerNameControl(i32 slot);
+    CComboBox* GetMaxGruntzControl(i32 slot);
     CWnd* GetPlayerColorControl(i32 slot);
 
     i32 SetPlayerTypeSelection(i32 slot, i32 selection);
@@ -239,11 +241,11 @@ public:
 
     void Watchdog();
 
-    CWnd* GetReadyControl(i32 slot);
-    CWnd* GetPlayerNameControl(i32 slot);
-    CWnd* GetMaxGruntzControl(i32 slot);
+    CButton* GetReadyControl(i32 slot);
+    CEdit* GetPlayerNameControl(i32 slot);
+    CComboBox* GetMaxGruntzControl(i32 slot);
     CWnd* GetPlayerColorControl(i32 slot);
-    CWnd* GetPlayerTypeControl(i32 slot);
+    CComboBox* GetPlayerTypeControl(i32 slot);
     void SetPlayerTypeSelection(i32 slot, i32 selection);
     i32 GetPlayerTypeSelection(i32 slot);
     i32 GetMaxGruntzSelection(i32 slot);
@@ -255,9 +257,13 @@ public:
     class CGruntzMgr* m_gameManager;
 
     CLatencyList* m_latencyOptions;
+    // @identity-TODO: unaccessed span required by m_usesCustomMap's retail offset;
+    // dialog initialization and data exchange do not identify its members.
     char m_pad64[8];
     b32 m_usesCustomMap;
     CString m_worldName;
+    // @identity-TODO: only list construction/destruction uses this member;
+    // latency options and world selection use different storage.
     CStringList m_reserved74;
 
     MFC_MESSAGE_MAP_CLASS(CMultiStartDlg)

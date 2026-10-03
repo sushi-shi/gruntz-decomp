@@ -28,6 +28,7 @@ public:
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
+    // @identity-TODO: constructor zeroes this word; splash timing never reads it.
     i32 m_reserved1b4;
     i32 m_splashCountdownMs;
 };

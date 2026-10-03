@@ -86,6 +86,8 @@ struct WwdGridNode : CBaseListItem {
         NO_SEED
     };
     WwdGridNode(ENoSeed) {}
+    // @identity-TODO: node construction and region seeding zero this word;
+    // grid traversal only consumes the bucket and coordinate members.
     i32 m_reserved08;
     BucketHead* m_bucket;
     Coord m_position;

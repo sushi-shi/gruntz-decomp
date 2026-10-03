@@ -161,6 +161,8 @@ public:
 
     CString m_name;
 
+    // @identity-TODO: this word is only initialized; the later reserved scalar
+    // members are save-streamed without a game-object operation reading them.
     i32 m_reservede0;
 
     MoveMode m_moveMode;

@@ -1310,11 +1310,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CString warp;
         i32 notTraining = 1;
         if (warp.LoadString(IDS_TRAINING_WORLD_NAME)) {
-            if (strcmp(
-                    static_cast<const char*>(warp),
-                    static_cast<const char*>(g_gameReg->GetWorldFileName())
-                )
-                == 0) {
+            if (warp == g_gameReg->GetWorldFileName()) {
                 notTraining = 0;
             }
         }

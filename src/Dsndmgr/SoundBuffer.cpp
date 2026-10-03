@@ -1132,12 +1132,12 @@ SoundSample* SoundDevice::LoadSampleResource(const char* name, u32 flags, u32 lo
         return NULL;
     }
 
-    HINSTANCE mod1 = AfxGetModuleState()->m_hCurrentInstanceHandle;
+    HINSTANCE mod1 = AfxGetInstanceHandle();
     HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
     if (!hRsrc) {
         return NULL;
     }
-    HINSTANCE mod2 = AfxGetModuleState()->m_hCurrentInstanceHandle;
+    HINSTANCE mod2 = AfxGetInstanceHandle();
     HGLOBAL hRes = LoadResource(mod2, hRsrc);
     if (!hRes) {
         return NULL;
@@ -1248,12 +1248,12 @@ i32 SoundDevice::ReloadResource(SoundBuffer* buffer, const char* name, u32 loadO
         return 1;
     }
 
-    HINSTANCE mod1 = AfxGetModuleState()->m_hCurrentInstanceHandle;
+    HINSTANCE mod1 = AfxGetInstanceHandle();
     HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
     if (!hRsrc) {
         return 0;
     }
-    HINSTANCE mod2 = AfxGetModuleState()->m_hCurrentInstanceHandle;
+    HINSTANCE mod2 = AfxGetInstanceHandle();
     HGLOBAL hRes = LoadResource(mod2, hRsrc);
     if (!hRes) {
         return 0;

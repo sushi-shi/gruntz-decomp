@@ -30,13 +30,15 @@ public:
     i32 BuildCellAttributes(i32 width, i32 height);
 
     CPtrArray m_arr;
+    // @identity-TODO: BuildCellAttributes zeroes this word and SerializeDispatch
+    // streams it; cell lookup and occupancy operations never consume it.
     i32 m_reserved90;
 };
 
 RVA(0x00085480, 0x52)
 inline void CGruntzMapMgr::Reset() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
-        Coord* elem = static_cast<Coord*>(m_arr.GetData()[i]);
+        Coord* elem = static_cast<Coord*>(m_arr.GetAt(i));
         if (elem != NULL) {
             g_coordPool.Push(elem);
         }
