@@ -1301,7 +1301,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 rx = pt.m_x;
             (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
             i32 ry = pt2.m_y;
-            CTileTriggerSwitchLogic* rec = m_cellQuery->FindSwitchLogic((rx << 8) + ry, TRIGID_ANY);
+            CTileTriggerSwitchLogic* rec =
+                m_cellQuery->FindSwitchLogic(CellKey(rx, ry), TRIGID_ANY);
             if (rec->m_typeId == TRIGID_SWITCH_2) {
                 unit->SetDefenderState(AISTATE_SEEK);
                 unit->RecycleCoords();
@@ -2202,7 +2203,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         Coord tp;
         i32 keyHi = g->GetScreenTileX();
         g->GetScreenTile(&tp);
-        i32 key = (keyHi << 8) + tp.m_y;
+        i32 key = CellKey(keyHi, tp.m_y);
         CTileTriggerSwitchLogic* r = m_cellQuery->FindSwitchLogic(key, TRIGID_ANY);
         if (r->m_typeId == TRIGID_SWITCH_2) {
             g->SetDefenderState(AISTATE_SEEK);
@@ -2293,7 +2294,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
         PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
-            CTileActionEvent* r = m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
+            CTileActionEvent* r = m_cellQuery->FindActionByCellKey(CellKey(first.m_x, first.m_y));
             if (r != NULL) {
                 if (r->GetPlayerFlags(m_playerIndex) != 0) {
                     g->RecycleCoords();
@@ -2325,7 +2326,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (t == PICKUP_GAUNTLETZ) {
             if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
                 CTileActionEvent* r =
-                    m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
+                    m_cellQuery->FindActionByCellKey(CellKey(first.m_x, first.m_y));
                 if (r != NULL) {
                     BrickTileId k = r->GetActionCode();
                     if (r->GetPlayerFlags(m_playerIndex) != 0) {
@@ -2438,7 +2439,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     if (word & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
-        CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
+        CTileActionEvent* cell = m_cellQuery->FindActionByCellKey(CellKey(col, row));
         if (requireUnoccupied != 0) {
             if (cell != NULL && cell->GetPlayerFlags(m_playerIndex) == 0) {
                 CPtrList list2(10);

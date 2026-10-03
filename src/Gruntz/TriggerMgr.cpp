@@ -1580,7 +1580,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                     && type != TILEKIND_GAUNTLET_BRICK_C) {
                     continue;
                 }
-                CTileActionEvent* o = root->m_tileTriggers->FindActionByCellKey(ty + (tx << 8));
+                CTileActionEvent* o = root->m_tileTriggers->FindActionByCellKey(CellKey(tx, ty));
                 if (o->BreakTopBrick(NULL)) {
                     root->m_tileTriggers->RemoveActionEvent(o);
                 }
@@ -1588,7 +1588,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             }
 
             CTileTriggerLogic* lo =
-                root->m_tileTriggers->FindLogic(ty + (tx << 8), TRIGID_COVERED_POWERUP_26);
+                root->m_tileTriggers->FindLogic(CellKey(tx, ty), TRIGID_COVERED_POWERUP_26);
             if (lo != NULL) {
                 lo->ApplyMove(type);
                 root->m_tileTriggers->RemoveIdleLogic(lo);
