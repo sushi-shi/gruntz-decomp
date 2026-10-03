@@ -60,6 +60,14 @@ struct CLogicRecord : public CWapObj {
 
     i32 ResolveTarget(void* context);
 
+    const RECT& GetUserRect1() const {
+        return m_userRect1;
+    }
+
+    const RECT& GetUserRect2() const {
+        return m_userRect2;
+    }
+
     LogicRecordDispatchFn GetDispatch() const {
         return m_dispatch;
     }

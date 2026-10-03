@@ -87,14 +87,19 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_wp[7].m_y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
     m_wp[8].m_x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
     m_wp[8].m_y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].m_x = (m_object->GetLogicRecord()->m_userRect1.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].m_y = (m_object->GetLogicRecord()->m_userRect1.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].m_x = (m_object->GetLogicRecord()->m_userRect1.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].m_y = (m_object->GetLogicRecord()->m_userRect1.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].m_x = (m_object->GetLogicRecord()->m_userRect2.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].m_y = (m_object->GetLogicRecord()->m_userRect2.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].m_x = (m_object->GetLogicRecord()->m_userRect2.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].m_y = (m_object->GetLogicRecord()->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].m_x = (m_object->GetLogicRecord()->GetUserRect1().left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].m_y = (m_object->GetLogicRecord()->GetUserRect1().top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].m_x =
+        (m_object->GetLogicRecord()->GetUserRect1().right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].m_y =
+        (m_object->GetLogicRecord()->GetUserRect1().bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].m_x =
+        (m_object->GetLogicRecord()->GetUserRect2().left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].m_y = (m_object->GetLogicRecord()->GetUserRect2().top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].m_x =
+        (m_object->GetLogicRecord()->GetUserRect2().right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].m_y =
+        (m_object->GetLogicRecord()->GetUserRect2().bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
 
     i32 i = 1;
     b32 found = false;
