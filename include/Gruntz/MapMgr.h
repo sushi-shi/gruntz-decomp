@@ -23,6 +23,8 @@ public:
     ~CBrickzNodePool();
     i32 Allocate(u32 count);
     void Free();
+    inline BrickzNode* Pop();
+    inline void Push(BrickzNode* node);
 
     BrickzNode* m_freeList;
     BrickzNode* m_storage;
