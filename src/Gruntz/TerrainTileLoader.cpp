@@ -502,7 +502,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             if (cellType == TILEKIND_HIDDEN_POWERUP) {
                 BrickTileId actionCode;
-                switch (unit->m_brickPickupType) {
+                switch (unit->GetBrickPickupType()) {
                     case PICKUP_REDBRICK:
                         actionCode = BRICKTILE_RED_1;
                         break;
@@ -539,8 +539,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cellType == TILEKIND_GAUNTLET_BRICK_A || cellType == TILEKIND_GAUNTLET_BRICK_B) {
                 CTileActionEvent* event =
                     state->m_tileTriggers->FindActionByCellKey(CellKey(tileX, tileY));
-                if (event
-                        ->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(playerIndex))
+                if (event->MorphByTool(
+                        unit->GetBrickPickupType(),
+                        static_cast<PlayerSlot>(playerIndex)
+                    )
                     == 0) {
                     return 0;
                 }

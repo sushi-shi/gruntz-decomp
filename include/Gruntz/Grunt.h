@@ -184,6 +184,9 @@ public:
     PickupType GetVehiclePickupType() const {
         return m_vehiclePickupType;
     }
+    PickupType GetBrickPickupType() const {
+        return m_brickPickupType;
+    }
     inline void BuildUnitSearchBox(RECT* box, i32 radius);
     inline Coord ScanCell();
     i32 GetPlayerIndex() const {

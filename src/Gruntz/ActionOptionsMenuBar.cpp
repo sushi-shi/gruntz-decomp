@@ -138,7 +138,7 @@ i32 CActionOptionsMenuBar::Refresh() {
         if (prim == PICKUP_NONE) {
             m_buttonIcon[0] = PICKUP_BARE_HANDS_ICON;
         } else if (prim == PICKUP_BRICK) {
-            m_buttonIcon[0] = grunt->m_brickPickupType;
+            m_buttonIcon[0] = grunt->GetBrickPickupType();
         }
         if (!grunt->CanShowStamina()) {
             m_buttonState[0] = ACTIONOPTION_DISABLED;
