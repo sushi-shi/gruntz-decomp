@@ -346,18 +346,9 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
                 return 0;
             }
         }
-        if (w <= 0 || h <= 0
-            || (bpp != BPP_PALETTED_8 && bpp != BPP_RGB_16 && bpp != BPP_RGB_24
-                && bpp != BPP_RGB_32)) {
+        if (!CDrawSubWorker::SetGeom(w, h, bpp)) {
             return 0;
         }
-        m_srcRect.left = 0;
-        m_srcRect.top = 0;
-        m_width = w;
-        m_height = h;
-        m_bpp = bpp;
-        m_srcRect.right = w;
-        m_srcRect.bottom = h;
     }
     return 1;
 }
@@ -511,15 +502,7 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (!m_surface->IsValid()) {
         return 0;
     }
-    if (w > 0 && h > 0
-        && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24 || bpp == BPP_RGB_32)) {
-        m_bpp = bpp;
-        m_width = w;
-        m_height = h;
-        SET_RECT_COMPONENTS(m_srcRect, 0, 0, w, h);
-        return 1;
-    }
-    return 0;
+    return CDrawSubWorker::SetGeom(w, h, bpp);
 }
 
 RVA(0x00164790, 0x41)
