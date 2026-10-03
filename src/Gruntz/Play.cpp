@@ -6934,7 +6934,7 @@ i32 CPlay::ClearPlacedObjects() {
                     );
                     if (result == NULL) {
 
-                        SetCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y, 0);
+                        g_gameReg->m_tileGrid->SetObjectIdAt(obj->m_x, obj->m_y, 0);
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                         g_coordPool.Push(obj);

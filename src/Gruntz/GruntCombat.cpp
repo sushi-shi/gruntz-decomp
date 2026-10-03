@@ -1784,7 +1784,7 @@ void CGrunt::StepBehavior(char*) {
                 result = found;
             }
             if (result == NULL) {
-                SetCellObject(g_gameReg->m_tileGrid, tx, ty, 0);
+                g_gameReg->m_tileGrid->SetObjectIdAt(tx, ty, 0);
             } else {
 
                 CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_logicRecord->m_userLogic);

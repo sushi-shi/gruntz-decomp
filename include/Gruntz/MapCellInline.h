@@ -12,12 +12,8 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    SetCellObject(
-        reg->m_tileGrid,
-        owner->m_screenX >> TILE_SHIFT_PX,
-        owner->m_screenY >> TILE_SHIFT_PX,
-        0
-    );
+    reg->m_tileGrid
+        ->SetObjectIdAt(owner->m_screenX >> TILE_SHIFT_PX, owner->m_screenY >> TILE_SHIFT_PX, 0);
 }
 
 #define SET_MAIN_PLANE_TILE(reg, tileX, tileY, tile)                                               \

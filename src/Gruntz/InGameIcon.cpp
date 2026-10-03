@@ -369,8 +369,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         return;
     }
 
-    SetCellObject(
-        g_gameReg->m_tileGrid,
+    g_gameReg->m_tileGrid->SetObjectIdAt(
         m_object->m_screenX >> TILE_SHIFT_PX,
         m_object->m_screenY >> TILE_SHIFT_PX,
         m_object->m_objectId
@@ -514,7 +513,7 @@ i32 CInGameIcon::PeekCycle() {
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 cell = grid->CellFlagsAt(tileX, tileY);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
-            SetCellObject(grid, tileX, tileY, 0);
+            grid->SetObjectIdAt(tileX, tileY, 0);
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
         return 0;
@@ -672,10 +671,9 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        SetCellObject(grid, tileX, tileY, 0);
+        grid->SetObjectIdAt(tileX, tileY, 0);
         obj = m_object;
-        SetCellObject(
-            g_gameReg->m_tileGrid,
+        g_gameReg->m_tileGrid->SetObjectIdAt(
             obj->m_screenX >> TILE_SHIFT_PX,
             obj->m_screenY >> TILE_SHIFT_PX,
             obj->m_objectId

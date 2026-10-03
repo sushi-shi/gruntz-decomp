@@ -101,6 +101,7 @@ public:
     BrickzCell CellAt(i32 x, i32 y);
     TileCollisionKind CellTypeAt(i32 x, i32 y) const;
     i32 ObjectIdAt(u32 x, u32 y) const;
+    void SetObjectIdAt(u32 x, u32 y, i32 objectId);
     i32 CanStepBetween(
         i32 sourceX,
         i32 sourceY,
