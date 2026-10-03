@@ -70,7 +70,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
     }
     m_defenderPx = m_lastTilePx;
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_CLIP_NULL(grid);
+    grid->Clip(NULL);
 
     Coord c1;
     GetScreenPos(&c1);
@@ -127,12 +127,12 @@ i32 CGrunt::StepGooSuckerBehavior() {
         if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
                 return 1;
             }
         } else {
             if (atTarget) {
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
                 return 1;
             }
         }
@@ -189,7 +189,7 @@ L_scanb:
         if (!IntersectRect(&isect, &box, &gb)) {
             isect = box;
         }
-        GRID_CLIP_INL(grid, &isect);
+        grid->Clip(&isect);
 
         i32 best = INT_MAX;
         i32 bestX = 0;
@@ -212,7 +212,7 @@ L_scanb:
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
-                    GRID_CLIP_INL(grid, NULL);
+                    grid->Clip(NULL);
                     return 1;
                 }
                 i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
@@ -247,7 +247,7 @@ L_scanb:
                 TileSwitch(bestX, bestY, 0, m_arrivalFlags, 1, 0);
             }
         }
-        GRID_RECT_INLINE(grid);
+        grid->Clip(NULL);
     } else {
         Coord* coord = GetHeadCoord();
         i32 col = coord->m_x;

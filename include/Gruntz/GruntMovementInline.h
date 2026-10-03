@@ -4,6 +4,7 @@
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordInline.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Wwd/WwdAniDrawValue.h>
 
@@ -65,24 +66,6 @@ inline void CGrunt::MirrorAcrossArrival() {
     GetScreenPos(&pb);
     i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + pa.m_y;
     TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
-}
-
-inline void RecycleGruntCoords(CGrunt* grunt) {
-    if (grunt->CoordCount() == 0) {
-        return;
-    }
-    POSITION node = grunt->CoordHead();
-    if (node != NULL) {
-        do {
-            POSITION current = node;
-            grunt->m_coordList.GetNext(node);
-            Coord* coord = static_cast<Coord*>(grunt->m_coordList.GetAt(current));
-            if (coord != NULL) {
-                g_coordPool.Push(coord);
-            }
-        } while (node != NULL);
-    }
-    grunt->m_coordList.RemoveAll();
 }
 
 inline void ScreenTile(Coord* pos) {

@@ -111,11 +111,11 @@ i32 CGrunt::StepDefenderBehavior() {
         }
         if (m_combatActive == false && m_stamina >= STAMINA_FULL && occOnTile) {
             COMMIT_GRUNT_NEIGHBOR(occ);
-            RecycleGruntCoords(this);
+            this->RecycleCoords();
             return 1;
         }
         if (occOnTile) {
-            RecycleGruntCoords(this);
+            this->RecycleCoords();
             return 1;
         }
     } else {
@@ -227,11 +227,11 @@ i32 CGrunt::StepDefenderBehavior() {
                                     }
                                 } else {
                                     SetEntrancePos(1, 1);
-                                    RecycleGruntCoords(this);
+                                    this->RecycleCoords();
                                 }
                             } else {
                                 SetEntrancePos(1, 1);
-                                RecycleGruntCoords(this);
+                                this->RecycleCoords();
                             }
                             return 1;
                         }
@@ -255,7 +255,7 @@ i32 CGrunt::StepDefenderBehavior() {
     }
 
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_CLIP_INL_FIELDS(grid, NULL);
+    grid->Clip(NULL);
 
     return 1;
 }

@@ -32,7 +32,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             i32 flags = grid->CellFlagsAt(col, row);
             if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                 && grid->m_rows[row][col].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
-                RECYCLE_GRUNT_COORDS(g)
+                g->RecycleCoords();
                 return 1;
             }
         }
@@ -61,14 +61,14 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                             i32 flags = cell->m_flags;
                             if (flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    SCAN_BOUNDS_PLAINCLIP(grid);
+                                    grid->Clip(NULL);
                                     return 1;
                                 }
                                 hits++;
                             } else if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                                        && cell->m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    SCAN_BOUNDS_PLAINCLIP(grid);
+                                    grid->Clip(NULL);
                                     return 1;
                                 }
                                 hits++;
@@ -79,7 +79,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                 }
             }
             {
-                GRID_CLIP_NULL(grid);
+                grid->Clip(NULL);
             }
             if (m_attackWaypoints.GetSize() != 0) {
 

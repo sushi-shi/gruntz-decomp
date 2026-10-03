@@ -86,7 +86,7 @@ state2: {
             m_arrivalCell.m_y + 5
         );
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        GRID_CLIP_INL(grid, &box);
+        grid->Clip(&box);
     }
 
     CDWordArray acc;
@@ -120,7 +120,7 @@ state2: {
                     m_defenderState = AISTATE_COOLDOWN;
                     m_dwell = 0;
                     CMapMgr* hit = g_gameReg->m_tileGrid;
-                    GRID_CLIP_INL(hit, NULL);
+                    hit->Clip(NULL);
                     return 1;
                 }
             }
@@ -128,7 +128,7 @@ state2: {
         acc.RemoveAt(sel, 1);
     }
     CMapMgr* spent = g_gameReg->m_tileGrid;
-    GRID_CLIP_INL(spent, NULL);
+    spent->Clip(NULL);
     m_defenderState = AISTATE_SEEK;
     goto common;
 }
@@ -197,7 +197,7 @@ common: {
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
         if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
-            RecycleGruntCoords(this);
+            this->RecycleCoords();
             g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
@@ -217,7 +217,7 @@ common: {
         return 1;
     }
     m_arrivalCell = *head;
-    RecycleGruntCoords(this);
+    this->RecycleCoords();
     m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;
 }
