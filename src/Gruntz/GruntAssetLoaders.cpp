@@ -164,7 +164,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             goto finalize;
 
         case DEATH_FALL: {
-            CMapMgr* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->GetTileGrid();
             TileCollisionKind attr = grid->m_rows[m_object->m_screenPosition.m_y >> TILE_SHIFT_PX]
                                                  [m_object->m_screenPosition.m_x >> TILE_SHIFT_PX]
                                                      .m_typeCode;
@@ -190,7 +190,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         }
 
         case DEATH_FALL2: {
-            CMapMgr* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->GetTileGrid();
             TileCollisionKind attr = grid->m_rows[m_object->m_screenPosition.m_y >> TILE_SHIFT_PX]
                                                  [m_object->m_screenPosition.m_x >> TILE_SHIFT_PX]
                                                      .m_typeCode;

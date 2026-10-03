@@ -27,8 +27,8 @@ inline void CopyLastTileToDefender(CGrunt* grunt) {
 
 inline i32 CommitGruntNeighbor(CGrunt* grunt, CGrunt* target) {
     return grunt->CommitNeighbor(
-        target->m_playerIndex,
-        target->m_unitIndex,
+        target->GetPlayerIndex(),
+        target->GetUnitIndex(),
         target->LastTilePx().m_x,
         target->LastTilePx().m_y
     );
@@ -36,12 +36,12 @@ inline i32 CommitGruntNeighbor(CGrunt* grunt, CGrunt* target) {
 
 inline void SetGruntArrivalTarget(CGrunt* grunt, CGrunt* target) {
     grunt->SetEntrancePos(1, 1);
-    grunt->m_arrivalCell.Set(target->m_playerIndex, target->m_unitIndex);
+    grunt->m_arrivalCell.Set(target->GetPlayerIndex(), target->GetUnitIndex());
 }
 
 inline void BeginGruntEntranceAndReleaseCell(CGrunt* grunt) {
     grunt->m_entranceActive = true;
-    grunt->m_triggerMgr->RemoveCellRecord(grunt->m_playerIndex, grunt->m_unitIndex, 1);
+    grunt->m_triggerMgr->RemoveCellRecord(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), 1);
 }
 
 inline void ResetGruntPoweredState(CGrunt* grunt) {
@@ -71,8 +71,8 @@ inline CGrunt* FindNearestEnemyAtTarget(CGrunt* grunt, i32* atTarget) {
 
 inline void ClearMoveTileFx(CGrunt* grunt) {
     grunt->m_triggerMgr->LoadTileArrivalFx(
-        grunt->m_playerIndex,
-        grunt->m_unitIndex,
+        grunt->GetPlayerIndex(),
+        grunt->GetUnitIndex(),
         grunt->m_moveTile.m_x,
         grunt->m_moveTile.m_y,
         grunt->m_entranceReason,
@@ -82,7 +82,8 @@ inline void ClearMoveTileFx(CGrunt* grunt) {
 
 inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
     if (grunt->m_cellRemovalNotified == false) {
-        grunt->m_triggerMgr->UnregisterUnit(grunt->m_playerIndex, grunt->m_unitIndex, exitedLevel);
+        grunt->m_triggerMgr
+            ->UnregisterUnit(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), exitedLevel);
     }
 }
 

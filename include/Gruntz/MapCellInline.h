@@ -13,7 +13,7 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    reg->m_tileGrid->SetObjectIdAt(
+    reg->GetTileGrid()->SetObjectIdAt(
         owner->m_screenPosition.m_x >> TILE_SHIFT_PX,
         owner->m_screenPosition.m_y >> TILE_SHIFT_PX,
         0
@@ -24,7 +24,7 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     {                                                                                              \
         CDDrawWorkerHost* plane = (reg)->m_world->m_level->m_mainPlane;                            \
         SET_WORKER_HOST_CELL(plane, tileX, tileY, tile);                                           \
-        (reg)->m_tileGrid->ComputeCellFlags(tileX, tileY, tile);                                   \
+        (reg)->GetTileGrid()->ComputeCellFlags(tileX, tileY, tile);                                \
     }
 
 inline SIZE
@@ -62,7 +62,7 @@ CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 playerIndex, i32 u
 }
 
 static inline void TBombGridClear(CGameObject* obj) {
-    CMapMgr* g = g_gameReg->m_tileGrid;
+    CMapMgr* g = g_gameReg->GetTileGrid();
     i32 cy = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
     i32 cx = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->GetWidth())

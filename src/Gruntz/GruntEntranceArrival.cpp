@@ -519,7 +519,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         LoadGruntTypeTable(m_toolId, 1, 0, 0);
         m_entranceActive = false;
         CGruntzMgr* g = g_gameReg;
-        CMapMgr* grid = g->m_tileGrid;
+        CMapMgr* grid = g->GetTileGrid();
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 flags = grid->CellFlagsAt(tx, ty);
@@ -706,7 +706,7 @@ RVA(0x000633e0, 0x2f1)
 i32 CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != false && IsGruntAtSavedScreenPos(this)) {
         CGruntzMgr* g = g_gameReg;
-        CMapMgr* grid = g->m_tileGrid;
+        CMapMgr* grid = g->GetTileGrid();
         Coord tile;
         GetScreenTile(&tile);
         i32 flags = grid->CellFlagsAt(tile.m_x, tile.m_y);
@@ -808,7 +808,7 @@ i32 CGrunt::StepEntranceReinit() {
     }
 
     Coord* targetCoord = GetHeadCoord();
-    CMapMgr* tileGrid = g_gameReg->m_tileGrid;
+    CMapMgr* tileGrid = g_gameReg->GetTileGrid();
     i32 targetCellFlags = tileGrid->CellFlagsAt(targetCoord->m_x, targetCoord->m_y);
     GruntDirectionCell cell;
     if (!(targetCellFlags & BRICKZ_CELL_OCCUPIED)) {
@@ -880,7 +880,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         LoadGruntTypeTable(m_toolId, 1, 0, 0);
         m_entranceActive = false;
 
-        CMapMgr* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->GetTileGrid();
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 flags = grid->CellFlagsAt(tx, ty);
@@ -1114,7 +1114,7 @@ tail:
                 i32 cy = oh->m_screenPosition.m_y;
                 if (m_neighborScanEnabled != false && m_entranceCommitted != false
                     && RectContains(cx, cy)) {
-                    if (!(g_gameReg->m_tileGrid->CellFlagsAt(
+                    if (!(g_gameReg->GetTileGrid()->CellFlagsAt(
                               m_lastTilePx.m_x >> TILE_SHIFT_PX,
                               m_lastTilePx.m_y >> TILE_SHIFT_PX
                           )
@@ -1156,7 +1156,7 @@ i32 CGrunt::FinishStruckAnimation() {
     }
     m_entranceActive = false;
 
-    CMapMgr* grid = g_gameReg->m_tileGrid;
+    CMapMgr* grid = g_gameReg->GetTileGrid();
     i32 tx = SCREEN_TILE_COMPONENT(m_lastTilePx.m_x);
     i32 ty = SCREEN_TILE_COMPONENT(m_lastTilePx.m_y);
     i32 flags = grid->CellFlagsAt(tx, ty);
@@ -1195,7 +1195,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
         return 0;
     }
     CGruntzMgr* g = g_gameReg;
-    CMapMgr* grid = g->m_tileGrid;
+    CMapMgr* grid = g->GetTileGrid();
     i32 tx = SCREEN_TILE_COMPONENT(m_lastTilePx.m_x);
     i32 ty = SCREEN_TILE_COMPONENT(m_lastTilePx.m_y);
     i32 flags = grid->CellFlagsAt(tx, ty);
@@ -1349,7 +1349,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
     SET_ANIMATION_ACT("D");
     SetupTubeAnim(m_coordToggle);
     CGruntzMgr* g = g_gameReg;
-    CMapMgr* grid = g->m_tileGrid;
+    CMapMgr* grid = g->GetTileGrid();
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     i32 f1 = grid->CellFlagsAt(tx, ty);
@@ -1357,7 +1357,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         BuildGruntLoseItemAnimation();
         g = g_gameReg;
     }
-    grid = g->m_tileGrid;
+    grid = g->GetTileGrid();
     char* cellObj;
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->GetWidth())
         || static_cast<u32>(ty) >= static_cast<u32>(grid->GetHeight())) {
@@ -1375,7 +1375,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         static_cast<void*>(cellObj)
     );
     if (found == NULL) {
-        grid = g_gameReg->m_tileGrid;
+        grid = g_gameReg->GetTileGrid();
         grid->SetObjectIdAt(tx, ty, 0);
         return 0;
     }

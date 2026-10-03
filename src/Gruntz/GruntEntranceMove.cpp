@@ -280,7 +280,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 }
 
 inline void CGrunt::ResolveEntranceOccupant() {
-    CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* grid = g_gameReg->GetTileGrid();
     i32 tx = m_object->m_screenPosition.m_x >> TILE_SHIFT_PX;
     i32 ty = m_object->m_screenPosition.m_y >> TILE_SHIFT_PX;
     i32 flags = grid->CellFlagsAt(tx, ty);
@@ -342,11 +342,11 @@ i32 CGrunt::LoadEntranceConfig() {
         i32 newTileY = newPxY >> TILE_SHIFT_PX;
 
         if (oldX != -1 && m_lastTilePx.m_y != -1) {
-            CGruntzMapMgr* og = g_gameReg->m_tileGrid;
+            CGruntzMapMgr* og = g_gameReg->GetTileGrid();
             og->ReleaseCellOccupancy(oldTileX, oldTileY);
         }
         {
-            CGruntzMapMgr* ng = g_gameReg->m_tileGrid;
+            CGruntzMapMgr* ng = g_gameReg->GetTileGrid();
             ng->AcquireCellOccupancy(newTileX, newTileY, m_playerIndex, m_unitIndex);
         }
         m_lastTilePx.m_x = newPxX;
@@ -573,7 +573,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     m_entranceActive = false;
 
     i32 tx = SCREEN_TILE_COMPONENT(m_lastTilePx.m_x);
-    CGruntzMapMgr* board = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* board = g_gameReg->GetTileGrid();
     i32 ty = SCREEN_TILE_COMPONENT(m_lastTilePx.m_y);
     i32 flags = board->CellFlagsAt(tx, ty);
 
@@ -720,7 +720,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 
     CGruntzMgr* g = g_gameReg;
     CState* state = g->m_curState;
-    CGruntzMapMgr* b = g->m_tileGrid;
+    CGruntzMapMgr* b = g->GetTileGrid();
     CWwdSpriteObject* h = m_object;
     i32 xbound = b->GetWidth();
     i32 tileY = SCREEN_TILE_COMPONENT(h->m_screenPosition.m_y);
@@ -850,10 +850,10 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
         i32 newTx = newX >> TILE_SHIFT_PX;                                                         \
         i32 newTy = newY >> TILE_SHIFT_PX;                                                         \
         if (oldTx != -1 && oldTy != -1) {                                                          \
-            CGruntzMapMgr* oldGrid = g_gameReg->m_tileGrid;                                        \
+            CGruntzMapMgr* oldGrid = g_gameReg->GetTileGrid();                                     \
             oldGrid->ReleaseCellOccupancy(oldTx, oldTy);                                           \
         }                                                                                          \
-        CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;                                            \
+        CGruntzMapMgr* newGrid = g_gameReg->GetTileGrid();                                         \
         newGrid->AcquireCellOccupancy(newTx, newTy, m_playerIndex, m_unitIndex);                   \
         m_lastTilePx.m_x = newX;                                                                   \
         m_lastTilePx.m_y = newY;                                                                   \

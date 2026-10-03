@@ -182,15 +182,15 @@ i32 CActionOptionsMenuBar::Render() {
     level->m_mainPlane->WorldToViewport(&screen.x, &screen.y);
 
     CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
-    LevelCoordRect r = g_gameReg->World()->m_level->m_viewportRect;
+    LevelCoordRect r = g_gameReg->World()->m_level->GetViewportRect();
     m_frame->RenderFrameClipped(ctx, screen.x, screen.y, &r, 0);
 
     if (m_buttonFrame[0]) {
-        r = g_gameReg->World()->m_level->m_viewportRect;
+        r = g_gameReg->World()->m_level->GetViewportRect();
         m_buttonFrame[0]->RenderFrameClipped(ctx, screen.x - 0xc, screen.y + 2, &r, 0);
     }
     if (m_buttonFrame[1]) {
-        r = g_gameReg->World()->m_level->m_viewportRect;
+        r = g_gameReg->World()->m_level->GetViewportRect();
         m_buttonFrame[1]->RenderFrameClipped(ctx, screen.x + 0x10, screen.y + 2, &r, 0);
     }
     return 1;

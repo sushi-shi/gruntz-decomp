@@ -106,7 +106,7 @@ i32 CTriggerMgr::PlaceObject(
             special = 0x100;
             wantSlot = 1;
         }
-        CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
         Coord position(x, y);
         Coord tile = position;
         ScreenTile(&tile);
@@ -816,7 +816,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_CHECKPOINT:
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ || g == NULL
-                || g->m_playerIndex != g_curPlayer) {
+                || g->GetPlayerIndex() != g_curPlayer) {
                 return 0;
             }
             sw = state->m_tileTriggers->FindSwitchLogic(
@@ -1032,7 +1032,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (g == NULL) {
                 return 0;
             }
-            if (g->m_playerIndex != g_curPlayer) {
+            if (g->GetPlayerIndex() != g_curPlayer) {
                 return 0;
             }
             CTileTriggerSwitchLogic* obj = state->m_tileTriggers->FindSwitchLogic(
@@ -1142,7 +1142,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         cell->m_arrivalPhase = 0;
         CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
         if (hit != NULL) {
-            if (hit->m_playerIndex == cell->m_playerIndex && g_traitorMode == false) {
+            if (hit->GetPlayerIndex() == cell->GetPlayerIndex() && g_traitorMode == false) {
                 return 0;
             }
             return cell->CommitNeighbor(hitPlayerIndex, hitUnitIndex, bx, by) != 0;
@@ -1150,7 +1150,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         if (cell->CanShowStamina() == 0) {
             return 0;
         }
-        CGruntzMapMgr* map = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* map = g_gameReg->GetTileGrid();
         TileCollisionKind bute = map->CellTypeAt(bx >> TILE_SHIFT_PX, by >> TILE_SHIFT_PX);
         PickupType kind = cell->ArrivalPickup();
 
@@ -1281,7 +1281,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     i32 hitUnitIndex;
     hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
     if (hit == NULL) {
-        CGruntzMapMgr* map = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* map = g_gameReg->GetTileGrid();
         i32 flags = map->CellFlagsAt(argTileX, argTileY);
         if ((flags & 0x40939) != 0 || (flags & 0x82) != 0) {
             return 0;
@@ -1342,7 +1342,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     if (hit->LoadGruntTypeTable(cell->m_vehiclePickupType, 1, moveKind, 0) != 0) {
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
 
-        if (hit->m_playerIndex != playerIndex) {
+        if (hit->GetPlayerIndex() != playerIndex) {
             CGameObject* obj = cell->m_object;
             i32 sy = obj->m_screenPosition.m_y;
             i32 sx = obj->m_screenPosition.m_x;

@@ -233,7 +233,7 @@ RVA(0x00040d20, 0xe3)
 i32 CGruntPuddle::Remove() {
     if (m_placed != false) {
         CGruntzMgr* reg = g_gameReg;
-        CMapMgr* grid = reg->m_tileGrid;
+        CMapMgr* grid = reg->GetTileGrid();
         Coord tile = m_tile;
         i32 flags = grid->CellFlagsAt(tile.m_x, tile.m_y);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {

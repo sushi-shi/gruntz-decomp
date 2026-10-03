@@ -541,7 +541,7 @@ i32 CGrunt::TryPowerupAtTile() {
     i32 py = (my & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 tx = px >> TILE_SHIFT_PX;
     i32 ty = py >> TILE_SHIFT_PX;
-    i32 flags = g_gameReg->m_tileGrid->CellFlagsAt(tx, ty);
+    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(tx, ty);
     if ((flags & BRICKZ_BLOCKED_MASK) || (flags & IDX(CELL_FLAG_SPECIAL))) {
         return 0;
     }
@@ -635,7 +635,7 @@ void CGrunt::DestroyAnims() {
 
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
-    CMapMgr* grid = g_gameReg->m_tileGrid;
+    CMapMgr* grid = g_gameReg->GetTileGrid();
 
     CPtrList* coordz = &m_coordList;
     if (CoordCount() == 0) {
@@ -1403,7 +1403,7 @@ i32 CGrunt::CommitNeighbor(
         return 0;
     }
     {
-        CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* bd = g_gameReg->GetTileGrid();
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 flags = bd->CellFlagsAt(tx, ty);
@@ -1781,7 +1781,7 @@ void CGrunt::StepBehavior(char*) {
     }
     {
         CGruntzMgr* reg = g_gameReg;
-        CMapMgr* grid = reg->m_tileGrid;
+        CMapMgr* grid = reg->GetTileGrid();
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 cellObj = grid->ObjectIdAt(tx, ty);
@@ -1796,7 +1796,7 @@ void CGrunt::StepBehavior(char*) {
                 result = found;
             }
             if (result == NULL) {
-                g_gameReg->m_tileGrid->SetObjectIdAt(tx, ty, 0);
+                g_gameReg->GetTileGrid()->SetObjectIdAt(tx, ty, 0);
             } else {
 
                 CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_logicRecord->m_userLogic);
@@ -1818,7 +1818,7 @@ void CGrunt::StepBehavior(char*) {
         CGruntzMgr* reg2 = g_gameReg;
         i32 flags;
         {
-            CMapMgr* bd = reg2->m_tileGrid;
+            CMapMgr* bd = reg2->GetTileGrid();
             flags = bd->CellFlagsAt(tx, ty);
         }
         if (flags & 0x100000) {
@@ -1890,7 +1890,7 @@ void CGrunt::StepBehavior(char*) {
                     gate = false;
                     break;
                 default: {
-                    i32 cellId = g_gameReg->m_tileGrid->TileIdAt(ptx, pty);
+                    i32 cellId = g_gameReg->GetTileGrid()->TileIdAt(ptx, pty);
                     if (cellId == -1) {
                         hazard = g_areaPitDeath;
                     } else {
@@ -1999,7 +1999,7 @@ afterTile:
             i32 col5 = m_defenderPx.m_x >> TILE_SHIFT_PX;
             i32 row5 = m_defenderPx.m_y >> TILE_SHIFT_PX;
             i32 reach = m_defenderRadius + m_reachRect.right;
-            CMapMgr* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->GetTileGrid();
 
             RECT rs;
             SET_RECT_COMPONENTS(rs, col5 - reach, row5 - reach, reach + col5 + 1, reach + row5 + 1);
@@ -2064,7 +2064,7 @@ afterTile:
         }
         {
 
-            CMapMgr* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->GetTileGrid();
             grid->Clip(NULL);
         }
     }
@@ -2344,7 +2344,7 @@ void CGrunt::AdvanceMotion() {
         eq = IsAnimationAct("A");
         if (eq && CoordCount() != 0) {
             Coord* co = GetHeadCoord();
-            i32 fl = MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->m_tileGrid, co->m_x, co->m_y);
+            i32 fl = MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->GetTileGrid(), co->m_x, co->m_y);
             if (!(fl & BRICKZ_CELL_OCCUPIED) && !((m_arrivalFlags & fl) & BRICKZ_CELL_OCCUPIED)
                 && ((m_arrivalFlags & fl) == 0 || (m_passableMask & fl) != 0)) {
                 Coord* tc = GetTailCoord();
@@ -2364,7 +2364,7 @@ void CGrunt::AdvanceMotion() {
                     if (CoordCount() != 0) {
                         Coord* h3 = GetHeadCoord();
                         i32 fl2 =
-                            MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->m_tileGrid, h3->m_x, h3->m_y);
+                            MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->GetTileGrid(), h3->m_x, h3->m_y);
                         if (!(fl2 & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;
                             StepEntranceReinit();

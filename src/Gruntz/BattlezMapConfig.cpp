@@ -144,7 +144,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_ctx = mgr;
     m_playerIndex = playerIndex;
     m_triggerMgr = mgr->m_triggerMgr;
-    m_board = mgr->m_tileGrid;
+    m_board = mgr->GetTileGrid();
     m_play = static_cast<CPlay*>(mgr->m_curState);
     m_cellQuery = m_play->m_tileTriggers;
     m_active = true;
@@ -1335,8 +1335,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 i32 firstCellFlags = m_board->CellFlagsAt(ax, ay);
                 if (!(firstCellFlags & 0x2)) {
                     m_triggerMgr->UseEquippedToolAt(
-                        unit->m_playerIndex,
-                        unit->m_unitIndex,
+                        unit->GetPlayerIndex(),
+                        unit->GetUnitIndex(),
                         ax * 0x20 + 0x10,
                         ay * 0x20 + 0x10
                     );
@@ -1353,8 +1353,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if ((pathHeadFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && prim == PICKUP_BRICK
             && unit->m_battleState == BZTASK_CARRY_BRICK) {
             m_triggerMgr->UseEquippedToolAt(
-                unit->m_playerIndex,
-                unit->m_unitIndex,
+                unit->GetPlayerIndex(),
+                unit->GetUnitIndex(),
                 cx * 0x20 + 0x10,
                 cy * 0x20 + 0x10
             );
@@ -1474,8 +1474,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                             ->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
                         != 0) {
                         m_triggerMgr->UseEquippedToolAt(
-                            unit->m_playerIndex,
-                            unit->m_unitIndex,
+                            unit->GetPlayerIndex(),
+                            unit->GetUnitIndex(),
                             ox * 0x20 + 0x10,
                             oy * 0x20 + 0x10
                         );
@@ -1691,16 +1691,16 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
             if (actor->m_vehiclePickupType == PICKUP_SCROLL) {
                 CGameObject* tl = actor->m_object;
                 m_triggerMgr->UseToyAt(
-                    actor->m_playerIndex,
-                    actor->m_unitIndex,
+                    actor->GetPlayerIndex(),
+                    actor->GetUnitIndex(),
                     tl->m_screenPosition.m_x,
                     tl->m_screenPosition.m_y
                 );
             } else {
                 CGameObject* ul2 = other->m_object;
                 m_triggerMgr->UseToyAt(
-                    actor->m_playerIndex,
-                    actor->m_unitIndex,
+                    actor->GetPlayerIndex(),
+                    actor->GetUnitIndex(),
                     ul2->m_screenPosition.m_x,
                     ul2->m_screenPosition.m_y
                 );
@@ -1711,8 +1711,8 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     CGameObject* ul3 = other->m_object;
     (static_cast<CGrunt*>(actor))
         ->CommitNeighbor(
-            other->m_playerIndex,
-            other->m_unitIndex,
+            other->GetPlayerIndex(),
+            other->GetUnitIndex(),
             ul3->m_screenPosition.m_x,
             ul3->m_screenPosition.m_y
         );
@@ -2238,8 +2238,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if ((maskFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && type == PICKUP_BRICK
         && g->m_battleState == BZTASK_CARRY_BRICK) {
         m_triggerMgr->UseEquippedToolAt(
-            g->m_playerIndex,
-            g->m_unitIndex,
+            g->GetPlayerIndex(),
+            g->GetUnitIndex(),
             (first.m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
             (first.m_y << TILE_SHIFT_PX) + TILE_HALF_PX
         );
@@ -2251,8 +2251,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         && g->m_battleState == BZTASK_CARRY_BRICK) {
         if (m_board->CellTypeAt(first.m_x, first.m_y) != TILEKIND_GAUNTLET_BRICK_C) {
             m_triggerMgr->UseEquippedToolAt(
-                g->m_playerIndex,
-                g->m_unitIndex,
+                g->GetPlayerIndex(),
+                g->GetUnitIndex(),
                 (first.m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (first.m_y << TILE_SHIFT_PX) + TILE_HALF_PX
             );
@@ -2279,8 +2279,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (g->ArrivalPickupOf(er) == PICKUP_BOMB || g->ArrivalPickupOf(er) == PICKUP_TIMEBOMB) {
             if (g->ArrivalPickupOf(er) == PICKUP_BOMB) {
                 m_triggerMgr->UseEquippedToolAt(
-                    g->m_playerIndex,
-                    g->m_unitIndex,
+                    g->GetPlayerIndex(),
+                    g->GetUnitIndex(),
                     (first.m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (first.m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
@@ -2298,8 +2298,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                             DECLARE_TILE_CENTER_PIXEL_PAIR(hitX, hitY, col, row)
                             if (g->RectContains(hitX, hitY) != 0) {
                                 m_triggerMgr->UseEquippedToolAt(
-                                    g->m_playerIndex,
-                                    g->m_unitIndex,
+                                    g->GetPlayerIndex(),
+                                    g->GetUnitIndex(),
                                     hitX,
                                     hitY
                                 );
@@ -2323,8 +2323,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     return 1;
                 }
                 m_triggerMgr->UseEquippedToolAt(
-                    g->m_playerIndex,
-                    g->m_unitIndex,
+                    g->GetPlayerIndex(),
+                    g->GetUnitIndex(),
                     (first.m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (first.m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
@@ -2364,8 +2364,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 }
             }
             m_triggerMgr->UseEquippedToolAt(
-                g->m_playerIndex,
-                g->m_unitIndex,
+                g->GetPlayerIndex(),
+                g->GetUnitIndex(),
                 (first.m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (first.m_y << TILE_SHIFT_PX) + TILE_HALF_PX
             );
@@ -2393,8 +2393,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (g->ArrivalPickupOf(er2) != PICKUP_WINGZ) {
             if (g->ArrivalPickupOf(er2) == PICKUP_SHOVEL) {
                 m_triggerMgr->UseEquippedToolAt(
-                    g->m_playerIndex,
-                    g->m_unitIndex,
+                    g->GetPlayerIndex(),
+                    g->GetUnitIndex(),
                     (first.m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (first.m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                 );

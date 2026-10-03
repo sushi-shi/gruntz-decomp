@@ -387,7 +387,7 @@ void CProjectile::AdvanceMotion() {
     i32 tier = 0;
     if (m_kind != PICKUP_WINGZ) {
         CGruntzMgr* reg = g_gameReg;
-        CMapMgr* plane = reg->m_tileGrid;
+        CMapMgr* plane = reg->GetTileGrid();
         i32 tileY = m_targetPx.m_y >> TILE_SHIFT_PX;
         i32 tileX = m_targetPx.m_x >> TILE_SHIFT_PX;
         u32 flags = plane->CellFlagsAt(tileX, tileY);
@@ -613,8 +613,8 @@ void CProjectile::ScanTargets(i32 impact) {
                 return;
             }
 
-            i32 hitPlayerIndex = g->m_playerIndex;
-            i32 hitUnitIndex = g->m_unitIndex;
+            i32 hitPlayerIndex = g->GetPlayerIndex();
+            i32 hitUnitIndex = g->GetUnitIndex();
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
 
                 Coord* k = static_cast<Coord*>(m_hitList.GetNext(pos));
@@ -858,7 +858,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     }
     Coord tile;
     GetScreenTile(&tile);
-    CMapMgr* g = g_gameReg->m_tileGrid;
+    CMapMgr* g = g_gameReg->GetTileGrid();
     if (tile.m_x < g->GetWidth() && tile.m_y < g->GetHeight()) {
         g->m_rows[tile.m_y][tile.m_x].m_flags |= IDX(CELL_FLAG_TIME_BOMB);
     }
@@ -868,7 +868,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
 // @early-stop
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::UpdateCountdown() {
-    i32 cell = g_gameReg->m_tileGrid->CellFlagsAt(
+    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
         m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
         m_object->m_screenPosition.m_y >> TILE_SHIFT_PX
     );

@@ -81,8 +81,8 @@
 
 #define SET_GRUNT_ARRIVAL_TARGET(target)                                                           \
     SetEntrancePos(1, 1);                                                                          \
-    m_arrivalCell.m_x = target->m_playerIndex;                                                     \
-    m_arrivalCell.m_y = target->m_unitIndex
+    m_arrivalCell.m_x = target->GetPlayerIndex();                                                  \
+    m_arrivalCell.m_y = target->GetUnitIndex()
 
 #define GRUNT_AT_SAVED_SCREEN_POS(grunt)                                                           \
     grunt->m_object->m_screenPosition.m_x == grunt->m_lastTilePx.m_x                               \
@@ -94,8 +94,8 @@
 
 #define COMMIT_GRUNT_NEIGHBOR(target)                                                              \
     CommitNeighbor(                                                                                \
-        target->m_playerIndex,                                                                     \
-        target->m_unitIndex,                                                                       \
+        target->GetPlayerIndex(),                                                                  \
+        target->GetUnitIndex(),                                                                    \
         target->LastTilePx().m_x,                                                                  \
         target->LastTilePx().m_y                                                                   \
     )
