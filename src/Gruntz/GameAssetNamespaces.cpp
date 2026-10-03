@@ -61,12 +61,12 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         }
         m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(snd), "GAME", "_");
     }
-    if (m_world->m_animRegistry->HasWithPrefix("GAME") == 0) {
+    if (m_world->GetAnimationRegistry()->HasWithPrefix("GAME") == 0) {
         CRezDir* aniz = m_resourceArchive->GetDirFromPath("GAME_ANIZ");
         if (aniz == NULL) {
             return 0;
         }
-        m_world->m_animRegistry->LoadFromTree(static_cast<CRezDir*>(aniz), "GAME", "_");
+        m_world->GetAnimationRegistry()->LoadFromTree(static_cast<CRezDir*>(aniz), "GAME", "_");
     }
 
     if (m_mgr->SpriteTable()->BuildToolToyColorTable(m_mgr->m_resourceArchive) == 0) {

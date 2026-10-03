@@ -129,7 +129,7 @@ void CCreditsState::ReleaseResources() {
         m_world->SoundRegistry()->RemoveWithPrefix("CREDITZ", "_");
         m_world->m_imageRegistry->RemoveWithPrefix("CREDITZ", "_");
 
-        m_world->m_animRegistry->RemoveWithPrefix("CREDITZ", "_");
+        m_world->GetAnimationRegistry()->RemoveWithPrefix("CREDITZ", "_");
     }
 
     CMoviePlayer* vh = m_videoHandle;

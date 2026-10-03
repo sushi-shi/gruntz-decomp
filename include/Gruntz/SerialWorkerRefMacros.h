@@ -38,7 +38,7 @@
         if ((field) != NULL) {                                                                     \
             strcpy(                                                                                \
                 name,                                                                              \
-                static_cast<const char*>((mgr)->m_animRegistry->FindAnimationKey(field))           \
+                static_cast<const char*>((mgr)->GetAnimationRegistry()->FindAnimationKey(field))   \
             );                                                                                     \
         }                                                                                          \
         (ar)->Write(name, SERIAL_NAME_LEN);                                                        \
@@ -67,7 +67,7 @@
         g_serialCounter++;                                                                         \
         (ar)->Read(name, SERIAL_NAME_LEN);                                                         \
         if (strlen(name) != 0) {                                                                   \
-            (field) = MapFind<CAniElement>((mgr)->m_animRegistry->m_animations, name);             \
+            (field) = MapFind<CAniElement>((mgr)->GetAnimationRegistry()->m_animations, name);     \
         } else {                                                                                   \
             (field) = NULL;                                                                        \
         }                                                                                          \

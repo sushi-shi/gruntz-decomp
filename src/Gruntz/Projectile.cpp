@@ -185,24 +185,36 @@ i32 CProjectile::LoadProjectileSprites(
     }
 
     m_frames[0] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + DATA_COMPGEN(0x00213658, "1")
         );
     if (m_frames[0] == NULL) {
         return 0;
     }
-    m_frames[1] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2");
-    m_frames[2] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3");
-    m_frames[3] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4");
-    m_frames[4] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5");
-    m_frames[PF_IMPACT] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT");
-    m_frames[PF_FALL] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
+    m_frames[1] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "2"
+    );
+    m_frames[2] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "3"
+    );
+    m_frames[3] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "4"
+    );
+    m_frames[4] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "5"
+    );
+    m_frames[PF_IMPACT] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "IMPACT"
+    );
+    m_frames[PF_FALL] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "FALL"
+    );
 
     SwitchAnimation(m_frames[0]);
     SetImageSetByName(key + "_OBJECT");

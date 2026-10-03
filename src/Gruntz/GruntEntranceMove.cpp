@@ -226,7 +226,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         i32 r = GetRandom(0, 0x1e0);
         if (r > 0x140) {
             found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezOne
             );
             if (onScreen) {
@@ -235,7 +235,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
             found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezTwo
             );
             if (onScreen) {
@@ -244,7 +244,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         } else {
             found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezThree
             );
             if (onScreen) {
@@ -254,13 +254,13 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
         found = MapFind<CAniElement>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
             s_gruntzEntrancezDrop
         );
         key = s_gruntzEntrancezDrop;
     } else {
         found = MapFind<CAniElement>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
             s_gruntzEntrancezRessurect
         );
         key = "GRUNTZ_DEATHZ_MELT";
@@ -300,7 +300,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         CAniElement* found = NULL;                                                                 \
         CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;                          \
         MapLookup(                                                                                 \
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                 \
+            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
             s_gruntzEntrancezDrop,                                                                 \
             found                                                                                  \
         );                                                                                         \

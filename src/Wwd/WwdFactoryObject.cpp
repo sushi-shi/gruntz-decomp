@@ -679,7 +679,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     memset(buf, 0, sizeof(buf));
     if (m_animation != NULL) {
 
-        strcpy(buf, OwnerMgr()->m_animRegistry->FindAnimationKey(m_animation));
+        strcpy(buf, OwnerMgr()->GetAnimationRegistry()->FindAnimationKey(m_animation));
     }
     ar->Write(buf, SERIAL_NAME_LEN);
     return 1;
@@ -704,7 +704,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (strlen(buf) == 0) {
         m_animation = NULL;
     } else {
-        m_animation = MapFind<CAniElement>(OwnerMgr()->m_animRegistry->m_animations, buf);
+        m_animation = MapFind<CAniElement>(OwnerMgr()->GetAnimationRegistry()->m_animations, buf);
     }
     CAniElement* w = m_animation;
     if (w != NULL) {

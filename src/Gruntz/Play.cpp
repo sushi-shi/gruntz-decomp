@@ -1551,7 +1551,7 @@ void CPlay::ModeCleanup() {
         m_world->m_imageRegistry->MapTeardown();
     }
     if (m_world) {
-        m_world->m_animRegistry->ClearAnimations();
+        m_world->GetAnimationRegistry()->ClearAnimations();
     }
     if (m_world) {
         m_world->m_level->ReleaseChildren();

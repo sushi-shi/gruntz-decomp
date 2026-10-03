@@ -955,13 +955,13 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CAniElement* found;
     i32 r = rand() % 0x1e1;
     if (r > 0x140) {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzOne);
+        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzOne);
         PLAY_VOICE_IF_VISIBLE(0x384);
     } else if (r > 0xa0) {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzTwo);
+        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzTwo);
         PLAY_VOICE_IF_VISIBLE(0x385);
     } else {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzThree);
+        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzThree);
         PLAY_VOICE_IF_VISIBLE(0x386);
     }
 
