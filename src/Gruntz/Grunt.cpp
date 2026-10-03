@@ -825,7 +825,7 @@ i32 CGrunt::StepArrivalDrop(
             lastTile.m_y,
             tile.m_x,
             tile.m_y,
-            &m_coordList,
+            GetCoordList(),
             clearEndpointFlags,
             blockedMask,
             passableMask
@@ -971,7 +971,7 @@ i32 CGrunt::StepArrivalDrop(
             lastTile.m_y,
             tile.m_x,
             tile.m_y,
-            &m_coordList,
+            GetCoordList(),
             clearEndpointFlags,
             blockedMask,
             passableMask
@@ -1103,7 +1103,7 @@ reProbe:
             lastTile.m_y,
             walk.m_x,
             walk.m_y,
-            &m_coordList,
+            GetCoordList(),
             clearEndpointFlags,
             blockedMask,
             passableMask

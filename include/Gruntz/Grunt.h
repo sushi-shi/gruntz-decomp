@@ -417,6 +417,9 @@ public:
     Coord* GetTailCoord() {
         return static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
     }
+    CPtrList* GetCoordList() {
+        return &m_coordList;
+    }
     Coord* RemoveHeadCoord() {
         return static_cast<Coord*>(m_coordList.RemoveHead());
     }

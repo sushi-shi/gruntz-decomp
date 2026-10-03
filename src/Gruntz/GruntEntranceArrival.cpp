@@ -779,24 +779,19 @@ tail:
     return 0;
 }
 
-// @early-stop
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
-    bool eq;
-    eq = IsAnimationAct("D");
-    if (eq) {
+    if (IsAnimationAct("D")) {
         return 0;
     }
-    eq = IsAnimationAct("L");
-    if (eq) {
+    if (IsAnimationAct("L")) {
         return 0;
     }
 
     m_arrivalVoiceTiming.Start(0x7530);
     m_neighborScanEnabled = false;
 
-    eq = IsAnimationAct("I");
-    if (eq) {
+    if (IsAnimationAct("I")) {
         ClearMoveTileFx(this);
     }
     if (m_poweredUp != false && m_neighborValid == false) {
@@ -810,27 +805,26 @@ i32 CGrunt::StepEntranceReinit() {
     Coord* targetCoord = GetHeadCoord();
     CMapMgr* tileGrid = g_gameReg->GetTileGrid();
     i32 targetCellFlags = tileGrid->CellFlagsAt(targetCoord->m_x, targetCoord->m_y);
-    GruntDirectionCell cell;
     if (!(targetCellFlags & BRICKZ_CELL_OCCUPIED)) {
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        cell = m_entranceCell;
+        char* walkAnimationName = EntranceCell()->WalkName().GetBuffer(0);
+        SetImageSetByName(walkAnimationName);
+        return 0;
     } else {
 
-        Coord currentTile;
-        GetScreenTile(&currentTile);
+        Coord currentTile = ScreenTile(this);
         i32 currentCellFlags = tileGrid->CellFlagsAt(currentTile.m_x, currentTile.m_y);
         if (!(currentCellFlags & IDX(CELL_FLAG_ARROW))) {
             return 0;
         }
+        m_entranceActive = true;
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        cell = m_entranceCell;
-        m_entranceActive = true;
+        char* walkAnimationName = EntranceCell()->WalkName().GetBuffer(0);
+        SetImageSetByName(walkAnimationName);
+        return 0;
     }
-    char* walkAnimationName = m_cells[3 * cell.m_row + cell.m_column].WalkName().GetBuffer(0);
-    SetImageSetByName(walkAnimationName);
-    return 0;
 }
 
 // @early-stop
