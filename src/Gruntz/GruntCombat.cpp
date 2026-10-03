@@ -635,7 +635,7 @@ RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->GetTileGrid();
 
-    CPtrList* coordz = &m_coordList;
+    CPtrList* coordz = GetCoordList();
     if (CoordCount() == 0) {
         return 1;
     }

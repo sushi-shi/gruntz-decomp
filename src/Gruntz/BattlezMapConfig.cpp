@@ -1237,7 +1237,7 @@ void CBattlezMapConfig::RerouteIdleUnit(
 
 RVA(0x00029b40, 0x813)
 i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
-    CPtrList* coordList = &unit->m_coordList;
+    CPtrList* coordList = unit->GetCoordList();
     if (unit->CoordCount() == 0) {
         goto returnZero;
     }
@@ -1490,7 +1490,7 @@ returnZero:
 
 RVA(0x0002a570, 0x4c6)
 i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
-    CPtrList* coordList = &unit->m_coordList;
+    CPtrList* coordList = unit->GetCoordList();
     if (coordList->IsEmpty()) {
         return 1;
     }
@@ -2098,7 +2098,7 @@ i32 __stdcall BattlezMapConfigAcceptAlwaysArg(i32) {
 
 RVA(0x0002c690, 0xdb4)
 i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
-    CPtrList* coordList = &g->m_coordList;
+    CPtrList* coordList = g->GetCoordList();
     if (RepathAroundBlockedTiles(g)) {
         return 1;
     }
@@ -3201,7 +3201,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
             POSITION h = unit->CoordHead();
             if (h != NULL) {
                 do {
-                    CPtrList* listPayload = &unit->m_coordList;
+                    CPtrList* listPayload = unit->GetCoordList();
                     if (listPayload != NULL) {
                         g_coordPool.Push(listPayload);
                     }
