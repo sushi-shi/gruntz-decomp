@@ -2229,7 +2229,7 @@ grunttoysprite	?FireActivation@CGruntToySprite@@UAEXH@Z	100.0000	100.0000	4	cf1f
 grunttoysprite	?GetTypeTag@CGruntToySprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x12260	100.0000	
 grunttoysprite	?RegisterActs@CGruntToySprite@@SAXXZ	100.0000	100.0000	2	87126ae24d79	0x7f720	100.0000	
 grunttoysprite	?SerializeDispatch@CGruntToySprite@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	5	fe59e7c0d712	0x7fa20	100.0000	
-grunttoysprite	?Update@CGruntToySprite@@QAEHXZ	99.3000	99.3000	26	eae3b2696704	0x7f960	100.0000	
+grunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	99.3000	26	eae3b2696704	0x7f960	100.0000	
 grunttoytimesprite	??0CGruntToyTimeSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	7	00b32b2ab9fa	0x7fbd0	100.0000	
 grunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	100.0000	100.0000	1	cpp:842b478c8568	0x12130	100.0000	
 grunttoytimesprite	??_GCGruntToyTimeSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:842b478c8568	0x12100	100.0000	
