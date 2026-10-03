@@ -122,7 +122,7 @@ i32 CActionArea::SerializeDispatch(
         return 0;
     }
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
-    SerializeClockPair(ar, mode, &m_timing);
+    m_timing.Serialize(ar, mode, typeId, object);
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_phase, sizeof(m_phase));

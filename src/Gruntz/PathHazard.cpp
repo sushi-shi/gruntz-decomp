@@ -448,8 +448,8 @@ i32 CPathHazard::SerializeDispatch(
         typeId,
         object
     )
-    SerializeClockPair(s, mode, &m_leg);
-    SerializeClockPair(s, mode, &m_strike);
+    m_leg.Serialize(s, mode, typeId, object);
+    m_strike.Serialize(s, mode, typeId, object);
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
             s->Read(&m_speed, sizeof(m_speed));

@@ -29,15 +29,7 @@ inline i32 ClockInterval::Serialize(
 }
 
 inline void SerializeClockPair(CFileMemBase* ar, SerialMode mode, ClockInterval* timer) {
-    if (mode != SERIAL_SAVE) {
-        if (mode == SERIAL_LOAD) {
-            ar->Read(&timer->m_start, sizeof(timer->m_start));
-            ar->Read(&timer->m_interval, sizeof(timer->m_interval));
-        }
-    } else {
-        ar->Write(&timer->m_start, sizeof(timer->m_start));
-        ar->Write(&timer->m_interval, sizeof(timer->m_interval));
-    }
+    timer->Serialize(ar, mode, LOGIC_UNSET, NULL);
 }
 
 #endif // GRUNTZ_SERIALRECORDS_H

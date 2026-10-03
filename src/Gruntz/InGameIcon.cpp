@@ -497,7 +497,7 @@ i32 CToyPeek::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    SerializeClockPair(ar, mode, &m_countdownTiming);
+    m_countdownTiming.Serialize(ar, mode, typeId, object);
     return 1;
 }
 
