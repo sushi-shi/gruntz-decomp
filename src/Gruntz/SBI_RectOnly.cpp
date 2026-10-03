@@ -407,7 +407,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     return 1;
                 case SBICMD_QUIT:
                     HiCueLookup();
-                    if (g_gameReg->m_frameGate != false) {
+                    if (g_gameReg->GetFrameGate() != false) {
                         g_gameReg->FinishLevel(g_gameReg->ToggleFrameGate(), true);
                     }
                     (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(true);
@@ -1354,7 +1354,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
     switch (m_itemKind) {
         case GAME_TAB_MISSION_STATUS: {
             CSBI_ImageSet* status;
-            if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+            if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
                 NEW_STATUS_BAR_ITEM(
                     status,
                     CSBI_ImageSet,
@@ -1384,7 +1384,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             break;
         }
         default: {
-            if (m_chatBoxDisabled != false && g_gameReg->m_frameGate != false) {
+            if (m_chatBoxDisabled != false && g_gameReg->GetFrameGate() != false) {
                 CSBI_MenuItem* resume;
                 NEW_STATUS_BAR_ITEM(
                     resume,
@@ -2537,9 +2537,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->m_triggerMgr;
                 if (obj->RecordListHas(playerIndex, unitIndex)) {
-                    obj->m_cameraTargetIdentity = Coord(playerIndex, unitIndex);
-                    obj->m_armed = true;
-                    obj->LoadCameraSprite();
+                    obj->SetCameraTarget(playerIndex, unitIndex);
                 }
             }
             return 1;
@@ -4077,7 +4075,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     );
     AddTabItem(6, dialog);
 
-    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
 
         CSBI_ImageSet* status;
         NEW_STATUS_BAR_ITEM(

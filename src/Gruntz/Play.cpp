@@ -478,7 +478,7 @@ i32 CPlay::Render() {
         return 1;
     }
 
-    if (m_mgr->m_frameGate == false
+    if (m_mgr->GetFrameGate() == false
         && (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER || m_levelOverlayOpen == false)) {
         m_levelTimer->Tick(static_cast<i32>(g_frameDelta));
         m_mgr->m_commandMgr->ExecuteScheduledCommands(0);
@@ -926,9 +926,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
-        if (g_gameReg->m_frameGate != false) {
+        if (g_gameReg->GetFrameGate() != false) {
             g_gameReg->m_frameGate ^= 1;
-            g_gameReg->FinishLevel(g_gameReg->m_frameGate, true);
+            g_gameReg->FinishLevel(g_gameReg->GetFrameGate(), true);
         }
     }
 
@@ -1660,7 +1660,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
         return 1;
     }
 
-    if (m_mgr->m_frameGate == false) {
+    if (m_mgr->GetFrameGate() == false) {
         if (m_chatBox->m_inputActive != false) {
             m_mgr->ChatLog()->HandleInputChar(charCode, keyData);
             return 1;
@@ -1705,7 +1705,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (this->m_paused != false) {
         return 1;
     }
-    if (this->m_mgr->m_frameGate != false) {
+    if (this->m_mgr->GetFrameGate() != false) {
         return 1;
     }
 
@@ -1718,7 +1718,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -1739,7 +1739,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'Q') {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -1753,7 +1753,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'R') {
                 if (mgr->GetGameMode() == GAMEMODE_QUESTZ
-                    && g_gameReg->m_triggerMgr->m_phase != FINISH_STATE_VICTORY) {
+                    && g_gameReg->m_triggerMgr->GetFinishState() != FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->GetHwnd(), WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
@@ -1762,7 +1762,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'N') {
                 if (mgr->GetGameMode() == GAMEMODE_QUESTZ
-                    && g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                    && g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
                 }
@@ -1810,9 +1810,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-        if (g_gameReg->m_frameGate != false) {
+        if (g_gameReg->GetFrameGate() != false) {
             g_gameReg->m_frameGate ^= 1;
-            g_gameReg->FinishLevel(g_gameReg->m_frameGate, true);
+            g_gameReg->FinishLevel(g_gameReg->GetFrameGate(), true);
         }
         this->OpenLevelOverlay(true);
         return 1;
@@ -1884,9 +1884,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        if (h->m_frameGate != false) {
+        if (h->GetFrameGate() != false) {
             h->m_frameGate ^= 1;
-            this->m_mgr->FinishLevel(h->m_frameGate, true);
+            this->m_mgr->FinishLevel(h->GetFrameGate(), true);
         }
         this->m_mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         this->OpenLevelOverlay(true);
@@ -2530,7 +2530,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     }
 
     xr = x;
-    if (m_mgr->m_frameGate == false) {
+    if (m_mgr->GetFrameGate() == false) {
         if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
             && m_statusBar->m_activeTab != TAB_GAME) {
             if (m_minimap->BeginMinimapPan(eventArg, xr, y)) {
@@ -2694,7 +2694,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     }
 
 drag_box: {
-    if (m_mgr->m_frameGate != false) {
+    if (m_mgr->GetFrameGate() != false) {
         goto ret1;
     }
     LevelCoordRect wr = m_mgr->m_world->m_level->m_viewportRect;
@@ -2933,7 +2933,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
         return 1;
     }
-    if (m_mgr->m_frameGate != false) {
+    if (m_mgr->GetFrameGate() != false) {
         return 1;
     }
     if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
@@ -3861,7 +3861,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             return 1;
         }
 
-        if (m_chatBox->HitTest(x, y) == 0 && m_mgr->m_frameGate == false && m_inGame == false
+        if (m_chatBox->HitTest(x, y) == 0 && m_mgr->GetFrameGate() == false && m_inGame == false
             && m_dragInhibit1 == false && m_dragInhibit2 == false) {
 
             if (m_cursorId != 0) {
@@ -4146,7 +4146,7 @@ i32 CPlay::ExecuteCommand(
     u8 unusedScheduleSlot
 ) {
     CGruntzMgr* mgr = m_mgr;
-    if (mgr->m_frameGate != false) {
+    if (mgr->GetFrameGate() != false) {
         return 0;
     }
     i32 res;
@@ -5259,13 +5259,13 @@ i32 CPlay::ScanBuildTiles() {
         if (p == NULL) {
             continue;
         }
-        if (p->m_extent.left == COORD_UNSET) {
+        if (!p->HasMovementBounds()) {
             p->m_extent.left = 0;
         }
-        if (p->m_area.left == COORD_UNSET) {
+        if (!p->HasHitBounds()) {
             p->m_area.left = 0;
         }
-        if (p->m_switchRect.left == COORD_UNSET) {
+        if (!p->HasAttackBounds()) {
             p->m_switchRect.left = 0;
         }
         if (p->m_clip.left == COORD_UNSET) {
@@ -7066,7 +7066,7 @@ i32 CPlay::CanQuickSave() {
     if (m_renderDisabled == false && m_inGame == false && m_levelOverlayOpen == false
         && m_defeatCountdownActive == false && m_statusBar->m_hlBusy == false
         && m_statusBar->m_levelOverlayActive == false
-        && m_statusBar->m_quitConfirmationActive == false && g_gameReg->m_frameGate == false
+        && m_statusBar->m_quitConfirmationActive == false && g_gameReg->GetFrameGate() == false
         && g_gameReg->m_triggerMgr->m_groupFlag != false) {
         return 1;
     }

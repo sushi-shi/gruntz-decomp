@@ -605,7 +605,7 @@ i32 CMulti::Render() {
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::AdvanceGameFrame() {
     b32 ready = FrameSyncWait();
-    if (m_roundComplete == false && Mgr()->m_frameGate != false && ready == false) {
+    if (m_roundComplete == false && Mgr()->GetFrameGate() != false && ready == false) {
         RenderGameFrame();
         return 1;
     }
@@ -670,7 +670,7 @@ i32 CMulti::AdvanceGameFrame() {
 
 RVA(0x000b6e90, 0x34d)
 void CMulti::RenderGameFrame() {
-    if (m_roundComplete == false && Mgr()->m_frameGate != false) {
+    if (m_roundComplete == false && Mgr()->GetFrameGate() != false) {
         RestoreCursorSaveUnder();
         DrawVisibleWorld();
         m_statusBar->LoadMainStatusBarSprite();
