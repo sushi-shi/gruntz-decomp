@@ -909,17 +909,17 @@ i32 CGrunt::StepArrivalDrop(
     nudged = 0;
 
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    if (grid->m_rowInts[tileY][tileX * 7 + 4] != IDX(TILEKIND_GIANT_ROCK)) {
+    if (grid->m_rows[tileY][tileX].m_typeCode != TILEKIND_GIANT_ROCK) {
         goto nudgeDone;
     }
-    free4 = (grid->m_rowInts[tileY + 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK)) ? ROCKADJ_BELOW
-                                                                                    : ROCKADJ_NONE;
-    free4 |= (grid->m_rowInts[tileY - 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK)) ? ROCKADJ_ABOVE
-                                                                                     : ROCKADJ_NONE;
-    free4 |= (grid->m_rowInts[tileY][tileX * 7 + 11] == IDX(TILEKIND_GIANT_ROCK)) ? ROCKADJ_RIGHT
-                                                                                  : ROCKADJ_NONE;
-    free4 |= (grid->m_rowInts[tileY][tileX * 7 - 3] == IDX(TILEKIND_GIANT_ROCK)) ? ROCKADJ_LEFT
-                                                                                 : ROCKADJ_NONE;
+    free4 = (grid->m_rows[tileY + 1][tileX].m_typeCode == TILEKIND_GIANT_ROCK) ? ROCKADJ_BELOW
+                                                                               : ROCKADJ_NONE;
+    free4 |= (grid->m_rows[tileY - 1][tileX].m_typeCode == TILEKIND_GIANT_ROCK) ? ROCKADJ_ABOVE
+                                                                                : ROCKADJ_NONE;
+    free4 |= (grid->m_rows[tileY][tileX + 1].m_typeCode == TILEKIND_GIANT_ROCK) ? ROCKADJ_RIGHT
+                                                                                : ROCKADJ_NONE;
+    free4 |= (grid->m_rows[tileY][tileX - 1].m_typeCode == TILEKIND_GIANT_ROCK) ? ROCKADJ_LEFT
+                                                                                : ROCKADJ_NONE;
     switch (free4) {
         case ROCKADJ_RIGHT | ROCKADJ_BELOW:
             tileX++;
@@ -955,8 +955,8 @@ i32 CGrunt::StepArrivalDrop(
 
     for (sy = tileY - 1; sy < tileY + 2; sy++) {
         for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            saved[sx - tileX + 1][sy - tileY + 1] = grid->m_rowInts[sy][sx * 7 + 7];
-            grid->m_rowInts[sy][sx * 7 + 7] = 0;
+            saved[sx - tileX + 1][sy - tileY + 1] = grid->m_rows[sy][sx].m_flags;
+            grid->m_rows[sy][sx].m_flags = 0;
         }
     }
     grid = g_gameReg->m_tileGrid;
@@ -984,7 +984,7 @@ i32 CGrunt::StepArrivalDrop(
     }
     for (sy = tileY - 1; sy < tileY + 2; sy++) {
         for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            grid->m_rowInts[sy][sx * 7 + 7] = saved[sx - tileX + 1][sy - tileY + 1];
+            grid->m_rows[sy][sx].m_flags = saved[sx - tileX + 1][sy - tileY + 1];
         }
     }
     if (0 != nudged) {
