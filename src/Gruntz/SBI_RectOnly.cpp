@@ -413,7 +413,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     return 1;
                 case SBICMD_QUIT:
                     HiCueLookup();
-                    if (g_gameReg->m_frameGate != false) {
+                    if (g_gameReg->GetFrameGate() != false) {
                         g_gameReg->FinishLevel(g_gameReg->ToggleFrameGate(), true);
                     }
                     (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(true);
@@ -1390,7 +1390,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             break;
         }
         default: {
-            if (m_chatBoxDisabled != false && g_gameReg->m_frameGate != false) {
+            if (m_chatBoxDisabled != false && g_gameReg->GetFrameGate() != false) {
                 CSBI_MenuItem* resume;
                 NEW_STATUS_BAR_ITEM(
                     resume,

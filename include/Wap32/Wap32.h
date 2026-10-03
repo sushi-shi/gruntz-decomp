@@ -113,6 +113,10 @@ public:
     void ResetFpsSampleWindow(i32 reset);
     void ResetFrameTiming();
 
+    b32 GetFrameGate() const {
+        return m_frameGate;
+    }
+
     b32 ToggleFrameGate() {
         m_frameGate ^= 1;
         return m_frameGate;

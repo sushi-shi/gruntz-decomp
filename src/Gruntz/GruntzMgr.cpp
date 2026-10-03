@@ -2033,7 +2033,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
 
     if (active) {
         RefreshGameClock();
-        if (m_frameGate != false) {
+        if (GetFrameGate() != false) {
             return;
         }
         if (m_musicEnabled == false) {
