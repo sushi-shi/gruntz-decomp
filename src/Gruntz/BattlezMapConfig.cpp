@@ -3529,12 +3529,10 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
                     unit->m_coordList.AddTail(list.GetNext(pp));
                 }
                 Coord* tail = unit->GetTailCoord();
-                SET_TILE_CENTER_PIXEL_PAIR(
-                    unit->m_entrancePx.m_x,
-                    unit->m_entrancePx.m_y,
-                    tail->m_x,
-                    tail->m_y
-                )
+                unit->m_entrancePx.Set(
+                    (tail->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (tail->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
+                );
                 unit->m_defenderState = AISTATE_RETREAT;
                 return 1;
             }
