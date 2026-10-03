@@ -155,7 +155,7 @@ i32 CTriggerMgr::PlaceObject(
             goto fail;
         }
         sprite->GetLogicRecord()->Dispatch(sprite);
-        CGrunt* logic = static_cast<CGrunt*>(sprite->GetLogicRecord()->m_userLogic);
+        CGrunt* logic = static_cast<CGrunt*>(sprite->GetLogicRecord()->UserLogic());
         CGruntzMgr* game = g_gameReg;
 
         i32 kindId;

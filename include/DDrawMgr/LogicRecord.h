@@ -81,7 +81,7 @@ struct CLogicRecord : public CWapObj {
     u8* m_payload;
     CUserLogic* m_userLogic;
 
-    CUserLogic* UserLogic() const {
+    CUserLogic* const& UserLogic() const {
         return m_userLogic;
     }
 

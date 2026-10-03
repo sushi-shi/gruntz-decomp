@@ -161,8 +161,8 @@ i32 CWormhole::SpawnPartners() {
         if (obj != NULL) {
             CLogicRecord* record = obj->GetLogicRecord();
             if (record->GetDispatch() == &DispatchTeleporterLogic && obj->m_screenPosition.m_x == tx
-                && obj->m_screenPosition.m_y == ty && record->m_userLogic != NULL) {
-                static_cast<CTeleporter*>(record->m_userLogic)->ReapplyConfig();
+                && obj->m_screenPosition.m_y == ty && record->UserLogic() != NULL) {
+                static_cast<CTeleporter*>(record->UserLogic())->ReapplyConfig();
             }
         }
     } while (pos != NULL);

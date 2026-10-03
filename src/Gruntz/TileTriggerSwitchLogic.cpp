@@ -256,7 +256,6 @@ done:
     return;
 }
 
-// @early-stop
 RVA(0x00110c10, 0xeee)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->World();
@@ -282,7 +281,7 @@ i32 CTileTriggerLogic::Tick() {
                 return 0;
             }
             trig->GetLogicRecord()->Dispatch(trig);
-            trans = static_cast<CTileTriggerTransition*>(trig->GetLogicRecord()->m_userLogic);
+            trans = static_cast<CTileTriggerTransition*>(trig->GetLogicRecord()->UserLogic());
         }
     }
 
@@ -372,7 +371,7 @@ i32 CTileTriggerLogic::Tick() {
                             }
                             o->GetLogicRecord()->Dispatch(o);
                             CTileTriggerTransition* lg = static_cast<CTileTriggerTransition*>(
-                                o->GetLogicRecord()->m_userLogic
+                                o->GetLogicRecord()->UserLogic()
                             );
                             if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", PbStr(anim)) == 0) {
                                 lg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

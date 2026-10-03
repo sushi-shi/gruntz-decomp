@@ -97,7 +97,7 @@ i32 CExitTrigger::SerializeDispatch(
                 if (MapLookupById(holder->ChildGroup()->m_registeredGameObjectsById, key, found)) {
                     obj = found;
                 }
-                m_warlordLogic = static_cast<CWarlord*>(obj->GetLogicRecord()->m_userLogic);
+                m_warlordLogic = static_cast<CWarlord*>(obj->GetLogicRecord()->UserLogic());
                 if (m_warlordLogic == NULL) {
                     return 0;
                 }

@@ -107,8 +107,8 @@ i32 CTimer::Tick(i32 elapsedMs) {
                 )) {
                 hit = obj;
             }
-            if (hit != NULL && hit->GetLogicRecord()->m_userLogic != NULL) {
-                static_cast<CWarlord*>(hit->GetLogicRecord()->m_userLogic)->ResolveDeathAnimation();
+            if (hit != NULL && hit->GetLogicRecord()->UserLogic() != NULL) {
+                static_cast<CWarlord*>(hit->GetLogicRecord()->UserLogic())->ResolveDeathAnimation();
             }
         }
         return 1;
@@ -126,8 +126,8 @@ i32 CTimer::Tick(i32 elapsedMs) {
                 )) {
                 hit = obj;
             }
-            if (hit != NULL && hit->GetLogicRecord()->m_userLogic != NULL) {
-                static_cast<CWarlord*>(hit->GetLogicRecord()->m_userLogic)->NotifyFortUnderAttack();
+            if (hit != NULL && hit->GetLogicRecord()->UserLogic() != NULL) {
+                static_cast<CWarlord*>(hit->GetLogicRecord()->UserLogic())->NotifyFortUnderAttack();
             }
         }
     }
