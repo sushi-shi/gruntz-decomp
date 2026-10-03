@@ -60,7 +60,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             CGrunt* cand =
                 g_gameReg->GetTriggerMgr()->UnitAt(candidatePlayerIndex, candidateUnitIndex);
             if (cand != NULL && cand->IsEntranceCommitted() != false
-                && cand->m_gruntKind != GRUNT_GHOST) {
+                && cand->GetGruntKind() != GRUNT_GHOST) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
                 i32 pb;

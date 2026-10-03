@@ -131,7 +131,7 @@ i32 CSpotLight::Tick() {
             &m_targetUnitIndex,
             NULL
         );
-        if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
+        if (tgt != NULL && tgt->GetGruntKind() != GRUNT_INVULNERABLE
             && !(m_storyMode != false && m_targetPlayerIndex != 0)) {
             SET_ANIMATION_ACT("B");
             SET_SCREEN_POS(m_object, tgt->m_object->m_screenX, tgt->m_object->m_screenY);
