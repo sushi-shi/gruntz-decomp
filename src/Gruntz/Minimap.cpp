@@ -207,7 +207,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
         return 0;
     }
 
-    RECT* vr = &m_world->m_level->m_mainPlane->m_planeViewRect;
+    RECT* vr = m_world->m_level->m_mainPlane->GetPlaneViewRect();
     RECT box;
     SET_RECT_COMPONENTS(
         box,

@@ -108,10 +108,10 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
     CGameLevel* view = m_world->m_level;
-    const RECT* vp = &view->m_mainPlane->m_planeViewRect;
+    const RECT* vp = view->m_mainPlane->GetPlaneViewRect();
     r.left += vp->left - view->m_viewportRect.left;
     r.top += vp->top - view->m_viewportRect.top;
-    vp = &view->m_mainPlane->m_planeViewRect;
+    vp = view->m_mainPlane->GetPlaneViewRect();
     r.right += vp->left - view->m_viewportRect.left;
     r.bottom += vp->top - view->m_viewportRect.top;
     for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
@@ -616,8 +616,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         } else if (dx >= w) {
                             dx = dx - w;
                         }
-                        if (plane->m_planeViewRect.right >= w && dx < plane->m_planeViewRect.left
-                            && dx <= plane->m_planeViewRect.right - w) {
+                        if (plane->GetPlaneViewRect()->right >= w
+                            && dx < plane->GetPlaneViewRect()->left
+                            && dx <= plane->GetPlaneViewRect()->right - w) {
                             dx = dx + w;
                         }
                     }
@@ -628,13 +629,14 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         } else if (dy >= h) {
                             dy = dy - h;
                         }
-                        if (plane->m_planeViewRect.bottom >= h && dy < plane->m_planeViewRect.top
-                            && dy <= plane->m_planeViewRect.bottom - h) {
+                        if (plane->GetPlaneViewRect()->bottom >= h
+                            && dy < plane->GetPlaneViewRect()->top
+                            && dy <= plane->GetPlaneViewRect()->bottom - h) {
                             dy = dy + h;
                         }
                     }
-                    dx += plane->m_viewportRect.left - plane->m_planeViewRect.left;
-                    dy += plane->m_viewportRect.top - plane->m_planeViewRect.top;
+                    dx += plane->m_viewportRect.left - plane->GetPlaneViewRect()->left;
+                    dy += plane->m_viewportRect.top - plane->GetPlaneViewRect()->top;
                     u16 color;
                     if (cell->RectContains(x, y)) {
                         color = PackRgb16(0xff, 0, 0);
@@ -867,7 +869,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
         return 0;
     }
     CGameLevel* view = m_world->m_level;
-    RECT* vr = &view->m_mainPlane->m_planeViewRect;
+    RECT* vr = view->m_mainPlane->GetPlaneViewRect();
     i32 worldX = vr->left - view->m_viewportRect.left + pointerX;
     i32 worldY = vr->top - view->m_viewportRect.top + pointerY;
     this->PlaceObjectFull(worldX, worldY);

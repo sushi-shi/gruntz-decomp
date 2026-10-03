@@ -165,7 +165,7 @@ i32 CWwdSpriteObject::IntersectsViewport() {
     i32 bottom = m_screenY + m_frameImage->m_anchorY;
     if (HAS(static_cast<WwdGameObjectFlags>(m_flags), WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
 
-        RECT* r = &OwnerMgr()->m_level->m_mainPlane->m_planeViewRect;
+        RECT* r = OwnerMgr()->m_level->m_mainPlane->GetPlaneViewRect();
         if (right < r->left) {
             return 0;
         }

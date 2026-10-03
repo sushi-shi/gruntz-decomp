@@ -207,7 +207,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
             CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
-            if (::PtInRect(&rc->m_planeViewRect, ex, ey)) {
+            if (::PtInRect(rc->GetPlaneViewRect(), ex, ey)) {
                 g->VoiceMgr()->PlayVoice(hit, 0x3fc, -1, 0, -1, -1);
             }
         }

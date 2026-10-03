@@ -2164,7 +2164,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 my = this->m_cursorY;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
             CDDrawWorkerHost* g = q->m_mainPlane;
-            RECT* view = &g->m_planeViewRect;
+            RECT* view = g->GetPlaneViewRect();
             i32 by = view->top - q->m_viewportRect.top + my;
             i32 bx = view->left - q->m_viewportRect.left + mx;
             mgr->m_triggerMgr->SpawnPuddle(bx, by, 0, 0, true, 0x19);
@@ -2179,7 +2179,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 my = this->m_cursorY;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
-        RECT* view = &g->m_planeViewRect;
+        RECT* view = g->GetPlaneViewRect();
         i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx = ((this->m_cursorX - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
                  + TILE_HALF_PX;
@@ -2539,7 +2539,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         }
         CGameLevel* geom = m_mgr->m_world->m_level;
         CDDrawWorkerHost* cam = geom->m_mainPlane;
-        RECT* view = &cam->m_planeViewRect;
+        RECT* view = cam->GetPlaneViewRect();
         sx = view->left - geom->m_viewportRect.left + xr;
         sy = view->top - geom->m_viewportRect.top + y;
 
@@ -2592,7 +2592,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 }
 
                 CGameLevel* ds = m_world->m_level;
-                LevelCoordRect* vr2 = &ds->m_mainPlane->m_planeViewRect;
+                LevelCoordRect* vr2 = ds->m_mainPlane->GetPlaneViewRect();
                 i32 wx = vr2->left - ds->m_viewportRect.left + xr;
                 i32 wy = vr2->top - ds->m_viewportRect.top + y;
                 if (g_gameReg->m_triggerMgr->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer)
@@ -2859,7 +2859,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
 
     h = m_mgr->m_world->m_level;
-    vr = &h->m_mainPlane->m_planeViewRect;
+    vr = h->m_mainPlane->GetPlaneViewRect();
     px = vr->left - h->m_viewportRect.left + x;
     py = vr->top - h->m_viewportRect.top + y;
     for (i = 0; i < StartMarkerCount(); i++) {
@@ -2897,7 +2897,6 @@ i32 CPlay::OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     return OnRButtonDown(keyFlags, x, y);
 }
 
-// @early-stop
 RVA(0x000ceae0, 0x268)
 i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed != false) {
@@ -2958,8 +2957,8 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (::PtInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
-        i32 rawX = geom->m_planeViewRect.left - ds->m_viewportRect.left + x;
-        i32 rawY = geom->m_planeViewRect.top - ds->m_viewportRect.top + y;
+        i32 rawX = geom->GetPlaneViewRect()->left - ds->m_viewportRect.left + x;
+        i32 rawY = geom->GetPlaneViewRect()->top - ds->m_viewportRect.top + y;
         i32 snapX = (rawX & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 snapY = (rawY & ~TILE_MASK_PX) + TILE_HALF_PX;
         m_tileClick.m_x = snapX;
@@ -3860,7 +3859,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
                 }
             }
             CGameLevel* v = m_world->m_level;
-            LevelCoordRect* vr = &v->m_mainPlane->m_planeViewRect;
+            LevelCoordRect* vr = v->m_mainPlane->GetPlaneViewRect();
             i32 wx = vr->left - v->m_viewportRect.left + x;
             i32 wy = vr->top - v->m_viewportRect.top + y;
             m_mgr->m_triggerMgr->PlaceObjectFull(wx, wy);
@@ -4104,7 +4103,7 @@ RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
 
-    RECT* vr = &v->m_mainPlane->m_planeViewRect;
+    RECT* vr = v->m_mainPlane->GetPlaneViewRect();
 
     i32 y = m_cursorY + (vr->top - v->m_viewportRect.top);
     i32 x = vr->left + (m_cursorX - v->m_viewportRect.left);

@@ -2111,10 +2111,10 @@ void CGruntzMgr::RecomputeViewScale() {
     }
     SET_RECT_COMPONENTS(
         m_viewBounds,
-        (LevelOf(World())->m_mainPlane)->m_planeViewRect.left - 0x60,
-        (LevelOf(World())->m_mainPlane)->m_planeViewRect.top - 0x60,
-        (LevelOf(World())->m_mainPlane)->m_planeViewRect.right + 0x60,
-        (LevelOf(World())->m_mainPlane)->m_planeViewRect.bottom + 0x60
+        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->left - 0x60,
+        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->top - 0x60,
+        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->right + 0x60,
+        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->bottom + 0x60
     );
 }
 
