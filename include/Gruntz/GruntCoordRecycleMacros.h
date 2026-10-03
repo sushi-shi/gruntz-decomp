@@ -10,7 +10,7 @@
         POSITION node = (grunt)->CoordHead();                                                      \
         while (node != NULL) {                                                                     \
             POSITION current = node;                                                               \
-            (grunt)->m_coordList.GetNext(node);                                                    \
+            (grunt)->GetNextCoord(node);                                                           \
             if (static_cast<Coord*>((grunt)->m_coordList.GetAt(current)) != NULL) {                \
                 g_coordPool.Push(static_cast<Coord*>((grunt)->m_coordList.GetAt(current)));        \
             }                                                                                      \
@@ -22,7 +22,7 @@
     {                                                                                              \
         POSITION position = (grunt)->m_coordList.GetHeadPosition();                                \
         while (position != NULL) {                                                                 \
-            Coord* coord = static_cast<Coord*>((grunt)->m_coordList.GetNext(position));            \
+            Coord* coord = (grunt)->GetNextCoord(position);                                        \
             if (coord != NULL) {                                                                   \
                 g_coordPool.Push(coord);                                                           \
             }                                                                                      \

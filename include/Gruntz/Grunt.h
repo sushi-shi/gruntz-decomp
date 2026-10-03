@@ -387,6 +387,9 @@ public:
     i32 CoordCount() const {
         return m_coordList.GetCount();
     }
+    Coord* GetNextCoord(POSITION& position) {
+        return static_cast<Coord*>(m_coordList.GetNext(position));
+    }
     Coord* GetHeadCoord() {
         return static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
     }
