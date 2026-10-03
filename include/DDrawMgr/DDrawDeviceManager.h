@@ -187,7 +187,7 @@ public:
         for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
             delete GetModeDesc(i);
         }
-        m_displayModes.SetSize(0, -1);
+        m_displayModes.RemoveAll();
     }
     DDSURFACEDESC m_surfaceDesc;
     i32 m_bankSwitchedCaps;

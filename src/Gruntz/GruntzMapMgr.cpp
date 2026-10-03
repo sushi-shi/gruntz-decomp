@@ -31,7 +31,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
             i32 count;
             ar->Read(&count, sizeof(count));
             for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
-                Coord* elem = static_cast<Coord*>(m_arr.GetData()[fi]);
+                Coord* elem = static_cast<Coord*>(m_arr.GetAt(fi));
                 if (elem != NULL) {
                     g_coordPool.Push(elem);
                 }
@@ -41,7 +41,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
                 Coord* elem = g_coordPool.Pop();
                 ar->Read(elem, 8);
-                m_arr.GetData()[ri] = elem;
+                m_arr.SetAt(ri, elem);
             }
             break;
         }
@@ -51,7 +51,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
             i32 wn = m_arr.GetSize();
             ar->Write(&wn, sizeof(wn));
             for (u32 wi = 0; wi < static_cast<u32>(wn); wi++) {
-                Coord* elem = static_cast<Coord*>(m_arr.GetData()[wi]);
+                Coord* elem = static_cast<Coord*>(m_arr.GetAt(wi));
                 if (elem == NULL) {
                     return 0;
                 }

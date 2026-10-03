@@ -349,6 +349,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     g_coordPool.Push(elem);
                 }
             }
+            // Direct SetSize preserves the random helpers' inline call set.
             m_arr.SetSize(0, -1);
         }
     }

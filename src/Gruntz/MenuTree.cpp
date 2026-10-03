@@ -93,7 +93,7 @@ CMenuPage* CMenuTree::FindPage(const char* pageKey) {
     while (position) {
         CMenuPage* page = static_cast<CMenuPage*>(m_pages.GetNext(position));
         if (page) {
-            if (strcmp(page->GetPageKey(), pageKey) == 0) {
+            if (page->GetPageKey() == pageKey) {
                 return page;
             }
         }

@@ -3573,7 +3573,7 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
     CString s;
     if (s.LoadString(0x81ab)) {
         bool eq;
-        eq = (strcmp(s, m_strWorldFile) == 0);
+        eq = (s == m_strWorldFile);
         if (eq) {
             matched = 1;
         }
@@ -3788,7 +3788,7 @@ RVA(0x00093be0, 0x107)
 i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     CFile file;
     char hdr[0x5f4];
-    if (file.Open(path, 0, NULL)) {
+    if (file.Open(path, CFile::modeRead, NULL)) {
         if (file.GetLength() < 0x5f4) {
             file.Close();
             return 0;

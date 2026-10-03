@@ -33,11 +33,11 @@ i32 BuildGameDate(CGameInfoTime* out) {
         return 0;
     }
     CTime now = CTime::GetCurrentTime();
-    i32 mon = now.GetLocalTm(NULL)->tm_mon + 1;
+    i32 mon = now.GetMonth();
     out->m_month = mon;
-    i32 day = now.GetLocalTm(NULL)->tm_mday;
+    i32 day = now.GetDay();
     out->m_day = day;
-    i32 year = now.GetLocalTm(NULL)->tm_year + 1900;
+    i32 year = now.GetYear();
     out->m_year = year;
     return 1;
 }

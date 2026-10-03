@@ -374,6 +374,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (count <= 0) {
         return 0;
     }
+    // The signed count guard is required; IsEmpty emits a zero-only test.
     if (m_list.GetCount() <= 0) {
         return 0;
     }

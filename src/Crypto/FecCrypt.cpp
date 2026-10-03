@@ -61,7 +61,7 @@ i32 CFecFile::ReadArchive(const char* name) {
     if (m_openGate == false) {
         return 0;
     }
-    if (m_stream.Open(name, 0, NULL) == false) {
+    if (m_stream.Open(name, CFile::modeRead, NULL) == false) {
         return 0;
     }
     m_readOpen = true;
@@ -128,9 +128,9 @@ fail:
 RVA(0x0017b840, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
     if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_header.m_fileCount) && idx != 0) {
-        const DWORD* slot = &m_index.GetData()[idx - 1];
+        const DWORD* slot = &m_index.ElementAt(idx - 1);
         if (m_stream.Seek(static_cast<i32>(*slot), CFile::begin) == static_cast<i32>(*slot)) {
-            return m_stream.m_hFile;
+            return static_cast<HFILE>(m_stream);
         }
     }
     return 0;
@@ -172,7 +172,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     CFile file;
-    if (file.Open(name, 0, NULL) == false) {
+    if (file.Open(name, CFile::modeRead, NULL) == false) {
         return 0;
     }
 
@@ -205,6 +205,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     m_entry.m_scramble = static_cast<u16>((Random() % FEC_SCRAMBLE_RANGE + FEC_SCRAMBLE_BASE));
+    // SeekToEnd introduces virtual dispatch instead of the direct CFile call.
     m_entry.m_payloadLen = file.Seek(0, CFile::end);
     if (file.Seek(0, CFile::begin) != 0) {
         m_nextIndex--;

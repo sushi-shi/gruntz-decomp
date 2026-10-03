@@ -376,7 +376,7 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel) {
             CSliderCtrl* pCtrl = static_cast<CSliderCtrl*>(CWnd::FromHandle(hCombo));
             if (pCtrl) {
                 pCtrl->SetRange(1, 3, true);
-                SendMessageA(pCtrl->m_hWnd, TBM_SETPOS, true, IDX(nSel));
+                pCtrl->SetPos(IDX(nSel));
 
                 HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
                 if (hCaption) {
@@ -401,10 +401,9 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel) {
 
 RVA(0x000370a0, 0xf1)
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
-    CWnd* pCtrl = CWnd::FromHandle(static_cast<HWND__*>(hCombo));
+    CSliderCtrl* pCtrl = static_cast<CSliderCtrl*>(CWnd::FromHandle(hCombo));
     if (pCtrl) {
-        g_videoResolutionMode =
-            static_cast<Resolution>(SendMessageA(pCtrl->m_hWnd, TBM_GETPOS, 0, 0));
+        g_videoResolutionMode = static_cast<Resolution>(pCtrl->GetPos());
 
         HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
         if (hCaption) {

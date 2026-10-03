@@ -42,9 +42,7 @@ i32 Font::AllocateMemory(i32 count) {
     for (i32 i = 0; i < m_count; i++) {
         m_surfaces[i] = NULL;
 
-        CSize g;
-        g.cx = 0;
-        g.cy = 0;
+        CSize g(0, 0);
         SET_FONT_GLYPH(i, g);
     }
 
@@ -75,11 +73,11 @@ i32 Font::LoadFont(CString szFileName) {
     FreeMemory();
 
     CFile file;
-    if (!file.Open(szFileName, 0, NULL)) {
+    if (!file.Open(szFileName, CFile::modeRead, NULL)) {
         return 0;
     }
 
-    CArchive ar(&file, 1, 0x1000, NULL);
+    CArchive ar(&file, CArchive::load, 0x1000, NULL);
 
     ar >> m_count;
     AllocateMemory(m_count);
@@ -109,11 +107,11 @@ i32 Font::LoadFont(CString szFileName) {
 RVA(0x001799f0, 0x16d)
 i32 Font::SaveFont(CString szFileName) {
     CFile file;
-    if (!file.Open(szFileName, 0x1001, NULL)) {
+    if (!file.Open(szFileName, CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
     }
 
-    CArchive ar(&file, 0, 0x1000, NULL);
+    CArchive ar(&file, CArchive::store, 0x1000, NULL);
 
     ar << m_count;
 
@@ -224,10 +222,10 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     if (RunRightEdge(rc, x) > static_cast<i32>(surf->m_apiDesc.dwWidth)) {
-        rc.right = rc.right + rc.right - rc.left + x - surf->m_apiDesc.dwWidth;
+        rc.right = rc.right + rc.Width() + x - surf->m_apiDesc.dwWidth;
     }
-    if (y - rc.top + rc.bottom > static_cast<i32>(surf->m_apiDesc.dwHeight)) {
-        rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_apiDesc.dwHeight;
+    if (y + rc.Height() > static_cast<i32>(surf->m_apiDesc.dwHeight)) {
+        rc.bottom = rc.bottom + rc.Height() + y - surf->m_apiDesc.dwHeight;
     }
 
     CSize m = MeasureText(text);
@@ -350,7 +348,7 @@ void FontRenderer::DrawWrapped(
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
         CSize m = MeasureWrapped(text, rc);
-        rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.cy / 2;
+        rc.top = rc.top + rc.Height() / 2 - m.cy / 2;
     }
 
     i32 y = rc.top;
@@ -412,7 +410,7 @@ void FontRenderer::DrawWrapped(
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
                     DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
@@ -428,6 +426,7 @@ void FontRenderer::DrawWrapped(
                 }
             } else {
 
+                // The signed length guard is required; IsEmpty emits a zero-only test.
                 while (head.GetLength() > 0) {
                     if (y >= rc.bottom) {
                         break;
@@ -491,7 +490,7 @@ CSize FontRenderer::MeasureText(CString text) {
 
         width += m_font->GetGlyph(g, c).cx;
     }
-    SET_SIZE_COMPONENTS(ext, width, m_font->GetMaxHeight());
+    ext = CSize(width, m_font->GetMaxHeight());
     return ext;
 }
 
@@ -553,7 +552,7 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 CSize lw = MeasureText(line);
                 i32 w = lw.cx;
                 if (maxExtent.cx <= w) {
@@ -656,7 +655,7 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 totalChars += line.GetLength();
                 y = y + m_font->GetMaxHeight();
                 x = rc.left;
@@ -667,6 +666,7 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
                 }
             } else {
 
+                // The signed length guard is required; IsEmpty emits a zero-only test.
                 while (head.GetLength() > 0) {
                     if (y >= rc.bottom) {
                         break;

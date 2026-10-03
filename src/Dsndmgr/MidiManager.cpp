@@ -285,7 +285,7 @@ i32 MidiSequence::LoadFile(const char* path, const char* name) {
         return LoadResource(path, name);
     }
     CFile file;
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
     u32 length = file.GetLength();

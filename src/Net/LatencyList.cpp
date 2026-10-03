@@ -139,6 +139,7 @@ i32 CLatencyList::PopulateGenericOptions() {
 
 RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
+    // The signed count guard is required; IsEmpty emits a zero-only test.
     if (m_list.GetCount() <= 0) {
         return 0;
     }

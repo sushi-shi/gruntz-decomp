@@ -117,20 +117,19 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
-        const char* s = name;
-        if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
+        if (name.Compare("LEVEL_OBJECTDROPPER_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
             m_travelDx = 0;
             m_travelDy = -1;
-        } else if (strcmp(s, "LEVEL_OBJECTDROPPER_EAST") == 0) {
+        } else if (name.Compare("LEVEL_OBJECTDROPPER_EAST") == 0) {
             m_object->m_direction = IDX(CARDINAL_EAST);
             m_travelDx = 1;
             m_travelDy = 0;
-        } else if (strcmp(s, "LEVEL_OBJECTDROPPER_SOUTH") == 0) {
+        } else if (name.Compare("LEVEL_OBJECTDROPPER_SOUTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_SOUTH);
             m_travelDx = 0;
             m_travelDy = 1;
-        } else if (strcmp(s, "LEVEL_OBJECTDROPPER_WEST") == 0) {
+        } else if (name.Compare("LEVEL_OBJECTDROPPER_WEST") == 0) {
             m_object->m_direction = IDX(CARDINAL_WEST);
             m_travelDx = -1;
             m_travelDy = 0;

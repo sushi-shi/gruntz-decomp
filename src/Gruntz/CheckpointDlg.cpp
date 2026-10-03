@@ -32,8 +32,8 @@ RVA(0x00023520, 0x3e)
 void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
     if (pDX->m_bSaveAndValidate == false) {
         NetLobby::g_curDlg = GetSafeHwnd();
-        CWnd* item = GetDlgItem(0x53a);
-        item->SendMessageA(BM_SETCHECK, 0, 0);
+        CButton* item = static_cast<CButton*>(GetDlgItem(0x53a));
+        item->SetCheck(0);
     }
 }
 
@@ -45,8 +45,8 @@ END_MESSAGE_MAP()
 
 RVA(0x00023590, 0x31)
 void CCheckpointDlg::OnToggleCheckpointPrompts() {
-    CWnd* c = GetDlgItem(0x53a);
-    i32 checked = c->SendMessageA(BM_GETCHECK, 0, 0);
+    CButton* c = static_cast<CButton*>(GetDlgItem(0x53a));
+    i32 checked = c->GetCheck();
     CGruntzMgr* reg = g_gameReg;
     reg->m_isCheckpointPrompts = checked == 0;
 }

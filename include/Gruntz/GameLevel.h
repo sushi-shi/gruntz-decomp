@@ -275,7 +275,7 @@ public:
     i32 index = 0;                                                                                 \
     if (m_mainIndex >= 0) {                                                                        \
         do {                                                                                       \
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index]))->Draw(visitor);            \
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index)))->Draw(visitor);                \
             ++index;                                                                               \
         } while (index <= m_mainIndex);                                                            \
     }
@@ -284,7 +284,7 @@ public:
     i32 index = m_mainIndex + 1;                                                                   \
     if (index < m_planes.GetSize()) {                                                              \
         do {                                                                                       \
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index]))->Draw(visitor);            \
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index)))->Draw(visitor);                \
             ++index;                                                                               \
         } while (index < m_planes.GetSize());                                                      \
     }
@@ -293,25 +293,25 @@ public:
     m_mainIndex = -1;                                                                              \
     m_mainPlane = NULL;                                                                            \
     for (i32 index = 0; index < m_planes.GetSize(); index++) {                                     \
-        static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index])->m_flags &=                      \
+        static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index))->m_flags &=                          \
             ~IDX(WWD_PLANE_FLAG_MAIN);                                                             \
     }
 
 #define RELEASE_LEVEL_CHILDREN                                                                     \
     i32 i;                                                                                         \
     for (i = 0; i < m_planes.GetSize(); i++) {                                                     \
-        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);           \
+        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetAt(i));               \
         if (child) {                                                                               \
             delete child;                                                                          \
         }                                                                                          \
     }                                                                                              \
-    m_planes.SetSize(0, -1);                                                                       \
+    m_planes.RemoveAll();                                                                          \
     for (i = 0; i < m_imageSets.GetSize(); i++) {                                                  \
-        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);              \
+        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetAt(i));                  \
         if (child) {                                                                               \
             delete child;                                                                          \
         }                                                                                          \
     }                                                                                              \
-    m_imageSets.SetSize(0, -1)
+    m_imageSets.RemoveAll()
 
 #endif // SRC_GRUNTZ_GAMELEVEL_H

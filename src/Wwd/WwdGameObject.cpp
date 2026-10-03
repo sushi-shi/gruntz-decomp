@@ -118,11 +118,8 @@ void CWwdSpriteObject::BltDirtyEx(
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
             CPoint pos;
             CSize size;
-
-            pos.x = ir.left;
-            pos.y = ir.top;
-            size.cx = ir.right - ir.left + 1;
-            size.cy = ir.bottom - ir.top + 1;
+            pos = CPoint(ir.left, ir.top);
+            size = CSize(ir.right - ir.left + 1, ir.bottom - ir.top + 1);
             dst->BlitDirtyRect(src, pos, size);
         } else {
             dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
@@ -145,13 +142,8 @@ void CWwdSpriteObject::BltDirtyRegions(
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            CPoint pos;
-            CSize size;
-
-            pos.x = ir.left;
-            pos.y = ir.top;
-            size.cx = ir.right - ir.left + 1;
-            size.cy = ir.bottom - ir.top + 1;
+            CPoint pos(ir.left, ir.top);
+            CSize size(ir.right - ir.left + 1, ir.bottom - ir.top + 1);
             dst->BlitDirtyRect(src, pos, size);
         } else {
             dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);

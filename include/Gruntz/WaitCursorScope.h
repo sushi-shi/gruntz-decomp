@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+// Direct application access preserves the inlined lifetime and register allocation.
 class CWaitCursorScope {
 public:
     CWaitCursorScope() {

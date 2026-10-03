@@ -68,20 +68,19 @@ CRollingBall::CRollingBall(CGameObject* obj)
     if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
-        const char* s = name;
-        if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
+        if (name.Compare("LEVEL_ROLLINGBALL_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
             m_stepDirX = 0;
             m_stepDirY = -1;
-        } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
+        } else if (name.Compare("LEVEL_ROLLINGBALL_EAST") == 0) {
             m_object->m_direction = IDX(CARDINAL_EAST);
             m_stepDirX = 1;
             m_stepDirY = 0;
-        } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
+        } else if (name.Compare("LEVEL_ROLLINGBALL_SOUTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_SOUTH);
             m_stepDirX = 0;
             m_stepDirY = 1;
-        } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
+        } else if (name.Compare("LEVEL_ROLLINGBALL_WEST") == 0) {
             m_object->m_direction = IDX(CARDINAL_WEST);
             m_stepDirX = -1;
             m_stepDirY = 0;

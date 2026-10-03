@@ -56,6 +56,6 @@ public:
         delete[] m_name;                                                                           \
         m_name = NULL;                                                                             \
     }                                                                                              \
-    m_records.SetSize(0, -1)
+    m_records.RemoveAll()
 
 #endif // GRUNTZ_CANIELEMENT_H

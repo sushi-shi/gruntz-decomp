@@ -50,28 +50,18 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
         static CString s_custom("custom\\");
         if (h != -1) {
             if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
-                MsgParam name;
-                item->SendMessageA(
-                    LB_ADDSTRING,
-                    0,
-                    (name.m_str = static_cast<const char*>(CString(fd.name)), name.m_lparam)
-                );
+                item->AddString(CString(fd.name));
             }
             while (_findnext(h, &fd) != -1) {
                 if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
-                    MsgParam name;
-                    item->SendMessageA(
-                        LB_ADDSTRING,
-                        0,
-                        (name.m_str = static_cast<const char*>(CString(fd.name)), name.m_lparam)
-                    );
+                    item->AddString(CString(fd.name));
                 }
             }
         }
-        item->SendMessageA(LB_SETCURSEL, 0, 0);
+        item->SetCurSel(0);
         return;
     }
-    i32 sel = static_cast<i32>(item->SendMessageA(LB_GETCURSEL, 0, 0));
+    i32 sel = static_cast<i32>(item->GetCurSel());
     if (sel == -1) {
         return;
     }
@@ -87,8 +77,8 @@ END_MESSAGE_MAP()
 
 RVA(0x000183f0, 0x2e)
 void CBattlezDlgCustom::PickIfSelected() {
-    CWnd* list = GetDlgItem(0x516);
-    if (list->SendMessageA(LB_GETCURSEL, 0, 0) != -1) {
+    CListBox* list = static_cast<CListBox*>(GetDlgItem(0x516));
+    if (list->GetCurSel() != -1) {
         CDialog::OnOK();
     }
 }
