@@ -1,6 +1,7 @@
 #include <StdAfx.h>
 
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TriggerMgrCameraInline.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -178,12 +179,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             i32 removedUnitIndex = p->m_y;
             if (removedPlayerIndex == m_cameraTargetIdentity.m_x
                 && removedUnitIndex == m_cameraTargetIdentity.m_y) {
-                CWwdSpriteObject* goal = m_goal;
-                if (goal != NULL) {
-                    goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-                    m_goal = NULL;
-                }
-                m_armed = false;
+                StopCameraTracking();
             }
             CActionOptionsMenuBar* ov = m_overlay;
             if (ov != NULL) {
@@ -217,11 +213,7 @@ void CTriggerMgr::ResetAll() {
     }
     m_recList.RemoveAll();
     StopPendingFx();
-    CWwdSpriteObject* goal = m_goal;
-    if (goal != NULL) {
-        goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-        m_goal = NULL;
-    }
+    ClearCameraSprite();
 }
 
 RVA(0x000784d0, 0x3a)

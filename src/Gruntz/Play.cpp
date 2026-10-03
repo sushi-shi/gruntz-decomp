@@ -99,6 +99,7 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TriggerMgrCameraInline.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Utils.h>
 #include <Gruntz/View.h>
@@ -1793,12 +1794,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == VK_ESCAPE) {
         CTriggerMgr* triggerManager = mgr->m_triggerMgr;
-        CWwdSpriteObject* n = triggerManager->m_goal;
-        if (n != NULL) {
-            n->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-            triggerManager->m_goal = NULL;
-        }
-        triggerManager->m_armed = false;
+        triggerManager->StopCameraTracking();
         CChatBoxOwner* rec = this->m_chatBox;
         if (rec->m_inputActive != false) {
             this->FlushPendingOps();
@@ -2942,11 +2938,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (idx != -1) {
         m_statusBar->ClearStat(idx);
         CTriggerMgr* w = m_mgr->m_triggerMgr;
-        if (w->m_goal != NULL) {
-            w->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-            w->m_goal = NULL;
-        }
-        w->m_armed = false;
+        w->StopCameraTracking();
         return 1;
     }
     if (m_mgr->m_triggerMgr->m_recList.IsEmpty()) {
@@ -5378,10 +5370,7 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
 
     if (m_mgr->m_triggerMgr->m_goal != NULL) {
         CTriggerMgr* g = m_mgr->m_triggerMgr;
-        if (g->m_goal != NULL) {
-            g->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-            g->m_goal = NULL;
-        }
+        g->ClearCameraSprite();
         m_mgr->m_triggerMgr->LoadCameraSprite();
     }
     return 1;
@@ -5420,11 +5409,7 @@ RVA(0x000d5f00, 0x69)
 i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
     CTriggerMgr* g = w->m_triggerMgr;
-    if (g->m_goal != NULL) {
-        g->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-        g->m_goal = NULL;
-    }
-    g->m_armed = false;
+    g->StopCameraTracking();
     CDDrawWorkerHost* pg = m_mgr->m_world->m_level->m_mainPlane;
     SET_SCROLL_POSITION_SCALED_FIRST(pg, x, y);
     return 1;
