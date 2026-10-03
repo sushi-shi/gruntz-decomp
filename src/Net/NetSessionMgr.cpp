@@ -699,7 +699,7 @@ i32 CNetSession::ComputeChecksum() {
 
                 PickupType carried = grunt->m_entranceReason;
                 PickupType effective = grunt->ArrivalPickupOf(carried);
-                sum += IDX(grunt->GetVehiclePickupType()) + grunt->m_entranceCommitted
+                sum += IDX(grunt->GetVehiclePickupType()) + grunt->IsEntranceCommitted()
                        + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);
 
                 i32 priority;

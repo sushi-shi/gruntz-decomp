@@ -110,7 +110,7 @@ i32 CGrunt::UpdateGruntStatus() {
         if (m_neighborValid != false) {
             m_neighborValid = false;
             CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
-            if (n != NULL && n->m_entranceCommitted != false) {
+            if (n != NULL && n->IsEntranceCommitted() != false) {
                 if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
                     CommitNeighbor(
                         m_neighborPlayerIndex,

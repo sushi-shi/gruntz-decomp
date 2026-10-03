@@ -96,7 +96,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 g->RecycleCoords();
                 UNSET_COORD(g->m_arrivalCell);
                 if (g != NULL && g->IsAtSavedScreenPos() && g->m_entranceCommitted != false
-                    && g->m_deathAnimStarted == false && g->m_entranceActive == false
+                    && g->IsDeathAnimationStarted() == false && g->m_entranceActive == false
                     && g->m_poweredUp == false && BattlezActDiffersFromIGLPJCR(g)) {
                     HandleUnitContact(g, cur);
                 }

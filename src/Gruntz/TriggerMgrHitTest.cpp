@@ -1025,20 +1025,15 @@ RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact) {
     i32 ix = x >> TILE_SHIFT_PX;
     i32 iy = y >> TILE_SHIFT_PX;
-    CMapMgr* plane = g_gameReg->GetTileGrid();
-    i32 attr;
-    if (ix >= plane->GetWidth() || iy >= plane->GetHeight()) {
-        attr = -1;
-    } else {
-        attr = plane->m_rowInts[iy][ix * 7 + 1];
-    }
+    CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
+    i32 attr = plane->OccupantAt(ix, iy);
     if (attr == -1) {
         return NULL;
     }
     i32 playerIndex = (attr >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
     i32 unitIndex = attr & GRUNT_IDENTITY_COMPONENT_MASK;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->m_entranceCommitted == false) {
+    if (cell == NULL || cell->IsEntranceCommitted() == false) {
         return NULL;
     }
 
@@ -1116,7 +1111,7 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 if (!g) {
                     continue;
                 }
-                if (!g->m_entranceCommitted) {
+                if (!g->IsEntranceCommitted()) {
                     continue;
                 }
                 i32 sx = g->m_object->m_screenX - 7;

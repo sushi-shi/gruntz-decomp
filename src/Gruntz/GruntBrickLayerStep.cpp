@@ -211,8 +211,8 @@ L_ed153:
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
         if ((cell->m_flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) != 0
-            || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
-            || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
+            || grid->CellTypeAt(col, row) == TILEKIND_GAUNTLET_BRICK_A
+            || grid->CellTypeAt(col, row) == TILEKIND_GAUNTLET_BRICK_B) {
             m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,

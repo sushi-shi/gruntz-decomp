@@ -30,6 +30,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
@@ -236,7 +237,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj)
     i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
     m_object->m_speedX = tileX;
     m_object->m_speedY = tileY;
-    m_object->m_id = (tileX << 8) + tileY;
+    m_object->m_id = CellKey(tileX, tileY);
 }
 
 RVA(0x0010e4a0, 0x102)
@@ -263,7 +264,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), C
     i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
     m_object->m_speedX = tileX;
     m_object->m_speedY = tileY;
-    m_object->m_id = (tileX << 8) + tileY;
+    m_object->m_id = CellKey(tileX, tileY);
 }
 
 RVA(0x0010ea80, 0x102)
@@ -422,13 +423,8 @@ i32 CCheckpointTrigger::Act() {
 
     i32 gy = pad->GetTileY();
     i32 gx = pad->GetTileX();
-    CMapMgr* grid = g_gameReg->GetTileGrid();
-    i32 owner;
-    if (static_cast<u32>(gx) < grid->GetWidth() && static_cast<u32>(gy) < grid->GetHeight()) {
-        owner = grid->m_rows[gy][gx].m_occupantId;
-    } else {
-        owner = -1;
-    }
+    CGruntzMapMgr* grid = g_gameReg->GetTileGrid();
+    i32 owner = grid->OccupantAt(gx, gy);
     if (owner == -1) {
         return 0;
     }

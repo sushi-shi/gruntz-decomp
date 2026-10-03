@@ -2722,7 +2722,7 @@ drag_box: {
     if (m_cursorId >= IDX(CURSOR_TOOL_HANDZ)) {
         CTriggerMgr* cg = g_gameReg->GetTriggerMgr();
         CGrunt* slot = cg->SoleSelectedGrunt();
-        if (slot != NULL && slot->m_entranceCommitted != false) {
+        if (slot != NULL && slot->IsEntranceCommitted() != false) {
             g_gameReg->VoiceMgr()->PlayVoice(slot, 0x324, -1, 0, -1, -1);
         }
     }
@@ -4164,7 +4164,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g != NULL && g->m_entranceCommitted != false) {
+            if (g != NULL && g->IsEntranceCommitted() != false) {
                 g->m_arrivalActive = false;
             }
             if (!m_mgr->GetTriggerMgr()->ClearCell(
@@ -4175,14 +4175,14 @@ i32 CPlay::ExecuteCommand(
                     0
                 )) {
                 if (player != static_cast<u32>(g_curPlayer) || g == NULL
-                    || g->m_entranceCommitted == false) {
+                    || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (player != static_cast<u32>(g_curPlayer) || g == NULL
-                || g->m_entranceCommitted == false) {
+                || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4247,7 +4247,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->m_entranceCommitted == false) {
+            if (g == NULL || g->IsEntranceCommitted() == false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
@@ -4271,7 +4271,7 @@ i32 CPlay::ExecuteCommand(
             }
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4280,19 +4280,19 @@ i32 CPlay::ExecuteCommand(
             if (res == -1) {
                 if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, px, py, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
-                        || g->m_entranceCommitted == false) {
+                        || g->IsEntranceCommitted() == false) {
                         return 0;
                     }
                     g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 1;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+            if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4303,7 +4303,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->m_entranceCommitted == false) {
+            if (g == NULL || g->IsEntranceCommitted() == false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
@@ -4321,7 +4321,7 @@ i32 CPlay::ExecuteCommand(
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4330,7 +4330,7 @@ i32 CPlay::ExecuteCommand(
             if (res == -1) {
                 if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, sx, sy, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
-                        || g->m_entranceCommitted == false) {
+                        || g->IsEntranceCommitted() == false) {
                         return 0;
                     }
                     g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4338,7 +4338,7 @@ i32 CPlay::ExecuteCommand(
                 }
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                    || g->m_entranceCommitted == false) {
+                    || g->IsEntranceCommitted() == false) {
                     return 1;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4346,7 +4346,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (player != static_cast<u32>(g_curPlayer)
                 || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                || g->m_entranceCommitted == false) {
+                || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4357,7 +4357,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
@@ -4380,7 +4380,7 @@ i32 CPlay::ExecuteCommand(
             }
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, px, py);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4389,19 +4389,19 @@ i32 CPlay::ExecuteCommand(
             if (res == -1) {
                 if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, px, py, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
-                        || g->m_entranceCommitted == false) {
+                        || g->IsEntranceCommitted() == false) {
                         return 0;
                     }
                     g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 1;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+            if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4412,7 +4412,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
@@ -4430,7 +4430,7 @@ i32 CPlay::ExecuteCommand(
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4439,7 +4439,7 @@ i32 CPlay::ExecuteCommand(
             if (res == -1) {
                 if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, sx, sy, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
-                        || g->m_entranceCommitted == false) {
+                        || g->IsEntranceCommitted() == false) {
                         return 0;
                     }
                     g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4447,7 +4447,7 @@ i32 CPlay::ExecuteCommand(
                 }
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                    || g->m_entranceCommitted == false) {
+                    || g->IsEntranceCommitted() == false) {
                     return 1;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4455,7 +4455,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (player != static_cast<u32>(g_curPlayer)
                 || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                || g->m_entranceCommitted == false) {
+                || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4469,14 +4469,14 @@ i32 CPlay::ExecuteCommand(
             }
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g != NULL && g->m_entranceCommitted != false && g->m_tileClaimed != false) {
+            if (g != NULL && g->IsEntranceCommitted() != false && g->m_tileClaimed != false) {
                 END_GUARD(g);
             }
             i32 sel = 0;
             b32 live = (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(player, gi);
             i32 r;
-            if (g2 == NULL || g2->m_entranceCommitted == false) {
+            if (g2 == NULL || g2->IsEntranceCommitted() == false) {
                 r = 0;
             } else {
                 r = g2->LoadPickupSprites(
@@ -4506,7 +4506,7 @@ i32 CPlay::ExecuteCommand(
                 static_cast<u8>(playerIndex),
                 static_cast<u8>(unitIndex)
             );
-            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
                 return 0;
             }
             g->SetEntrancePos(1, 1);
