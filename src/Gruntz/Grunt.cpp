@@ -3,7 +3,6 @@
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GruntDirectionInline.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/AniAdvance.h>
@@ -35,6 +34,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirectionInline.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntHealthSprite.h>
@@ -48,12 +48,12 @@
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
-#include <Gruntz/MapTraversalInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/MapCellInline.h>
+#include <Gruntz/MapTraversalInline.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -1241,7 +1241,7 @@ i32 CGrunt::StepGruntMovement() {
                 Coord current = ScreenTile(this);
                 rec = MovementDirection(current, *co);
                 CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-                if (bd->m_rowInts[cy][cx * 7] & BRICKZ_CELL_OCCUPIED) {
+                if (bd->m_rows[cy][cx].m_flags & BRICKZ_CELL_OCCUPIED) {
                     SetFacing(0x3e8, rec);
                     SetEntrancePos(1, 0);
                     return 0;
@@ -1302,10 +1302,13 @@ label_4c6e4:
         goto label_4cb2a;
     }
     {
-        i32 beyondPxX = targetPixel.m_x * 2 - m_lastTilePx.m_x;
-        i32 beyondPxY = targetPixel.m_y * 2 - m_lastTilePx.m_y;
-        i32 btx = beyondPxX >> TILE_SHIFT_PX;
-        i32 bty = beyondPxY >> TILE_SHIFT_PX;
+        Coord beyondPixel;
+        beyondPixel.Set(
+            targetPixel.m_x * 2 - m_lastTilePx.m_x,
+            targetPixel.m_y * 2 - m_lastTilePx.m_y
+        );
+        i32 btx = beyondPixel.m_x >> TILE_SHIFT_PX;
+        i32 bty = beyondPixel.m_y >> TILE_SHIFT_PX;
         CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
         i32 beyondFlag = bd->CellFlagsAt(btx, bty);
         if (beyondFlag & 0x20000939) {
@@ -1320,8 +1323,7 @@ label_4c6e4:
             }
         }
         PLAY_GRUNT_CUE_IN_VIEW(8);
-        targetPixel.m_x = beyondPxX;
-        targetPixel.m_y = beyondPxY;
+        targetPixel = beyondPixel;
     }
 
 label_4c92b: {
