@@ -280,20 +280,22 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     return 0;
 }
 
-inline void CGrunt::ResolveEntranceOccupant() {
-    CGruntzMapMgr* grid = g_gameReg->GetTileGrid();
-    i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
-    i32 flags = grid->CellFlagsAt(tx, ty);
-    if (flags & BRICKZ_CELL_OCCUPIED) {
-        i32 owner = grid->OccupantAt(static_cast<u32>(tx), static_cast<u32>(ty));
-        i32 playerIndex = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
-        i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;
-        if (m_playerIndex != playerIndex || m_unitIndex != unitIndex) {
-            m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, m_playerIndex);
-        }
-    }
-}
+#define RESOLVE_ENTRANCE_OCCUPANT()                                                                \
+    do {                                                                                           \
+        CGruntzMapMgr* grid = g_gameReg->GetTileGrid();                                            \
+        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;                                             \
+        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;                                             \
+        i32 flags = grid->CellFlagsAt(tx, ty);                                                     \
+        if (flags & BRICKZ_CELL_OCCUPIED) {                                                        \
+            i32 owner = grid->OccupantAt(static_cast<u32>(tx), static_cast<u32>(ty));              \
+            i32 playerIndex =                                                                      \
+                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;            \
+            i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;                                 \
+            if (m_playerIndex != playerIndex || m_unitIndex != unitIndex) {                        \
+                m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, m_playerIndex); \
+            }                                                                                      \
+        }                                                                                          \
+    } while (0)
 
 #define COMPLETE_ENTRANCE_COMMIT()                                                                 \
     do {                                                                                           \
@@ -313,10 +315,7 @@ inline void CGrunt::ResolveEntranceOccupant() {
                 m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                         \
             }                                                                                      \
             m_entranceDropActive = true;                                                           \
-            m_entranceTiming.m_intervalLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000); \
-            m_entranceTiming.m_intervalHi = 0;                                                     \
-            m_entranceTiming.m_startLo = g_frameTime;                                              \
-            m_entranceTiming.m_startHi = 0;                                                        \
+            m_entranceTiming.Start(g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000));         \
             m_flashTiming.m_intervalLo = 0;                                                        \
             m_flashTiming.m_intervalHi = 0;                                                        \
         } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {                      \
@@ -331,7 +330,7 @@ inline void CGrunt::ResolveEntranceOccupant() {
 RVA(0x00067f80, 0x313)
 i32 CGrunt::LoadEntranceConfig() {
     if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
-        ResolveEntranceOccupant();
+        RESOLVE_ENTRANCE_OCCUPANT();
         CWwdSpriteObject* h = m_object;
         i32 oldX = m_lastTilePx.m_x;
         m_entranceArmed = false;
@@ -841,7 +840,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 
 #define FINISH_ENTRANCE_DROP()                                                                     \
     do {                                                                                           \
-        ResolveEntranceOccupant();                                                                 \
+        RESOLVE_ENTRANCE_OCCUPANT();                                                               \
         m_entranceArmed = false;                                                                   \
         i32 newX = m_object->m_screenX;                                                            \
         i32 newY = m_object->m_screenY;                                                            \
@@ -905,6 +904,7 @@ retZero:
     return 0;
 }
 
+#undef RESOLVE_ENTRANCE_OCCUPANT
 #undef FINISH_ENTRANCE_DROP
 #undef COMPLETE_ENTRANCE_COMMIT
 
