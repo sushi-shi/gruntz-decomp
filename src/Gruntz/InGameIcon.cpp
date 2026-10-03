@@ -45,6 +45,7 @@
 #include <Gruntz/ToyPeek.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/WapSerializationInline.h>
 #include <Gruntz/WarpStoneFragment.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -679,7 +680,6 @@ i32 CInGameIcon::Reposition() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00098c90, 0x382)
 i32 CInGameIcon::SerializeDispatch(
     CFileMemBase* ar,
@@ -695,38 +695,8 @@ i32 CInGameIcon::SerializeDispatch(
     }
     SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, obj)
 
-    switch (mode) {
-        case SERIAL_LOAD: {
-            char aniName[SERIAL_NAME_LEN];
-            ar->Read(aniName, SERIAL_NAME_LEN);
-            ar->Read(m_blob, 0x10);
-            m_gameObject = obj;
-            m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
-            m_ownerLogicRecord = obj->GetLogicRecord();
-            if (strlen(aniName) == 0) {
-                m_value = NULL;
-            } else {
-                m_value = MapFind<CAniElement>(
-                    m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
-                    aniName
-                );
-            }
-            break;
-        }
-        case SERIAL_SAVE: {
-            memset(name, 0, sizeof(name));
-            if (m_value != NULL) {
-                strcpy(
-                    name,
-                    static_cast<const char*>(
-                        m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
-                    )
-                );
-            }
-            ar->Write(name, SERIAL_NAME_LEN);
-            ar->Write(m_blob, 0x10);
-            break;
-        }
+    if (!SerializeAnimationState(ar, mode, typeId, obj)) {
+        return 0;
     }
 
     i64* drift = &m_driftTiming.m_start;

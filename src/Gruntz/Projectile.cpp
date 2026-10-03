@@ -48,6 +48,7 @@
 #include <Gruntz/TimeBomb.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/WapSerializationInline.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <RectMacros.h>
@@ -636,7 +637,6 @@ void CProjectile::ScanTargets(i32 impact) {
     }
 }
 
-// @early-stop
 RVA(0x000e0d40, 0x6c2)
 i32 CProjectile::SerializeDispatch(
     CFileMemBase* s,
@@ -746,41 +746,8 @@ i32 CProjectile::SerializeDispatch(
     if (ok == 0) {
         return ok;
     }
-    if (s == NULL) {
+    if (!SerializeAnimationState(s, mode, typeId, object)) {
         return 0;
-    }
-
-    switch (mode) {
-        case SERIAL_LOAD: {
-            s->Read(buf, SERIAL_NAME_LEN);
-            s->Read(m_blob, 0x10);
-            CGameObject* obj = object;
-            m_gameObject = obj;
-            m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
-            m_ownerLogicRecord = obj->GetLogicRecord();
-            if (strlen(buf) == 0) {
-                m_value = NULL;
-                return 1;
-            }
-            m_value = MapFind<CAniElement>(
-                m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
-                buf
-            );
-            return 1;
-        }
-        case SERIAL_SAVE: {
-            char blob[SERIAL_NAME_LEN];
-            memset(blob, 0, sizeof(blob));
-            if (m_value != NULL) {
-                strcpy(
-                    blob,
-                    m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
-                );
-            }
-            s->Write(blob, SERIAL_NAME_LEN);
-            s->Write(m_blob, 0x10);
-            return 1;
-        }
     }
     return 1;
 }
