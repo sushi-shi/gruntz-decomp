@@ -903,19 +903,19 @@ i32 CGrunt::StepArrivalDrop(
     nudged = 0;
 
     CMapMgr* grid = g_gameReg->GetTileGrid();
-    if (grid->m_rows[targetTile.m_y][targetTile.m_x].m_typeCode != TILEKIND_GIANT_ROCK) {
+    if (grid->CellTypeAt(targetTile.m_x, targetTile.m_y) != TILEKIND_GIANT_ROCK) {
         goto nudgeDone;
     }
-    free4 = (grid->m_rows[targetTile.m_y + 1][targetTile.m_x].m_typeCode == TILEKIND_GIANT_ROCK)
+    free4 = (grid->CellTypeAt(targetTile.m_x, targetTile.m_y + 1) == TILEKIND_GIANT_ROCK)
                 ? ROCKADJ_BELOW
                 : ROCKADJ_NONE;
-    free4 |= (grid->m_rows[targetTile.m_y - 1][targetTile.m_x].m_typeCode == TILEKIND_GIANT_ROCK)
+    free4 |= (grid->CellTypeAt(targetTile.m_x, targetTile.m_y - 1) == TILEKIND_GIANT_ROCK)
                  ? ROCKADJ_ABOVE
                  : ROCKADJ_NONE;
-    free4 |= (grid->m_rows[targetTile.m_y][targetTile.m_x + 1].m_typeCode == TILEKIND_GIANT_ROCK)
+    free4 |= (grid->CellTypeAt(targetTile.m_x + 1, targetTile.m_y) == TILEKIND_GIANT_ROCK)
                  ? ROCKADJ_RIGHT
                  : ROCKADJ_NONE;
-    free4 |= (grid->m_rows[targetTile.m_y][targetTile.m_x - 1].m_typeCode == TILEKIND_GIANT_ROCK)
+    free4 |= (grid->CellTypeAt(targetTile.m_x - 1, targetTile.m_y) == TILEKIND_GIANT_ROCK)
                  ? ROCKADJ_LEFT
                  : ROCKADJ_NONE;
     switch (free4) {

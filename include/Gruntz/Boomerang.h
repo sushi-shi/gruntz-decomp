@@ -36,12 +36,4 @@ public:
     double m_phase;
     b32 m_launched;
 };
-
-extern const double g_boomerangMidpointScale;
-extern const double g_boomerangPixelToTileScale;
-extern const double g_boomerangHoldScale;
-extern const double g_boomerangHoldBiasMs;
-
-extern const double g_boomerangHalfTurnRadians;
-extern const double g_boomerangFullTurnRadians;
 #endif // GRUNTZ_BOOMERANG_H
