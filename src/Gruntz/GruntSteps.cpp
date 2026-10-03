@@ -112,6 +112,7 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
     return r;
 }
 
+// @early-stop
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
@@ -734,6 +735,7 @@ i32 CGrunt::SetArrivalTarget(
     return 1;
 }
 
+// @early-stop
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     CWwdSpriteObject* h = m_object;
