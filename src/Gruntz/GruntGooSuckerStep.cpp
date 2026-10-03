@@ -174,15 +174,10 @@ L_scanb:
         }
 
         i32 r = m_defenderRadius;
-        RECT box;
-        box.left = tileX - r;
-        box.right = tileX + r;
-        box.top = tileY - r;
-        box.bottom = tileY + r;
-        RECT gb;
-        SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
-        RECT isect;
-        if (!IntersectRect(&isect, &box, &gb)) {
+        CRect box(tileX - r, tileY - r, tileX + r, tileY + r);
+        CRect gb(0, 0, grid->m_width, grid->m_height);
+        CRect isect;
+        if (!isect.IntersectRect(&box, &gb)) {
             isect = box;
         }
         grid->Clip(&isect);
