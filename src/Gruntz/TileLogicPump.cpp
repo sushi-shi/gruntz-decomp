@@ -30,6 +30,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
@@ -422,13 +423,8 @@ i32 CCheckpointTrigger::Act() {
 
     i32 gy = pad->GetTileY();
     i32 gx = pad->GetTileX();
-    CMapMgr* grid = g_gameReg->GetTileGrid();
-    i32 owner;
-    if (static_cast<u32>(gx) < grid->GetWidth() && static_cast<u32>(gy) < grid->GetHeight()) {
-        owner = grid->m_rows[gy][gx].m_occupantId;
-    } else {
-        owner = -1;
-    }
+    CGruntzMapMgr* grid = g_gameReg->GetTileGrid();
+    i32 owner = grid->OccupantAt(gx, gy);
     if (owner == -1) {
         return 0;
     }
