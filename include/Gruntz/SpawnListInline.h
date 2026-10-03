@@ -18,4 +18,15 @@ inline CSpawnEntry* CSpawnList::NextEntry() {
     return NextEntry(m_cursor);
 }
 
+inline CSpawnEntry* CSpawnList::GetEntry(i32 index) {
+    if (index >= GetCount()) {
+        return NULL;
+    }
+    CSpawnEntry* entry = FirstEntry();
+    for (i32 remaining = index; remaining > 0; remaining--) {
+        entry = NextEntry();
+    }
+    return entry;
+}
+
 #endif // GRUNTZ_GRUNTZ_SPAWNLISTINLINE_H
