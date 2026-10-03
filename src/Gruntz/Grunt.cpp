@@ -2273,10 +2273,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             CStatusBarMgr* sb = play->m_statusBar;
             if (sb->m_hlBusy == false) {
-                if (sb->m_position == STATUSBAR_HIDDEN) {
+                if (sb->GetState() == STATUSBAR_HIDDEN) {
                     sb->RestoreStatusBar();
                 }
-                if (sb->m_activeTab != TAB_RESOURCE) {
+                if (sb->GetActiveTab() != TAB_RESOURCE) {
                     sb->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
                 }
                 sb->Deactivate();

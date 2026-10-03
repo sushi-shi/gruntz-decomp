@@ -535,10 +535,10 @@ i32 CPlay::Render() {
         m_statusBar->LoadMainStatusBarSprite();
         m_mgr->GetTileGrid()->UpdateDiagonals(m_mgr);
 
-        if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-            && m_statusBar->m_activeTab != TAB_GAME) {
+        if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+            && m_statusBar->GetActiveTab() != TAB_GAME) {
             RECT rc;
-            if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+            if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
                 SetRect(
@@ -1345,7 +1345,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
                 CStatusBarMgr* statusBar = self->m_statusBar;
                 i32 originX = TIMER_ORIGIN_X_STATUSBAR_RIGHT_PX;
-                if (statusBar->m_position != STATUSBAR_DOCK_RIGHT) {
+                if (statusBar->GetState() != STATUSBAR_DOCK_RIGHT) {
                     originX = TIMER_ORIGIN_X_PX;
                 }
                 if (!self->m_levelTimer->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
@@ -1681,7 +1681,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
         if (charCode == '=' || charCode == '+') {
             m_statusBar->RestoreStatusBar();
 
-            if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+            if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
                 m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
             } else {
                 m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
@@ -1994,10 +1994,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != false) {
             return 1;
         }
-        if (lv->m_position == STATUSBAR_HIDDEN) {
+        if (lv->GetState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
-        if (lv->m_activeTab != TAB_GRUNTZ) {
+        if (lv->GetActiveTab() != TAB_GRUNTZ) {
             lv->SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
@@ -2019,10 +2019,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != false) {
             return 1;
         }
-        if (lv->m_position == STATUSBAR_HIDDEN) {
+        if (lv->GetState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
-        if (lv->m_activeTab != TAB_RESOURCE) {
+        if (lv->GetActiveTab() != TAB_RESOURCE) {
             lv->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
@@ -2040,10 +2040,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != false) {
             return 1;
         }
-        if (lv->m_position == STATUSBAR_HIDDEN) {
+        if (lv->GetState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
-        if (lv->m_activeTab != TAB_STATZ) {
+        if (lv->GetActiveTab() != TAB_STATZ) {
             lv->SetTabState(SBICMD_TAB_STATZ, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
@@ -2073,10 +2073,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != false) {
             return 1;
         }
-        if (lv->m_position == STATUSBAR_HIDDEN) {
+        if (lv->GetState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
-        if (lv->m_activeTab != TAB_GAME) {
+        if (lv->GetActiveTab() != TAB_GAME) {
             lv->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         lv->SetTab(GAME_TAB_MENU, true);
@@ -2527,8 +2527,8 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
     xr = x;
     if (m_mgr->GetFrameGate() == false) {
-        if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-            && m_statusBar->m_activeTab != TAB_GAME) {
+        if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+            && m_statusBar->GetActiveTab() != TAB_GAME) {
             if (m_minimap->BeginMinimapPan(eventArg, xr, y)) {
                 return 1;
             }
@@ -2648,7 +2648,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         if (m_statusBar == NULL) {
             return 1;
         }
-        if (m_statusBar->m_position == STATUSBAR_HIDDEN) {
+        if (m_statusBar->GetState() == STATUSBAR_HIDDEN) {
             if (m_statusBar->HitTestLayer(xr, y)) {
                 m_dragSnapActive = true;
 
@@ -2771,8 +2771,8 @@ ret1:
 RVA(0x000ce530, 0xe3)
 i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed == false) {
-        if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-            && m_statusBar->m_activeTab != TAB_GAME) {
+        if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+            && m_statusBar->GetActiveTab() != TAB_GAME) {
             m_minimap->EndMinimapPan(keyFlags, x, y);
         }
         if (m_worldReady != false) {
@@ -2783,7 +2783,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
         }
         m_worldReady = false;
         m_dragSnapActive = false;
-        if (m_statusBar->m_position != STATUSBAR_HIDDEN) {
+        if (m_statusBar->GetState() != STATUSBAR_HIDDEN) {
             LevelCoordRect vp = m_world->m_level->GetViewportRect();
             if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
                 return m_statusBar->OnPointerRelease(keyFlags, x, y);
@@ -2806,11 +2806,11 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return this->OnLButtonDown(keyFlags, x, y);
     }
 
-    if (m_statusBar->m_position == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
+    if (m_statusBar->GetState() == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
         SoundCueRegistry* registry = m_mgr->m_world->SoundRegistry();
         registry->PlayCue("GAME_TABHIGHLIGHT1");
         m_statusBar->RestoreStatusBar();
-        if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+        if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
             m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         } else {
             m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
@@ -2926,8 +2926,9 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_mgr->GetFrameGate() != false) {
         return 1;
     }
-    if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-        && m_statusBar->m_activeTab != TAB_GAME && m_minimap->IssueMinimapCommand(keyFlags, x, y)) {
+    if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+        && m_statusBar->GetActiveTab() != TAB_GAME
+        && m_minimap->IssueMinimapCommand(keyFlags, x, y)) {
         return 1;
     }
 
@@ -3793,8 +3794,8 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     if (m_paused != false) {
         return 1;
     }
-    if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-        && m_statusBar->m_activeTab != TAB_GAME) {
+    if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+        && m_statusBar->GetActiveTab() != TAB_GAME) {
         m_minimap->ContinueMinimapPan(keyFlags, x, y);
     }
 
@@ -5539,10 +5540,10 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     FlushPendingOps();
     if (showQuitConfirmation == false) {
         CStatusBarMgr* g = m_statusBar;
-        if (g->m_position == STATUSBAR_HIDDEN) {
+        if (g->GetState() == STATUSBAR_HIDDEN) {
             g->RestoreStatusBar();
         }
-        if (g->m_activeTab != TAB_GAME) {
+        if (g->GetActiveTab() != TAB_GAME) {
             g->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         g->SetTab(GAME_TAB_MISSION_STATUS, true);
@@ -6432,7 +6433,7 @@ i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
     tagSIZE mode = w->GetModeSize();
     i32 right = mode.cx;
-    StatusBarDock state = m_statusBar->m_position;
+    StatusBarDock state = m_statusBar->GetState();
     i32 bottom = mode.cy;
     RECT r;
     if (state == STATUSBAR_DOCK_LEFT) {
@@ -6516,7 +6517,7 @@ i32 CPlay::ExpandViewport(i32 step) {
     SET_SIZE_COMPONENTS(modeSize, manager->m_modeSize.cx, manager->m_modeSize.cy);
 
     if (resized.right - resized.left
-        < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx
+        < (statusBar->GetState() == STATUSBAR_HIDDEN ? modeSize.cx
                                                      : modeSize.cx - STATUSBAR_WIDTH_PX)) {
         resized.left -= step;
         resized.right += step;

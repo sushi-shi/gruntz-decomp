@@ -374,7 +374,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     i32 vx = g_gameReg->m_modeSize.cx;
     i32 vy = g_gameReg->m_modeSize.cy;
-    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_position;
+    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->GetState();
 
     i32 ax, cx;
     if (pos != STATUSBAR_DOCK_RIGHT) {
@@ -909,10 +909,10 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     plane->m_mainPlane->WorldToViewport(&outR, &outC);
     CStatusBarMgr* sbi = lvl->m_statusBar;
     if (sbi->m_hlBusy == false) {
-        if (sbi->m_position == STATUSBAR_HIDDEN) {
+        if (sbi->GetState() == STATUSBAR_HIDDEN) {
             sbi->RestoreStatusBar();
         }
-        if (sbi->m_activeTab != TAB_GAME) {
+        if (sbi->GetActiveTab() != TAB_GAME) {
             sbi->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         sbi->SetTab(GAME_TAB_MENU, true);
@@ -941,7 +941,7 @@ void CTriggerMgr::ResetSpawnState() {
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetUpperBound(), 1);
         CStatusBarMgr* ctx = world->m_statusBar;
-        if (ctx->m_position != STATUSBAR_HIDDEN && ctx->m_activeTab == TAB_GAME) {
+        if (ctx->GetState() != STATUSBAR_HIDDEN && ctx->GetActiveTab() == TAB_GAME) {
             ctx->ResetWidgets(false);
             world->m_statusBar->TryActivate();
         }
