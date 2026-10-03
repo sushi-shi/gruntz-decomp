@@ -22,6 +22,7 @@
 #include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
@@ -89,9 +90,8 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
     do {
         CGrunt* candidate = *units;
         if (candidate != NULL) {
-            CGameObject* o = candidate->m_object;
-            i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
-            i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
+            i32 dx = candidate->GetScreenTileX() - tx;
+            i32 dy = candidate->GetScreenTileY() - ty;
             i32 d = SquaredDistance(dx, dy);
             if (d < bestDist && d < g->m_defenderRadius * 2) {
                 best = candidate;
@@ -527,7 +527,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 POSITION pos = m_baseList.GetHeadPosition();
                 while (pos != NULL) {
                     CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                    if (cand->m_tileX == tx && cand->m_tileY == ty && cand->m_pending == false) {
+                    if (cand->GetTileX() == tx && cand->GetTileY() == ty
+                        && cand->IsPending() == false) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
                         return 1;
                     }
@@ -1080,8 +1081,9 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     while (pos != NULL && stop == 0) {
         POSITION cur = pos;
         CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-        if (existing->m_tileX == puddle->m_tileX && existing->m_tileY == puddle->m_tileY) {
-            if (existing->m_pending != false) {
+        if (existing->GetTileX() == puddle->GetTileX()
+            && existing->GetTileY() == puddle->GetTileY()) {
+            if (existing->IsPending() != false) {
                 puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return 0;
             }
@@ -1097,7 +1099,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
         while (pos != NULL && stop == 0) {
             POSITION cur = pos;
             CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-            if (existing->m_pending == false) {
+            if (existing->IsPending() == false) {
                 existing->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 m_baseList.RemoveAt(cur);
                 stop = 1;
@@ -1816,11 +1818,11 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     while (pos != NULL) {
         POSITION cur = pos;
         CGruntPuddle* g = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-        if (g->m_pending != false) {
+        if (g->IsPending() != false) {
             continue;
         }
-        i32 tx = g->m_tileX;
-        i32 ty = g->m_tileY;
+        i32 tx = g->GetTileX();
+        i32 ty = g->GetTileY();
         POINT pt;
         SET_POINT_COMPONENTS(pt, tx, ty);
         if (!PtInRect(&rect, pt)) {

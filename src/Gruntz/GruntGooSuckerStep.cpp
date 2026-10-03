@@ -44,15 +44,15 @@
 RVA(0x000f0db0, 0x48)
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
-    CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
-    POSITION pos = list.GetHeadPosition();
+    CTriggerMgr* manager = g_gameReg->m_triggerMgr;
+    POSITION pos = manager->GetPuddleHeadPosition();
 
     if (pos != NULL) {
         do {
-            CGruntPuddle* p = static_cast<CGruntPuddle*>(list.GetNext(pos));
-            if (p->m_pending == false) {
-                i32 puddleX = p->m_tileX;
-                i32 puddleY = p->m_tileY;
+            CGruntPuddle* p = manager->GetNextPuddle(pos);
+            if (p->IsPending() == false) {
+                i32 puddleX = p->GetTileX();
+                i32 puddleY = p->GetTileY();
                 if (puddleX == tileX && puddleY == tileY) {
                     return 1;
                 }
@@ -186,12 +186,12 @@ L_scanb:
         i32 bestX = 0;
         i32 bestY = 0;
 
-        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
+        POSITION pos = m_triggerMgr->GetPuddleHeadPosition();
         while (pos != NULL) {
-            CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
-            if (gg->m_pending == false) {
-                i32 gx = gg->m_tileX;
-                i32 gy = gg->m_tileY;
+            CGruntPuddle* gg = m_triggerMgr->GetNextPuddle(pos);
+            if (gg->IsPending() == false) {
+                i32 gx = gg->GetTileX();
+                i32 gy = gg->GetTileY();
                 if (RectContains(
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
