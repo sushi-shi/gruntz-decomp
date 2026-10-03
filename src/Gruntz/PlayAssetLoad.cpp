@@ -644,7 +644,7 @@ i32 CState::BuildAssetNamespacePrefixes(
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(IDS_LOADING);
-                RECT r = *(&g_gameReg->World()->m_level->m_viewportRect);
+                RECT r = g_gameReg->World()->m_level->GetViewportRect();
                 RECT r2;
                 CopyRect(&r2, &r);
                 DrawTextToFrontSurface(g_gameReg->World(), &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);

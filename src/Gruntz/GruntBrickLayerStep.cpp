@@ -42,7 +42,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     bool eqI = IsAnimationAct("I");

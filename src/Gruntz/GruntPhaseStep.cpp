@@ -85,7 +85,7 @@ state2: {
             m_arrivalCell.m_x + 5,
             m_arrivalCell.m_y + 5
         );
-        CMapMgr* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->GetTileGrid();
         grid->Clip(&box);
     }
 
@@ -111,15 +111,15 @@ state2: {
         DWORD pt = acc.GetAt(sel);
         i32 px = HIWORD(pt);
         i32 py = LOWORD(pt);
-        CMapMgr* pl = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(px) < g_gameReg->m_tileGrid->GetWidth()
-            && static_cast<u32>(py) < g_gameReg->m_tileGrid->GetHeight()) {
+        CMapMgr* pl = g_gameReg->GetTileGrid();
+        if (static_cast<u32>(px) < g_gameReg->GetTileGrid()->GetWidth()
+            && static_cast<u32>(py) < g_gameReg->GetTileGrid()->GetHeight()) {
             i32 flag = pl->CellFlagsAt(px, py);
             if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
                 if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
                     m_defenderState = AISTATE_COOLDOWN;
                     m_dwell = 0;
-                    CMapMgr* hit = g_gameReg->m_tileGrid;
+                    CMapMgr* hit = g_gameReg->GetTileGrid();
                     hit->Clip(NULL);
                     return 1;
                 }
@@ -127,7 +127,7 @@ state2: {
         }
         acc.RemoveAt(sel, 1);
     }
-    CMapMgr* spent = g_gameReg->m_tileGrid;
+    CMapMgr* spent = g_gameReg->GetTileGrid();
     spent->Clip(NULL);
     m_defenderState = AISTATE_SEEK;
     goto common;
@@ -196,7 +196,7 @@ common: {
         Coord* nc = static_cast<Coord*>(m_coordList.GetAt(next));
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
-        if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
+        if ((g_gameReg->GetTileGrid()->CellFlagsAt(fx, fy) & 0x20) != 0) {
             this->RecycleCoords();
             g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
@@ -213,7 +213,7 @@ common: {
         return 1;
     }
     Coord* head = GetHeadCoord();
-    if ((g_gameReg->m_tileGrid->CellFlagsAt(head->m_x, head->m_y) & 0x20) == 0) {
+    if ((g_gameReg->GetTileGrid()->CellFlagsAt(head->m_x, head->m_y) & 0x20) == 0) {
         return 1;
     }
     m_arrivalCell = *head;

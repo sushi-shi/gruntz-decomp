@@ -139,13 +139,15 @@ i32 CGrunt::StepDefenderBehavior() {
             target.x = occTX;
             target.y = occTY;
             if (PtInRect(&scanBounds, target) != false && m_defenderRadius > 1) {
-                RECT oldBounds = g_gameReg->m_tileGrid->m_bounds;
+                RECT oldBounds = g_gameReg->GetTileGrid()->m_bounds;
                 CDWordArray saved;
                 for (i32 y = oldBounds.top; y < oldBounds.bottom + 1; y++) {
                     for (i32 x = oldBounds.left; x < oldBounds.right + 1; x++) {
-                        if (static_cast<u32>(x) < g_gameReg->m_tileGrid->GetWidth()
-                            && static_cast<u32>(y) < g_gameReg->m_tileGrid->GetHeight()) {
-                            saved.Add(static_cast<DWORD>(g_gameReg->m_tileGrid->CellFlagsAt(x, y)));
+                        if (static_cast<u32>(x) < g_gameReg->GetTileGrid()->GetWidth()
+                            && static_cast<u32>(y) < g_gameReg->GetTileGrid()->GetHeight()) {
+                            saved.Add(
+                                static_cast<DWORD>(g_gameReg->GetTileGrid()->CellFlagsAt(x, y))
+                            );
                         }
                     }
                 }
@@ -156,30 +158,30 @@ i32 CGrunt::StepDefenderBehavior() {
                      borderX++) {
                     i32 top = cy - m_defenderRadius;
                     i32 bottom = cy + m_defenderRadius;
-                    if (static_cast<u32>(borderX) < g_gameReg->m_tileGrid->GetWidth()
-                        && static_cast<u32>(top) < g_gameReg->m_tileGrid->GetHeight()
+                    if (static_cast<u32>(borderX) < g_gameReg->GetTileGrid()->GetWidth()
+                        && static_cast<u32>(top) < g_gameReg->GetTileGrid()->GetHeight()
                         && (borderX != occTX || top != occTY)) {
-                        g_gameReg->m_tileGrid->CellFlagsAtUnchecked(borderX, top) = 1;
+                        g_gameReg->GetTileGrid()->CellFlagsAtUnchecked(borderX, top) = 1;
                     }
-                    if (static_cast<u32>(borderX) < g_gameReg->m_tileGrid->GetWidth()
-                        && static_cast<u32>(bottom) < g_gameReg->m_tileGrid->GetHeight()
+                    if (static_cast<u32>(borderX) < g_gameReg->GetTileGrid()->GetWidth()
+                        && static_cast<u32>(bottom) < g_gameReg->GetTileGrid()->GetHeight()
                         && (borderX != occTX || bottom != occTY)) {
-                        g_gameReg->m_tileGrid->CellFlagsAtUnchecked(borderX, bottom) = 1;
+                        g_gameReg->GetTileGrid()->CellFlagsAtUnchecked(borderX, bottom) = 1;
                     }
                 }
                 for (i32 borderY = cy - m_defenderRadius; borderY < cy + m_defenderRadius + 1;
                      borderY++) {
                     i32 left = cx - m_defenderRadius;
                     i32 right = cx + m_defenderRadius;
-                    if (static_cast<u32>(left) < g_gameReg->m_tileGrid->GetWidth()
-                        && static_cast<u32>(borderY) < g_gameReg->m_tileGrid->GetHeight()
+                    if (static_cast<u32>(left) < g_gameReg->GetTileGrid()->GetWidth()
+                        && static_cast<u32>(borderY) < g_gameReg->GetTileGrid()->GetHeight()
                         && (left != occTX || borderY != occTY)) {
-                        g_gameReg->m_tileGrid->CellFlagsAtUnchecked(left, borderY) = 1;
+                        g_gameReg->GetTileGrid()->CellFlagsAtUnchecked(left, borderY) = 1;
                     }
-                    if (static_cast<u32>(right) < g_gameReg->m_tileGrid->GetWidth()
-                        && static_cast<u32>(borderY) < g_gameReg->m_tileGrid->GetHeight()
+                    if (static_cast<u32>(right) < g_gameReg->GetTileGrid()->GetWidth()
+                        && static_cast<u32>(borderY) < g_gameReg->GetTileGrid()->GetHeight()
                         && (right != occTX || borderY != occTY)) {
-                        g_gameReg->m_tileGrid->CellFlagsAtUnchecked(right, borderY) = 1;
+                        g_gameReg->GetTileGrid()->CellFlagsAtUnchecked(right, borderY) = 1;
                     }
                 }
 
@@ -189,9 +191,9 @@ i32 CGrunt::StepDefenderBehavior() {
                 for (i32 restoreY = oldBounds.top; restoreY < oldBounds.bottom + 1; restoreY++) {
                     for (i32 restoreX = oldBounds.left; restoreX < oldBounds.right + 1;
                          restoreX++) {
-                        if (static_cast<u32>(restoreX) < g_gameReg->m_tileGrid->GetWidth()
-                            && static_cast<u32>(restoreY) < g_gameReg->m_tileGrid->GetHeight()) {
-                            g_gameReg->m_tileGrid->CellFlagsAtUnchecked(restoreX, restoreY) =
+                        if (static_cast<u32>(restoreX) < g_gameReg->GetTileGrid()->GetWidth()
+                            && static_cast<u32>(restoreY) < g_gameReg->GetTileGrid()->GetHeight()) {
+                            g_gameReg->GetTileGrid()->CellFlagsAtUnchecked(restoreX, restoreY) =
                                 saved.GetAt(savedIndex++);
                         }
                     }
@@ -254,7 +256,7 @@ i32 CGrunt::StepDefenderBehavior() {
         TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
     }
 
-    CMapMgr* grid = g_gameReg->m_tileGrid;
+    CMapMgr* grid = g_gameReg->GetTileGrid();
     grid->Clip(NULL);
 
     return 1;

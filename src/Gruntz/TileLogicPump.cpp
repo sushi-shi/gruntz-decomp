@@ -423,7 +423,7 @@ i32 CCheckpointTrigger::Act() {
 
     i32 gy = pad->m_tileY;
     i32 gx = pad->m_tileX;
-    CMapMgr* grid = g_gameReg->m_tileGrid;
+    CMapMgr* grid = g_gameReg->GetTileGrid();
     i32 owner;
     if (static_cast<u32>(gx) < grid->GetWidth() && static_cast<u32>(gy) < grid->GetHeight()) {
         owner = grid->m_rows[gy][gx].m_occupantId;

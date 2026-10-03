@@ -191,7 +191,7 @@ i32 CObjectDropper::Update() {
                         CGameObject* fo = found->m_object;
                         i32 fx = fo->m_screenX;
                         i32 fy = fo->m_screenY;
-                        CMapMgr* plane = g_gameReg->m_tileGrid;
+                        CMapMgr* plane = g_gameReg->GetTileGrid();
                         i32 cx = fx >> TILE_SHIFT_PX;
                         i32 cy = fy >> TILE_SHIFT_PX;
                         u32 flags = plane->CellFlagsAt(cx, cy);
@@ -350,7 +350,7 @@ i32 CDroppedObject::AdvanceFall() {
     i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
     if (landed > m_landY) {
         i32 x = m_object->m_screenX;
-        CMapMgr* g = g_gameReg->m_tileGrid;
+        CMapMgr* g = g_gameReg->GetTileGrid();
         i32 cell;
         {
             i32 cx = x >> TILE_SHIFT_PX;

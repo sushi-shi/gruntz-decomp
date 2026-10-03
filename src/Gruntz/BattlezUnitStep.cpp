@@ -82,7 +82,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             if (g->TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
-            g->m_arrivalCell.Set(nb->m_playerIndex, nb->m_unitIndex);
+            g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
             g->m_defenderState = AISTATE_ATTACK;
             g->m_dwell = 0;
             AcceptAlways(g);
@@ -123,7 +123,7 @@ inflight: {
     }
     if (nb != NULL && cur != nb) {
         g->RecycleCoords();
-        g->m_arrivalCell.Set(nb->m_playerIndex, nb->m_unitIndex);
+        g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
         g->m_defenderState = AISTATE_ATTACK;
         g->m_dwell = 0;
         {

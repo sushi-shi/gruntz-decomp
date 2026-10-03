@@ -179,6 +179,13 @@ public:
     inline PickupType ArrivalPickup() const;
     inline void BuildUnitSearchBox(RECT* box, i32 radius);
     inline Coord ScanCell();
+    i32 GetPlayerIndex() const {
+        return m_playerIndex;
+    }
+    i32 GetUnitIndex() const {
+        return m_unitIndex;
+    }
+
     inline i32 GetScreenTileY() const;
     inline i32 GetScreenTileX() const;
     inline void MirrorAcrossArrival();

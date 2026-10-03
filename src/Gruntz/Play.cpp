@@ -532,7 +532,7 @@ i32 CPlay::Render() {
         DrawWorldView();
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
         m_statusBar->LoadMainStatusBarSprite();
-        m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
+        m_mgr->GetTileGrid()->UpdateDiagonals(m_mgr);
 
         if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
             && m_statusBar->m_activeTab != TAB_GAME) {
@@ -594,9 +594,7 @@ i32 CPlay::Render() {
 
                 CString tmp;
                 tmp.Format("%d", secsLeft);
-                RECT lvl = g_gameReg->World()->m_level->m_viewportRect;
-                RECT box;
-                CopyRect(&box, &lvl);
+                CRect box(g_gameReg->World()->m_level->GetViewportRect());
                 DrawTextToBackSurface(g_gameReg->World(), &tmp, &box, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
@@ -1274,17 +1272,17 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    self->m_mgr->m_tileGrid->Reset();
+    self->m_mgr->GetTileGrid()->Reset();
 
     {
         CDDrawWorkerHost* mainPlane =
             static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
-        CGruntzMapMgr* tileGrid = self->m_mgr->m_tileGrid;
+        CGruntzMapMgr* tileGrid = self->m_mgr->GetTileGrid();
         if (!tileGrid->BuildCellAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
             goto fail0;
         }
     }
-    if (!(static_cast<CMapMgr*>(self->m_mgr->m_tileGrid))->UpdateDiagonals(self->m_mgr)) {
+    if (!(static_cast<CMapMgr*>(self->m_mgr->GetTileGrid()))->UpdateDiagonals(self->m_mgr)) {
         goto fail0;
     }
 
@@ -1465,7 +1463,7 @@ void CPlay::OnExit() {
     if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
         g_gameReg->m_gameMode = GAMEMODE_NONE;
     }
-    g_gameReg->m_tileGrid->Reset();
+    g_gameReg->GetTileGrid()->Reset();
 }
 
 RVA(0x000cb480, 0x22c)
@@ -2622,7 +2620,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 RECT span = {0, 0, 0, 0};
                 CGrunt* p =
                     g_gameReg->m_triggerMgr->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
-                if (p == NULL || g_curPlayer != p->m_playerIndex) {
+                if (p == NULL || g_curPlayer != p->GetPlayerIndex()) {
                     goto waypoint_cancel;
                 }
                 m_mgr->m_commandMgr->EnqueueSingle(
@@ -2689,7 +2687,7 @@ drag_box: {
     if (m_mgr->GetFrameGate() != false) {
         goto ret1;
     }
-    LevelCoordRect wr = m_mgr->m_world->m_level->m_viewportRect;
+    LevelCoordRect wr = m_mgr->m_world->m_level->GetViewportRect();
     if (!(x < wr.right && x >= wr.left && y < wr.bottom)) {
         goto ret1;
     }
@@ -2790,7 +2788,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
         m_worldReady = false;
         m_dragSnapActive = false;
         if (m_statusBar->m_position != STATUSBAR_HIDDEN) {
-            LevelCoordRect vp = m_world->m_level->m_viewportRect;
+            LevelCoordRect vp = m_world->m_level->GetViewportRect();
             if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
                 return m_statusBar->OnPointerRelease(keyFlags, x, y);
             }
@@ -2830,7 +2828,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
 
-    RECT rc = m_world->m_level->m_viewportRect;
+    RECT rc = m_world->m_level->GetViewportRect();
     if (x < rc.left || x > rc.right || y < rc.top || y > rc.bottom) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
@@ -2956,7 +2954,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
     CGameLevel* ph = m_mgr->m_world->m_level;
-    LevelCoordRect pr = ph->m_viewportRect;
+    LevelCoordRect pr = ph->GetViewportRect();
     if (::PtInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
@@ -3398,9 +3396,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
 
 RVA(0x000d00a0, 0x5a)
 void CPlay::PostSetup(HDC dc) {
-    RECT src = *(&m_world->m_level->m_viewportRect);
-    RECT dst;
-    CopyRect(&dst, &src);
+    CRect dst(m_world->m_level->GetViewportRect());
     m_mgr->ChatLog()->DrawTextLines(8, dc, &dst, 0x10);
 }
 
@@ -3775,9 +3771,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     }
 
     if (m_drewThisFrame != false) {
-        RECT vp = m_world->m_level->m_viewportRect;
-        RECT clip;
-        CopyRect((&clip), (&vp));
+        CRect clip(m_world->m_level->GetViewportRect());
         target->DecodeThunk(
             m_pathPreviewSource.x,
             m_pathPreviewSource.y,
@@ -3825,7 +3819,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         return m_statusBar->HandlePointerDrag(keyFlags, x, y);
     }
 
-    box = m_world->m_level->m_viewportRect;
+    box = m_world->m_level->GetViewportRect();
     if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
 
         if (m_dragInProgress != false) {
@@ -4048,7 +4042,7 @@ void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
-            LevelCoordRect vp = m_world->m_level->m_viewportRect;
+            LevelCoordRect vp = m_world->m_level->GetViewportRect();
             i32 cx = vp.left + (vp.right - vp.left) / 2;
             i32 cy = vp.top + (vp.bottom - vp.top) / 2;
             LayerBlitFrame(m_world, frame, cx, cy, useFront, true);
@@ -4063,7 +4057,7 @@ void CPlay::LoadSBITextEdges(i32 msgId) {
 
     RECT rect;
 
-    RECT vp = m_world->m_level->m_viewportRect;
+    RECT vp = m_world->m_level->GetViewportRect();
     GET_TEXT_BOUNDS(rect, vp);
 
     DrawTextToFrontSurface(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -4095,7 +4089,7 @@ void CPlay::PlayCueAt(
         GET_TEXT_BOUNDS(rect, *rectSrc);
     } else {
 
-        RECT vp = m_world->m_level->m_viewportRect;
+        RECT vp = m_world->m_level->GetViewportRect();
         GET_TEXT_BOUNDS(rect, vp);
     }
 
@@ -5127,7 +5121,7 @@ i32 CPlay::ValidateLevelTiles() {
                 for (i32 k = 3; k != 0; k--, ofs++, row++) {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
-                    CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
+                    CGruntzMapMgr* gg = g_gameReg->GetTileGrid();
                     if (static_cast<u32>(gx) >= gg->GetWidth()
                         || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
@@ -5149,7 +5143,7 @@ i32 CPlay::ValidateLevelTiles() {
                             break;
                     }
                     counts[kind]++;
-                    gg = g_gameReg->m_tileGrid;
+                    gg = g_gameReg->GetTileGrid();
                     if (static_cast<u32>(gx) >= gg->GetWidth()
                         || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
@@ -5159,7 +5153,7 @@ i32 CPlay::ValidateLevelTiles() {
                 }
             }
         } else if (dispatch == DispatchToobSpikezLogic) {
-            CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
+            CGruntzMapMgr* gg = g_gameReg->GetTileGrid();
             i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
             i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
             if (static_cast<u32>(tileX) < gg->GetWidth()
@@ -6929,7 +6923,7 @@ i32 CPlay::ClearPlacedObjects() {
         while (!done) {
             if (i < PlacedObjectCellCount(blockIdx)) {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
-                i32 occupantId = g_gameReg->m_tileGrid->ObjectIdAt(obj->m_x, obj->m_y);
+                i32 occupantId = g_gameReg->GetTileGrid()->ObjectIdAt(obj->m_x, obj->m_y);
                 if (occupantId != 0) {
                     CGameObject* result = LookupObjectById(
                         g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
@@ -6937,7 +6931,7 @@ i32 CPlay::ClearPlacedObjects() {
                     );
                     if (result == NULL) {
 
-                        g_gameReg->m_tileGrid->SetObjectIdAt(obj->m_x, obj->m_y, 0);
+                        g_gameReg->GetTileGrid()->SetObjectIdAt(obj->m_x, obj->m_y, 0);
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                         g_coordPool.Push(obj);
