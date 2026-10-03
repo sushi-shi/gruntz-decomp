@@ -6,6 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawChildGroupScanInline.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Globals.h>
 #include <Gruntz/ActReg.h>
@@ -1991,18 +1992,19 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         return 0;
     }
 
-    RECT box;
-    unit->BuildUnitSearchBox(&box, 3);
-    box.right++;
-    box.bottom++;
+    CRect box(
+        unit->ScanCell().m_x - 3,
+        unit->ScanCell().m_y - 3,
+        unit->ScanCell().m_x + 4,
+        unit->ScanCell().m_y + 4
+    );
     {
         CMapMgr* board = m_board;
         board->Clip(&box);
     }
 
     CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
-    coll->m_scanCursor = coll->m_list.GetHeadPosition();
-    CGameObject* g = static_cast<CGameObject*>(coll->Drain());
+    CGameObject* g = coll->FirstSerialChild();
     while (g != NULL) {
         if (g->m_logicRecord->m_dispatch == &DispatchInGameIconLogic
             && !HAS(g->m_stateFlags, SPRITE_STATE_HIDDEN)) {
@@ -2054,8 +2056,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
             i32 gx = g->m_screenX >> TILE_SHIFT_PX;
             i32 gy = g->m_screenY >> TILE_SHIFT_PX;
-            POINT wpt;
-            SET_POINT_COMPONENTS(wpt, gx, gy);
+            CPoint wpt(gx, gy);
             if (PtInRect(&box, wpt)) {
                 if (special != 0 && unit->m_gruntKind == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
@@ -2076,17 +2077,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
 
-        CDDrawChildGroup* c = m_ctx->m_world->ChildGroup();
-        if (c->m_scanCursor == NULL) {
-            g = NULL;
-        } else {
-            CGameObject* pp = c->NextChild(c->m_scanCursor);
-            if (pp->GetClassId() == CLASSID_SERIALREF) {
-                g = pp;
-            } else {
-                g = static_cast<CGameObject*>(c->Drain());
-            }
-        }
+        g = m_ctx->m_world->ChildGroup()->Drain();
     }
     m_board->Clip(static_cast<const RECT*>(0));
     return 0;
@@ -3686,19 +3677,6 @@ void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     result.m_x += m_tileWidthPx / 2;
     result.m_y += m_tileHeightPx / 2;
     *out = result;
-}
-
-RVA(0x00031250, 0x33)
-CGameObject* CDDrawChildGroup::Drain() {
-    for (;;) {
-        if (m_scanCursor == NULL) {
-            return NULL;
-        }
-        CGameObject* data = NextChild(m_scanCursor);
-        if (data->GetClassId() == CLASSID_SERIALREF) {
-            return data;
-        }
-    }
 }
 
 RVA_COMPGEN(0x000312a0, 0x74, ?get@_zdvec@@IAEPAXH@Z)

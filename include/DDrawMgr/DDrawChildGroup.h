@@ -156,7 +156,8 @@ public:
     i32 RectsOverlap(RECT* a, RECT* b);
     i32 BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj);
 
-    CGameObject* Drain();
+    inline CGameObject* Drain();
+    inline CGameObject* FirstSerialChild();
 };
 
 inline CGameObject* CDDrawChildGroup::FirstChild() {
