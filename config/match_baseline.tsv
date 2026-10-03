@@ -549,9 +549,9 @@ battlezmapconfig	?PathToNearestGoal@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z	92.12
 battlezmapconfig	?PickRandomIdleUnit@CBattlezMapConfig@@QAEPAVCGrunt@@H@Z	100.0000	100.0000	7	91adcb3a8388	0x2ad40	100.0000	
 battlezmapconfig	?PickSpawnCoord@CBattlezMapConfig@@QAEPAUCoord@@PAU2@PAVCGrunt@@H@Z	97.9048	97.9048	12	f0334eab47ca	0x30f20	97.9048	
 battlezmapconfig	?Push@?$FreeNodePool@UCoord@@@@QAEXPAX@Z	100.0000	100.0000	4	760c822fd49d	0x311b0	100.0000	
-battlezmapconfig	?RepathAroundBlockedTiles@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	67.3766	67.3766	22	7507291a9fce	0x2a570	77.1948	
+battlezmapconfig	?RepathAroundBlockedTiles@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	94.1221	94.1221	23	3c7a343175be	0x2a570	94.1221	
 battlezmapconfig	?RerouteIdleUnit@CBattlezMapConfig@@QAEXPAVCGrunt@@HHHHH@Z	100.0000	100.0000	3	7ae1cdebce52	0x29af0	100.0000	
-battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.4787	81.4787	25	e99afa49c5a4	0x2c690	88.0250	
+battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.4787	81.4787	26	d888d9217c28	0x2c690	88.0250	
 battlezmapconfig	?ResolveTileClaim@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	85.4232	85.4232	11	920f464d87c4	0x2dfa0	85.4232	
 battlezmapconfig	?RouteToNearbyEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	79.8565	79.8565	22	224d9109d439	0x2e3a0	85.0284	
 battlezmapconfig	?RouteToNearbyPickup@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	84.8895	84.8895	12	954ba8768c40	0x2c140	94.8459	
@@ -2022,11 +2022,11 @@ grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	a4660e013afa	0x49c
 grunt	?LoadCellAnimNames@CGrunt@@QAEXHH@Z	100.0000	100.0000	4	654bf693dbed	0x48470	100.0000	
 grunt	?LoadGruntTypeTable@CGrunt@@QAEHW4PickupType@@HHH@Z	95.8757	95.8757	31	0170796f7435	0x4dd50	95.8757	
 grunt	?OnObjectRemoved@CGrunt@@UAEXXZ	100.0000	100.0000	8	e3934a21f63c	0x48360	100.0000	
-grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAUtagRECT@@W4GruntEntranceMode@@@Z	89.8983	89.8983	16	f89603cac513	0x4d800	89.8983	
+grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAUtagRECT@@W4GruntEntranceMode@@@Z	93.1123	93.1123	17	fe48317effdf	0x4d800	93.1123	
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	2	f19d28fc085f	0x48400	100.0000	
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	8	45fd6a8d9919	0x4d060	100.0000	
 grunt	?SetFacing@CGrunt@@QAEXHUGruntDirectionCell@@@Z	95.3966	95.3966	10	90089eee2fae	0x4ac10	95.3966	
-grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	0.0000	0.0000	24	7e45b2d508ee	0x4b370	32.8881	
+grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	0.0000	0.0000	25	7f1482814611	0x4b370	32.8881	
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	73.7318	73.7318	33	95594efafe64	0x4c170	76.5825	
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	100.0000	100.0000	4	f6ef204884b1	0x4b320	100.0000	
 gruntarrivalneighbor	?StepPostGuardBehavior@CGrunt@@QAEHXZ	100.0000	100.0000	16	e37f5a98a616	0xf26f0	100.0000	
@@ -2052,7 +2052,7 @@ gruntcombat	?EntranceTileOffset@CGrunt@@QAEPAUCoord@@PAU2@@Z	100.0000	100.0000	3
 gruntcombat	?FinalizeStep@CGrunt@@UAEXPAD@Z	96.3685	96.3685	15	0cf919ecf0eb	0x5ecd0	96.3685	
 gruntcombat	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	10	25037163031d	0x5b6f0	100.0000	
 gruntcombat	?FireActivation@CGrunt@@UAEXH@Z	100.0000	100.0000	4	a551b1c6a238	0x5bcd0	100.0000	
-gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	99.1168	99.1168	17	099e821cffb8	0x59230	99.1168	
+gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	99.1168	99.1168	18	319ced579123	0x59230	99.1168	
 gruntcombat	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	100.0000	100.0000	20	0219f7061419	0x57100	100.0000	
 gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.8778	73.8778	40	6ff7aa629c3f	0x597a0	75.8557	
 gruntcombat	?Lookup@SoundCueRegistry@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	3	2d2eb61ed13a	0x5b7e0	100.0000	
