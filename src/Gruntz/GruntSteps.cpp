@@ -748,7 +748,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     if (m_entranceCommitted == false) {
         return 1;
     }
-    i32 flags = g_gameReg->m_tileGrid->CellFlagsAt(tileX, tileY);
+    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(tileX, tileY);
     if ((flags & 0xd39) || (flags & 0x82)) {
         return 0;
     }

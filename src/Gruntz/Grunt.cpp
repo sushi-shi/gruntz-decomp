@@ -1307,7 +1307,7 @@ label_4cb4b:
     SetFacing(0x3e8, rec);
     {
         m_commitPx = m_lastTilePx;
-        g_gameReg->m_tileGrid->ReleaseCellOccupancy(
+        g_gameReg->GetTileGrid()->ReleaseCellOccupancy(
             m_lastTilePx.m_x >> TILE_SHIFT_PX,
             m_lastTilePx.m_y >> TILE_SHIFT_PX
         );
