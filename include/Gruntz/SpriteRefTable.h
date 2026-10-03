@@ -6,6 +6,7 @@
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/SpriteTeamColorVariant.h>
 #include <Ints.h>
 
 class CSpriteRef {
@@ -43,6 +44,28 @@ public:
     void Clear();
 
     CSpriteRef* GetTool(i32 colorId);
+
+    void GetToolColor(i32 colorId, SpriteTeamColorVariant variant, u16& color) {
+        CSpriteRef* sprite = GetTool(colorId);
+        if (sprite == NULL) {
+            color = 0;
+            return;
+        }
+        switch (variant) {
+            case SPRITE_TEAM_COLOR_PRIMARY:
+                color = sprite->m_teamColor1;
+                break;
+            case SPRITE_TEAM_COLOR_SECONDARY:
+                color = sprite->m_teamColor2;
+                break;
+            case SPRITE_TEAM_COLOR_TERTIARY:
+                color = sprite->m_teamColor3;
+                break;
+            default:
+                color = sprite->m_teamColor1;
+                break;
+        }
+    }
 
     CSpriteRef* GetToy(i32 colorId);
 
