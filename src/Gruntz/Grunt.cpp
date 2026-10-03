@@ -1252,7 +1252,6 @@ label_4c6e4:
             goto label_4cb4b;
         }
     }
-    // Scalar comparison preserves the CString constructor and vector-get call boundary.
     if (targetPixel.m_x == m_entrancePx.m_x && targetPixel.m_y == m_entrancePx.m_y) {
         if ((flagHead & BRICKZ_BLOCKED_MASK) == 0) {
             goto label_4c92b;

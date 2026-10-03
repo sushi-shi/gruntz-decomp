@@ -2481,7 +2481,6 @@ void CGrunt::AdvanceMotion() {
             return;
         }
         Coord entrance = EntrancePx();
-        // Scalar comparison preserves nested array error-handler and reallocation calls.
         if (m_lastTilePx.m_x == entrance.m_x && m_lastTilePx.m_y == entrance.m_y) {
             m_arrivalPhase = 0;
             ResetEntranceAnimation(1, 0, 0);
