@@ -39,7 +39,6 @@
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementInline.h>
-#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
@@ -48,6 +47,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeTableInline.h>
@@ -681,7 +681,7 @@ i32 CGrunt::PathScan() {
                             s.AddTail(g_coordPool.PopCopy(*src));
                         }
 
-                        RecycleGruntCoords(this);
+                        this->RecycleCoords();
 
                         POSITION p = s.GetHeadPosition();
                         if (p != NULL) {
@@ -752,7 +752,7 @@ i32 CGrunt::PathScan() {
                         RECYCLE_HEAD_COORD(s)
                         if (!s.IsEmpty()) {
 
-                            RecycleGruntCoords(this);
+                            this->RecycleCoords();
 
                             POSITION p = s.GetHeadPosition();
                             if (p != NULL) {
@@ -1431,7 +1431,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
 
         if (!m_coordList.IsEmpty()) {
-            RECYCLE_GRUNT_COORDS(this)
+            this->RecycleCoords();
         }
         this->m_arrivalPending = false;
     }

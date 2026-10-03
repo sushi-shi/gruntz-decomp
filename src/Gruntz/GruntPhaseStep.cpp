@@ -197,7 +197,7 @@ common: {
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
         if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
-            RecycleGruntCoords(this);
+            this->RecycleCoords();
             g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
@@ -217,7 +217,7 @@ common: {
         return 1;
     }
     m_arrivalCell = *head;
-    RecycleGruntCoords(this);
+    this->RecycleCoords();
     m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;
 }

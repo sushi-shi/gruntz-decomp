@@ -90,7 +90,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 m_neighborScanEnabled = false;
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
                 m_defenderState = AISTATE_RETREAT;
                 return 1;
             }
@@ -136,7 +136,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
             m_neighborScanEnabled = false;
-            RecycleGruntCoords(this);
+            this->RecycleCoords();
             m_defenderState = AISTATE_RETREAT;
             return 1;
         }
@@ -168,7 +168,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
             m_neighborScanEnabled = false;
-            RecycleGruntCoords(this);
+            this->RecycleCoords();
             m_defenderState = AISTATE_RETREAT;
             m_dwell = DWELL_REPATH_MS;
             return 1;

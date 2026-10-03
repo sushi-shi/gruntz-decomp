@@ -15,8 +15,8 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
-#include <Gruntz/LightFx.h>
 #include <Gruntz/LevelCollisionInline.h>
+#include <Gruntz/LightFx.h>
 #include <Gruntz/MapCellInline.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/PickupType.h>

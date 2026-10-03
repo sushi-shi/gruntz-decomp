@@ -186,7 +186,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         }
     }
 
-    RecycleGruntCoords(this);
+    this->RecycleCoords();
 
     i32 count;
     ar->Read(&count, sizeof(count));

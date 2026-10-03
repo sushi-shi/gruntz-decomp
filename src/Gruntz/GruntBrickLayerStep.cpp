@@ -104,12 +104,12 @@ i32 CGrunt::StepBrickLayerBehavior() {
         if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
                 return 1;
             }
         } else {
             if (atTarget) {
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
                 return 1;
             }
         }
