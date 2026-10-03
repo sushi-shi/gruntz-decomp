@@ -2695,7 +2695,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             continue;
         }
         for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-            CGrunt* u = m_triggerMgr->m_units[band * TM_UNITS_PER_PLAYER + i];
+            CGrunt* u = m_triggerMgr->UnitAt(band, i);
             if (u == NULL) {
                 continue;
             }
@@ -2737,8 +2737,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             }
             Coord c;
             u->GetScreenTile(&c);
-            POINT wpt;
-            SET_POINT_COMPONENTS(wpt, c.m_x, c.m_y);
+            CPoint wpt(c.m_x, c.m_y);
             if (!PtInRect(&box, wpt)) {
                 continue;
             }
