@@ -3444,8 +3444,8 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             }
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindSwitchLogic(node, TRIGID_ANY);
             if (rec != NULL) {
-                i32 cx = rec->m_tileX;
-                i32 cy = rec->m_tileY;
+                i32 cx = rec->GetTileX();
+                i32 cy = rec->GetTileY();
                 if (IsCoordOccupied(unit, cx, cy) != 0) {
                     return 1;
                 }
@@ -3459,8 +3459,8 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             }
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindSwitchLogic(node, TRIGID_ANY);
             if (rec != NULL) {
-                i32 cx = rec->m_tileX;
-                i32 cy = rec->m_tileY;
+                i32 cx = rec->GetTileX();
+                i32 cy = rec->GetTileY();
                 i32 dx = cx - goal.m_x;
                 i32 dy = cy - goal.m_y;
                 dx = abs(dx);

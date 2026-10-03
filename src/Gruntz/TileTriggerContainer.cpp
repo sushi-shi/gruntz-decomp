@@ -847,7 +847,7 @@ void* CTileTriggerContainer::DeserializeLogic(
             obj->SetType(id);
 
             CGameLevel* level = g_gameReg->World()->m_level;
-            TileCollisionKind tileKind = PbResolveCell(level, obj->m_tileX, obj->m_tileY);
+            TileCollisionKind tileKind = PbResolveCell(level, obj->GetTileX(), obj->GetTileY());
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {
                 this->m_latchedLeaf = obj;
             }
