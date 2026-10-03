@@ -2701,7 +2701,7 @@ imageset3	?ScanRunLeftForValue@CPixelTileImageSet@@UAEHHHHPAH@Z	100.0000	100.000
 imageset3g	?FreePixels@CPixelTileImageSet@@UAEXXZ	100.0000	100.0000	2	df5c7f3450a5	0x1614b0	100.0000	
 imageset3g	?GetCollisionAt@CPixelTileImageSet@@UAE?AW4TileCollisionKind@@HH@Z	100.0000	100.0000	2	b7171dc10119	0x161570	100.0000	
 imageset3g	?GetKind@CPixelTileImageSet@@UAEHXZ	100.0000	100.0000	2	fd88b2068ca8	0x1614d0	100.0000	
-imageset3g	?GetStride@CPixelTileImageSet@@UAEHXZ	100.0000	99.5000	3	9d0b3c044182	0x161590	100.0000	
+imageset3g	?GetStride@CPixelTileImageSet@@UAEHXZ	99.5000	99.5000	4	554173c40826	0x161590	100.0000	
 imageset3g	?Parse@CPixelTileImageSet@@UAEHPAUWwdTileImageRecord@@@Z	100.0000	100.0000	5	de877c573a7f	0x166d70	100.0000	
 imageset3g	?ScanDown@CPixelTileImageSet@@UAEHHHPAH0@Z	100.0000	100.0000	3	ce173eaafc4b	0x167050	100.0000	
 imageset3g	?ScanDownForValue@CPixelTileImageSet@@UAEHHHHPAH@Z	100.0000	100.0000	3	c6664bc89b39	0x1670d0	100.0000	
@@ -3683,7 +3683,7 @@ savegame	?Encode@CSaveGame@@QAEHPAE@Z	100.0000	83.7083	1	8cb42874daa3	0xe5410	10
 savegame	?GetSlot@CSaveGame@@QAEPAUSaveSlot@@H@Z	100.0000	100.0000	2	368730c0d70a	0xe54b0	100.0000	
 savegame	?Init@CSaveGame@@QAEXXZ	100.0000	100.0000	1	79989966b4bc	0xe4d50	100.0000	
 savegame	?InitializeLevelSlot@CSaveGame@@QAEHPAUSaveSlot@@HPAVCGruntzMgr@@@Z	100.0000	100.0000	4	11d8477ef90b	0xe5240	100.0000	
-savegame	?InitializeNamedSlot@CSaveGame@@QAEHPAUSaveSlot@@PBDPAVCGruntzMgr@@@Z	100.0000	100.0000	4	02fddbad5144	0xe5130	100.0000	
+savegame	?InitializeNamedSlot@CSaveGame@@QAEHPAUSaveSlot@@PBDPAVCGruntzMgr@@@Z	100.0000	100.0000	5	8650a8759a25	0xe5130	100.0000	
 savegame	?InitializeNamedSlotAt@CSaveGame@@QAEHHPBDPAVCGruntzMgr@@@Z	100.0000	100.0000	2	42f4c80075b6	0xe54e0	100.0000	
 savegame	?InitializeSaveDirectory@CSaveGame@@QAEHPBD@Z	100.0000	100.0000	4	876ded27a8ee	0xe4b60	100.0000	
 savegame	?Load@CSaveGame@@QAEHXZ	100.0000	100.0000	5	a5fa41f1fb5f	0xe4d90	100.0000	
