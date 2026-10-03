@@ -226,6 +226,14 @@ public:
         return m_lastTilePx;
     }
 
+    BattlezTask GetBattlezTask() const {
+        return m_battleState;
+    }
+
+    void SetBattlezTask(BattlezTask task) {
+        m_battleState = task;
+    }
+
     GruntAiState GetDefenderState() const {
         return m_defenderState;
     }

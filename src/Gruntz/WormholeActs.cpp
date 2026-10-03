@@ -97,7 +97,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 );
                 loser->m_clearedRound = true;
             }
-            g_gameReg->m_gameStats->RecordFlagCapture(hitPlayerIndex, owningPlayer);
+            g_gameReg->GetGameStats()->RecordFlagCapture(hitPlayerIndex, owningPlayer);
             g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(owningPlayer);
             g_gameReg->GetTriggerMgr()
                 ->StartUnitDeath(hitPlayerIndex, hitUnitIndex, DEATH_EXIT, -1);

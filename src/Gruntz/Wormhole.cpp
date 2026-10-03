@@ -470,7 +470,7 @@ i32 CTeleporter::Update() {
 
     if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SECRET) {
         found->TryTeleportToCell(m_object->m_speed.m_x, m_object->m_speed.m_y, true, true);
-        g_gameReg->m_gameStats->m_secretsFound++;
+        g_gameReg->GetGameStats()->m_secretsFound++;
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
         CWwdSpriteObject* s = m_object;
         Coord spawnPosition(s->m_powerup, s->m_damage);

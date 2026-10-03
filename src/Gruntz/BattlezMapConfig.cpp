@@ -568,7 +568,7 @@ candidateFound:
     CGrunt** r2 = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (i32 k = TM_UNITS_PER_PLAYER; k != 0; k--) {
         CGrunt* g = *r2;
-        if (g != NULL && g->m_battleState == BZTASK_UNASSIGNED) {
+        if (g != NULL && g->GetBattlezTask() == BZTASK_UNASSIGNED) {
             freeCount++;
         }
         r2++;
@@ -578,9 +578,9 @@ candidateFound:
          * static_cast<double>(m_gruntRatio) * g_diffScale)
     );
     if (roll >= m_defenderChance || freeCount >= budget) {
-        unit->m_battleState = BZTASK_ADVANCE;
+        unit->SetBattlezTask(BZTASK_ADVANCE);
     } else {
-        unit->m_battleState = BZTASK_UNASSIGNED;
+        unit->SetBattlezTask(BZTASK_UNASSIGNED);
     }
     unit->m_arrivalState = AI_BATTLEZ_PATH;
     unit->SetDefenderState(AISTATE_SEEK);
@@ -1306,7 +1306,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         i32 sgx = pt.m_x;
         BrickzCell currentCell = m_board->CellAt(sgx, sgy);
 
-        if ((currentCell.m_flags & 0x4) && unit->m_battleState != BZTASK_SEEK_SWITCH) {
+        if ((currentCell.m_flags & 0x4) && unit->GetBattlezTask() != BZTASK_SEEK_SWITCH) {
             (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt));
             i32 rx = pt.m_x;
             (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
@@ -1315,7 +1315,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (rec->m_typeId == TRIGID_SWITCH_2) {
                 unit->SetDefenderState(AISTATE_SEEK);
                 unit->RecycleCoords();
-                unit->m_battleState = BZTASK_SEEK_SWITCH;
+                unit->SetBattlezTask(BZTASK_SEEK_SWITCH);
                 unit->m_dwell = 0;
                 return 0;
             }
@@ -1353,7 +1353,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         i32 pathHeadFlags = pathHeadCell.m_flags;
         if ((pathHeadFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && prim == PICKUP_BRICK
-            && unit->m_battleState == BZTASK_CARRY_BRICK) {
+            && unit->GetBattlezTask() == BZTASK_CARRY_BRICK) {
             m_triggerMgr->UseEquippedToolAt(
                 unit->GetPlayerIndex(),
                 unit->GetUnitIndex(),
@@ -2220,7 +2220,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         }
     }
 
-    if ((dest.m_flags & 4) && g->m_battleState != BZTASK_SEEK_SWITCH) {
+    if ((dest.m_flags & 4) && g->GetBattlezTask() != BZTASK_SEEK_SWITCH) {
         Coord tp;
         i32 keyHi = g->GetScreenTileX();
         g->GetScreenTile(&tp);
@@ -2229,14 +2229,14 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (r->m_typeId == TRIGID_SWITCH_2) {
             g->SetDefenderState(AISTATE_SEEK);
             g->RecycleCoords();
-            g->m_battleState = BZTASK_SEEK_SWITCH;
+            g->SetBattlezTask(BZTASK_SEEK_SWITCH);
             g->m_dwell = 0;
             return 0;
         }
     }
 
     if ((maskFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && type == PICKUP_BRICK
-        && g->m_battleState == BZTASK_CARRY_BRICK) {
+        && g->GetBattlezTask() == BZTASK_CARRY_BRICK) {
         m_triggerMgr->UseEquippedToolAt(
             g->GetPlayerIndex(),
             g->GetUnitIndex(),
@@ -2248,7 +2248,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if ((maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) && type == PICKUP_BRICK
-        && g->m_battleState == BZTASK_CARRY_BRICK) {
+        && g->GetBattlezTask() == BZTASK_CARRY_BRICK) {
         if (m_board->CellTypeAt(first.m_x, first.m_y) != TILEKIND_GAUNTLET_BRICK_C) {
             m_triggerMgr->UseEquippedToolAt(
                 g->GetPlayerIndex(),
@@ -3033,7 +3033,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             i32 nIdle = 0;
             for (i32 s = TM_UNITS_PER_PLAYER; s != 0; s--) {
                 CGrunt* u = *units;
-                if (u != NULL && u->m_battleState == BZTASK_CARRY_BRICK) {
+                if (u != NULL && u->GetBattlezTask() == BZTASK_CARRY_BRICK) {
                     nIdle++;
                 }
                 units++;
@@ -3046,14 +3046,14 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 if (u == NULL) {
                     continue;
                 }
-                if (u->m_battleState != BZTASK_UNASSIGNED) {
+                if (u->GetBattlezTask() != BZTASK_UNASSIGNED) {
                     continue;
                 }
                 if (u->m_poweredUp != false) {
                     continue;
                 }
                 u->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
-                u->m_battleState = BZTASK_CARRY_BRICK;
+                u->SetBattlezTask(BZTASK_CARRY_BRICK);
                 u->RecycleCoords();
             }
             return 1;
@@ -3276,7 +3276,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (;;) {
         CGrunt* unit = *units;
-        if (unit != NULL && unit != selfUnit && unit->m_battleState != BZTASK_SEEK_SWITCH) {
+        if (unit != NULL && unit != selfUnit && unit->GetBattlezTask() != BZTASK_SEEK_SWITCH) {
 
             if (!unit->CoordsEmpty()) {
                 POSITION node = unit->CoordHead();
@@ -3330,7 +3330,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
     if (src->m_gruntKind == GRUNT_GHOST) {
         return 0;
     }
-    if (src->m_battleState == BZTASK_ADVANCE) {
+    if (src->GetBattlezTask() == BZTASK_ADVANCE) {
         if (src->ArrivalCell().m_x != m_playerIndex) {
             return 0;
         }
@@ -3341,13 +3341,13 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
             continue;
         }
         b32 ok = true;
-        if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
+        if (u->GetBattlezTask() == BZTASK_ASSIGNED_TARGET) {
             Coord arrival = u->ArrivalCell();
             if (arrival.m_x == targetPlayer && arrival.m_y == targetUnit) {
                 ok = false;
             }
         }
-        if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
+        if (u->GetBattlezTask() == BZTASK_ASSIGNED_TARGET) {
             Coord arrival = u->ArrivalCell();
             if (!(arrival.m_x == targetPlayer && arrival.m_y == targetUnit) && (rand() % 3) != 0) {
                 ok = false;
@@ -3357,7 +3357,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
             continue;
         }
         Coord current = ScreenTile(u);
-        if (u->m_battleState == BZTASK_ADVANCE && u->m_targetTeam != -1) {
+        if (u->GetBattlezTask() == BZTASK_ADVANCE && u->m_targetTeam != -1) {
             Coord marker = m_ctx->m_players[u->m_targetTeam].GetBattlezConfig()->m_marker;
             i32 dx = marker.m_x - current.m_x;
             i32 dy = marker.m_y - current.m_y;
@@ -3371,7 +3371,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
             continue;
         }
         u->m_arrivalCell.m_x = targetPlayer;
-        u->m_battleState = BZTASK_ASSIGNED_TARGET;
+        u->SetBattlezTask(BZTASK_ASSIGNED_TARGET);
         u->m_arrivalCell.m_y = targetUnit;
         u->SetDefenderState(AISTATE_ATTACK);
         u->m_routeBlockedMask =
@@ -3429,7 +3429,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     unit->m_defenderQueuePosition = 0;
     unit->m_dwell = 0;
     unit->m_blockedVoicePending = true;
-    unit->m_battleState = BZTASK_ADVANCE;
+    unit->SetBattlezTask(BZTASK_ADVANCE);
     return 1;
 }
 

@@ -81,19 +81,19 @@ i32 CGrunt::LoadPickupSprites(
     if (countStats != 0) {
         if (type >= PICKUP_EQUIPPABLE_FIRST && type <= PICKUP_EQUIPPABLE_LAST
             && type != PICKUP_WARPSTONE) {
-            g_gameReg->m_gameStats->m_toolzCollected++;
-            g_gameReg->m_gameStats
+            g_gameReg->GetGameStats()->m_toolzCollected++;
+            g_gameReg->GetGameStats()
                 ->m_weaponPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_BOMB)]++;
         } else if (type >= PICKUP_TOYZ_FIRST && type <= PICKUP_TOYZ_LAST) {
-            g_gameReg->m_gameStats->m_toyzCollected++;
-            g_gameReg->m_gameStats
+            g_gameReg->GetGameStats()->m_toyzCollected++;
+            g_gameReg->GetGameStats()
                 ->m_toyPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_BABYWALKER)]++;
         } else if (type >= PICKUP_TIMEDPOWERUP_FIRST && type <= PICKUP_TIMEDPOWERUP_LAST) {
-            g_gameReg->m_gameStats->m_powerupzCollected++;
-            g_gameReg->m_gameStats
+            g_gameReg->GetGameStats()->m_powerupzCollected++;
+            g_gameReg->GetGameStats()
                 ->m_powerupPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_GHOST)]++;
         } else if (type >= PICKUP_CURSEZ_FIRST && type <= PICKUP_CURSEZ_LAST) {
-            g_gameReg->m_gameStats
+            g_gameReg->GetGameStats()
                 ->m_miscPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_RANDOMCOLORZ)]++;
         }
     }
@@ -251,12 +251,12 @@ i32 CGrunt::LoadPickupSprites(
             if (countStats != 0) {
                 if (n >= PICKUP_EQUIPPABLE_FIRST && n <= PICKUP_EQUIPPABLE_LAST
                     && n != PICKUP_WARPSTONE) {
-                    g_gameReg->m_gameStats->m_toolzCollected++;
-                    g_gameReg->m_gameStats
+                    g_gameReg->GetGameStats()->m_toolzCollected++;
+                    g_gameReg->GetGameStats()
                         ->m_weaponPickupsByPlayer[m_playerIndex][IDX(n) - IDX(PICKUP_BOMB)]++;
                 } else if (n >= PICKUP_TOYZ_FIRST && n <= PICKUP_TOYZ_LAST) {
-                    g_gameReg->m_gameStats->m_toyzCollected++;
-                    g_gameReg->m_gameStats
+                    g_gameReg->GetGameStats()->m_toyzCollected++;
+                    g_gameReg->GetGameStats()
                         ->m_toyPickupsByPlayer[m_playerIndex][IDX(n) - IDX(PICKUP_BABYWALKER)]++;
                 }
             }

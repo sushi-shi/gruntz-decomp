@@ -101,7 +101,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
     if (killerPlayerIndex != -1) {
         m_killerPlayerIndex = killerPlayerIndex;
-        g_gameReg->m_gameStats->RecordKill(killerPlayerIndex, m_playerIndex);
+        g_gameReg->GetGameStats()->RecordKill(killerPlayerIndex, m_playerIndex);
     }
 
     switch (deathType) {

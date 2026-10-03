@@ -107,7 +107,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");
-        g_gameReg->m_gameStats->m_secretsAvailable++;
+        g_gameReg->GetGameStats()->m_secretsAvailable++;
     }
 }
 

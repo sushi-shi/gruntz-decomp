@@ -59,8 +59,7 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
     if (!unit->CoordsEmpty()) {
         return 1;
     }
-    BrickzCell* tile = &m_board->m_rows[unit->ArrivalCell().m_y][unit->ArrivalCell().m_x];
-    if (tile->m_flags & 0x20) {
+    if (m_board->CellFlagsAtUnchecked(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y) & 0x20) {
         if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
             return 1;
         }
@@ -69,11 +68,11 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
             unit->m_dwell = 0;
             return 1;
         }
-        unit->m_battleState = BZTASK_ADVANCE;
+        unit->SetBattlezTask(BZTASK_ADVANCE);
 
         unit->RecycleCoords();
     } else {
-        unit->m_battleState = BZTASK_ADVANCE;
+        unit->SetBattlezTask(BZTASK_ADVANCE);
         unit->RecycleCoords();
     }
     ResetToSeek(unit);
