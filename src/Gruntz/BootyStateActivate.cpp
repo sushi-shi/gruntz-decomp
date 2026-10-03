@@ -1791,7 +1791,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
         BuildPowerupIconKeys(
             &key,
-            maxRunIndex(&g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i * 22], 22) + 1
+            maxRunIndex(g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i], 22) + 1
         );
         m_weaponIcons[i] = CreateSimpleAnimationSprite(0);
         if (m_weaponIcons[i] == NULL) {
@@ -1809,7 +1809,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             BuildPowerupIconKeys(
                 &key,
-                maxRunIndex(&g_gameReg->m_gameStats->m_toyPickupsByPlayer[i * 10], 10) + 0x17
+                maxRunIndex(g_gameReg->m_gameStats->m_toyPickupsByPlayer[i], 10) + 0x17
             );
             m_toyIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_toyIcons[i] == NULL) {
@@ -1822,7 +1822,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
             BuildPowerupIconKeys(
                 &key,
-                maxRunIndex(&g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i * 7], 7) + 0x36
+                maxRunIndex(g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i], 7) + 0x36
             );
             m_powerupIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_powerupIcons[i] == NULL) {
@@ -1835,7 +1835,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
             BuildPowerupIconKeys(
                 &key,
-                maxRunIndex(&g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4], 4) + 0x3d
+                maxRunIndex(g_gameReg->m_gameStats->m_miscPickupsByPlayer[i], 4) + 0x3d
             );
             m_miscIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_miscIcons[i] == NULL) {
@@ -2325,19 +2325,19 @@ void CMultiBootyState::DrawBattleStats() {
 
     for (i = 0; i < 4; i++) {
         if (g_gameReg->m_players[i].m_joined != false) {
-            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4], 4));
+            s.Format("%d", sumRun(g_gameReg->m_gameStats->m_miscPickupsByPlayer[i], 4));
             copyRect(&rc, &s_col1Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i * 7], 7));
+            s.Format("%d", sumRun(g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i], 7));
             copyRect(&rc, &s_col2Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_toyPickupsByPlayer[i * 10], 10));
+            s.Format("%d", sumRun(g_gameReg->m_gameStats->m_toyPickupsByPlayer[i], 10));
             copyRect(&rc, &s_col3Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i * 22], 22));
+            s.Format("%d", sumRun(g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i], 22));
             copyRect(&rc, &s_col4Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 

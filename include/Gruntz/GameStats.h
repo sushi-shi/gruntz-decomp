@@ -69,10 +69,10 @@ public:
     i32 m_killsByPlayer[PLAYER_SLOT_COUNT][PLAYER_SLOT_COUNT];
     i32 m_flagCapturesByPlayer[PLAYER_SLOT_COUNT][PLAYER_SLOT_COUNT];
 
-    i32 m_weaponPickupsByPlayer[88];
-    i32 m_toyPickupsByPlayer[40];
-    i32 m_powerupPickupsByPlayer[28];
-    i32 m_miscPickupsByPlayer[16];
+    i32 m_weaponPickupsByPlayer[PLAYER_SLOT_COUNT][22];
+    i32 m_toyPickupsByPlayer[PLAYER_SLOT_COUNT][10];
+    i32 m_powerupPickupsByPlayer[PLAYER_SLOT_COUNT][7];
+    i32 m_miscPickupsByPlayer[PLAYER_SLOT_COUNT][4];
 };
 
 inline CGameStats::CGameStats() {
