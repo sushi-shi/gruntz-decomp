@@ -519,12 +519,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 }
             }
             i32 vy = static_cast<i32>(prev->m_y);
-            if (vy < minY) {
-                minY = vy;
-            }
-            if (vy > maxY) {
-                maxY = vy;
-            }
+            minY = min(vy, minY);
+            maxY = max(vy, maxY);
             prev = cur;
             cur++;
         } while (--count);
@@ -704,12 +700,8 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             }
         }
         i32 py = static_cast<i32>(prev->m_y);
-        if (py < minYi) {
-            minYi = py;
-        }
-        if (py > maxYi) {
-            maxYi = py;
-        }
+        minYi = min(py, minYi);
+        maxYi = max(py, maxYi);
         prev = cur;
         cur++;
     }

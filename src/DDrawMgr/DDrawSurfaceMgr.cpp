@@ -27,6 +27,7 @@
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdObjMgr.h>
 
+#include <dsound.h>
 #include <string.h>
 
 RVA(0x00155840, 0x41)
@@ -108,9 +109,9 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         return 0;
     }
 
-    i32 cooperativeLevel = 1;
+    i32 cooperativeLevel = DSSCL_NORMAL;
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_SOUND_PRIORITY)) {
-        cooperativeLevel = 2;
+        cooperativeLevel = DSSCL_PRIORITY;
     }
     if (!m_soundStream->InitializeDevice(hWnd, cooperativeLevel)) {
         delete m_soundStream;
@@ -201,7 +202,7 @@ void CDDrawSurfaceMgr::FreeContext() {
 RVA(0x00155ff0, 0x22)
 i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
     if (m_soundStream != NULL && m_soundStream->m_initialized == false) {
-        return m_soundStream->InitializeDevice(m_hWnd, 1);
+        return m_soundStream->InitializeDevice(m_hWnd, DSSCL_NORMAL);
     }
     return 1;
 }

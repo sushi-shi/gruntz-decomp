@@ -550,9 +550,7 @@ i32 CMulti::Render() {
         m_session->ScheduleCommand(node, static_cast<u8>(static_cast<u8>(m_commandDelay) << 1));
     }
     i32 dt = m_frameDelta;
-    if (static_cast<u32>(dt) >= g_frameDelta) {
-        dt = static_cast<i32>(g_frameDelta);
-    }
+    dt = static_cast<i32>(min(static_cast<u32>(dt), g_frameDelta));
     m_packetsRcvd = m_session->Poll(dt);
     m_packetsSent = 0;
 
@@ -3151,18 +3149,14 @@ u32 CMulti::GetMaxAckLatency() {
 
     if (m_isHost != false) {
         for (i32 i = 0; i < 4; i++) {
-            if (m_playerLatencyMs[i] > max) {
-                max = m_playerLatencyMs[i];
-            }
+            max = max(m_playerLatencyMs[i], max);
         }
     } else {
 
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
             if (mgr->m_players[i].m_humanControlled && mgr->m_players[i].m_active) {
-                if (mgr->m_players[i].m_latency.m_avg > max) {
-                    max = mgr->m_players[i].m_latency.m_avg;
-                }
+                max = max(mgr->m_players[i].m_latency.m_avg, max);
             }
         }
     }

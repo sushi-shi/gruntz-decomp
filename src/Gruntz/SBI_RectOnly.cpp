@@ -2393,7 +2393,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
         if (tab->m_state == SLOT_FILLING) {
             i64 d = static_cast<i64>(g_frameTime) - tab->m_clock.m_start;
 
-            i32 elapsed = (d < 0) ? 0 : static_cast<i32>(d);
+            i32 elapsed = static_cast<i32>(max(0, d));
             u32 delay = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
             if (frame >= 0x1a) {

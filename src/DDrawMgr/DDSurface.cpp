@@ -1055,14 +1055,10 @@ void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
                 rect.left = 0;
                 rect.top = 0;
                 i32 w = m_apiDesc.dwWidth - x;
-                if (w >= static_cast<i32>(src->m_apiDesc.dwWidth)) {
-                    w = src->m_apiDesc.dwWidth;
-                }
+                w = min(w, static_cast<i32>(src->m_apiDesc.dwWidth));
                 rect.right = w;
                 i32 h = m_apiDesc.dwHeight - y;
-                if (h >= static_cast<i32>(src->m_apiDesc.dwHeight)) {
-                    h = src->m_apiDesc.dwHeight;
-                }
+                h = min(h, static_cast<i32>(src->m_apiDesc.dwHeight));
                 rect.bottom = h;
                 pRect = &rect;
             }
