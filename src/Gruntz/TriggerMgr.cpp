@@ -176,18 +176,16 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             if (cell != NULL) {
                 (static_cast<CGrunt*>(cell))->ClearAllSprites();
             }
-            i32 removedPlayerIndex = p->m_x;
-            i32 removedUnitIndex = p->m_y;
-            if (removedPlayerIndex == m_cameraTargetIdentity.m_x
-                && removedUnitIndex == m_cameraTargetIdentity.m_y) {
+            Coord removedIdentity = *p;
+            if (m_cameraTargetIdentity == removedIdentity) {
                 StopCameraTracking();
             }
             CActionOptionsMenuBar* ov = m_overlay;
             if (ov != NULL) {
                 i32 selectedPlayerIndex = p->m_x;
-                i32 overlayPlayerIndex = ov->m_playerIndex;
+                i32 overlayPlayerIndex = ov->GetPlayerIndex();
                 i32 selectedUnitIndex = p->m_y;
-                i32 overlayUnitIndex = ov->m_unitIndex;
+                i32 overlayUnitIndex = ov->GetUnitIndex();
                 if (overlayPlayerIndex == selectedPlayerIndex
                     && overlayUnitIndex == selectedUnitIndex) {
                     CloseActionOptionsMenu();

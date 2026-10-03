@@ -2141,7 +2141,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 }
             }
 
-            RECT scan = m_board->m_bounds;
+            RECT scan = m_board->GetSearchBounds();
 
             g->GetScreenTile(&a);
             i32 stepDy = a.m_y - first.m_y;
@@ -2642,7 +2642,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         }
     }
 
-    RECT sweep = m_board->m_bounds;
+    RECT sweep = m_board->GetSearchBounds();
     for (i32 c = sweep.left; c < sweep.right; c++) {
         for (i32 r = sweep.top; r < sweep.bottom; r++) {
             m_board->CellFlagsAtUnchecked(c, r) &= ~IDX(CELL_FLAG_CLAIM_VISITED);
