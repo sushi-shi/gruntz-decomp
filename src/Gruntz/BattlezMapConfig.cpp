@@ -2510,16 +2510,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
         CPtrList list(10);
         Coord start = ScreenTile(unit);
-        if ((m_board)->FindPathWithEndpointOverrides(
-                start.m_x,
-                start.m_y,
-                col,
-                row,
-                &list,
-                1,
-                0x4903,
-                0
-            )
+        if ((m_board)
+                ->FindPathWithEndpointOverrides(start.m_x, start.m_y, col, row, &list, 1, 0x4903, 0)
             != 0) {
             POSITION head = list.GetHeadPosition();
             g_stepRun = false;
@@ -3331,7 +3323,6 @@ i32 CBattlezMapConfig::RouteUnitTo(
     return 0;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000302c0, 0x1ec)
@@ -3344,16 +3335,11 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
     CPtrList list(10);
     Coord cur;
     POSITION n;
-    POSITION p;
     Coord* head;
     POSITION qp;
 
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cur));
-    i32 gx = goal.m_x;
-    i32 gy = goal.m_y;
-    if ((cur.m_x >> TILE_SHIFT_PX) == gx) {
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&goal));
-        if ((goal.m_y >> TILE_SHIFT_PX) == gy) {
+    if (unit->ScanCell().m_x == goal.m_x) {
+        if (unit->ScanCell().m_y == goal.m_y) {
             goto fail;
         }
     }
@@ -3363,16 +3349,17 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
         POSITION cur3 = n;
         unit->m_coordList.GetNext(n);
         Coord* coord = static_cast<Coord*>(unit->m_coordList.GetAt(cur3));
-        if (coord != NULL && coord->m_x == gx && coord->m_y == gy) {
+        if (coord != NULL && coord->m_x == goal.m_x && coord->m_y == goal.m_y) {
             break;
         }
     }
 
+    cur = ScreenTile(unit);
     if ((m_board)->FindPathWithEndpointOverrides(
-            unit->m_object->m_screenX >> TILE_SHIFT_PX,
-            unit->m_object->m_screenY >> TILE_SHIFT_PX,
-            gx,
-            gy,
+            cur.m_x,
+            cur.m_y,
+            goal.m_x,
+            goal.m_y,
             &list,
             0,
             blockedMask,
