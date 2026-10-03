@@ -81,7 +81,7 @@ BOOL CVoiceManager::CreateVoiceIndicators() {
             WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_WORLD_SPRITE
         );
         spr->GetLogicRecord()->Dispatch(spr);
-        CGruntVoice* got = static_cast<CGruntVoice*>(spr->GetLogicRecord()->m_userLogic);
+        CGruntVoice* got = static_cast<CGruntVoice*>(spr->GetLogicRecord()->UserLogic());
         *slot = got;
         if (got == NULL) {
             return false;

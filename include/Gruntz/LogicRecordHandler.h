@@ -19,27 +19,27 @@
             break;                                                                                 \
         }                                                                                          \
         case ACT_OBJECT_REMOVED:                                                                   \
-            record->m_userLogic->OnObjectRemoved();                                                \
+            record->UserLogic()->OnObjectRemoved();                                                \
             break;                                                                                 \
         case ACT_LEAVE_ACTIVE_REGION:                                                              \
-            record->m_userLogic->OnLeaveActiveRegion();                                            \
+            record->UserLogic()->OnLeaveActiveRegion();                                            \
             break;                                                                                 \
         case ACT_PREPARE_SAVE:                                                                     \
-            record->m_userLogic->PrepareSave();                                                    \
+            record->UserLogic()->PrepareSave();                                                    \
             break;                                                                                 \
         case ACT_AFTER_LOAD_REFERENCES:                                                            \
-            record->m_userLogic->AfterLoadReferences();                                            \
+            record->UserLogic()->AfterLoadReferences();                                            \
             break;                                                                                 \
         case ACT_AFTER_LOAD:                                                                       \
-            record->m_userLogic->AfterLoad();                                                      \
+            record->UserLogic()->AfterLoad();                                                      \
             break;                                                                                 \
         case ACT_AFTER_SAVE:                                                                       \
-            record->m_userLogic->AfterSave();                                                      \
+            record->UserLogic()->AfterSave();                                                      \
             break;                                                                                 \
         case ACT_LIVE:                                                                             \
             break;                                                                                 \
         default:                                                                                   \
-            DispatchLogicEvent(record->m_userLogic);                                               \
+            DispatchLogicEvent(record->UserLogic());                                               \
             break;                                                                                 \
     }                                                                                              \
     return 1;

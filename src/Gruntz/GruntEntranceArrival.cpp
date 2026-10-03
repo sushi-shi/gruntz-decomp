@@ -223,7 +223,7 @@ i32 CGrunt::StepAttackFire() {
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
                 spr->GetLogicRecord()->Dispatch(spr);
-                CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->m_userLogic);
+                CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->UserLogic());
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_playerIndex,
@@ -248,7 +248,7 @@ i32 CGrunt::StepAttackFire() {
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
                 spr->GetLogicRecord()->Dispatch(spr);
-                CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->m_userLogic);
+                CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->UserLogic());
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_playerIndex,
@@ -1359,7 +1359,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         grid->SetObjectIdAt(tx, ty, 0);
         return 0;
     }
-    CInGameIcon* icon = static_cast<CInGameIcon*>(found->GetLogicRecord()->m_userLogic);
+    CInGameIcon* icon = static_cast<CInGameIcon*>(found->GetLogicRecord()->UserLogic());
     icon->PlaceAt(m_playerIndex, m_unitIndex);
     return 0;
 }

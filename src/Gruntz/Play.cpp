@@ -4226,7 +4226,7 @@ i32 CPlay::ExecuteCommand(
                     }
                     g->m_arrivalFlags |= 0x18040402;
                     g->m_arrivalState = AI_DEFENDER;
-                    g->m_defenderState = AISTATE_SEEK;
+                    g->SetDefenderState(AISTATE_SEEK);
                     UNSET_COORD(g->m_arrivalCell);
                     g->m_arrivalActive = false;
                     SET_RECT_XY_EXTENTS(g->m_object->m_extent, 0, 0, 0, 0);
