@@ -37,11 +37,21 @@ def canonicalize_boundaries(payload: bytes, object_name: str, rows: list[dict]):
         by_start[row["rva"]].append(row)
     symbols = defaultdict(list)
     for symbol in coff.symbols.values():
-        if symbol.section > 0 and symbol.typ == 0 and symbol.storage_class in (2, 3) \
-                and symbol.aux_count == 0:
+        if symbol.section > 0 and symbol.typ == 0 and symbol.storage_class in (2, 3):
             section = coff.sections[symbol.section - 1]
             if not section.characteristics & MEM_EXECUTE:
                 symbols[msvc_names.mask(symbol.name)].append(symbol)
+
+    def section_record(symbol, section):
+        # Ordinary COFF section metadata is not a second data identity. No
+        # other auxiliary-bearing definition is exempt from alias detection.
+        if (symbol.name != section.name or symbol.value != 0
+                or symbol.typ != 0 or symbol.storage_class != 3
+                or symbol.aux_count != 1):
+            return False
+        extent, relocations, lines = struct.unpack_from("<IHH", payload, symbol.offset + 18)
+        line_count = struct.unpack_from("<H", payload, section.header_offset + 34)[0]
+        return (extent, relocations, lines) == (section.raw_size, section.reloc_count, line_count)
 
     def definition(row):
         if (len(by_name[msvc_names.mask(row["name"])]) != 1
@@ -51,12 +61,13 @@ def canonicalize_boundaries(payload: bytes, object_name: str, rows: list[dict]):
                 or row.get("section_offset", "-") == "-"):
             return None
         matches = symbols.get(msvc_names.mask(row["name"]), ())
-        if len(matches) != 1:
+        if len(matches) != 1 or matches[0].aux_count != 0:
             return None
         symbol = matches[0]
         section = coff.sections[symbol.section - 1]
         storage = "data" if section.characteristics & MEM_WRITE else "rdata"
-        if (storage != row["storage"] or symbol.value != row["section_offset"]
+        if (section.raw_offset == 0 or storage != row["storage"]
+                or symbol.value != row["section_offset"]
                 or symbol.value + row["size"] > section.raw_size):
             return None
         # Neither a retail range nor its candidate definition may have an
@@ -66,7 +77,7 @@ def canonicalize_boundaries(payload: bytes, object_name: str, rows: list[dict]):
             return None
         if any(other.index != symbol.index and other.section == symbol.section
                and symbol.value <= other.value < symbol.value + row["size"]
-               and other.aux_count == 0 for other in coff.symbols.values()):
+               and not section_record(other, section) for other in coff.symbols.values()):
             return None
         return symbol
 

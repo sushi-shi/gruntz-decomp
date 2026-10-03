@@ -23,15 +23,19 @@ def obj(addend=0x40, target=0, typ=6, *, gap=0, aliases=(), undefined=False,
                ("_next$S12", 0x40 + gap, 2, 0, 3),
                ("_entry", 0, 1, 0x20, 2)] + list(aliases)
     strings, table = bytearray(bytes(4)), bytearray()
-    for name, value, section, symbol_type, storage in symbols:
+    count = 0
+    for name, value, section, symbol_type, storage, *extra in symbols:
+        aux = extra[0] if extra else b""
         table += struct.pack("<II", 0, len(strings))
         strings += name.encode("latin1") + b"\0"
-        table += struct.pack("<IhHBB", value, section, symbol_type, storage, 0)
+        table += struct.pack("<IhHBB", value, section, symbol_type, storage, len(aux) // 18)
+        table += aux
+        count += 1 + len(aux) // 18
     struct.pack_into("<I", strings, 0, len(strings))
     rawptr, relptr = 100, 100 + len(code)
     dataptr = relptr + len(relocs)
     symptr = dataptr + len(data)
-    header = struct.pack("<HHIIIHH", 0x14c, 2, 0, symptr, len(symbols), 0, 0)
+    header = struct.pack("<HHIIIHH", 0x14c, 2, 0, symptr, count, 0, 0)
     text = struct.pack("<8sIIIIIIHHI", b".text", 0, 0, len(code), rawptr,
                        relptr, 0, len(relocs) // 10, 0, 0x60501020)
     section = struct.pack("<8sIIIIIIHHI", b".data" if writable else b".rdata",
@@ -135,6 +139,29 @@ class BoundaryControls(unittest.TestCase):
                       ("_nextAlias", 0x40, 2, 0, 3), ("_first$S22", 4, 2, 0, 3)):
             with self.subTest(alias=alias):
                 self.assert_unchanged(obj(aliases=[alias]))
+
+    def test_auxiliary_records_do_not_hide_data_aliases(self):
+        metadata = struct.pack("<IHHIHB3s", 0xB0, 0, 0, 0, 0, 0, bytes(3))
+        for name in ("_alias", "_first$S22", ".rdata"):
+            for value in (0, 4, 0x40):
+                if (name, value) == (".rdata", 0):
+                    continue
+                with self.subTest(name=name, value=value):
+                    self.assert_unchanged(obj(aliases=[(name, value, 2, 0, 3, metadata)]))
+        _normalized, proof = canonicalize_boundaries(
+            obj(aliases=[(".rdata", 0, 2, 0, 3, metadata)]), "example.c", claims())
+        self.assertEqual(len(proof), 1)
+        self.assert_unchanged(obj(aliases=[(".rdata", 0, 2, 0, 3, bytes(18))]))
+        self.assert_unchanged(obj(aliases=[("_first$S22", 0xB0, 2, 0, 3, metadata)]))
+
+    def test_unbacked_data_sections_cannot_prove_a_boundary(self):
+        original = bytearray(obj(writable=True))
+        coff = CoffObject(original)
+        struct.pack_into("<I", original, coff.sections[1].header_offset + 20, 0)
+        rows = claims()
+        for row in rows:
+            row["storage"] = "data"
+        self.assert_unchanged(bytes(original), rows)
 
     def test_data_payload_differences_are_preserved(self):
         original = bytearray(obj())

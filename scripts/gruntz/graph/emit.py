@@ -113,7 +113,8 @@ DELINK_MODS = _mods("delink/", "tool/delinker.py", "core/pe.py",
                     "core/coff.py", "core/msvc_names.py", "model.py") + TOOL_MODS
 NORMALIZE_MODS = _mods("compare/normalize.py", "compare/canonicalize.py",
                        "compare/data_boundaries.py", "compare/function_sizes.py",
-                       "delink/eh_band.py", "core/coff.py", "core/msvc_names.py")
+                       "delink/eh_band.py", "core/coff.py", "core/msvc_names.py",
+                       "core/tsv.py")
 PROJECT_MODS = _mods("compare/project.py", "compare/normalize.py", "manifest.py")
 REPORT_MODS = _mods("tool/objdiff.py")
 LINK_MODS = _mods("graph/link.py", "graph/implib.py", "tool/link.py",

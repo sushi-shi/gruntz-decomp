@@ -50,6 +50,7 @@ _MODULE_MTIME = max(
     Path(eh_band.__file__).stat().st_mtime,
     Path(function_sizes.__file__).stat().st_mtime,
     Path(data_boundaries.__file__).stat().st_mtime,
+    Path(tsv.__file__).stat().st_mtime,
     Path(__file__).stat().st_mtime,
 )
 SYMBOL_SIZE = canon.SYMBOL_SIZE
