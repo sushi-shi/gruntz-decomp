@@ -57,6 +57,10 @@ public:
     inline void SetInitialFramePending(b32 pending);
     inline void ResetAssetLoadState(GruntzPlayer* player);
 
+    CTileTriggerContainer* GetTileTriggers() const {
+        return m_tileTriggers;
+    }
+
     QuestLevel CurrentQuestLevel() const {
         return static_cast<QuestLevel>(m_levelIndex);
     }

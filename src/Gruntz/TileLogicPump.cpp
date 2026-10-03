@@ -366,7 +366,7 @@ i32 CCheckpointTrigger::Act() {
             return 0;
         }
         CTileTriggerSwitchLogic* child =
-            play->m_tileTriggers->FindSwitchLogic(key, TRIGID_CHECKPOINT_SWITCH_8);
+            play->GetTileTriggers()->FindSwitchLogic(key, TRIGID_CHECKPOINT_SWITCH_8);
         if (child == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
             return 0;
@@ -415,7 +415,7 @@ i32 CCheckpointTrigger::Act() {
     }
 
     CTileTriggerSwitchLogic* pad =
-        play->m_tileTriggers->FindSwitchLogic(m_state[pick], TRIGID_CHECKPOINT_SWITCH_8);
+        play->GetTileTriggers()->FindSwitchLogic(m_state[pick], TRIGID_CHECKPOINT_SWITCH_8);
     if (pad == NULL) {
         g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
         return 0;

@@ -148,7 +148,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_triggerMgr = mgr->GetTriggerMgr();
     m_board = mgr->GetTileGrid();
     m_play = static_cast<CPlay*>(mgr->m_curState);
-    m_cellQuery = m_play->m_tileTriggers;
+    m_cellQuery = m_play->GetTileTriggers();
     m_active = true;
 
     m_gruntCreationTime = g_buteMgr.GetDword("Battlez", "GruntCreationTime", 10000);
@@ -2330,7 +2330,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     } else {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
-                            m_play->m_tileTriggers->SetCell(first.m_x, first.m_y, m_playerIndex);
+                            m_play->GetTileTriggers()->SetCell(first.m_x, first.m_y, m_playerIndex);
                         }
                     }
                 }
