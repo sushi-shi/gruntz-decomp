@@ -50,7 +50,7 @@ rva	unit	function	lost_max	cur
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
 0x09c0e0	spriteloaders	?AddTime@CTimer@@QAEXHH@Z	100.0000	99.8214
 0x075e90	terraintileloader	?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	84.1791	83.9946
-0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.8053	93.6726
+0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	91.9027
 0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.3390
 0x078430	triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379

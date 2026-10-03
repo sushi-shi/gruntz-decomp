@@ -1747,7 +1747,7 @@ fontconfig	??1CFontConfig@@QAE@XZ	100.0000	100.0000	1	5d3b273e09e9	0x85f40	100.0
 fontconfig	??1CPen@@UAE@XZ	100.0000	100.0000	1	cpp:f25ad3dca3dc	0x220f0	100.0000	
 fontconfig	??1FontItem@@QAE@XZ	100.0000	100.0000	1	cpp:1c54d09168ac	0x21c40	100.0000	
 fontconfig	?AddItem@CFontConfig@@QAEHPBDHH@Z	100.0000	100.0000	3	77a55bf8eb8a	0x21c60	100.0000	
-fontconfig	?Draw3DText@CFontConfig@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	94.0260	93.9167	4	e021b13de38d	0x22810	94.0260	
+fontconfig	?Draw3DText@CFontConfig@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	93.9167	93.9167	5	804daa4fab89	0x22810	94.0260	
 fontconfig	?DrawTextLines@CFontConfig@@QAEHHPAUHDC__@@PAUtagRECT@@I@Z	93.3010	93.3010	10	7644b94ea7d7	0x22360	93.3010	
 fontconfig	?DrawWithFont@CFontConfig@@QAEHPBDPAUHDC__@@PAUtagRECT@@I@Z	100.0000	100.0000	2	f0a92227d6b1	0x22770	100.0000	
 fontconfig	?EndInput@CFontConfig@@QAEXXZ	100.0000	100.0000	2	ad808bb50e1b	0x21ef0	100.0000	
@@ -4299,7 +4299,7 @@ trees	_tr_static_init	100.0000	100.0000	1	988facf51b1a	0x1884c0	100.0000
 triggermgr	?ApplyGruntAreaEffect@CTriggerMgr@@QAEHHHHW4GruntAreaEffectKind@@H@Z	95.2766	95.2766	15	1773fd583977	0x7b930	95.2766	
 triggermgr	?BuildRockBreakParticles@CTriggerMgr@@QAEHHHHH@Z	96.0535	96.0535	26	b27ca89dfc09	0x7b440	96.0535	
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHW4WarpStoneFragment@@@Z	100.0000	100.0000	1	e63030c4e3bb	0x79b30	100.0000	
-triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	91.9027	9	a9cc081a6940	0x7cf40	98.9381	
+triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	91.9027	91.9027	10	0ef6eea62863	0x7cf40	98.9381	
 triggermgr	?CenterSelectionGroup@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	9	da1f57af64da	0x7cd40	100.0000	
 triggermgr	?ClearRecords@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	ab4dd275bed1	0x78880	100.0000	
 triggermgr	?ClearSelections@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	2050e939daa3	0x7d0c0	100.0000	
