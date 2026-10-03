@@ -139,6 +139,10 @@ public:
 
     CObList m_list;
 
+    CObList* GetList() {
+        return &m_list;
+    }
+
     POSITION GetHeadPosition() const {
         return m_list.GetHeadPosition();
     }

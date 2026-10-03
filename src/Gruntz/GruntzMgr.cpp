@@ -1261,7 +1261,7 @@ i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
-    CObList* list = &World()->ChildGroup()->m_list;
+    CObList* list = World()->ChildGroup()->GetList();
     if (list == NULL) {
         return;
     }

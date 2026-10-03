@@ -493,7 +493,7 @@ void CGameLevel::ResetMainPlane(){RESET_MAIN_PLANE_SELECTION(i)}
 RVA(0x0015dc90, 0x141)
 void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx) {
 
-    CObList* chain = &ctx->m_list;
+    CObList* chain = ctx->GetList();
 
     if ((m_flags & 1) && chain != NULL && GetPlane(0) != NULL) {
         GetPlane(0)->Draw(visitor);

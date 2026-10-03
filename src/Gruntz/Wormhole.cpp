@@ -148,7 +148,7 @@ i32 CWormhole::SpawnPartners() {
         return 0;
     }
 
-    CObList* list = &g_gameReg->World()->ChildGroup()->m_list;
+    CObList* list = g_gameReg->World()->ChildGroup()->GetList();
     if (list == NULL) {
         return 0;
     }

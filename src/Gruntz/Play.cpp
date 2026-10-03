@@ -3372,7 +3372,7 @@ i32 CPlay::LoadImageBanks() {
 
 RVA(0x000d0050, 0x3a)
 i32 CPlay::CountObjectsByCategory(i32 category) {
-    CObList* container = &m_world->ChildGroup()->m_list;
+    CObList* container = m_world->ChildGroup()->GetList();
     if (container == NULL) {
         return 0;
     }
@@ -4530,7 +4530,7 @@ i32 CPlay::ExecuteCommand(
 RVA(0x000d2b20, 0x21f)
 b32 CPlay::PlaceStartGruntz() {
 
-    CObList* list = &m_world->ChildGroup()->m_list;
+    CObList* list = m_world->ChildGroup()->GetList();
     if (list == NULL) {
         return false;
     }
@@ -4604,7 +4604,7 @@ i32 CPlay::ValidateLevelTiles() {
         counts[c] = 0;
     }
 
-    CObList* list = &m_world->ChildGroup()->m_list;
+    CObList* list = m_world->ChildGroup()->GetList();
     if (list == NULL) {
         return 0;
     }
@@ -5179,7 +5179,7 @@ i32 CDDrawWorkerHost::GetTileHandle(i32 tileX, i32 tileY) {
 // @early-stop
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
-    CObList* pl = &m_world->ChildGroup()->m_list;
+    CObList* pl = m_world->ChildGroup()->GetList();
     if (pl == NULL) {
         return 0;
     }
@@ -5291,7 +5291,7 @@ i32 CPlay::ScanBuildTiles() {
 
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
-    CObList* chain = &m_world->ChildGroup()->m_list;
+    CObList* chain = m_world->ChildGroup()->GetList();
     if (chain == NULL) {
         return 0;
     }
@@ -5633,7 +5633,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
         return 1;
     }
 
-    CObList* head = &this->m_world->ChildGroup()->m_list;
+    CObList* head = this->m_world->ChildGroup()->GetList();
     POSITION pos = head == NULL ? NULL : head->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = this->m_world->ChildGroup()->NextChild(pos);
@@ -6559,7 +6559,7 @@ RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
     CDDrawSurfacePair* held = v->GetDrawTarget()->GetBackPair();
-    CObList& chain = v->ChildGroup()->m_list;
+    CObList& chain = *v->ChildGroup()->GetList();
 
     RECT r = v->m_level->GetViewportRect();
     r.right = r.right + 1;
@@ -6614,7 +6614,7 @@ RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
 
-    CObList* pl = &v->ChildGroup()->m_list;
+    CObList* pl = v->ChildGroup()->GetList();
     if (pl == NULL) {
         return 0;
     }
