@@ -232,7 +232,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         UNSET_COORD(unit->m_arrivalCell);
         UNSET_COORD(unit->m_defenderPx);
         unit->SetDefenderState(AISTATE_SEEK);
-        unit->m_battleState = BZTASK_ADVANCE;
+        unit->SetBattlezTask(BZTASK_ADVANCE);
         unit->RecycleCoords();
         return 1;
     }
@@ -240,7 +240,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     UNSET_COORD(unit->m_arrivalCell);
     UNSET_COORD(unit->m_defenderPx);
     unit->SetDefenderState(AISTATE_SEEK);
-    unit->m_battleState = BZTASK_ADVANCE;
+    unit->SetBattlezTask(BZTASK_ADVANCE);
     unit->RecycleCoords();
     return 1;
 }

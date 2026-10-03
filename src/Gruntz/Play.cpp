@@ -972,7 +972,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     g_resourceInstallActive = false;
     Cmd_ResetScroll();
-    g_gameReg->m_gameStats->Reset();
+    g_gameReg->GetGameStats()->Reset();
     g_gameReg->m_commandMgr->m_pendingLocalCommands.RemoveAll();
     g_gameReg->m_commandMgr->RecycleQueuedCommands();
     g_frameTicks = 0;
@@ -4737,7 +4737,7 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_SECRET_SWITCH:
-                    g_gameReg->m_gameStats->m_secretsAvailable++;
+                    g_gameReg->GetGameStats()->m_secretsAvailable++;
                     // fall through
                 case TILEKIND_SECRET_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
@@ -5474,7 +5474,7 @@ i32 CPlay::ResetPlayState() {
         CGruntzMgr* reg = g_gameReg;
 
         if (reg->m_strWorldFile.IsEmpty()) {
-            m_mgr->m_gameStats->UpdateLevelRecord(m_levelIndex, true);
+            m_mgr->GetGameStats()->UpdateLevelRecord(m_levelIndex, true);
             reg = g_gameReg;
 
             if (reg->CheatMgr()->m_cheatsUsed == false) {
@@ -5741,13 +5741,13 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     smarts == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : smarts;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
-                    m_mgr->m_gameStats->m_toolzAvailable++;
+                    m_mgr->GetGameStats()->m_toolzAvailable++;
                 } else if (cv >= PICKUP_TOYZ_FIRST && cv <= PICKUP_TOYZ_LAST) {
-                    m_mgr->m_gameStats->m_toyzAvailable++;
+                    m_mgr->GetGameStats()->m_toyzAvailable++;
                 } else if (cv >= PICKUP_TIMEDPOWERUP_FIRST && cv <= PICKUP_TIMEDPOWERUP_LAST) {
-                    m_mgr->m_gameStats->m_powerupzAvailable++;
+                    m_mgr->GetGameStats()->m_powerupzAvailable++;
                 } else if (cv == PICKUP_COIN) {
-                    m_mgr->m_gameStats->m_coinsAvailable++;
+                    m_mgr->GetGameStats()->m_coinsAvailable++;
                 }
                 i32 d = obj->m_smarts;
                 PickupType item = static_cast<PickupType>(d);
@@ -5809,13 +5809,13 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     powerup == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : powerup;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
-                    m_mgr->m_gameStats->m_toolzAvailable++;
+                    m_mgr->GetGameStats()->m_toolzAvailable++;
                 } else if (cv >= PICKUP_TOYZ_FIRST && cv <= PICKUP_TOYZ_LAST) {
-                    m_mgr->m_gameStats->m_toyzAvailable++;
+                    m_mgr->GetGameStats()->m_toyzAvailable++;
                 } else if (cv >= PICKUP_TIMEDPOWERUP_FIRST && cv <= PICKUP_TIMEDPOWERUP_LAST) {
-                    m_mgr->m_gameStats->m_powerupzAvailable++;
+                    m_mgr->GetGameStats()->m_powerupzAvailable++;
                 } else if (cv == PICKUP_COIN) {
-                    m_mgr->m_gameStats->m_coinsAvailable++;
+                    m_mgr->GetGameStats()->m_coinsAvailable++;
                 }
                 i32 e = obj->m_powerup;
                 PickupType item = static_cast<PickupType>(e);
