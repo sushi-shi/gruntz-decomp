@@ -36,6 +36,13 @@ public:
         return &m_planeViewRect;
     }
 
+    i32 GetTileColumns() const {
+        return m_tileGridSize.cx;
+    }
+    i32 GetTileRows() const {
+        return m_tileGridSize.cy;
+    }
+
     CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
     virtual ~CDDrawWorkerHost() OVERRIDE;
 
@@ -197,8 +204,8 @@ public:
     }
 
 #define CLAMP_TILE_TO_PLANE(tileX, tileY, plane)                                                   \
-    CLAMP_TO_EXTENT(tileX, (plane)->m_tileGridSize.cx)                                             \
-    CLAMP_TO_EXTENT(tileY, (plane)->m_tileGridSize.cy)
+    CLAMP_TO_EXTENT(tileX, (plane)->GetTileColumns())                                              \
+    CLAMP_TO_EXTENT(tileY, (plane)->GetTileRows())
 
 #define CLAMP_PIXEL_TO_PLANE(pixelX, pixelY, plane)                                                \
     CLAMP_TO_EXTENT(pixelX, (plane)->m_planePixelSize.cx)                                          \

@@ -16,6 +16,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -1636,7 +1637,6 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0007b930, 0x3e0)
 i32 CTriggerMgr::ApplyGruntAreaEffect(
     i32 x,
@@ -1654,8 +1654,8 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
         y - radiusPx - 7,
         y + radiusPx + 7
     );
-    i32 maxTileX = m_world->m_level->m_mainPlane->m_tileGridSize.cx - 2;
-    i32 maxTileY = m_world->m_level->m_mainPlane->m_tileGridSize.cy - 2;
+    i32 maxTileX = m_world->m_level->m_mainPlane->GetTileColumns() - 2;
+    i32 maxTileY = m_world->m_level->m_mainPlane->GetTileRows() - 2;
 
     CGrunt** units = m_units;
     for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {
@@ -1667,7 +1667,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
             if (grunt->IsEntranceCommitted() == false) {
                 continue;
             }
-            if (grunt->m_entranceDropActive != false) {
+            if (grunt->IsEntranceDropActive() != false) {
                 continue;
             }
             i32 gruntX = grunt->m_object->m_screenPosition.m_x;
@@ -1680,17 +1680,17 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                 && area.bottom >= gruntTop) {
                 switch (effect) {
                     case GRUNT_AREA_EFFECT_DROP:
-                        if (grunt->m_gruntKind != GRUNT_INVULNERABLE) {
+                        if (grunt->GetGruntKind() != GRUNT_INVULNERABLE) {
                             StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, deathParam);
                         }
                         break;
                     case GRUNT_AREA_EFFECT_EXPLODE:
-                        if (grunt->m_gruntKind != GRUNT_INVULNERABLE) {
+                        if (grunt->GetGruntKind() != GRUNT_INVULNERABLE) {
                             StartUnitDeath(playerIndex, unitIndex, DEATH_EXPLODE, deathParam);
                         }
                         break;
                     case GRUNT_AREA_EFFECT_SQUASH:
-                        if (grunt->m_gruntKind != GRUNT_INVULNERABLE) {
+                        if (grunt->GetGruntKind() != GRUNT_INVULNERABLE) {
                             StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, deathParam);
                         }
                         break;
@@ -1700,11 +1700,10 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         }
                         i32 placed = 0;
                         do {
-                            i32 tileX = maxTileX == 0 ? static_cast<char>(rand()) & 1
-                                                      : rand() % maxTileX + 1;
-                            i32 tileY = maxTileY == 0 ? static_cast<char>(rand()) & 1
-                                                      : rand() % maxTileY + 1;
+                            i32 tileX = GetRandom(1, maxTileX);
+                            i32 tileY = GetRandom(1, maxTileY);
                             if (grunt->TryTeleportToCell(tileX, tileY, false, true)) {
+                                placed = 1;
                                 CGameObject* flashObject =
                                     g_gameReg->World()->ChildGroup()->CreateSprite(
                                         0,
@@ -1714,7 +1713,6 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                                         "LightFx",
                                         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                     );
-                                placed = 1;
                                 flashObject->GetLogicRecord()->Dispatch(flashObject);
                                 (static_cast<CLightFx*>(flashObject->GetLogicRecord()->UserLogic()))
                                     ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, true);

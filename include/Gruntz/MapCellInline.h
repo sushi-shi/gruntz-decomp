@@ -67,7 +67,7 @@ static inline void TBombGridClear(CGameObject* obj) {
     i32 cx = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->GetWidth())
         && static_cast<u32>(cy) < static_cast<u32>(g->GetHeight())) {
-        g->m_rows[cy][cx].m_flags &= ~IDX(CELL_FLAG_TIME_BOMB);
+        g->CellFlagsAtUnchecked(cx, cy) &= ~IDX(CELL_FLAG_TIME_BOMB);
     }
 }
 

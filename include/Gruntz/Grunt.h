@@ -184,6 +184,9 @@ public:
     inline PickupType ArrivalPickupOf(PickupType entranceReason) const;
     inline PickupType ArrivalPickup() const;
 
+    PickupType GetGruntKind() const {
+        return m_gruntKind;
+    }
     PickupType GetVehiclePickupType() const {
         return m_vehiclePickupType;
     }
@@ -197,6 +200,9 @@ public:
     }
     b32 HasArrived() const {
         return m_arrived;
+    }
+    b32 IsEntranceDropActive() const {
+        return m_entranceDropActive;
     }
     b32 IsEntranceCommitted() const {
         return m_entranceCommitted;

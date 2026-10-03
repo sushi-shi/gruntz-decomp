@@ -43,6 +43,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileActionEvent.h>
@@ -760,7 +761,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         for (i32 col = colBeg; col < colEnd; col++) {
                                             if (static_cast<u32>(col) < b->m_width
                                                 && static_cast<u32>(row) < b->m_height) {
-                                                if (b->CellFlagsAtUnchecked(col, row) & 0x1000000) {
+                                                if (b->CellFlagsAtUnchecked(col, row)
+                                                    & IDX(CELL_FLAG_TIME_BOMB)) {
                                                     goto perimSweep;
                                                 }
                                             }
@@ -1600,7 +1602,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (u == NULL) {
                 continue;
             }
-            if (u->m_entranceDropActive != false) {
+            if (u->IsEntranceDropActive() != false) {
                 continue;
             }
             POINT wpt;
@@ -1610,7 +1612,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
                 continue;
             }
             i32 keep = 1;
-            if (u->m_gruntKind == GRUNT_GHOST) {
+            if (u->GetGruntKind() == GRUNT_GHOST) {
                 if (GetRandom(0, 99) > 5) {
                     keep = 0;
                 }
@@ -1646,7 +1648,7 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 cell = rand() % TM_UNITS_PER_PLAYER;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         CGrunt* u = m_triggerMgr->UnitAt(band, i);
-        if (u != NULL && u->m_entranceDropActive == false) {
+        if (u != NULL && u->IsEntranceDropActive() == false) {
             return u;
         }
         cell = (cell + 1) % TM_UNITS_PER_PLAYER;
@@ -1679,10 +1681,10 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->IsAnimationAct("L")) {
         return 0;
     }
-    if (other->m_gruntKind == GRUNT_GHOST) {
+    if (other->GetGruntKind() == GRUNT_GHOST) {
         return 0;
     }
-    if (other->m_entranceDropActive != false) {
+    if (other->IsEntranceDropActive() != false) {
         return 0;
     }
     i32 roll = rand() % 4;
@@ -1972,17 +1974,7 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, L
             break;
     }
 
-    i64* p = &m_routeTiming.m_start;
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(&p[0], sizeof(i64));
-            ar->Write(&p[1], sizeof(i64));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(&p[0], sizeof(i64));
-            ar->Read(&p[1], sizeof(i64));
-            break;
-    }
+    SerializeClockPair(ar, mode, &m_routeTiming);
     return 1;
 }
 
@@ -2013,7 +2005,7 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
 
 RVA(0x0002c140, 0x420)
 i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
-    if (unit->m_gruntKind != GRUNT_NORMAL) {
+    if (unit->GetGruntKind() != GRUNT_NORMAL) {
         return 0;
     }
     PickupType prim = unit->ArrivalPickup();
@@ -2086,7 +2078,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             i32 gy = g->m_screenPosition.m_y >> TILE_SHIFT_PX;
             CPoint wpt(gx, gy);
             if (box.PtInRect(wpt)) {
-                if (special != 0 && unit->m_gruntKind == GRUNT_NORMAL) {
+                if (special != 0 && unit->GetGruntKind() == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                         CMapMgr* bd = m_board;
                         bd->Clip(NULL);
@@ -3329,7 +3321,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
     if (src == NULL) {
         return 0;
     }
-    if (src->m_gruntKind == GRUNT_GHOST) {
+    if (src->GetGruntKind() == GRUNT_GHOST) {
         return 0;
     }
     if (src->GetBattlezTask() == BZTASK_ADVANCE) {

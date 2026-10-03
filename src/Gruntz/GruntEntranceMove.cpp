@@ -176,7 +176,7 @@ RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     CGrunt* other = m_triggerMgr->UnitAt(playerIndex, unitIndex);
     if (other != NULL && other->IsEntranceCommitted() != false
-        && other->m_gruntKind != GRUNT_GHOST) {
+        && other->GetGruntKind() != GRUNT_GHOST) {
         Coord otherTile = other->m_lastTilePx;
         ScreenTile(&otherTile);
         Coord targetTile = m_defenderPx;

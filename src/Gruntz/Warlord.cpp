@@ -30,6 +30,7 @@
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -295,34 +296,8 @@ i32 CWarlord::SerializeDispatch(
         }
     }
 
-    {
-        i64* cooldown = &m_cooldownTimer.m_start;
-        switch (mode) {
-            case SERIAL_LOAD:
-                ar->Read(cooldown, sizeof(*cooldown));
-                cooldown++;
-                ar->Read(cooldown, sizeof(*cooldown));
-                break;
-            case SERIAL_SAVE:
-                ar->Write(cooldown, sizeof(*cooldown));
-                cooldown++;
-                ar->Write(cooldown, sizeof(*cooldown));
-                break;
-        }
-        i64* timer2 = &m_notifyTimer.m_start;
-        switch (mode) {
-            case SERIAL_LOAD:
-                ar->Read(timer2, sizeof(*timer2));
-                timer2++;
-                ar->Read(timer2, sizeof(*timer2));
-                break;
-            case SERIAL_SAVE:
-                ar->Write(timer2, sizeof(*timer2));
-                timer2++;
-                ar->Write(timer2, sizeof(*timer2));
-                break;
-        }
-    }
+    m_cooldownTimer.Serialize(ar, mode, typeId, obj);
+    m_notifyTimer.Serialize(ar, mode, typeId, obj);
     return 1;
 fail:
     return 0;

@@ -183,7 +183,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                         && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE
                         && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_BOMB) {
                         i32 seekable = 1;
-                        if (sv->m_gruntKind == GRUNT_GHOST) {
+                        if (sv->GetGruntKind() == GRUNT_GHOST) {
                             seekable = 0;
                         }
                         if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) == PICKUP_WARPSTONE) {

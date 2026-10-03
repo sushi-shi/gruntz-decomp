@@ -177,7 +177,7 @@ i32 CStaticHazard::UpdateActiveState() {
             i32 col = m_tile.m_x;
             if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
                 && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
-                grid->m_rows[row][col].m_flags &= 0xf7ffffff;
+                MAP_CELL_FLAGS_AT_UNCHECKED(grid, col, row) &= 0xf7ffffff;
             }
             return 0;
         }
@@ -215,7 +215,7 @@ i32 CStaticHazard::UpdateActiveState() {
         i32 col = m_tile.m_x;
         if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
             && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
-            grid->m_rows[row][col].m_flags |= 0x8000000;
+            MAP_CELL_FLAGS_AT_UNCHECKED(grid, col, row) |= 0x8000000;
         }
     } else {
         CMapMgr* grid = g_gameReg->GetTileGrid();
@@ -223,7 +223,7 @@ i32 CStaticHazard::UpdateActiveState() {
         i32 col = m_tile.m_x;
         if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
             && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
-            grid->m_rows[row][col].m_flags &= 0xf7ffffff;
+            MAP_CELL_FLAGS_AT_UNCHECKED(grid, col, row) &= 0xf7ffffff;
         }
         CWwdSpriteObject* o = m_object;
         o->SetSortKey(0);
@@ -238,7 +238,7 @@ i32 CStaticHazard::UpdateActiveState() {
             i32 col = m_tile.m_x;
             if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
                 && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
-                grid->m_rows[row][col].m_flags &= 0xf7ffffff;
+                MAP_CELL_FLAGS_AT_UNCHECKED(grid, col, row) &= 0xf7ffffff;
             }
         }
     }

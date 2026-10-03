@@ -28,6 +28,7 @@
 #include <Gruntz/MovingDeathTileId.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TriggerMgr.h>
@@ -135,7 +136,7 @@ i32 CRollingBall::Update() {
             i32 cx = lg->m_screenPosition.m_x >> TILE_SHIFT_PX;
             i32 cy = lg->m_screenPosition.m_y >> TILE_SHIFT_PX;
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
-                map->m_rows[cy][cx].m_flags &= 0xefffffff;
+                map->CellFlagsAtUnchecked(cx, cy) &= 0xefffffff;
             }
             m_explodeLatch = true;
         }
@@ -173,7 +174,7 @@ i32 CRollingBall::Update() {
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;
         CMapMgr* map = g_gameReg->GetTileGrid();
         if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
-            map->m_rows[ty][tx].m_flags &= 0xefffffff;
+            map->CellFlagsAtUnchecked(tx, ty) &= 0xefffffff;
         }
         CMapMgr* map2 = g_gameReg->GetTileGrid();
         i32 terrain = map2->CellFlagsAt(tx, ty);
@@ -188,7 +189,7 @@ i32 CRollingBall::Update() {
             if (tileX < 0) {
                 tileX = 0;
             } else {
-                i32 w = lvl->m_mainPlane->m_tileGridSize.cx;
+                i32 w = lvl->m_mainPlane->GetTileColumns();
                 if (tileX >= w) {
                     tileX = w - 1;
                 }
@@ -196,7 +197,7 @@ i32 CRollingBall::Update() {
             if (tileY < 0) {
                 tileY = 0;
             } else {
-                i32 h = lvl->m_mainPlane->m_tileGridSize.cy;
+                i32 h = lvl->m_mainPlane->GetTileRows();
                 if (tileY >= h) {
                     tileY = h - 1;
                 }
@@ -386,7 +387,7 @@ i32 CRollingBall::Update() {
             if (tileX2 < 0) {
                 tileX2 = 0;
             } else {
-                i32 w = lvl2->m_mainPlane->m_tileGridSize.cx;
+                i32 w = lvl2->m_mainPlane->GetTileColumns();
                 if (tileX2 >= w) {
                     tileX2 = w - 1;
                 }
@@ -394,7 +395,7 @@ i32 CRollingBall::Update() {
             if (tileY2 < 0) {
                 tileY2 = 0;
             } else {
-                i32 h = lvl2->m_mainPlane->m_tileGridSize.cy;
+                i32 h = lvl2->m_mainPlane->GetTileRows();
                 if (tileY2 >= h) {
                     tileY2 = h - 1;
                 }
@@ -481,7 +482,7 @@ i32 CRollingBall::Update() {
         i32 mtx = m_target.m_x >> TILE_SHIFT_PX;
         i32 mty = m_target.m_y >> TILE_SHIFT_PX;
         if (static_cast<u32>(mtx) < board2->m_width && static_cast<u32>(mty) < board2->m_height) {
-            board2->m_rows[mty][mtx].m_flags |= 0x10000000;
+            board2->CellFlagsAtUnchecked(mtx, mty) |= 0x10000000;
         }
     }
 
@@ -547,19 +548,7 @@ i32 CRollingBall::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    i64* explode = &m_explodeTiming.m_start;
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(explode, sizeof(*explode));
-            explode++;
-            ar->Write(explode, sizeof(*explode));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(explode, sizeof(*explode));
-            explode++;
-            ar->Read(explode, sizeof(*explode));
-            break;
-    }
+    m_explodeTiming.Serialize(ar, mode, typeId, object);
 
     switch (mode) {
         case SERIAL_SAVE:
