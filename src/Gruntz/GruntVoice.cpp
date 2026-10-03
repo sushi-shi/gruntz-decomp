@@ -105,10 +105,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE)
     m_stream = NULL;
-    m_playbackTiming.m_startLo = 0;
-    m_playbackTiming.m_intervalLo = 0;
-    m_playbackTiming.m_startHi = 0;
-    m_playbackTiming.m_intervalHi = 0;
+    m_playbackTiming.Clear();
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_KEEP_ACTIVE);
     Hide();
     m_priority = 0;

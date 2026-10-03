@@ -3290,8 +3290,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
 
     ClearRewardQueue();
     ClockInterval* clock = &m_reserved2b0;
-    clock->m_start = 0;
-    clock->m_interval = 0;
+    clock->Clear();
     m_hlBusy = false;
     SAFE_DELETE(m_retabNotify);
     ExitMode();

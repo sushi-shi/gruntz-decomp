@@ -4215,10 +4215,7 @@ i32 CPlay::ExecuteCommand(
                 mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
             if (g != NULL) {
                 if (g->m_tileClaimed != true) {
-                    g->m_arrivalRerollTiming.m_startLo = 0;
-                    g->m_arrivalRerollTiming.m_intervalLo = 0;
-                    g->m_arrivalRerollTiming.m_startHi = 0;
-                    g->m_arrivalRerollTiming.m_intervalHi = 0;
+                    g->m_arrivalRerollTiming.Clear();
                     g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
                     g->m_tileClaimed = true;
                     g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
@@ -5486,10 +5483,7 @@ i32 CPlay::ResetPlayState() {
         if (gameManager->m_musicEnabled != false && gameManager->m_gameMode == GAMEMODE_BATTLEZ) {
             m_mgr->m_midi->PlaySequence(sequenceName, true);
         }
-        m_ambientTiming.m_startLo = 0;
-        m_ambientTiming.m_intervalLo = 0;
-        m_ambientTiming.m_startHi = 0;
-        m_ambientTiming.m_intervalHi = 0;
+        m_ambientTiming.Clear();
         m_ambientInitDone = true;
     }
     if (m_mgr->m_gameMode == GAMEMODE_QUESTZ) {
@@ -5546,10 +5540,8 @@ i32 CPlay::ResetPlayState() {
     tl->m_countdownActive = true;
     tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
-    tl->m_gooTimer.m_start = 0;
-    tl->m_gooTimer.m_interval = 0;
-    tl->m_resourceTimer.m_start = 0;
-    tl->m_resourceTimer.m_interval = 0;
+    tl->m_gooTimer.Clear();
+    tl->m_resourceTimer.Clear();
     tl->m_finishReasonFrame = FINISH_REASON_NONE;
     tl->m_rollingballWanted = false;
     tl->m_teleportWanted = false;

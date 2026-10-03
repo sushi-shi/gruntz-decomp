@@ -720,10 +720,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                 }
                 if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
                     && m_arrived == false && m_tileClaimed != true) {
-                    m_arrivalRerollTiming.m_startLo = 0;
-                    m_arrivalRerollTiming.m_intervalLo = 0;
-                    m_arrivalRerollTiming.m_startHi = 0;
-                    m_arrivalRerollTiming.m_intervalHi = 0;
+                    m_arrivalRerollTiming.Clear();
                     m_defenderPx = m_lastTilePx;
                     m_tileClaimed = true;
                     PickupType kind = m_entranceReason;

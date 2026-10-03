@@ -32,6 +32,11 @@ struct ClockInterval {
         m_interval = 0;
     }
 
+    void Clear() {
+        m_start = 0;
+        m_interval = 0;
+    }
+
     void Start(u32 interval) {
         m_interval = interval;
         m_start = g_frameTime;

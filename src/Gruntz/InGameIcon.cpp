@@ -100,10 +100,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetupSprite(NULL);
 
     m_glitterSprite = NULL;
-    m_peekTiming.m_startLo = 0;
-    m_peekTiming.m_intervalLo = 0;
-    m_peekTiming.m_startHi = 0;
-    m_peekTiming.m_intervalHi = 0;
+    m_peekTiming.Clear();
 
     InGameIconGlitter glitter = ICON_GLITTER_NONE;
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
