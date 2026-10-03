@@ -15,11 +15,11 @@
                 m_object->GetLogicRecord()->m_flags &=                                             \
                     ~(IDX(LOGIC_RECORD_FLAG_SMALL_ACTIVE_REGION)                                   \
                       | IDX(LOGIC_RECORD_FLAG_KEEP_ACTIVE));                                       \
-                m_object->GetLogicRecord()->m_flags |= IDX(LOGIC_RECORD_FLAG_LARGE_ACTIVE_REGION); \
+                m_object->GetLogicRecord()->AddFlags(IDX(LOGIC_RECORD_FLAG_LARGE_ACTIVE_REGION));  \
                 m_wwdObject->m_flags &=                                                            \
                     ~(IDX(WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION)                                \
                       | IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));                                    \
-                m_wwdObject->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION);             \
+                m_wwdObject->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION));              \
             }                                                                                      \
         }                                                                                          \
     }

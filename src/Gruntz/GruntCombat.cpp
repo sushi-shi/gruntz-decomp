@@ -657,8 +657,7 @@ i32 CGrunt::PathScan() {
         Coord* co = static_cast<Coord*>(coordz->GetNext(node));
         if (co != NULL) {
 
-            if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0
-                || (co->m_x == target.m_x && co->m_y == target.m_y)) {
+            if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0 || (*co == target)) {
 
                 CPtrList s(0xa);
                 i32 res = grid->FindPathWithEndpointOverrides(
@@ -686,7 +685,7 @@ i32 CGrunt::PathScan() {
                             do {
                                 Coord* d = static_cast<Coord*>(s.GetNext(p));
                                 if (d != NULL) {
-                                    if (d->m_x != start.m_x || d->m_y != start.m_y) {
+                                    if (*d != start) {
                                         coordz->AddTail(d);
                                     }
                                 }
@@ -2170,7 +2169,7 @@ kindDispatch:
                         CWwdSpriteObject* ps = m_powerupSprite;
                         m_gruntKind = GRUNT_NORMAL;
                         if (ps != NULL) {
-                            ps->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                            ps->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             m_powerupSprite = NULL;
                         }
                         break;
@@ -2179,7 +2178,7 @@ kindDispatch:
                         CWwdSpriteObject* ps = m_powerupSprite;
                         m_gruntKind = GRUNT_NORMAL;
                         if (ps != NULL) {
-                            ps->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                            ps->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             m_powerupSprite = NULL;
                         }
                         PickupType typeId = m_toolId;

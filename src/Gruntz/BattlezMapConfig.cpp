@@ -189,7 +189,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
             slot->m_y = cur3->m_screenY >> TILE_SHIFT_PX;
             m_attackWaypoints.Add(slot);
-            cur3->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            cur3->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
 
@@ -1549,7 +1549,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 POSITION qp = list.GetHeadPosition();
                 while (qp != NULL) {
                     Coord* c3 = static_cast<Coord*>(list.GetNext(qp));
-                    if (c3 != NULL && (c3->m_x != center.m_x || c3->m_y != center.m_y)) {
+                    if (c3 != NULL && (*c3 != center)) {
                         coordList->AddTail(c3);
                     }
                 }
@@ -3170,7 +3170,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
     n = unit->CoordHead();
     while (n != NULL) {
         Coord* coord = unit->GetNextCoord(n);
-        if (coord != NULL && coord->m_x == goal.m_x && coord->m_y == goal.m_y) {
+        if (coord != NULL && *coord == goal) {
             break;
         }
     }
@@ -3553,7 +3553,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
                 CGrunt* u = grid->UnitAt(cell, j);
                 if (u != NULL && !u->CoordsEmpty()) {
                     Coord node = *u->GetTailCoord();
-                    if (node.m_x == cand.m_x && node.m_y == cand.m_y) {
+                    if (node == cand) {
                         ok = false;
                     }
                 }

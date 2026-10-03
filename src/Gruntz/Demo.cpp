@@ -91,7 +91,7 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) {
         return 0;
     }
     m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->m_flags |= 4;
+    m_world->m_level->AddFlags(4);
     return 1;
 }
 

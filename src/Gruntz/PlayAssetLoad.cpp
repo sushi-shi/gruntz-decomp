@@ -371,7 +371,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
         }
     }
     m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->m_flags |= 4;
+    m_world->m_level->AddFlags(4);
     g_backView = m_world->m_level->FindPlaneByName("BACK");
     return 1;
 }
