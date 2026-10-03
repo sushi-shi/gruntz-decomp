@@ -197,9 +197,9 @@ L_tailc:
         Coord* coord = GetHeadCoord();
         i32 col = coord->m_x;
         i32 row = coord->m_y;
-        BrickzCell* cell = &grid->m_rows[row][col];
-        if ((cell->m_flags & IDX(CELL_FLAG_REVEALED_POWERUP)) != 0
-            || (cell->m_flags & IDX(CELL_FLAG_COVERED_POWERUP)) != 0) {
+        i32& flags = grid->CellFlagsAtUnchecked(col, row);
+        if ((flags & IDX(CELL_FLAG_REVEALED_POWERUP)) != 0
+            || (flags & IDX(CELL_FLAG_COVERED_POWERUP)) != 0) {
             m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
