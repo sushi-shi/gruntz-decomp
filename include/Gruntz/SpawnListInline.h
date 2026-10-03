@@ -5,10 +5,7 @@
 
 inline CSpawnEntry* CSpawnList::FirstEntry() {
     m_cursor = m_list.GetHeadPosition();
-    if (m_cursor == NULL) {
-        return NULL;
-    }
-    return NextEntry(m_cursor);
+    return NextEntry();
 }
 
 inline CSpawnEntry* CSpawnList::NextEntry() {
