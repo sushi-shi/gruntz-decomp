@@ -2749,7 +2749,7 @@ ingameicon	?GetTypeTag@CInGameText@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	c
 ingameicon	?GetTypeTag@CToyPeek@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x11bf0	100.0000	
 ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	100.0000	100.0000	7	62ec1c070f2d	0x97680	100.0000	
 ingameicon	?PeekCycle@CInGameIcon@@QAEHXZ	93.8843	93.8843	11	4bc5937fdba8	0x984b0	93.8843	
-ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	96.3765	96.3765	18	86f8fe391b28	0x986b0	96.3765	
+ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	96.3765	96.3765	18	8fc3eb1deb4e	0x986b0	96.3765	
 ingameicon	?RefreshCell@CInGameIcon@@QAEHXZ	100.0000	100.0000	8	594470022920	0x98340	100.0000	
 ingameicon	?RegisterIconActions@@YAXXZ	100.0000	100.0000	2	c6b6a7d490a3	0x979e0	100.0000	
 ingameicon	?RegisterIconState@@YAXXZ	100.0000	100.0000	2	d4c877dd1520	0x97f40	100.0000	
@@ -3040,11 +3040,11 @@ menutree	?SetActivePage@CMenuTree@@QAEHPAVCMenuPage@@@Z	100.0000	100.0000	3	eee8
 menutree	?SetActivePageByKey@CMenuTree@@QAEHPBD@Z	100.0000	100.0000	3	b58d7e79d076	0x182dd0	100.0000	
 menutree	?Update@CMenuTree@@QAEHI@Z	100.0000	100.0000	13	acddb5f393e3	0x182c70	100.0000	
 menutree	?UpdateCursorAnimations@CMenuTree@@QAEHH@Z	100.0000	100.0000	5	1766b4f95d36	0x182ed0	100.0000	
-movinglogic	?AdvanceMotion@CMovingLogic@@UAEXXZ	98.5455	98.5455	4	629c791d6f97	0x16ea90	98.5455	
-movinglogic	?ArrivalVelX@CMotionState@@QAENN@Z	96.2500	96.2500	6	1df9d9425772	0x16f3c0	100.0000	
-movinglogic	?ArrivalVelY@CMotionState@@QAENN@Z	96.2500	96.2500	6	3b43fd002c23	0x16f430	100.0000	
+movinglogic	?AdvanceMotion@CMovingLogic@@UAEXXZ	100.0000	100.0000	5	2431fa3a78d5	0x16ea90	100.0000	
+movinglogic	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	7	90e5a31812cc	0x16f3c0	100.0000	
+movinglogic	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	7	85bc86c610b3	0x16f430	100.0000	
 movinglogic	?SerializeDispatch@CMovingLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	3	fd9ba8c2f75d	0x16f4a0	100.0000	
-movinglogic	?Step@CMotionState@@QAEXN@Z	81.8007	81.0395	4	39be0676f4a3	0x16ecd0	82.9390	
+movinglogic	?Step@CMotionState@@QAEXN@Z	83.8402	83.8402	4	39be0676f4a3	0x16ecd0	83.8402	
 multi	??0CNetCmdSlot@@QAE@XZ	100.0000	100.0000	4	461b13706de5	0xbbec0	100.0000	
 multi	??1CMulti@@UAE@XZ	100.0000	100.0000	1	f6002d2fbb63	0x8d270	100.0000	
 multi	??1CMultiStartDlg@@UAE@XZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0xb8960	100.0000	
