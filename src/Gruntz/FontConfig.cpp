@@ -529,7 +529,7 @@ i32 CFontConfig::Draw3DText(
     rc.top += voff;
     rc.bottom += voff;
     if (shadow) {
-        SetTextColor(hdc, RGB(0, 0, 0));
+        SetTextColor(hdc, 0);
         rc.left += dx;
         rc.top += dy;
         rc.right += dx;
