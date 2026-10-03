@@ -3187,15 +3187,10 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     if (cb == NULL) {
         return 0;
     }
-    RECT* r = rect;
-    if (r == NULL) {
+    if (rect == NULL) {
         return 0;
     }
-    RECT box;
-    box.left = r->left + offX;
-    box.right = r->right + offX;
-    box.top = r->top + offY;
-    box.bottom = r->bottom + offY;
+    CRect box(rect->left + offX, rect->top + offY, rect->right + offX, rect->bottom + offY);
     i32 count = 0;
     CDDrawChildGroup* children = World()->ChildGroup();
     POSITION pos = children->GetHeadPosition();
