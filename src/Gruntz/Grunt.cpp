@@ -666,7 +666,7 @@ i32 CGrunt::CommitArrival() {
         return 1;
     }
 
-    if (m_tileClaimed != false && g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+    if (m_tileClaimed != false && g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
         m_triggerMgr->EnqueueGuardEnd(m_playerIndex, m_unitIndex);
     } else if (m_tileClaimed != false) {
         END_GUARD(this);
@@ -1588,7 +1588,7 @@ i32 CGrunt::Place(
         }
     } else {
         m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             m_arrivalFlags = ARRIVAL_FLAGS_PLAYER_SINGLE;
         }
     }

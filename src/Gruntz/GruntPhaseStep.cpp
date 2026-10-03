@@ -79,7 +79,7 @@ state2: {
         goto common;
     }
     {
-        RECT box = MakeRect(
+        RECT box = CRect(
             m_arrivalCell.m_x - 4,
             m_arrivalCell.m_y - 4,
             m_arrivalCell.m_x + 5,

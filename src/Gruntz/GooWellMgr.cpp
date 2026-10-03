@@ -90,7 +90,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             return 0;
         }
         if (m_cueTimer.Expired()) {
-            if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+            if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
 
                 (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = true;
             }
@@ -105,7 +105,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (!m_cueTimer.Expired()) {
             goto done;
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_pendingFx != NULL) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_pendingFx != NULL) {
             return 0;
         }
         (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);
@@ -115,7 +115,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
 
     {
         CPlay* obj = static_cast<CPlay*>(g_gameReg->m_curState);
-        if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
                 GruntzPlayer* lastSlot = pslot;
@@ -174,13 +174,13 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (m_overlay) {
             m_overlay->RefreshIfActive(deltaMs);
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
             if (obj->m_winLoseBanner != false && m_unitCountByPlayer[g_curPlayer] == 0) {
                 LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
                 return 0;
             }
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             if (m_unitCountByPlayer[g_curPlayer] != 0) {
                 return 0;
             }
