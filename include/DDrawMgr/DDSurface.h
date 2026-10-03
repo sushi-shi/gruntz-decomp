@@ -92,6 +92,10 @@ public:
         return m_ddSurface;
     }
 
+    const DDSURFACEDESC& GetDescription() const {
+        return m_apiDesc;
+    }
+
     void* Lock(RECT* rect);
     i32 PixelOffset(i32 x, i32 y) const {
         return y * m_apiDesc.lPitch + x * m_bytesPerPixel;
@@ -123,6 +127,9 @@ public:
     i32 Fill(u32 color);
     i32 GetWidth();
     i32 GetHeight();
+    ColorDepth GetBitDepth() {
+        return m_bitDepth;
+    }
     i32 Scale(i32 n);
     void Unlock();
 

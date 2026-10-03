@@ -42,8 +42,8 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
     m_rows[goalY][goalX].m_occupantId = -1;
     m_edgeMask = blockedMask & BRICKZ_CELL_OCCUPIED;
     if (clearEndpointFlags != 0) {
-        m_rows[startY][startX].m_flags = 0;
-        m_rows[goalY][goalX].m_flags = 0;
+        CellFlagsAtUnchecked(startX, startY) = 0;
+        CellFlagsAtUnchecked(goalX, goalY) = 0;
     }
     blockedMask = self->CMapMgr::FindPath(
         startX,
@@ -59,8 +59,8 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
     m_rows[startY][startX].m_occupantId = savedStartOccupantId;
     m_rows[goalY][goalX].m_occupantId = savedGoalOccupantId;
     if (clearEndpointFlags != 0) {
-        m_rows[startY][startX].m_flags = savedStartFlags;
-        m_rows[goalY][goalX].m_flags = savedGoalFlags;
+        CellFlagsAtUnchecked(startX, startY) = savedStartFlags;
+        CellFlagsAtUnchecked(goalX, goalY) = savedGoalFlags;
     }
     if (goalWasOccupied != 0) {
         BrickzCell* restoredGoalCell = &m_rows[goalY][goalX];
@@ -145,14 +145,14 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
         i32 yacc = y0 << 16;
         if (dx > 0) {
             for (i32 x = x0; x < x1; x++) {
-                if (m_rows[yacc >> 16][x].m_flags != 0) {
+                if (CellFlagsAtUnchecked(x, yacc >> 16) != 0) {
                     return 0;
                 }
                 yacc += slope;
             }
         } else {
             for (i32 x = x0; x > x1; x--) {
-                if (m_rows[yacc >> 16][x].m_flags != 0) {
+                if (CellFlagsAtUnchecked(x, yacc >> 16) != 0) {
                     return 0;
                 }
                 yacc += slope;
@@ -163,14 +163,14 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
         i32 xacc = x0 << 16;
         if (dy > 0) {
             for (i32 y = y0; y < y1; y++) {
-                if (m_rows[y][xacc >> 16].m_flags != 0) {
+                if (CellFlagsAtUnchecked(xacc >> 16, y) != 0) {
                     return 0;
                 }
                 xacc += slope;
             }
         } else {
             for (i32 y = y0; y > y1; y--) {
-                if (m_rows[y][xacc >> 16].m_flags != 0) {
+                if (CellFlagsAtUnchecked(xacc >> 16, y) != 0) {
                     return 0;
                 }
                 xacc += slope;

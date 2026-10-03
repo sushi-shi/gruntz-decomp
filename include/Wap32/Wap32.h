@@ -79,6 +79,10 @@ public:
     }
     virtual i32 OnCommand(WPARAM wParam, LPARAM lParam);
 
+    const HWND& GetHwnd() const {
+        return m_hwnd;
+    }
+
     i32 CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner);
     void Destroy();
 

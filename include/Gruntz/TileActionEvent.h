@@ -53,6 +53,10 @@ public:
         return m_playerFlags[playerIndex];
     }
 
+    BrickTileId GetActionCode() const {
+        return m_actionCode;
+    }
+
     i32 SetActionCode(BrickTileId code);
 
     i32 BreakTopBrick(CGrunt* grunt);

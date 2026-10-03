@@ -112,7 +112,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     RECT menuBounds;
     SET_RECT_COMPONENTS(menuBounds, 0, 8, 0x27f, 0x1df);
     m_menuTree = new CMenuTree;
-    if (!m_menuTree->Configure(m_world, m_mgr->m_gameWnd->m_hwnd, &menuBounds, 0x14, 0xa, 1)) {
+    if (!m_menuTree->Configure(m_world, m_mgr->m_gameWnd->GetHwnd(), &menuBounds, 0x14, 0xa, 1)) {
         return 0;
     }
 
@@ -270,7 +270,7 @@ void CMenuState::StopMusicChain() {
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::LeaveState(GameStateId) {
     m_world->m_drawTarget->TransExit();
-    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
+    m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_activateCueDurationMs)
@@ -376,7 +376,7 @@ i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     } else if (key == VK_ESCAPE) {
         if (m_menuTree->ReturnToPreviousPage() == 0) {
             m_activateCueDurationMs = 0;
-            PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
+            PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
         }
     }
     return 1;

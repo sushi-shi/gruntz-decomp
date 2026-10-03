@@ -124,8 +124,8 @@ void ImageRotateBlit(
     i32 colorkey
 ) {
 
-    i32 w = src->m_apiDesc.dwWidth;
-    i32 h = src->m_apiDesc.dwHeight;
+    i32 w = src->GetWidth();
+    i32 h = src->GetHeight();
 
     i32 sq[4];
     if (pivot != NULL) {
@@ -317,8 +317,8 @@ i32 RotateRasterize(
     i32 i;
     if (clipLeft == -1) {
         topBound = 0.0f;
-        rightBound = static_cast<float>(static_cast<i32>(dst->m_apiDesc.dwWidth));
-        bottomBound = static_cast<float>(static_cast<i32>(dst->m_apiDesc.dwHeight));
+        rightBound = static_cast<float>(dst->GetWidth());
+        bottomBound = static_cast<float>(dst->GetHeight());
         leftBound = g_rasterZero;
     } else {
         leftBound = static_cast<float>(clipLeft);
@@ -462,7 +462,7 @@ RVA(0x00146a20, 0x5b7)
 i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
     i32 minY = 0x1001;
     i32 maxY = -1;
-    if (WarpIsPow2(src->m_apiDesc.dwWidth) == 0) {
+    if (WarpIsPow2(src->GetWidth()) == 0) {
         return 0;
     }
     g_warpColorkey = static_cast<i16>(colorkey);
@@ -471,7 +471,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     {
         i32 m = 1;
         while (static_cast<u32>(shift) < 0x20) {
-            if ((src->m_apiDesc.dwWidth & m) != 0) {
+            if ((src->GetWidth() & m) != 0) {
                 break;
             }
             m <<= 1;
@@ -533,7 +533,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     i32 dstPitch = dst->m_apiDesc.lPitch;
     g_rasterDestRow = static_cast<u8*>(dst->Lock(NULL));
     g_rasterDestRow += dstPitch * minY;
-    g_warpUMask = ((src->m_apiDesc.dwWidth + 0x3ffff) << WARP_TEXTURE_FRACTION_BITS) << shift;
+    g_warpUMask = ((static_cast<u32>(src->GetWidth()) + 0x3ffff) << WARP_TEXTURE_FRACTION_BITS)
+                  << shift;
 
     if (mode == 0) {
         for (i32 y = minY; y < maxY; y++, lrow++, g_rasterDestRow += dst->m_apiDesc.lPitch) {

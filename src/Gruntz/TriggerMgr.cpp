@@ -1017,7 +1017,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
     Coord tile = cell->LastTilePx();
     ScreenTile(&tile);
-    tg->m_rows[tile.m_y][tile.m_x].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
+    tg->CellFlagsAtUnchecked(tile.m_x, tile.m_y) &= BRICKZ_CELL_UNOCCUPIED_MASK;
     tg->m_rows[tile.m_y][tile.m_x].m_occupantId = -1;
     m_units[idx] = NULL;
     m_unitCountByPlayer[playerIndex] -= 1;

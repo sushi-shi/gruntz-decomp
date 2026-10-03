@@ -153,8 +153,8 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
     }
     i32 r = BuildRle(
         bits,
-        surf->m_apiDesc.dwWidth,
-        surf->m_apiDesc.dwHeight,
+        surf->GetWidth(),
+        surf->GetHeight(),
         surf->m_apiDesc.lPitch,
         keyVal,
         palette

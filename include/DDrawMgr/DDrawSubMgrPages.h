@@ -39,6 +39,10 @@ public:
     }
     virtual i32 CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags);
 
+    CDDrawFrontSurface* GetFrontSurface() {
+        return m_frontSurface;
+    }
+
     i32 ResolvePageImage(char* name, DDrawPageKind pageIndex);
     i32 LoadPageImage(struct CRezItm* src, DDrawPageKind pageIndex);
     void BltDirtyChildrenEx();
@@ -112,6 +116,39 @@ public:
     RECT m_srcRect;
     CDDSurface* m_surface;
 };
+
+RVA(0x00158fd0, 0x41)
+inline i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
+    if (w <= 0 || h <= 0) {
+        return 0;
+    }
+    m_width = w;
+    m_height = h;
+    m_bpp = bpp;
+    m_srcRect.left = 0;
+    m_srcRect.top = 0;
+    m_srcRect.right = w;
+    m_srcRect.bottom = h;
+    return 1;
+}
+
+RVA(0x00159020, 0x55)
+inline i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
+    if (w <= 0 || h <= 0) {
+        return 0;
+    }
+    if (bpp != BPP_PALETTED_8 && bpp != BPP_RGB_16 && bpp != BPP_RGB_24 && bpp != BPP_RGB_32) {
+        return 0;
+    }
+    m_width = w;
+    m_height = h;
+    m_bpp = bpp;
+    m_srcRect.left = 0;
+    m_srcRect.top = 0;
+    m_srcRect.right = w;
+    m_srcRect.bottom = h;
+    return 1;
+}
 
 class CDDrawFrontSurface : public CDrawSubWorker {
 public:

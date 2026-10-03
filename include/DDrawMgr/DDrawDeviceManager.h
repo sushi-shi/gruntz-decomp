@@ -52,6 +52,14 @@ struct DisplayResolution;
 
 class CDDrawDeviceManager {
 public:
+    HRESULT FlipToGDISurface() {
+        return m_device->FlipToGDISurface();
+    }
+
+    IDirectDraw2* GetDirectDraw() const {
+        return m_device;
+    }
+
     b32 HasPalette() const {
         return m_hasPalette;
     }

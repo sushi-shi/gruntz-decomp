@@ -165,7 +165,7 @@ i32 CCreditsState::LeaveState(GameStateId nextState) {
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
     IDirectDrawSurface* in =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
+        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
@@ -189,9 +189,9 @@ i32 CCreditsState::Render() {
             if (L->m_items[j]->m_pressedButtons & IDX(INPUT_BUTTON_MASK)) {
 
                 if (m_previousStateId == GAMESTATE_MENU) {
-                    PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 } else {
-                    PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
+                    PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
                 }
                 owner()->m_owner->m_running = false;
                 break;
@@ -203,7 +203,7 @@ i32 CCreditsState::Render() {
     DrawScrollingCredits();
 
     CDDrawSubMgrPages* drawPages = m_world->m_drawTarget;
-    drawPages->m_frontSurface->GetSurface()->Flip(NULL);
+    drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
     drawPages->m_backPair->BltSelf(drawPages->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
@@ -250,9 +250,9 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == GAMESTATE_MENU) {
-            PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         } else {
-            PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
+            PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
         }
     }
     return 1;
@@ -267,9 +267,9 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
         return 1;
     }
     if (m_previousStateId == GAMESTATE_MENU) {
-        PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
-        PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
+        PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
     }
     return 1;
 }

@@ -961,8 +961,8 @@ i32 CGrunt::StepArrivalDrop(
     for (scan.m_y = tile.m_y - 1; scan.m_y < tile.m_y + 2; scan.m_y++) {
         for (scan.m_x = tile.m_x - 1; scan.m_x < tile.m_x + 2; scan.m_x++) {
             saved[scan.m_x - tile.m_x + 1][scan.m_y - tile.m_y + 1] =
-                grid->m_rows[scan.m_y][scan.m_x].m_flags;
-            grid->m_rows[scan.m_y][scan.m_x].m_flags = 0;
+                grid->CellFlagsAtUnchecked(scan.m_x, scan.m_y);
+            grid->CellFlagsAtUnchecked(scan.m_x, scan.m_y) = 0;
         }
     }
     grid = g_gameReg->GetTileGrid();
@@ -990,7 +990,7 @@ i32 CGrunt::StepArrivalDrop(
     }
     for (scan.m_y = tile.m_y - 1; scan.m_y < tile.m_y + 2; scan.m_y++) {
         for (scan.m_x = tile.m_x - 1; scan.m_x < tile.m_x + 2; scan.m_x++) {
-            grid->m_rows[scan.m_y][scan.m_x].m_flags =
+            grid->CellFlagsAtUnchecked(scan.m_x, scan.m_y) =
                 saved[scan.m_x - tile.m_x + 1][scan.m_y - tile.m_y + 1];
         }
     }
@@ -1249,7 +1249,7 @@ i32 CGrunt::StepGruntMovement() {
                 Coord current = ScreenTile(this);
                 rec = MovementDirection(current, *co);
                 CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-                if (bd->m_rows[cy][cx].m_flags & BRICKZ_CELL_OCCUPIED) {
+                if (bd->CellFlagsAtUnchecked(cx, cy) & BRICKZ_CELL_OCCUPIED) {
                     SetFacing(0x3e8, rec);
                     SetEntrancePos(1, 0);
                     return 0;

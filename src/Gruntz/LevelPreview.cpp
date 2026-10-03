@@ -99,7 +99,7 @@ i32 CPreviewState::AcceptPreviewCommand(i32 unused) {
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
+        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (surf == NULL || surf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
@@ -195,5 +195,5 @@ void CPreviewState::Cancel() {
         m_mgr->DelayedQuit();
         return;
     }
-    PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->m_hwnd)), WM_COMMAND, 0x8027, 0);
+    PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->GetHwnd())), WM_COMMAND, 0x8027, 0);
 }

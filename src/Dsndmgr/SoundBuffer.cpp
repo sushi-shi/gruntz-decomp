@@ -532,7 +532,7 @@ SoundBuffer* SoundSample::CreateInstance(b32 reusable) {
     if (instance == NULL) {
         return NULL;
     }
-    IDirectSound* device = m_owner->m_device;
+    IDirectSound* device = m_owner->GetDirectSound();
     b32 hr = device->DuplicateSoundBuffer(m_buffer, &instance->m_buffer) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x217, hr);

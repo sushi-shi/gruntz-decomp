@@ -54,14 +54,14 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = OwnerMgr()->m_deviceManager->LoadFileSurface(path, surfaceCaps, colorKey);
+    CDDSurface* item = OwnerMgr()->GetDeviceManager()->LoadFileSurface(path, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
     }
 
-    m_width = item->m_apiDesc.dwWidth;
-    m_height = item->m_apiDesc.dwHeight;
+    m_width = item->GetWidth();
+    m_height = item->GetHeight();
     SET_POINT_COMPONENTS(m_anchor, m_width >> 1, m_height >> 1);
     SetBltFastFlags(item);
     SET_POINT_COMPONENTS(m_origin, 0, 0);
@@ -116,14 +116,14 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
 
     CDDSurface* item =
-        OwnerMgr()->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
+        OwnerMgr()->GetDeviceManager()->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_apiDesc.dwWidth;
+    i32 w = item->GetWidth();
     m_width = w;
-    i32 h = item->m_apiDesc.dwHeight;
+    i32 h = item->GetHeight();
     m_height = h;
     SET_POINT_COMPONENTS(m_anchor, w >> 1, h >> 1);
     SetBltFastFlags(item);
@@ -137,16 +137,16 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item =
-        OwnerMgr()
-            ->m_deviceManager->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
+    CDDSurface* item = OwnerMgr()
+                           ->GetDeviceManager()
+                           ->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_apiDesc.dwWidth;
+    i32 w = item->GetWidth();
     m_width = w;
-    i32 h = item->m_apiDesc.dwHeight;
+    i32 h = item->GetHeight();
     m_height = h;
     SET_POINT_COMPONENTS(m_anchor, w >> 1, h >> 1);
     SetBltFastFlags(item);
@@ -162,7 +162,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
         return 0;
     }
 
-    ColorDepth fmt = OwnerMgr()->m_drawTarget->m_frontSurface->m_bpp;
+    ColorDepth fmt = OwnerMgr()->m_drawTarget->GetFrontSurface()->m_bpp;
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }
@@ -181,7 +181,7 @@ void CImage::Unload() {
     m_width = 0;
     m_height = 0;
     if (m_surface != NULL) {
-        OwnerMgr()->m_deviceManager->RemoveSurface(m_surface);
+        OwnerMgr()->GetDeviceManager()->RemoveSurface(m_surface);
         m_surface = NULL;
     }
     CDDrawShadeBlit* owned = m_owned;
@@ -264,7 +264,7 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
     }
 
     return m_surface->Resolve(
-        OwnerMgr()->m_deviceManager,
+        OwnerMgr()->GetDeviceManager(),
         resolved,
         index,
         static_cast<u32>(src->GetSize()),

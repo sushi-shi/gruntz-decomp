@@ -435,7 +435,7 @@ i32 SoundCueRegistry::BindSoundStream(b32 allowUnavailable) {
     if (mgr == NULL) {
         return 0;
     }
-    SoundStream* stream = mgr->m_soundStream;
+    SoundStream* stream = mgr->GetSoundStream();
     if (allowUnavailable == false) {
         if (stream == NULL) {
             return 0;
@@ -792,7 +792,7 @@ SoundCue::~SoundCue() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001586e0, 0x34)
 i32 SoundCue::LoadFromWave(RiffWaveHeader* riff) {
-    SoundDevice* dev = OwnerMgr()->m_soundStream;
+    SoundDevice* dev = OwnerMgr()->GetSoundStream();
     if (!dev) {
         return 0;
     }
@@ -802,7 +802,7 @@ i32 SoundCue::LoadFromWave(RiffWaveHeader* riff) {
 
 RVA(0x00158720, 0x34)
 i32 SoundCue::LoadFromFile(char* path) {
-    SoundDevice* dev = OwnerMgr()->m_soundStream;
+    SoundDevice* dev = OwnerMgr()->GetSoundStream();
     if (!dev) {
         return 0;
     }
@@ -816,7 +816,7 @@ i32 SoundCue::LoadFromSource(CRezItm* source) {
     if (blob == NULL) {
         return 0;
     }
-    SoundDevice* dev = OwnerMgr()->m_soundStream;
+    SoundDevice* dev = OwnerMgr()->GetSoundStream();
     b32 ok;
     if (dev == NULL) {
         ok = false;
@@ -833,7 +833,7 @@ i32 SoundCue::LoadFromSource(CRezItm* source) {
 RVA(0x001587c0, 0x23)
 void SoundCue::Unload() {
     if (m_sound != NULL) {
-        SoundDevice* dev = OwnerMgr()->m_soundStream;
+        SoundDevice* dev = OwnerMgr()->GetSoundStream();
         if (dev != NULL) {
             dev->DestroyBuffer(m_sound);
             m_sound = NULL;
@@ -850,10 +850,10 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
         listenerX = OwnerMgr()->m_level->m_mainPlane->m_scrollPixel.m_x;
     }
     if (maxPanOffsetPx <= 0) {
-        maxPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->GetWidth() << 2;
+        maxPanOffsetPx = OwnerMgr()->m_drawTarget->GetFrontSurface()->GetWidth() << 2;
     }
     if (fullPanOffsetPx <= 0) {
-        fullPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->GetWidth() / 3;
+        fullPanOffsetPx = OwnerMgr()->m_drawTarget->GetFrontSurface()->GetWidth() / 3;
     }
 
     i32 panOffsetPx = sourceX - listenerX;

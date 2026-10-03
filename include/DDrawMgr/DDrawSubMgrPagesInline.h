@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 inline void FlipFrontAndRestoreOverlay(CDDrawSubMgrPages* pages) {
-    pages->m_frontSurface->GetSurface()->Flip(NULL);
+    pages->GetFrontSurface()->GetSurface()->Flip(NULL);
     pages->m_backPair->GetSurface()->BltFast(
         0,
         0,

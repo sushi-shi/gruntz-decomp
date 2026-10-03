@@ -66,7 +66,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     g_pathStr.Empty();
     HWND v = parent;
     if (parent == NULL) {
-        v = g_gameReg->m_gameWnd->m_hwnd;
+        v = g_gameReg->m_gameWnd->GetHwnd();
     }
     CDDrawSurfaceMgr* world = g_gameReg->World();
     g_customWorldParent = v;

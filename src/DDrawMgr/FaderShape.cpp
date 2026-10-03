@@ -75,10 +75,9 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         return 0;
     }
 
-    m_targetSize = CSize(m_targetSurface->m_apiDesc.dwWidth, m_targetSurface->m_apiDesc.dwHeight);
-    m_sourceSize = CSize(m_sourceSurface->m_apiDesc.dwWidth, m_sourceSurface->m_apiDesc.dwHeight);
-    m_warpSize =
-        CSize(m_warpSourceSurface->m_apiDesc.dwWidth, m_warpSourceSurface->m_apiDesc.dwHeight);
+    m_targetSize = CSize(m_targetSurface->GetWidth(), m_targetSurface->GetHeight());
+    m_sourceSize = CSize(m_sourceSurface->GetWidth(), m_sourceSurface->GetHeight());
+    m_warpSize = CSize(m_warpSourceSurface->GetWidth(), m_warpSourceSurface->GetHeight());
     CSize targetSize(m_targetSize);
     CSize sourceSize(m_sourceSize);
     CSize warpSize(m_warpSize);
@@ -111,7 +110,7 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
     }
 
     m_useLut = pInit->m_useLut;
-    if (m_targetSurface->m_bitDepth != BPP_PALETTED_8) {
+    if (m_targetSurface->GetBitDepth() != BPP_PALETTED_8) {
         m_useLut = false;
     }
 

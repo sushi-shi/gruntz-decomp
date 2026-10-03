@@ -71,7 +71,7 @@ i32 LayerBlitFrame(
 
     CDrawSubWorker* node;
     if (useFront) {
-        node = surfaceMgr->m_drawTarget->m_frontSurface;
+        node = surfaceMgr->m_drawTarget->GetFrontSurface();
         if (!node) {
             return 0;
         }
@@ -114,7 +114,7 @@ i32 DrawTextToFrontSurface(
     i32 b,
     i32 flag
 ) {
-    CDDrawFrontSurface* frontSurface = surfaceMgr->m_drawTarget->m_frontSurface;
+    CDDrawFrontSurface* frontSurface = surfaceMgr->m_drawTarget->GetFrontSurface();
 
     if (frontSurface == NULL) {
         return 0;

@@ -50,11 +50,11 @@ void CVoiceManager::Clear() {
         delete group;
     }
     m_voiceGroups.RemoveAll();
-    if (m_world != NULL && m_world->m_soundStream != NULL) {
+    if (m_world != NULL && m_world->GetSoundStream() != NULL) {
         StreamVoice** stream = m_streamVoices;
         for (i32 k = 0; k < 2; k++) {
             if (stream[0] != NULL) {
-                m_world->m_soundStream->DestroyVoice(stream[0]);
+                m_world->GetSoundStream()->DestroyVoice(stream[0]);
                 stream[0] = NULL;
             }
             stream++;
@@ -138,7 +138,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
         }
     }
     CRezItm* source = SelectVoiceVariant(voiceGroup, variantIndex);
-    if (source == NULL || m_world->m_soundStream == NULL) {
+    if (source == NULL || m_world->GetSoundStream() == NULL) {
         return false;
     }
     CGruntVoice* firstIndicator = m_indicators[0];
@@ -170,7 +170,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {
-        m_streamVoices[slotIndex] = m_world->m_soundStream->OpenStream(
+        m_streamVoices[slotIndex] = m_world->GetSoundStream()->OpenStream(
             source,
             0x5000,
             0x1400,
@@ -240,7 +240,7 @@ i32 CVoiceManager::PlayVoice(
     if (source == NULL) {
         return 0;
     }
-    if (m_world->m_soundStream == NULL) {
+    if (m_world->GetSoundStream() == NULL) {
         return 0;
     }
     CGruntVoice* firstIndicator = indicators[0];
@@ -272,7 +272,7 @@ i32 CVoiceManager::PlayVoice(
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {
-        m_streamVoices[slotIndex] = m_world->m_soundStream->OpenStream(
+        m_streamVoices[slotIndex] = m_world->GetSoundStream()->OpenStream(
             source,
             0x5000,
             0x1400,
@@ -337,7 +337,7 @@ i32 CVoiceManager::PlayVoice(
     if (source == NULL) {
         return 0;
     }
-    if (m_world->m_soundStream == NULL) {
+    if (m_world->GetSoundStream() == NULL) {
         return 0;
     }
     CGruntVoice* firstIndicator = indicators[0];
@@ -369,7 +369,7 @@ i32 CVoiceManager::PlayVoice(
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {
-        m_streamVoices[slotIndex] = m_world->m_soundStream->OpenStream(
+        m_streamVoices[slotIndex] = m_world->GetSoundStream()->OpenStream(
             source,
             0x5000,
             0x1400,

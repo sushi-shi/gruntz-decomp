@@ -61,7 +61,7 @@ void CDemo::ReleaseResources() {
 
 RVA(0x0003c030, 0x22)
 i32 CDemo::CompleteLevel() {
-    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
+    PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
     return 1;
 }
 
@@ -102,13 +102,13 @@ i32 CDemo::Render() {
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
         if (list->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON8)) {
-            PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             break;
         }
     }
     CountDown(m_demoCountdown, g_frameDelta);
     if (m_demoCountdown == 0) {
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
+        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
     }
     return 1;
 }

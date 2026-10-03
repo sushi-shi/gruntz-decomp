@@ -44,7 +44,7 @@ i32 SaveScreenshot(
         name = nameBuf;
     }
 
-    CDDrawDeviceManager* manager = owner->m_world->m_deviceManager;
+    CDDrawDeviceManager* manager = owner->m_world->GetDeviceManager();
     if (manager == NULL) {
         return 0;
     }

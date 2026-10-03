@@ -65,7 +65,7 @@ i32 DrawPageDebugText(
     }
     CDrawSubWorker* page;
     if (useFrontPage != false) {
-        page = mgr->m_drawTarget->m_frontSurface;
+        page = mgr->m_drawTarget->GetFrontSurface();
         if (page == NULL) {
             return 0;
         }
@@ -936,7 +936,7 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     CTileActionEvent* elem = FindActionByCellKey(CellKey(tileX, tileY));
     if (elem != NULL) {
         ENABLE_PLAYER_SLOT_FLAGS(elem->m_playerFlags, playerSlot);
-        elem->SetActionCode(elem->m_actionCode);
+        elem->SetActionCode(elem->GetActionCode());
         return 1;
     }
 
