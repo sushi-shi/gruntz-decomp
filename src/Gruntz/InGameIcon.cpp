@@ -478,8 +478,7 @@ i32 CInGameIcon::RefreshCell() {
     CWwdSpriteObject* obj = m_object;
     i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
-    i64 delta = static_cast<i64>(g_frameTime) - m_driftTiming.m_start;
-    if (delta < m_driftTiming.m_interval) {
+    if (!m_driftTiming.Expired()) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         if (grid->ObjectIdAt(tileX, tileY) != 0) {
             return 0;
@@ -535,7 +534,6 @@ i32 CInGameIcon::PeekCycle() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000986b0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
@@ -629,10 +627,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
             logicRecord = m_logicRecord;
             SET_ANIMATION_ACT("B");
             owner = m_wwdObject;
-            m_driftTiming.m_startLo = g_frameTime;
-            m_driftTiming.m_startHi = 0;
-            m_driftTiming.m_intervalLo = owner->m_damage;
-            m_driftTiming.m_intervalHi = 0;
+            m_driftTiming.Start(owner->m_damage);
             return 1;
         }
         rend = m_glitterSprite;
@@ -652,8 +647,7 @@ fail:
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    i64 delta = static_cast<i64>(g_frameTime) - m_driftTiming.m_start;
-    if (delta >= m_driftTiming.m_interval) {
+    if (m_driftTiming.Expired()) {
         CWwdSpriteObject* r = m_wwdObject;
         r->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         SET_ANIMATION_ACT("A");
