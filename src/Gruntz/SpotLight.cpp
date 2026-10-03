@@ -84,7 +84,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     } else {
         m_angle = 0;
     }
-    CShadeTable* looked = g_gameReg->GetLightFxMgr()->m_tables[m_object->m_powerup];
+    CShadeTable* looked = g_gameReg->GetLightFxMgr()->GetShadeTable(m_object->m_powerup);
     CWwdSpriteObject* d = m_object;
     d->m_drawActive = true;
     d->m_drawFillCmd = SHADE_DST_BY_SRC_16;
@@ -262,7 +262,7 @@ i32 CSpotLight::SerializeDispatch(
             break;
         case SERIAL_POSTLOAD: {
             CWwdSpriteObject* o = m_object;
-            CShadeTable* fill = reg->GetLightFxMgr()->m_tables[o->m_powerup];
+            CShadeTable* fill = reg->GetLightFxMgr()->GetShadeTable(o->m_powerup);
             o->m_drawActive = true;
             o->m_drawFillArg = fill;
             o->m_drawFillCmd = SHADE_DST_BY_SRC_16;

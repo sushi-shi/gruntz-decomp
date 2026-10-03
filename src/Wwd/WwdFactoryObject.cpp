@@ -468,7 +468,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         if (HAS(static_cast<WwdGameObjectFlags>(c->m_flags),
                 WWD_GAME_OBJECT_FLAG_CULL_SOUND_WHEN_NOT_DRAWN)
             || HAS(m_element->m_flags, ANI_RECORD_FLAG_CULL_CUE_WHEN_NOT_DRAWN)) {
-            if (c->m_dirty.m_armed == -1) {
+            if (!c->m_dirty.IsValid()) {
                 shouldPlayCue = false;
             }
         }

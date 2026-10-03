@@ -99,7 +99,7 @@ void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) 
     if (m_dirty.m_armed != -1) {
         RECT* r = &m_dirty.m_rect;
         dst->GetSurface()->BltFast(r->left, r->top, src->GetSurface(), r, DDBLTFAST_WAIT);
-        m_dirty.m_armed = -1;
+        m_dirty.Invalidate();
     }
 }
 
@@ -109,7 +109,7 @@ void CWwdSpriteObject::BltDirtyEx(
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {
-    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+    if (m_dirty.IsValid() && m_shadow.IsValid()) {
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
@@ -122,9 +122,9 @@ void CWwdSpriteObject::BltDirtyEx(
             dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
             dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
         }
-    } else if (m_dirty.m_armed != -1) {
+    } else if (m_dirty.IsValid()) {
         dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
-    } else if (m_shadow.m_armed != -1) {
+    } else if (m_shadow.IsValid()) {
         dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
     }
 }
@@ -135,7 +135,7 @@ void CWwdSpriteObject::BltDirtyRegions(
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {
-    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+    if (m_dirty.IsValid() && m_shadow.IsValid()) {
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
@@ -146,9 +146,9 @@ void CWwdSpriteObject::BltDirtyRegions(
             dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
             dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
         }
-    } else if (m_dirty.m_armed != -1) {
+    } else if (m_dirty.IsValid()) {
         dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
-    } else if (m_shadow.m_armed != -1) {
+    } else if (m_shadow.IsValid()) {
         dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
     }
 }

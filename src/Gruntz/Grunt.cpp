@@ -1317,7 +1317,7 @@ label_4cb4b:
         CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
         bd2->AcquireCellOccupancy(tgtTileX, tgtTileY, m_playerIndex, m_unitIndex);
 
-        m_lastTilePx.Set(targetPixel.m_x, targetPixel.m_y);
+        m_lastTilePx = targetPixel;
         ComputeFacing(1.0);
     }
     m_arrivalPending = true;

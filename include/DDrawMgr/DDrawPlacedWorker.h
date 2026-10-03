@@ -45,7 +45,7 @@ public:
         m_ownerCtx = ctx;
         m_flags = 0;
         m_dirty.m_rect.left = COORD_UNSET;
-        m_dirty.m_armed = -1;
+        m_dirty.Invalidate();
         m_screenX = COORD_UNSET;
         m_clip.left = COORD_UNSET;
         m_level = NULL;

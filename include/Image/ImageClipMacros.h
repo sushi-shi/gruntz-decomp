@@ -60,7 +60,7 @@
     i32 width = rect.right - rect.left + 1;                                                        \
     i32 height = rect.bottom - rect.top + 1;                                                       \
     if (width <= 0 || height <= 0) {                                                               \
-        info->m_dirty.m_armed = -1;                                                                \
+        info->m_dirty.Invalidate();                                                                \
         return;                                                                                    \
     }
 
