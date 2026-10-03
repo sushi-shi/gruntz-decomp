@@ -62,9 +62,9 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
         while (pos != NULL) {
             CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetAt(pos));
             m_triggerMgr->m_baseList.GetNext(pos);
-            if (cand->m_pending == false) {
-                i32 candX = cand->m_tileX;
-                i32 candY = cand->m_tileY;
+            if (cand->IsPending() == false) {
+                i32 candX = cand->GetTileX();
+                i32 candY = cand->GetTileY();
                 CGameObject* object = unit->m_object;
                 i32 screenX = object->m_screenX;
                 i32 screenY = object->m_screenY;
@@ -83,7 +83,7 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
             }
         }
         if (best != NULL) {
-            RouteUnitTo(unit, best->m_tileX, best->m_tileY, 0xd87, 0, 0);
+            RouteUnitTo(unit, best->GetTileX(), best->GetTileY(), 0xd87, 0, 0);
         }
         unit->m_dwell = 0;
     }
@@ -98,7 +98,8 @@ i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
     POSITION pos = lst.GetHeadPosition();
     while (pos != NULL) {
         CGruntPuddle* cand = static_cast<CGruntPuddle*>(lst.GetNext(pos));
-        if (cand != NULL && cand->m_tileX == x && cand->m_tileY == y && cand->m_pending == false) {
+        if (cand != NULL && cand->GetTileX() == x && cand->GetTileY() == y
+            && cand->IsPending() == false) {
             return 1;
         }
     }

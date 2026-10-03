@@ -1458,9 +1458,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             while (opos != NULL) {
                 CGruntPuddle* cand =
                     static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(opos));
-                if (cand->m_pending == false) {
-                    i32 ox = cand->m_tileX;
-                    i32 oy = cand->m_tileY;
+                if (cand->IsPending() == false) {
+                    i32 ox = cand->GetTileX();
+                    i32 oy = cand->GetTileY();
                     if ((static_cast<CGrunt*>(unit))
                             ->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
                         != 0) {

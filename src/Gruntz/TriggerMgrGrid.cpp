@@ -1144,8 +1144,8 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 POSITION pos = m_baseList.GetHeadPosition();
                 while (pos != NULL) {
                     CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                    if (cand->m_pending == false && cand->m_tileX == argTileX
-                        && cand->m_tileY == argTileY) {
+                    if (cand->IsPending() == false && cand->GetTileX() == argTileX
+                        && cand->GetTileY() == argTileY) {
                         cell->RunMoveConfig(argTileX, argTileY);
                         cand->SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                         cand->m_pending = true;
