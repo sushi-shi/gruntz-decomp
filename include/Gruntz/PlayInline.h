@@ -18,7 +18,7 @@
 
 inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
     player->m_active = true;
-    player->m_humanControlled = true;
+    player->SetHumanControlled(true);
     m_region0Gate = false;
     m_region1Gate = false;
     m_region2Gate = false;

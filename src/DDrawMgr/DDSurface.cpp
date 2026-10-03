@@ -366,7 +366,7 @@ RVA(0x0013e850, 0x93)
 i32 CDDSurface::Flip(CDDSurface* target) {
     IDirectDrawSurface* tsurf = NULL;
     if (target != NULL) {
-        tsurf = target->m_ddSurface;
+        tsurf = target->GetDirectDrawSurface();
     }
     i32 hr = m_ddSurface->Flip(tsurf, DDFLIP_WAIT);
     if (hr == 0) {
@@ -623,10 +623,10 @@ RVA(0x0013ee60, 0x8d)
 i32 CDDSurface::Blt(CDDSurface* src) {
     LPRECT srcRect = &src->m_fullRect;
     LPRECT dstRect = &m_fullRect;
-    i32 hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, DDBLT_WAIT, NULL);
+    i32 hr = m_ddSurface->Blt(dstRect, src->GetDirectDrawSurface(), srcRect, DDBLT_WAIT, NULL);
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
-            hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, DDBLT_WAIT, NULL);
+            hr = m_ddSurface->Blt(dstRect, src->GetDirectDrawSurface(), srcRect, DDBLT_WAIT, NULL);
         } else {
             return static_cast<i32>(DDERR_SURFACELOST);
         }
@@ -641,13 +641,13 @@ RVA(0x0013eef0, 0x98)
 i32 CDDSurface::BltEx(RECT* dstRect, CDDSurface* src, RECT* srcRect, u32 flags, DDBLTFX* fx) {
     i32 hr;
     if (src != NULL) {
-        hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, flags, fx);
+        hr = m_ddSurface->Blt(dstRect, src->GetDirectDrawSurface(), srcRect, flags, fx);
     } else {
         hr = m_ddSurface->Blt(dstRect, NULL, srcRect, flags, fx);
     }
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
-            hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, flags, fx);
+            hr = m_ddSurface->Blt(dstRect, src->GetDirectDrawSurface(), srcRect, flags, fx);
         } else {
             return static_cast<i32>(DDERR_SURFACELOST);
         }
@@ -660,10 +660,10 @@ i32 CDDSurface::BltEx(RECT* dstRect, CDDSurface* src, RECT* srcRect, u32 flags, 
 
 RVA(0x0013ef90, 0x8b)
 i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans) {
-    i32 hr = m_ddSurface->BltFast(x, y, src->m_ddSurface, srcRect, trans);
+    i32 hr = m_ddSurface->BltFast(x, y, src->GetDirectDrawSurface(), srcRect, trans);
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
-            hr = m_ddSurface->BltFast(x, y, src->m_ddSurface, srcRect, trans);
+            hr = m_ddSurface->BltFast(x, y, src->GetDirectDrawSurface(), srcRect, trans);
         } else {
             return static_cast<i32>(DDERR_SURFACELOST);
         }
@@ -1062,7 +1062,7 @@ void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
                 rect.bottom = h;
                 pRect = &rect;
             }
-            m_ddSurface->BltFast(x, y, src->m_ddSurface, pRect, dwTrans);
+            m_ddSurface->BltFast(x, y, src->GetDirectDrawSurface(), pRect, dwTrans);
         }
     }
 }

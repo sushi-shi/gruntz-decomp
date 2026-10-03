@@ -981,7 +981,7 @@ CDDSurface* CDDrawDeviceManager::WrapAttachedSurface(CDDSurface* srcSurface, i32
     IDirectDrawSurface* attached = NULL;
     DDSCAPS want;
     want.dwCaps = caps;
-    i32 hr = srcSurface->m_ddSurface->GetAttachedSurface(&want, &attached);
+    i32 hr = srcSurface->GetDirectDrawSurface()->GetAttachedSurface(&want, &attached);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DDRAWMGR_FILE, 0x6ae, hr);
         return NULL;

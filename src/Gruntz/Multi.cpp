@@ -473,7 +473,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
             return 0;
         }
         e->m_battlezConfig.FreeArrays();
-        if (e->m_battlezConfig.LoadConfig(Mgr(), i, e->m_difficulty) == 0) {
+        if (e->m_battlezConfig.LoadConfig(Mgr(), i, e->GetDifficulty()) == 0) {
             return 0;
         }
         if (e->m_humanControlled && e->m_active) {
@@ -2037,7 +2037,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
             packet.m_rows[i].m_color = static_cast<u8>(v);
             v = player->m_humanControlled;
             packet.m_rows[i].m_humanControlled = static_cast<u8>(v);
-            v = IDX(player->m_difficulty);
+            v = IDX(player->GetDifficulty());
             packet.m_rows[i].m_difficulty = static_cast<u8>(v);
             v = player->m_ready;
             packet.m_rows[i].m_ready = static_cast<u8>(v);
@@ -2074,7 +2074,7 @@ i32 CMulti::ApplyPlayerTable(CNetPlayerTablePacket* packet) {
         if (player != NULL) {
             player->m_active = packet->m_rows[i].m_active;
             player->m_color = static_cast<ColorTint>(packet->m_rows[i].m_color);
-            player->m_humanControlled = packet->m_rows[i].m_humanControlled;
+            player->SetHumanControlled(packet->m_rows[i].m_humanControlled);
             player->m_difficulty = static_cast<BattlezDifficulty>(packet->m_rows[i].m_difficulty);
             if (packet->m_rows[i].m_ready != false) {
                 player->m_ready = true;
@@ -2142,7 +2142,7 @@ i32 CMulti::RegisterPlayer(
 
     slot->m_name = CString(name);
     slot->m_color = color;
-    slot->m_humanControlled = humanControlled;
+    slot->SetHumanControlled(humanControlled);
     slot->m_difficulty = difficulty;
     slot->m_ready = false;
     slot->m_networkPlayerId = networkPlayerId;
@@ -2263,7 +2263,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     packet.m_color = static_cast<u8>(v);
     v = player->m_humanControlled;
     packet.m_humanControlled = static_cast<u8>(v);
-    v = IDX(player->m_difficulty);
+    v = IDX(player->GetDifficulty());
     packet.m_difficulty = static_cast<u8>(v);
     v = player->m_ready;
     packet.m_ready = static_cast<u8>(v);
@@ -2300,7 +2300,7 @@ i32 CMulti::ApplyPlayerUpdate(CNetPlayerUpdatePacket* packet) {
         player->m_ready = false;
     }
     player->m_maxGruntz = packet->m_maxGruntz;
-    player->m_humanControlled = packet->m_humanControlled;
+    player->SetHumanControlled(packet->m_humanControlled);
     player->m_networkPlayerId = packet->m_networkPlayerId;
     player->m_active = true;
     return 1;

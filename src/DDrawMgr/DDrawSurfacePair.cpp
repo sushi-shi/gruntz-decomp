@@ -189,13 +189,13 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
     if (m_surface == NULL) {
         return 1;
     }
-    IDirectDrawSurface* s = m_surface->m_ddSurface;
+    IDirectDrawSurface* s = m_surface->GetDirectDrawSurface();
     if (s != NULL && s->IsLost() == 0) {
         return 1;
     }
 
     CDDSurface* held = m_surface;
-    IDirectDrawSurface* r = held->m_ddSurface;
+    IDirectDrawSurface* r = held->GetDirectDrawSurface();
 
     i32 hr = r->Restore();
     return hr == 0;
@@ -330,7 +330,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         i32 sysmem;
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_OVERLAY) {
             DDSCAPS caps;
-            if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
+            if (0 == m_surface->GetDirectDrawSurface()->GetCaps(&caps)) {
                 sysmem = DDSCAPS_SYSTEMMEMORY & caps.dwCaps;
             } else {
                 sysmem = 0;
@@ -383,14 +383,14 @@ void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
         return;
     }
     HDC hdc = NULL;
-    w->m_ddSurface->GetDC(&hdc);
+    w->GetDirectDrawSurface()->GetDC(&hdc);
     if (!hdc) {
         return;
     }
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, RGB(255, 255, 255));
     DrawTextA(hdc, buf, strlen(buf), rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    w->m_ddSurface->ReleaseDC(hdc);
+    w->GetDirectDrawSurface()->ReleaseDC(hdc);
 }
 
 RVA(0x00164420, 0x79)
@@ -400,14 +400,14 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
         return;
     }
     HDC hdc = NULL;
-    w->m_ddSurface->GetDC(&hdc);
+    w->GetDirectDrawSurface()->GetDC(&hdc);
     if (!hdc) {
         return;
     }
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, RGB(255, 255, 255));
     DrawTextA(hdc, text, strlen(text), rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    w->m_ddSurface->ReleaseDC(hdc);
+    w->GetDirectDrawSurface()->ReleaseDC(hdc);
 }
 
 RVA(0x001644a0, 0x1b0)
@@ -483,9 +483,10 @@ RVA(0x00164660, 0x46)
 i32 CDrawSubWorker::Probe() {
     CDDSurface* s = m_surface;
     if (s != NULL) {
-        IDirectDrawSurface* dd = s->m_ddSurface;
+        IDirectDrawSurface* dd = s->GetDirectDrawSurface();
         if (dd == NULL || dd->IsLost() != 0) {
             s = m_surface;
+            // The direct COM receivers preserve both restoration-path load lifetimes.
             if (s->m_ddSurface->Restore() != 0) {
                 s = m_surface;
                 if (s->m_ddSurface->Restore() != 0) {

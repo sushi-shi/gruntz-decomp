@@ -484,7 +484,7 @@ i32 CInGameIcon::RefreshCell() {
     i64 delta = static_cast<i64>(g_frameTime) - m_driftTiming.m_start;
     if (delta < m_driftTiming.m_interval) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        if (CellObjectIdAt(grid, tileX, tileY) != 0) {
+        if (grid->ObjectIdAt(tileX, tileY) != 0) {
             return 0;
         }
     }
@@ -666,7 +666,7 @@ i32 CInGameIcon::Reposition() {
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
-        i32 cellVal = CellObjectIdAt(grid, tileX, tileY);
+        i32 cellVal = grid->ObjectIdAt(tileX, tileY);
         if (cellVal != 0) {
 
             CGameObject* found = NULL;

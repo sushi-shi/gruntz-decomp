@@ -15,6 +15,10 @@ Compiler-generated identities should come from the automatic oracles:
 
 - String literals: content plus retail reference evidence.
 - FP pool constants: payload and corroborated ordered relocation sites.
+  Decoded x87 scalar reads or explicit pins establish the literal width;
+  candidate alignment padding stays in the section layout, outside the
+  literal's retail extent. Opaque references retain their byte-proved
+  boundary span when no narrower extent is established.
 - Dynamic initialization: `RVA_DYNINIT(rva, size, owner)` on the owning datum,
   not an `RVA_COMPGEN` pin on a volatile `_$E<n>` ordinal.
 - An ambiguous literal or an FP slot without a corroborated referrer may need

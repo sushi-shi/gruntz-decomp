@@ -5,7 +5,7 @@
 
 inline DWORD SurfaceCaps(CDDSurface* surface, DWORD mask) {
     DDSCAPS caps;
-    if (surface->m_ddSurface->GetCaps(&caps) == 0) {
+    if (surface->GetDirectDrawSurface()->GetCaps(&caps) == 0) {
         return caps.dwCaps & mask;
     }
     return 0;

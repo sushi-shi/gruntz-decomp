@@ -654,6 +654,52 @@ def ehfuncinfo_rows(model: Model):
     return rows, withheld
 
 
+def _fp_read_widths(blobs: list[bytes]) -> list[dict[int, int]]:
+    """Operand site -> literal width for decoded absolute x87 scalar reads.
+
+    Each blob starts at a proved function boundary. Separate the blobs with
+    more than an instruction's maximum length of NOPs, so an incomplete tail
+    cannot shift decoding at the next boundary. One objdump invocation covers
+    an object's referrers. Integer loads/copies and opaque uses deliberately
+    supply no scalar-type evidence.
+    """
+    from gruntz.tool.objdump import disassemble
+
+    widths = [{} for _ in blobs]
+    if not blobs:
+        return widths
+    code, starts = bytearray(), []
+    for blob in blobs:
+        code.extend(b"\x90" * 16)
+        starts.append(len(code))
+        code.extend(blob)
+    for line in disassemble(bytes(code)).splitlines():
+        parts = line.split("\t")
+        if len(parts) < 3:
+            continue
+        try:
+            at = int(parts[0].strip().removesuffix(":"), 16)
+            raw = bytes.fromhex(parts[1])
+        except ValueError:
+            continue
+        # D8/DC arithmetic reads m32fp/m64fp; D9/DD /0 loads them. An
+        # absolute disp32 is ModRM mod=00,r/m=101 and is the only address
+        # operand here. Stores, integer x87 operations and indirect reads
+        # do not establish a pooled scalar's type.
+        if len(raw) != 6 or raw[1] & 0xC7 != 0x05:
+            continue
+        if raw[0] in (0xD8, 0xDC):
+            size = 4 if raw[0] == 0xD8 else 8
+        elif raw[0] in (0xD9, 0xDD) and raw[1] == 0x05:
+            size = 4 if raw[0] == 0xD9 else 8
+        else:
+            continue
+        index = bisect.bisect_right(starts, at) - 1
+        if index >= 0 and at + len(raw) <= starts[index] + len(blobs[index]):
+            widths[index][at + 2 - starts[index]] = size
+    return widths
+
+
 def fp_pool_rows(model: Model, base_dir=BASE_DIR):
     """`$T<n>` FP-pool constants, ADDRESSED OUT OF RETAIL'S OWN RELOC TABLE.
 
@@ -667,7 +713,12 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
     one retail slot); each row carries `member`, cl's real per-object symbol,
     for ordinary_sections' name matching. A `$T<rva>` pin - a DATA_COMPGEN use
     site (src_data_compgen) or a reviewed data_compgen row - bridges to a
-    still-unaddressed member when extent and bytes agree.
+    still-unaddressed member when extent and bytes agree. A decoded x87
+    scalar read or a pin proves the literal's width; the candidate's span
+    to the next member can also contain alignment bytes. Those bytes belong
+    to ordinary_sections' layout, not to the literal's retail range. Opaque
+    uses retain the existing byte-proved boundary span when no finer extent
+    evidence is available.
     """
     import struct
 
@@ -710,6 +761,8 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
             continue
 
         votes: dict[str, set[int]] = defaultdict(set)
+        read_widths: dict[str, set[int]] = defaultdict(set)
+        blobs, referrers = [], []
         for sec in c.section_table:
             if not sec["characteristics"] & MEM_EXECUTE:
                 continue
@@ -719,13 +772,25 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
             if not rel:
                 continue
             text = c.section_payload(sec["index"])
-            for off, name in c.defined_symbols(sec["index"]):
+            definitions = c.defined_symbols(sec["index"])
+            for off, name in definitions:
+                end = min((o for o, _n in definitions if o > off),
+                          default=len(text))
+                uses = [(sym, site - off,
+                         struct.unpack("<I", text[site:site + 4])[0])
+                        for site, sym in rel.items()
+                        if off <= site < end and sym in pool]
+                if uses:
+                    # Even an unpaired referrer can prove the candidate
+                    # literal's type for the fallback pin join.
+                    blobs.append(text[off:end])
+                    referrers.append(uses)
                 hit = fn_extent.get(msvc_names.mask(name))
                 if hit is None:
                     continue
                 rva, size = hit
                 mine = sorted((s, n) for s, n in rel.items()
-                              if off <= s < off + size)
+                              if off <= s < min(off + size, end))
                 lo = bisect.bisect_left(sites, rva)
                 hi = bisect.bisect_left(sites, rva + size)
                 theirs = sites[lo:hi]
@@ -739,19 +804,35 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
                         break
                     value = struct.unpack("<I", img.data[at:at + 4])[0] \
                         - img.image_base
+                    addend = struct.unpack("<I", text[site:site + 4])[0]
                     if FP_POOL_NAME.fullmatch(sym):
-                        found.append((sym, value))
+                        # A copy may address the upper word of a double.
+                        # Its COFF addend is not a second pool identity.
+                        found.append((sym, value - addend, target - rva, addend))
                         continue
                     anchor = known.get(msvc_names.mask(sym))
                     if anchor is None:      # not ours to check
                         continue
-                    addend = struct.unpack("<I", text[site:site + 4])[0]
                     if value != anchor + addend:
                         corroborated = False
                         break
                 if corroborated:
-                    for sym, value in found:
+                    for sym, value, _target, _addend in found:
                         votes[sym].add(value)
+                    if found:
+                        blobs.append(img.pe.read(rva, size) or b"")
+                        referrers.append([(sym, target, addend)
+                                          for sym, _value, target, addend in found])
+
+        decoded = _fp_read_widths(blobs)
+        for widths, uses in zip(decoded, referrers):
+            for sym, site, addend in uses:
+                if addend == 0 and site in widths:
+                    read_widths[sym].add(widths[site])
+
+        pin_widths: dict[int, set[int]] = defaultdict(set)
+        for rva, size in pins.get(stem, ()):
+            pin_widths[rva].add(size)
 
         def emit(member, rva, storage, size, want, how):
             at = img.off(rva)
@@ -774,7 +855,18 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
             storage, _off, want, size = pool[member]
             seen = votes.get(member) or set()
             if len(seen) == 1:
-                emit(member, next(iter(seen)), storage, size, want,
+                rva = next(iter(seen))
+                widths = read_widths[member] | pin_widths.get(rva, set())
+                if len(widths) > 1:
+                    withheld.append((rva, member,
+                                     "FP-pool width evidence disagrees"))
+                    continue
+                literal_size = next(iter(widths), size)
+                if not 0 < literal_size <= size:
+                    withheld.append((rva, member,
+                                     "FP literal exceeds its candidate slot"))
+                    continue
+                emit(member, rva, storage, literal_size, want[:literal_size],
                      "retail-reloc-fp-pool")
             elif seen:
                 withheld.append((0, member, "referrers disagree on the rva"))
@@ -783,18 +875,27 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
 
         taken = {r["rva"] for r in rows}
         pairs: dict[int, list[str]] = defaultdict(list)
-        for rva, size in pins.get(stem, ()):
+        for rva, widths in sorted(pin_widths.items()):
             if rva in taken:
+                continue
+            if len(widths) != 1:
+                withheld.append((rva, f"$T{rva}",
+                                 "FP-pool pins disagree on the literal width"))
+                continue
+            size = next(iter(widths))
+            if size <= 0:
+                withheld.append((rva, f"$T{rva}", "FP-pool pin has no literal extent"))
                 continue
             at = img.off(rva)
             if at is None:
                 continue
             want = img.data[at:at + size]
             for member in stranded:
-                # The pin states the LITERAL's size, the member its padded
-                # slot extent; accept the prefix match (bytes still verified,
-                # the enrolled extent stays the obj's).
+                # The pin states the literal's size, not its padded slot.
                 if pool[member][3] >= size and pool[member][2][:size] == want:
+                    if read_widths[member] and read_widths[member] != {size}:
+                        withheld.append((rva, member, "FP-pool width evidence disagrees"))
+                        continue
                     pairs[rva].append(member)
         claims = Counter(m for ms in pairs.values() for m in ms)
         for rva, ms in sorted(pairs.items()):
@@ -802,8 +903,10 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
                 withheld.append((rva, ms[0] if ms else "$T?",
                                  f"DATA_COMPGEN pin matches {len(ms)} pool members"))
                 continue
-            storage, _off, want, size = pool[ms[0]]
-            emit(ms[0], rva, storage, size, want, "src-DATA_COMPGEN-fp-pool")
+            storage, _off, want, _span = pool[ms[0]]
+            size = next(iter(pin_widths[rva]))
+            emit(ms[0], rva, storage, size, want[:size],
+                 "src-DATA_COMPGEN-fp-pool")
         for member in stranded:
             if not claims.get(member):
                 withheld.append((0, member, "no relocation-paired referrer"))
@@ -914,13 +1017,6 @@ def candidates(model: Model):
     # proves one of the pair is mis-modelled but not which - neither enrolls.
     rows, aliases = ([r for r in rows if r["name"] not in alias_of],
                      [r for r in rows if r["name"] in alias_of])
-    # One FP-pool slot, two channels: the `$T<rva>` pin (literal size) nested
-    # inside the pool extent is one claim, not an overlap - keep the pool row.
-    pool_ext = {(r["rva"], r["name"]): r["size"] for r in rows
-                if "fp-pool" in (r.get("provenance") or "")}
-    rows = [r for r in rows
-            if "fp-pool" in (r.get("provenance") or "")
-            or r["size"] >= pool_ext.get((r["rva"], r["name"]), 0)]
     rows.sort(key=lambda x: (x["rva"], x["size"], x["name"]))
     extents = []
     for r in rows:

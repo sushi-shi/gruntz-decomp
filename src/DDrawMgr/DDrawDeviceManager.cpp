@@ -144,7 +144,7 @@ i32 CDDrawOverlaySurface::UpdateOverlay(
     u32 flags,
     DDOVERLAYFX* fx
 ) {
-    return m_ddSurface->UpdateOverlay(srcRect, dest->m_ddSurface, destRect, flags, fx);
+    return m_ddSurface->UpdateOverlay(srcRect, dest->GetDirectDrawSurface(), destRect, flags, fx);
 }
 
 RVA(0x00148af0, 0x58)
