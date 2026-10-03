@@ -254,8 +254,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             if (mapped == NULL) {
                                 g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
-                                CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
+                                CInGameIcon* icon = static_cast<CInGameIcon*>(
+                                    mapped->GetLogicRecord()->UserLogic()
+                                );
                                 if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->SetPlayerIndex(playerIndex);
                                     icon->HandleInput();
@@ -319,8 +320,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             if (mapped == NULL) {
                                 g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
-                                CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
+                                CInGameIcon* icon = static_cast<CInGameIcon*>(
+                                    mapped->GetLogicRecord()->UserLogic()
+                                );
                                 if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->SetPlayerIndex(playerIndex);
                                     icon->HandleInput();
@@ -388,8 +390,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             if (mapped == NULL) {
                                 g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
-                                CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
+                                CInGameIcon* icon = static_cast<CInGameIcon*>(
+                                    mapped->GetLogicRecord()->UserLogic()
+                                );
                                 if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->SetPlayerIndex(playerIndex);
                                     icon->HandleInput();
@@ -453,8 +456,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             if (mapped == NULL) {
                                 g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
-                                CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
+                                CInGameIcon* icon = static_cast<CInGameIcon*>(
+                                    mapped->GetLogicRecord()->UserLogic()
+                                );
                                 if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->SetPlayerIndex(playerIndex);
                                     icon->HandleInput();

@@ -21,7 +21,7 @@ inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
     if (resolved == NULL) {
         return false;
     }
-    CUserLogic* logic = resolved->m_logicRecord->m_userLogic;
+    CUserLogic* logic = resolved->GetLogicRecord()->m_userLogic;
     if (logic == NULL) {
         return false;
     }

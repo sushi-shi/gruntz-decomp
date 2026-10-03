@@ -12,7 +12,7 @@
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
+    CLogicRecord* record = obj->GetLogicRecord();
     GameIconFlashState state = static_cast<GameIconFlashState>(record->EventCode());
     if (state != GAME_ICON_FLASH_IDLE) {
         if (state == GAME_ICON_FLASH_ACTIVE) {

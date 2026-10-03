@@ -87,14 +87,14 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_wp[7].m_y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
     m_wp[8].m_x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
     m_wp[8].m_y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].m_x = (m_object->m_logicRecord->m_userRect1.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].m_y = (m_object->m_logicRecord->m_userRect1.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].m_x = (m_object->m_logicRecord->m_userRect1.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].m_y = (m_object->m_logicRecord->m_userRect1.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].m_x = (m_object->m_logicRecord->m_userRect2.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].m_y = (m_object->m_logicRecord->m_userRect2.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].m_x = (m_object->m_logicRecord->m_userRect2.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].m_y = (m_object->m_logicRecord->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].m_x = (m_object->GetLogicRecord()->m_userRect1.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].m_y = (m_object->GetLogicRecord()->m_userRect1.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].m_x = (m_object->GetLogicRecord()->m_userRect1.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].m_y = (m_object->GetLogicRecord()->m_userRect1.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].m_x = (m_object->GetLogicRecord()->m_userRect2.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].m_y = (m_object->GetLogicRecord()->m_userRect2.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].m_x = (m_object->GetLogicRecord()->m_userRect2.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].m_y = (m_object->GetLogicRecord()->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
 
     i32 i = 1;
     b32 found = false;
@@ -111,7 +111,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_wpCount = i;
     m_wpIndex = 0;
 
-    CLogicRecord* record = m_object->m_logicRecord;
+    CLogicRecord* record = m_object->GetLogicRecord();
     if (record->m_speed == 0) {
         record->m_speed = g_buteMgr.GetDword("Hazardz", "PathHazardTimePerTile", 1000);
     }
@@ -346,7 +346,7 @@ i32 CPathHazard::BeginLeg() {
     double ux = dx / len;
     double uy = dy / len;
 
-    m_speed = 1.0 / (static_cast<double>(obj->m_logicRecord->m_speed) * 0.03125);
+    m_speed = 1.0 / (static_cast<double>(obj->GetLogicRecord()->m_speed) * 0.03125);
     m_posX = static_cast<double>(obj->m_screenX);
     m_posY = static_cast<double>(obj->m_screenY);
     m_unitX = ux;
@@ -379,7 +379,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
                 ->CreateSprite(0, sx, sy, 0, "SpotLight", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (sl != NULL) {
             sl->SetImageSetByName("LEVEL_SPOTLIGHT");
-            CLogicRecord* sub = sl->m_logicRecord;
+            CLogicRecord* sub = sl->GetLogicRecord();
             sl->m_score = 1;
             sl->m_direction = 0;
             sl->m_smarts = 2;
@@ -388,7 +388,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->m_damage = m_object->m_faceDirection;
             sub->m_dispatch(sl);
 
-            (static_cast<CSpotLight*>(sl->m_logicRecord->m_userLogic))->m_focus = m_object;
+            (static_cast<CSpotLight*>(sl->GetLogicRecord()->m_userLogic))->m_focus = m_object;
         }
     }
     CWwdSpriteObject* o = m_object;

@@ -110,7 +110,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                     claimed->m_warlordObjectId
                 );
-                CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_logicRecord->m_userLogic);
+                CWarlord* wl = static_cast<CWarlord*>(warlordObj->GetLogicRecord()->m_userLogic);
                 if (wl != NULL) {
                     wl->ResolveJoyAnimation();
                 }
@@ -119,7 +119,7 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
-                if (cur->m_logicRecord->GetDispatch() == DispatchGruntCreationPointLogic
+                if (cur->GetLogicRecord()->GetDispatch() == DispatchGruntCreationPointLogic
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
@@ -136,7 +136,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         marks.Add(mark);
                     }
                 }
-                if (cur->m_logicRecord->GetDispatch() == DispatchFortressFlagLogic
+                if (cur->GetLogicRecord()->GetDispatch() == DispatchFortressFlagLogic
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
@@ -180,7 +180,7 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
-                LogicRecordDispatchFn dispatch = cur->m_logicRecord->GetDispatch();
+                LogicRecordDispatchFn dispatch = cur->GetLogicRecord()->GetDispatch();
                 if (dispatch == DispatchGruntCreationPointLogic
                     || dispatch == DispatchFortressFlagLogic) {
                     if (cur->m_smarts == m_object->m_smarts) {

@@ -73,7 +73,7 @@ i32 CWwdSpatialMgr::ActivateKeepActiveFromGrid(CWwdGrid* grid) {
         CGameObject* record = obj->m_object;
         if (HAS(static_cast<WwdGameObjectFlags>(record->m_flags), WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE)
             || HAS(
-                static_cast<LogicRecordFlags>(record->m_logicRecord->m_flags),
+                static_cast<LogicRecordFlags>(record->GetLogicRecord()->m_flags),
                 LOGIC_RECORD_FLAG_KEEP_ACTIVE
             )) {
             m_activeGroup->InsertSorted(record, 1);
@@ -121,7 +121,7 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
                 || centerY < m_levelBounds.top - 0xdc || centerY > m_levelBounds.bottom + 0xdc) {
                 if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
                         WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
-                    CLogicRecord* record = obj->m_logicRecord;
+                    CLogicRecord* record = obj->GetLogicRecord();
                     record->SetLogicEvent(ACT_OBJECT_REMOVED);
                     record->m_dispatch(obj);
                 }

@@ -7,15 +7,15 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline i32 NotifyLogicForEventCode(CGameObject* object, i32 eventCode) {
-    CLogicRecord* record = object->m_logicRecord;
+    CLogicRecord* record = object->GetLogicRecord();
     if (!record) {
         return 0;
     }
     i32 savedEventCode = record->m_eventCode;
     record->SetEventCode(eventCode);
-    object->m_logicRecord->m_dispatch(object);
-    if (object->m_logicRecord->m_eventCode == eventCode) {
-        object->m_logicRecord->SetEventCode(savedEventCode);
+    object->GetLogicRecord()->m_dispatch(object);
+    if (object->GetLogicRecord()->m_eventCode == eventCode) {
+        object->GetLogicRecord()->SetEventCode(savedEventCode);
     }
     return 1;
 }
