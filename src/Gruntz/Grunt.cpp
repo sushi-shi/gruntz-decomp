@@ -889,7 +889,7 @@ i32 CGrunt::StepArrivalDrop(
                     this->RecycleCoords();
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
-                        m_coordList.AddTail(probe.GetNext(pos));
+                        AddTailCoord(static_cast<Coord*>(probe.GetNext(pos)));
                     }
                 } else {
                     pos = probe.GetHeadPosition();

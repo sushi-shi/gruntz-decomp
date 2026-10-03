@@ -4604,7 +4604,6 @@ b32 CPlay::PlaceStartGruntz() {
     return true;
 }
 
-// @early-stop
 RVA(0x000d2dd0, 0x1e40)
 i32 CPlay::ValidateLevelTiles() {
     i32 validCount = 0;
@@ -4696,7 +4695,7 @@ i32 CPlay::ValidateLevelTiles() {
                     );
                     return 0;
                 }
-                i32 tcidx = r->m_tileToken;
+                i32 tcidx = r->GetTileToken();
                 if (tcidx == 0) {
                     MODAL_REPORT_AT(
                         "Bad switch at: x=%d, y=%d",
@@ -5007,7 +5006,7 @@ i32 CPlay::ValidateLevelTiles() {
                     );
                     return 0;
                 }
-                i32 tcidx = r->m_tileToken;
+                i32 tcidx = r->GetTileToken();
                 if (tcidx == 0) {
                     MODAL_REPORT_AT(
                         "Bad trigger at: x=%d, y=%d",
@@ -5172,13 +5171,9 @@ i32 CPlay::ValidateLevelTiles() {
 
             i32 col = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
             i32 rowBase = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
-            i32 stride = (col << 3) - col;
-
-            i32 guardColumnOffset = stride - 7;
-            for (i32 dy = -1; dy < 2; dy++, guardColumnOffset += 7) {
+            for (i32 dy = -1; dy < 2; dy++) {
                 i32 row = rowBase;
-                i32 ofs = rowBase - 1;
-                for (i32 k = 3; k != 0; k--, ofs++, row++) {
+                for (i32 k = 3; k != 0; k--, row++) {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
                     CGruntzMapMgr* gg = g_gameReg->GetTileGrid();
@@ -5208,8 +5203,7 @@ i32 CPlay::ValidateLevelTiles() {
                         || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
                     }
-                    BrickzCell* cellRow = gg->m_rows[ofs];
-                    cellRow[gx].m_flags |= bit;
+                    gg->CellFlagsAtUnchecked(gx, gyy) |= bit;
                 }
             }
         } else if (dispatch == DispatchToobSpikezLogic) {
@@ -5218,7 +5212,7 @@ i32 CPlay::ValidateLevelTiles() {
             i32 tileY = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
             if (static_cast<u32>(tileX) < gg->GetWidth()
                 && static_cast<u32>(tileY) < gg->GetHeight()) {
-                gg->m_rows[tileY][tileX].m_flags |= 0x2000000;
+                gg->CellFlagsAtUnchecked(tileX, tileY) |= 0x2000000;
             }
         } else if (dispatch == DispatchWarpStonePadLogic) {
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
@@ -5231,7 +5225,10 @@ i32 CPlay::ValidateLevelTiles() {
         }
     } while (pos != NULL);
 
-    TRACE("%s\n", static_cast<LPCTSTR>(CString("ValidateLevelTiles")));
+    // Preserve the dead trace unwind state without conditional-temporary bookkeeping.
+    if (0) {
+        AfxTrace("%s\n", static_cast<LPCTSTR>(CString("ValidateLevelTiles")));
+    }
     return ok;
 }
 

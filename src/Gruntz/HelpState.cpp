@@ -117,7 +117,7 @@ i32 CHelpState::Render() {
 
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
-        if (g_actorList->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON_MASK)) {
+        if (g_actorList->m_items[i]->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
             PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
             m_mgr->m_owner->m_running = false;
             return 1;

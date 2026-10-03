@@ -146,13 +146,13 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 
     m_combatActive = true;
 
-    i32 idx;
+    GruntAttackPose pose;
     switch (m_entranceReason) {
         case PICKUP_BOOMERANG:
             if (m_arrivalState != AI_NONE) {
                 m_entranceActive = true;
             }
-            idx = 1;
+            pose = GRUNT_ATTACK2;
             break;
         case PICKUP_GUNHAT:
         case PICKUP_NERFGUN:
@@ -161,10 +161,10 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
         case PICKUP_WARPSTONE:
         case PICKUP_WELDER:
         case PICKUP_WINGZ:
-            idx = 1;
+            pose = GRUNT_ATTACK2;
             break;
         default:
-            idx = rand() % 2;
+            pose = static_cast<GruntAttackPose>(rand() % 2);
             break;
     }
 
@@ -180,7 +180,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
         SET_SORT_KEY_IF_CHANGED(h, z)
     }
 
-    SwitchAnimation(m_poseAttack[idx]);
+    SwitchAnimation(AT(m_poseAttack, pose));
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 

@@ -117,20 +117,20 @@ i32 CInputState::Update() {
     CInputDevBase* dev = m_primaryDevice;
     CInputDeviceGroup* group = m_deviceGroup;
     if (dev) {
-        m_heldButtons = dev->m_heldButtons;
-        m_pressedButtons = dev->m_pressedButtons;
+        m_heldButtons = dev->GetHeldButtons();
+        m_pressedButtons = dev->GetPressedButtons();
     } else if (group != NULL) {
-        m_heldButtons = m_keyboard->m_heldButtons;
-        m_pressedButtons = m_keyboard->m_pressedButtons;
+        m_heldButtons = m_keyboard->GetHeldButtons();
+        m_pressedButtons = m_keyboard->GetPressedButtons();
         CJoystickDevice* joy = m_joystick;
         if (joy) {
-            m_heldButtons |= joy->m_heldButtons;
-            m_pressedButtons |= joy->m_pressedButtons;
+            m_heldButtons |= joy->GetHeldButtons();
+            m_pressedButtons |= joy->GetPressedButtons();
         }
         CMouseDevice* mouse = m_mouse;
         if (mouse) {
-            m_heldButtons |= mouse->m_heldButtons;
-            m_pressedButtons |= mouse->m_pressedButtons;
+            m_heldButtons |= mouse->GetHeldButtons();
+            m_pressedButtons |= mouse->GetPressedButtons();
         }
     }
     b32 suppress = m_suppressed;

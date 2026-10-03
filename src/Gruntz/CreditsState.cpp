@@ -186,7 +186,7 @@ i32 CCreditsState::Render() {
         CInputDeviceGroup* L = g_actorList;
         i32 n = L->m_count;
         for (i32 j = 0; j < n; j++) {
-            if (L->m_items[j]->m_pressedButtons & IDX(INPUT_BUTTON_MASK)) {
+            if (L->m_items[j]->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
 
                 if (m_previousStateId == GAMESTATE_MENU) {
                     PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);

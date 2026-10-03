@@ -2193,7 +2193,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                     POSITION qp = path.GetHeadPosition();
                                     while (qp != NULL) {
                                         Coord* step = static_cast<Coord*>(path.GetNext(qp));
-                                        g->m_coordList.AddTail(step);
+                                        g->AddTailCoord(step);
                                     }
                                     Coord* nt = g->GetTailCoord();
                                     SET_TILE_CENTER_PIXEL_PAIR(
@@ -2919,7 +2919,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                                 cand->RecycleCoords();
                                 POSITION pp = list.GetHeadPosition();
                                 while (pp != NULL) {
-                                    cand->m_coordList.AddTail(list.GetNext(pp));
+                                    cand->AddTailCoord(static_cast<Coord*>(list.GetNext(pp)));
                                 }
                                 unit->m_defenderState = AISTATE_SEEK;
                                 cand->m_defenderState = AISTATE_RETREAT;
@@ -3149,7 +3149,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
                     while (pp != NULL) {
                         Coord* cur = static_cast<Coord*>(list.GetNext(pp));
                         if (cur != NULL) {
-                            unit->m_coordList.AddTail(cur);
+                            unit->AddTailCoord(cur);
                         }
                     }
                     list.RemoveAll();
@@ -3237,7 +3237,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
         while (qp != NULL) {
             Coord* cur5 = static_cast<Coord*>(list.GetNext(qp));
             if (cur5 != NULL) {
-                unit->m_coordList.AddTail(cur5);
+                unit->AddTailCoord(cur5);
             }
         }
         list.RemoveAll();
@@ -3534,7 +3534,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
                 POSITION pp = list.GetHeadPosition();
                 while (pp != NULL) {
-                    unit->m_coordList.AddTail(list.GetNext(pp));
+                    unit->AddTailCoord(static_cast<Coord*>(list.GetNext(pp)));
                 }
                 Coord* tail = unit->GetTailCoord();
                 unit->m_entrancePx.Set(
