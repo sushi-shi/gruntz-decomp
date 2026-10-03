@@ -3,8 +3,8 @@
 #include <rva.h>
 
 #include <Gruntz/Brickz.h>
-#include <Gruntz/BrickzNeighborMacros.h>
 
+#include <Gruntz/BrickzNeighborMacros.h>
 #include <Gruntz/GameStats.h>
 #include <Gruntz/SerialArchive.h>
 
