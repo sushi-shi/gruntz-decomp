@@ -69,7 +69,7 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         m_world->m_animRegistry->LoadFromTree(static_cast<CRezDir*>(aniz), "GAME", "_");
     }
 
-    if (m_mgr->m_spriteFactory->BuildToolToyColorTable(m_mgr->m_resourceArchive) == 0) {
+    if (m_mgr->SpriteTable()->BuildToolToyColorTable(m_mgr->m_resourceArchive) == 0) {
         return 0;
     }
     if (m_cursorSavedSurfaces[0] == NULL && m_cursorSavedSurfaces[1] == NULL) {

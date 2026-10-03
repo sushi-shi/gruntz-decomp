@@ -82,9 +82,9 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (s == NULL) {
         goto fail;
     }
-    sel = g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[g_curPlayer].m_color), 0);
+    sel = g_gameReg->SpriteTable()->GetSel(IDX(g_gameReg->m_players[g_curPlayer].m_color), 0);
     if (sel == NULL) {
-        sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+        sel = g_gameReg->SpriteTable()->GetSel(1, 0);
     }
     m_config->SetAllTypes(SHADE_PAL_16);
     m_config->SetAllFormats(sel);

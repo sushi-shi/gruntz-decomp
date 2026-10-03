@@ -539,7 +539,7 @@ i32 CBootyState::StepGlitterAnim() {
 // @early-stop
 RVA(0x00019920, 0x1f0)
 i32 CBootyState::BuildGruntSprintAnimation() {
-    CShadeTable* h = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    CShadeTable* h = g_gameReg->SpriteTable()->GetSel(0, 0);
     if (!h) {
         return 0;
     }
@@ -744,11 +744,11 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
 // @early-stop
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
-    CShadeTable* handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    CShadeTable* handleA = g_gameReg->SpriteTable()->GetSel(0, 0);
     if (handleA == NULL) {
         return 0;
     }
-    CShadeTable* handleB = g_gameReg->m_spriteFactory->GetSel(0, 1);
+    CShadeTable* handleB = g_gameReg->SpriteTable()->GetSel(0, 1);
 
     CRezDir* img = m_gruntResources->GetDirFromPath("IMAGEZ_GOKARTGRUNT");
     if (img == NULL) {
@@ -1096,7 +1096,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
         return 1;
     }
-    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(0, 0);
     if (sel == NULL) {
         return 0;
     }
@@ -1234,7 +1234,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     letter = "P";
                     break;
             }
-            CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
+            CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(0, 0);
             if (sel != NULL) {
                 if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
                     PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_FLAGRISE");

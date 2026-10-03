@@ -211,7 +211,7 @@ i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32
     m_gaugePoints = gaugePoints;
     m_playerIndex = playerIndex;
     m_moveIcon = moveIcon;
-    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(moveIcon, 0);
+    CShadeTable* shade = g_gameReg->SpriteTable()->GetSel(moveIcon, 0);
     CWwdSpriteObject* sprite = m_object;
     sprite->SetDrawFill(SHADE_PAL_16, shade);
     m_wwdObject->Show();
@@ -287,9 +287,9 @@ i32 CGruntPuddle::SerializeDispatch(
             ar->Read(&m_moveIcon, sizeof(m_moveIcon));
             break;
         case SERIAL_POSTLOAD: {
-            CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, 0);
+            CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(m_moveIcon, 0);
             if (sel == NULL) {
-                sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                sel = g_gameReg->SpriteTable()->GetSel(1, 0);
             }
             CGameObject* obj = m_object;
             obj->SetDrawFill(SHADE_PAL_16, sel);

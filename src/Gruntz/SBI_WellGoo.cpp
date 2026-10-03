@@ -64,9 +64,9 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
     sel = IDX(g_gameReg->m_players[g_curPlayer].m_color);
-    node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
+    node = g_gameReg->SpriteTable()->GetSel(sel, 0);
     if (node == NULL) {
-        node = g_gameReg->m_spriteFactory->GetSel(1, 0);
+        node = g_gameReg->SpriteTable()->GetSel(1, 0);
     }
 
     set = m_host->FindWorker(key);
@@ -209,9 +209,9 @@ i32 CSBI_WellGoo::SerializeFields(
                 return 0;
             }
             i32 sel = IDX(g_gameReg->m_players[g_curPlayer].m_color);
-            CShadeTable* node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
+            CShadeTable* node = g_gameReg->SpriteTable()->GetSel(sel, 0);
             if (node == NULL) {
-                node = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                node = g_gameReg->SpriteTable()->GetSel(1, 0);
             }
             CImage* fr = m_frame;
             if (fr->m_owned != NULL) {
