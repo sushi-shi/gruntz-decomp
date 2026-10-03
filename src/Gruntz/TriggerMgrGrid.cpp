@@ -1043,7 +1043,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->IsEntranceCommitted() == false) {
+    if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
     i32 cellTileX = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
