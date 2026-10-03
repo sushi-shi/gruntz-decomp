@@ -73,12 +73,8 @@ void CWwdDotObject::BltDirtyEx(
                                                                     : m_shadow.m_position.x;
             i32 top = m_dirty.m_position.y < m_shadow.m_position.y ? m_dirty.m_position.y
                                                                    : m_shadow.m_position.y;
-            CPoint pos;
-            CSize size;
-            size.cy = dy;
-            size.cx = dx;
-            pos.y = top;
-            pos.x = left;
+            CPoint pos(left, top);
+            CSize size(dx, dy);
             dst->BlitDirtyRect(src, pos, size);
         }
     } else if (m_dirty.m_armed != -1) {
@@ -107,12 +103,8 @@ void CWwdDotObject::BltDirtyRegions(
                                                                     : m_shadow.m_position.x;
             i32 top = m_dirty.m_position.y < m_shadow.m_position.y ? m_dirty.m_position.y
                                                                    : m_shadow.m_position.y;
-            CPoint pos;
-            CSize size;
-            size.cy = dy;
-            size.cx = dx;
-            pos.y = top;
-            pos.x = left;
+            CPoint pos(left, top);
+            CSize size(dx, dy);
             dst->BlitDirtyRect(src, pos, size);
         }
     } else if (m_dirty.m_armed != -1) {

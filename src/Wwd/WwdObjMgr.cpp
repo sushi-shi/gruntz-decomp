@@ -330,7 +330,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
 
     i32 i;
     for (i = 0; i < s_killQueue.GetSize(); i++) {
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_killQueue.GetData()[i]);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_killQueue.GetAt(i));
         if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
                 WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
             CLogicRecord* record = obj->m_logicRecord;
@@ -352,7 +352,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     }
 
     for (i = 0; i < s_sortQueue.GetSize(); i++) {
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_sortQueue.GetData()[i]);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_sortQueue.GetAt(i));
         obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
         m_list.RemoveAt(obj->m_posCache);
         InsertSorted(obj, 0);

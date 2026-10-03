@@ -42,9 +42,7 @@ i32 Font::AllocateMemory(i32 count) {
     for (i32 i = 0; i < m_count; i++) {
         m_surfaces[i] = NULL;
 
-        CSize g;
-        g.cx = 0;
-        g.cy = 0;
+        CSize g(0, 0);
         SET_FONT_GLYPH(i, g);
     }
 
@@ -428,6 +426,7 @@ void FontRenderer::DrawWrapped(
                 }
             } else {
 
+                // The signed length guard is required; IsEmpty emits a zero-only test.
                 while (head.GetLength() > 0) {
                     if (y >= rc.bottom) {
                         break;
@@ -491,7 +490,7 @@ CSize FontRenderer::MeasureText(CString text) {
 
         width += m_font->GetGlyph(g, c).cx;
     }
-    SET_SIZE_COMPONENTS(ext, width, m_font->GetMaxHeight());
+    ext = CSize(width, m_font->GetMaxHeight());
     return ext;
 }
 
@@ -667,6 +666,7 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
                 }
             } else {
 
+                // The signed length guard is required; IsEmpty emits a zero-only test.
                 while (head.GetLength() > 0) {
                     if (y >= rc.bottom) {
                         break;

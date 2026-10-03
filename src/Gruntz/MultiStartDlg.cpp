@@ -92,7 +92,7 @@ i32 CMultiStartDlg::InitializeWorldCombo() {
     }
     editControl->SetReadOnly(1);
     combo->SetCurSel(0);
-    HWND__* editHwnd = editControl->m_hWnd;
+    HWND editHwnd = editControl->GetSafeHwnd();
     g_savedMultiWndProc = reinterpret_cast<WNDPROC>(GetWindowLongA(editHwnd, GWL_WNDPROC));
     SetWindowLongA(editHwnd, GWL_WNDPROC, reinterpret_cast<LONG>(MultiMapComboEditProc));
     CommitWorldSelection();
@@ -961,6 +961,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
         }
         ok->EnableWindow(hasRemoteHumanPlayer & allLivePlayersReady);
     }
+    // HWND temporaries preserve the handle-register allocation across invalidation calls.
     HWND color0 = this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd;
     ::InvalidateRect(color0, NULL, true);
     HWND color1 = this->GetDlgItem(CTRL_PLAYER_COLOR1)->m_hWnd;

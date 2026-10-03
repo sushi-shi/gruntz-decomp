@@ -38,7 +38,7 @@ public:
 RVA(0x00085480, 0x52)
 inline void CGruntzMapMgr::Reset() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
-        Coord* elem = static_cast<Coord*>(m_arr.GetData()[i]);
+        Coord* elem = static_cast<Coord*>(m_arr.GetAt(i));
         if (elem != NULL) {
             g_coordPool.Push(elem);
         }

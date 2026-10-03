@@ -108,7 +108,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             entry = static_cast<CRezItm*>(worlds->GetNextItem(entry));
         }
         combo->SetCurSel(0);
-        HWND editHwnd = comboChild->m_hWnd;
+        HWND editHwnd = comboChild->GetSafeHwnd();
         MsgParam prev;
         prev.m_long = GetWindowLongA(editHwnd, GWL_WNDPROC);
         g_savedDlgWndProc = prev.m_wndproc;

@@ -128,9 +128,9 @@ fail:
 RVA(0x0017b840, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
     if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_header.m_fileCount) && idx != 0) {
-        const DWORD* slot = &m_index.GetData()[idx - 1];
+        const DWORD* slot = &m_index.ElementAt(idx - 1);
         if (m_stream.Seek(static_cast<i32>(*slot), CFile::begin) == static_cast<i32>(*slot)) {
-            return m_stream.m_hFile;
+            return static_cast<HFILE>(m_stream);
         }
     }
     return 0;

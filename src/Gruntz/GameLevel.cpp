@@ -298,7 +298,7 @@ i32 CGameLevel::SetViewportSizeAndUpdatePlanes(i32 w, i32 h) {
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->SetViewportRect(&rect);
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(i)))->SetViewportRect(&rect);
             ++i;
         } while (i < m_planes.GetSize());
     }

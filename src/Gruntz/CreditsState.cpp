@@ -386,7 +386,7 @@ i32 CCreditsState::SetupTitle() {
     prov->m_ddSurface->GetDC(&hdc);
     if (hdc) {
         i32 h = DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x450);
-        SetRect(&m_scrollRect, 0x32, SCREEN_H_PX, 0x24e, h + SCREEN_H_PX);
+        m_scrollRect.SetRect(0x32, SCREEN_H_PX, 0x24e, h + SCREEN_H_PX);
         prov->m_ddSurface->ReleaseDC(hdc);
     }
     m_scrollAccum = 0.0;
