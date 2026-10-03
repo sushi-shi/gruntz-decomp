@@ -886,7 +886,6 @@ i32 ClockInterval::Serialize(
     return 1;
 }
 
-// @early-stop
 RVA(0x00059230, 0x450)
 i32 CGrunt::HandleCombatContact(
     i32 otherPxX,
@@ -1528,7 +1527,6 @@ i32 CGrunt::CommitNeighbor(
     return 1;
 }
 
-// @early-stop
 RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
