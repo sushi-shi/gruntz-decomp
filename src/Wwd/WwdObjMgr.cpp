@@ -419,7 +419,7 @@ void CDDrawChildGroup::InvalidateChildShadows() {
     if (n != NULL) {
         do {
             CGameObject* cur_obj = NextChild(n);
-            cur_obj->m_shadow.m_armed = -1;
+            cur_obj->m_shadow.Invalidate();
         } while (n != NULL);
     }
 }

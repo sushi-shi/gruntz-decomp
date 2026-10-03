@@ -26,13 +26,13 @@ void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
     if (m_clip.left == COORD_UNSET) {
         if (m_screenX < 0 || m_screenY < 0 || m_screenX >= dst->GetWidth()
             || m_screenY >= dst->GetHeight()) {
-            m_dirty.m_armed = -1;
+            m_dirty.Invalidate();
             return;
         }
     } else {
         if (m_screenX < m_clip.left || m_screenY < m_clip.top || m_screenX > m_clip.right
             || m_screenY > m_clip.bottom) {
-            m_dirty.m_armed = -1;
+            m_dirty.Invalidate();
             return;
         }
     }
@@ -42,17 +42,17 @@ void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
     m_dirty.m_position.y = m_screenY;
     m_dirty.m_size.cx = 1;
     m_dirty.m_size.cy = 1;
-    m_dirty.m_armed = 0;
+    m_dirty.Validate();
 }
 
 RVA(0x001661d0, 0xc2)
 void CWwdDotObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
-    if (m_shadow.m_armed != -1) {
+    if (m_shadow.IsValid()) {
         u8 pixel = src->GetSurface()->GetPixel(m_shadow.m_position.x, m_shadow.m_position.y);
         dst->GetSurface()->PutPixel(m_shadow.m_position.x, m_shadow.m_position.y, pixel);
-        m_dirty.m_armed = -1;
+        m_dirty.Invalidate();
     }
 }
 
@@ -62,7 +62,7 @@ void CWwdDotObject::BltDirtyEx(
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {
-    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+    if (m_dirty.IsValid() && m_shadow.IsValid()) {
         i32 dx = abs(m_dirty.m_position.x - m_shadow.m_position.x) + 1;
         i32 dy = abs(m_dirty.m_position.y - m_shadow.m_position.y) + 1;
         if (dx > 0x20 || dy > 0x20) {
@@ -75,9 +75,9 @@ void CWwdDotObject::BltDirtyEx(
             CSize size(dx, dy);
             dst->BlitDirtyRect(src, pos, size);
         }
-    } else if (m_dirty.m_armed != -1) {
+    } else if (m_dirty.IsValid()) {
         dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
-    } else if (m_shadow.m_armed != -1) {
+    } else if (m_shadow.IsValid()) {
         dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
     }
 }
@@ -88,7 +88,7 @@ void CWwdDotObject::BltDirtyRegions(
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {
-    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+    if (m_dirty.IsValid() && m_shadow.IsValid()) {
         const POINT& dirtyPos = m_dirty.m_position;
         const POINT& shadowPos = m_shadow.m_position;
         i32 dx = abs(m_dirty.m_position.x - m_shadow.m_position.x) + 1;
@@ -103,9 +103,9 @@ void CWwdDotObject::BltDirtyRegions(
             CSize size(dx, dy);
             dst->BlitDirtyRect(src, pos, size);
         }
-    } else if (m_dirty.m_armed != -1) {
+    } else if (m_dirty.IsValid()) {
         dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
-    } else if (m_shadow.m_armed != -1) {
+    } else if (m_shadow.IsValid()) {
         dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
     }
 }

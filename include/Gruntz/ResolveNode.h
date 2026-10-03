@@ -32,6 +32,15 @@ struct WwdDirtyRect {
         m_armed = -1;
     }
 
+    b32 IsValid() const {
+        return m_armed != -1;
+    }
+    void Validate() {
+        m_armed = 0;
+    }
+    void Invalidate() {
+        m_armed = -1;
+    }
     void Reset() {
         m_rect.left = COORD_UNSET;
         m_armed = -1;

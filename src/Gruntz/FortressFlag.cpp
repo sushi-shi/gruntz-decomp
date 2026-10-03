@@ -173,7 +173,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_ACTOR_BEHIND);
-    m_object->m_dirty.m_armed = 0;
+    m_object->m_dirty.Validate();
 }
 
 RVA(0x00046d30, 0x102)
@@ -205,7 +205,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_OVERLAY);
-    m_object->m_dirty.m_armed = 0;
+    m_object->m_dirty.Validate();
 }
 
 RVA(0x00047350, 0x102)

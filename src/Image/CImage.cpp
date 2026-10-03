@@ -286,7 +286,7 @@ RVA(0x00153470, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     SpriteStateFlags mode = info->m_stateFlags;
     if (HAS(mode, SPRITE_STATE_HIDDEN)) {
-        info->m_dirty.m_armed = -1;
+        info->m_dirty.Invalidate();
         return;
     }
     if (HAS(mode, SPRITE_STATE_FLASHING)) {
@@ -299,7 +299,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         }
         mode = info->m_stateFlags;
         if (!HAS(mode, SPRITE_STATE_FLASH_VISIBLE)) {
-            info->m_dirty.m_armed = -1;
+            info->m_dirty.Invalidate();
             return;
         }
     }
@@ -386,7 +386,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirty.m_armed = -1;
+        info->m_dirty.Invalidate();
         return;
     }
     RECT s;
