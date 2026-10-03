@@ -1218,16 +1218,12 @@ outOfRange:
         }                                                                                          \
     }
 
-// @early-stop
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     i32 bx;
     i32 by;
     CGrunt* hit;
     i32 moveKind;
-    bool isG;
-    bool isL;
-    bool isP;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
         return 0;
@@ -1283,7 +1279,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         return 1;
     }
 
-    Coord hitTile = hit->m_lastTilePx;
+    Coord hitTile = hit->LastTilePx();
     if (hitTile.m_x != bx || hitTile.m_y != by) {
         Coord hitCommit = hit->m_commitPx;
         if (hitCommit.m_x != bx || hitCommit.m_y != by) {
@@ -1291,16 +1287,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         }
     }
 
-    isG = hit->IsAnimationAct("G");
-    if (isG) {
-        return 0;
-    }
-    isL = hit->IsAnimationAct("L");
-    if (isL) {
-        return 0;
-    }
-    isP = hit->IsAnimationAct("P");
-    if (isP) {
+    if (hit->IsAnimationAct("G") || hit->IsAnimationAct("L") || hit->IsAnimationAct("P")) {
         return 0;
     }
 
