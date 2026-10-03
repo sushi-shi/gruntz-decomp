@@ -44,17 +44,17 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
     }
 
     CDDSurface* s = m_srcSurface;
-    m_fadeDivisor = static_cast<float>(static_cast<i32>(s->m_apiDesc.dwWidth)) * 0.5f;
-    m_centerX = static_cast<i32>(s->m_apiDesc.dwWidth) / 2;
-    m_centerY = static_cast<i32>(s->m_apiDesc.dwHeight) / 2;
-    m_cells = new CFaderRadialCell[s->m_apiDesc.dwHeight * s->m_apiDesc.dwWidth];
+    m_fadeDivisor = static_cast<float>(s->GetWidth()) * 0.5f;
+    m_centerX = s->GetWidth() / 2;
+    m_centerY = s->GetHeight() / 2;
+    m_cells = new CFaderRadialCell[s->GetHeight() * s->GetWidth()];
 
     i32 cx = m_centerX;
     i32 cy = m_centerY;
     m_maxRadius = static_cast<i32>((sqrt(static_cast<double>((SQR(cx) + SQR(cy)))) * 10000.0));
 
-    for (i32 y = 0; y < static_cast<i32>(m_srcSurface->m_apiDesc.dwHeight); y++) {
-        for (i32 x = 0; x < static_cast<i32>(m_srcSurface->m_apiDesc.dwWidth); x++) {
+    for (i32 y = 0; y < m_srcSurface->GetHeight(); y++) {
+        for (i32 x = 0; x < m_srcSurface->GetWidth(); x++) {
             i32 dx = x - m_centerX;
             i32 dy = y - m_centerY;
             CFaderRadialCell cell;
@@ -66,7 +66,7 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
             cell.m_vx = static_cast<float>(dx) * fade;
             cell.m_vy = static_cast<float>(m_centerY - y) * fade;
             cell.m_pixel = m_srcSurface->GetPixel(x, y);
-            m_cells[y * m_srcSurface->m_apiDesc.dwWidth + x] = cell;
+            m_cells[y * m_srcSurface->GetWidth() + x] = cell;
         }
     }
     return 1;
@@ -81,7 +81,7 @@ void CFaderRadial::FreeBuffer() {
 
 RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
-    u8* scratch = new u8[m_dstSurface->m_apiDesc.dwWidth];
+    u8* scratch = new u8[m_dstSurface->GetWidth()];
     m_dstSurface->Clear(0);
     m_srcSurface->Lock(NULL);
     u8* base = static_cast<u8*>(m_dstSurface->Lock(NULL));
@@ -89,16 +89,14 @@ void CFaderRadial::RenderFrame(i32 frame) {
         return;
     }
 
-    for (i32 i = 0; i < static_cast<i32>(m_srcSurface->m_apiDesc.dwWidth)
-                            * static_cast<i32>(m_srcSurface->m_apiDesc.dwHeight);
-         i++) {
+    for (i32 i = 0; i < m_srcSurface->GetWidth() * m_srcSurface->GetHeight(); i++) {
         float d = m_cells[i].m_radius - static_cast<float>(static_cast<u32>(frame));
         if (d > 1.0f) {
             float sf = d / m_fadeDivisor + 1.0f;
             i32 px = m_centerX + static_cast<i32>((m_cells[i].m_vx / sf));
             i32 py = m_centerY - static_cast<i32>((m_cells[i].m_vy / sf));
-            if (px > 0 && px < static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth) && py > 0
-                && py < static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight)) {
+            if (px > 0 && px < m_dstSurface->GetWidth() && py > 0
+                && py < m_dstSurface->GetHeight()) {
                 base[py * m_dstSurface->m_apiDesc.lPitch + px] = m_cells[i].m_pixel;
             }
         }

@@ -30,8 +30,8 @@ i32 CFaderFlat::ApplyInit(CFaderConfig* desc) {
     m_durationPercent = s->m_durationPercent;
     m_splitPercent = s->m_splitPercent;
     m_previousFrame = 0;
-    m_rowStates = new i32[m_srcSurface->m_apiDesc.dwHeight];
-    for (i32 i = 0; i < static_cast<i32>(m_srcSurface->m_apiDesc.dwHeight); i++) {
+    m_rowStates = new i32[m_srcSurface->GetHeight()];
+    for (i32 i = 0; i < m_srcSurface->GetHeight(); i++) {
         m_rowStates[i] = 0;
     }
     return 1;
@@ -42,8 +42,8 @@ RVA(0x0017f660, 0x2e6)
 void CFaderFlat::RenderFrame(i32 frame) {
     u16* srcBits = static_cast<u16*>(m_srcSurface->Lock(NULL));
     u16* dstBits = static_cast<u16*>(m_dstSurface->Lock(NULL));
-    i32 h = m_srcSurface->m_apiDesc.dwHeight;
-    i32 w = m_srcSurface->m_apiDesc.dwWidth;
+    i32 h = m_srcSurface->GetHeight();
+    i32 w = m_srcSurface->GetWidth();
     i32 base = h - frame - 1;
     i32 span = m_durationPercent * h / 100;
     if (span + base > h) {
@@ -105,7 +105,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
 
 RVA(0x0017f950, 0x24)
 i32 CFaderFlat::GetFrameCount() {
-    i32 n = m_srcSurface->m_apiDesc.dwHeight;
+    i32 n = m_srcSurface->GetHeight();
     return n + (m_durationPercent * n) / 100;
 }
 

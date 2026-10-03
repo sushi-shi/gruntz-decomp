@@ -66,7 +66,7 @@ void CMinimap::Reset() {
 RVA(0x000a33a0, 0x23)
 void CMinimap::FreeSurface() {
     if (m_world != NULL && m_surface != NULL) {
-        m_world->m_deviceManager->RemoveSurface(m_surface);
+        m_world->GetDeviceManager()->RemoveSurface(m_surface);
         m_surface = NULL;
     }
 }
@@ -85,7 +85,8 @@ i32 CMinimap::AllocSurface() {
 
     SIZE
     size = mapMgr->GetGridSize();
-    m_surface = world->m_deviceManager->CreateOffscreenSurface(size.cx, size.cy, BPP_UNSET, 0, -1);
+    m_surface =
+        world->GetDeviceManager()->CreateOffscreenSurface(size.cx, size.cy, BPP_UNSET, 0, -1);
     if (m_surface == NULL) {
         return 0;
     }

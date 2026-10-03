@@ -767,7 +767,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x42c);
                 return 1;
             }
-            PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         case CMD_SHOW_STATE0:
             if (!TransitionState(GAMESTATE_SPLASH, 1, false, 0)) {
@@ -816,7 +816,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             return 1;
         case CMD_LOBBY_RESET:
             m_lobbyProbed = false;
-            PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8025, 0);
+            PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, 0x8025, 0);
             return 1;
         case CMD_EXIT_TO_ATTRACT:
             if (!CheckPlayState()) {
@@ -829,7 +829,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x430);
                 return 1;
             }
-            PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         case CMD_CAPTURE_WORLD:
             if (g_cdPromptResult) {

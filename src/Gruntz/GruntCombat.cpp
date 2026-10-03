@@ -2326,7 +2326,7 @@ void CGrunt::AdvanceMotion() {
         eq = IsAnimationAct("A");
         if (eq && CoordCount() != 0) {
             Coord* co = GetHeadCoord();
-            i32 fl = g_gameReg->m_tileGrid->m_rows[co->m_y][co->m_x].m_flags;
+            i32 fl = MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->m_tileGrid, co->m_x, co->m_y);
             if (!(fl & BRICKZ_CELL_OCCUPIED) && !((m_arrivalFlags & fl) & BRICKZ_CELL_OCCUPIED)
                 && ((m_arrivalFlags & fl) == 0 || (m_passableMask & fl) != 0)) {
                 Coord* tc = GetTailCoord();
@@ -2345,7 +2345,8 @@ void CGrunt::AdvanceMotion() {
                     );
                     if (CoordCount() != 0) {
                         Coord* h3 = GetHeadCoord();
-                        i32 fl2 = g_gameReg->m_tileGrid->m_rows[h3->m_y][h3->m_x].m_flags;
+                        i32 fl2 =
+                            MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->m_tileGrid, h3->m_x, h3->m_y);
                         if (!(fl2 & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;
                             StepEntranceReinit();

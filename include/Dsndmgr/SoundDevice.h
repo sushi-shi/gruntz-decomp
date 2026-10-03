@@ -19,6 +19,10 @@ public:
     SoundDevice();
     virtual ~SoundDevice();
 
+    IDirectSound* GetDirectSound() const {
+        return m_device;
+    }
+
     void Shutdown();
     void DestroyBuffer(SoundBuffer* buffer);
     void StopAllBuffers();

@@ -619,7 +619,7 @@ CDDrawDeviceManager::CreatePrimarySurface(i32 caps, i32 descFlags, i32 backBuffe
         return NULL;
     }
     RegisterSurface(item);
-    m_displayColorDepth = item->m_bitDepth;
+    m_displayColorDepth = item->GetBitDepth();
     return item;
 }
 
@@ -636,7 +636,7 @@ CDDSurface* CDDrawDeviceManager::CreatePrimarySurfaceFromDesc(const DDSURFACEDES
         return NULL;
     }
     RegisterSurface(item);
-    m_displayColorDepth = item->m_bitDepth;
+    m_displayColorDepth = item->GetBitDepth();
     return item;
 }
 
@@ -653,7 +653,7 @@ CDDSurface* CDDrawDeviceManager::Create24BitPrimarySurface(i32 backBufferCount) 
         return NULL;
     }
     RegisterSurface(item);
-    m_displayColorDepth = item->m_bitDepth;
+    m_displayColorDepth = item->GetBitDepth();
     return item;
 }
 

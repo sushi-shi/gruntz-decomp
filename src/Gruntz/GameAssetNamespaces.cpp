@@ -73,7 +73,7 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
     if (m_cursorSavedSurfaces[0] == NULL && m_cursorSavedSurfaces[1] == NULL) {
-        CDDrawDeviceManager* manager = m_world->m_deviceManager;
+        CDDrawDeviceManager* manager = m_world->GetDeviceManager();
         if (manager == NULL) {
             return 0;
         }

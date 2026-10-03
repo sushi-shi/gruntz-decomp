@@ -92,7 +92,7 @@ i32 CSplashState::LeaveState(GameStateId nextState) {
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
     IDirectDrawSurface* in =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
+        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x447);
@@ -118,7 +118,7 @@ i32 CSplashState::Render() {
     if (!IsAdvanceRequested() && m_splashCountdownMs) {
         return 1;
     }
-    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     m_mgr->m_owner->m_running = false;
     return 1;
 }
@@ -158,13 +158,13 @@ i32 CSplashState::RestoreDisplay() {
 RVA(0x000f9b40, 0x37)
 i32 CSplashState::OnKeyDown(i32 code, i32) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;
 }
 
 RVA(0x000f9b90, 0x24)
 i32 CSplashState::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;
 }

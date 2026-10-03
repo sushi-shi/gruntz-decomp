@@ -368,39 +368,6 @@ RVA_COMPGEN(0x00158f90, 0x1e, ??_GCDrawSubWorker@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00158fb0, 0x19, ??1CDrawSubWorker@@UAE@XZ)
 
-RVA(0x00158fd0, 0x41)
-i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
-    if (w <= 0 || h <= 0) {
-        return 0;
-    }
-    m_width = w;
-    m_bpp = bpp;
-    m_height = h;
-    m_srcRect.bottom = h;
-    m_srcRect.left = 0;
-    m_srcRect.top = 0;
-    m_srcRect.right = w;
-    return 1;
-}
-
-RVA(0x00159020, 0x55)
-i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
-    if (w <= 0 || h <= 0) {
-        return 0;
-    }
-    if (bpp != BPP_PALETTED_8 && bpp != BPP_RGB_16 && bpp != BPP_RGB_24 && bpp != BPP_RGB_32) {
-        return 0;
-    }
-    m_height = h;
-    m_srcRect.bottom = h;
-    m_width = w;
-    m_bpp = bpp;
-    m_srcRect.left = 0;
-    m_srcRect.top = 0;
-    m_srcRect.right = w;
-    return 1;
-}
-
 RVA(0x00159080, 0x8)
 void CDrawSubWorker::Unload() {
     m_width = 0;

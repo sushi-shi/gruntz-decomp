@@ -146,7 +146,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy =
-        menuRoot()->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
+        menuRoot()->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
@@ -167,7 +167,7 @@ i32 CAttract::Render() {
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
         if (g_actorList->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON8)) {
-            PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         }
     }
@@ -210,14 +210,14 @@ i32 CAttract::RestoreDisplay() {
 RVA(0x00014720, 0x37)
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_SPACE || code == VK_RETURN || code == VK_ESCAPE) {
-        PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;
 }
 
 RVA(0x00014770, 0x24)
 i32 CAttract::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;
 }
 
@@ -238,7 +238,7 @@ i32 CAttract::OnPaint() {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    menuRoot()->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
+    menuRoot()->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
     menuRoot()->m_drawTarget->BlitPage(menuRoot()->m_drawTarget->m_backPair);
     return 1;
 }

@@ -164,7 +164,7 @@ void CDDrawSurfaceMgr::SetRestoreHandler(SurfaceRestoreFn handler) {
 
 RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
-    CDDrawFrontSurface* child = m_drawTarget->m_frontSurface;
+    CDDrawFrontSurface* child = m_drawTarget->GetFrontSurface();
 
     if (child->GetWidth() != x || child->GetHeight() != y) {
         if (m_drawTarget->ResizePages(x, y, bpp) == BPP_UNSET) {

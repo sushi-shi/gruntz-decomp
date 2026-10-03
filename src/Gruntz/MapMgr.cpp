@@ -48,7 +48,6 @@ CBrickzNodePool::~CBrickzNodePool() {
     Free();
 }
 
-// @early-stop
 RVA(0x0009e740, 0x76)
 i32 CBrickzNodePool::Allocate(u32 count) {
     m_storage = new BrickzNode[count];
@@ -61,16 +60,20 @@ i32 CBrickzNodePool::Allocate(u32 count) {
     m_count = count;
     e->m_openPrev = NULL;
 
-    BrickzNode* next = e + 1;
-    for (u32 i = 0; i < m_count; ++i) {
-        if (e == m_freeList) {
-            e->m_openPrev = NULL;
-        } else {
-            e->m_openPrev = e - 1;
-        }
-        e->m_openNext = next;
-        ++e;
-        ++next;
+    u32 i = 0;
+    if (i < m_count) {
+        BrickzNode* next = e + 1;
+        do {
+            if (e == m_freeList) {
+                e->m_openPrev = NULL;
+            } else {
+                e->m_openPrev = e - 1;
+            }
+            e->m_openNext = next;
+            ++e;
+            ++next;
+            ++i;
+        } while (i < m_count);
     }
     m_freeList[m_count - 1].m_openNext = NULL;
     return 1;
@@ -94,7 +97,6 @@ CBrickzCellNodePool::~CBrickzCellNodePool() {
     Free();
 }
 
-// @early-stop
 RVA(0x0009e860, 0x7a)
 i32 CBrickzCellNodePool::Allocate(u32 count) {
     m_storage = new BrickzCellNode[count];
@@ -107,17 +109,21 @@ i32 CBrickzCellNodePool::Allocate(u32 count) {
     m_count = count;
     e->m_cellPrev = NULL;
 
-    BrickzCellNode* next = e + 1;
-    for (u32 i = 0; i < m_count; ++i) {
-        if (e == m_freeList) {
-            e->m_cellPrev = NULL;
-        } else {
-            e->m_cellPrev = e - 1;
-        }
-        e->m_searchNode = NULL;
-        e->m_cellNext = next;
-        ++e;
-        ++next;
+    u32 i = 0;
+    if (i < m_count) {
+        BrickzCellNode* next = e + 1;
+        do {
+            if (e == m_freeList) {
+                e->m_cellPrev = NULL;
+            } else {
+                e->m_cellPrev = e - 1;
+            }
+            e->m_searchNode = NULL;
+            e->m_cellNext = next;
+            ++e;
+            ++next;
+            ++i;
+        } while (i < m_count);
     }
     m_freeList[m_count - 1].m_cellNext = NULL;
     return 1;

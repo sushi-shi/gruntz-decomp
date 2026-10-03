@@ -159,12 +159,12 @@ i32 CGrunt::StepDefenderBehavior() {
                     if (static_cast<u32>(borderX) < g_gameReg->m_tileGrid->m_width
                         && static_cast<u32>(top) < g_gameReg->m_tileGrid->m_height
                         && (borderX != occTX || top != occTY)) {
-                        g_gameReg->m_tileGrid->m_rows[top][borderX].m_flags = 1;
+                        g_gameReg->m_tileGrid->CellFlagsAtUnchecked(borderX, top) = 1;
                     }
                     if (static_cast<u32>(borderX) < g_gameReg->m_tileGrid->m_width
                         && static_cast<u32>(bottom) < g_gameReg->m_tileGrid->m_height
                         && (borderX != occTX || bottom != occTY)) {
-                        g_gameReg->m_tileGrid->m_rows[bottom][borderX].m_flags = 1;
+                        g_gameReg->m_tileGrid->CellFlagsAtUnchecked(borderX, bottom) = 1;
                     }
                 }
                 for (i32 borderY = cy - m_defenderRadius; borderY < cy + m_defenderRadius + 1;
@@ -174,12 +174,12 @@ i32 CGrunt::StepDefenderBehavior() {
                     if (static_cast<u32>(left) < g_gameReg->m_tileGrid->m_width
                         && static_cast<u32>(borderY) < g_gameReg->m_tileGrid->m_height
                         && (left != occTX || borderY != occTY)) {
-                        g_gameReg->m_tileGrid->m_rows[borderY][left].m_flags = 1;
+                        g_gameReg->m_tileGrid->CellFlagsAtUnchecked(left, borderY) = 1;
                     }
                     if (static_cast<u32>(right) < g_gameReg->m_tileGrid->m_width
                         && static_cast<u32>(borderY) < g_gameReg->m_tileGrid->m_height
                         && (right != occTX || borderY != occTY)) {
-                        g_gameReg->m_tileGrid->m_rows[borderY][right].m_flags = 1;
+                        g_gameReg->m_tileGrid->CellFlagsAtUnchecked(right, borderY) = 1;
                     }
                 }
 
@@ -191,7 +191,7 @@ i32 CGrunt::StepDefenderBehavior() {
                          restoreX++) {
                         if (static_cast<u32>(restoreX) < g_gameReg->m_tileGrid->m_width
                             && static_cast<u32>(restoreY) < g_gameReg->m_tileGrid->m_height) {
-                            g_gameReg->m_tileGrid->m_rows[restoreY][restoreX].m_flags =
+                            g_gameReg->m_tileGrid->CellFlagsAtUnchecked(restoreX, restoreY) =
                                 saved.GetAt(savedIndex++);
                         }
                     }

@@ -1351,14 +1351,14 @@ i32 CBootyState::CheckPerfectBonus() {
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
+        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
             return 0;
         }
     }
-    SoundStream* snd = m_world->m_soundStream;
+    SoundStream* snd = m_world->GetSoundStream();
     if (snd != NULL) {
         i32 now = static_cast<i32>(timeGetTime());
         snd->TickVolumeRamps(now);
@@ -1586,7 +1586,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     }
     CGameStats* gameStats = g_gameReg->m_gameStats;
     if (gameStats->m_isCustomLevel != false) {
-        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
         if (m_initOnce == false) {
             if (gameStats->m_currentAreaComplete != false) {
@@ -1674,7 +1674,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 sub->StopAllStreams();
             }
             g_gameReg->PlayMovieEntry(IDX(MOVIE_ENTRY_ENDING));
-            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
+            PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
         } else {
 
             g_gameReg->PassClickToPlayState((nextLevelStats->m_levelNumber % 0x28) + 1, false, 1);
@@ -2450,7 +2450,7 @@ void CMultiBootyState::DrawBattleStats() {
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
+        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
@@ -2543,7 +2543,7 @@ i32 CMultiBootyState::OnPaint() {
 RVA(0x0001f8a0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
     if (m_sequenceState == BOOTYSEQ_PERFECT_BONUS) {
-        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;
 }

@@ -174,7 +174,7 @@ RVA(0x0013d910, 0x9f)
 i32 CGameApp::RunMessageLoop() {
     MSG msg;
 
-    HWND hwnd = m_gameWnd->m_hwnd;
+    HWND hwnd = m_gameWnd->GetHwnd();
     if (!hwnd) {
         return 0;
     }
@@ -314,7 +314,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     CGameWnd* wnd = m_gameWnd;
     m_errorReported = true;
     if (wnd != NULL && wnd->m_closeGuard == false) {
-        PostMessageA(wnd->m_hwnd, WM_CLOSE, 0, 0);
+        PostMessageA(wnd->GetHwnd(), WM_CLOSE, 0, 0);
     }
     m_running = false;
     m_errorCode = wParam;
@@ -337,7 +337,7 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!pGameWnd) {
         return 0;
     }
-    if (!pGameWnd->m_hwnd) {
+    if (!pGameWnd->GetHwnd()) {
         return 0;
     }
 

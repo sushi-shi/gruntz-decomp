@@ -150,11 +150,11 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
 
 RVA(0x0013e2e0, 0x1f0)
 i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
-    if (manager->m_device == NULL) {
+    if (manager->GetDirectDraw() == NULL) {
         return 0;
     }
 
-    i32 hr = manager->m_device->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, NULL);
+    i32 hr = manager->GetDirectDraw()->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, NULL);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0xd5, hr);
         return 0;
@@ -1045,20 +1045,19 @@ i32 CDDSurface::RestoreLost() {
 RVA(0x0013f990, 0xc4)
 void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
     i32 dwTrans = DDBLTFAST_WAIT + DDBLTFAST_SRCCOLORKEY * (useColorKey != false);
-    for (i32 y = 0; y < static_cast<i32>(m_apiDesc.dwHeight); y += src->m_apiDesc.dwHeight) {
-        for (i32 x = 0; x < static_cast<i32>(m_apiDesc.dwWidth); x += src->m_apiDesc.dwWidth) {
+    for (i32 y = 0; y < static_cast<i32>(m_apiDesc.dwHeight); y += src->GetHeight()) {
+        for (i32 x = 0; x < static_cast<i32>(m_apiDesc.dwWidth); x += src->GetWidth()) {
             RECT rect;
             RECT* pRect = NULL;
-            if (x + static_cast<i32>(src->m_apiDesc.dwWidth) >= static_cast<i32>(m_apiDesc.dwWidth)
-                || y + static_cast<i32>(src->m_apiDesc.dwHeight)
-                       >= static_cast<i32>(m_apiDesc.dwHeight)) {
+            if (x + src->GetWidth() >= static_cast<i32>(m_apiDesc.dwWidth)
+                || y + src->GetHeight() >= static_cast<i32>(m_apiDesc.dwHeight)) {
                 rect.left = 0;
                 rect.top = 0;
                 i32 w = m_apiDesc.dwWidth - x;
-                w = min(w, static_cast<i32>(src->m_apiDesc.dwWidth));
+                w = min(w, src->GetWidth());
                 rect.right = w;
                 i32 h = m_apiDesc.dwHeight - y;
-                h = min(h, static_cast<i32>(src->m_apiDesc.dwHeight));
+                h = min(h, src->GetHeight());
                 rect.bottom = h;
                 pRect = &rect;
             }
@@ -1579,8 +1578,8 @@ i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 m
     RECT sr;
     ClipVtx v[4];
 
-    i32 srcW = src->m_apiDesc.dwWidth;
-    i32 srcH = src->m_apiDesc.dwHeight;
+    i32 srcW = src->GetWidth();
+    i32 srcH = src->GetHeight();
     if (srcRect != NULL) {
         sr = *srcRect;
     } else {

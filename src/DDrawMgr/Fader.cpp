@@ -46,7 +46,7 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 frame = 1;
     while (frame <= count) {
         if (vsync && m_deviceManager) {
-            m_deviceManager->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+            m_deviceManager->GetDirectDraw()->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
         }
         RenderFrame(frame);
         loops++;
@@ -84,7 +84,10 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
                 static_cast<i32>(((static_cast<float>(GetTickCount()) - fStart) / fDur * fCount));
             if (prev != frame && frame <= count && frame > 0) {
                 if (vsync && m_deviceManager) {
-                    m_deviceManager->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+                    m_deviceManager->GetDirectDraw()->WaitForVerticalBlank(
+                        DDWAITVB_BLOCKBEGIN,
+                        NULL
+                    );
                 }
                 RenderFrame(frame);
                 loops++;

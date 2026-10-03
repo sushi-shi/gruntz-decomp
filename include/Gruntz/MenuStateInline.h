@@ -46,7 +46,7 @@ inline void CMenuState::HandleControllerInput() {
     for (i = 0; i < count; i++) {
         if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON8)) {
             if (!m_menuTree->ReturnToPreviousPage()) {
-                PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
+                PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
             }
             return;
         }
