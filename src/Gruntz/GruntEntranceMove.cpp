@@ -22,6 +22,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntActionInline.h>
@@ -222,7 +223,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             }
         }
 
-        i32 r = rand() % 0x1e1;
+        i32 r = GetRandom(0, 0x1e0);
         if (r > 0x140) {
             found = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
@@ -409,8 +410,8 @@ i32 CGrunt::StartBombGruntRun() {
         m_triggerMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
     }
-    i32 dx = rand() % 3 - 1;
-    i32 dy = rand() % 3 - 1;
+    i32 dx = GetRandom(-1, 1);
+    i32 dy = GetRandom(-1, 1);
     if (dx == 0 && dy == 0) {
         dx = 1;
     }
