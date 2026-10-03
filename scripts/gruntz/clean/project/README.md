@@ -2,13 +2,14 @@
 
 The clean C++ base for building and extending Gruntz.
 
-```mermaid
-flowchart LR
-    main["main<br/>Reconstruction & matching"] -->|"gruntz clean"| source["source<br/>One clean snapshot"]
-    source -.->|"Create your branch"| port["Your port<br/>Ongoing development"]
-    style main fill:#172554,color:#dbeafe,stroke:#60a5fa
-    style source fill:#14532d,color:#dcfce7,stroke:#4ade80
-    style port fill:#451a03,color:#fef3c7,stroke:#fbbf24
+```text
+       main
+         |
+         v
+      source (you are here)
+         |
+         v
+     your port
 ```
 
 [`main`](https://github.com/sushi-shi/gruntz-decomp/tree/main) owns reconstruction
