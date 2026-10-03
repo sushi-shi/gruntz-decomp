@@ -783,7 +783,7 @@ i32 CGrunt::StepArrivalDrop(
         )
         != 0) {
         if (CoordCount() != 0) {
-            g_coordPool.Push(m_coordList.RemoveHead());
+            g_coordPool.Push(RemoveHeadCoord());
         }
     pathGate:
         reinit = 1;
@@ -931,9 +931,9 @@ i32 CGrunt::StepArrivalDrop(
             passableMask
         ) != 0
         && CoordCount() != 0) {
-        g_coordPool.Push(m_coordList.RemoveHead());
+        g_coordPool.Push(RemoveHeadCoord());
         if (CoordCount() != 0) {
-            g_coordPool.Push(m_coordList.RemoveTail());
+            g_coordPool.Push(RemoveTailCoord());
             if (CoordCount() != 0) {
                 nudged = 1;
                 tail = GetTailCoord();
@@ -1064,7 +1064,7 @@ reProbe:
         )
         != 0) {
         if (CoordCount() != 0) {
-            g_coordPool.Push(m_coordList.RemoveHead());
+            g_coordPool.Push(RemoveHeadCoord());
         }
         goto pathGate;
     }

@@ -25,7 +25,7 @@ inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
     if (logic == NULL) {
         return false;
     }
-    m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_object->Show();
     SET_SCREEN_POS(m_object, logic->m_object->m_screenX, logic->m_object->m_screenY - 0x32);
     return true;
 }
@@ -37,7 +37,7 @@ inline b32 CGruntVoice::PositionIndicatorAtSourceObject() {
     );
 
     if (resolved != NULL) {
-        m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_object->Show();
         i32 dx = 0, dy = 0;
         CImage* layer = static_cast<CWwdSpriteObject*>(resolved)->m_frameImage;
         if (layer != NULL) {

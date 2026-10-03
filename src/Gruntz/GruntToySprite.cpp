@@ -61,7 +61,7 @@ RVA(0x0007f920, 0x21)
 i32 CGruntToySprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
     m_gruntIdentity.m_playerIndex = playerIndex;
     m_gruntIdentity.m_unitIndex = unitIndex;
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->Show();
     return 1;
 }
 

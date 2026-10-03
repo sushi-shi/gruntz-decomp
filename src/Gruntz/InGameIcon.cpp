@@ -374,7 +374,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         m_object->m_screenY >> TILE_SHIFT_PX,
         m_object->m_objectId
     );
-    m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_object->Show();
 }
 
 RVA(0x00097680, 0x110)
@@ -497,7 +497,7 @@ i32 CToyPeek::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    SerializeClockPair(ar, mode, &m_countdownTiming);
+    m_countdownTiming.Serialize(ar, mode, typeId, object);
     return 1;
 }
 
@@ -621,7 +621,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         ClearTileBit(reg, m_object);
         owner = m_wwdObject;
         if (owner->m_damage > 0) {
-            owner->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            owner->Hide();
             SET_ANIMATION_ACT("B");
             owner = m_wwdObject;
             m_driftTiming.Start(owner->m_damage);
@@ -646,7 +646,7 @@ i32 CInGameIcon::Reposition() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     if (m_driftTiming.Expired()) {
         CWwdSpriteObject* r = m_wwdObject;
-        r->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        r->Show();
         SET_ANIMATION_ACT("A");
 
         CGruntzMgr* reg = g_gameReg;

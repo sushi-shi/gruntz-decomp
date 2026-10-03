@@ -888,14 +888,14 @@ i32 CGrunt::SerializeDispatch(
             break;
     }
     m_entranceCell.Serialize(ar, mode, typeId, object);
-    SerializeClockPair(ar, mode, &m_toyTiming);
-    SerializeClockPair(ar, mode, &m_idleDelayTiming);
-    SerializeClockPair(ar, mode, &m_idleWindowTiming);
-    SerializeClockPair(ar, mode, &m_entranceTiming);
-    SerializeClockPair(ar, mode, &m_flashTiming);
-    SerializeClockPair(ar, mode, &m_attackTiming);
-    SerializeClockPair(ar, mode, &m_combatTiming);
-    SerializeClockPair(ar, mode, &m_hudRetireTiming);
+    m_toyTiming.Serialize(ar, mode, typeId, object);
+    m_idleDelayTiming.Serialize(ar, mode, typeId, object);
+    m_idleWindowTiming.Serialize(ar, mode, typeId, object);
+    m_entranceTiming.Serialize(ar, mode, typeId, object);
+    m_flashTiming.Serialize(ar, mode, typeId, object);
+    m_attackTiming.Serialize(ar, mode, typeId, object);
+    m_combatTiming.Serialize(ar, mode, typeId, object);
+    m_hudRetireTiming.Serialize(ar, mode, typeId, object);
     m_wingzTiming.Serialize(ar, mode, typeId, object);
     m_conversionTiming.Serialize(ar, mode, typeId, object);
     m_shimmerTiming.Serialize(ar, mode, typeId, object);
