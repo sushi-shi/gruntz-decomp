@@ -75,9 +75,9 @@ public:
     b32 m_customNameFlag;
     CString m_worldName;
 
-    CWnd* GetPlayerTypeControl(i32 slot);
-    CWnd* GetPlayerNameControl(i32 slot);
-    CWnd* GetMaxGruntzControl(i32 slot);
+    CComboBox* GetPlayerTypeControl(i32 slot);
+    CEdit* GetPlayerNameControl(i32 slot);
+    CComboBox* GetMaxGruntzControl(i32 slot);
     CWnd* GetPlayerColorControl(i32 slot);
 
     i32 SetPlayerTypeSelection(i32 slot, i32 selection);
@@ -242,8 +242,8 @@ public:
     void Watchdog();
 
     CButton* GetReadyControl(i32 slot);
-    CWnd* GetPlayerNameControl(i32 slot);
-    CWnd* GetMaxGruntzControl(i32 slot);
+    CEdit* GetPlayerNameControl(i32 slot);
+    CComboBox* GetMaxGruntzControl(i32 slot);
     CWnd* GetPlayerColorControl(i32 slot);
     CComboBox* GetPlayerTypeControl(i32 slot);
     void SetPlayerTypeSelection(i32 slot, i32 selection);

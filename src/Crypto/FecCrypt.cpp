@@ -61,7 +61,7 @@ i32 CFecFile::ReadArchive(const char* name) {
     if (m_openGate == false) {
         return 0;
     }
-    if (m_stream.Open(name, 0, NULL) == false) {
+    if (m_stream.Open(name, CFile::modeRead, NULL) == false) {
         return 0;
     }
     m_readOpen = true;
@@ -172,7 +172,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     CFile file;
-    if (file.Open(name, 0, NULL) == false) {
+    if (file.Open(name, CFile::modeRead, NULL) == false) {
         return 0;
     }
 
@@ -205,6 +205,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     m_entry.m_scramble = static_cast<u16>((Random() % FEC_SCRAMBLE_RANGE + FEC_SCRAMBLE_BASE));
+    // SeekToEnd introduces virtual dispatch instead of the direct CFile call.
     m_entry.m_payloadLen = file.Seek(0, CFile::end);
     if (file.Seek(0, CFile::begin) != 0) {
         m_nextIndex--;

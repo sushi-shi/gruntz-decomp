@@ -75,14 +75,14 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             g_gameReg->m_players[i].m_color = static_cast<ColorTint>(g_battlezLastColors[i]);
         }
 
-        CWnd* comboChild = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
+        CEdit* comboChild = static_cast<CEdit*>(GetDlgItem(0x4ff)->GetWindow(GW_CHILD));
         if (comboChild == NULL) {
             return;
         }
-        comboChild->SendMessageA(EM_SETREADONLY, 1, 0);
+        comboChild->SetReadOnly(1);
         comboChild->SetWindowTextA("");
 
-        CWnd* combo = GetDlgItem(0x4ff);
+        CComboBox* combo = static_cast<CComboBox*>(GetDlgItem(0x4ff));
         CRezDir* worlds = m_gameManager->m_resourceArchive->GetDirFromPath("GAME_BATTLEZ");
         if (worlds == NULL) {
             return;
@@ -100,18 +100,14 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                     display += c;
                 }
             }
-            combo->SendMessageA(
-                CB_ADDSTRING,
-                0,
-                reinterpret_cast<LPARAM>(static_cast<const char*>(display))
-            );
+            combo->AddString(display);
             if (first != 0) {
                 first = 0;
                 comboChild->SetWindowTextA(display);
             }
             entry = static_cast<CRezItm*>(worlds->GetNextItem(entry));
         }
-        combo->SendMessageA(CB_SETCURSEL, 0, 0);
+        combo->SetCurSel(0);
         HWND editHwnd = comboChild->m_hWnd;
         MsgParam prev;
         prev.m_long = GetWindowLongA(editHwnd, GWL_WNDPROC);
@@ -126,20 +122,12 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
 
         for (i = 0; i < 4; i++) {
             if (i != 0) {
-                GetPlayerTypeControl(i)
-                    ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
-                GetPlayerTypeControl(i)
-                    ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (easy)"));
-                GetPlayerTypeControl(i)
-                    ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (normal)"));
-                GetPlayerTypeControl(i)->SendMessageA(
-                    CB_ADDSTRING,
-                    0,
-                    reinterpret_cast<LPARAM>("Computer (difficult)")
-                );
+                GetPlayerTypeControl(i)->AddString("None");
+                GetPlayerTypeControl(i)->AddString("Computer (easy)");
+                GetPlayerTypeControl(i)->AddString("Computer (normal)");
+                GetPlayerTypeControl(i)->AddString("Computer (difficult)");
             } else {
-                GetPlayerTypeControl(i)
-                    ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
+                GetPlayerTypeControl(i)->AddString("Human");
             }
         }
         SetPlayerTypeSelection(0, 0);
@@ -182,9 +170,9 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             }
         }
         for (i = 0; i < 4; i++) {
-            CWnd* edit = GetPlayerNameControl(i);
+            CEdit* edit = GetPlayerNameControl(i);
             if (edit != NULL) {
-                edit->SendMessageA(EM_LIMITTEXT, 9, 0);
+                edit->LimitText(9);
             }
         }
 
@@ -193,12 +181,12 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         GetDlgItem(IDOK)->EnableWindow(true);
         GetDlgItem(IDCANCEL)->EnableWindow(true);
         for (i = 0; i < 4; i++) {
-            CWnd* typeControl = GetPlayerTypeControl(i);
-            CWnd* nameControl = GetPlayerNameControl(i);
+            CComboBox* typeControl = GetPlayerTypeControl(i);
+            CEdit* nameControl = GetPlayerNameControl(i);
             CWnd* colorControl = GetPlayerColorControl(i);
-            CWnd* maxGruntzControl = GetMaxGruntzControl(i);
+            CComboBox* maxGruntzControl = GetMaxGruntzControl(i);
             nameControl->EnableWindow(true);
-            nameControl->SendMessageA(EM_SETREADONLY, 0, 0);
+            nameControl->SetReadOnly(0);
             colorControl->EnableWindow(true);
             typeControl->EnableWindow(true);
             maxGruntzControl->EnableWindow(true);
@@ -267,7 +255,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             m_customNameFlag = false;
         }
     } else {
-        CWnd* comboChild = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
+        CEdit* comboChild = static_cast<CEdit*>(GetDlgItem(0x4ff)->GetWindow(GW_CHILD));
         if (comboChild == NULL) {
             return;
         }
@@ -276,7 +264,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         reg->Set("CustomMap", m_customNameFlag);
 
         for (i = 0; i < 4; i++) {
-            CWnd* edit = GetPlayerNameControl(i);
+            CEdit* edit = GetPlayerNameControl(i);
             if (edit != NULL) {
                 CString name;
                 edit->GetWindowTextA(name);
@@ -284,8 +272,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             }
         }
         for (i = 0; i < 4; i++) {
-            i32 selection =
-                static_cast<i32>(GetPlayerTypeControl(i)->SendMessageA(CB_GETCURSEL, 0, 0));
+            i32 selection = static_cast<i32>(GetPlayerTypeControl(i)->GetCurSel());
             if (selection != 0) {
                 m_gameManager->m_players[i].m_active = true;
                 m_gameManager->m_players[i].m_difficulty =
@@ -361,60 +348,60 @@ BEGIN_MESSAGE_MAP(CBattlezDlg, CDialog)
 END_MESSAGE_MAP()
 
 RVA(0x00015ac0, 0x60)
-CWnd* CBattlezDlg::GetPlayerTypeControl(i32 slot) {
-    CWnd* result = NULL;
+CComboBox* CBattlezDlg::GetPlayerTypeControl(i32 slot) {
+    CComboBox* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_TYPE0);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_TYPE1);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_TYPE2);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_TYPE3);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE3));
             break;
     }
     return result;
 }
 
 RVA(0x00015b40, 0x60)
-CWnd* CBattlezDlg::GetPlayerNameControl(i32 slot) {
-    CWnd* result = NULL;
+CEdit* CBattlezDlg::GetPlayerNameControl(i32 slot) {
+    CEdit* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_NAME0);
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_NAME1);
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_NAME2);
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_NAME3);
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME3));
             break;
     }
     return result;
 }
 
 RVA(0x00015bc0, 0x60)
-CWnd* CBattlezDlg::GetMaxGruntzControl(i32 slot) {
-    CWnd* result = NULL;
+CComboBox* CBattlezDlg::GetMaxGruntzControl(i32 slot) {
+    CComboBox* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ0);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ0));
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ1);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ1));
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ2);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ2));
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ3);
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ3));
             break;
     }
     return result;
@@ -442,31 +429,31 @@ CWnd* CBattlezDlg::GetPlayerColorControl(i32 slot) {
 
 RVA(0x00015cc0, 0x23)
 i32 CBattlezDlg::SetPlayerTypeSelection(i32 slot, i32 selection) {
-    CWnd* control = GetPlayerTypeControl(slot);
-    return control->SendMessageA(CB_SETCURSEL, selection, 0);
+    CComboBox* control = GetPlayerTypeControl(slot);
+    return control->SetCurSel(selection);
 }
 
 RVA(0x00015d00, 0x20)
 i32 CBattlezDlg::GetPlayerTypeSelection(i32 slot) {
-    CWnd* control = GetPlayerTypeControl(slot);
-    return control->SendMessageA(CB_GETCURSEL, 0, 0);
+    CComboBox* control = GetPlayerTypeControl(slot);
+    return control->GetCurSel();
 }
 
 RVA(0x00015d30, 0x21)
 i32 CBattlezDlg::GetMaxGruntzSelection(i32 slot) {
-    CWnd* control = GetMaxGruntzControl(slot);
-    return control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* control = GetMaxGruntzControl(slot);
+    return control->GetCurSel() + 1;
 }
 
 RVA(0x00015d70, 0x24)
 i32 CBattlezDlg::SetMaxGruntzSelection(i32 slot, i32 count) {
-    CWnd* control = GetMaxGruntzControl(slot);
-    return control->SendMessageA(CB_SETCURSEL, count - 1, 0);
+    CComboBox* control = GetMaxGruntzControl(slot);
+    return control->SetCurSel(count - 1);
 }
 
 RVA(0x00015db0, 0x19)
 void CBattlezDlg::SetPlayerName(i32 slot, const char* name) {
-    CWnd* control = GetPlayerNameControl(slot);
+    CEdit* control = GetPlayerNameControl(slot);
     control->SetWindowTextA(name);
 }
 RVA(0x00015de0, 0x5f)
@@ -515,15 +502,15 @@ void CBattlezDlg::OnPlayerTypeSelection3() {
 
 RVA(0x00015fe0, 0xbe)
 void CBattlezDlg::UpdatePlayerSlotEnabled(i32 slot) {
-    CWnd* typeControl = GetPlayerTypeControl(slot);
-    CWnd* nameControl = GetPlayerNameControl(slot);
+    CComboBox* typeControl = GetPlayerTypeControl(slot);
+    CEdit* nameControl = GetPlayerNameControl(slot);
     CWnd* colorControl = GetPlayerColorControl(slot);
-    CWnd* maxGruntzControl = GetMaxGruntzControl(slot);
+    CComboBox* maxGruntzControl = GetMaxGruntzControl(slot);
     if (slot == 0) {
         return;
     }
     GruntzPlayer* player = &m_gameManager->m_players[slot];
-    if (typeControl->SendMessageA(CB_GETCURSEL, 0, 0) != 0) {
+    if (typeControl->GetCurSel() != 0) {
         nameControl->EnableWindow(true);
         colorControl->EnableWindow(true);
         player->m_active = true;
@@ -570,7 +557,7 @@ void CBattlezDlg::PaintPlayerColorControls() {
         rect.top += 2;
         rect.right -= 2;
         rect.bottom -= 2;
-        FillRect(dc.m_hDC, &rect, brush);
+        dc.FillRect(&rect, &brush);
     }
 }
 
@@ -629,7 +616,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         CDC dc;
         dc.Attach(lpdis->hDC);
         CBrush brush(color);
-        FillRect(dc.m_hDC, &lpdis->rcItem, brush);
+        dc.FillRect(&lpdis->rcItem, &brush);
         dc.Detach();
     }
     CWnd::OnDrawItem(nIDCtl, lpdis);
@@ -700,11 +687,11 @@ RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
 
 RVA(0x000171b0, 0xca)
 void CBattlezDlg::OnWorldSelectionChange() {
-    CWnd* combo = GetDlgItem(0x4ff);
+    CComboBox* combo = static_cast<CComboBox*>(GetDlgItem(0x4ff));
     if (combo == NULL) {
         return;
     }
-    long selection = combo->SendMessageA(CB_GETCURSEL, 0, 0);
+    long selection = combo->GetCurSel();
     if (selection == -1) {
         return;
     }
@@ -803,29 +790,29 @@ void CBattlezDlg::HandlePlayerNameChange(i32) {}
 
 RVA(0x00017560, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection0() {
-    CWnd* control = GetMaxGruntzControl(0);
-    i32 count = control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* control = GetMaxGruntzControl(0);
+    i32 count = control->GetCurSel() + 1;
     g_gameReg->m_players[0].m_maxGruntz = count;
     return count;
 }
 RVA(0x000175a0, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection1() {
-    CWnd* control = GetMaxGruntzControl(1);
-    i32 count = control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* control = GetMaxGruntzControl(1);
+    i32 count = control->GetCurSel() + 1;
     g_gameReg->m_players[1].m_maxGruntz = count;
     return count;
 }
 RVA(0x000175e0, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection2() {
-    CWnd* control = GetMaxGruntzControl(2);
-    i32 count = control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* control = GetMaxGruntzControl(2);
+    i32 count = control->GetCurSel() + 1;
     g_gameReg->m_players[2].m_maxGruntz = count;
     return count;
 }
 RVA(0x00017620, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection3() {
-    CWnd* control = GetMaxGruntzControl(3);
-    i32 count = control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
+    CComboBox* control = GetMaxGruntzControl(3);
+    i32 count = control->GetCurSel() + 1;
     g_gameReg->m_players[3].m_maxGruntz = count;
     return count;
 }

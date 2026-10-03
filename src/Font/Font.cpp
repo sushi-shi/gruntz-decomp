@@ -75,7 +75,7 @@ i32 Font::LoadFont(CString szFileName) {
     FreeMemory();
 
     CFile file;
-    if (!file.Open(szFileName, 0, NULL)) {
+    if (!file.Open(szFileName, CFile::modeRead, NULL)) {
         return 0;
     }
 
@@ -109,7 +109,7 @@ i32 Font::LoadFont(CString szFileName) {
 RVA(0x001799f0, 0x16d)
 i32 Font::SaveFont(CString szFileName) {
     CFile file;
-    if (!file.Open(szFileName, 0x1001, NULL)) {
+    if (!file.Open(szFileName, CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
     }
 

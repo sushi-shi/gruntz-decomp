@@ -240,7 +240,7 @@ RVA(0x0015d500, 0x127)
 i32 CGameLevel::LoadFromFile(const char* path) {
     CFile file;
 
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
 
@@ -1463,7 +1463,7 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
 
     CFile stream;
 
-    if (stream.Open(name, 0, NULL) == false) {
+    if (stream.Open(name, CFile::modeRead, NULL) == false) {
         return 0;
     }
 
@@ -1491,7 +1491,7 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
 
     CFile stream;
 
-    if (stream.Open(name, 0, NULL) == false) {
+    if (stream.Open(name, CFile::modeRead, NULL) == false) {
         return 0;
     }
 

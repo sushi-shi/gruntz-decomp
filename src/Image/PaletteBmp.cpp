@@ -11,7 +11,7 @@
 RVA(0x00177480, 0x169)
 i32 CDibPal::InitBmp(const char* path, u32 flags) {
     CFile f;
-    if (f.Open(path, 0, NULL) == false) {
+    if (f.Open(path, CFile::modeRead, NULL) == false) {
         return 0;
     }
 
