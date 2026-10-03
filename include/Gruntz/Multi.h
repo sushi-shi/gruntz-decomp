@@ -260,14 +260,18 @@ public:
     CNetPlayerNode* m_localPlayer;
     i32 m_localPlayerId;
     i32 m_lastSenderId;
+    // @identity-TODO: unaccessed word required by m_processedCommandTick's retail offset.
     char m_p5c4[0x5cc - 0x5c8];
     i32 m_processedCommandTick;
+    // @identity-TODO: session reset only zeroes this word.
     i32 m_reserved5d0;
     i32 m_drainTimer;
     i32 m_frameDelta;
     i32 m_lastTime;
     u32 m_accumTime;
     i32 m_lastFrameSyncTime;
+    // @identity-TODO: state entry and session reset zero both words; timing code
+    // does not read them, so their original roles remain unknown.
     i32 m_reserved5e8;
     i32 m_reserved5ec;
     i32 m_playerLatencyMs[4];
@@ -275,6 +279,7 @@ public:
 
     CDWordArray m_readyPlayerIds;
 
+    // @identity-TODO: unaccessed tail retained for TransitionState's CMulti allocation.
     char m_pad618[0x660 - 0x618];
 };
 

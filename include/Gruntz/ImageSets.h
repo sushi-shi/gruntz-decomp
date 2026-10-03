@@ -18,6 +18,8 @@ GZ_ENUM_CONST_END(TileImageSetKind)
 
 struct WwdTileImageRecord {
     i32 m_kind;
+    // @identity-TODO: all three collision parsers skip this word before dimensions;
+    // record strides include it, but no reader establishes its meaning.
     i32 m_reserved4;
     i32 m_width;
     i32 m_height;

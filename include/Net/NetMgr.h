@@ -303,6 +303,8 @@ public:
     // surviving retail writer or reader proves what either buffer contains.
     char* m_ownedBufferB;
     char* m_ownedBufferA;
+    // @identity-TODO: player-node initialization zeroes this word; neither owned
+    // buffer management nor list traversal reads it.
     i32 m_reserved1c;
     __POSITION* m_listPosition;
 
@@ -455,6 +457,7 @@ public:
     POSITION m_providerCursor;
     POSITION m_sessionCursor;
     POSITION m_playerCursor;
+    // @identity-TODO: unaccessed tail retained for the CNetMgr allocation in CMulti.
     i32 m_reserved88;
 
     CNetProviderNode* GetFirstProvider() {

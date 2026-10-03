@@ -45,6 +45,8 @@ struct PidHeader {
     i32 m_offsetX;
     i32 m_offsetY;
     u32 m_fill;
+    // @identity-TODO: PID decoders begin pixels after this word without reading it;
+    // SavePid writes zero in the corresponding PidWriteHeader field.
     u32 m_reserved1c;
 
     u8 m_pixels[1];

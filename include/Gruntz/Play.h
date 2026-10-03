@@ -289,11 +289,14 @@ public:
     i32 SavePlayState(CFileMemBase* ar);
     i32 LoadPlayState(CFileMemBase* ar);
 
+    // @identity-TODO: only CString construction/destruction identifies this member;
+    // the following unaccessed word preserves m_returnToMenuOnComplete's retail offset.
     CString m_reserved1b4;
     char m_pad1b8[0x1bc - 0x1b8];
     b32 m_returnToMenuOnComplete;
     b32 m_completedFinalLevel;
     b32 m_initialFramePending;
+    // @identity-TODO: initialized to zero with the play state; no semantic read.
     i32 m_reserved1c8;
     i32 m_savedClock;
 
@@ -309,6 +312,7 @@ public:
     CTileTriggerContainer* m_tileTriggers;
     b32 m_dragSnapActive;
     b32 m_dragInProgress;
+    // @identity-TODO: initialized and save-streamed, but never used by play logic.
     i32 m_reserved2f0;
     i32 m_cursorFrame;
     i32 m_cursorId;
@@ -390,6 +394,7 @@ public:
     i32 m_stepCountdown;
     i32 m_focusPlayerIndex;
     MidiSequence* m_savedMusicSequence;
+    // @identity-TODO: unaccessed tail retained for TransitionState's CPlay allocation.
     i32 m_reserved51c;
 
     i32 SaveUnderAndDrawCursor(CDDrawSurfacePair* pair);

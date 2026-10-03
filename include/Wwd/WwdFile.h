@@ -21,6 +21,8 @@ GZ_ENUM_CONST_BEGIN(WwdFormatConstants)
 GZ_ENUM_CONST_END(WwdFormatConstants)
 
 struct WwdHeader {
+    // @identity-TODO: the reserved words occupy fixed WWD header positions;
+    // header validation and main-block loading never interpret them.
     u32 m_headerSize;
     u32 m_reserved04;
     u32 m_flags;
@@ -46,6 +48,8 @@ struct WwdHeader {
 };
 
 struct WwdPlaneHeader {
+    // @identity-TODO: plane readers skip the reserved words; m_name and the
+    // complete plane-header stride require their storage.
     u32 m_headerSize;
     u32 m_reserved04;
     GZ_ENUM_STORAGE(WwdPlaneFlags, u32) m_flags;
@@ -131,6 +135,8 @@ struct PlaneObjectRecord {
 };
 
 struct WwdTileDescTable {
+    // @identity-TODO: descriptor loading uses m_count and m_descriptors only;
+    // the intervening reserved words remain part of the file-header layout.
     u32 m_headerSize;
     u32 m_reserved04;
     u32 m_count;

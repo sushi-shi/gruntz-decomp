@@ -173,6 +173,8 @@ public:
 
     DDCAPS m_driverCaps;
     DDCAPS m_helCaps;
+    // @identity-TODO: no separate access identifies this span; m_surfaces' retail
+    // offset requires it. GetCapsChecked uses m_driverCaps and m_helCaps only.
     char m_pad300[0x47c - 0x300];
     CPtrList m_surfaces;
     CPtrList m_palettes;

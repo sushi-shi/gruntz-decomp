@@ -275,6 +275,7 @@ public:
 
     i32 PostCommandIfKey();
 
+    // @identity-TODO: construction and activation zero this word; no semantic read.
     i32 m_reserved1b4;
     BootySeqPhase m_sequenceState;
     CWwdSpriteObject* m_puddleSprites[4];

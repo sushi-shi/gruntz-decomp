@@ -310,6 +310,7 @@ public:
     CCheatMgr* m_cheatMgr;
 
     MidiManager* m_midi;
+    // @identity-TODO: initialized to zero; no reader identifies this word.
     i32 m_reserved4c;
     CShadeTableCache* m_shadeCache;
 
@@ -320,6 +321,7 @@ public:
     CFontConfig* m_chatLog;
     CVoiceManager* m_voiceManager;
 
+    // @identity-TODO: initialized to zero; no reader identifies this word.
     i32 m_reserved64;
     CTriggerMgr* m_triggerMgr;
     CGruntzCmdMgr* m_commandMgr;
@@ -338,10 +340,12 @@ public:
     i32 m_lobbyResult;
     b32 m_lobbyProbed;
     b32 m_delayedQuitPending;
+    // @identity-TODO: initialized to zero; no reader identifies this word.
     i32 m_reserveda8;
     b32 m_modalBusy;
     b32 m_renderGate;
 
+    // @identity-TODO: construction and lobby startup only zero this word.
     i32 m_reservedb4;
     b32 m_isCheckpointPrompts;
     SaveSlot* m_saveInfoRec;
@@ -349,6 +353,7 @@ public:
 
     LPDPLCONNECTION m_connSettings;
     CString m_strWorldFile;
+    // @identity-TODO: initialized to 30; no consumer proves a timer or count role.
     i32 m_reservedcc;
     char m_driveLetter;
     b32 m_driveLetterProbed;
@@ -380,6 +385,7 @@ public:
     GameModeId m_gameMode;
     i32 m_computerPlayerCount;
     RECT m_viewBounds;
+    // @identity-TODO: unaccessed word required by m_players' retail offset.
     char m_pad14c[0x150 - 0x14c];
     GruntzPlayer m_players[4];
 };

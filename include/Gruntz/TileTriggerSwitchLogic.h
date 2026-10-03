@@ -59,6 +59,8 @@ public:
     i32 m_cellKey;
     b32 m_linkGate;
     i32 m_damageParam;
+    // @identity-TODO: initialization zeroes this word and SaveState/LoadState stream
+    // it; link and checkpoint decisions do not read it.
     i32 m_reserved1c;
     b32 m_initGate;
 

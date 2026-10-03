@@ -64,6 +64,7 @@ public:
     b32 m_doneFlag;
 
     b32 m_optionsPresenceCounted;
+    // @identity-TODO: unaccessed word required by m_battlezConfig's retail offset.
     char m_pad034[0x38 - 0x34];
 
     CBattlezMapConfig m_battlezConfig;
@@ -72,6 +73,7 @@ public:
     i32 m_maxGruntz;
 
     PlayerLatency m_latency;
+    // @identity-TODO: unaccessed word required by the retail player-array stride.
     char m_pad234[0x238 - 0x234];
 };
 

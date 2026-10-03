@@ -11,6 +11,8 @@
 struct CRezItm;
 
 struct CAniSource {
+    // @identity-TODO: Build starts with m_flags and reaches frame data through
+    // m_data; neither retained header span is interpreted by the ANI readers.
     char m_pad00[0x8];
     i32 m_flags;
     i32 m_count;
