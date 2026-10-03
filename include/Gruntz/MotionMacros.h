@@ -7,14 +7,14 @@
     do {                                                                                           \
         double targetPosition = (target);                                                          \
         double nv;                                                                                 \
-        if (a == g_motionZero) {                                                                   \
+        if (a == 0.0) {                                                                            \
             nv = v;                                                                                \
         } else {                                                                                   \
             double delta = (targetPosition - (s)) * a;                                             \
-            double disc = SQR(v) - delta * g_motionNegTwo;                                         \
-            disc = max(g_motionZero, disc);                                                        \
+            double disc = SQR(v) - delta * -2.0;                                                   \
+            disc = max(0.0, disc);                                                                 \
             double r = sqrt(disc);                                                                 \
-            nv = (v > g_motionZero) ? r : -r;                                                      \
+            nv = (v > 0.0) ? r : -r;                                                               \
         }                                                                                          \
         v = nv;                                                                                    \
     } while (0)
@@ -22,7 +22,7 @@
 #define STEP_AXIS(v, a, s, vmax, loBand, hiBand, posClamp, scr)                                    \
     do {                                                                                           \
         double step0 = dt * a;                                                                     \
-        double t = (v - step0 * g_motionNegHalf) * dt;                                             \
+        double t = (v - step0 * -0.5) * dt;                                                        \
         scr = t;                                                                                   \
         do {                                                                                       \
             double c;                                                                              \
