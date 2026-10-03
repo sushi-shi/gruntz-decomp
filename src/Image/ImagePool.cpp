@@ -1077,7 +1077,7 @@ void CDibPal::ClearSystemPalette() {
         lp.m_palPalEntry[i].peRed = 0;
         lp.m_palPalEntry[i].peGreen = 0;
         lp.m_palPalEntry[i].peBlue = 0;
-        lp.m_palPalEntry[i].peFlags = 4;
+        lp.m_palPalEntry[i].peFlags = PC_NOCOLLAPSE;
     }
     HPALETTE hpal = CreatePalette(&lp.m_lp);
     if (hpal) {
