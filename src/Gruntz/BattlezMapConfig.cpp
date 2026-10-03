@@ -43,6 +43,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileActionEvent.h>
@@ -1590,7 +1591,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (u == NULL) {
                 continue;
             }
-            if (u->m_entranceDropActive != false) {
+            if (u->IsEntranceDropActive() != false) {
                 continue;
             }
             POINT wpt;
@@ -1636,7 +1637,7 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 cell = rand() % TM_UNITS_PER_PLAYER;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         CGrunt* u = m_triggerMgr->UnitAt(band, i);
-        if (u != NULL && u->m_entranceDropActive == false) {
+        if (u != NULL && u->IsEntranceDropActive() == false) {
             return u;
         }
         cell = (cell + 1) % TM_UNITS_PER_PLAYER;
@@ -1672,7 +1673,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->m_gruntKind == GRUNT_GHOST) {
         return 0;
     }
-    if (other->m_entranceDropActive != false) {
+    if (other->IsEntranceDropActive() != false) {
         return 0;
     }
     i32 roll = rand() % 4;
@@ -1950,17 +1951,7 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, L
             break;
     }
 
-    i64* p = &m_routeTiming.m_start;
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(&p[0], sizeof(i64));
-            ar->Write(&p[1], sizeof(i64));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(&p[0], sizeof(i64));
-            ar->Read(&p[1], sizeof(i64));
-            break;
-    }
+    SerializeClockPair(ar, mode, &m_routeTiming);
     return 1;
 }
 

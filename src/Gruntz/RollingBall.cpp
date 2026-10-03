@@ -27,6 +27,7 @@
 #include <Gruntz/MovingDeathTileId.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
@@ -547,19 +548,7 @@ i32 CRollingBall::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    i64* explode = &m_explodeTiming.m_start;
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(explode, sizeof(*explode));
-            explode++;
-            ar->Write(explode, sizeof(*explode));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(explode, sizeof(*explode));
-            explode++;
-            ar->Read(explode, sizeof(*explode));
-            break;
-    }
+    m_explodeTiming.Serialize(ar, mode, typeId, object);
 
     switch (mode) {
         case SERIAL_SAVE:
