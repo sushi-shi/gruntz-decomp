@@ -240,9 +240,9 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_idleRouteLimit.m_x = 6;
     m_idleRouteLimit.m_y = 6;
     m_defenderTargetMaxDistance = 8;
-    m_idleBurnRand.m_x = m_board->m_width / 3;
-    m_idleBurnRand.m_y = m_board->m_width / 3;
-    m_assignedTargetMaxDistance = m_board->m_width >> 2;
+    m_idleBurnRand.m_x = m_board->GetWidth() / 3;
+    m_idleBurnRand.m_y = m_board->GetWidth() / 3;
+    m_assignedTargetMaxDistance = m_board->GetWidth() >> 2;
     m_roundRobinTick = 0;
 
     m_toolzPct = g_buteMgr.GetInt("Battlez", "ToolzPercent");
@@ -1275,9 +1275,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             POSITION n = unit->CoordHead();
             while (n != NULL) {
                 POSITION cur = n;
-                unit->m_coordList.GetNext(n);
-                if (static_cast<Coord*>(unit->m_coordList.GetAt(cur)) != NULL) {
-                    g_coordPool.Push(static_cast<Coord*>(unit->m_coordList.GetAt(cur)));
+                unit->GetNextCoord(n);
+                if (unit->GetCoordAt(cur) != NULL) {
+                    g_coordPool.Push(unit->GetCoordAt(cur));
                 }
             }
             coordList->RemoveAll();
@@ -1285,7 +1285,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
 
         POSITION head = coordList->GetHeadPosition();
-        Coord* firstCoord = static_cast<Coord*>(unit->m_coordList.GetAt(head));
+        Coord* firstCoord = unit->GetCoordAt(head);
         BrickzCell pathHeadCell = m_board->CellAt(firstCoord->m_x, firstCoord->m_y);
         if (coordList->IsEmpty()) {
             goto returnZero;
@@ -1322,11 +1322,11 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         PickupType entranceMode = unit->ArrivalPickup();
         if (entranceMode == PICKUP_TIMEBOMB && unit->CoordCount() >= 2) {
             POSITION node = unit->CoordHead();
-            Coord* ca = static_cast<Coord*>(unit->m_coordList.GetAt(node));
+            Coord* ca = unit->GetCoordAt(node);
             POSITION nn = node;
-            unit->m_coordList.GetNext(nn);
+            unit->GetNextCoord(nn);
             i32 ax = ca->m_x;
-            Coord* cb = static_cast<Coord*>(unit->m_coordList.GetAt(nn));
+            Coord* cb = unit->GetCoordAt(nn);
             i32 ay = ca->m_y;
             i32 bx = cb->m_x;
             i32 by = cb->m_y;
@@ -1367,13 +1367,13 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             POSITION head = unit->CoordHead();
             if (head != NULL) {
                 POSITION n = head;
-                unit->m_coordList.GetNext(n);
+                unit->GetNextCoord(n);
                 if (n != NULL) {
                     while (n != NULL) {
                         POSITION cur = n;
-                        unit->m_coordList.GetNext(n);
-                        if (static_cast<Coord*>(unit->m_coordList.GetAt(cur)) != NULL) {
-                            g_coordPool.Push(static_cast<Coord*>(unit->m_coordList.GetAt(cur)));
+                        unit->GetNextCoord(n);
+                        if (unit->GetCoordAt(cur) != NULL) {
+                            g_coordPool.Push(unit->GetCoordAt(cur));
                             coordList->RemoveAt(cur);
                         }
                     }
@@ -2290,8 +2290,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             if (g->ArrivalPickupOf(er) == PICKUP_TIMEBOMB) {
                 for (i32 row = first.m_y - 1; row < first.m_y + 2; row++) {
                     for (i32 col = first.m_x - 1; col < first.m_x + 2; col++) {
-                        if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
-                            && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
+                        if (static_cast<u32>(col) < static_cast<u32>(m_board->GetWidth())
+                            && static_cast<u32>(row) < static_cast<u32>(m_board->GetHeight())) {
                             i32 cf = m_board->CellFlagsAt(col, row);
                             if (cf & BRICKZ_BLOCKED_MASK) {
                                 return 1;
@@ -2421,8 +2421,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 ox = g->GetScreenTileX();
         i32 row = rand() % 3 + oy - 1;
         i32 col = rand() % 3 + ox - 1;
-        if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width)
-            || static_cast<u32>(row) >= static_cast<u32>(m_board->m_height)) {
+        if (static_cast<u32>(col) >= static_cast<u32>(m_board->GetWidth())
+            || static_cast<u32>(row) >= static_cast<u32>(m_board->GetHeight())) {
             return 1;
         }
         i32 c0 = m_board->CellFlagsAt(col, row);
@@ -2827,7 +2827,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
     if (useArg == false) {
 
         while (n != NULL) {
-            Coord* c = static_cast<Coord*>(unit->m_coordList.GetNext(n));
+            Coord* c = unit->GetNextCoord(n);
             if (c != NULL) {
                 BrickzCell* row = m_board->m_rows[c->m_y];
                 if (row[c->m_x].m_flags & 4) {
@@ -2855,7 +2855,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
 
             if (unit->CoordCount() != 0) {
                 POSITION p = unit->CoordHead();
-                Coord* c = static_cast<Coord*>(unit->m_coordList.GetAt(p));
+                Coord* c = unit->GetCoordAt(p);
                 CMapMgr* b = m_board;
                 i32 word = b->CellFlagsAt(c->m_x, c->m_y);
                 if (!(word & BRICKZ_CELL_OCCUPIED)) {
@@ -3193,7 +3193,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
 
     n = unit->CoordHead();
     while (n != NULL) {
-        Coord* coord = static_cast<Coord*>(unit->m_coordList.GetNext(n));
+        Coord* coord = unit->GetNextCoord(n);
         if (coord != NULL && coord->m_x == goal.m_x && coord->m_y == goal.m_y) {
             break;
         }
@@ -3260,7 +3260,7 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
     }
     BrickzCell** rows = ((m_board)->m_rows);
     while (node != NULL) {
-        Coord* c = static_cast<Coord*>(unit->m_coordList.GetNext(node));
+        Coord* c = unit->GetNextCoord(node);
         i32 y = c->m_y;
         i32 x = c->m_x;
         if (rows[y][x].m_flags & 4) {
@@ -3284,7 +3284,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                 if (node != NULL) {
                     CMapMgr* board = m_board;
                     for (;;) {
-                        Coord* c = static_cast<Coord*>(unit->m_coordList.GetNext(node));
+                        Coord* c = unit->GetNextCoord(node);
                         i32 x = c->m_x;
                         i32 y = c->m_y;
                         i32 tile = board->CellFlagsAt(x, y);

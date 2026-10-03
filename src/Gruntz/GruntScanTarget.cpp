@@ -221,8 +221,8 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     CWwdSpriteObject* object = m_object;
                     SELECT_RANDOM_EXTENT_POINT(object, baseCol, spanX, baseRow, spanY)
                     CMapMgr* grid = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width)
-                        && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
+                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->GetWidth())
+                        && static_cast<u32>(baseRow) < static_cast<u32>(grid->GetHeight())) {
                         this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
                     }
                     i32 steps = CoordCount();

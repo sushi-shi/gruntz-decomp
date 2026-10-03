@@ -362,7 +362,7 @@ i32 CWarlord::UpdateMovingState() {
     }
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (reg->GetGameMode() != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
         i32 dist = reg->m_triggerMgr->NearestOtherPlayerUnitDistSq(
             o->m_smarts,
@@ -391,7 +391,7 @@ i32 CWarlord::UpdatePanicState() {
         return 0;
     }
 
-    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
         i32 dist = g_gameReg->m_triggerMgr->NearestOtherPlayerUnitDistSq(
             o->m_smarts,
@@ -496,7 +496,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
 
     if (m_deathStarted == false) {
         if (!IsAnimationAct("D")) {
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 g_gameReg->VoiceMgr()->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
                 m_cooldownTimer.m_interval = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
@@ -536,7 +536,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
 #define PLAY_WARLORD_VOICE(questzCue, otherCue)                                                    \
     {                                                                                              \
         CGruntzMgr* g = g_gameReg;                                                                 \
-        if (g->m_gameMode == GAMEMODE_QUESTZ) {                                                    \
+        if (g->GetGameMode() == GAMEMODE_QUESTZ) {                                                 \
             CWwdSpriteObject* h = m_object;                                                        \
             i32 cue = (questzCue);                                                                 \
             i32 x = h->m_screenPosition.m_x;                                                       \
@@ -557,7 +557,7 @@ i32 CWarlord::ResolveDeathAnimation() {
     m_deathStarted = true;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g->GetGameMode() == GAMEMODE_QUESTZ) {
         CWwdSpriteObject* h = m_object;
         Coord position = h->ScreenPos();
         if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {

@@ -176,7 +176,7 @@ L_scanb:
 
         i32 r = m_defenderRadius;
         CRect box(tileX - r, tileY - r, tileX + r, tileY + r);
-        CRect gb(0, 0, grid->m_width, grid->m_height);
+        CRect gb(0, 0, grid->GetWidth(), grid->GetHeight());
         CRect isect;
         if (!isect.IntersectRect(&box, &gb)) {
             isect = box;

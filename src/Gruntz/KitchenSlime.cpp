@@ -127,7 +127,7 @@ i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == false || reg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (reg->m_isEasyMode == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {
         CGameObject* lvl = Level();
         i32 playerIndex, unitIndex;
         CGrunt* ent = static_cast<CGrunt*>(reg->m_triggerMgr->FindGruntAt(
@@ -345,13 +345,7 @@ i32 CKitchenSlime::LoadSprites() {
     m_speed = 32.0 / static_cast<double>(time);
 
     if (changed != false) {
-        CWwdSpriteObject* player = Anim();
-        CDDrawWorker* spr = player->m_imageSet;
-        if (spr != NULL) {
-            CImage* img = spr->GetAt(1);
-            player->m_frameIndex = 1;
-            player->m_frameImage = img;
-        }
+        Anim()->SetImageFrame(1);
     }
     m_stepMag = 0.0;
     return 1;

@@ -861,7 +861,7 @@ RVA_COMPGEN(0x00086040, 0x49, ??1MidiManager@@QAE@XZ)
 
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::CommitSinglePlayerProgress() {
-    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         return;
     }
     CState* currentState = g_gameReg->m_curState;

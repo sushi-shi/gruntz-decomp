@@ -40,7 +40,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             i32 tileY = g->GetScreenTileY();
             CRect
                 box(g->ScanCell().m_x - 5, g->ScanCell().m_y - 5, g->ScanCell().m_x + 5, tileY + 5);
-            CRect gb(0, 0, m_board->m_width, m_board->m_height);
+            CRect gb(0, 0, m_board->GetWidth(), m_board->GetHeight());
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
                 u32 hits = 0;

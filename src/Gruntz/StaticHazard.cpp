@@ -130,7 +130,7 @@ void CStaticHazard::RegisterActs() {
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::UpdateIdleState() {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != false && reg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (reg->m_isEasyMode != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {
         return 0;
     }
     u32 phase = g_frameTime - m_pulseEpoch;
@@ -177,8 +177,8 @@ i32 CStaticHazard::UpdateActiveState() {
             CMapMgr* grid = g_gameReg->m_tileGrid;
             i32 row = m_tile.m_y;
             i32 col = m_tile.m_x;
-            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
+                && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
                 grid->m_rows[row][col].m_flags &= 0xf7ffffff;
             }
             return 0;
@@ -215,16 +215,16 @@ i32 CStaticHazard::UpdateActiveState() {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 row = m_tile.m_y;
         i32 col = m_tile.m_x;
-        if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+        if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
+            && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
             grid->m_rows[row][col].m_flags |= 0x8000000;
         }
     } else {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 row = m_tile.m_y;
         i32 col = m_tile.m_x;
-        if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+        if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
+            && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
             grid->m_rows[row][col].m_flags &= 0xf7ffffff;
         }
         CWwdSpriteObject* o = m_object;
@@ -238,8 +238,8 @@ i32 CStaticHazard::UpdateActiveState() {
                 g_gameReg->m_tileGrid;
             i32 row = m_tile.m_y;
             i32 col = m_tile.m_x;
-            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
+                && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
                 grid->m_rows[row][col].m_flags &= 0xf7ffffff;
             }
         }

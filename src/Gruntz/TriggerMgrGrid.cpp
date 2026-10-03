@@ -159,7 +159,7 @@ i32 CTriggerMgr::PlaceObject(
         CGruntzMgr* game = g_gameReg;
 
         i32 kindId;
-        if (game->m_gameMode == GAMEMODE_QUESTZ) {
+        if (game->GetGameMode() == GAMEMODE_QUESTZ) {
             switch (aiType) {
                 case BZUNIT_BOMB:
                     kindId = IDX(PICKUP_BOMB);
@@ -815,7 +815,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         }
 
         case TILEKIND_CHECKPOINT:
-            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ || g == NULL
+            if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ || g == NULL
                 || g->m_playerIndex != g_curPlayer) {
                 return 0;
             }
@@ -1026,7 +1026,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         }
         case TILEKIND_CHECKPOINT_UP: {
 
-            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+            if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                 return 0;
             }
             if (g == NULL) {
@@ -1205,7 +1205,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             case PICKUP_WINGZ:
                 return cell->BeginAttack(bx, by) != 0;
             case PICKUP_WARPSTONE: {
-                if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     return 0;
                 }
                 i32 flags = map->CellFlagsAt(argTileX, argTileY);

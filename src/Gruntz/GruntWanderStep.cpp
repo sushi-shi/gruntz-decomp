@@ -230,10 +230,10 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 return 1;
             }
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(px) >= static_cast<u32>(grid->m_width)) {
+            if (static_cast<u32>(px) >= static_cast<u32>(grid->GetWidth())) {
                 return 1;
             }
-            if (static_cast<u32>(py) >= static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(py) >= static_cast<u32>(grid->GetHeight())) {
                 return 1;
             }
             TileSwitch(px, py, 0, m_arrivalFlags, 1, 0);
@@ -249,7 +249,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
         if (IsArrivalRerollPending() != 0) {
             CWwdSpriteObject* base = m_object;
             SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lx, ax, ly, ay)
-            if (lx < g_gameReg->m_tileGrid->m_width && ly < g_gameReg->m_tileGrid->m_height) {
+            if (lx < g_gameReg->m_tileGrid->GetWidth() && ly < g_gameReg->m_tileGrid->GetHeight()) {
                 TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
             }
             if (CoordCount() != 0) {

@@ -283,7 +283,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
             PLAY_GRUNT_CUE_IN_VIEW(3);
 
-            if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+            if (m_entranceReason == PICKUP_WARPSTONE
+                && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                 SwitchAnimationByName("GRUNTZ_NORMALGRUNT_DEATH", 0);
                 APPLY_NAME_INLINE("GRUNTZ_NORMALGRUNT_DEATH");
             }
@@ -301,7 +302,7 @@ finalize:
 
 tail:
 
-    if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         m_triggerMgr->SpawnTileFx(
             m_object->m_screenPosition.m_x,
             m_object->m_screenPosition.m_y,

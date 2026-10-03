@@ -87,7 +87,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
         time = g_buteMgr.GetDword("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CGruntzMgr* reg = g_gameReg;
-    if (false != reg->m_isEasyMode && reg->m_gameMode == GAMEMODE_QUESTZ
+    if (false != reg->m_isEasyMode && reg->GetGameMode() == GAMEMODE_QUESTZ
         && m_object->m_smarts != 1) {
         time += 1000;
     }

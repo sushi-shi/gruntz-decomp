@@ -1028,7 +1028,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
     ScreenTile(&tile);
     CMapMgr* plane = g_gameReg->m_tileGrid;
     i32 attr;
-    if (tile.m_x >= plane->m_width || tile.m_y >= plane->m_height) {
+    if (tile.m_x >= plane->GetWidth() || tile.m_y >= plane->GetHeight()) {
         attr = -1;
     } else {
         attr = plane->m_rows[tile.m_y][tile.m_x].m_occupantId;
@@ -1103,10 +1103,10 @@ CGrunt* CTriggerMgr::FindGruntAt(
         do {
             for (i32 y = tileBounds.top; static_cast<u32>(y) <= static_cast<u32>(tileBounds.bottom);
                  y++) {
-                if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
+                if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->GetWidth())) {
                     continue;
                 }
-                if (static_cast<u32>(y) >= static_cast<u32>(g_gameReg->m_tileGrid->m_height)) {
+                if (static_cast<u32>(y) >= static_cast<u32>(g_gameReg->m_tileGrid->GetHeight())) {
                     continue;
                 }
                 i32 val = g_gameReg->m_tileGrid->OccupantAt(x, y);

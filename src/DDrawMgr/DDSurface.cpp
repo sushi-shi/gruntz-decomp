@@ -855,7 +855,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         }
         rc = *clip;
     } else {
-        rc = MakeRect(0, 0, m_apiDesc.dwWidth, m_apiDesc.dwHeight);
+        rc = CRect(0, 0, m_apiDesc.dwWidth, m_apiDesc.dwHeight);
     }
     pct = pct * CLUT_BLEND_LEVEL_COUNT / CLUT_BLEND_PERCENT_MAX;
     u16* src = static_cast<u16*>(Lock(NULL));

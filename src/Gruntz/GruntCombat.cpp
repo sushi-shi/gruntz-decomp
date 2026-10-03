@@ -300,7 +300,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     SpellId idx = static_cast<SpellId>(forced);
     if (forced == 0) {
         i32 m = 3;
-        if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             m = 6;
         }
         if (m == 0) {
@@ -1170,7 +1170,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     i32 hit = AT(AT(g_hitTable, this->m_entranceReason), attackKind);
-    if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ
+    if (g_gameReg->m_isEasyMode != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ
         && this->m_playerIndex == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
@@ -1941,7 +1941,7 @@ void CGrunt::StepBehavior(char*) {
                 CGruntzMgr* reg3 = g_gameReg;
                 i32 hp;
 
-                if (reg3->m_isEasyMode != false && reg3->m_gameMode == GAMEMODE_QUESTZ) {
+                if (reg3->m_isEasyMode != false && reg3->GetGameMode() == GAMEMODE_QUESTZ) {
                     i32 bite = m_health - 5;
                     hp = max(0, bite);
                 } else {

@@ -153,7 +153,7 @@ i32 CPathHazard::Tick() {
     rect.bottom = obj->m_frameImage->m_anchor.y + obj->m_screenPosition.m_y - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == false || reg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (reg->m_isEasyMode == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {
         i32 playerIndex, unitIndex;
         CGrunt* ent = reg->m_triggerMgr->FindGruntAt(
             obj->m_screenPosition.m_x,
@@ -165,7 +165,7 @@ i32 CPathHazard::Tick() {
         );
         if (ent != NULL && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
-            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ || playerIndex == 0) {
+            if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ || playerIndex == 0) {
                 if (this->HitTest(playerIndex, unitIndex) == 0) {
                     return 0;
                 }
@@ -274,7 +274,7 @@ i32 CPathHazard::SiblingTick() {
     );
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != false && reg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (reg->m_isEasyMode != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {
 
     } else {
         i32 playerIndex, unitIndex;
@@ -288,7 +288,7 @@ i32 CPathHazard::SiblingTick() {
         );
         if (ent != NULL && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
-            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ || playerIndex == 0) {
+            if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ || playerIndex == 0) {
                 if (this->HitTest(playerIndex, unitIndex) == 0) {
                     return 0;
                 }

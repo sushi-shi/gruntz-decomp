@@ -859,7 +859,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     Coord tile;
     GetScreenTile(&tile);
     CMapMgr* g = g_gameReg->m_tileGrid;
-    if (tile.m_x < g->m_width && tile.m_y < g->m_height) {
+    if (tile.m_x < g->GetWidth() && tile.m_y < g->GetHeight()) {
         g->m_rows[tile.m_y][tile.m_x].m_flags |= IDX(CELL_FLAG_TIME_BOMB);
     }
     m_object->m_smarts = -1;

@@ -367,7 +367,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
             return 0;
         }
         m_stepCountdown = 2;
-    } else if (m_renderDisabled == false || m_mgr->m_gameMode == GAMEMODE_MULTIPLAYER) {
+    } else if (m_renderDisabled == false || m_mgr->GetGameMode() == GAMEMODE_MULTIPLAYER) {
         if (!EnterMode(previousState)) {
             return 0;
         }
@@ -479,7 +479,7 @@ i32 CPlay::Render() {
     }
 
     if (m_mgr->m_frameGate == false
-        && (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER || m_levelOverlayOpen == false)) {
+        && (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER || m_levelOverlayOpen == false)) {
         m_levelTimer->Tick(static_cast<i32>(g_frameDelta));
         m_mgr->m_commandMgr->ExecuteScheduledCommands(0);
 
@@ -708,7 +708,7 @@ void CPlay::UpdateWorldFrame() {
     g_engineFrameDelta = g_frameDelta;
     m_world->ChildGroup()->TickKillCues(0);
     m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
-    if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
 
         (g_gameReg)->AdvanceComputerPlayerTurns();
     }
@@ -759,7 +759,7 @@ i32 CPlay::UpdateWorldFixedSteps() {
             }
             m_world->ChildGroup()->TickKillCues(0);
             m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
-            if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
+            if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
                 (g_gameReg)->AdvanceComputerPlayerTurns();
             }
             m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
@@ -924,7 +924,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
     self->m_mgr->RestoreVideoMode(false);
 
-    if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
+    if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
         if (g_gameReg->m_frameGate != false) {
             g_gameReg->m_frameGate ^= 1;
@@ -943,7 +943,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CGruntzMgr* mgr = self->m_mgr;
         gameReg = g_gameReg;
         GruntzPlayer* team = &mgr->m_players[t];
-        if (gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        if (gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             team->SeedForSlot(t);
             if (t == 0) {
                 team->m_active = true;
@@ -966,7 +966,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     g_frameTime = 0;
-    if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
         srand(timeGetTime());
     }
     g_resourceInstallActive = false;
@@ -1170,7 +1170,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    if (diff != 0 && (g_gameReg)->m_gameMode == GAMEMODE_QUESTZ) {
+    if (diff != 0 && (g_gameReg)->GetGameMode() == GAMEMODE_QUESTZ) {
         BuildWarlordNameTable(savedThis);
     }
     BuildHelpReveal(false);
@@ -1300,7 +1300,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
 
-    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         CString warp;
         i32 notTraining = 1;
         if (warp.LoadString(IDS_TRAINING_WORLD_NAME)) {
@@ -1313,7 +1313,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    if (self->m_mgr->m_gameMode == GAMEMODE_BATTLEZ) {
+    if (self->m_mgr->GetGameMode() == GAMEMODE_BATTLEZ) {
         self->m_mgr->InitializeBattlezPlayers();
     }
     self->m_mgr->m_saveGame
@@ -1408,7 +1408,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             gameReg = g_gameReg;
         }
 
-        if (gameReg->m_gameMode != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == false) {
+        if (gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == false) {
             CString scr;
             self->m_inGame = true;
             self->m_hudSuppressed = false;
@@ -1438,7 +1438,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_renderDisabled = true;
         g_playActive = false;
         ResetViewport();
-        if ((g_gameReg)->m_gameMode == GAMEMODE_MULTIPLAYER) {
+        if ((g_gameReg)->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             g_playActive = true;
             self->m_renderDisabled = false;
             self->m_mgr->CheckSavedMode();
@@ -1462,7 +1462,7 @@ void CPlay::OnExit() {
         m_world->ChildGroup()->ClearChildren();
     }
     g_gameReg->m_isBuiltInBattlezLevel = false;
-    if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
         g_gameReg->m_gameMode = GAMEMODE_NONE;
     }
     g_gameReg->m_tileGrid->Reset();
@@ -1716,7 +1716,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_quitConfirmationActive != false) {
 
             if (vk == 'Y' || vk == VK_RETURN) {
-                if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
@@ -1737,7 +1737,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         } else {
 
             if (vk == 'Q') {
-                if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
@@ -1747,12 +1747,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
 
-            if (vk == 'S' && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (vk == 'S' && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                 mgr->FinalizeLevelAndShowResults();
             }
             if (vk == 'R') {
-                if (mgr->m_gameMode == GAMEMODE_QUESTZ
+                if (mgr->GetGameMode() == GAMEMODE_QUESTZ
                     && g_gameReg->m_triggerMgr->m_phase != FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     CGameWnd* r = g_gameReg->m_gameWnd;
@@ -1761,7 +1761,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
             if (vk == 'N') {
-                if (mgr->m_gameMode == GAMEMODE_QUESTZ
+                if (mgr->GetGameMode() == GAMEMODE_QUESTZ
                     && g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
@@ -1769,7 +1769,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
             if (vk == 'O') {
-                if (mgr->m_gameMode != GAMEMODE_QUESTZ
+                if (mgr->GetGameMode() != GAMEMODE_QUESTZ
                     && this->m_statusBar->m_observerTabAvailable != false) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     this->CloseLevelOverlay(0);
@@ -2060,7 +2060,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2150,7 +2150,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gooPuddlez == false) {
             return 1;
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
@@ -4497,7 +4497,7 @@ i32 CPlay::ExecuteCommand(
                 END_GUARD(g);
             }
             i32 sel = 0;
-            b32 live = (g_gameReg->m_gameMode != GAMEMODE_QUESTZ);
+            b32 live = (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ);
             CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(player, gi);
             i32 r;
             if (g2 == NULL || g2->m_entranceCommitted == false) {
@@ -4552,7 +4552,7 @@ b32 CPlay::PlaceStartGruntz() {
     i32 counter = 0;
     GruntEntranceMode entranceMode = GRUNT_ENTRANCE_NONE;
     POSITION pos = list->GetHeadPosition();
-    if (m_mgr->m_gameMode == GAMEMODE_QUESTZ) {
+    if (m_mgr->GetGameMode() == GAMEMODE_QUESTZ) {
         entranceMode = GRUNT_ENTRANCE_WORMHOLE;
     }
     while (pos != NULL) {
@@ -4585,7 +4585,7 @@ b32 CPlay::PlaceStartGruntz() {
                     return false;
                 }
                 obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-            } else if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ
+            } else if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ
                        && dispatch == DispatchGruntCreationPointLogic
                        && obj->m_smarts == g_curPlayer) {
 
@@ -5115,8 +5115,9 @@ i32 CPlay::ValidateLevelTiles() {
             obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else if (dispatch == DispatchLevelTimeLogic) {
 
-            if (m_levelTimer != NULL && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
-                && g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (m_levelTimer != NULL && m_mgr->GetGameMode() != GAMEMODE_MULTIPLAYER
+                && g_gameReg->m_isEasyMode != false
+                && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 i32 seconds = obj->m_points;
                 i32 minutes = obj->m_score;
                 seconds += seconds;
@@ -5187,8 +5188,8 @@ i32 CPlay::ValidateLevelTiles() {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
                     CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_width
-                        || static_cast<u32>(gyy) >= gg->m_height) {
+                    if (static_cast<u32>(gx) >= gg->GetWidth()
+                        || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
                     }
                     i32 kind = obj->m_smarts;
@@ -5209,8 +5210,8 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                     counts[kind]++;
                     gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_width
-                        || static_cast<u32>(gyy) >= gg->m_height) {
+                    if (static_cast<u32>(gx) >= gg->GetWidth()
+                        || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
                     }
                     BrickzCell* cellRow = gg->m_rows[ofs];
@@ -5221,11 +5222,12 @@ i32 CPlay::ValidateLevelTiles() {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
             i32 tileX = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
             i32 tileY = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
-            if (static_cast<u32>(tileX) < gg->m_width && static_cast<u32>(tileY) < gg->m_height) {
+            if (static_cast<u32>(tileX) < gg->GetWidth()
+                && static_cast<u32>(tileY) < gg->GetHeight()) {
                 gg->m_rows[tileY][tileX].m_flags |= 0x2000000;
             }
         } else if (dispatch == DispatchWarpStonePadLogic) {
-            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+            if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                 Coord* slot = g_coordPool.Pop();
                 slot->m_x = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
                 slot->m_y = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
@@ -5527,7 +5529,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char sequenceName[0x40];
-    if (m_mgr->m_musicEnabled != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (m_mgr->m_musicEnabled != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         m_ambientTiming.Start(AMBIENT_INTRO_INTERVAL_MS);
         wsprintfA(sequenceName, "INTRO%d", GetAmbientId());
         if (g_gameReg->m_musicEnabled != false) {
@@ -5539,13 +5541,14 @@ i32 CPlay::ResetPlayState() {
         m_mgr->m_midi->SelectSequence(sequenceName);
         m_mgr->m_midi->SetCurrentLooping(true);
         CGruntzMgr* gameManager = g_gameReg;
-        if (gameManager->m_musicEnabled != false && gameManager->m_gameMode == GAMEMODE_BATTLEZ) {
+        if (gameManager->m_musicEnabled != false
+            && gameManager->GetGameMode() == GAMEMODE_BATTLEZ) {
             m_mgr->m_midi->PlaySequence(sequenceName, true);
         }
         m_ambientTiming.Clear();
         m_ambientInitDone = true;
     }
-    if (m_mgr->m_gameMode == GAMEMODE_QUESTZ) {
+    if (m_mgr->GetGameMode() == GAMEMODE_QUESTZ) {
         CGruntzMgr* reg = g_gameReg;
 
         if (reg->m_strWorldFile.IsEmpty()) {
@@ -5646,7 +5649,7 @@ i32 CPlay::CloseLevelOverlay(i32) {
         CStatusBarMgr* worker = m_statusBar;
         m_levelOverlayOpen = false;
         worker->ExitMode();
-        if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
+        if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
             g_frameTime = m_savedClock;
         }
     }
@@ -5657,7 +5660,7 @@ i32 CPlay::CloseLevelOverlay(i32) {
 
 RVA(0x000d65d0, 0x7cc)
 i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
-    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
             if (loaded[id] == 0) {
                 BuildHelpReveal(false);
@@ -6786,7 +6789,7 @@ i32 CPlay::DrawLevelInfoText() {
             s0 = "";
     }
 
-    GameModeId mode = g_gameReg->m_gameMode;
+    GameModeId mode = g_gameReg->GetGameMode();
     if (mode == GAMEMODE_QUESTZ) {
         if (g_gameReg->m_isCustomLevel != false) {
             s1.LoadString(IDS_CUSTOM_QUEST_LEVEL);
@@ -7020,7 +7023,7 @@ i32 CPlay::ClearPlacedObjects() {
 RVA(0x000da200, 0x9b)
 i32 CPlay::GetAmbientId() {
     CGruntzMgr* gr = g_gameReg;
-    if (gr->m_gameMode == GAMEMODE_QUESTZ && gr->m_isCustomLevel == false) {
+    if (gr->GetGameMode() == GAMEMODE_QUESTZ && gr->m_isCustomLevel == false) {
         return (m_levelIndex + 1) % 2;
     }
     DATA(0x0024c26c)

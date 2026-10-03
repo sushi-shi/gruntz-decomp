@@ -142,7 +142,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     m_lastDropPlayerIndex = -1;
     m_lastDropUnitIndex = -1;
     m_speed = g_objDropDiv / static_cast<double>(static_cast<u32>(time));
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         m_scrollMode = OBJECT_DROP_PLAYER_ZERO_ONLY;
     }
     CShadeTable* sel = g_gameReg->m_lightFxMgr->m_tables[5];
@@ -166,7 +166,7 @@ void CObjectDropper::RegisterActs() {
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (m_dropTiming.Expired()) {
-        if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+        if (g_gameReg->m_isEasyMode == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
             RECT box;
             SET_RECT_XY_EXTENTS(

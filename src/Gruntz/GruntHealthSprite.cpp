@@ -63,13 +63,7 @@ i32 CGruntHealthSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 displaye
     m_gruntIdentity.m_playerIndex = playerIndex;
     m_gruntIdentity.m_unitIndex = unitIndex;
     i32 slot = 0x15 - ROUND(static_cast<double>(displayedValue) * 0.2);
-    CWwdSpriteObject* obj = m_object;
-    CDDrawWorker* map = obj->m_imageSet;
-    if (map) {
-        CImage* glyph = map->GetAt(slot);
-        obj->m_frameImage = glyph;
-        obj->m_frameIndex = slot;
-    }
+    m_object->SetImageFrame(slot);
     m_displayedValue = displayedValue;
     return 1;
 }
@@ -89,13 +83,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
     i32 result = GetDisplayedValue(e);
     if (m_displayedValue != result) {
         i32 slot = 0x15 - ROUND(static_cast<double>(result) * 0.2);
-        CWwdSpriteObject* obj = m_object;
-        CDDrawWorker* holder = obj->m_imageSet;
-        if (holder != NULL) {
-            CImage* glyph = holder->GetAt(slot);
-            obj->m_frameImage = glyph;
-            obj->m_frameIndex = slot;
-        }
+        m_object->SetImageFrame(slot);
         m_displayedValue = result;
     }
     SET_VECTOR2_COMPONENTS(

@@ -26,7 +26,7 @@ inline void ResetArrivalFlags(CGrunt* grunt) {
 }
 
 inline void MarkQuestzArrival(CGrunt* grunt) {
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         grunt->m_arrivalFlags |= 0x10;
     }
 }

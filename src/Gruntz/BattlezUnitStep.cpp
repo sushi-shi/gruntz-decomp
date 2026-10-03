@@ -68,8 +68,8 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             goto inflight;
         }
 
-        i32 W = m_board->m_width;
-        i32 H = m_board->m_height;
+        i32 W = m_board->GetWidth();
+        i32 H = m_board->GetHeight();
         Coord c0;
         g->GetScreenTile((&c0));
         CGrunt* nb = FindIdleGruntInBox(
@@ -110,8 +110,8 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
 inflight: {
 
     CGrunt* cur = m_triggerMgr->UnitAt(g->ArrivalCell().m_x, g->ArrivalCell().m_y);
-    i32 W = m_board->m_width;
-    i32 H = m_board->m_height;
+    i32 W = m_board->GetWidth();
+    i32 H = m_board->GetHeight();
     Coord c0;
     g->GetScreenTile((&c0));
     CGrunt* nb = FindIdleGruntInBox(

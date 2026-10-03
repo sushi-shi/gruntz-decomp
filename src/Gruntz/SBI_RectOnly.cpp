@@ -417,7 +417,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     SetTab(GAME_TAB_MENU, false);
                     return 1;
                 case SBICMD_DESTRUCT:
-                    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+                    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                         break;
                     }
                     if (m_destructButtonLocked != false) {
@@ -577,7 +577,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         HiCueLookup();
                         g_gameReg->FinalizeLevelAndShowResults();
-                    } else if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                    } else if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         HiCueLookup();
                         HiPost(0x806b);
                     } else {
@@ -586,7 +586,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     }
                     return 1;
                 case SBICMD_DIALOG_SECONDARY:
-                    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
@@ -598,7 +598,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     }
                     return 1;
                 case SBICMD_DIALOG_YES:
-                    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
@@ -810,7 +810,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_DOCK_LEFT,
             TAB_CONTROLS,
-            MakeRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
+            CRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
             NULL,
             -1
         )) {
@@ -825,7 +825,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_DOCK_RIGHT,
             TAB_CONTROLS,
-            MakeRect(bx + 0x8a, by + 0xad, bx + 0x96, by + 0xb9),
+            CRect(bx + 0x8a, by + 0xad, bx + 0x96, by + 0xb9),
             NULL,
             -1
         )) {
@@ -840,7 +840,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_HIDE,
             TAB_CONTROLS,
-            MakeRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
+            CRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
             NULL,
             -1
         )) {
@@ -856,7 +856,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_STATZ,
         TAB_CONTROLS,
-        MakeRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0xad),
+        CRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0xad),
         "GAME_STATUSBAR_TABZ_STATZTAB",
         -1,
         0
@@ -871,7 +871,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_GRUNTZ,
         TAB_CONTROLS,
-        MakeRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0xad),
+        CRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0xad),
         "GAME_STATUSBAR_TABZ_GRUNTZTAB",
         -1,
         0
@@ -886,7 +886,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_RESOURCE,
         TAB_CONTROLS,
-        MakeRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0xad),
+        CRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0xad),
         "GAME_STATUSBAR_TABZ_RESOURCETAB",
         -1,
         0
@@ -901,7 +901,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_MULTIPLAYER,
         TAB_CONTROLS,
-        MakeRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0xad),
+        CRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0xad),
         "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
         -1,
         0
@@ -925,7 +925,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_GAME,
         TAB_CONTROLS,
-        MakeRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0xad),
+        CRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0xad),
         "GAME_STATUSBAR_TABZ_GAMETAB",
         -1,
         0
@@ -1345,7 +1345,6 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
@@ -1362,7 +1361,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 code,
                 SBICMD_PAUSE,
                 TAB_GAME,
-                MakeRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
                 "GAME_STATUSBAR_TABZ_GAMETAB_RESUME",
                 -1,
                 0
@@ -1377,7 +1376,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 code,
                 SBICMD_PAUSE,
                 TAB_GAME,
-                MakeRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
                 "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE",
                 -1,
                 0
@@ -1393,14 +1392,14 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_LOAD_GAME,
             TAB_GAME,
-            MakeRect(bx, by + 0x125, bx + 0x9f, by + 0x13c),
+            CRect(bx, by + 0x125, bx + 0x9f, by + 0x13c),
             "GAME_STATUSBAR_TABZ_GAMETAB_LOAD",
             -1,
             0
         );
         AddTabItem(5, load);
         m_gameLoadButton = load;
-        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             load->SetEnabled(0);
         }
 
@@ -1411,14 +1410,14 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_SAVE_GAME,
             TAB_GAME,
-            MakeRect(bx, by + 0xfd, bx + 0x9f, by + 0x114),
+            CRect(bx, by + 0xfd, bx + 0x9f, by + 0x114),
             "GAME_STATUSBAR_TABZ_GAMETAB_SAVE",
             -1,
             0
         );
         AddTabItem(5, save);
         m_gameSaveButton = save;
-        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             save->SetEnabled(0);
         }
 
@@ -1429,7 +1428,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_SETTINGS,
             TAB_GAME,
-            MakeRect(bx, by + 0x14d, bx + 0x9f, by + 0x164),
+            CRect(bx, by + 0x14d, bx + 0x9f, by + 0x164),
             "GAME_STATUSBAR_TABZ_GAMETAB_SETTINGS",
             -1,
             0
@@ -1444,14 +1443,14 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_BOOTY_STATE,
             TAB_GAME,
-            MakeRect(bx, by + 0x175, bx + 0x9f, by + 0x18c),
+            CRect(bx, by + 0x175, bx + 0x9f, by + 0x18c),
             "GAME_STATUSBAR_TABZ_GAMETAB_HELP",
             -1,
             0
         );
         AddTabItem(5, help);
         m_gameHelpButton = help;
-        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             help->SetEnabled(0);
         }
 
@@ -1462,7 +1461,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_QUIT,
             TAB_GAME,
-            MakeRect(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
+            CRect(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
             "GAME_STATUSBAR_TABZ_GAMETAB_QUIT",
             -1,
             0
@@ -1477,14 +1476,14 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_DESTRUCT,
             TAB_GAME,
-            MakeRect(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
+            CRect(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
             "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
             IDX(m_destructButtonFrame),
             0
         );
         AddTabItem(5, destruct);
         m_destructButtonImage = destruct;
-        if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             destruct->SetEnabled(0);
             m_destructButtonFrame = DESTRUCT_FRAME_DISABLED;
             m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
@@ -1501,7 +1500,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_MISSION_STATUS,
             TAB_GAME,
-            MakeRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+            CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
             "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
             1,
             0
@@ -1514,7 +1513,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_MISSION_STATUS,
             TAB_GAME,
-            MakeRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+            CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
             "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
             2,
             0
@@ -1576,7 +1575,6 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
     m_chatBoxDisabled = false;
 }
 
-// @early-stop
 RVA(0x00102250, 0x1de4)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_world;
@@ -2467,7 +2465,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != SLOT_ARMED) {
         return 0;
     }
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_hlBusy == false) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_hlBusy == false) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -3272,7 +3270,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     memset(m_statFlags, 0, sizeof(m_statFlags));
     Reset();
 
-    GameModeId mode = g_gameReg->m_gameMode;
+    GameModeId mode = g_gameReg->GetGameMode();
     if (mode == GAMEMODE_MULTIPLAYER) {
         for (i32 i = 0; i < g_buteMgr.GetInt("Multiplayer", "StartingGruntz", 0); i++) {
             m_slots[i].m_value = s_slotCommitLevel;
@@ -3298,7 +3296,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
             Coord* p = GetReward(0);
             result = static_cast<PickupType>(p->m_x);
@@ -3990,7 +3988,6 @@ i32 CWarpStoneFly::Draw() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
     if (m_levelOverlayActive == false) {
@@ -4019,7 +4016,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_FRAME,
             TAB_DIALOG,
-            MakeRect(cx, cy, cx + 0xbc, cy + 0x79),
+            CRect(cx, cy, cx + 0xbc, cy + 0x79),
             "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
             -1,
             0
@@ -4033,7 +4030,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_YES,
             TAB_DIALOG,
-            MakeRect(cx + 0x19, cy + 0x4d, cx + 0x4c, cy + 0x64),
+            CRect(cx + 0x19, cy + 0x4d, cx + 0x4c, cy + 0x64),
             "GAME_STATUSBAR_TABZ_DIALOG_YES",
             -1,
             0
@@ -4048,7 +4045,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_NO,
             TAB_DIALOG,
-            MakeRect(cx + 0x6b, cy + 0x4d, cx + 0x9e, cy + 0x64),
+            CRect(cx + 0x6b, cy + 0x4d, cx + 0x9e, cy + 0x64),
             "GAME_STATUSBAR_TABZ_DIALOG_NO",
             -1,
             0
@@ -4070,7 +4067,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         w,
         SBICMD_DIALOG_FRAME,
         TAB_DIALOG,
-        MakeRect(cx, cy, cx + 0x11c, cy + 0x90),
+        CRect(cx, cy, cx + 0x11c, cy + 0x90),
         "GAME_STATUSBAR_TABZ_DIALOG",
         -1,
         0
@@ -4086,7 +4083,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_MISSION_STATUS,
             TAB_DIALOG,
-            MakeRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
+            CRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
             "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
             1,
             0
@@ -4100,14 +4097,14 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_REASON,
             TAB_DIALOG,
-            MakeRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
+            CRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
             "GAME_STATUSBAR_TABZ_DIALOG_REASON",
             reason,
             0
         );
         AddTabItem(6, rsn);
 
-        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             CSBI_MenuItem* next;
             NEW_STATUS_BAR_ITEM(
                 next,
@@ -4115,7 +4112,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 w,
                 SBICMD_DIALOG_PRIMARY,
                 TAB_DIALOG,
-                MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+                CRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
                 "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
                 -1,
                 0
@@ -4130,7 +4127,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 w,
                 SBICMD_DIALOG_SECONDARY,
                 TAB_DIALOG,
-                MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
+                CRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
                 "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
                 -1,
                 0
@@ -4146,7 +4143,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 w,
                 SBICMD_DIALOG_SECONDARY,
                 TAB_DIALOG,
-                MakeRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
+                CRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
                 "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
                 -1,
                 0
@@ -4164,7 +4161,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         w,
         SBICMD_DIALOG_MISSION_STATUS,
         TAB_DIALOG,
-        MakeRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
+        CRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
         "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
         2,
         0
@@ -4178,14 +4175,14 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         w,
         SBICMD_DIALOG_REASON,
         TAB_DIALOG,
-        MakeRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
+        CRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
         "GAME_STATUSBAR_TABZ_DIALOG_REASON",
         reason,
         0
     );
     AddTabItem(6, rsn);
 
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         CSBI_MenuItem* replay;
         NEW_STATUS_BAR_ITEM(
             replay,
@@ -4193,7 +4190,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_PRIMARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+            CRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
             -1,
             0
@@ -4208,7 +4205,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_SECONDARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
+            CRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
             -1,
             0
@@ -4234,7 +4231,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_PRIMARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+            CRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
             -1,
             0
@@ -4250,7 +4247,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_SECONDARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
+            CRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
             -1,
             0
@@ -4266,7 +4263,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_SECONDARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
+            CRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
             -1,
             0
@@ -4289,7 +4286,7 @@ void CStatusBarMgr::ExitMode() {
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
     m_hlBusy = false;
-    if (wasQuitConfirmation == false && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (wasQuitConfirmation == false && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -4352,7 +4349,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     if (m_hlBusy != false) {
         return;
     }
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         return;
     }
     if (m_position == STATUSBAR_HIDDEN) {
