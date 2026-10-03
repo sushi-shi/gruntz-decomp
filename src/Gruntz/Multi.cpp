@@ -755,7 +755,6 @@ void CMulti::RenderGameFrame() {
     }
 }
 
-// @early-stop
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
     Mgr()->m_lobbyResult = 0;
