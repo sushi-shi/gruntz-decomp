@@ -1,0 +1,61 @@
+#ifndef SBI_MENUITEM_H
+#define SBI_MENUITEM_H
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SBI_Image.h>
+#include <Gruntz/SbiMenuItemState.h>
+#include <Gruntz/SerialArchive.h>
+#include <Ints.h>
+
+#include <stddef.h>
+
+class CDDrawWorker;
+
+class CDDrawSurfaceMgr;
+
+class CSBI_MenuItem : public CSBI_Image {
+public:
+    CSBI_MenuItem() {
+        m_kind = SBI_KIND_MENU_ITEM;
+        m_state = MENUITEM_UNSET;
+        m_frame = NULL;
+        m_record = NULL;
+    }
+
+    virtual ~CSBI_MenuItem()  ;
+
+    virtual i32 SerializeFields(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload)
+         ;
+    virtual void Reset()  ;
+    virtual i32 Refresh(i32 deltaMs)  ;
+    virtual i32 Render()  ;
+
+    virtual i32 SetupImage(
+        CStatusBarMgr* owner,
+        CDDrawSurfaceMgr* host,
+        SbiCommandId cmd,
+        StatusBarTab tab,
+        RECT rc,
+        const char* key,
+        i32 frame,
+        i32 unused
+    )  ;
+
+    i32 ResolveFrame(const char* key, i32 frameIndex);
+    i32 SetState(SbiMenuItemState state, i32 playHighlightSound);
+    i32 ProbeState(SbiMenuItemState state);
+    i32 Blit();
+
+    SbiMenuItemState m_state;
+
+    CDDrawWorker* m_record;
+};
+
+inline CSBI_MenuItem::~CSBI_MenuItem() {
+    Reset();
+}
+
+#endif

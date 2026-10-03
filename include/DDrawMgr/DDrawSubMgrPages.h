@@ -1,0 +1,162 @@
+#ifndef GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H
+#define GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H
+
+#include <Ints.h>
+
+#include <DDrawMgr/ColorDepth.h>
+#include <Enums.h>
+#include <Ints.h>
+#include <Wap32/WapObj.h>
+
+#include <stddef.h>
+
+class CDDrawSurfaceMgr;
+class CDDSurface;
+class CDDrawSurfacePair;
+class CDDrawFrontSurface;
+
+GZ_ENUM_BEGIN(DDrawPageKind)
+    DDRAW_PAGE_BACK = 1,
+    DDRAW_PAGE_OVERLAY = 2
+GZ_ENUM_END(DDrawPageKind)
+
+class CDDrawSubMgrPages : public CWapObj {
+public:
+    CDDrawSubMgrPages(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
+        m_frontSurface = NULL;
+        m_backPair = NULL;
+        m_overlayPair = NULL;
+    }
+    virtual ~CDDrawSubMgrPages()  ;
+
+    virtual i32 IsLoaded()  ;
+
+    virtual void Unload()  ;
+
+    virtual LoadableClassId GetClassId()   {
+        return CLASSID_SUBMGRPAGES;
+    }
+    virtual i32 CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags);
+
+    CDDrawFrontSurface* GetFrontSurface() {
+        return m_frontSurface;
+    }
+
+    i32 ResolvePageImage(char* name, DDrawPageKind pageIndex);
+    i32 LoadPageImage(struct CRezItm* src, DDrawPageKind pageIndex);
+    void BltDirtyChildrenEx();
+    void FlipAndNotify();
+    i32 PagesReady();
+    i32 ResizePages(i32 w, i32 h, ColorDepth bpp);
+    i32 CreateOverlay(i32 copyFromBack, i32 createFlag);
+    void UnloadOverlay();
+    void ClearAllPages(u32 color);
+    i32 BlitPage(CDDrawSurfacePair* dst);
+    i32 HasOverlay();
+    i32 PresentBackPage();
+    i32 TransEnter();
+    i32 TransTitle();
+    i32 TransExit();
+
+    CDDrawSurfacePair* GetBackPair() const {
+        return m_backPair;
+    }
+
+    CDDrawFrontSurface* m_frontSurface;
+    CDDrawSurfacePair* m_backPair;
+    CDDrawSurfacePair* m_overlayPair;
+};
+
+class CDrawSubWorker : public CWapObj {
+public:
+    CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+
+protected:
+    enum InlineCtorTag {
+        INLINE_CTOR
+    };
+    CDrawSubWorker(InlineCtorTag, CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+        : CWapObj(owner, id, flags) {
+        m_width = 0;
+    }
+
+public:
+    virtual i32 IsLoaded()  ;
+    virtual void Unload()  ;
+    virtual LoadableClassId GetClassId()  ;
+
+    virtual i32 SetGeometry(i32 w, i32 h, ColorDepth bpp);
+
+    virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp);
+
+    i32 GetWidth() const {
+        return m_width;
+    }
+    i32 GetHeight() const {
+        return m_height;
+    }
+    CDDSurface* const& GetSurface() const {
+        return m_surface;
+    }
+
+    i32 Probe();
+    void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size);
+
+    virtual ~CDrawSubWorker()   {
+        m_width = 0;
+    }
+
+    i32 m_width;
+    i32 m_height;
+    ColorDepth m_bpp;
+    RECT m_srcRect;
+    CDDSurface* m_surface;
+};
+
+inline i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
+    if (w <= 0 || h <= 0) {
+        return 0;
+    }
+    m_width = w;
+    m_height = h;
+    m_bpp = bpp;
+    m_srcRect.left = 0;
+    m_srcRect.top = 0;
+    m_srcRect.right = w;
+    m_srcRect.bottom = h;
+    return 1;
+}
+
+inline i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
+    if (w <= 0 || h <= 0) {
+        return 0;
+    }
+    if (bpp != BPP_PALETTED_8 && bpp != BPP_RGB_16 && bpp != BPP_RGB_24 && bpp != BPP_RGB_32) {
+        return 0;
+    }
+    m_width = w;
+    m_height = h;
+    m_bpp = bpp;
+    m_srcRect.left = 0;
+    m_srcRect.top = 0;
+    m_srcRect.right = w;
+    m_srcRect.bottom = h;
+    return 1;
+}
+
+class CDDrawFrontSurface : public CDrawSubWorker {
+public:
+    CDDrawFrontSurface(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+        : CDrawSubWorker(owner, id, flags) {
+        m_surface = NULL;
+    }
+
+    virtual i32 IsLoaded()  ;
+    virtual void Unload()  ;
+    virtual LoadableClassId GetClassId()  ;
+
+    virtual i32 SetGeometry(i32 w, i32 h, ColorDepth bpp)  ;
+    virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp)  ;
+};
+
+#endif

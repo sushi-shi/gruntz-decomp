@@ -1,0 +1,47 @@
+#ifndef GRUNTZ_GRUNTZ_ROLLINGBALL_H
+#define GRUNTZ_GRUNTZ_ROLLINGBALL_H
+
+#include <Ints.h>
+
+#include <Gruntz/ActReg.h>
+#include <Gruntz/ClockInterval.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
+
+class CFileMemBase;
+
+class CRollingBall : public CUserLogic, public CWapX {
+public:
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*)  ;
+
+    virtual LogicTypeId GetTypeTag()   {
+        return LOGIC_ROLLINGBALL;
+    }
+
+public:
+    CRollingBall() : CUserLogic(CUserLogic::INLINE_BASE) {}
+    CRollingBall(CGameObject* obj);
+
+    virtual void FireActivation(i32 id)  ;
+
+    static void RegisterActs();
+
+    i32 Update();
+
+    double m_moveSpeed;
+
+    double m_subX;
+    double m_subY;
+    i32 m_stepDirX;
+    i32 m_stepDirY;
+    Coord m_target;
+    b32 m_explodeLatch;
+    i32 m_fallLatch;
+
+    ClockInterval m_explodeTiming;
+    double m_moveDelta;
+};
+
+#endif

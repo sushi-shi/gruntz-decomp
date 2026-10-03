@@ -1,0 +1,16 @@
+#ifndef GRUNTZ_GRUNTZ_SBIBELTPHASE_H
+#define GRUNTZ_GRUNTZ_SBIBELTPHASE_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(SbiBeltPhase)
+    BELT_IDLE = 1,
+    BELT_IN_MACHINE = 2,
+    BELT_SPEWING = 3,
+    BELT_DROP_START = 4,
+    BELT_FALLING = 5,
+    BELT_TRAVELLING = 7,
+    BELT_FALLING_OFF = 8
+GZ_ENUM_END(SbiBeltPhase)
+
+#endif

@@ -1,0 +1,22 @@
+#ifndef GRUNTZ_DDRAWMGR_WALLPROJECT_H
+#define GRUNTZ_DDRAWMGR_WALLPROJECT_H
+
+#include <Ints.h>
+
+extern const float g_rasterZero;
+extern const float g_wallHalf;
+extern const float g_negativePi;
+
+class CDDSurface;
+
+i32 ProjectWallQuad(
+    CDDSurface* surface,
+    i32 x0,
+    i32 y0,
+    i32 x1,
+    i32 y1,
+    i32 halfWidth,
+    i16 color,
+    RECT clip
+);
+#endif

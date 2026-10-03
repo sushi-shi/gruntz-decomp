@@ -1,0 +1,203 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/SBI_GruntMachine.h>
+#include <Gruntz/SBI_ImageSetAni.h>
+#include <Gruntz/SBI_SideTab.h>
+#include <Gruntz/SBI_StatzTabGruntBar.h>
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/StatusBarItem.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+
+#include <string.h>
+
+i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    SbiCommandId cmd,
+    StatusBarTab tab,
+    RECT g,
+    const char* key,
+    i32 leftFrameIndex,
+    i32 rightFrameIndex
+) {
+
+    CDDrawSurfaceMgr* h;
+    CDDrawWorker* rec;
+    CImage* spr;
+    CDDrawWorker* cfg;
+    CImage* s;
+    CShadeTable* sel;
+    CImage* val;
+
+    if (host == NULL) {
+        goto fail;
+    }
+    if (owner == NULL) {
+        goto fail;
+    }
+    h = host;
+    Initialize(owner, tab, h);
+
+    m_rect = g;
+
+    m_cmd = cmd;
+    spr = h->FindFrame("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", 1);
+    m_standaloneFrame = spr;
+    if (spr == NULL) {
+        return 0;
+    }
+    cfg = m_host->FindWorker(key);
+    m_config = cfg;
+    if (cfg == NULL) {
+        return 0;
+    }
+    m_leftFrameIndex = leftFrameIndex;
+    m_rightFrameIndex = rightFrameIndex;
+    s = m_config->GetAt(leftFrameIndex);
+    m_leftFrame = s;
+    if (s == NULL) {
+        goto fail;
+    }
+    sel = g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[g_curPlayer].m_color), 0);
+    if (sel == NULL) {
+        sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+    }
+    m_config->SetAllTypes(SHADE_PAL_16);
+    m_config->SetAllFormats(sel);
+    val = m_config->GetAt(m_rightFrameIndex);
+    m_rightFrame = val;
+    return val != NULL;
+fail:
+    return 0;
+}
+
+void CSBI_GruntMachine::Reset() {
+    m_leftFrame = NULL;
+    m_rightFrame = NULL;
+    m_config = NULL;
+}
+
+i32 CSBI_GruntMachine::Refresh(i32) {
+    return 1;
+}
+
+i32 CSBI_GruntMachine::Render() {
+    if (m_redrawFrames > 0) {
+        i32 idx = m_leftFrameIndex;
+        m_redrawFrames--;
+        CDDrawWorker* cfg = m_config;
+
+        m_leftFrame = cfg->GetAt(idx);
+        idx = m_rightFrameIndex;
+        m_rightFrame = cfg->GetAt(idx);
+
+        CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->m_backPair;
+
+        CImage* f = m_standaloneFrame;
+        if (f) {
+            f->RenderFrame(ctx, m_rect.left + f->m_anchorX, m_rect.top + f->m_anchorY, 0);
+        }
+        f = m_rightFrame;
+        if (f) {
+            f->RenderFrame(ctx, m_rect.left + f->m_anchorX + 0x2c, m_rect.top + f->m_anchorY, 0);
+        }
+        f = m_leftFrame;
+        if (f) {
+            f->RenderFrame(ctx, m_rect.left + f->m_anchorX, m_rect.top + f->m_anchorY, 0);
+        }
+    }
+    return 1;
+}
+
+void CSBI_GruntMachine::SetFrames(i32 leftFrameIndex, i32 rightFrameIndex) {
+    if (leftFrameIndex != -1) {
+        m_leftFrameIndex = leftFrameIndex;
+    }
+    if (rightFrameIndex != -1) {
+        m_rightFrameIndex = rightFrameIndex;
+    }
+    m_redrawFrames = 2;
+}
+
+i32 CSBI_GruntMachine::SerializeFields(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
+    if (s == NULL) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* reg = g_gameReg->World();
+    if (reg == NULL) {
+        return 0;
+    }
+
+    char buf[SERIAL_NAME_LEN];
+
+    switch (mode) {
+        case SERIAL_SAVE: {
+            i32 v;
+
+            SERIAL_WRITE_WORKER(s, buf, m_config);
+            s->Write(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
+
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_leftFrame);
+            s->Write(&m_rightFrameIndex, sizeof(m_rightFrameIndex));
+
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_rightFrame);
+
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_standaloneFrame);
+            break;
+        }
+
+        case SERIAL_LOAD: {
+            CObject* out;
+
+            GS_NAMEREF(m_config);
+            s->Read(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
+
+            {
+                i32 idx;
+                GS_IDXREF(m_leftFrame);
+            }
+            s->Read(&m_rightFrameIndex, sizeof(m_rightFrameIndex));
+
+            {
+                i32 idx;
+                GS_IDXREF(m_rightFrame);
+            }
+
+            {
+                i32 idx;
+                GS_IDXREF(m_standaloneFrame);
+            }
+
+            break;
+        }
+    }
+
+    return CStatusBarItem::SerializeFields(s, mode, typeId, payload) != 0 ? 1 : 0;
+}

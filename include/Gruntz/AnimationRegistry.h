@@ -1,0 +1,43 @@
+#ifndef GRUNTZ_ANIMATIONREGISTRY_H
+#define GRUNTZ_ANIMATIONREGISTRY_H
+
+#include <Ints.h>
+
+#include <Ints.h>
+#include <Wap32/WapObj.h>
+
+class CAniElement;
+class CRezDir;
+struct CRezItm;
+
+class AnimationRegistry : public CWapObj {
+public:
+    AnimationRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
+
+    virtual i32 IsLoaded()  ;
+    virtual i32 IsReady()  ;
+    virtual void Unload()  ;
+
+    CAniElement* FindAnimation(const char* key);
+    void RemoveAnimation(CAniElement* target);
+    void ClearAnimations();
+    i32 RemoveWithPrefix(const char* prefix, const char* separator);
+    i32 HasWithPrefix(const char* prefix);
+    CString FindAnimationKey(CAniElement* target);
+    virtual ~AnimationRegistry()  ;
+
+    CAniElement* LoadAnimationFromSource(const char* key, CRezItm* source);
+    CAniElement* LoadAnimationFromFile(const char* key, const char* path);
+    CAniElement* LoadNamedAnimation(CRezItm* source);
+    void AddAnimation(CAniElement* animation, const char* key);
+    i32 LoadFromTree(CRezDir* tree, const char* prefix, const char* separator);
+
+    CMapStringToPtr m_animations;
+
+private:
+    void RegisterAnimation(CAniElement* animation, const char* key) {
+        m_animations[key] = animation;
+    }
+};
+
+#endif

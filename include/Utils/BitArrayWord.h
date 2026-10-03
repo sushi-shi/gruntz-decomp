@@ -1,0 +1,12 @@
+#ifndef UTILS_BITARRAYWORD_H
+#define UTILS_BITARRAYWORD_H
+
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(BitArrayWord)
+    BITARRAY_WORD_BITS = 32,
+    BITARRAY_WORD_SHIFT = 5,
+    BITARRAY_BIT_MASK = 0x1f
+GZ_ENUM_CONST_END(BitArrayWord)
+
+#endif

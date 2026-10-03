@@ -1,0 +1,39 @@
+#ifndef GRUNTZ_WWDGAMEOBJECT_H
+#define GRUNTZ_WWDGAMEOBJECT_H
+
+#include <Ints.h>
+
+#include <DDrawMgr/LogicRecord.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGridIter.h>
+#include <Ints.h>
+#include <Wap32/WapObj.h>
+
+class CDDrawSurfaceMgr;
+
+struct WwdSnapshot {
+    i32 m_id;
+    i32 m_objectId;
+    LoadableClassId m_classId;
+    i32 m_serialTypeId;
+    LogicTypeId m_logicTypeId;
+    char m_logicTypeName[0x80];
+    i32 m_screenX;
+    i32 m_screenY;
+    i32 m_sortKey;
+};
+
+class CDDrawWorker;
+
+class CImage;
+class CDDrawSurfacePair;
+struct SoundCue;
+
+class CWwdGameObjectSerial : public CGameObject {
+public:
+    virtual i32 GetSerialTypeId();
+};
+
+#endif

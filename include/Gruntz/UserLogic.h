@@ -1,0 +1,276 @@
+#ifndef GRUNTZ_USERLOGIC_H
+#define GRUNTZ_USERLOGIC_H
+
+#include <Ints.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/LogicRecord.h>
+#include <Enums.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/WwdGridIter.h>
+#include <Wap32/TileGeometry.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdGameObjectFlags.h>
+#include <ZTools/BitVec.h>
+
+struct CGameObject;
+struct SoundCue;
+class CDDrawSurfacePair;
+class CUserLogic;
+
+class CDDrawWorker;
+
+class CImage;
+
+extern b32 g_logicTypesRegistered;
+
+class CFileMemBase;
+
+class CUserBase {
+public:
+    virtual ~CUserBase() {}
+
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
+        return 1;
+    }
+
+    virtual LogicTypeId GetTypeTag() {
+        return LOGIC_UNSET;
+    }
+};
+
+class CUserLogic : public CUserBase {
+public:
+    enum EInlineBase {
+        INLINE_BASE
+    };
+
+    CUserLogic();
+    CUserLogic(EInlineBase) {}
+    CUserLogic(CGameObject* obj);
+    CUserLogic(CGameObject* obj, EInlineBase);
+    virtual ~CUserLogic()   {}
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*)  ;
+
+    virtual LogicTypeId GetTypeTag()   {
+        return LOGIC_NONE;
+    }
+
+    virtual void StepBehavior(char* animationActName);
+
+    virtual void FireActivation(i32 id);
+
+    virtual void FinalizeStep(char* name);
+
+    virtual void Activate() {}
+
+    virtual i32 AdvanceAnimation() {
+        return 1;
+    }
+
+    virtual i32 RecordFrameTick() {
+        return 1;
+    }
+
+    virtual i32 StepAttackFire() {
+        return 1;
+    }
+
+    virtual void OnLeaveActiveRegion() {}
+
+    virtual void OnObjectRemoved() {}
+
+    virtual void AfterLoad() {}
+
+    virtual void AfterSave() {}
+
+    virtual void PrepareSave() {}
+
+    virtual void AfterLoadReferences() {}
+
+    void GetScreenPos(Coord* out);
+
+    void GetScreenTile(Coord* out);
+
+    void RegisterLogicTypesOnce();
+    void BuildLogicTypeTable(CGameObject* obj);
+
+    void LoadGruntTuningConstants(i32);
+
+    const CString& GetAnimationActName() const {
+        return ::GetAnimationActName(m_logicRecord->EventCode());
+    }
+
+    bool IsAnimationAct(const char* name) const {
+        return GetAnimationActName() == name;
+    }
+
+    bool IsNotAnimationAct(const char* name) const {
+        return GetAnimationActName() != name;
+    }
+
+    typedef i32 (CUserLogic::*ActCallback)();
+    ActCallback m_deferredCallback;
+    ActCallback m_gatedCallback;
+    CGameObject* m_logicObject;
+
+    CWwdSpriteObject* m_object;
+
+    CLogicRecord* m_logicRecord;
+    zBitVec m_actBits;
+    i32 m_gatedCallbackCode;
+
+    i32 m_reserved2c;
+
+    i32 m_previousAnimationActId;
+};
+
+typedef i32 (CUserLogic::*CActHandler)();
+
+#define SET_ANIMATION_ACT(key)                                                                         m_previousAnimationActId = m_logicRecord->m_eventCode;                                             m_logicRecord->m_eventCode = ActFindId(key)
+
+#define APPLY_NAME_INLINE(name) m_wwdObject->SetImageSetByName(name)
+
+#define APPLY_LOOKUP_SPRITE_INLINE(name, frame) m_wwdObject->SetImageFrameByName(name, frame)
+
+#define ADVANCE_CURRENT_ANIMATION_CURSOR(cursor, elapsed)                                              m_wwdObject->m_animationCursor.Advance(elapsed);                                                   CAniAdvanceCursor* cursor = &m_wwdObject->m_animationCursor;
+
+#define GET_SCREEN_TILE_Y_FIRST(logic, out)                                                            (logic)->GetScreenPos((&out));                                                                     out.m_y >>= TILE_SHIFT_PX;                                                                         out.m_x >>= TILE_SHIFT_PX;
+
+#define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                      CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                               CAniRecordView* record = animation->RecordAt(0);                                                   i32 frame = record->m_param;
+
+#define SET_OBJECT_FLAGS_INLINE(bits) m_wwdObject->m_flags |= bits
+
+#define HIDE_OBJECT_INLINE() m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN
+
+#define SET_OBJECT_FLAGS_AND_HIDE_INLINE(bits)                                                         SET_OBJECT_FLAGS_INLINE(bits);                                                                     HIDE_OBJECT_INLINE();
+
+#define INITIALIZE_DEFAULT_CYCLE_ANIMATION                                                             SET_ANIMATION_ACT("A");                                                                            if (m_wwdObject->m_animationCursor.m_animation == NULL) {                                              SwitchAnimationByName("GAME_CYCLE100", 0);                                                     }
+
+#define MARK_OBJECT_COMPLETE_IF(condition)                                                             if (condition) {                                                                                       SET_OBJECT_FLAGS_INLINE(0x10000);                                                              }
+
+#define APPLY_CURRENT_ANIMATION_FRAME_SPRITE(name, animation, record)                                  CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                               CAniRecordView* record = animation->RecordAt(0);                                                   APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
+
+#define SET_OBJECT_AREA(value)                                                                         m_object->m_area.left = value;                                                                     m_object->m_area.right = value;                                                                    m_object->m_area.top = value;                                                                      m_object->m_area.bottom = value;
+
+#define CLEAR_OBJECT_AREA                                                                              m_object->m_area.left = 0;                                                                         m_object->m_area.right = 0;                                                                        m_object->m_area.top = 0;                                                                          m_object->m_area.bottom = 0;
+
+#define SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                       if (!CUserLogic::SerializeDispatch(ar, mode, typeId, object)) {                                        return 0;                                                                                      }
+
+#define SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)                             SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                           return SerializeAnimationState(ar, mode, typeId, object) != 0;
+
+#define SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)                   SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                           if (!SerializeAnimationState(ar, mode, typeId, object)) {                                              return 0;                                                                                      }
+
+#define SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(baseAr, stateAr, mode, typeId, object)           if (!CUserLogic::SerializeDispatch(baseAr, mode, typeId, object)) {                                    return 0;                                                                                      }                                                                                                  return SerializeAnimationState(stateAr, mode, typeId, object) != 0;
+
+#define SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(                                       baseAr,                                                                                            stateAr,                                                                                           mode,                                                                                              typeId,                                                                                            object                                                                                         )                                                                                                      if (!CUserLogic::SerializeDispatch(baseAr, mode, typeId, object)) {                                    return 0;                                                                                      }                                                                                                  if (!SerializeAnimationState(stateAr, mode, typeId, object)) {                                         return 0;                                                                                      }
+
+inline void CUserLogic::GetScreenTile(Coord* out) {
+    GetScreenPos(out);
+    out->m_x >>= TILE_SHIFT_PX;
+    out->m_y >>= TILE_SHIFT_PX;
+}
+
+inline void CUserLogic::RegisterLogicTypesOnce() {
+    if (!g_logicTypesRegistered) {
+        BuildLogicTypeTable(m_logicObject);
+        g_logicTypesRegistered = true;
+    }
+}
+
+#define USERLOGIC_ATTACH_TO_OBJECT(obj)                                                                m_logicObject = (obj);                                                                             m_object = static_cast<CWwdSpriteObject*>(obj);                                                    m_logicRecord = (obj)->m_logicRecord;                                                              {                                                                                                      zBitVec tmp("", 0);                                                                                m_actBits = tmp;                                                                               }                                                                                                  RegisterLogicTypesOnce();                                                                          m_object->AddLogicHit("LogicHit");                                                                 m_object->AddLogicAttack("LogicAttack");                                                           m_object->AddLogicBump("LogicBump");                                                               m_deferredCallback = 0;                                                                            m_gatedCallback = 0;                                                                               m_gatedCallbackCode = IDX(ACT_NONE);                                                               m_reserved2c = 2;
+
+inline CUserLogic::CUserLogic(CGameObject* obj, EInlineBase) {
+    USERLOGIC_ATTACH_TO_OBJECT(obj);
+}
+
+class CWapX {
+public:
+    CWapX() {}
+    CWapX(CGameObject* obj) {
+        m_gameObject = obj;
+        m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
+        m_ownerLogicRecord = obj->m_logicRecord;
+    }
+
+    ~CWapX() {}
+
+    i32 SerializeAnimationState(
+        CFileMemBase* archive,
+        SerialMode mode,
+        LogicTypeId unusedTypeId,
+        CGameObject* object
+    );
+
+    void ApplyAnimation(class CAniElement* animation, i32 advanceImmediately);
+
+    CGameObject* m_gameObject;
+    CWwdSpriteObject* m_wwdObject;
+
+    CLogicRecord* m_ownerLogicRecord;
+
+    class CAniElement* m_value;
+    char m_blob[0x10];
+
+    void Hide() {
+        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    }
+
+    void Show() {
+        m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    }
+
+    void SetObjectFlags(i32 bits) {
+        m_wwdObject->m_flags |= bits;
+    }
+
+    void SetImageFrameByName(const char* name, i32 flag) {
+        m_wwdObject->SetImageFrameByName(name, flag);
+    }
+
+    void SetImageSetByName(const char* name) {
+        m_wwdObject->SetImageSetByName(name);
+    }
+
+    void SwitchAnimation(CAniElement* anim) {
+        m_value = m_wwdObject->m_animationCursor.m_animation;
+        m_wwdObject->m_animationCursor.SetAnimation(anim);
+    }
+
+    void SwitchAnimationAndMaybeAdvance(CAniElement* anim, i32 advanceImmediately) {
+        m_value = m_wwdObject->m_animationCursor.m_animation;
+        m_wwdObject->SetAnimation(anim, advanceImmediately);
+    }
+
+    i32 SwitchAnimationByName(const char* key, i32 advanceImmediately) {
+        m_value = m_wwdObject->m_animationCursor.m_animation;
+        return m_wwdObject->SetAnimationByName(key, advanceImmediately);
+    }
+};
+
+class CTileTrigger : public CUserLogic, public CWapX {
+public:
+
+    virtual i32
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
+         {
+            SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
+        }
+    virtual LogicTypeId GetTypeTag()   {
+        return LOGIC_TILETRIGGER;
+    }
+
+public:
+    CTileTrigger();
+    CTileTrigger(CUserLogic::EInlineBase) {}
+    CTileTrigger(CGameObject* obj);
+    virtual void FireActivation(i32 id)  ;
+    static void RegisterActs();
+    i32 AdvanceAnim();
+};
+
+#endif

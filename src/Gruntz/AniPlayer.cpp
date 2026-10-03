@@ -1,0 +1,74 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/AniPlayer.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+
+i32 CAniPlayer::Start(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    SbiCommandId cmd,
+    StatusBarTab tab,
+    RECT rc,
+    const char* key,
+    i32 frameStart,
+    i32 frameEnd,
+    i32 intervalMs,
+    i32 loop,
+    i32 step
+) {
+    if (CSBI_ImageSetAni::
+            Init(owner, host, cmd, tab, rc, key, frameStart, frameEnd, intervalMs, loop, step)
+        == SBICMD_NONE) {
+        return 0;
+    }
+    m_timing.Start(m_interval);
+    return 1;
+}
+
+i32 CAniPlayer::TickToggle(i32 unused) {
+    if (m_timing.Expired()) {
+        m_frameIndex = (m_frameIndex == m_frameStart) ? m_frameEnd : m_frameStart;
+        m_timing.Start(m_interval);
+    }
+    return 1;
+}
+
+i32 CAniPlayer::RenderCel() {
+    CDDrawWorker* tbl = m_frameSet;
+    CImage* cel = tbl->GetAt(m_frameIndex);
+    SetFrame(cel);
+    if (cel != NULL) {
+        CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->GetDrawTarget()->GetBackPair();
+        cel->RenderFrame(surfaceCtx, cel->m_anchorX + m_rect.left, cel->m_anchorY + m_rect.top, 0);
+    }
+    return 1;
+}
+
+i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 payload) {
+    if (arc == NULL) {
+        return 0;
+    }
+
+    if (CSBI_ImageSetAni::SerializeFields(static_cast<CFileMemBase*>(arc), mode, typeId, payload)
+        == 0) {
+        return 0;
+    }
+    SerializeClockPair(arc, mode, &m_timing);
+    return 1;
+}

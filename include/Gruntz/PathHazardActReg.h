@@ -1,0 +1,7 @@
+#ifndef GRUNTZ_GRUNTZ_PATHHAZARDACTREG_H
+#define GRUNTZ_GRUNTZ_PATHHAZARDACTREG_H
+
+#include <Gruntz/ActReg.h>
+#include <Ints.h>
+
+#endif

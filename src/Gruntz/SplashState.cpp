@@ -1,0 +1,157 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/SplashState.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DinMgr2/DirectInputMgr2.h>
+#include <Dsndmgr/SoundStream.h>
+#include <Enums.h>
+#include <Gruntz/AssetRoot.h>
+#include <Gruntz/Attract.h>
+#include <Gruntz/BankMgr.h>
+#include <Gruntz/ErrorStringId.h>
+#include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
+#include <Gruntz/SplashStateInline.h>
+#include <Gruntz/State.h>
+#include <Gruntz/View.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Wap32/GameApp.h>
+
+#include <ddraw.h>
+
+template<>
+CString CStringStaticPool<CAssetRootTag>::s_value;
+
+i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+    if (CAssetRootStorage::s_value.IsEmpty()) {
+        return 0;
+    }
+
+    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+        return 0;
+    }
+    SetCursor(NULL);
+    m_mgr->RestoreVideoMode(false);
+
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_SPLASH");
+    if (!m_stateResources) {
+        return 0;
+    }
+
+    CRezDir* soundz = StateResources()->GetDir("SOUNDZ");
+    if (soundz) {
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundz), "", "_");
+    }
+    return 1;
+}
+
+void CSplashState::ReleaseResources() {
+    SoundCueRegistry* reg = m_world->SoundRegistry();
+    if (reg->m_soundStream != NULL) {
+        reg->m_soundStream->StopAllStreams();
+    }
+    m_world->SoundRegistry()->ClearCues();
+    CState::ReleaseResources();
+}
+
+i32 CSplashState::EnterState(GameStateId previousState) {
+    int(WINAPI * sc)(BOOL) = ShowCursor;
+    while (sc(0) >= 0) {
+    }
+    LoadAndPresentTitlePage(static_cast<const char*>(CAssetRootStorage::s_value), 1, 1, 1, 0);
+    m_splashCountdownMs = 0xea60;
+    return 1;
+}
+
+i32 CSplashState::LeaveState(GameStateId nextState) {
+    m_world->GetDrawTarget()->ClearAllPages(0);
+    return 1;
+}
+
+i32 CSplashState::Render() {
+    IDirectDrawSurface* in =
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+    if (!in || in->IsLost()) {
+        if (!InputVirtual()) {
+            m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x447);
+            return 0;
+        }
+    }
+
+    m_world->SoundRegistry()->TickVolumeRamps();
+
+    if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_splashCountdownMs) {
+        m_splashCountdownMs = 0;
+    } else {
+        m_splashCountdownMs = m_splashCountdownMs - g_gameAppFrameDeltaMs;
+    }
+
+    {
+        CInputDeviceGroup* L = g_actorList;
+        for (i32 i = 0; i < L->m_count; i++) {
+            L->m_items[i]->Poll();
+        }
+    }
+
+    if (!IsAdvanceRequested() && m_splashCountdownMs) {
+        return 1;
+    }
+    PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    m_mgr->m_owner->m_running = false;
+    return 1;
+}
+
+i32 CSplashState::InputVirtual() {
+    if (m_world->GetDrawTarget()->PagesReady() == 0) {
+        return 0;
+    }
+    while (ShowCursor(false) >= 0) {
+    }
+    return LoadAndPresentTitlePage(
+        static_cast<const char*>(CAssetRootStorage::s_value),
+        0,
+        0,
+        1,
+        0
+    );
+}
+
+i32 CSplashState::RestoreDisplay() {
+    if (IsActive() == 0) {
+        return 0;
+    }
+    while (ShowCursor(false) >= 0) {
+    }
+    return LoadAndPresentTitlePage(
+        static_cast<const char*>(CAssetRootStorage::s_value),
+        0,
+        0,
+        1,
+        0
+    );
+}
+
+i32 CSplashState::OnKeyDown(i32 code, i32) {
+    if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
+        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    }
+    return 1;
+}
+
+i32 CSplashState::OnLButtonDown(i32, i32, i32) {
+    PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    return 1;
+}

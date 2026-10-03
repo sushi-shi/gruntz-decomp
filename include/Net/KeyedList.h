@@ -1,0 +1,44 @@
+#ifndef GRUNTZ_NET_KEYEDLIST_H
+#define GRUNTZ_NET_KEYEDLIST_H
+
+#include <Ints.h>
+
+struct CKeyedNode {
+    CKeyedNode() {
+        m_key.Empty();
+        m_commandDelay = 0;
+        m_resendInterval = 0;
+    }
+
+    CString m_key;
+    i32 m_commandDelay;
+    i32 m_resendInterval;
+    CString GetName();
+    i32 GetCommandDelay() const {
+        return m_commandDelay;
+    }
+    i32 GetResendInterval() const {
+        return m_resendInterval;
+    }
+    ~CKeyedNode();
+};
+
+class CKeyedList {
+public:
+    CKeyedList(i32 nBlockSize) : m_list(nBlockSize) {
+        m_mode = 0;
+    }
+
+    ~CKeyedList() {
+        Clear();
+    }
+
+    CKeyedNode* AddNode(const char* key, i32 commandDelay, i32 resendInterval);
+
+    void Clear();
+
+    CPtrList m_list;
+    i32 m_mode;
+};
+
+#endif

@@ -1,0 +1,229 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/SBI_StatzTabGruntBar.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Enums.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPickupInline.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HealthGlyph.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Ints.h>
+#include <Rez/FrameClock.h>
+
+void CSBI_StatzTabGruntBar::Reset() {
+    m_statusGlyphLatched = NULL;
+    m_abilityGlyphLatched = NULL;
+    m_overrideGlyphLatched = NULL;
+    m_selectGlyph = NULL;
+    m_statusGlyph = NULL;
+    m_abilityGlyph = NULL;
+    m_overrideGlyph = NULL;
+    m_selectKey = NULL;
+    m_glyphMap = NULL;
+    m_timerGlyphMap = NULL;
+    m_timerGlyph = NULL;
+}
+
+i32 CSBI_StatzTabGruntBar::Refresh(i32 deltaMs) {
+    if (Update()) {
+        RequestRedraw();
+    }
+    return 1;
+}
+
+i32 CSBI_StatzTabGruntBar::Render() {
+    CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
+    if (m_redrawFrames > 0) {
+        m_redrawFrames--;
+        m_statusGlyph->RenderFrame(
+            ctx,
+            m_rect.left + m_statusGlyph->m_anchorX,
+            m_rect.top + m_statusGlyph->m_anchorY,
+            0
+        );
+        m_abilityGlyph->RenderFrame(
+            ctx,
+            m_rect.left + m_abilityGlyph->m_anchorX + 0x14,
+            m_rect.top + m_abilityGlyph->m_anchorY,
+            0
+        );
+        m_overrideGlyph->RenderFrame(
+            ctx,
+            m_rect.left + m_overrideGlyph->m_anchorX + 0x28,
+            m_rect.top + m_overrideGlyph->m_anchorY,
+            0
+        );
+        if (m_selectKey != NULL) {
+            m_selectKey->RenderFrame(
+                ctx,
+                m_rect.left + m_selectKey->m_anchorX + 0x3c,
+                m_rect.top + m_selectKey->m_anchorY,
+                0
+            );
+        }
+        if (m_statusGlyphLatched != NULL) {
+            m_statusGlyphLatched->RenderFrame(
+                ctx,
+                m_rect.left + m_statusGlyph->m_anchorX + 1,
+                m_rect.top + m_statusGlyph->m_anchorY,
+                0
+            );
+        }
+        if (m_abilityGlyphLatched != NULL) {
+            m_abilityGlyphLatched->RenderFrame(
+                ctx,
+                m_rect.left + m_abilityGlyph->m_anchorX + 0x14,
+                m_rect.top + m_abilityGlyph->m_anchorY,
+                0
+            );
+        }
+        i32 adj = -1;
+        if (m_selectKey != NULL) {
+            adj = 0;
+        }
+        if (m_overrideGlyphLatched != NULL) {
+            m_overrideGlyphLatched->RenderFrame(
+                ctx,
+                m_rect.left + m_overrideGlyph->m_anchorX + 0x28 + adj,
+                m_rect.top + m_overrideGlyph->m_anchorY,
+                0
+            );
+        }
+        if (m_selectGlyph != NULL) {
+            m_selectGlyph->RenderFrame(
+                ctx,
+                m_rect.left + m_selectKey->m_anchorX + 0x3b,
+                m_rect.top + m_selectKey->m_anchorY,
+                0
+            );
+        }
+    }
+    if (m_timerGlyph != NULL) {
+        m_timerGlyph->RenderFrame(
+            ctx,
+            m_rect.left + m_timerGlyph->m_anchorX,
+            m_rect.top + m_timerGlyph->m_anchorY,
+            0
+        );
+    }
+    return 1;
+}
+
+i32 CSBI_StatzTabGruntBar::Update() {
+    i32 dirty = 0;
+    i32 playerIndex = m_playerIndex;
+    i32 unitIndex = m_unitIndex;
+    CTriggerMgr* table = g_gameReg->m_triggerMgr;
+    CGrunt* unit = table->UnitAt(playerIndex, unitIndex);
+
+    i32 statusVal;
+    i32 abilityVal;
+    i32 selectVal;
+    i32 overrideVal;
+    i32 timerVal;
+
+    if (unit == NULL) {
+        statusVal = -1;
+        abilityVal = -1;
+        overrideVal = -1;
+        selectVal = 0;
+        timerVal = -1;
+    } else {
+
+        statusVal = HealthGlyphIndex(unit->m_health);
+
+        PickupType level = unit->m_entranceReason;
+        abilityVal = -1;
+        overrideVal = -1;
+        selectVal = 0;
+
+        PickupType cap = unit->ArrivalPickupOf(level);
+        if (cap != PICKUP_NONE) {
+            abilityVal = IDX(level);
+            if (level > PICKUP_EQUIPPABLE_LAST) {
+                abilityVal = IDX(unit->m_toolId);
+            }
+            if (abilityVal == IDX(PICKUP_BRICK)) {
+                abilityVal = IDX(unit->m_brickPickupType) + 0x11;
+            }
+        }
+        PickupType badge = unit->m_vehiclePickupType;
+        if (badge != PICKUP_NONE) {
+            overrideVal = IDX(badge);
+        }
+
+        if (m_selectKey != NULL) {
+            selectVal = table->SelectionListFind(playerIndex, unitIndex);
+        }
+
+        timerVal = m_timerValue;
+        if (unit->m_arrived != false) {
+            if (m_timerTiming.Expired()) {
+                if (timerVal > 0) {
+                    timerVal++;
+                    if (timerVal > 0xa) {
+                        timerVal = 1;
+                    }
+                } else {
+                    timerVal = 1;
+                }
+                m_timerTiming.Start(0x32);
+            }
+        } else {
+            timerVal = -1;
+        }
+    }
+
+    if (m_statusValue != statusVal) {
+        CDDrawWorker* gm = m_glyphMap;
+        m_statusGlyphLatched = gm->GetAt(statusVal);
+        m_statusValue = statusVal;
+        dirty = 1;
+    }
+
+    if (m_abilityValue != abilityVal) {
+        CDDrawWorker* gm = m_glyphMap;
+        m_abilityGlyphLatched = gm->GetAt(abilityVal);
+        m_abilityValue = abilityVal;
+        dirty = 1;
+    }
+
+    if (m_overrideValue != overrideVal) {
+        CDDrawWorker* gm = m_glyphMap;
+        m_overrideGlyphLatched = gm->GetAt(overrideVal);
+        m_overrideValue = overrideVal;
+        dirty = 1;
+    }
+
+    if (m_selectValue != selectVal) {
+        if (selectVal == 0) {
+
+            m_selectGlyph = NULL;
+        } else {
+            CDDrawWorker* gm = m_glyphMap;
+            i32 key = selectVal + 0x28;
+            m_selectGlyph = gm->GetAt(key);
+        }
+        m_selectValue = selectVal;
+        dirty = 1;
+    }
+
+    if (m_timerValue != timerVal) {
+        CDDrawWorker* gm = m_timerGlyphMap;
+        m_timerGlyph = gm->GetAt(timerVal);
+        m_timerValue = timerVal;
+        dirty = 1;
+    }
+    return dirty;
+}
+
+CSBI_StatzTabGruntBar::~CSBI_StatzTabGruntBar() {
+    Reset();
+}

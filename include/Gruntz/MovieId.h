@@ -1,0 +1,19 @@
+#ifndef GRUNTZ_GRUNTZ_MOVIEID_H
+#define GRUNTZ_GRUNTZ_MOVIEID_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(MovieId)
+    MOVIE_LOGO = -1,
+    MOVIE_GRUNTZ0 = 0,
+    MOVIE_GRUNTZ1 = 2,
+    MOVIE_GRUNTZ2 = 4,
+    MOVIE_GRUNTZ3 = 6,
+    MOVIE_GRUNTZ4 = 8,
+    MOVIE_GRUNTZ5 = 10,
+    MOVIE_GRUNTZ6 = 12,
+    MOVIE_GRUNTZ7 = 13,
+    MOVIE_GRUNTZ8 = 14
+GZ_ENUM_END(MovieId)
+
+#endif

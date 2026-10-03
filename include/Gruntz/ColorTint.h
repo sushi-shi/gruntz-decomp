@@ -1,0 +1,30 @@
+#ifndef GRUNTZ_GRUNTZ_COLORTINT_H
+#define GRUNTZ_GRUNTZ_COLORTINT_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN_SPLIT(ColorTint, u8)
+    TINT_ORANGE = 0,
+    TINT_GREEN = 1,
+    TINT_BLUE = 2,
+    TINT_RED = 3,
+    TINT_PURPLE = 4,
+    TINT_YELLOW = 5,
+    TINT_HOTPINK = 6,
+    TINT_BLACK = 7,
+    TINT_DKBLUE = 8,
+    TINT_DKGREEN = 9,
+    TINT_TURQ = 10,
+    TINT_DKRED = 11,
+    TINT_PINK = 12,
+    TINT_DKYELLOW = 13,
+    TINT_GREY = 14,
+    TINT_CYAN = 15,
+    TINT_WHITE = 16
+GZ_ENUM_END_SPLIT(ColorTint, u8)
+
+GZ_ENUM_CONST_BEGIN(ColorTintConstants)
+    TINT_COUNT = 17
+GZ_ENUM_CONST_END(ColorTintConstants)
+
+#endif

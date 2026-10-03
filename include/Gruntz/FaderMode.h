@@ -1,0 +1,14 @@
+#ifndef GRUNTZ_GRUNTZ_FADERMODE_H
+#define GRUNTZ_GRUNTZ_FADERMODE_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(FaderMode)
+    FADER_INVALID = 0,
+    FADER_SWEEP_FORWARD = 1,
+    FADER_SWEEP_REVERSE = 2,
+    FADER_SPLIT_FROM_CENTER = 3,
+    FADER_COUNT = 4
+GZ_ENUM_END(FaderMode)
+
+#endif

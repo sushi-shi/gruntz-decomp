@@ -1,0 +1,222 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/GameStateRecordLoad.h>
+
+#include <Bute/ButeMgr.h>
+#include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/CoordPool.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/ResolveNodeInline.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
+#include <Wwd/WwdGameObjectFamily.h>
+
+#include <string.h>
+
+i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
+    if (ar == NULL) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* dir = g_gameReg->World();
+    if (dir == NULL) {
+        return 0;
+    }
+
+    char buf[SERIAL_NAME_LEN];
+
+    m_vehicleLoopSound = NULL;
+    m_powerupLoopSound = NULL;
+    m_struckCount = 0;
+    m_struckTiming.Clear();
+
+    SERIALREF(m_selectedSprite);
+    SERIALREF(m_toySprite);
+    SERIALREF(m_healthSprite);
+    SERIALREF(m_staminaSprite);
+    SERIALREF(m_toyTimeSprite);
+    SERIALREF(m_wingzTimeSprite);
+    SERIALREF(m_powerupSprite);
+
+    READCSTR(m_animSetName);
+    READCSTR(m_frameSetName);
+    READCSTR(m_deathFrameSetName);
+
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_poseWalk);
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseAttack, GRUNT_ATTACK1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseAttack, GRUNT_ATTACK2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_poseAttackIdle);
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseStruck, GRUNT_STRUCK1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseStruck, GRUNT_STRUCK2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE3));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE4));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseIdle, GRUNT_IDLE5));
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_poseDeath);
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseToy, GRUNT_TOY1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseToy, GRUNT_TOY2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseToy, GRUNT_TOY_BREAK));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseItem, GRUNT_ITEM1));
+    SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseItem, GRUNT_ITEM2));
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_pickupGeoSrc);
+
+    ar->Read(&m_reserved18c, sizeof(m_reserved18c));
+    ar->Read(&m_toyBlendPct, sizeof(m_toyBlendPct));
+    ar->Read(&m_brickPickupType, sizeof(m_brickPickupType));
+    ar->Read(&m_entranceReason, sizeof(m_entranceReason));
+    ar->Read(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
+    ar->Read(&m_toolId, sizeof(m_toolId));
+    ar->Read(&m_entrancePickup, sizeof(m_entrancePickup));
+    ar->Read(&m_helpCueId, sizeof(m_helpCueId));
+    ar->Read(&m_reserved1a8, sizeof(m_reserved1a8));
+    ar->Read(&m_reserved1ac, sizeof(m_reserved1ac));
+    ar->Read(&m_reserved1b0, sizeof(m_reserved1b0));
+    ar->Read(&m_reserved1b4, sizeof(m_reserved1b4));
+    ar->Read(&m_arrived, sizeof(m_arrived));
+    ar->Read(&m_entrancePx, sizeof(m_entrancePx));
+    ar->Read(&m_lastTilePx, sizeof(m_lastTilePx));
+    ar->Read(&m_commitPx, sizeof(m_commitPx));
+    ar->Read(&m_reserved1dc, sizeof(m_reserved1dc));
+    ar->Read(&m_entranceActive, sizeof(m_entranceActive));
+    ar->Read(&m_arrivalPending, sizeof(m_arrivalPending));
+    ar->Read(&m_playerIndex, sizeof(m_playerIndex));
+    ar->Read(&m_unitIndex, sizeof(m_unitIndex));
+    ar->Read(&m_moveIcon, sizeof(m_moveIcon));
+    ar->Read(&m_savedMoveIcon, sizeof(m_savedMoveIcon));
+    ar->Read(&m_entranceCommitted, sizeof(m_entranceCommitted));
+    ar->Read(&m_neighborPlayerIndex, sizeof(m_neighborPlayerIndex) + sizeof(m_neighborUnitIndex));
+    ar->Read(&m_attackTargetPx, sizeof(m_attackTargetPx));
+    ar->Read(&m_reserved210, sizeof(m_reserved210));
+    ar->Read(&m_struckPose, sizeof(m_struckPose));
+    ar->Read(&m_combatActive, sizeof(m_combatActive));
+    ar->Read(&m_neighborValid, sizeof(m_neighborValid));
+    ar->Read(&m_poweredUp, sizeof(m_poweredUp));
+    ar->Read(&m_daFlag, sizeof(m_daFlag));
+    ar->Read(&m_entranceStamped, sizeof(m_entranceStamped));
+    ar->Read(&m_bombRunActive, sizeof(m_bombRunActive));
+    ar->Read(&m_arrivalActive, sizeof(m_arrivalActive));
+    ar->Read(&m_reachRect, sizeof(m_reachRect));
+    ar->Read(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
+    ar->Read(&m_vehicleContactRect, sizeof(m_vehicleContactRect));
+    ar->Read(&m_vehicleContactExclusionRect, sizeof(m_vehicleContactExclusionRect));
+    ar->Read(&m_health, sizeof(m_health));
+    ar->Read(&m_stamina, sizeof(m_stamina));
+    ar->Read(&m_toyTime, sizeof(m_toyTime));
+    ar->Read(&m_wingzTime, sizeof(m_wingzTime));
+    ar->Read(&m_moveSpeed, sizeof(m_moveSpeed));
+    ar->Read(&m_reserved418, sizeof(m_reserved418));
+    ar->Read(&m_reserved42c, sizeof(m_reserved42c));
+    ar->Read(&m_reserved430, sizeof(m_reserved430));
+    ar->Read(&m_startingItemId, sizeof(m_startingItemId));
+    ar->Read(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
+    ar->Read(&m_arrivalState, sizeof(m_arrivalState));
+    ar->Read(&m_defenderState, sizeof(m_defenderState));
+    ar->Read(&m_battleState, sizeof(m_battleState));
+    ar->Read(&m_defenderRadius, sizeof(m_defenderRadius));
+    ar->Read(&m_defenderQueuePosition, sizeof(m_defenderQueuePosition));
+    ar->Read(&m_defenderPickupType, sizeof(m_defenderPickupType));
+    ar->Read(&m_dwell, sizeof(m_dwell));
+    ar->Read(&m_arrivalCell, sizeof(m_arrivalCell));
+    ar->Read(&m_defenderPx, sizeof(m_defenderPx));
+    ar->Read(&m_toolConfigured, sizeof(m_toolConfigured));
+    ar->Read(&m_neighborScanEnabled, sizeof(m_neighborScanEnabled));
+    ar->Read(&m_tileMoveCommitted, sizeof(m_tileMoveCommitted));
+    ar->Read(&m_reserved3dc, sizeof(m_reserved3dc));
+    ar->Read(&m_moveTile, sizeof(m_moveTile));
+    ar->Read(&m_arrivalPhase, sizeof(m_arrivalPhase));
+    ar->Read(&m_timePerTile, sizeof(m_timePerTile));
+    ar->Read(&m_movePosX, sizeof(m_movePosX));
+    ar->Read(&m_movePosY, sizeof(m_movePosY));
+    ar->Read(&m_reserved8d0, sizeof(m_reserved8d0));
+    ar->Read(&m_coordToggle, sizeof(m_coordToggle));
+    ar->Read(&m_wingzEnabled, sizeof(m_wingzEnabled));
+    ar->Read(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
+    ar->Read(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));
+    ar->Read(&m_resetApplied, sizeof(m_resetApplied));
+    ar->Read(&m_arrivalFlags, sizeof(m_arrivalFlags));
+    ar->Read(&m_passableMask, sizeof(m_passableMask));
+    ar->Read(&m_gruntKind, sizeof(m_gruntKind));
+    ar->Read(&m_entranceArmed, sizeof(m_entranceArmed));
+    ar->Read(&m_deathType, sizeof(m_deathType));
+    ar->Read(&m_entranceDropActive, sizeof(m_entranceDropActive));
+    ar->Read(&m_hasExtent, sizeof(m_hasExtent));
+    ar->Read(&m_unusedBattleCell, sizeof(m_unusedBattleCell));
+    ar->Read(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));
+    ar->Read(&m_pendingTrigger, sizeof(m_pendingTrigger));
+    ar->Read(&m_killerPlayerIndex, sizeof(m_killerPlayerIndex));
+    ar->Read(&m_tileClaimed, sizeof(m_tileClaimed));
+    ar->Read(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
+    ar->Read(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
+    ar->Read(&m_routeBlockedMask, sizeof(m_routeBlockedMask));
+    ar->Read(&m_routePassableMask, sizeof(m_routePassableMask));
+    ar->Read(&m_moveVariantOverride, sizeof(m_moveVariantOverride));
+    ar->Read(&m_moveKind, sizeof(m_moveKind));
+    ar->Read(&m_moveVariant, sizeof(m_moveVariant));
+    ar->Read(&m_coordRetryCount, sizeof(m_coordRetryCount));
+    ar->Read(&m_toyTileIndex, sizeof(m_toyTileIndex));
+    ar->Read(&m_blockedVoicePending, sizeof(m_blockedVoicePending));
+    ar->Read(&m_powerupDuration, sizeof(m_powerupDuration));
+    ar->Read(&m_warpstoneAnchorIndex, sizeof(m_warpstoneAnchorIndex));
+    ar->Read(&m_lowStaminaCued, sizeof(m_lowStaminaCued));
+    ar->Read(&m_targetTeam, sizeof(m_targetTeam));
+    ar->Read(&m_arrivalTargetPx, sizeof(m_arrivalTargetPx));
+
+    CGruntCellRec* row = m_cells;
+    for (i32 gi = 0; gi < 3; ++gi, row += 3) {
+        CGruntCellRec* cell = row;
+        for (i32 gj = 0; gj < 3; ++gj, ++cell) {
+            if (cell->DeserializeStrings(ar) == 0) {
+                return 0;
+            }
+        }
+    }
+
+    this->RecycleCoords();
+
+    i32 count;
+    ar->Read(&count, sizeof(count));
+    for (i32 a = 0; a < count; ++a) {
+        Coord* item = g_coordPool.Pop();
+        ar->Read(item, 8);
+        m_coordList.AddTail(item);
+    }
+
+    DeleteAllPayloads();
+
+    ar->Read(&count, sizeof(count));
+    for (i32 b = 0; b < count; ++b) {
+        i32* mem = new i32[0xb];
+        i32* item;
+        if (mem != NULL) {
+            memset(mem, 0, 0xb * 4);
+            item = mem;
+        } else {
+            item = NULL;
+        }
+        ar->Read(item, 0x2c);
+        m_payloads.AddTail(item);
+    }
+
+    b32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);
+    CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), flag);
+    CWwdSpriteObject* cb = m_object;
+    cb->SetDrawFill(SHADE_PAL_16, r);
+
+    if (m_gruntKind == GRUNT_GHOST) {
+        CWwdSpriteObject* cb2 = m_object;
+        i32 v = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
+        SET_DRAW_FILL_FRACTION(cb2, SHADE_PAL_ALPHA_16, v);
+    }
+    return 1;
+}

@@ -1,0 +1,27 @@
+#ifndef GRUNTZ_NET_NETPACKETS_H
+#define GRUNTZ_NET_NETPACKETS_H
+
+#include <Ints.h>
+
+#include <Ints.h>
+#include <Net/NetMsgId.h>
+
+struct CNetGameConfigPacket {
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
+    NetMsgId m_messageId;
+    b32 m_usesCustomLevel;
+    char m_builtInLevelName[0x80];
+    char m_customLevelName[0x80];
+    i32 m_commandDelay;
+    i32 m_resendInterval;
+    b32 m_autoCommandDelay;
+    i32 m_rngSeed;
+};
+
+struct CNetMsg {
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
+    NetMsgId m_messageId;
+    i32 m_value;
+};
+
+#endif

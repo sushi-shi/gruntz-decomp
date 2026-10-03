@@ -1,0 +1,312 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Globals.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActRegistry.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
+#include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/EnemyAiType.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TileSnapMacros.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
+#include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
+
+#include <new>
+#include <string.h>
+
+static char s_exitzDrain[] = "GRUNTZ_EXITZ_DRAIN";
+
+static char s_deathzExplode[] = "GRUNTZ_DEATHZ_EXPLODE";
+
+static char s_deathzKaroke[] = "GRUNTZ_DEATHZ_KAROKE";
+
+static char s_deathzElectrocute[] = "GRUNTZ_DEATHZ_ELECTROCUTE";
+
+static char s_deathzQuickfall2[] = "GRUNTZ_DEATHZ_QUICKFALL2";
+
+static char s_deathzFall2[] = "GRUNTZ_DEATHZ_FALL2";
+
+static char s_deathzFall[] = "GRUNTZ_DEATHZ_FALL";
+
+static char s_deathzQuickfall[] = "GRUNTZ_DEATHZ_QUICKFALL";
+
+static char s_deathzBurn[] = "GRUNTZ_DEATHZ_BURN";
+
+static char s_deathzShatter[] = "GRUNTZ_DEATHZ_SHATTER";
+
+static char s_deathzHole[] = "GRUNTZ_DEATHZ_HOLE";
+
+static char s_deathzSink[] = "GRUNTZ_DEATHZ_SINK";
+
+static char s_deathzSquash[] = "GRUNTZ_DEATHZ_SQUASH";
+static const char s_normalgruntDeath[] = "GRUNTZ_NORMALGRUNT_DEATH";
+
+i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex) {
+    if (m_deathAnimStarted != false) {
+        return 0;
+    }
+
+    FinishActiveAction();
+    STOP_GRUNT_LOOP_SOUNDS;
+
+    m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+    m_deathAnimStarted = true;
+    m_health = 0;
+    m_entranceCommitted = false;
+
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
+
+    if (m_poweredUp != false && m_neighborValid == false) {
+        RESET_GRUNT_POWERED_STATE(this)
+    }
+    m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
+
+    SET_ANIMATION_ACT("C");
+
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
+    {
+        CWwdSpriteObject* o = m_object;
+        SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH)
+    }
+
+    if (killerPlayerIndex != -1) {
+        m_killerPlayerIndex = killerPlayerIndex;
+        g_gameReg->m_gameStats->RecordKill(killerPlayerIndex, m_playerIndex);
+    }
+
+    switch (deathType) {
+        case DEATH_SQUASH:
+            if (m_entranceReason == PICKUP_BOMB) {
+                SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+                goto pathA;
+            }
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzSquash);
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzSquash, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x35b);
+            goto finalize;
+
+        case DEATH_DROP:
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+            goto tail;
+
+        case DEATH_SINK:
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzSink);
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzSink, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x35a);
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+            LoadGruntMovingDeathConfig();
+            goto tail;
+
+        case DEATH_HOLE:
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzHole);
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzHole, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x357);
+            goto finalize;
+
+        case DEATH_SHATTER:
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzShatter);
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_FREEZE", DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x354);
+            goto finalize;
+
+        case DEATH_BURN:
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzBurn);
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzBurn, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x352);
+            goto finalize;
+
+        case DEATH_QUICKFALL:
+            SNAP_OBJECT_TO_TILE_CENTER(m_object)
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall);
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
+            {
+                CWwdSpriteObject* o = m_object;
+                SET_SORT_KEY_IF_CHANGED(o, -1)
+            }
+            PLAY_VOICE_IF_VISIBLE(0x357);
+            goto finalize;
+
+        case DEATH_FALL: {
+            CMapMgr* grid = g_gameReg->m_tileGrid;
+            TileCollisionKind attr = static_cast<TileCollisionKind>((
+                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
+            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
+            i32 tag = 0x355;
+            if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
+                m_poseDeath =
+                    m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall);
+                tag = 0x357;
+                {
+                    CWwdSpriteObject* o = m_object;
+                    SET_SORT_KEY_IF_CHANGED(o, -1)
+                }
+                SNAP_OBJECT_TO_TILE_CENTER(m_object)
+            } else {
+                m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzFall);
+            }
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(tag);
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+            LoadGruntMovingDeathConfig();
+            goto tail;
+        }
+
+        case DEATH_FALL2: {
+            CMapMgr* grid = g_gameReg->m_tileGrid;
+            TileCollisionKind attr = static_cast<TileCollisionKind>((
+                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
+            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
+            i32 tag = 0x355;
+            if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
+                m_poseDeath =
+                    m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall2);
+                tag = 0x357;
+                {
+                    CWwdSpriteObject* o = m_object;
+                    SET_SORT_KEY_IF_CHANGED(o, -1)
+                }
+                SNAP_OBJECT_TO_TILE_CENTER(m_object)
+            } else {
+                m_poseDeath = MapFind<CAniElement>(
+                    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                    s_deathzFall2
+                );
+            }
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(tag);
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+            LoadGruntMovingDeathConfig();
+            goto tail;
+        }
+
+        case DEATH_ELECTROCUTE: {
+            m_poseDeath = MapFind<CAniElement>(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                s_deathzElectrocute
+            );
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzElectrocute, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x353);
+            goto finalize;
+        }
+
+        case DEATH_MELT: {
+            SnapToLastTile(1);
+            m_poseDeath = MapFind<CAniElement>(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                "GRUNTZ_DEATHZ_MELT"
+            );
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_MELT", DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x359);
+            goto finalize;
+        }
+
+        case DEATH_KAROKE: {
+            m_poseDeath = MapFind<CAniElement>(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                s_deathzKaroke
+            );
+            SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzKaroke, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x358);
+            goto tail;
+        }
+
+        case DEATH_EXPLODE: {
+            if (m_entranceReason == PICKUP_BOMB) {
+                SwitchAnimation(m_poseDeath);
+                goto pathA;
+            }
+            m_poseDeath = MapFind<CAniElement>(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                s_deathzExplode
+            );
+            SwitchAnimation(m_poseDeath);
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzExplode, DEATH_FRAME());
+            PLAY_VOICE_IF_VISIBLE(0x354);
+            goto finalize;
+        }
+
+        case DEATH_DRAIN: {
+            m_poseDeath = MapFind<CAniElement>(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                s_exitzDrain
+            );
+            SwitchAnimation(m_poseDeath);
+            APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_EXITZ", DEATH_FRAME());
+            SET_ANIMATION_ACT("B");
+            goto tail;
+        }
+
+        default:
+            SwitchAnimation(m_poseDeath);
+            APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
+            PLAY_GRUNT_CUE_IN_VIEW(3);
+
+            if (m_entranceReason == PICKUP_WARPSTONE
+                && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+                SwitchAnimationByName("GRUNTZ_NORMALGRUNT_DEATH", 0);
+                APPLY_NAME_INLINE("GRUNTZ_NORMALGRUNT_DEATH");
+            }
+            goto tail;
+    }
+
+pathA:
+    APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
+    PLAY_GRUNT_CUE_IF_VISIBLE(3);
+    deathType = DEATH_NORMAL;
+    goto tail;
+
+finalize:
+    m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+
+tail:
+
+    if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+        m_triggerMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
+    }
+    if (m_arrivalState == AI_TOOLTHIEF) {
+        TryPowerupAtTile();
+    }
+    m_gruntKind = GRUNT_NORMAL;
+    m_deathType = deathType;
+    return 0;
+}
+
+#undef DEATH_FRAME

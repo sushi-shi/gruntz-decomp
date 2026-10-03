@@ -1,0 +1,60 @@
+#ifndef GRUNTZ_GRUNTZ_CFADER_H
+#define GRUNTZ_GRUNTZ_CFADER_H
+
+#include <Ints.h>
+
+class CDDSurface;
+#include <Ints.h>
+
+#include <DDrawMgr/ShadeTableCache.h>
+
+class CFader {
+public:
+    CFader();
+    virtual ~CFader();
+
+    virtual void RenderFrame(i32 frame) = 0;
+    virtual i32 GetFrameCount() = 0;
+    virtual void BeginFade();
+    virtual void EndFade();
+
+    void Wait(i32 delay);
+    void SetDefaultSurfaces(CDDSurface* primary, CDDSurface* secondary);
+    void SetDeviceManager(class CDDrawDeviceManager* manager);
+
+    void RunFadeStepped(i32 step, i32 lead, i32 vsync);
+
+    void RunFade(u32 dur, i32 lead, i32 vsync);
+
+    void SelectTarget(CDDSurface*& dst, CDDSurface* target) {
+        if (target == NULL) {
+            dst = m_primarySurface;
+        } else {
+            dst = target;
+        }
+    }
+    void SelectSource(CDDSurface*& dst, CDDSurface* source) {
+        if (source == NULL) {
+            dst = m_secondarySurface;
+        } else {
+            dst = source;
+        }
+    }
+
+    CShadeTableCache m_cache;
+    CShadeTable* m_table;
+    i32 m_previousFrame;
+    CDDSurface* m_primarySurface;
+    CDDSurface* m_secondarySurface;
+
+    class CDDrawDeviceManager* m_deviceManager;
+    b32 m_ownsTable;
+    i32 m_measuredFps;
+};
+
+#include <io.h>
+
+void ScatterSamples(i32* arr, i32, i32, i32);
+i32 IsPrime(i32 n);
+
+#endif

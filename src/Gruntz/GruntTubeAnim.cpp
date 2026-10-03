@@ -1,0 +1,51 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/State.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <ZTools/ZDArray.h>
+
+#include <new>
+#include <string.h>
+
+i32 CGrunt::SetupTubeAnim(b32 isWater) {
+    m_reachRect = CRect(-1, -1, 1, 1);
+    m_reachExclusionRect = CRect(0, 0, 0, 0);
+    m_coordToggle = isWater;
+
+    if (isWater != false) {
+        m_animSetName = "TOOBWATERGRUNT";
+    } else {
+        m_animSetName = "TOOBGRUNT";
+    }
+    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, NULL);
+    ReadConfigFromButeMgr();
+    LoadCellAnimNames(0, 0);
+    LoadAnimNameTable(0, 0);
+
+    if (m_poweredUp != false && m_neighborValid == false) {
+        RESET_GRUNT_POWERED_STATE(this)
+    }
+
+    if (IsAnimationAct("D")) {
+        GruntDirectionCell cell = m_entranceCell;
+        i32 col = cell.m_column + cell.m_row * 2;
+        i32 base = cell.m_row + col;
+        char* buf = m_cells[base].WalkName().GetBuffer(0);
+        SetImageSetByName(buf);
+        SwitchAnimation(m_poseWalk);
+        return 1;
+    }
+    ResetEntranceAnimation(1, 0, 0);
+    return 1;
+}

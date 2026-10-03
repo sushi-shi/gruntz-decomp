@@ -1,0 +1,103 @@
+#ifndef GRUNTZ_CDDRAWSHADEBLIT_H
+#define GRUNTZ_CDDRAWSHADEBLIT_H
+
+#include <Ints.h>
+
+#include <DDrawMgr/ColorDepth.h>
+#include <DDrawMgr/ShadeTableCache.h>
+#include <Enums.h>
+#include <Ints.h>
+
+class CString;
+class CDDSurface;
+
+typedef struct tagRECT ShadeRect;
+
+struct PidHeader;
+
+GZ_ENUM_CONST_BEGIN(ShadeRleLayout)
+    SHADE_RLE_MAX_RUN = 0x7e,
+    SHADE_RLE_TRANSPARENT_FLAG = 0x80
+GZ_ENUM_CONST_END(ShadeRleLayout)
+
+GZ_ENUM_CONST_BEGIN(ShadeLightLevel)
+    SHADE_LIGHT_MIDPOINT = 0x80
+GZ_ENUM_CONST_END(ShadeLightLevel)
+
+struct PidWriteHeader {
+    i32 m_formatTag;
+    i32 m_flags;
+    i32 m_width;
+    i32 m_height;
+    i32 m_offsetX;
+    i32 m_offsetY;
+    i32 m_fill;
+
+    i32 m_reserved1c;
+};
+
+class CDDrawShadeBlit {
+public:
+    CDDrawShadeBlit();
+    i32 BuildRle(u8* pixels, i32 width, i32 height, i32 stride, i32 keyVal, PALETTEENTRY* palette);
+    i32 LoadFromFile(CString name, ColorDepth fmt);
+
+    i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY* palette);
+    i32 Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt);
+
+    u8* EncodeRle16(const u8* src);
+    void Teardown();
+    i32 WritePidFile(CString path, PidWriteHeader header);
+
+    i32 SavePid(CString path, i32 offsetX, i32 offsetY);
+    i32 Decompress(u8* dest);
+
+    i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip);
+    i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 vflip);
+
+    void Select(ShadeMode mode, CShadeTable* descr);
+
+    void BlitCopyForward(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+    void BlitCopyMirrored(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+    inline void CopyRowFlip(u8* dst, u8* src, i32 bytes);
+    void BlitShadedForward(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip);
+    void BlitShadedMirrored(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip);
+
+    inline void ConvertRow(u8* dst, u8* src, i32 count);
+
+    inline void ConvertRowFlip(u8* dst, u8* src, i32 count);
+
+    inline void ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta);
+
+    inline void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta);
+
+    b32 m_doubleScanlines;
+    i32 m_width;
+    i32 m_height;
+    u8* m_rleData;
+    u32 m_rleLen;
+    ShadeMode m_drawType;
+    i32 m_light;
+    CShadeTable* m_palDescr;
+
+    PALETTEENTRY* m_palette;
+    i32 m_colorKey;
+    u8 m_srcBpp;
+    u8 m_dstBpp;
+    b32 m_blendVariant;
+
+    u16* m_lutBank0;
+    u16* m_lutBank1;
+    u16* m_lutBank2;
+};
+
+extern u8 g_scratch[];
+extern CShadeTable* g_dstBySrcShadeTable;
+extern CShadeTable* g_dstByLevelShadeTable;
+extern CShadeTable* g_srcByLevelShadeTable;
+extern CShadeTable* g_lerpLevelShadeTable;
+extern CShadeTable* g_greyShadeTable;
+extern CShadeTable* g_dstBySrc16ShadeTable;
+extern CShadeTable* g_palette16ShadeTable;
+
+#endif

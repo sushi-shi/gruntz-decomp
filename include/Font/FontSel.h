@@ -1,0 +1,13 @@
+#ifndef FONT_FONTSEL_H
+#define FONT_FONTSEL_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(FontSel)
+    FONTSEL_TINY = 100,
+    FONTSEL_SMALL = 110,
+    FONTSEL_MEDIUM = 120,
+    FONTSEL_LARGE = 130
+GZ_ENUM_END(FontSel)
+
+#endif

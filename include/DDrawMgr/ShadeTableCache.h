@@ -1,0 +1,96 @@
+#ifndef GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
+#define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
+
+#include <Ints.h>
+
+#include <DDrawMgr/ShadeMode.h>
+#include <Enums.h>
+#include <Wap32/Object.h>
+
+class CFile;
+class CString;
+
+GZ_ENUM_CONST_BEGIN(FlashShadeRampDefaults)
+    FLASH_SHADE_DARK_RAMP_STEPS = 32,
+    FLASH_SHADE_BRIGHT_RAMP_STEPS = 32,
+    FLASH_SHADE_START_PERCENT = 50,
+    FLASH_SHADE_END_PERCENT = 200
+GZ_ENUM_CONST_END(FlashShadeRampDefaults)
+
+GZ_ENUM_CONST_BEGIN(FlashShadeChannelClamp)
+    FLASH_SHADE_CHANNEL_BOOST = 16,
+    FLASH_SHADE_CHANNEL_MAX = 255
+GZ_ENUM_CONST_END(FlashShadeChannelClamp)
+
+struct CShadeTable {
+    b32 m_alloc;
+    i32 m_size;
+
+    union {
+        u8* m_data;
+        u16* m_lut16;
+    };
+    i32 m_key;
+
+    u8* GetData() const {
+        return m_data;
+    }
+
+    u16* Lut16() const {
+        return m_lut16;
+    }
+
+    CShadeTable();
+    i32 Set(u32 size, i32 id);
+    void Reset();
+    void Free();
+
+    i32 LoadFromFile(CString path, i32 id);
+    i32 LoadFromMem(u8* buf, u32 len, i32 id);
+    i32 ReadFrom(CFile* file, i32 id);
+    i32 SaveToFile(CString path);
+};
+
+typedef CArray<CShadeTable*, CShadeTable*> CShadeTableArray;
+
+class CShadeTableCache {
+public:
+    CShadeTableCache();
+    ~CShadeTableCache();
+    i32 Init();
+    void FreeNodes();
+
+    CShadeTable*
+    FlashTable(PALETTEENTRY* pal, i32 darkRampSteps, i32 brightRampSteps, i32 startPct, i32 endPct);
+    CShadeTable* HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg);
+    CShadeTable* HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor);
+    CShadeTable* GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol);
+    CShadeTable* LumaSortTable(PALETTEENTRY* pal);
+    CShadeTable* HueSortTable(PALETTEENTRY* pal);
+    CShadeTable* AddFromArray(CString name);
+    CShadeTable* AddFromBuffer(u8* data, i32 size);
+    CShadeTable* GreyTable();
+    CShadeTable* AddTable(float scale);
+    CShadeTable* SubTable(i32 color);
+    CShadeTable* AlphaTable(PALETTEENTRY* pal);
+    CShadeTable* FindByKey(i32 key);
+    void FindRemove(CShadeTable* t);
+
+    static i32 __cdecl CompareLuma(const void* a, const void* b);
+
+    static i32 __cdecl CompareHue(const void* a, const void* b);
+
+    static i32 __cdecl FindNearestColor(PALETTEENTRY* pal, u8 r, u8 g, u8 b);
+
+    b32 m_initialized;
+    CShadeTableArray m_arr;
+};
+
+extern const float g_one;
+extern const float g_colorChannelMax;
+extern const float g_percentScale;
+extern const float g_lumaR;
+extern const float g_lumaG;
+extern const float g_lumaB;
+extern const float g_inv255;
+#endif

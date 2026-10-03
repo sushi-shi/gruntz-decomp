@@ -1,0 +1,147 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/SBI_GruntMachine.h>
+#include <Gruntz/SBI_ImageSetAni.h>
+#include <Gruntz/SBI_SideTab.h>
+#include <Gruntz/SBI_StatzTabGruntBar.h>
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/StatusBarItem.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+
+#include <string.h>
+
+void CSBI_StatzTabArrow::SetUnsampledDirection(StatusBarDock position, b32 animate) {
+    if (position == STATUSBAR_DOCK_RIGHT) {
+        if (animate == false) {
+            SetRange(4, -1, 0, 0, -1);
+        } else {
+            SetRange(-1, -1, 1, 0, -1);
+        }
+    } else {
+        if (animate == false) {
+            SetRange(1, -1, 0, 0, -1);
+        } else {
+            SetRange(-1, -1, -1, 0, -1);
+        }
+    }
+}
+
+void CSBI_StatzTabArrow::SetSampledDirection(StatusBarDock position, b32 animate) {
+    if (position == STATUSBAR_DOCK_RIGHT) {
+        if (animate == false) {
+            SetRange(1, -1, 0, 0, -1);
+        } else {
+            SetRange(-1, -1, -1, 0, -1);
+        }
+    } else {
+        if (animate == false) {
+            SetRange(4, -1, 0, 0, -1);
+        } else {
+            SetRange(-1, -1, 1, 0, -1);
+        }
+    }
+}
+
+i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    SbiCommandId cmd,
+    StatusBarTab tab,
+    RECT g,
+    const char* key,
+    i32 playerIndex,
+    i32 unitIndex,
+    i32 selMode
+) {
+    CDDrawSurfaceMgr* h;
+    CDDrawWorker* head;
+
+    if (host == NULL) {
+        goto fail;
+    }
+    if (owner == NULL) {
+        goto fail;
+    }
+    h = host;
+    Initialize(owner, tab, h);
+
+    m_rect = g;
+
+    m_cmd = cmd;
+    head = h->FindWorker(key);
+    m_glyphMap = head;
+    if (head == NULL) {
+        return 0;
+    }
+    CImage* v;
+    v = head->GetAt(0x21);
+    m_statusGlyph = v;
+    if (v == NULL) {
+        return 0;
+    }
+    CImage* w;
+    w = head->GetAt(0x22);
+    m_abilityGlyph = w;
+    if (w == NULL) {
+        return 0;
+    }
+
+    CImage* val;
+    if (selMode != 0) {
+        CDDrawWorker* sel = m_host->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR");
+        m_timerGlyphMap = sel;
+        if (sel == NULL) {
+            return 0;
+        }
+        CImage* x = m_glyphMap->GetAt(0x23);
+        m_selectKey = x;
+        if (x == NULL) {
+            return 0;
+        }
+        val = m_glyphMap->GetAt(0x22);
+    } else {
+        CDDrawWorker* sel = m_host->FindWorker("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR");
+        m_timerGlyphMap = sel;
+        if (sel == NULL) {
+            return 0;
+        }
+        val = m_glyphMap->GetAt(0x23);
+    }
+    m_overrideGlyph = val;
+    if (val == NULL) {
+        goto fail;
+    }
+    m_playerIndex = playerIndex;
+    m_unitIndex = unitIndex;
+    m_timerValue = -1;
+    m_overrideValue = -1;
+    m_abilityValue = -1;
+    m_statusValue = -1;
+    m_selectValue = 0;
+    m_timerTiming.Clear();
+    Update();
+    return 1;
+fail:
+    return 0;
+}

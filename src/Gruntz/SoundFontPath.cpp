@@ -1,0 +1,84 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/SoundFontPath.h>
+
+#include <Dsndmgr/SfManager.h>
+#include <Gruntz/PathBuffer.h>
+#include <Gruntz/SFSelectDevice.h>
+#include <Gruntz/SoundFont.h>
+
+#include <stdio.h>
+#include <string.h>
+
+namespace {
+#include <Utils/FileExists.h>
+}
+
+void CloseSoundFontDevice() {
+    if (g_sfReady != false && g_sfDevice != NULL && g_sfDeviceCount != 0) {
+        SfDeviceInitKeys();
+        g_sfDevice->SF_Close(g_sfDeviceId);
+        FreeLibrary(g_sfDll);
+        g_sfDll = NULL;
+        g_sfReady = false;
+    }
+}
+
+i32 SoundFontDeviceReady() {
+    return g_sfReady;
+}
+
+i32 SfDeviceInitKeys() {
+    if (g_sfReady == false) {
+        return 0;
+    }
+    g_sfMidiLocation.m_PresetIndex = 0;
+    for (i32 i = 1; i <= 0x7f; i++) {
+        g_sfMidiLocation.m_BankIndex = static_cast<WORD>(i);
+
+        (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(
+            g_sfDeviceId,
+            &g_sfMidiLocation
+        );
+    }
+    g_sfMidiLocation.m_BankIndex = 1;
+    return 1;
+}
+
+i32 BuildSoundFontPath(char drive) {
+    if (g_sfReady == false) {
+        return 0;
+    }
+
+    GetCurrentDirectoryA(GRUNTZ_PATH_BUFFER_MAX_CHARS, g_sfDir);
+    int len = static_cast<int>(strlen(g_sfDir));
+    if (len > 0 && g_sfDir[len - 1] == '\\') {
+        g_sfDir[len - 1] = '\0';
+    }
+    sprintf(g_sfLocal4, "%s\\Gruntz4.SF2", g_sfDir);
+    sprintf(g_sfLocal, "%s\\Gruntz.SF2", g_sfDir);
+    sprintf(g_sfMusic4, "%c:\\MUSIC\\Gruntz4.SF2", drive);
+    sprintf(g_sfMusic, "%c:\\MUSIC\\Gruntz.SF2", drive);
+    SfDeviceInitKeys();
+
+    g_sfMidiLocation.m_BankIndex = 1;
+    g_sfMidiLocation.m_PresetIndex = 0;
+    g_sfBufferObject.m_Size = 0x80;
+    g_sfBufferObject.m_Flag = 0;
+    int hiVer = 0;
+    i32 res = 0x6b;
+    if (g_sfVer >= 0x37115c) {
+        hiVer = 1;
+    }
+    g_sfBufferObject.m_Buffer = hiVer ? g_sfLocal4 : g_sfLocal;
+    if (FileExists(g_sfBufferObject.m_Buffer)) {
+        res = g_sfDevice->SF_LoadBank(g_sfDeviceId, &g_sfMidiLocation, &g_sfBufferObject);
+    }
+    if (res != 0) {
+        g_sfBufferObject.m_Buffer = hiVer ? g_sfMusic4 : g_sfMusic;
+        res = g_sfDevice->SF_LoadBank(g_sfDeviceId, &g_sfMidiLocation, &g_sfBufferObject);
+    }
+    return res == 0;
+}

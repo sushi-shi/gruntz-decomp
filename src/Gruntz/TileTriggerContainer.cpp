@@ -1,0 +1,890 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/TileTriggerContainer.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelCollisionInline.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileActionEvent.h>
+#include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileTriggerLogicInline.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Wap32/CoordUnset.h>
+#include <Wwd/WwdGameObjectFamily.h>
+
+#include <new>
+
+i32 DrawPageDebugText(
+    CDDrawSurfaceMgr* mgr,
+    const CString* text,
+    RECT* dst,
+    i32 fontFlag,
+    b32 useFrontPage,
+    i32 r,
+    i32 g,
+    i32 b
+) {
+    if (mgr == NULL) {
+        return 0;
+    }
+    CDrawSubWorker* page;
+    if (useFrontPage != false) {
+        page = mgr->GetDrawTarget()->GetFrontSurface();
+        if (page == NULL) {
+            return 0;
+        }
+    } else {
+        page = mgr->GetDrawTarget()->GetBackPair();
+        if (page == NULL) {
+            return 0;
+        }
+    }
+    CDDSurface* surf = page->GetSurface();
+    if (surf == NULL) {
+        return 0;
+    }
+
+    HDC hdc = NULL;
+    surf->GetDirectDrawSurface()->GetDC(&hdc);
+    g_gameReg->ChatLog()->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
+    surf->GetDirectDrawSurface()->ReleaseDC(hdc);
+    return 1;
+}
+
+i32 CTileTriggerContainer::Initialize() {
+    if (m_initialized != false) {
+        return 0;
+    }
+    m_initialized = true;
+    return 1;
+}
+
+void CTileTriggerContainer::Shutdown() {
+    if (m_initialized != false) {
+        RemoveAll();
+        m_initialized = false;
+    }
+}
+
+CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
+    TrigLogicId logicType,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+
+    RECT extent,
+    RECT area,
+    RECT switchRect,
+    RECT clip,
+    RECT switchRectA,
+    RECT switchRectB,
+    b32 isMatch,
+    i32 damageParam,
+    i32 checkpointType
+) {
+    CTileTriggerSwitchLogic* obj = NULL;
+    switch (logicType) {
+        case TRIGID_SWITCH_1:
+        case TRIGID_SWITCH_2:
+        case TRIGID_SWITCH_5:
+            obj = new CTileTriggerSwitchLogic;
+            break;
+        case TRIGID_MULTI_SWITCH_3:
+            obj = new CTileMultiTriggerSwitchLogic;
+            break;
+        case TRIGID_EXCLUSIVE_SWITCH_4:
+            obj = new CTileExclusiveTriggerSwitchLogic;
+            break;
+        case TRIGID_SECRET_SWITCH_6:
+            obj = new CTileSecretTriggerSwitchLogic;
+            break;
+        case TRIGID_TIME_SWITCH_7:
+            obj = new CTileTimeTriggerSwitchLogic;
+            break;
+        case TRIGID_CHECKPOINT_SWITCH_8:
+            obj = new CCheckpointTriggerSwitchLogic;
+            break;
+    }
+    if (obj == NULL) {
+        return NULL;
+    }
+
+    RECT local[6];
+    local[0] = extent;
+    local[1] = area;
+    local[2] = switchRect;
+    local[3] = clip;
+    local[4] = switchRectA;
+    local[5] = switchRectB;
+
+    if (obj->BuildSmall(
+            this,
+            logicType,
+            tileX,
+            tileY,
+            cellKey,
+            local,
+            isMatch,
+            damageParam,
+            checkpointType
+        )
+        == TRIGID_ANY) {
+
+        delete obj;
+        return NULL;
+    }
+    m_switchLogics.AddTail(obj);
+    return obj;
+}
+
+i32 CTileTriggerContainer::RemoveSwitchLogic(i32 cellKey, TrigLogicId logicType) {
+    POSITION pos = m_switchLogics.GetHeadPosition();
+    while (pos != NULL) {
+        POSITION cur = pos;
+        CTileTriggerSwitchLogic* logic =
+            static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
+        if (logic->m_typeId == logicType && logic->m_cellKey == cellKey) {
+
+            delete logic;
+            m_switchLogics.RemoveAt(cur);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
+    TileCollisionKind tileType,
+    TrigLogicId logicType,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    i32 tileToken,
+    i32 dutyOnSpan,
+    i32 leadInSpan,
+    i32 dutyOffSpan
+) {
+    RECT empty = {0, 0, 0, 0};
+    return AddLogic(
+        tileType,
+        logicType,
+        tileX,
+        tileY,
+        cellKey,
+        empty,
+        empty,
+        empty,
+        empty,
+        empty,
+        empty,
+        tileToken,
+        dutyOnSpan,
+        leadInSpan,
+        dutyOffSpan
+    );
+}
+
+void CTileTriggerContainer::AddLogicFromRecord(
+    TileCollisionKind tileType,
+    TrigLogicId logicType,
+    CGameObject* object
+) {
+    AddLogic(
+        tileType,
+        logicType,
+        object->m_speedX,
+        object->m_speedY,
+        object->m_id,
+        object->m_extent,
+        object->m_area,
+        object->m_switchRect,
+        object->m_clip,
+        object->m_logicRecord->m_userRect1,
+        object->m_logicRecord->m_userRect2,
+        object->m_smarts,
+        object->m_damage,
+        object->m_points,
+        object->m_health
+    );
+}
+
+CTileTriggerLogic* CTileTriggerContainer::AddLogic(
+    TileCollisionKind tileType,
+    TrigLogicId logicType,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    RECT extent,
+    RECT area,
+    RECT switchRect,
+    RECT clip,
+    RECT switchRectA,
+    RECT switchRectB,
+    i32 tileToken,
+    i32 dutyOnSpan,
+    i32 leadInSpan,
+    i32 dutyOffSpan
+) {
+    CTileTriggerLogic* obj = NULL;
+    switch (logicType) {
+        case TRIGID_TILE_TRIGGER_21:
+        case TRIGID_TILE_TRIGGER_24:
+            obj = new CTileTriggerLogic;
+            break;
+        case TRIGID_SECRET_TRIGGER_25:
+            obj = new CTileSecretTriggerLogic;
+            break;
+        case TRIGID_COVERED_POWERUP_26:
+            obj = new CCoveredPowerupLogic;
+            break;
+        case TRIGID_TIME_TRIGGER_23:
+            obj = new CTileTimeTriggerLogic;
+            break;
+    }
+    if (obj == NULL) {
+        return NULL;
+    }
+
+    RECT local[6];
+    local[0] = extent;
+    local[1] = area;
+    local[2] = switchRect;
+    local[3] = clip;
+    local[4] = switchRectA;
+    local[5] = switchRectB;
+
+    if (obj->Build(
+            this,
+            logicType,
+            tileX,
+            tileY,
+            cellKey,
+            local,
+            tileToken,
+            dutyOnSpan,
+            leadInSpan,
+            dutyOffSpan
+        )
+        == TRIGID_ANY) {
+        delete obj;
+        return NULL;
+    }
+
+    if (logicType == TRIGID_TIME_TRIGGER_23) {
+        m_timedLogics.AddTail(obj);
+    } else {
+        m_idleLogics.AddTail(obj);
+    }
+    if (logicType == TRIGID_TILE_TRIGGER_21
+        && (tileType == TILEKIND_PYRAMID_LATCH_A || tileType == TILEKIND_PYRAMID_LATCH_B)) {
+        m_latchedLeaf = obj;
+    }
+    return obj;
+}
+
+CTileActionEvent* CTileTriggerContainer::AddActionEvent(
+    BrickTileId actionCode,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    RECT playerFlags
+) {
+    CTileActionEvent* event = new CTileActionEvent;
+    if (event == NULL) {
+        return NULL;
+    }
+    if (!event->Build(this, actionCode, tileX, tileY, cellKey, playerFlags)) {
+        delete event;
+        return NULL;
+    }
+    m_actionEvents.AddTail(event);
+    return event;
+}
+
+CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
+    BrickTileId actionCode,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    i32 playerSlot
+) {
+    CTileActionEvent* event = new CTileActionEvent;
+    if (event == NULL) {
+        return NULL;
+    }
+    RECT playerFlags = {0, 0, 0, 0};
+    switch (static_cast<PlayerSlot>(playerSlot)) {
+        case PLAYER_SLOT_1:
+            playerFlags.top = 1;
+            break;
+        case PLAYER_SLOT_2:
+            playerFlags.right = 1;
+            break;
+        case PLAYER_SLOT_3:
+            playerFlags.bottom = 1;
+            break;
+        case PLAYER_SLOT_ALL:
+            playerFlags.top = playerFlags.right = playerFlags.bottom = 1;
+        case PLAYER_SLOT_0:
+            playerFlags.left = 1;
+            break;
+    }
+    if (!event->Build(this, actionCode, tileX, tileY, cellKey, playerFlags)) {
+        delete event;
+        return NULL;
+    }
+    m_actionEvents.AddTail(event);
+    return event;
+}
+
+CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    i32* block9,
+    i32 powerupType,
+    i32 textId,
+    i32 dutyOffSpan
+) {
+    CGiantRockLogic* e = new CGiantRockLogic;
+    if (e == NULL) {
+        return NULL;
+    }
+    if (!e->Build(
+            this,
+            tileX,
+            tileY,
+            cellKey,
+            block9,
+            static_cast<PickupType>(powerupType),
+            textId,
+            dutyOffSpan
+        )) {
+        delete e;
+        return NULL;
+    }
+    m_idleLogics.AddTail(e);
+    return e;
+}
+
+i32 CTileTriggerContainer::RemoveIdleLogic(CTileTriggerLogic* logic) {
+    POSITION pos = m_idleLogics.GetHeadPosition();
+    while (pos != NULL) {
+        POSITION cur = pos;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+        if (elem == logic) {
+
+            delete elem;
+            m_idleLogics.RemoveAt(cur);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+CTileTriggerSwitchLogic*
+CTileTriggerContainer::FindSwitchLogic(i32 cellKey, TrigLogicId logicType) {
+    POSITION pos = m_switchLogics.GetHeadPosition();
+    while (pos != NULL) {
+        CTileTriggerSwitchLogic* logic =
+            static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
+        if (logic->m_cellKey == cellKey) {
+            if (logicType == TRIGID_ANY || logic->m_typeId == logicType) {
+                return logic;
+            }
+        }
+    }
+    return NULL;
+}
+
+CTileTriggerLogic* CTileTriggerContainer::FindLogic(i32 cellKey, TrigLogicId logicType) {
+    POSITION pos = m_idleLogics.GetHeadPosition();
+    while (pos != NULL) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+        if (elem->m_cellKey == cellKey) {
+            if (logicType == TRIGID_ANY) {
+                return elem;
+            }
+            if (elem->m_typeTag == logicType) {
+                return elem;
+            }
+        }
+    }
+    pos = m_timedLogics.GetHeadPosition();
+    while (pos != NULL) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
+        if (elem->m_cellKey == cellKey) {
+            if (logicType == TRIGID_ANY) {
+                return elem;
+            }
+            if (elem->m_typeTag == logicType) {
+                return elem;
+            }
+        }
+    }
+    return NULL;
+}
+
+void CTileTriggerContainer::RemoveAll() {
+    POSITION pos = m_idleLogics.GetHeadPosition();
+    while (pos != NULL) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+        delete elem;
+    }
+    m_idleLogics.RemoveAll();
+    pos = m_switchLogics.GetHeadPosition();
+    while (pos != NULL) {
+        CTileTriggerSwitchLogic* elem =
+            static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
+        delete elem;
+    }
+    m_switchLogics.RemoveAll();
+    pos = m_timedLogics.GetHeadPosition();
+    while (pos != NULL) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
+        delete elem;
+    }
+    m_timedLogics.RemoveAll();
+    pos = m_actionEvents.GetHeadPosition();
+    while (pos != NULL) {
+        CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+        delete elem;
+    }
+    m_actionEvents.RemoveAll();
+    m_latchedLeaf = NULL;
+}
+
+i32 CTileTriggerContainer::UpdateTimedLogics(i32 unusedFrameDelta) {
+    POSITION pos = m_timedLogics.GetHeadPosition();
+    while (pos != NULL) {
+        POSITION cur = pos;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
+        i32 disposition = elem->Classify(unusedFrameDelta);
+        if (disposition == 0) {
+            m_timedLogics.RemoveAt(cur);
+            delete elem;
+        } else if (disposition == -1) {
+            m_timedLogics.RemoveAt(cur);
+            m_idleLogics.AddTail(elem);
+        }
+    }
+    return 1;
+}
+
+i32 CTileTriggerContainer::ActivateTimedLogic(CTileTriggerLogic* logic) {
+    POSITION pos = m_idleLogics.GetHeadPosition();
+    while (pos != NULL) {
+        POSITION cur = pos;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+        if (elem == logic) {
+            m_idleLogics.RemoveAt(cur);
+            m_timedLogics.AddTail(elem);
+            elem->m_dutyOn = false;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
+    POSITION pos = m_actionEvents.GetHeadPosition();
+    while (pos != NULL) {
+        CTileActionEvent* data = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+        if (data->m_cellKey == cellKey) {
+            return data;
+        }
+    }
+    return NULL;
+}
+
+i32 CTileTriggerContainer::RemoveActionEvent(CTileActionEvent* event) {
+    POSITION pos = m_actionEvents.GetHeadPosition();
+    while (pos != NULL) {
+        POSITION cur_node = pos;
+        CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+        if (elem == event) {
+            delete elem;
+            m_actionEvents.RemoveAt(cur_node);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+i32 CTileTriggerContainer::Serialize(
+    CFileMemBase* archive,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
+    if (archive == NULL) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_SAVE: {
+            POSITION pos;
+            i32 count = m_switchLogics.GetCount();
+            archive->Write(&count, sizeof(count));
+            pos = m_switchLogics.GetHeadPosition();
+            while (pos != NULL) {
+                CTileTriggerSwitchLogic* logic =
+                    static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
+                if (SerializeSwitchLogic(archive, SERIAL_SAVE, typeId, payload, logic) == 0) {
+                    return 0;
+                }
+            }
+            count = m_idleLogics.GetCount();
+            archive->Write(&count, sizeof(count));
+            pos = m_idleLogics.GetHeadPosition();
+            while (pos != NULL) {
+                CTileTriggerLogic* logic =
+                    static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+                if (SerializeTriggerLogic(archive, SERIAL_SAVE, typeId, payload, logic) == 0) {
+                    return 0;
+                }
+            }
+            count = m_timedLogics.GetCount();
+            archive->Write(&count, sizeof(count));
+            pos = m_timedLogics.GetHeadPosition();
+            while (pos != NULL) {
+                CTileTriggerLogic* logic =
+                    static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
+                if (SerializeTriggerLogic(archive, SERIAL_SAVE, typeId, payload, logic) == 0) {
+                    return 0;
+                }
+            }
+            count = m_actionEvents.GetCount();
+            archive->Write(&count, sizeof(count));
+            pos = m_actionEvents.GetHeadPosition();
+            while (pos != NULL) {
+                CTileActionEvent* event =
+                    static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+                if (event->Serialize(archive, SERIAL_SAVE, typeId, payload) == 0) {
+                    return 0;
+                }
+            }
+            if (SaveInitialized(archive) == 0) {
+                return 0;
+            }
+            break;
+        }
+        case SERIAL_LOAD: {
+            RemoveAll();
+            u32 n;
+            u32 i;
+            archive->Read(&n, sizeof(n));
+            for (i = 0; i < n; i++) {
+                CTileTriggerSwitchLogic* logic = static_cast<CTileTriggerSwitchLogic*>(
+                    DeserializeLogic(archive, SERIAL_LOAD, typeId, payload)
+                );
+                if (logic == NULL) {
+                    return 0;
+                }
+                m_switchLogics.AddTail(static_cast<void*>(logic));
+            }
+            archive->Read(&n, sizeof(n));
+            for (i = 0; i < n; i++) {
+                CTileTriggerLogic* logic = static_cast<CTileTriggerLogic*>(
+                    DeserializeLogic(archive, SERIAL_LOAD, typeId, payload)
+                );
+                if (logic == NULL) {
+                    return 0;
+                }
+                m_idleLogics.AddTail(static_cast<void*>(logic));
+            }
+            archive->Read(&n, sizeof(n));
+            for (i = 0; i < n; i++) {
+                CTileTriggerLogic* logic = static_cast<CTileTriggerLogic*>(
+                    DeserializeLogic(archive, SERIAL_LOAD, typeId, payload)
+                );
+                if (logic == NULL) {
+                    return 0;
+                }
+                m_timedLogics.AddTail(static_cast<void*>(logic));
+            }
+            archive->Read(&n, sizeof(n));
+            for (i = 0; i < n; i++) {
+                CTileActionEvent* event = new CTileActionEvent;
+                if (event->Serialize(archive, SERIAL_LOAD, typeId, payload) == 0) {
+                    return 0;
+                }
+                event->m_owner = this;
+                m_actionEvents.AddTail(event);
+            }
+            if (LoadInitialized(archive) == 0) {
+                return 0;
+            }
+            break;
+        }
+    }
+
+    return 1;
+}
+
+i32 CTileTriggerContainer::SerializeSwitchLogic(
+    CFileMemBase* archive,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload,
+    CTileTriggerSwitchLogic* logic
+) {
+    if (logic == NULL) {
+        return 0;
+    }
+    TrigLogicId tag = logic->m_typeId;
+    archive->Write(&tag, sizeof(tag));
+
+    switch (tag) {
+        case TRIGID_SWITCH_1:
+
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_SWITCH_2:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_MULTI_SWITCH_3:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_EXCLUSIVE_SWITCH_4:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_SWITCH_5:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_SECRET_SWITCH_6:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_TIME_SWITCH_7:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_CHECKPOINT_SWITCH_8:
+
+            if (logic->SerializeDispatch(archive, mode, typeId, payload) == 0) {
+                return 0;
+            }
+            break;
+        default:
+            return 0;
+    }
+    return 1;
+}
+
+i32 CTileTriggerContainer::SerializeTriggerLogic(
+    CFileMemBase* archive,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload,
+    CTileTriggerLogic* logic
+) {
+    if (logic == NULL) {
+        return 0;
+    }
+    TrigLogicId tag = logic->m_typeTag;
+    archive->Write(&tag, sizeof(tag));
+
+    switch (tag) {
+        case TRIGID_GIANT_ROCK_22:
+            if ((static_cast<CGiantRockLogic*>(logic))
+                    ->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_TILE_TRIGGER_21:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_TIME_TRIGGER_23:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_TILE_TRIGGER_24:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_SECRET_TRIGGER_25:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload)) {
+                break;
+            }
+            return 0;
+        case TRIGID_COVERED_POWERUP_26:
+            if (logic->SerializeDispatch(archive, mode, typeId, payload) == 0) {
+                return 0;
+            }
+            break;
+        default:
+            return 0;
+    }
+    return 1;
+}
+
+#define DESERIALIZE_TRIGGER_LOGIC(base, derived, tagField)                                             {                                                                                                      base* obj = new derived;                                                                           if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {                               return NULL;                                                                                   }                                                                                                  obj->m_owner = this;                                                                               obj->tagField = id;                                                                                return obj;                                                                                    }
+
+void* CTileTriggerContainer::DeserializeLogic(
+    CFileMemBase* reader,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
+    if (reader == NULL) {
+        return NULL;
+    }
+    if (mode != SERIAL_LOAD) {
+        return NULL;
+    }
+    TrigLogicId id;
+    reader->Read(&id, sizeof(id));
+    switch (id) {
+        case TRIGID_SWITCH_1:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+        case TRIGID_SWITCH_2:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+        case TRIGID_MULTI_SWITCH_3:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CTileMultiTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_EXCLUSIVE_SWITCH_4:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CTileExclusiveTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_SWITCH_5:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+        case TRIGID_SECRET_SWITCH_6:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CTileSecretTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_TIME_SWITCH_7:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CTileTimeTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_CHECKPOINT_SWITCH_8:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CCheckpointTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_TILE_TRIGGER_21: {
+            CTileTriggerLogic* obj = new CTileTriggerLogic;
+            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
+                return NULL;
+            }
+            obj->m_owner = this;
+            obj->m_typeTag = id;
+
+            CGameLevel* level = g_gameReg->World()->m_level;
+            TileCollisionKind tileKind = PbResolveCell(level, obj->m_tileX, obj->m_tileY);
+            if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {
+                this->m_latchedLeaf = obj;
+            }
+            return obj;
+        }
+        case TRIGID_GIANT_ROCK_22:
+            DESERIALIZE_TRIGGER_LOGIC(CGiantRockLogic, CGiantRockLogic, m_typeTag);
+        case TRIGID_TIME_TRIGGER_23:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileTimeTriggerLogic, m_typeTag);
+        case TRIGID_TILE_TRIGGER_24:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileTriggerLogic, m_typeTag);
+        case TRIGID_SECRET_TRIGGER_25:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileSecretTriggerLogic, m_typeTag);
+        case TRIGID_COVERED_POWERUP_26:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CCoveredPowerupLogic, m_typeTag);
+        default:
+            return NULL;
+    }
+}
+
+i32 CTileTriggerContainer::SaveInitialized(CFileMemBase* archive) {
+    if (archive == NULL) {
+        return 0;
+    }
+    if (g_gameReg->World() == NULL) {
+        return 0;
+    }
+    archive->Write(&m_initialized, sizeof(m_initialized));
+    return 1;
+}
+
+i32 CTileTriggerContainer::LoadInitialized(CFileMemBase* archive) {
+    if (archive == NULL) {
+        return 0;
+    }
+    if (g_gameReg->World() == NULL) {
+        return 0;
+    }
+    archive->Read(&m_initialized, sizeof(m_initialized));
+    return 1;
+}
+
+CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
+    for (i32 scanX = tileX - 1; scanX < tileX + 2; scanX++) {
+        for (i32 scanY = tileY - 1; scanY < tileY + 2; scanY++) {
+
+            CGiantRockLogic* logic = static_cast<CGiantRockLogic*>(
+                FindLogic(CellKey(scanX, scanY), TRIGID_GIANT_ROCK_22)
+            );
+            if (logic != NULL) {
+                return logic;
+            }
+        }
+    }
+    return NULL;
+}
+
+i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
+    CTileActionEvent* elem = FindActionByCellKey(CellKey(tileX, tileY));
+    if (elem != NULL) {
+        if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
+            i32* flags = elem->m_playerFlags;
+            for (i32 i = 0; i < 4; i++) {
+                flags[i] = 1;
+            }
+        } else {
+            elem->m_playerFlags[playerSlot] = 1;
+        }
+        elem->SetActionCode(elem->GetActionCode());
+        return 1;
+    }
+
+    if (FindLogic(CellKey(tileX, tileY), TRIGID_COVERED_POWERUP_26) != NULL) {
+        return 1;
+    }
+    CGiantRockLogic* found = ScanNeighborhood(tileX, tileY);
+    return found != NULL;
+}

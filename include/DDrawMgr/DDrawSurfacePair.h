@@ -1,0 +1,62 @@
+#ifndef GRUNTZ_CDDRAWSURFACEPAIR_H
+#define GRUNTZ_CDDRAWSURFACEPAIR_H
+
+#include <Ints.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDSurface.h>
+#include <Enums.h>
+#include <Ints.h>
+#include <Wap32/WapObj.h>
+
+#include <stddef.h>
+
+class CDDSurface;
+class CDDrawSurfaceMgr;
+struct CRezItm;
+
+GZ_ENUM_FLAGS_BEGIN(DDrawSurfacePairFlags, i32)
+    SURFACEPAIR_SYSTEM_MEMORY = 0x10000,
+    SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER = 0x20000
+GZ_ENUM_FLAGS_END(DDrawSurfacePairFlags, i32)
+GZ_ENUM_FLAGS_OPS(DDrawSurfacePairFlags)
+
+class CDDrawSurfacePair : public CDrawSubWorker {
+public:
+    virtual i32 IsLoaded()  ;
+
+    void DrawCount(RECT* rc, i32 n);
+    void DrawLabel(RECT* rc, char* text);
+
+public:
+    CDDrawSurfacePair(CDDrawSurfaceMgr* mgr, i32 kind, i32 flags)
+        : CDrawSubWorker(INLINE_CTOR, mgr, kind, flags) {
+        m_surface = NULL;
+        m_ownsSurface = true;
+    }
+
+    virtual void Unload()  ;
+    virtual LoadableClassId GetClassId()  ;
+
+    virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp)  ;
+    virtual i32 InitFromSurface(CDDSurface* src);
+    virtual i32 Create(i32 w, i32 h, ColorDepth bpp, i32 flags);
+    virtual i32 LoadImage(CRezItm* src);
+    virtual i32 ResolveImageName(char* name);
+
+    virtual ~CDDrawSurfacePair()  ;
+
+    void BltSelf(CDDrawSurfacePair* src);
+    i32 RestoreIfLost();
+
+    void DrawBox(RECT* rect, i32 color);
+    void DrawCross(i32 x, i32 y);
+
+    void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size);
+
+    b32 m_ownsSurface;
+};
+
+#define BLT_SURFACE_PAIR_SELF(dst, src)                                                                (dst)->GetSurface()->BltFast(0, 0, (src)->GetSurface(), &(src)->m_srcRect, DDBLTFAST_WAIT)
+
+#endif

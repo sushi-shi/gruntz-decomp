@@ -1,0 +1,124 @@
+#ifndef GRUNTZ_CDIRECTDRAWMGR_H
+#define GRUNTZ_CDIRECTDRAWMGR_H
+
+#include <Ints.h>
+
+#include <DDrawMgr/ColorDepth.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
+#include <DDrawMgr/DDSurface.h>
+
+struct IDirectDraw;
+struct IDirectDraw2;
+struct IDirectDrawPalette;
+
+void __cdecl DDrawLogLine(char* fmt, ...);
+
+struct DisplayResolution {
+    i32 m_width;
+    i32 m_height;
+};
+
+struct CDDPalette {
+public:
+    CDDPalette() {
+        m_palette = NULL;
+        m_pos = NULL;
+        m_reserved = 0;
+        m_entries = NULL;
+        m_readbackEntries = NULL;
+        m_active = false;
+        m_sourcePalette = NULL;
+        m_targetPalette = NULL;
+        m_firstColorIndex = 0;
+        m_colorCount = 0;
+    }
+
+    i32 LoadFromFile(IDirectDraw2* dd, char* sFile, u32 flags);
+
+    i32 Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags);
+    i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);
+    i32 LoadPcx(IDirectDraw2* dd, char* filename, u32 flags);
+    i32 CreateRGB(IDirectDraw2* dd, u8* rgb, u32 flags);
+    i32 CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 flags);
+    i32 LoadPal(IDirectDraw2* dd, char* filename, u32 flags);
+    i32 LoadDefault(IDirectDraw2* dd, char* filename, u32 flags);
+    void Destroy();
+    void GetEntries();
+
+    i32 SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unused);
+
+    i32 SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused);
+    i32 SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused);
+
+    void FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs);
+
+    void StartFadeToColor(i32 start, i32 count, char r, char g, char b, i32 durationMs);
+    void StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs);
+    i32 Tick();
+    void Flush();
+
+    void BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b);
+    void FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs);
+    void Apply(i32 unused);
+    i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags);
+    i32 CaptureSystemPalette();
+    void DumpEntries();
+
+    POSITION m_pos;
+
+    IDirectDrawPalette* m_palette;
+
+    i32 m_reserved;
+
+    PALETTEENTRY* m_entries;
+    PALETTEENTRY* m_readbackEntries;
+    PALETTEENTRY* m_targetPalette;
+    PALETTEENTRY* m_sourcePalette;
+
+    PALETTEENTRY m_fixedColor;
+    i32 m_durationMs;
+    i32 m_startTimeMs;
+    i32 m_lastElapsedMs;
+    i32 m_firstColorIndex;
+    i32 m_colorCount;
+    b32 m_active;
+};
+
+struct DDModeInfo {
+    i32 m_width;
+    i32 m_height;
+    ColorDepth m_bpp;
+};
+
+class CMoviePlayer;
+
+extern i32 RestoreLostSurfaces();
+
+i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused);
+
+#include <ddraw.h>
+#include <stdio.h>
+
+extern i32 (*g_restoreHandler)();
+class CDDrawDeviceManager;
+
+extern CDDrawDeviceManager* g_directDrawMgr;
+
+void BuildColorChannelTables();
+i32 __stdcall CreateDirectDrawVia(
+    GUID* lpGuid,
+    i32 driverDesc,
+    i32 driverName,
+    IDirectDraw2*(__cdecl* factory)(void*, i32, i32)
+);
+
+union DdDriverEnumFn {
+    LPDDENUMCALLBACKA m_sdk;
+    i32(__stdcall* m_body)(GUID*, i32, i32, IDirectDraw2*(__cdecl*)(void*, i32, i32));
+};
+union DdModeEnumFn {
+    LPDDENUMMODESCALLBACK m_sdk;
+    i32(__stdcall* m_body)(DDSURFACEDESC*, i32);
+};
+
+#endif

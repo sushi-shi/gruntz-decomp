@@ -1,0 +1,56 @@
+#ifndef GRUNTZ_GRUNTZ_SPAWNLIST_H
+#define GRUNTZ_GRUNTZ_SPAWNLIST_H
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Ints.h>
+
+class CSpawnEntry {
+public:
+    CSpawnEntry(CString name, i32 data);
+
+    CString GetName() {
+        return m_name;
+    }
+    CString GetTail();
+
+    CString m_name;
+    b32 m_flag;
+    i32 m_data;
+};
+
+class CSpawnList {
+public:
+    CSpawnList() {
+        m_cursor = NULL;
+        m_lastPicked = -1;
+    }
+    ~CSpawnList();
+    void ClearFlags();
+    void DeleteAllEntries();
+    CSpawnEntry* FindEntry(CString name, b32 useHash);
+    CSpawnEntry* FindByName(const CString& name);
+    void AddVoiceSound(CString resourceName, i32 data);
+
+    i32 GetCount() const {
+        return m_list.GetCount();
+    }
+
+    CPtrList m_list;
+
+    CSpawnEntry* NextEntry(POSITION& pos) {
+        return static_cast<CSpawnEntry*>(m_list.GetNext(pos));
+    }
+    CSpawnEntry* FirstEntry();
+    CSpawnEntry* NextEntry();
+    CSpawnEntry* GetEntry(i32 index);
+    POSITION m_cursor;
+    i32 m_lastPicked;
+};
+
+inline CSpawnList::~CSpawnList() {
+    DeleteAllEntries();
+}
+
+#endif

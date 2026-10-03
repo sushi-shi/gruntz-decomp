@@ -1,0 +1,38 @@
+#ifndef GRUNTZ_GRUNTZ_WARPSTONEFLY_H
+#define GRUNTZ_GRUNTZ_WARPSTONEFLY_H
+
+#include <Ints.h>
+
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/WarpStoneFragment.h>
+#include <Ints.h>
+
+class CStatusBarMgr;
+class CFileMemBase;
+
+class CImage;
+
+class CWarpStoneFly {
+public:
+    CWarpStoneFly();
+
+    i32 Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment);
+    i32 Tick(u32 dt);
+    i32 Draw();
+
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+
+    WarpStoneFragment m_arrivalMode;
+    i32 m_targetX;
+    i32 m_targetY;
+    double m_currentX;
+    double m_currentY;
+    double m_velocityScale;
+    double m_xDirection;
+    double m_yDirection;
+    CImage* m_sprite;
+    CStatusBarMgr* m_owner;
+};
+
+#endif

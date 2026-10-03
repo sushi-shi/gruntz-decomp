@@ -1,0 +1,83 @@
+#ifndef GRUNTZ_GAMESTATS_H
+#define GRUNTZ_GAMESTATS_H
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PlayerSlot.h>
+#include <Gruntz/QuestLevelStats.h>
+#include <Gruntz/SerialArchive.h>
+#include <Ints.h>
+
+class CGameStats {
+public:
+    CGameStats();
+
+    i32 ResetWithLevelRecords(QuestLevelStats* levelRecords);
+    ~CGameStats();
+    void Reset();
+    void SetLevelNumber(i32 levelNumber);
+    void RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
+    void ClearFlagCaptures();
+    i32 CountAllFlagCaptures(i32 validatedPlayerIndex);
+    i32 GetFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
+    void RecordKill(i32 killerPlayerIndex, i32 victimPlayerIndex);
+    void ClearKills();
+    i32 CountKillsForPlayer(i32 playerIndex);
+    i32 IsCurrentLevelPerfect(i32 unused);
+    i32 IsCampaignPerfect();
+    float CurrentAreaCoinRatio();
+    i32 CurrentAreaHasAllWarpLetters();
+    i32 SumToyzCollectedForCurrentArea();
+    i32 SumToyzAvailableForCurrentArea();
+    i32 SumToolzCollectedForCurrentArea();
+    i32 SumToolzAvailableForCurrentArea();
+    i32 SumPowerupzCollectedForCurrentArea();
+    i32 SumPowerupzAvailableForCurrentArea();
+    i32 SumSecretsFoundForCurrentArea();
+    i32 SumSecretsAvailableForCurrentArea();
+    i32 SumCoinsCollectedForCurrentArea();
+    i32 SumCoinsAvailableForCurrentArea();
+    i32 SumGruntzLostForCurrentArea();
+    i32 SumGruntzExitedForCurrentArea();
+    i32 SumElapsedTimeForCurrentArea();
+    i32 CurrentAreaHasWarpLetter(i32 letterIndex);
+    void UpdateLevelRecord(i32 levelNumber, b32 writeAvailableCounts);
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+
+    QuestLevelStats* m_levelRecords;
+    i32 m_levelNumber;
+    b32 m_isCustomLevel;
+    b32 m_currentAreaComplete;
+
+    i32 m_elapsedTimeMs;
+    i32 m_toyzCollected;
+    i32 m_toolzCollected;
+    i32 m_gruntzExited;
+    i32 m_gruntzLost;
+    i32 m_powerupzCollected;
+    i32 m_secretsFound;
+    i32 m_coinsCollected;
+    i32 m_toyzAvailable;
+    i32 m_toolzAvailable;
+    i32 m_powerupzAvailable;
+    i32 m_secretsAvailable;
+    i32 m_coinsAvailable;
+    b32 m_warpLetterFound;
+    i32 m_gruntzByPlayer[PLAYER_SLOT_COUNT];
+    i32 m_killsByPlayer[PLAYER_SLOT_COUNT][PLAYER_SLOT_COUNT];
+    i32 m_flagCapturesByPlayer[PLAYER_SLOT_COUNT][PLAYER_SLOT_COUNT];
+
+    i32 m_weaponPickupsByPlayer[PLAYER_SLOT_COUNT][22];
+    i32 m_toyPickupsByPlayer[PLAYER_SLOT_COUNT][10];
+    i32 m_powerupPickupsByPlayer[PLAYER_SLOT_COUNT][7];
+    i32 m_miscPickupsByPlayer[PLAYER_SLOT_COUNT][4];
+};
+
+inline CGameStats::CGameStats() {
+    Reset();
+}
+
+extern const float g_zeroF;
+#endif

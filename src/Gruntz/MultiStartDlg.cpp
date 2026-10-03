@@ -1,0 +1,1215 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/MultiStartDlg.h>
+
+#include <Enums.h>
+#include <Gruntz/ColorTint.h>
+#include <Gruntz/ColorTintRef.h>
+#include <Gruntz/CustomMapSelection.h>
+#include <Gruntz/Dialogs.h>
+#include <Gruntz/GameRand.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/Multi.h>
+#include <Gruntz/MultiStartDlgCtrlId.h>
+#include <Ints.h>
+#include <MsgParam.h>
+#include <Net/KeyedList.h>
+#include <Net/LatencyList.h>
+#include <Net/NetLobbyCtrlId.h>
+#include <Net/NetMgr.h>
+#include <Net/NetProviderNode.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
+#include <Utils/RegMgr.h>
+
+#include <stdio.h>
+#include <string.h>
+#include <windowsx.h>
+
+CString g_defaultPlayerNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
+
+WNDPROC g_savedMultiWndProc = NULL;
+
+CMulti* g_multiState;
+
+b32 g_watchdogBusy;
+
+i32 g_netStatsTick;
+
+i32 g_latencyDisplayTick;
+
+char g_usingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
+
+CMultiStartDlg::CMultiStartDlg(CGruntzMgr* gameManager, CWnd* pParent)
+    : CDialog(0xc5, pParent), m_reserved74(0xa) {
+    m_gameManager = gameManager;
+    m_usesCustomMap = false;
+    m_latencyOptions = NULL;
+    g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
+}
+
+i32 CMultiStartDlg::InitializeWorldCombo() {
+    CComboBox* combo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
+    if (combo == NULL) {
+        return 0;
+    }
+    CRezDir* worlds = m_gameManager->m_resourceArchive->GetDirFromPath("GAME_MULTI");
+    if (worlds == NULL) {
+        return 0;
+    }
+    CRezItm* entry = worlds->GetFirstItem(worlds->GetFirstType());
+    while (entry != NULL) {
+        CString name(entry->GetName());
+        name.MakeUpper();
+        combo->AddString(name);
+        entry = worlds->GetNextItem(entry);
+    }
+    CWnd* reloadedCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
+    CEdit* editControl = static_cast<CEdit*>(reloadedCombo->GetWindow(GW_CHILD));
+    if (editControl == NULL) {
+        return 0;
+    }
+    editControl->SetReadOnly(1);
+    combo->SetCurSel(0);
+    HWND editHwnd = editControl->GetSafeHwnd();
+    g_savedMultiWndProc = reinterpret_cast<WNDPROC>(GetWindowLongA(editHwnd, GWL_WNDPROC));
+    SetWindowLongA(editHwnd, GWL_WNDPROC, reinterpret_cast<LONG>(MultiMapComboEditProc));
+    CommitWorldSelection();
+    return 1;
+}
+
+LRESULT CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_SETTEXT) {
+        if (strcmp("", reinterpret_cast<LPCTSTR>(lParam)) == 0) {
+            return 0;
+        }
+    }
+    return CallWindowProcA(g_savedMultiWndProc, hWnd, msg, wParam, lParam);
+}
+
+i32 CMultiStartDlg::RefreshWorldControls() {
+    if (g_multiState->m_isHost != false) {
+        CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
+        CWnd* worldEdit = GetDlgItem(IDX(IDC_MULTI_WORLD))->GetWindow(GW_CHILD);
+        CWnd* customWorldButton = GetDlgItem(IDX(IDC_MULTI_CUSTOM_WORLD));
+        CWnd* echoLatencyButton = GetDlgItem(IDX(IDC_MULTI_ECHO_LATENCY));
+        if (!worldEdit) {
+            return 0;
+        }
+        if (!worldCombo) {
+            return 0;
+        }
+        if (!customWorldButton) {
+            return 0;
+        }
+        if (!echoLatencyButton) {
+            return 0;
+        }
+        i32 localSlot = GetLocalPlayerSlotIndex();
+        b32 canEditWorld = (m_gameManager->m_players[localSlot].m_ready == false);
+        worldCombo->EnableWindow(canEditWorld);
+        customWorldButton->EnableWindow(canEditWorld);
+        echoLatencyButton->EnableWindow(false);
+        return 1;
+    }
+    CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
+    CWnd* worldEdit = GetDlgItem(IDX(IDC_MULTI_WORLD))->GetWindow(GW_CHILD);
+    CWnd* customWorldButton = GetDlgItem(IDX(IDC_MULTI_CUSTOM_WORLD));
+    CWnd* echoLatencyButton = GetDlgItem(IDX(IDC_MULTI_ECHO_LATENCY));
+    if (!worldEdit) {
+        return 0;
+    }
+    if (!worldCombo) {
+        return 0;
+    }
+    if (!customWorldButton) {
+        return 0;
+    }
+    if (!echoLatencyButton) {
+        return 0;
+    }
+    worldCombo->SetCurSel(-1);
+    m_usesCustomMap = g_multiState->m_usesCustomLevel;
+    if (m_usesCustomMap != false) {
+        worldEdit->SetWindowTextA(g_multiState->CustomLevelName());
+    } else {
+        CString currentName;
+        worldEdit->GetWindowTextA(currentName);
+        if (currentName.Compare(g_multiState->BuiltInLevelName())) {
+            worldEdit->SetWindowTextA(g_multiState->BuiltInLevelName());
+        }
+    }
+    worldCombo->EnableWindow(false);
+    customWorldButton->EnableWindow(false);
+    echoLatencyButton->EnableWindow(false);
+    return 1;
+}
+
+i32 CMultiStartDlg::BuildLatencyOptions() {
+    m_latencyOptions = new CLatencyList(0xa);
+    CMulti* multi = g_multiState;
+    i32 presetCount = 5;
+    CNetProviderNode* provider = multi->m_netMgr->m_selectedProvider;
+    if (multi->m_lobbyLaunch) {
+        presetCount = 2;
+    } else if (provider) {
+        if (provider->IsIpxProvider()) {
+            presetCount = 1;
+        }
+        if (provider->IsTcpIpProvider()) {
+            presetCount = 2;
+        }
+        if (provider->IsModemProvider()) {
+            presetCount = 3;
+        }
+        if (provider->IsSerialProvider()) {
+            presetCount = 4;
+        }
+    }
+    m_latencyOptions->Dispatch(presetCount);
+    HWND dialogHwnd = GetSafeHwnd();
+    m_latencyOptions->FillCombo(dialogHwnd, IDX(IDC_MULTI_LATENCY));
+    m_latencyOptions->SelectItem(dialogHwnd, IDX(IDC_MULTI_LATENCY), 0, 0);
+    g_multiState->m_autoCommandDelay = true;
+    return 1;
+}
+
+i32 CMultiStartDlg::RefreshLatencyControl() {
+    CWnd* latencyCombo = GetDlgItem(IDX(IDC_MULTI_LATENCY));
+    if (latencyCombo == NULL) {
+        return 0;
+    }
+    CMulti* multi = g_multiState;
+    if (multi->m_isHost) {
+        i32 localSlot = GetLocalPlayerSlotIndex();
+        latencyCombo->EnableWindow(m_gameManager->m_players[localSlot].m_ready == false);
+    } else {
+        latencyCombo->EnableWindow(false);
+    }
+    HWND dialogHwnd = GetSafeHwnd();
+    if (g_multiState->m_autoCommandDelay) {
+        m_latencyOptions->SelectItem(dialogHwnd, IDX(IDC_MULTI_LATENCY), 0, 0);
+    } else {
+        m_latencyOptions->SelectItem(
+            dialogHwnd,
+            IDX(IDC_MULTI_LATENCY),
+            g_multiState->m_commandDelay,
+            g_multiState->m_resendInterval
+        );
+    }
+    return 1;
+}
+
+void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
+    CRegMgr* reg = static_cast<CRegMgr*>(g_gameReg->m_settings);
+    if (pDX->m_bSaveAndValidate == false) {
+        GetDlgItem(IDX(IDC_MULTI_GAME_NAME))->SetWindowTextA(g_multiState->GameName());
+        NetLobby::g_curDlg = GetSafeHwnd();
+        if (!InitializeWorldCombo()) {
+            return;
+        }
+        if (!BuildLatencyOptions()) {
+            return;
+        }
+        i32 i;
+        for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
+            CComboBox* typeCombo = GetPlayerTypeControl(i);
+            typeCombo->AddString("None");
+            typeCombo = GetPlayerTypeControl(i);
+            typeCombo->AddString("Computer (easy)");
+            typeCombo = GetPlayerTypeControl(i);
+            typeCombo->AddString("Computer (normal)");
+            typeCombo = GetPlayerTypeControl(i);
+            typeCombo->AddString("Computer (difficult)");
+            typeCombo = GetPlayerTypeControl(i);
+            typeCombo->AddString("Human");
+        }
+        for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
+            CEdit* nameControl = GetPlayerNameControl(i);
+            if (nameControl != NULL) {
+                nameControl->LimitText(9);
+            }
+        }
+        static_cast<CEdit*>(GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT)))->LimitText(100);
+        CustomMapSelection customFlag = static_cast<CustomMapSelection>(
+            reg->Get("CustomMultiMap", IDX(CUSTOM_MAP_UNINITIALIZED))
+        );
+        if (g_multiState->m_isHost != false && customFlag != CUSTOM_MAP_UNINITIALIZED) {
+            char mapName[0x100];
+            DWORD size = 0x100;
+            reg->Get("LastMultiMap", mapName, size, "");
+            m_usesCustomMap = customFlag;
+            if (customFlag != CUSTOM_MAP_STANDARD) {
+                char path[0x100];
+                sprintf(path, "custom\\%s", mapName);
+                FILE* file = fopen(path, "rb");
+                if (file != NULL) {
+                    CComboBox* worldCombo =
+                        static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
+                    CWnd* child = worldCombo->GetWindow(GW_CHILD);
+                    if (child == NULL) {
+                        return;
+                    }
+                    child->SetWindowTextA(mapName);
+                    g_multiState->m_usesCustomLevel = true;
+                    g_multiState->m_customLevelName = mapName;
+                    g_multiState->m_builtInLevelName = "";
+                    fclose(file);
+                }
+            } else {
+                CWnd* child = GetDlgItem(IDX(IDC_MULTI_WORLD))->GetWindow(GW_CHILD);
+                if (child == NULL) {
+                    return;
+                }
+                child->SetWindowTextA(mapName);
+                g_multiState->m_usesCustomLevel = false;
+                g_multiState->m_customLevelName = "";
+                g_multiState->m_builtInLevelName = mapName;
+            }
+        }
+        {
+            CWnd* chatLog = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
+            g_netMessageEditHwnd = chatLog->GetSafeHwnd();
+        }
+        g_multiState->m_netMgr->m_selectedPlayer = NULL;
+        g_multiState->PollSession();
+        if (!RefreshWorldControls()) {
+            return;
+        }
+        if (!RefreshLatencyControl()) {
+            return;
+        }
+        if (!RefreshPlayerControls(1)) {
+            return;
+        }
+    } else {
+        CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
+        CWnd* child = worldCombo->GetWindow(GW_CHILD);
+        if (child == NULL) {
+            return;
+        }
+        child->GetWindowTextA(m_worldName);
+        if (g_multiState->m_isHost != false) {
+            reg->Set("LastMultiMap", m_worldName);
+            reg->Set("CustomMultiMap", m_usesCustomMap);
+        }
+        for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
+            CEdit* nameControl = GetPlayerNameControl(i);
+            if (nameControl != NULL) {
+                CString name;
+                nameControl->GetWindowTextA(name);
+                m_gameManager->m_players[i].m_name = name;
+            }
+        }
+        NetLobby::g_curDlg = NULL;
+    }
+    PaintPlayerColorControls();
+}
+
+BEGIN_MESSAGE_MAP(CMultiStartDlg, CDialog)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE0, CMultiStartDlg::OnPlayerTypeSelection0)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE1, CMultiStartDlg::OnPlayerTypeSelection1)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE2, CMultiStartDlg::OnPlayerTypeSelection2)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE3, CMultiStartDlg::OnPlayerTypeSelection3)
+    ON_WM_TIMER()
+    ON_WM_MEASUREITEM()
+    ON_WM_DRAWITEM()
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CMultiStartDlg::OnPlayerColor0)
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR1, CMultiStartDlg::OnPlayerColor1)
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR2, CMultiStartDlg::OnPlayerColor2)
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR3, CMultiStartDlg::OnPlayerColor3)
+    ON_BN_CLICKED(IDC_MULTI_CUSTOM_WORLD, CMultiStartDlg::OnCustomWorld)
+    ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldSelection)
+    ON_BN_CLICKED(0x4c6, CMultiStartDlg::OnChatSend)
+    ON_EN_CHANGE(CTRL_PLAYER_NAME1, CMultiStartDlg::OnPlayerNameChange1)
+    ON_EN_CHANGE(CTRL_PLAYER_NAME0, CMultiStartDlg::OnPlayerNameChange0)
+    ON_EN_CHANGE(CTRL_PLAYER_NAME2, CMultiStartDlg::OnPlayerNameChange2)
+    ON_EN_CHANGE(CTRL_PLAYER_NAME3, CMultiStartDlg::OnPlayerNameChange3)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ0, CMultiStartDlg::OnMaxGruntzSelection0)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ1, CMultiStartDlg::OnMaxGruntzSelection1)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ2, CMultiStartDlg::OnMaxGruntzSelection2)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ3, CMultiStartDlg::OnMaxGruntzSelection3)
+    ON_CBN_SELCHANGE(IDC_MULTI_LATENCY, CMultiStartDlg::CommitLatencySelection)
+    ON_BN_CLICKED(CTRL_PLAYER_READY0, CMultiStartDlg::OnReadyToggle0)
+    ON_BN_CLICKED(CTRL_PLAYER_READY1, CMultiStartDlg::OnReadyToggle1)
+    ON_BN_CLICKED(CTRL_PLAYER_READY2, CMultiStartDlg::OnReadyToggle2)
+    ON_BN_CLICKED(CTRL_PLAYER_READY3, CMultiStartDlg::OnReadyToggle3)
+    ON_BN_CLICKED(IDC_MULTI_ECHO_LATENCY, CMultiStartDlg::EchoLatencySettings)
+    ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldSelection)
+END_MESSAGE_MAP()
+
+CComboBox* CMultiStartDlg::GetPlayerTypeControl(i32 slot) {
+    CComboBox* result = NULL;
+    switch (static_cast<PlayerSlot>(slot)) {
+        case PLAYER_SLOT_0:
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE0));
+            break;
+        case PLAYER_SLOT_1:
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE1));
+            break;
+        case PLAYER_SLOT_2:
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE2));
+            break;
+        case PLAYER_SLOT_3:
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_TYPE3));
+            break;
+    }
+    return result;
+}
+
+CButton* CMultiStartDlg::GetReadyControl(i32 slot) {
+    CButton* result = NULL;
+    switch (static_cast<PlayerSlot>(slot)) {
+        case PLAYER_SLOT_0:
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY0));
+            break;
+        case PLAYER_SLOT_1:
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY1));
+            break;
+        case PLAYER_SLOT_2:
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY2));
+            break;
+        case PLAYER_SLOT_3:
+            result = static_cast<CButton*>(GetDlgItem(CTRL_PLAYER_READY3));
+            break;
+    }
+    return result;
+}
+
+CEdit* CMultiStartDlg::GetPlayerNameControl(i32 slot) {
+    CEdit* result = NULL;
+    switch (static_cast<PlayerSlot>(slot)) {
+        case PLAYER_SLOT_0:
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME0));
+            break;
+        case PLAYER_SLOT_1:
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME1));
+            break;
+        case PLAYER_SLOT_2:
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME2));
+            break;
+        case PLAYER_SLOT_3:
+            result = static_cast<CEdit*>(GetDlgItem(CTRL_PLAYER_NAME3));
+            break;
+    }
+    return result;
+}
+
+CComboBox* CMultiStartDlg::GetMaxGruntzControl(i32 slot) {
+    CComboBox* result = NULL;
+    switch (static_cast<PlayerSlot>(slot)) {
+        case PLAYER_SLOT_0:
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ0));
+            break;
+        case PLAYER_SLOT_1:
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ1));
+            break;
+        case PLAYER_SLOT_2:
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ2));
+            break;
+        case PLAYER_SLOT_3:
+            result = static_cast<CComboBox*>(GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ3));
+            break;
+    }
+    return result;
+}
+
+CWnd* CMultiStartDlg::GetPlayerColorControl(i32 slot) {
+    CWnd* result = NULL;
+    switch (static_cast<PlayerSlot>(slot)) {
+        case PLAYER_SLOT_0:
+            result = GetDlgItem(CTRL_PLAYER_COLOR0);
+            break;
+        case PLAYER_SLOT_1:
+            result = GetDlgItem(CTRL_PLAYER_COLOR1);
+            break;
+        case PLAYER_SLOT_2:
+            result = GetDlgItem(CTRL_PLAYER_COLOR2);
+            break;
+        case PLAYER_SLOT_3:
+            result = GetDlgItem(CTRL_PLAYER_COLOR3);
+            break;
+    }
+    return result;
+}
+
+void CMultiStartDlg::SetPlayerTypeSelection(i32 slot, i32 selection) {
+    CComboBox* control = GetPlayerTypeControl(slot);
+    if (control != NULL) {
+        control->SetCurSel(selection);
+    }
+}
+
+i32 CMultiStartDlg::GetPlayerTypeSelection(i32 slot) {
+    CComboBox* control = GetPlayerTypeControl(slot);
+    if (control == NULL) {
+        return -1;
+    }
+    return control->GetCurSel();
+}
+
+i32 CMultiStartDlg::GetMaxGruntzSelection(i32 slot) {
+    CComboBox* control = GetMaxGruntzControl(slot);
+    if (control == NULL) {
+        return -1;
+    }
+    return control->GetCurSel() + 1;
+}
+
+void CMultiStartDlg::SetMaxGruntzSelection(i32 slot, i32 count) {
+    CComboBox* control = GetMaxGruntzControl(slot);
+    if (control) {
+        control->SetCurSel(count - 1);
+    }
+}
+
+void CMultiStartDlg::SetPlayerName(i32 slot, const char* name) {
+    CEdit* control = GetPlayerNameControl(slot);
+    if (control != NULL) {
+        control->SetWindowTextA(name);
+    }
+}
+
+void CMultiStartDlg::OnPlayerTypeSelection0() {
+    ApplyPlayerTypeSelection(0);
+    BroadcastPlayerSlotChanges();
+}
+
+void CMultiStartDlg::OnPlayerTypeSelection1() {
+    ApplyPlayerTypeSelection(1);
+    BroadcastPlayerSlotChanges();
+}
+
+void CMultiStartDlg::OnPlayerTypeSelection2() {
+    ApplyPlayerTypeSelection(2);
+    BroadcastPlayerSlotChanges();
+}
+
+void CMultiStartDlg::OnPlayerTypeSelection3() {
+    ApplyPlayerTypeSelection(3);
+    BroadcastPlayerSlotChanges();
+}
+
+void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
+    CComboBox* typeControl = GetPlayerTypeControl(slot);
+    CEdit* nameControl = GetPlayerNameControl(slot);
+    CWnd* colorControl = GetPlayerColorControl(slot);
+    GetMaxGruntzControl(slot);
+    GetReadyControl(slot);
+    GruntzPlayer* player = &m_gameManager->m_players[slot];
+    if (typeControl->GetCurSel() == 0) {
+        if (player->m_humanControlled && player->m_active) {
+            g_multiState->DropLobbyPlayer(player->m_playerIndex);
+        } else if (!player->m_humanControlled && player->m_active) {
+            SetPlayerColorAvailable(player->m_color, true);
+        }
+        player->m_active = false;
+        player->m_ready = false;
+        nameControl->EnableWindow(false);
+        colorControl->EnableWindow(false);
+    } else {
+        if (static_cast<MultiplayerPlayerKind>(typeControl->GetCurSel()) != MULTI_PLAYER_HUMAN) {
+            if (player->m_humanControlled != false) {
+                if (player->m_active != false) {
+                    g_multiState->DropLobbyPlayer(player->m_playerIndex);
+                }
+                ColorTint freeColor = FindAvailablePlayerColor();
+                player->m_color = freeColor;
+                SetPlayerColorAvailable(freeColor, false);
+            } else if (player->m_active == false) {
+                ColorTint freeColor = FindAvailablePlayerColor();
+                player->m_color = freeColor;
+                SetPlayerColorAvailable(freeColor, false);
+            }
+            player->m_ready = true;
+            player->SetHumanControlled(false);
+            player->m_difficulty =
+                static_cast<BattlezDifficulty>(static_cast<i32>(typeControl->GetCurSel()) - 1);
+            player->m_active = true;
+            player->m_name = g_defaultPlayerNames[slot];
+        }
+        nameControl->EnableWindow(true);
+        colorControl->EnableWindow(true);
+    }
+}
+
+void CMultiStartDlg::OnTimer(u32 nIDEvent) {
+    switch (nIDEvent) {
+        case MULTI_START_WATCHDOG_TIMER:
+            Watchdog();
+            break;
+    }
+    Default();
+}
+
+i32 CMultiStartDlg::OnInitDialog() {
+    CDialog::OnInitDialog();
+    SetTimer(MULTI_START_WATCHDOG_TIMER, 0x32, NULL);
+    return 1;
+}
+
+void CMultiStartDlg::AppendChatLine(char* line) {
+    CWnd* item = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
+
+    HWND edit = item->GetSafeHwnd();
+    if (!edit || !line || !line[0]) {
+        return;
+    }
+    i32 len = ::Edit_GetTextLength(edit);
+    if (len == 0) {
+        ::SendMessageA(edit, EM_SETSEL, len, -1);
+    } else {
+        ::SendMessageA(edit, EM_SETSEL, len, len);
+    }
+    char buffer[0x80];
+    buffer[0] = 0;
+    if (len > 0) {
+        strcat(buffer, "\r\n");
+    }
+    strcat(buffer, line);
+    MsgParam text;
+    text.m_str = buffer;
+    ::SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
+    ::SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
+}
+
+i32 CMultiStartDlg::PaintPlayerColorControls() {
+    CPaintDC dc(this);
+    for (i32 i = 0; i < 4; i++) {
+        CWnd* colorControl = GetPlayerColorControl(i);
+        if (colorControl == NULL) {
+            continue;
+        }
+
+        CRect rect;
+        colorControl->GetClientRect(&rect);
+        colorControl->ClientToScreen(&rect.TopLeft());
+        colorControl->ClientToScreen(&rect.BottomRight());
+        ScreenToClient(&rect.TopLeft());
+        ScreenToClient(&rect.BottomRight());
+        CBrush brush;
+        if (colorControl->IsWindowEnabled()) {
+            GetRandomNumber();
+            GetRandomNumber();
+            i32 shade = (GetRandomNumber() % 0xff) & 0xff;
+            brush.CreateSolidBrush((shade << 8 | shade) << 8 | shade);
+        } else {
+            brush.CreateSolidBrush(RGB(128, 128, 128));
+        }
+        dc.FillRect(&rect, &brush);
+    }
+    return 1;
+}
+
+void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
+    CWnd::OnMeasureItem(nIDCtl, lpmis);
+}
+
+void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
+    COLORREF color;
+    b32 shouldDraw = false;
+    switch (nIDCtl) {
+        case CTRL_PLAYER_COLOR0:
+            if (GetPlayerColorControl(0)->IsWindowEnabled()) {
+                color = TintColorRef(m_gameManager->m_players[0].m_color);
+            } else {
+                color = RGB(200, 200, 200);
+            }
+            shouldDraw = true;
+            break;
+        case CTRL_PLAYER_COLOR1:
+            if (GetPlayerColorControl(1)->IsWindowEnabled()) {
+                color = TintColorRef(m_gameManager->m_players[1].m_color);
+            } else {
+                color = RGB(200, 200, 200);
+            }
+            shouldDraw = true;
+            break;
+        case CTRL_PLAYER_COLOR2:
+            if (GetPlayerColorControl(2)->IsWindowEnabled()) {
+                color = TintColorRef(m_gameManager->m_players[2].m_color);
+            } else {
+                color = RGB(200, 200, 200);
+            }
+            shouldDraw = true;
+            break;
+        case CTRL_PLAYER_COLOR3:
+            if (GetPlayerColorControl(3)->IsWindowEnabled()) {
+                color = TintColorRef(m_gameManager->m_players[3].m_color);
+            } else {
+                color = RGB(200, 200, 200);
+            }
+            shouldDraw = true;
+            break;
+    }
+    if (shouldDraw) {
+        CDC dc;
+        dc.Attach(lpdis->hDC);
+        CBrush brush(color);
+        dc.FillRect(&lpdis->rcItem, &brush);
+        dc.Detach();
+    }
+    CWnd::OnDrawItem(nIDCtl, lpdis);
+}
+
+void CMultiStartDlg::OnPlayerColor0() {
+    CMulti* multi = g_multiState;
+    if ((multi->m_isHost == false || m_gameManager->m_players[0].m_humanControlled != false)
+        && (m_gameManager->m_players[0].m_ready != false
+            || m_gameManager->m_players[0].m_networkPlayerId != multi->m_localPlayerId)) {
+        return;
+    }
+    CBattlezDlgColors colorDialog(m_gameManager, 0, 1, NULL);
+    if (colorDialog.DoModal() == IDOK) {
+        if (SetPlayerColor(0, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
+            BroadcastPlayerSlotChanges();
+            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, true);
+        }
+    }
+}
+
+void CMultiStartDlg::OnPlayerColor1() {
+    CMulti* multi = g_multiState;
+    if ((multi->m_isHost == false || m_gameManager->m_players[1].m_humanControlled != false)
+        && (m_gameManager->m_players[1].m_ready != false
+            || m_gameManager->m_players[1].m_networkPlayerId != multi->m_localPlayerId)) {
+        return;
+    }
+    CBattlezDlgColors colorDialog(m_gameManager, 1, 1, NULL);
+    if (colorDialog.DoModal() == IDOK) {
+        if (SetPlayerColor(1, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
+            BroadcastPlayerSlotChanges();
+            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, true);
+        }
+    }
+}
+
+void CMultiStartDlg::OnPlayerColor2() {
+    CMulti* multi = g_multiState;
+    if ((multi->m_isHost == false || m_gameManager->m_players[2].m_humanControlled != false)
+        && (m_gameManager->m_players[2].m_ready != false
+            || m_gameManager->m_players[2].m_networkPlayerId != multi->m_localPlayerId)) {
+        return;
+    }
+    CBattlezDlgColors colorDialog(m_gameManager, 2, 1, NULL);
+    if (colorDialog.DoModal() == IDOK) {
+        if (SetPlayerColor(2, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
+            BroadcastPlayerSlotChanges();
+            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, true);
+        }
+    }
+}
+
+void CMultiStartDlg::OnPlayerColor3() {
+    CMulti* multi = g_multiState;
+    if ((multi->m_isHost == false || m_gameManager->m_players[3].m_humanControlled != false)
+        && (m_gameManager->m_players[3].m_ready != false
+            || m_gameManager->m_players[3].m_networkPlayerId != multi->m_localPlayerId)) {
+        return;
+    }
+    CBattlezDlgColors colorDialog(m_gameManager, 3, 1, NULL);
+    if (colorDialog.DoModal() == IDOK) {
+        if (SetPlayerColor(3, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
+            BroadcastPlayerSlotChanges();
+            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, true);
+        }
+    }
+}
+
+void CMultiStartDlg::OnCustomWorld() {
+    if (g_multiState->m_isHost == false) {
+        return;
+    }
+    CBattlezDlgCustom dlg(NULL);
+    if (dlg.DoModal() == IDOK && !dlg.m_customName.IsEmpty()) {
+
+        CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
+        CWnd* worldEdit = worldCombo->GetWindow(GW_CHILD);
+
+        if (worldEdit == NULL) {
+            return;
+        }
+        dlg.m_customName.MakeUpper();
+        worldEdit->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
+        m_usesCustomMap = true;
+        g_multiState->m_usesCustomLevel = true;
+        g_multiState->m_customLevelName = static_cast<LPCTSTR>(dlg.m_customName);
+        g_multiState->m_builtInLevelName = "";
+        g_multiState->SendGameConfig(NULL);
+    }
+}
+
+void CMultiStartDlg::CommitWorldSelection() {
+    if (g_multiState->m_isHost != false) {
+        CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
+        if (worldCombo != NULL) {
+            i32 selection = worldCombo->GetCurSel();
+            if (selection != CB_ERR) {
+                CString worldName;
+                (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
+                if (!worldName.IsEmpty()) {
+                    m_usesCustomMap = false;
+                }
+                g_multiState->m_usesCustomLevel = false;
+                g_multiState->m_customLevelName = "";
+                g_multiState->m_builtInLevelName = static_cast<LPCTSTR>(worldName);
+                g_multiState->SendGameConfig(NULL);
+            }
+        }
+    }
+}
+
+void CMultiStartDlg::OnChatSend() {
+    CWnd* input = GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT));
+    if (input == NULL) {
+        return;
+    }
+    CString message, inputText;
+    GetPlayerNameControl(GetLocalPlayerSlotIndex())->GetWindowTextA(message);
+    message += " says: ";
+    input->GetWindowTextA(inputText);
+    if (!inputText.IsEmpty()) {
+        message += inputText;
+        AppendChatLine(const_cast<char*>(static_cast<const char*>(message)));
+        input->SetWindowTextA("");
+        g_multiState
+            ->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(message)), 0, 0, NULL);
+    }
+}
+
+void CMultiStartDlg::BroadcastPlayerSlotChanges() {
+    CMulti* multi = g_multiState;
+    if (multi->m_isHost != false) {
+        multi->BroadcastPlayerTable(NULL);
+        RefreshPlayerControls(1);
+    } else {
+        g_multiState->BroadcastPlayerUpdate(
+            m_gameManager->FindPlayerByNetworkId(multi->m_localPlayerId)
+        );
+    }
+}
+
+i32 CMultiStartDlg::EnableChatControls() {
+    CWnd* control = GetDlgItem(IDCANCEL);
+    control->EnableWindow(true);
+    control = GetDlgItem(IDX(IDC_NETCHAT_SEND));
+    control->EnableWindow(true);
+    control = GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT));
+    control->EnableWindow(true);
+    control = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
+    control->EnableWindow(true);
+    CString s1;
+    if (g_multiState->m_usesCustomLevel == false) {
+        CString s2;
+    }
+    return 1;
+}
+
+i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
+    CWnd::GetFocus();
+    b32 allLivePlayersReady = true;
+    b32 hasRemoteHumanPlayer = false;
+    i32 localSlotIndex = this->GetLocalPlayerSlotIndex();
+    b32 localReadyFlag =
+        g_multiState->m_isHost ? m_gameManager->m_players[localSlotIndex].m_ready : true;
+    for (i32 slotIndex = 0; slotIndex < 4; slotIndex++) {
+        GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
+        if (player) {
+            if (player->m_networkPlayerId != g_multiState->m_localPlayerId
+                && player->m_humanControlled && player->m_active) {
+                hasRemoteHumanPlayer = true;
+            }
+            CEdit* nameControl = GetPlayerNameControl(slotIndex);
+            if ((g_multiState->m_isHost && player->m_humanControlled == false)
+                || player->m_networkPlayerId == g_multiState->m_localPlayerId) {
+                nameControl->EnableWindow(true);
+            } else {
+                nameControl->EnableWindow(false);
+            }
+            CComboBox* typeControl = GetPlayerTypeControl(slotIndex);
+            if (g_multiState->m_isHost && localReadyFlag == false
+                && player->m_networkPlayerId != g_multiState->m_localPlayerId) {
+                typeControl->EnableWindow(true);
+            } else {
+                typeControl->EnableWindow(false);
+            }
+            CButton* readyControl = GetReadyControl(slotIndex);
+            if (player->m_networkPlayerId == g_multiState->m_localPlayerId) {
+                readyControl->EnableWindow(true);
+            } else {
+                readyControl->EnableWindow(false);
+            }
+            if (player->m_ready == false && player->m_active) {
+                readyControl->SetCheck(BST_UNCHECKED);
+                allLivePlayersReady = false;
+            } else if (player->m_active) {
+                readyControl->SetCheck(BST_CHECKED);
+            } else {
+                readyControl->SetCheck(BST_UNCHECKED);
+            }
+            CComboBox* maxGruntzControl = GetMaxGruntzControl(slotIndex);
+            maxGruntzControl->EnableWindow(
+                g_multiState->m_isHost && player->m_active && localReadyFlag == false
+            );
+            SetMaxGruntzSelection(slotIndex, player->m_active ? player->m_maxGruntz : 0);
+            if (force == 0) {
+                if (this->GetLocalPlayerSlotIndex() == slotIndex) {
+                    continue;
+                }
+                if (g_multiState->m_isHost && player->m_humanControlled == false) {
+                    continue;
+                }
+            }
+            if (player->m_active) {
+                GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
+                if (player->m_humanControlled) {
+                    CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                    typeCombo->SetCurSel(4);
+                } else {
+                    i32 selection = IDX(player->GetDifficulty());
+                    CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                    typeCombo->SetCurSel(selection + 1);
+                }
+                this->ApplyPlayerTypeSelection(slotIndex);
+            } else {
+                GetPlayerNameControl(slotIndex)->SetWindowTextA("");
+                CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
+                typeCombo->SetCurSel(0);
+                this->ApplyPlayerTypeSelection(slotIndex);
+            }
+        }
+    }
+    if (g_multiState->m_isHost) {
+        CWnd* ok = this->GetDlgItem(IDOK);
+        if (ok == NULL) {
+            return 0;
+        }
+        ok->EnableWindow(hasRemoteHumanPlayer & allLivePlayersReady);
+    }
+    GetDlgItem(CTRL_PLAYER_COLOR0)->Invalidate();
+    GetDlgItem(CTRL_PLAYER_COLOR1)->Invalidate();
+    GetDlgItem(CTRL_PLAYER_COLOR2)->Invalidate();
+    GetDlgItem(CTRL_PLAYER_COLOR3)->Invalidate();
+    return 1;
+}
+
+void CMultiStartDlg::Watchdog() {
+    if (g_watchdogBusy != false) {
+        return;
+    }
+    g_watchdogBusy = true;
+    CNetSessionListNode* session = g_multiState->m_netMgr->m_selectedSession;
+    if (session == NULL) {
+        return;
+    }
+    g_multiState->m_netMgr->EnumerateSessionPlayers(session, DPENUMPLAYERS_ALL);
+    g_multiState->ResolveLocalPlayer();
+    if (g_netStatsTick == 0) {
+        g_multiState->BroadcastValueMessage(NETMSG_LATENCY_PROBE, timeGetTime(), 0);
+    }
+    if (g_multiState->m_isHost == false) {
+        if (g_netStatsTick == 0) {
+            g_multiState->ReportMaxAckLatency();
+        }
+        EnableWindow(false);
+        i32 verificationResult =
+            g_multiState->VerifyCustomLevel(session, g_multiState->m_localPlayer);
+        EnableWindow(true);
+        if (verificationResult != 0) {
+            EndDialog(1);
+            g_watchdogBusy = false;
+            return;
+        }
+    } else {
+        g_multiState->PollSession();
+        if (g_multiState->m_autoCommandDelay != false) {
+            g_multiState->AutoTuneCmdDelay();
+        }
+    }
+    if (++g_netStatsTick > 3) {
+        g_netStatsTick = 0;
+    }
+    if (g_latencyDisplayTick == 0) {
+        for (i32 i = 0; i < 4; i++) {
+            GruntzPlayer* player = &g_gameReg->m_players[i];
+            CWnd* latencyValueControl;
+            CWnd* latencyUnitControl;
+            switch (static_cast<PlayerSlot>(i)) {
+                case PLAYER_SLOT_0:
+                    latencyValueControl = GetDlgItem(CTRL_PLAYER_LATENCY_VALUE0);
+                    latencyUnitControl = GetDlgItem(CTRL_PLAYER_LATENCY_UNIT0);
+                    break;
+                case PLAYER_SLOT_1:
+                    latencyValueControl = GetDlgItem(CTRL_PLAYER_LATENCY_VALUE1);
+                    latencyUnitControl = GetDlgItem(CTRL_PLAYER_LATENCY_UNIT1);
+                    break;
+                case PLAYER_SLOT_2:
+                    latencyValueControl = GetDlgItem(CTRL_PLAYER_LATENCY_VALUE2);
+                    latencyUnitControl = GetDlgItem(CTRL_PLAYER_LATENCY_UNIT2);
+                    break;
+                case PLAYER_SLOT_3:
+                    latencyValueControl = GetDlgItem(CTRL_PLAYER_LATENCY_VALUE3);
+                    latencyUnitControl = GetDlgItem(CTRL_PLAYER_LATENCY_UNIT3);
+                    break;
+            }
+            if (player->m_active != false && player->m_humanControlled != false) {
+                char latencyText[0x20];
+                wsprintfA(latencyText, "%d", player->m_latency.m_avg);
+                latencyValueControl->SetWindowTextA(latencyText);
+                latencyUnitControl->SetWindowTextA("ms");
+            } else {
+                latencyValueControl->SetWindowTextA("");
+                latencyUnitControl->SetWindowTextA("");
+            }
+        }
+    }
+    if (++g_latencyDisplayTick > 0x31) {
+        g_latencyDisplayTick = 0;
+    }
+    if (g_multiState->m_sessionTerminated != false) {
+        KillTimer(1);
+        g_multiState->ReportVersionMsg("The game session has been terminated.", 0);
+        g_watchdogBusy = false;
+        return;
+    }
+    if (g_multiState->m_colorSelectionRejected != false) {
+        g_multiState->m_colorSelectionRejected = false;
+        g_multiState->ReportVersionMsg("Someone has already selected that color.", 0);
+        g_watchdogBusy = false;
+        return;
+    }
+    if (g_multiState->m_removedByHost != false) {
+        KillTimer(1);
+        g_multiState->ReportVersionMsg("You have been removed from the game by the host.", 0);
+    } else if (g_multiState->m_gameClosed != false) {
+        KillTimer(1);
+        g_multiState->ReportVersionMsg("This game is closed.", 0);
+    } else if (g_multiState->m_gameFull != false) {
+        KillTimer(1);
+        g_multiState->ReportVersionMsg("This game is already full.", 0);
+    } else if (g_multiState->m_versionMismatch != false) {
+        KillTimer(1);
+        g_multiState->ReportVersionMsg(
+            "This version is not the same as the host computer's version of the game.",
+            0
+        );
+    } else {
+        if (g_playerRosterChanged != false) {
+            RefreshPlayerControls(1);
+            EnableChatControls();
+            RefreshWorldControls();
+            RefreshLatencyControl();
+            g_playerRosterChanged = false;
+        }
+        if (g_multiState->m_connectAccepted != false) {
+            EnableChatControls();
+            RefreshWorldControls();
+            RefreshLatencyControl();
+            g_multiState->m_connectAccepted = false;
+        }
+        g_watchdogBusy = false;
+        return;
+    }
+    EndDialog(0);
+    g_watchdogBusy = false;
+}
+
+i32 CMultiStartDlg::GetLocalPlayerSlotIndex() {
+    GruntzPlayer* slot = m_gameManager->FindPlayerByNetworkId(g_multiState->m_localPlayerId);
+    if (slot == NULL) {
+        return -1;
+    }
+    return slot->m_playerIndex;
+}
+
+i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
+    GruntzPlayer* player = &m_gameManager->m_players[slot];
+    if (g_multiState->m_isHost != false) {
+        b32 available = IsPlayerColorAvailable(color);
+        if (available == false) {
+            g_multiState->ReportVersionMsg("Someone has already selected that color.", available);
+            return 0;
+        }
+        SetPlayerColorAvailable(player->m_color, true);
+        SetPlayerColorAvailable(color, false);
+    }
+    player->m_color = color;
+    return 1;
+}
+
+void CMultiStartDlg::OnOK() {
+    if (g_multiState->m_isHost == false) {
+        return;
+    }
+    if (&CMulti::GetCommandDelay == NULL) {
+        return;
+    }
+    if (&CMulti::GetResendDelay == NULL) {
+        return;
+    }
+    g_multiState->BroadcastPlayerIdMessage(NETMSG_VERIFY_CUSTOM_LEVEL, DPSEND_GUARANTEED);
+    i32 customLevel = g_multiState->m_usesCustomLevel;
+    i32 verificationToken = g_gameReg->ResolveLevelChecksum(
+        false,
+        false,
+        customLevel,
+        0,
+        customLevel != 0 ? g_multiState->CustomLevelName() : g_multiState->BuiltInLevelName()
+    );
+    g_multiState->m_levelVerifyResult = false;
+    if (g_multiState->Poll(verificationToken) == 0) {
+        g_multiState->m_customLevelVerificationPending = false;
+        EnableWindow(false);
+        g_gameReg->EnterModalUI(
+            "Unable to verify custom level with other players. The game will not start."
+        );
+        EnableWindow(true);
+    } else if (g_multiState->m_levelVerifyResult != false) {
+        g_multiState->m_customLevelVerificationPending = true;
+        CDialog::OnOK();
+    } else {
+        g_multiState->m_customLevelVerificationPending = false;
+        EnableWindow(false);
+        g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
+        EnableWindow(true);
+    }
+}
+
+i32 CMulti::GetCommandDelay() {
+    return m_commandDelay;
+}
+
+i32 CMulti::GetResendDelay() {
+    return m_resendInterval;
+}
+
+void CMultiStartDlg::OnPlayerNameChange0() {
+    HandlePlayerNameChange(0);
+}
+
+void CMultiStartDlg::OnPlayerNameChange1() {
+    HandlePlayerNameChange(1);
+}
+
+void CMultiStartDlg::OnPlayerNameChange2() {
+    HandlePlayerNameChange(2);
+}
+
+void CMultiStartDlg::OnPlayerNameChange3() {
+    HandlePlayerNameChange(3);
+}
+
+void CMultiStartDlg::HandlePlayerNameChange(i32 slot) {}
+
+void CMultiStartDlg::OnMaxGruntzSelection0() {
+    CComboBox* combo = GetMaxGruntzControl(0);
+    g_gameReg->m_players[0].m_maxGruntz = combo->GetCurSel() + 1;
+    BroadcastPlayerSlotChanges();
+}
+
+void CMultiStartDlg::OnMaxGruntzSelection1() {
+    CComboBox* combo = GetMaxGruntzControl(1);
+    g_gameReg->m_players[1].m_maxGruntz = combo->GetCurSel() + 1;
+    BroadcastPlayerSlotChanges();
+}
+
+void CMultiStartDlg::OnMaxGruntzSelection2() {
+    CComboBox* combo = GetMaxGruntzControl(2);
+    g_gameReg->m_players[2].m_maxGruntz = combo->GetCurSel() + 1;
+    BroadcastPlayerSlotChanges();
+}
+
+void CMultiStartDlg::OnMaxGruntzSelection3() {
+    CComboBox* combo = GetMaxGruntzControl(3);
+    g_gameReg->m_players[3].m_maxGruntz = combo->GetCurSel() + 1;
+    BroadcastPlayerSlotChanges();
+}
+
+void CMultiStartDlg::CommitLatencySelection() {
+    if (g_multiState->m_isHost == false) {
+        return;
+    }
+    i32 commandDelay, resendInterval;
+    HWND dialogHwnd = GetSafeHwnd();
+    m_latencyOptions
+        ->GetSelItemData(dialogHwnd, IDX(IDC_MULTI_LATENCY), &commandDelay, &resendInterval);
+    if (commandDelay != 0 || resendInterval != 0) {
+        g_multiState->m_commandDelay = commandDelay;
+        g_multiState->m_resendInterval = resendInterval;
+        g_multiState->m_autoCommandDelay = false;
+        g_multiState->SendGameConfig(NULL);
+    } else {
+        g_multiState->m_autoCommandDelay = true;
+    }
+}
+
+void CMultiStartDlg::CommitReadySelection(i32 slotIndex) {
+    CButton* readyControl = GetReadyControl(slotIndex);
+    if (!readyControl) {
+        return;
+    }
+    i32 checked = readyControl->GetCheck();
+    GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
+    if (!player) {
+        return;
+    }
+    if (checked) {
+        player->m_ready = true;
+    } else {
+        player->m_ready = false;
+    }
+    if (g_multiState->m_isHost) {
+        g_multiState->BroadcastPlayerTable(NULL);
+        RefreshPlayerControls(1);
+        EnableChatControls();
+        RefreshWorldControls();
+        RefreshLatencyControl();
+    } else {
+        g_multiState->BroadcastPlayerUpdate(player);
+    }
+}
+
+void CMultiStartDlg::OnReadyToggle0() {
+    CommitReadySelection(0);
+}
+
+void CMultiStartDlg::OnReadyToggle1() {
+    CommitReadySelection(1);
+}
+
+void CMultiStartDlg::OnReadyToggle2() {
+    CommitReadySelection(2);
+}
+
+void CMultiStartDlg::OnReadyToggle3() {
+    CommitReadySelection(3);
+}
+
+i32 CMultiStartDlg::DestroyWindow() {
+    CKeyedList* latencyOptions = m_latencyOptions;
+    if (latencyOptions) {
+        delete latencyOptions;
+        m_latencyOptions = NULL;
+    }
+    return CWnd::DestroyWindow();
+}
+
+void CMultiStartDlg::EchoLatencySettings() {
+    char message[128];
+    wsprintfA(
+        message,
+        g_usingCmdDelay,
+        g_multiState->m_commandDelay,
+        g_multiState->m_resendInterval
+    );
+    AppendChatLine(message);
+}

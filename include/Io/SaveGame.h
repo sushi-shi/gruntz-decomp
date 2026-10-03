@@ -1,0 +1,129 @@
+#ifndef SRC_IO_SAVEGAME_H
+#define SRC_IO_SAVEGAME_H
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/QuestLevel.h>
+#include <Gruntz/QuestLevelStats.h>
+#include <Io/FileStream.h>
+
+#include <string.h>
+
+GZ_ENUM_CONST_BEGIN(SaveSlotFlags)
+    SAVESLOT_EMPTY = 0,
+    SAVESLOT_PRESENT = 0x1,
+    SAVESLOT_CHEATS_USED = 0x2
+GZ_ENUM_CONST_END(SaveSlotFlags)
+
+GZ_ENUM_CONST_BEGIN(SaveGameStringId)
+    SAVE_STRING_SAVING_GAME = 0x81a6
+GZ_ENUM_CONST_END(SaveGameStringId)
+
+enum {
+    SAVE_SLOT_COUNT = 10,
+    SAVE_LEVEL_STATS_COUNT = 40
+};
+
+struct SaveSlot {
+    union {
+        i32 m_type;
+        u8 m_flags;
+    };
+    i32 m_levelId;
+    i32 m_count;
+    b32 m_active;
+    i32 m_checksum;
+    union {
+        char m_name[0x21];
+        char m_snapshot[0x21];
+    };
+    union {
+        char m_savePath[0x40];
+        char m_serial[0x40];
+    };
+    char m_levelName[0x83];
+    b32 m_isCustom;
+    b32 m_isBattlez;
+};
+
+class CSaveGame {
+public:
+    ~CSaveGame();
+
+    i32 InitializeSaveDirectory(const char* saveDirectory);
+    void Reset();
+    void Init();
+    i32 Load();
+    i32 Save(char* screenshotPath, i32 messageId);
+    i32 ComputeAll();
+    i32 Verify();
+    i32 InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* mgr);
+    i32 CopySlot(SaveSlot* dst, const SaveSlot* src);
+    i32 InitializeLevelSlot(SaveSlot* dst, i32 levelId, CGruntzMgr* mgr);
+    i32 VerifySlot(SaveSlot* slot);
+    i32 Register(SaveSlot* slot);
+    i32 Encode(u8* buf);
+    i32 Decode(u8* buf);
+    SaveSlot* GetSlot(i32 i);
+    i32 TempFileExistsAt(i32 index);
+    i32 InitializeNamedSlotAt(i32 index, const char* name, CGruntzMgr* mgr);
+    i32 StoreSlot(i32 idx, const SaveSlot* src);
+
+    i32 CloseTempFile(SaveSlot* r);
+    void SetMaxLevel(QuestLevel v);
+    void SetCurLevel(QuestLevel v);
+    QuestLevel CurrentLevel() const {
+        return static_cast<QuestLevel>(m_curLevel);
+    }
+    i32 CheckMagic();
+    void SetMagic();
+
+    CString m_saveDirectory;
+    CString m_progressFilePath;
+
+    i32 m_header[4];
+    GZ_ENUM_STORAGE(QuestLevel, u32) m_maxLevel;
+    GZ_ENUM_STORAGE(QuestLevel, u32) m_curLevel;
+    u32 m_magic;
+    QuestLevelStats m_levelStats[SAVE_LEVEL_STATS_COUNT];
+    SaveSlot m_slots[SAVE_SLOT_COUNT];
+};
+
+inline CSaveGame::~CSaveGame() {
+    Reset();
+}
+
+BOOL CALLBACK SaveGameDialogProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK LevelPreviewDlgProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK DeleteSaveDialogProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK InfoLineDialogProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK OkCancelDialogProc(HWND, UINT, WPARAM, LPARAM);
+
+extern CSaveGame* g_saveDlgSink;
+
+class CDibMgr;
+class CDib;
+extern CDibMgr* g_previewMgr;
+extern CDib* g_previewImage;
+
+void FillSaveDialog(HWND hDlg, CSaveGame* saveGame);
+i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame);
+
+int TempFileExists(SaveSlot* p);
+void LabelSaveSlot(
+    HWND hWnd,
+    SaveSlot* item,
+    i32 nameControlId,
+    i32 loadControlId,
+    i32 infoControlId,
+    i32 deleteControlId
+);
+void SetSaveSlotDialogName(HWND hWnd, CSaveGame* gate, SaveSlot* item);
+
+void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev);
+
+extern SaveSlot* g_slotState;
+
+#endif

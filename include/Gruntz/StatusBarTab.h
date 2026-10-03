@@ -1,0 +1,19 @@
+#ifndef GRUNTZ_GRUNTZ_STATUSBARTAB_H
+#define GRUNTZ_GRUNTZ_STATUSBARTAB_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(StatusBarTab)
+    TAB_ALL = -1,
+    TAB_CONTROLS = 0,
+    TAB_NONE = 0,
+    TAB_STATZ = 1,
+    TAB_GRUNTZ = 2,
+    TAB_RESOURCE = 3,
+    TAB_MULTIPLAYER = 4,
+    TAB_GAME = 5,
+    TAB_DIALOG = 6,
+    TAB_LAST = TAB_GAME
+GZ_ENUM_END(StatusBarTab)
+
+#endif

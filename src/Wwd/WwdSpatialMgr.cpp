@@ -1,0 +1,298 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Wwd/WwdSpatialMgr.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Gruntz/WwdGrid.h>
+#include <Gruntz/WwdGridIter.h>
+#include <SafeDelete.h>
+#include <Wap32/Object.h>
+#include <Wwd/LogicRecordEvent.h>
+#include <Wwd/WwdSpatialMgrInline.h>
+
+void CWwdSpatialMgr::FreeGrids() {
+    SAFE_DELETE(m_defaultRegionGrid);
+    SAFE_DELETE(m_largeRegionGrid);
+    SAFE_DELETE(m_smallRegionGrid);
+    m_activeGroup = NULL;
+}
+
+i32 CWwdSpatialMgr::ActivateAt(i32 centerX, i32 centerY) {
+    if (m_activeCenter.m_x == centerX && m_activeCenter.m_y == centerY) {
+        return 0;
+    }
+    SetActiveCenter(centerX, centerY);
+
+    WwdRect r;
+    r.Init(
+        centerX - m_defaultRegionHalfWidth,
+        centerY - m_defaultRegionHalfHeight,
+        m_defaultRegionHalfWidth + centerX,
+        m_defaultRegionHalfHeight + centerY
+    );
+    i32 n0 = m_defaultRegionGrid->Query(r, 1);
+
+    r.Init(
+        centerX - m_largeRegionHalfWidth,
+        centerY - m_largeRegionHalfHeight,
+        m_largeRegionHalfWidth + centerX,
+        m_largeRegionHalfHeight + centerY
+    );
+    i32 n1 = m_largeRegionGrid->Query(r, 1);
+
+    r.Init(
+        centerX - m_smallRegionHalfWidth,
+        centerY - m_smallRegionHalfHeight,
+        m_smallRegionHalfWidth + centerX,
+        m_smallRegionHalfHeight + centerY
+    );
+    i32 n2 = m_smallRegionGrid->Query(r, 1);
+
+    return n0 + n1 + n2;
+}
+
+i32 CWwdSpatialMgr::ActivateKeepActiveObjects() {
+    i32 n = ActivateKeepActiveFromGrid(m_defaultRegionGrid);
+    n += ActivateKeepActiveFromGrid(m_largeRegionGrid);
+    n += ActivateKeepActiveFromGrid(m_smallRegionGrid);
+    return n;
+}
+
+i32 CWwdSpatialMgr::ActivateKeepActiveFromGrid(CWwdGrid* grid) {
+    i32 count = 0;
+    CWwdGridIter it;
+    for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
+        CGameObject* record = obj->m_object;
+        if (HAS(static_cast<WwdGameObjectFlags>(record->m_flags), WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE)
+            || HAS(
+                static_cast<LogicRecordFlags>(record->m_logicRecord->m_flags),
+                LOGIC_RECORD_FLAG_KEEP_ACTIVE
+            )) {
+            m_activeGroup->InsertSorted(record, 1);
+            grid->Remove(obj);
+            ++count;
+        }
+    }
+    return count;
+}
+
+i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
+    i32 count = 0;
+    WwdRect defaultBounds;
+    defaultBounds.Init(
+        centerX - m_defaultRegionHalfWidth,
+        centerY - m_defaultRegionHalfHeight,
+        m_defaultRegionHalfWidth + centerX,
+        m_defaultRegionHalfHeight + centerY
+    );
+    WwdRect largeBounds;
+    largeBounds.Init(
+        centerX - m_largeRegionHalfWidth,
+        centerY - m_largeRegionHalfHeight,
+        centerX + m_largeRegionHalfWidth,
+        centerY + m_largeRegionHalfHeight
+    );
+    WwdRect smallBounds;
+    smallBounds.Init(
+        centerX - m_smallRegionHalfWidth,
+        centerY - m_smallRegionHalfHeight,
+        centerX + m_smallRegionHalfWidth,
+        centerY + m_smallRegionHalfHeight
+    );
+
+    POSITION pos = m_activeGroup->m_list.GetHeadPosition();
+    while (pos != NULL) {
+        POSITION cur = pos;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_activeGroup->NextChild(pos));
+        if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
+                WWD_GAME_OBJECT_FLAG_DELETE_IF_VIEW_OUTSIDE_LEVEL)) {
+
+            if (centerX < m_levelBounds.left - 0x140 || centerX > m_levelBounds.right + 0x140
+                || centerY < m_levelBounds.top - 0xdc || centerY > m_levelBounds.bottom + 0xdc) {
+                if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
+                        WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
+                    CLogicRecord* record = obj->m_logicRecord;
+                    record->SetLogicEvent(ACT_OBJECT_REMOVED);
+                    record->m_dispatch(obj);
+                }
+                m_activeGroup->RemoveAll(cur, obj);
+                if (obj != NULL) {
+                    delete obj;
+                }
+                obj = NULL;
+            }
+        }
+        if (obj != NULL
+            && !HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE)
+            && HAS(
+                static_cast<WwdGameObjectFlags>(obj->m_flags),
+                WWD_GAME_OBJECT_FLAG_WORLD_SPACE
+            )) {
+            i32 x = obj->m_screenX;
+            i32 y = obj->m_screenY;
+            WwdRegion* r = &obj->m_region;
+            if (x < m_levelBounds.left) {
+                x = m_levelBounds.left;
+            }
+            if (y < m_levelBounds.top) {
+                y = m_levelBounds.top;
+            }
+            if (x >= m_levelBounds.right) {
+                x = m_levelBounds.right;
+            }
+            if (y >= m_levelBounds.bottom) {
+                y = m_levelBounds.bottom;
+            }
+            r->m_x = x;
+            r->m_y = y;
+            WwdGameObjectFlags flags = static_cast<WwdGameObjectFlags>(obj->m_flags);
+            i32 result;
+            if (HAS(flags, WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION)) {
+                CWwdGrid* grid = m_largeRegionGrid;
+                if (x >= largeBounds.m_minX && y >= largeBounds.m_minY && x <= largeBounds.m_maxX
+                    && y <= largeBounds.m_maxY) {
+                    result = 0;
+                } else {
+                    result = DeactivateRegionObject(grid, cur, obj, r, flags);
+                }
+            } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION)) {
+                CWwdGrid* grid = m_smallRegionGrid;
+                if (x >= smallBounds.m_minX && y >= smallBounds.m_minY && x <= smallBounds.m_maxX
+                    && y <= smallBounds.m_maxY) {
+                    result = 0;
+                } else {
+                    result = DeactivateRegionObject(grid, cur, obj, r, flags);
+                }
+            } else {
+                CWwdGrid* grid = m_defaultRegionGrid;
+                if (x >= defaultBounds.m_minX && y >= defaultBounds.m_minY
+                    && x <= defaultBounds.m_maxX && y <= defaultBounds.m_maxY) {
+                    result = 0;
+                } else {
+                    result = DeactivateRegionObject(grid, cur, obj, r, flags);
+                }
+            }
+            count += result;
+        }
+    }
+    return count;
+}
+
+i32 CWwdSpatialMgr::PruneCount() {
+    i32 n = 0;
+    if (m_defaultRegionGrid) {
+        n = m_defaultRegionGrid->Clear();
+    }
+    if (m_largeRegionGrid) {
+        n += m_largeRegionGrid->Clear();
+    }
+    if (m_smallRegionGrid) {
+        n += m_smallRegionGrid->Clear();
+    }
+    if (m_activeGroup) {
+        m_activeGroup->PruneOrphans();
+    }
+    return n;
+}
+
+void CWwdSpatialMgr::ParkObject(CWwdGameObject* obj) {
+    WwdGameObjectFlags flags = static_cast<WwdGameObjectFlags>(obj->m_flags);
+    if (HAS(flags, WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION)) {
+        m_largeRegionGrid->Add(&obj->m_region);
+        m_activeGroup->RegisterObjectId(obj);
+    } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION)) {
+        m_smallRegionGrid->Add(&obj->m_region);
+        m_activeGroup->RegisterObjectId(obj);
+    } else {
+        m_defaultRegionGrid->Add(&obj->m_region);
+        m_activeGroup->RegisterObjectId(obj);
+    }
+}
+
+i32 CWwdSpatialMgr::FlushAll() {
+    i32 n = FlushGrid(m_defaultRegionGrid);
+    n += FlushGrid(m_largeRegionGrid);
+    n += FlushGrid(m_smallRegionGrid);
+    return n;
+}
+
+i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
+    i32 count = 0;
+    CWwdGridIter it;
+    for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
+        CGameObject* record = obj->m_object;
+        m_activeGroup->InsertSorted(record, 1);
+        grid->Remove(obj);
+        ++count;
+    }
+    return count;
+}
+
+i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CGameObject*)) {
+    if (cb == NULL) {
+        return 0;
+    }
+    i32 n = ForEachGrid(m_defaultRegionGrid, cb);
+    n += ForEachGrid(m_largeRegionGrid, cb);
+    n += ForEachGrid(m_smallRegionGrid, cb);
+    return n;
+}
+
+i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*)) {
+    i32 count = 0;
+    CWwdGridIter it;
+    for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
+        cb(obj->m_object);
+        ++count;
+    }
+    return count;
+}
+
+CGameObject* CWwdSpatialMgr::GetFirstObject() {
+    m_iterationGrid = m_defaultRegionGrid;
+    WwdRegion* n = m_iter.Start(m_defaultRegionGrid, 0);
+    if (n) {
+        return n->m_object;
+    }
+    m_iterationGrid = m_largeRegionGrid;
+    n = m_iter.Start(m_largeRegionGrid, 0);
+    if (n) {
+        return n->m_object;
+    }
+    m_iterationGrid = m_smallRegionGrid;
+    n = m_iter.Start(m_smallRegionGrid, 0);
+    if (n) {
+        return n->m_object;
+    }
+    m_iterationGrid = NULL;
+    return NULL;
+}
+
+CGameObject* CWwdSpatialMgr::GetNextObject() {
+    if (m_iterationGrid == NULL) {
+        return NULL;
+    }
+    WwdRegion* n = m_iter.GetNext();
+    if (n) {
+        return n->m_object;
+    }
+    if (m_iterationGrid == m_defaultRegionGrid) {
+        m_iterationGrid = m_largeRegionGrid;
+        n = m_iter.Start(m_largeRegionGrid, 0);
+        if (n) {
+            return n->m_object;
+        }
+    }
+    if (m_iterationGrid == m_largeRegionGrid) {
+        m_iterationGrid = m_smallRegionGrid;
+        n = m_iter.Start(m_smallRegionGrid, 0);
+        if (n) {
+            return n->m_object;
+        }
+    }
+    m_iterationGrid = NULL;
+    return NULL;
+}

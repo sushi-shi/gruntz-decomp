@@ -1,0 +1,92 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/GameInfoString.h>
+
+#include <Enums.h>
+#include <Gruntz/GameInfo.h>
+#include <Gruntz/Utils.h>
+
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
+char g_infoScratch[0x100] = {0};
+
+char g_infoMaster[0x800] = {0};
+
+i32 CGameInfo::HasSupportedVersion() {
+    return m_body.m_version == 1;
+}
+
+i32 ValidateGameTime(CGameInfoTime* t) {
+    return t != NULL;
+}
+
+i32 BuildGameDate(CGameInfoTime* out) {
+    if (out == NULL) {
+        return 0;
+    }
+    CTime now = CTime::GetCurrentTime();
+    i32 mon = now.GetMonth();
+    out->m_month = mon;
+    i32 day = now.GetDay();
+    out->m_day = day;
+    i32 year = now.GetYear();
+    out->m_year = year;
+    return 1;
+}
+
+i32 CGameInfo::FormatGameInfoString() {
+    char* name = m_body.m_name;
+    if (name == NULL) {
+        return 0;
+    }
+    if (strlen(name) == 0) {
+        return 0;
+    }
+    if (!HasSupportedVersion()) {
+        return 0;
+    }
+
+    g_infoMaster[0] = 0;
+    sprintf(
+        g_infoScratch,
+        "Name=%s&Type=%i&Location=%s&Version=%lu",
+        name,
+        m_body.m_type,
+        m_body.m_location,
+        m_body.m_version
+    );
+    strcat(g_infoMaster, g_infoScratch);
+
+    CGameInfoTime* t = &m_body.m_time;
+    if (t == NULL) {
+        return 0;
+    }
+    if (!ValidateGameTime(t)) {
+        memset(t, 0, 28);
+    }
+
+    int a = 0, b = 0, c = 0;
+    DissectTime(t->m_timeMs, &a, &b, &c);
+    sprintf(g_infoScratch, "&S=%lu&H=%i&M=%02i&SE=%02i", t->m_score, a, b, c);
+    strcat(g_infoMaster, g_infoScratch);
+
+    sprintf(g_infoScratch, "&Month=%i&Day=%i&Year=%i", t->m_month, t->m_day, t->m_year);
+    strcat(g_infoMaster, g_infoScratch);
+
+    i32 chk = (69 * (b * a) + 1) * c + b + a + t->m_month + t->m_year + t->m_day + t->m_score;
+    sprintf(g_infoScratch, "&Checksum=%lu", chk);
+    strcat(g_infoMaster, g_infoScratch);
+
+    if (g_infoMaster[0] != 0) {
+        for (char* p = g_infoMaster; *p != 0; p++) {
+            if (*p == ' ') {
+                *p = '+';
+            }
+        }
+    }
+    return 0;
+}

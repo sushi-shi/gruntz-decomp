@@ -1,0 +1,41 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Net/LatencyList.h>
+#include <Net/NetConnectionType.h>
+
+i32 CLatencyList::Dispatch(i32 mode) {
+    m_mode = mode;
+    NetConnectionType connectionType = static_cast<NetConnectionType>(mode);
+    switch (connectionType) {
+        case NETCONN_IPX:
+            if (PopulateIpxOptions()) {
+                break;
+            }
+            return 0;
+        case NETCONN_TCPIP:
+            if (PopulateTcpIpOptions()) {
+                break;
+            }
+            return 0;
+        case NETCONN_MODEM:
+            if (PopulateModemOptions()) {
+                break;
+            }
+            return 0;
+        case NETCONN_SERIAL:
+            if (PopulateSerialOptions()) {
+                break;
+            }
+            return 0;
+        case NETCONN_GENERIC:
+            if (PopulateGenericOptions()) {
+                break;
+            }
+            return 0;
+        default:
+            return 0;
+    }
+    return 1;
+}

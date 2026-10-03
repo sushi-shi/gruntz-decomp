@@ -1,0 +1,189 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/WwdGrid.h>
+#include <Gruntz/WwdGridIter.h>
+#include <Wwd/WwdGridShell.h>
+
+#include <math.h>
+#include <string.h>
+
+i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
+    m_count = 0;
+    memcpy(&m_bounds, &rect, sizeof(m_bounds));
+    if (rect.right < rect.left) {
+        i32 t = rect.left;
+        rect.left = rect.right;
+        rect.right = t;
+    }
+    if (rect.bottom < rect.top) {
+        i32 t = rect.top;
+        rect.top = rect.bottom;
+        rect.bottom = t;
+    }
+    m_width = rect.right - rect.left;
+    m_height = rect.bottom - rect.top;
+    m_shiftY = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
+    m_shiftX = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
+    m_cellH = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftY)));
+    m_cellW = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftX)));
+    m_cols = m_width / m_cellH + 1;
+    m_rows = m_height / m_cellW + 1;
+    m_cellCount = m_rows * m_cols;
+    BucketHead* arr = new BucketHead[m_cellCount];
+    m_buckets = arr;
+    if (arr == NULL) {
+        return 0;
+    }
+    m_allocated = true;
+    return 1;
+}
+
+i32 CWwdGrid::Setup(RECT rect) {
+    i32 cellW;
+    if (rect.right > rect.left) {
+        cellW = (rect.right - rect.left) / 10;
+    } else {
+        cellW = (rect.left - rect.right) / 10;
+    }
+    i32 cellH;
+    if (rect.bottom > rect.top) {
+        cellH = (rect.bottom - rect.top) / 10;
+    } else {
+        cellH = (rect.top - rect.bottom) / 10;
+    }
+    return Setup(rect, cellW, cellH);
+}
+
+void CWwdGrid::FreeBuckets() {
+    if (m_allocated) {
+
+        delete[] m_buckets;
+        m_allocated = false;
+    }
+}
+
+i32 CWwdGrid::Add(WwdRegion* r) {
+    i32 col = (r->m_y - m_bounds.m_minY) >> m_shiftX;
+    i32 row = (r->m_x - m_bounds.m_minX) >> m_shiftY;
+    BucketHead* bucket = m_buckets + (col * m_cols + row);
+    r->m_bucket = bucket;
+    bucket->InsertFirst(r);
+    ++m_count;
+    return 1;
+}
+
+void CWwdGrid::Remove(WwdRegion* r) {
+    r->m_bucket->Delete(r);
+    r->m_bucket = NULL;
+    --m_count;
+}
+
+i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
+    i32 fired = 0;
+    WWD_RECT_RETURN_IF_DISJOINT(q, m_bounds, 0)
+    WWD_RECT_CLAMP_COMPONENTS(q, m_bounds)
+    WwdRect cell;
+    cell.m_minY = (q.m_minY - m_bounds.m_minY) >> m_shiftX;
+    cell.m_minX = (q.m_minX - m_bounds.m_minX) >> m_shiftY;
+    cell.m_maxY = (q.m_maxY - m_bounds.m_minY) >> m_shiftX;
+    cell.m_maxX = (q.m_maxX - m_bounds.m_minX) >> m_shiftY;
+    i32 base = cell.m_minY * m_cols + cell.m_minX;
+    for (i32 y = cell.m_minY; y <= cell.m_maxY; y++) {
+        i32 idx = base;
+        for (i32 x = cell.m_minX; x <= cell.m_maxX; x++) {
+            WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].GetFirst());
+            while (r) {
+                WwdRegion* next = static_cast<WwdRegion*>(r->Next());
+                if (q.Contains(r)) {
+                    if (doRemove) {
+                        m_buckets[idx].Delete(r);
+                        r->m_bucket = NULL;
+                        --m_count;
+                    }
+                    OnFound(r);
+                    ++fired;
+                }
+                r = next;
+            }
+            idx++;
+        }
+        base += m_cols;
+    }
+    return fired;
+}
+
+i32 CWwdGrid::Clear() {
+    i32 nonEmpty = 0;
+    for (i32 i = 0; i < m_cellCount; ++i) {
+        WwdRegion* r = static_cast<WwdRegion*>(m_buckets[i].GetFirst());
+        while (r) {
+            m_buckets[i].Delete(r);
+            r->m_bucket = NULL;
+            ++nonEmpty;
+            r = static_cast<WwdRegion*>(m_buckets[i].GetFirst());
+        }
+    }
+    m_count = 0;
+    return nonEmpty;
+}
+
+WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
+
+    WwdRect full = grid->m_bounds;
+    return Init(grid, full, remove);
+}
+
+WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
+    m_grid = grid;
+    m_rect = rect;
+    m_remove = remove;
+    WWD_RECT_RETURN_IF_DISJOINT(m_rect, grid->m_bounds, NULL)
+    WWD_RECT_CLAMP_COMPONENTS(m_rect, grid->m_bounds)
+    m_colStart = (m_rect.m_minY - grid->m_bounds.m_minY) >> grid->m_shiftX;
+    m_rowStart = (m_rect.m_minX - grid->m_bounds.m_minX) >> grid->m_shiftY;
+    m_colEnd = (m_rect.m_maxY - grid->m_bounds.m_minY) >> grid->m_shiftX;
+    m_rowEnd = (m_rect.m_maxX - grid->m_bounds.m_minX) >> grid->m_shiftY;
+    i32 base = m_colStart * grid->m_cols + m_rowStart;
+    m_col = m_colStart;
+    m_row = m_rowStart;
+    m_rowBase = base;
+    m_cell = base;
+    m_next = static_cast<WwdRegion*>(grid->m_buckets[base].GetFirst());
+    return GetNext();
+}
+
+WwdRegion* CWwdGridIter::GetNext() {
+    for (;;) {
+        m_cur = m_next;
+        while (m_cur == NULL) {
+            if (m_row < m_rowEnd) {
+                ++m_cell;
+                ++m_row;
+            } else {
+                if (m_col >= m_colEnd) {
+                    return NULL;
+                }
+                m_rowBase += m_grid->m_cols;
+                m_cell = m_rowBase;
+                m_row = m_rowStart;
+                ++m_col;
+            }
+            m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].GetFirst());
+        }
+        while (m_cur != NULL) {
+            m_next = static_cast<WwdRegion*>(m_cur->Next());
+            if (!m_rect.Contains(m_cur)) {
+
+                continue;
+            }
+            if (m_remove) {
+                m_grid->m_buckets[m_cell].Delete(m_cur);
+                m_cur->m_bucket = NULL;
+                --m_grid->m_count;
+            }
+            return m_cur;
+        }
+    }
+}

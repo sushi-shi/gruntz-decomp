@@ -1,0 +1,199 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/SBI_ImageSetAni.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/Sprite.h>
+#include <Image/CImage.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+
+i32 CSBI_ImageSetAni::Init(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    SbiCommandId cmd,
+    StatusBarTab tab,
+    RECT rc,
+    const char* key,
+    i32 frameStart,
+    i32 frameEnd,
+    i32 intervalMs,
+    i32 loop,
+    i32 step
+) {
+    CDDrawWorker* tbl;
+
+    if (host == NULL) {
+        goto fail;
+    }
+    if (owner == NULL) {
+        goto fail;
+    }
+    Initialize(owner, tab, host);
+
+    m_rect = rc;
+    m_cmd = cmd;
+    if (key == NULL) {
+        return 0;
+    }
+    tbl = host->FindWorker(key);
+    m_frameSet = tbl;
+    if (tbl == NULL) {
+        goto fail;
+    }
+    m_interval = intervalMs;
+    m_step = step;
+    m_loop = loop;
+
+    if (frameStart == -1) {
+        if (step >= 0) {
+            m_frameStart = tbl->GetMinIndex();
+        } else {
+            m_frameStart = tbl->GetMaxIndex();
+        }
+    } else {
+        m_frameStart = frameStart;
+    }
+    if (frameEnd == -1) {
+        if (step >= 0) {
+            m_frameEnd = tbl->GetMaxIndex();
+        } else {
+            m_frameEnd = tbl->GetMinIndex();
+        }
+    } else {
+        m_frameEnd = frameEnd;
+    }
+    m_frameIndex = m_frameStart;
+
+    CImage* cel;
+    cel = tbl->GetAt(m_frameStart);
+    SetFrame(cel);
+    return cel != NULL;
+fail:
+    return 0;
+}
+
+i32 CSBI_ImageSetAni::Refresh(i32) {
+    return 1;
+}
+
+i32 CSBI_ImageSetAni::Render() {
+    if (m_redrawFrames > 0) {
+        CImage* cel = m_frameSet->GetAt(m_frameIndex);
+        SetFrame(cel);
+        if (cel != NULL) {
+            CDDrawSurfacePair* surfaceCtx = g_gameReg->World()->m_drawTarget->m_backPair;
+            cel->RenderFrame(
+                surfaceCtx,
+                cel->m_anchorX + m_rect.left,
+                cel->m_anchorY + m_rect.top,
+                0
+            );
+        }
+        u32 now = timeGetTime();
+        if (now - static_cast<u32>(m_lastTime) > static_cast<u32>(m_interval)) {
+            m_frameIndex += m_step;
+            m_lastTime = timeGetTime();
+        }
+        if (m_step > 0) {
+            if (m_frameIndex > m_frameEnd) {
+                if (m_loop != 0) {
+                    m_frameIndex = m_frameStart;
+                    return 1;
+                }
+                m_redrawFrames--;
+                m_frameIndex = m_frameEnd;
+                return 1;
+            }
+        } else if (m_step < 0) {
+            if (m_frameIndex < m_frameEnd) {
+                if (m_loop != 0) {
+                    m_frameIndex = m_frameStart;
+                    return 1;
+                }
+                m_redrawFrames--;
+                m_frameIndex = m_frameEnd;
+                return 1;
+            }
+        } else {
+            m_redrawFrames--;
+        }
+    }
+    return 1;
+}
+
+void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval) {
+
+    if (start == -1) {
+        if (step >= 0) {
+            m_frameStart = m_frameSet->GetMinIndex();
+        } else {
+            m_frameStart = m_frameSet->GetMaxIndex();
+        }
+    } else {
+        m_frameStart = start;
+    }
+    if (end == -1) {
+        if (step >= 0) {
+            m_frameEnd = m_frameSet->GetMaxIndex();
+        } else {
+            m_frameEnd = m_frameSet->GetMinIndex();
+        }
+    } else {
+        m_frameEnd = end;
+    }
+    if (interval != -1) {
+        m_interval = interval;
+    }
+    m_step = step;
+    m_loop = loop;
+    m_frameIndex = m_frameStart;
+    m_redrawFrames = 2;
+    m_lastTime = timeGetTime();
+}
+
+i32 CSBI_ImageSetAni::SerializeFields(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
+    if (s == NULL) {
+        return 0;
+    }
+    if (g_gameReg->World() == NULL) {
+        return 0;
+    }
+    switch (mode) {
+
+        case SERIAL_LOAD:
+            s->Read(&m_interval, sizeof(m_interval));
+            s->Read(&m_lastTime, sizeof(m_lastTime));
+            s->Read(&m_loop, sizeof(m_loop));
+            s->Read(&m_step, sizeof(m_step));
+            s->Read(&m_frameEnd, sizeof(m_frameEnd));
+            s->Read(&m_frameStart, sizeof(m_frameStart));
+            break;
+        case SERIAL_SAVE:
+            s->Write(&m_interval, sizeof(m_interval));
+            s->Write(&m_lastTime, sizeof(m_lastTime));
+            s->Write(&m_loop, sizeof(m_loop));
+            s->Write(&m_step, sizeof(m_step));
+            s->Write(&m_frameEnd, sizeof(m_frameEnd));
+            s->Write(&m_frameStart, sizeof(m_frameStart));
+            break;
+    }
+    return CSBI_ImageSet::SerializeFields(s, mode, typeId, payload) != 0;
+}

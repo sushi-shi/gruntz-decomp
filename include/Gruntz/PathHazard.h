@@ -1,0 +1,69 @@
+#ifndef GRUNTZ_CPATHHAZARD_H
+#define GRUNTZ_CPATHHAZARD_H
+
+#include <Ints.h>
+
+#include <Bute/ButeMgr.h>
+#include <Gruntz/ClockInterval.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
+#include <Ints.h>
+
+struct CPathWaypoint {
+    i32 m_x;
+    i32 m_y;
+};
+
+#include <Rez/FrameClock.h>
+
+class CPathHazard : public CUserLogic, public CWapX {
+public:
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*)  ;
+
+    virtual void FireActivation(i32 id)  ;
+
+public:
+    CPathHazard();
+    CPathHazard(CUserLogic::EInlineBase) {}
+    CPathHazard(CGameObject* obj);
+
+    virtual LogicTypeId GetTypeTag()   {
+        return LOGIC_PATHHAZARD;
+    }
+
+    virtual i32 Tick();
+    virtual i32 SiblingTick();
+
+    virtual i32 Arrive();
+
+    virtual i32 BeginLeg();
+
+    virtual i32 HitTest(i32 playerIndex, i32 unitIndex) {
+        return 1;
+    }
+
+    i32 ForwardTick();
+    i32 ForwardSiblingTick();
+
+    double m_speed;
+    double m_posX;
+    double m_posY;
+    double m_unitX;
+    double m_unitY;
+    double m_roundBiasX;
+    double m_roundBiasY;
+    CPathWaypoint m_wp[13];
+    i32 m_wpIndex;
+    i32 m_wpX;
+    i32 m_wpY;
+    i32 m_wpCount;
+
+    ClockInterval m_leg;
+    b32 m_strikeArmed;
+    ClockInterval m_strike;
+};
+
+#endif

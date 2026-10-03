@@ -1,0 +1,18 @@
+#ifndef NET_NETLOBBYCTRLID_H
+#define NET_NETLOBBYCTRLID_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(NetLobbyCtrlId)
+    IDC_NETCHAT_SEND = 0x4c6,
+    IDC_NET_RESTART = 0x4cc,
+    IDC_NET_CONTINUE = 0x4cd,
+    IDC_NET_ABORT = 0x4ce,
+    IDC_NET_DROPIN_ACCEPT = 0x4d0,
+    IDC_NET_DROPIN_REJECT = 0x4d1,
+    IDC_NET_RESUME = 0x4d2,
+    IDC_NET_DROP_PLAYER = 0x4ea,
+    IDC_NET_LOBBY_LAUNCH = 0x4f7
+GZ_ENUM_END(NetLobbyCtrlId)
+
+#endif

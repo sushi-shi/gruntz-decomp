@@ -1,0 +1,17 @@
+#ifndef GRUNTZ_GRUNTZ_MULTISTARTDLG_H
+#define GRUNTZ_GRUNTZ_MULTISTARTDLG_H
+
+#include <Ints.h>
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(MultiplayerPlayerKind)
+    MULTI_PLAYER_SLOT_CLOSED = 0,
+    MULTI_PLAYER_COMPUTER_EASY = 1,
+    MULTI_PLAYER_COMPUTER_NORMAL = 2,
+    MULTI_PLAYER_COMPUTER_DIFFICULT = 3,
+    MULTI_PLAYER_HUMAN = 4
+GZ_ENUM_END(MultiplayerPlayerKind)
+
+extern char g_typeDesc2[];
+#endif

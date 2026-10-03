@@ -1,0 +1,31 @@
+#ifndef DSNDMGR_VOLUMESCALE_H
+#define DSNDMGR_VOLUMESCALE_H
+
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(VolumeScale)
+    VOLUME_PCT_MAX = 100,
+    MIDI_VOLUME_MAX = 127
+GZ_ENUM_CONST_END(VolumeScale)
+
+inline i32 MidiVolumeToPercent(i32 midiVolume) {
+    if (midiVolume <= 0) {
+        return 0;
+    }
+    if (midiVolume >= MIDI_VOLUME_MAX) {
+        return VOLUME_PCT_MAX;
+    }
+    return midiVolume * VOLUME_PCT_MAX / MIDI_VOLUME_MAX;
+}
+
+inline i32 PercentToMidiVolume(i32 volumePct) {
+    if (volumePct <= 0) {
+        return 0;
+    }
+    if (volumePct >= VOLUME_PCT_MAX) {
+        return MIDI_VOLUME_MAX;
+    }
+    return volumePct * MIDI_VOLUME_MAX / VOLUME_PCT_MAX;
+}
+
+#endif

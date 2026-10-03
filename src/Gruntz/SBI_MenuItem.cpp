@@ -1,0 +1,214 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/SBI_MenuItem.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
+#include <Dsndmgr/SoundBuffer.h>
+#include <Globals.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SbiConfig.h>
+#include <Gruntz/SbiMenuItemState.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarTab.h>
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+
+i32 CSBI_MenuItem::SetupImage(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    SbiCommandId cmd,
+    StatusBarTab tab,
+    RECT rc,
+    const char* key,
+    i32 frame,
+    i32 unused
+) {
+    if (key == NULL) {
+        return 0;
+    }
+    if (host != NULL && owner != NULL) {
+
+        m_owner = owner;
+        m_host = host;
+        m_tab = tab;
+        m_kind = SBI_KIND_MENU_ITEM;
+        SetFrame(NULL);
+
+        m_rect = rc;
+        m_redrawFrames = 0;
+        m_cmd = cmd;
+        m_state = MENUITEM_NORMAL;
+        SetEnabled(1);
+        return ResolveFrame(key, frame) != 0;
+    }
+    return 0;
+}
+
+void CSBI_MenuItem::Reset() {
+    SetFrame(NULL);
+}
+
+i32 CSBI_MenuItem::Refresh(i32) {
+    return 1;
+}
+
+i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
+    if (key == NULL) {
+        return 0;
+    }
+
+    CDDrawWorker* rec = m_host->FindWorker(key);
+    m_record = rec;
+    if (rec == NULL) {
+        return 0;
+    }
+
+    if (frameIndex == -1) {
+        SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, rec->GetMinIndex()));
+    } else {
+        SetFrame(rec->GetAt(frameIndex));
+    }
+    return m_frame != NULL;
+}
+
+i32 CSBI_MenuItem::Render() {
+    if (m_redrawFrames > 0) {
+        m_redrawFrames--;
+        CImage* f = m_frame;
+        if (f) {
+            i32 y = m_rect.top + f->m_anchorY;
+            i32 x = m_rect.left + f->m_anchorX;
+            f->RenderFrame(g_gameReg->m_world->GetDrawTarget()->m_backPair, x, y, 0);
+        }
+    }
+    return 1;
+}
+
+i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
+    if (m_state == state || m_record == NULL) {
+        return 0;
+    }
+    if (state == MENUITEM_HIGHLIGHT && m_state == MENUITEM_SELECTED) {
+        return 1;
+    }
+
+    if (state == MENUITEM_SELECTED) {
+        m_owner->ClearTabGroup();
+        m_owner->m_activeTab = static_cast<StatusBarTab>(IDX(m_cmd));
+        m_owner->LoadTabSprites();
+        m_owner->Deactivate();
+    } else if (state == MENUITEM_HIGHLIGHT && playHighlightSound) {
+
+        PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_TABHIGHLIGHT2");
+    }
+    CDDrawWorker* r = m_record;
+    CImage* frame = r->GetAt(IDX(state));
+    SetFrame(frame);
+    m_state = state;
+    RequestRedraw();
+    return 1;
+}
+
+i32 CSBI_MenuItem::ProbeState(SbiMenuItemState state) {
+    if (state == MENUITEM_NORMAL || m_record == NULL) {
+        return 0;
+    }
+    if (state == MENUITEM_HIGHLIGHT && m_state == state) {
+        return SetState(MENUITEM_NORMAL, 1);
+    }
+    if (state == MENUITEM_SELECTED && m_state == MENUITEM_SELECTED) {
+        return SetState(MENUITEM_NORMAL, 1);
+    }
+    return 1;
+}
+
+i32 CSBI_MenuItem::Blit() {
+    if (m_state != MENUITEM_HIGHLIGHT) {
+        return 1;
+    }
+    return SetState(MENUITEM_NORMAL, 1);
+}
+
+i32 CSBI_MenuItem::SerializeFields(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
+    if (ar == NULL) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* mgr = g_gameReg->World();
+    if (mgr == NULL) {
+        return 0;
+    }
+
+    char tmp[SERIAL_NAME_LEN];
+    switch (mode) {
+        case SERIAL_LOAD:
+            ar->Read(&m_state, sizeof(m_state));
+            SERIAL_READ_WORKER(ar, mgr, tmp, m_record);
+            break;
+        case SERIAL_SAVE:
+            ar->Write(&m_state, sizeof(m_state));
+            SERIAL_WRITE_WORKER(ar, tmp, m_record);
+            break;
+    }
+
+    return CSBI_Image::SerializeFields(ar, mode, typeId, payload) != 0;
+}
+
+void CStatusBarItem::Reset() {}
+
+i32 CStatusBarItem::SerializeFields(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
+    if (ar == NULL) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* mgr = g_gameReg->World();
+    if (mgr == NULL) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_LOAD:
+            ar->Read(&m_enabled, sizeof(m_enabled));
+            ar->Read(&m_kind, sizeof(m_kind));
+            ar->Read(&m_cmd, sizeof(m_cmd));
+            ar->Read(&m_tab, sizeof(m_tab));
+            ar->Read(&m_rect, sizeof(m_rect));
+            ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
+            break;
+        case SERIAL_SAVE:
+            ar->Write(&m_enabled, sizeof(m_enabled));
+            ar->Write(&m_kind, sizeof(m_kind));
+            ar->Write(&m_cmd, sizeof(m_cmd));
+            ar->Write(&m_tab, sizeof(m_tab));
+            ar->Write(&m_rect, sizeof(m_rect));
+            ar->Write(&m_redrawFrames, sizeof(m_redrawFrames));
+            break;
+    }
+    return 1;
+}

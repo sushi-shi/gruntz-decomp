@@ -1,0 +1,15 @@
+#ifndef CRYPTO_BLOWFISHAPI_H
+#define CRYPTO_BLOWFISHAPI_H
+
+#include <Ints.h>
+
+#include <Ints.h>
+
+void Blowfish_encipher(u32* xl, u32* xr);
+
+class istream;
+class ostream;
+
+void __stdcall BitStreamBlowfishEncode(istream* src, ostream* dst);
+
+#endif

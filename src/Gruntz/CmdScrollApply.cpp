@@ -1,0 +1,133 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/RandomRange.h>
+#include <Gruntz/ScrollState.h>
+#include <Gruntz/StatusBarDock.h>
+#include <Gruntz/StatusBarMgr.h>
+#include <Ints.h>
+#include <RectMacros.h>
+#include <Rez/FrameClock.h>
+#include <Rez/FrameCountdown.h>
+#include <Wap32/TileGeometry.h>
+#include <Wwd/WwdFile.h>
+
+#include <stddef.h>
+
+void Cmd_ResetScroll() {
+    g_scrollClock = 0;
+    g_scrollTimer = 0;
+    g_scrollPace.m_lastTime = 0;
+    g_scrollPace.m_period = 0;
+}
+
+void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
+    CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
+    i32 scrollX = v->m_scrollPixelX;
+    i32 scrollY = v->m_scrollPixelY;
+
+    if (g_scrollClock > g_frameTime) {
+        CountDown(g_scrollTimer, g_frameDelta);
+        if (g_scrollTimer == 0) {
+            g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
+            i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);
+            i32 jitterY = RandRange(pm, -g_jitterY, g_jitterY);
+            scrollX += jitterX;
+            scrollY += jitterY;
+        }
+    }
+
+    tagSIZE screenSize = g_gameReg->m_modeSize;
+    i32 cx = screenSize.cx / 2;
+    i32 cy = screenSize.cy / 2;
+    if (bar->m_position != STATUSBAR_HIDDEN) {
+        cx -= 0xa0;
+    }
+    if (snapFlag) {
+        cx = 0x60;
+        cy = 0x60;
+    }
+
+    if (scrollX < cx - 1) {
+        scrollX = cx - 1;
+    }
+    CDDrawWorkerHost* boundsPlane = pm->m_world->m_level->m_mainPlane;
+    CLAMP_UPPER_INPLACE(scrollX, boundsPlane->m_planePixelWidth - cx);
+    if (scrollY < cy - 1) {
+        scrollY = cy - 1;
+    }
+    CLAMP_UPPER_INPLACE(scrollY, boundsPlane->m_planePixelHeight - cy);
+
+    i32 deltaX = scrollX - g_lastScrollX;
+    i32 deltaY = scrollY - g_lastScrollY;
+    g_lastScrollX = scrollX;
+    g_lastScrollY = scrollY;
+
+    CDDrawWorkerHost* scrollPlane = pm->m_world->m_level->m_mainPlane;
+    SET_SCROLL_POSITION_PRODUCT_CAST(scrollPlane, scrollX, scrollY);
+
+    CDDrawWorkerHost* gm = g_backView;
+    if (gm != NULL) {
+        i32 nx = gm->m_scrollPixelX;
+        i32 ny = gm->m_scrollPixelY;
+        if (deltaX != 0 || deltaY != 0) {
+            nx = static_cast<i32>((static_cast<float>(nx) - static_cast<float>(deltaX) * -0.05f));
+            ny = static_cast<i32>((static_cast<float>(ny) - static_cast<float>(deltaY) * -0.05f));
+        }
+        if (static_cast<i64>(g_frameTime) - g_scrollPace.m_lastTime >= g_scrollPace.m_period) {
+            nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
+            ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
+            CDDrawWorkerHost* g2 = g_backView;
+            SET_SCROLL_POSITION_PRODUCT_CAST(g2, nx, ny);
+            g_scrollPace.m_period = g_buteMgr.GetDword("BackPlane", "ScrollTime");
+            g_scrollPace.m_lastTime = g_frameTime;
+        }
+    }
+
+    CDDrawSurfaceMgr* o = pm->m_world;
+    SET_RECT_COMPONENTS(
+        pm->m_viewBounds,
+        o->m_level->m_mainPlane->m_planeViewRect.left - 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.top - 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.right + 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60
+    );
+}
+
+void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX) {
+    i32 t = durationMs + g_frameTime;
+    g_scrollClock = max(g_scrollClock, static_cast<u32>(t));
+    g_jitterX = jitterX;
+    g_jitterY = jitterY;
+    g_panMinX = panMinX;
+    g_panMaxX = panMaxX;
+}
+
+i32 g_jitterX;
+
+i32 g_jitterY;
+
+CDDrawWorkerHost* g_backView;
+
+ScrollPace g_scrollPace;
+
+u32 g_scrollClock;
+
+u32 g_scrollTimer;
+
+i32 g_serializedScrollReservedFirst;
+
+i32 g_serializedScrollReservedSecond;
+
+i32 g_lastScrollX;
+
+i32 g_lastScrollY;

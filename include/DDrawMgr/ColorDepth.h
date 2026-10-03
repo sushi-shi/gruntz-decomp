@@ -1,0 +1,17 @@
+#ifndef DDRAWMGR_COLORDEPTH_H
+#define DDRAWMGR_COLORDEPTH_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(ColorDepth)
+    BPP_UNSET = 0,
+    BPP_MONO_1 = 1,
+    BPP_PALETTED_2 = 2,
+    BPP_PALETTED_4 = 4,
+    BPP_PALETTED_8 = 8,
+    BPP_RGB_16 = 16,
+    BPP_RGB_24 = 24,
+    BPP_RGB_32 = 32
+GZ_ENUM_END(ColorDepth)
+
+#endif

@@ -1,0 +1,19 @@
+#ifndef GRUNTZ_WWD_MOVEMODE_H
+#define GRUNTZ_WWD_MOVEMODE_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(MoveMode)
+    MOVE_NONE = 0,
+    MOVE_GROUNDED = 1,
+    MOVE_GROUNDED_2 = 2,
+    MOVE_GROUNDED_LAST = MOVE_GROUNDED_2,
+    MOVE_RISING = 3,
+    MOVE_FALLING = 4,
+    MOVE_GROUNDED_5 = 5,
+    MOVE_CLIMBING = 6,
+    MOVE_DIRECT = 7,
+    MOVE_AUTO_VERTICAL = 8
+GZ_ENUM_END(MoveMode)
+
+#endif

@@ -1,0 +1,28 @@
+#ifndef GRUNTZ_SERIALARCHIVE_H
+#define GRUNTZ_SERIALARCHIVE_H
+
+#include <Enums.h>
+
+class CFileMemBase;
+
+GZ_ENUM_CONST_BEGIN(SerialNameField)
+    SERIAL_NAME_LEN = 0x80
+GZ_ENUM_CONST_END(SerialNameField)
+
+GZ_ENUM_BEGIN(SerialMode)
+    SERIAL_SNAPSHOT_BEGIN = 1,
+    SERIAL_RESTORE_BEGIN = 2,
+    SERIAL_PRESAVE = 3,
+    SERIAL_SAVE = 4,
+    SERIAL_POSTSAVE = 5,
+    SERIAL_PRELOAD = 6,
+    SERIAL_LOAD = 7,
+    SERIAL_POSTLOAD = 8,
+
+    SERIAL_CREATE = 9,
+    SERIAL_CREATE_BY_SERIAL_ID = 10
+GZ_ENUM_END(SerialMode)
+
+extern char g_syncErrMsgBuf[];
+
+#endif

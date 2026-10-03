@@ -1,0 +1,12 @@
+#ifndef GRUNTZ_GRUNTZ_STAMINAPCT_H
+#define GRUNTZ_GRUNTZ_STAMINAPCT_H
+
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(StaminaPct)
+    STAMINA_EMPTY = 0,
+    STAMINA_HALF = 50,
+    STAMINA_FULL = 100
+GZ_ENUM_CONST_END(StaminaPct)
+
+#endif

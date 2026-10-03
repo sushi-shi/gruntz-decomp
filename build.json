@@ -1,0 +1,3354 @@
+{
+  "units": [
+    {
+      "name": "adler32",
+      "source": "vendor/zlib-1.0.4/adler32.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "deflate",
+      "source": "vendor/zlib-1.0.4/deflate.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "trees",
+      "source": "vendor/zlib-1.0.4/trees.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "inftrees",
+      "source": "vendor/zlib-1.0.4/inftrees.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "infblock",
+      "source": "vendor/zlib-1.0.4/infblock.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "infcodes",
+      "source": "vendor/zlib-1.0.4/infcodes.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "inffast",
+      "source": "vendor/zlib-1.0.4/inffast.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "infutil",
+      "source": "vendor/zlib-1.0.4/infutil.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "zutil",
+      "source": "vendor/zlib-1.0.4/zutil.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "inflate",
+      "source": "vendor/zlib-1.0.4/inflate.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "uncompr",
+      "source": "vendor/zlib-1.0.4/uncompr.c",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "gamewnd",
+      "source": "src/Wap32/GameWnd.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gameapp",
+      "source": "src/Wap32/GameApp.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "brickz",
+      "source": "src/Gruntz/Brickz.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "brickzcellflags",
+      "source": "src/Gruntz/BrickzCellFlags.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "soundfontpath",
+      "source": "src/Gruntz/SoundFontPath.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "savescreenshot",
+      "source": "src/Gruntz/SaveScreenshot.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_menuitem",
+      "source": "src/Gruntz/SBI_MenuItem.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_rectonlybase",
+      "source": "src/Gruntz/SBI_RectOnlyBase.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_rectonly",
+      "source": "src/Gruntz/SBI_RectOnly.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_image",
+      "source": "src/Gruntz/SBI_Image.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_imagesetani",
+      "source": "src/Gruntz/SBI_ImageSetAni.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_imageset",
+      "source": "src/Gruntz/SBI_ImageSet.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_warlordhead",
+      "source": "src/Gruntz/SBI_WarlordHead.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_wellgoo",
+      "source": "src/Gruntz/SBI_WellGoo.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_statztabgruntbar",
+      "source": "src/Gruntz/SBI_StatzTabGruntBar.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "triggermgr",
+      "source": "src/Gruntz/TriggerMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "triggermgrgrid",
+      "source": "src/Gruntz/TriggerMgrGrid.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "triggermgrhittest",
+      "source": "src/Gruntz/TriggerMgrHitTest.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "userlogic",
+      "source": "src/Gruntz/UserLogic.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "mainmenubuilder",
+      "source": "src/Gruntz/MainMenuBuilder.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "menupage",
+      "source": "src/Gruntz/MenuPage.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "menuitem",
+      "source": "src/Gruntz/MenuItem.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "databuffer",
+      "source": "src/DDrawMgr/DataBuffer.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "terraintileloader",
+      "source": "src/Gruntz/TerrainTileLoader.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "rollingball",
+      "source": "src/Gruntz/RollingBall.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "levelrezpath",
+      "source": "src/Gruntz/LevelRezPath.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "brickzload",
+      "source": "src/Gruntz/BrickzLoad.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "grunttilescan",
+      "source": "src/Gruntz/GruntTileScan.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntarrivalscan",
+      "source": "src/Gruntz/GruntArrivalScan.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntbricklayerstep",
+      "source": "src/Gruntz/GruntBrickLayerStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntwanderstep",
+      "source": "src/Gruntz/GruntWanderStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntreticlescan",
+      "source": "src/Gruntz/GruntReticleScan.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntchargestep",
+      "source": "src/Gruntz/GruntChargeStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntarrivalupdate",
+      "source": "src/Gruntz/GruntArrivalUpdate.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntgoosuckerstep",
+      "source": "src/Gruntz/GruntGooSuckerStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntdefensealt",
+      "source": "src/Gruntz/GruntDefenseAlt.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntarrivalneighbor",
+      "source": "src/Gruntz/GruntArrivalNeighbor.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntdefensestep",
+      "source": "src/Gruntz/GruntDefenseStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntdiggerstep",
+      "source": "src/Gruntz/GruntDiggerStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntscantarget",
+      "source": "src/Gruntz/GruntScanTarget.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntphasestep",
+      "source": "src/Gruntz/GruntPhaseStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntseektarget",
+      "source": "src/Gruntz/GruntSeekTarget.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntpeertracking",
+      "source": "src/Gruntz/GruntPeerTracking.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntdefenselean",
+      "source": "src/Gruntz/GruntDefenseLean.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ingameicon",
+      "source": "src/Gruntz/InGameIcon.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "aniplayer",
+      "source": "src/Gruntz/AniPlayer.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "warlord",
+      "source": "src/Gruntz/Warlord.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntpuddle",
+      "source": "src/Gruntz/GruntPuddle.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntvoice",
+      "source": "src/Gruntz/GruntVoice.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntspawnconfig",
+      "source": "src/Gruntz/VoiceManager.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "statusbartabbuilders",
+      "source": "src/Gruntz/StatusBarTabBuilders.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_sidetab",
+      "source": "src/Gruntz/SBI_SideTab.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sbi_statztabarrow",
+      "source": "src/Gruntz/SBI_StatzTabArrow.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "cheatmgr",
+      "source": "src/Gruntz/CheatMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "worldsoundset",
+      "source": "src/Gruntz/WorldSoundSet.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "projectile",
+      "source": "src/Gruntz/Projectile.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "movinglogic",
+      "source": "src/Gruntz/MovingLogic.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GR"
+      ]
+    },
+    {
+      "name": "dialogs",
+      "source": "src/Gruntz/Dialogs.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "battlezdlgcolors",
+      "source": "src/Gruntz/BattlezDlgColors.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "checkpointdlg",
+      "source": "src/Gruntz/CheckpointDlg.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "multistartdlg",
+      "source": "src/Gruntz/MultiStartDlg.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gamelevel",
+      "source": "src/Gruntz/GameLevel.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gamelevelmove",
+      "source": "src/Wwd/GameLevelMove.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "levelplane",
+      "source": "src/DDrawMgr/LevelPlane.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "imageset1",
+      "source": "src/Gruntz/UniformTileImageSet.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "imageset2",
+      "source": "src/Gruntz/RectTileImageSet.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "imageset3g",
+      "source": "src/Gruntz/PixelTileImageSet.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "filestream",
+      "source": "src/Io/FileStream.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "savegame",
+      "source": "src/Io/SaveGame.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "savegamedialogs",
+      "source": "src/Io/SaveGameDialogs.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "rezmgr",
+      "source": "src/Rez/RezMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "rezfile",
+      "source": "src/Rez/RezFile.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "cimage",
+      "source": "src/Image/CImage.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "fileimage",
+      "source": "src/Image/FileImage.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "registryhelper",
+      "source": "src/Utils/RegMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "advancedoptions",
+      "source": "src/Gruntz/AdvancedOptions.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntzapp",
+      "source": "src/Gruntz/GruntzApp.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntzmgr",
+      "source": "src/Gruntz/GruntzMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "serializesyncmarker",
+      "source": "src/Gruntz/SerializeSyncMarker.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "statemgrbz",
+      "source": "src/Gruntz/InputState.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntzwnd",
+      "source": "src/Gruntz/GruntzWnd.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "mapmgr",
+      "source": "src/Gruntz/MapMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "maplogic",
+      "source": "src/Gruntz/MapLogic.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "spritereftable",
+      "source": "src/Gruntz/SpriteRefTable.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "spriteref",
+      "source": "src/Gruntz/SpriteRef.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "butemgr",
+      "source": "src/Bute/ButeMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gamestaterecordload",
+      "source": "src/Gruntz/GameStateRecordLoad.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "rezarchive",
+      "source": "src/Rez/RezArchive.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "hash",
+      "source": "src/Rez/RezHash.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "butetree",
+      "source": "src/Bute/ButeTree.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "debugtiming",
+      "source": "src/Utils/DebugTiming.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "grunt",
+      "source": "src/Gruntz/Grunt.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntsteps",
+      "source": "src/Gruntz/GruntSteps.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntcombat",
+      "source": "src/Gruntz/GruntCombat.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntentrancemove",
+      "source": "src/Gruntz/GruntEntranceMove.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntassetloaders",
+      "source": "src/Gruntz/GruntAssetLoaders.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntpickupload",
+      "source": "src/Gruntz/GruntPickupLoad.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntzmgrcmd",
+      "source": "src/Gruntz/GruntzMgrCmd.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "serialobjectfactory",
+      "source": "src/Gruntz/SerialObjectFactory.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "savefrontbuffershot",
+      "source": "src/Gruntz/SaveFrontBufferShot.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntdatarecord",
+      "source": "src/Gruntz/GruntDataRecord.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntzcmdmgr",
+      "source": "src/Gruntz/GruntzCmdMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "splashstate",
+      "source": "src/Gruntz/SplashState.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "bootystateactivate",
+      "source": "src/Gruntz/BootyStateActivate.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "loadgamemenu",
+      "source": "src/Gruntz/LoadGameMenu.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gameinfostring",
+      "source": "src/Gruntz/GameInfoString.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "spotlight",
+      "source": "src/Gruntz/SpotLight.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "netmgr",
+      "source": "src/Net/NetMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "netmgrerror",
+      "source": "src/Net/NetMgrReportError.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "winmain",
+      "source": "src/Gruntz/WinMain.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "creditsstate",
+      "source": "src/Gruntz/CreditsState.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "statereleaseresources",
+      "source": "src/Gruntz/StateReleaseResources.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "attract",
+      "source": "src/Gruntz/Attract.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "attractstate",
+      "source": "src/Gruntz/AttractState.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "play",
+      "source": "src/Gruntz/Play.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntzplayer",
+      "source": "src/Gruntz/GruntzPlayer.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "playassetload",
+      "source": "src/Gruntz/PlayAssetLoad.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "demo",
+      "source": "src/Gruntz/Demo.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "dircellmethods",
+      "source": "src/Gruntz/DirCellMethods.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "rockbreakeffectupdate",
+      "source": "src/Gruntz/RockBreakEffectUpdate.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "font",
+      "source": "src/Font/Font.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "fonts",
+      "source": "src/Gruntz/Fonts.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "fontconfig",
+      "source": "src/Gruntz/FontConfig.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "wormhole",
+      "source": "src/Gruntz/Wormhole.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "wormholeacts",
+      "source": "src/Gruntz/WormholeActs.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "battlezmapconfig",
+      "source": "src/Gruntz/BattlezMapConfig.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "battlezunitstep",
+      "source": "src/Gruntz/BattlezUnitStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "battlezspecialanim",
+      "source": "src/Gruntz/BattlezSpecialAnim.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "battlezspawncheck",
+      "source": "src/Gruntz/BattlezSpawnCheck.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "battlezrepath",
+      "source": "src/Gruntz/BattlezRepath.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "battlezreserveplace",
+      "source": "src/Gruntz/BattlezReservePlace.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "battlezretarget",
+      "source": "src/Gruntz/BattlezRetarget.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "videoconfig",
+      "source": "src/Gruntz/VideoConfig.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "videooptions",
+      "source": "src/Gruntz/VideoOptions.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "spriteloaders",
+      "source": "src/Gruntz/SpriteLoaders.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "cremusnode",
+      "source": "src/Image/ResolveNode.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gameobjectlogictypes",
+      "source": "src/Gruntz/GameObjectLogicTypes.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "startupprompt",
+      "source": "src/Gruntz/StartUpPrompt.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "kitchenslime",
+      "source": "src/Gruntz/KitchenSlime.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntcreationpoint",
+      "source": "src/Gruntz/GruntCreationPoint.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntentrancearrival",
+      "source": "src/Gruntz/GruntEntranceArrival.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gameiconflasheffect",
+      "source": "src/Gruntz/GameIconFlashEffect.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "grunthealthsprite",
+      "source": "src/Gruntz/GruntHealthSprite.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntwingztimesprite",
+      "source": "src/Gruntz/GruntWingzTimeSprite.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntselectedsprite",
+      "source": "src/Gruntz/GruntSelectedSprite.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntpowerupsprite",
+      "source": "src/Gruntz/GruntPowerupSprite.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "grunttoysprite",
+      "source": "src/Gruntz/GruntToySprite.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "pathhazard",
+      "source": "src/Gruntz/PathHazard.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "droppedobject",
+      "source": "src/Gruntz/DroppedObject.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "fortressflag",
+      "source": "src/Gruntz/FortressFlag.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "cursorsnapsprite",
+      "source": "src/Gruntz/CursorSnapSprite.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "menustate",
+      "source": "src/Gruntz/MenuState.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "donothing",
+      "source": "src/Gruntz/DoNothing.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "behindcandy",
+      "source": "src/Gruntz/BehindCandy.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "eyecandy",
+      "source": "src/Gruntz/EyeCandy.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "exittrigger",
+      "source": "src/Gruntz/ExitTrigger.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "statichazard",
+      "source": "src/Gruntz/StaticHazard.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "toobspikez",
+      "source": "src/Gruntz/ToobSpikez.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "menusparkle",
+      "source": "src/Gruntz/MenuSparkle.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "secretteleportertrigger",
+      "source": "src/Gruntz/SecretTeleporterTrigger.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "tilelogicpump",
+      "source": "src/Gruntz/TileLogicPump.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntbehaviorleaf",
+      "source": "src/Gruntz/GruntDecay.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "actionoptionsmenubar",
+      "source": "src/Gruntz/ActionOptionsMenuBar.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "inputdeviceconfig",
+      "source": "src/Gruntz/InputDeviceConfig.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "ddrawshadeblit",
+      "source": "src/DDrawMgr/DDrawShadeBlit.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddrawsurfacemgr",
+      "source": "src/DDrawMgr/DDrawSurfaceMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddrawworkerregistry",
+      "source": "src/DDrawMgr/DDrawWorkerRegistry.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "multi",
+      "source": "src/Gruntz/Multi.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "tileswitchlogic",
+      "source": "src/Gruntz/TileTriggerSwitchLogic.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "tiletriggercontainer",
+      "source": "src/Gruntz/TileTriggerContainer.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "areamgr",
+      "source": "src/Gruntz/AreaMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "animationregistry",
+      "source": "src/DDrawMgr/AnimationRegistry.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "anirecord",
+      "source": "src/DDrawMgr/AniRecord.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "wwdspatialmgr",
+      "source": "src/Wwd/WwdSpatialMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "wwdgrid",
+      "source": "src/Wwd/WwdGrid.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "wwdgameobject",
+      "source": "src/Wwd/WwdGameObject.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "wwdfactoryobject",
+      "source": "src/Wwd/WwdFactoryObject.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "wwdgameobjectrender",
+      "source": "src/Wwd/WwdGameObjectRender.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddrawsubmgr",
+      "source": "src/DDrawMgr/DDrawSubMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddrawsubmgrpages",
+      "source": "src/DDrawMgr/DDrawSubMgrPages.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "wwdobjmgr",
+      "source": "src/Wwd/WwdObjMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddrawptrcollections",
+      "source": "src/DDrawMgr/DDrawDeviceManager.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "directdrawmgr",
+      "source": "src/DDrawMgr/DirectDrawMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddsurface",
+      "source": "src/DDrawMgr/DDSurface.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddpalette",
+      "source": "src/DDrawMgr/DirPal.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddrawsurfacepair",
+      "source": "src/DDrawMgr/DDrawSurfacePair.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "directinputmgr2",
+      "source": "src/DinMgr2/DinMgr2.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "inputdevice",
+      "source": "src/DinMgr2/InputDevice.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "directsoundmgr",
+      "source": "src/Dsndmgr/SoundBuffer.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "soundvoicelist",
+      "source": "src/Lith/BaseList.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "soundstream",
+      "source": "src/Dsndmgr/SoundStream.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gruntzsoundz",
+      "source": "src/Dsndmgr/MidiManager.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "winapicdrom",
+      "source": "src/Utils/WinAPICdRom.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "menutree",
+      "source": "src/Gruntz/MenuTree.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "chatboxowner",
+      "source": "src/Gruntz/ChatBoxOwner.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "lightfx",
+      "source": "src/Gruntz/LightFx.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "lightfxrender",
+      "source": "src/Gruntz/Minimap.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntstartingpoint",
+      "source": "src/Gruntz/GruntStartingPoint.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "guardpoint",
+      "source": "src/Gruntz/GuardPoint.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "waypoint",
+      "source": "src/Gruntz/WayPoint.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "actionarea",
+      "source": "src/Gruntz/ActionArea.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "lightfxmgr",
+      "source": "src/Gruntz/LightFxMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntindicatorlogicdispatch",
+      "source": "src/Gruntz/GruntIndicatorLogicDispatch.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "ingameuilogicdispatch",
+      "source": "src/Gruntz/InGameUiLogicDispatch.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "visualandmarkerlogicdispatch",
+      "source": "src/Gruntz/VisualAndMarkerLogicDispatch.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "hazardlogicdispatch",
+      "source": "src/Gruntz/HazardLogicDispatch.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sfselectdevice",
+      "source": "src/Gruntz/SFSelectDevice.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "shadetablecache",
+      "source": "src/DDrawMgr/ShadeTableCache.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "gamestats",
+      "source": "src/Gruntz/GameStats.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "goowellmgr",
+      "source": "src/Gruntz/GooWellMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "fadermgr",
+      "source": "src/DDrawMgr/FaderMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "helpstate",
+      "source": "src/Gruntz/HelpState.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "tilescan",
+      "source": "src/Gruntz/TileScan.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "keyedlist",
+      "source": "src/Gruntz/KeyedList.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gamesave",
+      "source": "src/Io/GameSave.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "bzkinddispatch",
+      "source": "src/Gruntz/BzKindDispatch.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "scattersamples",
+      "source": "src/Gruntz/ScatterSamples.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "fader",
+      "source": "src/DDrawMgr/Fader.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "fadermesh",
+      "source": "src/DDrawMgr/FaderMesh.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "faderflat",
+      "source": "src/DDrawMgr/FaderFlat.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "faderradial",
+      "source": "src/DDrawMgr/FaderRadial.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "fadersine",
+      "source": "src/DDrawMgr/FaderSine.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "faderlight",
+      "source": "src/DDrawMgr/FaderLight.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "fadershape",
+      "source": "src/DDrawMgr/FaderShape.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "engstrrendertext",
+      "source": "src/Wap32/EngStrRenderText.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "blowfish",
+      "source": "src/Crypto/Blowfish.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "simpleanimation",
+      "source": "src/Gruntz/SimpleAnimation.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "behindcandyani",
+      "source": "src/Gruntz/BehindCandyAni.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "frontcandy",
+      "source": "src/Gruntz/FrontCandy.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "frontcandyani",
+      "source": "src/Gruntz/FrontCandyAni.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "eyecandyani",
+      "source": "src/Gruntz/EyeCandyAni.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "singleanimation",
+      "source": "src/Gruntz/SingleAnimation.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "singleframemessage",
+      "source": "src/Gruntz/SingleFrameMessage.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "anicycle",
+      "source": "src/Gruntz/AniCycle.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntstaminasprite",
+      "source": "src/Gruntz/GruntStaminaSprite.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntzmapmgr",
+      "source": "src/Gruntz/GruntzMapMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "leveltime",
+      "source": "src/Gruntz/LevelTime.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "statusbarspriteacts",
+      "source": "src/Gruntz/StatusBarSpriteActs.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "rezlist",
+      "source": "src/Lith/VirtList.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "rezcoll",
+      "source": "src/Lith/BaseHash.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "typekeycoll",
+      "source": "src/Bute/TypeKeyColl.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "buteglobals",
+      "source": "src/Bute/ButeGlobals.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT"
+      ]
+    },
+    {
+      "name": "feccrypt",
+      "source": "src/Crypto/FecCrypt.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "ddpagemgr",
+      "source": "src/DDrawMgr/DDPageMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "imageset3",
+      "source": "src/Image/PixelTileImageSet.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "netcmdslot",
+      "source": "src/Net/NetCmdSlot.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "netsessionmgr",
+      "source": "src/Net/NetSessionMgr.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "netlobbydialogs",
+      "source": "src/Net/LobbyDialogs.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "multihelpdlg",
+      "source": "src/Net/MultiHelpDlg.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "imagepool",
+      "source": "src/Image/ImagePool.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "streamrecordloaders",
+      "source": "src/Gruntz/StreamRecordLoaders.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntstaterec",
+      "source": "src/Gruntz/GruntStateRec.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "statedispatch",
+      "source": "src/Gruntz/StateDispatch.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "butetail",
+      "source": "src/Bute/ButeTail.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "cursorsnapactreg",
+      "source": "src/Gruntz/CursorSnapActReg.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "palettebmp",
+      "source": "src/Image/PaletteBmp.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "imagepolyclip",
+      "source": "src/Image/ImagePolyClip.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "grunttubeanim",
+      "source": "src/Gruntz/GruntTubeAnim.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gruntstatestep",
+      "source": "src/Gruntz/GruntStateStep.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "utils",
+      "source": "src/Gruntz/Utils.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "namerecord",
+      "source": "src/Gruntz/NameRecord.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "ddrawworkerhost",
+      "source": "src/DDrawMgr/DDrawWorkerHost.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "latencylist",
+      "source": "src/Net/LatencyList.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "wapcompress",
+      "source": "src/Wap32/WapCompress.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "customworlddialog",
+      "source": "src/Gruntz/CustomWorldDialog.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "chainforward",
+      "source": "src/Gruntz/ChainForward.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "bitarray",
+      "source": "src/Utils/BitArray.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "bitarraystream",
+      "source": "src/Utils/BitArrayStream.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "glyphstr",
+      "source": "src/Gruntz/GlyphStringDraw.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "destructbutton",
+      "source": "src/Gruntz/DestructButton.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "debugprintf",
+      "source": "src/Rez/DebugPrintf.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "levelpreview",
+      "source": "src/Gruntz/LevelPreview.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "gameassetnamespaces",
+      "source": "src/Gruntz/GameAssetNamespaces.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "sparam",
+      "source": "src/Gruntz/Sparam.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "grunttoytimesprite",
+      "source": "src/Gruntz/GruntToyTimeSprite.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "logicrecorddispatch",
+      "source": "src/Gruntz/LogicRecordDispatch.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "cmdscrollapply",
+      "source": "src/Gruntz/CmdScrollApply.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    },
+    {
+      "name": "customleveldlg",
+      "source": "src/Gruntz/CustomLevelDlg.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX",
+        "/GR"
+      ]
+    }
+  ]
+}

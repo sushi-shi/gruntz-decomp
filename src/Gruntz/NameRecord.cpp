@@ -1,0 +1,98 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Gruntz/GameInfo.h>
+
+#include <string.h>
+
+i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
+    if (name == NULL) {
+        return 0;
+    }
+    i32 len = static_cast<i32>(strlen(name));
+    if (len < 0) {
+        goto fail;
+    }
+    if (len > 16) {
+        return 0;
+    }
+    if (name2 != NULL) {
+        i32 len2 = static_cast<i32>(strlen(name));
+        if (len2 < 0) {
+            goto fail;
+        }
+        if (len2 > 64) {
+            goto fail;
+        }
+    }
+    memset(&m_body, 0, sizeof(m_body));
+    strcpy(m_body.m_name, name);
+    if (name2 != NULL) {
+        strcpy(m_body.m_location, name2);
+    }
+    m_body.m_version = 1;
+    return 1;
+fail:
+    return 0;
+}
+
+i32 CGameInfo::CopyBody(char* body) {
+    if (body != NULL) {
+        i32 len = static_cast<i32>(strlen(body + 0x10));
+        if (len > 0 && len < 16) {
+            memcpy(&m_body, body, sizeof(m_body));
+            HasSupportedVersion();
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void CGameInfo::ClearTime() {
+    memset(&m_body.m_time, 0, sizeof(m_body.m_time));
+}
+
+i32 CGameInfo::UpdateBestScore(i32 score, i32 timeMs, i32 gameType) {
+    if (score == 0) {
+        return 0;
+    }
+    if (timeMs == 0) {
+        return 0;
+    }
+    CGameInfoTime* b = &m_body.m_time;
+    if (b == NULL) {
+        return 0;
+    }
+    if (b->m_score > score) {
+        return 0;
+    }
+    if (b->m_score == score && b->m_timeMs < timeMs) {
+        return 0;
+    }
+    b->m_score = score;
+    b->m_timeMs = timeMs;
+    BuildGameDate(b);
+    m_body.m_type = gameType;
+    return 1;
+}
+
+i32 CGameInfo::CopyIfLarger(CGameInfoTime* src, i32 type) {
+    if (src == NULL) {
+        return 0;
+    }
+    CGameInfoTime* dst = &m_body.m_time;
+    if (dst == NULL) {
+        return 0;
+    }
+    if (dst->m_score > src->m_score) {
+        return 0;
+    }
+    if (dst->m_score == src->m_score && dst->m_timeMs < src->m_timeMs) {
+        return 0;
+    }
+    *dst = *src;
+    m_body.m_type = type;
+    return 1;
+}

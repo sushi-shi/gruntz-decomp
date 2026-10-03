@@ -1,0 +1,285 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/Timer.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Warlord.h>
+#include <Image/CImage.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+#include <Utils/MillisPer.h>
+#include <Wap32/TileGeometry.h>
+
+#include <string.h>
+
+CTimer::CTimer() {
+    RESET_TIMER_SPRITES;
+    m_running = false;
+}
+
+i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
+    CDDrawWorker* spr = g_gameReg->World()->FindWorker("GAME_TIMER");
+    m_sprite = spr;
+    if (!spr) {
+        return 0;
+    }
+
+    m_frameMinTens = spr->GetAt(10);
+    if (!m_frameMinTens) {
+        return 0;
+    }
+    m_frameMinOnes = spr->GetAt(10);
+    if (!m_frameMinOnes) {
+        return 0;
+    }
+    m_frameColon = spr->GetAt(11);
+    if (!m_frameColon) {
+        return 0;
+    }
+    m_frameSecTens = spr->GetAt(10);
+    if (!m_frameSecTens) {
+        return 0;
+    }
+    m_frameSecOnes = spr->GetAt(10);
+    if (!m_frameSecOnes) {
+        return 0;
+    }
+
+    m_baseX = originX;
+    m_baseY = originY;
+    m_active = true;
+    m_running = false;
+    return 1;
+}
+
+void CTimer::Reset() {
+    RESET_TIMER_SPRITES;
+}
+
+i32 CTimer::Tick(i32 elapsedMs) {
+    static_cast<void>(elapsedMs);
+    if (!m_running) {
+        return 1;
+    }
+
+    i64 rem = m_countdown.m_interval - static_cast<u32>(g_frameTime) + m_countdown.m_start;
+    i32 v = static_cast<i32>(max(0, rem));
+    m_currentMs = v;
+
+    if (v == 0) {
+
+        Stop();
+        CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
+        ls->m_winLoseBanner = true;
+        ls->m_cueTiming.Start(0x1f4);
+        g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(g_curPlayer);
+        GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
+        if (slot != NULL) {
+            slot->m_clearedRound = true;
+        }
+        i32 key = g_gameReg->m_players[0].m_warlordObjectId;
+        if (key != 0) {
+            CGameObject* obj = NULL;
+            CGameObject* hit = NULL;
+            if (MapLookupById(
+                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                    key,
+                    obj
+                )) {
+                hit = obj;
+            }
+            if (hit != NULL && hit->m_logicRecord->m_userLogic != NULL) {
+                static_cast<CWarlord*>(hit->m_logicRecord->m_userLogic)->ResolveDeathAnimation();
+            }
+        }
+        return 1;
+    }
+
+    if (static_cast<u32>(v) < 0xea60) {
+        i32 key = g_gameReg->m_players[0].m_warlordObjectId;
+        if (key != 0) {
+            CGameObject* obj = NULL;
+            CGameObject* hit = NULL;
+            if (MapLookupById(
+                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                    key,
+                    obj
+                )) {
+                hit = obj;
+            }
+            if (hit != NULL && hit->m_logicRecord->m_userLogic != NULL) {
+                static_cast<CWarlord*>(hit->m_logicRecord->m_userLogic)->NotifyFortUnderAttack();
+            }
+        }
+    }
+
+    u32 t = static_cast<u32>(m_currentMs);
+    i32 d10min = t / (MILLIS_PER_MINUTE * 10);
+    i32 d1min = t / MILLIS_PER_MINUTE % 10;
+    if (d1min == 0 && d10min != 0) {
+        d1min = 10;
+    }
+    u32 r = t % MILLIS_PER_MINUTE;
+    i32 d10sec = r / 10000;
+    if (d10sec == 0 && (d10min != 0 || d1min != 0)) {
+        d10sec = 10;
+    }
+    i32 d1sec = r / MILLIS_PER_SECOND % 10;
+    if (d1sec == 0 && (d10min != 0 || d1min != 0 || d10sec != 0)) {
+        d1sec = 10;
+    }
+
+    CDDrawWorker* spr = m_sprite;
+    m_frameMinTens = spr->GetAt(d10min);
+    m_frameMinOnes = spr->GetAt(d1min);
+    m_frameSecTens = spr->GetAt(d10sec);
+    m_frameSecOnes = spr->GetAt(d1sec);
+    return 1;
+}
+
+i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
+    if (!m_running) {
+        return 1;
+    }
+    if (forceVisible == false && static_cast<u32>(m_currentMs) < 0x2710
+        && static_cast<u32>(g_period500CountdownMs) >= 0xfa) {
+        return 1;
+    }
+    if (m_frameMinTens) {
+        m_frameMinTens->RenderFrame(target, m_baseX - 0x22, m_baseY, 0);
+    }
+    if (m_frameMinOnes) {
+        m_frameMinOnes->RenderFrame(target, m_baseX - 0x10, m_baseY, 0);
+    }
+    if (m_frameColon) {
+        m_frameColon->RenderFrame(target, m_baseX, m_baseY, 0);
+    }
+    if (m_frameSecTens) {
+        m_frameSecTens->RenderFrame(target, m_baseX + 0x10, m_baseY, 0);
+    }
+    if (m_frameSecOnes) {
+        m_frameSecOnes->RenderFrame(target, m_baseX + 0x22, m_baseY, 0);
+    }
+    return 1;
+}
+
+void CTimer::SetTime(i32 minutes, i32 seconds) {
+    u32 clampedMinutes = static_cast<u32>(minutes);
+    clampedMinutes = min(0x63, clampedMinutes);
+    u32 clampedSeconds = static_cast<u32>(seconds);
+    clampedSeconds = min(0x3b, clampedSeconds);
+    m_currentMs = static_cast<i32>((clampedMinutes * 60 + clampedSeconds) * MILLIS_PER_SECOND);
+}
+
+void CTimer::AddTime(i32 minutes, i32 seconds) {
+    if (!m_running) {
+        return;
+    }
+    u32 secs = static_cast<u32>(seconds);
+    secs = min(0x3b, secs);
+    u32 mins = static_cast<u32>(minutes);
+    mins = min(0x63, mins);
+    u32 cur = static_cast<u32>(m_currentMs);
+    u32 carry = 0;
+    u32 onClock;
+    if (cur % MILLIS_PER_MINUTE / MILLIS_PER_SECOND + secs > 0x3b) {
+        carry = 1;
+    }
+
+    onClock = cur / MILLIS_PER_MINUTE;
+    if (onClock + mins > 0x63) {
+        mins = 0x63 - onClock - carry;
+    }
+    u32 total = (secs + mins * 60) * MILLIS_PER_SECOND;
+    m_countdown.m_interval += total;
+}
+
+i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
+    if (ar == NULL) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_SAVE: {
+            i32 r = Serialize(ar);
+            if (!r) {
+                return r;
+            }
+            break;
+        }
+        case SERIAL_LOAD: {
+            i32 r = Deserialize(ar);
+            if (!r) {
+                return r;
+            }
+            break;
+        }
+    }
+
+    SerializeClockPair(ar, mode, &m_countdown);
+
+    SerializeClockPair(ar, mode, &m_stamp);
+    return 1;
+}
+
+i32 CTimer::Serialize(CFileMemBase* ar) {
+    if (ar == NULL) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* mgr = g_gameReg->World();
+    if (mgr == NULL) {
+        return 0;
+    }
+
+    ar->Write(&m_baseX, sizeof(m_baseX));
+    ar->Write(&m_baseY, sizeof(m_baseY));
+
+    char tmp[SERIAL_NAME_LEN];
+
+    SERIAL_WRITE_WORKER(ar, tmp, m_sprite);
+
+    ar->Write(&m_active, sizeof(m_active));
+
+    {
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameMinTens);
+    }
+
+    {
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameMinOnes);
+    }
+
+    {
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameSecTens);
+    }
+
+    {
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameSecOnes);
+    }
+
+    {
+        i32 zero;
+        SERIAL_WRITE_FRAME(ar, mgr, tmp, zero, m_frameColon);
+    }
+
+    ar->Write(&m_running, sizeof(m_running));
+    ar->Write(&m_currentMs, sizeof(m_currentMs));
+    return 1;
+}

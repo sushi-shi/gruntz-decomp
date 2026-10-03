@@ -1,0 +1,13 @@
+#ifndef WAP32_SCREENGEOMETRY_H
+#define WAP32_SCREENGEOMETRY_H
+
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(ScreenGeometry)
+    SCREEN_W_PX = 0x280,
+    SCREEN_H_PX = 0x1e0,
+    SCREEN_HALF_W_PX = 0x140,
+    SCREEN_HALF_H_PX = 0xf0
+GZ_ENUM_CONST_END(ScreenGeometry)
+
+#endif

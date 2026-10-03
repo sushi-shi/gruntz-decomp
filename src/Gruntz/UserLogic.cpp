@@ -1,0 +1,97 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/UserLogic.h>
+
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/LogicRecordRegistryFindInline.h>
+#include <Enums.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
+
+#include <string.h>
+
+void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
+    if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicHit")) {
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(DispatchLogicHit, "LogicHit", 2);
+    }
+    if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicAttack")) {
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(DispatchLogicAttack, "LogicAttack", 2);
+    }
+    if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicBump")) {
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(DispatchLogicBump, "LogicBump", 2);
+    }
+}
+
+void CUserLogic::StepBehavior(char* animationActName) {}
+
+void CUserLogic::FireActivation(i32) {}
+
+void CUserLogic::FinalizeStep(char*) {
+    if (m_deferredCallback == NULL) {
+        return;
+    }
+    if (m_gatedCallback != NULL && m_logicRecord->EventCode() == m_gatedCallbackCode) {
+        (this->*m_gatedCallback)();
+        m_gatedCallback = NULL;
+    }
+    (this->*m_deferredCallback)();
+    m_deferredCallback = NULL;
+    m_gatedCallbackCode = IDX(ACT_NONE);
+}
+
+i32 CWapX::SerializeAnimationState(
+    CFileMemBase* archive,
+    SerialMode mode,
+    LogicTypeId unusedTypeId,
+    CGameObject* object
+) {
+    char name[SERIAL_NAME_LEN];
+
+    if (archive == NULL) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_LOAD: {
+
+            archive->Read(name, SERIAL_NAME_LEN);
+            archive->Read(m_blob, 0x10);
+            m_gameObject = object;
+            m_wwdObject = static_cast<CWwdSpriteObject*>(object);
+            m_ownerLogicRecord = object->m_logicRecord;
+            if (strlen(name) == 0) {
+                m_value = NULL;
+            } else {
+                CMapStringToPtr* map =
+                    &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
+                CAniElement* value = MapFind<CAniElement>(*map, name);
+                m_value = value;
+            }
+            break;
+        }
+        case SERIAL_SAVE: {
+
+            memset(name, 0, sizeof(name));
+            if (m_value != NULL) {
+                strcpy(
+                    name,
+                    static_cast<const char*>(
+                        m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
+                    )
+                );
+            }
+            archive->Write(name, SERIAL_NAME_LEN);
+            archive->Write(m_blob, 0x10);
+            break;
+        }
+    }
+    return 1;
+}

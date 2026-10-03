@@ -1,0 +1,485 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/GameStats.h>
+
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Io/FileMem.h>
+
+#include <stddef.h>
+
+const float g_zeroF = 0.0f;
+
+i32 CGameStats::ResetWithLevelRecords(QuestLevelStats* levelRecords) {
+    Reset();
+    m_levelRecords = levelRecords;
+    return 1;
+}
+
+CGameStats::~CGameStats() {
+    Reset();
+}
+
+void CGameStats::Reset() {
+    m_levelNumber = 0;
+    m_isCustomLevel = false;
+    m_currentAreaComplete = false;
+    m_elapsedTimeMs = 0;
+    m_toyzCollected = 0;
+    m_toolzCollected = 0;
+    m_gruntzExited = 0;
+    m_gruntzLost = 0;
+    m_powerupzCollected = 0;
+    m_secretsFound = 0;
+    m_coinsCollected = 0;
+    m_warpLetterFound = false;
+    m_toolzAvailable = 0;
+    m_toyzAvailable = 0;
+    m_powerupzAvailable = 0;
+    m_secretsAvailable = 0;
+    m_coinsAvailable = 0;
+    ClearKills();
+    ClearFlagCaptures();
+    i32 i;
+    for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
+        m_gruntzByPlayer[i] = 0;
+    }
+    for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
+        for (i32 pickup = 0; pickup < 22; ++pickup) {
+            m_weaponPickupsByPlayer[i][pickup] = 0;
+        }
+    }
+    for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
+        for (i32 pickup = 0; pickup < 10; ++pickup) {
+            m_toyPickupsByPlayer[i][pickup] = 0;
+        }
+    }
+    for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
+        for (i32 pickup = 0; pickup < 7; ++pickup) {
+            m_powerupPickupsByPlayer[i][pickup] = 0;
+        }
+    }
+    for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
+        for (i32 pickup = 0; pickup < 4; ++pickup) {
+            m_miscPickupsByPlayer[i][pickup] = 0;
+        }
+    }
+}
+
+void CGameStats::SetLevelNumber(i32 levelNumber) {
+    m_levelNumber = levelNumber;
+    if (levelNumber > 0x24) {
+        m_currentAreaComplete = false;
+        return;
+    }
+    i32 areaFirstIndex = (levelNumber - 1) / 4 * 4;
+    b32 areaComplete = true;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        if (m_levelRecords[i].m_completed == false) {
+            areaComplete = false;
+        }
+    }
+    m_currentAreaComplete = areaComplete;
+}
+
+void CGameStats::RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex) {
+    if (capturingPlayerIndex >= 0 && capturingPlayerIndex <= PLAYER_SLOT_COUNT
+        && flagOwnerPlayerIndex >= 0 && flagOwnerPlayerIndex <= PLAYER_SLOT_COUNT) {
+        m_flagCapturesByPlayer[capturingPlayerIndex][flagOwnerPlayerIndex] = 1;
+    }
+}
+
+void CGameStats::ClearFlagCaptures() {
+    for (i32 i = 0; i < PLAYER_SLOT_COUNT * PLAYER_SLOT_COUNT; i++) {
+        (&m_flagCapturesByPlayer[0][0])[i] = 0;
+    }
+}
+
+i32 CGameStats::CountAllFlagCaptures(i32 validatedPlayerIndex) {
+    if (validatedPlayerIndex < 0 || validatedPlayerIndex > PLAYER_SLOT_COUNT) {
+        return 0;
+    }
+    i32 sum = 0;
+    i32* capture = &m_flagCapturesByPlayer[0][0];
+    for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {
+        for (i32 flagOwnerIndex = 0; flagOwnerIndex < PLAYER_SLOT_COUNT; flagOwnerIndex++) {
+            sum += *capture++;
+        }
+    }
+    return sum;
+}
+
+i32 CGameStats::GetFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex) {
+    if (capturingPlayerIndex >= 0 && capturingPlayerIndex <= PLAYER_SLOT_COUNT
+        && flagOwnerPlayerIndex >= 0 && flagOwnerPlayerIndex <= PLAYER_SLOT_COUNT) {
+        return m_flagCapturesByPlayer[capturingPlayerIndex][flagOwnerPlayerIndex];
+    }
+    return 0;
+}
+
+void CGameStats::RecordKill(i32 killerPlayerIndex, i32 victimPlayerIndex) {
+    if (killerPlayerIndex >= 0 && killerPlayerIndex <= PLAYER_SLOT_COUNT && victimPlayerIndex >= 0
+        && victimPlayerIndex <= PLAYER_SLOT_COUNT && killerPlayerIndex != victimPlayerIndex) {
+        m_killsByPlayer[killerPlayerIndex][victimPlayerIndex]++;
+    }
+}
+
+void CGameStats::ClearKills() {
+    for (i32 i = 0; i < PLAYER_SLOT_COUNT * PLAYER_SLOT_COUNT; i++) {
+        (&m_killsByPlayer[0][0])[i] = 0;
+    }
+}
+
+i32 CGameStats::CountKillsForPlayer(i32 playerIndex) {
+    i32 sum = 0;
+    i32* kills = m_killsByPlayer[playerIndex];
+    for (i32 opponentIndex = 0; opponentIndex < PLAYER_SLOT_COUNT; opponentIndex++) {
+        sum += *kills++;
+    }
+    return sum;
+}
+
+i32 CGameStats::IsCampaignPerfect() {
+    i32 levelIndex = 0;
+    QuestLevelStats* levelStats = m_levelRecords;
+    for (; levelIndex < 0x20; levelIndex++, levelStats++) {
+        if (levelStats->m_completed == false) {
+            return 0;
+        }
+        if (levelStats->m_warpLetterFound == false) {
+            return 0;
+        }
+        if (levelStats->m_toolzCollected < levelStats->m_toolzAvailable) {
+            return 0;
+        }
+        if (levelStats->m_toyzCollected < levelStats->m_toyzAvailable) {
+            return 0;
+        }
+        if (levelStats->m_powerupzCollected < levelStats->m_powerupzAvailable) {
+            return 0;
+        }
+        if (levelStats->m_secretsFound < levelStats->m_secretsAvailable) {
+            return 0;
+        }
+        if (levelStats->m_coinsCollected < levelStats->m_coinsAvailable) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+i32 CGameStats::IsCurrentLevelPerfect(i32 unused) {
+    if (m_warpLetterFound == false) {
+        return 0;
+    }
+    if (m_toyzAvailable > m_toyzCollected) {
+        return 0;
+    }
+    if (m_toolzAvailable > m_toolzCollected) {
+        return 0;
+    }
+    if (m_powerupzAvailable > m_powerupzCollected) {
+        return 0;
+    }
+    if (m_secretsAvailable > m_secretsFound) {
+        return 0;
+    }
+    return m_coinsAvailable <= m_coinsCollected;
+}
+
+float CGameStats::CurrentAreaCoinRatio() {
+    float availableCoins = g_zeroF;
+    float collectedCoins = g_zeroF;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = 0; i < 4; i++) {
+        availableCoins += m_levelRecords[areaFirstIndex + i].m_coinsAvailable;
+        collectedCoins += m_levelRecords[areaFirstIndex + i].m_coinsCollected;
+    }
+    if (g_zeroF == availableCoins) {
+        return g_zeroF;
+    }
+    return collectedCoins / availableCoins;
+}
+
+i32 CGameStats::CurrentAreaHasAllWarpLetters() {
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = 0; i < 4; i++) {
+        if (m_levelRecords[areaFirstIndex + i].m_warpLetterFound == false) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+i32 CGameStats::CurrentAreaHasWarpLetter(i32 letterIndex) {
+    i32 levelIndex = letterIndex + (m_levelNumber - 1) / 4 * 4;
+    if (levelIndex == m_levelNumber - 1) {
+        return m_warpLetterFound;
+    }
+    QuestLevelStats* levelStats = &m_levelRecords[levelIndex];
+    return levelStats->m_warpLetterFound;
+}
+
+i32 CGameStats::SumToyzCollectedForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_toyzCollected;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumToyzAvailableForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_toyzAvailable;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumToolzCollectedForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_toolzCollected;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumToolzAvailableForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_toolzAvailable;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumPowerupzCollectedForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_powerupzCollected;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumPowerupzAvailableForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_powerupzAvailable;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumSecretsFoundForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_secretsFound;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumSecretsAvailableForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_secretsAvailable;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumCoinsCollectedForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_coinsCollected;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumCoinsAvailableForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_coinsAvailable;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumGruntzLostForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_gruntzLost;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumGruntzExitedForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_gruntzExited;
+    }
+    return sum;
+}
+
+i32 CGameStats::SumElapsedTimeForCurrentArea() {
+    i32 sum = 0;
+    i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
+    for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
+        sum += m_levelRecords[i].m_elapsedTimeMs;
+    }
+    return sum;
+}
+
+void CGameStats::UpdateLevelRecord(i32 levelNumber, b32 writeAvailableCounts) {
+    QuestLevelStats* levelStats = &m_levelRecords[levelNumber - 1];
+    if (writeAvailableCounts == false) {
+        levelStats->m_completed = true;
+        levelStats->m_elapsedTimeMs = m_elapsedTimeMs;
+        levelStats->m_toyzCollected = m_toyzCollected;
+        levelStats->m_toolzCollected = m_toolzCollected;
+        levelStats->m_gruntzExited = m_gruntzExited;
+        levelStats->m_gruntzLost = m_gruntzLost;
+        levelStats->m_powerupzCollected = m_powerupzCollected;
+        levelStats->m_secretsFound = m_secretsFound;
+        levelStats->m_coinsCollected = m_coinsCollected;
+        levelStats->m_warpLetterFound = m_warpLetterFound;
+        levelStats->m_isEasyMode = g_gameReg->m_isEasyMode;
+    } else {
+        levelStats->m_toyzAvailable = m_toyzAvailable;
+        levelStats->m_toolzAvailable = m_toolzAvailable;
+        levelStats->m_powerupzAvailable = m_powerupzAvailable;
+        levelStats->m_secretsAvailable = m_secretsAvailable;
+        levelStats->m_coinsAvailable = m_coinsAvailable;
+    }
+}
+
+i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 payload) {
+    i32 i;
+    i32 r;
+    i32 c;
+    if (s == NULL) {
+        return 0;
+    }
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
+            s->Read(&m_levelNumber, sizeof(m_levelNumber));
+            s->Read(&m_isCustomLevel, sizeof(m_isCustomLevel));
+            s->Read(&m_currentAreaComplete, sizeof(m_currentAreaComplete));
+            s->Read(&m_elapsedTimeMs, sizeof(m_elapsedTimeMs));
+            s->Read(&m_toyzCollected, sizeof(m_toyzCollected));
+            s->Read(&m_toolzCollected, sizeof(m_toolzCollected));
+            s->Read(&m_gruntzExited, sizeof(m_gruntzExited));
+            s->Read(&m_gruntzLost, sizeof(m_gruntzLost));
+            s->Read(&m_powerupzCollected, sizeof(m_powerupzCollected));
+            s->Read(&m_secretsFound, sizeof(m_secretsFound));
+            s->Read(&m_coinsCollected, sizeof(m_coinsCollected));
+            s->Read(&m_toyzAvailable, sizeof(m_toyzAvailable));
+            s->Read(&m_toolzAvailable, sizeof(m_toolzAvailable));
+            s->Read(&m_powerupzAvailable, sizeof(m_powerupzAvailable));
+            s->Read(&m_secretsAvailable, sizeof(m_secretsAvailable));
+            s->Read(&m_coinsAvailable, sizeof(m_coinsAvailable));
+            s->Read(&m_warpLetterFound, sizeof(m_warpLetterFound));
+            for (i = 0; i < 4; i++) {
+                s->Read(&m_gruntzByPlayer[i], sizeof(m_gruntzByPlayer[i]));
+            }
+            for (r = 0; r < 4; r++) {
+                for (c = 0; c < 4; c++) {
+                    s->Read(&m_killsByPlayer[r][c], sizeof(m_killsByPlayer[r][c]));
+                }
+            }
+            for (r = 0; r < 4; r++) {
+                for (c = 0; c < 4; c++) {
+                    s->Read(&m_flagCapturesByPlayer[r][c], sizeof(m_flagCapturesByPlayer[r][c]));
+                }
+            }
+            for (r = 0; r < 4; r++) {
+                for (c = 0; c < 22; c++) {
+                    s->Read(&m_weaponPickupsByPlayer[r][c], sizeof(m_weaponPickupsByPlayer[0][0]));
+                }
+            }
+            for (r = 0; r < 4; r++) {
+                for (c = 0; c < 10; c++) {
+                    s->Read(&m_toyPickupsByPlayer[r][c], sizeof(m_toyPickupsByPlayer[0][0]));
+                }
+            }
+            for (r = 0; r < 4; r++) {
+                for (c = 0; c < 7; c++) {
+                    s->Read(
+                        &m_powerupPickupsByPlayer[r][c],
+                        sizeof(m_powerupPickupsByPlayer[0][0])
+                    );
+                }
+            }
+            for (r = 0; r < 4; r++) {
+                for (c = 0; c < 4; c++) {
+                    s->Read(&m_miscPickupsByPlayer[r][c], sizeof(m_miscPickupsByPlayer[0][0]));
+                }
+            }
+        }
+    } else {
+        s->Write(&m_levelNumber, sizeof(m_levelNumber));
+        s->Write(&m_isCustomLevel, sizeof(m_isCustomLevel));
+        s->Write(&m_currentAreaComplete, sizeof(m_currentAreaComplete));
+        s->Write(&m_elapsedTimeMs, sizeof(m_elapsedTimeMs));
+        s->Write(&m_toyzCollected, sizeof(m_toyzCollected));
+        s->Write(&m_toolzCollected, sizeof(m_toolzCollected));
+        s->Write(&m_gruntzExited, sizeof(m_gruntzExited));
+        s->Write(&m_gruntzLost, sizeof(m_gruntzLost));
+        s->Write(&m_powerupzCollected, sizeof(m_powerupzCollected));
+        s->Write(&m_secretsFound, sizeof(m_secretsFound));
+        s->Write(&m_coinsCollected, sizeof(m_coinsCollected));
+        s->Write(&m_toyzAvailable, sizeof(m_toyzAvailable));
+        s->Write(&m_toolzAvailable, sizeof(m_toolzAvailable));
+        s->Write(&m_powerupzAvailable, sizeof(m_powerupzAvailable));
+        s->Write(&m_secretsAvailable, sizeof(m_secretsAvailable));
+        s->Write(&m_coinsAvailable, sizeof(m_coinsAvailable));
+        s->Write(&m_warpLetterFound, sizeof(m_warpLetterFound));
+        for (i = 0; i < 4; i++) {
+            s->Write(&m_gruntzByPlayer[i], sizeof(m_gruntzByPlayer[i]));
+        }
+        for (r = 0; r < 4; r++) {
+            for (c = 0; c < 4; c++) {
+                s->Write(&m_killsByPlayer[r][c], sizeof(m_killsByPlayer[r][c]));
+            }
+        }
+        for (r = 0; r < 4; r++) {
+            for (c = 0; c < 4; c++) {
+                s->Write(&m_flagCapturesByPlayer[r][c], sizeof(m_flagCapturesByPlayer[r][c]));
+            }
+        }
+        for (r = 0; r < 4; r++) {
+            for (c = 0; c < 22; c++) {
+                s->Write(&m_weaponPickupsByPlayer[r][c], sizeof(m_weaponPickupsByPlayer[0][0]));
+            }
+        }
+        for (r = 0; r < 4; r++) {
+            for (c = 0; c < 10; c++) {
+                s->Write(&m_toyPickupsByPlayer[r][c], sizeof(m_toyPickupsByPlayer[0][0]));
+            }
+        }
+        for (r = 0; r < 4; r++) {
+            for (c = 0; c < 7; c++) {
+                s->Write(&m_powerupPickupsByPlayer[r][c], sizeof(m_powerupPickupsByPlayer[0][0]));
+            }
+        }
+        for (r = 0; r < 4; r++) {
+            for (c = 0; c < 4; c++) {
+                s->Write(&m_miscPickupsByPlayer[r][c], sizeof(m_miscPickupsByPlayer[0][0]));
+            }
+        }
+    }
+    return 1;
+}

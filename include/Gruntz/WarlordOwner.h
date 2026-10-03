@@ -1,0 +1,14 @@
+#ifndef GRUNTZ_GRUNTZ_WARLORDOWNER_H
+#define GRUNTZ_GRUNTZ_WARLORDOWNER_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(WarlordOwner)
+    WARLORDZ_KING = 0,
+    WARLORDZ_NAPOLEAN = 1,
+    WARLORDZ_PATTON = 2,
+    WARLORDZ_VIKING = 3,
+    WARLORDZ_COUNT = 4
+GZ_ENUM_END(WarlordOwner)
+
+#endif

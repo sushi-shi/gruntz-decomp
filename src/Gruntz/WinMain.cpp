@@ -1,0 +1,138 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/WinMain.h>
+
+#include <ComOutRef.h>
+#include <Enums.h>
+#include <Gruntz/AdvancedOptions.h>
+#include <Gruntz/GameAssetNamespaces.h>
+#include <Gruntz/GruntzApp.h>
+#include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/MenuVersion.h>
+#include <Gruntz/StartUpPrompt.h>
+#include <Gruntz/Utils.h>
+#include <Wap32/Wap32.h>
+
+#include <stdio.h>
+#include <string.h>
+
+typedef enum GruntzHotKey {
+    VK_DOLLAR = 0x24,
+} GruntzHotKey;
+
+CGruntzApp* g_pApp;
+
+i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShowCmd) {
+    char szModulePath[0xFE];
+
+    if (GetModuleFileNameA(NULL, szModulePath, 0xFE) > 0
+        && ExistProcess(szModulePath, 2, NULL) != 0) {
+
+        HWND hPrev = FindWindowA("GruntzClass", "Gruntz");
+        if (hPrev != NULL) {
+            if (IsIconic(hPrev)) {
+                SendMessageA(hPrev, WM_SYSCOMMAND, SC_RESTORE, 0);
+            }
+            if (lpCmdLine != NULL && strstr(lpCmdLine, "LOBBYLAUNCH") != NULL) {
+                PostMessageA(hPrev, WM_COMMAND, IDX(CMD_LOBBY_RESET), 0);
+            }
+        }
+        return 0;
+    }
+
+    {
+        DWORD dwSize = GetFileVersionInfoSizeA(szModulePath, NULL);
+        u8* pInfo = new u8[dwSize];
+        GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
+        char* pValue;
+        UINT uLen;
+        VerQueryValueA(
+            pInfo,
+            const_cast<LPSTR>("\\StringFileInfo\\040904B0\\FileVersion"),
+            PtrOut(&pValue),
+            &uLen
+        );
+        sscanf(
+            pValue,
+            "%d, %d, %d, %d",
+            &g_versionMajor,
+            &g_versionMid,
+            &g_versionMinor,
+            &g_buildNumber
+        );
+        delete[] pInfo;
+    }
+
+    if (StartUpPrompt(NULL) == 0) {
+        return 0;
+    }
+
+    g_pApp = new CGruntzApp;
+    if (g_pApp == NULL) {
+        return 0;
+    }
+
+    g_appResHandle = hInstance;
+    i32 bAdvanced = 0;
+    ActiveWait(0x64);
+    if (static_cast<i16>(GetAsyncKeyState(VK_CONTROL)) & 0x80000000) {
+        bAdvanced = 1;
+    }
+    if (static_cast<i16>(GetAsyncKeyState(VK_SHIFT)) & 0x80000000) {
+        bAdvanced = 1;
+    }
+    if (static_cast<i16>(GetAsyncKeyState(VK_DOLLAR)) & 0x80000000) {
+        bAdvanced = 1;
+    }
+
+    if (lpCmdLine != NULL) {
+        if (strstr(lpCmdLine, "advanced") != NULL) {
+            bAdvanced = 1;
+        }
+        if (strstr(lpCmdLine, "optionz") != NULL) {
+            bAdvanced = 1;
+        }
+        if (strstr(lpCmdLine, "ADVANCED") != NULL) {
+            bAdvanced = 1;
+        }
+        if (strstr(lpCmdLine, "OPTIONZ") != NULL) {
+            bAdvanced = 1;
+        }
+        if (strstr(lpCmdLine, "ADV") != NULL) {
+            bAdvanced = 1;
+        }
+        if (strstr(lpCmdLine, "adv") != NULL) {
+            bAdvanced = 1;
+        }
+    }
+
+    if (bAdvanced != 0) {
+        i32 nDlgResult =
+            DialogBoxA(g_appResHandle, "CONFIG_ADVANCED", NULL, &AdvancedOptionsDialogProc);
+        if (nDlgResult == 0) {
+            if (g_pApp != NULL) {
+                delete g_pApp;
+            }
+            g_pApp = NULL;
+            return 0;
+        }
+    }
+
+    if (g_pApp->Init(hInstance, "Gruntz", "Gruntz", lpCmdLine, 0, CW_USEDEFAULT, CW_USEDEFAULT)
+        == 0) {
+        if (g_pApp != NULL) {
+            delete g_pApp;
+        }
+        g_pApp = NULL;
+        return 0;
+    }
+
+    i32 rc = g_pApp->RunMessageLoop();
+    if (g_pApp != NULL) {
+        delete g_pApp;
+    }
+    g_pApp = NULL;
+    return rc;
+}

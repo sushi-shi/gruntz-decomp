@@ -1,0 +1,229 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Globals.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
+#include <Gruntz/EnemyAiType.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/ScanGridMacros.h>
+#include <Gruntz/StaminaPct.h>
+#include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TriggerMgrRecords.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
+#include <Ints.h>
+#include <Wap32/TileGeometry.h>
+#include <ZTools/ZDArray.h>
+
+#include <limits.h>
+#include <new>
+#include <stdlib.h>
+#include <string.h>
+
+i32 CGrunt::StepGauntletGruntBehavior() {
+    if (IsAnimationAct("I")) {
+        return 1;
+    }
+    this->m_defenderPx = this->m_lastTilePx;
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
+
+    b32 poweredUp = this->m_poweredUp;
+    if (poweredUp != false) {
+        b32 neighborValid = this->m_neighborValid;
+        if (neighborValid == false) {
+            if (this->m_combatActive != false) {
+                return 1;
+            }
+            if (this->m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    return 1;
+                }
+                if (atTarget && g == NULL) {
+                    return 1;
+                }
+                if (this->m_poweredUp == false) {
+                    return 1;
+                }
+                if (this->m_neighborValid != false) {
+                    return 1;
+                }
+                this->m_entranceActive = false;
+                this->m_combatActive = false;
+                this->m_neighborValid = false;
+                this->m_poweredUp = false;
+                ResetEntranceAnimation(1, 0, 0);
+                return 1;
+            }
+            if (atTarget) {
+                return 1;
+            }
+            if (this->m_poweredUp == false) {
+                return 1;
+            }
+            if (this->m_neighborValid != false) {
+                return 1;
+            }
+            this->m_entranceActive = false;
+            this->m_combatActive = false;
+            this->m_neighborValid = false;
+            this->m_poweredUp = false;
+            ResetEntranceAnimation(1, 0, 0);
+            return 1;
+        }
+        this->m_neighborValid = false;
+        return 1;
+    }
+
+    switch (this->m_defenderState) {
+        case AISTATE_SEEK: {
+            Coord c;
+            if (g != NULL && this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
+                && IsGruntAtSavedScreenPos(g)
+                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                COMMIT_GRUNT_NEIGHBOR(g);
+                break;
+            }
+            if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
+                if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
+                    g->GetScreenPos(&c);
+                    if (TileSwitch(
+                            c.m_x >> TILE_SHIFT_PX,
+                            c.m_y >> TILE_SHIFT_PX,
+                            0,
+                            this->m_arrivalFlags,
+                            0,
+                            0x20
+                        )
+                        != 0) {
+                        SET_GRUNT_ARRIVAL_TARGET(g);
+                        this->m_defenderState = AISTATE_CHASE;
+                        PLAY_VOICE_IF_VISIBLE(0x366);
+                    }
+                }
+                this->m_dwell = 0;
+                break;
+            }
+            if (this->m_resetApplied == false && this->m_hasExtent != false
+                && static_cast<u32>(this->m_dwell) > 3000) {
+                if (IsArrivalRerollPending() != 0) {
+                    CGameObject* base = this->m_object;
+                    SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lo, ax, lo2, ay)
+                    if (lo < g_gameReg->m_tileGrid->GetWidth()
+                        && lo2 < g_gameReg->m_tileGrid->GetHeight()) {
+                        TileSwitch(
+                            static_cast<i32>(lo),
+                            static_cast<i32>(lo2),
+                            0,
+                            this->m_arrivalFlags,
+                            1,
+                            0
+                        );
+                    }
+                    if (this->CoordCount() != 0) {
+                        ax = Max(ax, ay);
+                        if (this->CoordCount() > ax) {
+                            SetEntrancePos(1, 1);
+                        }
+                    }
+                } else {
+                    ResetArrivalReroll();
+                }
+                this->m_dwell = 0;
+            }
+            break;
+        }
+        case AISTATE_CHASE: {
+            CGrunt* slot = m_triggerMgr->UnitAt(this->m_arrivalCell.m_x, this->m_arrivalCell.m_y);
+            CGrunt* found = m_triggerMgr->FindNearestEnemy(this);
+            if (found == NULL || found == slot) {
+                if (slot == NULL || slot->m_entranceCommitted == false
+                    || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
+                    this->m_defenderState = AISTATE_SEEK;
+                } else {
+                    StepArrivalDrop(
+                        slot->m_lastTilePx.m_x,
+                        slot->m_lastTilePx.m_y,
+                        0,
+                        this->m_arrivalFlags,
+                        0,
+                        0x20
+                    );
+                    if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
+                        && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                        && IsGruntAtSavedScreenPos(slot)) {
+                        COMMIT_GRUNT_NEIGHBOR(slot);
+                        this->m_defenderState = AISTATE_ATTACK;
+                    }
+                }
+            } else {
+                ResetToSeek(this);
+            }
+            break;
+        }
+        case AISTATE_ATTACK: {
+            if (m_poweredUp == false) {
+                m_defenderState = AISTATE_CHASE;
+                break;
+            }
+            CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
+            if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
+                && slot->m_entranceCommitted != false) {
+                if (m_neighborValid != false || m_combatActive != false
+                    || m_stamina < STAMINA_FULL) {
+                    break;
+                }
+                if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                    && IsGruntAtSavedScreenPos(slot)) {
+                    COMMIT_GRUNT_NEIGHBOR(slot);
+                    break;
+                }
+            } else if (slot == NULL) {
+                m_defenderState = AISTATE_SEEK;
+                break;
+            }
+            m_defenderState = AISTATE_CHASE;
+            PLAY_VOICE_IN_VIEW(0x366);
+            break;
+        }
+    }
+
+    if (this->CoordCount() != 0) {
+
+        Coord* cell = GetHeadCoord();
+
+        BrickzCell& gc = g_gameReg->m_tileGrid->m_rows[cell->m_y][cell->m_x];
+        if ((gc.m_flagBytes[0] & 0x20) != 0) {
+            SetEntrancePos(1, 1);
+            if (this->CoordCount() != 0) {
+                this->RecycleCoords();
+            }
+            g_gameReg->m_triggerMgr->UseEquippedToolAt(
+                m_playerIndex,
+                m_unitIndex,
+                cell->m_x * 0x20 + 0x10,
+                cell->m_y * 0x20 + 0x10
+            );
+        }
+    }
+    return 1;
+}

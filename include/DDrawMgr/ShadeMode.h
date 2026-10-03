@@ -1,0 +1,30 @@
+#ifndef GRUNTZ_DDRAWMGR_SHADEMODE_H
+#define GRUNTZ_DDRAWMGR_SHADEMODE_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(ShadeMode)
+    SHADE_COPY = 1,
+
+    SHADE_DST_BY_SRC = 2,
+
+    SHADE_DST_BY_LEVEL = 3,
+
+    SHADE_SRC_BY_LEVEL = 4,
+
+    SHADE_FILL_LEVEL = 5,
+
+    SHADE_LERP_LEVEL = 6,
+
+    SHADE_DST_BY_SRC_16 = 7,
+
+    SHADE_ALPHA_16 = 8,
+
+    SHADE_GREY_TABLE = 9,
+
+    SHADE_PAL_16 = 10,
+
+    SHADE_PAL_ALPHA_16 = 11
+GZ_ENUM_END(ShadeMode)
+
+#endif

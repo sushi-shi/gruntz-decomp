@@ -1,0 +1,1339 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/GruntEntranceArrival.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/AniAdvance.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
+#include <Enums.h>
+#include <Globals.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
+#include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/CoordPool.h>
+#include <Gruntz/EnemyAiType.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRand.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntActionInline.h>
+#include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCombatClockInline.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPickupInline.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
+#include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/InGameIcon.h>
+#include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/Projectile.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
+#include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/StaminaPct.h>
+#include <Gruntz/State.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
+#include <Ints.h>
+#include <Pix16.h>
+#include <RectMacros.h>
+#include <Rez/FrameClock.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezTypeTag.h>
+#include <Utils/MapTyped.h>
+#include <Utils/MillisPer.h>
+#include <Wap32/Object.h>
+#include <Wap32/TileGeometry.h>
+#include <Wap32/Wap32.h>
+#include <Wwd/WwdObjMgrInline.h>
+
+#include <math.h>
+#include <new>
+#include <stdlib.h>
+#include <string.h>
+
+static char s_toyTime[] = "ToyTime";
+
+static char s_gruntzBigwheelgrunt[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
+
+static char s_gruntzGokartgrunt[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
+
+static char s_gruntzExitzThree[] = "GRUNTZ_EXITZ_THREE";
+
+static char s_gruntzExitzTwo[] = "GRUNTZ_EXITZ_TWO";
+
+static char s_gruntzExitzOne[] = "GRUNTZ_EXITZ_ONE";
+
+i32 CGrunt::ResetGeometry() {
+    SwitchAnimation(m_poseAttackIdle);
+
+    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+
+    const char* name = EntranceCell()->AttackName().GetBuffer(0);
+    SetImageFrameByName(name, frame);
+
+    SET_ANIMATION_ACT("E");
+    return 0;
+}
+
+i32 CGrunt::UpdateGruntStatus() {
+    if (m_poweredUp == false) {
+        ResetEntranceAnimation(1, 0, 0);
+        return 0;
+    }
+
+    m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+
+    if (m_stamina >= STAMINA_FULL) {
+        if (m_neighborValid != false) {
+            m_neighborValid = false;
+            CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
+            if (n != NULL && n->m_entranceCommitted != false) {
+                if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
+                    CommitNeighbor(
+                        m_neighborPlayerIndex,
+                        m_neighborUnitIndex,
+                        n->m_object->m_screenX,
+                        n->m_object->m_screenY
+                    );
+                }
+            }
+        }
+    } else if (m_stamina > STAMINA_HALF) {
+        if (m_lowStaminaCued == false) {
+            PLAY_GRUNT_CUE_IN_VIEW(2);
+            m_lowStaminaCued = true;
+        }
+    }
+    return 0;
+}
+
+i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex) {
+    if (m_entranceReason >= PICKUP_TOYZ_FIRST) {
+        return 0;
+    }
+
+    SetGruntNeighbor(this, targetPlayerIndex, targetUnitIndex);
+    SET_ANIMATION_ACT("F");
+
+    m_combatActive = true;
+
+    i32 idx;
+    switch (m_entranceReason) {
+        case PICKUP_BOOMERANG:
+            if (m_arrivalState != AI_NONE) {
+                m_entranceActive = true;
+            }
+            idx = 1;
+            break;
+        case PICKUP_GUNHAT:
+        case PICKUP_NERFGUN:
+        case PICKUP_ROCK:
+        case PICKUP_TIMEBOMB:
+        case PICKUP_WARPSTONE:
+        case PICKUP_WELDER:
+        case PICKUP_WINGZ:
+            idx = 1;
+            break;
+        default:
+            idx = rand() % 2;
+            break;
+    }
+
+    CreateHealthSprite();
+
+    ArmGruntCombatTimeout(this);
+
+    PLAY_GRUNT_CUE_IN_VIEW(1);
+
+    {
+        CWwdSpriteObject* h = m_object;
+        i32 z = h->m_screenY + 0x186c1;
+        SET_SORT_KEY_IF_CHANGED(h, z)
+    }
+
+    SwitchAnimation(m_poseAttack[idx]);
+
+    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
+
+    char* buf = EntranceCell()->AttackName().GetBuffer(0);
+    SetImageFrameByName(buf, frame);
+    m_struckPose = 1;
+    return 0;
+}
+
+i32 CGrunt::StartRangedAttackAnimation() {
+    SET_ANIMATION_ACT("F");
+
+    SwitchAnimation(AT(m_poseAttack, GRUNT_ATTACK2));
+
+    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
+
+    char* buf = EntranceCell()->AttackName().GetBuffer(0);
+    SetImageFrameByName(buf, frame);
+    m_struckPose = 1;
+    return 0;
+}
+
+i32 CGrunt::StepAttackFire() {
+    i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    i32 flag = 0;
+    if (advanced == WWDDRAW_EFFECT_FRAME) {
+
+        switch (m_entranceReason) {
+            case GRUNT_GUNHAT:
+            case GRUNT_NERFGUN:
+            case GRUNT_ROCK:
+            case GRUNT_WELDER:
+            case GRUNT_WINGZ: {
+                CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
+                    0,
+                    m_object->m_screenX,
+                    m_object->m_screenY,
+                    0,
+                    "Projectile",
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                );
+                spr->m_logicRecord->m_dispatch(spr);
+                CProjectile* s = static_cast<CProjectile*>(spr->m_logicRecord->m_userLogic);
+                if (s->LoadProjectileSprites(
+                        m_entranceReason,
+                        m_playerIndex,
+                        m_unitIndex,
+                        m_attackTargetPx.m_x,
+                        m_attackTargetPx.m_y,
+                        m_object->m_screenX,
+                        m_object->m_screenY
+                    )
+                    == 0) {
+                    s->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+                }
+                break;
+            }
+            case GRUNT_BOOMERANG: {
+                CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
+                    0,
+                    m_object->m_screenX,
+                    m_object->m_screenY,
+                    0,
+                    "Boomerang",
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                );
+                spr->m_logicRecord->m_dispatch(spr);
+                CProjectile* s = static_cast<CProjectile*>(spr->m_logicRecord->m_userLogic);
+                if (s->LoadProjectileSprites(
+                        m_entranceReason,
+                        m_playerIndex,
+                        m_unitIndex,
+                        m_attackTargetPx.m_x,
+                        m_attackTargetPx.m_y,
+                        m_object->m_screenX,
+                        m_object->m_screenY
+                    )
+                    == 0) {
+                    s->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+                }
+                break;
+            }
+            case GRUNT_TIMEBOMB: {
+                Coord pos;
+                EntranceTileOffset(&pos);
+                CGameObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
+                    0,
+                    pos.m_x,
+                    pos.m_y,
+                    0xf,
+                    "TimeBomb",
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                );
+                spr->m_damage = 0;
+                spr->m_logicRecord->m_dispatch(spr);
+                spr->m_smarts = m_playerIndex;
+                break;
+            }
+            default: {
+
+                CGrunt* tgt = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
+                if (tgt != NULL) {
+                    tgt->StepCombatReaction(
+                        m_entranceReason,
+                        m_struckPose,
+                        m_playerIndex,
+                        m_unitIndex,
+                        m_object->m_screenX,
+                        m_object->m_screenY,
+                        0,
+                        m_gruntKind
+                    );
+                    PickupType t = tgt->ArrivalPickup();
+                    if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
+                        m_triggerMgr->StartUnitDeath(
+                            m_playerIndex,
+                            m_unitIndex,
+                            DEATH_EXPLODE,
+                            m_neighborPlayerIndex
+                        );
+                        return 0;
+                    }
+                    break;
+                }
+                flag = 1;
+                break;
+            }
+        }
+
+        m_entranceActive = true;
+        u32 dt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "AttackDowntime");
+        if (m_gruntKind == GRUNT_ROIDZ) {
+            dt = 0;
+        }
+        m_attackTiming.Start(dt);
+        m_lowStaminaCued = false;
+        m_stamina = 0;
+        if (m_healthSprite != NULL) {
+            CreateStaminaSprite();
+        }
+        m_combatActive = false;
+    }
+
+    CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
+    if ((cur->m_finished == false || cur->m_frameTicksLeft != 0) && flag == 0) {
+        return 0;
+    }
+    if (m_entranceReason == GRUNT_BOOMERANG) {
+        LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+    }
+    CWwdSpriteObject* h = m_object;
+    i32 zkey = h->m_screenY + 0x186a0;
+    SET_SORT_KEY_IF_CHANGED(h, zkey)
+    i32 poweredUpSnapshot = m_poweredUp;
+    m_entranceActive = false;
+    if (poweredUpSnapshot != 0) {
+        ResetGeometry();
+        return 0;
+    }
+    ResetEntranceAnimation(1, 0, 0);
+    return 0;
+}
+
+i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
+    if (commit != 0) {
+        StopVehicleLoopSound();
+        if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B && m_arrivalActive != false) {
+            CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
+            if (occ != NULL) {
+                CGameObject* inner = occ->m_object;
+                i32 innerY = inner->m_screenY;
+                i32 innerX = inner->m_screenX;
+                i32 xMasked = (innerX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 yMasked = (innerY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                if (VehicleContactContains(xMasked, yMasked) != 0) {
+                    m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, innerX, innerY);
+                }
+            }
+        }
+
+        if (m_poweredUp != false && m_neighborValid == false) {
+            RESET_GRUNT_POWERED_STATE(this)
+        }
+        m_entranceActive = true;
+        SetEntrancePos(1, 1);
+
+        this->RecycleCoords();
+
+        m_entranceStamped = false;
+        HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
+        HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
+
+        if (m_entranceReason == PICKUP_SCROLL) {
+            SET_ANIMATION_ACT("P");
+            i32 toyIdx = rand() % 2;
+            SwitchAnimationAndMaybeAdvance(m_poseToy[toyIdx], 0);
+
+            DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
+            char* buf = (&m_frameSetName)->GetBuffer(0);
+            SetImageFrameByName(buf, frame);
+
+            i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
+            i32 moveVariant = m_moveVariant;
+            if (moveVariant != 0) {
+                i32 tier = cueTier + moveVariant - 1;
+                CGruntzMgr* g = g_gameReg;
+                const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
+                if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
+                    != 0) {
+                    g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
+                }
+            } else {
+                if (m_moveKind == 0) {
+                    i32 md = 3;
+                    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+                        md = 6;
+                    }
+                    m_moveKind = GetRandom(1, md);
+                }
+                i32 tier = cueTier + m_moveKind - 1;
+                CGruntzMgr* g = g_gameReg;
+                const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
+                if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
+                    != 0) {
+                    g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
+                }
+            }
+            return 0;
+        } else {
+            DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
+            m_toyTiming.Start(tt);
+            m_toyTime = 0x64;
+            CreateToyTimeSprite();
+        }
+    }
+
+    if (walking != 0) {
+
+        m_toyTileIndex = 0;
+        if (m_poweredUp != false && m_neighborValid == false) {
+            RESET_GRUNT_POWERED_STATE(this)
+        }
+        SET_ANIMATION_ACT("L");
+        SwitchAnimation(m_poseWalk);
+        GruntDirectionCell cell = m_entranceCell;
+        i32 colv = cell.m_column + cell.m_row * 2;
+        i32 basev = cell.m_row + colv;
+        char* nm = m_cells[basev].WalkName().GetBuffer(0);
+        SetImageSetByName(nm);
+
+        DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
+        m_idleDelayTiming.Start(tt >> 1);
+        return 0;
+    }
+
+    SET_ANIMATION_ACT("G");
+
+    CWwdSpriteObject* h = m_object;
+    i32 z = h->m_screenY + 0xc3500;
+    SET_SORT_KEY_IF_CHANGED(h, z)
+
+    i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->m_durationMs;
+    i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->m_durationMs;
+    i32 availableMs = static_cast<i32>(m_toyTiming.Remaining());
+    i32 toy1ExcessMs = 0;
+    if (static_cast<u32>(toy1DurationMs) > static_cast<u32>(availableMs)) {
+        toy1ExcessMs = toy1DurationMs - availableMs;
+    }
+    i32 toy2ExcessMs = 0;
+    if (static_cast<u32>(toy2DurationMs) > static_cast<u32>(availableMs)) {
+        toy2ExcessMs = toy2DurationMs - availableMs;
+    }
+    i32 sel;
+    if (toy1ExcessMs == 0 && toy2ExcessMs == 0) {
+        i32 r = GetRandom(1, 100);
+        sel = (r >= m_toyBlendPct) ? 1 : 0;
+    } else if (toy1ExcessMs != 0 && toy2ExcessMs == 0) {
+        sel = 0;
+    } else if (toy2ExcessMs != 0 && toy1ExcessMs == 0) {
+        sel = 1;
+    } else {
+        sel = (static_cast<u32>(toy1ExcessMs) < static_cast<u32>(toy2ExcessMs)) ? 0 : 1;
+    }
+
+    CAniElement* want = m_poseToy[sel];
+    if (m_wwdObject->m_animationCursor.m_animation != want) {
+        SwitchAnimation(want);
+        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
+        char* buf = (&m_frameSetName)->GetBuffer(0);
+        SetImageFrameByName(buf, frame);
+    }
+
+    CWwdSpriteObject* object = m_object;
+    CGruntzMgr* g = g_gameReg;
+    i32 yy = object->m_screenY;
+    i32 xx = object->m_screenX;
+
+    if (sel == 0) {
+        if (::PtInRect(&g->m_world->m_level->m_mainPlane->m_planeViewRect, xx, yy)) {
+            g->VoiceMgr()->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
+        }
+    } else {
+        if (::PtInRect(&g->m_world->m_level->m_mainPlane->m_planeViewRect, xx, yy)) {
+            g->VoiceMgr()->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
+        }
+    }
+    return 0;
+}
+
+i32 CGrunt::UpdateToyUseAnimation() {
+    b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
+    if (sub->IsComplete()) {
+        if (m_arrived != false) {
+            CreateHealthSprite();
+            CreateStaminaSprite();
+            CreateToySprite();
+        }
+        SET_ANIMATION_ACT("A");
+        LoadGruntTypeTable(m_toolId, 1, 0, 0);
+        m_entranceActive = false;
+        CGruntzMgr* g = g_gameReg;
+        CMapMgr* grid = g->m_tileGrid;
+        i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 flags = grid->CellFlagsAt(tx, ty);
+        if (flags & 0x80) {
+            SetEntrancePos(1, 1);
+            m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            return 0;
+        }
+        CWwdSpriteObject* h = m_object;
+        i32 v = h->m_screenY + 0x186a0;
+        SET_SORT_KEY_IF_CHANGED(h, v)
+        return 0;
+    }
+
+    i64 diff = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
+    if (diff >= m_toyTiming.m_interval && m_entranceStamped == false && ready == true) {
+        HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
+        SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
+        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+        char* nm = (&m_frameSetName)->GetBuffer(0);
+        SetImageFrameByName(nm, frame);
+        m_entranceStamped = true;
+        PLAY_GRUNT_CUE_IN_VIEW(0xc);
+        return 0;
+    }
+    StopVehicleLoopSound();
+    if (ready == true) {
+        UpdateArrival(0, 0);
+    }
+    return 0;
+}
+
+i32 CGrunt::RecordFrameTick() {
+    m_recordedFrameTick = g_frameTicks;
+    return 1;
+}
+
+i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
+    i32 e1y = e1->y;
+    i32 e2y = e2->y;
+
+    i32 py = p->top;
+    if ((e1y < py) != (e2y < py)) {
+        float t = static_cast<float>((py - e1y)) / static_cast<float>((e2y - e1y));
+        float ix = static_cast<float>(e1->x) + t * static_cast<float>((e2->x - e1->x));
+
+        if (ix >= static_cast<float>(p->left) && ix <= static_cast<float>(p->right)) {
+            return 1;
+        }
+    }
+
+    i32 pyc = p->bottom;
+    if ((e1y < pyc) != (e2y < pyc)) {
+        float t = static_cast<float>((pyc - e1y)) / static_cast<float>((e2y - e1y));
+        float ix = static_cast<float>(e1->x) + t * static_cast<float>((e2->x - e1->x));
+
+        if (ix >= static_cast<float>(p->left) && ix <= static_cast<float>(p->right)) {
+            return 1;
+        }
+    }
+
+    i32 e1x = e1->x;
+    i32 e2x = e2->x;
+    i32 px = p->left;
+    if ((e1x > px) != (e2x > px)) {
+
+        float t = static_cast<float>((px - e1x)) / static_cast<float>((e2x - e1x));
+        float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
+
+        if (iy < static_cast<float>(p->bottom) && iy > static_cast<float>(p->top)) {
+            return 1;
+        }
+    }
+
+    i32 pxr = p->right;
+    if ((e1x > pxr) != (e2x > pxr)) {
+
+        float t = static_cast<float>((pxr - e1x)) / static_cast<float>((e2x - e1x));
+        float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
+
+        if (iy < static_cast<float>(p->bottom) && iy > static_cast<float>(p->top)) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue) {
+    m_resetApplied = false;
+
+    i32 applied = 0;
+
+    if (IsNotAnimationAct("A") && chooseIdleVariant == 0) {
+
+        SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
+        m_idleWindowTiming.Start(0x3a98);
+        i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
+        m_idleDelayTiming.Start(0x7530 + GetRandom(0, d));
+        applied = 1;
+    } else if (AT(m_poseIdle, GRUNT_IDLE2) != NULL) {
+        if (chooseIdleVariant != 0) {
+
+            i32 count = 1;
+            if (AT(m_poseIdle, GRUNT_IDLE3) != NULL) {
+                count = 2;
+            }
+            i32 idx = GetRandom(1, count);
+            if (playVoiceCue != 0) {
+                g_gameReg->Rand();
+                b32 focused = (m_playerIndex == g_curPlayer);
+                if (focused && idx > 0x5a) {
+                    PLAY_GRUNT_CUE_IF_VISIBLE(4);
+                } else if (focused || m_entranceReason != PICKUP_NONE) {
+                    switch (idx) {
+                        case GRUNT_IDLE_VARIANT_PRIMARY:
+                            PLAY_GRUNT_CUE_IF_VISIBLE(5);
+                            break;
+                        case GRUNT_IDLE_VARIANT_SECONDARY:
+                            PLAY_GRUNT_CUE_IF_VISIBLE(6);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            SwitchAnimation(m_poseIdle[idx]);
+            m_resetApplied = true;
+            applied = 1;
+        } else {
+
+            if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
+                SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
+                {
+                    i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
+                    applied = 1;
+                    m_idleDelayTiming.Start(GetRandom(0x4e20, d));
+                }
+            }
+        }
+    } else {
+
+        SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
+    }
+
+    SET_ANIMATION_ACT("A");
+
+    if (!applied && refreshFrame == 0) {
+        return;
+    }
+
+    GruntDirectionCell cell = m_entranceCell;
+    if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
+        switch (m_entranceCell.m_direction) {
+            case DIR_NORTHEAST:
+                cell = g_gruntDirEast;
+                break;
+            case DIR_SOUTHEAST:
+            case DIR_SOUTHWEST:
+                cell = g_gruntDirSouth;
+                break;
+            case DIR_NORTHWEST:
+                cell = g_gruntDirWest;
+                break;
+            default:
+                break;
+        }
+    }
+
+    {
+        i32 col = cell.m_column + cell.m_row * 2;
+        i32 base = cell.m_row + col;
+        CString key = m_cells[base].IdleName();
+
+        APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
+    }
+}
+
+i32 CGrunt::ResolveEntranceArrival() {
+    if (m_entranceActive != false && IsGruntAtSavedScreenPos(this)) {
+        CGruntzMgr* g = g_gameReg;
+        CMapMgr* grid = g->m_tileGrid;
+        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
+        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
+        i32 flags = grid->CellFlagsAt(tx, ty);
+        if (!(flags & 0x80)) {
+            m_entranceActive = false;
+        }
+    }
+
+    b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+
+    if (m_idleWindowTiming.Expired()) {
+        CGruntzMgr* g = g_gameReg;
+        GameModeId mode = g->GetGameMode();
+        if (mode != GAMEMODE_QUESTZ) {
+            GruntzPlayer* slot = &g->m_players[m_playerIndex];
+            if (slot != NULL && slot->m_humanControlled != false) {
+                if (m_tileClaimed == false && m_arrivalNotified == false
+                    && mode == GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
+                    && m_arrived == false) {
+                    m_triggerMgr->EnqueueGuardBegin(m_playerIndex, m_unitIndex);
+                    m_arrivalNotified = true;
+                    goto tail;
+                }
+                if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
+                    && m_arrived == false && m_tileClaimed != true) {
+                    m_arrivalRerollTiming.Clear();
+                    m_tileClaimed = true;
+                    m_defenderPx = m_lastTilePx;
+                    PickupType kind = m_entranceReason;
+
+                    switch (kind) {
+                        case PICKUP_BOOMERANG:
+                        case PICKUP_GUNHAT:
+                        case PICKUP_NERFGUN:
+                        case PICKUP_ROCK:
+                        case PICKUP_WELDER:
+                        case PICKUP_WINGZ:
+                            m_defenderRadius = 1;
+                            break;
+                        default:
+                            m_defenderRadius =
+                                g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
+                            break;
+                    }
+                    m_arrivalState = AI_DEFENDER;
+                    m_defenderState = AISTATE_SEEK;
+                    UNSET_COORD(m_arrivalCell);
+                    m_arrivalActive = false;
+                    m_arrivalFlags |= 0x18040402;
+                    SET_RECT_XY_EXTENTS(m_object->m_extent, 0, 0, 0, 0);
+                    SetEntrancePos(1, 1);
+                }
+            }
+        }
+    }
+
+tail:
+    if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
+
+        if (m_wwdObject->m_animationCursor.IsComplete()) {
+            ResetEntranceAnimation(0, 0, 0);
+        }
+        return 0;
+    }
+    if (m_idleDelayTiming.Expired() && ready == true) {
+        ResetEntranceAnimation(0, 1, 1);
+    }
+    return 0;
+}
+
+i32 CGrunt::StepEntranceReinit() {
+    bool eq;
+    eq = IsAnimationAct("D");
+    if (eq) {
+        return 0;
+    }
+    eq = IsAnimationAct("L");
+    if (eq) {
+        return 0;
+    }
+
+    m_arrivalVoiceTiming.Start(0x7530);
+    m_neighborScanEnabled = false;
+
+    eq = IsAnimationAct("I");
+    if (eq) {
+        ClearMoveTileFx(this);
+    }
+    if (m_poweredUp != false && m_neighborValid == false) {
+        RESET_GRUNT_POWERED_STATE(this)
+    }
+    m_tileMoveCommitted = false;
+    if (CoordCount() == 0) {
+        return 0;
+    }
+
+    Coord* targetCoord = GetHeadCoord();
+    CMapMgr* tileGrid = g_gameReg->m_tileGrid;
+    i32 targetCellFlags = tileGrid->CellFlagsAt(targetCoord->m_x, targetCoord->m_y);
+    GruntDirectionCell cell;
+    if (!(targetCellFlags & BRICKZ_CELL_OCCUPIED)) {
+        SET_ANIMATION_ACT("D");
+        SwitchAnimation(m_poseWalk);
+        cell = m_entranceCell;
+    } else {
+
+        i32 currentTileX = m_object->m_screenX >> TILE_SHIFT_PX;
+        i32 currentTileY = m_object->m_screenY >> TILE_SHIFT_PX;
+        i32 currentCellFlags = tileGrid->CellFlagsAt(currentTileX, currentTileY);
+        if (!(currentCellFlags & 0x80)) {
+            return 0;
+        }
+        SET_ANIMATION_ACT("D");
+        SwitchAnimation(m_poseWalk);
+        cell = m_entranceCell;
+        m_entranceActive = true;
+    }
+    i32 col = cell.m_column + cell.m_row * 2;
+    i32 base = cell.m_row + col;
+
+    char* walkAnimationName = m_cells[base].WalkName().GetBuffer(0);
+    SetImageSetByName(walkAnimationName);
+    return 0;
+}
+
+i32 CGrunt::StepArrivalReroll() {
+    m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    u32 elapsed = m_arrivalVoiceTiming.Elapsed();
+    if (elapsed <= 0x2710) {
+        return 0;
+    }
+    if (elapsed % MILLIS_PER_SECOND != 0) {
+        return 0;
+    }
+    i32 v;
+    i32 range = 0x7531 - elapsed;
+    if (range == 0) {
+        if ((GetRandomNumber() & 1)) {
+            v = elapsed;
+        } else {
+            v = 0x7530;
+        }
+    } else {
+        v = GetRandomNumber() % range + elapsed;
+    }
+    if (v <= 0x7148) {
+        return 0;
+    }
+    i32 pick = GetRandomNumber() % 0x65;
+    if (pick > 0x19) {
+        PLAY_VOICE_IN_VIEW(0x15d);
+    } else {
+        PLAY_GRUNT_CUE_IN_VIEW(9);
+    }
+    return 0;
+}
+
+i32 CGrunt::LoadVehicleGruntAnimations() {
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
+    if (sub->IsComplete()) {
+        if (m_arrived) {
+            CreateHealthSprite();
+            CreateStaminaSprite();
+            CreateToySprite();
+        }
+        SET_ANIMATION_ACT("A");
+        LoadGruntTypeTable(m_toolId, 1, 0, 0);
+        m_entranceActive = false;
+
+        CMapMgr* grid = g_gameReg->m_tileGrid;
+        i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 flags = grid->CellFlagsAt(tx, ty);
+        if (flags & 0x80) {
+            SetEntrancePos(1, 1);
+            m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+        }
+        return 0;
+    }
+
+    i64 elapsed = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
+    if (elapsed >= m_toyTiming.m_interval) {
+        if (m_entranceStamped == false && IsGruntAtSavedScreenPos(this)) {
+            HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
+            SetEntrancePos(1, 1);
+            m_entranceStamped = true;
+            SwitchAnimationAndMaybeAdvance(AT(m_poseToy, GRUNT_TOY_BREAK), 0);
+
+            DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+            char* buf = (&m_frameSetName)->GetBuffer(0);
+            SetImageFrameByName(buf, frame);
+
+            CWwdSpriteObject* h = m_object;
+            CGruntzMgr* g = g_gameReg;
+            i32 y = h->m_screenY;
+            i32 x = h->m_screenX;
+            const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
+            if (::PtInRect(&rect, x, y)) {
+                g->VoiceMgr()->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
+                StopVehicleLoopSound();
+                return 0;
+            }
+        }
+        StopVehicleLoopSound();
+        return 0;
+    }
+
+    i64 elapsed2 = static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start;
+    if (elapsed2 >= m_idleDelayTiming.m_interval) {
+        PLAY_GRUNT_CUE_IN_VIEW(0xd);
+    }
+
+    CWwdSpriteObject* h2 = m_object;
+    CGruntzMgr* g2 = g_gameReg;
+    i32 hy = h2->m_screenY;
+    i32 hx = h2->m_screenX;
+    if (::PtInRect(&g2->m_viewBounds, hx, hy)) {
+        if (m_entranceReason == PICKUP_GOKART) {
+            EnsureVehicleLoopSound(s_gruntzGokartgrunt);
+            return 0;
+        }
+        if (m_entranceReason == PICKUP_BIGWHEEL) {
+            EnsureVehicleLoopSound(s_gruntzBigwheelgrunt);
+            return 0;
+        }
+        return 0;
+    }
+    StopVehicleLoopSound();
+    return 0;
+}
+
+i32 CGrunt::BuildGruntExitAnimation() {
+    if (m_deathAnimStarted != false) {
+        return 0;
+    }
+
+    FinishActiveAction();
+    STOP_GRUNT_LOOP_SOUNDS;
+
+    m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+    m_entranceCommitted = false;
+    m_deathAnimStarted = true;
+
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
+
+    m_gruntKind = GRUNT_NORMAL;
+    if (m_poweredUp != false && m_neighborValid == false) {
+        RESET_GRUNT_POWERED_STATE(this)
+    }
+
+    BeginGruntEntranceAndReleaseCell(this);
+
+    SET_ANIMATION_ACT("B");
+
+    CAniElement* found;
+    i32 r = rand() % 0x1e1;
+    if (r > 0x140) {
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzOne);
+        PLAY_VOICE_IF_VISIBLE(0x384);
+    } else if (r > 0xa0) {
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzTwo);
+        PLAY_VOICE_IF_VISIBLE(0x385);
+    } else {
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzThree);
+        PLAY_VOICE_IF_VISIBLE(0x386);
+    }
+
+    CWapX::ApplyAnimation(found, 0);
+    i32 frame =
+        static_cast<CAniRecordView*>(m_wwdObject->m_animationCursor.m_animation->AtChecked(0))
+            ->m_param;
+    SetImageFrameByName("GRUNTZ_EXITZ", frame);
+    return 0;
+}
+
+i32 CGrunt::StepWarpExit() {
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
+    if (sub->IsComplete()) {
+        if (m_deathType == GRUNT_DEATH_WARPOUT) {
+            CState* st = g_gameReg->m_curState;
+            i32 lvl = st->m_levelIndex + 0x64;
+            CString s;
+            s.Format("WORLDZ\\LEVEL%i", lvl);
+            if (st->m_levelResources->GetRezFromPath(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
+                PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
+            }
+        }
+        UnregisterFromBoard(this, 1);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+    }
+    return 0;
+}
+
+i32 CGrunt::StepCombatReaction(
+    PickupType attackKind,
+    i32 struckPose,
+    i32 srcPlayerIndex,
+    i32 srcUnitIndex,
+    i32 srcPxX,
+    i32 srcPxY,
+    i32 fromProjectile,
+    PickupType attackerGruntKind
+) {
+    if (m_entranceCommitted == false || m_entranceDropActive != false) {
+        return 0;
+    }
+    {
+        CWwdSpriteObject* h = m_object;
+        i32 v = h->m_screenY + 0x186a0;
+        SET_SORT_KEY_IF_CHANGED(h, v)
+    }
+
+    bool ne;
+    bool eq;
+    ne = IsNotAnimationAct("A");
+    if (!ne) {
+        goto tail;
+    }
+    ne = IsNotAnimationAct("D");
+    if (!ne) {
+        goto tail;
+    }
+    eq = IsAnimationAct("I");
+    if (eq) {
+        if (m_entranceReason == PICKUP_WAND) {
+            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
+        }
+        ClearMoveTileFx(this);
+        goto tail;
+    }
+    if (GRUNT_IS_USING_TOY(eq)) {
+        goto restoreTool;
+    }
+    if (SettleActiveKnockback()) {
+        goto tail;
+    }
+    eq = IsAnimationAct("Q");
+    if (eq) {
+        m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
+        return 0;
+    }
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+        goto tail;
+    }
+    SETTLE_ACTIVE_TUBE_MOVE(eq);
+    goto tail;
+
+restoreTool:
+    RestoreToolAfterToyUse(1);
+
+tail:
+    CreateHealthSprite();
+    ArmGruntCombatTimeout(this);
+    if (GRUNT_NOT_AT_SAVED_SCREEN_POS(this)) {
+        ConsiderArrival(1);
+    }
+    if (LoadGruntCombatAnimations(
+            attackKind,
+            struckPose,
+            srcPlayerIndex,
+            srcUnitIndex,
+            srcPxX,
+            srcPxY,
+            fromProjectile,
+            attackerGruntKind
+        )
+        == 0) {
+        return 0;
+    }
+
+    {
+        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
+        eq = (*rec == "F");
+        if (eq) {
+            if (m_entranceCommitted != false) {
+                return 0;
+            }
+        }
+    }
+    m_entranceActive = true;
+    {
+        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
+        ne = (*rec != "O");
+        if (ne) {
+            SET_ANIMATION_ACT("H");
+            CGrunt* cellObj = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
+            if (cellObj != NULL) {
+                CGameObject* oh = cellObj->m_object;
+                i32 cx = oh->m_screenX;
+                i32 cy = oh->m_screenY;
+                if (m_neighborScanEnabled != false && m_entranceCommitted != false
+                    && RectContains(cx, cy)) {
+                    if (!(g_gameReg->m_tileGrid->CellFlagsAt(
+                              m_lastTilePx.m_x >> TILE_SHIFT_PX,
+                              m_lastTilePx.m_y >> TILE_SHIFT_PX
+                          )
+                          & 0x80)) {
+                        CommitNeighbor(srcPlayerIndex, srcUnitIndex, cx, cy);
+                    }
+                }
+            }
+        }
+    }
+
+    m_combatActive = false;
+    CAniElement* pose = m_poseStruck[struckPose];
+    SwitchAnimation(pose);
+    i32 frame;
+    {
+        CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
+        CAniRecordView* elem = desc->RecordAt(0);
+        frame = elem->m_param;
+    }
+    {
+        char* cn = EntranceCell()->StruckName().GetBuffer(0);
+        SetImageFrameByName(cn, frame);
+    }
+    PLAY_GRUNT_CUE_IN_VIEW(7);
+    return 0;
+}
+
+i32 CGrunt::FinishStruckAnimation() {
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
+    if (!sub->IsComplete()) {
+        return 0;
+    }
+    if (m_health <= 0) {
+        m_entranceCommitted = false;
+        m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
+        return 0;
+    }
+    m_entranceActive = false;
+
+    CMapMgr* grid = g_gameReg->m_tileGrid;
+    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 flags = grid->CellFlagsAt(tx, ty);
+    if (flags & 0x80) {
+        SetEntrancePos(1, 1);
+        m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+        return 0;
+    }
+    if (m_neighborScanEnabled == false && m_tileMoveCommitted != false) {
+        StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
+        return 0;
+    }
+    if (m_entranceReason == PICKUP_WARPSTONE) {
+        ResetEntranceAnimation(1, 0, 0);
+        return 0;
+    }
+    ResetGeometry();
+    return 0;
+}
+
+i32 CGrunt::FinishKnockbackAnimation() {
+
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
+    if (!sub->IsComplete()) {
+        return 0;
+    }
+    m_entranceActive = false;
+    SnapToLastTile(1);
+    SetEntrancePos(1, 1);
+
+    m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+    if (m_health <= 0) {
+        m_entranceCommitted = false;
+        m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
+        return 0;
+    }
+    CGruntzMgr* g = g_gameReg;
+    CMapMgr* grid = g->m_tileGrid;
+    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 flags = grid->CellFlagsAt(tx, ty);
+    if (flags & 0x80) {
+        return 0;
+    }
+    if (m_neighborScanEnabled == false && m_tileMoveCommitted != false) {
+        StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
+        return 0;
+    }
+    ResetGeometry();
+    return 0;
+}
+
+i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
+    bool eq = IsAnimationAct("I");
+    if (eq) {
+        ClearMoveTileFx(this);
+    } else {
+        PLAY_GRUNT_CUE_IF_VISIBLE(8);
+    }
+
+    FaceTowardTile(tileX, tileY);
+    m_moveTile.m_x = tileX;
+    m_moveTile.m_y = tileY;
+    if (m_poweredUp != false && m_neighborValid == false) {
+        RESET_GRUNT_POWERED_STATE(this)
+    }
+
+    i32 poseIdx = 0;
+    if (m_entranceReason == PICKUP_BOMB) {
+        SET_ANIMATION_ACT("M");
+        m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+        m_timePerTile = g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64);
+        m_entranceActive = true;
+        m_bombRunActive = true;
+        SetEntrancePos(1, 1);
+    } else if (m_entranceReason == PICKUP_TOOB) {
+        m_entranceActive = true;
+        SET_ANIMATION_ACT("N");
+        m_coordToggle = (m_coordToggle == false);
+    } else if (m_entranceReason == PICKUP_WAND) {
+        i32 base;
+        if (rand() % 100 < 80) {
+            poseIdx = 1;
+            base = 0x41a;
+        } else {
+            poseIdx = 0;
+            base = 0x424;
+        }
+
+        i32 variant = m_moveVariantOverride;
+        m_moveVariant = variant;
+        if (variant == 0) {
+            i32 n = 3;
+            if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+                n = 6;
+            }
+            m_moveVariant = GetRandom(1, n);
+        }
+
+        i32 cueId = base + m_moveVariant - 1;
+        PLAY_VOICE_IN_VIEW(cueId);
+
+        SET_ANIMATION_ACT("I");
+        m_entranceActive = true;
+        SetEntrancePos(1, 1);
+    } else {
+        SET_ANIMATION_ACT("I");
+        SetEntrancePos(1, 1);
+    }
+
+    SwitchAnimation(m_poseItem[poseIdx]);
+
+    char* name = EntranceCell()->ItemName().GetBuffer(0);
+    SetImageSetByName(name);
+    return 0;
+}
+
+i32 CGrunt::LoadWandGruntItemConfig() {
+    i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    if (advanced > 0) {
+        WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
+        if (cue == WWDDRAW_TOOL_APPLIES) {
+            m_entranceActive = true;
+            u32 downtime =
+                g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "ItemDowntime");
+            if (m_gruntKind == GRUNT_ROIDZ) {
+                downtime = 0;
+            }
+            m_attackTiming.Start(downtime);
+            m_lowStaminaCued = false;
+            m_stamina = 0;
+            if (m_healthSprite != NULL) {
+                CreateStaminaSprite();
+            }
+            if (m_entranceReason == PICKUP_WAND) {
+                LoadGruntAbilityTuning(m_moveVariant);
+                i32 hp = m_health - g_buteMgr.GetInt("WANDGRUNT", "HealthLoss", 0x19);
+                m_health = Max(0, hp);
+                if (m_health <= 0) {
+                    m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
+                }
+            }
+        }
+        m_triggerMgr->LoadTileArrivalFx(
+            m_playerIndex,
+            m_unitIndex,
+            m_moveTile.m_x,
+            m_moveTile.m_y,
+            m_entranceReason,
+            cue
+        );
+    }
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
+    if (sub->IsComplete()) {
+        m_entranceActive = false;
+        ResetEntranceAnimation(1, 0, 0);
+    }
+    return 0;
+}
+
+i32 CGrunt::FinishToobMoveAnimation() {
+    i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    if (advanced > 0) {
+        WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
+        m_triggerMgr->LoadTileArrivalFx(
+            m_playerIndex,
+            m_unitIndex,
+            m_moveTile.m_x,
+            m_moveTile.m_y,
+            m_entranceReason,
+            cue
+        );
+    }
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
+    if (!sub->IsComplete()) {
+        return 0;
+    }
+    m_entranceActive = false;
+    if (m_arrived != false) {
+        CreateHealthSprite();
+        CreateStaminaSprite();
+        CreateToySprite();
+    }
+    SET_ANIMATION_ACT("D");
+    SetupTubeAnim(m_coordToggle);
+    CGruntzMgr* g = g_gameReg;
+    CMapMgr* grid = g->m_tileGrid;
+    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 f1 = grid->CellFlagsAt(tx, ty);
+    if (f1 & 0x2000000) {
+        BuildGruntLoseItemAnimation();
+        g = g_gameReg;
+    }
+    grid = g->m_tileGrid;
+    char* cellObj;
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->GetWidth())
+        || static_cast<u32>(ty) >= static_cast<u32>(grid->GetHeight())) {
+        cellObj = NULL;
+    } else {
+
+        cellObj = reinterpret_cast<char*>(grid->m_rowInts[ty][tx * 7 + 2]);
+    }
+    if (cellObj == NULL) {
+        return 0;
+    }
+    CGameObject* found = LookupActiveObject(
+        g->m_world->ChildGroup()->m_registeredGameObjectsById,
+        static_cast<void*>(cellObj)
+    );
+    if (found == NULL) {
+        grid = g_gameReg->m_tileGrid;
+        grid->SetObjectIdAt(tx, ty, 0);
+        return 0;
+    }
+    CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_logicRecord->m_userLogic);
+    icon->PlaceAt(m_playerIndex, m_unitIndex);
+    return 0;
+}

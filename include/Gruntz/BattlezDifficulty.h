@@ -1,0 +1,12 @@
+#ifndef GRUNTZ_GRUNTZ_BATTLEZDIFFICULTY_H
+#define GRUNTZ_GRUNTZ_BATTLEZDIFFICULTY_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN_SPLIT(BattlezDifficulty, u8)
+    BZDIFF_EASY = 0,
+    BZDIFF_NORMAL = 1,
+    BZDIFF_HARD = 2
+GZ_ENUM_END_SPLIT(BattlezDifficulty, u8)
+
+#endif

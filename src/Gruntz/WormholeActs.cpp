@@ -1,0 +1,204 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/WormholeActs.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Globals.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/CoordPool.h>
+#include <Gruntz/CurPlayer.h>
+#include <Gruntz/ExitTrigger.h>
+#include <Gruntz/FontConfig.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
+#include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
+#include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/Play.h>
+#include <Gruntz/ResolveNodeInline.h>
+#include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/Warlord.h>
+#include <Gruntz/Wormhole.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdObjMgrInline.h>
+#include <ZTools/ZDArray.h>
+
+#include <stddef.h>
+
+template<>
+CActReg CActRegPool<CExitTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+
+void CExitTrigger::FireActivation(i32 coord) {
+    DispatchRegisteredAct(this, coord);
+}
+
+void CExitTrigger::RegisterActs() {
+    ACT_NAME_ID(id, "A")
+    (CActRegPool<CExitTrigger>::s_table[id]) =
+        static_cast<i32 (CUserLogic::*)()>(&CExitTrigger::AdvanceAnim);
+}
+
+i32 CExitTrigger::AdvanceAnim() {
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
+        CWwdSpriteObject* trig = m_object;
+        CTriggerMgr::HitSpanArg span;
+        span.m_span = &trig->m_area;
+        g_gameReg->m_triggerMgr->HitTestApply(trig->m_screenX, trig->m_screenY, span);
+    } else if (m_resolved != false) {
+        i32 hitPlayerIndex;
+        i32 hitUnitIndex;
+        CWwdSpriteObject* obj = m_object;
+        if (g_gameReg->m_triggerMgr->FindGruntAt(
+                obj->m_screenX,
+                obj->m_screenY,
+                &obj->m_area,
+                &hitPlayerIndex,
+                &hitUnitIndex,
+                NULL
+            )
+            != NULL) {
+            i32 owningPlayer = m_object->m_smarts;
+            if (hitPlayerIndex == owningPlayer) {
+                return 0;
+            }
+            m_resolved = false;
+            GruntzPlayer* loser = &g_gameReg->m_players[owningPlayer];
+            GruntzPlayer* winner = &g_gameReg->m_players[hitPlayerIndex];
+            if (loser != NULL) {
+                g_gameReg->ChatLog()->AddItem(
+                    static_cast<const char*>(
+                        loser->GetName() + " was conquered by " + winner->GetName()
+                            + "!"
+                        ),
+                        FONT_ITEM_FLAGS_NONE,
+                        0x11
+                );
+                loser->m_clearedRound = true;
+            }
+            g_gameReg->m_gameStats->RecordFlagCapture(hitPlayerIndex, owningPlayer);
+            g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(owningPlayer);
+            g_gameReg->m_triggerMgr->StartUnitDeath(hitPlayerIndex, hitUnitIndex, DEATH_EXIT, -1);
+            if (m_warlordLogic != NULL) {
+                m_warlordLogic->ResolveDeathAnimation();
+                m_warlordLogic = NULL;
+            }
+            GruntzPlayer* claimed = &g_gameReg->m_players[hitPlayerIndex];
+            if (claimed != NULL) {
+                CGameObject* warlordObj = LookupObjectById(
+                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                    claimed->m_warlordObjectId
+                );
+                CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_logicRecord->m_userLogic);
+                if (wl != NULL) {
+                    wl->ResolveJoyAnimation();
+                }
+            }
+            CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
+            POSITION pos = grp->m_list.GetHeadPosition();
+            while (pos != NULL) {
+                CGameObject* cur = grp->NextChild(pos);
+                if (cur->m_logicRecord->m_dispatch == DispatchGruntCreationPointLogic
+                    && cur->m_smarts == owningPlayer) {
+                    cur->m_smarts = hitPlayerIndex;
+                    CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
+                        IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
+                        0
+                    );
+                    cur->SetDrawFill(SHADE_PAL_16, tbl);
+                    if (hitPlayerIndex == g_curPlayer) {
+                        Coord* mark = g_coordPool.Pop();
+                        mark->m_x = (cur->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                        mark->m_y = (cur->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                        CPtrArray& marks =
+                            static_cast<CPlay*>(g_gameReg->m_curState)->m_startMarkers;
+                        marks.Add(mark);
+                    }
+                }
+                if (cur->m_logicRecord->m_dispatch == DispatchFortressFlagLogic
+                    && cur->m_smarts == owningPlayer) {
+                    cur->m_smarts = hitPlayerIndex;
+                    CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
+                        IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
+                        0
+                    );
+                    cur->SetDrawFill(SHADE_PAL_16, tbl);
+                }
+            }
+            if (owningPlayer == g_curPlayer) {
+                g_gameReg->m_triggerMgr->LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
+            } else {
+                GruntzPlayer* board = &g_gameReg->m_players[owningPlayer];
+                if (board != NULL && board->m_humanControlled == false) {
+                    board->m_battlezConfig.Clear();
+                }
+            }
+        } else {
+
+            i32 lostPlayer = m_object->m_smarts;
+            if (lostPlayer == g_curPlayer) {
+                return 0;
+            }
+            GruntzPlayer* slot = &g_gameReg->m_players[lostPlayer];
+            if (slot->m_joined == false) {
+                return 0;
+            }
+            if (slot->m_clearedRound != false) {
+                return 0;
+            }
+            if (slot->m_doneFlag == false) {
+                return 0;
+            }
+            slot->m_clearedRound = true;
+            m_resolved = false;
+            if (m_warlordLogic != NULL) {
+                m_warlordLogic->ResolveDeathAnimation();
+                m_warlordLogic = NULL;
+            }
+            CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
+            POSITION pos = grp->m_list.GetHeadPosition();
+            while (pos != NULL) {
+                CGameObject* cur = grp->NextChild(pos);
+                LogicRecordDispatchFn dispatch = cur->m_logicRecord->m_dispatch;
+                if (dispatch == DispatchGruntCreationPointLogic
+                    || dispatch == DispatchFortressFlagLogic) {
+                    if (cur->m_smarts == m_object->m_smarts) {
+                        i32 x = cur->m_screenX;
+                        i32 y = cur->m_screenY;
+                        if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
+                            CWwdSpriteObject* fx = g_gameReg->World()->ChildGroup()->CreateSprite(
+                                0,
+                                x,
+                                y,
+                                SORTKEY_OVERLAY,
+                                "Explosion",
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            );
+                            if (fx != NULL) {
+                                fx->SetAnimationByName("GAME_EXPLOSION3", 0);
+                                fx->m_smarts = 0;
+                                fx->m_score = 0;
+                            }
+                        }
+                        cur->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    }
+                }
+            }
+            g_gameReg->m_triggerMgr->StartPlayerVictorySequence(m_object->m_smarts);
+        }
+    }
+    return 0;
+}

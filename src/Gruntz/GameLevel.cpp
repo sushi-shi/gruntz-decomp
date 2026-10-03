@@ -1,0 +1,1658 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/GameLevel.h>
+
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
+#include <Enums.h>
+#include <Globals.h>
+#include <Gruntz/GameLevelInline.h>
+#include <Gruntz/ImageSets.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
+#include <Io/FileMem.h>
+#include <Io/FileStream.h>
+#include <Pix16.h>
+#include <RectMacros.h>
+#include <Rez/RezArchiveEntry.h>
+#include <Wap32/CoordUnset.h>
+#include <Wap32/Object.h>
+#include <Wap32/TileGeometry.h>
+#include <Wap32/WapCompress.h>
+#include <Wwd/MoveFlags.h>
+#include <Wwd/MoveMode.h>
+#include <Wwd/WwdFile.h>
+#include <Wwd/WwdObjectType.h>
+
+#include <stdlib.h>
+#include <string.h>
+
+CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+    : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
+
+    m_maxStepX = 0x40;
+    m_maxStepY = 0x40;
+    m_defaultActiveGridCellSize[1] = 250;
+    m_largeActiveGridCellSize[0] = 1000;
+    m_largeActiveGridCellSize[1] = 1000;
+    m_smallActiveGridCellSize[0] = 250;
+
+    m_viewportRect.left = COORD_UNSET;
+    m_mainPlane = NULL;
+    m_mainIndex = -1;
+    m_checksum = 0;
+    m_defaultActiveGridCellSize[0] = 500;
+    m_smallActiveGridCellSize[1] = 125;
+    m_defaultActiveRegionSize.m_w = 1600;
+    m_defaultActiveRegionSize.m_h = 1200;
+    m_largeActiveRegionSize.m_w = 2560;
+    m_largeActiveRegionSize.m_h = 1920;
+    m_smallActiveRegionSize.m_w = 768;
+    m_smallActiveRegionSize.m_h = 576;
+}
+
+i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
+    m_viewportRect = *coords;
+    SetSpatialDefaults();
+    if (LoadFromFile(path) == 0) {
+        Unload();
+        return 0;
+    }
+    return 1;
+}
+
+i32 CGameLevel::LoadSourceWithCoords(CRezItm* src, LevelCoordRect* coords) {
+    m_viewportRect = *coords;
+    SetSpatialDefaults();
+    if (LoadFromSource(src) == 0) {
+        Unload();
+        return 0;
+    }
+    return 1;
+}
+
+i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
+    m_viewportRect = *coords;
+    SetSpatialDefaults();
+    if (LoadWwd(hdr) == 0) {
+        Unload();
+        return 0;
+    }
+    return 1;
+}
+
+i32 CGameLevel::SetViewportSize(i32 w, i32 h) {
+    SetLevelViewport(&m_viewportRect, w, h);
+    SetSpatialDefaults();
+    return 1;
+}
+
+i32 CGameLevel::SetViewportRect(LevelCoordRect* coords) {
+    m_viewportRect = *coords;
+    SetSpatialDefaults();
+    return 1;
+}
+
+void CGameLevel::ResetSpatialDefaults() {
+    SetSpatialDefaults();
+}
+
+void CGameLevel::Unload() {
+    RELEASE_LEVEL_CHILDREN;
+    m_viewportRect.left = COORD_UNSET;
+    m_mainPlane = NULL;
+    m_mainIndex = -1;
+    memset(&m_header, 0, 1524);
+}
+
+i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
+    ReleaseChildren();
+
+    WwdHeader* source = hdr;
+    if (source->m_headerSize > sizeof(*source)) {
+        return 0;
+    }
+
+    m_header = *source;
+
+    char* block = reinterpret_cast<char*>(source);
+    Bytef* ehAlloc = NULL;
+
+    u32* pflags = &source->m_flags;
+
+    if (*pflags & 0x2) {
+        u32 capacity = source->m_mainBlockLength + source->m_headerSize + 0x20;
+        Bytef* buf = new Bytef[capacity + 0x20];
+        if (buf == NULL) {
+            return 0;
+        }
+
+        hdr = reinterpret_cast<WwdHeader*>(InflateMainBlock(source, buf, capacity));
+        if (hdr == NULL) {
+            delete[] buf;
+            return 0;
+        }
+
+        block = reinterpret_cast<char*>(hdr);
+        ehAlloc = buf;
+    }
+
+    strcpy(m_levelName, source->m_levelName);
+    m_flags = *pflags;
+    m_checksum = source->m_checksum;
+
+    i32 result = 0;
+
+    char* cursor = block + source->m_planesOffset;
+
+    for (u32 i = 0; i < source->m_numPlanes; ++i) {
+
+        if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_viewportRect)
+            == NULL) {
+            goto fail;
+        }
+        cursor += 0xa0;
+    }
+
+    if (source->m_tileDescriptionsOffset > 0) {
+
+        WwdTileDescTable* rec =
+            reinterpret_cast<WwdTileDescTable*>(block + source->m_tileDescriptionsOffset);
+        char* elem = rec->m_descriptors;
+        if (elem == NULL) {
+            result = -1;
+        } else if (rec == NULL) {
+            result = -1;
+        } else {
+            i32 n = 0;
+            i32 j = 0;
+            while (static_cast<u32>(j) < rec->m_count) {
+                RecordBytes<WwdTileImageRecord> record;
+                record.m_chars = elem;
+                CTileImageSet* set = ReadImageSet(record.m_rec);
+                if (set == NULL) {
+                    result = -1;
+                    goto check_result;
+                }
+                ++n;
+                elem += set->GetStride();
+                m_imageSets.SetAtGrow(j, static_cast<CObject*>(set));
+                ++j;
+            }
+            result = n;
+        }
+    check_result:
+        if (result < 0) {
+            goto fail;
+        }
+    }
+
+    {
+        i32 startX = source->m_startX;
+        i32 startY = source->m_startY;
+        CDDrawWorkerHost* mp = m_mainPlane;
+        SET_SCROLL_POSITION_RAW_FIRST(mp, startX, startY);
+
+        i32 ox = m_mainPlane->m_scrollPixelX;
+        i32 oy = m_mainPlane->m_scrollPixelY;
+        i32 i2 = 0;
+        while (i2 < m_planes.GetSize()) {
+            if (i2 != m_mainIndex) {
+                CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(m_planes[i2]);
+                SET_SCROLL_POSITION_RAW_FIRST(p, ox, oy);
+            }
+            ++i2;
+        }
+    }
+
+    if (ehAlloc != NULL) {
+        delete[] ehAlloc;
+    }
+    return 1;
+
+fail:
+    if (ehAlloc != NULL) {
+        delete[] ehAlloc;
+    }
+    return 0;
+}
+
+i32 CGameLevel::LoadFromFile(const char* path) {
+    CFile file;
+
+    if (!file.Open(path, CFile::modeRead, NULL)) {
+        return 0;
+    }
+
+    RecordBytes<WwdHeader> fileData;
+    fileData.m_bytes = new u8[file.GetLength()];
+    if (!fileData.m_bytes) {
+        return 0;
+    }
+
+    file.Read(fileData.m_bytes, file.GetLength());
+    if (LoadWwd(fileData.m_rec) == 0) {
+        delete[] fileData.m_bytes;
+        return 0;
+    }
+    delete[] fileData.m_bytes;
+    return 1;
+}
+
+i32 CGameLevel::LoadFromSource(CRezItm* source) {
+    u8* handle = source->Load();
+    if (handle == NULL) {
+        return 0;
+    }
+
+    if (LoadWwd(static_cast<WwdHeader*>(static_cast<void*>(handle))) == 0) {
+        source->UnLoad();
+        return 0;
+    }
+    source->UnLoad();
+    return 1;
+}
+
+void CGameLevel::ReleaseChildren() {
+    RELEASE_LEVEL_CHILDREN;
+    m_mainPlane = NULL;
+    m_mainIndex = -1;
+}
+
+i32 CGameLevel::SetViewportSizeAndUpdatePlanes(i32 w, i32 h) {
+    if (w <= 0) {
+        return 0;
+    }
+    if (h <= 0) {
+        return 0;
+    }
+    i32 maxX = w - 1;
+    i32 maxY = h - 1;
+    LevelCoordRect rect;
+    SET_RECT_COMPONENTS(rect, 0, 0, maxX, maxY);
+    m_viewportRect = rect;
+    i32 i = 0;
+    if (m_planes.GetSize() > 0) {
+        do {
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(i)))->SetViewportRect(&rect);
+            ++i;
+        } while (i < m_planes.GetSize());
+    }
+    return 1;
+}
+
+i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
+    if (cursor == NULL) {
+        return -1;
+    }
+    if (dir == NULL) {
+        return -1;
+    }
+    i32 n = 0;
+    for (i32 i = 0; static_cast<u32>(i) < dir[2]; i++) {
+        RecordBytes<WwdTileImageRecord> record;
+        record.m_chars = cursor;
+        CTileImageSet* set = ReadImageSet(record.m_rec);
+        if (set == NULL) {
+            return -1;
+        }
+        n++;
+        cursor += set->GetStride();
+        m_imageSets.SetAtGrow(i, static_cast<CObject*>(set));
+    }
+    return n;
+}
+
+CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
+    if (record == NULL) {
+        return NULL;
+    }
+    CTileImageSet* set;
+    switch (record->m_kind) {
+        case TILE_IMAGESET_UNIFORM:
+            set = new CUniformTileImageSet;
+            break;
+        case TILE_IMAGESET_RECT:
+            set = new CRectTileImageSet;
+            break;
+        case TILE_IMAGESET_PIXELS:
+            set = new CPixelTileImageSet;
+            break;
+        default:
+            return NULL;
+    }
+
+    if (set->Parse(record) == 0) {
+        if (set != NULL) {
+            delete set;
+        }
+        return NULL;
+    }
+    return set;
+}
+
+CDDrawWorkerHost*
+CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT*) {
+    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
+
+    if (plane->Read(planeData, blockBase, &m_viewportRect) == 0) {
+        if (plane) {
+            delete plane;
+        }
+        return NULL;
+    }
+
+    m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
+
+    if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
+        m_mainPlane = plane;
+        m_mainIndex = m_planes.GetUpperBound();
+    }
+
+    return plane;
+}
+
+CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
+    i32 w,
+    i32 h,
+    i32 tileW,
+    i32 tileH,
+    i32 depthX,
+    i32 depthY,
+    const char* name
+) {
+    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
+
+    if (plane->InitGeometry(
+            w,
+            h,
+            tileW,
+            tileH,
+            depthX,
+            depthY,
+            &m_viewportRect,
+            const_cast<char*>(name)
+        )
+        == 0) {
+        if (plane) {
+            delete plane;
+        }
+        return NULL;
+    }
+
+    m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
+
+    if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
+        m_mainPlane = plane;
+        m_mainIndex = m_planes.GetUpperBound();
+    }
+
+    return plane;
+}
+
+void CGameLevel::UpdatePlaneViewports(LevelCoordRect* coords) {
+    m_viewportRect = *coords;
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+        (static_cast<CDDrawWorkerHost*>(m_planes[i]))->SetViewportRect(coords);
+    }
+}
+
+void CGameLevel::SyncToMainIndex(CDDrawSurfacePair* visitor){DRAW_PLANES_THROUGH_MAIN(visitor, i)}
+
+void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor){DRAW_PLANES_AFTER_MAIN(visitor, i)}
+
+i32 CGameLevel::RemovePlane(i32 index) {
+    CDDrawWorkerHost* p = GetPlane(index);
+    if (p == NULL) {
+        return 0;
+    }
+    b32 wasMain = HAS(static_cast<WwdPlaneFlags>(p->m_flags), WWD_PLANE_FLAG_MAIN);
+    delete p;
+    m_planes.RemoveAt(index, 1);
+    if (wasMain) {
+        i32 last = m_planes.GetUpperBound();
+        CDDrawWorkerHost* lp = GetPlane(last);
+        if (lp != NULL) {
+            RESET_MAIN_PLANE_SELECTION(i)
+            m_mainIndex = last;
+            m_mainPlane = lp;
+            lp->m_flags |= IDX(WWD_PLANE_FLAG_MAIN);
+        }
+    }
+    return 1;
+}
+
+i32 CGameLevel::MovePlane(i32 from, i32 to) {
+    if (from >= 0 && to < m_planes.GetSize()) {
+        if (from == to) {
+            return 1;
+        }
+        CDDrawWorkerHost* el = GetPlane(from);
+        if (el != NULL) {
+            m_planes.RemoveAt(from, 1);
+            m_planes.InsertAt(to, static_cast<CObject*>(el), 1);
+            if (el == m_mainPlane) {
+                m_mainIndex = to;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void CGameLevel::ResetMainPlane(){RESET_MAIN_PLANE_SELECTION(i)}
+
+void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx) {
+
+    CObList* chain = &ctx->m_list;
+
+    if ((m_flags & 1) && chain != NULL && GetPlane(0) != NULL) {
+        GetPlane(0)->Draw(visitor);
+        POSITION pos = chain->GetHeadPosition();
+
+        i32 i = 1;
+        if (m_planes.GetSize() > i) {
+            do {
+                CDDrawWorkerHost* p = GetPlane(i);
+                i32 zBound = p->m_zCoord;
+                i32 blocked = 0;
+                while (pos != NULL && blocked == 0) {
+                    POSITION cur = pos;
+                    CGameObject* pl = ctx->NextChild(pos);
+                    if (pl->m_sortKey < zBound) {
+                        pl->Render(visitor);
+                    } else {
+                        pos = cur;
+                        blocked = 1;
+                    }
+                }
+
+                GetPlane(i)->Draw(visitor);
+                ++i;
+            } while (i < m_planes.GetSize());
+        }
+
+        while (pos != NULL) {
+            ctx->NextChild(pos)->Render(visitor);
+        }
+        return;
+    }
+
+    DRAW_PLANES_THROUGH_MAIN(visitor, idx)
+    ctx->RenderChildren(visitor);
+    DRAW_PLANES_AFTER_MAIN(visitor, j)
+}
+
+CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+        CDDrawWorkerHost* p = GetPlane(i);
+        if (stricmp(name, p->m_planeName) == 0) {
+            return static_cast<CDDrawWorkerHost*>(p);
+        }
+    }
+    return NULL;
+}
+
+i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
+    i32 step = m_maxStepX;
+
+    i32 flags;
+    if (IsWithinStep(target->m_screenX, destX, step)
+        && IsWithinStep(target->m_screenY, destY, m_maxStepY)) {
+        flags = DispatchMove(target, destX, destY, moveFlags);
+    } else if (target->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
+        flags = DispatchMove(target, destX, destY, moveFlags);
+    } else {
+        MoveMode kind = target->m_moveMode;
+        if (kind == MOVE_DIRECT) {
+            flags = DispatchMove(target, destX, destY, moveFlags);
+        } else {
+            b32 ok = true;
+            i32 goalX = destX;
+            destX = SignedStepToward(target->m_screenX, goalX, step);
+            step = SignedStepToward(target->m_screenY, destY, m_maxStepY);
+            do {
+                i32 nx = StepTowardGoal(target->m_screenX, destX, goalX);
+                i32 ny = StepTowardGoal(target->m_screenY, step, destY);
+
+                flags = DispatchMove(target, nx, ny, moveFlags);
+
+                if (target->m_moveMode != kind) {
+                    ok = false;
+                } else if ((flags & IDX(MOVE_RESULT_TILE_COLLISION)) != 0) {
+                    ok = false;
+                } else if (target->m_screenX == goalX && target->m_screenY == destY) {
+                    ok = false;
+                } else if ((flags & IDX(MOVE_RESULT_NO_POSITION_CHANGE)) != 0) {
+                    ok = false;
+                }
+            } while (ok != false);
+        }
+    }
+    return flags;
+}
+
+i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
+    if (m_flags & 4) {
+        return ApplyMove(target, destX, destY, moveFlags);
+    }
+
+    i32 result = 0;
+    MoveMode moveMode = target->m_moveMode;
+    i32 prevX = target->m_screenX;
+    i32 prevY = target->m_screenY;
+
+    switch (moveMode) {
+        case MOVE_GROUNDED:
+        case MOVE_GROUNDED_2:
+        case MOVE_GROUNDED_5:
+            result = MoveGrounded(target, destX, destY, moveFlags);
+            break;
+        case MOVE_RISING:
+            result = MoveRising(target, destX, destY, moveFlags);
+            if (target->m_moveMode == MOVE_FALLING) {
+                result |= IDX(MOVE_RESULT_TILE_TOP);
+            }
+            break;
+        case MOVE_FALLING:
+            result = MoveFalling(target, destX, destY, moveFlags);
+            if (target->m_moveMode == MOVE_GROUNDED) {
+                result |= IDX(MOVE_RESULT_TILE_BOTTOM);
+            }
+            break;
+        case MOVE_AUTO_VERTICAL:
+            if (destY < prevY) {
+                result = MoveRising(target, destX, destY, moveFlags);
+                if (target->m_moveMode == MOVE_FALLING) {
+                    result |= IDX(MOVE_RESULT_TILE_TOP);
+                    target->m_moveMode = MOVE_AUTO_VERTICAL;
+                }
+            } else {
+                result = MoveFalling(target, destX, destY, moveFlags);
+                if (target->m_moveMode == MOVE_GROUNDED) {
+                    result |= IDX(MOVE_RESULT_TILE_BOTTOM);
+                }
+            }
+            break;
+        case MOVE_CLIMBING:
+            result = MoveClimbing(target, destX, destY, moveFlags);
+            break;
+        case MOVE_DIRECT:
+            SET_SCREEN_POS(target, destX, destY);
+            break;
+    }
+
+    if (result & IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_TOP | MOVE_RESULT_TILE_BOTTOM)) {
+        result |= IDX(MOVE_RESULT_TILE_COLLISION);
+    }
+    u32 objectFlags = target->m_flags;
+    if (objectFlags & IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE)) {
+        result |= IDX(MOVE_RESULT_DEATH_TILE);
+    }
+    if (objectFlags & 0x10) {
+        result |= IDX(MOVE_RESULT_ON_CARRIER);
+    }
+    if (target->m_screenX == prevX && target->m_screenY == prevY) {
+        result |= IDX(MOVE_RESULT_NO_POSITION_CHANGE);
+    }
+    return result;
+}
+
+i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 result = 0;
+
+    if (destX > t->m_screenX) {
+        result = StepAxisLo(t, destX, destY, &destX, moveFlags);
+    } else if (destX < t->m_screenX) {
+        result = StepAxisHi(t, destX, destY, &destX, moveFlags);
+    }
+
+    if (destY < t->m_screenY) {
+        destY = ResolveCeilingCollision(t, destX, destY, moveFlags);
+    }
+
+    i32 bracket;
+    i32 mid;
+
+    if (moveFlags & IDX(MOVE_REQUEST_PROBE_TOP)) {
+        i32 col = destX;
+        i32 limit = t->m_extent.top + destY - 1;
+        if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
+            bracket = moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB);
+            if (bracket != 0) {
+                i32 lo = col;
+                i32 hi = col;
+                mid = col;
+                if (ClampSpan(col, limit, &lo, &hi) != 0) {
+                    mid = (hi + lo) / 2;
+                }
+            } else {
+                mid = destX;
+            }
+            goto rebracket;
+        }
+    } else if (moveFlags & IDX(MOVE_REQUEST_PROBE_BOTTOM)) {
+        i32 col = destX;
+        i32 limit = t->m_extent.bottom + destY + 2;
+        if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
+            bracket = moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB);
+            if (bracket != 0) {
+                i32 lo = col;
+                i32 hi = col;
+                mid = col;
+                if (ClampSpan(col, limit, &lo, &hi) != 0) {
+                    mid = (hi + lo) / 2;
+                }
+            } else {
+                mid = destX;
+            }
+            goto rebracket;
+        }
+    }
+
+    if (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
+        if (HoldMove(t, t->m_carrier, destX, destY, moveFlags) == 0) {
+            t->m_moveMode = MOVE_FALLING;
+        }
+    } else {
+        destY = FreeMove(t, destX, destY, moveFlags);
+    }
+    goto commit;
+
+rebracket:
+    if (bracket != 0) {
+        destX = mid;
+    }
+    t->m_moveMode = MOVE_CLIMBING;
+
+commit:
+    SET_SCREEN_POS(t, destX, destY);
+    return result;
+}
+
+i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 savedDestX = destX;
+    i32 result = 0;
+
+    if (destX > t->m_screenX) {
+        result = StepAxisLo(t, destX, destY, &destX, moveFlags);
+    } else if (destX < t->m_screenX) {
+        result = StepAxisHi(t, destX, destY, &destX, moveFlags);
+    }
+
+    if (moveFlags & IDX(MOVE_REQUEST_LAND_ON_PLATFORM)) {
+        i32 outY;
+        if (TryLandOnPlatform(t, destX, destY, &outY, moveFlags) != 0) {
+            destY = outY;
+        }
+    }
+
+    if (t->m_moveMode != MOVE_GROUNDED) {
+        destY = ResolveFloorCollision(t, destX, destY, moveFlags);
+    }
+
+    if (moveFlags & IDX(MOVE_REQUEST_PROBE_TOP)) {
+        i32 coord = destX;
+        i32 limit = t->m_extent.top + destY - 1;
+        if (AxisProbe(coord, limit) == TILEKIND_CLIMB) {
+            if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
+                i32 lo = coord;
+                i32 hi = coord;
+                if (ClampSpan(coord, limit, &lo, &hi) != 0) {
+                    coord = (hi + lo) / 2;
+                }
+            } else {
+                coord = destX;
+            }
+            if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
+                destX = coord;
+                t->m_moveMode = MOVE_CLIMBING;
+            } else {
+                t->m_moveMode = MOVE_CLIMBING;
+            }
+        }
+    }
+
+    if (t->m_moveMode == MOVE_GROUNDED && destX != savedDestX) {
+        if (result & IDX(MOVE_RESULT_AXIS_BLOCKED)) {
+            result &=
+                ~IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_RIGHT | MOVE_RESULT_TILE_LEFT);
+            if (destX > t->m_screenX) {
+                result |= StepAxisLo(t, destX, destY, &destX, moveFlags);
+            } else if (destX < t->m_screenX) {
+                result |= StepAxisHi(t, destX, destY, &destX, moveFlags);
+            }
+        }
+    }
+
+    SET_SCREEN_POS(t, destX, destY);
+    return result;
+}
+
+i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 result = 0;
+
+    if (destX > t->m_screenX) {
+        result = StepAxisLo(t, destX, destY, &destX, moveFlags);
+    } else if (destX < t->m_screenX) {
+        result = StepAxisHi(t, destX, destY, &destX, moveFlags);
+    }
+
+    destY = ResolveCeilingCollision(t, destX, destY, moveFlags);
+
+    if (moveFlags & IDX(MOVE_REQUEST_PROBE_TOP)) {
+        i32 coord = destX;
+        i32 limit = t->m_extent.top + destY - 1;
+        if (AxisProbe(coord, limit) == TILEKIND_CLIMB) {
+            if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
+                i32 lo = coord;
+                i32 hi = coord;
+                if (ClampSpan(coord, limit, &lo, &hi) != 0) {
+                    coord = (hi + lo) / 2;
+                }
+            } else {
+                coord = destX;
+            }
+            if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
+                destX = coord;
+            }
+            t->m_moveMode = MOVE_CLIMBING;
+        }
+    }
+
+    SET_SCREEN_POS(t, destX, destY);
+    return result;
+}
+
+i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 result = 0;
+    i32 cursor;
+
+    if (t->m_screenY < destY) {
+        cursor = ResolveFloorCollision(t, destX, destY, moveFlags);
+        if (t->m_moveMode != MOVE_GROUNDED) {
+            i32 hi = t->m_extent.bottom + cursor + 1;
+            i32 lo = t->m_extent.top + cursor - 1;
+            if (AxisProbe(destX, lo) != TILEKIND_CLIMB && AxisProbe(destX, hi) != TILEKIND_CLIMB) {
+                t->m_moveMode = MOVE_FALLING;
+            }
+        }
+    } else {
+        cursor = ResolveCeilingCollision(t, destX, destY, moveFlags);
+        i32 hi = t->m_extent.bottom + cursor + 1;
+        i32 lo = t->m_extent.top + cursor - 1;
+        if (AxisProbe(destX, lo) != TILEKIND_CLIMB && AxisProbe(destX, hi) != TILEKIND_CLIMB) {
+
+            i32 probe;
+            i32 top = t->m_extent.bottom + cursor + 1;
+            if (SpanCheck(destX, top - cursor + t->m_screenY, top, &probe) != 0 && probe > cursor) {
+                t->m_moveMode = MOVE_GROUNDED;
+                cursor = probe - t->m_extent.bottom - 1;
+            }
+        }
+    }
+
+    i32 coord = destX;
+    if (coord > t->m_screenX) {
+        result = StepAxisLo(t, coord, cursor, &coord, moveFlags);
+    } else if (coord < t->m_screenX) {
+        result = StepAxisHi(t, coord, cursor, &coord, moveFlags);
+    }
+
+    SET_SCREEN_POS(t, coord, cursor);
+    return result;
+}
+
+i32 CGameLevel::StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags) {
+    i32 mid = t->m_extent.right + destX;
+    i32 lo = t->m_extent.top + destY;
+    i32 hi = t->m_extent.bottom + destY;
+    i32 cur = lo;
+
+    while (cur <= hi) {
+        TileCollisionKind result;
+        PROBE_TILE(this, mid, cur, result);
+        if (result == TILEKIND_SOLID) {
+            *outX = t->m_screenX;
+            return 0x60000;
+        }
+        if (cur == hi) {
+            ++cur;
+        } else {
+            cur += t->m_strideY;
+            cur = min(hi, cur);
+        }
+    }
+
+    *outX = destX;
+    return 0;
+}
+
+i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags) {
+    i32 mid = t->m_extent.left + destX;
+    i32 lo = t->m_extent.top + destY;
+    i32 hi = t->m_extent.bottom + destY;
+    i32 cur = lo;
+
+    while (cur <= hi) {
+        TileCollisionKind result;
+        PROBE_TILE(this, mid, cur, result);
+        if (result == TILEKIND_SOLID) {
+            *outX = t->m_screenX;
+            return 0xa0000;
+        }
+        if (cur == hi) {
+            ++cur;
+        } else {
+            cur += t->m_strideY;
+            cur = min(hi, cur);
+        }
+    }
+
+    *outX = destX;
+    return 0;
+}
+
+i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
+    i32 hiX = t->m_extent.right + x;
+    i32 fixedY = t->m_extent.top + y;
+    i32 col = t->m_extent.left + x;
+    while (col <= hiX) {
+        TileCollisionKind result;
+        PROBE_TILE(this, col, fixedY, result);
+        if (result == TILEKIND_SOLID) {
+            return t->m_screenY;
+        }
+        if (col == hiX) {
+            col++;
+        } else {
+            col += t->m_strideX;
+        }
+    }
+    return y;
+}
+
+i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 mid = t->m_extent.right + destX;
+    i32 cur = t->m_extent.left + destX;
+    i32 hiY = t->m_extent.bottom + destY + 1;
+
+    if (cur <= mid) {
+        do {
+            TileCollisionKind result;
+            PROBE_TILE(this, cur, hiY, result);
+            if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
+
+                TileCollisionKind r2;
+                PROBE_TILE(this, cur, hiY - 1, r2);
+                if (r2 != TILEKIND_SOLID) {
+                    TileCollisionKind r3;
+                    PROBE_TILE_VIA_HANDLE(this, cur, hiY - 1, r3);
+                    if (r3 != TILEKIND_GROUND) {
+                        return destY;
+                    }
+                }
+            } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
+                if (AxisProbe(cur, hiY) == TILEKIND_CLIMB) {
+                    if (AxisProbe(cur, hiY - 1) != TILEKIND_CLIMB) {
+                        return destY;
+                    }
+                }
+            }
+            if (cur == mid) {
+                ++cur;
+            } else {
+                cur += t->m_strideX;
+            }
+        } while (cur <= mid);
+    }
+
+    t->m_moveMode = MOVE_FALLING;
+    return destY;
+}
+
+i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 lo = t->m_extent.left + destX;
+    i32 mid = t->m_extent.right + destX;
+    i32 hiY = destY + t->m_extent.bottom + 1;
+
+    TileCollisionKind first;
+    PROBE_TILE(this, destX, hiY, first);
+    if (first == TILEKIND_DEATH) {
+        t->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE);
+    }
+    i32 base = destY - t->m_screenY;
+
+    i32 cur = lo;
+    if (cur <= mid) {
+        do {
+            TileCollisionKind result;
+            PROBE_TILE(this, cur, hiY, result);
+            if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
+                i32 floor = t->m_screenY + t->m_extent.bottom;
+                if (hiY >= floor) {
+                    i32 y = hiY;
+                    do {
+                        TileCollisionKind g = AxisProbe(cur, y);
+                        if (g != TILEKIND_SOLID && g != TILEKIND_GROUND) {
+                            t->m_moveMode = MOVE_GROUNDED;
+                            return y - t->m_extent.bottom;
+                        }
+                        --y;
+                    } while (y >= floor);
+                }
+            } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
+                i32 floor = hiY - base;
+                i32 hi = hiY;
+                if (hi > floor) {
+                    i32 y = hi - 1;
+                    if (y >= floor) {
+                        do {
+                            if (AxisProbe(cur, y) != TILEKIND_CLIMB) {
+                                t->m_moveMode = MOVE_GROUNDED;
+                                return hi - t->m_extent.bottom - 1;
+                            }
+                            hi = y;
+                            --y;
+                        } while (y >= floor);
+                    }
+                }
+            }
+            if (cur == mid) {
+                ++cur;
+            } else {
+                cur += t->m_strideX;
+            }
+        } while (cur <= mid);
+    }
+
+    return destY;
+}
+
+i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
+    i32 limit = t->m_screenY + t->m_extent.bottom;
+    for (i32 row = y; row >= limit; row--) {
+        TileCollisionKind result;
+        PROBE_TILE(this, x, row, result);
+        if (result != TILEKIND_SOLID && result != TILEKIND_GROUND) {
+            *out = row - t->m_extent.bottom;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+i32 CGameLevel::ResolveCeilingCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 startCol = t->m_extent.left + destX;
+    i32 mid = t->m_extent.right + destX;
+    i32 ceil = destY + t->m_extent.top - 1;
+    i32 cur = startCol;
+
+    if (cur <= mid) {
+        do {
+            TileCollisionKind result;
+            PROBE_TILE(this, cur, ceil, result);
+            if (result == TILEKIND_SOLID) {
+                i32 floor = t->m_screenY + t->m_extent.top - 1;
+                if (ceil <= floor) {
+                    i32 y = ceil;
+                    do {
+
+                        if (AxisProbe(startCol, y) != TILEKIND_SOLID) {
+                            t->m_moveMode = MOVE_FALLING;
+                            return y - t->m_extent.top;
+                        }
+                        ++y;
+                    } while (y <= floor);
+                }
+            }
+            if (cur == mid) {
+                ++cur;
+            } else {
+                cur += t->m_strideX;
+            }
+        } while (cur <= mid);
+    }
+
+    return destY;
+}
+
+i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
+    i32 limit = t->m_screenY + t->m_extent.top - 1;
+    for (i32 row = y; row <= limit; row++) {
+        TileCollisionKind result;
+        PROBE_TILE(this, x, row, result);
+        if (result != TILEKIND_SOLID) {
+            *out = row - t->m_extent.top;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
+    i32 py2 = t->m_extent.bottom + off + 1;
+    i32 py1 = t->m_extent.top + off - 1;
+    TileCollisionKind r1;
+    PROBE_TILE(this, x, py1, r1);
+    if (r1 == TILEKIND_CLIMB) {
+        return 1;
+    }
+    TileCollisionKind r2;
+    PROBE_TILE(this, x, py2, r2);
+    return r2 == TILEKIND_CLIMB;
+}
+
+i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
+    y = ResolveCeilingCollision(t, x, y, flags);
+    i32 headRow = t->m_extent.bottom + y + 1;
+    i32 footRow = t->m_extent.top + y - 1;
+    if (AxisProbe(x, footRow) == TILEKIND_CLIMB) {
+        goto done;
+    }
+    if (AxisProbe(x, headRow) == TILEKIND_CLIMB) {
+        goto done;
+    }
+    {
+
+        i32 head2 = t->m_extent.bottom + y + 1;
+        i32 b = head2 - y + t->m_screenY;
+        if (b > head2) {
+            i32 cur = b - 1;
+            while (cur >= head2) {
+                TileCollisionKind result;
+                PROBE_TILE(this, x, cur, result);
+                if (result != TILEKIND_CLIMB) {
+
+                    ++cur;
+                    if (cur > y) {
+                        y = cur - t->m_extent.bottom - 1;
+                        t->m_moveMode = MOVE_GROUNDED;
+                    }
+                    goto done;
+                }
+                --cur;
+            }
+        }
+    }
+done:
+    return y;
+}
+
+i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
+    y = ResolveFloorCollision(t, x, y, flags);
+    if (t->m_moveMode == MOVE_GROUNDED) {
+        return y;
+    }
+    i32 headRow = t->m_extent.bottom + y + 1;
+    i32 footRow = t->m_extent.top + y - 1;
+    TileCollisionKind result;
+    PROBE_TILE(this, x, footRow, result);
+    if (result != TILEKIND_CLIMB) {
+        if (AxisProbe(x, headRow) != TILEKIND_CLIMB) {
+            t->m_moveMode = MOVE_FALLING;
+        }
+    }
+    return y;
+}
+
+i32 CGameLevel::SpanCheck(i32 x, i32 yEndExclusive, i32 yBegin, i32* outY) {
+    if (yEndExclusive <= yBegin) {
+        return 0;
+    }
+    i32 y = yEndExclusive - 1;
+    while (y >= yBegin) {
+        TileCollisionKind result;
+        PROBE_TILE(this, x, y, result);
+        if (result != TILEKIND_CLIMB) {
+            *outY = y + 1;
+            return 1;
+        }
+        --y;
+    }
+
+    return 0;
+}
+
+i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
+    i32 footY = t->m_extent.bottom + y + 1;
+    TileCollisionKind result;
+    PROBE_TILE(this, x, footY + 1, result);
+    if (result != TILEKIND_CLIMB) {
+        return 0;
+    }
+    if (flags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
+        i32 lo = x, hi = x;
+        *out = x;
+        if (ClampSpan(x, footY + 1, &lo, &hi) != 0) {
+            *out = (lo + hi) / 2;
+        }
+    }
+    return 1;
+}
+
+i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
+    i32 probeY = t->m_extent.top + y - 1;
+    TileCollisionKind result;
+    PROBE_TILE(this, x, probeY, result);
+    if (result != TILEKIND_CLIMB) {
+        return 0;
+    }
+    if (flags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
+        i32 lo = x, hi = x;
+        *out = x;
+        if (ClampSpan(x, probeY, &lo, &hi) != 0) {
+            *out = (lo + hi) / 2;
+        }
+    }
+    return 1;
+}
+
+i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
+    TileCollisionKind r1;
+    PROBE_TILE(this, x, y, r1);
+    if (r1 != TILEKIND_CLIMB) {
+        return 0;
+    }
+    TileCollisionKind r2;
+    PROBE_TILE(this, x, y - 1, r2);
+    return r2 != TILEKIND_CLIMB;
+}
+
+i32 CGameLevel::TryLandOnPlatform(
+    CGameObject* object,
+    i32 destX,
+    i32 destY,
+    i32* outLandingY,
+    i32 moveFlags
+) {
+    if ((moveFlags & IDX(MOVE_REQUEST_LAND_ON_PLATFORM)) == 0) {
+        return 0;
+    }
+
+    CDDrawChildGroup* children = OwnerMgr()->ChildGroup();
+    POSITION pos = children->m_list.GetHeadPosition();
+    while (pos != NULL) {
+        CGameObject* platform = children->NextChild(pos);
+        if (platform->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {
+            if (CanLandOnPlatform(object, platform, destX, destY, outLandingY, moveFlags) != 0) {
+                object->m_moveMode = MOVE_GROUNDED;
+                object->m_carrier = platform;
+                object->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+i32 CGameLevel::CanLandOnPlatform(
+    CGameObject* object,
+    CGameObject* platform,
+    i32 destX,
+    i32 destY,
+    i32* outLandingY,
+    i32 moveFlags
+) {
+
+    if (platform->m_area.left == -1) {
+        goto fail;
+    }
+    if (object->m_extent.left == -1) {
+        goto fail;
+    }
+    {
+        i32 sy = object->m_screenY;
+        if (sy > destY) {
+            goto fail;
+        }
+
+        i32 boxL = platform->m_area.left + platform->m_screenX;
+        i32 boxR = platform->m_area.right + platform->m_screenX;
+        i32 boxT = platform->m_screenY + platform->m_area.top;
+        i32 tLoA = object->m_extent.left + destX;
+        i32 tMid = object->m_extent.right + destX;
+        i32 bottom = object->m_extent.bottom;
+        i32 tHi = bottom + destY;
+        i32 cmpHi = tHi - destY + sy;
+
+        i32 over = platform->m_deltaY;
+        CLAMP_UPPER_INPLACE(over, 0);
+        i32 ceil = boxT - over;
+        if (cmpHi > ceil) {
+            goto fail;
+        }
+        if (tMid < boxL) {
+            goto fail;
+        }
+        if (tLoA > boxR) {
+            goto fail;
+        }
+
+        i32 stand = boxT - 1;
+        if (cmpHi == tHi) {
+            if (tHi != stand) {
+                goto fail;
+            }
+        } else {
+            if (tHi < stand) {
+                goto fail;
+            }
+        }
+
+        *outLandingY = boxT - bottom - 1;
+        return 1;
+    }
+fail:
+    return 0;
+}
+
+i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, i32 moveFlags) {
+    if (p == NULL) {
+        return 0;
+    }
+    if ((moveFlags & IDX(MOVE_REQUEST_LAND_ON_PLATFORM)) == 0) {
+        return 0;
+    }
+    if (p->m_objectType != WWD_OBJECT_TYPE_PLATFORM) {
+        return 0;
+    }
+    if (p->m_area.left == -1) {
+        return 0;
+    }
+    if (et->m_extent.left == -1) {
+        return 0;
+    }
+
+    i32 ox = p->m_screenX;
+    i32 boxL = ox + p->m_area.left;
+    i32 boxR = ox + p->m_area.right;
+    i32 boxT = p->m_screenY + p->m_area.top;
+    i32 tMid = et->m_extent.right + destX;
+    i32 tLoA = et->m_extent.left + destX;
+
+    i32 hi = et->m_extent.bottom + destY;
+    if (tMid < boxL) {
+        return 0;
+    }
+    if (tLoA > boxR) {
+        return 0;
+    }
+    return hi == boxT - 1;
+}
+
+i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
+    CLAMP_PIXEL_TO_PLANE(x, y, m_mainPlane);
+    CDDrawWorkerHost* pl = m_mainPlane;
+    i32 qx = x >> pl->m_shiftX;
+    i32 alignedX = qx << pl->m_shiftX;
+    i32 qy = y >> pl->m_shiftY;
+    i32 idx = pl->m_tileRowOffsets[qy] + qx;
+    i32 tile = pl->m_tileHandles[idx];
+    if (tile == UNINIT_FILL || tile == s_tileClear) {
+        return 0;
+    }
+    CTileImageSet* set =
+        static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
+    *outLo = alignedX;
+    *outHi = alignedX + set->m_width - 1;
+    return 1;
+}
+
+i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
+    i32 row = t->m_screenY + t->m_extent.bottom + 1;
+
+    TileCollisionKind r1;
+    PROBE_TILE(this, dx + t->m_screenX, row, r1);
+    if (r1 != TILEKIND_SOLID) {
+        TileCollisionKind r2;
+        PROBE_TILE(this, dx + t->m_screenX, row, r2);
+        if (r2 != TILEKIND_GROUND) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
+    i32 row = t->m_screenY + t->m_extent.bottom + 1;
+
+    TileCollisionKind r1;
+    PROBE_TILE(this, dx + t->m_screenX, row, r1);
+    if (r1 != TILEKIND_SOLID) {
+        TileCollisionKind r2;
+        PROBE_TILE(this, dx + t->m_screenX, row, r2);
+        if (r2 != TILEKIND_GROUND) {
+            TileCollisionKind r3;
+            PROBE_TILE(this, dx + t->m_screenX, row, r3);
+            if (r3 != TILEKIND_CLIMB) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
+    i32 px = t->m_screenX;
+    i32 py = t->m_screenY + t->m_extent.top + dy;
+    TileCollisionKind result;
+    PROBE_TILE(this, px, py, result);
+    return result == TILEKIND_SOLID;
+}
+
+i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
+    if (name == NULL) {
+        return 0;
+    }
+    if (headerBuf == NULL) {
+        return 0;
+    }
+
+    CFile stream;
+
+    if (stream.Open(name, CFile::modeRead, NULL) == false) {
+        return 0;
+    }
+
+    if (stream.Read(headerBuf, sizeof(WwdHeader)) != sizeof(WwdHeader)) {
+        return 0;
+    }
+
+    if (headerBuf->m_headerSize > sizeof(WwdHeader)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
+    WwdHeader header;
+
+    if (name == NULL) {
+        return 0;
+    }
+    if (nameOut == NULL) {
+        return 0;
+    }
+
+    CFile stream;
+
+    if (stream.Open(name, CFile::modeRead, NULL) == false) {
+        return 0;
+    }
+
+    if (stream.Read(&header, sizeof(header)) != sizeof(header)) {
+        return 0;
+    }
+
+    if (header.m_headerSize > sizeof(header)) {
+        return 0;
+    }
+
+    strcpy(nameOut, header.m_levelName);
+    return 1;
+}
+
+Bytef* CGameLevel::InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {
+    uLongf outLen;
+
+    if (src == NULL) {
+        return NULL;
+    }
+    if (dest == NULL) {
+        return NULL;
+    }
+
+    if (src->m_headerSize > sizeof(*src)) {
+        return NULL;
+    }
+    if ((src->m_flags & 0x2) == 0) {
+        return NULL;
+    }
+    if (src->m_mainBlockLength == 0) {
+        return NULL;
+    }
+    if (src->m_mainBlockLength > destLen + src->m_headerSize) {
+        return NULL;
+    }
+
+    memcpy(dest, src, src->m_headerSize);
+    outLen = static_cast<uLongf>((destLen - src->m_headerSize));
+    if (uncompress(
+            dest + src->m_headerSize,
+            &outLen,
+
+            reinterpret_cast<Bytef*>(src) + src->m_headerSize,
+            src->m_mainBlockLength
+        )
+        != 0) {
+        return NULL;
+    }
+
+    return outLen == src->m_mainBlockLength ? dest : NULL;
+}
+
+i32 __stdcall WwdFile_CompressMainBlock(
+    unsigned char* src,
+    unsigned long srcLen,
+    unsigned char* dest,
+    unsigned long destCap
+) {
+    if (src == NULL) {
+        return 0;
+    }
+    if (dest == NULL) {
+        return 0;
+    }
+    unsigned long outLen = destCap;
+    return WapCompress(dest, &outLen, src, srcLen) == 0 ? static_cast<i32>(outLen) : 0;
+}
+
+TileCollisionKind CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
+    i32 px = t->m_screenX + dx;
+    i32 py = t->m_extent.bottom + t->m_screenY;
+    TileCollisionKind result;
+    PROBE_TILE(this, px, py, result);
+    return result;
+}
+
+TileCollisionKind CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
+    i32 px = t->m_screenX + dx;
+    i32 py = t->m_extent.top + t->m_screenY;
+    TileCollisionKind result;
+    PROBE_TILE(this, px, py, result);
+    return result;
+}
+
+i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
+    if (t->m_extent.left == COORD_UNSET) {
+        return 0;
+    }
+    if (m_mainPlane == NULL) {
+        return 0;
+    }
+
+    i32 px = t->m_screenX;
+    i32 row = t->m_extent.bottom + t->m_screenY;
+
+    TileCollisionKind result;
+    PROBE_TILE(this, px, row, result);
+
+    i32 startRow = row;
+    i32 wrapH = m_mainPlane->m_planePixelHeight;
+    while (result != TILEKIND_SOLID) {
+        if (result == TILEKIND_GROUND || result == TILEKIND_CLIMB) {
+            break;
+        }
+        ++row;
+        if (row >= wrapH) {
+            return 0;
+        }
+        PROBE_TILE(this, px, row, result);
+    }
+
+    i32 final = row - startRow - 1;
+    t->m_screenY += final;
+    return 1;
+}
+
+i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
+    if (x1 > x0) {
+        for (i32 col = x0; col <= x1; col += step) {
+            TileCollisionKind r;
+            PROBE_TILE(this, col, y, r);
+            if (r == TILEKIND_SOLID) {
+                return 0;
+            }
+        }
+    } else {
+        for (i32 col = x0; col >= x1; col -= step) {
+            TileCollisionKind r;
+            PROBE_TILE(this, col, y, r);
+            if (r == TILEKIND_SOLID) {
+                return 0;
+            }
+        }
+    }
+    TileCollisionKind rf;
+    PROBE_TILE(this, x1, y, rf);
+    return rf != TILEKIND_SOLID;
+}
+
+void CGameLevel::MainPlaneNotify() {
+    if (m_mainPlane != NULL) {
+        m_mainPlane->UpdateActiveRegionSizes();
+    }
+}
+
+i32 CGameLevel::ValidateAllPlanes(char* errOut) {
+    b32 ok = true;
+    if (errOut != NULL) {
+        *errOut = 0;
+    }
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+        if ((static_cast<CDDrawWorkerHost*>(m_planes[i]))->ValidateTiles(errOut) == 0) {
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+void CGameLevel::NotifyAllPlanes() {
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+        (static_cast<CDDrawWorkerHost*>(m_planes[i]))->ResolveColorKey();
+    }
+}
+
+i32 CGameLevel::SerializeDispatch(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
+    if (s == NULL) {
+        return 0;
+    }
+
+    char buf[SERIAL_NAME_LEN];
+
+    switch (mode) {
+        case SERIAL_PRESAVE:
+            break;
+        case SERIAL_SAVE:
+            memset(buf, 0, sizeof(buf));
+            strcpy(buf, m_levelName);
+            s->Write(buf, SERIAL_NAME_LEN);
+            break;
+        case SERIAL_POSTSAVE:
+            break;
+        case SERIAL_PRELOAD:
+            break;
+        case SERIAL_LOAD:
+            s->Read(buf, SERIAL_NAME_LEN);
+            strcpy(m_levelName, buf);
+            break;
+        case SERIAL_POSTLOAD:
+            break;
+        default:
+            goto tail;
+    }
+
+tail:
+    if (m_mainPlane == NULL) {
+        return 0;
+    }
+    return m_mainPlane->SerializeDispatch(s, mode, typeId, payload) != 0 ? 1 : 0;
+}
+
+i32 CGameLevel::CanSaveName(CFileMemBase* s) {
+    return s != NULL;
+}
+
+i32 CGameLevel::SaveName(CFileMemBase* s) {
+    if (s == NULL) {
+        return 0;
+    }
+
+    char buf[SERIAL_NAME_LEN];
+    memset(buf, 0, sizeof(buf));
+    strcpy(buf, m_levelName);
+    s->Write(buf, SERIAL_NAME_LEN);
+    return 1;
+}
+
+i32 CGameLevel::LoadName(CFileMemBase* s) {
+    if (s == NULL) {
+        return 0;
+    }
+
+    char buf[SERIAL_NAME_LEN];
+    s->Read(buf, SERIAL_NAME_LEN);
+    strcpy(m_levelName, buf);
+    return 1;
+}
+
+i32 CGameLevel::CanLoadName(CFileMemBase* s) {
+    return s != NULL;
+}
+
+i32 CGameLevel::IsLoaded() {
+    if (m_viewportRect.left == COORD_UNSET) {
+        goto fail;
+    }
+    if (m_ownerCtx == NULL) {
+        goto fail;
+    }
+    if (m_id != -1) {
+        return 1;
+    }
+
+fail:
+    return 0;
+}
+
+CGameLevel::~CGameLevel() {
+    Unload();
+}
+
+TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
+
+    i32 px = coord;
+    CLAMP_TO_EXTENT(px, m_mainPlane->m_planePixelWidth);
+    i32 py = limit;
+    CLAMP_TO_EXTENT(py, m_mainPlane->m_planePixelHeight);
+    CDDrawWorkerHost* pl = m_mainPlane;
+    i32 qx = px >> pl->m_shiftX;
+    i32 qy = py >> pl->m_shiftY;
+    i32 col = qx;
+    i32 subX = px - (qx << pl->m_shiftX);
+    i32 idx = pl->m_tileRowOffsets[qy] + col;
+    i32 subY = py - (qy << pl->m_shiftY);
+    i32 tile = pl->m_tileHandles[idx];
+    return CollisionAtHandle(tile, subX, subY);
+}

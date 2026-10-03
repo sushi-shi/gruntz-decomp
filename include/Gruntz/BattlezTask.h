@@ -1,0 +1,24 @@
+#ifndef GRUNTZ_GRUNTZ_BATTLEZTASK_H
+#define GRUNTZ_GRUNTZ_BATTLEZTASK_H
+
+#include <Enums.h>
+#include <Gruntz/PlayerSlot.h>
+#include <Gruntz/TriggerGridDimensions.h>
+
+GZ_ENUM_BEGIN(BattlezTask)
+    BZTASK_UNASSIGNED = 0,
+    BZTASK_STEP = 2,
+    BZTASK_ASSIGNED_TARGET = 3,
+    BZTASK_ADVANCE = 4,
+    BZTASK_CARRY_GOOBER = 6,
+    BZTASK_CHECK_QUEUED_SPAWN = 7,
+    BZTASK_CARRY_SPY = 9,
+    BZTASK_CARRY_BRICK = 0xa,
+    BZTASK_SEEK_SWITCH = 0xb
+GZ_ENUM_END(BattlezTask)
+
+GZ_ENUM_CONST_BEGIN(BattlezRoster)
+    BATTLEZ_QUEUE_POSITION_UNSET = TM_UNITS_PER_PLAYER + 1
+GZ_ENUM_CONST_END(BattlezRoster)
+
+#endif

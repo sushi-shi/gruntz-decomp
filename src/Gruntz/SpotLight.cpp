@@ -1,0 +1,259 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/SpotLight.h>
+
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Dsndmgr/SoundBuffer.h>
+#include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRand.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRefLookup.h>
+#include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundState.h>
+#include <Gruntz/SpotLightActReg.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/UserLogic.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+#include <Wap32/TileGeometry.h>
+#include <Wap32/WapObj.h>
+#include <ZTools/ZDArray.h>
+
+#include <math.h>
+
+CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
+    SET_ANIMATION_ACT("A");
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
+
+    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, ax, centerY)
+    m_center.m_x = static_cast<double>(ax);
+    double cy = static_cast<double>(centerY);
+    m_center.m_y = cy;
+    i32 nx;
+    if (m_object->m_smarts == 0) {
+        nx = ax - TILE_SIZE_PX;
+    } else {
+        nx = ax - m_object->m_smarts * TILE_SIZE_PX;
+    }
+    SET_SCREEN_POS(m_object, nx, centerY);
+    double px = static_cast<double>(nx);
+    m_position.m_x = px;
+    m_position.m_y = cy;
+    CWwdSpriteObject* o = m_object;
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
+    m_offset.m_x = m_center.m_x - px;
+    m_offset.m_y = m_center.m_y - cy;
+
+    if (m_object->m_damage == 0) {
+        m_angularVelocity =
+            3.1415927 / static_cast<double>(g_buteMgr.GetDword("Hazardz", "SpotLightTime", 0xbb8));
+    } else {
+        m_angularVelocity =
+            3.1415927 / static_cast<double>(static_cast<u32>(m_object->m_damage));
+    }
+    if (m_object->m_direction == 1) {
+        m_angularVelocity = m_angularVelocity * -1.0;
+    }
+    if (m_object->m_points == 1) {
+        m_angle = 3.1415927;
+    } else {
+        m_angle = 0;
+    }
+    CShadeTable* looked = g_gameReg->m_lightFxMgr->m_tables[m_object->m_powerup];
+    CWwdSpriteObject* d = m_object;
+    d->m_drawActive = true;
+    d->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+    d->m_drawFillArg = looked;
+    m_focus = NULL;
+    CLEAR_OBJECT_AREA
+    m_targetPlayerIndex = -1;
+    m_targetUnitIndex = -1;
+    m_storyMode = false;
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
+        m_storyMode = true;
+    }
+}
+
+template<>
+CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+
+void CSpotLight::FireActivation(i32 id) {
+    DispatchRegisteredAct(this, id);
+}
+
+void RegisterSpotLightActions() {
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CSpotLight>::s_table[id] = static_cast<CActHandler>(&CSpotLight::Tick);
+
+    ACT_NAME_ID(id2, "B")
+    CActRegPool<CSpotLight>::s_table[id2] = static_cast<CActHandler>(&CSpotLight::Update);
+}
+
+i32 CSpotLight::Tick() {
+    if (g_gameReg->m_isEasyMode == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+        CGrunt* tgt = g_gameReg->m_triggerMgr->FindGruntAt(
+            m_object->m_screenX,
+            m_object->m_screenY,
+            &m_object->m_area,
+            &m_targetPlayerIndex,
+            &m_targetUnitIndex,
+            NULL
+        );
+        if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
+            && !(m_storyMode != false && m_targetPlayerIndex != 0)) {
+            SET_ANIMATION_ACT("B");
+            SET_SCREEN_POS(m_object, tgt->m_object->m_screenX, tgt->m_object->m_screenY);
+            if (m_object->m_score == 1) {
+                g_gameReg->m_triggerMgr
+                    ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);
+                i32 laser = GetRandomNumber() % 2 + 1;
+                CString name;
+                name.Format("LEVEL_UFOHAZARDLASER%d", laser);
+                PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), name);
+                return 0;
+            } else {
+                tgt->SnapToLastTile(1);
+                g_gameReg->m_triggerMgr
+                    ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_KAROKE, -1);
+                return 0;
+            }
+        }
+    }
+
+    double s = sin(m_angle);
+    double c = cos(m_angle);
+    double ox = m_offset.m_x;
+    double oy = -m_offset.m_y;
+    double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
+    CWwdSpriteObject* mv = m_focus;
+    double rotatedX = ox * c + oy * s;
+    double rotatedY = ox * s - oy * c;
+    m_position.Init(rotatedX, rotatedY);
+    if (mv != NULL) {
+        VEC2_SET(m_center, static_cast<double>(mv->m_screenX), static_cast<double>(mv->m_screenY));
+    }
+    m_position.m_x = m_center.m_x + rotatedX;
+    m_position.m_y = m_center.m_y + rotatedY;
+    m_angle = dAngle + m_angle;
+    SET_SCREEN_POS(m_object, static_cast<i32>(m_position.m_x), static_cast<i32>(m_position.m_y));
+    return 0;
+}
+
+int CSpotLight::Update() {
+    if (m_object->m_score == 1) {
+        double c = cos(m_angle);
+        double s = sin(m_angle);
+        double ox = m_offset.m_x;
+        double oy = -m_offset.m_y;
+
+        double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
+        CWwdSpriteObject* focus = m_focus;
+        VEC2_SET(m_position, oy * s - ox * c, ox * s + oy * c);
+        if (focus) {
+            VEC2_SET(
+                m_center,
+                static_cast<double>(focus->m_screenX),
+                static_cast<double>(focus->m_screenY)
+            );
+        }
+        m_position.Init(m_center.m_x + m_position.m_x, m_center.m_y + m_position.m_y);
+        m_angle = dAngle + m_angle;
+    }
+    if (g_gameReg->m_triggerMgr->UnitAt(m_targetPlayerIndex, m_targetUnitIndex) == NULL) {
+        SET_ANIMATION_ACT("A");
+    }
+    return 0;
+}
+
+i32 CSpotLight::SerializeDispatch(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(
+        ar,
+        static_cast<CFileMemBase*>(ar),
+        mode,
+        typeId,
+        object
+    )
+    CGruntzMgr* reg = g_gameReg;
+    CDDrawSurfaceMgr* world = reg->m_world;
+    CFileMemBase* s = static_cast<CFileMemBase*>(ar);
+    switch (mode) {
+        case SERIAL_SAVE:
+            s->Write(&m_angularVelocity, sizeof(m_angularVelocity));
+            s->Write(&m_position.m_x, sizeof(m_position.m_x));
+            s->Write(&m_position.m_y, sizeof(m_position.m_y));
+            s->Write(&m_center.m_x, sizeof(m_center.m_x));
+            s->Write(&m_center.m_y, sizeof(m_center.m_y));
+            s->Write(&m_offset.m_x, sizeof(m_offset.m_x));
+            s->Write(&m_offset.m_y, sizeof(m_offset.m_y));
+            s->Write(&m_angle, sizeof(m_angle));
+            g_serialCounter++;
+            {
+                i32 id = 0;
+                if (m_focus != NULL) {
+                    id = m_focus->m_objectId;
+                }
+                s->Write(&id, sizeof(id));
+            }
+            s->Write(&m_targetPlayerIndex, sizeof(m_targetPlayerIndex));
+            s->Write(&m_targetUnitIndex, sizeof(m_targetUnitIndex));
+            s->Write(&m_storyMode, sizeof(m_storyMode));
+            break;
+        case SERIAL_LOAD:
+            s->Read(&m_angularVelocity, sizeof(m_angularVelocity));
+            s->Read(&m_position.m_x, sizeof(m_position.m_x));
+            s->Read(&m_position.m_y, sizeof(m_position.m_y));
+            s->Read(&m_center.m_x, sizeof(m_center.m_x));
+            s->Read(&m_center.m_y, sizeof(m_center.m_y));
+            s->Read(&m_offset.m_x, sizeof(m_offset.m_x));
+            s->Read(&m_offset.m_y, sizeof(m_offset.m_y));
+            s->Read(&m_angle, sizeof(m_angle));
+            g_serialCounter++;
+            {
+                i32 id;
+                s->Read(&id, sizeof(id));
+                m_focus = LookupSerialRef(world->ChildGroup()->m_registeredGameObjectsById, id);
+                if (m_focus == NULL && id != 0) {
+                    return 0;
+                }
+            }
+            s->Read(&m_targetPlayerIndex, sizeof(m_targetPlayerIndex));
+            s->Read(&m_targetUnitIndex, sizeof(m_targetUnitIndex));
+            s->Read(&m_storyMode, sizeof(m_storyMode));
+            break;
+        case SERIAL_POSTLOAD: {
+            CWwdSpriteObject* o = m_object;
+            CShadeTable* fill = reg->m_lightFxMgr->m_tables[o->m_powerup];
+            o->m_drawActive = true;
+            o->m_drawFillArg = fill;
+            o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+            break;
+        }
+    }
+    return 1;
+}

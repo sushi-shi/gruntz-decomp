@@ -1,0 +1,83 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Globals.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
+#include <Gruntz/EnemyAiType.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/ScanGridMacros.h>
+#include <Gruntz/StaminaPct.h>
+#include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TriggerMgrRecords.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
+#include <Ints.h>
+#include <Wap32/TileGeometry.h>
+#include <ZTools/ZDArray.h>
+
+#include <limits.h>
+#include <new>
+#include <stdlib.h>
+#include <string.h>
+
+i32 CGrunt::StepToyerBehavior() {
+    m_defenderPx = m_lastTilePx;
+    if (m_vehiclePickupType == PICKUP_NONE) {
+        m_arrivalState = AI_POSTGUARD;
+        m_defenderState = AISTATE_SEEK;
+        m_dwell = 0;
+        return 1;
+    }
+    CGrunt* p = m_triggerMgr->FindNearestEnemy(this);
+    if (p == NULL) {
+        return 1;
+    }
+    if (p->m_entranceCommitted == false) {
+        return 1;
+    }
+    CGameObject* a = p->m_object;
+    if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p)
+        && VehicleContactContains(a->m_screenX, a->m_screenY)) {
+        CGameObject* b = p->m_object;
+        g_gameReg->m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, b->m_screenX, b->m_screenY);
+        return 1;
+    }
+    if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
+        return 1;
+    }
+    if (GruntInRadius(p->m_playerIndex, p->m_unitIndex)) {
+        CGameObject* b = p->m_object;
+        TileSwitch(
+            b->m_screenX >> TILE_SHIFT_PX,
+            b->m_screenY >> TILE_SHIFT_PX,
+            0,
+            m_arrivalFlags,
+            1,
+            0
+        );
+        m_dwell = 0;
+        if (m_blockedVoicePending == false) {
+            return 1;
+        }
+        PLAY_VOICE_IN_VIEW(0x366);
+    }
+    m_blockedVoicePending = false;
+    return 1;
+}

@@ -1,0 +1,14 @@
+#ifndef GRUNTZ_GRUNTZ_ROCKNEIGHBORMASK_H
+#define GRUNTZ_GRUNTZ_ROCKNEIGHBORMASK_H
+
+#include <Enums.h>
+
+GZ_ENUM_FLAGS_BEGIN(RockNeighborMask, i32)
+    ROCKADJ_NONE = 0,
+    ROCKADJ_BELOW = 1,
+    ROCKADJ_ABOVE = 2,
+    ROCKADJ_RIGHT = 4,
+    ROCKADJ_LEFT = 8
+GZ_ENUM_FLAGS_END(RockNeighborMask, i32)
+
+#endif

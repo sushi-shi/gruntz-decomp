@@ -1,0 +1,255 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
+#include <Gruntz/EnemyAiType.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/ScanGridMacros.h>
+#include <Gruntz/StaminaPct.h>
+#include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TriggerMgrRecords.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
+#include <Ints.h>
+#include <RectMacros.h>
+#include <Wap32/TileGeometry.h>
+#include <ZTools/ZDArray.h>
+
+#include <limits.h>
+#include <new>
+#include <stdlib.h>
+#include <string.h>
+
+i32 CellTargetable(i32 tileX, i32 tileY) {
+    CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
+    POSITION pos = list.GetHeadPosition();
+
+    if (pos != NULL) {
+        do {
+            CGruntPuddle* p = static_cast<CGruntPuddle*>(list.GetNext(pos));
+            if (p->m_pending == false) {
+                i32 puddleX = p->m_tileX;
+                i32 puddleY = p->m_tileY;
+                if (puddleX == tileX && puddleY == tileY) {
+                    return 1;
+                }
+            }
+        } while (pos != NULL);
+    }
+    return 0;
+}
+
+i32 CGrunt::StepGooSuckerBehavior() {
+    bool eqI = IsAnimationAct("I");
+    if (eqI) {
+        return 1;
+    }
+    m_defenderPx = m_lastTilePx;
+    CMapMgr* grid = g_gameReg->GetTileGrid();
+    grid->Clip(NULL);
+
+    i32 tileX = ScanCell().m_x;
+    i32 tileY = ScanCell().m_y;
+
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
+
+    b32 powered = m_poweredUp;
+    if (powered != false) {
+        b32 neighborValid = m_neighborValid;
+        if (neighborValid == false) {
+            if (m_combatActive != false) {
+                goto L_yes;
+            }
+            if (m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    goto L_yes;
+                }
+                if (atTarget && g == NULL) {
+                    goto L_yes;
+                }
+                if (m_poweredUp == false) {
+                    goto L_yes;
+                }
+                if (m_neighborValid != false) {
+                    goto L_yes;
+                }
+            } else {
+                if (atTarget) {
+                    goto L_yes;
+                }
+                if (m_poweredUp == false) {
+                    goto L_yes;
+                }
+                if (m_neighborValid != false) {
+                    goto L_yes;
+                }
+            }
+            RESET_GRUNT_POWERED_STATE(this)
+        } else {
+            m_neighborValid = false;
+        }
+    L_yes:
+        return 1;
+    }
+
+    if (g != NULL) {
+        if (m_neighborValid != false) {
+            return 1;
+        }
+        if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
+            if (atTarget) {
+                COMMIT_GRUNT_NEIGHBOR(g);
+                this->RecycleCoords();
+                return 1;
+            }
+        } else {
+            if (atTarget) {
+                this->RecycleCoords();
+                return 1;
+            }
+        }
+    } else {
+        m_blockedVoicePending = false;
+    }
+
+L_ed006b:
+    if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
+        m_blockedVoicePending = false;
+        goto L_scanb;
+    }
+    if (m_poweredUp != false) {
+        goto L_scanb;
+    }
+    if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
+        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        COMMIT_GRUNT_NEIGHBOR(g);
+    }
+    if (m_poweredUp != false) {
+        goto L_scanb;
+    }
+    if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {
+        goto L_scanb;
+    }
+    {
+        Coord cc;
+        g->GetScreenPos(&cc);
+        if (TileSwitch(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
+            != 0) {
+            if (m_blockedVoicePending != false) {
+                PLAY_VOICE_IF_VISIBLE(0x366);
+                m_blockedVoicePending = false;
+            }
+            m_dwell = 0;
+        }
+    }
+
+L_scanb:
+    if (CoordCount() == 0) {
+        if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
+            return 1;
+        }
+
+        i32 r = m_defenderRadius;
+        CRect box(tileX - r, tileY - r, tileX + r, tileY + r);
+        CRect gb(0, 0, grid->GetWidth(), grid->GetHeight());
+        CRect isect;
+        if (!isect.IntersectRect(&box, &gb)) {
+            isect = box;
+        }
+        grid->Clip(&isect);
+
+        i32 best = INT_MAX;
+        i32 bestX = 0;
+        i32 bestY = 0;
+
+        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
+        while (pos != NULL) {
+            CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
+            if (gg->m_pending == false) {
+                i32 gx = gg->m_tileX;
+                i32 gy = gg->m_tileY;
+                if (RectContains(
+                        (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (gy << TILE_SHIFT_PX) + TILE_HALF_PX
+                    )
+                    != 0) {
+                    m_triggerMgr->UseEquippedToolAt(
+                        m_playerIndex,
+                        m_unitIndex,
+                        (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (gy << TILE_SHIFT_PX) + TILE_HALF_PX
+                    );
+                    grid->Clip(NULL);
+                    return 1;
+                }
+                i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
+                i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
+                i32 dist = abs(dx) + abs(dy);
+                if (dist < best) {
+                    POINT pt;
+                    pt.x = gx;
+                    pt.y = gy;
+                    if (PtInRect(&isect, pt)) {
+                        best = dist;
+                        bestX = gx;
+                        bestY = gy;
+                    }
+                }
+            }
+        }
+        if (best != INT_MAX) {
+            i32 dx = bestX - tileX;
+            dx = abs(dx);
+            i32 dy = bestY - tileY;
+            dy = abs(dy);
+            if (dx <= 1 && dy <= 1) {
+                m_triggerMgr->UseEquippedToolAt(
+                    m_playerIndex,
+                    m_unitIndex,
+                    (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (bestY << TILE_SHIFT_PX) + TILE_HALF_PX
+                );
+                SetEntrancePos(1, 1);
+            } else {
+                TileSwitch(bestX, bestY, 0, m_arrivalFlags, 1, 0);
+            }
+        }
+        grid->Clip(NULL);
+    } else {
+        Coord* coord = GetHeadCoord();
+        i32 col = coord->m_x;
+        i32 row = coord->m_y;
+        if (CellTargetable(col, row) == 0) {
+            return 1;
+        }
+        m_triggerMgr->UseEquippedToolAt(
+            m_playerIndex,
+            m_unitIndex,
+            (col << TILE_SHIFT_PX) + TILE_HALF_PX,
+            (row << TILE_SHIFT_PX) + TILE_HALF_PX
+        );
+        SetEntrancePos(1, 1);
+    }
+    m_dwell = 0;
+    return 1;
+}

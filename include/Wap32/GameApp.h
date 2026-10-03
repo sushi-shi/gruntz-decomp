@@ -1,0 +1,27 @@
+#ifndef GRUNTZ_WAP32_GAMEAPP_H
+#define GRUNTZ_WAP32_GAMEAPP_H
+
+#include <Ints.h>
+
+#include <Enums.h>
+#include <Utils/AsyncKeyState.h>
+#include <Utils/MillisPer.h>
+
+GZ_ENUM_CONST_BEGIN(GameAppTiming)
+    GAMEAPP_PERIODIC_TIMER_MS = 100,
+    GAMEAPP_FPS_UNAVAILABLE = -1,
+    GAMEAPP_FPS_SAMPLE_SECONDS = 2,
+    GAMEAPP_FPS_SAMPLE_INTERVAL_MS = GAMEAPP_FPS_SAMPLE_SECONDS * MILLIS_PER_SECOND
+GZ_ENUM_CONST_END(GameAppTiming)
+
+extern i32 g_gameAppNowMs;
+extern i32 g_gameAppFrameDeltaMs;
+extern i32 g_framePacingEpochMs;
+extern i32 g_gameAppTimerRemainingMs;
+extern i32 g_gameAppTimerPeriodMs;
+
+#define FREE_GAME_MANAGER                                                                              if (m_gameMgr) {                                                                                       delete m_gameMgr;                                                                                  m_gameMgr = NULL;                                                                              }
+
+#define CLEAR_GAME_MANAGER_WINDOW                                                                      m_gameWnd = NULL;                                                                                  m_owner = NULL
+
+#endif

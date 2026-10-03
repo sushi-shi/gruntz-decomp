@@ -1,0 +1,4 @@
+#ifndef WAP32_COBJECT_H
+#define WAP32_COBJECT_H
+
+#endif

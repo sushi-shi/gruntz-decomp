@@ -1,0 +1,556 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <DDrawMgr/DirPal.h>
+
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelShift.h>
+#include <Image/FileImageRecords.h>
+#include <Io/FileStream.h>
+#include <SafeDelete.h>
+
+#include <ddraw.h>
+#include <stdio.h>
+#include <string.h>
+
+#define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
+
+i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
+    m_entries = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        m_entries[i] = entries[i];
+    }
+    m_readbackEntries = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+    i32 hr = dd->CreatePalette(flags, entries, &m_palette, NULL);
+    if (hr == 0) {
+        return 1;
+    }
+    CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x4b, hr);
+    return 0;
+}
+
+i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* sFile, u32 flags) {
+    char* pExt = strrchr(sFile, '.');
+    if (pExt && stricmp(pExt, ".BMP") == 0) {
+        return LoadBmp(dd, sFile, flags);
+    } else if (pExt && stricmp(pExt, ".PCX") == 0) {
+        return LoadPcx(dd, sFile, flags);
+    } else if (pExt && stricmp(pExt, ".PAL") == 0) {
+        return LoadPal(dd, sFile, flags);
+    }
+    return LoadDefault(dd, sFile, flags);
+}
+
+i32 CDDPalette::CreateRGB(IDirectDraw2* dd, u8* rgb, u32 flags) {
+    PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
+
+    u8* src = rgb;
+    COPY_RGB_PALETTE(entries, src, i, PALETTE_ENTRY_COUNT)
+    return Create(dd, entries, flags);
+}
+
+void CDDPalette::Destroy() {
+    m_pos = NULL;
+    m_reserved = 0;
+    if (m_palette != NULL) {
+        m_palette = NULL;
+    }
+    SAFE_DELETE_ARRAY(m_entries);
+    SAFE_DELETE_ARRAY(m_readbackEntries);
+    SAFE_DELETE_ARRAY(m_sourcePalette);
+    m_active = false;
+}
+
+i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
+    BITMAPFILEHEADER hdr;
+    PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
+    Bmp256Info info;
+    CFile file;
+    if (file.Open(filename, CFile::modeRead, NULL) == false) {
+        return 0;
+    }
+    if (file.Read(&hdr, sizeof(hdr)) != sizeof(hdr)) {
+        return 0;
+    }
+    if (file.Read(&info, sizeof(info)) != sizeof(info)) {
+        return 0;
+    }
+
+    if (file.Read(info.m_bmiColors, sizeof(info.m_bmiColors)) != sizeof(info.m_bmiColors)) {
+        return 0;
+    }
+    COPY_BGRX_PALETTE(pe, info.m_bmiColors, i, PALETTE_ENTRY_COUNT)
+    return Create(dd, pe, flags);
+}
+
+i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
+    PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
+    u8 rgb[PALETTE_RGB_BYTE_COUNT];
+    CFile file;
+    if (file.Open(filename, CFile::modeRead, NULL) == false) {
+        return 0;
+    }
+    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
+    if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
+        return 0;
+    }
+    u8* src = rgb;
+    COPY_RGB_PALETTE(pe, src, i, PALETTE_ENTRY_COUNT)
+    return Create(dd, pe, flags);
+}
+
+i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 flags) {
+    if (size < PALETTE_RGB_BYTE_COUNT) {
+        return 0;
+    }
+    PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
+    u8* src = static_cast<u8*>(data) + size - PALETTE_RGB_BYTE_COUNT;
+
+    COPY_RGB_PALETTE(entries, src, i, PALETTE_ENTRY_COUNT)
+    return Create(dd, entries, flags);
+}
+
+i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
+    PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
+    u8 rgb[PALETTE_RGB_BYTE_COUNT];
+    CFile file;
+    if (file.Open(filename, CFile::modeRead, NULL) == false) {
+        return 0;
+    }
+    if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
+        return 0;
+    }
+    u8* src = rgb;
+    COPY_RGB_PALETTE(pe, src, i, PALETTE_ENTRY_COUNT)
+    return Create(dd, pe, flags);
+}
+
+i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
+    PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
+    HRSRC hr = FindResourceA(g_resModule, filename, "PALETTE");
+    if (!hr) {
+        return 0;
+    }
+    HGLOBAL hg = LoadResource(g_resModule, hr);
+    if (!hg) {
+        return 0;
+    }
+    u8* src = static_cast<u8*>(LockResource(hg));
+    if (!src) {
+        return 0;
+    }
+    COPY_RGB_PALETTE(pal, src, i, PALETTE_ENTRY_COUNT)
+    return Create(dd, pal, flags);
+}
+
+i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unused) {
+
+    for (u32 i = start; i < start + count; i++) {
+        m_entries[i] = data[i - start];
+    }
+    if (g_directDrawMgr != NULL) {
+        IDirectDraw2* dd = g_directDrawMgr->GetDirectDraw();
+        dd->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+    }
+    return m_palette->SetEntries(0, start, count, data);
+}
+
+i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused) {
+    PALETTEENTRY* buf = new PALETTEENTRY[count];
+    if (buf == NULL) {
+        return DDERR_INVALIDPARAMS;
+    }
+
+    COPY_BGRX_PALETTE(buf, quads, i, count)
+    i32 hr = SetAndNotify(start, count, buf, unused);
+    delete[] buf;
+    return hr;
+}
+
+i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
+    PALETTEENTRY* buf = new PALETTEENTRY[count];
+    if (buf == NULL) {
+        return DDERR_INVALIDPARAMS;
+    }
+
+    COPY_RGB_PALETTE(buf, rgb, i, count)
+    i32 hr = SetAndNotify(start, count, buf, unused);
+    delete[] buf;
+    return hr;
+}
+
+void CDDPalette::GetEntries() {
+    if (m_readbackEntries == NULL) {
+        m_readbackEntries = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+        if (m_readbackEntries == NULL) {
+            return;
+        }
+    }
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_readbackEntries);
+    if (hr != 0) {
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x265, hr);
+    }
+}
+
+void CDDPalette::Apply(i32 unused) {
+    PALETTEENTRY* readback = m_readbackEntries;
+    if (readback == NULL) {
+        return;
+    }
+
+    for (u32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        m_entries[i] = readback[i];
+    }
+    if (g_directDrawMgr != NULL) {
+        IDirectDraw2* dd = g_directDrawMgr->GetDirectDraw();
+        dd->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+    }
+    m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, readback);
+}
+
+i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
+    for (i32 i = start; i < start + count; i++) {
+        m_entries[i].peRed = r;
+        m_entries[i].peGreen = g;
+        m_entries[i].peBlue = b;
+    }
+    i32 hr = m_palette->SetEntries(flags, start, count, m_entries + start);
+    if (hr != 0) {
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x2a3, hr);
+    }
+    return hr;
+}
+
+void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
+    if (hr != 0) {
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x2c0, hr);
+    }
+    PALETTEENTRY* snapshot = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        snapshot[i] = m_entries[i];
+    }
+    i32 t0 = timeGetTime();
+    i32 prev = 9;
+
+    for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = timeGetTime() - t0) {
+        if (t != prev) {
+            for (i32 j = start; j < start + count; j++) {
+                m_entries[j].peRed = static_cast<u8>((
+                    ((r & PIXEL_BYTE_MASK) - snapshot[j].peRed) * t / durationMs + snapshot[j].peRed
+                ));
+                m_entries[j].peGreen = static_cast<u8>(
+                    (((g & PIXEL_BYTE_MASK) - snapshot[j].peGreen) * t / durationMs
+                     + snapshot[j].peGreen)
+                );
+                m_entries[j].peBlue = static_cast<u8>(
+                    (((b & PIXEL_BYTE_MASK) - snapshot[j].peBlue) * t / durationMs
+                     + snapshot[j].peBlue)
+                );
+            }
+            m_palette->SetEntries(0, start, count, m_entries + start);
+        }
+        prev = t;
+    }
+    SetRange(start, count, r, g, b, 0);
+    delete[] snapshot;
+}
+
+void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, i32 durationMs) {
+    if (m_active) {
+        Flush();
+    }
+    i32 err = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
+    if (err) {
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x311, err);
+    }
+    m_firstColorIndex = start;
+    m_colorCount = count;
+    m_durationMs = durationMs;
+    m_startTimeMs = timeGetTime();
+    m_lastElapsedMs = -1;
+    m_targetPalette = NULL;
+    m_fixedColor.peRed = r;
+    m_fixedColor.peGreen = g;
+    m_fixedColor.peBlue = b;
+    if (!m_sourcePalette) {
+        m_sourcePalette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+    }
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        m_sourcePalette[i] = m_entries[i];
+    }
+    m_active = true;
+    Tick();
+}
+
+void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
+    if (m_active) {
+        Flush();
+    }
+    i32 err = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
+    if (err) {
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x34b, err);
+    }
+    m_firstColorIndex = start;
+    m_colorCount = count;
+    m_durationMs = durationMs;
+    m_startTimeMs = timeGetTime();
+    m_targetPalette = target;
+    m_lastElapsedMs = -1;
+    if (!m_sourcePalette) {
+        m_sourcePalette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+    }
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        m_sourcePalette[i] = m_entries[i];
+    }
+    m_active = true;
+    Tick();
+}
+
+i32 CDDPalette::Tick() {
+    if (m_active == false) {
+        return 0;
+    }
+    u32 dt = timeGetTime() - m_startTimeMs;
+    if (dt >= static_cast<u32>(m_durationMs)) {
+        Flush();
+        return 0;
+    }
+    if (m_targetPalette != NULL) {
+        if (dt != static_cast<u32>(m_lastElapsedMs)) {
+            i32 i = m_firstColorIndex;
+            if (i < m_firstColorIndex + m_colorCount) {
+                do {
+                    m_entries[i].peRed = static_cast<char>(
+                                             (static_cast<i32>(
+                                                  ((static_cast<u32>(m_targetPalette[i].peRed)
+                                                    - static_cast<u32>(m_sourcePalette[i].peRed))
+                                                   * dt)
+                                              )
+                                              / m_durationMs)
+                                         )
+                                         + m_sourcePalette[i].peRed;
+                    m_entries[i].peGreen =
+                        static_cast<char>(
+                            (static_cast<i32>(
+                                 ((static_cast<u32>(m_targetPalette[i].peGreen)
+                                   - static_cast<u32>(m_sourcePalette[i].peGreen))
+                                  * dt)
+                             )
+                             / m_durationMs)
+                        )
+                        + m_sourcePalette[i].peGreen;
+                    m_entries[i].peBlue = static_cast<char>(
+                                              (static_cast<i32>(
+                                                   ((static_cast<u32>(m_targetPalette[i].peBlue)
+                                                     - static_cast<u32>(m_sourcePalette[i].peBlue))
+                                                    * dt)
+                                               )
+                                               / m_durationMs)
+                                          )
+                                          + m_sourcePalette[i].peBlue;
+                    i++;
+                } while (i < m_firstColorIndex + m_colorCount);
+            }
+            m_palette
+                ->SetEntries(0, m_firstColorIndex, m_colorCount, m_entries + m_firstColorIndex);
+        }
+    } else {
+        if (dt != static_cast<u32>(m_lastElapsedMs)) {
+            i32 i = m_firstColorIndex;
+            if (i < m_firstColorIndex + m_colorCount) {
+                do {
+                    m_entries[i].peRed = static_cast<char>(
+                                             (static_cast<i32>(
+                                                  ((static_cast<u32>(m_fixedColor.peRed)
+                                                    - static_cast<u32>(m_sourcePalette[i].peRed))
+                                                   * dt)
+                                              )
+                                              / m_durationMs)
+                                         )
+                                         + m_sourcePalette[i].peRed;
+                    m_entries[i].peGreen =
+                        static_cast<char>(
+                            (static_cast<i32>(
+                                 ((static_cast<u32>(m_fixedColor.peGreen)
+                                   - static_cast<u32>(m_sourcePalette[i].peGreen))
+                                  * dt)
+                             )
+                             / m_durationMs)
+                        )
+                        + m_sourcePalette[i].peGreen;
+                    m_entries[i].peBlue = static_cast<char>(
+                                              (static_cast<i32>(
+                                                   ((static_cast<u32>(m_fixedColor.peBlue)
+                                                     - static_cast<u32>(m_sourcePalette[i].peBlue))
+                                                    * dt)
+                                               )
+                                               / m_durationMs)
+                                          )
+                                          + m_sourcePalette[i].peBlue;
+                    i++;
+                } while (i < m_firstColorIndex + m_colorCount);
+            }
+            m_palette
+                ->SetEntries(0, m_firstColorIndex, m_colorCount, m_entries + m_firstColorIndex);
+        }
+    }
+    m_lastElapsedMs = dt;
+    return 1;
+}
+
+void CDDPalette::Flush() {
+    if (m_active == false) {
+        return;
+    }
+    PALETTEENTRY* v = m_targetPalette;
+    m_active = false;
+    if (v != NULL) {
+        SetAndNotify(m_firstColorIndex, m_colorCount, v, 0);
+        m_targetPalette = NULL;
+    } else {
+
+        PALETTEENTRY pe = m_fixedColor;
+        SetRange(m_firstColorIndex, m_colorCount, pe.peRed, pe.peGreen, pe.peBlue, 0);
+    }
+}
+
+void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
+    i32 end = start + count;
+    if (start < end) {
+        i32 i = start;
+        do {
+            m_entries[i].peRed =
+                static_cast<u8>(((r - m_entries[i].peRed) * pct / 100 + m_entries[i].peRed));
+            m_entries[i].peGreen =
+                static_cast<u8>(((g - m_entries[i].peGreen) * pct / 100 + m_entries[i].peGreen));
+            m_entries[i].peBlue =
+                static_cast<u8>(((b - m_entries[i].peBlue) * pct / 100 + m_entries[i].peBlue));
+            i++;
+        } while (i < end);
+    }
+    i32 hr = m_palette->SetEntries(0, start, count, m_entries + start);
+    if (hr != 0) {
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x406, hr);
+    }
+}
+
+void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
+    if (hr != 0) {
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x41f, hr);
+    }
+    PALETTEENTRY* snapshot = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        snapshot[i] = m_entries[i];
+    }
+    i32 t0 = timeGetTime();
+    i32 prev = 9;
+
+    for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = timeGetTime() - t0) {
+        if (t != prev) {
+            for (i32 i = start; i < start + count; i++) {
+                m_entries[i].peRed = static_cast<u8>(
+                    (target[i].peRed - snapshot[i].peRed) * t / durationMs + snapshot[i].peRed
+                );
+                m_entries[i].peGreen = static_cast<u8>(
+                    (target[i].peGreen - snapshot[i].peGreen) * t / durationMs + snapshot[i].peGreen
+                );
+                m_entries[i].peBlue = static_cast<u8>(
+                    (target[i].peBlue - snapshot[i].peBlue) * t / durationMs + snapshot[i].peBlue
+                );
+            }
+            m_palette->SetEntries(0, start, count, m_entries + start);
+        }
+        prev = t;
+    }
+    SetAndNotify(start, count, target, 0);
+    delete[] snapshot;
+}
+
+i32 CDDPalette::CaptureSystemPalette() {
+    HDC hDC = CreateDCA("DISPLAY", NULL, NULL, NULL);
+    if (hDC) {
+        i32 nNumPalColors = GetDeviceCaps(hDC, SIZEPALETTE);
+        i32 nNumSysColors = GetDeviceCaps(hDC, NUMRESERVED);
+        LogPal256 lp;
+        lp.m_palVersion = LOGICAL_PALETTE_VERSION;
+        lp.m_palNumEntries = PALETTE_ENTRY_COUNT;
+        if (GetSystemPaletteEntries(hDC, 0, nNumSysColors / 2, lp.m_palPalEntry)
+            && GetSystemPaletteEntries(
+                hDC,
+                nNumPalColors - nNumSysColors / 2,
+                nNumSysColors / 2,
+                &lp.m_palPalEntry[lp.m_palNumEntries - nNumSysColors / 2]
+            )) {
+            DeleteDC(hDC);
+            PALETTEENTRY* dest = m_entries;
+            if (dest) {
+                i32 i;
+                for (i = 0; i < nNumSysColors / 2; i++) {
+                    dest[i].peRed = lp.m_palPalEntry[i].peRed;
+                    dest[i].peGreen = lp.m_palPalEntry[i].peGreen;
+                    dest[i].peBlue = lp.m_palPalEntry[i].peBlue;
+                }
+                for (i = nNumPalColors - nNumSysColors / 2; i < nNumPalColors; i++) {
+                    dest[i].peRed = lp.m_palPalEntry[i].peRed;
+                    dest[i].peGreen = lp.m_palPalEntry[i].peGreen;
+                    dest[i].peBlue = lp.m_palPalEntry[i].peBlue;
+                }
+                i32 rc = SetAndNotify(0, PALETTE_ENTRY_COUNT, dest, 0);
+                if (rc == 0) {
+                    return 1;
+                }
+                CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x495, rc);
+            }
+        }
+    }
+    return 0;
+}
+
+i32 BlackoutSystemPalette() {
+    HDC hScreenDC = GetDC(NULL);
+    if (hScreenDC != NULL) {
+        LogPal256 sysPal;
+        sysPal.m_palVersion = LOGICAL_PALETTE_VERSION;
+        sysPal.m_palNumEntries = PALETTE_ENTRY_COUNT;
+        for (i32 iPal = 0; iPal < PALETTE_ENTRY_COUNT; iPal++) {
+            sysPal.m_palPalEntry[iPal].peRed = 0;
+            sysPal.m_palPalEntry[iPal].peGreen = 0;
+            sysPal.m_palPalEntry[iPal].peBlue = 0;
+            sysPal.m_palPalEntry[iPal].peFlags = PC_NOCOLLAPSE;
+        }
+        HPALETTE hScreenPal = CreatePalette(&sysPal.m_lp);
+        if (hScreenPal != NULL) {
+            hScreenPal = SelectPalette(hScreenDC, hScreenPal, FALSE);
+            RealizePalette(hScreenDC);
+            hScreenPal = SelectPalette(hScreenDC, hScreenPal, FALSE);
+            DeleteObject(hScreenPal);
+            ReleaseDC(NULL, hScreenDC);
+            return 1;
+        }
+        ReleaseDC(NULL, hScreenDC);
+    }
+    return 0;
+}
+
+void CDDPalette::DumpEntries() {
+    PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, entries);
+    if (hr != 0) {
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x4e4, hr);
+        return;
+    }
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        DDrawLogLine(
+            "I:%03i R:%03i G:%03i B:%03i\n",
+            i,
+            entries[i].peRed,
+            entries[i].peGreen,
+            entries[i].peBlue
+        );
+    }
+}

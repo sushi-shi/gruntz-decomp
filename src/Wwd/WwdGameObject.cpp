@@ -1,0 +1,1016 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <DDrawMgr/ColorDepth.h>
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawShadeBlit.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DrawSubWorkerInline.h>
+#include <DDrawMgr/LogicRecord.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
+#include <Enums.h>
+#include <Globals.h>
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
+#include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/Blk6c.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/Sprite.h>
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameObject.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
+#include <Ints.h>
+#include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
+#include <SafeDelete.h>
+#include <Utils/MapTyped.h>
+#include <Wap32/CoordUnset.h>
+#include <Wap32/Object.h>
+#include <Wap32/WapObj.h>
+#include <Wwd/LogicRecordEvent.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdGameObjectInline.h>
+#include <Wwd/WwdSpriteAnimationInline.h>
+
+#include <ddraw.h>
+#include <stdlib.h>
+#include <string.h>
+
+b32 g_logicTypesRegistered;
+
+void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
+    CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
+    m_imageSet = spr;
+    SetImageFrame(frame);
+}
+
+void CWwdSpriteObject::SetImageSetByName(const char* name) {
+    CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
+    m_imageSet = spr;
+    if (spr) {
+        i32 n = spr->GetMinIndex();
+        m_frameIndex = n;
+        m_frameImage = spr->GetAt(n);
+    }
+}
+
+i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
+    CAniElement* animation = MapFind<CAniElement>(OwnerMgr()->m_animRegistry->m_animations, name);
+    if (!animation) {
+        return 0;
+    }
+    SET_ANIMATION_AND_MAYBE_ADVANCE(this, animation, advanceImmediately)
+    return 1;
+}
+
+i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
+    SoundCue* cue = OwnerMgr()->SoundRegistry()->FindCue(name);
+    if (cue == NULL) {
+        return 0;
+    }
+    m_soundCue = cue;
+    return 1;
+}
+
+void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
+
+    m_shadow = m_dirty;
+    if (m_dirty.m_armed != -1) {
+        RECT* r = &m_dirty.m_rect;
+        dst->GetSurface()->BltFast(r->left, r->top, src->GetSurface(), r, DDBLTFAST_WAIT);
+        m_dirty.m_armed = -1;
+    }
+}
+
+void CWwdSpriteObject::BltDirtyEx(
+    CDrawSubWorker* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
+) {
+    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+        RECT ir;
+        if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
+            UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
+            CPoint pos;
+            CSize size;
+            pos = CPoint(ir.left, ir.top);
+            size = CSize(ir.right - ir.left + 1, ir.bottom - ir.top + 1);
+            dst->BlitDirtyRect(src, pos, size);
+        } else {
+            dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
+        }
+    } else if (m_dirty.m_armed != -1) {
+        dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+    } else if (m_shadow.m_armed != -1) {
+        dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
+    }
+}
+
+void CWwdSpriteObject::BltDirtyRegions(
+    CDDrawSurfacePair* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
+) {
+    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+        RECT ir;
+        if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
+            UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
+            CPoint pos(ir.left, ir.top);
+            CSize size(ir.right - ir.left + 1, ir.bottom - ir.top + 1);
+            dst->BlitDirtyRect(src, pos, size);
+        } else {
+            dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
+        }
+    } else if (m_dirty.m_armed != -1) {
+        dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+    } else if (m_shadow.m_armed != -1) {
+        dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
+    }
+}
+
+i32 CWwdSpriteObject::IntersectsViewport() {
+    if (m_frameImage == NULL) {
+        return 0;
+    }
+    i32 left = m_screenX - m_frameImage->m_anchorX;
+    i32 right = m_screenX + m_frameImage->m_anchorX;
+    i32 top = m_screenY - m_frameImage->m_anchorY;
+    i32 bottom = m_screenY + m_frameImage->m_anchorY;
+    if (HAS(static_cast<WwdGameObjectFlags>(m_flags), WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
+
+        RECT* r = &OwnerMgr()->m_level->m_mainPlane->m_planeViewRect;
+        if (right < r->left) {
+            return 0;
+        }
+        if (left > r->right) {
+            return 0;
+        }
+        if (bottom < r->top) {
+            return 0;
+        }
+        return top <= r->bottom;
+    } else {
+
+        CDDrawFrontSurface* g = OwnerMgr()->GetDrawTarget()->GetFrontSurface();
+
+        i32 gw = g->GetWidth();
+        i32 gh = g->GetHeight();
+        if (right < 0) {
+            return 0;
+        }
+        if (left >= gw) {
+            return 0;
+        }
+        if (bottom < 0) {
+            return 0;
+        }
+        return top < gh;
+    }
+}
+
+i32 CWwdSpriteObject::SerializeDispatch(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    if (ar == NULL) {
+        return 0;
+    }
+    if (m_animationCursor.SerializeDispatch(ar, mode, typeId, object) == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_SAVE:
+            if (WriteSpriteState(ar) == 0) {
+                return 0;
+            }
+            break;
+        case SERIAL_LOAD:
+            if (ReadSpriteState(ar) == 0) {
+                return 0;
+            }
+            break;
+    }
+    return CGameObject::SerializeDispatch(ar, mode, typeId, object) != 0;
+}
+
+i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
+    CFileMemBase* ar = stream;
+    if (ar == NULL) {
+        return 0;
+    }
+    ar->Write(&m_reserved18c, sizeof(m_reserved18c));
+    ar->Write(&m_frameIndex, sizeof(m_frameIndex));
+    b32 hasFrameImage = false;
+    if (m_frameImage != NULL) {
+        hasFrameImage = true;
+    }
+    ar->Write(&hasFrameImage, sizeof(hasFrameImage));
+
+    char tmp[0x100];
+    memset(tmp, 0, SERIAL_NAME_LEN);
+    if (m_imageSet != NULL) {
+        strcpy(tmp, m_imageSet->m_name);
+    }
+    ar->Write(tmp, SERIAL_NAME_LEN);
+
+    memset(tmp, 0, SERIAL_NAME_LEN);
+    {
+        strcpy(tmp, OwnerMgr()->SoundRegistry()->FindCueKey(m_soundCue));
+    }
+    ar->Write(tmp, SERIAL_NAME_LEN);
+    return 1;
+}
+
+i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
+    CFileMemBase* ar = stream;
+    if (ar == NULL) {
+        return 0;
+    }
+    ar->Read(&m_reserved18c, sizeof(m_reserved18c));
+    ar->Read(&m_frameIndex, sizeof(m_frameIndex));
+    b32 hasFrameImage;
+    ar->Read(&hasFrameImage, sizeof(hasFrameImage));
+    m_imageSet = NULL;
+
+    char name[0x100];
+    ar->Read(name, SERIAL_NAME_LEN);
+    if (strlen(name) != 0) {
+
+        CDDrawWorker* imageSet = OwnerMgr()->FindWorker(name);
+        m_imageSet = imageSet;
+        if (imageSet != NULL && hasFrameImage == true) {
+            i32 idx = m_frameIndex;
+            CImage* frame = imageSet->GetAt(idx);
+            m_frameImage = frame;
+        }
+    }
+
+    m_soundCue = NULL;
+    ar->Read(name, SERIAL_NAME_LEN);
+    if (strlen(name) != 0) {
+
+        SoundCue* found = NULL;
+        CDDrawSurfaceMgr* mgr = OwnerMgr();
+        MapLookup(mgr->SoundRegistry()->m_cues, name, found);
+        m_soundCue = found;
+    }
+    return 1;
+}
+
+i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
+    CResolveNode::SetPosition(x, y);
+    m_screenX = x;
+    m_screenY = y;
+    m_sortKey = sortKey;
+    m_spawnX = x;
+    CLogicRecord* record = m_logicRecord;
+    m_spawnY = y;
+    m_spawnSortKey = sortKey;
+    m_strideX = 10;
+    m_strideY = 10;
+    m_points = 0;
+    m_score = 0;
+    m_health = 0;
+    m_smarts = 0;
+    m_powerup = 0;
+    m_damage = 0;
+    m_direction = 0;
+    m_faceDirection = 0;
+    m_speedX = 0;
+    m_speedY = 0;
+    m_reservede0 = 0;
+    m_reserved180 = 0;
+
+    if (record->Init(logicTemplate->m_dispatch, logicTemplate->m_flags) == 0) {
+        return 0;
+    }
+    m_hitLogic = NULL;
+    m_attackLogic = NULL;
+    m_collisionLogic = NULL;
+    m_hitSource = NULL;
+    m_attackTarget = NULL;
+    m_hitOther = NULL;
+    m_objectType = 0;
+    m_hitTypeFlags = 0;
+    m_attackTypeMask = 0;
+    m_collMask = 0;
+    m_extent.left = COORD_UNSET;
+    m_area.left = COORD_UNSET;
+    m_switchRect.left = COORD_UNSET;
+    m_region.m_object = this;
+    m_region.m_x = m_screenX;
+    m_region.m_y = m_screenY;
+    LogicRecordFlags logicFlags = static_cast<LogicRecordFlags>(m_logicRecord->m_flags);
+    if (HAS(logicFlags, LOGIC_RECORD_FLAG_LARGE_ACTIVE_REGION)) {
+        m_flags |= IDX(WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION);
+        return 1;
+    }
+    if (HAS(logicFlags, LOGIC_RECORD_FLAG_SMALL_ACTIVE_REGION)) {
+        m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION);
+    }
+    return 1;
+}
+
+i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
+    if (logicTemplate == NULL) {
+        return 0;
+    }
+    if (m_hitLogic != NULL) {
+        m_hitLogic->Unload();
+    } else {
+        m_hitLogic = new CLogicRecord(m_ownerCtx, m_id);
+    }
+    if (m_hitLogic == NULL) {
+        return 0;
+    }
+
+    return m_hitLogic->Init(logicTemplate->m_dispatch, 0);
+}
+
+void CGameObject::AddLogicHit(char* key) {
+    EnsureHitLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+}
+
+i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
+    if (logicTemplate == NULL) {
+        return 0;
+    }
+    if (m_attackLogic != NULL) {
+        m_attackLogic->Unload();
+    } else {
+        m_attackLogic = new CLogicRecord(m_ownerCtx, m_id);
+    }
+    if (m_attackLogic == NULL) {
+        return 0;
+    }
+
+    return m_attackLogic->Init(logicTemplate->m_dispatch, 0);
+}
+
+void CGameObject::AddLogicAttack(char* key) {
+    EnsureAttackLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+}
+
+i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
+    if (logicTemplate == NULL) {
+        return 0;
+    }
+    if (m_collisionLogic != NULL) {
+        m_collisionLogic->Unload();
+    } else {
+        m_collisionLogic = new CLogicRecord(m_ownerCtx, m_id);
+    }
+    if (m_collisionLogic == NULL) {
+        return 0;
+    }
+
+    return m_collisionLogic->Init(logicTemplate->m_dispatch, 0);
+}
+
+void CGameObject::AddLogicBump(char* key) {
+    EnsureBumpLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+}
+
+i32 CGameObject::SerializeDispatch(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    if (ar == NULL) {
+        return 0;
+    }
+
+    switch (mode) {
+        case SERIAL_PRESAVE:
+            m_carrierId = 0;
+            if (m_carrier != NULL) {
+                m_carrierId = m_carrier->m_objectId;
+            }
+            if (!NotifyLogicForEventCode(this, ACT_PREPARE_SAVE)) {
+                goto fail;
+            }
+        default:
+        dispatch:
+            return m_logicRecord->SerializeDispatch(ar, mode, typeId, object) != 0;
+        case SERIAL_SAVE:
+            if (Serialize(ar) == 0) {
+                return 0;
+            }
+            if (!NotifyLogicForEventCode(this, ACT_AFTER_SAVE)) {
+                goto fail;
+            }
+            goto dispatch;
+        case SERIAL_LOAD:
+            if (SerializeObjectState(ar) == 0) {
+                return 0;
+            }
+            if (!NotifyLogicForEventCode(this, ACT_AFTER_LOAD)) {
+                goto fail;
+            }
+            goto dispatch;
+        case SERIAL_POSTLOAD: {
+            i32 node = m_carrierId;
+            if (node != 0) {
+                CWwdGameObject* found = NULL;
+                if (MapLookup(
+                        OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
+                        reinterpret_cast<void*>(node),
+                        found
+                    )
+                    == false) {
+                    found = NULL;
+                }
+                m_carrier = found;
+            } else {
+                m_carrier = NULL;
+            }
+            if (!NotifyLogicForEventCode(this, ACT_AFTER_LOAD_REFERENCES)) {
+                goto fail;
+            }
+            goto dispatch;
+        }
+    }
+fail:
+    return 0;
+}
+
+i32 CGameObject::PrepareSave(CFileMemBase* ar) {
+    if (ar == NULL) {
+        return 0;
+    }
+    m_carrierId = 0;
+    if (m_carrier != NULL) {
+        m_carrierId = m_carrier->m_objectId;
+    }
+    return 1;
+}
+
+i32 CGameObject::Serialize(CFileMemBase* arParam) {
+    CFileMemBase* ar = arParam;
+    if (ar == NULL) {
+        return 0;
+    }
+
+    ar->Write(&m_shadow, sizeof(m_shadow));
+
+    char tmp[SERIAL_NAME_LEN];
+    memset(tmp, 0, sizeof(tmp));
+    strcpy(tmp, m_name);
+    ar->Write(tmp, SERIAL_NAME_LEN);
+
+    ar->Write(&m_moveMode, sizeof(m_moveMode));
+    ar->Write(&m_objectType, sizeof(m_objectType));
+    ar->Write(&m_hitTypeFlags, sizeof(m_hitTypeFlags));
+    ar->Write(&m_attackTypeMask, sizeof(m_attackTypeMask));
+    ar->Write(&m_collMask, sizeof(m_collMask));
+    ar->Write(&m_strideX, sizeof(m_strideX));
+    ar->Write(&m_strideY, sizeof(m_strideY));
+    ar->Write(&m_reserved100, sizeof(m_reserved100));
+    ar->Write(&m_spawnX, sizeof(m_spawnX));
+    ar->Write(&m_spawnY, sizeof(m_spawnY));
+    ar->Write(&m_spawnSortKey, sizeof(m_spawnSortKey));
+    ar->Write(&m_reserved110, sizeof(m_reserved110));
+    ar->Write(&m_score, sizeof(m_score));
+    ar->Write(&m_points, sizeof(m_points));
+    ar->Write(&m_powerup, sizeof(m_powerup));
+    ar->Write(&m_damage, sizeof(m_damage));
+    ar->Write(&m_smarts, sizeof(m_smarts));
+    ar->Write(&m_health, sizeof(m_health));
+    ar->Write(&m_direction, sizeof(m_direction));
+    ar->Write(&m_faceDirection, sizeof(m_faceDirection));
+    ar->Write(&m_extent.left, sizeof(m_extent));
+    ar->Write(&m_area.left, sizeof(m_area));
+    ar->Write(&m_switchRect.left, sizeof(m_switchRect));
+    ar->Write(&m_speedX, sizeof(m_speedX));
+    ar->Write(&m_speedY, sizeof(m_speedY));
+    ar->Write(&m_reserved16c, sizeof(m_reserved16c));
+    ar->Write(&m_reserved170, sizeof(m_reserved170));
+    ar->Write(&m_deltaX, sizeof(m_deltaX));
+    ar->Write(&m_deltaY, sizeof(m_deltaY));
+    ar->Write(&m_reserved17c, sizeof(m_reserved17c));
+    ar->Write(&m_reserved180, sizeof(m_reserved180));
+    ar->Write(&m_plotDX, sizeof(m_plotDX));
+    ar->Write(&m_plotDY, sizeof(m_plotDY));
+    ar->Write(&m_dirty, sizeof(m_dirty));
+    ar->Write(&m_stateFlags, sizeof(m_stateFlags));
+    ar->Write(&m_flashCountdown, sizeof(m_flashCountdown));
+    ar->Write(&m_flashInterval, sizeof(m_flashInterval));
+    ar->Write(&m_drawFillCmd, sizeof(m_drawFillCmd));
+    ar->Write(&m_fillFraction, sizeof(m_fillFraction));
+    ar->Write(&m_drawActive, sizeof(m_drawActive));
+    ar->Write(&m_clip.left, sizeof(m_clip));
+    ar->Write(&m_id, sizeof(m_id));
+    ar->Write(&m_flags, sizeof(m_flags));
+    ar->Write(&m_carrierId, sizeof(m_carrierId));
+
+    memset(tmp, 0, sizeof(tmp));
+    if (m_hitLogic != NULL) {
+        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_hitLogic));
+    }
+    ar->Write(tmp, SERIAL_NAME_LEN);
+
+    memset(tmp, 0, sizeof(tmp));
+    if (m_attackLogic != NULL) {
+        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_attackLogic));
+    }
+    ar->Write(tmp, SERIAL_NAME_LEN);
+
+    memset(tmp, 0, sizeof(tmp));
+    if (m_collisionLogic != NULL) {
+        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_collisionLogic));
+    }
+    ar->Write(tmp, SERIAL_NAME_LEN);
+    return 1;
+}
+
+i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
+    CFileMemBase* ar = arParam;
+    if (ar == NULL) {
+        return 0;
+    }
+
+    ar->Read(&m_shadow, sizeof(m_shadow));
+
+    char name[SERIAL_NAME_LEN];
+    ar->Read(name, SERIAL_NAME_LEN);
+    m_name = name;
+
+    ar->Read(&m_moveMode, sizeof(m_moveMode));
+    ar->Read(&m_objectType, sizeof(m_objectType));
+    ar->Read(&m_hitTypeFlags, sizeof(m_hitTypeFlags));
+    ar->Read(&m_attackTypeMask, sizeof(m_attackTypeMask));
+    ar->Read(&m_collMask, sizeof(m_collMask));
+    ar->Read(&m_strideX, sizeof(m_strideX));
+    ar->Read(&m_strideY, sizeof(m_strideY));
+    ar->Read(&m_reserved100, sizeof(m_reserved100));
+    ar->Read(&m_spawnX, sizeof(m_spawnX));
+    ar->Read(&m_spawnY, sizeof(m_spawnY));
+    ar->Read(&m_spawnSortKey, sizeof(m_spawnSortKey));
+    ar->Read(&m_reserved110, sizeof(m_reserved110));
+    ar->Read(&m_score, sizeof(m_score));
+    ar->Read(&m_points, sizeof(m_points));
+    ar->Read(&m_powerup, sizeof(m_powerup));
+    ar->Read(&m_damage, sizeof(m_damage));
+    ar->Read(&m_smarts, sizeof(m_smarts));
+    ar->Read(&m_health, sizeof(m_health));
+    ar->Read(&m_direction, sizeof(m_direction));
+    ar->Read(&m_faceDirection, sizeof(m_faceDirection));
+    ar->Read(&m_extent.left, sizeof(m_extent));
+    ar->Read(&m_area.left, sizeof(m_area));
+    ar->Read(&m_switchRect.left, sizeof(m_switchRect));
+    ar->Read(&m_speedX, sizeof(m_speedX));
+    ar->Read(&m_speedY, sizeof(m_speedY));
+    ar->Read(&m_reserved16c, sizeof(m_reserved16c));
+    ar->Read(&m_reserved170, sizeof(m_reserved170));
+    ar->Read(&m_deltaX, sizeof(m_deltaX));
+    ar->Read(&m_deltaY, sizeof(m_deltaY));
+    ar->Read(&m_reserved17c, sizeof(m_reserved17c));
+    ar->Read(&m_reserved180, sizeof(m_reserved180));
+    ar->Read(&m_plotDX, sizeof(m_plotDX));
+    ar->Read(&m_plotDY, sizeof(m_plotDY));
+    ar->Read(&m_dirty, sizeof(m_dirty));
+    ar->Read(&m_stateFlags, sizeof(m_stateFlags));
+    ar->Read(&m_flashCountdown, sizeof(m_flashCountdown));
+    ar->Read(&m_flashInterval, sizeof(m_flashInterval));
+    ar->Read(&m_drawFillCmd, sizeof(m_drawFillCmd));
+    ar->Read(&m_fillFraction, sizeof(m_fillFraction));
+    ar->Read(&m_drawActive, sizeof(m_drawActive));
+    ar->Read(&m_clip.left, sizeof(m_clip));
+    ar->Read(&m_id, sizeof(m_id));
+    ar->Read(&m_flags, sizeof(m_flags));
+    ar->Read(&m_carrierId, sizeof(m_carrierId));
+
+    ar->Read(name, SERIAL_NAME_LEN);
+    if (strlen(name) != 0) {
+        CObject* found = NULL;
+        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        if (this->EnsureHitLogic(static_cast<CLogicRecord*>(found)) == 0) {
+            return 0;
+        }
+    }
+
+    ar->Read(name, SERIAL_NAME_LEN);
+    if (strlen(name) != 0) {
+        CObject* found = NULL;
+        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        if (this->EnsureAttackLogic(static_cast<CLogicRecord*>(found)) == 0) {
+            return 0;
+        }
+    }
+
+    ar->Read(name, SERIAL_NAME_LEN);
+    if (strlen(name) != 0) {
+        CObject* found = NULL;
+        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        if (this->EnsureBumpLogic(static_cast<CLogicRecord*>(found)) == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+i32 CGameObject::ResolveLinkedObject(b32 gate) {
+    if (gate == false) {
+        return 0;
+    }
+    CWwdGameObject* found;
+    if (m_carrierId != 0) {
+        if (LookupLinkedObject(
+                OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
+                m_carrierId,
+                found
+            )
+            == false) {
+            found = NULL;
+        }
+        m_carrier = found;
+        return 1;
+    }
+    m_carrier = NULL;
+    return 1;
+}
+
+i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
+    CFileMemBase* ar = dst;
+    if (ar == NULL) {
+        return 0;
+    }
+    CLogicRecord* record = m_logicRecord;
+    if (record == NULL) {
+        return 0;
+    }
+    if (record->m_eventCode == 0) {
+        record->m_dispatch(this);
+    }
+
+    i32 serialTypeId = 0;
+
+    if (this->GetClassId() == CLASSID_CALLBACKOBJ) {
+        serialTypeId = static_cast<CWwdGameObjectSerial*>(this)->GetSerialTypeId();
+    }
+
+    record = m_logicRecord;
+    CUserLogic* logic = record->m_userLogic;
+    LogicTypeId logicTypeId = LOGIC_UNSET;
+    if (logic != NULL) {
+        logicTypeId = logic->GetTypeTag();
+    }
+
+    WwdSnapshot snapshot;
+    snapshot.m_id = m_id;
+    snapshot.m_classId = this->GetClassId();
+    snapshot.m_objectId = m_objectId;
+    snapshot.m_screenX = m_screenX;
+    snapshot.m_screenY = m_screenY;
+    snapshot.m_sortKey = m_sortKey;
+    snapshot.m_serialTypeId = serialTypeId;
+    snapshot.m_logicTypeId = logicTypeId;
+
+    {
+        strcpy(
+            snapshot.m_logicTypeName,
+            OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_logicRecord)
+        );
+    }
+    ar->Write(&snapshot, sizeof(snapshot));
+    return 1;
+}
+
+i32 CGameObject::NotifyForEventCode(i32 eventCode) {
+    return NotifyLogicForEventCode(this, eventCode);
+}
+
+i32 CLogicRecord::IsLoaded() {
+    return m_dispatch != NULL;
+}
+
+LoadableClassId CLogicRecord::GetClassId() {
+    return CLASSID_LOGICRECORD;
+}
+
+CLogicRecord::~CLogicRecord() {
+    m_dispatch = NULL;
+    if (m_payload) {
+        delete[] m_payload;
+        m_payload = NULL;
+        m_payloadSize = 0;
+    }
+    SAFE_DELETE(m_userLogic);
+    m_target = NULL;
+}
+
+i32 CLogicRecord::Init(LogicRecordDispatchFn dispatch, i32 flags) {
+    if (dispatch == NULL) {
+        return 0;
+    }
+    m_dispatch = dispatch;
+    m_flags = flags;
+    m_payload = NULL;
+    m_userLogic = NULL;
+    m_timeDelay = 0;
+    m_frameDelay = 0;
+    m_minX = 0;
+    m_minY = 0;
+    m_maxX = 0;
+    m_maxY = 0;
+    m_positionedSound = NULL;
+    m_reserved16c = 0;
+    m_userFlags = 0;
+    return 1;
+}
+
+void CLogicRecord::Unload() {
+    m_dispatch = NULL;
+    if (m_payload) {
+        delete[] m_payload;
+        m_payload = NULL;
+        m_payloadSize = 0;
+    }
+    SAFE_DELETE(m_userLogic);
+    m_target = NULL;
+}
+
+void CDDrawWorker::Unload() {
+    for (i32 i = 0; i < m_items.GetSize(); i++) {
+        CImage* el = static_cast<CImage*>(m_items.GetAt(i));
+        if (el != NULL) {
+            delete el;
+        }
+    }
+    m_items.RemoveAll();
+
+    m_minIndex = 99999;
+    m_maxIndex = 0;
+}
+
+CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
+    if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
+        return NULL;
+    }
+
+    CImage* worker = new CImage(n, Owner());
+    if (!worker->Resolve(src, mode)) {
+        if (worker) {
+            delete worker;
+        }
+        return NULL;
+    }
+    ADD_FRAME_AT(static_cast<CObject*>(worker), n)
+    return worker;
+}
+
+CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+        return NULL;
+    }
+
+    CImage* nf = new CImage(index, Owner());
+
+    if (nf->Create(path, keyed) == 0) {
+        if (nf != NULL) {
+            delete nf;
+        }
+        return NULL;
+    }
+
+    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    return nf;
+}
+
+CImage*
+CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+        return NULL;
+    }
+
+    CImage* nf = new CImage(index, Owner());
+
+    if (nf->LoadDispatch(desc, mode, size, 1) == 0) {
+        if (nf != NULL) {
+            delete nf;
+        }
+        return NULL;
+    }
+
+    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    return nf;
+}
+
+CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
+    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+        return NULL;
+    }
+
+    CImage* nf = new CImage(index, Owner());
+
+    if (nf->CreateBlankSurface(width, height, keyed) == 0) {
+        if (nf != NULL) {
+            delete nf;
+        }
+        return NULL;
+    }
+
+    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    return nf;
+}
+
+void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
+
+i32 CDDrawWorker::BuildFramesFromArchive(CRezDir* tab) {
+    i32 count = 0;
+    CRezTyp* sym = tab->GetFirstType();
+    while (sym != NULL) {
+        CRezItm* val = tab->GetFirstItem(sym);
+        while (val != NULL) {
+            char* p = val->GetName();
+            while (*p != 0) {
+                if (*p >= '0' && *p <= '9') {
+                    break;
+                }
+                p++;
+            }
+            i32 fi = atoi(p);
+            if (InsertFrame(val, fi, 1) != NULL) {
+                count++;
+            }
+            val = tab->GetNextItem(val);
+            if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
+                val = NULL;
+            }
+        }
+        sym = tab->GetNextType(sym);
+        if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
+            sym = NULL;
+        }
+    }
+    return count;
+}
+
+i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
+
+    i32 matched = 0;
+    i32 liveFrames = 0;
+    i32 n = m_items.GetSize();
+    for (i32 i = 0; i < n; i++) {
+        if (GetAt(i) != NULL) {
+            liveFrames++;
+        }
+    }
+    CRezTyp* sym = tab->GetFirstType();
+    while (sym != NULL) {
+        CRezItm* val = tab->GetFirstItem(sym);
+        while (val != NULL) {
+            GZ_ENUM_RETURN(RezTypeTag, u32)
+            tag = (static_cast<CRezItm*>(val))->GetType();
+            if (tag == IMGTAG_XCP || tag == IMGTAG_PMB || tag == IMGTAG_DIR || tag == IMGTAG_DIP) {
+                char* p = val->GetName();
+                while (*p != 0) {
+                    if (*p >= '0' && *p <= '9') {
+                        break;
+                    }
+                    p++;
+                }
+                i32 fi = atoi(p);
+                if (0 == ReloadFrame(static_cast<CRezItm*>(val), fi, 1)) {
+                    return -1;
+                }
+                matched++;
+            }
+            val = tab->GetNextItem(val);
+        }
+        sym = tab->GetNextType(sym);
+    }
+    return (matched >= liveFrames) ? matched : -1;
+}
+
+i32 CDDrawWorker::ReloadFrame(CRezItm* rec, i32 n, i32 flag) {
+    CImage* el = GetAt(n);
+    if (el == NULL) {
+        return 0;
+    }
+    return el->Reload(rec, flag) != 0;
+}
+
+i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
+    i32 sum = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImage* frame = GetAt(i);
+        if (frame) {
+            i32 size = frame->m_height * frame->m_width;
+            if (frame->m_surface && frame->m_surface->GetBitDepth() == BPP_RGB_16) {
+                size += size;
+            }
+            if (frame->m_surface && frame->m_surface->GetBitDepth() == BPP_RGB_24) {
+                size = size * 3;
+            }
+            if (frame->m_owned) {
+                size = frame->m_owned->m_rleLen;
+            }
+            if (raw == 0) {
+                size += 0x34;
+            }
+            sum += size;
+        }
+    }
+    return sum;
+}
+
+i32 CDDrawWorker::SetAllTypes(ShadeMode type) {
+    i32 count = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImage* frame = GetAt(i);
+        if (frame && frame->m_owned) {
+            frame->m_owned->Select(type, NULL);
+            count++;
+        }
+    }
+    return count;
+}
+
+i32 CDDrawWorker::SetAllLightLevels(i32 value) {
+    i32 count = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImage* frame = GetAt(i);
+        if (frame && frame->m_owned) {
+            frame->m_owned->m_light = value;
+            count++;
+        }
+    }
+    return count;
+}
+
+i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
+    if (!format) {
+        return 0;
+    }
+    i32 count = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImage* frame = GetAt(i);
+        if (frame && frame->m_owned) {
+            frame->m_owned->m_palDescr = format;
+            count++;
+        }
+    }
+    return count;
+}
+
+ShadeMode CDDrawWorker::GetFirstFrameState() {
+    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+    if (frame == NULL) {
+        return SHADE_COPY;
+    }
+    CDDrawShadeBlit* fmt = frame->m_owned;
+    if (fmt == NULL) {
+        return SHADE_COPY;
+    }
+    return fmt->m_drawType;
+}
+
+i32 CDDrawWorker::GetFirstFrameLightLevel() {
+    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+    if (frame == NULL) {
+        return 1;
+    }
+    CDDrawShadeBlit* fmt = frame->m_owned;
+    if (fmt == NULL) {
+        return 0;
+    }
+    return fmt->m_light;
+}
+
+i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
+    if (frame) {
+        for (i32 i = 0; i < m_items.GetSize(); i++) {
+            CImage* cur = static_cast<CImage*>(m_items.GetAt(i));
+            if (cur && cur == frame) {
+                if (outName) {
+                    strcpy(outName, m_name);
+                }
+                if (outIndex) {
+                    *outIndex = i;
+                }
+                return 1;
+            }
+        }
+    }
+    return 0;
+}

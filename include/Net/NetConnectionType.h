@@ -1,0 +1,15 @@
+#ifndef GRUNTZ_NET_NETCONNECTIONTYPE_H
+#define GRUNTZ_NET_NETCONNECTIONTYPE_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(NetConnectionType)
+    NETCONN_IPX = 1,
+    NETCONN_TCPIP = 2,
+    NETCONN_MODEM = 3,
+    NETCONN_SERIAL = 4,
+    NETCONN_GENERIC = 5,
+    NETCONN_COUNT = 6
+GZ_ENUM_END(NetConnectionType)
+
+#endif

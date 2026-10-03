@@ -1,0 +1,17 @@
+#ifndef GRUNTZ_GRUNTZ_WARPLETTER_H
+#define GRUNTZ_GRUNTZ_WARPLETTER_H
+
+#include <Enums.h>
+
+GZ_ENUM_BEGIN(WarpLetter)
+    WARPLETTER_W = 0,
+    WARPLETTER_A = 1,
+    WARPLETTER_R = 2,
+    WARPLETTER_P = 3
+GZ_ENUM_END(WarpLetter)
+
+GZ_ENUM_CONST_BEGIN(WarpLetterConstants)
+    WARPLETTER_COUNT = 4
+GZ_ENUM_CONST_END(WarpLetterConstants)
+
+#endif

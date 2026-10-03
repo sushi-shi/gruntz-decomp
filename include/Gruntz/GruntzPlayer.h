@@ -1,0 +1,86 @@
+#ifndef SRC_GRUNTZ_GRUNTZPLAYER_H
+#define SRC_GRUNTZ_GRUNTZPLAYER_H
+
+#include <Ints.h>
+
+#include <Gruntz/BattlezDifficulty.h>
+#include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/ColorTint.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+
+struct PlayerLatency {
+    PlayerLatency() {
+        m_avg = 0;
+        m_count = 0;
+    }
+
+    ~PlayerLatency() {}
+
+    void Clear() {
+        m_avg = 0;
+        m_count = 0;
+    }
+
+    i32 m_avg;
+    i32 m_count;
+};
+
+class GruntzPlayer {
+public:
+    GruntzPlayer();
+
+    ~GruntzPlayer() {
+        Clear();
+    }
+
+    i32 SeedForSlot(i32 index);
+    void Clear();
+    i32 Reset();
+
+    i32 TrySetColor(ColorTint color);
+    i32 ClearRoundState();
+
+    CString GetName() {
+        return m_name;
+    }
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 Deactivate();
+    CString GetDefaultName(i32);
+
+    void SetHumanControlled(b32 controlled) {
+        m_humanControlled = controlled;
+    }
+
+    BattlezDifficulty GetDifficulty() const {
+        return m_difficulty;
+    }
+
+    i32 m_playerIndex;
+    CString m_name;
+    ColorTint m_color;
+
+    i32 m_warlordObjectId;
+    BattlezDifficulty m_difficulty;
+    b32 m_humanControlled;
+
+    i32 m_networkPlayerId;
+    b32 m_ready;
+    b32 m_active;
+    b32 m_clearedRound;
+    b32 m_joined;
+    b32 m_doneFlag;
+
+    b32 m_optionsPresenceCounted;
+
+    CBattlezMapConfig m_battlezConfig;
+    i32 m_focusX;
+    i32 m_focusY;
+    i32 m_maxGruntz;
+
+    PlayerLatency m_latency;
+};
+
+#define CLEAR_GRUNTZ_PLAYER                                                                            m_playerIndex = -1;                                                                                m_networkPlayerId = -2;                                                                            m_active = false;                                                                                  m_humanControlled = true;                                                                          m_name = "";                                                                                       m_color = TINT_ORANGE;                                                                             m_difficulty = BZDIFF_EASY;                                                                        m_focusX = 0;                                                                                      m_focusY = 0;                                                                                      m_maxGruntz = 0xf;                                                                                 m_doneFlag = false;                                                                                m_optionsPresenceCounted = false;                                                                  m_latency.Clear()
+
+#endif

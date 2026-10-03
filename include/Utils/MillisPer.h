@@ -1,0 +1,12 @@
+#ifndef UTILS_MILLISPER_H
+#define UTILS_MILLISPER_H
+
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(MillisPer)
+    MILLIS_PER_SECOND = 1000,
+    MILLIS_PER_MINUTE = 60000,
+    MILLIS_PER_HOUR = 3600000
+GZ_ENUM_CONST_END(MillisPer)
+
+#endif

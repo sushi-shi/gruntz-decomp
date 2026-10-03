@@ -1,0 +1,49 @@
+#ifndef GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H
+#define GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H
+
+#include <Ints.h>
+
+#include <Gruntz/ActReg.h>
+#include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h>
+#include <Gruntz/UserLogic.h>
+
+class CFileMemBase;
+
+struct CGruntPuddleSink {};
+
+extern char g_puddleSpriteKey[];
+
+class CGruntPuddle : public CUserLogic, public CWapX {
+public:
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*)  ;
+
+    virtual LogicTypeId GetTypeTag()   {
+        return LOGIC_GRUNTPUDDLE;
+    }
+
+public:
+    CGruntPuddle() {}
+    CGruntPuddle(CGameObject* obj);
+
+    i32 Idle();
+    i32 Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
+    i32 Remove();
+    void SetBute(char* key);
+
+    virtual void FireActivation(i32 id)  ;
+
+    i32 m_tileX;
+    i32 m_tileY;
+    b32 m_pending;
+
+    b32 m_placed;
+    i32 m_gaugePoints;
+    i32 m_playerIndex;
+
+    i32 m_moveIcon;
+};
+
+i32 CellTargetable(i32 col, i32 row);
+
+#endif

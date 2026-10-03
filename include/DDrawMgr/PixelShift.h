@@ -1,0 +1,72 @@
+#ifndef INCLUDE_DDRAWMGR_PIXELSHIFT_H
+#define INCLUDE_DDRAWMGR_PIXELSHIFT_H
+
+#include <DDrawMgr/PixelFormatMacros.h>
+#include <Enums.h>
+#include <Ints.h>
+
+GZ_ENUM_CONST_BEGIN(PixelFormat16Constants)
+    PIXEL8_BYTES_PER_PIXEL = 1,
+    PIXEL16_BYTES_PER_PIXEL = 2,
+    PIXEL24_BYTES_PER_PIXEL = 3,
+    PIXEL32_BYTES_PER_PIXEL = 4,
+    PIXEL_BITS_PER_BYTE = 8,
+    PIXEL_BYTE_MASK = 0xff,
+    PIXEL_NIBBLE_BITS = 4,
+    PIXEL_NIBBLE_MASK = 0xf,
+    PIXEL_NIBBLE_VALUE_COUNT = 0x10,
+    PIXEL_NIBBLE_MIDPOINT = 8,
+    PIXEL16_VALUE_COUNT = 0x10000,
+    PIXEL16_VALUE_MASK = 0xffff,
+    PIXEL16_RED_DOWN = 3,
+    PIXEL16_BLUE_DOWN = 3,
+    PIXEL16_GREEN_UP = 5,
+    RGB555_GREEN_DOWN = 3,
+    RGB555_RED_UP = 10,
+    RGB555_CHANNEL_BITS = 5,
+    RGB555_CHANNEL_MASK = 0x1f,
+    RGB555_RED_TO_4_SHIFT = 11,
+    RGB555_GREEN_TO_4_SHIFT = 6,
+    RGB565_GREEN_DOWN = 2,
+    RGB565_RED_UP = 11,
+    RGB565_GREEN_BITS = 6,
+    RGB565_GREEN_TO_5_SHIFT = 6,
+    RGB565_RED_TO_4_SHIFT = 12,
+    RGB565_GREEN_TO_4_SHIFT = 7,
+    RGB16_BLUE_TO_4_SHIFT = 1
+GZ_ENUM_CONST_END(PixelFormat16Constants)
+
+extern i32 g_rUp;
+extern i32 g_gUp;
+extern i32 g_bUp;
+extern i32 g_rDown;
+extern i32 g_gDown;
+extern i32 g_bDown;
+
+inline void UnpackPixel16(u16 pixel, u8& red, u8& green, u8& blue) {
+    red = static_cast<u8>((static_cast<u8>((pixel >> g_rUp)) << g_rDown));
+    green = static_cast<u8>((static_cast<u8>((pixel >> g_gUp)) << g_gDown));
+    blue = static_cast<u8>((static_cast<u8>(pixel) << g_bDown));
+}
+
+inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
+    u16 value = static_cast<u8>(blue >> g_bDown);
+    value |= static_cast<u16>(static_cast<u8>(red >> g_rDown) << g_rUp);
+    value |= static_cast<u16>(static_cast<u8>(green >> g_gDown) << g_gUp);
+    return value;
+}
+
+inline u16 PackRgb16(i32 r, i32 g, i32 b) {
+    u16 color =
+        static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
+    return color;
+}
+
+static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
+    return static_cast<u16>(
+        ((static_cast<u8>(r >> g_rDown) << g_rUp)
+         | ((static_cast<u8>(g >> g_gDown) << g_gUp) | static_cast<u8>(b >> g_bDown)))
+    );
+}
+
+#endif

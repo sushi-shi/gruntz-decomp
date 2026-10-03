@@ -1,0 +1,343 @@
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/MenuTree.h>
+
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSubMgrPagesInline.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/WorkerLookup.h>
+#include <Dsndmgr/SoundBuffer.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/MenuPage.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
+#include <Gruntz/SoundState.h>
+#include <Image/CImage.h>
+#include <Image/ImageSet.h>
+#include <RectMacros.h>
+#include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
+#include <Wap32/CoordUnset.h>
+
+#include <stddef.h>
+
+i32 CMenuTree::Configure(
+    CDDrawSurfaceMgr* world,
+    HWND windowHandle,
+    RECT* bounds,
+    i32 headerGap,
+    i32 rowSpacing,
+    i32 wrapFlags
+) {
+    if (!world) {
+        return 0;
+    }
+    m_world = world;
+    m_windowHandle = windowHandle;
+    m_wrapFlags = wrapFlags;
+    m_headerGap = headerGap;
+    m_rowSpacing = rowSpacing;
+    m_activePage = NULL;
+    if (bounds) {
+        CopyRect(&m_bounds, bounds);
+        return 1;
+    }
+    SET_RECT_COMPONENTS(
+        m_bounds,
+        0,
+        0,
+        world->GetDrawTarget()->GetFrontSurface()->GetWidth() - 1,
+        world->GetDrawTarget()->GetFrontSurface()->GetHeight() - 1
+    );
+    return 1;
+}
+
+void CMenuTree::Reset() {
+    ClearPages();
+    INITIALIZE_MENU_TREE_MEMBERS;
+}
+
+void CMenuTree::ClearPages() {
+    POSITION position = m_pages.GetHeadPosition();
+    while (position) {
+        CMenuPage* page = static_cast<CMenuPage*>(m_pages.GetNext(position));
+        delete page;
+    }
+    m_pages.RemoveAll();
+    m_activePage = NULL;
+}
+
+i32 CMenuTree::AddPage(CMenuPage* page) {
+    if (!page) {
+        return 0;
+    }
+    m_pages.AddTail(page);
+    if (!m_activePage) {
+        SetActivePage(page);
+    }
+    return 1;
+}
+
+CMenuPage* CMenuTree::FindPage(const char* pageKey) {
+    POSITION position = m_pages.GetHeadPosition();
+    while (position) {
+        CMenuPage* page = static_cast<CMenuPage*>(m_pages.GetNext(position));
+        if (page) {
+            if (page->GetPageKey() == pageKey) {
+                return page;
+            }
+        }
+    }
+    return NULL;
+}
+
+i32 CMenuTree::Update(u32 deltaMs) {
+    if (!m_activePage) {
+        return 0;
+    }
+    if (!m_activePage->UpdateItems(deltaMs)) {
+        return 0;
+    }
+    return UpdateCursorAnimations(static_cast<i32>(deltaMs)) != 0;
+}
+
+i32 CMenuTree::DrawActivePage() {
+    if (!m_activePage) {
+        return 0;
+    }
+    CDDrawSurfacePair* backBuffer = m_world->GetDrawTarget()->GetBackPair();
+    if (!backBuffer) {
+        return 0;
+    }
+    return m_activePage->Draw(backBuffer) != 0;
+}
+
+i32 CMenuTree::PresentFrame() {
+    CDDrawSubMgrPages* drawTarget = m_world->GetDrawTarget();
+    FlipFrontAndRestoreOverlay(drawTarget);
+    return 1;
+}
+
+i32 CMenuTree::MoveFocusUp() {
+    if (!m_activePage) {
+        return 0;
+    }
+    return m_activePage->MoveFocusUpSequential() != 0;
+}
+
+i32 CMenuTree::MoveFocusDown() {
+    if (!m_activePage) {
+        return 0;
+    }
+    return m_activePage->MoveFocusDownSequential() != 0;
+}
+
+i32 CMenuTree::ActivateFocusedItem() {
+    if (!m_activePage) {
+        return 0;
+    }
+    return m_activePage->ActivateFocusedItem() != 0;
+}
+
+i32 CMenuTree::ReturnToPreviousPage() {
+    if (!m_activePage) {
+        return 0;
+    }
+    return m_activePage->ReturnToParentPage(1) != 0;
+}
+
+i32 CMenuTree::SetActivePage(CMenuPage* page) {
+    if (!page) {
+        return 0;
+    }
+    m_activePage = page;
+    page->PrepareForActivation();
+    m_activePage->FocusInitialItem();
+    return 1;
+}
+
+i32 CMenuTree::SetActivePageByKey(const char* pageKey) {
+    return SetActivePage(FindPage(pageKey));
+}
+
+i32 CMenuTree::ConfigureLeftCursorAnimation(
+    const char* animationKey,
+    i32 framePeriodMs,
+    i32 offsetX
+) {
+    if (!m_world) {
+        return 0;
+    }
+    CDDrawWorker* animation = m_world->FindWorker(animationKey);
+    m_leftCursorAnimation = animation;
+    if (!animation) {
+        return 0;
+    }
+    m_leftCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->GetMinIndex());
+    m_leftCursorFrameIndex = animation->GetMinIndex();
+    m_leftCursorFramePeriodMs = framePeriodMs;
+    m_leftCursorFrameTimerMs = framePeriodMs;
+    m_leftCursorOffsetX = offsetX;
+    return 1;
+}
+
+i32 CMenuTree::ConfigureRightCursorAnimation(
+    const char* animationKey,
+    i32 framePeriodMs,
+    i32 offsetX
+) {
+    if (!m_world) {
+        return 0;
+    }
+    CDDrawWorker* animation = m_world->FindWorker(animationKey);
+    m_rightCursorAnimation = animation;
+    if (!animation) {
+        return 0;
+    }
+    m_rightCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->GetMinIndex());
+    m_rightCursorFrameIndex = animation->GetMinIndex();
+    m_rightCursorFramePeriodMs = framePeriodMs;
+    m_rightCursorFrameTimerMs = framePeriodMs;
+    m_rightCursorOffsetX = offsetX;
+    return 1;
+}
+
+i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
+    CDDrawWorker* leftAnimation = m_leftCursorAnimation;
+    if (leftAnimation) {
+        if (static_cast<u32>(m_leftCursorFrameTimerMs) > static_cast<u32>(deltaMs)) {
+            m_leftCursorFrameTimerMs -= deltaMs;
+        } else {
+            m_leftCursorFrameTimerMs = m_leftCursorFramePeriodMs;
+            CImage* frame = leftAnimation->GetAt(++m_leftCursorFrameIndex);
+            m_leftCursorFrame = frame;
+            if (frame == NULL) {
+                m_leftCursorFrame =
+                    DDRAW_WORKER_FRAME_AT_UNCHECKED(leftAnimation, leftAnimation->GetMinIndex());
+                m_leftCursorFrameIndex = leftAnimation->GetMinIndex();
+            }
+        }
+    }
+    CDDrawWorker* rightAnimation = m_rightCursorAnimation;
+    if (rightAnimation) {
+        if (static_cast<u32>(m_rightCursorFrameTimerMs) > static_cast<u32>(deltaMs)) {
+            m_rightCursorFrameTimerMs -= deltaMs;
+            return 1;
+        }
+        m_rightCursorFrameTimerMs = m_rightCursorFramePeriodMs;
+        CImage* frame = rightAnimation->GetAt(++m_rightCursorFrameIndex);
+        m_rightCursorFrame = frame;
+        if (frame == NULL) {
+            m_rightCursorFrame =
+                DDRAW_WORKER_FRAME_AT_UNCHECKED(rightAnimation, rightAnimation->GetMinIndex());
+            m_rightCursorFrameIndex = rightAnimation->GetMinIndex();
+        }
+    }
+    return 1;
+}
+
+i32 CMenuTree::DrawFocusCursors(
+    CDDrawSurfacePair* target,
+    CMenuItem* item,
+    i32 defaultCenterX,
+    i32 defaultCenterY
+) {
+    if (!item) {
+        return 0;
+    }
+    Coord itemCenter;
+    if (item->m_fixedCenter.m_x != UNINIT_FILL) {
+        itemCenter = item->m_fixedCenter;
+    } else {
+        itemCenter.Set(defaultCenterX, defaultCenterY);
+    }
+    if (m_leftCursorFrame) {
+        i32 cursorX = -(item->GetFrameWidth() / 2) - m_leftCursorOffsetX + itemCenter.m_x;
+        m_leftCursorFrame->RenderFrame(target, cursorX, itemCenter.m_y, 0);
+    }
+    if (m_rightCursorFrame) {
+        i32 cursorX = item->GetFrameWidth() / 2 + m_rightCursorOffsetX + itemCenter.m_x;
+        m_rightCursorFrame->RenderFrame(target, cursorX, itemCenter.m_y, 0);
+    }
+    return 1;
+}
+
+i32 CMenuTree::PlayFocusSound() {
+    if (m_focusSoundKey.IsEmpty()) {
+        return 0;
+    }
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), m_focusSoundKey);
+}
+
+i32 CMenuTree::PlayActivationSound() {
+    if (m_activationSoundKey.IsEmpty()) {
+        return 0;
+    }
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), m_activationSoundKey);
+}
+
+i32 CMenuTree::MoveFocusLeft() {
+    if (!m_activePage) {
+        return 0;
+    }
+    return m_activePage->MoveFocusLeftColumn() != 0;
+}
+
+i32 CMenuTree::MoveFocusRight() {
+    if (!m_activePage) {
+        return 0;
+    }
+    return m_activePage->MoveFocusRightColumn() != 0;
+}
+
+i32 CMenuTree::FocusItemAt(i32 screenX, i32 screenY) {
+    if (!m_activePage) {
+        return 0;
+    }
+    return m_activePage->FocusItemAt(screenX, screenY) != 0;
+}
+
+i32 CMenuTree::ClickAt(i32 screenX, i32 screenY) {
+    CMenuPage* page = m_activePage;
+    if (!page) {
+        return 0;
+    }
+    return page->ClickAt(screenX, screenY) != 0;
+}
+
+i32 CMenuTree::MoveFocusLeftFollowingLinks() {
+    CMenuPage* page = m_activePage;
+    if (!page) {
+        return 0;
+    }
+    return page->MoveFocusLeft() != 0;
+}
+
+i32 CMenuTree::MoveFocusRightFollowingLinks() {
+    CMenuPage* page = m_activePage;
+    if (!page) {
+        return 0;
+    }
+    return page->MoveFocusRight() != 0;
+}
+
+i32 CMenuTree::MoveFocusUpFollowingLinks() {
+    CMenuPage* page = m_activePage;
+    if (!page) {
+        return 0;
+    }
+    return page->MoveFocusUp() != 0;
+}
+
+i32 CMenuTree::MoveFocusDownFollowingLinks() {
+    CMenuPage* page = m_activePage;
+    if (!page) {
+        return 0;
+    }
+    return page->MoveFocusDown() != 0;
+}

@@ -1,0 +1,4 @@
+#ifndef GRUNTZ_GRUNTZ_CSTRING_H
+#define GRUNTZ_GRUNTZ_CSTRING_H
+
+#endif

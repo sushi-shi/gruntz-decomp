@@ -1,0 +1,285 @@
+#define GRUNTZ_MENUITEM_TU
+
+#include <StdAfx.h>
+
+#include <Ints.h>
+
+#include <Gruntz/MenuItem.h>
+
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorker.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
+#include <Enums.h>
+#include <Gruntz/AnimatedMenuItem.h>
+#include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/MenuItemState.h>
+#include <Gruntz/MenuPage.h>
+#include <Gruntz/MenuTree.h>
+#include <Image/CImage.h>
+#include <Wap32/CoordUnset.h>
+
+#include <stdio.h>
+
+i32 CMenuItem::Init(
+    CMenuPage* page,
+    const char* name,
+    const char* animationKey,
+    i32 commandId,
+    const char* targetPageKey,
+    GZ_ENUM_PARAM(MenuItemFlags, i32) flags
+) {
+    if (!page) {
+        return 0;
+    }
+    m_flags = flags;
+    m_world = page->m_world;
+    m_menuTree = page->m_menuTree;
+    m_page = page;
+    m_itemName = name;
+    m_targetPageKey = targetPageKey;
+    m_commandId = commandId;
+    m_secondaryCommandId = 0;
+    m_commandParam = 0;
+    if (HAS(m_flags, MENU_ITEM_INITIAL_DISABLED)) {
+        m_state = MENUSTATE_DISABLED;
+    } else {
+        m_state = MENUSTATE_NORMAL;
+    }
+    if (!UsesStateAnimations()) {
+        m_animation = m_world->FindWorker(animationKey);
+        if (!m_animation) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void CMenuItem::Cleanup() {
+    Reset();
+}
+
+i32 CMenuItem::GetFrameWidth() {
+    CDDrawWorker* animation = m_animation;
+    if (!animation) {
+        return 0;
+    }
+    CImage* frame = animation->GetAt(2);
+    if (!frame) {
+        return 0;
+    }
+    return frame->m_width;
+}
+
+i32 CMenuItem::GetFrameHeight() {
+    CDDrawWorker* animation = m_animation;
+    if (!animation) {
+        return 0;
+    }
+    CImage* frame = animation->GetAt(2);
+    if (!frame) {
+        return 0;
+    }
+    return frame->m_height;
+}
+
+i32 CMenuItem::PostCommands() {
+    i32 commandId = m_commandId;
+    if (!commandId) {
+        return commandId;
+    }
+    HWND windowHandle = m_menuTree->m_windowHandle;
+    if (windowHandle) {
+        PostMessageA(windowHandle, WM_COMMAND, commandId, m_commandParam);
+    }
+    if (m_secondaryCommandId && windowHandle) {
+        PostMessageA(windowHandle, WM_COMMAND, m_secondaryCommandId, 0);
+    }
+    return 1;
+}
+
+i32 CMenuItem::OnPageActivated() {
+    return 1;
+}
+
+i32 CMenuItem::Update(u32) {
+    return 1;
+}
+
+i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
+    CDDrawWorker* animation = m_animation;
+    if (!animation) {
+        return 0;
+    }
+
+    if (m_fixedCenter.m_x != UNINIT_FILL) {
+        centerX = m_fixedCenter.m_x;
+        centerY = m_fixedCenter.m_y;
+    }
+    MenuItemState state = m_state;
+    CImage* frame = animation->GetAt(IDX(state));
+    if (!frame) {
+        return 0;
+    }
+    frame->RenderFrame(target, centerX, centerY, 0);
+    m_hitLeft = centerX - frame->m_anchorX;
+    m_hitRight = centerX + frame->m_anchorX;
+    m_hitTop = centerY - frame->m_anchorY;
+    m_hitBottom = centerY + frame->m_anchorY;
+    return 1;
+}
+
+i32 CMenuItem::Select(i32 playFocusSound) {
+    if (playFocusSound) {
+        m_menuTree->PlayFocusSound();
+    }
+    SetState(MENUSTATE_SELECTED);
+    return 1;
+}
+
+i32 CMenuItem::Deselect() {
+    SetState(MENUSTATE_NORMAL);
+    return 1;
+}
+
+i32 CMenuItem::Activate() {
+    m_menuTree->PlayActivationSound();
+    PostCommands();
+    m_menuTree->SetActivePageByKey(m_targetPageKey);
+    return 1;
+}
+
+i32 CMenuItem::HitTest(i32 screenX, i32 screenY) {
+    if (m_hitLeft == UNINIT_FILL) {
+        return 0;
+    }
+    if (screenX < m_hitLeft) {
+        return 0;
+    }
+    if (screenX > m_hitRight) {
+        return 0;
+    }
+    if (screenY < m_hitTop) {
+        return 0;
+    }
+    return screenY <= m_hitBottom;
+}
+
+i32 CAnimatedMenuItem::Init(
+    CMenuPage* page,
+    const char* name,
+    const char* animationKey,
+    i32 commandId,
+    const char* targetPageKey,
+    GZ_ENUM_PARAM(MenuItemFlags, i32) flags
+) {
+    if (!page) {
+        return 0;
+    }
+    if (!CMenuItem::Init(page, name, animationKey, commandId, targetPageKey, flags)) {
+        return 0;
+    }
+    m_frameIndex = 0;
+    m_frameTimerMs = 0;
+    m_framePeriodMs = 0x64;
+
+    char animationName[0x80];
+
+    sprintf(animationName, "%s_NORMAL", animationKey);
+    m_normalAnimation = m_world->FindWorker(animationName);
+
+    sprintf(animationName, "%s_SELECTED", animationKey);
+    m_selectedAnimation = m_world->FindWorker(animationName);
+
+    sprintf(animationName, "%s_DISABLED", animationKey);
+    m_disabledAnimation = m_world->FindWorker(animationName);
+
+    return 1;
+}
+
+i32 CAnimatedMenuItem::GetFrameWidth() {
+    CImage* frame = GetCurrentFrame();
+    if (!frame) {
+        return 0;
+    }
+    return frame->m_width;
+}
+
+i32 CAnimatedMenuItem::GetFrameHeight() {
+    CImage* frame = GetCurrentFrame();
+    if (!frame) {
+        return 0;
+    }
+    return frame->m_height;
+}
+
+i32 CAnimatedMenuItem::Update(u32 deltaMs) {
+    if (deltaMs >= static_cast<u32>(m_frameTimerMs)) {
+        m_frameTimerMs = m_framePeriodMs;
+        AdvanceFrame();
+        return 1;
+    }
+    m_frameTimerMs = m_frameTimerMs - deltaMs;
+    return 1;
+}
+
+i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
+
+    if (m_fixedCenter.m_x != UNINIT_FILL) {
+        centerX = m_fixedCenter.m_x;
+        centerY = m_fixedCenter.m_y;
+    }
+    CImage* frame = GetCurrentFrame();
+    if (!frame) {
+        return 0;
+    }
+    frame->RenderFrame(target, centerX, centerY, 0);
+    m_hitLeft = centerX - frame->m_anchorX;
+    m_hitRight = centerX + frame->m_anchorX;
+    m_hitTop = centerY - frame->m_anchorY;
+    m_hitBottom = centerY + frame->m_anchorY;
+    return 1;
+}
+
+CDDrawWorker* CAnimatedMenuItem::GetStateAnimation() {
+    switch (m_state) {
+        case MENUSTATE_NORMAL:
+            return m_normalAnimation;
+        case MENUSTATE_SELECTED:
+            return m_selectedAnimation;
+        case MENUSTATE_DISABLED:
+            return m_disabledAnimation;
+    }
+    return NULL;
+}
+
+CImage* CAnimatedMenuItem::GetCurrentFrame() {
+    CDDrawWorker* animation = GetStateAnimation();
+    if (!animation) {
+        return NULL;
+    }
+
+    CImage* frame = animation->GetAt(m_frameIndex);
+    if (frame == NULL) {
+        m_frameIndex = animation->GetMinIndex();
+        frame = animation->GetAt(m_frameIndex);
+    }
+    return frame;
+}
+
+i32 CAnimatedMenuItem::AdvanceFrame() {
+    if (!GetCurrentFrame()) {
+        return 0;
+    }
+    m_frameIndex = m_frameIndex + 1;
+    if (HAS(m_flags, MENU_ITEM_HOLD_FINAL_ANIMATION_FRAME)) {
+        CDDrawWorker* animation = GetStateAnimation();
+        if (animation) {
+            if (m_frameIndex > animation->GetMaxIndex()) {
+                m_frameIndex = m_frameIndex - 1;
+                return 1;
+            }
+        }
+    }
+    return GetCurrentFrame() != NULL;
+}
