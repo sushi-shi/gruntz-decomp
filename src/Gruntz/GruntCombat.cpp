@@ -1463,8 +1463,10 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         this->m_lastTilePx = newPos;
         SET_ANIMATION_ACT("O");
-        double ddx = static_cast<double>(this->m_lastTilePx.m_x) - this->m_object->m_screenX;
-        double ddy = static_cast<double>(this->m_lastTilePx.m_y) - this->m_object->m_screenY;
+        double ddx = static_cast<double>(this->m_lastTilePx.m_x);
+        ddx -= this->m_object->m_screenX;
+        double ddy = static_cast<double>(this->m_lastTilePx.m_y);
+        ddy -= this->m_object->m_screenY;
         double dist = sqrt(SQR(ddx) + SQR(ddy));
         m_moveSpeed = dist / static_cast<double>(g_buteMgr.GetDword("Grunt", s_knockKey, 200));
         m_movePosX = static_cast<double>((this->m_object->m_screenX));
