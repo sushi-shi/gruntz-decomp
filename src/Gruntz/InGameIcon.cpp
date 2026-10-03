@@ -34,7 +34,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -91,7 +90,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SNAP_OBJECT_TO_TILE_CENTER_COPY(m_object, snapX, snapY)
 
     CWwdSpriteObject* snapped = m_object;
-    SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_INGAME_INFO)
+    snapped->SetSortKey(SORTKEY_INGAME_INFO);
 
     SET_ANIMATION_ACT("A");
     SwitchAnimationByName("GAME_CYCLE100", 0);
@@ -466,7 +465,7 @@ RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_object->m_screenY -= 0x18;
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
+    o->SetSortKey(SORTKEY_GRUNT_HUD);
     SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
     m_countdownTiming.Start(0x1388);
     SET_ANIMATION_ACT("A");
@@ -842,7 +841,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_INGAME_INFO)
+    o->SetSortKey(SORTKEY_INGAME_INFO);
     m_cachedPlayerIndex = -1;
     m_cachedUnitIndex = -1;
 }

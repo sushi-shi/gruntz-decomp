@@ -9,7 +9,6 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/BigAnimationMacros.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
 
@@ -41,7 +40,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     CWwdSpriteObject* o = m_object;
     if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
         i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(o, v)
+        o->SetSortKey(v);
     }
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }

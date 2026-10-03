@@ -1674,11 +1674,11 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
         return 0;
     }
     i32 roll = rand() % 4;
-    if (actor->m_vehiclePickupType != PICKUP_NONE && roll == 0) {
+    if (actor->GetVehiclePickupType() != PICKUP_NONE && roll == 0) {
         CGameObject* ul = other->m_object;
         if ((static_cast<CGrunt*>(actor))->VehicleContactContains(ul->m_screenX, ul->m_screenY)
             != 0) {
-            if (actor->m_vehiclePickupType == PICKUP_SCROLL) {
+            if (actor->GetVehiclePickupType() == PICKUP_SCROLL) {
                 CGameObject* tl = actor->m_object;
                 m_triggerMgr->UseToyAt(
                     actor->GetPlayerIndex(),

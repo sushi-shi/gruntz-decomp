@@ -807,7 +807,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             } else {
                 PickupType gruntKind = g->ArrivalPickup();
                 if (IDX(gruntKind) == sw->m_checkpointType
-                    || sw->m_checkpointType == IDX(g->m_vehiclePickupType)) {
+                    || sw->m_checkpointType == IDX(g->GetVehiclePickupType())) {
                     sw->SwitchDown();
                 } else {
                     RECT* view = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
@@ -1030,7 +1030,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
 
 RVA(0x0006da60, 0x27)
 void CTriggerMgr::EnqueueGuardBegin(i32 playerIndex, i32 unitIndex) {
-    g_gameReg->m_commandMgr->EnqueueSingle(
+    g_gameReg->GetCommandMgr()->EnqueueSingle(
         true,
         playerIndex,
         unitIndex,
@@ -1044,7 +1044,7 @@ void CTriggerMgr::EnqueueGuardBegin(i32 playerIndex, i32 unitIndex) {
 
 RVA(0x0006daa0, 0x27)
 void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
-    g_gameReg->m_commandMgr->EnqueueSingle(
+    g_gameReg->GetCommandMgr()->EnqueueSingle(
         true,
         playerIndex,
         unitIndex,
@@ -1218,16 +1218,12 @@ outOfRange:
         }                                                                                          \
     }
 
-// @early-stop
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     i32 bx;
     i32 by;
     CGrunt* hit;
     i32 moveKind;
-    bool isG;
-    bool isL;
-    bool isP;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
         return 0;
@@ -1244,8 +1240,8 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         return -1;
     }
 
-    if (cellTileX == argTileX && cellTileY == argTileY && cell->m_vehiclePickupType != PICKUP_SCROLL
-        && g_traitorMode == false) {
+    if (cellTileX == argTileX && cellTileY == argTileY
+        && cell->GetVehiclePickupType() != PICKUP_SCROLL && g_traitorMode == false) {
         return 0;
     }
     by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -1265,7 +1261,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             return 0;
         }
 
-        PickupType kind = cell->m_vehiclePickupType;
+        PickupType kind = cell->GetVehiclePickupType();
         i32 moveKind = 0;
         if (kind == PICKUP_SCROLL) {
             moveKind = cell->m_moveKind;
@@ -1283,7 +1279,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         return 1;
     }
 
-    Coord hitTile = hit->m_lastTilePx;
+    Coord hitTile = hit->LastTilePx();
     if (hitTile.m_x != bx || hitTile.m_y != by) {
         Coord hitCommit = hit->m_commitPx;
         if (hitCommit.m_x != bx || hitCommit.m_y != by) {
@@ -1291,21 +1287,12 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         }
     }
 
-    isG = hit->IsAnimationAct("G");
-    if (isG) {
-        return 0;
-    }
-    isL = hit->IsAnimationAct("L");
-    if (isL) {
-        return 0;
-    }
-    isP = hit->IsAnimationAct("P");
-    if (isP) {
+    if (hit->IsAnimationAct("G") || hit->IsAnimationAct("L") || hit->IsAnimationAct("P")) {
         return 0;
     }
 
     moveKind = 0;
-    if (cell->m_vehiclePickupType == PICKUP_SCROLL) {
+    if (cell->GetVehiclePickupType() == PICKUP_SCROLL) {
         moveKind = cell->m_moveKind;
     }
     cell->FaceTowardPixel(bx, by);
@@ -1315,7 +1302,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
 
     CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
-    if (hit->LoadGruntTypeTable(cell->m_vehiclePickupType, 1, moveKind, 0) != 0) {
+    if (hit->LoadGruntTypeTable(cell->GetVehiclePickupType(), 1, moveKind, 0) != 0) {
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
 
         if (hit->GetPlayerIndex() != playerIndex) {

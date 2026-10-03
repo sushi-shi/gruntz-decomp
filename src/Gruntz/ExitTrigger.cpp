@@ -15,7 +15,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -37,7 +36,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_EXIT_TRIGGER)
+    o->SetSortKey(SORTKEY_EXIT_TRIGGER);
     SET_OBJECT_AREA(1)
     SwitchAnimationByName("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;

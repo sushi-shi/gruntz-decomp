@@ -481,7 +481,7 @@ i32 CPlay::Render() {
     if (m_mgr->GetFrameGate() == false
         && (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER || m_levelOverlayOpen == false)) {
         m_levelTimer->Tick(static_cast<i32>(g_frameDelta));
-        m_mgr->m_commandMgr->ExecuteScheduledCommands(0);
+        m_mgr->GetCommandMgr()->ExecuteScheduledCommands(0);
 
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
             if (m_bootyTiming.Expired()) {
@@ -973,8 +973,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     g_resourceInstallActive = false;
     Cmd_ResetScroll();
     g_gameReg->GetGameStats()->Reset();
-    g_gameReg->m_commandMgr->m_pendingLocalCommands.RemoveAll();
-    g_gameReg->m_commandMgr->RecycleQueuedCommands();
+    g_gameReg->GetCommandMgr()->m_pendingLocalCommands.RemoveAll();
+    g_gameReg->GetCommandMgr()->RecycleQueuedCommands();
     g_frameTicks = 0;
     self->m_returnToMenuOnComplete = false;
     self->m_mgr->m_isCustomLevel = false;
@@ -2140,7 +2140,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
-        h->m_commandMgr->EnqueuePlaceGruntAtScreenPoint(true, g_curPlayer, mx, my, 0);
+        h->GetCommandMgr()->EnqueuePlaceGruntAtScreenPoint(true, g_curPlayer, mx, my, 0);
         return 1;
     }
 
@@ -2549,7 +2549,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             } else {
                 if (::PtInRect(&geom->m_viewportRect, xr, y)) {
                     if (FindStartPointAt(sx, sy, &x, &y)) {
-                        m_mgr->m_commandMgr->EnqueueSingle(
+                        m_mgr->GetCommandMgr()->EnqueueSingle(
                             true,
                             static_cast<char>(g_curPlayer),
                             0,
@@ -2595,7 +2595,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 i32 wy = vr2->top - ds->m_viewportRect.top + y;
                 if (g_gameReg->GetTriggerMgr()->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer)
                     != NULL) {
-                    m_mgr->m_commandMgr->EnqueueSingle(
+                    m_mgr->GetCommandMgr()->EnqueueSingle(
                         true,
                         static_cast<char>(eventArg),
                         static_cast<char>(y),
@@ -2621,7 +2621,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 if (p == NULL || g_curPlayer != p->GetPlayerIndex()) {
                     goto waypoint_cancel;
                 }
-                m_mgr->m_commandMgr->EnqueueSingle(
+                m_mgr->GetCommandMgr()->EnqueueSingle(
                     true,
                     static_cast<char>(eventArg),
                     static_cast<char>(y),
@@ -2874,7 +2874,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
             char ab = static_cast<char>(g_curPlayer);
             px = (px & 0xffe0) + 0x10;
             py = (py & 0xffe0) + 0x10;
-            m_mgr->m_commandMgr->EnqueueSingle(
+            m_mgr->GetCommandMgr()->EnqueueSingle(
                 true,
                 ab,
                 0,
@@ -4577,7 +4577,7 @@ b32 CPlay::PlaceStartGruntz() {
                 GruntzPlayer* e = &g_gameReg->m_players[g_curPlayer];
                 if (e != NULL && counter < e->m_maxGruntz) {
                     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
-                    m_mgr->m_commandMgr->EnqueueSingle(
+                    m_mgr->GetCommandMgr()->EnqueueSingle(
                         true,
                         static_cast<char>(obj->m_smarts),
                         0,

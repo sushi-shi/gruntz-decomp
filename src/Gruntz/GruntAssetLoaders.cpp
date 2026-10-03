@@ -21,7 +21,6 @@
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileSnapMacros.h>
@@ -95,7 +94,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     {
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH)
+        o->SetSortKey(SORTKEY_GRUNT_DEATH);
     }
 
     if (killerPlayerIndex != -1) {
@@ -157,7 +156,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
             {
                 CWwdSpriteObject* o = m_object;
-                SET_SORT_KEY_IF_CHANGED(o, -1)
+                o->SetSortKey(-1);
             }
             PLAY_VOICE_IF_VISIBLE(0x357);
             goto finalize;
@@ -174,7 +173,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
-                    SET_SORT_KEY_IF_CHANGED(o, -1)
+                    o->SetSortKey(-1);
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
@@ -200,7 +199,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
-                    SET_SORT_KEY_IF_CHANGED(o, -1)
+                    o->SetSortKey(-1);
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {

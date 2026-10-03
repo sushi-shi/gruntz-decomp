@@ -16,7 +16,6 @@
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -41,7 +40,7 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
     SetImageSetByName("GAME_LIGHTING_POWERUP");
     SwitchAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_POWERUP)
+    o->SetSortKey(SORTKEY_GRUNT_POWERUP);
     Hide();
 }
 

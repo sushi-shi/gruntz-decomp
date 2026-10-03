@@ -125,8 +125,8 @@ i32 CSBI_SideTab::BuildHandle() {
             m_sampleMode = STATUS_SAMPLE_HEALTH;
         }
     } else if (mode == STATUS_SAMPLE_VEHICLE) {
-        val = IDX(unit->m_vehiclePickupType);
-        if (unit->m_vehiclePickupType == PICKUP_NONE) {
+        val = IDX(unit->GetVehiclePickupType());
+        if (unit->GetVehiclePickupType() == PICKUP_NONE) {
             m_sampleMode = STATUS_SAMPLE_HEALTH;
         }
     }
