@@ -383,8 +383,8 @@ i32 CInGameIcon::HandleInput() {
     PickupType cmd = GetPickupType();
     CShadeTable* rec;
     if (cmd == PICKUP_TOYBOX) {
-        i32 key = obj->m_score;
-        PickupType sub = static_cast<PickupType>(obj->m_points);
+        i32 key = GetPlayerIndex();
+        PickupType sub = GetToyType();
         if (sub < PICKUP_TOYZ_FIRST || sub > PICKUP_TOYZ_LAST) {
             return 0;
         }
@@ -560,10 +560,10 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     obj = m_object;
     if (pickup == PICKUP_TOYBOX) {
 
-        toyboxPickup = static_cast<PickupType>(obj->m_points);
+        toyboxPickup = GetToyType();
         matchActive = false;
         flag = true;
-        if (obj->m_score == playerIndex) {
+        if (GetPlayerIndex() == playerIndex) {
             matchActive = true;
             flag = false;
         }
