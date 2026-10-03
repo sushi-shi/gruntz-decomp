@@ -2623,18 +2623,17 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     i32 top;
     i32 left;
     {
-        CGameObject* lvl = unit->m_object;
-        bottom = lvl->m_screenY >> TILE_SHIFT_PX;
+        bottom = unit->GetScreenTileY();
         Coord g0;
         Coord g1;
         Coord g2;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g0);
+        unit->GetScreenTile(&g0);
         g2.m_y = g0.m_y;
         right = g0.m_x;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g1);
+        unit->GetScreenTile(&g1);
         g2.m_x = g1.m_x;
         top = g1.m_y;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g2);
+        unit->GetScreenTile(&g2);
         left = g2.m_x;
     }
     RECT box;
