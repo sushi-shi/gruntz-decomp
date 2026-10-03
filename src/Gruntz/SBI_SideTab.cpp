@@ -56,6 +56,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     if (parent == NULL) {
         goto fail;
     }
+    // Keep the conditional enable branch after the rectangle copy.
     m_host = host;
     m_tab = tab;
     m_owner = parent;

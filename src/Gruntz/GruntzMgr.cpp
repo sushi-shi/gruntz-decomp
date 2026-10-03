@@ -2631,7 +2631,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     if (rec == NULL) {
         return 0;
     }
-    i32 savedIdx = rec->m_minIndex;
+    i32 savedIdx = rec->GetMinIndex();
     CImage* e = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, savedIdx);
     if (e == NULL) {
         return 0;
@@ -2718,7 +2718,7 @@ i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     if (sink && key) {
         CDDrawWorker* row = World()->FindWorker(key);
         if (row) {
-            CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->m_minIndex);
+            CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->GetMinIndex());
             if (dst) {
                 CImage* src = sink->GetAt(idx);
                 if (src != NULL) {
@@ -2771,7 +2771,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
             set = World()->FindWorker("Gruntz");
         }
         if (set) {
-            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
+            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
@@ -2803,7 +2803,7 @@ void CGruntzMgr::CheatEclipseToggle() {
             set = World()->FindWorker("Gruntz");
         }
         if (set) {
-            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
+            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {

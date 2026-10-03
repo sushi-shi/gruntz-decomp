@@ -543,7 +543,6 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     CWwdSpriteObject* rend;
     CGrunt* cell;
     CGrunt* placed;
-    CLogicRecord* logicRecord;
     PickupType cmd;
     PickupType toyboxPickup;
     b32 matchActive;
@@ -623,7 +622,6 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         owner = m_wwdObject;
         if (owner->m_damage > 0) {
             owner->m_stateFlags |= SPRITE_STATE_HIDDEN;
-            logicRecord = m_logicRecord;
             SET_ANIMATION_ACT("B");
             owner = m_wwdObject;
             m_driftTiming.Start(owner->m_damage);

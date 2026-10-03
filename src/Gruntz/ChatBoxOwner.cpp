@@ -159,7 +159,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
 
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->m_maxIndex);
+        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->GetMaxIndex());
         if (!frame) {
             return 0;
         }
@@ -167,7 +167,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         framePosition += CPoint(0x140, 0x20);
         frame->RenderFrame(target, framePosition.x, framePosition.y, 0);
     } else {
-        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->m_minIndex);
+        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->GetMinIndex());
         if (!frame) {
             return 0;
         }

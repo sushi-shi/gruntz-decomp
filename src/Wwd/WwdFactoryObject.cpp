@@ -341,7 +341,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_frameIndex = c->m_frameIndex + 1;
                 c->m_frameImage = seq->GetFrame(c->m_frameIndex);
                 if (c->m_frameImage == NULL) {
-                    i32 first = c->m_imageSet->m_minIndex;
+                    i32 first = c->m_imageSet->GetMinIndex();
                     c->m_frameIndex = first;
                     c->m_frameImage = c->m_imageSet->GetFrame(first);
                 }
@@ -354,8 +354,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     break;
                 }
                 i32 idx = c->m_frameIndex;
-                if (idx == seq->m_minIndex) {
-                    c->m_frameIndex = seq->m_maxIndex;
+                if (idx == seq->GetMinIndex()) {
+                    c->m_frameIndex = seq->GetMaxIndex();
                 } else {
                     c->m_frameIndex = idx - 1;
                 }
@@ -379,7 +379,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 if (seq == NULL) {
                     break;
                 }
-                i32 first = seq->m_minIndex;
+                i32 first = seq->GetMinIndex();
                 c->m_frameIndex = first;
                 c->m_frameImage = seq->GetFrame(first);
                 break;
@@ -390,7 +390,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 if (seq == NULL) {
                     break;
                 }
-                i32 last = seq->m_maxIndex;
+                i32 last = seq->GetMaxIndex();
                 c->m_frameIndex = last;
                 c->m_frameImage = seq->GetFrame(last);
                 break;
@@ -548,7 +548,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDLOOP_AT_FIRST: {
                 CWwdSpriteObject* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_imageSet;
-                if (c2->m_frameIndex == seq->m_minIndex) {
+                if (c2->m_frameIndex == seq->GetMinIndex()) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
                     }
@@ -558,7 +558,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDLOOP_AT_LAST: {
                 CWwdSpriteObject* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_imageSet;
-                if (c2->m_frameIndex == seq->m_maxIndex) {
+                if (c2->m_frameIndex == seq->GetMaxIndex()) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
                     }
@@ -568,7 +568,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDLOOP_AFTER_FIRST: {
                 CWwdSpriteObject* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_imageSet;
-                if (c2->m_frameIndex == seq->m_minIndex + 1) {
+                if (c2->m_frameIndex == seq->GetMinIndex() + 1) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
                     }
@@ -583,7 +583,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDLOOP_BEFORE_LAST: {
                 CWwdSpriteObject* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_imageSet;
-                if (c2->m_frameIndex == seq->m_maxIndex - 1) {
+                if (c2->m_frameIndex == seq->GetMaxIndex() - 1) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;
                         m_index = m_index + 1;
@@ -745,7 +745,7 @@ RVA(0x0015cc50, 0x38)
 void CWwdSpriteObject::ClampToFirstFrame() {
     CDDrawWorker* seq = m_imageSet;
     if (seq != NULL) {
-        i32 n = seq->m_minIndex;
+        i32 n = seq->GetMinIndex();
         m_frameIndex = n;
         CImage* layer = seq->GetAt(n);
         m_frameImage = layer;
@@ -756,7 +756,7 @@ RVA(0x0015cc90, 0x38)
 void CWwdSpriteObject::ClampToLastFrame() {
     CDDrawWorker* seq = m_imageSet;
     if (seq != NULL) {
-        i32 n = seq->m_maxIndex;
+        i32 n = seq->GetMaxIndex();
         m_frameIndex = n;
         CImage* layer = seq->GetAt(n);
         m_frameImage = layer;

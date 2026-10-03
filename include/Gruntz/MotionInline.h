@@ -8,15 +8,15 @@
 
 inline double
 ArrivalVelocity(double velocity, double acceleration, double position, double target) {
-    if (acceleration == g_motionZero) {
+    if (acceleration == 0.0) {
         return velocity;
     }
-    double discriminant = SQR(velocity) - (target - position) * acceleration * g_motionNegTwo;
-    if (g_motionZero > discriminant) {
-        discriminant = g_motionZero;
+    double discriminant = SQR(velocity) - (target - position) * acceleration * -2.0;
+    if (0.0 > discriminant) {
+        discriminant = 0.0;
     }
     double root = sqrt(discriminant);
-    return (velocity > g_motionZero) ? root : -root;
+    return (velocity > 0.0) ? root : -root;
 }
 
 inline void StepMotionAxis(
@@ -31,7 +31,7 @@ inline void StepMotionAxis(
     double dt
 ) {
     double accelerationStep = dt * acceleration;
-    double proposedStep = (velocity - accelerationStep * g_motionNegHalf) * dt;
+    double proposedStep = (velocity - accelerationStep * -0.5) * dt;
     step = proposedStep;
     do {
         double clampedStep;

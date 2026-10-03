@@ -2318,7 +2318,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (t == PICKUP_SPY) {
             CTileActionEvent* r = m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
             if (r != NULL) {
-                if (r->m_playerFlags[m_playerIndex] != 0) {
+                if (r->GetPlayerFlags(m_playerIndex) != 0) {
                     g->RecycleCoords();
                     ResolveTileClaim(g, first.m_x, first.m_y, 1);
                     return 1;
@@ -2351,7 +2351,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
                 if (r != NULL) {
                     BrickTileId k = static_cast<BrickTileId>(r->m_actionCode);
-                    if (r->m_playerFlags[m_playerIndex] != 0) {
+                    if (r->GetPlayerFlags(m_playerIndex) != 0) {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
                             ResolveTileClaim(g, first.m_x, first.m_y, 0);
@@ -2453,23 +2453,17 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if ((m_board)
                 ->FindPathWithEndpointOverrides(start.m_x, start.m_y, col, row, &list, 1, 0x4903, 0)
             != 0) {
-            POSITION head = list.GetHeadPosition();
             g_stepRun = false;
             g_stepCol = col;
             g_stepRow = row;
-            if (head != NULL) {
-                POSITION n = head;
-                while (n != NULL) {
-                    g_coordPool.Push(static_cast<Coord*>(list.GetNext(n)));
-                }
-            }
+            RecycleCoordList(list);
             return;
         }
     }
     if (word & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
         CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
         if (requireUnoccupied != 0) {
-            if (cell != NULL && cell->m_playerFlags[m_playerIndex] == 0) {
+            if (cell != NULL && cell->GetPlayerFlags(m_playerIndex) == 0) {
                 CPtrList list2(10);
                 Coord start = ScreenTile(unit);
                 if ((m_board)->FindPathWithEndpointOverrides(
@@ -2483,21 +2477,15 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         0
                     )
                     != 0) {
-                    POSITION head = list2.GetHeadPosition();
                     g_stepRun = false;
                     g_stepCol = col;
                     g_stepRow = row;
-                    if (head != NULL) {
-                        POSITION n = head;
-                        while (n != NULL) {
-                            g_coordPool.Push(static_cast<Coord*>(list2.GetNext(n)));
-                        }
-                    }
+                    RecycleCoordList(list2);
                 }
             }
         } else if (cell != NULL) {
             BrickTileId id = static_cast<BrickTileId>(cell->m_actionCode);
-            i32 occ = cell->m_playerFlags[m_playerIndex];
+            i32 occ = cell->GetPlayerFlags(m_playerIndex);
             i32 special = 0;
             if (occ == 0) {
                 special = 1;
@@ -2527,16 +2515,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                     )
                     != 0) {
                     if (!list3.IsEmpty()) {
-                        POSITION head = list3.GetHeadPosition();
                         g_stepRun = false;
                         g_stepCol = col;
                         g_stepRow = row;
-                        if (head != NULL) {
-                            POSITION n = head;
-                            while (n != NULL) {
-                                g_coordPool.Push(static_cast<Coord*>(list3.GetNext(n)));
-                            }
-                        }
+                        RecycleCoordList(list3);
                     }
                 }
             }

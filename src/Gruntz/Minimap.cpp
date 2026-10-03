@@ -151,39 +151,15 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                 }
 
                 if (grunt->m_combatTiming.Expired() || grunt->m_playerIndex != g_curPlayer) {
-                    CSpriteRef* spriteRef =
-                        m_gameMgr->m_spriteFactory->GetTool(IDX(grunt->m_moveIcon));
-                    if (spriteRef == NULL) {
-                        *pixel = 0;
-                        continue;
-                    }
-
-                    switch (teamColor) {
-                        case SPRITE_TEAM_COLOR_PRIMARY:
-                            *pixel = spriteRef->m_teamColor1;
-                            break;
-                        case SPRITE_TEAM_COLOR_SECONDARY:
-                            *pixel = spriteRef->m_teamColor2;
-                            break;
-                        case SPRITE_TEAM_COLOR_TERTIARY:
-                            *pixel = spriteRef->m_teamColor3;
-                            break;
-                        default:
-                            *pixel = spriteRef->m_teamColor1;
-                            break;
-                    }
+                    m_gameMgr->m_spriteFactory
+                        ->GetToolColor(IDX(grunt->m_moveIcon), teamColor, *pixel);
                 } else if (static_cast<u32>(g_period100CountdownMs)
                            < MINIMAP_COMBAT_BLINK_PHASE_MS) {
 
                     GetTileColor(m_mapMgr->TileIdAt(x, y), *pixel);
                 } else {
-                    CSpriteRef* spriteRef =
-                        m_gameMgr->m_spriteFactory->GetTool(IDX(grunt->m_moveIcon));
-                    if (spriteRef == NULL) {
-                        *pixel = 0;
-                        continue;
-                    }
-                    *pixel = spriteRef->m_teamColor2;
+                    m_gameMgr->m_spriteFactory
+                        ->GetToolColor(IDX(grunt->m_moveIcon), SPRITE_TEAM_COLOR_SECONDARY, *pixel);
                 }
             } else {
                 u16 color;

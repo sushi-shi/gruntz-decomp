@@ -77,7 +77,7 @@ void CLightFx::Activate(
     CWwdSpriteObject* object = m_wwdObject;
     if (imageSet != NULL) {
 
-        i32 firstFrameIndex = imageSet->m_minIndex;
+        i32 firstFrameIndex = imageSet->GetMinIndex();
 
         object->m_imageSet = imageSet;
         CImage* firstFrame = imageSet->GetAt(firstFrameIndex);

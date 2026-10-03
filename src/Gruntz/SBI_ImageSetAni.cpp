@@ -16,7 +16,6 @@
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
-#include <Gruntz/StatusBarItemInline.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
@@ -44,7 +43,7 @@ i32 CSBI_ImageSetAni::Init(
     if (owner == NULL) {
         goto fail;
     }
-    INITIALIZE_STATUS_BAR_ITEM(owner, tab, host)
+    InitializeBase(owner, tab, host);
 
     m_rect = rc;
     m_cmd = cmd;
@@ -62,18 +61,18 @@ i32 CSBI_ImageSetAni::Init(
 
     if (frameStart == -1) {
         if (step >= 0) {
-            m_frameStart = tbl->m_minIndex;
+            m_frameStart = tbl->GetMinIndex();
         } else {
-            m_frameStart = tbl->m_maxIndex;
+            m_frameStart = tbl->GetMaxIndex();
         }
     } else {
         m_frameStart = frameStart;
     }
     if (frameEnd == -1) {
         if (step >= 0) {
-            m_frameEnd = tbl->m_maxIndex;
+            m_frameEnd = tbl->GetMaxIndex();
         } else {
-            m_frameEnd = tbl->m_minIndex;
+            m_frameEnd = tbl->GetMinIndex();
         }
     } else {
         m_frameEnd = frameEnd;
@@ -144,18 +143,18 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
 
     if (start == -1) {
         if (step >= 0) {
-            m_frameStart = m_frameSet->m_minIndex;
+            m_frameStart = m_frameSet->GetMinIndex();
         } else {
-            m_frameStart = m_frameSet->m_maxIndex;
+            m_frameStart = m_frameSet->GetMaxIndex();
         }
     } else {
         m_frameStart = start;
     }
     if (end == -1) {
         if (step >= 0) {
-            m_frameEnd = m_frameSet->m_maxIndex;
+            m_frameEnd = m_frameSet->GetMaxIndex();
         } else {
-            m_frameEnd = m_frameSet->m_minIndex;
+            m_frameEnd = m_frameSet->GetMinIndex();
         }
     } else {
         m_frameEnd = end;

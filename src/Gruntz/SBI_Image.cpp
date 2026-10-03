@@ -38,11 +38,7 @@ i32 CSBI_Image::SetupImage(
     i32 extra
 ) {
     if (host != NULL && owner != NULL) {
-        m_owner = owner;
-        m_tab = tab;
-        m_host = host;
-        m_redrawFrames = 0;
-        SetEnabled(0);
+        InitializeBase(owner, tab, host, false);
         m_rect = rc;
         m_cmd = cmd;
         if (key != NULL) {

@@ -46,12 +46,17 @@ public:
         m_enabled = on;
     }
 
-    inline void InitializeBase(CStatusBarMgr* owner, StatusBarTab tab, CDDrawSurfaceMgr* host) {
+    inline void InitializeBase(
+        CStatusBarMgr* owner,
+        StatusBarTab tab,
+        CDDrawSurfaceMgr* host,
+        b32 enabled = true
+    ) {
         m_owner = owner;
         m_tab = tab;
         m_host = host;
         m_redrawFrames = 0;
-        SetEnabled(1);
+        SetEnabled(enabled);
     }
 
     b32 m_enabled;

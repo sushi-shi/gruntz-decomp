@@ -52,6 +52,14 @@ public:
     i32 GetMemoryUsage(i32 raw);
     i32 FindFrame(CImage* frame, char* outName, i32* outIndex);
 
+    i32 GetMinIndex() const {
+        return m_minIndex;
+    }
+
+    i32 GetMaxIndex() const {
+        return m_maxIndex;
+    }
+
     CImage* GetAt(i32 index) {
         if (index < m_minIndex || index > m_maxIndex) {
             return NULL;
@@ -85,7 +93,7 @@ public:
 
 // Caller-shape fallbacks for sites where VC5 cannot preserve the GetAt expansion.
 #define DDRAW_WORKER_CONTAINS_FRAME(worker, index)                                                 \
-    worker->m_minIndex <= index && worker->m_maxIndex >= index
+    worker->GetMinIndex() <= index && worker->GetMaxIndex() >= index
 #define DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, index)                                             \
     static_cast<CImage*>(worker->m_items.GetAt(index))
 

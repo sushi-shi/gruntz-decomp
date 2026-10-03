@@ -279,7 +279,7 @@ CImage* CAnimatedMenuItem::GetCurrentFrame() {
 
     CImage* frame = animation->GetAt(m_frameIndex);
     if (frame == NULL) {
-        m_frameIndex = animation->m_minIndex;
+        m_frameIndex = animation->GetMinIndex();
         frame = animation->GetAt(m_frameIndex);
     }
     return frame;
@@ -293,7 +293,7 @@ i32 CAnimatedMenuItem::AdvanceFrame() {
     if (HAS(m_flags, MENU_ITEM_HOLD_FINAL_ANIMATION_FRAME)) {
         CDDrawWorker* animation = GetStateAnimation();
         if (animation) {
-            if (m_frameIndex > animation->m_maxIndex) {
+            if (m_frameIndex > animation->GetMaxIndex()) {
                 m_frameIndex = m_frameIndex - 1;
                 return 1;
             }

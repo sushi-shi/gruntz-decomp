@@ -9,10 +9,6 @@
 extern const double g_movingLogicMin;
 extern const double g_movingLogicMax;
 
-extern const double g_motionNegHalf;
-extern const double g_motionZero;
-extern const double g_motionNegTwo;
-
 class CMotionState {
 public:
     enum EInlineBase {
@@ -43,6 +39,8 @@ public:
     void Step(double dt);
     double ArrivalVelX(double target);
     double ArrivalVelY(double target);
+    void CorrectX(double position);
+    void CorrectY(double position);
 
     double m_time;
     double m_deltaTime;

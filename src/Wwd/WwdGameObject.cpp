@@ -71,7 +71,7 @@ void CWwdSpriteObject::SetImageSetByName(const char* name) {
     CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
     m_imageSet = spr;
     if (spr) {
-        i32 n = spr->m_minIndex;
+        i32 n = spr->GetMinIndex();
         m_frameIndex = n;
         m_frameImage = spr->GetAt(n);
     }
