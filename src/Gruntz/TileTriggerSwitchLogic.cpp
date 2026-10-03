@@ -1782,7 +1782,7 @@ i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
     if (g_soundCueTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)
         >= static_cast<u32>(cue->m_replayDelayMs)) {
         cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-        return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
+        return cue->GetSound()->AcquireAndPlay(volumePercent, 0, 0, false);
     }
     return 0;
 }

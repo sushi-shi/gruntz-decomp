@@ -292,7 +292,7 @@ i32 CAmbientSound::InitFromKey(
     if (cue == NULL) {
         return 0;
     }
-    return InitFromSound(cue->m_sound, volumeLevel, masterVolume, region, volumeScale);
+    return InitFromSound(cue->GetSound(), volumeLevel, masterVolume, region, volumeScale);
 }
 
 RVA(0x0000be50, 0x8f)
@@ -503,7 +503,7 @@ i32 CAmbientPosSound::InitFromKey(
     if (cue == NULL) {
         return 0;
     }
-    return InitFromSound(cue->m_sound, volumeLevel, masterVolume, position, volumeScale);
+    return InitFromSound(cue->GetSound(), volumeLevel, masterVolume, position, volumeScale);
 }
 
 RVA(0x0000c530, 0x51)
@@ -619,7 +619,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
                 CAmbientSound* placed;
                 if (obj->m_extent.top > 0) {
                     placed = g_gameReg->m_worldSounds->CreateRandomFromSound(
-                        layer->m_sound,
+                        layer->GetSound(),
                         0x64,
                         &rc,
                         obj->m_damage,
@@ -630,9 +630,13 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
                         0
                     );
                 } else {
-                    placed =
-                        g_gameReg->m_worldSounds
-                            ->CreateAmbientFromSound(layer->m_sound, 0x64, &rc, obj->m_damage, 0);
+                    placed = g_gameReg->m_worldSounds->CreateAmbientFromSound(
+                        layer->GetSound(),
+                        0x64,
+                        &rc,
+                        obj->m_damage,
+                        0
+                    );
                 }
                 if (placed && obj->m_switchRect.top > 0) {
                     placed->m_secondaryRegion = obj->m_switchRect;
@@ -696,7 +700,7 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
             pt.m_y = obj->m_screenY;
 
             CAmbientPosSound* v =
-                set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_damage, 0);
+                set->CreatePositionedFromSound(layer->GetSound(), 0x64, &pt, obj->m_damage, 0);
             if (v != NULL) {
                 record->m_positionedSound = v;
             }

@@ -128,7 +128,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         SoundCue* activationCue = m_world->SoundRegistry()->FindCue("MENU_ACTIVATE");
         if (activationCue != NULL) {
             activationCue = m_world->SoundRegistry()->FindCue("MENU_ACTIVATE");
-            m_activateCueDurationMs = activationCue->m_sound->GetDurationMs();
+            m_activateCueDurationMs = activationCue->GetSound()->GetDurationMs();
         } else {
             m_activateCueDurationMs = 0;
         }
@@ -255,16 +255,16 @@ void CMenuState::StopMusicChain() {
         return;
     }
     SoundCue* mus = m_menuMusicCue;
-    if (!mus->m_sound->IsPlaying()) {
+    if (!mus->GetSound()->IsPlaying()) {
         return;
     }
-    m_menuMusicCue->m_sound->RampVolumeTo(0, 0x1f4, true);
-    if (!m_menuMusicCue->m_sound->IsPlaying()) {
+    m_menuMusicCue->GetSound()->RampVolumeTo(0, 0x1f4, true);
+    if (!m_menuMusicCue->GetSound()->IsPlaying()) {
         return;
     }
     do {
         m_world->SoundRegistry()->TickVolumeRamps();
-    } while (m_menuMusicCue->m_sound->IsPlaying());
+    } while (m_menuMusicCue->GetSound()->IsPlaying());
 }
 
 RVA(0x000a06d0, 0x5f)

@@ -933,11 +933,11 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (cue == NULL) {
         goto fail;
     }
-    if (cue->m_sound == NULL) {
+    if (cue->GetSound() == NULL) {
         goto fail;
     }
 
-    m_sound = static_cast<SoundBuffer*>(cue->m_sound->AcquireInstance());
+    m_sound = static_cast<SoundBuffer*>(cue->GetSound()->AcquireInstance());
     if (m_sound != NULL) {
         m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
         return 1;
