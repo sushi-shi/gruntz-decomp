@@ -54,21 +54,21 @@ CRollingBall::CRollingBall(CGameObject* obj)
     SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_ROLLING_BALL_BASE + snapY)
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
-        CString name;
+        std::string name;
         name = frameSet->m_name;
-        if (name.Compare("LEVEL_ROLLINGBALL_NORTH") == 0) {
+        if ((name).compare("LEVEL_ROLLINGBALL_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
             m_stepDirX = 0;
             m_stepDirY = -1;
-        } else if (name.Compare("LEVEL_ROLLINGBALL_EAST") == 0) {
+        } else if ((name).compare("LEVEL_ROLLINGBALL_EAST") == 0) {
             m_object->m_direction = IDX(CARDINAL_EAST);
             m_stepDirX = 1;
             m_stepDirY = 0;
-        } else if (name.Compare("LEVEL_ROLLINGBALL_SOUTH") == 0) {
+        } else if ((name).compare("LEVEL_ROLLINGBALL_SOUTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_SOUTH);
             m_stepDirX = 0;
             m_stepDirY = 1;
-        } else if (name.Compare("LEVEL_ROLLINGBALL_WEST") == 0) {
+        } else if ((name).compare("LEVEL_ROLLINGBALL_WEST") == 0) {
             m_object->m_direction = IDX(CARDINAL_WEST);
             m_stepDirX = -1;
             m_stepDirY = 0;
@@ -169,8 +169,8 @@ i32 CRollingBall::Update() {
         i32 terrain = map2->CellFlagsAt(tx, ty);
 
         if ((terrain & BRICKZ_BLOCKED_MASK) != 0 || (terrain & IDX(CELL_FLAG_SPECIAL)) != 0) {
-            CString fall;
-            CString explosion;
+            std::string fall;
+            std::string explosion;
 
             CGameLevel* lvl = g_gameReg->World()->m_level;
             i32 tileY = m_target.m_y >> TILE_SHIFT_PX;
@@ -239,8 +239,8 @@ i32 CRollingBall::Update() {
                             break;
                         }
                     }
-                    SetImageSetByName(fall);
-                    SwitchAnimationByName(explosion, 0);
+                    SetImageSetByName((fall).c_str());
+                    SwitchAnimationByName((explosion).c_str(), 0);
                     if (act != IDX(TILEKIND_DEATH)) {
                         m_explodeLatch = true;
                         return 0;

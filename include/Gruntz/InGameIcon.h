@@ -16,7 +16,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/UserLogic.h>
 
-class SoundCue;
+struct SoundCue;
 
 GZ_ENUM_BEGIN(InGameIconGlitter)
     ICON_GLITTER_NONE = 0,

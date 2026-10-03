@@ -1,6 +1,8 @@
 #ifndef SRC_IO_SAVEGAME_H
 #define SRC_IO_SAVEGAME_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -80,8 +82,8 @@ public:
     i32 CheckMagic();
     void SetMagic();
 
-    CString m_saveDirectory;
-    CString m_progressFilePath;
+    std::string m_saveDirectory;
+    std::string m_progressFilePath;
 
     i32 m_header[4];
     GZ_ENUM_STORAGE(QuestLevel, u32) m_maxLevel;

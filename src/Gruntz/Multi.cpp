@@ -119,7 +119,7 @@ u32 g_ackThrottleDeadline;
 
 i32 g_playersInOptionsCount = 0;
 
-CString g_sessionName;
+std::string g_sessionName;
 
 CNetChatPacket g_netChatPacket;
 
@@ -251,7 +251,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         NetGameMgr()->m_isBuiltInMultiplayerLevel = true;
         NetGameMgr()->m_strWorldFile = BuiltInLevelName();
     }
-    if (Mgr()->GetWorldFileName().IsEmpty()) {
+    if ((Mgr()->GetWorldFileName()).empty()) {
         return 0;
     }
 
@@ -386,8 +386,8 @@ i32 CMulti::LeaveState(GameStateId nextState) {
     if (nextState != GAMESTATE_HELP) {
         RECT r;
         m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
-        CString s;
-        s.LoadString(0x81a9);
+        std::string s;
+        loadResourceText(0x81a9, s);
         tagSIZE mode = m_mgr->GetModeSize();
         r.right = mode.cx;
         r.bottom = mode.cy;
@@ -499,10 +499,10 @@ i32 CMulti::Render() {
         m_processedCommandTick = newId;
         CGruntzCmdMgr* mgr = Mgr()->m_commandMgr;
         CGruntzCommand* node;
-        if (mgr->m_pendingLocalCommands.IsEmpty()) {
+        if (mgr->m_pendingLocalCommands.empty()) {
             node = NULL;
         } else {
-            node = static_cast<CGruntzCommand*>(mgr->m_pendingLocalCommands.RemoveHead());
+            node = static_cast<CGruntzCommand*>(takeFront(mgr->m_pendingLocalCommands));
         }
         if (node) {
             node->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
@@ -725,10 +725,10 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    CString title;
-    title.Format("TITLE%d", idx);
+    std::string title;
+    title = formatText("TITLE%d", idx);
 
-    if (LoadAndPresentTitlePage(title, 0, 0, 1, 0) == 0) {
+    if (LoadAndPresentTitlePage((title).c_str(), 0, 0, 1, 0) == 0) {
         m_stateResources = saved;
         return 0;
     }
@@ -778,11 +778,11 @@ char* CNetSessionListNode::SessionName() {
     return m_sessionDesc.lpszSessionNameA;
 }
 
-void CMulti::SetGameName(CString s) {
+void CMulti::SetGameName(std::string s) {
     m_gameName = s;
 }
 
-void CMulti::SetPlayerName(CString s) {
+void CMulti::SetPlayerName(std::string s) {
     m_playerName = s;
 }
 
@@ -829,13 +829,13 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
                 {
                     store->Set(
                         "Player Name",
-                        const_cast<char*>(static_cast<const char*>(PlayerName()))
+                        (PlayerName()).c_str()
                     );
                 }
                 {
                     store->Set(
                         "Game Name",
-                        const_cast<char*>(static_cast<const char*>(GameName()))
+                        (GameName()).c_str()
                     );
                 }
             }
@@ -849,7 +849,7 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
                 }
                 store->Set(
                     "Player Name",
-                    const_cast<char*>(static_cast<const char*>(PlayerName()))
+                    (PlayerName()).c_str()
                 );
             }
         }
@@ -857,7 +857,7 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
     return Network()->m_selectedProvider;
 }
 
-CString CMulti::GameName() {
+std::string CMulti::GameName() {
     return m_gameName;
 }
 
@@ -912,7 +912,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             MessageBeep(MB_OK);
             return wParam;
         }
-        g_connectRptMgr->SetPlayerName(CString(gameBuf));
+        g_connectRptMgr->SetPlayerName(std::string(gameBuf));
 
         if (g_hostServicesMode != false) {
             GetDlgItemTextA(hDlg, 0x51c, gameBuf, 0x40);
@@ -920,7 +920,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
                 MessageBeep(MB_OK);
                 return true;
             }
-            g_connectRptMgr->SetGameName(CString(gameBuf));
+            g_connectRptMgr->SetGameName(std::string(gameBuf));
         }
 
         HWND combo = GetDlgItem(hDlg, 0x3fc);
@@ -936,7 +936,7 @@ ret_false:
     return false;
 }
 
-void CMulti::ReportVersionMsg(char* msg, i32 code) {
+void CMulti::ReportVersionMsg(const char* msg, i32 code) {
     char buf[512];
     if (msg && *msg && Mgr()) {
         if (code > 0) {
@@ -1087,11 +1087,11 @@ i32 CMulti::DetectConnectionConfig() {
     }
 
     CRegMgr* cfg = NetGameMgr()->m_settings;
-    CString kDelay = m_providerConfigPrefix + "_CmdDelay";
-    CString kResend = m_providerConfigPrefix + "_Resend";
-    CString kDyn = m_providerConfigPrefix + "_DynCmdDelay";
-    i32 cd = cfg->Get(kDelay, -1);
-    i32 rs = cfg->Get(kResend, -1);
+    std::string kDelay = m_providerConfigPrefix + "_CmdDelay";
+    std::string kResend = m_providerConfigPrefix + "_Resend";
+    std::string kDyn = m_providerConfigPrefix + "_DynCmdDelay";
+    i32 cd = cfg->Get((kDelay).c_str(), -1);
+    i32 rs = cfg->Get((kResend).c_str(), -1);
     if (cd != -1 && rs != -1) {
         m_commandDelay = cd;
         m_resendInterval = rs;
@@ -1113,12 +1113,12 @@ i32 CMulti::DetectConnectionConfig() {
 void CMulti::ApplyCmdDelayDefaults() {
     CRegMgr* reg = g_gameReg->m_settings;
 
-    CString cmdDelayName = m_providerConfigPrefix + "_CmdDelay";
-    CString resendName = m_providerConfigPrefix + "_Resend";
-    CString dynCmdName = m_providerConfigPrefix + "_DynCmdDelay";
+    std::string cmdDelayName = m_providerConfigPrefix + "_CmdDelay";
+    std::string resendName = m_providerConfigPrefix + "_Resend";
+    std::string dynCmdName = m_providerConfigPrefix + "_DynCmdDelay";
 
-    reg->Set(cmdDelayName, m_commandDelay);
-    reg->Set(resendName, m_resendInterval);
+    reg->Set((cmdDelayName).c_str(), m_commandDelay);
+    reg->Set((resendName).c_str(), m_resendInterval);
 }
 
 i32 CMulti::ShowMultiStartDlg() {
@@ -1185,7 +1185,7 @@ void RefreshSessionSelection(HWND hDlg, HWND hList) {}
 
 CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
     char buf[0x100] = "";
-    Sparam_Add(buf, "NAME", m_gameName);
+    Sparam_Add(buf, "NAME", (m_gameName).c_str());
     Sparam_Add(buf, "CMDDELAY", m_commandDelay);
     Sparam_Add(buf, "RESEND", m_resendInterval);
     Sparam_Add(buf, "LEVEL", SelectedLevelIndex());
@@ -1207,7 +1207,7 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
     GruntzPlayer* hostPlayer = NetGameMgr()->m_players;
     ColorTint hostColor = static_cast<ColorTint>(hostPlayer->m_color);
 
-    bool failed = RegisterLocalPlayer(hostPlayer->GetName(), hostColor, -1, m_localPlayerId) == 0;
+    bool failed = RegisterLocalPlayer((hostPlayer->GetName()).c_str(), hostColor, -1, m_localPlayerId) == 0;
     return failed ? NULL : enumResult;
 }
 
@@ -1224,7 +1224,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
 
     m_localPlayer =
         Network()
-            ->JoinSessionAndCreatePlayer(sel, static_cast<const char*>(PlayerName()), "", NULL);
+            ->JoinSessionAndCreatePlayer(sel, (PlayerName()).c_str(), "", NULL);
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
         return 0;
@@ -1239,7 +1239,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
         m_resendInterval = atoi(buf);
     }
     if (Sparam_Get(buf, sel->m_sessionDesc.lpszSessionNameA, "NAME")) {
-        SetGameName(CString(buf));
+        SetGameName(std::string(buf));
     }
     m_syncGate = false;
     SelectedLevelIndex() = 1;
@@ -1261,7 +1261,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
     packet.m_preferredPlayerIndex = NET_PREFERRED_PLAYER_INDEX_ANY;
     packet.m_ready = false;
     packet.m_maxGruntz = TM_UNITS_PER_PLAYER;
-    strcpy(packet.m_name, PlayerName());
+    strcpy(packet.m_name, (PlayerName()).c_str());
     BroadcastPacket(&packet, sizeof(packet), DPSEND_GUARANTEED);
     return 1;
 }
@@ -1763,23 +1763,20 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             break;
 
         case NETMSG_VERSION_MISMATCH: {
-            CString result;
+            std::string result;
             if (senderPlayer != NULL) {
-                result.Format(
-                    "*** %s has a different version of the game.",
-                    static_cast<const char*>(senderPlayer->ShortName())
-                );
+                result = formatText("*** %s has a different version of the game.", (senderPlayer->ShortName()).c_str());
             } else {
-                result.Format("*** A player had a different version of the game.");
+                result = formatText("*** A player had a different version of the game.");
             }
             if (g_netMessageEditHwnd != NULL) {
                 AppendEditLine(
                     g_netMessageEditHwnd,
-                    const_cast<char*>(static_cast<const char*>(result))
+                    (result).c_str()
                 );
             } else {
                 (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
-                    ->AddItem(result, FONT_ITEM_FLAGS_NONE, 0x11);
+                    ->AddItem((result).c_str(), FONT_ITEM_FLAGS_NONE, 0x11);
             }
             break;
         }
@@ -1793,7 +1790,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
     return 1;
 }
 
-CString CNetPlayerNode::ShortName() {
+std::string CNetPlayerNode::ShortName() {
     return m_shortName;
 }
 
@@ -1854,9 +1851,9 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     slot->m_active = false;
     SetPlayerColorAvailable(slot->m_color, true);
 
-    CString line = slot->GetName() + " has left the game.";
+    std::string line = slot->GetName() + " has left the game.";
     (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
-        ->AddItem(const_cast<char*>(static_cast<const char*>(line)), FONT_ITEM_SHADOW, 0x11);
+        ->AddItem((line).c_str(), FONT_ITEM_SHADOW, 0x11);
 
     if (player != NULL) {
         Network()->RemovePlayer(player);
@@ -1952,7 +1949,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
             v = player->m_maxGruntz;
             packet.m_rows[i].m_maxGruntz = static_cast<u8>(v);
             packet.m_rows[i].m_networkPlayerId = player->m_networkPlayerId;
-            strcpy(packet.m_rows[i].m_name, static_cast<const char*>(player->GetName()));
+            strcpy(packet.m_rows[i].m_name, (player->GetName()).c_str());
         }
     }
 
@@ -2045,7 +2042,7 @@ i32 CMulti::RegisterPlayer(
 
     SetPlayerColorAvailable(color, false);
 
-    slot->m_name = CString(name);
+    slot->m_name = std::string(name);
     slot->m_color = color;
     slot->SetHumanControlled(humanControlled);
     slot->m_difficulty = difficulty;
@@ -2170,7 +2167,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     packet.m_maxGruntz = static_cast<u8>(v);
     v = player->m_networkPlayerId;
     packet.m_networkPlayerId = v;
-    strcpy(packet.m_name, static_cast<const char*>(player->GetName()));
+    strcpy(packet.m_name, (player->GetName()).c_str());
 
     return BroadcastPacket(&packet, sizeof(packet), DPSEND_GUARANTEED);
 }
@@ -2229,26 +2226,27 @@ i32 CMulti::AnnounceOptionsClosed() {
     return 1;
 }
 
-i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally, HWND edit) {
-    if (text == NULL) {
+i32 CMulti::BroadcastChatLine(const char* input, i32 prefixPlayerName, i32 echoLocally, HWND edit) {
+    if (input == NULL) {
         return 0;
     }
-    if (text[0] == 0) {
+    std::string text(input);
+    if (text.empty()) {
         return 0;
     }
 
-    i32 len = strlen(text);
+    i32 len = static_cast<i32>(text.size());
     if (len > 0x80) {
-        text[0x80] = 0;
+        text.resize(0x80);
         len = 0x80;
     }
 
     if (len > 0 && text[len - 1] < ' ') {
-        text[len - 1] = 0;
+        text.resize(len - 1);
         len--;
     }
     if (len > 0 && text[len - 1] < ' ') {
-        text[len - 1] = 0;
+        text.resize(len - 1);
     }
 
     char line[0x12c];
@@ -2257,14 +2255,12 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
         sprintf(
             line,
             "%s: %s",
-            static_cast<const char*>(
-                static_cast<GruntzPlayer*>(Mgr()->FindPlayerByNetworkId(LocalPlayer()->m_playerId))
-                    ->GetName()
-            ),
-            text
+            (static_cast<GruntzPlayer*>(Mgr()->FindPlayerByNetworkId(LocalPlayer()->m_playerId))
+                    ->GetName()).c_str(),
+            text.c_str()
         );
     } else {
-        strcpy(line, text);
+        strcpy(line, text.c_str());
     }
 
     if (echoLocally != 0 && edit != NULL) {
@@ -2290,7 +2286,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
     return 1;
 }
 
-void CMulti::AppendEditLine(HWND edit, char* str) {
+void CMulti::AppendEditLine(HWND edit, const char* str) {
     if (!edit || !str || !str[0]) {
         return;
     }
@@ -2352,7 +2348,7 @@ void CMulti::RecordPlayerReady(CNetPlayerNode* unusedPlayer, i32 playerId) {
         return;
     }
 
-    i32 count = m_readyPlayerIds.GetSize();
+    i32 count = static_cast<i32>(m_readyPlayerIds.size());
     i32 i;
     for (i = 0; i < count; i++) {
         if (static_cast<i32>(m_readyPlayerIds[i]) == playerId) {
@@ -2381,7 +2377,7 @@ void CMulti::RecordPlayerReady(CNetPlayerNode* unusedPlayer, i32 playerId) {
         p++;
     }
 
-    i32 total = m_readyPlayerIds.GetSize();
+    i32 total = static_cast<i32>(m_readyPlayerIds.size());
     i32 recorded = 0;
     for (i = 0; i < total; i++) {
         if (m_readyPlayerIds[i] != 0) {
@@ -2398,12 +2394,12 @@ void CMulti::RecordPlayerReady(CNetPlayerNode* unusedPlayer, i32 playerId) {
 }
 
 i32 CMulti::WaitForOtherPlayers() {
-    CDWordArray* votes = &m_readyPlayerIds;
-    votes->RemoveAll();
+    std::vector<u32>* votes = &m_readyPlayerIds;
+    votes->clear();
     for (i32 k = 3; k != 0; k--) {
-        votes->Add(0);
+        votes->push_back(0);
     }
-    if (Network()->m_players.GetCount() == 1) {
+    if (static_cast<i32>(Network()->m_players.size()) == 1) {
         goto ready;
     }
     {
@@ -2417,7 +2413,7 @@ i32 CMulti::WaitForOtherPlayers() {
         }
         if (count != 0) {
             BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, DPSEND_GUARANTEED);
-            CString waitStr("Waiting for other playerz...");
+            std::string waitStr("Waiting for other playerz...");
             CGruntzMgr* g = g_gameReg;
 
             RECT rc;
@@ -2741,7 +2737,7 @@ void CMulti::CheckDropTimeout() {
     ShowDropPlayerDialog();
 }
 
-CString CNetCmdSlot::GetPlayerName() {
+std::string CNetCmdSlot::GetPlayerName() {
     return m_player->GetName();
 }
 
@@ -2758,11 +2754,11 @@ i32 CMulti::SetupTcpIpConfig() {
     m_resendInterval = 0x3c;
 
     CRegMgr* cfg = NetGameMgr()->m_settings;
-    CString kDelay = m_providerConfigPrefix + "_CmdDelay";
-    CString kResend = m_providerConfigPrefix + "_Resend";
-    CString kDyn = m_providerConfigPrefix + "_DynCmdDelay";
-    i32 cd = cfg->Get(kDelay, -1);
-    i32 rs = cfg->Get(kResend, -1);
+    std::string kDelay = m_providerConfigPrefix + "_CmdDelay";
+    std::string kResend = m_providerConfigPrefix + "_Resend";
+    std::string kDyn = m_providerConfigPrefix + "_DynCmdDelay";
+    i32 cd = cfg->Get((kDelay).c_str(), -1);
+    i32 rs = cfg->Get((kResend).c_str(), -1);
     if (cd != -1 && rs != -1) {
         m_commandDelay = cd;
         m_resendInterval = rs;
@@ -2774,7 +2770,7 @@ i32 CMulti::SetupTcpIpConfig() {
     hostPlayer->m_color = TINT_ORANGE;
 
     m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
-        const_cast<char*>(static_cast<const char*>(hostPlayer->GetName())),
+        (hostPlayer->GetName()).c_str(),
         "",
         NULL
     ));
@@ -2786,7 +2782,7 @@ i32 CMulti::SetupTcpIpConfig() {
     m_localPlayerId = LocalPlayer()->m_playerId;
     ColorTint hostColor = static_cast<ColorTint>(hostPlayer->m_color);
 
-    if (RegisterLocalPlayer(hostPlayer->GetName(), hostColor, -1, m_localPlayerId) == 0) {
+    if (RegisterLocalPlayer((hostPlayer->GetName()).c_str(), hostColor, -1, m_localPlayerId) == 0) {
         return 0;
     }
     return 1;
@@ -2795,7 +2791,7 @@ i32 CMulti::SetupTcpIpConfig() {
 i32 CMulti::CreateLocalPlayer() {
     {
         m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
-            const_cast<char*>(static_cast<const char*>(PlayerName())),
+            (PlayerName()).c_str(),
             "",
             NULL
         ));
@@ -2825,7 +2821,7 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_preferredPlayerIndex = NET_PREFERRED_PLAYER_INDEX_ANY;
     pkt.m_networkPlayerId = m_localPlayerId;
     {
-        strcpy(pkt.m_name, static_cast<const char*>(PlayerName()));
+        strcpy(pkt.m_name, (PlayerName()).c_str());
     }
     BroadcastPacket(&pkt, sizeof(pkt), DPSEND_GUARANTEED);
     return 1;
@@ -2849,7 +2845,7 @@ i32 CMulti::CreateHostPlayer(
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
     m_localPlayer = Network()->CreatePlayer(
-        const_cast<char*>(static_cast<const char*>(PlayerName())),
+        (PlayerName()).c_str(),
         "",
         NULL
     );
@@ -2942,10 +2938,10 @@ i32 CMulti::SendGameConfig(CNetPlayerNode* recipient) {
     blob.m_messageId = STAT_CONFIG;
     blob.m_usesCustomLevel = m_usesCustomLevel;
     {
-        wsprintfA(blob.m_builtInLevelName, static_cast<const char*>(BuiltInLevelName()));
+        wsprintfA(blob.m_builtInLevelName, (BuiltInLevelName()).c_str());
     }
     {
-        wsprintfA(blob.m_customLevelName, static_cast<const char*>(CustomLevelName()));
+        wsprintfA(blob.m_customLevelName, (CustomLevelName()).c_str());
     }
     blob.m_commandDelay = m_commandDelay;
     blob.m_resendInterval = m_resendInterval;
@@ -3074,14 +3070,14 @@ i32 CMulti::OnChar(i32 charCode, i32 keyData) {
     if (m_chatBox && m_chatBox->m_inputActive) {
         if (m_connected) {
             if (Mgr()->ChatLog()->HandleInputChar(charCode, keyData)) {
-                CString line = Mgr()->ChatLog()->GetInputText();
-                i32 n = line.GetLength();
+                std::string line = Mgr()->ChatLog()->GetInputText();
+                i32 n = static_cast<i32>((line).size());
                 if (n > 9) {
-                    CString text = line.Right(n - 9);
+                    std::string text = rightText(line, n - 9);
                     char buf[0x100];
-                    strcpy(buf, text);
+                    strcpy(buf, (text).c_str());
                     BroadcastChatLine(buf, 1, 1, NULL);
-                    Mgr()->ChatLog()->m_inputText.Empty();
+                    (Mgr()->ChatLog()->m_inputText).erase();
                 }
             }
         }

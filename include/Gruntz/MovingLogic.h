@@ -28,7 +28,7 @@ public:
         return LOGIC_NONE;
     }
 
-    virtual void FinalizeStep(char*)   {
+    virtual void FinalizeStep(const char*)   {
         if (m_deferredCallback != NULL) {
             if (m_gatedCallback != NULL && m_logicRecord->EventCode() == m_gatedCallbackCode) {
                 (this->*m_gatedCallback)();

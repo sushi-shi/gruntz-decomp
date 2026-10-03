@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_SOUNDCUEREGISTRY_H
 #define GRUNTZ_SOUNDCUEREGISTRY_H
 
+#include <map>
+#include <string>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/SoundCue.h>
@@ -9,7 +14,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/WapObj.h>
 
-struct SoundStream;
+class SoundStream;
 class CRezDir;
 struct CRezItm;
 
@@ -63,11 +68,11 @@ public:
     SoundCue* GetNextCueAfter(SoundCue* target);
     i32 ConfigurePrimaryFromFirstCue(i32 startPrimary);
     i32 HasWithPrefix(const char* prefix);
-    CString FindCueKey(SoundCue* target);
+    std::string FindCueKey(SoundCue* target);
     i32 ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary);
 
     i32 CueCount() const {
-        return m_cues.GetCount();
+        return static_cast<i32>(m_cues.size());
     }
 
     void ClearCues();
@@ -80,7 +85,7 @@ public:
 
     i32 BindSoundStream(b32 allowUnavailable);
 
-    CMapStringToPtr m_cues;
+    std::map<std::string, SoundCue*> m_cues;
     SoundStream* m_soundStream;
 
     b32 m_silentMode;

@@ -76,8 +76,8 @@ i32 CDDrawShadeBlit::BuildRle(
     m_width = width;
     m_height = height;
 
-    CByteArray ba;
-    ba.SetSize(0, 0x3e8);
+    std::vector<u8> ba;
+    ba.resize(0);
 
     i32 row = 0;
     if (m_height > 0) {
@@ -92,9 +92,9 @@ i32 CDDrawShadeBlit::BuildRle(
                                && static_cast<i32>(src[i]) != keyVal) {
                             i++;
                         }
-                        ba.Add(static_cast<u8>((i - runStart)));
+                        ba.push_back(static_cast<u8>((i - runStart)));
                         for (i32 j = runStart; j < i; j++) {
-                            ba.Add(src[j]);
+                            ba.push_back(src[j]);
                         }
                         runStart = i;
                     } else {
@@ -103,7 +103,7 @@ i32 CDDrawShadeBlit::BuildRle(
                                && static_cast<i32>(src[i]) == keyVal) {
                             i++;
                         }
-                        ba.Add(static_cast<u8>(((i - runStart) | SHADE_RLE_TRANSPARENT_FLAG)));
+                        ba.push_back(static_cast<u8>(((i - runStart) | SHADE_RLE_TRANSPARENT_FLAG)));
                         runStart = i;
                     }
                 } while (i < m_width);
@@ -116,10 +116,10 @@ i32 CDDrawShadeBlit::BuildRle(
     if (m_rleData != NULL) {
         delete[] m_rleData;
     }
-    m_rleLen = ba.GetSize();
-    m_rleData = new u8[ba.GetSize()];
+    m_rleLen = static_cast<i32>(ba.size());
+    m_rleData = new u8[static_cast<i32>(ba.size())];
     for (i32 k = 0; k < static_cast<i32>(m_rleLen); k++) {
-        m_rleData[k] = ba.GetAt(k);
+        m_rleData[k] = ba[k];
     }
 
     if (palette != NULL) {
@@ -153,9 +153,9 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
     return r;
 }
 
-i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
+i32 CDDrawShadeBlit::LoadFromFile(std::string name, ColorDepth fmt) {
     CFile file;
-    if (!file.Open(name, CFile::modeRead | CFile::typeBinary, NULL)) {
+    if (!file.Open((name).c_str(), CFile::modeRead | CFile::typeBinary, NULL)) {
         return 0;
     }
     RecordBytes<PidHeader> fileData;
@@ -238,13 +238,13 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
     return 1;
 }
 
-i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
+i32 CDDrawShadeBlit::WritePidFile(std::string path, PidWriteHeader header) {
     if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
     }
 
     CFile file;
-    if (file.Open(path, CFile::modeCreate | CFile::modeWrite | CFile::typeBinary, NULL) == false) {
+    if (file.Open((path).c_str(), CFile::modeCreate | CFile::modeWrite | CFile::typeBinary, NULL) == false) {
         return 0;
     }
     file.Write(&header, sizeof(header));
@@ -263,7 +263,7 @@ i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
     return 1;
 }
 
-i32 CDDrawShadeBlit::SavePid(CString path, i32 offsetX, i32 offsetY) {
+i32 CDDrawShadeBlit::SavePid(std::string path, i32 offsetX, i32 offsetY) {
     if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
     }

@@ -1,6 +1,8 @@
 #ifndef SRC_GRUNTZ_GAMELEVEL_H
 #define SRC_GRUNTZ_GAMELEVEL_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>
@@ -218,15 +220,15 @@ private:
 
 public:
     CDDrawWorkerHost* GetPlane(i32 index) {
-        return (index >= 0 && index < m_planes.GetSize())
+        return (index >= 0 && index < static_cast<i32>(m_planes.size()))
                    ? static_cast<CDDrawWorkerHost*>(m_planes[index])
                    : NULL;
     }
 
     LevelCoordRect m_viewportRect;
-    CObArray m_array20;
-    CObArray m_planes;
-    CObArray m_imageSets;
+    std::vector<CObject*> m_array20;
+    std::vector<CDDrawWorkerHost*> m_planes;
+    std::vector<CTileImageSet*> m_imageSets;
     CDDrawWorkerHost* m_mainPlane;
     i32 m_mainIndex;
     i32 m_maxStepX;
@@ -244,12 +246,12 @@ public:
     WwdHeader m_header;
 };
 
-#define DRAW_PLANES_THROUGH_MAIN(visitor, index)                                                       i32 index = 0;                                                                                     if (m_mainIndex >= 0) {                                                                                do {                                                                                                   (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index)))->Draw(visitor);                            ++index;                                                                                       } while (index <= m_mainIndex);                                                                }
+#define DRAW_PLANES_THROUGH_MAIN(visitor, index)                                                       i32 index = 0;                                                                                     if (m_mainIndex >= 0) {                                                                                do {                                                                                                   (static_cast<CDDrawWorkerHost*>(m_planes[index]))->Draw(visitor);                            ++index;                                                                                       } while (index <= m_mainIndex);                                                                }
 
-#define DRAW_PLANES_AFTER_MAIN(visitor, index)                                                         i32 index = m_mainIndex + 1;                                                                       if (index < m_planes.GetSize()) {                                                                      do {                                                                                                   (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index)))->Draw(visitor);                            ++index;                                                                                       } while (index < m_planes.GetSize());                                                          }
+#define DRAW_PLANES_AFTER_MAIN(visitor, index)                                                         i32 index = m_mainIndex + 1;                                                                       if (index < static_cast<i32>(m_planes.size())) {                                                                      do {                                                                                                   (static_cast<CDDrawWorkerHost*>(m_planes[index]))->Draw(visitor);                            ++index;                                                                                       } while (index < static_cast<i32>(m_planes.size()));                                                          }
 
-#define RESET_MAIN_PLANE_SELECTION(index)                                                              m_mainIndex = -1;                                                                                  m_mainPlane = NULL;                                                                                for (i32 index = 0; index < m_planes.GetSize(); index++) {                                             static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index))->m_flags &=                                      ~IDX(WWD_PLANE_FLAG_MAIN);                                                                 }
+#define RESET_MAIN_PLANE_SELECTION(index)                                                              m_mainIndex = -1;                                                                                  m_mainPlane = NULL;                                                                                for (i32 index = 0; index < static_cast<i32>(m_planes.size()); index++) {                                             static_cast<CDDrawWorkerHost*>(m_planes[index])->m_flags &=                                      ~IDX(WWD_PLANE_FLAG_MAIN);                                                                 }
 
-#define RELEASE_LEVEL_CHILDREN                                                                         i32 i;                                                                                             for (i = 0; i < m_planes.GetSize(); i++) {                                                             CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetAt(i));                       if (child) {                                                                                           delete child;                                                                                  }                                                                                              }                                                                                                  m_planes.RemoveAll();                                                                              for (i = 0; i < m_imageSets.GetSize(); i++) {                                                          CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetAt(i));                          if (child) {                                                                                           delete child;                                                                                  }                                                                                              }                                                                                                  m_imageSets.RemoveAll()
+#define RELEASE_LEVEL_CHILDREN                                                                         i32 i;                                                                                             for (i = 0; i < static_cast<i32>(m_planes.size()); i++) {                                                             CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes[i]);                       if (child) {                                                                                           delete child;                                                                                  }                                                                                              }                                                                                                  m_planes.clear();                                                                              for (i = 0; i < static_cast<i32>(m_imageSets.size()); i++) {                                                          CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets[i]);                          if (child) {                                                                                           delete child;                                                                                  }                                                                                              }                                                                                                  m_imageSets.clear()
 
 #endif

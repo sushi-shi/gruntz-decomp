@@ -28,7 +28,7 @@ namespace NetLobby {
 
     CMulti* g_curMulti;
 
-    CString g_dropInPlayerName;
+    std::string g_dropInPlayerName;
 
     BOOL CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
@@ -306,13 +306,10 @@ namespace NetLobby {
 
     void InitializeDropWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
-            CString banner;
-            if (!g_sessionName.IsEmpty()) {
-                banner.Format(
-                    "Not Receiving Data From Client: %s",
-                    static_cast<LPCTSTR>(g_sessionName)
-                );
-                SetDlgItemTextA(hWnd, 0x44b, static_cast<LPCTSTR>(banner));
+            std::string banner;
+            if (!(g_sessionName).empty()) {
+                banner = formatText("Not Receiving Data From Client: %s", (g_sessionName).c_str());
+                SetDlgItemTextA(hWnd, 0x44b, (banner).c_str());
             }
             UpdateDropWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, NULL);
@@ -417,8 +414,8 @@ namespace NetLobby {
         if (hWnd && ctx) {
             char buf[0x80];
 
-            const char* pn = g_dropInPlayerName;
-            if (g_dropInPlayerName.GetLength()) {
+            const char* pn = (g_dropInPlayerName).c_str();
+            if (static_cast<i32>((g_dropInPlayerName).size())) {
                 sprintf(buf, "New Player Drop-In Request: %s", pn);
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }

@@ -50,14 +50,14 @@ void CWorldSoundSet::Deactivate() {
 }
 
 void CWorldSoundSet::Teardown() {
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
-        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+    std::list<CAmbientSound*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        CAmbientSound* sound = static_cast<CAmbientSound*>(*(pos++));
         if (sound != NULL) {
             delete sound;
         }
     }
-    m_list.RemoveAll();
+    m_list.clear();
 }
 
 CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
@@ -76,7 +76,8 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
         delete obj;
         return NULL;
     }
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = m_list.insert(m_list.end(), obj);
+    obj->m_inSoundSet = true;
     return obj;
 }
 
@@ -95,7 +96,8 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
         delete obj;
         return NULL;
     }
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = m_list.insert(m_list.end(), obj);
+    obj->m_inSoundSet = true;
     return obj;
 }
 
@@ -115,7 +117,8 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
         delete obj;
         return NULL;
     }
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = m_list.insert(m_list.end(), obj);
+    obj->m_inSoundSet = true;
     return obj;
 }
 
@@ -134,7 +137,8 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
         delete obj;
         return NULL;
     }
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = m_list.insert(m_list.end(), obj);
+    obj->m_inSoundSet = true;
     return obj;
 }
 
@@ -165,7 +169,8 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomFromKey(
         return NULL;
     }
     obj->InitCycleTiming(playDurationMin, playDurationMax, silenceDurationMin, silenceDurationMax);
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = m_list.insert(m_list.end(), obj);
+    obj->m_inSoundSet = true;
     return obj;
 }
 
@@ -189,7 +194,8 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomFromSound(
         return NULL;
     }
     obj->InitCycleTiming(playDurationMin, playDurationMax, silenceDurationMin, silenceDurationMax);
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = m_list.insert(m_list.end(), obj);
+    obj->m_inSoundSet = true;
     return obj;
 }
 
@@ -198,9 +204,9 @@ void CWorldSoundSet::SetMasterVolume(i32 masterVolume) {
     if (m_cueRegistry->m_soundStream != NULL) {
         m_cueRegistry->m_soundStream->ClearVolumeRamps();
     }
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
-        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+    std::list<CAmbientSound*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        CAmbientSound* sound = static_cast<CAmbientSound*>(*(pos++));
         if (sound != NULL) {
             sound->ApplyMasterVolume(masterVolume);
         }
@@ -211,9 +217,9 @@ void CWorldSoundSet::Stop() {
     if (m_cueRegistry != NULL && m_cueRegistry->m_soundStream != NULL) {
         m_cueRegistry->m_soundStream->ClearVolumeRamps();
     }
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
-        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+    std::list<CAmbientSound*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        CAmbientSound* sound = static_cast<CAmbientSound*>(*(pos++));
         if (sound != NULL && sound->m_sound != NULL) {
             sound->m_sound->StopAndRewind();
             sound->m_isPlaying = false;
@@ -222,9 +228,9 @@ void CWorldSoundSet::Stop() {
 }
 
 void CWorldSoundSet::Resume() {
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
-        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+    std::list<CAmbientSound*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        CAmbientSound* sound = static_cast<CAmbientSound*>(*(pos++));
         if (sound != NULL) {
             sound->m_isPlaying = false;
             sound->Update(m_listenerX, m_listenerY, true);
@@ -237,9 +243,9 @@ void CWorldSoundSet::Resume() {
 void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
     m_listenerX = x;
     m_listenerY = y;
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
-        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+    std::list<CAmbientSound*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        CAmbientSound* sound = static_cast<CAmbientSound*>(*(pos++));
         if (sound != NULL) {
             sound->Update(x, y, false);
         }
@@ -623,8 +629,9 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
             sound->m_sound->StopAndRewind();
             sound->m_isPlaying = false;
         }
-        if (sound->m_listNode != NULL) {
-            set->m_list.RemoveAt(sound->m_listNode);
+        if (sound->m_inSoundSet) {
+            set->m_list.erase(sound->m_listNode);
+            sound->m_inSoundSet = false;
             delete sound;
         }
         record->m_positionedSound = NULL;

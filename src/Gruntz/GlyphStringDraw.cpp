@@ -100,7 +100,7 @@ i32 LayerBlitFrame(
 
 i32 DrawTextToFrontSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,
@@ -130,7 +130,7 @@ i32 DrawTextToFrontSurface(
 
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,
@@ -160,7 +160,7 @@ i32 DrawTextToOverlaySurface(
 
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

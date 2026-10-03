@@ -39,7 +39,7 @@ inline void CPlay::FreeStartMarkers() {
             g_coordPool.Push(node);
         }
     }
-    m_startMarkers.RemoveAll();
+    m_startMarkers.clear();
 }
 
 inline void CPlay::FreePlacedObjectCells(i32 group) {
@@ -49,7 +49,7 @@ inline void CPlay::FreePlacedObjectCells(i32 group) {
             g_coordPool.Push(node);
         }
     }
-    m_placedObjectCells[group].RemoveAll();
+    m_placedObjectCells[group].clear();
 }
 
 inline void CPlay::UpdateAmbientMusic() {

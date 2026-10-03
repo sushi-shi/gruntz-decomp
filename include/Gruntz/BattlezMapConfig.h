@@ -1,6 +1,8 @@
 #ifndef SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 #define SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <Gruntz/BattlezDifficulty.h>
@@ -148,14 +150,14 @@ public:
     Coord m_marker;
     i32 m_reserved0d8;
 
-    CPtrArray m_candArray;
-    CPtrArray m_attackWaypoints;
+    std::vector<Coord*> m_candArray;
+    std::vector<Coord*> m_attackWaypoints;
 
     Coord* CoordAt(i32 index) {
-        return static_cast<Coord*>(m_attackWaypoints.GetAt(index));
+        return static_cast<Coord*>(m_attackWaypoints[index]);
     }
-    CDWordArray m_reserved104;
-    CDWordArray m_reserved118;
+    std::vector<u32> m_reserved104;
+    std::vector<u32> m_reserved118;
 
     i32 m_reserved12c[4];
     i32 m_reserved13c;

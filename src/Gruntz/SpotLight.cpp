@@ -128,9 +128,9 @@ i32 CSpotLight::Tick() {
                 g_gameReg->m_triggerMgr
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);
                 i32 laser = GetRandomNumber() % 2 + 1;
-                CString name;
-                name.Format("LEVEL_UFOHAZARDLASER%d", laser);
-                PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), name);
+                std::string name;
+                name = formatText("LEVEL_UFOHAZARDLASER%d", laser);
+                PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), (name).c_str());
                 return 0;
             } else {
                 tgt->SnapToLastTile(1);

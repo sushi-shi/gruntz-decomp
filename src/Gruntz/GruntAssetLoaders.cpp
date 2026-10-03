@@ -276,7 +276,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         default:
             SwitchAnimation(m_poseDeath);
-            APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
+            APPLY_NAME_INLINE(m_deathFrameSetName.c_str());
             PLAY_GRUNT_CUE_IN_VIEW(3);
 
             if (m_entranceReason == PICKUP_WARPSTONE
@@ -288,7 +288,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     }
 
 pathA:
-    APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
+    APPLY_NAME_INLINE(m_deathFrameSetName.c_str());
     PLAY_GRUNT_CUE_IF_VISIBLE(3);
     deathType = DEATH_NORMAL;
     goto tail;

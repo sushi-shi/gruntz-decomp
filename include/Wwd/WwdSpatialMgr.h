@@ -51,7 +51,7 @@ struct CWwdSpatialMgr {
     i32 ActivateKeepActiveFromGrid(CWwdGrid* grid);
     i32 DeactivateRegionObject(
         CWwdGrid* grid,
-        POSITION pos,
+        std::list<CGameObject*>::iterator pos,
         CWwdGameObject* obj,
         WwdRegion* region,
         WwdGameObjectFlags flags

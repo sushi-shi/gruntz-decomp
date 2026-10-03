@@ -400,11 +400,11 @@ i32 CMenuState::OnPaint() {
 }
 
 void CMenuState::BuildVersionString(CRect r) {
-    CString str;
+    std::string str;
     if (g_versionMid == 0) {
-        str.Format("Gruntz v%d.%d", g_versionMajor, g_versionMinor);
+        str = formatText("Gruntz v%d.%d", g_versionMajor, g_versionMinor);
     } else {
-        str.Format("Gruntz v%d.%d%d", g_versionMajor, g_versionMid, g_versionMinor);
+        str = formatText("Gruntz v%d.%d%d", g_versionMajor, g_versionMid, g_versionMinor);
     }
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";

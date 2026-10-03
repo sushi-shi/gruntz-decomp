@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_BOOTYSTATEACTIVATE_H
 #define GRUNTZ_BOOTYSTATEACTIVATE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -25,7 +27,7 @@ GZ_ENUM_CONST_END(BootyEffectCount)
 
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

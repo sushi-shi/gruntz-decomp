@@ -233,7 +233,7 @@ i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
 
     memset(tmp, 0, SERIAL_NAME_LEN);
     {
-        strcpy(tmp, OwnerMgr()->SoundRegistry()->FindCueKey(m_soundCue));
+        strcpy(tmp, (OwnerMgr()->SoundRegistry()->FindCueKey(m_soundCue)).c_str());
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -433,7 +433,7 @@ i32 CGameObject::SerializeDispatch(
                 CWwdGameObject* found = NULL;
                 if (MapLookup(
                         OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
-                        reinterpret_cast<void*>(node),
+                        node,
                         found
                     )
                     == false) {
@@ -474,7 +474,7 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 
     char tmp[SERIAL_NAME_LEN];
     memset(tmp, 0, sizeof(tmp));
-    strcpy(tmp, m_name);
+    strcpy(tmp, (m_name).c_str());
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     ar->Write(&m_moveMode, sizeof(m_moveMode));
@@ -524,19 +524,19 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_hitLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_hitLogic));
+        strcpy(tmp, (OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_hitLogic)).c_str());
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_attackLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_attackLogic));
+        strcpy(tmp, (OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_attackLogic)).c_str());
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collisionLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_collisionLogic));
+        strcpy(tmp, (OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_collisionLogic)).c_str());
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -602,7 +602,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        MapLookup(OwnerMgr()->m_logicRegistry->m_templatesByName, name, found);
         if (this->EnsureHitLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -611,7 +611,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        MapLookup(OwnerMgr()->m_logicRegistry->m_templatesByName, name, found);
         if (this->EnsureAttackLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -620,7 +620,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        MapLookup(OwnerMgr()->m_logicRegistry->m_templatesByName, name, found);
         if (this->EnsureBumpLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -688,7 +688,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     {
         strcpy(
             snapshot.m_logicTypeName,
-            OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_logicRecord)
+            (OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_logicRecord)).c_str()
         );
     }
     ar->Write(&snapshot, sizeof(snapshot));
@@ -750,20 +750,20 @@ void CLogicRecord::Unload() {
 }
 
 void CDDrawWorker::Unload() {
-    for (i32 i = 0; i < m_items.GetSize(); i++) {
-        CImage* el = static_cast<CImage*>(m_items.GetAt(i));
+    for (i32 i = 0; i < static_cast<i32>(m_items.size()); i++) {
+        CImage* el = static_cast<CImage*>(m_items[i]);
         if (el != NULL) {
             delete el;
         }
     }
-    m_items.RemoveAll();
+    m_items.clear();
 
     m_minIndex = 99999;
     m_maxIndex = 0;
 }
 
 CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
-    if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
+    if (n < static_cast<i32>(m_items.size()) && static_cast<CImage*>(m_items[n]) != NULL) {
         return NULL;
     }
 
@@ -774,12 +774,12 @@ CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
         }
         return NULL;
     }
-    ADD_FRAME_AT(static_cast<CObject*>(worker), n)
+    ADD_FRAME_AT((worker), n)
     return worker;
 }
 
 CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < static_cast<i32>(m_items.size()) && static_cast<CImage*>(m_items[index]) != NULL) {
         return NULL;
     }
 
@@ -792,13 +792,13 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    ADD_FRAME_AT((nf), index)
     return nf;
 }
 
 CImage*
 CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < static_cast<i32>(m_items.size()) && static_cast<CImage*>(m_items[index]) != NULL) {
         return NULL;
     }
 
@@ -811,12 +811,12 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    ADD_FRAME_AT((nf), index)
     return nf;
 }
 
 CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < static_cast<i32>(m_items.size()) && static_cast<CImage*>(m_items[index]) != NULL) {
         return NULL;
     }
 
@@ -829,11 +829,11 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    ADD_FRAME_AT((nf), index)
     return nf;
 }
 
-void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
+void CDDrawWorker::AddFrameAt(CImage* elem, i32 index){ADD_FRAME_AT(elem, index)}
 
 i32 CDDrawWorker::BuildFramesFromArchive(CRezDir* tab) {
     i32 count = 0;
@@ -869,7 +869,7 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
 
     i32 matched = 0;
     i32 liveFrames = 0;
-    i32 n = m_items.GetSize();
+    i32 n = static_cast<i32>(m_items.size());
     for (i32 i = 0; i < n; i++) {
         if (GetAt(i) != NULL) {
             liveFrames++;
@@ -974,7 +974,7 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
 }
 
 ShadeMode CDDrawWorker::GetFirstFrameState() {
-    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+    CImage* frame = static_cast<CImage*>(m_items[m_minIndex]);
     if (frame == NULL) {
         return SHADE_COPY;
     }
@@ -986,7 +986,7 @@ ShadeMode CDDrawWorker::GetFirstFrameState() {
 }
 
 i32 CDDrawWorker::GetFirstFrameLightLevel() {
-    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+    CImage* frame = static_cast<CImage*>(m_items[m_minIndex]);
     if (frame == NULL) {
         return 1;
     }
@@ -999,8 +999,8 @@ i32 CDDrawWorker::GetFirstFrameLightLevel() {
 
 i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     if (frame) {
-        for (i32 i = 0; i < m_items.GetSize(); i++) {
-            CImage* cur = static_cast<CImage*>(m_items.GetAt(i));
+        for (i32 i = 0; i < static_cast<i32>(m_items.size()); i++) {
+            CImage* cur = static_cast<CImage*>(m_items[i]);
             if (cur && cur == frame) {
                 if (outName) {
                     strcpy(outName, m_name);

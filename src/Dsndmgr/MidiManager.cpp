@@ -1,6 +1,7 @@
 #include <StdAfx.h>
 
 #include <Ints.h>
+#include <Utils/MapTyped.h>
 
 #include <Dsndmgr/MidiManager.h>
 
@@ -55,18 +56,18 @@ void MidiManager::ClearSequences() {
     if (m_currentSequence != NULL) {
         m_currentSequence->End();
     }
-    POSITION pos = m_sequences.GetStartPosition();
-    if (pos != static_cast<POSITION>(0)) {
+    std::map<std::string, MidiSequence*>::iterator pos = m_sequences.begin();
+    if (pos != m_sequences.end()) {
         do {
-            CString key;
+            std::string key;
             CObject* sequenceObject = NULL;
-            m_sequences.GetNextAssoc(pos, key, sequenceObject);
+            (key = pos->first, sequenceObject = pos->second, ++pos);
             if (sequenceObject != NULL) {
                 delete static_cast<MidiSequence*>(sequenceObject);
             }
-        } while (pos != static_cast<POSITION>(0));
+        } while (pos != m_sequences.end());
     }
-    m_sequences.RemoveAll();
+    m_sequences.clear();
     m_currentSequence = NULL;
 }
 
@@ -107,7 +108,7 @@ void MidiManager::RegisterSequence(MidiSequence* sequence) {
     if (m_midiAvailable == false) {
         return;
     }
-    m_sequences[sequence->m_name] = static_cast<CObject*>(sequence);
+    m_sequences[sequence->m_name] = (sequence);
     if (m_currentSequence == NULL) {
         m_currentSequence = sequence;
     }
@@ -124,7 +125,7 @@ MidiSequence* MidiManager::FindSequence(const char* name) {
         return NULL;
     }
     CObject* sequenceObject = NULL;
-    return m_sequences.Lookup(name, sequenceObject) ? static_cast<MidiSequence*>(sequenceObject)
+    return MapLookup(m_sequences, name, sequenceObject) ? static_cast<MidiSequence*>(sequenceObject)
                                                     : NULL;
 }
 

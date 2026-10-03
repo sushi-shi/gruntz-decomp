@@ -324,15 +324,15 @@ i32 CCreditsState::DrawScrollingCredits() {
             SelectClipRgn(hdc, m_clipRegion);
         }
         COLORREF oldColor = SetTextColor(hdc, FlashColor());
-        DrawTextA(hdc, m_caption, -1, &m_drawRect, DT_WORDBREAK | DT_EXPANDTABS);
+        DrawTextA(hdc, (m_caption).c_str(), -1, &m_drawRect, DT_WORDBREAK | DT_EXPANDTABS);
         SetTextColor(hdc, oldColor);
         if (m_fxEnabled != false && m_fadeCountdown != 0) {
-            CString s("Now is the time at Monolith when we dance");
+            std::string s("Now is the time at Monolith when we dance");
             RECT r = {0, 0, SCREEN_W_PX, SCREEN_H_PX};
             COLORREF oldColor2 = SetTextColor(hdc, RGB(255, 255, 255));
             DrawTextA(
                 hdc,
-                s,
+                (s).c_str(),
                 -1,
                 &r,
                 DT_CENTER | DT_VCENTER | DT_WORDBREAK | DT_SINGLELINE | DT_EXPANDTABS
@@ -373,7 +373,7 @@ i32 CCreditsState::SetupTitle() {
     prov->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc) {
         i32 h =
-            DrawTextA(hdc, m_caption, -1, &m_drawRect, DT_WORDBREAK | DT_EXPANDTABS | DT_CALCRECT);
+            DrawTextA(hdc, (m_caption).c_str(), -1, &m_drawRect, DT_WORDBREAK | DT_EXPANDTABS | DT_CALCRECT);
         m_scrollRect.SetRect(0x32, SCREEN_H_PX, 0x24e, h + SCREEN_H_PX);
         prov->GetDirectDrawSurface()->ReleaseDC(hdc);
     }

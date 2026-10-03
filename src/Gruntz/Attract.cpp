@@ -394,9 +394,9 @@ i32 CState::InputVirtual() {
         return 0;
     }
     if (g_playActive == false) {
-        CString text;
+        std::string text;
         RECT rect;
-        text.LoadString(0x81a9);
+        loadResourceText(0x81a9, text);
         tagSIZE mode = m_mgr->GetModeSize();
         rect.right = mode.cx;
         rect.bottom = mode.cy;

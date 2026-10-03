@@ -48,7 +48,7 @@ i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
     if (saveDirectory == NULL) {
         return 0;
     }
-    m_saveDirectory = saveDirectory;
+    m_saveDirectory = saveDirectory ? saveDirectory : "";
     m_progressFilePath = m_saveDirectory + "Gruntz.sav";
     memset(m_header, 0, s_saveFileHeaderBytes);
     Init();
@@ -58,7 +58,7 @@ i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
         if (slot != NULL) {
             char numbuf[16];
             _itoa(i + 1, numbuf, 10);
-            wsprintfA(slot->m_savePath, m_saveDirectory + "Slot" + numbuf + ".sav");
+            wsprintfA(slot->m_savePath, (m_saveDirectory + "Slot" + numbuf + ".sav").c_str());
         }
     }
     return 1;
@@ -66,7 +66,7 @@ i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
 
 void CSaveGame::Reset() {
     Init();
-    m_progressFilePath.Empty();
+    (m_progressFilePath).erase();
 }
 
 void CSaveGame::Init() {
@@ -81,7 +81,7 @@ void CSaveGame::Init() {
 
 i32 CSaveGame::Load() {
     CFile file;
-    if (!file.Open(m_progressFilePath, CFile::modeRead, NULL)) {
+    if (!file.Open((m_progressFilePath).c_str(), CFile::modeRead, NULL)) {
         return 0;
     }
     file.Read(m_header, s_saveFileHeaderBytes);
@@ -96,11 +96,11 @@ i32 CSaveGame::Load() {
 i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     CWaitCursorScope wait;
     CFile file;
-    if (!file.Open(m_progressFilePath, CFile::modeCreate, NULL)) {
+    if (!file.Open((m_progressFilePath).c_str(), CFile::modeCreate, NULL)) {
         return 0;
     }
     file.Close();
-    if (!file.Open(m_progressFilePath, CFile::modeWrite, NULL)) {
+    if (!file.Open((m_progressFilePath).c_str(), CFile::modeWrite, NULL)) {
         return 0;
     }
     ComputeAll();
@@ -215,7 +215,7 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
         isBattlez,
         isCustom,
         slot->m_levelId,
-        CString(name)
+        std::string(name)
     );
     if (r == 0) {
         g_gameReg->EnterModalUI(
@@ -247,7 +247,7 @@ i32 CSaveGame::Register(SaveSlot* slot) {
         isBattlez,
         isCustom,
         slot->m_levelId,
-        CString(name)
+        std::string(name)
     );
 }
 

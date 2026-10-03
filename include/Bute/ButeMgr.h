@@ -1,6 +1,8 @@
 #ifndef SRC_BUTE_BUTEMGR_H
 #define SRC_BUTE_BUTEMGR_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Bute/ButeStore.h>
@@ -62,9 +64,9 @@ public:
             m_symType = t;
             m_data.m_d = new double(val);
         }
-        CSymTabItem(SymTypes t, const CString& val) {
+        CSymTabItem(SymTypes t, const std::string& val) {
             m_symType = t;
-            m_data.m_s = new CString(val);
+            m_data.m_s = new std::string(val);
         }
         CSymTabItem(SymTypes t, ButeIntRect* src) {
             m_symType = t;
@@ -87,7 +89,7 @@ public:
             DWORD* m_dw;
             double* m_d;
             float* m_f;
-            CString* m_s;
+            std::string* m_s;
             ButeIntRect* m_r;
             ButeIntPoint* m_point;
             CAVector* m_v;
@@ -103,8 +105,8 @@ public:
     float GetFloat(const char* tag, const char* key);
     double GetDouble(const char* tag, const char* key, double def);
     double GetDouble(const char* tag, const char* key);
-    CString* GetString(const char* tag, const char* key, CString* def);
-    CString* GetString(const char* tag, const char* key);
+    std::string* GetString(const char* tag, const char* key, std::string* def);
+    std::string* GetString(const char* tag, const char* key);
 
     struct ButeIntRect* GetRect(const char* tag, const char* key, struct ButeIntRect* def);
     struct ButeIntPoint* GetPoint(const char* tag, const char* key, struct ButeIntPoint* def);
@@ -114,7 +116,7 @@ public:
     bool Match(ButeToken expectType);
     bool ScanTok();
 
-    bool Parse(CString filename, int streamBase);
+    bool Parse(std::string filename, int streamBase);
     bool Parse(CRezItm* stream, const char* key);
 
     bool Save();
@@ -148,7 +150,7 @@ public:
     void SetDword(const char* tag, const char* key, DWORD val);
     void SetFloat(const char* tag, const char* key, float val);
     void SetDouble(const char* tag, const char* key, double val);
-    void SetString(const char* tag, const char* key, const CString& val);
+    void SetString(const char* tag, const char* key, const std::string& val);
     void SetRect(const char* tag, const char* key, struct ButeIntRect* val);
     void SetVector(const char* tag, const char* key, const CAVector& val);
     void SetRange(const char* tag, const char* key, const CARange& val);
@@ -179,7 +181,7 @@ private:
     bool m_bLineCounterFlag;
 
     bool m_bErrorFlag;
-    CString m_sErrorString;
+    std::string m_sErrorString;
     ErrCallback m_pDisplayFunc;
     TableOfTags m_tagTab;
 
@@ -197,9 +199,9 @@ private:
     GZ_ENUM_STORAGE(ButeToken, i16) m_token;
     i16 m_tokenMinor;
     char m_szTokenString[0x100 - 0xae];
-    CString m_sTagName;
-    CString m_sAttribute;
-    CString m_sAttributeFilename;
+    std::string m_sTagName;
+    std::string m_sAttribute;
+    std::string m_sAttributeFilename;
     bool m_bPutChar;
     bool m_writeMode;
 

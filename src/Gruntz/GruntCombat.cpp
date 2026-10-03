@@ -462,8 +462,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         "SingleAnimation",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix);
-    spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix, 0);
+    spr->SetImageSetByName(("GRUNTZ_" + m_animSetName + s_loseItemSuffix).c_str());
+    spr->SetAnimationByName(("GRUNTZ_" + m_animSetName + s_loseItemSuffix).c_str(), 0);
 
     PLAY_GRUNT_CUE_IN_VIEW(0xe);
 
@@ -571,12 +571,12 @@ void CGrunt::DestroyAnims() {
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
 
-    CPtrList* coordz = &m_coordList;
+    std::list<Coord*>* coordz = &m_coordList;
     if (CoordCount() == 0) {
         return 1;
     }
 
-    POSITION node = coordz->GetHeadPosition();
+    std::list<Coord*>::iterator node = coordz->begin();
 
     Coord start = ScreenTile(this);
 
@@ -589,14 +589,14 @@ i32 CGrunt::PathScan() {
     Coord target = *GetTailCoord();
     i32 hits = 0;
 
-    while (node != NULL) {
-        Coord* co = static_cast<Coord*>(coordz->GetNext(node));
+    while (node != coordz->end()) {
+        Coord* co = static_cast<Coord*>(*(node++));
         if (co != NULL) {
 
             if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0
                 || (co->m_x == target.m_x && co->m_y == target.m_y)) {
 
-                CPtrList s(0xa);
+                std::list<Coord*> s;
                 i32 res = grid->FindPathWithEndpointOverrides(
                     start.m_x,
                     start.m_y,
@@ -608,28 +608,28 @@ i32 CGrunt::PathScan() {
                     m_passableMask
                 );
                 if (res != 0) {
-                    if (!s.IsEmpty()) {
+                    if (!s.empty()) {
 
-                        while (node != NULL) {
-                            Coord* src = static_cast<Coord*>(coordz->GetNext(node));
-                            s.AddTail(g_coordPool.PopCopy(*src));
+                        while (node != coordz->end()) {
+                            Coord* src = static_cast<Coord*>(*(node++));
+                            s.insert(s.end(), g_coordPool.PopCopy(*src));
                         }
 
                         this->RecycleCoords();
 
-                        POSITION p = s.GetHeadPosition();
-                        if (p != NULL) {
+                        std::list<Coord*>::iterator p = s.begin();
+                        if (p != s.end()) {
                             do {
-                                Coord* d = static_cast<Coord*>(s.GetNext(p));
+                                Coord* d = static_cast<Coord*>(*(p++));
                                 if (d != NULL) {
                                     if (d->m_x != start.m_x || d->m_y != start.m_y) {
-                                        coordz->AddTail(d);
+                                        coordz->insert(coordz->end(), d);
                                     }
                                 }
-                            } while (p != NULL);
+                            } while (p != s.end());
                         }
                         RECYCLE_HEAD_COORD(s)
-                        s.RemoveAll();
+                        s.clear();
                         grid->Clip(NULL);
                         return 1;
                     }
@@ -669,7 +669,7 @@ i32 CGrunt::PathScan() {
                 if (mf != 0 && (m_passableMask & cf) == 0) {
                     continue;
                 }
-                CPtrList s(0xa);
+                std::list<Coord*> s;
                 i32 res = grid->FindPathWithEndpointOverrides(
                     start.m_x,
                     start.m_y,
@@ -682,19 +682,19 @@ i32 CGrunt::PathScan() {
                 );
                 if (res != 0) {
 
-                    if (!s.IsEmpty()) {
+                    if (!s.empty()) {
                         RECYCLE_HEAD_COORD(s)
-                        if (!s.IsEmpty()) {
+                        if (!s.empty()) {
 
                             this->RecycleCoords();
 
-                            POSITION p = s.GetHeadPosition();
-                            if (p != NULL) {
+                            std::list<Coord*>::iterator p = s.begin();
+                            if (p != s.end()) {
                                 do {
-                                    coordz->AddTail(s.GetNext(p));
-                                } while (p != NULL);
+                                    coordz->insert(coordz->end(), *(p++));
+                                } while (p != s.end());
                             }
-                            s.RemoveAll();
+                            s.clear();
 
                             if (grid->FindPathWithEndpointOverrides(
                                     cc,
@@ -707,16 +707,16 @@ i32 CGrunt::PathScan() {
                                     m_passableMask
                                 )
                                 != 0) {
-                                if (!s.IsEmpty()) {
+                                if (!s.empty()) {
                                     RECYCLE_HEAD_COORD(s)
-                                    if (!s.IsEmpty()) {
-                                        POSITION q = s.GetHeadPosition();
-                                        if (q != NULL) {
+                                    if (!s.empty()) {
+                                        std::list<Coord*>::iterator q = s.begin();
+                                        if (q != s.end()) {
                                             do {
-                                                coordz->AddTail(s.GetNext(q));
-                                            } while (q != NULL);
+                                                coordz->insert(coordz->end(), *(q++));
+                                            } while (q != s.end());
                                         }
-                                        s.RemoveAll();
+                                        s.clear();
                                     }
                                 }
                             }
@@ -1280,9 +1280,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;
         newGrid->AcquireCellOccupancy(nxt, nyt, this->m_playerIndex, this->m_unitIndex);
 
-        if (!m_coordList.IsEmpty()) {
+        if (!m_coordList.empty()) {
             Coord tile;
-            m_coordList.AddHead(g_coordPool.PopCopy(*tile.Set(
+            m_coordList.insert(m_coordList.begin(), g_coordPool.PopCopy(*tile.Set(
                 this->m_lastTilePx.m_x >> TILE_SHIFT_PX,
                 this->m_lastTilePx.m_y >> TILE_SHIFT_PX
             )));
@@ -1299,7 +1299,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_movePosX = static_cast<double>((this->m_object->m_screenX));
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
 
-        if (!m_coordList.IsEmpty()) {
+        if (!m_coordList.empty()) {
             this->RecycleCoords();
         }
         this->m_arrivalPending = false;
@@ -1625,7 +1625,7 @@ static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
     }
 }
 
-void CGrunt::StepBehavior(char*) {
+void CGrunt::StepBehavior(const char*) {
     if (m_struckTiming.Expired()) {
         m_struckCount = 0;
     }
@@ -2149,7 +2149,7 @@ kindDispatch:
     }
 }
 
-void CGrunt::FinalizeStep(char* name) {
+void CGrunt::FinalizeStep(const char* name) {
     CUserLogic::FinalizeStep(name);
     AdvanceMotion();
     if (m_vehicleLoopSound != NULL) {

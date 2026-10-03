@@ -1,6 +1,10 @@
 #ifndef GRUNTZ_GRUNTZ_CMULTI_H
 #define GRUNTZ_GRUNTZ_CMULTI_H
 
+#include <vector>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -77,7 +81,7 @@ public:
         return m_netMgr;
     }
 
-    void AppendEditLine(HWND edit, char* str);
+    void AppendEditLine(HWND edit, const char* str);
 
     CNetPlayerNode* LocalPlayer() {
         return m_localPlayer;
@@ -95,22 +99,22 @@ public:
         return m_session;
     }
 
-    CString GameName();
+    std::string GameName();
 
-    CString PlayerName() {
+    std::string PlayerName() {
         return m_playerName;
     }
 
-    CString BuiltInLevelName() {
+    std::string BuiltInLevelName() {
         return m_builtInLevelName;
     }
 
-    CString CustomLevelName() {
+    std::string CustomLevelName() {
         return m_customLevelName;
     }
     i32 GetCommandDelay();
     i32 GetResendDelay();
-    void ReportVersionMsg(char* msg, i32 code);
+    void ReportVersionMsg(const char* msg, i32 code);
 
     void ReportStatusId(u32 strId, i32 level);
     void ReportNetError(i32 level);
@@ -157,7 +161,7 @@ public:
         i32 networkPlayerId
     );
 
-    i32 BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally, HWND edit);
+    i32 BroadcastChatLine(const char* text, i32 prefixPlayerName, i32 echoLocally, HWND edit);
     i32 ReadGroupSel();
     i32 AdvanceGameFrame();
     void RenderGameFrame();
@@ -220,8 +224,8 @@ public:
     void HandleVersionCheck(CNetVersionPacket* packet);
     void SendVersionCheck(CNetPlayerNode* recipient);
 
-    void SetGameName(CString s);
-    void SetPlayerName(CString s);
+    void SetGameName(std::string s);
+    void SetPlayerName(std::string s);
 
     CNetSession* m_session;
     CNetMgr* m_netMgr;
@@ -247,15 +251,15 @@ public:
     b32 m_connectAccepted;
     b32 m_savedEffectsEnabled;
     b32 m_roundComplete;
-    CString m_providerConfigPrefix;
-    CString m_gameName;
-    CString m_playerName;
+    std::string m_providerConfigPrefix;
+    std::string m_gameName;
+    std::string m_playerName;
     i32 m_commandDelay;
     i32 m_resendInterval;
     b32 m_gameClosed;
     b32 m_usesCustomLevel;
-    CString m_builtInLevelName;
-    CString m_customLevelName;
+    std::string m_builtInLevelName;
+    std::string m_customLevelName;
     CNetPlayerNode* m_localPlayer;
     i32 m_localPlayerId;
     i32 m_lastSenderId;
@@ -275,13 +279,13 @@ public:
     i32 m_playerLatencyMs[4];
     b32 m_autoCommandDelay;
 
-    CDWordArray m_readyPlayerIds;
+    std::vector<u32> m_readyPlayerIds;
 
     char m_pad618[0x660 - 0x618];
 };
 
 extern CMulti* g_multiState;
-extern CString g_sessionName;
+extern std::string g_sessionName;
 extern i32 g_battlezTurnPlayerIndex;
 
 extern CNetMgr* g_netMgr;
@@ -306,7 +310,7 @@ extern u32 g_ackThrottleDeadline;
 
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

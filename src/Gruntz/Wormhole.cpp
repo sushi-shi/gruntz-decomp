@@ -123,12 +123,12 @@ i32 CWormhole::SpawnPartners() {
         return 0;
     }
 
-    CObList* list = &g_gameReg->World()->ChildGroup()->m_list;
+    std::list<CGameObject*>* list = &g_gameReg->World()->ChildGroup()->m_list;
     if (list == NULL) {
         return 0;
     }
-    POSITION pos = list->GetHeadPosition();
-    if (pos == NULL) {
+    std::list<CGameObject*>::iterator pos = list->begin();
+    if (pos == list->end()) {
         return 0;
     }
     do {
@@ -140,7 +140,7 @@ i32 CWormhole::SpawnPartners() {
                 static_cast<CTeleporter*>(record->m_userLogic)->ReapplyConfig();
             }
         }
-    } while (pos != NULL);
+    } while (pos != list->end());
     return 0;
 }
 
@@ -203,12 +203,12 @@ i32 CGruntPuddle::Remove() {
         i32 flags = grid->CellFlagsAt(tx, ty);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-            CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
-            POSITION pos = list.GetHeadPosition();
-            while (pos != NULL) {
-                POSITION current = pos;
-                if (list.GetNext(pos) == this) {
-                    list.RemoveAt(current);
+            std::list<CGruntPuddle*>& list = g_gameReg->m_triggerMgr->m_baseList;
+            std::list<CGruntPuddle*>::iterator pos = list.begin();
+            while (pos != list.end()) {
+                std::list<CGruntPuddle*>::iterator current = pos;
+                if (*(pos++) == this) {
+                    list.erase(current);
                     return 0;
                 }
             }

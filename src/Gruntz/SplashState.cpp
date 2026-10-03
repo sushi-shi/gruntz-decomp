@@ -32,11 +32,10 @@
 
 #include <ddraw.h>
 
-template<>
-CString CStringStaticPool<CAssetRootTag>::s_value;
+std::string CAssetRootStorage::s_value;
 
 i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    if (CAssetRootStorage::s_value.IsEmpty()) {
+    if ((CAssetRootStorage::s_value).empty()) {
         return 0;
     }
 
@@ -71,7 +70,7 @@ i32 CSplashState::EnterState(GameStateId previousState) {
     int(WINAPI * sc)(BOOL) = ShowCursor;
     while (sc(0) >= 0) {
     }
-    LoadAndPresentTitlePage(static_cast<const char*>(CAssetRootStorage::s_value), 1, 1, 1, 0);
+    LoadAndPresentTitlePage((CAssetRootStorage::s_value).c_str(), 1, 1, 1, 0);
     m_splashCountdownMs = 0xea60;
     return 1;
 }
@@ -121,7 +120,7 @@ i32 CSplashState::InputVirtual() {
     while (ShowCursor(false) >= 0) {
     }
     return LoadAndPresentTitlePage(
-        static_cast<const char*>(CAssetRootStorage::s_value),
+        (CAssetRootStorage::s_value).c_str(),
         0,
         0,
         1,
@@ -136,7 +135,7 @@ i32 CSplashState::RestoreDisplay() {
     while (ShowCursor(false) >= 0) {
     }
     return LoadAndPresentTitlePage(
-        static_cast<const char*>(CAssetRootStorage::s_value),
+        (CAssetRootStorage::s_value).c_str(),
         0,
         0,
         1,

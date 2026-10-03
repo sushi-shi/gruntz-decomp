@@ -27,14 +27,14 @@ int StartUpPrompt(HWND hWnd) {
         return 0;
     }
 
-    CString strPath;
-    CString strRez = "Gruntz.REZ";
-    strPath.Format("%s\\%s", szDir, static_cast<LPCTSTR>(strRez));
+    std::string strPath;
+    std::string strRez = "Gruntz.REZ";
+    strPath = formatText("%s\\%s", szDir, (strRez).c_str());
 
     char szText[128];
     char szCaption[62];
 
-    if (!FileExists(strPath)) {
+    if (!FileExists((strPath).c_str())) {
         g_cdPromptResult = false;
         for (;;) {
             strcpy(szText, "Please insert the game CD-ROM into the drive.");

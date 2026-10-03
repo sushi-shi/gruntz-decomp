@@ -53,6 +53,6 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
 CLogicRecord* CLogicRecordRegistry::FindTemplate(const char* key) {
     CObject* found = NULL;
     ASSERT(key != NULL);
-    m_templatesByName.Lookup(key, found);
+    MapLookup(m_templatesByName, key, found);
     return static_cast<CLogicRecord*>(found);
 }

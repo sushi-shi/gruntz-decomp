@@ -9,7 +9,7 @@
 
 i32 EngStr_RenderText(
     void* self,
-    CString* text,
+    std::string* text,
     RECT* dst,
     CDDSurface* drawSurface,
     i32 fontSel,
@@ -46,7 +46,7 @@ i32 EngStr_RenderText(
             g_textObj.SetFont(&g_tinyFont);
             break;
     }
-    CString* str = text;
+    std::string* str = text;
     RECT* rc = dst;
     CRect rect;
     if (shadow) {

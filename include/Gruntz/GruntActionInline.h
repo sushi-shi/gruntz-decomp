@@ -32,7 +32,7 @@ inline void CGrunt::RestorePreviousAppearance() {
         m_tileMoveCommitted = false;
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        char* name = EntranceCell()->WalkName().GetBuffer(0);
+        const char* name = (EntranceCell()->WalkName()).c_str();
         SetImageSetByName(name);
     } else {
         ResetEntranceAnimation(1, 0, 0);

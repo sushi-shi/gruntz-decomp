@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_MENUPAGE_H
 #define GRUNTZ_MENUPAGE_H
 
+#include <list>
+class CMenuItem;
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -37,7 +42,7 @@ public:
     ~CMenuPage() {
         Reset();
     }
-    CString GetPageKey();
+    std::string GetPageKey();
 
     i32 Configure(
         CMenuTree* menuTree,
@@ -112,16 +117,18 @@ public:
 
     CDDrawSurfaceMgr* m_world;
     CMenuTree* m_menuTree;
-    CString m_parentPageKey;
-    CString m_pageKey;
-    CString m_initialFocusItemName;
-    CPtrList m_items;
+    std::string m_parentPageKey;
+    std::string m_pageKey;
+    std::string m_initialFocusItemName;
+    std::list<CMenuItem*> m_items;
 
-    CMenuItem* NextItem(POSITION& position) {
-        return static_cast<CMenuItem*>(m_items.GetNext(position));
+    CMenuItem* NextItem(std::list<CMenuItem*>::iterator& position) {
+        return static_cast<CMenuItem*>(*(position++));
     }
-    CMenuItem* PrevItem(POSITION& position) {
-        return static_cast<CMenuItem*>(m_items.GetPrev(position));
+    CMenuItem* PrevItem(std::list<CMenuItem*>::iterator& position) {
+        CMenuItem* item = *position;
+        position = position == m_items.begin() ? m_items.end() : --position;
+        return item;
     }
     MenuPageFlags m_flags;
     RECT m_bounds;

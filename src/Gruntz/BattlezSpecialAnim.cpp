@@ -89,8 +89,8 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    CString* recs;
-    CString* sel;
+    std::string* recs;
+    std::string* sel;
     i32 ci;
 
     recs = &g_typeColl[unit->m_logicRecord->m_eventCode];

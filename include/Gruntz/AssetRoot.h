@@ -1,11 +1,10 @@
 #ifndef GRUNTZ_ASSETROOT_H
 #define GRUNTZ_ASSETROOT_H
 
-template<class Tag> struct CStringStaticPool {
-    static CString s_value;
-};
+#include <string>
 
-struct CAssetRootTag;
-typedef CStringStaticPool<CAssetRootTag> CAssetRootStorage;
+struct CAssetRootStorage {
+    static std::string s_value;
+};
 
 #endif

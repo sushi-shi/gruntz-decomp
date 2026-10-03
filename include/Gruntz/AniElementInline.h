@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 inline CObject* CAniElement::GetAt(i32 i) const {
-    if (i >= 0 && i < m_records.GetSize()) {
-        return m_records.GetAt(i);
+    if (i >= 0 && i < static_cast<i32>(m_records.size())) {
+        return m_records[i];
     }
     return NULL;
 }

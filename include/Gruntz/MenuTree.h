@@ -1,7 +1,13 @@
 #ifndef GRUNTZ_MENU_TREE_H
 #define GRUNTZ_MENU_TREE_H
 
+#include <list>
+class CMenuPage;
+
+#include <string>
+
 #include <Ints.h>
+#include <Gruntz/MenuPage.h>
 
 #include <Ints.h>
 
@@ -75,10 +81,10 @@ public:
     i32 m_rowSpacing;
 
     i32 m_wrapFlags;
-    CPtrList m_pages;
+    std::list<CMenuPage*> m_pages;
     CMenuPage* m_activePage;
-    CString m_focusSoundKey;
-    CString m_activationSoundKey;
+    std::string m_focusSoundKey;
+    std::string m_activationSoundKey;
     CDDrawWorker* m_leftCursorAnimation;
     CImage* m_leftCursorFrame;
     i32 m_leftCursorFramePeriodMs;
@@ -93,6 +99,6 @@ public:
     i32 m_rightCursorFrameIndex;
 };
 
-#define INITIALIZE_MENU_TREE_MEMBERS                                                                   m_world = NULL;                                                                                    m_windowHandle = NULL;                                                                             m_activePage = NULL;                                                                               m_leftCursorAnimation = NULL;                                                                      m_rightCursorAnimation = NULL;                                                                     m_leftCursorFrame = NULL;                                                                          m_rightCursorFrame = NULL;                                                                         m_focusSoundKey.Empty();                                                                           m_activationSoundKey.Empty()
+#define INITIALIZE_MENU_TREE_MEMBERS                                                                   m_world = NULL;                                                                                    m_windowHandle = NULL;                                                                             m_activePage = NULL;                                                                               m_leftCursorAnimation = NULL;                                                                      m_rightCursorAnimation = NULL;                                                                     m_leftCursorFrame = NULL;                                                                          m_rightCursorFrame = NULL;                                                                         m_focusSoundKey.erase();                                                                           m_activationSoundKey.erase()
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_CSTATE_H
 #define GRUNTZ_GRUNTZ_CSTATE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -18,7 +20,7 @@ class CRezDir;
 class CFileMemBase;
 class CGruntzMgr;
 class CFaderMgr;
-class CString;
+
 class CMulti;
 
 class CState {
@@ -164,7 +166,7 @@ public:
         return m_mgr;
     }
     i32 BuildAssetNamespacePrefixes(
-        const CString& name,
+        const std::string& name,
         i32 mode,
         i32 lightGate,
         class CMulti* finishGate

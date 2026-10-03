@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_CSTATUSBARMGR_H
 #define GRUNTZ_CSTATUSBARMGR_H
 
+#include <list>
+class CStatusBarItem;
+
+#include <vector>
+
 #include <Ints.h>
 
 #include <Bute/ButeMgr.h>
@@ -87,7 +92,10 @@ GZ_ENUM_CONST_BEGIN(GruntWellPct)
     GRUNT_WELL_FULL = 100
 GZ_ENUM_CONST_END(GruntWellPct)
 
-#define DELETE_STATUS_ITEMS(list)                                                                      {                                                                                                      POSITION pos = (list).GetHeadPosition();                                                           while (pos) {                                                                                          delete static_cast<CStatusBarItem*>((list).GetNext(pos));                                      }                                                                                                  (list).RemoveAll();                                                                            }
+#define DELETE_STATUS_ITEMS(items) \
+    { for (std::list<CStatusBarItem*>::iterator item = (items).begin(); \
+           item != (items).end(); ++item) { delete *item; } \
+      (items).clear(); }
 
 class CStatusBarMgr {
     inline b32 ActivateReadySlot(i32 slot);
@@ -192,7 +200,7 @@ public:
     void ResetWidgets(b32 keepLists);
     void ClearTabGroup();
     void AddTabItem(i32 tab, CStatusBarItem* item) {
-        m_tabLists[tab].AddTail(item);
+        m_tabLists[tab].insert(m_tabLists[tab].end(), item);
     }
     i32 ClearStat(i32 idx);
     void EnterHlRow(i32 row, i32 group);
@@ -228,7 +236,7 @@ public:
     i32 m_barX;
     i32 m_barY;
 
-    CPtrList m_tabLists[8];
+    std::list<CStatusBarItem*> m_tabLists[8];
     StatusBarTab m_activeTab;
     GameTabContent m_itemKind;
     StatusSampleMode m_statFlags[TM_UNITS_PER_PLAYER];
@@ -298,21 +306,21 @@ public:
     b32 m_rezActive;
     i32 m_rezTick;
 
-    CPtrArray m_rewardQueue;
+    std::vector<Coord*> m_rewardQueue;
 
     i32 m_reserved544;
 
     Coord* GetReward(i32 index) const {
-        return static_cast<Coord*>(m_rewardQueue.GetAt(index));
+        return static_cast<Coord*>(m_rewardQueue[index]);
     }
     void ClearRewardQueue() {
-        for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
+        for (i32 i = 0; i < static_cast<i32>(m_rewardQueue.size()); i++) {
             Coord* reward = GetReward(i);
             if (reward) {
                 g_coordPool.Push(reward);
             }
         }
-        m_rewardQueue.RemoveAll();
+        m_rewardQueue.clear();
     }
 
     b32 m_hlBusy;

@@ -28,11 +28,11 @@
 
 char g_mapNameBuf[0x200] = {0};
 
-CString g_pathStr;
+std::string g_pathStr;
 
-CString g_levelStr;
+std::string g_levelStr;
 
-CString g_selectedCustomWorldName;
+std::string g_selectedCustomWorldName;
 
 CDDrawSurfaceMgr* g_customWorldSurfaceMgr = NULL;
 
@@ -46,8 +46,8 @@ char g_dotDot[] = "..";
 
 char g_customGlob[] = "*.WWD";
 
-CString RunCustomWorldDialog(HWND parent, CString* outSource) {
-    g_pathStr.Empty();
+std::string RunCustomWorldDialog(HWND parent, std::string* outSource) {
+    (g_pathStr).erase();
     HWND v = parent;
     if (parent == NULL) {
         v = g_gameReg->m_gameWnd->GetHwnd();
@@ -59,7 +59,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     g_customWorldInst = g_gameReg->m_owner->m_hInstance;
     i32 accepted = g_gameReg->RunModalDialog("CUSTOM_WORLD", CustomWorldDlgProc, false);
     if (accepted == 0) {
-        g_pathStr.Empty();
+        (g_pathStr).erase();
     }
     g_customWorldSurfaceMgr = NULL;
     g_customWorldParent = NULL;
@@ -128,7 +128,7 @@ i32 FillCustomLevelList(HWND hWnd) {
     while (bContinue) {
         char disp[256];
         sprintf(disp, "%s", fd.name);
-        if (!g_gameReg->IsBattlezMapFile(CString(disp))) {
+        if (!g_gameReg->IsBattlezMapFile(std::string(disp))) {
             i32 len = strlen(disp);
             if (len > 4) {
                 disp[len - 4] = 0;
@@ -155,13 +155,13 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = SetDlgItemTextA;
-    if (g_gameReg->World()->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+    if (g_gameReg->World()->m_level->IsValidWwd((g_pathStr).c_str(), &info)) {
         char* p = info.m_levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
         }
         sprintf(num, "%i", atoi(p));
-        setText(hDlg, 0x408, static_cast<const char*>(g_selectedCustomWorldName));
+        setText(hDlg, 0x408, (g_selectedCustomWorldName).c_str());
         setText(hDlg, 0x428, info.m_author);
         setText(hDlg, 0x40c, num);
         setText(hDlg, 0x429, info.m_created);
@@ -197,18 +197,18 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     g_pathStr += "\\Custom\\";
     g_pathStr += itemText;
     g_pathStr += ".WWD";
-    if (!FileExists(g_pathStr)) {
-        g_pathStr.Empty();
+    if (!FileExists((g_pathStr).c_str())) {
+        (g_pathStr).erase();
         return 0;
     }
     g_selectedCustomWorldName = itemText;
     return 1;
 }
 
-i32 WwdFile::ValidateMainBlock(CString name) {
+i32 WwdFile::ValidateMainBlock(std::string name) {
     char header[0x100];
 
-    if (name.IsEmpty()) {
+    if ((name).empty()) {
         return -1;
     }
 
@@ -217,7 +217,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
         return -1;
     }
 
-    if (!lvl->ReadWwdHeaderName(name, header)) {
+    if (!lvl->ReadWwdHeaderName((name).c_str(), header)) {
         return -1;
     }
 
@@ -235,10 +235,10 @@ BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
-            if (g_customWorldSurfaceMgr != NULL && FileExists(g_pathStr)
+            if (g_customWorldSurfaceMgr != NULL && FileExists((g_pathStr).c_str())
                 && g_customWorldSurfaceMgr->m_level
-                       ->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
-                SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
+                       ->IsValidWwd((g_pathStr).c_str(), &info)) {
+                SetDlgItemTextA(hDlg, 0x408, (g_levelStr).c_str());
                 SetDlgItemTextA(hDlg, 0x428, info.m_author);
                 char* p = info.m_levelName;
                 while (*p && (*p < '0' || *p > '9')) {
@@ -292,46 +292,46 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     g_pathStr += "\\Custom\\";
     g_pathStr += szLevel;
     g_pathStr += ".WWD";
-    if (!FileExists(g_pathStr)) {
-        g_pathStr.Empty();
+    if (!FileExists((g_pathStr).c_str())) {
+        (g_pathStr).erase();
         return 0;
     }
     DialogBoxA(g_customWorldInst, "CUSTOM_WORLDINFO", g_customWorldParent, CustomWorldInfoDlgProc);
     return 1;
 }
 
-CString BuildCustomWwdPath(CString name) {
-    if (name.IsEmpty()) {
+std::string BuildCustomWwdPath(std::string name) {
+    if ((name).empty()) {
         return name;
     }
-    if (strstr(name, "\\") != NULL) {
+    if (strstr((name).c_str(), "\\") != NULL) {
         return name;
     }
     char cwd[254];
     if (_getcwd(cwd, 254) == NULL) {
         return name;
     }
-    CString orig = name;
+    std::string orig = name;
     name = cwd;
     name += "\\CUSTOM\\";
     name += orig;
-    name.MakeUpper();
-    if (strstr(name, ".WWD") == NULL) {
+    std::transform((name).begin(), (name).end(), (name).begin(), asciiUpper);
+    if (strstr((name).c_str(), ".WWD") == NULL) {
         name += ".WWD";
     }
     return name;
 }
 
-CString WwdFile::GetMapBaseName(CString path) {
-    CString result = path;
-    i32 len = path.GetLength();
+std::string WwdFile::GetMapBaseName(std::string path) {
+    std::string result = path;
+    i32 len = static_cast<i32>((path).size());
     if (len == 0) {
         return result;
     }
     if (len <= 4) {
         return result;
     }
-    strcpy(g_mapNameBuf, path);
+    strcpy(g_mapNameBuf, (path).c_str());
     i32 blen = strlen(g_mapNameBuf);
     if (blen < 5) {
         return result;

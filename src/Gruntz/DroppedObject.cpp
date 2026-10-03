@@ -64,7 +64,6 @@ CActReg CActRegPool<CDroppedObject>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<>
 CActReg CActRegPool<CDroppedObjectShadow>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-struct CString;
 
 i32 DispatchObjectDropperLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CObjectDropper)
@@ -90,21 +89,21 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
 
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
-        CString name;
+        std::string name;
         name = frameSet->m_name;
-        if (name.Compare("LEVEL_OBJECTDROPPER_NORTH") == 0) {
+        if ((name).compare("LEVEL_OBJECTDROPPER_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
             m_travelDx = 0;
             m_travelDy = -1;
-        } else if (name.Compare("LEVEL_OBJECTDROPPER_EAST") == 0) {
+        } else if ((name).compare("LEVEL_OBJECTDROPPER_EAST") == 0) {
             m_object->m_direction = IDX(CARDINAL_EAST);
             m_travelDx = 1;
             m_travelDy = 0;
-        } else if (name.Compare("LEVEL_OBJECTDROPPER_SOUTH") == 0) {
+        } else if ((name).compare("LEVEL_OBJECTDROPPER_SOUTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_SOUTH);
             m_travelDx = 0;
             m_travelDy = 1;
-        } else if (name.Compare("LEVEL_OBJECTDROPPER_WEST") == 0) {
+        } else if ((name).compare("LEVEL_OBJECTDROPPER_WEST") == 0) {
             m_object->m_direction = IDX(CARDINAL_WEST);
             m_travelDx = -1;
             m_travelDy = 0;

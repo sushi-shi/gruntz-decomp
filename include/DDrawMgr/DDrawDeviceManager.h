@@ -1,6 +1,12 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWDEVICEMANAGER_H
 #define GRUNTZ_DDRAWMGR_DDRAWDEVICEMANAGER_H
 
+#include <list>
+struct CDDPalette;
+class CDDSurface;
+
+#include <vector>
+
 #include <Ints.h>
 
 #include <DDrawMgr/ColorDepth.h>
@@ -183,18 +189,18 @@ public:
     DDCAPS m_helCaps;
 
     char m_pad300[0x47c - 0x300];
-    CPtrList m_surfaces;
-    CPtrList m_palettes;
-    CPtrArray m_displayModes;
+    std::list<CDDSurface*> m_surfaces;
+    std::list<CDDPalette*> m_palettes;
+    std::vector<DDSURFACEDESC*> m_displayModes;
 
     DDSURFACEDESC* GetModeDesc(i32 index) {
-        return static_cast<DDSURFACEDESC*>(m_displayModes.GetAt(index));
+        return static_cast<DDSURFACEDESC*>(m_displayModes[index]);
     }
     void FreeDisplayModes() {
-        for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
+        for (i32 i = 0; i < static_cast<i32>(m_displayModes.size()); i++) {
             delete GetModeDesc(i);
         }
-        m_displayModes.RemoveAll();
+        m_displayModes.clear();
     }
     DDSURFACEDESC m_surfaceDesc;
     i32 m_bankSwitchedCaps;

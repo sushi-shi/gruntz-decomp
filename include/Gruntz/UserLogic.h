@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_USERLOGIC_H
 #define GRUNTZ_USERLOGIC_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Bute/ButeMgr.h>
@@ -60,11 +62,11 @@ public:
         return LOGIC_NONE;
     }
 
-    virtual void StepBehavior(char* animationActName);
+    virtual void StepBehavior(const char* animationActName);
 
     virtual void FireActivation(i32 id);
 
-    virtual void FinalizeStep(char* name);
+    virtual void FinalizeStep(const char* name);
 
     virtual void Activate() {}
 
@@ -101,7 +103,7 @@ public:
 
     void LoadGruntTuningConstants(i32);
 
-    const CString& GetAnimationActName() const {
+    const std::string& GetAnimationActName() const {
         return ::GetAnimationActName(m_logicRecord->EventCode());
     }
 

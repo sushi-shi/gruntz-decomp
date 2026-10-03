@@ -17,7 +17,7 @@ i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
     i32 i;
     for (i = 0; i < 5; i++) {
         memset(buf, 0, sizeof(buf));
-        strcpy(buf, m_names[i]);
+        strcpy(buf, (m_names[i]).c_str());
         ar->Write(buf, sizeof(buf));
     }
 

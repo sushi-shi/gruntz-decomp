@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_MENUITEM_H
 #define GRUNTZ_MENUITEM_H
 
+#include <list>
+class CMenuItem;
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -62,23 +67,23 @@ public:
         return 0;
     }
 
-    CString GetItemName() {
+    std::string GetItemName() {
         return m_itemName;
     }
 
-    CString GetLeftItemName() {
+    std::string GetLeftItemName() {
         return m_leftItemName;
     }
 
-    CString GetRightItemName() {
+    std::string GetRightItemName() {
         return m_rightItemName;
     }
 
-    CString GetUpItemName() {
+    std::string GetUpItemName() {
         return m_upItemName;
     }
 
-    CString GetDownItemName() {
+    std::string GetDownItemName() {
         return m_downItemName;
     }
     i32 PostCommands();
@@ -94,15 +99,14 @@ public:
 
     CMenuTree* m_menuTree;
     CMenuPage* m_page;
-    CString m_itemName;
-    CString m_targetPageKey;
+    std::string m_itemName;
+    std::string m_targetPageKey;
     i32 m_commandId;
     i32 m_secondaryCommandId;
     MenuItemFlags m_flags;
     MenuItemState m_state;
     CDDrawWorker* m_animation;
 
-    POSITION m_listPosition;
 
     i32 m_commandParam;
     i32 m_hitLeft;
@@ -110,10 +114,10 @@ public:
     i32 m_hitRight;
     i32 m_hitBottom;
     Coord m_fixedCenter;
-    CString m_leftItemName;
-    CString m_rightItemName;
-    CString m_upItemName;
-    CString m_downItemName;
+    std::string m_leftItemName;
+    std::string m_rightItemName;
+    std::string m_upItemName;
+    std::string m_downItemName;
 };
 
 inline CMenuItem::~CMenuItem() {
@@ -125,13 +129,13 @@ inline void CMenuItem::Reset() {
     m_page = NULL;
     m_animation = NULL;
     m_world = NULL;
-    m_listPosition = NULL;
+
     m_hitLeft = UNINIT_FILL;
     m_fixedCenter.m_x = UNINIT_FILL;
-    m_leftItemName.Empty();
-    m_rightItemName.Empty();
-    m_upItemName.Empty();
-    m_downItemName.Empty();
+    (m_leftItemName).erase();
+    (m_rightItemName).erase();
+    (m_upItemName).erase();
+    (m_downItemName).erase();
 }
 
 inline CMenuItem::CMenuItem() {

@@ -9,10 +9,10 @@
 #include <Gruntz/GruntzMgr.h>
 
 template<>
-CPtrList CPtrListPool<CGruntzSingleCommand>::s_freeList(0xa);
+std::list<CGruntzSingleCommand*> ObjectPoolStorage<CGruntzSingleCommand >::s_freeList;
 
 template<>
-CPtrList CPtrListPool<CGruntzMultiCommand>::s_freeList(0xa);
+std::list<CGruntzMultiCommand*> ObjectPoolStorage<CGruntzMultiCommand >::s_freeList;
 
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 

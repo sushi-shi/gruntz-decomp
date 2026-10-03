@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_ANIMATIONREGISTRY_H
 #define GRUNTZ_ANIMATIONREGISTRY_H
 
+#include <map>
+#include <string>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Ints.h>
@@ -23,7 +28,7 @@ public:
     void ClearAnimations();
     i32 RemoveWithPrefix(const char* prefix, const char* separator);
     i32 HasWithPrefix(const char* prefix);
-    CString FindAnimationKey(CAniElement* target);
+    std::string FindAnimationKey(CAniElement* target);
     virtual ~AnimationRegistry()  ;
 
     CAniElement* LoadAnimationFromSource(const char* key, CRezItm* source);
@@ -32,7 +37,7 @@ public:
     void AddAnimation(CAniElement* animation, const char* key);
     i32 LoadFromTree(CRezDir* tree, const char* prefix, const char* separator);
 
-    CMapStringToPtr m_animations;
+    std::map<std::string, CAniElement*> m_animations;
 
 private:
     void RegisterAnimation(CAniElement* animation, const char* key) {

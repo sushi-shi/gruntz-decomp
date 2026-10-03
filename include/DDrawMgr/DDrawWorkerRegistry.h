@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
 
+#include <map>
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDSurface.h>
@@ -64,7 +67,7 @@ public:
     virtual void RemoveByKey(const char* key);
     virtual void MapTeardown();
 
-    CMapStringToOb m_workersByName;
+    std::map<std::string, CDDrawWorker*> m_workersByName;
 
     i32 RemoveWithPrefix(const char* prefix, const char* separator);
 

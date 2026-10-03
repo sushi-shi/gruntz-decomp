@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_CFADERSUBTYPES_H
 #define GRUNTZ_GRUNTZ_CFADERSUBTYPES_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDSurface.h>
@@ -22,7 +24,7 @@ struct RezElem40 {
     float m_scale;
 };
 
-typedef CArray<RezElem40, const RezElem40&> CRezBufferObject;
+typedef std::vector<RezElem40> CRezBufferObject;
 
 struct CFaderRadialCell {
     float m_vx;

@@ -45,7 +45,7 @@
 #include <string.h>
 
 i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 areaArg, i32 prevStateId) {
-    ctx->m_strWorldFile.Empty();
+    (ctx->m_strWorldFile).erase();
     if (CPlay::LoadGameAssetNamespaces(ctx, areaArg, prevStateId) == 0) {
         return 0;
     }
@@ -70,13 +70,13 @@ i32 CDemoSetup::SetupDemoActors() {
     return 1;
 }
 
-class CRezItm;
+struct CRezItm;
 
 i32 CDemo::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
-    CString key;
-    key.Format("WORLDZ\\LEVEL%i", 1);
-    CRezItm* node = m_levelResources->GetRezFromPath(key, REZ_TAG_WWD);
+    std::string key;
+    key = formatText("WORLDZ\\LEVEL%i", 1);
+    CRezItm* node = m_levelResources->GetRezFromPath((key).c_str(), REZ_TAG_WWD);
     if (node == NULL) {
         return 0;
     }
@@ -129,7 +129,7 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
 
             i32 snapX = gh->m_mainPlane->m_scrollPixelX;
             i32 snapY = gh->m_mainPlane->m_scrollPixelY;
-            for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
+            for (i32 i = 0; i < static_cast<i32>(gh->m_planes.size()); i++) {
                 if (i != gh->m_mainIndex) {
                     CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
                     SET_SCROLL_POSITION_PRODUCT_CAST(p, snapX, snapY);

@@ -139,28 +139,28 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
 
 i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection) {
     if (fromSelection != 0) {
-        CPtrList* list = m_selLists;
+        std::list<Coord*>* list = m_selLists;
         i32 k = 10;
         do {
-            POSITION pos = list->GetHeadPosition();
-            while (pos != NULL) {
-                POSITION cur = pos;
-                Coord* p = static_cast<Coord*>(list->GetNext(pos));
+            std::list<Coord*>::iterator pos = list->begin();
+            while (pos != list->end()) {
+                std::list<Coord*>::iterator cur = pos;
+                Coord* p = static_cast<Coord*>(*(pos++));
                 if (p->m_x == playerIndex && p->m_y == unitIndex) {
                     g_coordPool.Push(p);
-                    list->RemoveAt(cur);
+                    list->erase(cur);
                 }
             }
             list++;
             k--;
         } while (k != 0);
     }
-    POSITION pos = m_recList.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur = pos;
-        Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    while (pos != m_recList.end()) {
+        std::list<Coord*>::iterator cur = pos;
+        Coord* p = static_cast<Coord*>(*(pos++));
         if (p->m_x == playerIndex && p->m_y == unitIndex) {
-            if (m_recList.GetCount() == 1) {
+            if (static_cast<i32>(m_recList.size()) == 1) {
                 StopPendingFx();
             }
             CGrunt* cell = UnitAt(playerIndex, unitIndex);
@@ -190,7 +190,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                 }
             }
             g_coordPool.Push(p);
-            m_recList.RemoveAt(cur);
+            m_recList.erase(cur);
             return 1;
         }
     }
@@ -198,16 +198,16 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
 }
 
 void CTriggerMgr::ResetAll() {
-    POSITION pos = m_recList.GetHeadPosition();
-    while (pos != NULL) {
-        Coord* payload = static_cast<Coord*>(m_recList.GetNext(pos));
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    while (pos != m_recList.end()) {
+        Coord* payload = static_cast<Coord*>(*(pos++));
         CGrunt* cell = UnitAt(payload->m_x, payload->m_y);
         if (cell != NULL) {
             (static_cast<CGrunt*>(cell))->ClearAllSprites();
             g_coordPool.Push(payload);
         }
     }
-    m_recList.RemoveAll();
+    m_recList.clear();
     StopPendingFx();
     CWwdSpriteObject* goal = m_goal;
     if (goal != NULL) {
@@ -217,9 +217,9 @@ void CTriggerMgr::ResetAll() {
 }
 
 i32 CTriggerMgr::RecordListHas(i32 playerIndex, i32 unitIndex) {
-    POSITION pos = m_recList.GetHeadPosition();
-    while (pos != NULL) {
-        Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    while (pos != m_recList.end()) {
+        Coord* p = static_cast<Coord*>(*(pos++));
         if (p->m_x == playerIndex && p->m_y == unitIndex) {
             return 1;
         }
@@ -234,9 +234,9 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
     u8 count = 0;
     u8 playerIndex;
     u8 unitIndices[0x80];
-    POSITION pos = m_recList.GetHeadPosition();
-    while (pos != NULL) {
-        Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    while (pos != m_recList.end()) {
+        Coord* selection = static_cast<Coord*>(*(pos++));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
         if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == false) {
@@ -281,9 +281,9 @@ void CTriggerMgr::EnqueueSelectedToolUse(
     u8 count = 0;
     u8 playerIndex;
     u8 unitIndices[0x80];
-    POSITION pos = m_recList.GetHeadPosition();
-    while (pos != NULL) {
-        Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    while (pos != m_recList.end()) {
+        Coord* selection = static_cast<Coord*>(*(pos++));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
         if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == false) {
@@ -343,13 +343,13 @@ void CTriggerMgr::EnqueueSelectedToolUse(
 }
 
 void CTriggerMgr::ClearRecords() {
-    POSITION pos = m_recList.GetHeadPosition();
-    if (pos != NULL) {
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    if (pos != m_recList.end()) {
         do {
-            g_coordPool.Push(m_recList.GetNext(pos));
-        } while (pos != NULL);
+            g_coordPool.Push(*(pos++));
+        } while (pos != m_recList.end());
     }
-    m_recList.RemoveAll();
+    m_recList.clear();
 }
 
 i32 CTriggerMgr::ScrollToActiveRecord() {
@@ -507,9 +507,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 break;
 
             case PICKUP_GOOBER: {
-                POSITION pos = m_baseList.GetHeadPosition();
-                while (pos != NULL) {
-                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                std::list<CGruntPuddle*>::iterator pos = m_baseList.begin();
+                while (pos != m_baseList.end()) {
+                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(*(pos++));
                     if (cand->m_tileX == tx && cand->m_tileY == ty && cand->m_pending == false) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
                         return 1;
@@ -562,7 +562,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 }
                 i32 occupantId = g_gameReg->m_tileGrid->ObjectIdAt(tx, ty);
                 if (occupantId != 0) {
-                    CMapPtrToPtr* map =
+                    std::map<i32, CGameObject*>* map =
                         &g_gameReg->m_world->ChildGroup()->m_registeredGameObjectsById;
                     CGameObject* occupant = NULL;
                     MapLookupById(*map, occupantId, occupant);
@@ -863,7 +863,7 @@ i32 CTriggerMgr::RenderActionOptionsMenu() {
 
 i32 CTriggerMgr::ByteTableHas(WarpStoneFragment fragment) {
 
-    i32 n = m_byteArr.GetSize();
+    i32 n = static_cast<i32>(m_byteArr.size());
     for (i32 i = 0; i < n; i++) {
         if (IDX(fragment) == m_byteArr[i]) {
             return 1;
@@ -877,10 +877,10 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         return;
     }
     CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-    CString name;
-    name.Format("Level%i", lvl->m_levelIndex);
+    std::string name;
+    name = formatText("Level%i", lvl->m_levelIndex);
     WarpStoneFragment fragment = static_cast<WarpStoneFragment>(
-        g_buteMgr.GetInt("WarpStone", const_cast<char*>(static_cast<const char*>(name)))
+        g_buteMgr.GetInt("WarpStone", (name).c_str())
     );
     if (col >= g_gameReg->m_viewBounds.right || col < g_gameReg->m_viewBounds.left
         || row >= g_gameReg->m_viewBounds.bottom || row < g_gameReg->m_viewBounds.top) {
@@ -905,7 +905,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (lvl->m_statusBar->StartWarpStoneFly(outR, outC, fragment) != 0) {
         lvl->m_statusBar->m_hlBusy = true;
     } else {
-        m_byteArr.Add(static_cast<u8>(IDX(fragment)));
+        m_byteArr.push_back(static_cast<u8>(IDX(fragment)));
     }
     m_groupInitialized = true;
 }
@@ -921,8 +921,8 @@ void CTriggerMgr::ResetSpawnState() {
     CStatusBarMgr* st = world->m_statusBar;
     SAFE_DELETE(st->m_retabNotify);
     world->m_statusBar->m_hlBusy = false;
-    if (m_byteArr.GetSize() > 0) {
-        m_byteArr.RemoveAt(m_byteArr.GetUpperBound(), 1);
+    if (static_cast<i32>(m_byteArr.size()) > 0) {
+        m_byteArr.erase(m_byteArr.begin() + (static_cast<i32>(m_byteArr.size()) - 1), m_byteArr.begin() + ((static_cast<i32>(m_byteArr.size()) - 1)) + 1);
         CStatusBarMgr* ctx = world->m_statusBar;
         if (ctx->m_position != STATUSBAR_HIDDEN && ctx->m_activeTab == TAB_GAME) {
             ctx->ResetWidgets(false);
@@ -1041,41 +1041,41 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;
     }
-    POSITION pos = m_baseList.GetHeadPosition();
+    std::list<CGruntPuddle*>::iterator pos = m_baseList.begin();
     i32 stop = 0;
     i32 overCapacity = stop;
     i32 replacedExisting = stop;
-    if (m_baseList.GetCount() > 0x3b) {
+    if (static_cast<i32>(m_baseList.size()) > 0x3b) {
         overCapacity = 1;
     }
-    while (pos != NULL && stop == 0) {
-        POSITION cur = pos;
-        CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+    while (pos != m_baseList.end() && stop == 0) {
+        std::list<CGruntPuddle*>::iterator cur = pos;
+        CGruntPuddle* existing = static_cast<CGruntPuddle*>(*(pos++));
         if (existing->m_tileX == puddle->m_tileX && existing->m_tileY == puddle->m_tileY) {
             if (existing->m_pending != false) {
                 puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return 0;
             }
             existing->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-            m_baseList.RemoveAt(cur);
+            m_baseList.erase(cur);
             stop = 1;
             replacedExisting = 1;
         }
     }
     if (overCapacity != 0 && replacedExisting == 0) {
-        pos = m_baseList.GetHeadPosition();
+        pos = m_baseList.begin();
         stop = 0;
-        while (pos != NULL && stop == 0) {
-            POSITION cur = pos;
-            CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+        while (pos != m_baseList.end() && stop == 0) {
+            std::list<CGruntPuddle*>::iterator cur = pos;
+            CGruntPuddle* existing = static_cast<CGruntPuddle*>(*(pos++));
             if (existing->m_pending == false) {
                 existing->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-                m_baseList.RemoveAt(cur);
+                m_baseList.erase(cur);
                 stop = 1;
             }
         }
     }
-    m_baseList.AddTail(puddle);
+    m_baseList.insert(m_baseList.end(), puddle);
     return 1;
 }
 
@@ -1084,8 +1084,8 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
 
-    POSITION pos = fac->m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = fac->m_list.begin();
+    while (pos != fac->m_list.end()) {
         CGameObject* obj = fac->NextChild(pos);
         LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
         if (dispatch == DispatchInGameIconLogic || dispatch == DispatchInGameTextLogic) {
@@ -1199,26 +1199,26 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(m_unitExited, 0xf0);
     ar->Write(m_gruntzExitedByPlayer, 0x10);
     ar->Write(m_gruntzLostByPlayer, 0x10);
-    u32 n = static_cast<u32>(m_byteArr.GetSize());
+    u32 n = static_cast<u32>(static_cast<i32>(m_byteArr.size()));
     ar->Write(&n, sizeof(n));
     for (u32 i = 0; i < n; i++) {
-        u8 b = m_byteArr.GetAt(i);
+        u8 b = m_byteArr[i];
         ar->Write(&b, sizeof(b));
     }
-    n = static_cast<u32>(m_recList.GetCount());
+    n = static_cast<u32>(static_cast<i32>(m_recList.size()));
     ar->Write(&n, sizeof(n));
-    POSITION pos = m_recList.GetHeadPosition();
-    while (pos != NULL) {
-        ar->Write(m_recList.GetNext(pos), 8);
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    while (pos != m_recList.end()) {
+        ar->Write(*(pos++), 8);
     }
-    CPtrList* list = m_selLists;
+    std::list<Coord*>* list = m_selLists;
     i32 k = 10;
     do {
-        n = static_cast<u32>(list->GetCount());
+        n = static_cast<u32>(static_cast<i32>(list->size()));
         ar->Write(&n, sizeof(n));
-        POSITION selPos = list->GetHeadPosition();
-        while (selPos != NULL) {
-            ar->Write(list->GetNext(selPos), 8);
+        std::list<Coord*>::iterator selPos = list->begin();
+        while (selPos != list->end()) {
+            ar->Write(*(selPos++), 8);
         }
         list++;
         k--;
@@ -1236,12 +1236,12 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     }
     ar->Write(&objId, sizeof(objId));
     ar->Write(m_reserved274, 0x10);
-    n = static_cast<u32>(m_baseList.GetCount());
+    n = static_cast<u32>(static_cast<i32>(m_baseList.size()));
     ar->Write(&n, sizeof(n));
     b32 hasOv;
-    pos = m_baseList.GetHeadPosition();
-    while (pos != NULL) {
-        CGruntPuddle* obj = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+    std::list<CGruntPuddle*>::iterator basePos = m_baseList.begin();
+    while (basePos != m_baseList.end()) {
+        CGruntPuddle* obj = static_cast<CGruntPuddle*>(*(basePos++));
         if (obj == NULL) {
             goto fail;
         }
@@ -1317,12 +1317,12 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     i32 count;
     u32 ci;
     ar->Read(&count, sizeof(count));
-    CByteArray* arr = &m_byteArr;
-    arr->RemoveAll();
+    std::vector<u8>* arr = &m_byteArr;
+    arr->clear();
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 b;
         ar->Read(&b, 1);
-        arr->SetAtGrow(ci, b);
+        growAndAssign(*arr, ci, b);
     }
     ClearRecords();
 
@@ -1330,17 +1330,17 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         Coord* node = g_coordPool.Pop();
         ar->Read(node, 8);
-        m_recList.AddTail(node);
+        m_recList.insert(m_recList.end(), node);
     }
 
-    CPtrList* sel = m_selLists;
+    std::list<Coord*>* sel = m_selLists;
     i32 slot = 0xa;
     do {
         ar->Read(&count, sizeof(count));
         for (ci = 0; ci < static_cast<u32>(count); ci++) {
             Coord* node = g_coordPool.Pop();
             ar->Read(node, 8);
-            sel->AddTail(node);
+            sel->insert(sel->end(), node);
         }
         sel++;
     } while (--slot != 0);
@@ -1382,7 +1382,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     }
 
     ar->Read(m_reserved274, 0x10);
-    m_baseList.RemoveAll();
+    m_baseList.clear();
     ar->Read(&count, sizeof(count));
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 key;
@@ -1402,7 +1402,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (obj == NULL) {
             return 0;
         }
-        m_baseList.AddTail(obj);
+        m_baseList.insert(m_baseList.end(), obj);
     }
 
     CActionOptionsMenuBar* old = m_overlay;
@@ -1442,7 +1442,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
         return 0;
     }
     CGrunt* cell;
-    if (m_recList.GetCount() != 1) {
+    if (static_cast<i32>(m_recList.size()) != 1) {
         cell = NULL;
     } else {
         Coord* rec = HeadRec();
@@ -1501,9 +1501,9 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
         if (v == 0) {
             v = (rand(), 1);
         }
-        CString key;
-        key.Format("GAME_EXPLOSION%d", v);
-        spr->SetAnimationByName(key, 0);
+        std::string key;
+        key = formatText("GAME_EXPLOSION%d", v);
+        spr->SetAnimationByName((key).c_str(), 0);
         spr->m_smarts = id;
         spr->m_score = 1;
     }
@@ -1534,9 +1534,9 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 if (type == TILEKIND_GIANT_ROCK) {
                     CGiantRockLogic* gr = root->m_tileTriggers->ScanNeighborhood(tx, ty);
                     if (gr == NULL) {
-                        CString msg;
-                        msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
-                        g_gameReg->EnterModalUI(msg);
+                        std::string msg;
+                        msg = formatText("No giant rock logic found around: x=%d, y=%d", cx, cy);
+                        g_gameReg->EnterModalUI((msg).c_str());
                         g_gameReg->ReportError(
                             IDX(TRIGERR_LOOKUP_MISS),
                             IDX(TRIGSITE_ROCK_SCAN_MISS)
@@ -1766,10 +1766,10 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     i32 hy = cy >> TILE_SHIFT_PX;
     SET_RECT_COMPONENTS(rect, hx - r, hy - r, hx + r, hy + r);
 
-    POSITION pos = m_baseList.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur = pos;
-        CGruntPuddle* g = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+    std::list<CGruntPuddle*>::iterator pos = m_baseList.begin();
+    while (pos != m_baseList.end()) {
+        std::list<CGruntPuddle*>::iterator cur = pos;
+        CGruntPuddle* g = static_cast<CGruntPuddle*>(*(pos++));
         if (g->m_pending != false) {
             continue;
         }
@@ -1839,7 +1839,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         if (ok) {
             g->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
 
-            m_baseList.RemoveAt(cur);
+            m_baseList.erase(cur);
             CreateLightFx(
                 g_gameReg->World()->ChildGroup(),
                 (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -2003,7 +2003,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
         return 0;
     }
 
-    CString name;
+    std::string name;
     switch (type) {
         case PICKUP_BOMB:
             name = "GAME_INGAMEICONZ_TOOLZ_BOMBZ";
@@ -2066,14 +2066,11 @@ i32 CTriggerMgr::SpawnPowerupIcon(
             if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
 
                 CState* st = g_gameReg->m_curState;
-                CString lvl;
-                lvl.Format("Level%i", st->m_levelIndex);
-                name.Format(
-                    "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i",
-                    g_buteMgr.GetInt("WarpStone", static_cast<const char*>(lvl))
-                );
+                std::string lvl;
+                lvl = formatText("Level%i", st->m_levelIndex);
+                name = formatText("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", g_buteMgr.GetInt("WarpStone", (lvl).c_str()));
             } else {
-                name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpstoneVariant);
+                name = formatText("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpstoneVariant);
             }
             break;
         case PICKUP_WELDER:
@@ -2184,7 +2181,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     if (!spr) {
         return 0;
     }
-    spr->SetImageSetByName(name);
+    spr->SetImageSetByName((name).c_str());
     spr->m_damage = damage;
     spr->m_score = 0;
     spr->m_points = 0;
@@ -2197,23 +2194,23 @@ i32 CTriggerMgr::SpawnPowerupIcon(
 }
 
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
-    POSITION pos = m_selLists[idx].GetHeadPosition();
-    if (pos != NULL) {
+    std::list<Coord*>::iterator pos = m_selLists[idx].begin();
+    if (pos != m_selLists[idx].end()) {
         do {
-            Coord* payload = static_cast<Coord*>(m_selLists[idx].GetNext(pos));
+            Coord* payload = static_cast<Coord*>(*(pos++));
             if (payload != NULL) {
                 g_coordPool.Push(payload);
             }
-        } while (pos != NULL);
+        } while (pos != m_selLists[idx].end());
     }
-    CPtrList* sel = &m_selLists[idx];
-    sel->RemoveAll();
-    pos = m_recList.GetHeadPosition();
-    while (pos != NULL) {
-        Coord* src = static_cast<Coord*>(m_recList.GetNext(pos));
+    std::list<Coord*>* sel = &m_selLists[idx];
+    sel->clear();
+    pos = m_recList.begin();
+    while (pos != m_recList.end()) {
+        Coord* src = static_cast<Coord*>(*(pos++));
         Coord* dst = g_coordPool.Pop();
         *dst = *src;
-        sel->AddTail(dst);
+        sel->insert(sel->end(), dst);
     }
     m_selSentinel = -1;
     return 1;
@@ -2225,8 +2222,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     if (ov != NULL && ov->m_active != false) {
         CloseActionOptionsMenu();
     }
-    POSITION pos = m_selLists[slot].GetHeadPosition();
-    if (pos == NULL) {
+    std::list<Coord*>::iterator pos = m_selLists[slot].begin();
+    if (pos == m_selLists[slot].end()) {
         m_selSentinel = -1;
         return 0;
     }
@@ -2238,8 +2235,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     bbox.left = grid->m_planePixelWidth - 1;
     bbox.top = grid->m_planePixelHeight - 1;
     do {
-        POSITION cur = pos;
-        Coord* payload = static_cast<Coord*>(m_selLists[slot].GetNext(pos));
+        std::list<Coord*>::iterator cur = pos;
+        Coord* payload = static_cast<Coord*>(*(pos++));
         CGrunt* cell = UnitAt(payload->m_x, payload->m_y);
         if (cell != NULL) {
             ResetCell(payload->m_x, payload->m_y, 1, 0);
@@ -2254,9 +2251,9 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
             }
         } else {
             g_coordPool.Push(payload);
-            m_selLists[slot].RemoveAt(cur);
+            m_selLists[slot].erase(cur);
         }
-    } while (pos != NULL);
+    } while (pos != m_selLists[slot].end());
     if (m_selSentinel == slot) {
         (static_cast<CPlay*>(g_gameReg->m_curState))
             ->ResetGoals(
@@ -2271,8 +2268,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 }
 
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
-    POSITION pos = m_recList.GetHeadPosition();
-    if (pos == NULL) {
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    if (pos == m_recList.end()) {
         return 0;
     }
     RECT bbox;
@@ -2283,7 +2280,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     bbox.right = 0;
     bbox.bottom = 0;
     do {
-        Coord* k = static_cast<Coord*>(m_recList.GetNext(pos));
+        Coord* k = static_cast<Coord*>(*(pos++));
         CGrunt* cell = UnitAt(k->m_x, k->m_y);
         if (cell != NULL) {
             count++;
@@ -2295,7 +2292,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
             bbox.top = min(gy, bbox.top);
             bbox.bottom = max(gy, bbox.bottom);
         }
-    } while (pos != NULL);
+    } while (pos != m_recList.end());
     i32 cy = bbox.top + (bbox.bottom - bbox.top) / 2;
     i32 cx = bbox.left + (bbox.right - bbox.left) / 2;
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(cx, cy);
@@ -2316,19 +2313,19 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
 }
 
 void CTriggerMgr::ClearSelections() {
-    CPtrList* list = m_selLists;
+    std::list<Coord*>* list = m_selLists;
     i32 k = 10;
     do {
-        POSITION pos = list->GetHeadPosition();
-        if (pos != NULL) {
+        std::list<Coord*>::iterator pos = list->begin();
+        if (pos != list->end()) {
             do {
-                Coord* payload = static_cast<Coord*>(list->GetNext(pos));
+                Coord* payload = static_cast<Coord*>(*(pos++));
                 if (payload != NULL) {
                     g_coordPool.Push(payload);
                 }
-            } while (pos != NULL);
+            } while (pos != list->end());
         }
-        list->RemoveAll();
+        list->clear();
         list++;
         k--;
     } while (k != 0);
@@ -2387,11 +2384,11 @@ i32 CTriggerMgr::SelectionListFind(i32 playerIndex, i32 unitIndex) {
         return 0;
     }
     i32 result = 0;
-    CPtrList* list = m_selLists;
+    std::list<Coord*>* list = m_selLists;
     for (i32 i = 0; i < 10; i++, list++) {
-        POSITION pos = list->GetHeadPosition();
-        while (pos != NULL) {
-            Coord* payload = static_cast<Coord*>(list->GetNext(pos));
+        std::list<Coord*>::iterator pos = list->begin();
+        while (pos != list->end()) {
+            Coord* payload = static_cast<Coord*>(*(pos++));
             if (payload->m_x == playerIndex && payload->m_y == unitIndex) {
                 if (result != 0) {
                     return 10;
@@ -2420,8 +2417,8 @@ void CTriggerMgr::DestroyAllAnims() {
     } while (r != 0);
 
     CDDrawChildGroup* children = m_world->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = children->m_list.begin();
+    while (pos != children->m_list.end()) {
         CGameObject* obj = children->NextChild(pos);
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
@@ -2537,11 +2534,11 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     u8 buf[0x80];
     u8 count = 0;
     char x;
-    POSITION pos = m_recList.GetHeadPosition();
-    if (pos != NULL) {
+    std::list<Coord*>::iterator pos = m_recList.begin();
+    if (pos != m_recList.end()) {
         i32 magic = g_curPlayer;
         do {
-            Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
+            Coord* p = static_cast<Coord*>(*(pos++));
 
             CGrunt* cell = UnitAt(p->m_x, p->m_y);
             x = static_cast<char>(p->m_x);
@@ -2549,7 +2546,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
                 buf[count] = static_cast<u8>(p->m_y);
                 count++;
             }
-        } while (pos != NULL);
+        } while (pos != m_recList.end());
     }
     if (count == 1) {
         g_gameReg->m_commandMgr->EnqueueSingle(

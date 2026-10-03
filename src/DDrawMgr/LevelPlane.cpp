@@ -76,7 +76,7 @@ i32 CDDrawWorkerHost::Read(
         nameBuf[len] = 0;
         if (len > 0) {
 
-            m_imageSets.SetAtGrow(static_cast<char>(n), (OwnerMgr())->FindWorker(nameBuf));
+            growAndAssign(m_imageSets, static_cast<char>(n), (OwnerMgr())->FindWorker(nameBuf));
         }
     }
 
@@ -98,8 +98,8 @@ i32 CDDrawWorkerHost::Read(
 
     if (m_flags & IDX(WWD_PLANE_FLAG_AUTO_TILE_SIZE)) {
 
-        CDDrawWorker* set = (m_imageSets.GetSize() > 0) ? ImageSetAt(0) : NULL;
-        for (i32 f = 0; f < set->m_items.GetSize(); f++) {
+        CDDrawWorker* set = (static_cast<i32>(m_imageSets.size()) > 0) ? ImageSetAt(0) : NULL;
+        for (i32 f = 0; f < static_cast<i32>(set->m_items.size()); f++) {
             if (set->GetAt(f) != NULL) {
                 CImage* first = set->GetAt(f);
                 SET_TILE_SIZE_FROM_IMAGE(first);
@@ -220,7 +220,7 @@ void CDDrawWorkerHost::Unload() {
 }
 
 void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
-    m_imageSets.SetAtGrow(index, OwnerMgr()->FindWorker(key));
+    growAndAssign(m_imageSets, index, OwnerMgr()->FindWorker(key));
 }
 
 void CDDrawWorkerHost::UpdatePlaneViewRect() {
@@ -330,7 +330,7 @@ void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
 }
 
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
-    for (i32 i = 0; i < set->m_items.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(set->m_items.size()); i++) {
         if (set->GetAt(i) != NULL) {
             CImage* f = set->GetAt(i);
             SET_TILE_SIZE_FROM_IMAGE(f);
@@ -564,16 +564,16 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     char buf[0x400];
 
     ReadPlaneString(buf, strCursor, nameLen);
-    CString name(buf);
+    std::string name(buf);
 
     ReadPlaneString(buf, strCursor, logicLen);
-    CString logic(buf);
+    std::string logic(buf);
 
     ReadPlaneString(buf, strCursor, imageSetLen);
-    CString imageSet(buf);
+    std::string imageSet(buf);
 
     ReadPlaneString(buf, strCursor, soundLen);
-    CString sound(buf);
+    std::string sound(buf);
 
     if (x < 0 || x >= m_planePixelWidth || y < 0 || y >= m_planePixelHeight) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
@@ -581,14 +581,14 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return used;
     }
 
-    if (logic.IsEmpty()) {
+    if ((logic).empty()) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
         return used;
     }
 
     CLogicRecord* logicTemplate =
-        OwnerMgr()->m_logicRegistry->FindTemplate(static_cast<const char*>(logic));
+        OwnerMgr()->m_logicRegistry->FindTemplate((logic).c_str());
     if (logicTemplate == NULL) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
@@ -608,21 +608,21 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    if (!imageSet.IsEmpty()) {
+    if (!(imageSet).empty()) {
         if (gridIndex != -1) {
-            obj->SetImageFrameByName(static_cast<const char*>(imageSet), gridIndex);
+            obj->SetImageFrameByName((imageSet).c_str(), gridIndex);
         } else {
-            obj->SetImageSetByName(static_cast<const char*>(imageSet));
+            obj->SetImageSetByName((imageSet).c_str());
         }
     }
 
-    if (!sound.IsEmpty()) {
-        obj->SetAnimationByName(static_cast<const char*>(sound), 0);
-        obj->SetSoundCueByName(static_cast<const char*>(sound));
+    if (!(sound).empty()) {
+        obj->SetAnimationByName((sound).c_str(), 0);
+        obj->SetSoundCueByName((sound).c_str());
     }
 
-    if (!name.IsEmpty()) {
-        obj->m_name = static_cast<const char*>(name);
+    if (!(name).empty()) {
+        obj->m_name = (name).c_str();
     }
 
     p++;

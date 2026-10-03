@@ -745,11 +745,11 @@ i32 DispatchLogicBump(CGameObject* obj) {
 }
 
 i32 DispatchLogicEvent(CUserLogic* ar) {
-    CString* entry = &g_typeColl[ar->m_logicRecord->EventCode()];
-    ar->StepBehavior(entry->GetBuffer(0));
+    std::string* entry = &g_typeColl[ar->m_logicRecord->EventCode()];
+    ar->StepBehavior((entry)->c_str());
     ar->FireActivation(ar->m_logicRecord->EventCode());
 
     entry = &g_typeColl[ar->m_logicRecord->EventCode()];
-    ar->FinalizeStep(entry->GetBuffer(0));
+    ar->FinalizeStep((entry)->c_str());
     return 1;
 }

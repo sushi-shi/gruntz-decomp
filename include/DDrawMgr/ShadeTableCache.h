@@ -1,6 +1,10 @@
 #ifndef GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 
+#include <vector>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/ShadeMode.h>
@@ -8,7 +12,7 @@
 #include <Wap32/Object.h>
 
 class CFile;
-class CString;
+
 
 GZ_ENUM_CONST_BEGIN(FlashShadeRampDefaults)
     FLASH_SHADE_DARK_RAMP_STEPS = 32,
@@ -45,13 +49,13 @@ struct CShadeTable {
     void Reset();
     void Free();
 
-    i32 LoadFromFile(CString path, i32 id);
+    i32 LoadFromFile(std::string path, i32 id);
     i32 LoadFromMem(u8* buf, u32 len, i32 id);
     i32 ReadFrom(CFile* file, i32 id);
-    i32 SaveToFile(CString path);
+    i32 SaveToFile(std::string path);
 };
 
-typedef CArray<CShadeTable*, CShadeTable*> CShadeTableArray;
+typedef std::vector<CShadeTable*> CShadeTableArray;
 
 class CShadeTableCache {
 public:
@@ -67,7 +71,7 @@ public:
     CShadeTable* GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol);
     CShadeTable* LumaSortTable(PALETTEENTRY* pal);
     CShadeTable* HueSortTable(PALETTEENTRY* pal);
-    CShadeTable* AddFromArray(CString name);
+    CShadeTable* AddFromArray(std::string name);
     CShadeTable* AddFromBuffer(u8* data, i32 size);
     CShadeTable* GreyTable();
     CShadeTable* AddTable(float scale);

@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_PREVIEWSTATE_H
 #define GRUNTZ_PREVIEWSTATE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -25,7 +27,7 @@ public:
 
     char m_pad1b4[0x1b8 - 0x1b4];
     u32 m_previewCountdownMs;
-    CString m_previewName;
+    std::string m_previewName;
     i32 m_previewIndex;
 };
 

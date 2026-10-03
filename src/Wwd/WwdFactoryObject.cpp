@@ -623,7 +623,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     memset(buf, 0, sizeof(buf));
     if (m_animation != NULL) {
 
-        strcpy(buf, OwnerMgr()->m_animRegistry->FindAnimationKey(m_animation));
+        strcpy(buf, (OwnerMgr()->m_animRegistry->FindAnimationKey(m_animation)).c_str());
     }
     ar->Write(buf, SERIAL_NAME_LEN);
     return 1;

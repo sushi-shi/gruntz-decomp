@@ -104,7 +104,7 @@ i32 CPreviewState::Refade() {
     while (ShowCursor(false) >= 0) {
     }
     i32 r =
-        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true);
+        LoadTitlePage((m_previewName).c_str(), 0, 0, 0, 0, true);
     RetireScene(0x50, 0x3e8, 0, true);
     return r;
 }
@@ -116,7 +116,7 @@ i32 CPreviewState::RefadeVirtual() {
     while (ShowCursor(false) >= 0) {
     }
     i32 r =
-        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true);
+        LoadTitlePage((m_previewName).c_str(), 0, 0, 0, 0, true);
     RetireScene(0x50, 0x3e8, 0, true);
     return r;
 }
@@ -142,10 +142,10 @@ void CPreviewState::LoadLevelPreviewScreen() {
     m_previewIndex = idx + 1;
     sprintf(buf, "PREVIEW%i", idx);
     m_previewName = buf;
-    sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_previewName));
+    sprintf(buf, "\\SCREENZ\\%s", (m_previewName).c_str());
     StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
     b32 failed = false;
-    if (LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true)
+    if (LoadTitlePage((m_previewName).c_str(), 0, 0, 0, 0, true)
         == 0) {
         failed = true;
     } else {

@@ -103,9 +103,9 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
         centerY + m_smallRegionHalfHeight
     );
 
-    POSITION pos = m_activeGroup->m_list.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur = pos;
+    std::list<CGameObject*>::iterator pos = m_activeGroup->m_list.begin();
+    while (pos != m_activeGroup->m_list.end()) {
+        std::list<CGameObject*>::iterator cur = pos;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_activeGroup->NextChild(pos));
         if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
                 WWD_GAME_OBJECT_FLAG_DELETE_IF_VIEW_OUTSIDE_LEVEL)) {

@@ -1,6 +1,8 @@
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -147,9 +149,9 @@ extern "C" i32 uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLo
 
 class WwdFile {
 public:
-    static i32 ValidateMainBlock(CString name);
+    static i32 ValidateMainBlock(std::string name);
 
-    static CString GetMapBaseName(CString path);
+    static std::string GetMapBaseName(std::string path);
 };
 
 #endif

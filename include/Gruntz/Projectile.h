@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_PROJECTILE_H
 #define GRUNTZ_PROJECTILE_H
 
+#include <list>
+struct Coord;
+
 #include <Ints.h>
 
 #include <Gruntz/ActReg.h>
@@ -68,7 +71,7 @@ public:
     CAniElement* m_frames[7];
     CWwdSpriteObject* m_shadow;
     SoundBuffer* m_sound;
-    CPtrList m_hitList;
+    std::list<Coord*> m_hitList;
     i32 m_sourcePxX, m_sourcePxY;
 };
 

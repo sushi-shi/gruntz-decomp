@@ -276,17 +276,17 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             }
         }
 
-        POSITION n = m_tabLists[0].GetHeadPosition();
-        while (n) {
-            CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
+        std::list<CStatusBarItem*>::iterator n = m_tabLists[0].begin();
+        while (n != m_tabLists[0].end()) {
+            CStatusBarItem* cur = static_cast<CStatusBarItem*>(*(n++));
             if (cur) {
                 cur->Render();
             }
         }
-        CPtrList& tab = m_tabLists[IDX(m_activeTab)];
-        POSITION m = tab.GetHeadPosition();
-        while (m) {
-            CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(m));
+        std::list<CStatusBarItem*>& tab = m_tabLists[IDX(m_activeTab)];
+        std::list<CStatusBarItem*>::iterator m = tab.begin();
+        while (m != tab.end()) {
+            CStatusBarItem* cur = static_cast<CStatusBarItem*>(*(m++));
             if (cur) {
                 cur->Render();
             }
@@ -296,9 +296,9 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
         }
     }
 
-    POSITION k = m_tabLists[6].GetHeadPosition();
-    while (k) {
-        CStatusBarItem* p = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
+    std::list<CStatusBarItem*>::iterator k = m_tabLists[6].begin();
+    while (k != m_tabLists[6].end()) {
+        CStatusBarItem* p = static_cast<CStatusBarItem*>(*(k++));
         if (p) {
             p->RequestRedraw();
             p->Render();
@@ -681,7 +681,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
             if (m_destructWarningSound == NULL) {
 
                 SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
-                CMapStringToPtr* map = &registry->m_cues;
+                std::map<std::string, SoundCue*>* map = &registry->m_cues;
                 SoundCue* found = MapFind<SoundCue>(*map, "GAME_DESTRUCT");
                 if (found) {
                     SoundSample* sample = found->m_sound;
@@ -703,24 +703,24 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
     }
     UpdateStatusSystems();
 
-    POSITION n = m_tabLists[0].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
+    std::list<CStatusBarItem*>::iterator n = m_tabLists[0].begin();
+    while (n != m_tabLists[0].end()) {
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(*(n++));
         if (cur) {
             cur->Refresh(deltaMs);
         }
     }
-    CPtrList& tab = m_tabLists[IDX(m_activeTab)];
-    POSITION m = tab.GetHeadPosition();
-    while (m) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(m));
+    std::list<CStatusBarItem*>& tab = m_tabLists[IDX(m_activeTab)];
+    std::list<CStatusBarItem*>::iterator m = tab.begin();
+    while (m != tab.end()) {
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(*(m++));
         if (cur) {
             cur->Refresh(deltaMs);
         }
     }
-    POSITION k = m_tabLists[6].GetHeadPosition();
-    while (k) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
+    std::list<CStatusBarItem*>::iterator k = m_tabLists[6].begin();
+    while (k != m_tabLists[6].end()) {
+        CStatusBarItem* cur = static_cast<CStatusBarItem*>(*(k++));
         if (cur) {
             cur->Refresh(deltaMs);
         }
@@ -733,9 +733,9 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
 }
 
 CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
-    POSITION n = m_tabLists[0].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
+    std::list<CStatusBarItem*>::iterator n = m_tabLists[0].begin();
+    while (n != m_tabLists[0].end()) {
+        CStatusBarItem* r = static_cast<CStatusBarItem*>(*(n++));
         if (r) {
             b32 hit = r->m_enabled;
             if (hit) {
@@ -746,10 +746,10 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
             }
         }
     }
-    CPtrList& tab = m_tabLists[IDX(m_activeTab)];
-    n = tab.GetHeadPosition();
-    while (n) {
-        CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
+    std::list<CStatusBarItem*>& tab = m_tabLists[IDX(m_activeTab)];
+    n = tab.begin();
+    while (n != tab.end()) {
+        CStatusBarItem* r = static_cast<CStatusBarItem*>(*(n++));
         if (r) {
             b32 hit = r->m_enabled;
             if (hit) {
@@ -760,9 +760,9 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
             }
         }
     }
-    n = m_tabLists[6].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
+    n = m_tabLists[6].begin();
+    while (n != m_tabLists[6].end()) {
+        CStatusBarItem* r = static_cast<CStatusBarItem*>(*(n++));
         if (r) {
             b32 hit = r->m_enabled;
             if (hit) {
@@ -1080,18 +1080,18 @@ i32 CStatusBarMgr::Deactivate() {
         SetSpritePos(w - 0x45, h - 0x30);
     }
 
-    POSITION n = m_tabLists[0].GetHeadPosition();
-    while (n) {
-        CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(m_tabLists[0].GetNext(n));
+    std::list<CStatusBarItem*>::iterator n = m_tabLists[0].begin();
+    while (n != m_tabLists[0].end()) {
+        CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(*(n++));
         if (cur) {
             cur->RequestRedraw();
         }
     }
 
-    CPtrList& tab = m_tabLists[IDX(m_activeTab)];
-    POSITION m = tab.GetHeadPosition();
-    while (m) {
-        CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(tab.GetNext(m));
+    std::list<CStatusBarItem*>& tab = m_tabLists[IDX(m_activeTab)];
+    std::list<CStatusBarItem*>::iterator m = tab.begin();
+    while (m != tab.end()) {
+        CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(*(m++));
         if (cur) {
             cur->RequestRedraw();
         }
@@ -3193,11 +3193,11 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-        if (m_rewardQueue.GetSize() > 0) {
+        if (static_cast<i32>(m_rewardQueue.size()) > 0) {
             Coord* p = GetReward(0);
             result = static_cast<PickupType>(p->m_x);
             g_coordPool.Push(p);
-            m_rewardQueue.RemoveAt(0, 1);
+            m_rewardQueue.erase(m_rewardQueue.begin() + 0, m_rewardQueue.begin() + (0) + 1);
         } else {
             result = PICKUP_NONE;
             if (m_machineItemSprite) {
@@ -3313,15 +3313,15 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
     Coord reward = {pickupValue, score};
     Coord* node = g_coordPool.PopCopy(reward);
-    i32 n = m_rewardQueue.GetSize();
+    i32 n = static_cast<i32>(m_rewardQueue.size());
     for (i32 i = 0; i < n; i++) {
         Coord* e = GetReward(i);
         if (e != NULL && score < e->m_y) {
-            m_rewardQueue.InsertAt(i, node, 1);
+            m_rewardQueue.insert(m_rewardQueue.begin() + (i), 1, node);
             return 1;
         }
     }
-    m_rewardQueue.Add(node);
+    m_rewardQueue.push_back(node);
     return 1;
 }
 
@@ -3586,7 +3586,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         } while (--cnt);
     }
 
-    i32 ptrCount = m_rewardQueue.GetSize();
+    i32 ptrCount = static_cast<i32>(m_rewardQueue.size());
     s->Write(&ptrCount, sizeof(ptrCount));
     for (u32 n = 0; n < static_cast<u32>(ptrCount); n++) {
         s->Write(GetReward(n), sizeof(Coord));
@@ -3675,11 +3675,11 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
 
     i32 cnt;
     ar->Read(&cnt, sizeof(cnt));
-    m_rewardQueue.SetSize(cnt, -1);
+    m_rewardQueue.resize(cnt);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         Coord* node = g_coordPool.Pop();
         ar->Read(node, sizeof(Coord));
-        m_rewardQueue.SetAt(n, node);
+        m_rewardQueue[n] = node;
     }
     return 1;
 }
@@ -3824,8 +3824,8 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     i32 cellX = static_cast<i32>(m_currentX);
     if (cellX == m_targetX && cellY == m_targetY) {
         i32 mode = m_arrivalMode;
-        CByteArray* arr = &g_gameReg->m_triggerMgr->m_byteArr;
-        arr->Add(static_cast<BYTE>(mode));
+        std::vector<u8>* arr = &g_gameReg->m_triggerMgr->m_byteArr;
+        arr->push_back(static_cast<BYTE>(mode));
         m_owner->m_hlBusy = false;
         if (m_owner->m_position != STATUSBAR_HIDDEN && m_owner->m_activeTab == TAB_GAME) {
             m_owner->ResetWidgets(false);
@@ -4344,7 +4344,7 @@ i32 CStatusBarMgr::GetActiveValue() {
     if (m_rezActive == false) {
         return m_machineItem;
     }
-    if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
+    if (static_cast<i32>(m_rewardQueue.size()) > 0 && static_cast<i32>(m_rewardQueue.size()) > m_rezTick) {
         return GetReward(m_rezTick)->m_x;
     }
     return 0;

@@ -1,17 +1,19 @@
 #ifndef GRUNTZ_GRUNTZ_GLYPHSTRINGDRAW_H
 #define GRUNTZ_GRUNTZ_GLYPHSTRINGDRAW_H
 
+#include <string>
+
 #include <Ints.h>
 
 class CDDrawSurfaceMgr;
 class CDDSurface;
-class CString;
+
 struct tagRECT;
 typedef tagRECT RECT;
 
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,
@@ -22,7 +24,7 @@ i32 DrawTextToOverlaySurface(
 );
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

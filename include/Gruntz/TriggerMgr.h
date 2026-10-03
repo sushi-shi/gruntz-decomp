@@ -1,7 +1,14 @@
 #ifndef SRC_GRUNTZ_TRIGGERMGR_H
 #define SRC_GRUNTZ_TRIGGERMGR_H
 
+#include <list>
+class CGruntPuddle;
+struct Coord;
+
+#include <vector>
+
 #include <Ints.h>
+#include <Gruntz/GruntPuddle.h>
 
 #include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
@@ -248,7 +255,7 @@ public:
 
     i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind);
 
-    CPtrList m_baseList;
+    std::list<CGruntPuddle*> m_baseList;
     CGrunt* m_units[PLAYER_SLOT_COUNT * TM_UNITS_PER_PLAYER];
     i32 m_unitCountByPlayer[PLAYER_SLOT_COUNT];
     i32 m_unitExited[PLAYER_SLOT_COUNT * TM_UNITS_PER_PLAYER];
@@ -262,7 +269,7 @@ public:
     Coord m_cameraTargetIdentity;
     CWwdSpriteObject* m_goal;
 
-    CPtrList m_recList;
+    std::list<Coord*> m_recList;
 
     CGrunt** PlayerUnits(i32 playerIndex) {
         return &m_units[playerIndex * TM_UNITS_PER_PLAYER];
@@ -271,17 +278,17 @@ public:
         return PlayerUnits(playerIndex)[unitIndex];
     }
     Coord* HeadRec() {
-        return static_cast<Coord*>(m_recList.GetHead());
+        return static_cast<Coord*>(m_recList.front());
     }
     CGrunt* SoleSelectedGrunt() {
-        if (m_recList.GetCount() != 1) {
+        if (static_cast<i32>(m_recList.size()) != 1) {
             return NULL;
         }
         Coord* rec = HeadRec();
         return UnitAt(rec->m_x, rec->m_y);
     }
     CActionOptionsMenuBar* m_overlay;
-    CByteArray m_byteArr;
+    std::vector<u8> m_byteArr;
 
     char m_reserved274[0x10];
     b32 m_groupInitialized;
@@ -296,7 +303,7 @@ public:
 
     ClockInterval m_gooTimer;
     ClockInterval m_resourceTimer;
-    CPtrList m_selLists[10];
+    std::list<Coord*> m_selLists[10];
     i32 m_selSentinel;
     FinishLevelReason m_finishReasonFrame;
 

@@ -1,6 +1,14 @@
 #ifndef NET_NETMGR_H
 #define NET_NETMGR_H
 
+#include <list>
+class CNetPlayerNode;
+struct CNetProviderNode;
+class CNetSessionListNode;
+struct GruntRec;
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -25,7 +33,6 @@
 
 void ActiveWait(u32 milliseconds);
 
-CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 class GruntzPlayer;
 class CGruntzMgr;
@@ -135,7 +142,7 @@ struct CNetCmdSlot {
 
     CMulti* m_owner;
 
-    CPtrList m_records;
+    std::list<GruntRec*> m_records;
     i32 m_drainAckFlags[PLAYER_SLOT_COUNT];
     i32 m_receivedAhead[3];
     i32 m_peerReceivedAhead[3];
@@ -158,7 +165,7 @@ struct CNetCmdSlot {
     void BeginDrain();
     void ClearSyncState();
     void ClearDrainAcks();
-    CString GetPlayerName();
+    std::string GetPlayerName();
     i32 Initialize(CMulti* owner, GruntzPlayer* player, NetSlotState state);
     i32 ProcessPacket(i32 playerId, char* packet, i32 packetSize);
 
@@ -275,11 +282,11 @@ class CNetSessionListNode : public CObject {
 public:
     DPSESSIONDESC2 m_sessionDesc;
 
-    __POSITION* m_listPosition;
+    std::list<CNetSessionListNode*>::iterator m_listPosition;
 
     CNetSessionListNode() {
         memset(&m_sessionDesc, 0, sizeof(m_sessionDesc));
-        m_listPosition = NULL;
+
     }
     virtual ~CNetSessionListNode()  ;
     i32 Initialize(LPCDPSESSIONDESC2 sessionDesc);
@@ -292,19 +299,19 @@ public:
 class CNetPlayerNode : public CObject {
 public:
     DPID m_playerId;
-    CString m_shortName;
-    CString m_longName;
+    std::string m_shortName;
+    std::string m_longName;
     DWORD m_flags;
 
     char* m_ownedBufferB;
     char* m_ownedBufferA;
 
     i32 m_reserved1c;
-    __POSITION* m_listPosition;
+    std::list<CNetPlayerNode*>::iterator m_listPosition;
 
     CNetPlayerNode() {
         m_playerId = 0;
-        m_listPosition = NULL;
+
         m_ownedBufferA = NULL;
         m_ownedBufferB = NULL;
     }
@@ -312,7 +319,7 @@ public:
 
     i32 Initialize(DPID playerId, const char* shortName, const char* longName, DWORD flags);
 
-    CString ShortName();
+    std::string ShortName();
 };
 
 extern BOOL __stdcall NetEnumSessionCallback(
@@ -422,7 +429,7 @@ public:
     CNetPlayerNode*
     AddPlayer(DPID playerId, const char* shortName, const char* longName, DWORD flags);
 
-    CNetPlayerNode* CreatePlayer(char* shortName, const char* longName, HANDLE eventHandle);
+    CNetPlayerNode* CreatePlayer(const char* shortName, const char* longName, HANDLE eventHandle);
     void PopulatePlayerList(HWND hList);
 
     i32 InitializeFromProvider(CNetProviderNode* provider, GUID appGuid);
@@ -440,60 +447,60 @@ public:
     IDirectPlay* m_directPlayBase;
     IDirectPlay4A* m_directPlay;
 
-    CObList m_providers;
-    CObList m_sessionListings;
-    CObList m_players;
+    std::list<CNetProviderNode*> m_providers;
+    std::list<CNetSessionListNode*> m_sessionListings;
+    std::list<CNetPlayerNode*> m_players;
 
     CNetProviderNode* m_selectedProvider;
 
     CNetSessionListNode* m_selectedSession;
     CNetPlayerNode* m_selectedPlayer;
-    POSITION m_providerCursor;
-    POSITION m_sessionCursor;
-    POSITION m_playerCursor;
+    std::list<CNetProviderNode*>::iterator m_providerCursor;
+    std::list<CNetSessionListNode*>::iterator m_sessionCursor;
+    std::list<CNetPlayerNode*>::iterator m_playerCursor;
 
     i32 m_reserved88;
 
     CNetProviderNode* GetFirstProvider() {
-        m_providerCursor = m_providers.GetHeadPosition();
-        return m_providerCursor != NULL
-                   ? static_cast<CNetProviderNode*>(m_providers.GetNext(m_providerCursor))
+        m_providerCursor = m_providers.begin();
+        return m_providerCursor != m_providers.end()
+                   ? static_cast<CNetProviderNode*>(*(m_providerCursor++))
                    : NULL;
     }
     CNetProviderNode* GetNextProvider() {
-        if (m_providerCursor != NULL) {
+        if (m_providerCursor != m_providers.end()) {
             CNetProviderNode* next =
-                static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
-            m_providers.GetNext(m_providerCursor);
+                static_cast<CNetProviderNode*>(*(m_providerCursor));
+            *(m_providerCursor++);
             return next;
         }
         return NULL;
     }
     CNetSessionListNode* GetFirstSession() {
-        m_sessionCursor = m_sessionListings.GetHeadPosition();
-        return m_sessionCursor != NULL
-                   ? static_cast<CNetSessionListNode*>(m_sessionListings.GetNext(m_sessionCursor))
+        m_sessionCursor = m_sessionListings.begin();
+        return m_sessionCursor != m_sessionListings.end()
+                   ? static_cast<CNetSessionListNode*>(*(m_sessionCursor++))
                    : NULL;
     }
     CNetSessionListNode* GetNextSession() {
-        if (m_sessionCursor != NULL) {
+        if (m_sessionCursor != m_sessionListings.end()) {
             CNetSessionListNode* next =
-                static_cast<CNetSessionListNode*>(m_sessionListings.GetAt(m_sessionCursor));
-            m_sessionListings.GetNext(m_sessionCursor);
+                static_cast<CNetSessionListNode*>(*(m_sessionCursor));
+            *(m_sessionCursor++);
             return next;
         }
         return NULL;
     }
     CNetPlayerNode* GetFirstPlayer() {
-        m_playerCursor = m_players.GetHeadPosition();
-        return m_playerCursor != NULL
-                   ? static_cast<CNetPlayerNode*>(m_players.GetNext(m_playerCursor))
+        m_playerCursor = m_players.begin();
+        return m_playerCursor != m_players.end()
+                   ? static_cast<CNetPlayerNode*>(*(m_playerCursor++))
                    : NULL;
     }
     CNetPlayerNode* GetNextPlayer() {
-        if (m_playerCursor != NULL) {
-            CNetPlayerNode* next = static_cast<CNetPlayerNode*>(m_players.GetAt(m_playerCursor));
-            m_players.GetNext(m_playerCursor);
+        if (m_playerCursor != m_players.end()) {
+            CNetPlayerNode* next = static_cast<CNetPlayerNode*>(*(m_playerCursor));
+            *(m_playerCursor++);
             return next;
         }
         return NULL;

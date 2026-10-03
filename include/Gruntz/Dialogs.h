@@ -1,6 +1,10 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
+#include <list>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -12,7 +16,6 @@
 #include <Net/NetLobby.h>
 #include <Wap32/Object.h>
 
-class CString;
 struct HWND__;
 struct tagMEASUREITEMSTRUCT;
 struct tagDRAWITEMSTRUCT;
@@ -72,7 +75,7 @@ public:
 
     char m_pad60[8];
     b32 m_customNameFlag;
-    CString m_worldName;
+    std::string m_worldName;
 
     CComboBox* GetPlayerTypeControl(i32 slot);
     CEdit* GetPlayerNameControl(i32 slot);
@@ -146,7 +149,7 @@ public:
 
     void PickIfSelected();
 
-    CString m_customName;
+    std::string m_customName;
 
     DECLARE_MESSAGE_MAP()
 };
@@ -193,7 +196,7 @@ public:
 
     void SetMaxGruntzSelection(i32 slot, i32 count);
     void SetPlayerName(i32 slot, const char* name);
-    void AppendChatLine(char* line);
+    void AppendChatLine(const char* line);
     i32 RefreshPlayerControls(i32 force);
     void OnMaxGruntzSelection0();
     void OnMaxGruntzSelection1();
@@ -259,9 +262,9 @@ public:
 
     char m_pad64[8];
     b32 m_usesCustomMap;
-    CString m_worldName;
+    std::string m_worldName;
 
-    CStringList m_reserved74;
+    std::list<std::string> m_reserved74;
 
     MFC_MESSAGE_MAP_CLASS(CMultiStartDlg)
     DECLARE_MESSAGE_MAP()
@@ -287,7 +290,7 @@ public:
     DECLARE_MESSAGE_MAP()
 };
 
-extern CString g_defaultPlayerNames[4];
+extern std::string g_defaultPlayerNames[4];
 
 extern b32 g_watchdogBusy;
 extern i32 g_netStatsTick;

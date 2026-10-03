@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H
 
+#include <list>
+class CDDrawPlacedWorker;
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawPlacedWorker.h>
@@ -35,7 +38,7 @@ public:
 
     void ClearWorkers();
 
-    CObList m_workers;
+    std::list<CDDrawPlacedWorker*> m_workers;
 };
 
 #endif

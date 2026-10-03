@@ -1,7 +1,11 @@
 #ifndef GRUNTZ_CWORLDSOUNDSET_H
 #define GRUNTZ_CWORLDSOUNDSET_H
 
+#include <list>
+class CAmbientSound;
+
 #include <Ints.h>
+#include <Gruntz/AmbientSound.h>
 
 #include <Dsndmgr/SoundDevice.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -84,14 +88,14 @@ public:
 
     SoundCueRegistry* m_cueRegistry;
     i32 m_masterVolume;
-    CPtrList m_list;
+    std::list<CAmbientSound*> m_list;
     b32 m_enabled;
 
     i32 m_listenerX;
     i32 m_listenerY;
 };
 
-inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
+inline CWorldSoundSet::CWorldSoundSet() : m_list() {
     m_cueRegistry = NULL;
     m_masterVolume = kSoundVolumeMax;
 }

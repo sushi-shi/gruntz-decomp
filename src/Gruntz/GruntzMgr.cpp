@@ -448,7 +448,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     char dpBuf[256];
     strcpy(dpBuf, szCmdLine);
     AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, SW_SHOWNORMAL);
-    m_strWorldFile.Empty();
+    (m_strWorldFile).erase();
 
     m_world = new CDDrawSurfaceMgr;
     i32 flags = 0xe1;
@@ -483,7 +483,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     SAFE_DELETE(m_resourceArchive);
     m_resourceArchive = new CRezMgr;
     bool parseFailed = ResourceArchive()->Open(
-                           const_cast<char*>(static_cast<const char*>(GetRezPath())),
+                           (GetRezPath()).c_str(),
                            true,
                            false
                        )
@@ -642,7 +642,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_gameReg->ResourceArchive()->GetRezFromPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
 
         if (0) {
-            AfxTrace("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
+            AfxTrace("%s\n", (std::string("parsing ") + "GAME_ATTRIBUTEZ").c_str());
         }
         g_buteMgr.Init(&ButeParseErrorSink);
         if (!g_buteMgr.Parse(stream, "1212C")) {
@@ -708,13 +708,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     CRezDir* attract = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     g_attractStateCount = 0;
-    CString title;
-    title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-    CRezItm* titleImage = attract->GetRezFromPath(title, IMGTAG_XCP);
+    std::string title;
+    title = formatText("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
+    CRezItm* titleImage = attract->GetRezFromPath((title).c_str(), IMGTAG_XCP);
     while (titleImage != NULL) {
         g_attractStateCount++;
-        title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        titleImage = attract->GetRezFromPath(title, IMGTAG_XCP);
+        title = formatText("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
+        titleImage = attract->GetRezFromPath((title).c_str(), IMGTAG_XCP);
     }
     if (!TransitionState(mode, 1, false, 0)) {
         if (mode == GAMESTATE_MULTI) {
@@ -731,7 +731,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     return 1;
 }
 
-CString CGruntzMgr::GetRezPath() {
+std::string CGruntzMgr::GetRezPath() {
     return m_strRezPath;
 }
 
@@ -833,7 +833,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
     m_gameStats->m_gruntzExited += m_triggerMgr->m_gruntzExitedByPlayer[g_curPlayer];
     m_gameStats->m_gruntzLost += m_triggerMgr->m_gruntzLostByPlayer[g_curPlayer];
 
-    if (!m_strWorldFile.IsEmpty()) {
+    if (!(m_strWorldFile).empty()) {
         m_gameStats->SetLevelNumber(1);
         m_gameStats->m_isCustomLevel = true;
         return;
@@ -1067,7 +1067,7 @@ i32 CGruntzMgr::GoToNextLevel() {
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
-    m_strWorldFile.Empty();
+    (m_strWorldFile).erase();
     CState* st = m_curState;
     i32 next = st->m_levelIndex + 1;
     if (next > IDX(QUESTLEVEL_TRAINING_LAST)) {
@@ -1088,7 +1088,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
     }
-    m_strWorldFile.Empty();
+    (m_strWorldFile).erase();
     CState* st = m_curState;
     i32 prev = st->m_levelIndex - 1;
     if (prev <= 0) {
@@ -1176,12 +1176,12 @@ i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
 }
 
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
-    CObList* list = &World()->ChildGroup()->m_list;
+    std::list<CGameObject*>* list = &World()->ChildGroup()->m_list;
     if (list == NULL) {
         return;
     }
-    POSITION pos = list->GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = list->begin();
+    while (pos != list->end()) {
         CGameObject* obj = World()->ChildGroup()->NextChild(pos);
         if (obj) {
             obj->m_stateFlags ^= static_cast<SpriteStateFlags>(mask);
@@ -1706,7 +1706,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = LevelOf(World());
         if (view) {
-            u32 idx = view->m_planes.GetSize();
+            u32 idx = static_cast<i32>(view->m_planes.size());
             if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
                 idx--;
             }
@@ -1809,8 +1809,8 @@ i32 CGruntzMgr::CaptureWorldFile() {
         && st != GAMESTATE_DEMO) {
         return 0;
     }
-    CString name = RunCustomWorldDialog(m_gameWnd->GetHwnd(), NULL);
-    if (name.IsEmpty()) {
+    std::string name = RunCustomWorldDialog(m_gameWnd->GetHwnd(), NULL);
+    if ((name).empty()) {
         return 0;
     }
     m_strWorldFile = name;
@@ -1823,7 +1823,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
 i32 CGruntzMgr::ClearWorldFile() {
     GameStateId mode = m_curState->Update();
     if (mode == GAMESTATE_MENU || mode == GAMESTATE_ATTRACT || mode == GAMESTATE_PLAY) {
-        m_strWorldFile.Empty();
+        (m_strWorldFile).erase();
         PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEW_GAME), 0);
         return 1;
     }
@@ -1977,7 +1977,7 @@ i32 CGruntzMgr::IsStandardMode() {
     return 0;
 }
 
-i32 CGruntzMgr::AppendChatMessage(char* msg) {
+i32 CGruntzMgr::AppendChatMessage(const char* msg) {
     CFontConfig* log = m_chatLog;
     if (log == NULL) {
         return 0;
@@ -2014,7 +2014,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     if (entryId < IDX(MOVIE_ENTRY_FIRST) || entryId > IDX(MOVIE_ENTRY_LAST)) {
         return 0;
     }
-    if (!FileExists(m_strMoviePath)) {
+    if (!FileExists((m_strMoviePath).c_str())) {
         return 0;
     }
 
@@ -2047,7 +2047,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
         )) {
         MovieOpenFlags openFlags =
             m_isInterlaced != false ? MOVIE_OPEN_INTERLACED : MOVIE_OPEN_DEFAULT;
-        if (player.Open(m_strMoviePath, IDX(entryId), MOVIE_TILE, openFlags, NULL, NULL)) {
+        if (player.Open((m_strMoviePath).c_str(), IDX(entryId), MOVIE_TILE, openFlags, NULL, NULL)) {
             m_modalBusy = true;
             player.Pump(MOVIE_PUMP_SKIP_ON_KEY, 1);
             m_modalBusy = false;
@@ -2065,8 +2065,8 @@ CFecFile::CFecFile() {
     srand(time(NULL));
 }
 
-CString CGruntzMgr::BuildMoviePath(MovieId movie) {
-    CString name;
+std::string CGruntzMgr::BuildMoviePath(MovieId movie) {
+    std::string name;
 
     switch (movie) {
         case MOVIE_LOGO:
@@ -2101,29 +2101,29 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
             break;
     }
 
-    if (name.IsEmpty()) {
+    if ((name).empty()) {
         return name;
     }
 
-    CString path;
+    std::string path;
     char szDir[GRUNTZ_PATH_BUFFER_SIZE];
 
     if (GetCurrentDirectoryA(GRUNTZ_PATH_BUFFER_MAX_CHARS, szDir)) {
-        path.Format("%s\\%s", szDir, static_cast<const char*>(name));
-        if (!FileExists(path)) {
-            path.Empty();
+        path = formatText("%s\\%s", szDir, (name).c_str());
+        if (!FileExists((path).c_str())) {
+            (path).erase();
         }
     }
 
-    if (path.IsEmpty()) {
-        path.Format("%c:\\Movies\\%s", GetGruntzDriveLetter(), static_cast<const char*>(name));
-        if (path.IsEmpty()) {
+    if ((path).empty()) {
+        path = formatText("%c:\\Movies\\%s", GetGruntzDriveLetter(), (name).c_str());
+        if ((path).empty()) {
             return path;
         }
     }
 
-    if (!FileExists(path)) {
-        path.Empty();
+    if (!FileExists((path).c_str())) {
+        (path).erase();
         return path;
     }
 
@@ -2131,7 +2131,7 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
 }
 
 i32 CGruntzMgr::IsMoviePathValid() {
-    return FileExists(m_strMoviePath) != 0;
+    return FileExists((m_strMoviePath).c_str()) != 0;
 }
 
 i32 CGruntzMgr::PlayLogoMovie() {
@@ -2328,44 +2328,44 @@ i32 CGruntzMgr::LaunchProcessInDir(char* sApp, char* sPath) {
 }
 
 CState* CGruntzMgr::TopState() {
-    if (m_stateStack.GetSize() <= 0) {
+    if (static_cast<i32>(m_stateStack.size()) <= 0) {
         return NULL;
     }
-    return static_cast<CState*>(m_stateStack.GetAt(m_stateStack.GetUpperBound()));
+    return static_cast<CState*>(m_stateStack[(static_cast<i32>(m_stateStack.size()) - 1)]);
 }
 
 void CGruntzMgr::PushState(CState* s) {
     if (!s) {
         return;
     }
-    m_stateStack.Add(s);
+    m_stateStack.push_back(s);
 }
 
 i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (!s) {
         return 0;
     }
-    i32 n = m_stateStack.GetSize();
+    i32 n = static_cast<i32>(m_stateStack.size());
     if (n <= 0) {
         return 0;
     }
-    CState* top = static_cast<CState*>(m_stateStack.GetAt(n - 1));
-    m_stateStack.RemoveAt(n - 1, 1);
+    CState* top = static_cast<CState*>(m_stateStack[n - 1]);
+    m_stateStack.erase(m_stateStack.begin() + n - 1, m_stateStack.begin() + (n - 1) + 1);
     return top == s;
 }
 
 void CGruntzMgr::ClearStateStack() {
-    for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
-        CState* s = static_cast<CState*>(m_stateStack.GetAt(i));
+    for (i32 i = 0; i < static_cast<i32>(m_stateStack.size()); i++) {
+        CState* s = static_cast<CState*>(m_stateStack[i]);
         if (s) {
             delete s;
         }
     }
-    m_stateStack.RemoveAll();
+    m_stateStack.clear();
 }
 
 i32 CGruntzMgr::CheckMovieFileExists() {
-    return FileExists(m_strMoviePath);
+    return FileExists((m_strMoviePath).c_str());
 }
 
 void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
@@ -2462,7 +2462,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         if (spr == NULL) {
             return 0;
         }
-        spr->m_imageSets.SetAtGrow(0, static_cast<CObject*>(rec));
+        growAndAssign(spr->m_imageSets, 0, (rec));
         spr->m_flags |= IDX(WWD_PLANE_FLAG_WRAP_X | WWD_PLANE_FLAG_WRAP_Y);
         spr->m_zCoord = 0xf4241;
         i32 parity = 1;
@@ -2681,13 +2681,13 @@ i32 CGruntzMgr::MakeRezPath() {
 
     b32 found = true;
 
-    CString rez("Gruntz.REZ");
+    std::string rez("Gruntz.REZ");
     m_haveRez = false;
-    m_strRezPath.Format("%s\\%s", cwd, static_cast<LPCTSTR>(rez));
-    if (!FileExists(m_strRezPath)) {
+    m_strRezPath = formatText("%s\\%s", cwd, (rez).c_str());
+    if (!FileExists((m_strRezPath).c_str())) {
         if (drive) {
-            m_strRezPath.Format(s_dataPath, drive, static_cast<LPCTSTR>(rez));
-            if (FileExists(m_strRezPath)) {
+            m_strRezPath = formatText(s_dataPath, drive, (rez).c_str());
+            if (FileExists((m_strRezPath).c_str())) {
                 m_haveRez = true;
             } else {
                 found = false;
@@ -2698,24 +2698,24 @@ i32 CGruntzMgr::MakeRezPath() {
     }
 
     i32 movFound = 1;
-    CString fecHi(s_fecName);
-    CString fecLo(s_fecLoName);
-    CString fec(g_enableHqMovie ? fecHi : fecLo);
+    std::string fecHi(s_fecName);
+    std::string fecLo(s_fecLoName);
+    std::string fec(g_enableHqMovie ? fecHi : fecLo);
 
     m_haveMoviez = false;
-    m_strMoviePath.Format("%s\\%s", cwd, static_cast<LPCTSTR>(fecHi));
-    if (!m_inGameDir && !FileExists(m_strMoviePath)) {
+    m_strMoviePath = formatText("%s\\%s", cwd, (fecHi).c_str());
+    if (!m_inGameDir && !FileExists((m_strMoviePath).c_str())) {
         movFound = 0;
         if (!g_enableHqMovie) {
-            m_strMoviePath.Format("%s\\%s", cwd, static_cast<LPCTSTR>(fecLo));
-            if (FileExists(m_strMoviePath)) {
+            m_strMoviePath = formatText("%s\\%s", cwd, (fecLo).c_str());
+            if (FileExists((m_strMoviePath).c_str())) {
                 movFound = 1;
             }
         }
     }
     if (!movFound && drive) {
-        m_strMoviePath.Format(s_moviezPath, drive, static_cast<LPCTSTR>(fec));
-        if (FileExists(m_strMoviePath)) {
+        m_strMoviePath = formatText(s_moviezPath, drive, (fec).c_str());
+        if (FileExists((m_strMoviePath).c_str())) {
             m_haveMoviez = true;
         }
     }
@@ -2801,7 +2801,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     m_resourceArchive = new CRezMgr;
 
     bool parseFailed = m_resourceArchive->Open(
-                           const_cast<char*>(static_cast<const char*>(GetRezPath())),
+                           (GetRezPath()).c_str(),
                            true,
                            false
                        )
@@ -2923,8 +2923,8 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     i32 r2 = SQR(radius);
     i32 count = 0;
     CDDrawChildGroup* children = World()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = children->m_list.begin();
+    while (pos != children->m_list.end()) {
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {
             i32 adx = abs(obj->m_screenX - x);
@@ -2955,8 +2955,8 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     box.bottom = r->bottom + offY;
     i32 count = 0;
     CDDrawChildGroup* children = World()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = children->m_list.begin();
+    while (pos != children->m_list.end()) {
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {
             i32 ox = obj->m_screenX;
@@ -3023,9 +3023,9 @@ void CGruntzMgr::SetMusicEnabled(b32 enabled) {
 
 i32 CGruntzMgr::LoadSaveMessageSprite() {
     if (CheatMgr()->m_cheatsUsed != false) {
-        CString name;
-        name.LoadStringA(0x81aa);
-        EnterModalUI(name);
+        std::string name;
+        loadResourceText(0x81aa, name);
+        EnterModalUI((name).c_str());
     } else if (RunModalDialog("GAME_SAVE", SaveGameDialogProc, false) == 1) {
         RunModalDialog("GAME_SAVEMSG", OkCancelDialogProc, false);
     }
@@ -3045,9 +3045,9 @@ i32 CGruntzMgr::Quicksave() {
         return 0;
     }
     if (CheatMgr()->m_cheatsUsed != false) {
-        CString name;
-        name.LoadStringA(0x81aa);
-        EnterModalUI(name);
+        std::string name;
+        loadResourceText(0x81aa, name);
+        EnterModalUI((name).c_str());
         return 1;
     }
     if (m_saveInfoRec == NULL || !(m_saveInfoRec->m_flags & 1)) {
@@ -3098,7 +3098,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, const char* snapshot) {
         return 0;
     }
 
-    strcpy(dst->m_levelName, GetWorldFileName());
+    strcpy(dst->m_levelName, (GetWorldFileName()).c_str());
     dst->m_isBattlez = (m_gameMode == GAMEMODE_BATTLEZ);
     dst->m_isCustom = m_isCustomLevel;
 
@@ -3114,8 +3114,8 @@ CState* CGruntzMgr::FindStateById(GameStateId id) {
     if (m_curState && m_curState->Update() == id) {
         return m_curState;
     }
-    for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
-        CState* s = static_cast<CState*>(m_stateStack.GetAt(i));
+    for (i32 i = 0; i < static_cast<i32>(m_stateStack.size()); i++) {
+        CState* s = static_cast<CState*>(m_stateStack[i]);
         if (s && s->Update() == id) {
             return s;
         }
@@ -3203,7 +3203,7 @@ BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
     return false;
 }
 
-i32 CGruntzMgr::SetInactivePlayerName(i32 slot, i32, i32, i32, i32, const CString& val, i32) {
+i32 CGruntzMgr::SetInactivePlayerName(i32 slot, i32, i32, i32, i32, const std::string& val, i32) {
     if (CheckPlayState()) {
         if (m_players[slot].m_active == false) {
             m_players[slot].m_name = val;
@@ -3289,7 +3289,7 @@ i32 CGruntzMgr::OpenBattlezSetup() {
         m_isBuiltInBattlezLevel = true;
         m_strWorldFile = dlg.m_worldName;
     }
-    if (m_strWorldFile.IsEmpty()) {
+    if ((m_strWorldFile).empty()) {
         return 0;
     }
     PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_START_BATTLEZ_GAME), 0);
@@ -3298,8 +3298,8 @@ i32 CGruntzMgr::OpenBattlezSetup() {
 
 i32 CGruntzMgr::InitializeBattlezPlayers() {
     i32 matched = 0;
-    CString s;
-    if (s.LoadString(0x81ab)) {
+    std::string s;
+    if (loadResourceText(0x81ab, s)) {
         bool eq;
         eq = (s == m_strWorldFile);
         if (eq) {
@@ -3426,7 +3426,7 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
 
     char buf[SERIAL_NAME_LEN];
     memset(buf, 0, SERIAL_NAME_LEN);
-    strcpy(buf, m_strWorldFile);
+    strcpy(buf, (m_strWorldFile).c_str());
     ar->Write(buf, SERIAL_NAME_LEN);
 
     ar->Write(&m_loadingSaveGame, sizeof(m_loadingSaveGame));
@@ -3508,10 +3508,10 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     return 1;
 }
 
-i32 CGruntzMgr::IsBattlezMapFile(CString path) {
+i32 CGruntzMgr::IsBattlezMapFile(std::string path) {
     CFile file;
     char hdr[0x5f4];
-    if (file.Open(path, CFile::modeRead, NULL)) {
+    if (file.Open((path).c_str(), CFile::modeRead, NULL)) {
         if (file.GetLength() < 0x5f4) {
             file.Close();
             return 0;
@@ -3524,5 +3524,3 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     }
     return 0;
 }
-
-template class CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*>;

@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CWARLORD_H
 #define GRUNTZ_CWARLORD_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/ActReg.h>
@@ -44,7 +46,7 @@ public:
     i32 ResolveIdleAnimation();
     i32 ResolveBattlecryAnimation();
 
-    CString m_warlordName;
+    std::string m_warlordName;
 
     CAniElement* m_idleAnims[4];
     CAniElement* m_battlecryAnims[3];

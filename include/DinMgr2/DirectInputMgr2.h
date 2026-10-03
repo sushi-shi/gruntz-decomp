@@ -1,6 +1,11 @@
 #ifndef DINMGR2_DIRECTINPUTMGR2_H
 #define DINMGR2_DIRECTINPUTMGR2_H
 
+#include <list>
+class CInputDeviceGroup;
+
+#include <vector>
+
 #define DIRECTINPUT_VERSION 0x0500
 
 #include <Ints.h>
@@ -111,12 +116,12 @@ public:
     u32 m_flags;
     CMouseDevice* m_mouse;
     CKeyboardDevice* m_keyboard;
-    CPtrArray m_joysticks;
-    CPtrList m_deviceGroups;
+    std::vector<CJoystickDevice*> m_joysticks;
+    std::list<CInputDeviceGroup*> m_deviceGroups;
 
     CJoystickDevice* GetJoystick(i32 index) {
-        return (index >= 0 && index < m_joysticks.GetSize())
-                   ? static_cast<CJoystickDevice*>(m_joysticks.GetAt(index))
+        return (index >= 0 && index < static_cast<i32>(m_joysticks.size()))
+                   ? static_cast<CJoystickDevice*>(m_joysticks[index])
                    : NULL;
     }
 };

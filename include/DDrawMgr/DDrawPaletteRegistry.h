@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWPALETTEREGISTRY_H
 #define GRUNTZ_DDRAWMGR_DDRAWPALETTEREGISTRY_H
 
+#include <map>
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawPaletteResource.h>
@@ -29,10 +32,10 @@ public:
     virtual CDDrawPaletteResource* LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 flags);
     virtual ~CDDrawPaletteRegistry()  ;
 
-    CMapStringToOb m_palettesByName;
+    std::map<std::string, CDDrawPaletteResource*> m_palettesByName;
 
-    CMapStringToOb m_reservedMap2;
-    CMapStringToOb m_reservedMap3;
+    std::map<std::string, CObject*> m_reservedMap2;
+    std::map<std::string, CObject*> m_reservedMap3;
 
     CDDrawPaletteResource* m_activePalette;
 

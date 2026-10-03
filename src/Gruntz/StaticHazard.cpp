@@ -46,7 +46,6 @@
 template<>
 CActReg CActRegPool<CStaticHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-struct CString;
 
 i32 DispatchStaticHazardLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CStaticHazard)

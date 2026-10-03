@@ -8,26 +8,26 @@
 
 void CKeyedList::Clear() {
 
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
-        CKeyedNode* sub = static_cast<CKeyedNode*>(m_list.GetNext(pos));
+    std::list<CKeyedNode*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        CKeyedNode* sub = static_cast<CKeyedNode*>(*(pos++));
         delete sub;
     }
-    m_list.RemoveAll();
+    m_list.clear();
     m_mode = 0;
 }
 
 CKeyedNode::~CKeyedNode() {
-    m_key.Empty();
+    (m_key).erase();
     m_commandDelay = 0;
     m_resendInterval = 0;
 }
 
 CKeyedNode* CKeyedList::AddNode(const char* key, i32 commandDelay, i32 resendInterval) {
     CKeyedNode* node = new CKeyedNode;
-    node->m_key = key;
+    node->m_key = key ? key : "";
     node->m_commandDelay = commandDelay;
     node->m_resendInterval = resendInterval;
-    m_list.AddTail(node);
+    m_list.insert(m_list.end(), node);
     return node;
 }

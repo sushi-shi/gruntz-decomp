@@ -91,9 +91,9 @@ i32 CAttract::EnterState(GameStateId previousState) {
         } while (ShowCursor(false) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    CString s;
-    s.Format("TITLE%d", idx);
-    LoadAndPresentTitlePage(s, 0, 0, 1, 0);
+    std::string s;
+    s = formatText("TITLE%d", idx);
+    LoadAndPresentTitlePage((s).c_str(), 0, 0, 1, 0);
     CDDrawSubMgrPages* page = menuRoot()->GetDrawTarget();
     page->BlitPage(page->GetBackPair());
 
@@ -179,9 +179,9 @@ i32 CAttract::InputVirtual() {
         } while (ShowCursor(false) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    CString s;
-    s.Format("TITLE%d", idx);
-    return LoadAndPresentTitlePage(s, 0, 0, 1, 0);
+    std::string s;
+    s = formatText("TITLE%d", idx);
+    return LoadAndPresentTitlePage((s).c_str(), 0, 0, 1, 0);
 }
 
 i32 CAttract::RestoreDisplay() {
@@ -194,9 +194,9 @@ i32 CAttract::RestoreDisplay() {
         } while (ShowCursor(false) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    CString s;
-    s.Format("TITLE%d", idx);
-    return LoadAndPresentTitlePage(s, 0, 0, 1, 0);
+    std::string s;
+    s = formatText("TITLE%d", idx);
+    return LoadAndPresentTitlePage((s).c_str(), 0, 0, 1, 0);
 }
 
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {

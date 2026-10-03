@@ -12,7 +12,7 @@
 
 class CWwdSpriteObject;
 struct CGameObject;
-class CAniRecordView;
+struct CAniRecordView;
 class CAniElement;
 class CFileMemBase;
 

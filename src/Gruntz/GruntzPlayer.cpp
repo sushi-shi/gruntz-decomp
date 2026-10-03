@@ -176,7 +176,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     }
     ComboBox_ResetContent(cb);
     for (i32 i = 0; i < 0x11; i++) {
-        ComboBox_AddString(cb, static_cast<const char*>(GetColorName(i, false)));
+        ComboBox_AddString(cb, (GetColorName(i, false)).c_str());
     }
     if (curSel >= 0) {
         ComboBox_SetCurSel(cb, curSel);
@@ -194,7 +194,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     }
     ComboBox_ResetContent(cb);
     for (i32 i = 0; i < 3; i++) {
-        ComboBox_AddString(cb, static_cast<const char*>(GetDifficultyName(i, false)));
+        ComboBox_AddString(cb, (GetDifficultyName(i, false)).c_str());
     }
     if (curSel >= 0) {
         ComboBox_SetCurSel(cb, curSel);
@@ -239,7 +239,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
         ar->Write(&m_clearedRound, sizeof(m_clearedRound));
         g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
-        strcpy(tmp, static_cast<const char*>(m_name));
+        strcpy(tmp, (m_name).c_str());
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&m_focusX, sizeof(m_focusX));
         ar->Write(&m_focusY, sizeof(m_focusY));
@@ -250,26 +250,26 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
            != 0;
 }
 
-CString GruntzPlayer::GetDefaultName(i32) {
+std::string GruntzPlayer::GetDefaultName(i32) {
 
-    CString name("Player");
+    std::string name("Player");
     return name;
 }
 
-CString GetColorName(i32 colorIdx, b32 upper) {
-    CString s;
+std::string GetColorName(i32 colorIdx, b32 upper) {
+    std::string s;
     s = g_colorNames[colorIdx];
     if (upper) {
-        s.MakeUpper();
+        std::transform((s).begin(), (s).end(), (s).begin(), asciiUpper);
     }
     return s;
 }
 
-CString GetDifficultyName(i32 diffIdx, b32 upper) {
-    CString s;
+std::string GetDifficultyName(i32 diffIdx, b32 upper) {
+    std::string s;
     s = g_difficultyNames[diffIdx];
     if (upper) {
-        s.MakeUpper();
+        std::transform((s).begin(), (s).end(), (s).begin(), asciiUpper);
     }
     return s;
 }

@@ -19,7 +19,7 @@
 #include <new>
 #include <stddef.h>
 
-CString CMenuPage::GetPageKey() {
+std::string CMenuPage::GetPageKey() {
     return m_pageKey;
 }
 
@@ -35,8 +35,8 @@ i32 CMenuPage::Configure(
     }
     m_world = menuTree->m_world;
     m_menuTree = menuTree;
-    m_pageKey = pageKey;
-    m_parentPageKey = parentPageKey;
+    m_pageKey = pageKey ? pageKey : "";
+    m_parentPageKey = parentPageKey ? parentPageKey : "";
     m_rowSpacing = menuTree->m_rowSpacing;
     m_headerGap = menuTree->m_headerGap;
     m_flags = flags;
@@ -56,14 +56,14 @@ void CMenuPage::Reset() {
 }
 
 void CMenuPage::ClearItems() {
-    POSITION position = m_items.GetHeadPosition();
-    while (position) {
+    std::list<CMenuItem*>::iterator position = m_items.begin();
+    while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
         if (item) {
             delete item;
         }
     }
-    m_items.RemoveAll();
+    m_items.clear();
 }
 
 i32 CMenuPage::ResolveHeaderAnimation(const char* animationKey) {
@@ -74,7 +74,7 @@ i32 CMenuPage::AppendItem(CMenuItem* item) {
     if (!item) {
         return 0;
     }
-    item->m_listPosition = m_items.AddTail(item);
+    m_items.insert(m_items.end(), item);
     return 1;
 }
 
@@ -164,8 +164,8 @@ i32 CMenuPage::PrepareForActivation() {
         m_focusedItem->Deselect();
         m_focusedItem = NULL;
     }
-    POSITION position = m_items.GetHeadPosition();
-    while (position) {
+    std::list<CMenuItem*>::iterator position = m_items.begin();
+    while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
         if (item) {
             item->OnPageActivated();
@@ -175,9 +175,9 @@ i32 CMenuPage::PrepareForActivation() {
 }
 
 i32 CMenuPage::FocusInitialItem() {
-    if (!m_initialFocusItemName.IsEmpty()) {
-        POSITION position = m_items.GetHeadPosition();
-        while (position) {
+    if (!(m_initialFocusItemName).empty()) {
+        std::list<CMenuItem*>::iterator position = m_items.begin();
+        while (position != m_items.end()) {
             CMenuItem* item = NextItem(position);
             if (item) {
                 bool matches = item->GetItemName() == m_initialFocusItemName;
@@ -191,8 +191,8 @@ i32 CMenuPage::FocusInitialItem() {
             }
         }
     }
-    POSITION position = m_items.GetHeadPosition();
-    while (position) {
+    std::list<CMenuItem*>::iterator position = m_items.begin();
+    while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
         if (item) {
             if (item->IsSelectable()) {
@@ -224,8 +224,8 @@ i32 CMenuPage::SetFocusedItem(CMenuItem* item, i32 playFocusSound) {
 }
 
 i32 CMenuPage::UpdateItems(u32 deltaMs) {
-    POSITION position = m_items.GetHeadPosition();
-    while (position) {
+    std::list<CMenuItem*>::iterator position = m_items.begin();
+    while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
         if (item) {
             item->Update(deltaMs);
@@ -252,8 +252,8 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
             drawY += m_headerGap + headerFrame->m_anchorY;
         }
     }
-    POSITION position = m_items.GetHeadPosition();
-    while (position) {
+    std::list<CMenuItem*>::iterator position = m_items.begin();
+    while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
         if (item) {
             drawY += item->GetFrameHeight() / 2;
@@ -273,20 +273,20 @@ i32 CMenuPage::MoveFocusUpSequential() {
     if (!m_focusedItem) {
         return 0;
     }
-    POSITION currentPosition = m_focusedItem->m_listPosition;
-    if (!currentPosition) {
+    std::list<CMenuItem*>::iterator currentPosition = std::find(m_items.begin(), m_items.end(), m_focusedItem);
+    if (currentPosition == m_items.end()) {
         return 0;
     }
     CMenuItem* candidateItem = NULL;
-    POSITION scanPosition = currentPosition;
+    std::list<CMenuItem*>::iterator scanPosition = currentPosition;
 
     PrevItem(scanPosition);
-    while (scanPosition) {
+    while (scanPosition != m_items.end()) {
         candidateItem = PrevItem(scanPosition);
         if (candidateItem) {
             if (candidateItem->IsSelectable()) {
 
-                scanPosition = NULL;
+                scanPosition = m_items.end();
                 continue;
             }
         }
@@ -295,14 +295,14 @@ i32 CMenuPage::MoveFocusUpSequential() {
     if (!candidateItem) {
 
         if (CanWrap()) {
-            POSITION wrapStartPosition = m_focusedItem->m_listPosition;
-            if (!wrapStartPosition) {
+            std::list<CMenuItem*>::iterator wrapStartPosition = std::find(m_items.begin(), m_items.end(), m_focusedItem);
+            if (wrapStartPosition == m_items.end()) {
                 return 0;
             }
-            POSITION wrapPosition = wrapStartPosition;
+            std::list<CMenuItem*>::iterator wrapPosition = wrapStartPosition;
 
             NextItem(wrapPosition);
-            while (wrapPosition) {
+            while (wrapPosition != m_items.end()) {
                 CMenuItem* wrapCandidate = NextItem(wrapPosition);
                 if (wrapCandidate) {
                     if (wrapCandidate->IsSelectable()) {
@@ -328,20 +328,20 @@ i32 CMenuPage::MoveFocusDownSequential() {
     if (!m_focusedItem) {
         return 0;
     }
-    POSITION currentPosition = m_focusedItem->m_listPosition;
-    if (!currentPosition) {
+    std::list<CMenuItem*>::iterator currentPosition = std::find(m_items.begin(), m_items.end(), m_focusedItem);
+    if (currentPosition == m_items.end()) {
         return 0;
     }
     CMenuItem* candidateItem = NULL;
-    POSITION scanPosition = currentPosition;
+    std::list<CMenuItem*>::iterator scanPosition = currentPosition;
 
     NextItem(scanPosition);
-    while (scanPosition) {
+    while (scanPosition != m_items.end()) {
         candidateItem = NextItem(scanPosition);
         if (candidateItem) {
             if (candidateItem->IsSelectable()) {
 
-                scanPosition = NULL;
+                scanPosition = m_items.end();
                 continue;
             }
         }
@@ -350,14 +350,14 @@ i32 CMenuPage::MoveFocusDownSequential() {
     if (!candidateItem) {
 
         if (CanWrap()) {
-            POSITION wrapStartPosition = m_focusedItem->m_listPosition;
-            if (!wrapStartPosition) {
+            std::list<CMenuItem*>::iterator wrapStartPosition = std::find(m_items.begin(), m_items.end(), m_focusedItem);
+            if (wrapStartPosition == m_items.end()) {
                 return 0;
             }
-            POSITION wrapPosition = wrapStartPosition;
+            std::list<CMenuItem*>::iterator wrapPosition = wrapStartPosition;
 
             PrevItem(wrapPosition);
-            while (wrapPosition) {
+            while (wrapPosition != m_items.end()) {
                 CMenuItem* wrapCandidate = PrevItem(wrapPosition);
                 if (wrapCandidate) {
                     if (wrapCandidate->IsSelectable()) {
@@ -387,10 +387,10 @@ i32 CMenuPage::ActivateFocusedItem() {
 }
 
 i32 CMenuPage::ReturnToParentPage(i32 playActivationSound) {
-    if (m_parentPageKey.IsEmpty()) {
+    if ((m_parentPageKey).empty()) {
         return 0;
     }
-    if (!m_menuTree->SetActivePageByKey(m_parentPageKey)) {
+    if (!m_menuTree->SetActivePageByKey((m_parentPageKey).c_str())) {
         return 0;
     }
     if (playActivationSound) {
@@ -432,8 +432,8 @@ i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
     i32 columnX = ((m_columnWidth / 2)) + m_bounds.left + m_columnOffsetX;
     i32 firstRowY = drawY;
     i32 rowInColumn = 0;
-    POSITION position = m_items.GetHeadPosition();
-    while (position) {
+    std::list<CMenuItem*>::iterator position = m_items.begin();
+    while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
         if (item) {
             drawY += item->GetFrameHeight() / 2;
@@ -465,8 +465,8 @@ i32 CMenuPage::MoveFocusRightColumn() {
         return 0;
     }
 
-    POSITION position = currentItem->m_listPosition;
-    if (!position) {
+    std::list<CMenuItem*>::iterator position = std::find(m_items.begin(), m_items.end(), currentItem);
+    if (position == m_items.end()) {
         return 0;
     }
     i32 stepsRemaining = m_rowsPerColumn;
@@ -474,7 +474,7 @@ i32 CMenuPage::MoveFocusRightColumn() {
     if (stepsRemaining >= 0) {
         stepsRemaining++;
         do {
-            if (position != NULL) {
+            if (position != m_items.end()) {
                 candidateItem = NextItem(position);
             } else {
                 candidateItem = NULL;
@@ -502,8 +502,8 @@ i32 CMenuPage::MoveFocusLeftColumn() {
         return 0;
     }
 
-    POSITION position = currentItem->m_listPosition;
-    if (!position) {
+    std::list<CMenuItem*>::iterator position = std::find(m_items.begin(), m_items.end(), currentItem);
+    if (position == m_items.end()) {
         return 0;
     }
     i32 stepsRemaining = m_rowsPerColumn;
@@ -511,7 +511,7 @@ i32 CMenuPage::MoveFocusLeftColumn() {
     if (stepsRemaining >= 0) {
         stepsRemaining++;
         do {
-            if (position != NULL) {
+            if (position != m_items.end()) {
                 candidateItem = PrevItem(position);
             } else {
                 candidateItem = NULL;
@@ -554,8 +554,8 @@ i32 CMenuPage::ClickAt(i32 screenX, i32 screenY) {
 }
 
 CMenuItem* CMenuPage::HitTest(i32 screenX, i32 screenY) {
-    POSITION position = m_items.GetHeadPosition();
-    while (position) {
+    std::list<CMenuItem*>::iterator position = m_items.begin();
+    while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
         if (item) {
             if (item->HitTest(screenX, screenY)) {
@@ -570,9 +570,9 @@ CMenuItem* CMenuPage::FindItemByName(const char* name) {
     if (!name) {
         return NULL;
     }
-    CString requestedName(name);
-    POSITION position = m_items.GetHeadPosition();
-    while (position) {
+    std::string requestedName(name);
+    std::list<CMenuItem*>::iterator position = m_items.begin();
+    while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
         if (item) {
             bool matches = requestedName == item->GetItemName();
@@ -588,7 +588,7 @@ i32 CMenuPage::MoveFocusLeft() {
     if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindItemByName(m_focusedItem->GetLeftItemName());
+    CMenuItem* item = FindItemByName((m_focusedItem->GetLeftItemName()).c_str());
     if (item) {
         if (!item->IsSelectable()) {
             return 0;
@@ -605,7 +605,7 @@ i32 CMenuPage::MoveFocusRight() {
     if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindItemByName(m_focusedItem->GetRightItemName());
+    CMenuItem* item = FindItemByName((m_focusedItem->GetRightItemName()).c_str());
     if (item) {
         if (!item->IsSelectable()) {
             return 0;
@@ -622,7 +622,7 @@ i32 CMenuPage::MoveFocusUp() {
     if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindItemByName(m_focusedItem->GetUpItemName());
+    CMenuItem* item = FindItemByName((m_focusedItem->GetUpItemName()).c_str());
     if (item) {
         if (!item->IsSelectable()) {
             return 0;
@@ -639,7 +639,7 @@ i32 CMenuPage::MoveFocusDown() {
     if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindItemByName(m_focusedItem->GetDownItemName());
+    CMenuItem* item = FindItemByName((m_focusedItem->GetDownItemName()).c_str());
     if (item) {
         if (!item->IsSelectable()) {
             return 0;

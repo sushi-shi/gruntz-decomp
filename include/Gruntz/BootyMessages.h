@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_BOOTYMESSAGES_H
 #define GRUNTZ_GRUNTZ_BOOTYMESSAGES_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/CoordNode.h>
@@ -13,9 +15,8 @@ struct SecretMsgRow {
 
 extern RECT g_levelMsgRectsA[8];
 
-extern CString g_levelMsgStrings[8];
+extern std::string g_levelMsgStrings[8];
 
-class CString;
 
 extern const Coord g_bootyLetterCoords[16];
 
@@ -23,7 +24,7 @@ extern const float g_secretRatioScale;
 
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

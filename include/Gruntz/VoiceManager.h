@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_VOICEMANAGER_H
 #define GRUNTZ_VOICEMANAGER_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -73,7 +75,7 @@ public:
 
     StreamVoice* m_streamVoices[2];
 
-    CPtrArray m_voiceGroups;
+    std::vector<CSpawnList*> m_voiceGroups;
     i32 m_voiceVolume;
 };
 

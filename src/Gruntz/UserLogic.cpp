@@ -31,11 +31,11 @@ void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     }
 }
 
-void CUserLogic::StepBehavior(char* animationActName) {}
+void CUserLogic::StepBehavior(const char* animationActName) {}
 
 void CUserLogic::FireActivation(i32) {}
 
-void CUserLogic::FinalizeStep(char*) {
+void CUserLogic::FinalizeStep(const char*) {
     if (m_deferredCallback == NULL) {
         return;
     }
@@ -70,7 +70,7 @@ i32 CWapX::SerializeAnimationState(
             if (strlen(name) == 0) {
                 m_value = NULL;
             } else {
-                CMapStringToPtr* map =
+                std::map<std::string, CAniElement*>* map =
                     &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
                 CAniElement* value = MapFind<CAniElement>(*map, name);
                 m_value = value;
@@ -83,9 +83,7 @@ i32 CWapX::SerializeAnimationState(
             if (m_value != NULL) {
                 strcpy(
                     name,
-                    static_cast<const char*>(
-                        m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
-                    )
+                    (m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)).c_str()
                 );
             }
             archive->Write(name, SERIAL_NAME_LEN);

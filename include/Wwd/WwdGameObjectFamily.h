@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H
 #define GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H
 
+#include <list>
+struct CGameObject;
+
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -136,7 +141,7 @@ public:
 
     i32 m_sortKey;
 
-    POSITION m_posCache;
+    std::list<CGameObject*>::iterator m_posCache;
 
     CLogicRecord* m_logicRecord;
     CLogicRecord* m_hitLogic;
@@ -152,7 +157,7 @@ public:
 
     WwdDirtyRect m_shadow;
 
-    CString m_name;
+    std::string m_name;
 
     i32 m_reservede0;
 
@@ -206,7 +211,7 @@ inline i32 CGameObject::AttackBits(CGameObject* target) const {
 
 inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
     m_screenX = COORD_UNSET;
-    m_posCache = NULL;
+
     m_logicRecord = new CLogicRecord(owner, id, 0);
     m_carrier = NULL;
     m_hitLogic = NULL;
@@ -310,7 +315,7 @@ public:
 class CWwdGameObject : public CWwdSpriteObject {
 public:
     CWwdGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
-        : CWwdSpriteObject(owner, id, objectFlags), m_children(0xa) {
+        : CWwdSpriteObject(owner, id, objectFlags), m_children() {
         m_reserved1f8 = 0;
     }
     virtual ~CWwdGameObject()  ;
@@ -346,7 +351,7 @@ public:
     CWwdGameObject*
     CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags);
 
-    CObList m_children;
+    std::list<CGameObject*> m_children;
 
     i32 m_reserved1f8;
 };
@@ -402,13 +407,16 @@ public:
     u8 m_dotColor;
 };
 
-inline CGameObject* CDDrawChildGroup::NextChild(POSITION& pos) {
-    return static_cast<CGameObject*>(m_list.GetNext(pos));
+inline CGameObject* CDDrawChildGroup::NextChild(std::list<CGameObject*>::iterator& pos) {
+    return static_cast<CGameObject*>(*(pos++));
 }
 inline CGameObject* CDDrawChildGroup::HeadChild() const {
-    return static_cast<CGameObject*>(m_list.GetHead());
+    return static_cast<CGameObject*>(m_list.front());
 }
 
-#define CLEAR_WWD_GAME_OBJECT_CHILDREN                                                                 POSITION pos = m_children.GetHeadPosition();                                                       while (pos != NULL) {                                                                                  CObject* child = m_children.GetNext(pos);                                                          if (child != NULL) {                                                                                   delete child;                                                                                  }                                                                                              }                                                                                                  m_children.RemoveAll()
+#define CLEAR_WWD_GAME_OBJECT_CHILDREN \
+    for (std::list<CGameObject*>::iterator child = m_children.begin(); \
+         child != m_children.end(); ++child) { delete *child; } \
+    m_children.clear()
 
 #endif

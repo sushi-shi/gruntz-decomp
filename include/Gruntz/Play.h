@@ -1,6 +1,10 @@
 #ifndef SRC_GRUNTZ_CPLAY_H
 #define SRC_GRUNTZ_CPLAY_H
 
+#include <vector>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -134,25 +138,25 @@ public:
     virtual i32 BuildWorldLevelPath(i32);
 
     Coord* StartMarkerAt(i32 index) {
-        return static_cast<Coord*>(m_startMarkers.GetAt(index));
+        return static_cast<Coord*>(m_startMarkers[index]);
     }
     i32 StartMarkerCount() {
-        return m_startMarkers.GetSize();
+        return static_cast<i32>(m_startMarkers.size());
     }
     Coord* PlacedObjectCellAt(i32 group, i32 index) {
-        return static_cast<Coord*>(m_placedObjectCells[group].GetAt(index));
+        return static_cast<Coord*>(m_placedObjectCells[group][index]);
     }
     i32 PlacedObjectCellCount(i32 group) {
-        return m_placedObjectCells[group].GetSize();
+        return static_cast<i32>(m_placedObjectCells[group].size());
     }
     Coord* CameraBookmarkAt(i32 index) {
-        return static_cast<Coord*>(m_cameraBookmarks.GetAt(index));
+        return static_cast<Coord*>(m_cameraBookmarks[index]);
     }
     void SetCameraBookmarkAt(i32 index, Coord* bookmark) {
-        m_cameraBookmarks.SetAt(index, bookmark);
+        m_cameraBookmarks[index] = bookmark;
     }
     i32 CameraBookmarkCount() {
-        return m_cameraBookmarks.GetSize();
+        return static_cast<i32>(m_cameraBookmarks.size());
     }
     inline void FreeStartMarkers();
     inline void FreePlacedObjectCells(i32 group);
@@ -286,7 +290,7 @@ public:
     i32 SavePlayState(CFileMemBase* ar);
     i32 LoadPlayState(CFileMemBase* ar);
 
-    CString m_reserved1b4;
+    std::string m_reserved1b4;
     char m_pad1b8[0x1bc - 0x1b8];
     b32 m_returnToMenuOnComplete;
     b32 m_completedFinalLevel;
@@ -327,7 +331,7 @@ public:
     b32 m_dragInhibit1;
     b32 m_dragInhibit2;
 
-    CPtrArray m_startMarkers;
+    std::vector<Coord*> m_startMarkers;
 
     struct Anchor {
         i32 m_x;
@@ -335,12 +339,12 @@ public:
     };
     Anchor m_anchors[4];
 
-    CPtrArray m_placedObjectCells[4];
+    std::vector<Coord*> m_placedObjectCells[4];
     CTimer* m_levelTimer;
     ClockInterval m_cueTiming;
     b32 m_cueToggle;
     i32 m_lastCueId;
-    CString m_cueText;
+    std::string m_cueText;
     b32 m_drewThisFrame;
 
     POINT m_pathPreviewSource;
@@ -358,7 +362,7 @@ public:
     ViewportResizeMode m_viewportResizeMode;
     b32 m_hudSuppressed;
 
-    CPtrArray m_cameraBookmarks;
+    std::vector<Coord*> m_cameraBookmarks;
     i32 m_cameraBookmarkIndex;
     ClockInterval m_defeatCountdownTiming;
     b32 m_defeatCountdownActive;
@@ -418,8 +422,8 @@ extern char* g_colorNames[];
 extern char* g_difficultyNames[];
 
 void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX);
-CString GetColorName(i32 colorIdx, b32 upper);
-CString GetDifficultyName(i32 diffIdx, b32 upper);
+std::string GetColorName(i32 colorIdx, b32 upper);
+std::string GetDifficultyName(i32 diffIdx, b32 upper);
 
 i32 LayerBlitFrame(
     CDDrawSurfaceMgr* surfaceMgr,
@@ -432,7 +436,7 @@ i32 LayerBlitFrame(
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, b32 snapFlag);
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,
@@ -443,7 +447,7 @@ i32 DrawTextToOverlaySurface(
 );
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

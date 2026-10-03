@@ -63,12 +63,12 @@ void CMenuTree::Reset() {
 }
 
 void CMenuTree::ClearPages() {
-    POSITION position = m_pages.GetHeadPosition();
-    while (position) {
-        CMenuPage* page = static_cast<CMenuPage*>(m_pages.GetNext(position));
+    std::list<CMenuPage*>::iterator position = m_pages.begin();
+    while (position != m_pages.end()) {
+        CMenuPage* page = static_cast<CMenuPage*>(*(position++));
         delete page;
     }
-    m_pages.RemoveAll();
+    m_pages.clear();
     m_activePage = NULL;
 }
 
@@ -76,7 +76,7 @@ i32 CMenuTree::AddPage(CMenuPage* page) {
     if (!page) {
         return 0;
     }
-    m_pages.AddTail(page);
+    m_pages.insert(m_pages.end(), page);
     if (!m_activePage) {
         SetActivePage(page);
     }
@@ -84,9 +84,9 @@ i32 CMenuTree::AddPage(CMenuPage* page) {
 }
 
 CMenuPage* CMenuTree::FindPage(const char* pageKey) {
-    POSITION position = m_pages.GetHeadPosition();
-    while (position) {
-        CMenuPage* page = static_cast<CMenuPage*>(m_pages.GetNext(position));
+    std::list<CMenuPage*>::iterator position = m_pages.begin();
+    while (position != m_pages.end()) {
+        CMenuPage* page = static_cast<CMenuPage*>(*(position++));
         if (page) {
             if (page->GetPageKey() == pageKey) {
                 return page;
@@ -268,17 +268,17 @@ i32 CMenuTree::DrawFocusCursors(
 }
 
 i32 CMenuTree::PlayFocusSound() {
-    if (m_focusSoundKey.IsEmpty()) {
+    if ((m_focusSoundKey).empty()) {
         return 0;
     }
-    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), m_focusSoundKey);
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), (m_focusSoundKey).c_str());
 }
 
 i32 CMenuTree::PlayActivationSound() {
-    if (m_activationSoundKey.IsEmpty()) {
+    if ((m_activationSoundKey).empty()) {
         return 0;
     }
-    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), m_activationSoundKey);
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), (m_activationSoundKey).c_str());
 }
 
 i32 CMenuTree::MoveFocusLeft() {

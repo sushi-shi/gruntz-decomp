@@ -1,12 +1,14 @@
 #ifndef GRUNTZ_GRUNTZ_MENUSTATE_H_H
 #define GRUNTZ_GRUNTZ_MENUSTATE_H_H
 
+#include <string>
+
 #include <Gruntz/GameMode.h>
 #include <Ints.h>
 
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    std::string* text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

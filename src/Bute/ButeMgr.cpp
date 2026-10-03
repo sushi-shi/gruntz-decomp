@@ -769,8 +769,8 @@ CButeMgr::CButeMgr() {
     m_writeMode = 0;
     m_bCrypt = 0;
     m_bErrorFlag = 0;
-    m_sAttributeFilename.Empty();
-    m_sTagName.Empty();
+    (m_sAttributeFilename).erase();
+    (m_sTagName).erase();
 }
 
 void CButeMgr::Reset() {
@@ -895,11 +895,10 @@ void CButeMgr::DisplayMessage(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    vsprintf(m_sErrorString.GetBuffer(0x100), fmt, args);
-    m_sErrorString.ReleaseBuffer(-1);
+    m_sErrorString = formatTextV(fmt, args);
 
     if (m_pDisplayFunc != NULL) {
-        m_pDisplayFunc(m_sErrorString.GetBuffer(0));
+        m_pDisplayFunc((m_sErrorString).c_str());
     }
 
     va_end(args);
@@ -931,8 +930,8 @@ bool CButeMgr::Statement() {
     m_sAttribute = m_szTokenString;
 
     if (!m_writeMode) {
-        if (m_pCurrTabOfItems->lookup(m_sAttribute)) {
-            DisplayMessage(s_fmtDupSymbol, m_sAttribute.GetBuffer(0));
+        if (m_pCurrTabOfItems->lookup((m_sAttribute).c_str())) {
+            DisplayMessage(s_fmtDupSymbol, (m_sAttribute).c_str());
             bDup = true;
         }
     }
@@ -954,10 +953,10 @@ bool CButeMgr::Statement() {
             intValue = atoi(m_szTokenString);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(INT_TYPE, intValue));
+                    m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(INT_TYPE, intValue));
                 }
             } else {
-                intValue = GetInt(m_sTagName, m_sAttribute);
+                intValue = GetInt((m_sTagName).c_str(), (m_sAttribute).c_str());
                 (*m_pSaveData) << static_cast<int>(intValue);
             }
             break;
@@ -968,10 +967,10 @@ bool CButeMgr::Statement() {
             dwordValue = strtoul(m_szTokenString, endptr, 10);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(DWORD_TYPE, dwordValue));
+                    m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(DWORD_TYPE, dwordValue));
                 }
             } else {
-                dwordValue = GetDword(m_sTagName, m_sAttribute);
+                dwordValue = GetDword((m_sTagName).c_str(), (m_sAttribute).c_str());
                 (*m_pSaveData) << s_strDword << static_cast<unsigned long>(dwordValue);
             }
             break;
@@ -982,10 +981,10 @@ bool CButeMgr::Statement() {
             floatValue = static_cast<float>(atof(m_szTokenString));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(FLOAT_TYPE, floatValue));
+                    m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(FLOAT_TYPE, floatValue));
                 }
             } else {
-                floatValue = GetFloat(m_sTagName, m_sAttribute);
+                floatValue = GetFloat((m_sTagName).c_str(), (m_sAttribute).c_str());
                 ((*m_pSaveData) << s_strFloat) << floatValue;
             }
             break;
@@ -993,10 +992,10 @@ bool CButeMgr::Statement() {
             floatValue = static_cast<float>(atof(m_szTokenString));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(FLOAT_TYPE, floatValue));
+                    m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(FLOAT_TYPE, floatValue));
                 }
             } else {
-                floatValue = GetFloat(m_sTagName, m_sAttribute);
+                floatValue = GetFloat((m_sTagName).c_str(), (m_sAttribute).c_str());
                 (*m_pSaveData) << floatValue << s_strFloatSuffix;
             }
             break;
@@ -1004,10 +1003,10 @@ bool CButeMgr::Statement() {
             doubleValue = atof(m_szTokenString);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(DOUBLE_TYPE, doubleValue));
+                    m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(DOUBLE_TYPE, doubleValue));
                 }
             } else {
-                doubleValue = GetDouble(m_sTagName, m_sAttribute);
+                doubleValue = GetDouble((m_sTagName).c_str(), (m_sAttribute).c_str());
                 (*m_pSaveData) << doubleValue;
             }
             break;
@@ -1016,12 +1015,12 @@ bool CButeMgr::Statement() {
             if (!m_writeMode) {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
-                        m_sAttribute,
+                        (m_sAttribute).c_str(),
                         new CSymTabItem(RECT_TYPE, &ButeIntRect(a, b, c, d))
                     );
                 }
             } else {
-                ButeIntRect r = *GetRect(m_sTagName, m_sAttribute);
+                ButeIntRect r = *GetRect((m_sTagName).c_str(), (m_sAttribute).c_str());
                 (*m_pSaveData) << s_strOpen << static_cast<long>(r.m_a) << s_strComma
                                << static_cast<long>(r.m_b) << s_strComma << static_cast<long>(r.m_c)
                                << s_strComma << static_cast<long>(r.m_d) << s_strClose;
@@ -1032,12 +1031,12 @@ bool CButeMgr::Statement() {
             if (!m_writeMode) {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
-                        m_sAttribute,
+                        (m_sAttribute).c_str(),
                         new CSymTabItem(POINT_TYPE, &ButeIntPoint(px, py))
                     );
                 }
             } else {
-                ButeIntPoint pt = *GetPoint(m_sTagName, m_sAttribute);
+                ButeIntPoint pt = *GetPoint((m_sTagName).c_str(), (m_sAttribute).c_str());
                 (*m_pSaveData) << s_strOpen << static_cast<long>(pt.m_a) << s_strComma
                                << static_cast<long>(pt.m_b) << s_strClose;
             }
@@ -1047,12 +1046,12 @@ bool CButeMgr::Statement() {
             if (!m_writeMode) {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
-                        m_sAttribute,
+                        (m_sAttribute).c_str(),
                         new CSymTabItem(VECTOR_TYPE, CAVector(x, y, z))
                     );
                 }
             } else {
-                CAVector v = GetVector(m_sTagName, m_sAttribute);
+                CAVector v = GetVector((m_sTagName).c_str(), (m_sAttribute).c_str());
                 (*m_pSaveData) << s_strLt << v.Geti() << s_strComma << v.Getj() << s_strComma
                                << v.Getk() << s_strGt;
             }
@@ -1062,12 +1061,12 @@ bool CButeMgr::Statement() {
             if (!m_writeMode) {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
-                        m_sAttribute,
+                        (m_sAttribute).c_str(),
                         new CSymTabItem(RANGE_TYPE, CARange(x, y))
                     );
                 }
             } else {
-                CARange range = GetRange(m_sTagName, m_sAttribute);
+                CARange range = GetRange((m_sTagName).c_str(), (m_sAttribute).c_str());
                 (*m_pSaveData) << "[" << range.GetMin() << s_strComma << range.GetMax() << "]";
             }
             break;
@@ -1075,14 +1074,14 @@ bool CButeMgr::Statement() {
             if (!m_writeMode) {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
-                        m_sAttribute,
-                        new CSymTabItem(STRING_TYPE, CString(m_szTokenString))
+                        (m_sAttribute).c_str(),
+                        new CSymTabItem(STRING_TYPE, std::string(m_szTokenString))
                     );
                 }
             } else {
-                CString tmp(*GetString(m_sTagName, m_sAttribute));
+                std::string tmp(*GetString((m_sTagName).c_str(), (m_sAttribute).c_str()));
                 ostream& output = (*m_pSaveData) << static_cast<unsigned char>('"');
-                ostream& stringOutput = output << tmp.GetBuffer(0);
+                ostream& stringOutput = output << (tmp).c_str();
                 stringOutput << static_cast<unsigned char>('"');
             }
             break;
@@ -1161,9 +1160,9 @@ void CButeMgr::AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx) {
             break;
 
         case STRING_TYPE: {
-            CString& text = *value->m_data.m_s;
+            std::string& text = *value->m_data.m_s;
             ostream& stringOutput = output << static_cast<unsigned char>('"')
-                                           << static_cast<const char*>(text);
+                                           << (text).c_str();
             stringOutput << static_cast<unsigned char>('"');
             break;
         }
@@ -1224,7 +1223,7 @@ bool CButeMgr::TagList() {
         }
         if (m_writeMode) {
 
-            TableOfItems* grp = static_cast<TableOfItems*>(ModifiedTags()->lookup(m_sTagName));
+            TableOfItems* grp = static_cast<TableOfItems*>(ModifiedTags()->lookup((m_sTagName).c_str()));
             if (grp) {
                 grp->traverse(&AuxTabItemsSave, m_pSaveData);
             }
@@ -1249,7 +1248,7 @@ bool CButeMgr::TagList() {
 
 bool CButeMgr::Save() {
     Reset();
-    if (m_sAttributeFilename.IsEmpty()) {
+    if ((m_sAttributeFilename).empty()) {
         return false;
     }
 
@@ -1258,7 +1257,7 @@ bool CButeMgr::Save() {
 
     char block[4096];
 
-    ifstream input(m_sAttributeFilename, ios::nocreate | ios::binary);
+    ifstream input((m_sAttributeFilename).c_str(), ios::nocreate | ios::binary);
     input.seekg(0, ios::end);
     i32 length = input.tellg();
     input.clear();
@@ -1275,7 +1274,7 @@ bool CButeMgr::Save() {
             source.write(block, input.gcount());
         }
         input.close();
-        m_pSaveData = new fstream(m_sAttributeFilename, ios::in | ios::out | ios::binary);
+        m_pSaveData = new fstream((m_sAttributeFilename).c_str(), ios::in | ios::out | ios::binary);
         m_pSaveData->precision(100);
     }
 
@@ -1286,13 +1285,8 @@ bool CButeMgr::Save() {
     m_pSaveData->clear();
 
     if (m_bCrypt) {
-#ifdef __clang__
-
-        ofstream output(m_sAttributeFilename, ios::binary);
+        ofstream output(m_sAttributeFilename.c_str(), ios::binary);
         m_cryptMgr.Encrypt(*m_pSaveData, output);
-#else
-        m_cryptMgr.Encrypt(*m_pSaveData, ofstream(m_sAttributeFilename, ios::binary));
-#endif
     }
 
     delete[] source.str();
@@ -1613,7 +1607,7 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     newAddedTag->insert(key, new CSymTabItem(DOUBLE_TYPE, val));
 }
 
-CString* CButeMgr::GetString(const char* tag, const char* key, CString* def) {
+std::string* CButeMgr::GetString(const char* tag, const char* key, std::string* def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
@@ -1627,9 +1621,9 @@ CString* CButeMgr::GetString(const char* tag, const char* key, CString* def) {
     return def;
 }
 
-CString* CButeMgr::GetString(const char* tag, const char* key) {
+std::string* CButeMgr::GetString(const char* tag, const char* key) {
 
-    static CString s_empty("");
+    static std::string s_empty("");
 
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
@@ -1649,7 +1643,7 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
     return &s_empty;
 }
 
-void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
+void CButeMgr::SetString(const char* tag, const char* key, const std::string& val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
         CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));

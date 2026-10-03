@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_CHEATMGR_H
 #define GRUNTZ_GRUNTZ_CHEATMGR_H
 
+#include <map>
+#include <string>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Ints.h>
@@ -32,11 +37,11 @@ public:
     }
     void RegisterCheats();
     void LoadCheatConfig();
-    BOOL CheckCode(CString code);
+    BOOL CheckCode(std::string code);
     ~CCheatMgr();
 
     HWND m_owner;
-    CMapStringToPtr m_map;
+    std::map<std::string, CheatEntry*> m_map;
     u8 m_flag;
     char m_pendingCode[0x120 - 0x21];
     i32 m_pendingCodeLength;

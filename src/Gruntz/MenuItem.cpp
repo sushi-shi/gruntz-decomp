@@ -36,8 +36,8 @@ i32 CMenuItem::Init(
     m_world = page->m_world;
     m_menuTree = page->m_menuTree;
     m_page = page;
-    m_itemName = name;
-    m_targetPageKey = targetPageKey;
+    m_itemName = name ? name : "";
+    m_targetPageKey = targetPageKey ? targetPageKey : "";
     m_commandId = commandId;
     m_secondaryCommandId = 0;
     m_commandParam = 0;
@@ -145,7 +145,7 @@ i32 CMenuItem::Deselect() {
 i32 CMenuItem::Activate() {
     m_menuTree->PlayActivationSound();
     PostCommands();
-    m_menuTree->SetActivePageByKey(m_targetPageKey);
+    m_menuTree->SetActivePageByKey((m_targetPageKey).c_str());
     return 1;
 }
 

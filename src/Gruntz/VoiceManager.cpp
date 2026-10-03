@@ -41,12 +41,12 @@ BOOL CVoiceManager::Init(CGruntzMgr* game) {
 }
 
 void CVoiceManager::Clear() {
-    for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_voiceGroups.size()); i++) {
         CSpawnList* group = static_cast<CSpawnList*>(m_voiceGroups[i]);
 
         delete group;
     }
-    m_voiceGroups.RemoveAll();
+    m_voiceGroups.clear();
     if (m_world != NULL && m_world->GetSoundStream() != NULL) {
         StreamVoice** stream = m_streamVoices;
         for (i32 k = 0; k < 2; k++) {
@@ -107,23 +107,23 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
         return false;
     }
     i32 voiceGroup = ResolveGruntVoiceGroup(grunt, cueId);
-    CString voiceSection;
-    CString cueKey;
-    voiceSection.Format("SG%i", voiceGroup);
-    cueKey.Format("G%i", cueId);
+    std::string voiceSection;
+    std::string cueKey;
+    voiceSection = formatText("SG%i", voiceGroup);
+    cueKey = formatText("G%i", cueId);
     if (percent == -1) {
-        percent = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Per", -1);
+        percent = g_buteMgr.GetInt((voiceSection).c_str(), "Per", -1);
         if (percent == -1) {
-            percent = g_buteMgr.GetInt("GruntPercent", static_cast<LPCTSTR>(cueKey), 0);
+            percent = g_buteMgr.GetInt("GruntPercent", (cueKey).c_str(), 0);
         }
     }
     if (percent < 100 && g_gameReg->Rand() % 0x65 > percent) {
         return false;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Pri", -1);
+        priority = g_buteMgr.GetInt((voiceSection).c_str(), "Pri", -1);
         if (priority == -1) {
-            priority = g_buteMgr.GetInt("GruntPriority", static_cast<LPCTSTR>(cueKey), 1);
+            priority = g_buteMgr.GetInt("GruntPriority", (cueKey).c_str(), 1);
         }
     }
     for (i32 i = 0; i < 2; i++) {
@@ -209,16 +209,16 @@ i32 CVoiceManager::PlayVoice(
     if (!IsVoiceEnabled()) {
         return 0;
     }
-    CString voiceSection;
-    voiceSection.Format("SG%i", voiceGroup);
+    std::string voiceSection;
+    voiceSection = formatText("SG%i", voiceGroup);
     if (percent == -1) {
-        percent = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Per", 100);
+        percent = g_buteMgr.GetInt((voiceSection).c_str(), "Per", 100);
     }
     if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Pri", 1);
+        priority = g_buteMgr.GetInt((voiceSection).c_str(), "Pri", 1);
     }
     for (i32 i = 0; i < 2; i++) {
         if (indicators[i]->m_priority >= priority) {
@@ -309,16 +309,16 @@ i32 CVoiceManager::PlayVoice(
     if (!IsVoiceEnabled()) {
         return 0;
     }
-    CString voiceSection;
-    voiceSection.Format("SG%i", voiceGroup);
+    std::string voiceSection;
+    voiceSection = formatText("SG%i", voiceGroup);
     if (percent == -1) {
-        percent = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Per", 100);
+        percent = g_buteMgr.GetInt((voiceSection).c_str(), "Per", 100);
     }
     if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Pri", 1);
+        priority = g_buteMgr.GetInt((voiceSection).c_str(), "Pri", 1);
     }
     for (i32 i = 0; i < 2; i++) {
         if (indicators[i]->m_priority >= priority) {
@@ -484,7 +484,7 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
     if (voiceGroup == 0) {
         return NULL;
     }
-    if (voiceGroup >= m_voiceGroups.GetSize()) {
+    if (voiceGroup >= static_cast<i32>(m_voiceGroups.size())) {
         return NULL;
     }
     CSpawnList* group = static_cast<CSpawnList*>(m_voiceGroups[voiceGroup]);
@@ -519,16 +519,16 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
         return NULL;
     }
     return m_game->ResourceArchive()->GetRezFromPath(
-        static_cast<LPCTSTR>(variant->GetName()),
+        (variant->GetName()).c_str(),
         REZ_TAG_WAV
     );
 }
 
 BOOL CVoiceManager::BuildVoiceGroups() {
-    m_voiceGroups.RemoveAll();
-    m_voiceGroups.SetAtGrow(0, NULL);
+    m_voiceGroups.clear();
+    m_voiceGroups.resize(1);
     for (i32 i = 1; i < 0x4b0; i++) {
-        m_voiceGroups.SetAtGrow(i, BuildVoiceGroup(i));
+        growAndAssign(m_voiceGroups, i, BuildVoiceGroup(i));
     }
     return true;
 }
@@ -542,43 +542,39 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
     }
 
     CSpawnList* group = NULL;
-    CString fallback, section, key, resourceName;
-    section.Format("SG%i", voiceGroup);
-    CString directory = *g_buteMgr.GetString(static_cast<LPCTSTR>(section), "DIR", &fallback);
+    std::string fallback, section, key, resourceName;
+    section = formatText("SG%i", voiceGroup);
+    std::string directory = *g_buteMgr.GetString((section).c_str(), "DIR", &fallback);
 
-    key.Format("S%i", 1);
-    CString soundName =
-        *g_buteMgr.GetString(static_cast<LPCTSTR>(section), static_cast<LPCTSTR>(key), &fallback);
+    key = formatText("S%i", 1);
+    std::string soundName =
+        *g_buteMgr.GetString((section).c_str(), (key).c_str(), &fallback);
 
     i32 missingResource = 0;
-    if (!soundName.IsEmpty()) {
+    if (!(soundName).empty()) {
         group = new CSpawnList();
     }
 
-    if (!soundName.IsEmpty()) {
+    if (!(soundName).empty()) {
         i32 i = 1;
-        while (!soundName.IsEmpty() && missingResource == 0) {
+        while (!(soundName).empty() && missingResource == 0) {
             i++;
-            if (directory.IsEmpty()) {
-                resourceName.Format("VOICES_%s", static_cast<LPCTSTR>(soundName));
+            if ((directory).empty()) {
+                resourceName = formatText("VOICES_%s", (soundName).c_str());
             } else {
-                resourceName.Format(
-                    "VOICES_%s_%s",
-                    static_cast<LPCTSTR>(directory),
-                    static_cast<LPCTSTR>(soundName)
-                );
+                resourceName = formatText("VOICES_%s_%s", (directory).c_str(), (soundName).c_str());
             }
             CRezItm* source = m_game->ResourceArchive()->GetRezFromPath(
-                static_cast<LPCTSTR>(resourceName),
+                (resourceName).c_str(),
                 REZ_TAG_WAV
             );
             if (source != NULL) {
 
                 group->AddVoiceSound(resourceName, 0);
-                key.Format("S%i", i);
+                key = formatText("S%i", i);
                 soundName = *g_buteMgr.GetString(
-                    static_cast<LPCTSTR>(section),
-                    static_cast<LPCTSTR>(key),
+                    (section).c_str(),
+                    (key).c_str(),
                     &fallback
                 );
             } else {
@@ -589,14 +585,14 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
     return group;
 }
 
-void CSpawnList::AddVoiceSound(CString resourceName, i32 data) {
+void CSpawnList::AddVoiceSound(std::string resourceName, i32 data) {
     CSpawnEntry* node = new CSpawnEntry(resourceName, data);
     if (node != NULL) {
-        m_list.AddTail(node);
+        m_list.insert(m_list.end(), node);
     }
 }
 
-CSpawnEntry::CSpawnEntry(CString name, i32 data) {
+CSpawnEntry::CSpawnEntry(std::string name, i32 data) {
     m_name = name;
     m_flag = false;
     m_data = data;
@@ -655,7 +651,7 @@ void CVoiceManager::PauseAllVoices() {
 
 void CVoiceManager::ResetVoiceSelections() {
     PauseAllVoices();
-    for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_voiceGroups.size()); i++) {
         CSpawnList* group = static_cast<CSpawnList*>(m_voiceGroups[i]);
         if (group != NULL) {
             group->m_lastPicked = -1;

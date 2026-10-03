@@ -127,8 +127,8 @@ CWwdGameObject* CWwdGameObject::CreateObject(
         delete result;
         return NULL;
     }
-    POSITION node = m_children.AddTail(static_cast<CObject*>(result));
-    if (node == NULL) {
+    std::list<CGameObject*>::iterator node = m_children.insert(m_children.end(), (result));
+    if (node == m_children.end()) {
         delete result;
         return NULL;
     }
@@ -154,8 +154,8 @@ i32 CWwdGameObject::AddChild(CGameObject* child) {
     if (child == NULL) {
         return 0;
     }
-    POSITION pos = m_children.AddTail(static_cast<CObject*>(child));
-    if (pos == NULL) {
+    std::list<CGameObject*>::iterator pos = m_children.insert(m_children.end(), (child));
+    if (pos == m_children.end()) {
         return 0;
     }
     child->m_posCache = pos;
@@ -170,19 +170,20 @@ i32 CWwdGameObject::RemoveChild(CGameObject* child) {
     if (child == NULL) {
         return 0;
     }
-    POSITION pos = child->m_posCache;
-    if (pos == NULL) {
+    std::list<CGameObject*>::iterator pos = std::find(m_children.begin(), m_children.end(), child);
+    if (pos == m_children.end()) {
         return 0;
     }
-    m_children.RemoveAt(pos);
+    m_children.erase(pos);
+    child->m_posCache = m_children.end();
     return 1;
 }
 
 i32 CWwdGameObject::WalkChildWorkers() {
     i32 count = 0;
-    POSITION pos = m_children.GetHeadPosition();
-    while (pos != NULL) {
-        CGameObject* o = static_cast<CGameObject*>(m_children.GetNext(pos));
+    std::list<CGameObject*>::iterator pos = m_children.begin();
+    while (pos != m_children.end()) {
+        CGameObject* o = static_cast<CGameObject*>(*(pos++));
         o->m_logicRecord->m_dispatch(o);
         count++;
     }
@@ -190,16 +191,16 @@ i32 CWwdGameObject::WalkChildWorkers() {
 }
 
 void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
-    POSITION pos = m_children.GetHeadPosition();
-    while (pos != NULL) {
-        static_cast<CGameObject*>(m_children.GetNext(pos))->Render(ctx);
+    std::list<CGameObject*>::iterator pos = m_children.begin();
+    while (pos != m_children.end()) {
+        static_cast<CGameObject*>(*(pos++))->Render(ctx);
     }
 }
 
 void CWwdGameObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
-    POSITION pos = m_children.GetHeadPosition();
-    while (pos != NULL) {
-        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirty(dst, src);
+    std::list<CGameObject*>::iterator pos = m_children.begin();
+    while (pos != m_children.end()) {
+        static_cast<CGameObject*>(*(pos++))->BltDirty(dst, src);
     }
 }
 
@@ -208,9 +209,9 @@ void CWwdGameObject::BltDirtyEx(
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {
-    POSITION pos = m_children.GetHeadPosition();
-    while (pos != NULL) {
-        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyEx(dst, src, restoreSrc);
+    std::list<CGameObject*>::iterator pos = m_children.begin();
+    while (pos != m_children.end()) {
+        static_cast<CGameObject*>(*(pos++))->BltDirtyEx(dst, src, restoreSrc);
     }
 }
 
@@ -219,8 +220,8 @@ void CWwdGameObject::BltDirtyRegions(
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {
-    POSITION pos = m_children.GetHeadPosition();
-    while (pos != NULL) {
-        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyRegions(dst, src, restoreSrc);
+    std::list<CGameObject*>::iterator pos = m_children.begin();
+    while (pos != m_children.end()) {
+        static_cast<CGameObject*>(*(pos++))->BltDirtyRegions(dst, src, restoreSrc);
     }
 }

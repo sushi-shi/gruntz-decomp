@@ -124,14 +124,14 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 }
 
 int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
-    CString cls(AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW, NULL, NULL, NULL));
+    std::string cls(AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW, NULL, NULL, NULL));
     if (m_videoWnd != NULL) {
         return 0;
     }
     m_videoWnd = new CWnd;
     if (!m_videoWnd->CreateEx(
             WS_EX_TOPMOST,
-            cls,
+            (cls).c_str(),
             "Smacker Video Window",
             WS_POPUP | WS_VISIBLE,
             0,
@@ -788,7 +788,7 @@ i32 CMoviePlayer::AddToPlaylist(
     }
     rec->m_pumpFlags = pumpFlags;
     rec->m_count = count;
-    m_playlist.Add(rec);
+    m_playlist.push_back(rec);
     return 1;
 }
 
@@ -796,7 +796,7 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     if (!m_initialized) {
         return 0;
     }
-    if (m_playlist.GetSize() < idx) {
+    if (static_cast<i32>(m_playlist.size()) < idx) {
         return 0;
     }
 
@@ -805,7 +805,7 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     SAFE_DELETE(rec->m_origin);
     SAFE_DELETE(rec->m_rect);
 
-    m_playlist.RemoveAt(idx - 1);
+    m_playlist.erase(m_playlist.begin() + idx - 1);
     delete rec;
     return 1;
 }
@@ -814,14 +814,14 @@ i32 CMoviePlayer::FreeAll() {
     if (!m_initialized) {
         return 0;
     }
-    i32 count = m_playlist.GetSize();
+    i32 count = static_cast<i32>(m_playlist.size());
     for (i32 i = 0; i < count; i++) {
         if (!RemoveAt(1)) {
             return 0;
         }
     }
 
-    m_playlist.RemoveAll();
+    m_playlist.clear();
     return 1;
 }
 
@@ -831,7 +831,7 @@ MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
     }
     i32 iter = 1;
     do {
-        for (i32 i = 0; i < m_playlist.GetSize(); i++) {
+        for (i32 i = 0; i < static_cast<i32>(m_playlist.size()); i++) {
             PLAYLISTINFOSTRUCT* clip = m_playlist[i];
             if (clip->m_src == NULL) {
                 return MOVIE_RESULT_ERROR;

@@ -90,14 +90,14 @@ CProjectile::~CProjectile() {
         m_sound->StopAndRewind();
         m_sound = NULL;
     }
-    for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
-        Coord* hitPoint = static_cast<Coord*>(m_hitList.GetNext(pos));
+    for (std::list<Coord*>::iterator pos = m_hitList.begin(); pos != m_hitList.end();) {
+        Coord* hitPoint = static_cast<Coord*>(*(pos++));
         if (hitPoint != NULL) {
 
             g_coordPool.Push(hitPoint);
         }
     }
-    m_hitList.RemoveAll();
+    m_hitList.clear();
 }
 
 i32 CProjectile::LoadProjectileSprites(
@@ -109,7 +109,7 @@ i32 CProjectile::LoadProjectileSprites(
     i32 sourcePxX,
     i32 sourcePxY
 ) {
-    CString key;
+    std::string key;
     m_sourcePlayerIndex = sourcePlayerIndex;
     m_sourceUnitIndex = sourceUnitIndex;
     m_targetPxX = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -165,26 +165,26 @@ i32 CProjectile::LoadProjectileSprites(
 
     m_frames[0] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        key + "1"
+        (key + "1").c_str()
         );
     if (m_frames[0] == NULL) {
         return 0;
     }
     m_frames[1] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2");
+        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key + "2").c_str());
     m_frames[2] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3");
+        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key + "3").c_str());
     m_frames[3] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4");
+        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key + "4").c_str());
     m_frames[4] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5");
+        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key + "5").c_str());
     m_frames[PF_IMPACT] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT");
+        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key + "IMPACT").c_str());
     m_frames[PF_FALL] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
+        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key + "FALL").c_str());
 
     SwitchAnimation(m_frames[0]);
-    SetImageSetByName(key + "_OBJECT");
+    SetImageSetByName((key + "_OBJECT").c_str());
 
     u32 totalTime = count * m_timePerTile;
     double len = sqrt(Sqr(dx) + Sqr(dy));
@@ -218,8 +218,8 @@ i32 CProjectile::LoadProjectileSprites(
         m_shadow->m_logicRecord->m_dispatch(m_shadow);
         (static_cast<CLightFx*>(m_shadow->m_logicRecord->m_userLogic))
             ->Activate(
-                static_cast<const char*>(key + "_SHADOW"),
-                static_cast<const char*>(key + "1"),
+                (key + "_SHADOW").c_str(),
+                (key + "1").c_str(),
                 5,
                 true
             );
@@ -568,9 +568,9 @@ void CProjectile::ScanTargets(i32 impact) {
 
             i32 hitPlayerIndex = g->m_playerIndex;
             i32 hitUnitIndex = g->m_unitIndex;
-            for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
+            for (std::list<Coord*>::iterator pos = m_hitList.begin(); pos != m_hitList.end();) {
 
-                Coord* k = static_cast<Coord*>(m_hitList.GetNext(pos));
+                Coord* k = static_cast<Coord*>(*(pos++));
                 if (k->m_x == hitPlayerIndex && k->m_y == hitUnitIndex) {
                     return;
                 }
@@ -578,7 +578,7 @@ void CProjectile::ScanTargets(i32 impact) {
 
             Coord identity;
             Coord* slot = g_coordPool.PopCopy(*identity.Set(hitPlayerIndex, hitUnitIndex));
-            m_hitList.AddTail(slot);
+            m_hitList.insert(m_hitList.end(), slot);
             g->StepCombatReaction(
                 m_kind,
                 1,
@@ -648,7 +648,7 @@ i32 CProjectile::SerializeDispatch(
             for (i32 ci = 0; ci < count; ci++) {
                 Coord* payload = g_coordPool.Pop();
                 s->Read(payload, 8);
-                m_hitList.AddTail(payload);
+                m_hitList.insert(m_hitList.end(), payload);
             }
             break;
         }
@@ -688,12 +688,12 @@ i32 CProjectile::SerializeDispatch(
             }
             s->Write(&count, sizeof(count));
 
-            count = m_hitList.GetCount();
+            count = static_cast<i32>(m_hitList.size());
             s->Write(&count, sizeof(count));
 
-            POSITION pos = m_hitList.GetHeadPosition();
-            while (pos != NULL) {
-                s->Write(m_hitList.GetNext(pos), 8);
+            std::list<Coord*>::iterator pos = m_hitList.begin();
+            while (pos != m_hitList.end()) {
+                s->Write(*(pos++), 8);
             }
             break;
         }
@@ -731,7 +731,7 @@ i32 CProjectile::SerializeDispatch(
             if (m_value != NULL) {
                 strcpy(
                     blob,
-                    m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
+                    (m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)).c_str()
                 );
             }
             s->Write(blob, SERIAL_NAME_LEN);

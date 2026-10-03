@@ -1,6 +1,10 @@
 #ifndef GRUNTZ_GRUNTZ_CFADERMGR_H
 #define GRUNTZ_GRUNTZ_CFADERMGR_H
 
+#include <vector>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/Fader.h>
@@ -9,7 +13,7 @@
 
 GZ_ENUM_FORWARD(FaderKind);
 
-typedef CArray<CFader*, CFader*> CFaderArray;
+typedef std::vector<CFader*> CFaderArray;
 
 class CFaderMgr {
 public:
@@ -27,7 +31,7 @@ public:
     void DeleteAll();
 
     void SetTraceEnabled(b32 enabled);
-    void Trace(CString s);
+    void Trace(std::string s);
 
     class CDDSurface* m_primarySurface;
     class CDDSurface* m_secondarySurface;

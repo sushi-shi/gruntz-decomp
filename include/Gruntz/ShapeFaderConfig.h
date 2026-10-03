@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_SHAPEFADERCONFIG_H
 #define GRUNTZ_GRUNTZ_SHAPEFADERCONFIG_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/FaderConfig.h>
@@ -16,7 +18,7 @@ public:
     b32 m_stripCopy;
     b32 m_useLut;
     class CShadeTable* m_shadeTable;
-    CString m_shadeTablePath;
+    std::string m_shadeTablePath;
     class CDDPalette* m_palette;
 };
 

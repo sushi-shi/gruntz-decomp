@@ -42,9 +42,9 @@ i32 CShadeTable::ReadFrom(CFile* file, i32 id) {
     return 1;
 }
 
-i32 CShadeTable::LoadFromFile(CString path, i32 id) {
+i32 CShadeTable::LoadFromFile(std::string path, i32 id) {
     CFile file;
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    if (!file.Open((path).c_str(), CFile::modeRead, NULL)) {
         return 0;
     }
     i32 ok = ReadFrom(&file, id);
@@ -71,9 +71,9 @@ void CShadeTable::Free() {
     m_alloc = false;
 }
 
-i32 CShadeTable::SaveToFile(CString path) {
+i32 CShadeTable::SaveToFile(std::string path) {
     CFile file;
-    if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, NULL)) {
+    if (!file.Open((path).c_str(), CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
     }
     file.Write(&m_size, sizeof(m_size));

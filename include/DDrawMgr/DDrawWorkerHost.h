@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CDDRAWWORKERHOST_H
 #define GRUNTZ_CDDRAWWORKERHOST_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawWorker.h>
@@ -119,7 +121,7 @@ public:
     i32 m_shiftY;
     i32 m_movementXPercent;
     i32 m_movementYPercent;
-    CObArray m_imageSets;
+    std::vector<CDDrawWorker*> m_imageSets;
 
     CWwdSpatialMgr* m_spatialMgr;
     char m_planeName[0xf4 - 0xb4];

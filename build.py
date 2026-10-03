@@ -88,14 +88,23 @@ def main(argv=None):
         units = json.loads((ROOT / 'build.json').read_text())['units']
         shared = shared_fingerprint()
         compiled = 0
+        failures = []
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
             jobs = [pool.submit(compile_unit, unit, objects, shared) for unit in units]
             for count, future in enumerate(as_completed(jobs), 1):
-                obj, changed = future.result()
+                try:
+                    obj, changed = future.result()
+                except ToolError as error:
+                    failures.append(str(error))
+                    print(error, file=sys.stderr, flush=True)
+                    continue
                 compiled += changed
                 if changed:
                     print(f'[{count}/{len(units)}] {obj.stem}', flush=True)
         print(f'Compiled {compiled} of {len(units)} units', flush=True)
+        if failures:
+            (build / 'compile-errors.log').write_text('\n\n'.join(failures) + '\n')
+            return 1
         imports = {f'{stem}.lib': build_import_library(stem, libraries)
                    for stem in ('mss32', 'smackw32')}
         resource = build / 'Gruntz.res'

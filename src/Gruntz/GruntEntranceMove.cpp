@@ -195,7 +195,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
     ClearAllSprites();
 
-    CString key;
+    std::string key;
 
     CAniElement* found;
 
@@ -210,7 +210,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
                 CGrunt* focus;
                 CTriggerMgr* tm = g_gameReg->m_triggerMgr;
-                if (tm->m_recList.GetCount() != 1) {
+                if (static_cast<i32>(tm->m_recList.size()) != 1) {
                     focus = NULL;
                 } else {
                     Coord* rec = tm->HeadRec();
@@ -269,7 +269,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         ResetEntranceAnimation(1, 0, 0);
     } else {
         SwitchAnimation(found);
-        APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
+        APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key.c_str(), desc, elem)
     }
     return 0;
 }
@@ -335,7 +335,7 @@ i32 CGrunt::RearmEntranceDrop() {
 
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-        const char* name = EntranceCell()->ItemName().GetBuffer(0);
+        const char* name = (EntranceCell()->ItemName()).c_str();
         SetImageFrameByName(name, frame);
     }
 
@@ -394,7 +394,7 @@ i32 CGrunt::StartBombGruntRun() {
     m_bombRunActive = true;
     PLAY_GRUNT_CUE_IN_VIEW(8);
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
-    char* cn = EntranceCell()->ItemName().GetBuffer(0);
+    const char* cn = (EntranceCell()->ItemName()).c_str();
     SetImageSetByName(cn);
     return 0;
 }
@@ -477,7 +477,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (IsAnimationAct("D")) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        char* buf = EntranceCell()->WalkName().GetBuffer(0);
+        const char* buf = (EntranceCell()->WalkName()).c_str();
         SetImageFrameByName(buf, frame);
         return 1;
     }
@@ -485,7 +485,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (IsAnimationAct("A")) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        char* buf = EntranceCell()->IdleName().GetBuffer(0);
+        const char* buf = (EntranceCell()->IdleName()).c_str();
         SetImageFrameByName(buf, frame);
     }
     return 1;
@@ -502,7 +502,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-        char* buf = (&m_frameSetName)->GetBuffer(0);
+        const char* buf = ((&m_frameSetName))->c_str();
         SetImageFrameByName(buf, frame);
 
         m_entranceStamped = true;

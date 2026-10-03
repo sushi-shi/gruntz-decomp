@@ -59,9 +59,9 @@ i32 CGruntzCmdMgr::ExecuteScheduledCommands(i32 scheduleSlot) {
     commandsByPlayer[2] = NULL;
     commandsByPlayer[3] = NULL;
     i32 i;
-    for (i = 0; i < m_queuedCommands.GetCount(); i++) {
-        POSITION pos = m_queuedCommands.FindIndex(i);
-        CGruntzCommand* command = static_cast<CGruntzCommand*>(m_queuedCommands.GetAt(pos));
+    for (i = 0; i < static_cast<i32>(m_queuedCommands.size()); i++) {
+        std::list<CGruntzCommand*>::iterator pos = iteratorAt(m_queuedCommands.begin(), m_queuedCommands.end(), i);
+        CGruntzCommand* command = static_cast<CGruntzCommand*>(*(pos));
         GruntzCommandSubmitFlags flags = command->m_submitFlags;
         if (!(flags & COMMAND_SUBMIT_IMMEDIATE)) {
             if (!(flags & COMMAND_SUBMIT_SCHEDULED)) {
@@ -77,7 +77,7 @@ i32 CGruntzCmdMgr::ExecuteScheduledCommands(i32 scheduleSlot) {
             command->Execute(state);
             command->Recycle();
         }
-        m_queuedCommands.RemoveAt(pos);
+        m_queuedCommands.erase(pos);
         i--;
     }
     if (isMultiplayer) {
@@ -93,12 +93,12 @@ i32 CGruntzCmdMgr::ExecuteScheduledCommands(i32 scheduleSlot) {
 }
 
 void CGruntzCmdMgr::RemoveScheduledCommand(i32 playerIndex, i32 scheduleSlot) {
-    for (i32 i = 0; i < m_queuedCommands.GetCount(); i++) {
-        POSITION pos = m_queuedCommands.FindIndex(i);
-        CGruntzCommand* command = static_cast<CGruntzCommand*>(m_queuedCommands.GetAt(pos));
+    for (i32 i = 0; i < static_cast<i32>(m_queuedCommands.size()); i++) {
+        std::list<CGruntzCommand*>::iterator pos = iteratorAt(m_queuedCommands.begin(), m_queuedCommands.end(), i);
+        CGruntzCommand* command = static_cast<CGruntzCommand*>(*(pos));
         if (command->m_scheduleSlot == static_cast<u8>(scheduleSlot)
             && command->m_playerIndex == static_cast<u8>(playerIndex)) {
-            m_queuedCommands.RemoveAt(pos);
+            m_queuedCommands.erase(pos);
             command->Recycle();
             return;
         }
@@ -106,8 +106,8 @@ void CGruntzCmdMgr::RemoveScheduledCommand(i32 playerIndex, i32 scheduleSlot) {
 }
 
 void CGruntzCmdMgr::RecycleQueuedCommands() {
-    while (m_queuedCommands.GetCount()) {
-        CGruntzCommand* command = static_cast<CGruntzCommand*>(m_queuedCommands.RemoveTail());
+    while (static_cast<i32>(m_queuedCommands.size())) {
+        CGruntzCommand* command = static_cast<CGruntzCommand*>(takeBack(m_queuedCommands));
         if (command) {
             command->Recycle();
         }
@@ -116,7 +116,7 @@ void CGruntzCmdMgr::RecycleQueuedCommands() {
 
 void CGruntzCmdMgr::ClearCommands() {
     RecycleQueuedCommands();
-    m_pendingLocalCommands.RemoveAll();
+    m_pendingLocalCommands.clear();
     CGruntzSingleCommand::ReleasePool();
     CGruntzMultiCommand::ReleasePool();
 }
@@ -177,9 +177,9 @@ void CGruntzCmdMgr::EnqueueCommand(b32 isLocalCommand, CGruntzCommand* command) 
         } else if (m_manager->m_curState->Update() == GAMESTATE_MULTI) {
             command->m_submitFlags = COMMAND_SUBMIT_PENDING_SLOT;
         }
-        m_pendingLocalCommands.AddTail(command);
+        m_pendingLocalCommands.insert(m_pendingLocalCommands.end(), command);
     }
-    m_queuedCommands.AddTail(command);
+    m_queuedCommands.insert(m_queuedCommands.end(), command);
 }
 
 void CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint(
@@ -390,9 +390,9 @@ i32 CGruntzMultiCommand::Execute(CState* state) {
 }
 
 CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
-    CPtrList& freeList = CPtrListPool<CGruntzSingleCommand>::s_freeList;
-    if (freeList.GetCount()) {
-        return static_cast<CGruntzSingleCommand*>(freeList.RemoveTail());
+    std::list<CGruntzSingleCommand*>& freeList = ObjectPoolStorage<CGruntzSingleCommand>::s_freeList;
+    if (static_cast<i32>(freeList.size())) {
+        return static_cast<CGruntzSingleCommand*>(takeBack(freeList));
     }
     return new CGruntzSingleCommand;
 }
@@ -406,7 +406,7 @@ char CGruntzSingleCommand::GetRecordKind() {
 }
 
 void CGruntzSingleCommand::Recycle() {
-    CPtrListPool<CGruntzSingleCommand>::s_freeList.AddHead(this);
+    ObjectPoolStorage<CGruntzSingleCommand>::s_freeList.insert(ObjectPoolStorage<CGruntzSingleCommand>::s_freeList.begin(), this);
 }
 
 i32 CGruntzCommand::UnusedCommandQuery() {
@@ -414,9 +414,9 @@ i32 CGruntzCommand::UnusedCommandQuery() {
 }
 
 CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
-    CPtrList& freeList = CPtrListPool<CGruntzMultiCommand>::s_freeList;
-    if (freeList.GetCount()) {
-        return static_cast<CGruntzMultiCommand*>(freeList.RemoveTail());
+    std::list<CGruntzMultiCommand*>& freeList = ObjectPoolStorage<CGruntzMultiCommand>::s_freeList;
+    if (static_cast<i32>(freeList.size())) {
+        return static_cast<CGruntzMultiCommand*>(takeBack(freeList));
     }
     return new CGruntzMultiCommand;
 }
@@ -430,13 +430,13 @@ char CGruntzMultiCommand::GetRecordKind() {
 }
 
 void CGruntzMultiCommand::Recycle() {
-    CPtrListPool<CGruntzMultiCommand>::s_freeList.AddHead(this);
+    ObjectPoolStorage<CGruntzMultiCommand>::s_freeList.insert(ObjectPoolStorage<CGruntzMultiCommand>::s_freeList.begin(), this);
 }
 
 void CGruntzSingleCommand::ReleasePool() {
-    CPtrList& freeList = CPtrListPool<CGruntzSingleCommand>::s_freeList;
-    while (freeList.GetCount()) {
-        CGruntzCommand* node = static_cast<CGruntzCommand*>(freeList.RemoveTail());
+    std::list<CGruntzSingleCommand*>& freeList = ObjectPoolStorage<CGruntzSingleCommand>::s_freeList;
+    while (static_cast<i32>(freeList.size())) {
+        CGruntzCommand* node = static_cast<CGruntzCommand*>(takeBack(freeList));
         if (node) {
             delete node;
         }
@@ -444,9 +444,9 @@ void CGruntzSingleCommand::ReleasePool() {
 }
 
 void CGruntzMultiCommand::ReleasePool() {
-    CPtrList& freeList = CPtrListPool<CGruntzMultiCommand>::s_freeList;
-    while (freeList.GetCount()) {
-        CGruntzCommand* node = static_cast<CGruntzCommand*>(freeList.RemoveTail());
+    std::list<CGruntzMultiCommand*>& freeList = ObjectPoolStorage<CGruntzMultiCommand>::s_freeList;
+    while (static_cast<i32>(freeList.size())) {
+        CGruntzCommand* node = static_cast<CGruntzCommand*>(takeBack(freeList));
         if (node) {
             delete node;
         }
@@ -601,7 +601,7 @@ i32 CGruntzCmdMgr::Serialize(
             } else {
                 return 0;
             }
-            m_queuedCommands.AddTail(cmd);
+            m_queuedCommands.insert(m_queuedCommands.end(), cmd);
             cursorOrCount++;
         }
         return 1;
@@ -610,12 +610,12 @@ i32 CGruntzCmdMgr::Serialize(
     if (!CanSaveCommands(stream)) {
         return 0;
     }
-    cursorOrCount = m_queuedCommands.GetCount();
+    cursorOrCount = static_cast<i32>(m_queuedCommands.size());
     stream->Write(&cursorOrCount, sizeof(cursorOrCount));
 
-    POSITION pos = m_queuedCommands.GetHeadPosition();
-    while (pos != NULL) {
-        CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_queuedCommands.GetNext(pos));
+    std::list<CGruntzCommand*>::iterator pos = m_queuedCommands.begin();
+    while (pos != m_queuedCommands.end()) {
+        CGruntzCommand* cmd = static_cast<CGruntzCommand*>(*(pos++));
         i32 tagWord = cmd->GetRecordKind() & 0xff;
         stream->Write(&tagWord, sizeof(tagWord));
         if (!cmd->Serialize(stream, SERIAL_SAVE, typeId, payload)) {

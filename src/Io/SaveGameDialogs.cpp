@@ -535,8 +535,8 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
                 ? n - IDX(QUESTLEVEL_LAST)
                 : (n - 1) % 4 + 1,
             (n > IDX(QUESTLEVEL_LAST) && n < IDX(QUESTLEVEL_TRAINING_END))
-                ? static_cast<const char*>(CString("Training"))
-                : static_cast<const char*>(g_areaNames[(n - 1) / 4])
+                ? (std::string("Training")).c_str()
+                : (g_areaNames[(n - 1) / 4]).c_str()
         );
     } else if (lev->m_isBattlez != false && lev->m_isCustom == false) {
 

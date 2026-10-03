@@ -1,6 +1,10 @@
 #ifndef SRC_IMAGE_IMAGEPOOL_H
 #define SRC_IMAGE_IMAGEPOOL_H
 
+#include <list>
+class CDib;
+class CDibPal;
+
 #include <Ints.h>
 
 #include <DDrawMgr/ColorDepth.h>
@@ -30,10 +34,10 @@ public:
         return m_hInst != NULL && m_hWnd != NULL;
     }
     i32 GetNumDibs() {
-        return m_collDibs.GetCount();
+        return static_cast<i32>(m_collDibs.size());
     }
     i32 GetNumPals() {
-        return m_collPals.GetCount();
+        return static_cast<i32>(m_collPals.size());
     }
     u32 GetFlags() {
         return m_dwFlags;
@@ -105,8 +109,8 @@ private:
     u32 m_dwFlags;
     HPALETTE m_hOldPal;
 
-    CPtrList m_collDibs;
-    CPtrList m_collPals;
+    std::list<CDib*> m_collDibs;
+    std::list<CDibPal*> m_collPals;
 
     CDibPal* m_pCurPal;
 

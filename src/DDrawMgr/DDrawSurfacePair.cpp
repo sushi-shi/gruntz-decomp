@@ -45,24 +45,24 @@
 #include <string.h>
 
 void CDDrawWorkerList::Unload() {
-    POSITION pos = m_workers.GetHeadPosition();
-    while (pos) {
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+    std::list<CDDrawPlacedWorker*>::iterator pos = m_workers.begin();
+    while (pos != m_workers.end()) {
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(*(pos++));
         if (child) {
             delete child;
         }
     }
-    m_workers.RemoveAll();
+    m_workers.clear();
 }
 
 void CDDrawWorkerList::RenderAndPruneWorkers(
     CDDrawSurfacePair* backBuffer,
     CDDrawSurfacePair* overlay
 ) {
-    POSITION pos = m_workers.GetHeadPosition();
-    while (pos) {
-        POSITION cur = pos;
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+    std::list<CDDrawPlacedWorker*>::iterator pos = m_workers.begin();
+    while (pos != m_workers.end()) {
+        std::list<CDDrawPlacedWorker*>::iterator cur = pos;
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(*(pos++));
         child->RenderFrame(backBuffer, overlay);
         child->m_refCount--;
         if ((overlay->GetSurface() != NULL
@@ -71,7 +71,7 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
                  SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
              ))
             || child->m_refCount <= 0) {
-            m_workers.RemoveAt(cur);
+            m_workers.erase(cur);
             if (child) {
                 delete child;
             }
@@ -80,14 +80,14 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
 }
 
 void CDDrawWorkerList::ClearWorkers() {
-    POSITION pos = m_workers.GetHeadPosition();
-    while (pos) {
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+    std::list<CDDrawPlacedWorker*>::iterator pos = m_workers.begin();
+    while (pos != m_workers.end()) {
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(*(pos++));
         if (child) {
             delete child;
         }
     }
-    m_workers.RemoveAll();
+    m_workers.clear();
 }
 
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
@@ -744,17 +744,17 @@ i32 CLogicRecord::ResolveTarget(void* context) {
 
 void CLogicRecordRegistry::Unload() {
     CObject* value = NULL;
-    POSITION pos = m_templatesByName.GetStartPosition();
-    CString key;
-    if (pos != NULL) {
+    std::map<std::string, CLogicRecord*>::iterator pos = m_templatesByName.begin();
+    std::string key;
+    if (pos != m_templatesByName.end()) {
         do {
-            m_templatesByName.GetNextAssoc(pos, key, value);
+            (key = pos->first, value = pos->second, ++pos);
             if (value != NULL) {
                 delete static_cast<CLogicRecord*>(value);
             }
-        } while (pos != NULL);
+        } while (pos != m_templatesByName.end());
     }
-    m_templatesByName.RemoveAll();
+    m_templatesByName.clear();
 }
 
 CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
@@ -763,7 +763,7 @@ CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
     i32 flags
 ) {
 
-    CLogicRecord* record = new CLogicRecord(OwnerMgr(), m_templatesByName.GetCount());
+    CLogicRecord* record = new CLogicRecord(OwnerMgr(), static_cast<i32>(m_templatesByName.size()));
 
     if (record->Init(dispatch, flags) == 0) {
         if (record != NULL) {
@@ -771,22 +771,22 @@ CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
         }
         return NULL;
     }
-    m_templatesByName[key] = static_cast<CObject*>(record);
+    m_templatesByName[key] = (record);
     return record;
 }
 
-CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
+std::string CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
     CObject* value = NULL;
-    POSITION pos = m_templatesByName.GetStartPosition();
-    CString key;
-    while (pos != NULL) {
-        m_templatesByName.GetNextAssoc(pos, key, value);
+    std::map<std::string, CLogicRecord*>::iterator pos = m_templatesByName.begin();
+    std::string key;
+    while (pos != m_templatesByName.end()) {
+        (key = pos->first, value = pos->second, ++pos);
 
         if (value != NULL && static_cast<CLogicRecord*>(value)->m_dispatch == record->m_dispatch) {
             return key;
         }
     }
-    CString empty;
+    std::string empty;
     return empty;
 }
 
@@ -819,7 +819,7 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
             DELETE_ANI_ELEMENT_CONTENTS(i);
             return 0;
         }
-        m_records.Add(rec);
+        m_records.push_back(rec);
         cursor += g_aniParsedNameLen + 0x14;
         m_durationMs += rec->GetDurationMs();
     }
@@ -865,17 +865,17 @@ void CAniElement::DeleteAll() {
 
 void CDDrawPaletteRegistry::Unload() {
     CObject* val = NULL;
-    POSITION pos = m_palettesByName.GetStartPosition();
-    CString key;
-    if (pos != NULL) {
+    std::map<std::string, CDDrawPaletteResource*>::iterator pos = m_palettesByName.begin();
+    std::string key;
+    if (pos != m_palettesByName.end()) {
         do {
-            m_palettesByName.GetNextAssoc(pos, key, val);
+            (key = pos->first, val = pos->second, ++pos);
             if (val != NULL) {
                 delete (static_cast<CDDrawPaletteResource*>(val));
             }
-        } while (pos != NULL);
+        } while (pos != m_palettesByName.end());
     }
-    m_palettesByName.RemoveAll();
+    m_palettesByName.clear();
     m_activePalette = NULL;
 }
 
@@ -887,7 +887,7 @@ CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 
     if (data == NULL) {
         return NULL;
     }
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         src->UnLoad();
         if (w != NULL) {
@@ -902,33 +902,33 @@ CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 
     } else {
         strcpy(buf, src->GetName());
     }
-    m_palettesByName[buf] = static_cast<CObject*>(w);
+    m_palettesByName[buf] = (w);
     return w;
 }
 
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags) {
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
-    m_palettesByName[key] = static_cast<CObject*>(w);
+    m_palettesByName[key] = (w);
     return w;
 }
 
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flags) {
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->LoadPaletteFromFile(path, flags) == 0) {
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
-    m_palettesByName[key] = static_cast<CObject*>(w);
+    m_palettesByName[key] = (w);
     return w;
 }
 
@@ -943,7 +943,7 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 fl
     }
 
     i32 length = static_cast<i32>(src->GetSize());
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->CreatePaletteFromTrailingData(data, length, flags) == 0) {
         if (w != NULL) {
             delete w;
@@ -958,23 +958,23 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 fl
     } else {
         strcpy(buf, src->GetName());
     }
-    m_palettesByName[buf] = static_cast<CObject*>(w);
+    m_palettesByName[buf] = (w);
     return w;
 }
 
 void CDDrawPaletteRegistry::ClearPalettes() {
     CObject* val = NULL;
-    POSITION pos = m_palettesByName.GetStartPosition();
-    CString key;
-    if (pos != NULL) {
+    std::map<std::string, CDDrawPaletteResource*>::iterator pos = m_palettesByName.begin();
+    std::string key;
+    if (pos != m_palettesByName.end()) {
         do {
-            m_palettesByName.GetNextAssoc(pos, key, val);
+            (key = pos->first, val = pos->second, ++pos);
             if (val != NULL) {
                 delete (static_cast<CDDrawPaletteResource*>(val));
             }
-        } while (pos != NULL);
+        } while (pos != m_palettesByName.end());
     }
-    m_palettesByName.RemoveAll();
+    m_palettesByName.clear();
     m_activePalette = NULL;
 }
 
@@ -984,12 +984,12 @@ i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
         m_activePalette = NULL;
     }
     CObject* val = NULL;
-    POSITION pos = m_palettesByName.GetStartPosition();
-    CString key;
-    while (pos != NULL) {
-        m_palettesByName.GetNextAssoc(pos, key, val);
+    std::map<std::string, CDDrawPaletteResource*>::iterator pos = m_palettesByName.begin();
+    std::string key;
+    while (pos != m_palettesByName.end()) {
+        (key = pos->first, val = pos->second, ++pos);
         if (val == obj) {
-            m_palettesByName.RemoveKey(key);
+            m_palettesByName.erase((key).c_str());
             if (w != NULL) {
                 delete w;
             }
@@ -1007,26 +1007,26 @@ i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
     if (m_activePalette == w) {
         m_activePalette = NULL;
     }
-    m_palettesByName.RemoveKey(key);
+    m_palettesByName.erase(key);
     delete w;
     return 1;
 }
 
 i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {
-    m_name = name;
+    m_name = name ? name : "";
     m_mode = mode;
     m_option = option;
     return 1;
 }
 
 i32 CFileMem::Open() {
-    if (m_name.IsEmpty()) {
+    if ((m_name).empty()) {
         return 0;
     }
 
     if (WantRead()) {
         CFile* io = &m_file;
-        if (!io->Open(m_name, CFile::modeRead, NULL)) {
+        if (!io->Open((m_name).c_str(), CFile::modeRead, NULL)) {
             return 0;
         }
         m_length = io->GetLength();
@@ -1035,7 +1035,7 @@ i32 CFileMem::Open() {
     }
 
     CFile* out = &m_file;
-    if (!out->Open(m_name, CFile::modeCreate | CFile::modeWrite, NULL)) {
+    if (!out->Open((m_name).c_str(), CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
     }
     m_length = 0;

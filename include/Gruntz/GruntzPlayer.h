@@ -1,6 +1,8 @@
 #ifndef SRC_GRUNTZ_GRUNTZPLAYER_H
 #define SRC_GRUNTZ_GRUNTZPLAYER_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/BattlezDifficulty.h>
@@ -41,12 +43,12 @@ public:
     i32 TrySetColor(ColorTint color);
     i32 ClearRoundState();
 
-    CString GetName() {
+    std::string GetName() {
         return m_name;
     }
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 Deactivate();
-    CString GetDefaultName(i32);
+    std::string GetDefaultName(i32);
 
     void SetHumanControlled(b32 controlled) {
         m_humanControlled = controlled;
@@ -57,7 +59,7 @@ public:
     }
 
     i32 m_playerIndex;
-    CString m_name;
+    std::string m_name;
     ColorTint m_color;
 
     i32 m_warlordObjectId;

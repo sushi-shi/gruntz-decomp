@@ -1,6 +1,9 @@
 #ifndef SRC_IMAGE_IMAGEPALETTENODE_H
 #define SRC_IMAGE_IMAGEPALETTENODE_H
 
+#include <list>
+class CDibPal;
+
 #include <Ints.h>
 
 #include <Image/RezDecodeKind.h>
@@ -46,10 +49,10 @@ public:
     u32 GetFlags() {
         return m_dwFlags;
     }
-    POSITION GetPos() {
+    std::list<CDibPal*>::iterator GetPos() {
         return m_pos;
     }
-    void SetPos(POSITION pos) {
+    void SetPos(std::list<CDibPal*>::iterator pos) {
         m_pos = pos;
     }
     b32 IsIdentity() {
@@ -66,13 +69,13 @@ private:
     DIB_LOGPAL256 m_logPal;
     u32 m_dwFlags;
     b32 m_bIdentity;
-    POSITION m_pos;
+    std::list<CDibPal*>::iterator m_pos;
 };
 
 inline CDibPal::CDibPal() {
     m_hPal = NULL;
     m_bIdentity = false;
-    m_pos = NULL;
+
 }
 
 #endif

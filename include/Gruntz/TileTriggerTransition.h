@@ -27,7 +27,7 @@ public:
     }
     virtual void FireActivation(i32 id)  ;
     static void RegisterActs();
-    i32 ApplyAnimation(char* sprite, char* geom);
+    i32 ApplyAnimation(const char* sprite, const char* geom);
     i32 TransitionAct();
 };
 

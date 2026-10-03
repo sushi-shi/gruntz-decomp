@@ -76,20 +76,20 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         CRezItm* entry = static_cast<CRezItm*>(worlds->GetFirstItem(worlds->GetFirstType()));
         i32 first = 1;
         while (entry != NULL) {
-            CString upper(entry->GetName());
-            upper.MakeUpper();
-            CString display;
+            std::string upper(entry->GetName());
+            std::transform((upper).begin(), (upper).end(), (upper).begin(), asciiUpper);
+            std::string display;
             char c = 0;
-            for (i = 0; i < upper.GetLength() && c != '.'; i++) {
+            for (i = 0; i < static_cast<i32>((upper).size()) && c != '.'; i++) {
                 c = upper[i];
                 if (c != '.') {
                     display += c;
                 }
             }
-            combo->AddString(display);
+            combo->AddString((display).c_str());
             if (first != 0) {
                 first = 0;
-                comboChild->SetWindowTextA(display);
+                comboChild->SetWindowTextA((display).c_str());
             }
             entry = static_cast<CRezItm*>(worlds->GetNextItem(entry));
         }
@@ -219,9 +219,9 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             }
         } else {
             CWnd* child = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
-            CString mapName;
-            if (mapName.LoadStringA(0x81ab)) {
-                child->SetWindowTextA(mapName);
+            std::string mapName;
+            if (loadResourceText(0x81ab, mapName)) {
+                child->SetWindowTextA((mapName).c_str());
                 SetMaxGruntzSelection(0, 15);
                 SetMaxGruntzSelection(1, 1);
                 SetMaxGruntzSelection(2, 1);
@@ -245,15 +245,15 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         if (comboChild == NULL) {
             return;
         }
-        comboChild->GetWindowTextA(m_worldName);
-        reg->Set("LastMap", m_worldName);
+        m_worldName = readWindowText(comboChild->GetSafeHwnd());
+        reg->Set("LastMap", (m_worldName).c_str());
         reg->Set("CustomMap", m_customNameFlag);
 
         for (i = 0; i < 4; i++) {
             CEdit* edit = GetPlayerNameControl(i);
             if (edit != NULL) {
-                CString name;
-                edit->GetWindowTextA(name);
+                std::string name;
+                name = readWindowText(edit->GetSafeHwnd());
                 m_gameManager->m_players[i].m_name = name;
             }
         }
@@ -623,14 +623,14 @@ void CBattlezDlg::OnPlayerColor3() {
 void CBattlezDlg::ShowCustomDlg() {
     CBattlezDlgCustom dlg(NULL);
     if (dlg.DoModal() == IDOK) {
-        if (!dlg.m_customName.IsEmpty()) {
-            dlg.m_customName.MakeUpper();
+        if (!(dlg.m_customName).empty()) {
+            std::transform((dlg.m_customName).begin(), (dlg.m_customName).end(), (dlg.m_customName).begin(), asciiUpper);
             CWnd* item = GetDlgItem(0x4ff);
             CWnd* child = item->GetWindow(GW_CHILD);
             if (child == NULL) {
                 return;
             }
-            child->SetWindowTextA(dlg.m_customName);
+            child->SetWindowTextA((dlg.m_customName).c_str());
             m_customNameFlag = true;
         }
     }
@@ -645,13 +645,13 @@ void CBattlezDlg::OnWorldSelectionChange() {
     if (selection == CB_ERR) {
         return;
     }
-    CString worldName;
-    (static_cast<CComboBox*>(combo))->GetLBText(selection, worldName);
-    if (!worldName.IsEmpty()) {
+    std::string worldName;
+    worldName = readListBoxText(combo->GetSafeHwnd(), selection, true);
+    if (!(worldName).empty()) {
         CWnd* owner = GetDlgItem(0x4ff);
         CWnd* child = owner->GetWindow(GW_CHILD);
         if (child != NULL) {
-            child->SetWindowTextA(worldName);
+            child->SetWindowTextA((worldName).c_str());
             m_customNameFlag = false;
         }
     }
@@ -674,9 +674,9 @@ void CBattlezDlg::OnPlayerNameKillFocus3() {
 }
 
 void CBattlezDlg::ReadPlayerName(i32 slot) {
-    CString name;
-    GetPlayerNameControl(slot)->GetWindowText(name);
-    if (strlen(name) == 0) {
+    std::string name;
+    name = readWindowText(GetPlayerNameControl(slot)->GetSafeHwnd());
+    if (strlen((name).c_str()) == 0) {
         return;
     }
 }

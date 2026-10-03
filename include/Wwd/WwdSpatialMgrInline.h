@@ -10,7 +10,7 @@
 
 inline i32 CWwdSpatialMgr::DeactivateRegionObject(
     CWwdGrid* grid,
-    POSITION pos,
+    std::list<CGameObject*>::iterator pos,
     CWwdGameObject* obj,
     WwdRegion* region,
     WwdGameObjectFlags flags

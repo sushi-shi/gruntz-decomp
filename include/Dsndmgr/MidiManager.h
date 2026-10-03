@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_DSNDMGR_MIDIMANAGER_H
 #define GRUNTZ_DSNDMGR_MIDIMANAGER_H
 
+#include <map>
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -114,7 +117,7 @@ public:
         }
     }
 
-    CMapStringToOb m_sequences;
+    std::map<std::string, MidiSequence*> m_sequences;
     MidiSequence* m_currentSequence;
     HWND m_ownerWindow;
     HINSTANCE m_instanceHandle;

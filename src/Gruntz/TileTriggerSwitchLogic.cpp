@@ -277,8 +277,8 @@ i32 CTileTriggerLogic::Tick() {
         }
     }
 
-    CString key;
-    CString anim;
+    std::string key;
+    std::string anim;
 
     switch (srcId) {
         case TILEKIND_ARROW_UP_B: {
@@ -617,15 +617,15 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
         return 0;
     }
 
-    POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
+    std::list<CTileTriggerLogic*>::iterator pos = m_owner->m_idleLogics.begin();
     b32 found = false;
 
     CTileTriggerLogic* child;
-    while (pos != NULL) {
+    while (pos != m_owner->m_idleLogics.end()) {
         if (found != false) {
             break;
         }
-        child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+        child = static_cast<CTileTriggerLogic*>(*(pos++));
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = true;
         }
@@ -673,10 +673,10 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
         if (node->m_cellKey != m_cellKey && node->m_linkGate != false) {
             node->SwitchUp();
             b32 any = false;
-            POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
-            while (pos != NULL) {
+            std::list<CTileTriggerLogic*>::iterator pos = m_owner->m_idleLogics.begin();
+            while (pos != m_owner->m_idleLogics.end()) {
                 CTileTriggerLogic* o =
-                    static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+                    static_cast<CTileTriggerLogic*>(*(pos++));
                 if (o != NULL && o->FindIndexByKey(node->m_cellKey)) {
                     o->Tick();
                     counter++;
@@ -986,15 +986,15 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
         return 0;
     }
 
-    POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
+    std::list<CTileTriggerLogic*>::iterator pos = m_owner->m_idleLogics.begin();
     b32 found = false;
 
     CTileTriggerLogic* child;
-    while (pos != NULL) {
+    while (pos != m_owner->m_idleLogics.end()) {
         if (found != false) {
             break;
         }
-        child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+        child = static_cast<CTileTriggerLogic*>(*(pos++));
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = true;
         }

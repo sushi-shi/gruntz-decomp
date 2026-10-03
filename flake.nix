@@ -27,7 +27,9 @@
         program = "${launcher}/bin/gruntz-play";
       };
       devShells.${system}.default = pkgs.mkShell {
-        packages = [ pkgs.python3 pkgs.wineWow64Packages.staging ];
+        packages = [ pkgs.python3 pkgs.wineWow64Packages.staging
+                     pkgs.llvmPackages.clang pkgs.llvmPackages.lld ];
+        GRUNTZ_CLANG = "${pkgs.llvmPackages.clang-unwrapped}/bin/clang";
         MSVC_DIR = "${toolchain}/msvc";
         DXSDK_DIR = "${toolchain}/dx";
         shellHook = ''

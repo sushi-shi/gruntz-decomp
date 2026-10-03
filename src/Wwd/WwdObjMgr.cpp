@@ -58,17 +58,19 @@ void CDDrawChildGroup::DestroyChildren() {
             q->Prune();
         }
     }
-    POSITION n = m_list.GetHeadPosition();
-    while (n != NULL) {
+    std::list<CGameObject*>::iterator n = m_list.begin();
+    while (n != m_list.end()) {
         CGameObject* cur_obj = NextChild(n);
         CGameObject* obj = cur_obj;
         if (obj != NULL) {
             delete obj;
         }
     }
-    m_list.RemoveAll();
-    m_activeGameObjectsById.RemoveAll();
-    m_registeredGameObjectsById.RemoveAll();
+    m_list.clear();
+    m_walkCursor = m_list.end();
+    m_scanCursor = m_list.end();
+    m_activeGameObjectsById.clear();
+    m_registeredGameObjectsById.clear();
 }
 
 CWwdDotObject* CDDrawChildGroup::CreateDotObject(
@@ -271,11 +273,11 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 
 void CDDrawChildGroup::TickKillCues(i32 advance) {
 
-    static CObArray s_killQueue;
+    static std::vector<CGameObject*> s_killQueue;
 
-    static CObArray s_sortQueue;
-    s_killQueue.RemoveAll();
-    s_sortQueue.RemoveAll();
+    static std::vector<CGameObject*> s_sortQueue;
+    s_killQueue.clear();
+    s_sortQueue.clear();
 
     if (advance != 0) {
         u32 now = timeGetTime();
@@ -284,8 +286,8 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         g_soundCueTimeMs = now;
     }
 
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
         CLogicRecord* record = obj->m_logicRecord;
         if (record->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
@@ -298,15 +300,15 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         }
         WwdGameObjectFlags objectFlags = static_cast<WwdGameObjectFlags>(obj->m_flags);
         if (HAS(objectFlags, WWD_GAME_OBJECT_FLAG_PENDING_DELETE)) {
-            s_killQueue.Add(static_cast<CObject*>(obj));
+            s_killQueue.push_back((obj));
         } else if (HAS(objectFlags, WWD_GAME_OBJECT_FLAG_SORT_PENDING)) {
-            s_sortQueue.Add(static_cast<CObject*>(obj));
+            s_sortQueue.push_back((obj));
         }
     }
 
     i32 i;
-    for (i = 0; i < s_killQueue.GetSize(); i++) {
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_killQueue.GetAt(i));
+    for (i = 0; i < static_cast<i32>(s_killQueue.size()); i++) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_killQueue[i]);
         if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
                 WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
             CLogicRecord* record = obj->m_logicRecord;
@@ -318,40 +320,40 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
                 delete obj;
             }
         } else {
-            m_list.RemoveAt(obj->m_posCache);
-            m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
-            m_activeGameObjectsById.RemoveKey(WwdKey(obj));
+            m_list.erase(obj->m_posCache);
+            m_registeredGameObjectsById.erase(WwdKey(obj));
+            m_activeGameObjectsById.erase(WwdKey(obj));
             if (obj != NULL) {
                 delete obj;
             }
         }
     }
 
-    for (i = 0; i < s_sortQueue.GetSize(); i++) {
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_sortQueue.GetAt(i));
+    for (i = 0; i < static_cast<i32>(s_sortQueue.size()); i++) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_sortQueue[i]);
         obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
-        m_list.RemoveAt(obj->m_posCache);
+        m_list.erase(obj->m_posCache);
         InsertSorted(obj, 0);
     }
 }
 
 void CDDrawChildGroup::RenderChildren(CDDrawSurfacePair* target) {
-    POSITION n = m_list.GetHeadPosition();
-    if (n != NULL) {
+    std::list<CGameObject*>::iterator n = m_list.begin();
+    if (n != m_list.end()) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->Render(target);
-        } while (n != NULL);
+        } while (n != m_list.end());
     }
 }
 
 void CDDrawChildGroup::BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
-    POSITION n = m_list.GetHeadPosition();
-    if (n != NULL) {
+    std::list<CGameObject*>::iterator n = m_list.begin();
+    if (n != m_list.end()) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirty(dst, src);
-        } while (n != NULL);
+        } while (n != m_list.end());
     }
 }
 
@@ -360,12 +362,12 @@ void CDDrawChildGroup::BltDirtyChildrenEx(
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {
-    POSITION n = m_list.GetHeadPosition();
-    if (n != NULL) {
+    std::list<CGameObject*>::iterator n = m_list.begin();
+    if (n != m_list.end()) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirtyEx(dst, src, restoreSrc);
-        } while (n != NULL);
+        } while (n != m_list.end());
     }
     BltDirtyChildren(src, restoreSrc);
 }
@@ -375,23 +377,23 @@ void CDDrawChildGroup::BltDirtyChildRegions(
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {
-    POSITION n = m_list.GetHeadPosition();
-    if (n != NULL) {
+    std::list<CGameObject*>::iterator n = m_list.begin();
+    if (n != m_list.end()) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirtyRegions(dst, src, restoreSrc);
-        } while (n != NULL);
+        } while (n != m_list.end());
     }
     BltDirtyChildren(src, restoreSrc);
 }
 
 void CDDrawChildGroup::InvalidateChildShadows() {
-    POSITION n = m_list.GetHeadPosition();
-    if (n != NULL) {
+    std::list<CGameObject*>::iterator n = m_list.begin();
+    if (n != m_list.end()) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->m_shadow.m_armed = -1;
-        } while (n != NULL);
+        } while (n != m_list.end());
     }
 }
 
@@ -400,42 +402,42 @@ void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
         delete obj;
         return;
     }
-    m_list.RemoveAt(obj->m_posCache);
-    m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
-    m_activeGameObjectsById.RemoveKey(WwdKey(obj));
+    m_list.erase(obj->m_posCache);
+    m_registeredGameObjectsById.erase(WwdKey(obj));
+    m_activeGameObjectsById.erase(WwdKey(obj));
     delete obj;
 }
 
 void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
     obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
-    m_list.RemoveAt(obj->m_posCache);
+    m_list.erase(obj->m_posCache);
     InsertSorted(obj, 0);
 }
 
 void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_UNREGISTERED)) {
-        obj->m_posCache = NULL;
+        obj->m_posCache = m_list.end();
         return;
     }
     if (addToMaps != 0) {
         m_activeGameObjectsById[WwdKey(obj)] = obj;
         REGISTER_CHILD_OBJECT_ID(obj);
     }
-    POSITION pos = m_list.GetHeadPosition();
+    std::list<CGameObject*>::iterator pos = m_list.begin();
     i32 key = obj->m_sortKey;
-    while (pos != NULL) {
-        POSITION cur = pos;
+    while (pos != m_list.end()) {
+        std::list<CGameObject*>::iterator cur = pos;
         CWwdGameObject* data = static_cast<CWwdGameObject*>(NextChild(pos));
         if (data->m_sortKey > key
             && !HAS(
                 static_cast<WwdGameObjectFlags>(data->m_flags),
                 WWD_GAME_OBJECT_FLAG_SORT_PENDING
             )) {
-            obj->m_posCache = (m_list.InsertBefore(cur, static_cast<CObject*>(obj)));
+            obj->m_posCache = (m_list.insert(cur, (obj)));
             return;
         }
     }
-    obj->m_posCache = m_list.AddTail(static_cast<CObject*>(obj));
+    obj->m_posCache = m_list.insert(m_list.end(), (obj));
 }
 
 void CDDrawChildGroup::ClearChildren() {
@@ -445,12 +447,12 @@ void CDDrawChildGroup::ClearChildren() {
 void CDDrawChildGroup::CollideBroadcast() {
     i32 mask1;
     i32 mask2;
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
         CGameObject* oi = NextChild(pos);
         if (!(oi->m_flags & IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION))) {
-            POSITION ip = pos;
-            while (ip != NULL) {
+            std::list<CGameObject*>::iterator ip = pos;
+            while (ip != m_list.end()) {
                 CGameObject* oj = NextChild(ip);
                 i32 fj = oj->m_flags;
                 if (fj & IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)) {
@@ -555,49 +557,49 @@ static char s_dbgSys[] = "SYS";
 
 void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_HIT_RECT)) {
-        POSITION pos = m_list.GetHeadPosition();
+        std::list<CGameObject*>::iterator pos = m_list.begin();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
-        if (pos != NULL) {
+        if (pos != m_list.end()) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
                 if (obj->m_area.left != COORD_UNSET) {
                     DrawObjectDebugRect(obj, obj->m_area, view, drawHost);
                 }
-            } while (pos != NULL);
+            } while (pos != m_list.end());
         }
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ATTACK_RECT)) {
-        POSITION pos = m_list.GetHeadPosition();
+        std::list<CGameObject*>::iterator pos = m_list.begin();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
-        if (pos != NULL) {
+        if (pos != m_list.end()) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
                 if (obj->m_switchRect.left != COORD_UNSET) {
                     DrawObjectDebugRect(obj, obj->m_switchRect, view, drawHost);
                 }
-            } while (pos != NULL);
+            } while (pos != m_list.end());
         }
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_MOVE_RECT)) {
-        POSITION pos = m_list.GetHeadPosition();
+        std::list<CGameObject*>::iterator pos = m_list.begin();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
-        if (pos != NULL) {
+        if (pos != m_list.end()) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
                 if (obj->m_extent.left != COORD_UNSET) {
                     DrawObjectDebugRect(obj, obj->m_extent, view, drawHost);
                 }
-            } while (pos != NULL);
+            } while (pos != m_list.end());
         }
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ORIGIN)) {
-        POSITION pos = m_list.GetHeadPosition();
+        std::list<CGameObject*>::iterator pos = m_list.begin();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
-        if (pos != NULL) {
+        if (pos != m_list.end()) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
                 i32 x = obj->m_screenX;
@@ -634,14 +636,14 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         view->m_viewportRect.top - view->m_planeViewRect.top + y
                     );
                 }
-            } while (pos != NULL);
+            } while (pos != m_list.end());
         }
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SURFACE_MEMORY)) {
-        POSITION pos = m_list.GetHeadPosition();
+        std::list<CGameObject*>::iterator pos = m_list.begin();
         CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
-        if (pos != NULL) {
+        if (pos != m_list.end()) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
                 if (obj->m_screenX == COORD_UNSET) {
@@ -672,7 +674,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 } else {
                     drawHost->DrawLabel(&rc, "???");
                 }
-            } while (pos != NULL);
+            } while (pos != m_list.end());
         }
     }
 }
@@ -682,10 +684,10 @@ void CDDrawChildGroup::DrawObjectCounts() {
     if (!(m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SORT_KEY))) {
         return;
     }
-    POSITION pos = m_list.GetHeadPosition();
+    std::list<CGameObject*>::iterator pos = m_list.begin();
     CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
     CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
-    if (pos == NULL) {
+    if (pos == m_list.end()) {
         return;
     }
     do {
@@ -729,14 +731,14 @@ void CDDrawChildGroup::DrawObjectCounts() {
 
         view->WorldToViewport(&rc.right, &rc.bottom);
         drawHost->DrawCount(&rc, obj->m_sortKey);
-    } while (pos != NULL);
+    } while (pos != m_list.end());
 }
 
 i32 CDDrawChildGroup::CheckSortOrder() {
-    POSITION node = m_list.GetHeadPosition();
+    std::list<CGameObject*>::iterator node = m_list.begin();
     CWwdGameObject* anchor = static_cast<CWwdGameObject*>(NextChild(node));
     if (anchor != NULL) {
-        while (node != NULL && anchor != NULL
+        while (node != m_list.end() && anchor != NULL
                && HAS(
                    static_cast<WwdGameObjectFlags>(anchor->m_flags),
                    WWD_GAME_OBJECT_FLAG_SORT_PENDING
@@ -745,7 +747,7 @@ i32 CDDrawChildGroup::CheckSortOrder() {
         }
         if (anchor != NULL) {
             i32 key = anchor->m_sortKey;
-            while (node != NULL) {
+            while (node != m_list.end()) {
                 CGameObject* cur_obj = NextChild(node);
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
                 if (!HAS(
@@ -768,8 +770,8 @@ i32 CDDrawChildGroup::CheckSortOrder() {
 }
 
 CWwdGameObject* CDDrawChildGroup::FindById(i32 id) {
-    POSITION node = m_list.GetHeadPosition();
-    while (node != NULL) {
+    std::list<CGameObject*>::iterator node = m_list.begin();
+    while (node != m_list.end()) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == id) {
@@ -780,8 +782,8 @@ CWwdGameObject* CDDrawChildGroup::FindById(i32 id) {
 }
 
 CWwdGameObject* CDDrawChildGroup::FindSerialRefById(i32 id) {
-    POSITION node = m_list.GetHeadPosition();
-    while (node != NULL) {
+    std::list<CGameObject*>::iterator node = m_list.begin();
+    while (node != m_list.end()) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id) {
@@ -792,8 +794,8 @@ CWwdGameObject* CDDrawChildGroup::FindSerialRefById(i32 id) {
 }
 
 CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicRecord) {
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id) {
 
@@ -809,8 +811,8 @@ CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicR
 CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
     CLogicRecord* logicTemplate =
         MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key);
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
         CGameObject* obj = NextChild(pos);
         LoadableClassId tag = obj->GetClassId();
         if (tag == CLASSID_WWD_SPRITE_OBJECT && obj->m_id == id
@@ -822,8 +824,8 @@ CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
 }
 
 CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 collisionCategory) {
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
 
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id
@@ -835,8 +837,8 @@ CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 colli
 }
 
 CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
-    POSITION node = m_list.GetHeadPosition();
-    while (node != NULL) {
+    std::list<CGameObject*>::iterator node = m_list.begin();
+    while (node != m_list.end()) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_objectId == objectId) {
@@ -847,8 +849,8 @@ CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
 }
 
 CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
-    POSITION node = m_list.GetHeadPosition();
-    while (node != NULL) {
+    std::list<CGameObject*>::iterator node = m_list.begin();
+    while (node != m_list.end()) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_objectId == objectId) {
@@ -860,8 +862,8 @@ CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
 
 i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
     CWwdGameObject* found = NULL;
-    POSITION node = m_list.GetHeadPosition();
-    while (node != NULL) {
+    std::list<CGameObject*>::iterator node = m_list.begin();
+    while (node != m_list.end()) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == kind) {
@@ -876,8 +878,8 @@ i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
 
 i32 CDDrawChildGroup::CountByKind(i32 kind) {
     i32 count = 0;
-    POSITION node = m_list.GetHeadPosition();
-    while (node != NULL) {
+    std::list<CGameObject*>::iterator node = m_list.begin();
+    while (node != m_list.end()) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == kind) {
@@ -888,14 +890,14 @@ i32 CDDrawChildGroup::CountByKind(i32 kind) {
 }
 
 void CDDrawChildGroup::PruneList() {
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur = pos;
+    std::list<CGameObject*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        std::list<CGameObject*>::iterator cur = pos;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
         if (obj != NULL && !(obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_PRESERVE_ON_PRUNE))) {
-            m_list.RemoveAt(cur);
-            m_activeGameObjectsById.RemoveKey(WwdKey(obj));
-            m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
+            m_list.erase(cur);
+            m_activeGameObjectsById.erase(WwdKey(obj));
+            m_registeredGameObjectsById.erase(WwdKey(obj));
             delete obj;
         }
     }
@@ -904,8 +906,8 @@ void CDDrawChildGroup::PruneList() {
 i32 CDDrawChildGroup::SumWeighted() {
     i32 i = 0;
     i32 sum = 0;
-    POSITION node = m_list.GetHeadPosition();
-    while (node != NULL) {
+    std::list<CGameObject*>::iterator node = m_list.begin();
+    while (node != m_list.end()) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);
@@ -914,12 +916,12 @@ i32 CDDrawChildGroup::SumWeighted() {
     return sum;
 }
 
-void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
+void CDDrawChildGroup::RemoveAll(std::list<CGameObject*>::iterator pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
-    m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
+    m_registeredGameObjectsById.erase(WwdKey(obj));
 }
 
-void CDDrawChildGroup::RemoveByPosition(POSITION pos, CGameObject* obj) {
+void CDDrawChildGroup::RemoveByPosition(std::list<CGameObject*>::iterator pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
 }
 
@@ -929,12 +931,12 @@ void CDDrawChildGroup::RegisterObjectId(CWwdGameObject* obj) {
 
 i32 CDDrawChildGroup::CountActive() {
     i32 n = 0;
-    POSITION pos = m_registeredGameObjectsById.GetStartPosition();
-    if (pos != NULL) {
+    std::map<i32, CGameObject*>::iterator pos = m_registeredGameObjectsById.begin();
+    if (pos != m_registeredGameObjectsById.end()) {
         do {
-            void* key = NULL;
+            i32 key = 0;
             CWwdGameObject* val = NULL;
-            MapGetNext(m_registeredGameObjectsById, pos, key, val);
+            (key = pos->first, val = static_cast<CWwdGameObject*>(pos->second), ++pos);
             if (val != NULL
                 && !HAS(
                     static_cast<WwdGameObjectFlags>(val->m_flags),
@@ -942,7 +944,7 @@ i32 CDDrawChildGroup::CountActive() {
                 )) {
                 ++n;
             }
-        } while (pos != NULL);
+        } while (pos != m_registeredGameObjectsById.end());
     }
     return n;
 }
@@ -955,12 +957,12 @@ i32 CDDrawChildGroup::DispatchSerializationToObjects(
     if (ar == NULL) {
         return 0;
     }
-    POSITION pos = m_registeredGameObjectsById.GetStartPosition();
-    if (pos != NULL) {
+    std::map<i32, CGameObject*>::iterator pos = m_registeredGameObjectsById.begin();
+    if (pos != m_registeredGameObjectsById.end()) {
         do {
-            void* key = NULL;
+            i32 key = 0;
             CWwdGameObject* val = NULL;
-            MapGetNext(m_registeredGameObjectsById, pos, key, val);
+            (key = pos->first, val = static_cast<CWwdGameObject*>(pos->second), ++pos);
             if (val != NULL
                 && !HAS(
                     static_cast<WwdGameObjectFlags>(val->m_flags),
@@ -968,7 +970,7 @@ i32 CDDrawChildGroup::DispatchSerializationToObjects(
                 )) {
                 val->SerializeDispatch(ar, mode, typeId, val);
             }
-        } while (pos != NULL);
+        } while (pos != m_registeredGameObjectsById.end());
     }
     return 1;
 }
@@ -977,12 +979,12 @@ i32 CDDrawChildGroup::WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId)
     if (ar == NULL) {
         return 0;
     }
-    POSITION pos = m_registeredGameObjectsById.GetStartPosition();
-    if (pos != NULL) {
+    std::map<i32, CGameObject*>::iterator pos = m_registeredGameObjectsById.begin();
+    if (pos != m_registeredGameObjectsById.end()) {
         do {
-            void* key = NULL;
+            i32 key = 0;
             CWwdGameObject* val = NULL;
-            MapGetNext(m_registeredGameObjectsById, pos, key, val);
+            (key = pos->first, val = static_cast<CWwdGameObject*>(pos->second), ++pos);
             if (val != NULL
                 && !HAS(
                     static_cast<WwdGameObjectFlags>(val->m_flags),
@@ -991,7 +993,7 @@ i32 CDDrawChildGroup::WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId)
 
                 val->WriteSnapshot(ar, typeId);
             }
-        } while (pos != NULL);
+        } while (pos != m_registeredGameObjectsById.end());
     }
     return 1;
 }
@@ -1129,11 +1131,11 @@ i32 CDDrawChildGroup::SerializeObjects(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
     }
-    POSITION pos = m_registeredGameObjectsById.GetStartPosition();
-    while (pos != NULL) {
-        void* key = NULL;
+    std::map<i32, CGameObject*>::iterator pos = m_registeredGameObjectsById.begin();
+    while (pos != m_registeredGameObjectsById.end()) {
+        i32 key = 0;
         CWwdGameObject* val = NULL;
-        MapGetNext(m_registeredGameObjectsById, pos, key, val);
+        (key = pos->first, val = static_cast<CWwdGameObject*>(pos->second), ++pos);
         if (val != NULL
             && !HAS(
                 static_cast<WwdGameObjectFlags>(val->m_flags),
@@ -1167,7 +1169,7 @@ i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeI
             return 0;
         }
         if ((typeId & 1) != LOGIC_UNSET) {
-            TRACE("%s\n", static_cast<LPCTSTR>(CString(obj->m_name)));
+            TRACE("%s\n", (std::string(obj->m_name)).c_str());
         }
         if (obj->SerializeDispatch(ar, SERIAL_LOAD, typeId, obj) == 0) {
             return 0;
@@ -1178,15 +1180,15 @@ i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeI
 
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
-    POSITION pos = m_registeredGameObjectsById.GetStartPosition();
-    while (pos != NULL) {
-        void* key = NULL;
+    std::map<i32, CGameObject*>::iterator pos = m_registeredGameObjectsById.begin();
+    while (pos != m_registeredGameObjectsById.end()) {
+        i32 key = 0;
         CWwdGameObject* val = NULL;
-        MapGetNext(m_registeredGameObjectsById, pos, key, val);
+        (key = pos->first, val = static_cast<CWwdGameObject*>(pos->second), ++pos);
         if (val != NULL) {
 
             if (LookupActiveObject(m_activeGameObjectsById, WwdKey(val)) == NULL) {
-                m_registeredGameObjectsById.RemoveKey(WwdKey(val));
+                m_registeredGameObjectsById.erase(WwdKey(val));
                 if (val != NULL) {
                     delete val;
                 }

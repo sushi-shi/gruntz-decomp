@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CDDRAWWORKER_H
 #define GRUNTZ_CDDRAWWORKER_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDSurface.h>
@@ -65,7 +67,7 @@ public:
             return NULL;
         }
 
-        return static_cast<CImage*>(m_items.GetAt(index));
+        return static_cast<CImage*>(m_items[index]);
     }
 
     CImage* GetFrame(i32 n);
@@ -74,9 +76,9 @@ public:
         return OwnerMgr();
     }
 
-    void AddFrameAt(CObject* elem, i32 index);
+    void AddFrameAt(CImage* elem, i32 index);
 
-    CObArray m_items;
+    std::vector<CImage*> m_items;
     char m_name[0x40];
 
     i32 m_minIndex;
@@ -84,8 +86,8 @@ public:
 };
 
 #define DDRAW_WORKER_CONTAINS_FRAME(worker, index)                                                     worker->GetMinIndex() <= index && worker->GetMaxIndex() >= index
-#define DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, index)                                                 static_cast<CImage*>(worker->m_items.GetAt(index))
+#define DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, index)                                                 static_cast<CImage*>(worker->m_items[index])
 
-#define ADD_FRAME_AT(elem, index)                                                                      m_items.SetAtGrow(index, elem);                                                                    if (index < m_minIndex) {                                                                              m_minIndex = index;                                                                            }                                                                                                  if (index > m_maxIndex) {                                                                              m_maxIndex = index;                                                                            }
+#define ADD_FRAME_AT(elem, index)                                                                      growAndAssign(m_items, index, elem);                                                                    if (index < m_minIndex) {                                                                              m_minIndex = index;                                                                            }                                                                                                  if (index > m_maxIndex) {                                                                              m_maxIndex = index;                                                                            }
 
 #endif

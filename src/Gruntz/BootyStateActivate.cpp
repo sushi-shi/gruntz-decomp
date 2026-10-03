@@ -190,7 +190,7 @@ RECT g_levelMsgRectsB[8] = {
     {245, 392, 417, 462}
 };
 
-CString g_levelMsgStrings[8] = {
+std::string g_levelMsgStrings[8] = {
     "Time:",
     "Survivorz:",
     "Deathz:",
@@ -212,23 +212,23 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     }
 
     if (g_bootyCheatBuilt == false) {
-        CString bootyCheatz("BootyCheatz");
-        CString empty("");
-        CString grp;
-        CString text;
-        CString desc;
+        std::string bootyCheatz("BootyCheatz");
+        std::string empty("");
+        std::string grp;
+        std::string text;
+        std::string desc;
         i32 i = 0;
 
         i32 last = reinterpret_cast<i32>(g_secretMsgRows[24].m_strB + sizeof(SecretMsgRow));
         char* p = g_secretMsgRows[0].m_strB;
         do {
-            grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
-            i32 id = g_buteMgr.GetInt(bootyCheatz, grp, 1);
-            grp.Format("Cheat%i", id);
-            text = *g_buteMgr.GetString(grp, "Text", &empty);
-            desc = *g_buteMgr.GetString(grp, "Desc", &empty);
-            strcpy(p - 0x20, text);
-            strcpy(p, desc);
+            grp = formatText("A%dC%d", i / 3 + 1, i % 3 + 1);
+            i32 id = g_buteMgr.GetInt((bootyCheatz).c_str(), (grp).c_str(), 1);
+            grp = formatText("Cheat%i", id);
+            text = *g_buteMgr.GetString((grp).c_str(), "Text", &empty);
+            desc = *g_buteMgr.GetString((grp).c_str(), "Desc", &empty);
+            strcpy(p - 0x20, (text).c_str());
+            strcpy(p, (desc).c_str());
             i++;
             p += 0xa0;
         } while (reinterpret_cast<i32>(p) < last);
@@ -346,7 +346,7 @@ i32 CBootyState::LeaveState(GameStateId nextState) {
 
 i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != false && (g_gameReg->m_gameStats)->IsCampaignPerfect()) {
-        CString s;
+        std::string s;
         if (!LoadTitlePage("multi", 0, 0, 0, 0, true)) {
             return 0;
         }
@@ -354,13 +354,13 @@ i32 CBootyState::ShowSecretBonusMessage() {
         SetRect(&rA, 0, -15, SCREEN_W_PX, 0x1d1);
         SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
         SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
-        s.Format("The Secret of Secretz:");
+        s = formatText("The Secret of Secretz:");
         DrawTextToOverlaySurface(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
-        CString s2(g_secretMsgRows[24].m_strA);
-        CString s3(g_secretMsgRows[24].m_strB);
-        for (i32 k = 0; k < s2.GetLength(); k++) {
-            s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
+        std::string s2(g_secretMsgRows[24].m_strA);
+        std::string s3(g_secretMsgRows[24].m_strB);
+        for (i32 k = 0; k < static_cast<i32>((s2).size()); k++) {
+            (s2)[k] = static_cast<char>((((s2).c_str())[k] - 0x3d));
         }
         DrawTextToOverlaySurface(m_world, &s2, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
         DrawTextToOverlaySurface(m_world, &s3, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
@@ -377,13 +377,13 @@ i32 CBootyState::ShowSecretBonusMessage() {
         if (!LoadTitlePage("multi", 0, 0, 0, 0, true)) {
             return 0;
         }
-        CString title;
+        std::string title;
         RECT rTitle;
         SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
         if (category == SECRET_BONUS_TIER_ONE) {
-            title.Format("Secret Bonus Acquired:");
+            title = formatText("Secret Bonus Acquired:");
         } else {
-            title.Format("Secret Bonus Acquired:");
+            title = formatText("Secret Bonus Acquired:");
         }
         DrawTextToOverlaySurface(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
@@ -413,10 +413,10 @@ i32 CBootyState::ShowSecretBonusMessage() {
                 }
             }
             i32 idx = rowBase * 3 + j;
-            CString s5(g_secretMsgRows[idx].m_strA);
-            CString s6(g_secretMsgRows[idx].m_strB);
-            for (i32 k = 0; k < s5.GetLength(); k++) {
-                s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
+            std::string s5(g_secretMsgRows[idx].m_strA);
+            std::string s6(g_secretMsgRows[idx].m_strB);
+            for (i32 k = 0; k < static_cast<i32>((s5).size()); k++) {
+                (s5)[k] = static_cast<char>((((s5).c_str())[k] - 0x3d));
             }
             DrawTextToOverlaySurface(m_world, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
             DrawTextToOverlaySurface(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
@@ -525,7 +525,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
             return 0;
         }
 
-        CString dir;
+        std::string dir;
         switch (static_cast<GruntDirection>(i + 1)) {
             case DIR_NORTH:
                 dir = "NORTH";
@@ -553,7 +553,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
                 break;
         }
 
-        m_sprintSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
+        m_sprintSprites[i]->SetImageSetByName(("GRUNTZ_NORMALGRUNT_" + dir + "_WALK").c_str());
         m_sprintSprites[i]->SetAnimationByName("GAME_GRUNTSPRINT", 0);
         {
             CWwdSpriteObject* o = m_sprintSprites[i];
@@ -904,7 +904,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_icons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             SET_SCREEN_POS(m_icons[i], g_levelMsgIconPos[i].m_x, g_levelMsgIconPos[i].m_y);
             CopyRect(&box, &g_levelMsgRectsA[i]);
-            CString text = g_levelMsgStrings[i];
+            std::string text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             CopyRect(&box, &g_levelMsgRectsB[i]);
@@ -946,7 +946,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             RECT box;
             m_templateFlags[s] = 1;
             CopyRect(&box, &g_levelMsgRectsA[m_slot]);
-            CString text = g_levelMsgStrings[m_slot];
+            std::string text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
         }
@@ -972,7 +972,7 @@ i32 CBootyState::LevelMsgHudDriver() {
     for (i32 i = m_slot; i < 8; i++) {
         if (m_gokart[i]->m_screenX >= m_bomb[i]->m_screenX) {
             RECT box;
-            CString text;
+            std::string text;
             CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
@@ -996,27 +996,27 @@ i32 CBootyState::LevelMsgHudDriver() {
     return 0;
 }
 
-void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
+void CBootyState::FormatHudText(std::string* buf, BootyStatRow sel) {
     switch (sel) {
         case BOOTYSTAT_TIME: {
             u32 secs = static_cast<u32>(
                 STAT(SumElapsedTimeForCurrentArea, m_elapsedTimeMs) / MILLIS_PER_SECOND
             );
-            buf->Format("%d:%2.2d", secs / 60, secs % 60);
+            *(buf) = formatText("%d:%2.2d", secs / 60, secs % 60);
             return;
         }
         case BOOTYSTAT_GRUNTZ_EXITED:
-            buf->Format("%d", STAT(SumGruntzExitedForCurrentArea, m_gruntzExited));
+            *(buf) = formatText("%d", STAT(SumGruntzExitedForCurrentArea, m_gruntzExited));
             return;
         case BOOTYSTAT_GRUNTZ_LOST:
-            buf->Format("%d", STAT(SumGruntzLostForCurrentArea, m_gruntzLost));
+            *(buf) = formatText("%d", STAT(SumGruntzLostForCurrentArea, m_gruntzLost));
             return;
         case BOOTYSTAT_TOOLZ: {
             i32 total = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
             i32 cap = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
             i32 cur = STAT(SumToolzCollectedForCurrentArea, m_toolzCollected);
             cur = min(cur, cap);
-            buf->Format("%d of %d", cur, total);
+            *(buf) = formatText("%d of %d", cur, total);
             return;
         }
         case BOOTYSTAT_TOYZ: {
@@ -1024,7 +1024,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 cap = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
             i32 cur = STAT(SumToyzCollectedForCurrentArea, m_toyzCollected);
             cur = min(cur, cap);
-            buf->Format("%d of %d", cur, total);
+            *(buf) = formatText("%d of %d", cur, total);
             return;
         }
         case BOOTYSTAT_POWERUPZ: {
@@ -1032,7 +1032,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 cap = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
             i32 cur = STAT(SumPowerupzCollectedForCurrentArea, m_powerupzCollected);
             cur = min(cur, cap);
-            buf->Format("%d of %d", cur, total);
+            *(buf) = formatText("%d of %d", cur, total);
             return;
         }
         case BOOTYSTAT_COINZ: {
@@ -1040,7 +1040,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 cap = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
             i32 cur = STAT(SumCoinsCollectedForCurrentArea, m_coinsCollected);
             cur = min(cur, cap);
-            buf->Format("%d of %d", cur, total);
+            *(buf) = formatText("%d of %d", cur, total);
             return;
         }
         case BOOTYSTAT_SECRETZ: {
@@ -1048,7 +1048,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 cap = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
             i32 cur = STAT(SumSecretsFoundForCurrentArea, m_secretsFound);
             cur = min(cur, cap);
-            buf->Format("%d of %d", cur, total);
+            *(buf) = formatText("%d of %d", cur, total);
             return;
         }
         default:
@@ -1085,12 +1085,12 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
             return 0;
         }
 
-        static CString s_buf;
+        static std::string s_buf;
         const char* prefix = (i < (g_gameReg->m_gameStats->m_levelNumber - 1) % 4 + 1)
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
-        s_buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
-        m_visSprites[i]->SetImageSetByName(s_buf);
+        s_buf = formatText("%sSECRET%c", prefix, g_secretChars[i]);
+        m_visSprites[i]->SetImageSetByName((s_buf).c_str());
         m_visSprites[i]->SetAnimationByName("GAME_CYCLE100", 0);
         SET_SCREEN_POS(m_visSprites[i], g_idleSpriteIds[i] + 0xfa, 0xdc);
     }
@@ -1122,7 +1122,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         m_animSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[i]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
-                        CString letter;
+                        std::string letter;
                         switch (static_cast<WarpLetter>(i)) {
                             case WARPLETTER_W:
                                 letter = "W";
@@ -1138,7 +1138,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                                 break;
                         }
                         m_animSprites[i]->SetImageSetByName("GRUNTZ_PICKUPS");
-                        m_animSprites[i]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
+                        m_animSprites[i]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter).c_str(), 0);
                     }
                 } else {
                     SET_SCREEN_POS(m_visSprites[i], g_idleSpriteIds[i], 0xdc);
@@ -1184,7 +1184,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
 
     if (m_walkStarted == false && m_animSprites[m_stepIndex]->m_screenY <= 0xdc) {
         {
-            CString letter;
+            std::string letter;
             switch (static_cast<WarpLetter>(m_stepIndex)) {
                 case WARPLETTER_W:
                     letter = "W";
@@ -1204,7 +1204,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
                     PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_FLAGRISE");
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
-                    m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
+                    m_animSprites[m_stepIndex]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter).c_str(), 0);
                     CWwdSpriteObject* g = m_animSprites[m_stepIndex];
                     g->m_drawActive = true;
                     g->m_drawFillCmd = SHADE_PAL_16;
@@ -1345,13 +1345,13 @@ i32 CBootyState::Render() {
                 && g_levelBias100 == false) {
                 RECT rc;
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
-                CString s("World Completed!");
+                std::string s("World Completed!");
                 m_levelCompleteGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             } else {
                 RECT rc;
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
-                CString s("Level Completed!");
+                std::string s("Level Completed!");
                 m_levelCompleteGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             }
@@ -1376,7 +1376,7 @@ i32 CBootyState::Render() {
             UpdateBootyWalkingGruntz();
             CheckPerfectBonus();
             if (m_secretHudHandled == false && g_gameReg->m_gameStats->m_isCustomLevel == false) {
-                CString s;
+                std::string s;
                 RECT rc;
                 CGameStats* gameStats = g_gameReg->m_gameStats;
                 if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
@@ -1390,9 +1390,7 @@ i32 CBootyState::Render() {
                 } else {
                     if (gameStats->m_currentAreaComplete != false) {
                         if (gameStats->CurrentAreaHasAllWarpLetters()) {
-                            s.Format(
-                                "WARP letterz recovered! Prepare to receive your cheat codez!"
-                            );
+                            s = formatText("WARP letterz recovered! Prepare to receive your cheat codez!");
                         } else {
                             s = "WARP letterz not recovered! No cheatz for you.";
                         }
@@ -1461,13 +1459,13 @@ void CBootyState::ShowLevelCompleteMessage() {
         if (m_templateFlags[i]) {
             RECT r1;
             CopyRect(&r1, &g_levelMsgRectsA[i]);
-            CString t(g_levelMsgStrings[i]);
+            std::string t(g_levelMsgStrings[i]);
             DrawTextToOverlaySurface(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         if (m_readyFlags[i]) {
             RECT r2;
             CopyRect(&r2, &g_levelMsgRectsB[i]);
-            CString t2;
+            std::string t2;
             FormatHudText(&t2, static_cast<BootyStatRow>(i));
             DrawTextToOverlaySurface(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
         }
@@ -1476,17 +1474,17 @@ void CBootyState::ShowLevelCompleteMessage() {
     if (m_levelCompleteGate) {
         if (g_gameReg->m_gameStats->m_currentAreaComplete != false) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
-            CString s("World Completed!");
+            std::string s("World Completed!");
             DrawTextToOverlaySurface(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         } else {
             RECT r = {0, 0x24, 0x1ea, 0x64};
-            CString s("Level Completed!");
+            std::string s("Level Completed!");
             DrawTextToOverlaySurface(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         }
     }
 
     if (g_gameReg->m_gameStats->m_isCustomLevel == false && m_secretGate != false) {
-        CString s;
+        std::string s;
         RECT r;
         CGameStats* gameStats = g_gameReg->m_gameStats;
         if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
@@ -1499,7 +1497,7 @@ void CBootyState::ShowLevelCompleteMessage() {
         } else {
             if (gameStats->m_currentAreaComplete != false) {
                 if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
-                    s.Format("WARP letterz recovered! Prepare to receive your cheat codez!");
+                    s = formatText("WARP letterz recovered! Prepare to receive your cheat codez!");
                 } else {
                     s = "WARP letterz not recovered! No cheatz for you.";
                 }
@@ -1551,7 +1549,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                             m_animSprites[p]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                             m_animSprites[p]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                         } else {
-                            CString letter;
+                            std::string letter;
                             switch (static_cast<WarpLetter>(p)) {
                                 case WARPLETTER_W:
                                     letter = "W";
@@ -1567,7 +1565,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                                     break;
                             }
                             m_animSprites[p]->SetImageSetByName("GRUNTZ_PICKUPS");
-                            m_animSprites[p]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
+                            m_animSprites[p]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter).c_str(), 0);
                         }
                     }
                 }
@@ -1691,7 +1689,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (tint == NULL) {
             return 0;
         }
-        CString key;
+        std::string key;
 
         m_puddleSprites[i] = CreateSimpleAnimationSprite(0);
         if (m_puddleSprites[i] == NULL) {
@@ -1712,13 +1710,13 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             (m_gruntSprites[i])->SetDrawFillReversed(SHADE_PAL_16, tint);
             m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         } else {
-            key.Format("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
+            key = formatText("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
             m_gruntSprites[i] = CreateSimpleAnimationSprite(0);
             if (m_gruntSprites[i] == NULL) {
                 return 0;
             }
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
-            m_gruntSprites[i]->SetAnimationByName(key, 0);
+            m_gruntSprites[i]->SetAnimationByName((key).c_str(), 0);
             (m_gruntSprites[i])->SetDrawFill(SHADE_PAL_16, tint);
             m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
@@ -1731,7 +1729,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (m_weaponIcons[i] == NULL) {
             return 0;
         }
-        m_weaponIcons[i]->SetImageSetByName(key);
+        m_weaponIcons[i]->SetImageSetByName((key).c_str());
         m_weaponIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
         (m_weaponIcons[i])->SetDrawFill(SHADE_PAL_16, tint);
         m_weaponIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1749,7 +1747,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             if (m_toyIcons[i] == NULL) {
                 return 0;
             }
-            m_toyIcons[i]->SetImageSetByName(key);
+            m_toyIcons[i]->SetImageSetByName((key).c_str());
             m_toyIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             (m_toyIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_toyIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1762,7 +1760,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             if (m_powerupIcons[i] == NULL) {
                 return 0;
             }
-            m_powerupIcons[i]->SetImageSetByName(key);
+            m_powerupIcons[i]->SetImageSetByName((key).c_str());
             m_powerupIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             (m_powerupIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_powerupIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1775,7 +1773,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             if (m_miscIcons[i] == NULL) {
                 return 0;
             }
-            m_miscIcons[i]->SetImageSetByName(key);
+            m_miscIcons[i]->SetImageSetByName((key).c_str());
             m_miscIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             (m_miscIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_miscIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1796,15 +1794,15 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
 
     for (i32 t = 0; t < 4; t++) {
-        CString tabKey;
-        CString flagKey;
+        std::string tabKey;
+        std::string flagKey;
         GruntzPlayer* pl = &g_gameReg->m_players[t];
         CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(IDX(pl->m_color), 0);
         if (tint == NULL) {
             return 0;
         }
-        tabKey.Format("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD%d", t + 1);
-        flagKey.Format("GAME_FORTRESSFLAGZ_%s", static_cast<const char*>(GetWarlordName(t)));
+        tabKey = formatText("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD%d", t + 1);
+        flagKey = formatText("GAME_FORTRESSFLAGZ_%s", (GetWarlordName(t)).c_str());
 
         m_tabSprites[t] = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
@@ -1817,7 +1815,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (m_tabSprites[t] == NULL) {
             return 0;
         }
-        m_tabSprites[t]->SetImageSetByName(tabKey);
+        m_tabSprites[t]->SetImageSetByName((tabKey).c_str());
         m_tabSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
         (m_tabSprites[t])->SetDrawFill(SHADE_PAL_16, tint);
         m_tabSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1833,7 +1831,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (m_flagSprites[t] == NULL) {
             return 0;
         }
-        m_flagSprites[t]->SetImageSetByName(flagKey);
+        m_flagSprites[t]->SetImageSetByName((flagKey).c_str());
         m_flagSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
         (m_flagSprites[t])->SetDrawFill(SHADE_PAL_16, tint);
         m_flagSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1859,22 +1857,16 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     SET_SCREEN_POS(m_fortSprite, 0x64, 0x64);
     m_fortSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
-    CString joyKey;
-    CString bootyKey;
-    joyKey.Format(
-        "GRUNTZ_WARLORDZ_%s_JOY",
-        static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
-    );
-    bootyKey.Format(
-        "GRUNTZ_WARLORDZ_%s_BOOTY",
-        static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
-    );
+    std::string joyKey;
+    std::string bootyKey;
+    joyKey = formatText("GRUNTZ_WARLORDZ_%s_JOY", (GetWarlordName(QueryGruntSlots())).c_str());
+    bootyKey = formatText("GRUNTZ_WARLORDZ_%s_BOOTY", (GetWarlordName(QueryGruntSlots())).c_str());
     m_warlordBooty = CreateSimpleAnimationSprite(0);
     if (m_warlordBooty == NULL) {
         return 0;
     }
-    m_warlordBooty->SetImageSetByName(joyKey);
-    m_warlordBooty->SetAnimationByName(bootyKey, 0);
+    m_warlordBooty->SetImageSetByName((joyKey).c_str());
+    m_warlordBooty->SetAnimationByName((bootyKey).c_str(), 0);
     m_warlordBooty->SetDrawFill(SHADE_PAL_16, tint);
     m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
     SET_SCREEN_POS(m_warlordBooty, 0x64, 0x64);
@@ -1958,7 +1950,7 @@ i32 CMultiBootyState::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
+void CMultiBootyState::BuildPowerupIconKeys(std::string* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ_";
     switch (static_cast<PickupType>(key)) {
         case PICKUP_BOMB:
@@ -2099,7 +2091,7 @@ void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     }
 }
 
-CString g_areaNames[8] = {
+std::string g_areaNames[8] = {
     "Rocky Roadz",
     "Gruntziclez",
     "Trouble in the Tropicz",
@@ -2120,21 +2112,21 @@ i32 g_panMinX;
 
 i32 g_panMaxX;
 
-CString g_brickText1;
+std::string g_brickText1;
 
-CString g_brickText2;
+std::string g_brickText2;
 
-CString g_brickText3;
+std::string g_brickText3;
 
-CString g_brickText4;
+std::string g_brickText4;
 
-CString g_brickText5;
+std::string g_brickText5;
 
-CString g_brickText6;
+std::string g_brickText6;
 
-CString g_brickText7;
+std::string g_brickText7;
 
-CString g_brickText8;
+std::string g_brickText8;
 
 i32 g_attractStateCount = 0;
 
@@ -2142,18 +2134,18 @@ GruntDeathType g_areaHazardDeath = DEATH_DROP;
 
 FreeNodePool<Coord> g_coordPool;
 
-CString CMultiBootyState::GetWarlordName(i32 id) {
+std::string CMultiBootyState::GetWarlordName(i32 id) {
     switch (static_cast<WarlordOwner>(id)) {
         case WARLORDZ_KING:
-            return CString("KING");
+            return std::string("KING");
         case WARLORDZ_NAPOLEAN:
-            return CString("NAPOLEAN");
+            return std::string("NAPOLEAN");
         case WARLORDZ_PATTON:
-            return CString("PATTON");
+            return std::string("PATTON");
         case WARLORDZ_VIKING:
-            return CString("VIKING");
+            return std::string("VIKING");
         default:
-            return CString("");
+            return std::string("");
     }
 }
 
@@ -2170,7 +2162,7 @@ i32 CMultiBootyState::QueryGruntSlots() {
 }
 
 void CMultiBootyState::DrawBattleStats() {
-    CString s;
+    std::string s;
     RECT rc;
     BOOL(WINAPI * copyRect)(LPRECT, const RECT*) = CopyRect;
     i32 i;
@@ -2178,27 +2170,27 @@ void CMultiBootyState::DrawBattleStats() {
 
     for (i = 0; i < 4; i++) {
         if (g_gameReg->m_players[i].m_joined != false) {
-            s.Format("%d", sumRun(g_gameReg->m_gameStats->m_miscPickupsByPlayer[i], 4));
+            s = formatText("%d", sumRun(g_gameReg->m_gameStats->m_miscPickupsByPlayer[i], 4));
             copyRect(&rc, &s_col1Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i], 7));
+            s = formatText("%d", sumRun(g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i], 7));
             copyRect(&rc, &s_col2Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(g_gameReg->m_gameStats->m_toyPickupsByPlayer[i], 10));
+            s = formatText("%d", sumRun(g_gameReg->m_gameStats->m_toyPickupsByPlayer[i], 10));
             copyRect(&rc, &s_col3Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i], 22));
+            s = formatText("%d", sumRun(g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i], 22));
             copyRect(&rc, &s_col4Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", g_gameReg->m_gameStats->m_gruntzByPlayer[i]);
+            s = formatText("%d", g_gameReg->m_gameStats->m_gruntzByPlayer[i]);
             copyRect(&rc, &s_col5Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", (g_gameReg->m_gameStats)->CountKillsForPlayer(i));
+            s = formatText("%d", (g_gameReg->m_gameStats)->CountKillsForPlayer(i));
             copyRect(&rc, &s_col6Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
@@ -2289,7 +2281,7 @@ void CMultiBootyState::DrawBattleStats() {
                     color = RGB(0, 0, 0);
                     break;
             }
-            s.Format("%s", static_cast<const char*>(g_gameReg->m_players[i].GetName()));
+            s = formatText("%s", (g_gameReg->m_players[i].GetName()).c_str());
             copyRect(&rc, &s_colorRects[i]);
             DrawTextToOverlaySurface(
                 m_world,
@@ -2305,7 +2297,7 @@ void CMultiBootyState::DrawBattleStats() {
         }
     }
 
-    s.Format("BATTLE STATZ");
+    s = formatText("BATTLE STATZ");
     SET_RECT_COMPONENTS(rc, 0x96, 0xf, SCREEN_W_PX, 0x73);
     DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
@@ -2327,13 +2319,13 @@ i32 CMultiBootyState::Render() {
     m_world->ChildGroup()->RenderChildren(m_world->GetDrawTarget()->GetBackPair());
 
     u32 secs = g_gameReg->m_gameStats->m_elapsedTimeMs / MILLIS_PER_SECOND;
-    CString s;
+    std::string s;
     RECT rc;
     SetRect(&rc, 8, 0x41, 0xcb, 0xae);
     if (secs / 3600 != 0) {
-        s.Format("%d:%2.2d:%2.2d", secs / 3600, (secs / 60) % 60, secs % 60);
+        s = formatText("%d:%2.2d:%2.2d", secs / 3600, (secs / 60) % 60, secs % 60);
     } else {
-        s.Format("%d:%2.2d", secs / 60, secs % 60);
+        s = formatText("%d:%2.2d", secs / 60, secs % 60);
     }
     DrawTextToBackSurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 

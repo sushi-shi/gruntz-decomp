@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_DDRAWMGR_LOGICRECORDREGISTRY_H
 #define GRUNTZ_DDRAWMGR_LOGICRECORDREGISTRY_H
 
+#include <map>
+#include <string>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/LogicRecord.h>
@@ -42,9 +47,9 @@ public:
 
     CLogicRecord* FindTemplate(const char* key);
 
-    CString FindLogicTypeKey(CLogicRecord* record);
+    std::string FindLogicTypeKey(CLogicRecord* record);
 
-    CMapStringToOb m_templatesByName;
+    std::map<std::string, CLogicRecord*> m_templatesByName;
 };
 
 #endif

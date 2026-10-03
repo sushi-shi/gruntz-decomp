@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CGRUNTZMAPMGR_H
 #define GRUNTZ_CGRUNTZMAPMGR_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <Gruntz/Brickz.h>
@@ -29,19 +31,19 @@ public:
 
     i32 BuildCellAttributes(i32 width, i32 height);
 
-    CPtrArray m_arr;
+    std::vector<Coord*> m_arr;
 
     i32 m_reserved90;
 };
 
 inline void CGruntzMapMgr::Reset() {
-    for (i32 i = 0; i < m_arr.GetSize(); i++) {
-        Coord* elem = static_cast<Coord*>(m_arr.GetAt(i));
+    for (i32 i = 0; i < static_cast<i32>(m_arr.size()); i++) {
+        Coord* elem = static_cast<Coord*>(m_arr[i]);
         if (elem != NULL) {
             g_coordPool.Push(elem);
         }
     }
-    m_arr.RemoveAll();
+    m_arr.clear();
     CMapMgr::Reset();
 }
 
