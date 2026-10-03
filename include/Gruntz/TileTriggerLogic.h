@@ -116,6 +116,10 @@ public:
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
+    i32 GetTileToken() const {
+        return m_tileToken;
+    }
+
     i32 GetTileX() const {
         return m_tileX;
     }
