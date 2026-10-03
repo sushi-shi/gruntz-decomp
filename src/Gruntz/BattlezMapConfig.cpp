@@ -3429,8 +3429,8 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     }
     if (cell != NULL) {
 
-        i32* p;
-        for (p = cell->m_linkKeys; p - cell->m_linkKeys < 24; p++) {
+        const i32* p;
+        for (p = cell->GetLinkKeys(); p - cell->GetLinkKeys() < 24; p++) {
             i32 node = *p;
             if (node == 0) {
                 break;
@@ -3445,7 +3445,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             }
         }
 
-        for (p = cell->m_linkKeys; p - cell->m_linkKeys < 24; p++) {
+        for (p = cell->GetLinkKeys(); p - cell->GetLinkKeys() < 24; p++) {
             i32 node = *p;
             if (node == 0) {
                 break;

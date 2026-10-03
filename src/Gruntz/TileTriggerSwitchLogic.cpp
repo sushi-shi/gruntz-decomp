@@ -652,7 +652,7 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
     }
 
     for (i32 i = 0; i < 24; i++) {
-        i32 key = child->m_linkKeys[i];
+        i32 key = child->GetLinkKeys()[i];
         if (key == 0) {
             return 1;
         }
@@ -1048,7 +1048,7 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
     }
 
     for (i32 i = 0; i < 24; i++) {
-        i32 key = child->m_linkKeys[i];
+        i32 key = child->GetLinkKeys()[i];
         if (key == 0) {
             return 1;
         }
