@@ -705,7 +705,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
                 CMapStringToPtr* map = &registry->m_cues;
                 SoundCue* found = MapFind<SoundCue>(*map, "GAME_DESTRUCT");
                 if (found) {
-                    SoundSample* sample = found->m_sound;
+                    SoundSample* sample = found->GetSound();
                     if (sample) {
                         SoundBuffer* voice = sample->AcquireInstance();
                         m_destructWarningSound = voice;

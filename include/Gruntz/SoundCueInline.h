@@ -22,7 +22,8 @@ inline i32 PlaySoundCueIfElapsed(
         return 0;
     }
     cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-    return cue->m_sound->AcquireAndPlay(volumePercent, panPercent, frequencyOffsetPercent, looping);
+    return cue->GetSound()
+        ->AcquireAndPlay(volumePercent, panPercent, frequencyOffsetPercent, looping);
 }
 
 static __inline i32 PlayRegistryCueIfElapsed(SoundCueRegistry* soundRegistry, const char* cueKey) {

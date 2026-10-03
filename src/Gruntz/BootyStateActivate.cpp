@@ -353,9 +353,9 @@ i32 CBootyState::EnterState(GameStateId previousState) {
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId nextState) {
     SoundCue* found = m_world->SoundRegistry()->FindCue("BOOTY_LOOP");
-    if (found && found->m_sound->IsPlaying()) {
-        found->m_sound->RampVolumeTo(0, 0x1f4, true);
-        while (found->m_sound->IsPlaying()) {
+    if (found && found->GetSound()->IsPlaying()) {
+        found->GetSound()->RampVolumeTo(0, 0x1f4, true);
+        while (found->GetSound()->IsPlaying()) {
             m_world->SoundRegistry()->TickVolumeRamps();
         }
     }
@@ -1210,7 +1210,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         if (res == NULL) {
             return 1;
         }
-        if (res->m_sound->IsPlaying() != 0) {
+        if (res->GetSound()->IsPlaying() != 0) {
             m_visSprites[m_stepIndex]->m_stateFlags ^= SPRITE_STATE_HIDDEN;
         } else {
             m_visSprites[m_stepIndex]->Hide();
@@ -2000,9 +2000,9 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId nextState) {
     SoundCue* found = m_world->SoundRegistry()->FindCue("BOOTY_LOOP");
-    if (found && found->m_sound->IsPlaying()) {
-        found->m_sound->RampVolumeTo(0, 0x1f4, true);
-        while (found->m_sound->IsPlaying()) {
+    if (found && found->GetSound()->IsPlaying()) {
+        found->GetSound()->RampVolumeTo(0, 0x1f4, true);
+        while (found->GetSound()->IsPlaying()) {
             m_world->SoundRegistry()->TickVolumeRamps();
         }
     }

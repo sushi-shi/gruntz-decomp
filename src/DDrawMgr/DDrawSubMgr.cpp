@@ -634,9 +634,9 @@ i32 SoundCueRegistry::SumAudioBytes(const char* prefix) {
         MapGetNext(m_cues, pos, key, cue);
         if (cue != NULL) {
             if (prefix == NULL || *prefix == 0) {
-                sum += cue->m_sound->m_sampleCount;
+                sum += cue->GetSound()->m_sampleCount;
             } else if (strncmp(key, prefix, strlen(prefix)) == 0) {
-                sum += cue->m_sound->m_sampleCount;
+                sum += cue->GetSound()->m_sampleCount;
             }
         }
     }
@@ -733,7 +733,7 @@ i32 SoundCueRegistry::ConfigurePrimaryFromFirstCue(i32 startPrimary) {
         return 0;
     }
 
-    if (cue->m_sound == NULL) {
+    if (cue->GetSound() == NULL) {
         return 0;
     }
     return ConfigurePrimaryFromCue(cue, startPrimary) != 0;
@@ -749,7 +749,7 @@ i32 SoundCueRegistry::ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary) {
     }
 
     WAVEFORMATEX fmt;
-    if (cue->m_sound->GetFormat(&fmt, sizeof(fmt), NULL) == 0) {
+    if (cue->GetSound()->GetFormat(&fmt, sizeof(fmt), NULL) == 0) {
         return 0;
     }
     if (m_soundStream->SetPrimaryFormat(&fmt) == 0) {

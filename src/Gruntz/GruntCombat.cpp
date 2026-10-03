@@ -560,10 +560,10 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
     if (cue == NULL) {
         return;
     }
-    if (cue->m_sound == NULL) {
+    if (cue->GetSound() == NULL) {
         return;
     }
-    sound = static_cast<SoundBuffer*>(cue->m_sound->AcquireInstance());
+    sound = static_cast<SoundBuffer*>(cue->GetSound()->AcquireInstance());
     if (sound == NULL) {
         return;
     }
@@ -589,10 +589,10 @@ void CGrunt::EnsurePowerupLoopSound(const char* key) {
     if (cue == NULL) {
         return;
     }
-    if (cue->m_sound == NULL) {
+    if (cue->GetSound() == NULL) {
         return;
     }
-    sound = static_cast<SoundBuffer*>(cue->m_sound->AcquireInstance());
+    sound = static_cast<SoundBuffer*>(cue->GetSound()->AcquireInstance());
     if (sound == NULL) {
         return;
     }

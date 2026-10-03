@@ -1992,7 +1992,7 @@ void CGruntzMgr::DelayedQuit() {
     i32 base;
     if (out != NULL) {
         out = World()->SoundRegistry()->FindCue("MENU_ACTIVATE");
-        base = out->m_sound->GetDurationMs() + 0x1f4;
+        base = out->GetSound()->GetDurationMs() + 0x1f4;
     } else {
         base = 0;
     }

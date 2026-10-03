@@ -34,6 +34,10 @@ struct SoundCue : public CWapObj {
 
     i32 PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i32 fullPanOffsetPx);
 
+    SoundSample* const& GetSound() const {
+        return m_sound;
+    }
+
     SoundSample* m_sound;
     i32 m_lastPlayTimeMs;
     i32 m_replayDelayMs;
