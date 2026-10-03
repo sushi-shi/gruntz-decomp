@@ -1099,7 +1099,9 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         if (kDiag == PICKUP_BOMB) {
 
             if (cellTileY != argTileY && cellTileX != argTileX) {
-                if (abs(argTileY - cellTileY) != abs(argTileX - cellTileX)) {
+                i32 distanceX = abs(argTileX - cellTileX);
+                i32 distanceY = abs(argTileY - cellTileY);
+                if (distanceX != distanceY) {
                     return -1;
                 }
             }
