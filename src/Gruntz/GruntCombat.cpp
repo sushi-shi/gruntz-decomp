@@ -39,6 +39,7 @@
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
@@ -643,8 +644,7 @@ i32 CGrunt::PathScan() {
 
     POSITION node = coordz->GetHeadPosition();
 
-    Coord start;
-    start.Set(m_object->m_screenX >> TILE_SHIFT_PX, m_object->m_screenY >> TILE_SHIFT_PX);
+    Coord start = ScreenTile(this);
 
     {
         RECT rs;
@@ -678,25 +678,10 @@ i32 CGrunt::PathScan() {
 
                         while (node != NULL) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
-                            Coord* fresh = g_coordPool.Pop();
-                            if (fresh != NULL) {
-                                *fresh = *src;
-                            }
-                            s.AddTail(fresh);
+                            s.AddTail(g_coordPool.PopCopy(*src));
                         }
 
-                        if (CoordCount() != 0) {
-                            POSITION pos = m_coordList.GetHeadPosition();
-                            if (pos != NULL) {
-                                do {
-                                    Coord* d = static_cast<Coord*>(m_coordList.GetNext(pos));
-                                    if (d != NULL) {
-                                        g_coordPool.Push(d);
-                                    }
-                                } while (pos != NULL);
-                            }
-                            coordz->RemoveAll();
-                        }
+                        RecycleGruntCoords(this);
 
                         POSITION p = s.GetHeadPosition();
                         if (p != NULL) {
@@ -767,18 +752,7 @@ i32 CGrunt::PathScan() {
                         RECYCLE_HEAD_COORD(s)
                         if (!s.IsEmpty()) {
 
-                            if (CoordCount() != 0) {
-                                POSITION pos = m_coordList.GetHeadPosition();
-                                if (pos != NULL) {
-                                    do {
-                                        Coord* d = static_cast<Coord*>(coordz->GetNext(pos));
-                                        if (d != NULL) {
-                                            g_coordPool.Push(d);
-                                        }
-                                    } while (pos != NULL);
-                                }
-                                coordz->RemoveAll();
-                            }
+                            RecycleGruntCoords(this);
 
                             POSITION p = s.GetHeadPosition();
                             if (p != NULL) {
@@ -1964,20 +1938,7 @@ void CGrunt::StepBehavior(char*) {
             i32 ptx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 pty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
             CGameLevel* level = g_gameReg->World()->m_level;
-            i32 cx = ptx;
-            i32 cy = pty;
-            CLAMP_TILE_TO_PLANE(cx, cy, level->m_mainPlane);
-            i32 raw =
-                level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
-            TileCollisionKind kind;
-            if (raw == UNINIT_FILL || raw == -1) {
-                kind = TILEKIND_PASSABLE;
-            } else {
-                CTileImageSet* ts = static_cast<CTileImageSet*>(
-                    level->m_imageSets.GetAt(raw & WWD_TILE_IMAGE_SET_INDEX_MASK)
-                );
-                kind = ts->GetCollisionAt(0, 0);
-            }
+            TileCollisionKind kind = PbResolveCell(level, ptx, pty);
 
             b32 gate = true;
             GruntDeathType hazard;
@@ -1991,7 +1952,6 @@ void CGrunt::StepBehavior(char*) {
                     hazard = DEATH_SINK;
                     break;
                 case TILEKIND_SPIKES:
-                    hazard = static_cast<GruntDeathType>(cx);
                     gate = false;
                     break;
                 default: {
