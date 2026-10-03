@@ -2763,11 +2763,14 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     return 1;
 }
 
-// @early-stop
 RVA(0x0002e3a0, 0x7e1)
 i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
-    RECT box;
-    unit->BuildUnitSearchBox(&box, 7);
+    CRect box(
+        unit->ScanCell().m_x - 7,
+        unit->ScanCell().m_y - 7,
+        unit->ScanCell().m_x + 7,
+        unit->ScanCell().m_y + 7
+    );
 
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
@@ -2843,9 +2846,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     }
     if (best != NULL) {
         if (static_cast<u32>(unit->m_dwell) > 0x64) {
-            {
-                m_board->Clip(&box);
-            }
+            m_board->Clip(&box);
 
             i32 flags = 0;
             PickupType prim = unit->m_entranceReason;
@@ -2891,9 +2892,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                     }
                 }
 
-                {
-                    m_board->Clip(NULL);
-                }
+                m_board->Clip(NULL);
                 unit->m_dwell = 0;
             } else {
                 m_board->Clip(NULL);

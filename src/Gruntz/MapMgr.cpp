@@ -3,7 +3,6 @@
 #include <rva.h>
 
 #include <Gruntz/MapMgr.h>
-#include <Gruntz/MapClipInline.h>
 
 #include <Globals.h>
 #include <Gruntz/Brickz.h>
@@ -12,6 +11,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellInline.h>
+#include <Gruntz/MapClipInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 #include <RectMacros.h>
