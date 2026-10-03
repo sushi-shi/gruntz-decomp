@@ -256,7 +256,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
-                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
+                                if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
@@ -321,7 +321,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
-                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
+                                if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
@@ -390,7 +390,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
-                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
+                                if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
@@ -455,7 +455,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
-                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
+                                if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {

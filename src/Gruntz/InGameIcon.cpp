@@ -333,7 +333,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         }
     }
 
-    PickupType pickup = static_cast<PickupType>(m_object->m_smarts);
+    PickupType pickup = GetPickupType();
     if (pickup == PICKUP_WARPSTONE && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
         CString levelStr;
@@ -381,7 +381,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 RVA(0x00097680, 0x110)
 i32 CInGameIcon::HandleInput() {
     CWwdSpriteObject* obj = m_object;
-    PickupType cmd = static_cast<PickupType>(obj->m_smarts);
+    PickupType cmd = GetPickupType();
     CShadeTable* rec;
     if (cmd == PICKUP_TOYBOX) {
         i32 key = obj->m_score;
@@ -508,7 +508,7 @@ RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* obj = m_object;
-    PickupType cmd = static_cast<PickupType>(obj->m_smarts);
+    PickupType cmd = GetPickupType();
     if (cmd == PICKUP_TOYBOX) {
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = g_gameReg->m_tileGrid;
@@ -556,10 +556,10 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     PickupType pickup;
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_gameMode == GAMEMODE_QUESTZ && playerIndex != g_curPlayer
-        && static_cast<PickupType>(m_object->m_smarts) != PICKUP_TOYBOX) {
+        && GetPickupType() != PICKUP_TOYBOX) {
         goto fail;
     }
-    pickup = static_cast<PickupType>(m_object->m_smarts);
+    pickup = GetPickupType();
     obj = m_object;
     if (pickup == PICKUP_TOYBOX) {
 
@@ -598,7 +598,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     }
 
     sub = obj->m_faceDirection;
-    cmd = static_cast<PickupType>(obj->m_smarts);
+    cmd = GetPickupType();
     cell = reg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         ok = false;

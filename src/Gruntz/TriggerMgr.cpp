@@ -31,6 +31,7 @@
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/InGameIcon.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
@@ -583,8 +584,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     CGameObject* occupant = NULL;
                     MapLookupById(*map, occupantId, occupant);
                     if (occupant != NULL) {
-                        CUserLogic* logic = occupant->m_logicRecord->m_userLogic;
-                        if (logic != NULL && logic->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
+                        CInGameIcon* icon =
+                            static_cast<CInGameIcon*>(occupant->m_logicRecord->UserLogic());
+                        if (icon != NULL && icon->GetPickupType() == PICKUP_TOYBOX) {
                             world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
                             return 1;
                         }
