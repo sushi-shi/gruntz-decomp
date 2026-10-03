@@ -277,11 +277,10 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 #define RESOLVE_ENTRANCE_OCCUPANT()                                                                \
     do {                                                                                           \
         CGruntzMapMgr* grid = g_gameReg->GetTileGrid();                                            \
-        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;                                             \
-        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;                                             \
-        i32 flags = grid->CellFlagsAt(tx, ty);                                                     \
+        Coord tile = ScreenTile(this);                                                             \
+        i32 flags = grid->CellFlagsAt(tile.m_x, tile.m_y);                                         \
         if (flags & BRICKZ_CELL_OCCUPIED) {                                                        \
-            i32 owner = grid->OccupantAt(static_cast<u32>(tx), static_cast<u32>(ty));              \
+            i32 owner = grid->OccupantAt(static_cast<u32>(tile.m_x), static_cast<u32>(tile.m_y));  \
             i32 playerIndex =                                                                      \
                 (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;            \
             i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;                                 \
