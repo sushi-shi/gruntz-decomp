@@ -1117,8 +1117,7 @@ tail:
         ne = (*rec != "O");
         if (ne) {
             SET_ANIMATION_ACT("H");
-            CGrunt* cellObj =
-                m_triggerMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
+            CGrunt* cellObj = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
             if (cellObj != NULL) {
                 CGameObject* oh = cellObj->m_object;
                 i32 cx = oh->m_screenPosition.m_x;

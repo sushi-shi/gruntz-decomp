@@ -2649,18 +2649,17 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     i32 top;
     i32 left;
     {
-        CGameObject* lvl = unit->m_object;
-        bottom = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
+        bottom = unit->GetScreenTileY();
         Coord g0;
         Coord g1;
         Coord g2;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g0);
+        unit->GetScreenTile(&g0);
         g2.m_y = g0.m_y;
         right = g0.m_x;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g1);
+        unit->GetScreenTile(&g1);
         g2.m_x = g1.m_x;
         top = g1.m_y;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g2);
+        unit->GetScreenTile(&g2);
         left = g2.m_x;
     }
     RECT box;
@@ -2721,7 +2720,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             continue;
         }
         for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-            CGrunt* u = m_triggerMgr->m_units[band * TM_UNITS_PER_PLAYER + i];
+            CGrunt* u = m_triggerMgr->UnitAt(band, i);
             if (u == NULL) {
                 continue;
             }
@@ -2763,8 +2762,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             }
             Coord c;
             u->GetScreenTile(&c);
-            POINT wpt;
-            SET_POINT_COMPONENTS(wpt, c.m_x, c.m_y);
+            CPoint wpt(c.m_x, c.m_y);
             if (!PtInRect(&box, wpt)) {
                 continue;
             }

@@ -386,94 +386,93 @@ RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->GetTileGrid();
     Coord tile = LastTilePx();
-    i32 tx = tile.m_x >> TILE_SHIFT_PX;
-    i32 ty = tile.m_y >> TILE_SHIFT_PX;
+    Coord sourceCell = tile;
+    ScreenTile(&sourceCell);
     i32 result = 0;
     Coord next;
     GruntDirectionCell facing;
 
-    if (board->CellFlagsAt(tx, ty) & 0x80) {
+    if (board->CellFlagsAt(sourceCell.m_x, sourceCell.m_y) & 0x80) {
 
-        TileCollisionKind cmd = board->m_rows[ty][tx].m_typeCode;
+        TileCollisionKind cmd = board->m_rows[sourceCell.m_y][sourceCell.m_x].m_typeCode;
         switch (cmd) {
             case TILEKIND_ARROW_UP_A:
             case TILEKIND_ARROW_UP_B:
                 tile.m_y -= 0x20;
-                next.Set(tile.m_x, tile.m_y);
+                next = tile;
                 facing = g_gruntMoveDirNorth;
                 break;
             case TILEKIND_ARROW_RIGHT_A:
             case TILEKIND_ARROW_RIGHT_B:
                 tile.m_x += 0x20;
-                next.Set(tile.m_x, tile.m_y);
+                next = tile;
                 facing = g_gruntMoveDirEast;
                 break;
             case TILEKIND_ARROW_DOWN_A:
             case TILEKIND_ARROW_DOWN_B:
                 tile.m_y += 0x20;
-                next.Set(tile.m_x, tile.m_y);
+                next = tile;
                 facing = g_gruntMoveDirSouth;
                 break;
             case TILEKIND_ARROW_LEFT_A:
             case TILEKIND_ARROW_LEFT_B:
                 tile.m_x -= 0x20;
-                next.Set(tile.m_x, tile.m_y);
+                next = tile;
                 facing = g_gruntMoveDirWest;
                 break;
             case TILEKIND_ARROW_CURRENT:
                 switch (m_entranceCell.m_direction) {
                     case DIR_NORTH:
                         tile.m_y -= 0x20;
-                        next.Set(tile.m_x, tile.m_y);
+                        next = tile;
                         facing = g_gruntMoveDirNorth;
                         break;
                     case DIR_EAST:
                         tile.m_x += 0x20;
-                        next.Set(tile.m_x, tile.m_y);
+                        next = tile;
                         facing = g_gruntMoveDirEast;
                         break;
                     case DIR_SOUTH:
                         tile.m_y += 0x20;
-                        next.Set(tile.m_x, tile.m_y);
+                        next = tile;
                         facing = g_gruntMoveDirSouth;
                         break;
                     case DIR_WEST:
                         tile.m_x -= 0x20;
-                        next.Set(tile.m_x, tile.m_y);
+                        next = tile;
                         facing = g_gruntMoveDirWest;
                         break;
                     case DIR_NORTHEAST:
                         tile.m_x += 0x20;
                         tile.m_y -= 0x20;
-                        next.Set(tile.m_x, tile.m_y);
+                        next = tile;
                         facing = g_gruntMoveDirNorthEast;
                         break;
                     case DIR_SOUTHEAST:
                         tile.m_x += 0x20;
                         tile.m_y += 0x20;
-                        next.Set(tile.m_x, tile.m_y);
+                        next = tile;
                         facing = g_gruntMoveDirSouthEast;
                         break;
                     case DIR_SOUTHWEST:
                         tile.m_x -= 0x20;
                         tile.m_y += 0x20;
-                        next.Set(tile.m_x, tile.m_y);
+                        next = tile;
                         facing = g_gruntMoveDirSouthWest;
                         break;
                     case DIR_NORTHWEST:
                         tile.m_x -= 0x20;
                         tile.m_y -= 0x20;
-                        next.m_x = tile.m_x;
+                        next = tile;
                         facing = g_gruntMoveDirNorthWest;
-                        next.m_y = tile.m_y;
                         break;
                     default:
-                        next.Set(tile.m_x, tile.m_y);
+                        next = tile;
                         break;
                 }
                 break;
             default:
-                next.Set(tile.m_x, tile.m_y);
+                next = tile;
                 break;
         }
         i32 mtx = next.m_x >> TILE_SHIFT_PX;
@@ -515,9 +514,8 @@ i32 CGrunt::StepCompassMove() {
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.m_direction) {
                 case DIR_NORTH:
-                    next.m_x = tile.m_x;
+                    next.Set(tile.m_x, tile.m_y - 0x20);
                     facing = g_gruntMoveDirNorth;
-                    next.m_y = tile.m_y - 0x20;
                     break;
                 case DIR_NORTHEAST:
                     next.Set(tile.m_x + 0x20, tile.m_y - 0x20);
@@ -532,9 +530,8 @@ i32 CGrunt::StepCompassMove() {
                     facing = g_gruntMoveDirSouthEast;
                     break;
                 case DIR_SOUTH:
-                    next.m_x = tile.m_x;
+                    next.Set(tile.m_x, tile.m_y + 0x20);
                     facing = g_gruntMoveDirSouth;
-                    next.m_y = tile.m_y + 0x20;
                     break;
                 case DIR_SOUTHWEST:
                     next.Set(tile.m_x - 0x20, tile.m_y + 0x20);
@@ -549,15 +546,17 @@ i32 CGrunt::StepCompassMove() {
                     facing = g_gruntMoveDirNorthWest;
                     break;
                 default:
-                    next.Set(tile.m_x, tile.m_y);
+                    next = tile;
                     break;
             }
-            if (g_gameReg->GetTileGrid()->CanStepBetween(
-                    tx,
-                    ty,
+            CMapMgr* grid = g_gameReg->GetTileGrid();
+            i32 blockedMask = m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
+            if (grid->CanStepBetween(
+                    sourceCell.m_x,
+                    sourceCell.m_y,
                     next.m_x >> TILE_SHIFT_PX,
                     next.m_y >> TILE_SHIFT_PX,
-                    m_arrivalFlags | BRICKZ_CELL_OCCUPIED,
+                    blockedMask,
                     m_passableMask | 0x18000482
                 )
                 != 0) {
@@ -566,8 +565,11 @@ i32 CGrunt::StepCompassMove() {
                 m_toyTileIndex = 0;
             }
         } else {
+            next = tile;
             m_toyTileIndex = 0;
         }
+    } else {
+        next = tile;
     }
     if (result != 0) {
         goto commit;
@@ -586,7 +588,6 @@ i32 CGrunt::StepCompassMove() {
         while (result == 0 && bag.GetSize() > 0) {
             i32 idx = GetRandom(0, bag.GetUpperBound());
             i32 dir = bag.GetAt(idx);
-            next.Set(tile.m_x, tile.m_y);
             switch (static_cast<GruntDirection>(dir)) {
                 case DIR_NORTH:
                     next.Set(tile.m_x, tile.m_y - 0x20);
@@ -609,25 +610,26 @@ i32 CGrunt::StepCompassMove() {
                     facing = g_gruntMoveDirSouth;
                     break;
                 case DIR_SOUTHWEST:
-                    next.m_x = tile.m_x - 0x20;
+                    next.Set(tile.m_x - 0x20, tile.m_y + 0x20);
                     facing = g_gruntMoveDirSouthWest;
-                    next.m_y = tile.m_y + 0x20;
                     break;
                 case DIR_WEST:
                     next.Set(tile.m_x - 0x20, tile.m_y);
                     facing = g_gruntMoveDirWest;
                     break;
                 case DIR_NORTHWEST:
-                    facing = g_gruntMoveDirNorthWest;
                     next.Set(tile.m_x - 0x20, tile.m_y - 0x20);
+                    facing = g_gruntMoveDirNorthWest;
                     break;
             }
-            if (g_gameReg->GetTileGrid()->CanStepBetween(
-                    tx,
-                    ty,
+            CMapMgr* grid = g_gameReg->GetTileGrid();
+            i32 blockedMask = m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
+            if (grid->CanStepBetween(
+                    sourceCell.m_x,
+                    sourceCell.m_y,
                     next.m_x >> TILE_SHIFT_PX,
                     next.m_y >> TILE_SHIFT_PX,
-                    m_arrivalFlags | BRICKZ_CELL_OCCUPIED,
+                    blockedMask,
                     m_passableMask | 0x18000482
                 )
                 != 0) {
@@ -695,9 +697,9 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
     }
 
-    i32 tx = next.m_x >> TILE_SHIFT_PX;
-    i32 ty = next.m_y >> TILE_SHIFT_PX;
-    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(tx, ty);
+    Coord cell = next;
+    ScreenTile(&cell);
+    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(cell.m_x, cell.m_y);
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
     }
@@ -705,11 +707,10 @@ i32 CGrunt::ClaimSwitchTile() {
     m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
     m_commitPx = m_lastTilePx;
-    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(
-        m_lastTilePx.m_x >> TILE_SHIFT_PX,
-        m_lastTilePx.m_y >> TILE_SHIFT_PX
-    );
-    g_gameReg->GetTileGrid()->AcquireCellOccupancy(tx, ty, m_playerIndex, m_unitIndex);
+    Coord oldCell = LastTilePx();
+    ScreenTile(&oldCell);
+    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(oldCell.m_x, oldCell.m_y);
+    g_gameReg->GetTileGrid()->AcquireCellOccupancy(cell.m_x, cell.m_y, m_playerIndex, m_unitIndex);
 
     m_lastTilePx = next;
     ComputeFacing(1.0);
