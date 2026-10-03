@@ -6,6 +6,7 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 
 struct BrickzCell;
@@ -94,6 +95,7 @@ public:
 
     i32 CellFlagsAt(i32 x, i32 y);
     BrickzCell CellAt(i32 x, i32 y);
+    TileCollisionKind CellTypeAt(i32 x, i32 y) const;
     i32 CanStepBetween(
         i32 sourceX,
         i32 sourceY,

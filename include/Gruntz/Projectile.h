@@ -51,7 +51,7 @@ public:
     i32 m_sourcePlayerIndex, m_sourceUnitIndex;
     Coord m_targetPx;
     double m_flightDist;
-    i32 m_timePerTile;
+    u32 m_timePerTile;
     double m_velScale;
     DoubleVector2 m_position;
     DoubleVector2 m_velocity;

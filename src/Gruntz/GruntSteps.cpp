@@ -170,7 +170,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 
     Coord tile = m_lastTilePx;
     ScreenTile(&tile);
-    TileCollisionKind tileKind = g_gameReg->m_tileGrid->m_rows[tile.m_y][tile.m_x].m_typeCode;
+    TileCollisionKind tileKind = g_gameReg->m_tileGrid->CellTypeAt(tile.m_x, tile.m_y);
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
         if (IsGruntAtSavedScreenPos(this)) {
             Coord tile = LastTilePx();

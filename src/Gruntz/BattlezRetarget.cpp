@@ -77,14 +77,12 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             CBattlezMapConfig* b = &m_ctx->m_players[band].m_battlezConfig;
             if (b != NULL) {
                 i32 cnt = b->m_attackWaypoints.GetSize();
-                i32 x = b->m_marker.m_x;
-                i32 y = b->m_marker.m_y;
+                Coord goal = b->m_marker;
                 if (cnt != 0) {
                     Coord* pair = static_cast<Coord*>(b->m_attackWaypoints.GetAt(rand() % cnt));
-                    x = pair->m_x;
-                    y = pair->m_y;
+                    goal = *pair;
                 }
-                if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
+                if (unit->TileSwitch(goal.m_x, goal.m_y, 0, 0x9cf, 0, 0x4020) != 0) {
                     unit->m_arrivalCell.Set(band, 0);
                     AcceptAlways(unit);
                 }
