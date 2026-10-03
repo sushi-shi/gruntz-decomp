@@ -93,11 +93,10 @@ void CDDrawWorkerList::ClearWorkers() {
     m_workers.RemoveAll();
 }
 
-// @early-stop
 RVA(0x00163c90, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_flags = flags;
-    if (w <= 0 || h <= 0) {
+    if (!CDrawSubWorker::SetGeometry(w, h, bpp)) {
 
         if (m_id == IDX(DDRAW_PAGE_BACK)) {
             OwnerMgr()->SetInitError(WORLDERR_FRONT_DIMENSIONS);
@@ -106,10 +105,6 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
         return 0;
     }
-    m_width = w;
-    m_height = h;
-    m_bpp = bpp;
-    SET_RECT_COMPONENTS(m_srcRect, 0, 0, w, h);
     if (m_id == IDX(DDRAW_PAGE_BACK)) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = mgr->m_deviceManager->WrapAttachedSurface(
@@ -145,16 +140,9 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     i32 w = src->GetWidth();
     ColorDepth bpp = src->GetBitDepth();
     i32 h = src->GetHeight();
-    if (w <= 0 || h <= 0) {
+    if (!CDrawSubWorker::SetGeometry(w, h, bpp)) {
         return 0;
     }
-    m_width = w;
-    m_srcRect.right = w;
-    m_height = h;
-    m_bpp = bpp;
-    m_srcRect.left = 0;
-    m_srcRect.top = 0;
-    m_srcRect.bottom = h;
     m_id = 0x63;
     m_surface = src;
     m_ownsSurface = false;
