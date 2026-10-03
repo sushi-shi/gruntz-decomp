@@ -26,6 +26,7 @@
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
+#include <Rez/FrameCountdown.h>
 #include <Wap32/TileGeometry.h>
 
 #include <ddraw.h>
@@ -106,11 +107,7 @@ RVA(0x000a3460, 0x2f3)
 i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
     if (forceRefresh == false) {
 
-        if (static_cast<u32>(elapsedMs) >= static_cast<u32>(m_refreshRemaining)) {
-            m_refreshRemaining = 0;
-        } else {
-            m_refreshRemaining -= elapsedMs;
-        }
+        CountDown(m_refreshRemaining, static_cast<u32>(elapsedMs));
         if (m_refreshRemaining != 0) {
             return 1;
         }
