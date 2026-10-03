@@ -2192,7 +2192,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     }
 
     if (World()->m_soundStream != NULL) {
-        dsound = World()->m_soundStream->m_device;
+        dsound = World()->m_soundStream->GetDirectSound();
     }
     if (player.InitMode(
             m_gameWnd->GetHwnd(),
