@@ -2027,7 +2027,6 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0002c140, 0x420)
 i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     if (unit->m_gruntKind != GRUNT_NORMAL) {
@@ -2038,26 +2037,10 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         return 0;
     }
 
-    i32 bottom;
-    i32 right;
-    i32 top;
-    i32 left;
-    {
-        Coord c1;
-        unit->GetScreenTile(&c1);
-        bottom = c1.m_y;
-        Coord c2;
-        unit->GetScreenTile(&c2);
-        right = c2.m_x;
-        Coord c3;
-        unit->GetScreenTile(&c3);
-        top = c3.m_y;
-        Coord c4;
-        unit->GetScreenPos(&c4);
-        left = c4.m_x >> TILE_SHIFT_PX;
-    }
     RECT box;
-    SET_RECT_COMPONENTS(box, left - 3, top - 3, right + 4, bottom + 4);
+    unit->BuildUnitSearchBox(&box, 3);
+    box.right++;
+    box.bottom++;
     {
         CMapMgr* board = m_board;
         board->Clip(&box);
