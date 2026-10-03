@@ -91,7 +91,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     );
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
-    m_object->m_animationCursor.m_consumeDraw = 0;
+    m_object->m_animationCursor.SetConsumeDraw(false);
     m_object->m_smarts = IDX(g_areaHazardDeath);
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
@@ -101,7 +101,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
         "LEVEL_STATICHAZARDGO"
     );
     if (entry != NULL) {
-        i32 durationMs = entry->m_durationMs;
+        i32 durationMs = entry->GetDurationMs();
         m_activeWindow = g_buteMgr.GetInt("Hazardz", "AniPad", 0x64) + durationMs;
     } else {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x461);

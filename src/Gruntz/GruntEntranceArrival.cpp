@@ -442,8 +442,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     i32 z = h->m_screenY + 0xc3500;
     h->SetSortKey(z);
 
-    i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->m_durationMs;
-    i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->m_durationMs;
+    i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->GetDurationMs();
+    i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->GetDurationMs();
     i32 availableMs = static_cast<i32>(m_toyTiming.Remaining());
     i32 toy1ExcessMs = 0;
     if (static_cast<u32>(toy1DurationMs) > static_cast<u32>(availableMs)) {

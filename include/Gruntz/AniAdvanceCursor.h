@@ -55,6 +55,9 @@ public:
     CAniElement* GetAnimation() const {
         return m_animation;
     }
+    void SetConsumeDraw(b32 consume) {
+        m_consumeDraw = consume;
+    }
     void SetAnimation(CAniElement* animation);
     void RestartAnimation(i32 resetElapsedTime);
 

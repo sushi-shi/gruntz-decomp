@@ -38,6 +38,10 @@ public:
 
     void DeleteAll();
 
+    i32 GetDurationMs() const {
+        return m_durationMs;
+    }
+
     i32 m_flags;
     CObArray m_records;
     char* m_name;
