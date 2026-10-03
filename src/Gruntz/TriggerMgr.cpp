@@ -248,7 +248,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
         }
     }
     if (count == 1) {
-        g_gameReg->m_commandMgr->EnqueueSingle(
+        g_gameReg->GetCommandMgr()->EnqueueSingle(
             isLocalCommand,
             playerIndex,
             unitIndices[0],
@@ -259,7 +259,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
             0
         );
     } else {
-        g_gameReg->m_commandMgr->EnqueueMulti(
+        g_gameReg->GetCommandMgr()->EnqueueMulti(
             isLocalCommand,
             playerIndex,
             count,
@@ -297,7 +297,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
     }
     if (count == 1) {
         if (targetIsGrunt != false) {
-            g_gameReg->m_commandMgr->EnqueueSingle(
+            g_gameReg->GetCommandMgr()->EnqueueSingle(
                 isLocalCommand,
                 playerIndex,
                 unitIndices[0],
@@ -308,7 +308,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
                 0
             );
         } else {
-            g_gameReg->m_commandMgr->EnqueueSingle(
+            g_gameReg->GetCommandMgr()->EnqueueSingle(
                 isLocalCommand,
                 playerIndex,
                 unitIndices[0],
@@ -321,7 +321,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
         }
     } else {
         if (targetIsGrunt != false) {
-            g_gameReg->m_commandMgr->EnqueueMulti(
+            g_gameReg->GetCommandMgr()->EnqueueMulti(
                 isLocalCommand,
                 playerIndex,
                 count,
@@ -332,7 +332,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
                 0
             );
         } else {
-            g_gameReg->m_commandMgr->EnqueueMulti(
+            g_gameReg->GetCommandMgr()->EnqueueMulti(
                 isLocalCommand,
                 playerIndex,
                 count,
@@ -444,7 +444,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     i32 pfk = m_pendingFxKind;
     if (pfk >= 0xdf) {
-        PickupType alt = cell->m_vehiclePickupType;
+        PickupType alt = cell->GetVehiclePickupType();
         if (hitFlag != 0) {
             world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, true);
         } else {
@@ -669,7 +669,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00079520, 0x2e3)
 i32 CTriggerMgr::HandleTargetSelection(
     i32 targetX,
@@ -769,14 +768,14 @@ i32 CTriggerMgr::HandleTargetSelection(
         case TARGET_SELECTION_TOY:
             if (hit != NULL) {
                 if (hit->GetPlayerIndex() == g_curPlayer && g_traitorMode == false
-                    && (selectedGrunt != hit || hit->m_vehiclePickupType != PICKUP_SCROLL)) {
+                    && (selectedGrunt != hit || hit->GetVehiclePickupType() != PICKUP_SCROLL)) {
                     goto reportError;
                 }
                 i32 hitPlayerIndex = hit->GetPlayerIndex();
                 i32 hitUnitIndex = hit->GetUnitIndex();
                 i32 selectedUnitIndex = selectedGrunt->GetUnitIndex();
                 i32 selectedPlayerIndex = selectedGrunt->GetPlayerIndex();
-                g_gameReg->m_commandMgr->EnqueueSingle(
+                g_gameReg->GetCommandMgr()->EnqueueSingle(
                     true,
                     selectedPlayerIndex,
                     selectedUnitIndex,
@@ -789,7 +788,7 @@ i32 CTriggerMgr::HandleTargetSelection(
             } else {
                 i32 selectedUnitIndex = selectedGrunt->GetUnitIndex();
                 i32 selectedPlayerIndex = selectedGrunt->GetPlayerIndex();
-                g_gameReg->m_commandMgr->EnqueueSingle(
+                g_gameReg->GetCommandMgr()->EnqueueSingle(
                     true,
                     selectedPlayerIndex,
                     selectedUnitIndex,
@@ -1480,13 +1479,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     if (ov == NULL || ov->m_active == false) {
         return 0;
     }
-    CGrunt* cell;
-    if (m_recList.GetCount() != 1) {
-        cell = NULL;
-    } else {
-        Coord* rec = HeadRec();
-        cell = UnitAt(rec->m_x, rec->m_y);
-    }
+    CGrunt* cell = SoleSelectedGrunt();
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     ActionOptionHit kind = ov->HitHover(x, y);
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
@@ -1508,7 +1501,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
         }
     } else if (kind == ACTIONOPTION_HIT_SECONDARY) {
 
-        PickupType alt = cell->m_vehiclePickupType;
+        PickupType alt = cell->GetVehiclePickupType();
         if (alt == PICKUP_SCROLL) {
             CGameObject* o = cell->m_object;
             g_gameReg->GetTriggerMgr()->HandleTargetSelection(
@@ -1928,7 +1921,7 @@ i32 CTriggerMgr::SpawnGrunt(
     CGameObject* o = src->m_object;
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(o, sx, sy)
     PickupType k = ARRIVAL_PICKUP_TERNARY_GT(src);
-    PickupType vis = src->m_vehiclePickupType;
+    PickupType vis = src->GetVehiclePickupType();
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);
     CDDrawChildGroup* fac = m_world->ChildGroup();
     CWwdSpriteObject* sprite =
@@ -2555,7 +2548,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
         if (cell->m_entranceReason >= PICKUP_TOYZ_FIRST) {
             CloseActionOptionsMenu();
         } else {
-            PickupType kind = cell->m_vehiclePickupType;
+            PickupType kind = cell->GetVehiclePickupType();
             if (kind == PICKUP_SCROLL) {
                 CGameObject* o = cell->m_object;
                 g_gameReg->GetTriggerMgr()->HandleTargetSelection(
@@ -2602,7 +2595,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
         } while (pos != NULL);
     }
     if (count == 1) {
-        g_gameReg->m_commandMgr->EnqueueSingle(
+        g_gameReg->GetCommandMgr()->EnqueueSingle(
             true,
             x,
             static_cast<char>(buf[0]),
@@ -2613,7 +2606,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
             0
         );
     } else {
-        g_gameReg->m_commandMgr
+        g_gameReg->GetCommandMgr()
             ->EnqueueMulti(true, x, count, buf, static_cast<char>(IDX(PLAYERCMD_STOP)), 0, 0, 0);
     }
     return 1;

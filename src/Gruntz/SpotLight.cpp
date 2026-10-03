@@ -24,7 +24,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -66,7 +65,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_position.m_x = px;
     m_position.m_y = cy;
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
+    o->SetSortKey(SORTKEY_ACTOR);
     m_offset.m_x = m_center.m_x - px;
     m_offset.m_y = m_center.m_y - cy;
 

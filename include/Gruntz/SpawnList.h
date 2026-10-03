@@ -37,6 +37,14 @@ public:
         return m_list.GetCount();
     }
 
+    i32 GetLastPicked() const {
+        return m_lastPicked;
+    }
+
+    void SetLastPicked(i32 index) {
+        m_lastPicked = index;
+    }
+
     CPtrList m_list;
 
     CSpawnEntry* NextEntry(POSITION& pos) {

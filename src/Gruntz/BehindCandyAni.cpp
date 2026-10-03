@@ -11,7 +11,6 @@
 #include <Gruntz/BigAnimationMacros.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
 #include <ZTools/ZDArray.h>
@@ -34,7 +33,7 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0);
+    o->SetSortKey(0);
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 

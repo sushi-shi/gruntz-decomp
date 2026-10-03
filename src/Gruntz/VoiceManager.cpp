@@ -520,14 +520,14 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
         }
         if (group->GetCount() > 1) {
             i32 tries = 5;
-            while (selectedIndex == group->m_lastPicked && tries > 0) {
+            while (selectedIndex == group->GetLastPicked() && tries > 0) {
                 selectedIndex = RandRange(0, group->GetCount() - 1);
                 tries--;
             }
         }
     }
 
-    group->m_lastPicked = selectedIndex;
+    group->SetLastPicked(selectedIndex);
     CSpawnEntry* variant = group->GetEntry(selectedIndex);
     if (variant == NULL) {
         return NULL;
@@ -688,7 +688,7 @@ void CVoiceManager::ResetVoiceSelections() {
     for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
         CSpawnList* group = static_cast<CSpawnList*>(m_voiceGroups[i]);
         if (group != NULL) {
-            group->m_lastPicked = -1;
+            group->SetLastPicked(-1);
         }
     }
 }

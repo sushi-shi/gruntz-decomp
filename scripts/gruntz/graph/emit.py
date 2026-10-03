@@ -71,6 +71,7 @@ MANIFEST = "config/units.toml"
 RETAIL_EXE = "build/exe/GRUNTZ.EXE"
 COMPDB = "build/clangd/compile_commands.json"
 RELOC_REFERENTS = "config/retail/reloc_referents.tsv"
+DATA_MANIFEST = "build/gen/delink_data_manifest.tsv"
 
 #: The census + provider tables gruntz.model joins the claims against. Named
 #: rather than globbed: reloc_referents.tsv is a DELINKER input and belongs on
@@ -111,7 +112,9 @@ MODEL_MODS = _mods("model.py", "retail_labels/", "core/tsv.py", "core/paths.py",
 DELINK_MODS = _mods("delink/", "tool/delinker.py", "core/pe.py",
                     "core/coff.py", "core/msvc_names.py", "model.py") + TOOL_MODS
 NORMALIZE_MODS = _mods("compare/normalize.py", "compare/canonicalize.py",
-                       "delink/eh_band.py", "core/coff.py", "core/msvc_names.py")
+                       "compare/data_boundaries.py", "compare/function_sizes.py",
+                       "delink/eh_band.py", "core/coff.py", "core/msvc_names.py",
+                       "core/tsv.py")
 PROJECT_MODS = _mods("compare/project.py", "compare/normalize.py", "manifest.py")
 REPORT_MODS = _mods("tool/objdiff.py")
 LINK_MODS = _mods("graph/link.py", "graph/implib.py", "tool/link.py",
@@ -471,7 +474,8 @@ def emit(out: Path | None = None) -> tuple[int, int]:
                description="delink GRUNTZ.EXE -> target objs")
         w.build(graph.DELINK_STAMP, "delink",
                 inputs=[graph.BINDINGS, RETAIL_EXE],
-                implicit=[RELOC_REFERENTS, *DELINK_MODS, graph.TOOLCHAIN_ID])
+                implicit=[RELOC_REFERENTS, *DELINK_MODS, graph.TOOLCHAIN_ID],
+                implicit_outputs=[DATA_MANIFEST])
         w.newline()
 
         w.comment("=== normalize: base + target -> content-addressed copies ===")
@@ -488,7 +492,7 @@ def emit(out: Path | None = None) -> tuple[int, int]:
                description="normalize base/target objs")
         w.build(graph.NORMALIZE_STAMP, "normalize",
                 inputs=base_objs + [graph.DELINK_STAMP],
-                implicit=[MANIFEST, *NORMALIZE_MODS])
+                implicit=[MANIFEST, DATA_MANIFEST, *NORMALIZE_MODS])
         w.newline()
 
         w.comment("=== project: the delinked directory -> objdiff.json ===")

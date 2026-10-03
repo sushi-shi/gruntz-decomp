@@ -535,7 +535,7 @@ i32 CMulti::Render() {
     i32 newId = m_session->m_commandTick;
     if (m_processedCommandTick != newId) {
         m_processedCommandTick = newId;
-        CGruntzCmdMgr* mgr = Mgr()->m_commandMgr;
+        CGruntzCmdMgr* mgr = Mgr()->GetCommandMgr();
         CGruntzCommand* node;
         if (mgr->m_pendingLocalCommands.IsEmpty()) {
             node = NULL;
@@ -616,7 +616,7 @@ i32 CMulti::AdvanceGameFrame() {
     g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = 0x21;
     UpdateAmbientMusic();
-    Mgr()->m_commandMgr->ExecuteScheduledCommands(m_processedCommandTick % 128);
+    Mgr()->GetCommandMgr()->ExecuteScheduledCommands(m_processedCommandTick % 128);
     m_session->ComputeChecksum();
     g_frameTicks++;
     u32 t1 = g_period50CountdownMs ? g_period50CountdownMs : FRAME_CLOCK_PERIOD_50_MS;
@@ -756,7 +756,6 @@ void CMulti::RenderGameFrame() {
     }
 }
 
-// @early-stop
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
     Mgr()->m_lobbyResult = 0;
@@ -807,7 +806,7 @@ i32 CMulti::StartTitle() {
     if (session == NULL) {
         return 0;
     }
-    m_netMgr->m_selectedSession = session;
+    m_netMgr->SetSelectedSession(session);
     char hostName[12];
     strcpy(hostName, connection->lpPlayerName->lpszShortNameA);
     hostName[10] = '\0';
@@ -1049,7 +1048,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
             }
 
             if (g_netMgr != NULL) {
-                g_netMgr->m_selectedSession = NULL;
+                g_netMgr->SetSelectedSession(NULL);
                 SetTimer(hDlg, 1, 0x9c4, NULL);
                 SendMessageA(hDlg, WM_TIMER, 0, 0);
                 return true;
@@ -1169,7 +1168,7 @@ i32 CMulti::DetectConnectionConfig() {
     if (r == NULL) {
         return 0;
     }
-    Network()->m_selectedSession = r;
+    Network()->SetSelectedSession(r);
     return 1;
 }
 
@@ -1281,7 +1280,6 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
     return failed ? NULL : enumResult;
 }
 
-// @early-stop
 RVA(0x000b8cf0, 0x23b)
 i32 CMulti::OnJoinConfirm(HWND hDlg) {
     if (hDlg == NULL) {
@@ -1289,7 +1287,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
     }
 
     g_netMgr->ReadSessionSelection(GetDlgItem(hDlg, 0x3fc));
-    CNetSessionListNode* sel = Network()->m_selectedSession;
+    CNetSessionListNode* sel = Network()->GetSelectedSession();
     if (sel == NULL) {
         return 0;
     }
@@ -1314,8 +1312,9 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
         SetGameName(CString(buf));
     }
     m_syncGate = false;
+    i32 playerId = LocalPlayer()->m_playerId;
     SelectedLevelIndex() = 1;
-    m_localPlayerId = LocalPlayer()->m_playerId;
+    m_localPlayerId = playerId;
     if (Sparam_Get(buf, sel->m_sessionDesc.lpszSessionNameA, "LEVEL")) {
         SelectedLevelIndex() = atoi(buf);
     }
@@ -2686,7 +2685,7 @@ i32 CMulti::Poll(i32 token) {
 // @early-stop
 RVA(0x000bbc90, 0x1b8)
 i32 CMulti::CreateSession() {
-    CNetSessionListNode* rec = g_netMgr->m_selectedSession;
+    CNetSessionListNode* rec = g_netMgr->GetSelectedSession();
     if (rec == NULL) {
         return 0;
     }
@@ -3127,7 +3126,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     if (slot == NULL) {
         return 0;
     }
-    if (slot->m_isDraining != false) {
+    if (slot->IsDraining() != false) {
         return 0;
     }
 
@@ -3136,10 +3135,10 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     i32 end = seq + static_cast<i32>(m_commandDelay) * 3;
     for (; seq < end; seq++) {
 
-        NetGameMgr()->m_commandMgr->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
+        NetGameMgr()->GetCommandMgr()->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
         slot->RemoveRecord(seq / static_cast<i32>(m_commandDelay));
     }
-    slot->ClearSequenceSet(slot->m_receivedAhead);
+    slot->ClearSequenceSet(slot->ReceivedAhead());
     slot->ClearSequenceSet(slot->PeerReceivedAhead());
     return 1;
 }

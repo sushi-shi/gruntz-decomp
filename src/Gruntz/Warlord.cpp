@@ -32,7 +32,6 @@
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Timer.h>
@@ -91,7 +90,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     m_object->SetScreenPos(position);
 
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_WARLORD);
+    o->SetSortKey(SORTKEY_WARLORD);
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);

@@ -33,7 +33,6 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
@@ -224,7 +223,6 @@ i32 CTileTriggerSwitch::AdvanceAnim() {
     return 0;
 }
 
-// @early-stop
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -251,7 +249,6 @@ void CTileTrigger::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
 }
 
-// @early-stop
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -296,7 +293,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
 
     CWwdSpriteObject* o = m_object;
     i32 zk = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(o, zk);
+    o->SetSortKey(zk);
     memset(m_state, 0, sizeof(m_state));
     if (!m_object->HasMovementBounds()) {
         m_object->m_extent.left = 0;
@@ -491,7 +488,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION));
 
     CGameObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0);
+    o->SetSortKey(0);
 }
 
 RVA(0x0010fd10, 0x102)

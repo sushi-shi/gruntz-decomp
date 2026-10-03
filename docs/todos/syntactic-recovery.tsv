@@ -30,7 +30,7 @@ rva	unit	function	lost_max	cur
 0x0f0130	gruntarrivalupdate	?StepGauntletGruntBehavior@CGrunt@@QAEHXZ	97.2870	96.4049
 0x0ecc90	gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	90.2045	90.1894
 0x0ef6b0	gruntchargestep	?StepDumbChaserBehavior@CGrunt@@QAEHXZ	95.9763	95.8860
-0x05f310	gruntcombat	?AdvanceMotion@CGrunt@@UAEXXZ	94.9570	94.4253
+0x05f310	gruntcombat	?AdvanceMotion@CGrunt@@UAEXXZ	94.9570	88.8077
 0x0597a0	gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.2468	73.1162
 0x057db0	gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	68.8303
 0x05d210	gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	72.4686	70.5208
@@ -38,7 +38,7 @@ rva	unit	function	lost_max	cur
 0x0f36a0	gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	83.8203
 0x061940	gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5951	91.5705
 0x0646b0	gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	94.8659	93.1449
-0x062110	gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	94.0473	92.3919
+0x062110	gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	94.1261	92.4707
 0x067bd0	gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	99.1475
 0x06a6d0	gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	92.1188	91.5107
 0x067b00	gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9592	90.9388
@@ -47,6 +47,7 @@ rva	unit	function	lost_max	cur
 0x0f42f0	gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.8975	95.7157
 0x051c00	gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	74.9682	62.8182
 0x032ce0	grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	80.2577
+0x07f960	grunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	99.3000
 0x0ed9f0	gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	89.5283	89.4658
 0x083450	gruntzmgr	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	100.0000	99.7523
 0x175e40	imagepool	?InitBmp@CDib@@QAEHPBDPAUHDC__@@I@Z	100.0000	97.9776
@@ -55,11 +56,12 @@ rva	unit	function	lost_max	cur
 0x0986b0	ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	96.3765	96.2956
 0x162010	levelplane	?Draw@CDDrawWorkerHost@@QAEXPAVCDDrawSurfacePair@@@Z	87.7566	83.2420
 0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.3193
-0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4527	96.4054
+0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4662	96.3987
 0x0d0db0	play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	93.5785
-0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	91.7547	91.3432
+0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	92.6943	92.2827
 0x0ce660	play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.9791	96.4843
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.6613	88.9868
+0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660
 0x0ea6c0	sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.3681	91.2857
 0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	95.7703	95.4459
@@ -67,6 +69,7 @@ rva	unit	function	lost_max	cur
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
 0x09c0e0	spriteloaders	?AddTime@CTimer@@QAEXHH@Z	100.0000	99.8214
 0x075e90	terraintileloader	?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	84.2938	84.1046
+0x10ee20	tilelogicpump	??0CCheckpointTrigger@@QAE@PAUCGameObject@@@Z	99.9398	99.8675
 0x10f6a0	tilelogicpump	?Act@CCheckpointTrigger@@QAEHXZ	100.0000	98.3602
 0x110c10	tileswitchlogic	?Tick@CTileTriggerLogic@@UAEHXZ	95.5831	94.9255
 0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	91.9027
@@ -75,6 +78,7 @@ rva	unit	function	lost_max	cur
 0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.2161
 0x078430	triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379
+0x07d5c0	triggermgr	?ToggleToyTargeting@CTriggerMgr@@QAEHXZ	100.0000	99.7297
 0x06d300	triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	98.7466	93.6448
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	89.1185
 0x1523f0	wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623

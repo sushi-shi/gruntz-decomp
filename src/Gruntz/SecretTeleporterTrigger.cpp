@@ -21,7 +21,6 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/VoiceManager.h>
@@ -103,7 +102,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
         SnapTileCenter(&position);
         m_object->SetScreenPos(position);
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0);
+        o->SetSortKey(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");
@@ -132,7 +131,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
         SnapTileCenter(&position);
         m_object->SetScreenPos(position);
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0);
+        o->SetSortKey(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");
@@ -173,7 +172,7 @@ i32 CSecretLevelTrigger::Tick() {
         if (lvl != IDX(PICKUP_NONE) && IDX(hit->m_entranceReason) != lvl) {
             ok = false;
         }
-        if (lyr != IDX(PICKUP_NONE) && IDX(hit->m_vehiclePickupType) != lyr) {
+        if (lyr != IDX(PICKUP_NONE) && IDX(hit->GetVehiclePickupType()) != lyr) {
             ok = false;
         }
         if (ok) {

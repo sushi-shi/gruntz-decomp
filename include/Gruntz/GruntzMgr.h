@@ -96,6 +96,10 @@ public:
         return m_triggerMgr;
     }
 
+    CGruntzCmdMgr* GetCommandMgr() {
+        return m_commandMgr;
+    }
+
     void RegisterLevelAssetKeys();
     char GetGruntzDriveLetter();
     i32 IsInPlayState();

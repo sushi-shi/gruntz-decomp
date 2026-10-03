@@ -24,7 +24,6 @@
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -91,7 +90,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
     i32 v = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(o, v);
+    o->SetSortKey(v);
     switch (static_cast<WarlordOwner>(m_object->m_smarts)) {
         case WARLORDZ_KING:
             SetImageSetByName("GAME_FORTRESSFLAGZ_KING");
@@ -173,7 +172,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND);
+    o->SetSortKey(SORTKEY_ACTOR_BEHIND);
     m_object->m_dirty.m_armed = 0;
 }
 
@@ -205,7 +204,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY);
+    o->SetSortKey(SORTKEY_OVERLAY);
     m_object->m_dirty.m_armed = 0;
 }
 

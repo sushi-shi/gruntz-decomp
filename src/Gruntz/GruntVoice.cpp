@@ -25,7 +25,6 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TileTriggerTransition.h>
@@ -103,7 +102,7 @@ RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_EXCLAMATION");
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE);
+    o->SetSortKey(SORTKEY_GRUNT_VOICE);
     m_stream = NULL;
     m_playbackTiming.Clear();
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_KEEP_ACTIVE);

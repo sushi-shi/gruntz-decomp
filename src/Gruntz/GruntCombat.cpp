@@ -64,7 +64,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -2290,7 +2289,7 @@ void CGrunt::FinalizeStep(char* name) {
         SET_SCREEN_POS(m_object, nx, ny);
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v)
+        h->SetSortKey(v);
         return;
     }
 
@@ -2531,5 +2530,5 @@ void CGrunt::AdvanceMotion() {
     m_object->m_screenPosition.m_y = y;
     CWwdSpriteObject* o = m_object;
     i32 sortKey = o->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(o, sortKey)
+    o->SetSortKey(sortKey);
 }

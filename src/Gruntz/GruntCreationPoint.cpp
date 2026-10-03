@@ -34,12 +34,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     CWwdSpriteObject* o = m_object;
-    if (o->m_sortKey != SORTKEY_GRUNT_CREATION) {
-        o->m_sortKey = SORTKEY_GRUNT_CREATION;
-        i32 f = o->m_flags;
-        f |= IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
-        o->m_flags = f;
-    }
+    o->SetSortKey(SORTKEY_GRUNT_CREATION);
     SwitchAnimationByName("GAME_CYCLE100", 0);
 
     i32 idx;

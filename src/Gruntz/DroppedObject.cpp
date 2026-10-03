@@ -36,7 +36,6 @@
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
@@ -112,7 +111,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_position.m_x, m_position.m_y)
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
+    o->SetSortKey(SORTKEY_ACTOR_FRONT);
 
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
@@ -321,7 +320,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     );
     CWwdSpriteObject* o = m_object;
     m_fallY = static_cast<double>(o->m_screenPosition.m_y);
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
+    o->SetSortKey(SORTKEY_ACTOR_FRONT);
     m_timePerTile =
         g_objDropDiv
         / static_cast<double>(g_buteMgr.GetDword("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
@@ -453,7 +452,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     CWwdSpriteObject* draw = m_object;
     draw->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND);
+    o->SetSortKey(SORTKEY_ACTOR_BEHIND);
 }
 
 RVA(0x000c7750, 0x102)

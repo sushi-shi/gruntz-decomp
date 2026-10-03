@@ -534,7 +534,7 @@ i32 CRollingBall::Update() {
     fin2->m_screenPosition.m_y = ny;
     CWwdSpriteObject* fin3 = m_object;
     i32 next = fin3->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(fin3, next)
+    fin3->SetSortKey(next);
     return 0;
 }
 

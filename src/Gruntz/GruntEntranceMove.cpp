@@ -22,6 +22,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntActionInline.h>
@@ -188,7 +189,6 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00067bd0, 0x2ef)
 i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     SET_ANIMATION_ACT("K");
@@ -197,7 +197,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     m_entranceCommitted = false;
     m_entranceActive = true;
     CWwdSpriteObject* h = m_object;
-    SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR);
+    h->SetSortKey(SORTKEY_ACTOR);
 
     ClearAllSprites();
 
@@ -213,8 +213,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 onScreen = 1;
             } else {
 
-                CGrunt* focus;
                 CTriggerMgr* tm = g_gameReg->GetTriggerMgr();
+                CGrunt* focus;
                 if (tm->m_recList.GetCount() != 1) {
                     focus = NULL;
                 } else {
@@ -227,7 +227,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             }
         }
 
-        i32 r = rand() % 0x1e1;
+        i32 r = GetRandom(0, 0x1e0);
         if (r > 0x140) {
             found = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
@@ -298,7 +298,7 @@ inline void CGrunt::ResolveEntranceOccupant() {
     do {                                                                                           \
         m_entranceCommitted = true;                                                                \
         i32 sortKey = m_object->m_screenPosition.m_y + 0x186a0;                                    \
-        SET_SORT_KEY_IF_CHANGED(m_object, sortKey)                                                 \
+        m_object->SetSortKey(sortKey);                                                             \
         CAniElement* found = NULL;                                                                 \
         CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;                          \
         MapLookup(                                                                                 \
@@ -417,8 +417,8 @@ i32 CGrunt::StartBombGruntRun() {
         m_triggerMgr->LoadExplosionSprites(h->m_screenPosition.m_x, h->m_screenPosition.m_y, -1, 0);
         return 0;
     }
-    i32 dx = rand() % 3 - 1;
-    i32 dy = rand() % 3 - 1;
+    i32 dx = GetRandom(-1, 1);
+    i32 dy = GetRandom(-1, 1);
     if (dx == 0 && dy == 0) {
         dx = 1;
     }
@@ -582,7 +582,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     CWwdSpriteObject* h = m_object;
     i32 z = h->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(h, z)
+    h->SetSortKey(z);
     return 0;
 }
 

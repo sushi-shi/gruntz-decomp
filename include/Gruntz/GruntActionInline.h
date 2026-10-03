@@ -7,7 +7,6 @@
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/VoiceManager.h>
 #include <Wap32/TileGeometry.h>
@@ -103,7 +102,7 @@ inline void CGrunt::RestoreToolAfterToyUse(i32 defer) {
     {
         i32 sortKey = m_object->m_screenPosition.m_y + 0x186a0;
         CWwdSpriteObject* object = m_object;
-        SET_SORT_KEY_IF_CHANGED(object, sortKey)
+        object->SetSortKey(sortKey);
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;

@@ -173,7 +173,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             }
             i32 best = INT_MAX;
             i32 bestIdx = -1;
-            CGrunt** slots = g_gameReg->GetTriggerMgr()->m_units;
+            CGrunt** slots = g_gameReg->GetTriggerMgr()->PlayerUnits(0);
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
@@ -205,7 +205,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCell.m_x = bestIdx;
-                CGameObject* base = g_gameReg->GetTriggerMgr()->m_units[bestIdx]->m_object;
+                CGameObject* base = g_gameReg->GetTriggerMgr()->UnitAt(0, bestIdx)->m_object;
                 if (TileSwitch(
                         base->m_screenPosition.m_x >> TILE_SHIFT_PX,
                         base->m_screenPosition.m_y >> TILE_SHIFT_PX,

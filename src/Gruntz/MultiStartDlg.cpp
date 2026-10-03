@@ -968,7 +968,7 @@ void CMultiStartDlg::Watchdog() {
         return;
     }
     g_watchdogBusy = true;
-    CNetSessionListNode* session = g_multiState->m_netMgr->m_selectedSession;
+    CNetSessionListNode* session = g_multiState->m_netMgr->GetSelectedSession();
     if (session == NULL) {
         return;
     }
