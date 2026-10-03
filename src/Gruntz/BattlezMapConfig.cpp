@@ -162,7 +162,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
     for (CGameObject* cur = mgr->m_world->ChildGroup()->FirstChild(); cur != NULL;
          cur = mgr->m_world->ChildGroup()->NextChild()) {
-        if (cur->m_logicRecord->GetDispatch() == &DispatchGruntCreationPointLogic
+        if (cur->GetLogicRecord()->GetDispatch() == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
             slot->m_x = cur->m_screenX / TILE_SIZE_PX;
@@ -173,7 +173,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
     for (CGameObject* cur2 = mgr->m_world->ChildGroup()->FirstChild(); cur2 != NULL;
          cur2 = mgr->m_world->ChildGroup()->NextChild()) {
-        if (cur2->m_logicRecord->GetDispatch() == &DispatchExitTriggerLogic
+        if (cur2->GetLogicRecord()->GetDispatch() == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
             m_marker.m_x = cur2->m_screenX / TILE_SIZE_PX;
             m_marker.m_y = cur2->m_screenY / TILE_SIZE_PX;
@@ -183,7 +183,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
     for (CGameObject* cur3 = mgr->m_world->ChildGroup()->FirstChild(); cur3 != NULL;
          cur3 = mgr->m_world->ChildGroup()->NextChild()) {
-        if (cur3->m_logicRecord->GetDispatch() == &DispatchWayPointLogic
+        if (cur3->GetLogicRecord()->GetDispatch() == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
@@ -2010,7 +2010,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
     CGameObject* g = coll->FirstSerialChild();
     while (g != NULL) {
-        if (g->m_logicRecord->GetDispatch() == &DispatchInGameIconLogic && !g->IsHidden()) {
+        if (g->GetLogicRecord()->GetDispatch() == &DispatchInGameIconLogic && !g->IsHidden()) {
             i32 special = 0;
 
             switch (static_cast<PickupType>(g->m_smarts)) {

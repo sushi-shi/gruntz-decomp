@@ -244,7 +244,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 #define USERLOGIC_ATTACH_TO_OBJECT(obj)                                                            \
     m_logicObject = (obj);                                                                         \
     m_object = static_cast<CWwdSpriteObject*>(obj);                                                \
-    m_logicRecord = (obj)->m_logicRecord;                                                          \
+    m_logicRecord = (obj)->GetLogicRecord();                                                       \
     {                                                                                              \
         zBitVec tmp("", 0);                                                                        \
         m_actBits = tmp;                                                                           \
@@ -268,7 +268,7 @@ public:
     CWapX(CGameObject* obj) {
         m_gameObject = obj;
         m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
-        m_ownerLogicRecord = obj->m_logicRecord;
+        m_ownerLogicRecord = obj->GetLogicRecord();
     }
     RVA(0x00008be0, 0x1)
     ~CWapX() {}

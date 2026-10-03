@@ -631,7 +631,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE);
 
-    CLogicRecord* anim = obj->m_logicRecord;
+    CLogicRecord* anim = obj->GetLogicRecord();
     if (anim == NULL) {
         delete obj;
         return 0;

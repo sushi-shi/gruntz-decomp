@@ -3107,7 +3107,7 @@ void CPlay::DrawDebugStatsFull() {
     }
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
-        sprintf(scratch, " Sprites = %i ", m_world->ChildGroup()->m_list.GetCount());
+        sprintf(scratch, " Sprites = %i ", m_world->ChildGroup()->GetCount());
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
@@ -3200,7 +3200,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
-        sprintf(scratch, " Objs = %i ", m_world->ChildGroup()->m_list.GetCount());
+        sprintf(scratch, " Objs = %i ", m_world->ChildGroup()->GetCount());
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
@@ -3372,7 +3372,7 @@ i32 CPlay::LoadImageBanks() {
 
 RVA(0x000d0050, 0x3a)
 i32 CPlay::CountObjectsByCategory(i32 category) {
-    CObList* container = &m_world->ChildGroup()->m_list;
+    CObList* container = m_world->ChildGroup()->GetList();
     if (container == NULL) {
         return 0;
     }
@@ -4530,7 +4530,7 @@ i32 CPlay::ExecuteCommand(
 RVA(0x000d2b20, 0x21f)
 b32 CPlay::PlaceStartGruntz() {
 
-    CObList* list = &m_world->ChildGroup()->m_list;
+    CObList* list = m_world->ChildGroup()->GetList();
     if (list == NULL) {
         return false;
     }
@@ -4543,7 +4543,7 @@ b32 CPlay::PlaceStartGruntz() {
     while (pos != NULL) {
         CGameObject* obj = m_world->ChildGroup()->NextChild(pos);
         if (obj != NULL) {
-            CLogicRecord* record = obj->m_logicRecord;
+            CLogicRecord* record = obj->GetLogicRecord();
 
             LogicRecordDispatchFn dispatch = record->GetDispatch();
             if (dispatch == DispatchGruntStartingPointLogic) {
@@ -4595,6 +4595,7 @@ b32 CPlay::PlaceStartGruntz() {
     return true;
 }
 
+// @early-stop: Register and stack lifetimes remain after call, CFG, and EH closure.
 RVA(0x000d2dd0, 0x1e40)
 i32 CPlay::ValidateLevelTiles() {
     i32 validCount = 0;
@@ -4603,7 +4604,7 @@ i32 CPlay::ValidateLevelTiles() {
         counts[c] = 0;
     }
 
-    CObList* list = &m_world->ChildGroup()->m_list;
+    CObList* list = m_world->ChildGroup()->GetList();
     if (list == NULL) {
         return 0;
     }
@@ -4619,7 +4620,7 @@ i32 CPlay::ValidateLevelTiles() {
             continue;
         }
 
-        LogicRecordDispatchFn dispatch = obj->m_logicRecord->GetDispatch();
+        LogicRecordDispatchFn dispatch = obj->GetLogicRecord()->GetDispatch();
 
         if (dispatch == DispatchTileTriggerSwitchLogic) {
             TileCollisionKind type =
@@ -4692,8 +4693,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_logicRecord->m_userRect1,
-                            obj->m_logicRecord->m_userRect2,
+                            obj->GetLogicRecord()->GetUserRect1(),
+                            obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_MULTI_SWITCH_UP,
                             obj->m_damage,
                             0
@@ -4719,8 +4720,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_logicRecord->m_userRect1,
-                            obj->m_logicRecord->m_userRect2,
+                            obj->GetLogicRecord()->GetUserRect1(),
+                            obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_EXCLUSIVE_SWITCH_UP,
                             obj->m_damage,
                             0
@@ -4748,8 +4749,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_logicRecord->m_userRect1,
-                            obj->m_logicRecord->m_userRect2,
+                            obj->GetLogicRecord()->GetUserRect1(),
+                            obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_SECRET_SWITCH_UP,
                             obj->m_damage,
                             0
@@ -4775,8 +4776,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_logicRecord->m_userRect1,
-                            obj->m_logicRecord->m_userRect2,
+                            obj->GetLogicRecord()->GetUserRect1(),
+                            obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_TIME_SWITCH_UP,
                             obj->m_damage,
                             0
@@ -4802,8 +4803,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_logicRecord->m_userRect1,
-                            obj->m_logicRecord->m_userRect2,
+                            obj->GetLogicRecord()->GetUserRect1(),
+                            obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_CHECKPOINT_UP,
                             obj->m_damage,
                             obj->m_smarts
@@ -4829,8 +4830,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_logicRecord->m_userRect1,
-                            obj->m_logicRecord->m_userRect2,
+                            obj->GetLogicRecord()->GetUserRect1(),
+                            obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
                                 || type == TILEKIND_SWITCH_C_UP
                                 || type == TILEKIND_SECRET_SWITCH_UP,
@@ -4858,8 +4859,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_logicRecord->m_userRect1,
-                            obj->m_logicRecord->m_userRect2,
+                            obj->GetLogicRecord()->GetUserRect1(),
+                            obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
                                 || type == TILEKIND_SWITCH_C_UP
                                 || type == TILEKIND_SECRET_SWITCH_UP,
@@ -4887,8 +4888,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_logicRecord->m_userRect1,
-                            obj->m_logicRecord->m_userRect2,
+                            obj->GetLogicRecord()->GetUserRect1(),
+                            obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
                                 || type == TILEKIND_SWITCH_C_UP
                                 || type == TILEKIND_SECRET_SWITCH_UP,
@@ -4983,8 +4984,8 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_area,
                         obj->m_switchRect,
                         obj->m_clip,
-                        obj->m_logicRecord->m_userRect1,
-                        obj->m_logicRecord->m_userRect2,
+                        obj->GetLogicRecord()->GetUserRect1(),
+                        obj->GetLogicRecord()->GetUserRect2(),
                         0,
                         obj->m_damage,
                         obj->m_points,
@@ -5010,8 +5011,8 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_area,
                         obj->m_switchRect,
                         obj->m_clip,
-                        obj->m_logicRecord->m_userRect1,
-                        obj->m_logicRecord->m_userRect2,
+                        obj->GetLogicRecord()->GetUserRect1(),
+                        obj->GetLogicRecord()->GetUserRect2(),
                         obj->m_smarts,
                         obj->m_damage,
                         obj->m_points,
@@ -5036,8 +5037,8 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_area,
                     obj->m_switchRect,
                     obj->m_clip,
-                    obj->m_logicRecord->m_userRect1,
-                    obj->m_logicRecord->m_userRect2,
+                    obj->GetLogicRecord()->GetUserRect1(),
+                    obj->GetLogicRecord()->GetUserRect2(),
                     obj->m_smarts,
                     obj->m_damage,
                     obj->m_points,
@@ -5178,7 +5179,7 @@ i32 CDDrawWorkerHost::GetTileHandle(i32 tileX, i32 tileY) {
 // @early-stop
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
-    CObList* pl = &m_world->ChildGroup()->m_list;
+    CObList* pl = m_world->ChildGroup()->GetList();
     if (pl == NULL) {
         return 0;
     }
@@ -5200,7 +5201,7 @@ i32 CPlay::ScanBuildTiles() {
         if (p->m_clip.left == COORD_UNSET) {
             p->m_clip.left = 0;
         }
-        LogicRecordDispatchFn dispatch = p->m_logicRecord->GetDispatch();
+        LogicRecordDispatchFn dispatch = p->GetLogicRecord()->GetDispatch();
         if (dispatch == DispatchGiantRockLogic) {
             i32 buf[9];
             buf[0] = p->m_extent.left;
@@ -5268,8 +5269,8 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_area,
                     p->m_switchRect,
                     p->m_clip,
-                    p->m_logicRecord->m_userRect1,
-                    p->m_logicRecord->m_userRect2,
+                    p->GetLogicRecord()->GetUserRect1(),
+                    p->GetLogicRecord()->GetUserRect2(),
                     p->m_smarts,
                     p->m_powerup,
                     p->m_points,
@@ -5290,7 +5291,7 @@ i32 CPlay::ScanBuildTiles() {
 
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
-    CObList* chain = &m_world->ChildGroup()->m_list;
+    CObList* chain = m_world->ChildGroup()->GetList();
     if (chain == NULL) {
         return 0;
     }
@@ -5300,7 +5301,7 @@ i32 CPlay::AddLevelGruntz() {
         if (g == NULL) {
             continue;
         }
-        if (g->m_logicRecord->GetDispatch() != DispatchGruntStartingPointLogic) {
+        if (g->GetLogicRecord()->GetDispatch() != DispatchGruntStartingPointLogic) {
             continue;
         }
         if (g->m_smarts == g_curPlayer) {
@@ -5320,8 +5321,8 @@ i32 CPlay::AddLevelGruntz() {
                 g->m_damage,
                 g->m_points,
                 g->m_direction,
-                g->m_logicRecord->m_minX,
-                g->m_logicRecord->m_maxX,
+                g->GetLogicRecord()->m_minX,
+                g->GetLogicRecord()->m_maxX,
                 &g->m_extent
             )
             == -1) {
@@ -5632,12 +5633,12 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
         return 1;
     }
 
-    CObList* head = &this->m_world->ChildGroup()->m_list;
+    CObList* head = this->m_world->ChildGroup()->GetList();
     POSITION pos = head == NULL ? NULL : head->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = this->m_world->ChildGroup()->NextChild(pos);
         if (obj) {
-            LogicRecordDispatchFn dispatch = obj->m_logicRecord->GetDispatch();
+            LogicRecordDispatchFn dispatch = obj->GetLogicRecord()->GetDispatch();
             if (dispatch == DispatchGruntStartingPointLogic) {
                 i32 v = obj->m_powerup;
                 if (v) {
@@ -6558,7 +6559,7 @@ RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
     CDDrawSurfacePair* held = v->GetDrawTarget()->GetBackPair();
-    CObList& chain = v->ChildGroup()->m_list;
+    CObList& chain = *v->ChildGroup()->GetList();
 
     RECT r = v->m_level->GetViewportRect();
     r.right = r.right + 1;
@@ -6569,7 +6570,7 @@ i32 CPlay::NotifyVisibleEntities() {
 
     while (pos != NULL) {
         CGameObject* o = v->ChildGroup()->NextChild(pos);
-        LogicRecordDispatchFn dispatch = o->m_logicRecord->GetDispatch();
+        LogicRecordDispatchFn dispatch = o->GetLogicRecord()->GetDispatch();
         if (dispatch == DispatchGruntLogic || dispatch == DispatchInGameIconLogic
             || dispatch == DispatchGruntPuddleLogic || dispatch == DispatchGruntToySpriteLogic
             || dispatch == DispatchGruntStaminaSpriteLogic
@@ -6613,7 +6614,7 @@ RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
 
-    CObList* pl = &v->ChildGroup()->m_list;
+    CObList* pl = v->ChildGroup()->GetList();
     if (pl == NULL) {
         return 0;
     }
@@ -6643,7 +6644,7 @@ i32 CPlay::ScanShuffleQuads() {
         if (p == NULL) {
             continue;
         }
-        LogicRecordDispatchFn dispatch = p->m_logicRecord->m_dispatch;
+        LogicRecordDispatchFn dispatch = p->GetLogicRecord()->m_dispatch;
         if (dispatch == DispatchGruntCreationPointLogic || dispatch == DispatchExitTriggerLogic
             || dispatch == DispatchFortressFlagLogic || dispatch == DispatchWayPointLogic
             || dispatch == DispatchGuardPointLogic) {

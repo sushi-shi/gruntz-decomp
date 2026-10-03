@@ -428,7 +428,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             n->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
-            CLogicRecord* ni = n->m_logicRecord;
+            CLogicRecord* ni = n->GetLogicRecord();
             ni->m_speed =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             n->m_smarts = 0;
@@ -443,7 +443,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             e->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
-            CLogicRecord* ei = e->m_logicRecord;
+            CLogicRecord* ei = e->GetLogicRecord();
             ei->m_speed =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             e->m_smarts = 0;
@@ -458,7 +458,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             s->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
-            CLogicRecord* si = s->m_logicRecord;
+            CLogicRecord* si = s->GetLogicRecord();
             si->m_speed =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             s->m_smarts = 0;
@@ -473,7 +473,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             w->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
-            CLogicRecord* wi = w->m_logicRecord;
+            CLogicRecord* wi = w->GetLogicRecord();
             wi->m_speed =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             w->m_smarts = 0;
@@ -1767,7 +1767,8 @@ void CGrunt::StepBehavior(char*) {
                 g_gameReg->GetTileGrid()->SetObjectIdAt(tx, ty, 0);
             } else {
 
-                CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_logicRecord->m_userLogic);
+                CInGameIcon* icon =
+                    static_cast<CInGameIcon*>(result->GetLogicRecord()->m_userLogic);
                 icon->PlaceAt(m_playerIndex, m_unitIndex);
             }
         }

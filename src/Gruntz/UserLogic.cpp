@@ -72,7 +72,7 @@ i32 CWapX::SerializeAnimationState(
             archive->Read(m_blob, 0x10);
             m_gameObject = object;
             m_wwdObject = static_cast<CWwdSpriteObject*>(object);
-            m_ownerLogicRecord = object->m_logicRecord;
+            m_ownerLogicRecord = object->GetLogicRecord();
             if (strlen(name) == 0) {
                 m_value = NULL;
             } else {
