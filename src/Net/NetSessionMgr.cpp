@@ -204,7 +204,7 @@ i32 CNetSession::Poll(i32 elapsedMs) {
         if (status == 0) {
             availableCount--;
             received++;
-            if (senderId != m_localPlayer->m_playerId) {
+            if (senderId != m_localPlayer->GetPlayerId()) {
 
                 CNetWireMsg wire;
                 wire.m_bytes = g_lobbyRecvBuf;
@@ -375,7 +375,7 @@ i32 CNetSession::SendGruntRecord(
     memcpy(g_netGruntRecMsg.m_payload, record->m_payload, record->m_payloadLength);
 
     i32 result = m_netMgr->SendById(
-        m_localPlayer->m_playerId,
+        m_localPlayer->GetPlayerId(),
         recipientId,
         0,
         &g_netGruntRecMsg,
@@ -456,7 +456,7 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     memcpy(g_netCmdSendMsg.m_payload, entry->m_payload, entry->m_payloadLength);
 
     i32 status = m_netMgr->SendById(
-        m_localPlayer->m_playerId,
+        m_localPlayer->GetPlayerId(),
         slot->m_player->m_networkPlayerId,
         0,
         &g_netCmdSendMsg,

@@ -321,6 +321,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     } while (0)
 
 RVA(0x00067f80, 0x313)
+// @early-stop
 i32 CGrunt::LoadEntranceConfig() {
     if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         RESOLVE_ENTRANCE_OCCUPANT();

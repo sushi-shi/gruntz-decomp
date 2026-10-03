@@ -298,8 +298,8 @@ public:
         if (m_recList.GetCount() != 1) {
             return NULL;
         }
-        Coord* rec = HeadRec();
-        return UnitAt(rec->m_x, rec->m_y);
+        Coord rec = *HeadRec();
+        return UnitAt(rec.m_x, rec.m_y);
     }
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;

@@ -318,6 +318,10 @@ public:
 
     i32 Initialize(DPID playerId, const char* shortName, const char* longName, DWORD flags);
 
+    const DPID& GetPlayerId() const {
+        return m_playerId;
+    }
+
     CString ShortName();
 };
 
@@ -517,12 +521,12 @@ public:
             return 0;
         }
         DWORD messageCount;
-        i32 hr = m_directPlay->GetMessageCount(player->m_playerId, &messageCount);
+        i32 hr = m_directPlay->GetMessageCount(player->GetPlayerId(), &messageCount);
         return hr ? 0 : messageCount;
     }
     i32
     ReceiveMessage(DPID* sender, CNetPlayerNode* recipient, void* message, LPDWORD messageSize) {
-        DPID recipientId = recipient->m_playerId;
+        DPID recipientId = recipient->GetPlayerId();
         i32 hr = m_directPlay->Receive(sender, &recipientId, DPRECEIVE_ALL, message, messageSize);
         if (hr) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, NULL);
