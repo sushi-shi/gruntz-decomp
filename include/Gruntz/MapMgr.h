@@ -37,6 +37,8 @@ public:
     ~CBrickzCellNodePool();
     i32 Allocate(u32 count);
     void Free();
+    inline BrickzCellNode* Pop();
+    inline void Push(BrickzCellNode* node);
 
     BrickzCellNode* m_storage;
     BrickzCellNode* m_freeList;

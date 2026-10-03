@@ -52,6 +52,24 @@ inline void CBrickzNodePool::Push(BrickzNode* node) {
     m_freeList = node;
 }
 
+inline BrickzCellNode* CBrickzCellNodePool::Pop() {
+    BrickzCellNode* node = m_freeList;
+    BrickzCellNode* next = node->m_cellNext;
+    if (next == NULL) {
+        return NULL;
+    }
+    m_freeList = next;
+    next->m_cellPrev = NULL;
+    return node;
+}
+
+inline void CBrickzCellNodePool::Push(BrickzCellNode* node) {
+    node->m_cellNext = m_freeList;
+    node->m_cellPrev = NULL;
+    m_freeList->m_cellPrev = node;
+    m_freeList = node;
+}
+
 GZ_ENUM_CONST_BEGIN(BrickzCellMask)
     BRICKZ_BLOCKED_MASK = 0x939,
     BRICKZ_CELL_ROUTE_MASKB = 0x2000,

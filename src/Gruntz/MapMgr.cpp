@@ -480,7 +480,7 @@ BrickzNode* CMapMgr::PopBestOpenNode() {
 RVA(0x0009f470, 0x62)
 void CMapMgr::LinkClosedNode(BrickzNode* node) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
-    BrickzCellNode* slot = PopFreeCellNode(m_cellNodePool.m_freeList);
+    BrickzCellNode* slot = m_cellNodePool.Pop();
     BrickzCellNode* old = *head;
     if (old == NULL) {
         *head = slot;
@@ -549,11 +549,7 @@ void CMapMgr::RecycleClosedNodes() {
             node = *link;
             BrickzNode* child = cur->m_searchNode;
             m_nodePool.Push(child);
-            BrickzCellNode* freeHead = m_cellNodePool.m_freeList;
-            cur->m_cellPrev = NULL;
-            *link = freeHead;
-            m_cellNodePool.m_freeList->m_cellPrev = cur;
-            m_cellNodePool.m_freeList = cur;
+            m_cellNodePool.Push(cur);
         }
         cell->m_head = NULL;
         cell++;
@@ -601,10 +597,7 @@ void CMapMgr::UnlinkClosedNode(BrickzNode* node, i32 recycleSearchNode) {
     node->m_openPrev = NULL;
     node->m_openNext = NULL;
     node->m_cellLink = NULL;
-    slot->m_cellNext = m_cellNodePool.m_freeList;
-    slot->m_cellPrev = NULL;
-    m_cellNodePool.m_freeList->m_cellPrev = slot;
-    m_cellNodePool.m_freeList = slot;
+    m_cellNodePool.Push(slot);
     if (recycleSearchNode != 0) {
         m_nodePool.Push(node);
     }

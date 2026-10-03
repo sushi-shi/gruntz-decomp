@@ -27,17 +27,6 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
         (reg)->m_tileGrid->ComputeCellFlags(tileX, tileY, tile);                                   \
     }
 
-static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {
-    BrickzCellNode* node = freeList;
-    BrickzCellNode* next = node->m_cellNext;
-    if (next == NULL) {
-        return NULL;
-    }
-    freeList = next;
-    next->m_cellPrev = NULL;
-    return node;
-}
-
 inline SIZE
 CGruntzMapMgr::GetGridSize() const {
     SIZE
