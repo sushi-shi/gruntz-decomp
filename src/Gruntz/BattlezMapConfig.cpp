@@ -43,6 +43,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileActionEvent.h>
@@ -1950,17 +1951,7 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, L
             break;
     }
 
-    i64* p = &m_routeTiming.m_start;
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(&p[0], sizeof(i64));
-            ar->Write(&p[1], sizeof(i64));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(&p[0], sizeof(i64));
-            ar->Read(&p[1], sizeof(i64));
-            break;
-    }
+    SerializeClockPair(ar, mode, &m_routeTiming);
     return 1;
 }
 

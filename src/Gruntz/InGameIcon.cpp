@@ -32,6 +32,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
@@ -699,32 +700,8 @@ i32 CInGameIcon::SerializeDispatch(
         return 0;
     }
 
-    i64* drift = &m_driftTiming.m_start;
-    switch (mode) {
-        case SERIAL_LOAD:
-            ar->Read(drift, sizeof(*drift));
-            drift++;
-            ar->Read(drift, sizeof(*drift));
-            break;
-        case SERIAL_SAVE:
-            ar->Write(drift, sizeof(*drift));
-            drift++;
-            ar->Write(drift, sizeof(*drift));
-            break;
-    }
-    i64* idle = &m_peekTiming.m_start;
-    switch (mode) {
-        case SERIAL_LOAD:
-            ar->Read(idle, sizeof(*idle));
-            idle++;
-            ar->Read(idle, sizeof(*idle));
-            break;
-        case SERIAL_SAVE:
-            ar->Write(idle, sizeof(*idle));
-            idle++;
-            ar->Write(idle, sizeof(*idle));
-            break;
-    }
+    m_driftTiming.Serialize(ar, mode, typeId, obj);
+    m_peekTiming.Serialize(ar, mode, typeId, obj);
 
     switch (mode) {
         case SERIAL_SAVE: {

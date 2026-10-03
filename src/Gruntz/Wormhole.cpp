@@ -28,6 +28,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
@@ -354,16 +355,7 @@ i32 CTeleporter::SerializeDispatch(
     CGameObject* object
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
-    i64* clocks = &m_armTiming.m_start;
-    if (mode != SERIAL_SAVE) {
-        if (mode == SERIAL_LOAD) {
-            ar->Read(clocks, sizeof(*clocks));
-            ar->Read(clocks + 1, sizeof(*clocks));
-        }
-    } else {
-        ar->Write(clocks, sizeof(*clocks));
-        ar->Write(clocks + 1, sizeof(*clocks));
-    }
+    m_armTiming.Serialize(ar, mode, typeId, object);
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_armed, sizeof(m_armed));
