@@ -9,7 +9,7 @@ The clean C++ base for building and extending Gruntz.
       source
          |
          v
-     port/mfc-stdlib (this branch)
+     port-mfc-stdlib (this branch)
 ```
 
 [`main`](https://github.com/sushi-shi/gruntz-decomp/tree/main) owns reconstruction
