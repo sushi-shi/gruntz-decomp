@@ -3126,7 +3126,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     if (slot == NULL) {
         return 0;
     }
-    if (slot->m_isDraining != false) {
+    if (slot->IsDraining() != false) {
         return 0;
     }
 
@@ -3138,7 +3138,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
         NetGameMgr()->m_commandMgr->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
         slot->RemoveRecord(seq / static_cast<i32>(m_commandDelay));
     }
-    slot->ClearSequenceSet(slot->m_receivedAhead);
+    slot->ClearSequenceSet(slot->ReceivedAhead());
     slot->ClearSequenceSet(slot->PeerReceivedAhead());
     return 1;
 }

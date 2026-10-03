@@ -318,14 +318,14 @@ i32 CNetSession::RelayDrainingRecords() {
     i32 count = 0;
     CNetCmdSlot* source = m_slots;
     for (i32 sourceIndex = 0; sourceIndex < 4; sourceIndex++, source++) {
-        if (source && source->m_state == NETSLOT_ACTIVE && source->m_isDraining != false) {
+        if (source && source->m_state == NETSLOT_ACTIVE && source->IsDraining() != false) {
             i32 firstSequence, lastSequence;
             source->GetRecordRange(&firstSequence, &lastSequence);
             CNetCmdSlot* recipient = m_slots;
             i32 recipientsRemaining = 4;
             do {
                 if (recipient && recipient->m_state == NETSLOT_ACTIVE
-                    && recipient->m_isDraining == false) {
+                    && recipient->IsDraining() == false) {
                     for (i32 sequence = firstSequence; sequence <= lastSequence; sequence++) {
                         GruntRec* record = source->FindRecord(sequence);
                         if (record) {
@@ -390,7 +390,7 @@ i32 CNetSession::SendPendingRecords() {
     CNetCmdSlot* slot = m_slots;
     i32 slotsRemaining = 4;
     do {
-        if (slot && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false) {
+        if (slot && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() == false) {
             i32 candidateSequence = m_sequence + 2;
             if (m_batchBuilt == false && (m_commandTick + 1) % m_commandPeriod == 0) {
                 if (SendRecord(slot, candidateSequence)) {
@@ -506,10 +506,10 @@ void CNetSession::ReconcileDrainingSlots() {
         do {
             if (slot) {
                 NetSlotState state = slot->m_state;
-                if (state == NETSLOT_ACTIVE && slot->m_isDraining != false) {
+                if (state == NETSLOT_ACTIVE && slot->IsDraining() != false) {
                     withFlag++;
                 }
-                if (state == NETSLOT_ACTIVE && slot->m_isDraining == false) {
+                if (state == NETSLOT_ACTIVE && slot->IsDraining() == false) {
                     withoutFlag++;
                 }
             }
@@ -532,7 +532,7 @@ void CNetSession::ReconcileDrainingSlots() {
         CNetCmdSlot* slot = base;
         i32 slotsRemaining = 4;
         do {
-            if (slot && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining != false
+            if (slot && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() != false
                 && m_sequence > slot->m_drainSequence + 2) {
                 slot->ClearSyncState();
                 GruntzPlayer* player = slot->m_player;
@@ -559,7 +559,7 @@ i32 CNetSession::AdvanceTick() {
     CNetCmdSlot* slot = m_slots;
     i32 slotsRemaining = 4;
     do {
-        if (slot && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false) {
+        if (slot && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() == false) {
             slot->RemoveRecord(m_sequence - 4);
         }
         slot++;
@@ -598,7 +598,7 @@ RVA(0x000c0320, 0x37)
 i32 CNetSession::AllPeerWindowsReached(i32 sequence) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false
+        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() == false
             && slot->m_peerWindowBase < sequence) {
             return 0;
         }
@@ -647,7 +647,7 @@ CNetCmdSlot* CNetSession::FindLaggingSlot(u32 latencyThreshold) {
 
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false
+        if (slot && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() == false
             && static_cast<u32>(slot->m_latency) > latencyThreshold) {
             return slot;
         }
@@ -659,7 +659,7 @@ RVA(0x000c04a0, 0x37)
 i32 CNetSession::AllActiveLatenciesWithin(i32 latencyLimit) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false
+        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() == false
             && static_cast<u32>(slot->m_latency) > static_cast<u32>(latencyLimit)) {
             return 0;
         }
@@ -674,7 +674,7 @@ i32 CNetSession::VerifyChecksums() {
     if (expected != NULL) {
         for (i32 i = 0; i < 4; i++) {
             CNetCmdSlot* slot = &m_slots[i];
-            if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false) {
+            if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() == false) {
                 GruntRec* received = slot->FindRecord(sequence);
                 if (received != NULL && received->m_checksum != expected->m_checksum) {
                     return 0;

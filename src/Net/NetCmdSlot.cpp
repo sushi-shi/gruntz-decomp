@@ -353,7 +353,7 @@ i32 CNetCmdSlot::DrainAcknowledged() {
     }
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_owner->Session()->m_slots[i];
-        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false
+        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->IsDraining() == false
             && m_drainAckFlags[i] == 0) {
             return 0;
         }
