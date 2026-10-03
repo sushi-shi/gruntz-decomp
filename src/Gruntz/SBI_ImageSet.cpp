@@ -22,6 +22,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 
+// @early-stop
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,
