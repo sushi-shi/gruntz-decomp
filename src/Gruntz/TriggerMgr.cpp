@@ -145,6 +145,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
     }
 }
 
+// @early-stop
 RVA(0x00078260, 0x165)
 i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection) {
     if (fromSelection != 0) {
