@@ -816,7 +816,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_DOCK_LEFT,
             TAB_CONTROLS,
-            MakeRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
+            CRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
             NULL,
             -1
         )) {
@@ -831,7 +831,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_DOCK_RIGHT,
             TAB_CONTROLS,
-            MakeRect(bx + 0x8a, by + 0xad, bx + 0x96, by + 0xb9),
+            CRect(bx + 0x8a, by + 0xad, bx + 0x96, by + 0xb9),
             NULL,
             -1
         )) {
@@ -846,7 +846,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_HIDE,
             TAB_CONTROLS,
-            MakeRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
+            CRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
             NULL,
             -1
         )) {
@@ -862,7 +862,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_STATZ,
         TAB_CONTROLS,
-        MakeRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0xad),
+        CRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0xad),
         "GAME_STATUSBAR_TABZ_STATZTAB",
         -1,
         0
@@ -877,7 +877,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_GRUNTZ,
         TAB_CONTROLS,
-        MakeRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0xad),
+        CRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0xad),
         "GAME_STATUSBAR_TABZ_GRUNTZTAB",
         -1,
         0
@@ -892,7 +892,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_RESOURCE,
         TAB_CONTROLS,
-        MakeRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0xad),
+        CRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0xad),
         "GAME_STATUSBAR_TABZ_RESOURCETAB",
         -1,
         0
@@ -907,7 +907,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_MULTIPLAYER,
         TAB_CONTROLS,
-        MakeRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0xad),
+        CRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0xad),
         "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
         -1,
         0
@@ -931,7 +931,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         code,
         SBICMD_TAB_GAME,
         TAB_CONTROLS,
-        MakeRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0xad),
+        CRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0xad),
         "GAME_STATUSBAR_TABZ_GAMETAB",
         -1,
         0
@@ -1351,7 +1351,6 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
@@ -1368,7 +1367,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 code,
                 SBICMD_PAUSE,
                 TAB_GAME,
-                MakeRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
                 "GAME_STATUSBAR_TABZ_GAMETAB_RESUME",
                 -1,
                 0
@@ -1383,7 +1382,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 code,
                 SBICMD_PAUSE,
                 TAB_GAME,
-                MakeRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
                 "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE",
                 -1,
                 0
@@ -1399,7 +1398,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_LOAD_GAME,
             TAB_GAME,
-            MakeRect(bx, by + 0x125, bx + 0x9f, by + 0x13c),
+            CRect(bx, by + 0x125, bx + 0x9f, by + 0x13c),
             "GAME_STATUSBAR_TABZ_GAMETAB_LOAD",
             -1,
             0
@@ -1417,7 +1416,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_SAVE_GAME,
             TAB_GAME,
-            MakeRect(bx, by + 0xfd, bx + 0x9f, by + 0x114),
+            CRect(bx, by + 0xfd, bx + 0x9f, by + 0x114),
             "GAME_STATUSBAR_TABZ_GAMETAB_SAVE",
             -1,
             0
@@ -1435,7 +1434,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_SETTINGS,
             TAB_GAME,
-            MakeRect(bx, by + 0x14d, bx + 0x9f, by + 0x164),
+            CRect(bx, by + 0x14d, bx + 0x9f, by + 0x164),
             "GAME_STATUSBAR_TABZ_GAMETAB_SETTINGS",
             -1,
             0
@@ -1450,7 +1449,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_BOOTY_STATE,
             TAB_GAME,
-            MakeRect(bx, by + 0x175, bx + 0x9f, by + 0x18c),
+            CRect(bx, by + 0x175, bx + 0x9f, by + 0x18c),
             "GAME_STATUSBAR_TABZ_GAMETAB_HELP",
             -1,
             0
@@ -1468,7 +1467,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_QUIT,
             TAB_GAME,
-            MakeRect(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
+            CRect(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
             "GAME_STATUSBAR_TABZ_GAMETAB_QUIT",
             -1,
             0
@@ -1483,7 +1482,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_DESTRUCT,
             TAB_GAME,
-            MakeRect(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
+            CRect(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
             "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
             IDX(m_destructButtonFrame),
             0
@@ -1507,7 +1506,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_MISSION_STATUS,
             TAB_GAME,
-            MakeRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+            CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
             "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
             1,
             0
@@ -1520,7 +1519,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             code,
             SBICMD_MISSION_STATUS,
             TAB_GAME,
-            MakeRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+            CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
             "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
             2,
             0
@@ -1607,7 +1606,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_GRUNTZ,
-                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                 "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT",
                 -1,
                 0
@@ -1626,7 +1625,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         code,
                         static_cast<SbiCommandId>(IDX(SBICMD_GRUNT_SLOT_FIRST) + i),
                         TAB_GRUNTZ,
-                        MakeRect(bx + 0xe, y - 0x32, bx + 0x39, y),
+                        CRect(bx + 0xe, y - 0x32, bx + 0x39, y),
                         "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
                         *bptr,
                         0
@@ -1653,7 +1652,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_GRUNT_WELL,
                 TAB_GRUNTZ,
-                MakeRect(bx + 0x4c, by + 0xc8, bx + 0x97, by + 0x1cd),
+                CRect(bx + 0x4c, by + 0xc8, bx + 0x97, by + 0x1cd),
                 "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL",
                 -1,
                 0
@@ -1667,7 +1666,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_GRUNT_OVENS_TEXT,
                 TAB_GRUNTZ,
-                MakeRect(bx + 0x1e, by + 0xc4, bx + 0x3d, by + 0xcd),
+                CRect(bx + 0x1e, by + 0xc4, bx + 0x3d, by + 0xcd),
                 "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT",
                 -1,
                 0
@@ -1679,7 +1678,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_GRUNT_WELL_TEXT,
                 TAB_GRUNTZ,
-                MakeRect(bx + 0x68, by + 0x1cf, bx + 0x87, by + 0x1d8),
+                CRect(bx + 0x68, by + 0x1cf, bx + 0x87, by + 0x1d8),
                 "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT",
                 -1,
                 0
@@ -1691,7 +1690,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_GRUNT_WELL_GOO,
                     TAB_GRUNTZ,
-                    MakeRect(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3),
+                    CRect(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
                     m_gruntWellLevel
                 )) {
@@ -1709,7 +1708,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_RESOURCE,
-                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT",
                 -1,
                 0
@@ -1721,7 +1720,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_MAIN_BACKGROUND,
                 TAB_RESOURCE,
-                MakeRect(bx, by + 0x135, bx + 0x9f, by + 0x1be),
+                CRect(bx, by + 0x135, bx + 0x9f, by + 0x1be),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND",
                 -1,
                 0
@@ -1734,7 +1733,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_UPPER_BACKGROUND,
                 TAB_RESOURCE,
-                MakeRect(bx, by + 0xfb, bx + 0x9f, by + 0x134),
+                CRect(bx, by + 0xfb, bx + 0x9f, by + 0x134),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND",
                 -1,
                 0
@@ -1747,7 +1746,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_WINDOW_BACKGROUND,
                 TAB_RESOURCE,
-                MakeRect(bx + 0x48, by + 0xd3, bx + 0x67, by + 0xf3),
+                CRect(bx + 0x48, by + 0xd3, bx + 0x67, by + 0xf3),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND",
                 -1,
                 0
@@ -1761,7 +1760,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_BELT_TOOLS,
                 TAB_RESOURCE,
-                MakeRect(bx + 0x19, by + 0x11c, bx + 0x3c, by + 0x130),
+                CRect(bx + 0x19, by + 0x11c, bx + 0x3c, by + 0x130),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                 m_conveyorSlots[0].m_value,
                 0
@@ -1774,7 +1773,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_BELT_TOYS,
                 TAB_RESOURCE,
-                MakeRect(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130),
+                CRect(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                 m_conveyorSlots[1].m_value,
                 0
@@ -1787,7 +1786,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_BELT_BRICKS,
                 TAB_RESOURCE,
-                MakeRect(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130),
+                CRect(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                 m_conveyorSlots[2].m_value,
                 0
@@ -1801,7 +1800,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_CURRENT_ITEM,
                 TAB_RESOURCE,
-                MakeRect(
+                CRect(
                     m_machineItemRect.left + bx,
                     m_machineItemRect.top + by,
                     m_machineItemRect.right + bx,
@@ -1827,7 +1826,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         code,
                         static_cast<SbiCommandId>(IDX(SBICMD_TOOL_RESOURCE_FIRST) + i),
                         TAB_RESOURCE,
-                        MakeRect(bx + 0x1d, y - 0x17, bx + 0x34, y),
+                        CRect(bx + 0x1d, y - 0x17, bx + 0x34, y),
                         "GAME_INGAMEICONZ_NORMCHIPZ",
                         cfgp[-24],
                         0
@@ -1840,7 +1839,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         code,
                         static_cast<SbiCommandId>(IDX(SBICMD_TOY_RESOURCE_FIRST) + i),
                         TAB_RESOURCE,
-                        MakeRect(bx + 0x45, y - 0x17, bx + 0x5c, y),
+                        CRect(bx + 0x45, y - 0x17, bx + 0x5c, y),
                         "GAME_INGAMEICONZ_NORMCHIPZ",
                         cfgp[0],
                         0
@@ -1853,7 +1852,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         code,
                         static_cast<SbiCommandId>(IDX(SBICMD_BRICK_RESOURCE_FIRST) + i),
                         TAB_RESOURCE,
-                        MakeRect(bx + 0x6d, y - 0x17, bx + 0x84, y),
+                        CRect(bx + 0x6d, y - 0x17, bx + 0x84, y),
                         "GAME_INGAMEICONZ_NORMCHIPZ",
                         cfgp[24],
                         0
@@ -1872,7 +1871,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_RESOURCE_MACHINE_BACKGROUND,
                     TAB_RESOURCE,
-                    MakeRect(bx, by + 0xc8, bx + 0x9f, by + 0xfa),
+                    CRect(bx, by + 0xc8, bx + 0x9f, by + 0xfa),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINE",
                     m_leftMachine.m_counter,
                     m_rightMachine.m_counter
@@ -1889,7 +1888,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_MACHINE_FOREGROUND,
                 TAB_RESOURCE,
-                MakeRect(bx, by + 0x135, bx + 0x9f, by + 0x1df),
+                CRect(bx, by + 0x135, bx + 0x9f, by + 0x1df),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_FRAMEWORK",
                 -1,
                 0
@@ -1903,7 +1902,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_CONVEYOR_TOP,
                     TAB_RESOURCE,
-                    MakeRect(bx, by + 0x1bf, bx + 0x9f, by + 0x1cc),
+                    CRect(bx, by + 0x1bf, bx + 0x9f, by + 0x1cc),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_TOPSHREDDER",
                     -1,
                     -1,
@@ -1922,7 +1921,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_RESOURCE_FALLING_ITEM,
                 TAB_RESOURCE,
-                MakeRect(
+                CRect(
                     m_fallingItemRect.left + bx,
                     m_fallingItemRect.top + by,
                     m_fallingItemRect.right + bx,
@@ -1942,7 +1941,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_CONVEYOR_BOTTOM,
                     TAB_RESOURCE,
-                    MakeRect(bx, by + 0x1c7, bx + 0x9f, by + 0x1df),
+                    CRect(bx, by + 0x1c7, bx + 0x9f, by + 0x1df),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BOTTOMSHREDDER",
                     -1,
                     -1,
@@ -1963,7 +1962,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_MULTIPLAYER,
-                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT",
                 -1,
                 0
@@ -1976,7 +1975,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_MULTIPLAYER_HEAD1,
                 TAB_MULTIPLAYER,
-                MakeRect(bx + 0x53, by + 0xcf, bx + 0x8e, by + 0x10a),
+                CRect(bx + 0x53, by + 0xcf, bx + 0x8e, by + 0x10a),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1",
                 1,
                 0
@@ -1989,7 +1988,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_MULTIPLAYER_HEAD2,
                 TAB_MULTIPLAYER,
-                MakeRect(bx + 0x53, by + 0x112, bx + 0x8e, by + 0x14d),
+                CRect(bx + 0x53, by + 0x112, bx + 0x8e, by + 0x14d),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2",
                 1,
                 0
@@ -2002,7 +2001,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_MULTIPLAYER_HEAD3,
                 TAB_MULTIPLAYER,
-                MakeRect(bx + 0x53, by + 0x155, bx + 0x8e, by + 0x190),
+                CRect(bx + 0x53, by + 0x155, bx + 0x8e, by + 0x190),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3",
                 1,
                 0
@@ -2015,7 +2014,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_MULTIPLAYER_HEAD4,
                 TAB_MULTIPLAYER,
-                MakeRect(bx + 0x53, by + 0x197, bx + 0x8e, by + 0x1d2),
+                CRect(bx + 0x53, by + 0x197, bx + 0x8e, by + 0x1d2),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4",
                 1,
                 0
@@ -2056,7 +2055,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i),
                             TAB_MULTIPLAYER,
-                            MakeRect(gruntBarLeft, y - 0x11, gruntBarRight, y),
+                            CRect(gruntBarLeft, y - 0x11, gruntBarRight, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             m_tabCycle,
                             i,
@@ -2078,7 +2077,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_STATZ,
-                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                 "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT",
                 -1,
                 0
@@ -2104,7 +2103,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_STAT_TOGGLE_FIRST) + i),
                             TAB_STATZ,
-                            MakeRect(arrowL, y - 0x11, arrowR, y),
+                            CRect(arrowL, y - 0x11, arrowR, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_ARROW",
                             -1,
                             -1,
@@ -2128,7 +2127,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             code,
                             id,
                             TAB_STATZ,
-                            MakeRect(bx + 0x28, y - 0x11, bx + 0x77, y),
+                            CRect(bx + 0x28, y - 0x11, bx + 0x77, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             g_curPlayer,
                             i,
@@ -2150,7 +2149,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_GAME,
-                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                 "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT",
                 -1,
                 0
@@ -2163,7 +2162,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 code,
                 SBICMD_WARPSTONE_BASE,
                 TAB_GAME,
-                MakeRect(bx, by, bx + 0x9f, by + 0x7f),
+                CRect(bx, by, bx + 0x9f, by + 0x7f),
                 "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                 1,
                 0
@@ -2177,7 +2176,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_WARPSTONE_FRAGMENT1,
                     TAB_GAME,
-                    MakeRect(bx + 0x17, by + 0xe, bx + 0x52, by + 0x44),
+                    CRect(bx + 0x17, by + 0xe, bx + 0x52, by + 0x44),
                     "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                     2,
                     0
@@ -2191,7 +2190,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         code,
                         SBICMD_WARPSTONE_FRAGMENT2,
                         TAB_GAME,
-                        MakeRect(bx + 0x4c, by + 0xf, bx + 0x87, by + 0x3e),
+                        CRect(bx + 0x4c, by + 0xf, bx + 0x87, by + 0x3e),
                         "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                         3,
                         0
@@ -2205,7 +2204,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             code,
                             SBICMD_WARPSTONE_FRAGMENT3,
                             TAB_GAME,
-                            MakeRect(bx + 0x1b, by + 0x3b, bx + 0x52, by + 0x71),
+                            CRect(bx + 0x1b, by + 0x3b, bx + 0x52, by + 0x71),
                             "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                             4,
                             0
@@ -2219,7 +2218,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                                 code,
                                 SBICMD_WARPSTONE_FRAGMENT4,
                                 TAB_GAME,
-                                MakeRect(bx + 0x4a, by + 0x35, bx + 0x89, by + 0x74),
+                                CRect(bx + 0x4a, by + 0x35, bx + 0x89, by + 0x74),
                                 "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                                 5,
                                 0
@@ -4025,7 +4024,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_FRAME,
             TAB_DIALOG,
-            MakeRect(cx, cy, cx + 0xbc, cy + 0x79),
+            CRect(cx, cy, cx + 0xbc, cy + 0x79),
             "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
             -1,
             0
@@ -4039,7 +4038,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_YES,
             TAB_DIALOG,
-            MakeRect(cx + 0x19, cy + 0x4d, cx + 0x4c, cy + 0x64),
+            CRect(cx + 0x19, cy + 0x4d, cx + 0x4c, cy + 0x64),
             "GAME_STATUSBAR_TABZ_DIALOG_YES",
             -1,
             0
@@ -4054,7 +4053,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_NO,
             TAB_DIALOG,
-            MakeRect(cx + 0x6b, cy + 0x4d, cx + 0x9e, cy + 0x64),
+            CRect(cx + 0x6b, cy + 0x4d, cx + 0x9e, cy + 0x64),
             "GAME_STATUSBAR_TABZ_DIALOG_NO",
             -1,
             0
@@ -4076,7 +4075,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         w,
         SBICMD_DIALOG_FRAME,
         TAB_DIALOG,
-        MakeRect(cx, cy, cx + 0x11c, cy + 0x90),
+        CRect(cx, cy, cx + 0x11c, cy + 0x90),
         "GAME_STATUSBAR_TABZ_DIALOG",
         -1,
         0
@@ -4092,7 +4091,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_MISSION_STATUS,
             TAB_DIALOG,
-            MakeRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
+            CRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
             "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
             1,
             0
@@ -4106,7 +4105,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_REASON,
             TAB_DIALOG,
-            MakeRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
+            CRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
             "GAME_STATUSBAR_TABZ_DIALOG_REASON",
             reason,
             0
@@ -4121,7 +4120,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 w,
                 SBICMD_DIALOG_PRIMARY,
                 TAB_DIALOG,
-                MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+                CRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
                 "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
                 -1,
                 0
@@ -4136,7 +4135,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 w,
                 SBICMD_DIALOG_SECONDARY,
                 TAB_DIALOG,
-                MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
+                CRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
                 "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
                 -1,
                 0
@@ -4152,7 +4151,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 w,
                 SBICMD_DIALOG_SECONDARY,
                 TAB_DIALOG,
-                MakeRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
+                CRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
                 "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
                 -1,
                 0
@@ -4170,7 +4169,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         w,
         SBICMD_DIALOG_MISSION_STATUS,
         TAB_DIALOG,
-        MakeRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
+        CRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
         "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
         2,
         0
@@ -4184,7 +4183,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         w,
         SBICMD_DIALOG_REASON,
         TAB_DIALOG,
-        MakeRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
+        CRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
         "GAME_STATUSBAR_TABZ_DIALOG_REASON",
         reason,
         0
@@ -4199,7 +4198,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_PRIMARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+            CRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
             -1,
             0
@@ -4214,7 +4213,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_SECONDARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
+            CRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
             -1,
             0
@@ -4240,7 +4239,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_PRIMARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+            CRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
             -1,
             0
@@ -4256,7 +4255,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_SECONDARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
+            CRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
             -1,
             0
@@ -4272,7 +4271,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             w,
             SBICMD_DIALOG_SECONDARY,
             TAB_DIALOG,
-            MakeRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
+            CRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
             "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
             -1,
             0

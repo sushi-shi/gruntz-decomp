@@ -373,8 +373,8 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     i32 rightW = m_planeViewRect.right - (colR << m_shiftX) + 1;
     i32 rowB = m_planeViewRect.bottom >> m_shiftY;
     i32 botH = m_planeViewRect.bottom - (rowB << m_shiftY) + 1;
-    RECT topSrc = MakeRect(0, m_tileHeightPx - topH, m_tileWidthPx, m_tileHeightPx);
-    RECT leftSrc = MakeRect(m_tileWidthPx - leftW, 0, m_tileWidthPx, m_tileHeightPx);
+    RECT topSrc = CRect(0, m_tileHeightPx - topH, m_tileWidthPx, m_tileHeightPx);
+    RECT leftSrc = CRect(m_tileWidthPx - leftW, 0, m_tileWidthPx, m_tileHeightPx);
     RECT rightSrc = {0, 0, rightW, m_tileHeightPx};
     RECT corner;
     RECT dr;
