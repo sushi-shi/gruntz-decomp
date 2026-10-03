@@ -13,6 +13,8 @@ public:
     i32 FillFrom(CInputDevBase** src, i32 n, i32 unused);
     i32 Add(CInputDevBase* item);
 
+    // @identity-TODO: constructor and FillFrom zero this word; item operations use
+    // m_count and m_items without reading it.
     i32 m_reserved00;
     i32 m_count;
     CInputDevBase* m_items[32];

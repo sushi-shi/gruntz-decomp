@@ -36,10 +36,9 @@ struct SaveSlot {
     b32 m_active;
     i32 m_checksum;
     union {
-        char m_name[0x20];
-        char m_snapshot[0x20];
+        char m_name[0x21];
+        char m_snapshot[0x21];
     };
-    char m_pad34;
     union {
         char m_savePath[0x40];
         char m_serial[0x40];

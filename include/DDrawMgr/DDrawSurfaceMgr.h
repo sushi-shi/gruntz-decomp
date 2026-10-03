@@ -25,6 +25,8 @@ struct CSnapshotHeader {
     char m_name[0x110 - 0x10];
     u32 m_childCount;
     u32 m_objIdCounter;
+    // @identity-TODO: SnapshotChildren zeroes and writes the complete header;
+    // RestoreChildren reads this tail but assigns no meaning to its bytes.
     char m_reserved118[0x120 - 0x118];
 };
 #pragma pack(pop)

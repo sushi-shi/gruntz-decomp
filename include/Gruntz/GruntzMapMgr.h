@@ -30,6 +30,8 @@ public:
     i32 BuildCellAttributes(i32 width, i32 height);
 
     CPtrArray m_arr;
+    // @identity-TODO: BuildCellAttributes zeroes this word and SerializeDispatch
+    // streams it; cell lookup and occupancy operations never consume it.
     i32 m_reserved90;
 };
 

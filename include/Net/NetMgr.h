@@ -50,6 +50,8 @@ struct CNetVersionPacket {
     NetMsgId m_messageId;
     i32 m_butePos;
     i32 m_cfgWord;
+    // @identity-TODO: sent zero by SendVersionCheck and ignored by HandleVersionCheck;
+    // the transmitted packet size and following version fields require this storage.
     char m_pad10[8];
     i32 m_remoteVersion;
     i32 m_localVersion;
@@ -61,6 +63,8 @@ struct CNetValuePacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     NetMsgId m_messageId;
     i32 m_value;
+    // @identity-TODO: the value-message senders transmit this trailing word but
+    // their receivers only consume m_value; no separate field meaning is proven.
     char m_padc[4];
 };
 
@@ -70,10 +74,8 @@ struct CNetOptionsStatePacket {
     i32 m_value;
 };
 
-#pragma pack(push, 1)
 struct CNetPlayerRegistrationPacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad01[3];
     NetMsgId m_messageId;
     u8 m_active;
     GZ_ENUM_STORAGE(ColorTint, u8) m_color;
@@ -82,24 +84,23 @@ struct CNetPlayerRegistrationPacket {
     u8 m_preferredPlayerIndex;
     u8 m_maxGruntz;
     u8 m_ready;
-    char m_pad0f[1];
     i32 m_networkPlayerId;
     char m_name[0x28 - 0x14];
 };
 
 struct CNetPlayerUpdatePacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad01[3];
     NetMsgId m_messageId;
     i32 m_playerIndex;
     u8 m_active;
     GZ_ENUM_STORAGE(ColorTint, u8) m_color;
     u8 m_humanControlled;
     GZ_ENUM_STORAGE(BattlezDifficulty, u8) m_difficulty;
+    // @identity-TODO: broadcast zero and skipped by ApplyPlayerUpdate. The
+    // registration packet uses the corresponding byte for its preferred slot.
     char m_pad10[1];
     u8 m_maxGruntz;
     u8 m_ready;
-    char m_pad13[1];
     i32 m_networkPlayerId;
     char m_name[0x2c - 0x18];
 };
@@ -109,21 +110,20 @@ struct CNetPlayerRecord {
     GZ_ENUM_STORAGE(ColorTint, u8) m_color;
     u8 m_humanControlled;
     GZ_ENUM_STORAGE(BattlezDifficulty, u8) m_difficulty;
+    // @identity-TODO: retained in the player-table wire record, between difficulty
+    // and maximum grunt count; the table sender and receiver assign it no meaning.
     u8 m_pad04;
     u8 m_maxGruntz;
     u8 m_ready;
-    u8 m_pad07;
     i32 m_networkPlayerId;
     char m_name[0x20 - 0x0c];
 };
 
 struct CNetPlayerTablePacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad01[3];
     NetMsgId m_messageId;
     CNetPlayerRecord m_rows[4];
 };
-#pragma pack(pop)
 
 struct CNetCmdSlot {
     NetSlotState m_state;
@@ -303,6 +303,8 @@ public:
     // surviving retail writer or reader proves what either buffer contains.
     char* m_ownedBufferB;
     char* m_ownedBufferA;
+    // @identity-TODO: player-node initialization zeroes this word; neither owned
+    // buffer management nor list traversal reads it.
     i32 m_reserved1c;
     __POSITION* m_listPosition;
 
@@ -455,6 +457,7 @@ public:
     POSITION m_providerCursor;
     POSITION m_sessionCursor;
     POSITION m_playerCursor;
+    // @identity-TODO: unaccessed tail retained for the CNetMgr allocation in CMulti.
     i32 m_reserved88;
 
     CNetProviderNode* GetFirstProvider() {

@@ -67,6 +67,7 @@ public:
     POSITION m_pos;
 
     IDirectDrawPalette* m_palette;
+    // @identity-TODO: constructor and Destroy zero this word; no consumer identifies it.
     i32 m_reserved;
 
     PALETTEENTRY* m_entries;

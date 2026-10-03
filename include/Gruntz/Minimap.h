@@ -76,6 +76,8 @@ public:
     CGruntzMapMgr* m_mapMgr;
     CDDrawSurfaceMgr* m_world;
     CDDSurface* m_surface;
+    // @identity-TODO: unaccessed span required by m_boundsRect's retail offset;
+    // Init clears m_boundsRect and m_drawRect without accessing this storage.
     char m_pad14[0x10];
     RECT m_boundsRect;
     RECT m_drawRect;

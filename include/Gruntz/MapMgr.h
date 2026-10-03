@@ -105,6 +105,7 @@ public:
     u32 m_height;
     u32 m_cellCount;
     BrickzNode* m_openList;
+    // @identity-TODO: initialized and reset to zero; path searches never read it.
     i32 m_reserved1c;
     Coord m_start;
     Coord m_goal;

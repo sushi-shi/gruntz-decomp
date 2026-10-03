@@ -17,6 +17,8 @@ struct CDDPalette;
 struct RezElem40 {
     CRect m_startRect;
     CRect m_endRect;
+    // @identity-TODO: ApplyInit zeroes this word and array copies preserve it;
+    // RenderFrame uses the rectangles without reading this word.
     i32 m_reserved20;
     float m_scale;
 };
@@ -181,6 +183,8 @@ public:
     i32 m_sourceHeight;
     i32 m_warpWidth;
     i32 m_warpHeight;
+    // @identity-TODO: unaccessed span required by m_warpTable's retail offset;
+    // ApplyInit allocates the active lookup tables separately.
     char m_pad78[0x478 - 0x78];
     i32* m_warpTable;
     u8* m_dstBase;

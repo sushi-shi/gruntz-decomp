@@ -30,6 +30,8 @@ public:
     virtual ~CDDrawPaletteRegistry() OVERRIDE;
 
     CMapStringToOb m_palettesByName;
+    // @identity-TODO: construction/destruction proves two maps, but palette loading
+    // and lookup only use m_palettesByName; their original keys and roles are unknown.
     CMapStringToOb m_reservedMap2;
     CMapStringToOb m_reservedMap3;
 

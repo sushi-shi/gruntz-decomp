@@ -23,6 +23,7 @@ public:
     i32 OnKey(i32 key, i32 unused);
     virtual i32 OnLButtonDown(i32 unused, i32 x, i32 y) OVERRIDE;
 
+    // @identity-TODO: unaccessed word required by m_previewCountdownMs's retail offset.
     char m_pad1b4[0x1b8 - 0x1b4];
     u32 m_previewCountdownMs;
     CString m_previewName;

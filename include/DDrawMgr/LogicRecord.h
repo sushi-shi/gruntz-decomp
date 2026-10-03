@@ -85,6 +85,8 @@ struct CLogicRecord : public CWapObj {
     i32 m_maxX;
     i32 m_minY;
     i32 m_maxY;
+    // @identity-TODO: the reserved and pad members below are separate Save/Load
+    // records, except m_reserved16c, which Init only zeroes. Their roles are unknown.
     char m_pad3c[0x40 - 0x3c];
     i32 m_reserved40;
     i32 m_tweakX;

@@ -9,6 +9,9 @@
 
 GZ_ENUM_FORWARD(InputDeviceSel);
 
+// @identity-TODO
+// LoadInputDeviceConfig has no effective caller or address-taking reference; its
+// device selector is the only accessed member. No allocation or RTTI proves the owner.
 class CInputConfig {
 public:
     CString LoadInputDeviceConfig(i32 uppercase);

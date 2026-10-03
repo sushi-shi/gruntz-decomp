@@ -147,6 +147,8 @@ struct GameInfo {
     char m_szCmdLine[0x80];
     char m_szGameIdentifier[0x40];
     char m_szWindowName[0x40];
+    // @identity-TODO: Init copies or clears the complete GameInfo, and the window
+    // class name starts after this span. No bounded title copy proves its ownership.
     char m_pad10c[0x40];
     char m_szWindowClassName[0x80];
     i32 m_windowWidth;

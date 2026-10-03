@@ -51,6 +51,8 @@ public:
     SoundTaskList m_volumeRamps;
     IDirectSound* m_device;
 
+    // @identity-TODO: m_initialized's retail offset requires this unaccessed span;
+    // no capabilities call or whole-object use proves a DSCAPS member here.
     char m_reserved[0x78 - 0x18];
     b32 m_initialized;
     i32 m_lastRampTickMs;

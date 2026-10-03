@@ -19,7 +19,6 @@ public:
     virtual i32 BuildWorldLevelPath(i32) OVERRIDE;
 
     i32 m_demoCountdown;
-    i32 m_reserved524;
 };
 
 #endif // GRUNTZ_GRUNTZ_CDEMO_H

@@ -55,7 +55,6 @@ public:
     ClockInterval m_driftTiming;
     ClockInterval m_peekTiming;
     CWwdSpriteObject* m_glitterSprite;
-    i32 m_reserved7c; // retail news 0x80 (push in DispatchInGameIconLogic); position unproven
 };
 
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H

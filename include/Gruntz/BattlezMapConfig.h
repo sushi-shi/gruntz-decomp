@@ -101,6 +101,8 @@ public:
     CTileTriggerContainer* m_cellQuery;
 
     i32 m_playerIndex;
+    // @identity-TODO: reserved members below are initialized, cleared, or streamed
+    // by Serialize/Deserialize; no AI decision reads them to establish their roles.
     i32 m_reserved01c;
     i32 m_reserved020;
     i32 m_reserved024;
