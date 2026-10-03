@@ -201,12 +201,12 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
         return 0;
     }
     i32 sel = SendMessageA(lb, LB_GETCURSEL, 0, 0);
-    if (sel == -1) {
+    if (sel == LB_ERR) {
         return 0;
     }
     MsgParam out;
     out.m_str = itemText;
-    if (SendMessageA(lb, LB_GETTEXT, sel, out.m_lparam) == -1) {
+    if (SendMessageA(lb, LB_GETTEXT, sel, out.m_lparam) == LB_ERR) {
         return 0;
     }
     if (!_getcwd(dirBuf, 0xfe)) {
@@ -298,12 +298,12 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
         return 0;
     }
     i32 sel = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
-    if (sel == -1) {
+    if (sel == LB_ERR) {
         return 0;
     }
     MsgParam out;
     out.m_str = szLevel;
-    if (static_cast<i32>(SendMessageA(hList, LB_GETTEXT, sel, out.m_lparam)) == -1) {
+    if (static_cast<i32>(SendMessageA(hList, LB_GETTEXT, sel, out.m_lparam)) == LB_ERR) {
         return 0;
     }
     g_levelStr = szLevel;

@@ -671,7 +671,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
                 color = TintColorRef(m_gameManager->m_players[0].m_color);
             } else {
-                color = 0xc8c8c8;
+                color = RGB(200, 200, 200);
             }
             shouldDraw = true;
             break;
@@ -679,7 +679,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
                 color = TintColorRef(m_gameManager->m_players[1].m_color);
             } else {
-                color = 0xc8c8c8;
+                color = RGB(200, 200, 200);
             }
             shouldDraw = true;
             break;
@@ -687,7 +687,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
                 color = TintColorRef(m_gameManager->m_players[2].m_color);
             } else {
-                color = 0xc8c8c8;
+                color = RGB(200, 200, 200);
             }
             shouldDraw = true;
             break;
@@ -695,7 +695,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
                 color = TintColorRef(m_gameManager->m_players[3].m_color);
             } else {
-                color = 0xc8c8c8;
+                color = RGB(200, 200, 200);
             }
             shouldDraw = true;
             break;

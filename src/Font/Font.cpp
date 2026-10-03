@@ -153,7 +153,7 @@ i32 Font::GetMaxHeight() {
 RVA(0x00179be0, 0x14)
 FontRenderer::FontRenderer() {
     m_font = NULL;
-    m_color = 0x00ffffff;
+    m_color = RGB(255, 255, 255);
     m_clip = 0;
     m_surface = 0;
 }

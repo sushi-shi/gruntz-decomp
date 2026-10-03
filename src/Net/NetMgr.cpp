@@ -266,7 +266,7 @@ i32 CNetMgr::ReadProviderSelection(HWND hList) {
         return 0;
     }
     i32 selection = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
-    if (selection == -1) {
+    if (selection == LB_ERR) {
         return 0;
     }
     if (selection < 0) {
@@ -276,7 +276,7 @@ i32 CNetMgr::ReadProviderSelection(HWND hList) {
         return 0;
     }
     i32 itemData = static_cast<i32>(SendMessageA(hList, LB_GETITEMDATA, selection, 0));
-    if (itemData == -1) {
+    if (itemData == LB_ERR) {
         return 0;
     }
     if (itemData == 0) {
@@ -397,7 +397,7 @@ void CNetMgr::PopulateSessionList(HWND hList) {
             0,
             (name.m_str = listing->m_sessionDesc.lpszSessionNameA, name.m_lparam)
         ));
-        if (itemIndex != -1) {
+        if (itemIndex != LB_ERR) {
             MsgParam cookie;
             cookie.m_sessionListing = listing;
             SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);
@@ -415,7 +415,7 @@ i32 CNetMgr::ReadSessionSelection(HWND hList) {
         return 0;
     }
     i32 selection = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
-    if (selection == -1) {
+    if (selection == LB_ERR) {
         return 0;
     }
     if (selection < 0) {
@@ -425,7 +425,7 @@ i32 CNetMgr::ReadSessionSelection(HWND hList) {
         return 0;
     }
     i32 itemData = static_cast<i32>(SendMessageA(hList, LB_GETITEMDATA, selection, 0));
-    if (itemData == -1) {
+    if (itemData == LB_ERR) {
         return 0;
     }
     if (itemData == 0) {
@@ -692,7 +692,7 @@ void CNetMgr::PopulatePlayerList(HWND hList) {
             0,
             (name.m_str = static_cast<const char*>(player->ShortName()), name.m_lparam)
         ));
-        if (itemIndex != -1) {
+        if (itemIndex != LB_ERR) {
             MsgParam cookie;
             cookie.m_player = player;
             SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);

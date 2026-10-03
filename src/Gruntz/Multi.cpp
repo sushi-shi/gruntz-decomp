@@ -928,7 +928,8 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             g_netMgr->PopulateProviderList(combo, 0);
             if (g_serviceId == NET_SERVICE_NONE) {
                 SendMessageA(combo, LB_SETCURSEL, 0, 0);
-            } else if (static_cast<i32>(SendMessageA(combo, LB_SETCURSEL, g_serviceId, 0)) == -1) {
+            } else if (static_cast<i32>(SendMessageA(combo, LB_SETCURSEL, g_serviceId, 0))
+                       == LB_ERR) {
                 SendMessageA(combo, LB_SETCURSEL, 0, 0);
             }
 
@@ -956,7 +957,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         return true;
     }
 
-    if (wParam == 1) {
+    if (wParam == IDOK) {
 
         GetDlgItemTextA(hDlg, 0x51b, gameBuf, 0xa);
         if (gameBuf[0] == 0) {
@@ -976,7 +977,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
         HWND combo = GetDlgItem(hDlg, 0x3fc);
         i32 svc = static_cast<i32>(SendMessageA(combo, LB_GETCURSEL, 0, 0));
-        if (svc != -1) {
+        if (svc != LB_ERR) {
             g_serviceId = svc;
         }
         g_netMgr->ReadProviderSelection(GetDlgItem(hDlg, 0x3fc));
@@ -1056,7 +1057,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                 return true;
             }
 
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 KillTimer(hDlg, 1);
 
                 if ((static_cast<CMulti*>(g_connectRptMgr))->OnJoinConfirm(hDlg) == 0) {
@@ -1090,7 +1091,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                     return true;
                 }
                 FillSessionList(g_sessionListHwnd, g_netMgr);
-                if (sel != -1) {
+                if (sel != LB_ERR) {
                     SendMessageA(g_sessionListHwnd, LB_SETCURSEL, sel, 0);
                 } else {
                     SendMessageA(g_sessionListHwnd, LB_SETCURSEL, 0, 0);
@@ -1233,7 +1234,7 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
             name.m_str = listing->m_sessionDesc.lpszSessionNameA;
             itemIndex = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
         }
-        if (itemIndex != -1) {
+        if (itemIndex != LB_ERR) {
             MsgParam cookie;
             cookie.m_sessionListing = listing;
             SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);

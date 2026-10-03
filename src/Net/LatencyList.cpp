@@ -158,7 +158,7 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
             0,
             reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(rec->GetName()))
         );
-        if (idx != -1) {
+        if (idx != CB_ERR) {
             SendMessageA(combo, CB_SETITEMDATA, idx, data);
         }
     }
@@ -181,7 +181,7 @@ i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
     i32 i = 0;
     while (searching) {
         i32 data = pSend(list, CB_GETITEMDATA, i, 0);
-        if (data != -1) {
+        if (data != CB_ERR) {
             i32 itemLo = LOWORD(data);
             i32 itemHi = HIWORD(data);
             if (itemLo == lo && itemHi == hi) {
@@ -205,11 +205,11 @@ i32 CLatencyList::GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
         return 0;
     }
     i32 sel = SendMessageA(list, CB_GETCURSEL, 0, 0);
-    if (sel == -1) {
+    if (sel == CB_ERR) {
         return 0;
     }
     i32 data = SendMessageA(list, CB_GETITEMDATA, sel, 0);
-    if (data == -1) {
+    if (data == CB_ERR) {
         return 0;
     }
     *outLo = LOWORD(data);
