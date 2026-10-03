@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// @early-stop: Coordinate-return lifetimes remain after mirror call-boundary recovery.
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::StepTimeBomberBehavior() {
     m_neighborScanEnabled = false;
@@ -49,12 +50,12 @@ i32 CGrunt::StepTimeBomberBehavior() {
     m_defenderPx = LastTilePx();
 
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_COOLDOWN) {
-        MirrorAcrossArrival();
+        MIRROR_GRUNT_ACROSS_ARRIVAL();
         m_dwell = 0;
         m_defenderState = AISTATE_COOLDOWN;
     }
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_SEEK) {
-        MirrorAcrossArrival();
+        MIRROR_GRUNT_ACROSS_ARRIVAL();
         m_defenderState = AISTATE_SEEK;
         return 1;
     }
@@ -79,7 +80,7 @@ state2: {
         goto common;
     }
     {
-        RECT box = CRect(
+        CRect box(
             m_arrivalCell.m_x - 4,
             m_arrivalCell.m_y - 4,
             m_arrivalCell.m_x + 5,

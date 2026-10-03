@@ -910,7 +910,7 @@ CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if (obj->m_objectId == objectId) {
+        if (obj->GetObjectId() == objectId) {
             return obj;
         }
     }
@@ -925,7 +925,7 @@ CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_objectId == objectId) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->GetObjectId() == objectId) {
             return obj;
         }
     }
@@ -1232,7 +1232,7 @@ i32 CDDrawChildGroup::SerializeObjects(CFileMemBase* ar, LogicTypeId typeId) {
                 static_cast<WwdGameObjectFlags>(val->m_flags),
                 WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
             )) {
-            i32 objectId = val->m_objectId;
+            i32 objectId = val->GetObjectId();
             ar->Write(&objectId, sizeof(objectId));
             if (val->SerializeDispatch(ar, SERIAL_SAVE, typeId, val) == 0) {
                 return 0;

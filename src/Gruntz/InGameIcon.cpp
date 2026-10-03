@@ -372,7 +372,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     g_gameReg->m_tileGrid->SetObjectIdAt(
         m_object->m_screenX >> TILE_SHIFT_PX,
         m_object->m_screenY >> TILE_SHIFT_PX,
-        m_object->m_objectId
+        m_object->GetObjectId()
     );
     m_object->Show();
 }
@@ -674,7 +674,7 @@ i32 CInGameIcon::Reposition() {
         g_gameReg->GetTileGrid()->SetObjectIdAt(
             obj->m_screenX >> TILE_SHIFT_PX,
             obj->m_screenY >> TILE_SHIFT_PX,
-            obj->m_objectId
+            obj->GetObjectId()
         );
     }
     return 0;
@@ -772,7 +772,7 @@ i32 CInGameIcon::SerializeDispatch(
             g_serialCounter++;
             i32 id = 0;
             if (m_glitterSprite != NULL) {
-                id = m_glitterSprite->m_objectId;
+                id = m_glitterSprite->GetObjectId();
             }
             ar->Write(&id, sizeof(id));
             break;

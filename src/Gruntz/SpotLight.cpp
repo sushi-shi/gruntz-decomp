@@ -231,7 +231,7 @@ i32 CSpotLight::SerializeDispatch(
             {
                 i32 id = 0;
                 if (m_focus != NULL) {
-                    id = m_focus->m_objectId;
+                    id = m_focus->GetObjectId();
                 }
                 s->Write(&id, sizeof(id));
             }

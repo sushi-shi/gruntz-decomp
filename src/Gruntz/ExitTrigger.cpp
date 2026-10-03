@@ -68,7 +68,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
         }
         GruntzPlayer* slot2 = &g_gameReg->m_players[m_object->m_smarts];
         if (slot2 != NULL) {
-            slot2->m_warlordObjectId = e->m_objectId;
+            slot2->m_warlordObjectId = e->GetObjectId();
         }
     }
     m_resolved = true;
@@ -117,7 +117,7 @@ i32 CExitTrigger::SerializeDispatch(
                 g_serialCounter++;
                 i32 id = 0;
                 if (m_warlordLogic->m_object != NULL) {
-                    id = m_warlordLogic->m_object->m_objectId;
+                    id = m_warlordLogic->m_object->GetObjectId();
                 }
                 arc->Write(&id, sizeof(id));
             }

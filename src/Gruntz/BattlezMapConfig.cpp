@@ -1556,10 +1556,9 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 
                 m_board->Clip(NULL);
                 Coord* nt = unit->GetTailCoord();
-                unit->m_entrancePx.Set(
-                    (nt->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
-                    (nt->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
-                );
+                Coord entrance;
+                SET_TILE_CENTER_PIXEL_PAIR(entrance.m_x, entrance.m_y, nt->m_x, nt->m_y)
+                unit->m_entrancePx = entrance;
                 return 1;
             }
         }
@@ -2764,7 +2763,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
                         RECT* hit = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
                         if (::PtInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
-                            g_gameReg->m_voiceManager->PlayVoice(unit, 0x366, -1, 0, -1, -1);
+                            g_gameReg->VoiceMgr()->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }
                         m_routeTiming.Clear();
                         m_routeTiming.m_intervalLo = BLOCKED_VOICE_INTERVAL_MS;
