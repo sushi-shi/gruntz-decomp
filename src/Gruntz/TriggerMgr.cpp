@@ -81,7 +81,7 @@ i32 g_groupSentinel;
 RVA(0x00077f80, 0xab)
 CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
     i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 playerIndex = g->m_playerIndex;
+    i32 playerIndex = g->GetPlayerIndex();
     CGrunt** units = PlayerUnits(playerIndex);
     i32 ty = g->m_lastTilePx.m_y >> TILE_SHIFT_PX;
     CGrunt* best = NULL;
@@ -249,7 +249,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
         Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
-        if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == false) {
+        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_entranceActive == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
@@ -297,7 +297,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
         Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
-        if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == false) {
+        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_entranceActive == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
@@ -423,7 +423,7 @@ RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     CGrunt* cell = SoleSelectedGrunt();
-    if (cell == NULL || cell->m_playerIndex != g_curPlayer) {
+    if (cell == NULL || cell->GetPlayerIndex() != g_curPlayer) {
         return 1;
     }
 
@@ -691,7 +691,7 @@ i32 CTriggerMgr::HandleTargetSelection(
 
     TargetSelectionKind targetKind;
     if (selectedGrunt != NULL) {
-        if (selectedGrunt->m_playerIndex != g_curPlayer) {
+        if (selectedGrunt->GetPlayerIndex() != g_curPlayer) {
             return 1;
         }
         if (selector != TARGET_SELECTION_AUTO) {
@@ -737,7 +737,7 @@ i32 CTriggerMgr::HandleTargetSelection(
             return 1;
         case TARGET_SELECTION_GRUNT:
             if (hit != NULL) {
-                i32 hitPlayerIndex = hit->m_playerIndex;
+                i32 hitPlayerIndex = hit->GetPlayerIndex();
                 if (hitPlayerIndex == g_curPlayer && g_traitorMode == false) {
                     if (selectedGrunt != hit) {
                         goto reportError;
@@ -750,7 +750,7 @@ i32 CTriggerMgr::HandleTargetSelection(
                         }
                     }
                 }
-                this->EnqueueSelectedToolUse(true, hitPlayerIndex, hit->m_unitIndex, true);
+                this->EnqueueSelectedToolUse(true, hitPlayerIndex, hit->GetUnitIndex(), true);
             } else {
                 this->EnqueueSelectedToolUse(true, targetX, targetY, false);
             }
@@ -770,14 +770,14 @@ i32 CTriggerMgr::HandleTargetSelection(
             return 1;
         case TARGET_SELECTION_TOY:
             if (hit != NULL) {
-                if (hit->m_playerIndex == g_curPlayer && g_traitorMode == false
+                if (hit->GetPlayerIndex() == g_curPlayer && g_traitorMode == false
                     && (selectedGrunt != hit || hit->m_vehiclePickupType != PICKUP_SCROLL)) {
                     goto reportError;
                 }
-                i32 hitPlayerIndex = hit->m_playerIndex;
-                i32 hitUnitIndex = hit->m_unitIndex;
-                i32 selectedUnitIndex = selectedGrunt->m_unitIndex;
-                i32 selectedPlayerIndex = selectedGrunt->m_playerIndex;
+                i32 hitPlayerIndex = hit->GetPlayerIndex();
+                i32 hitUnitIndex = hit->GetUnitIndex();
+                i32 selectedUnitIndex = selectedGrunt->GetUnitIndex();
+                i32 selectedPlayerIndex = selectedGrunt->GetPlayerIndex();
                 g_gameReg->m_commandMgr->EnqueueSingle(
                     true,
                     selectedPlayerIndex,
@@ -789,8 +789,8 @@ i32 CTriggerMgr::HandleTargetSelection(
                     0
                 );
             } else {
-                i32 selectedUnitIndex = selectedGrunt->m_unitIndex;
-                i32 selectedPlayerIndex = selectedGrunt->m_playerIndex;
+                i32 selectedUnitIndex = selectedGrunt->GetUnitIndex();
+                i32 selectedPlayerIndex = selectedGrunt->GetPlayerIndex();
                 g_gameReg->m_commandMgr->EnqueueSingle(
                     true,
                     selectedPlayerIndex,
@@ -852,7 +852,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     if (selectedGrunt == NULL) {
         return 0;
     }
-    if (selectedGrunt->m_playerIndex != g_curPlayer) {
+    if (selectedGrunt->GetPlayerIndex() != g_curPlayer) {
         return 0;
     }
     if (m_overlay->Init(
@@ -860,8 +860,8 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
             ACTIONOPTION_HIDDEN,
             selectedWorldX,
             selectedWorldY,
-            selectedGrunt->m_playerIndex,
-            selectedGrunt->m_unitIndex
+            selectedGrunt->GetPlayerIndex(),
+            selectedGrunt->GetUnitIndex()
         )
         == ACTIONOPTION_HIDDEN) {
         return 0;
@@ -2359,8 +2359,8 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     if (doSelect != 0 && count == 1) {
         CGrunt* cell2 = SoleSelectedGrunt();
         if (cell2 != NULL) {
-            i32 playerIndex = cell2->m_playerIndex;
-            i32 unitIndex = cell2->m_unitIndex;
+            i32 playerIndex = cell2->GetPlayerIndex();
+            i32 unitIndex = cell2->GetUnitIndex();
             if (RecordListHas(playerIndex, unitIndex)) {
                 SetCameraTarget(playerIndex, unitIndex);
             }
@@ -2608,7 +2608,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
 
             CGrunt* cell = UnitAt(p->m_x, p->m_y);
             x = static_cast<char>(p->m_x);
-            if (cell->m_playerIndex == magic && cell->m_entranceActive == false) {
+            if (cell->GetPlayerIndex() == magic && cell->m_entranceActive == false) {
                 buf[count] = static_cast<u8>(p->m_y);
                 count++;
             }

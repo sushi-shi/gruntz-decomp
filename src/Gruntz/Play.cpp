@@ -2620,7 +2620,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 RECT span = {0, 0, 0, 0};
                 CGrunt* p =
                     g_gameReg->m_triggerMgr->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
-                if (p == NULL || g_curPlayer != p->m_playerIndex) {
+                if (p == NULL || g_curPlayer != p->GetPlayerIndex()) {
                     goto waypoint_cancel;
                 }
                 m_mgr->m_commandMgr->EnqueueSingle(

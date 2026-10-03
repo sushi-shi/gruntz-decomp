@@ -232,7 +232,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     i32 i = 0;
     CGrunt** rowPtr = m_units;
     for (; i < PLAYER_SLOT_COUNT; i++, rowPtr += TM_UNITS_PER_PLAYER) {
-        if (i != w->m_playerIndex) {
+        if (i != w->GetPlayerIndex()) {
             CGrunt** colPtr = rowPtr;
             i32 j = TM_UNITS_PER_PLAYER;
             do {

@@ -596,8 +596,8 @@ void CProjectile::ScanTargets(i32 impact) {
                 return;
             }
 
-            i32 hitPlayerIndex = g->m_playerIndex;
-            i32 hitUnitIndex = g->m_unitIndex;
+            i32 hitPlayerIndex = g->GetPlayerIndex();
+            i32 hitUnitIndex = g->GetUnitIndex();
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
 
                 Coord* k = static_cast<Coord*>(m_hitList.GetNext(pos));

@@ -1254,7 +1254,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
                     snd->PlayIfElapsed(static_cast<i32>(g_soundVolumePercent), 0, 0, false);
                 }
             }
-            i32 slot = grunt->m_playerIndex;
+            i32 slot = grunt->GetPlayerIndex();
             if (slot == IDX(PLAYER_SLOT_ALL)) {
                 i32* flags = m_playerFlags;
                 flags[0] = 1;

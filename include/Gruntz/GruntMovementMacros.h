@@ -29,8 +29,8 @@
 
 #define COMMIT_GRUNT_NEIGHBOR(target)                                                              \
     CommitNeighbor(                                                                                \
-        target->m_playerIndex,                                                                     \
-        target->m_unitIndex,                                                                       \
+        target->GetPlayerIndex(),                                                                  \
+        target->GetUnitIndex(),                                                                    \
         target->LastTilePx().m_x,                                                                  \
         target->LastTilePx().m_y                                                                   \
     )
@@ -45,8 +45,8 @@
 
 #define SET_GRUNT_ARRIVAL_TARGET(target)                                                           \
     SetEntrancePos(1, 1);                                                                          \
-    m_arrivalCell.m_x = target->m_playerIndex;                                                     \
-    m_arrivalCell.m_y = target->m_unitIndex
+    m_arrivalCell.m_x = target->GetPlayerIndex();                                                  \
+    m_arrivalCell.m_y = target->GetUnitIndex()
 
 #define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget)                                              \
     CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
