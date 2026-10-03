@@ -310,7 +310,7 @@ void CPlay::ReleaseResources() {
     }
     OnExit();
     if (m_mgr) {
-        m_mgr->m_isBuiltInBattlezLevel = false;
+        m_mgr->SetBuiltInBattlezLevel(false);
         m_mgr->m_strWorldFile.Empty();
     }
     m_saveSlot.m_type = 0;
@@ -1105,7 +1105,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         mgr = self->m_mgr;
         if (!mgr->m_strWorldFile.IsEmpty()) {
-            if (mgr->m_isBuiltInBattlezLevel == false
+            if (mgr->IsBuiltInBattlezLevel() == false
                 && mgr->m_isBuiltInMultiplayerLevel == false) {
                 sprintf(nameBuf, "CUSTOMLEVEL");
             }
@@ -1450,7 +1450,6 @@ fail0:
 
 #undef PTR
 
-// @early-stop
 RVA(0x000cb400, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
@@ -1458,9 +1457,9 @@ void CPlay::OnExit() {
     if (m_world) {
         m_world->ChildGroup()->ClearChildren();
     }
-    g_gameReg->m_isBuiltInBattlezLevel = false;
+    g_gameReg->SetBuiltInBattlezLevel(false);
     if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
-        g_gameReg->m_gameMode = GAMEMODE_NONE;
+        g_gameReg->SetGameMode(GAMEMODE_NONE);
     }
     g_gameReg->GetTileGrid()->Reset();
 }
@@ -3292,7 +3291,7 @@ void CPlay::DrawCustomLevelBanner() {
             return;
         }
         CString base;
-        if (m_mgr->m_isBuiltInBattlezLevel == false
+        if (m_mgr->IsBuiltInBattlezLevel() == false
             && m_mgr->m_isBuiltInMultiplayerLevel == false) {
             base = WwdFile::GetMapBaseName(world);
         } else {

@@ -165,7 +165,7 @@ char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
-    g_gameReg->m_gameMode = GAMEMODE_MULTIPLAYER;
+    g_gameReg->SetGameMode(GAMEMODE_MULTIPLAYER);
     if (mgr == NULL) {
         return 0;
     }

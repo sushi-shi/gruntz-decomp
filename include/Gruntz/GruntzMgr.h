@@ -299,6 +299,18 @@ public:
         return m_gameMode;
     }
 
+    void SetGameMode(GameModeId mode) {
+        m_gameMode = mode;
+    }
+
+    b32 IsBuiltInBattlezLevel() const {
+        return m_isBuiltInBattlezLevel;
+    }
+
+    void SetBuiltInBattlezLevel(b32 builtIn) {
+        m_isBuiltInBattlezLevel = builtIn;
+    }
+
     CDDrawSurfaceMgr* World() {
         return m_world;
     }
