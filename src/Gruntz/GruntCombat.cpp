@@ -244,43 +244,40 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
         cue = out;                                                                                 \
     } while (0)
 
-// @early-stop
 RVA(0x00056f80, 0xb0)
-i32* CGrunt::EntranceTileOffset(i32* out) {
-    i32 x = m_lastTilePx.m_x;
-    i32 y = m_lastTilePx.m_y;
+Coord* CGrunt::EntranceTileOffset(Coord* out) {
+    Coord pos = LastTilePx();
     switch (m_entranceCell.m_direction) {
         case DIR_NORTH:
-            y -= 0x20;
+            pos.m_y -= 0x20;
             break;
         case DIR_NORTHEAST:
-            x += 0x20;
-            y -= 0x20;
+            pos.m_x += 0x20;
+            pos.m_y -= 0x20;
             break;
         case DIR_EAST:
-            x += 0x20;
+            pos.m_x += 0x20;
             break;
         case DIR_SOUTHEAST:
-            x += 0x20;
-            y += 0x20;
+            pos.m_x += 0x20;
+            pos.m_y += 0x20;
             break;
         case DIR_SOUTH:
-            y += 0x20;
+            pos.m_y += 0x20;
             break;
         case DIR_SOUTHWEST:
-            x -= 0x20;
-            y += 0x20;
+            pos.m_x -= 0x20;
+            pos.m_y += 0x20;
             break;
         case DIR_WEST:
-            x -= 0x20;
+            pos.m_x -= 0x20;
             break;
         case DIR_NORTHWEST:
-            x -= 0x20;
-            y -= 0x20;
+            pos.m_x -= 0x20;
+            pos.m_y -= 0x20;
             break;
     }
-    out[0] = x;
-    out[1] = y;
+    *out = pos;
     return out;
 }
 
@@ -1439,7 +1436,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
     return 1;
 }
 
-// @early-stop
 RVA(0x0005b050, 0x40b)
 i32 CGrunt::CommitNeighbor(
     i32 targetPlayerIndex,
@@ -2312,7 +2308,6 @@ kindDispatch:
     }
 }
 
-// @early-stop
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
@@ -2401,7 +2396,6 @@ void CGrunt::FinalizeStep(char* name) {
     return;
 }
 
-// @early-stop
 RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
@@ -2409,20 +2403,26 @@ void CGrunt::AdvanceMotion() {
         eq = IsAnimationAct("A");
         if (eq && CoordCount() != 0) {
             Coord* co = GetHeadCoord();
-            i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
+            i32 fl = g_gameReg->m_tileGrid->m_rows[co->m_y][co->m_x].m_flags;
             if (!(fl & BRICKZ_CELL_OCCUPIED) && !((m_arrivalFlags & fl) & BRICKZ_CELL_OCCUPIED)
                 && ((m_arrivalFlags & fl) == 0 || (m_passableMask & fl) != 0)) {
                 Coord* tc = GetTailCoord();
-                SET_TILE_CENTER_PIXEL_PAIR(m_entrancePx.m_x, m_entrancePx.m_y, tc->m_x, tc->m_y)
+                m_entrancePx.Set(
+                    (tc->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (tc->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
+                );
                 m_coordRetryCount = 0;
                 StepEntranceReinit();
             } else if (static_cast<u32>(m_coordRetryCount) <= 5) {
                 if (PathScan() != 0) {
                     Coord* h2 = GetTailCoord();
-                    SET_TILE_CENTER_PIXEL_PAIR(m_entrancePx.m_x, m_entrancePx.m_y, h2->m_x, h2->m_y)
+                    m_entrancePx.Set(
+                        (h2->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (h2->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
+                    );
                     if (CoordCount() != 0) {
                         Coord* h3 = GetHeadCoord();
-                        i32 fl2 = g_gameReg->m_tileGrid->m_rowInts[h3->m_y][h3->m_x * 7];
+                        i32 fl2 = g_gameReg->m_tileGrid->m_rows[h3->m_y][h3->m_x].m_flags;
                         if (!(fl2 & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;
                             StepEntranceReinit();
@@ -2472,24 +2472,21 @@ void CGrunt::AdvanceMotion() {
                                 }
                             }
 
-                            i32 lastX = other->m_lastTilePx.m_x;
-                            i32 lastY = other->m_lastTilePx.m_y;
-                            i32 targetX = lastX;
-                            i32 targetY = lastY;
+                            Coord last = other->LastTilePx();
+                            Coord target = last;
                             if (RectContains(x, y) != 0) {
-                                targetX = otherPxX;
-                                targetY = otherPxY;
-                            } else if (RectContains(lastX, lastY) != 0) {
+                                target.m_x = otherPxX;
+                                target.m_y = otherPxY;
+                            } else if (RectContains(last.m_x, last.m_y) != 0) {
                                 other->SnapToLastTile(0);
                             } else {
-                                targetX = m_arrivalTargetPx.m_x;
-                                targetY = m_arrivalTargetPx.m_y;
+                                target = m_arrivalTargetPx;
                             }
                             result = m_triggerMgr->UseEquippedToolAt(
                                 m_playerIndex,
                                 m_unitIndex,
-                                targetX,
-                                targetY
+                                target.m_x,
+                                target.m_y
                             );
                         } else {
                             result = 0;
@@ -2518,21 +2515,19 @@ void CGrunt::AdvanceMotion() {
                                 }
                             }
 
-                            i32 lastX = other->m_lastTilePx.m_x;
-                            i32 lastY = other->m_lastTilePx.m_y;
-                            i32 targetX = lastX;
-                            i32 targetY = lastY;
+                            Coord last = other->LastTilePx();
+                            Coord target = last;
                             if (VehicleContactContains(x, y) != 0) {
-                                targetX = otherPxX;
-                                targetY = otherPxY;
-                            } else if (VehicleContactContains(lastX, lastY) != 0) {
+                                target.m_x = otherPxX;
+                                target.m_y = otherPxY;
+                            } else if (VehicleContactContains(last.m_x, last.m_y) != 0) {
                                 other->SnapToLastTile(0);
                             } else {
-                                targetX = m_arrivalTargetPx.m_x;
-                                targetY = m_arrivalTargetPx.m_y;
+                                target = m_arrivalTargetPx;
                             }
-                            result = m_triggerMgr
-                                         ->UseToyAt(m_playerIndex, m_unitIndex, targetX, targetY);
+                            result =
+                                m_triggerMgr
+                                    ->UseToyAt(m_playerIndex, m_unitIndex, target.m_x, target.m_y);
                         } else {
                             result = 0;
                         }
