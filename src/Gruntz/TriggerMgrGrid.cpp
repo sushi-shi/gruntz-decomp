@@ -1142,9 +1142,9 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 }
                 return 0;
             case PICKUP_GOOBER: {
-                POSITION pos = GetPuddleHeadPosition();
+                POSITION pos = m_baseList.GetHeadPosition();
                 while (pos != NULL) {
-                    CGruntPuddle* cand = GetNextPuddle(pos);
+                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
                     if (cand->m_pending == false && cand->m_tileX == argTileX
                         && cand->m_tileY == argTileY) {
                         cell->RunMoveConfig(argTileX, argTileY);
