@@ -189,7 +189,6 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00067bd0, 0x2ef)
 i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     SET_ANIMATION_ACT("K");
