@@ -1777,7 +1777,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 
         CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
-        deviceManager->m_device->FlipToGDISurface();
+        deviceManager->FlipToGDISurface();
     }
     i32 wasShown = ShowCursor(true);
     while (ShowCursor(true) < 0) {
@@ -1803,7 +1803,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 
         CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
-        deviceManager->m_device->FlipToGDISurface();
+        deviceManager->FlipToGDISurface();
     }
 
     int(WINAPI * show)(BOOL) = ShowCursor;
@@ -2178,7 +2178,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     IDirectSound* dsound = NULL;
 
     CDDSurface* front = World()->m_drawTarget->m_frontSurface->GetSurface();
-    IDirectDraw2* dd2 = World()->m_deviceManager->m_device;
+    IDirectDraw2* dd2 = World()->m_deviceManager->GetDirectDraw();
 
     if (World()->SoundRegistry()->HasWithPrefix("GAME") == 0) {
         CRezDir* snd = ResourceArchive()->GetDirFromPath("GAME_SOUNDZ");
@@ -2330,7 +2330,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
         }
 
         CDDrawDeviceManager* deviceManager = World()->m_deviceManager;
-        deviceManager->m_device->FlipToGDISurface();
+        deviceManager->FlipToGDISurface();
     }
 
     int(WINAPI * show)(BOOL) = ShowCursor;
@@ -2378,7 +2378,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
         }
 
         CDDrawDeviceManager* deviceManager = World()->m_deviceManager;
-        deviceManager->m_device->FlipToGDISurface();
+        deviceManager->FlipToGDISurface();
     }
 
     int(WINAPI * show)(BOOL) = ShowCursor;

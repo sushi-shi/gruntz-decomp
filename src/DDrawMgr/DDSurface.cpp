@@ -150,11 +150,11 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
 
 RVA(0x0013e2e0, 0x1f0)
 i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
-    if (manager->m_device == NULL) {
+    if (manager->GetDirectDraw() == NULL) {
         return 0;
     }
 
-    i32 hr = manager->m_device->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, NULL);
+    i32 hr = manager->GetDirectDraw()->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, NULL);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0xd5, hr);
         return 0;
