@@ -942,7 +942,7 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
         } else {
             elem->m_playerFlags[playerSlot] = 1;
         }
-        elem->SetActionCode(elem->m_actionCode);
+        elem->SetActionCode(elem->GetActionCode());
         return 1;
     }
 

@@ -2323,7 +2323,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 CTileActionEvent* r =
                     m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
                 if (r != NULL) {
-                    BrickTileId k = static_cast<BrickTileId>(r->m_actionCode);
+                    BrickTileId k = r->GetActionCode();
                     if (r->GetPlayerFlags(m_playerIndex) != 0) {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
@@ -2457,7 +2457,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 }
             }
         } else if (cell != NULL) {
-            BrickTileId id = static_cast<BrickTileId>(cell->m_actionCode);
+            BrickTileId id = cell->GetActionCode();
             i32 occ = cell->GetPlayerFlags(m_playerIndex);
             i32 special = 0;
             if (occ == 0) {
