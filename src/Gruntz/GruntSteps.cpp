@@ -112,7 +112,6 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
     return r;
 }
 
-// @early-stop
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
@@ -174,8 +173,8 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
             .m_typeCode;
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
         if (IsGruntAtSavedScreenPos(this)) {
-
-            m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            Coord tile = LastTilePx();
+            m_triggerMgr->ApplySwitch(this, tile.m_x, tile.m_y);
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         }
     }
@@ -381,7 +380,6 @@ i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -678,7 +676,6 @@ commit:
     return 1;
 }
 
-// @early-stop
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     Coord tile = LastTilePx();
@@ -750,11 +747,10 @@ i32 CGrunt::SetArrivalTarget(
     return 1;
 }
 
-// @early-stop
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     CWwdSpriteObject* h = m_object;
-    Coord tile = m_lastTilePx;
+    Coord tile = LastTilePx();
     i32 tx = tile.m_x;
     i32 ty = tile.m_y;
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
