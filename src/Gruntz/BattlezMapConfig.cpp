@@ -1496,30 +1496,23 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         return 1;
     }
     POSITION node = coordList->GetHeadPosition();
-    Coord center;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&center));
+    Coord center = unit->ScanCell();
     CMapMgr* board = m_board;
-    center.m_y >>= TILE_SHIFT_PX;
-    center.m_x >>= TILE_SHIFT_PX;
     {
-        RECT box;
-        SET_RECT_COMPONENTS(box, center.m_x - 6, center.m_y - 6, center.m_x + 6, center.m_y + 6);
+        CRect box(center.m_x - 6, center.m_y - 6, center.m_x + 6, center.m_y + 6);
         board->Clip(&box);
     }
-    Coord* tailCoord = unit->GetTailCoord();
-    i32 tx = tailCoord->m_x;
-    i32 ty = tailCoord->m_y;
+    Coord tail = *unit->GetTailCoord();
     u32 iter = 0;
+    coordList->GetNext(node);
     while (node != NULL && iter < 3) {
-        POSITION cur = node;
-        unit->m_coordList.GetNext(node);
-        Coord* coord = static_cast<Coord*>(unit->m_coordList.GetAt(cur));
+        Coord* coord = static_cast<Coord*>(coordList->GetNext(node));
         if (coord == NULL) {
             continue;
         }
         i32 x = coord->m_x;
         i32 y = coord->m_y;
-        if ((m_board->m_rows[y][x].m_flags & 1) != 0 && (x != tx || y != ty)) {
+        if ((m_board->m_rows[y][x].m_flags & 1) != 0 && (x != tail.m_x || y != tail.m_y)) {
             continue;
         }
         CPtrList list(10);
@@ -1534,7 +1527,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         if (unit->ArrivalPickupOf(er) == PICKUP_SPRING) {
             flags = BATTLEZ_ROUTE_SPRING_TRAVERSAL;
         }
-        if (board->FindPathWithEndpointOverrides(
+        if (m_board->FindPathWithEndpointOverrides(
                 center.m_x,
                 center.m_y,
                 coord->m_x,
@@ -1548,11 +1541,8 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
             RECYCLE_HEAD_COORD(list)
             if (!list.IsEmpty()) {
                 while (node != NULL) {
-                    POSITION remaining = node;
-                    unit->m_coordList.GetNext(node);
-                    list.AddTail(g_coordPool.PopCopy(
-                        *static_cast<Coord*>(unit->m_coordList.GetAt(remaining))
-                    ));
+                    Coord* remaining = static_cast<Coord*>(coordList->GetNext(node));
+                    list.AddTail(g_coordPool.PopCopy(*remaining));
                 }
 
                 unit->RecycleCoords();
@@ -1565,14 +1555,12 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     }
                 }
 
-                board->Clip(NULL);
+                m_board->Clip(NULL);
                 Coord* nt = unit->GetTailCoord();
-                SET_TILE_CENTER_PIXEL_PAIR(
-                    unit->m_entrancePx.m_x,
-                    unit->m_entrancePx.m_y,
-                    nt->m_x,
-                    nt->m_y
-                )
+                unit->m_entrancePx.Set(
+                    (nt->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (nt->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
+                );
                 return 1;
             }
         }
@@ -1580,7 +1568,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     }
 
     {
-        board->Clip(NULL);
+        m_board->Clip(NULL);
     }
     return 0;
 }
@@ -2343,7 +2331,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_GAUNTLETZ) {
             if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
-                CTileActionEvent* r = m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
+                CTileActionEvent* r =
+                    m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
                 if (r != NULL) {
                     BrickTileId k = static_cast<BrickTileId>(r->m_actionCode);
                     if (r->m_playerFlags[m_playerIndex] != 0) {
