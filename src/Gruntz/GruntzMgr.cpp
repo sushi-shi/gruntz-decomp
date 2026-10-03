@@ -477,7 +477,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         flags |= 0x10;
     }
     m_colorDepth = BPP_RGB_16;
-    if (!m_world->Init(m_gameWnd->GetHwnd(), SCREEN_W_PX, SCREEN_H_PX, BPP_RGB_16, flags)) {
+    if (!m_world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, BPP_RGB_16, flags)) {
         ReportWorldStatus(WORLD_REPORT_STARTUP_INIT);
         return 0;
     }
@@ -524,7 +524,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_cheatMgr = new CCheatMgr;
-    if (!CheatMgr()->Init(m_gameWnd->GetHwnd())) {
+    if (!CheatMgr()->Init(m_gameWnd->m_hwnd)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40b);
         return 0;
     }
@@ -537,7 +537,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     m_midi = new MidiManager;
-    if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->GetHwnd(), false)) {
+    if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->m_hwnd, false)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40c);
         return 0;
     }
@@ -561,7 +561,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     g_inputMgr = new DirectInputMgr2;
     if (!g_inputMgr->Create(
-            m_gameWnd->GetHwnd(),
+            m_gameWnd->m_hwnd,
             m_owner->m_hInstance,
             IDX(DIN_CREATE_ASYNC_KEYBOARD | DIN_CREATE_NO_MOUSE | DIN_CREATE_NO_JOYSTICKS)
         )) {
