@@ -244,6 +244,7 @@ public:
 
     void RecycleCoords();
     i32 VehicleContactContains(i32 x, i32 y);
+    void SetNeighbor(i32 playerIndex, i32 unitIndex);
     i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     CGrunt* FindGridNeighbor(i32 validate);
 
