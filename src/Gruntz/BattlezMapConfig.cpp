@@ -582,9 +582,9 @@ candidateFound:
     }
     unit->m_arrivalState = AI_BATTLEZ_PATH;
     unit->m_defenderState = AISTATE_SEEK;
-    unit->m_arrivalCell.Set(-1, -1);
-    unit->m_unusedBattleCell.Set(-1, -1);
-    unit->m_defenderPx.Set(-1, -1);
+    UNSET_COORD(unit->m_arrivalCell);
+    UNSET_COORD(unit->m_unusedBattleCell);
+    UNSET_COORD(unit->m_defenderPx);
     unit->m_targetTeam = -1;
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
@@ -3413,16 +3413,15 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00030730, 0x1da)
-i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
+i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i32) {
     if (m_active == false) {
         return 0;
     }
-    if (cellX == m_playerIndex) {
+    if (targetPlayer == m_playerIndex) {
         return 1;
     }
-    CGrunt* src = m_triggerMgr->UnitAt(cellX, cellY);
+    CGrunt* src = m_triggerMgr->UnitAt(targetPlayer, targetUnit);
     if (src == NULL) {
         return 0;
     }
@@ -3441,29 +3440,25 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         }
         b32 ok = true;
         if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
-            i32 ux = u->m_arrivalCell.m_x;
-            i32 uy = u->m_arrivalCell.m_y;
-            if (ux == cellX && uy == cellY) {
+            Coord arrival = u->ArrivalCell();
+            if (arrival.m_x == targetPlayer && arrival.m_y == targetUnit) {
                 ok = false;
             }
         }
         if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
-            i32 ux = u->m_arrivalCell.m_x;
-            i32 uy = u->m_arrivalCell.m_y;
-            if (!(ux == cellX && uy == cellY) && (rand() % 3) != 0) {
+            Coord arrival = u->ArrivalCell();
+            if (!(arrival.m_x == targetPlayer && arrival.m_y == targetUnit) && (rand() % 3) != 0) {
                 ok = false;
             }
         }
         if (ok == false) {
             continue;
         }
-        CGameObject* lvl = u->m_object;
-        i32 lx = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
-        i32 ly = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
+        Coord current = ScreenTile(u);
         if (u->m_battleState == BZTASK_ADVANCE && u->m_targetTeam != -1) {
-            CBattlezMapConfig* bundle = &m_ctx->m_players[u->m_targetTeam].m_battlezConfig;
-            i32 dx = bundle->m_marker.m_x - lx;
-            i32 dy = bundle->m_marker.m_y - ly;
+            Coord marker = m_ctx->m_players[u->m_targetTeam].m_battlezConfig.m_marker;
+            i32 dx = marker.m_x - current.m_x;
+            i32 dy = marker.m_y - current.m_y;
             dx = abs(dx);
             dy = abs(dy);
             if (SquaredDistance(dx, dy) <= 0x19) {
@@ -3473,9 +3468,9 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         if (ok == false) {
             continue;
         }
-        u->m_arrivalCell.m_x = cellX;
+        u->m_arrivalCell.m_x = targetPlayer;
         u->m_battleState = BZTASK_ASSIGNED_TARGET;
-        u->m_arrivalCell.m_y = cellY;
+        u->m_arrivalCell.m_y = targetUnit;
         u->m_defenderState = AISTATE_ATTACK;
         u->m_routeBlockedMask =
             IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
@@ -3485,7 +3480,6 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00030990, 0x11b)
 i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     i32 occupied = 0;
@@ -3523,12 +3517,12 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (unit == NULL) {
         return 0;
     }
-    unit->m_arrivalCell.Set(-1, -1);
-    unit->m_unusedBattleCell.Set(-1, -1);
-    unit->m_defenderPx.Set(-1, -1);
     unit->m_arrivalState = AI_BATTLEZ_PATH;
+    UNSET_COORD(unit->m_arrivalCell);
     unit->m_targetTeam = -1;
+    UNSET_COORD(unit->m_unusedBattleCell);
     unit->m_defenderState = AISTATE_SEEK;
+    UNSET_COORD(unit->m_defenderPx);
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
     unit->m_dwell = 0;
