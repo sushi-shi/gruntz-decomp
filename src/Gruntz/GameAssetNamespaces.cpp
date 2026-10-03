@@ -22,7 +22,6 @@
 DATA(0x00251614)
 i32 g_buildNumber;
 
-// @early-stop
 RVA(0x000f9ea0, 0x21d)
 i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     m_mgr = mgr;
@@ -34,8 +33,8 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_reserved44 = -1;
     m_reserved48 = -1;
     m_reserved14c = 0;
-    m_previousStateId = static_cast<GameStateId>(prevStateId);
     m_levelType = LevelAreaForLevel(areaArg);
+    m_previousStateId = static_cast<GameStateId>(prevStateId);
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
     sprintf(area, "AREA%i", IDX(m_levelType));
