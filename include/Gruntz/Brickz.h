@@ -67,6 +67,10 @@ struct BrickzCell {
     BrickzCellNode* m_head;
 };
 
+inline TileCollisionKind CMapMgr::CellTypeAt(i32 x, i32 y) const {
+    return m_rows[y][x].m_typeCode;
+}
+
 inline BrickzCell CMapMgr::CellAt(i32 x, i32 y) {
     BrickzCell cell;
     const BrickzCell* source;

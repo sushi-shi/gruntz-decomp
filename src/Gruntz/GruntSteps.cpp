@@ -168,10 +168,10 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, NULL);
 
-    TileCollisionKind tileKind =
-        g_gameReg->m_tileGrid
-            ->m_rows[m_lastTilePx.m_y >> TILE_SHIFT_PX][m_lastTilePx.m_x >> TILE_SHIFT_PX]
-            .m_typeCode;
+    TileCollisionKind tileKind = g_gameReg->m_tileGrid->CellTypeAt(
+        m_lastTilePx.m_x >> TILE_SHIFT_PX,
+        m_lastTilePx.m_y >> TILE_SHIFT_PX
+    );
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
         if (IsGruntAtSavedScreenPos(this)) {
             Coord tile = LastTilePx();

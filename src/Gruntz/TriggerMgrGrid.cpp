@@ -1128,7 +1128,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             return 0;
         }
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-        TileCollisionKind bute = map->m_rows[by >> TILE_SHIFT_PX][bx >> TILE_SHIFT_PX].m_typeCode;
+        TileCollisionKind bute = map->CellTypeAt(bx >> TILE_SHIFT_PX, by >> TILE_SHIFT_PX);
         PickupType kind = cell->ArrivalPickup();
 
         switch (kind) {
