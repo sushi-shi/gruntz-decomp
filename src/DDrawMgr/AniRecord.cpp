@@ -179,7 +179,7 @@ void CDDrawPaletteResource::Unload() {
 
 RVA(0x00168fd0, 0x24)
 i32 CDDrawPaletteResource::ApplyToFrontSurface() {
-    CDDrawFrontSurface* sd = OwnerMgr()->m_drawTarget->GetFrontSurface();
+    CDDrawFrontSurface* sd = OwnerMgr()->GetDrawTarget()->GetFrontSurface();
     if (sd->m_bpp != BPP_PALETTED_8) {
         return 1;
     }

@@ -343,7 +343,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
     if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
         return 0;
     }
-    m_world->m_drawTarget->TransExit();
+    m_world->GetDrawTarget()->TransExit();
     RetireScene(0x50, 0x3e8, 0, true);
 
     CGruntzMgr* reg = g_gameReg;
@@ -1359,7 +1359,7 @@ i32 CBootyState::CheckPerfectBonus() {
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf =
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
@@ -1469,8 +1469,8 @@ i32 CBootyState::Render() {
     }
 
     m_world->ChildGroup()->TickKillCues(1);
-    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
-    CDDrawSubMgrPages* dt = m_world->m_drawTarget;
+    m_world->ChildGroup()->RenderChildren(m_world->GetDrawTarget()->GetBackPair());
+    CDDrawSubMgrPages* dt = m_world->GetDrawTarget();
     FlipFrontAndRestoreOverlay(dt);
     m_world->SoundRegistry()->TickVolumeRamps();
     return 1;
@@ -1505,7 +1505,7 @@ i32 CBootyState::InputVirtual() {
     } else {
         ShowSecretBonusMessage();
     }
-    m_world->m_drawTarget->TransExit();
+    m_world->GetDrawTarget()->TransExit();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
@@ -1638,9 +1638,9 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                     return 0;
                 }
                 ShowLevelCompleteMessage();
-                m_world->m_drawTarget->TransExit();
-                m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
-                m_world->m_drawTarget->TransTitle();
+                m_world->GetDrawTarget()->TransExit();
+                m_world->ChildGroup()->RenderChildren(m_world->GetDrawTarget()->GetBackPair());
+                m_world->GetDrawTarget()->TransTitle();
                 RetireScene(0x50, 0x3e8, 0, true);
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
@@ -1655,7 +1655,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 if (!ShowSecretBonusMessage()) {
                     return 0;
                 }
-                m_world->m_drawTarget->TransExit();
+                m_world->GetDrawTarget()->TransExit();
                 RetireScene(0x50, 0x3e8, 0, true);
                 m_activation = BOOTYSEQ_SECRET_PENDING;
                 return 1;
@@ -1668,7 +1668,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
-            m_world->m_drawTarget->TransExit();
+            m_world->GetDrawTarget()->TransExit();
             RetireScene(0x50, 0x3e8, 0, true);
             return 1;
         }
@@ -2006,7 +2006,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
     if (!ok) {
         return ok;
     }
-    m_world->m_drawTarget->TransExit();
+    m_world->GetDrawTarget()->TransExit();
     RetireScene(0x50, 0x3e8, 0, true);
 
     CDDrawSurfaceMgr* host = g_gameReg->World();
@@ -2456,7 +2456,7 @@ void CMultiBootyState::DrawBattleStats() {
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf =
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
@@ -2468,7 +2468,7 @@ i32 CMultiBootyState::Render() {
         m_sequenceState = BOOTYSEQ_PERFECT_BONUS;
     }
     m_world->ChildGroup()->TickKillCues(1);
-    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
+    m_world->ChildGroup()->RenderChildren(m_world->GetDrawTarget()->GetBackPair());
 
     u32 secs = g_gameReg->m_gameStats->m_elapsedTimeMs / MILLIS_PER_SECOND;
     CString s;
@@ -2481,7 +2481,7 @@ i32 CMultiBootyState::Render() {
     }
     DrawTextToBackSurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 
-    CDDrawSubMgrPages* dt = m_world->m_drawTarget;
+    CDDrawSubMgrPages* dt = m_world->GetDrawTarget();
     FlipFrontAndRestoreOverlay(dt);
     m_world->SoundRegistry()->TickVolumeRamps();
     return 1;
@@ -2528,7 +2528,7 @@ i32 CMultiBootyState::InputVirtual() {
     }
 
     DrawBattleStats();
-    m_world->m_drawTarget->TransExit();
+    m_world->GetDrawTarget()->TransExit();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }

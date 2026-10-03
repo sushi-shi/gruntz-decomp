@@ -68,7 +68,7 @@ i32 CSBI_Image::Render() {
         if (cel != NULL) {
             CPoint position(m_rect.left + cel->m_anchor.x, m_rect.top + cel->m_anchor.y);
             cel->RenderFrame(
-                g_gameReg->m_world->m_drawTarget->m_backPair,
+                g_gameReg->m_world->GetDrawTarget()->GetBackPair(),
                 position.x,
                 position.y,
                 0

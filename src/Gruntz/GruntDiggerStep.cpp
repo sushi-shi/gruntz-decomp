@@ -16,6 +16,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -46,17 +47,13 @@ i32 CGrunt::StepDiggerBehavior() {
     if (isI) {
         return 1;
     }
-    CMapMgr* grid = g_gameReg->m_tileGrid;
+    CMapMgr* grid = g_gameReg->GetTileGrid();
     grid->Clip(NULL);
 
-    Coord c1;
-    GetScreenPos(&c1);
-    c1.m_x >>= TILE_SHIFT_PX;
-    Coord c2;
-    GetScreenPos(&c2);
-    c2.m_y >>= TILE_SHIFT_PX;
+    i32 tileX = ScanCell().m_x;
+    i32 tileY = ScanCell().m_y;
 
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
     m_defenderPx = m_lastTilePx;
 
@@ -148,15 +145,10 @@ L_tailc:
     if (CoordCount() == 0) {
         if ((m_poweredUp == false) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
             i32 r = m_defenderRadius;
-            RECT box;
-            box.left = c1.m_x - r;
-            box.right = c1.m_x + r;
-            box.top = c2.m_y - r;
-            box.bottom = c2.m_y + r;
-            RECT gb;
-            SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
-            RECT isect;
-            if (!IntersectRect(&isect, &box, &gb)) {
+            CRect box(tileX - r, tileY - r, tileX + r, tileY + r);
+            CRect gb(0, 0, grid->m_width, grid->m_height);
+            CRect isect;
+            if (!isect.IntersectRect(&box, &gb)) {
                 isect = box;
             }
             i32 best = INT_MAX;
@@ -167,9 +159,9 @@ L_tailc:
                 BrickzCell* cell = &grid->m_rows[row][isect.left];
                 for (i32 col = isect.left; col < isect.right; col++) {
                     if ((cell->m_flags & IDX(CELL_FLAG_COVERED_POWERUP)) != 0) {
-                        i32 dr = row - c2.m_y;
+                        i32 dr = row - tileY;
                         dr = abs(dr);
-                        i32 dc = col - c1.m_x;
+                        i32 dc = col - tileX;
                         dc = abs(dc);
                         i32 dist = dr + dc;
                         if (dist < best) {
@@ -182,9 +174,9 @@ L_tailc:
                 }
             }
             if (best != INT_MAX) {
-                i32 dc = bestCol - c1.m_x;
+                i32 dc = bestCol - tileX;
                 dc = abs(dc);
-                i32 dr = bestRow - c2.m_y;
+                i32 dr = bestRow - tileY;
                 dr = abs(dr);
                 if (dc <= 1 && dr <= 1) {
                     m_triggerMgr->UseEquippedToolAt(

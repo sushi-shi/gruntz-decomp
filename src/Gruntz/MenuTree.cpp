@@ -52,8 +52,8 @@ i32 CMenuTree::Configure(
         m_bounds,
         0,
         0,
-        world->m_drawTarget->GetFrontSurface()->GetWidth() - 1,
-        world->m_drawTarget->GetFrontSurface()->GetHeight() - 1
+        world->GetDrawTarget()->GetFrontSurface()->GetWidth() - 1,
+        world->GetDrawTarget()->GetFrontSurface()->GetHeight() - 1
     );
     return 1;
 }
@@ -117,7 +117,7 @@ i32 CMenuTree::DrawActivePage() {
     if (!m_activePage) {
         return 0;
     }
-    CDDrawSurfacePair* backBuffer = m_world->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* backBuffer = m_world->GetDrawTarget()->GetBackPair();
     if (!backBuffer) {
         return 0;
     }
@@ -126,7 +126,7 @@ i32 CMenuTree::DrawActivePage() {
 
 RVA(0x00182ce0, 0x36)
 i32 CMenuTree::PresentFrame() {
-    CDDrawSubMgrPages* drawTarget = m_world->m_drawTarget;
+    CDDrawSubMgrPages* drawTarget = m_world->GetDrawTarget();
     FlipFrontAndRestoreOverlay(drawTarget);
     return 1;
 }

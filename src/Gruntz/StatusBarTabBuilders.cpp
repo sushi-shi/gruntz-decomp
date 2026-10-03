@@ -118,7 +118,7 @@ i32 CSBI_GruntMachine::Render() {
         idx = m_rightFrameIndex;
         m_rightFrame = cfg->GetAt(idx);
 
-        CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
+        CDDrawSurfacePair* ctx = g_gameReg->m_world->GetDrawTarget()->m_backPair;
 
         CImage* f = m_standaloneFrame;
         if (f) {

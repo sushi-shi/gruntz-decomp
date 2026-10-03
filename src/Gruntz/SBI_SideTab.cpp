@@ -153,7 +153,7 @@ i32 CSBI_SideTab::BuildHandle() {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_drawGate) {
-        CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->m_backPair;
+        CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
         m_topFrame->RenderFrame(ctx, m_drawPosition.m_x, m_drawPosition.m_y, 0);
         m_bottomFrame
             ->RenderFrame(ctx, m_drawPosition.m_x + m_bottomFrameDy, m_drawPosition.m_y, 0);

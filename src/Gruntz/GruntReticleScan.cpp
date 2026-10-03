@@ -72,7 +72,7 @@ i32 CGrunt::StepDefenderBehavior() {
         }
     }
 
-    FIND_NEAREST_ENEMY_AT_TARGET(occ, occOnTile, occScreenX)
+    FIND_NEAREST_ENEMY_AT_TARGET(occ, occOnTile)
 
     b32 powered = m_poweredUp;
     if (powered != false) {

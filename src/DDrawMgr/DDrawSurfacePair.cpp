@@ -110,7 +110,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     if (m_id == IDX(DDRAW_PAGE_BACK)) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
-            mgr->m_drawTarget->GetFrontSurface()->GetSurface(),
+            mgr->GetDrawTarget()->GetFrontSurface()->GetSurface(),
             DDSCAPS_BACKBUFFER
         );
         if (m_surface == NULL) {
@@ -329,7 +329,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
-                mgr->m_drawTarget->GetFrontSurface()->GetSurface(),
+                mgr->GetDrawTarget()->GetFrontSurface()->GetSurface(),
                 DDSCAPS_BACKBUFFER
             );
             if (m_surface == NULL) {

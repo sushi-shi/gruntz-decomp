@@ -42,7 +42,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     bool eqI = IsAnimationAct("I");
@@ -50,17 +49,13 @@ i32 CGrunt::StepBrickLayerBehavior() {
         return 1;
     }
     m_defenderPx = m_lastTilePx;
-    CMapMgr* grid = g_gameReg->m_tileGrid;
+    CMapMgr* grid = g_gameReg->GetTileGrid();
     grid->Clip(NULL);
 
-    Coord c1;
-    GetScreenPos(&c1);
-    c1.m_x >>= TILE_SHIFT_PX;
-    Coord c2;
-    GetScreenPos(&c2);
-    c2.m_y >>= TILE_SHIFT_PX;
+    i32 tileX = ScanCell().m_x;
+    i32 tileY = ScanCell().m_y;
 
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
     b32 powered = m_poweredUp;
     if (powered != false) {
@@ -159,15 +154,10 @@ L_ed153:
         }
 
         i32 r = m_defenderRadius;
-        RECT box;
-        box.left = c1.m_x - r;
-        box.right = c1.m_x + r;
-        box.top = c2.m_y - r;
-        box.bottom = c2.m_y + r;
-        RECT gb;
-        SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
-        RECT isect;
-        if (!IntersectRect(&isect, &box, &gb)) {
+        CRect box(tileX - r, tileY - r, tileX + r, tileY + r);
+        CRect gb(0, 0, grid->m_width, grid->m_height);
+        CRect isect;
+        if (!isect.IntersectRect(&box, &gb)) {
             isect = box;
         }
 
@@ -181,9 +171,9 @@ L_ed153:
                 if ((cell->m_flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) != 0
                     || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
                     || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
-                    i32 dr = row - c2.m_y;
+                    i32 dr = row - tileY;
                     dr = abs(dr);
-                    i32 dc = col - c1.m_x;
+                    i32 dc = col - tileX;
                     dc = abs(dc);
                     i32 dist = dr + dc;
                     if (dist < best) {
@@ -196,9 +186,9 @@ L_ed153:
             }
         }
         if (best != INT_MAX) {
-            i32 dc = bestCol - c1.m_x;
+            i32 dc = bestCol - tileX;
             dc = abs(dc);
-            i32 dr = bestRow - c2.m_y;
+            i32 dr = bestRow - tileY;
             dr = abs(dr);
             if (dc <= 1 && dr <= 1) {
                 m_triggerMgr->UseEquippedToolAt(

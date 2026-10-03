@@ -106,8 +106,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         }
     }
 
-    if (!m_world->m_drawTarget->HasOverlay()) {
-        if (!m_world->m_drawTarget->CreateOverlay(0, 0x30000)) {
+    if (!m_world->GetDrawTarget()->HasOverlay()) {
+        if (!m_world->GetDrawTarget()->CreateOverlay(0, 0x30000)) {
             return 0;
         }
     }
@@ -165,7 +165,7 @@ i32 CCreditsState::LeaveState(GameStateId nextState) {
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
     IDirectDrawSurface* in =
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
@@ -202,9 +202,9 @@ i32 CCreditsState::Render() {
     StepVideo();
     DrawScrollingCredits();
 
-    CDDrawSubMgrPages* drawPages = m_world->m_drawTarget;
+    CDDrawSubMgrPages* drawPages = m_world->GetDrawTarget();
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
-    drawPages->m_backPair->BltSelf(drawPages->m_overlayPair);
+    drawPages->GetBackPair()->BltSelf(drawPages->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
         owner()->m_midi->PlaySequence("CREDITZ", true);
@@ -223,7 +223,7 @@ i32 CCreditsState::Render() {
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::InputVirtual() {
 
-    if (m_world->m_drawTarget->PagesReady() == 0) {
+    if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;
     }
     if (ShowCursor(false) >= 0) {
@@ -277,10 +277,10 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     if (m_videoPlaying != false) {
-        (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->PresentBackPage();
-        (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
-        (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->ClearAllPages(0);
-        m_world->m_drawTarget->m_overlayPair->GetSurface()->Fill(0);
+        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->PresentBackPage();
+        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->TransTitle();
+        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->ClearAllPages(0);
+        m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
         return 1;
     }
     char stateName[0x20];
@@ -300,21 +300,20 @@ i32 CCreditsState::InitAttractTitle() {
         return 0;
     }
     m_stateResources = saved;
-    CDDSurface* tgt = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* tgt = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
-    (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
+    (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->TransTitle();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
 
-// @early-stop
 RVA(0x000396f0, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
     if (m_world == NULL) {
         return 0;
     }
 
-    CDDSurface* prov = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* prov = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
 
     CountDown(m_scrollReseedTimer, g_frameDelta);
     if (m_fxEnabled != false) {
@@ -340,13 +339,13 @@ i32 CCreditsState::DrawScrollingCredits() {
         if (g_clipRegionEnabled != false) {
             SelectClipRgn(hdc, m_clipRegion);
         }
-        i32 oldColor = SetTextColor(hdc, FlashColor());
+        COLORREF oldColor = SetTextColor(hdc, FlashColor());
         DrawTextA(hdc, m_caption, -1, &m_drawRect, DT_WORDBREAK | DT_EXPANDTABS);
         SetTextColor(hdc, oldColor);
         if (m_fxEnabled != false && m_fadeCountdown != 0) {
             CString s("Now is the time at Monolith when we dance");
             CRect r(0, 0, SCREEN_W_PX, SCREEN_H_PX);
-            i32 oldColor2 = SetTextColor(hdc, RGB(255, 255, 255));
+            COLORREF oldColor2 = SetTextColor(hdc, RGB(255, 255, 255));
             DrawTextA(
                 hdc,
                 s,
@@ -387,7 +386,7 @@ i32 CCreditsState::SetupTitle() {
         delete[] buf;
     }
     m_clipRegion.CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX);
-    CDDSurface* prov = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* prov = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
     HDC hdc = NULL;
     prov->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc) {
@@ -416,9 +415,9 @@ i32 CCreditsState::StepVideo() {
     }
     i32 ret = 0;
     if (m_videoHandle) {
-        CDDrawSubMgrPages* v = m_world->m_drawTarget;
+        CDDrawSubMgrPages* v = m_world->GetDrawTarget();
         CDDrawSurfacePair* dst = v->m_overlayPair;
-        CDDrawSurfacePair* src = v->m_backPair;
+        CDDrawSurfacePair* src = v->GetBackPair();
         if (!m_videoHandle->Advance(dst->GetSurface()->GetDirectDrawSurface(), -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();

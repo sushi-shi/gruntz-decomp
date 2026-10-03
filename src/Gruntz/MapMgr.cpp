@@ -48,6 +48,7 @@ CBrickzNodePool::~CBrickzNodePool() {
     Free();
 }
 
+// @early-stop
 RVA(0x0009e740, 0x76)
 i32 CBrickzNodePool::Allocate(u32 count) {
     m_storage = new BrickzNode[count];
@@ -97,6 +98,7 @@ CBrickzCellNodePool::~CBrickzCellNodePool() {
     Free();
 }
 
+// @early-stop
 RVA(0x0009e860, 0x7a)
 i32 CBrickzCellNodePool::Allocate(u32 count) {
     m_storage = new BrickzCellNode[count];

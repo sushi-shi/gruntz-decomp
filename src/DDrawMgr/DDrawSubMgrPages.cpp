@@ -133,8 +133,8 @@ void CDDrawSubMgrPages::FlipAndNotify() {
     m_frontSurface->GetSurface()->Flip(NULL);
     CDDrawSurfaceMgr* n = OwnerMgr();
     CDDrawChildGroup* c = n->ChildGroup();
-    CDDrawSubMgrPages* s = n->m_drawTarget;
-    c->BltDirtyChildren(s->m_backPair, s->m_overlayPair);
+    CDDrawSubMgrPages* s = n->GetDrawTarget();
+    c->BltDirtyChildren(s->GetBackPair(), s->m_overlayPair);
 }
 
 RVA(0x00158bc0, 0x2e)

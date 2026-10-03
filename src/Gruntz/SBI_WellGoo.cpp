@@ -137,7 +137,7 @@ i32 CSBI_WellGoo::Render() {
         return 1;
     }
 
-    CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
     m_baseFrame->RenderFrame(ctx, m_drawX, m_rect.bottom + 3, 0);
 
     double fill = static_cast<float>(RECT_HEIGHT(m_rect)) * m_fillScale * 0.01f - 3.0f;

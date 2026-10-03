@@ -65,7 +65,7 @@ i32 CAniPlayer::RenderCel() {
     CImage* cel = tbl->GetAt(m_frameIndex);
     SetFrame(cel);
     if (cel != NULL) {
-        CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
+        CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->GetDrawTarget()->GetBackPair();
         cel->RenderFrame(
             surfaceCtx,
             cel->m_anchor.x + m_rect.left,
