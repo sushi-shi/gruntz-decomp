@@ -15,14 +15,11 @@ static inline Coord ScreenPosition(CGameObject* object) {
 static inline RECT AttackTileNeighborhood(CGrunt* grunt) {
     i32 halfBox = grunt->m_defenderRadius + grunt->m_reachRect.right + 1;
     CGameObject* object = grunt->m_object;
-    Coord pt1 = ScreenPosition(object);
-    ScreenTile(&pt1);
+    Coord pt1 = ScreenTile(ScreenPosition(object));
     i32 by = pt1.m_y;
-    Coord pt2 = ScreenPosition(object);
-    ScreenTile(&pt2);
+    Coord pt2 = ScreenTile(ScreenPosition(object));
     i32 bx = pt2.m_x;
-    Coord pt3 = ScreenPosition(object);
-    ScreenTile(&pt3);
+    Coord pt3 = ScreenTile(ScreenPosition(object));
     i32 topY = pt3.m_y;
     Coord pt4 = ScreenPosition(object);
     pt4.m_x >>= TILE_SHIFT_PX;

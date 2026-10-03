@@ -384,8 +384,7 @@ RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->GetTileGrid();
     Coord tile = LastTilePx();
-    Coord sourceCell = tile;
-    ScreenTile(&sourceCell);
+    Coord sourceCell = ScreenTile(tile);
     i32 result = 0;
     Coord next;
     GruntDirectionCell facing;
@@ -695,8 +694,7 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
     }
 
-    Coord cell = next;
-    ScreenTile(&cell);
+    Coord cell = ScreenTile(next);
     i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(cell.m_x, cell.m_y);
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
@@ -705,8 +703,7 @@ i32 CGrunt::ClaimSwitchTile() {
     m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
     m_commitPx = m_lastTilePx;
-    Coord oldCell = LastTilePx();
-    ScreenTile(&oldCell);
+    Coord oldCell = ScreenTile(LastTilePx());
     g_gameReg->GetTileGrid()->ReleaseCellOccupancy(oldCell.m_x, oldCell.m_y);
     g_gameReg->GetTileGrid()->AcquireCellOccupancy(cell.m_x, cell.m_y, m_playerIndex, m_unitIndex);
 
