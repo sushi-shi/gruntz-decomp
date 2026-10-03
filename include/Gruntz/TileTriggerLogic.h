@@ -116,6 +116,10 @@ public:
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
+    const i32* GetLinkKeys() const {
+        return m_linkKeys;
+    }
+
     i32 GetTileToken() const {
         return m_tileToken;
     }
