@@ -477,6 +477,7 @@ i32 CBattlezMapConfig::StepBoard() {
     return 1;
 }
 
+// @early-stop
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     i32 occupied = 0;
@@ -497,8 +498,7 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
         cand = static_cast<Coord*>(m_candArray.GetAt(i));
         if (cand != NULL) {
 
-            const i32* tilePtr = &m_board->m_rowInts[cand->m_y][cand->m_x * 7];
-            memcpy(&tileRec, tilePtr, sizeof(tileRec));
+            tileRec = m_board->m_rows[cand->m_y][cand->m_x];
             b32 usable = true;
             if (tileRec.m_flags & BRICKZ_CELL_OCCUPIED) {
 
