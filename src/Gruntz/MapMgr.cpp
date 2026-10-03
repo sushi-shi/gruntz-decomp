@@ -201,7 +201,6 @@ void CMapMgr::Reset() {
     m_reserved1c = 0;
 }
 
-// @early-stop
 RVA(0x0009eca0, 0x2bd)
 i32 CMapMgr::FindPath(
     i32 startX,
@@ -213,19 +212,10 @@ i32 CMapMgr::FindPath(
     i32 diagonalMask,
     i32 passableMask
 ) {
-    i32 boundsX = m_bounds.left;
-    if (static_cast<u32>((startX - boundsX)) >= static_cast<u32>(m_gridW)) {
+    if (!InSearchBounds(startX, startY)) {
         return 0;
     }
-    i32 gridHeight = m_gridH;
-    i32 boundsY = m_bounds.top;
-    if (static_cast<u32>((startY - boundsY)) >= static_cast<u32>(gridHeight)) {
-        return 0;
-    }
-    if (static_cast<u32>((goalX - boundsX)) >= static_cast<u32>(m_gridW)) {
-        return 0;
-    }
-    if (static_cast<u32>((goalY - boundsY)) >= static_cast<u32>(gridHeight)) {
+    if (!InSearchBounds(goalX, goalY)) {
         return 0;
     }
     m_passableMask = passableMask;
@@ -313,10 +303,7 @@ i32 CMapMgr::ExpandNeighbor(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag
     i32 ng = node->m_gCost + cost;
     i32 ncol = node->m_col + dx;
     i32 nrow = node->m_row + dy;
-    if (static_cast<u32>((ncol - m_bounds.left)) >= static_cast<u32>(m_gridW)) {
-        return 1;
-    }
-    if (static_cast<u32>((nrow - m_bounds.top)) >= static_cast<u32>(m_gridH)) {
+    if (!InSearchBounds(ncol, nrow)) {
         return 1;
     }
     BrickzCell* ncell = &m_rows[nrow][ncol];

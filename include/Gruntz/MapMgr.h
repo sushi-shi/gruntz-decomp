@@ -70,6 +70,7 @@ public:
     virtual i32 IsCellClear(i32 x, i32 y);
 
     void Clip(const tagRECT* r);
+    inline i32 InSearchBounds(i32 x, i32 y) const;
     void ComputeCellFlags(i32 x, i32 y, i32 tileId);
     i32 AllocGrid(i32 width, i32 height, void (*callback)());
     i32 FindPathWithEndpointOverrides(

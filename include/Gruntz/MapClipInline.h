@@ -22,4 +22,16 @@ inline void CMapMgr::Clip(const RECT* src) {
     m_gridH = dst->bottom - dst->top;
 }
 
+inline i32 CMapMgr::InSearchBounds(i32 x, i32 y) const {
+    x -= m_bounds.left;
+    if (static_cast<u32>(x) >= static_cast<u32>(m_gridW)) {
+        return 0;
+    }
+    y -= m_bounds.top;
+    if (static_cast<u32>(y) >= static_cast<u32>(m_gridH)) {
+        return 0;
+    }
+    return 1;
+}
+
 #endif // GRUNTZ_GRUNTZ_MAPCLIPINLINE_H
