@@ -975,10 +975,10 @@ i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
         CImage* frame = GetAt(i);
         if (frame) {
             i32 size = frame->m_height * frame->m_width;
-            if (frame->m_surface && frame->m_surface->m_bitDepth == BPP_RGB_16) {
+            if (frame->m_surface && frame->m_surface->GetBitDepth() == BPP_RGB_16) {
                 size += size;
             }
-            if (frame->m_surface && frame->m_surface->m_bitDepth == BPP_RGB_24) {
+            if (frame->m_surface && frame->m_surface->GetBitDepth() == BPP_RGB_24) {
                 size = size * 3;
             }
             if (frame->m_owned) {

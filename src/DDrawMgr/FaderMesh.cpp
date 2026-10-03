@@ -33,10 +33,10 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 
     m_meshBuf.RemoveAll();
 
-    i32 halfW = static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth) / 2;
-    i32 halfH = static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight) / 2;
-    i32 cellW = static_cast<i32>(m_sourceSurface->m_apiDesc.dwWidth) / m_cols;
-    i32 cellH = static_cast<i32>(m_sourceSurface->m_apiDesc.dwHeight) / m_rows;
+    i32 halfW = m_dstSurface->GetWidth() / 2;
+    i32 halfH = m_dstSurface->GetHeight() / 2;
+    i32 cellW = m_sourceSurface->GetWidth() / m_cols;
+    i32 cellH = m_sourceSurface->GetHeight() / m_rows;
     float radius = static_cast<float>(sqrt(static_cast<double>((SQR(cellW) + SQR(cellH)))));
     RezElem40 elem;
     for (i32 r = 0; r < m_rows; r++) {
@@ -113,20 +113,18 @@ void CFaderMesh::RenderFrame(i32 frame) {
         if (dstRect.left < 0 && dstRect.right > 0) {
             boundRect.left = elem.m_endRect.left - dstRect.left;
             dstRect.left = 0;
-        } else if (dstRect.right >= static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth)
-                   && dstRect.left < static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth)) {
-            boundRect.right =
-                elem.m_endRect.right - dstRect.right + m_dstSurface->m_apiDesc.dwWidth;
-            dstRect.right = m_dstSurface->m_apiDesc.dwWidth - 1;
+        } else if (dstRect.right >= m_dstSurface->GetWidth()
+                   && dstRect.left < m_dstSurface->GetWidth()) {
+            boundRect.right = elem.m_endRect.right - dstRect.right + m_dstSurface->GetWidth();
+            dstRect.right = m_dstSurface->GetWidth() - 1;
         }
         if (dstRect.top < 0 && dstRect.bottom > 0) {
             boundRect.top = boundRect.top - dstRect.top;
             dstRect.top = 0;
-        } else if (dstRect.bottom >= static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight)
-                   && dstRect.top < static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight)) {
-            boundRect.bottom =
-                boundRect.bottom + (m_dstSurface->m_apiDesc.dwHeight - dstRect.bottom);
-            dstRect.bottom = m_dstSurface->m_apiDesc.dwHeight - 1;
+        } else if (dstRect.bottom >= m_dstSurface->GetHeight()
+                   && dstRect.top < m_dstSurface->GetHeight()) {
+            boundRect.bottom = boundRect.bottom + (m_dstSurface->GetHeight() - dstRect.bottom);
+            dstRect.bottom = m_dstSurface->GetHeight() - 1;
         }
 
         m_dstSurface->BltEx(

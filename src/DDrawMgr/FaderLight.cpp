@@ -174,12 +174,8 @@ i32 CFaderLight::GetFrameCount() {
     double pLeft = pow(static_cast<double>(m_center.x), 2.0);
     double pTop = pow(static_cast<double>(m_center.y), 2.0);
     double dTopLeft = sqrt(pLeft + pTop);
-    double pBottom =
-        pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwHeight) - m_center.y),
-            2.0);
-    double pRight =
-        pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwWidth) - m_center.x),
-            2.0);
+    double pBottom = pow(static_cast<double>(m_targetSurface->GetHeight() - m_center.y), 2.0);
+    double pRight = pow(static_cast<double>(m_targetSurface->GetWidth() - m_center.x), 2.0);
     double dBottomRight = sqrt(pRight + pBottom);
     double dTopRight = sqrt(pRight + pTop);
     double dBottomLeft = sqrt(pLeft + pBottom);

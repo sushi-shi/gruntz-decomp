@@ -119,6 +119,9 @@ public:
     i32 Fill(u32 color);
     i32 GetWidth();
     i32 GetHeight();
+    ColorDepth GetBitDepth() {
+        return m_bitDepth;
+    }
     i32 Scale(i32 n);
     void Unlock();
 

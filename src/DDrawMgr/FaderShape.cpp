@@ -75,28 +75,28 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         return 0;
     }
 
-    m_targetHeight = m_targetSurface->m_apiDesc.dwHeight;
-    m_targetWidth = m_targetSurface->m_apiDesc.dwWidth;
-    m_sourceHeight = m_sourceSurface->m_apiDesc.dwHeight;
-    m_sourceWidth = m_sourceSurface->m_apiDesc.dwWidth;
-    m_warpHeight = m_warpSourceSurface->m_apiDesc.dwHeight;
-    m_warpWidth = m_warpSourceSurface->m_apiDesc.dwWidth;
-    if (m_targetHeight != m_sourceHeight) {
-        return 0;
-    }
+    m_targetWidth = m_targetSurface->GetWidth();
+    m_targetHeight = m_targetSurface->GetHeight();
+    m_sourceWidth = m_sourceSurface->GetWidth();
+    m_sourceHeight = m_sourceSurface->GetHeight();
+    m_warpWidth = m_warpSourceSurface->GetWidth();
+    m_warpHeight = m_warpSourceSurface->GetHeight();
     if (m_targetWidth != m_sourceWidth) {
         return 0;
     }
-    if (m_targetHeight != m_warpHeight) {
+    if (m_targetHeight != m_sourceHeight) {
         return 0;
     }
     if (m_targetWidth != m_warpWidth) {
         return 0;
     }
-    if (m_warpHeight != m_sourceHeight) {
+    if (m_targetHeight != m_warpHeight) {
         return 0;
     }
     if (m_warpWidth != m_sourceWidth) {
+        return 0;
+    }
+    if (m_warpHeight != m_sourceHeight) {
         return 0;
     }
 
@@ -125,7 +125,7 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
     }
 
     m_useLut = pInit->m_useLut;
-    if (m_targetSurface->m_bitDepth != BPP_PALETTED_8) {
+    if (m_targetSurface->GetBitDepth() != BPP_PALETTED_8) {
         m_useLut = false;
     }
 

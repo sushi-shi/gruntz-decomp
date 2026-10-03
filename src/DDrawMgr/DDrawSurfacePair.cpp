@@ -142,9 +142,9 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     if (src == NULL) {
         return 0;
     }
-    i32 w = src->m_apiDesc.dwWidth;
-    ColorDepth bpp = src->m_bitDepth;
-    i32 h = src->m_apiDesc.dwHeight;
+    i32 w = src->GetWidth();
+    ColorDepth bpp = src->GetBitDepth();
+    i32 h = src->GetHeight();
     if (w <= 0 || h <= 0) {
         return 0;
     }

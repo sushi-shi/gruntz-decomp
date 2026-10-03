@@ -59,8 +59,8 @@ i32 CImage::Create(char* path, i32 keyed) {
         return 0;
     }
 
-    m_width = item->m_apiDesc.dwWidth;
-    m_height = item->m_apiDesc.dwHeight;
+    m_width = item->GetWidth();
+    m_height = item->GetHeight();
     m_anchorX = m_width >> 1;
     m_anchorY = m_height >> 1;
     SetBltFastFlags(item);
@@ -124,9 +124,9 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_apiDesc.dwWidth;
+    i32 w = item->GetWidth();
     m_width = w;
-    i32 h = item->m_apiDesc.dwHeight;
+    i32 h = item->GetHeight();
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
@@ -148,9 +148,9 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_apiDesc.dwWidth;
+    i32 w = item->GetWidth();
     m_width = w;
-    i32 h = item->m_apiDesc.dwHeight;
+    i32 h = item->GetHeight();
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;

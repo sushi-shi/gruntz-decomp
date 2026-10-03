@@ -55,3 +55,4 @@ rva	unit	function	lost_max	cur
 0x078430	triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	91.2597
+0x1523f0	wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623
