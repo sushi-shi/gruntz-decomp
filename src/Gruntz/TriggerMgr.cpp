@@ -1988,7 +1988,7 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
                 SoundCue* p = m_world->SoundRegistry()->FindCue("GAME_FINISHLEVEL");
-                m_cueTimer.Start(p->m_sound->m_durationMs + 500);
+                m_cueTimer.Start(p->m_sound->GetDurationMs() + 500);
                 PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_FINISHLEVEL");
                 m_phase = FINISH_STATE_VICTORY;
                 m_groupFlag = false;

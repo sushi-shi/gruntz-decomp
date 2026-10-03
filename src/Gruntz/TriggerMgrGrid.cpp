@@ -1220,18 +1220,17 @@ outOfRange:
 
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
-    i32 bx;
-    i32 by;
+    Coord destination;
     CGrunt* hit;
     i32 moveKind;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
         return 0;
     }
-    i32 cellTileY = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
-    i32 cellTileX = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
     i32 argTileX = worldX >> TILE_SHIFT_PX;
     i32 argTileY = worldY >> TILE_SHIFT_PX;
+    i32 cellTileX = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 cellTileY = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
     if (o->m_screenX != cell->LastTilePx().m_x) {
         goto bad;
@@ -1244,9 +1243,11 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         && cell->GetVehiclePickupType() != PICKUP_SCROLL && g_traitorMode == false) {
         return 0;
     }
-    by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (cell->VehicleContactContains(bx, by) == 0) {
+    destination.Set(
+        (worldX & ~TILE_MASK_PX) + TILE_HALF_PX,
+        (worldY & ~TILE_MASK_PX) + TILE_HALF_PX
+    );
+    if (cell->VehicleContactContains(destination.m_x, destination.m_y) == 0) {
         goto bad;
     }
 
@@ -1266,12 +1267,12 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         if (kind == PICKUP_SCROLL) {
             moveKind = cell->m_moveKind;
         }
-        if (LoadToyBoxIcon(bx, by, playerIndex, kind, moveKind) == 0) {
+        if (LoadToyBoxIcon(destination.m_x, destination.m_y, playerIndex, kind, moveKind) == 0) {
             return 0;
         }
 
         CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
-        cell->FaceTowardPixel(bx, by);
+        cell->FaceTowardPixel(destination.m_x, destination.m_y);
         if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
             RESET_GRUNT_POWERED_STATE(cell)
         }
@@ -1280,9 +1281,9 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
 
     Coord hitTile = hit->LastTilePx();
-    if (hitTile.m_x != bx || hitTile.m_y != by) {
+    if (hitTile != destination) {
         Coord hitCommit = hit->m_commitPx;
-        if (hitCommit.m_x != bx || hitCommit.m_y != by) {
+        if (hitCommit != destination) {
             return 0;
         }
     }
@@ -1295,7 +1296,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     if (cell->GetVehiclePickupType() == PICKUP_SCROLL) {
         moveKind = cell->m_moveKind;
     }
-    cell->FaceTowardPixel(bx, by);
+    cell->FaceTowardPixel(destination.m_x, destination.m_y);
     cell->m_neighborValid = false;
     if (cell->m_poweredUp != false) {
         RESET_GRUNT_POWERED_STATE(cell)

@@ -128,7 +128,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         SoundCue* activationCue = m_world->SoundRegistry()->FindCue("MENU_ACTIVATE");
         if (activationCue != NULL) {
             activationCue = m_world->SoundRegistry()->FindCue("MENU_ACTIVATE");
-            m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
+            m_activateCueDurationMs = activationCue->m_sound->GetDurationMs();
         } else {
             m_activateCueDurationMs = 0;
         }

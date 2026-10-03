@@ -394,7 +394,6 @@ typedef enum TextColorRef {
     TCLR_WHITE = RGB(255, 255, 255),
 } TextColorRef;
 
-// @early-stop
 RVA(0x00022360, 0x338)
 i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (hdc == NULL) {
@@ -430,7 +429,9 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (item != NULL) {
             if (HAS(item->m_flags, FONT_ITEM_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
-                SET_RECT_XY_EXTENTS(work, cur.left + 1, cur.right + 1, cur.top + 1, cur.bottom + 1);
+                work = cur;
+                OFFSET_RECT_X_EDGES(work, 1, 1);
+                OFFSET_RECT_Y_EDGES(work, 1, 1);
                 DrawTextA(hdc, item->m_name, strlen(item->m_name), &work, format);
             }
             if (HAS(item->m_flags, FONT_ITEM_COLORED)) {
@@ -443,18 +444,14 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             calc = cur;
             DrawTextA(hdc, item->m_name, strlen(item->m_name), &calc, format | DT_CALCRECT);
             DrawTextA(hdc, item->m_name, strlen(item->m_name), &cur, format);
-            i32 measuredBottom = calc.bottom;
-            i32 measuredLeft = calc.left;
-            i32 rr = rect->right;
-            i32 rb = rect->bottom;
-            calc.top = measuredBottom;
-            calc.bottom = rb;
-            calc.right = rr;
-            SET_RECT_COMPONENTS(cur, measuredLeft, measuredBottom, rr, rb);
+            calc.top = calc.bottom;
+            calc.bottom = rect->bottom;
+            calc.right = rect->right;
+            cur = calc;
             SetTextColor(hdc, TCLR_WHITE);
-        }
-        if (savedFont) {
-            SelectObject(hdc, savedFont);
+            if (savedFont) {
+                SelectObject(hdc, savedFont);
+            }
         }
     }
     return 1;
@@ -522,12 +519,12 @@ i32 CFontConfig::Draw3DText(
     SetBkColor(hdc, RGB(0, 0, 0));
     CString text(*strSrc);
     DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
-    i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
-    i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
-    rc.left += hoff;
+    i32 hoff = ((dst->right - dst->left) - (rc.right - rc.left)) / 2;
+    i32 voff = ((dst->bottom - dst->top) - (rc.bottom - rc.top)) / 2;
     rc.right += hoff;
-    rc.top += voff;
+    rc.left += hoff;
     rc.bottom += voff;
+    rc.top += voff;
     if (shadow) {
         SetTextColor(hdc, RGB(0, 0, 0));
         rc.left += dx;

@@ -86,7 +86,6 @@ void CAttract::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-// @early-stop
 RVA(0x00014120, 0x1a9)
 i32 CAttract::EnterState(GameStateId previousState) {
 
@@ -113,7 +112,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
         if (g_soundEnabled) {
             m_titleCue->m_sound->ApplyAndPlay(0x64, 0, 0, false);
         }
-        m_titleCountdownMs = m_titleCue->m_sound->m_durationMs + 0x2710;
+        m_titleCountdownMs = m_titleCue->m_sound->GetDurationMs() + 0x2710;
     } else {
         m_titleCountdownMs = 0x1f40;
     }
