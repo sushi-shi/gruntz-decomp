@@ -189,6 +189,9 @@ public:
     i32 GetUnitIndex() const {
         return m_unitIndex;
     }
+    b32 HasArrived() const {
+        return m_arrived;
+    }
     b32 IsEntranceCommitted() const {
         return m_entranceCommitted;
     }
