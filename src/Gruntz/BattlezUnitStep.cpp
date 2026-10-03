@@ -330,9 +330,9 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     return 1;
                 }
                 goal = unit->m_defenderPx;
-                (static_cast<CUserLogic*>(unit))->GetScreenPos((&currentScreenPos));
+                unit->GetScreenPos(&currentScreenPos);
                 i32 currentDx = abs(marker.m_x - (currentScreenPos.m_x >> TILE_SHIFT_PX));
-                (static_cast<CUserLogic*>(unit))->GetScreenPos((&currentScreenPos));
+                unit->GetScreenPos(&currentScreenPos);
                 i32 currentDy = abs(marker.m_y - (currentScreenPos.m_y >> TILE_SHIFT_PX));
                 i32 currentDistanceSquared = SquaredDistance(currentDx, currentDy);
                 i32 goalDx = abs(marker.m_x - goal.m_x);
@@ -360,9 +360,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     UNSET_COORD(unit->m_defenderPx);
                     return 1;
                 }
-                CGameObject* lvl = unit->m_object;
-                i32 dx = abs(gx - (lvl->m_screenX >> TILE_SHIFT_PX));
-                i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
+                i32 dx = abs(gx - unit->GetScreenTileX());
+                i32 dy = abs(gy - unit->GetScreenTileY());
                 if (SquaredDistance(dx, dy) > 0x10) {
                     i32 cfg = unit->m_routeBlockedMask;
                     i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
@@ -426,9 +425,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         UNSET_COORD(unit->m_defenderPx);
         return 1;
     }
-    CGameObject* lvl = unit->m_object;
-    i32 dx = abs(gx - (lvl->m_screenX >> TILE_SHIFT_PX));
-    i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
+    i32 dx = abs(gx - unit->GetScreenTileX());
+    i32 dy = abs(gy - unit->GetScreenTileY());
     if (SquaredDistance(dx, dy) > 0x10) {
         return 1;
     }

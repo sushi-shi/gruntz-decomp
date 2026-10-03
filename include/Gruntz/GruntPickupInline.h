@@ -32,24 +32,12 @@ inline PickupType CGrunt::ArrivalPickupOf(PickupType entranceReason) const {
 
 inline i32 CGrunt::AddBattlezTraversalFlags(i32 flags) const {
     PickupType prim = m_entranceReason;
-    PickupType t = ArrivalPickupOf(prim);
-    if (t == PICKUP_TOOB) {
+    if (ArrivalPickupOf(prim) == PICKUP_TOOB) {
         flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
-    } else {
-        t = prim;
-        if (prim > PICKUP_EQUIPPABLE_LAST) {
-            t = m_toolId;
-        }
-        if (t == PICKUP_SPRING) {
-            flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
-        } else {
-            if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = m_toolId;
-            }
-            if (prim == PICKUP_WINGZ) {
-                flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
-            }
-        }
+    } else if (ArrivalPickupOf(prim) == PICKUP_SPRING) {
+        flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
+    } else if (ArrivalPickupOf(prim) == PICKUP_WINGZ) {
+        flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
     }
     return flags;
 }
