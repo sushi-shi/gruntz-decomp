@@ -4216,9 +4216,8 @@ i32 CPlay::ExecuteCommand(
             if (g != NULL) {
                 if (g->m_tileClaimed != true) {
                     g->m_arrivalRerollTiming.Clear();
-                    g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
+                    g->m_defenderPx = g->LastTilePx();
                     g->m_tileClaimed = true;
-                    g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
 
                     switch (g->m_entranceReason) {
                         case PICKUP_BOOMERANG:
@@ -4238,10 +4237,9 @@ i32 CPlay::ExecuteCommand(
                                 g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
                     }
                     g->m_arrivalFlags |= 0x18040402;
-                    g->m_arrivalCell.m_x = -1;
+                    UNSET_COORD(g->m_arrivalCell);
                     g->m_arrivalState = AI_DEFENDER;
                     g->m_defenderState = AISTATE_SEEK;
-                    g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = false;
                     SET_RECT_XY_EXTENTS(g->m_object->m_extent, 0, 0, 0, 0);
                     g->SetEntrancePos(1, 1);
