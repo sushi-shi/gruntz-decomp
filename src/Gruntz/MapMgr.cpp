@@ -293,16 +293,8 @@ i32 CMapMgr::FindPath(
 reached:
     BrickzNode* p = node;
     while (p != NULL) {
-        CoordPoolNode* rec = g_coordPool.m_freeHead;
-        i32 cellX = p->m_col;
-        i32 cellY = p->m_row;
-        Coord* slot = NULL;
-        if (rec->m_next != NULL) {
-            slot = &rec->m_value;
-            slot->m_x = cellX;
-            slot->m_y = cellY;
-            g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-        }
+        Coord position;
+        Coord* slot = g_coordPool.PopCopy(*position.Set(p->m_col, p->m_row));
 
         outPath->AddHead(slot);
         p = p->m_parent;

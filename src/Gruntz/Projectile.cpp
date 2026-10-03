@@ -606,13 +606,8 @@ void CProjectile::ScanTargets(i32 impact) {
                 }
             }
 
-            Coord* slot = NULL;
-            CoordPoolNode* p = g_coordPool.m_freeHead;
-            if (p->m_next != NULL) {
-                slot = &p->m_value;
-                slot->Set(hitPlayerIndex, hitUnitIndex);
-                g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-            }
+            Coord identity;
+            Coord* slot = g_coordPool.PopCopy(*identity.Set(hitPlayerIndex, hitUnitIndex));
             m_hitList.AddTail(slot);
             g->StepCombatReaction(
                 m_kind,
@@ -683,12 +678,7 @@ i32 CProjectile::SerializeDispatch(
 
             s->Read(&count, sizeof(count));
             for (i32 ci = 0; ci < count; ci++) {
-                CoordPoolNode* node = g_coordPool.m_freeHead;
-                Coord* payload = NULL;
-                if (node->m_next != NULL) {
-                    payload = &node->m_value;
-                    g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-                }
+                Coord* payload = g_coordPool.Pop();
                 s->Read(payload, 8);
                 m_hitList.AddTail(payload);
             }

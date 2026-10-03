@@ -443,13 +443,8 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
             return 1;
         }
     }
-    CoordPoolNode* node = g_coordPool.m_freeHead;
-    Coord* slot = NULL;
-    if (node->m_next != NULL) {
-        slot = &node->m_value;
-        slot->Set(playerIndex, unitIndex);
-        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-    }
+    Coord identity;
+    Coord* slot = g_coordPool.PopCopy(*identity.Set(playerIndex, unitIndex));
     m_recList.AddTail(slot);
 
     return cell->CommitArrival();
