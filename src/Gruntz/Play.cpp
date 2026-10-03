@@ -3107,7 +3107,7 @@ void CPlay::DrawDebugStatsFull() {
     }
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
-        sprintf(scratch, " Sprites = %i ", m_world->ChildGroup()->m_list.GetCount());
+        sprintf(scratch, " Sprites = %i ", m_world->ChildGroup()->GetCount());
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
@@ -3200,7 +3200,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
-        sprintf(scratch, " Objs = %i ", m_world->ChildGroup()->m_list.GetCount());
+        sprintf(scratch, " Objs = %i ", m_world->ChildGroup()->GetCount());
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {

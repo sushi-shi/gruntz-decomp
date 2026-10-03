@@ -143,6 +143,10 @@ public:
         return &m_list;
     }
 
+    i32 GetCount() const {
+        return m_list.GetCount();
+    }
+
     POSITION GetHeadPosition() const {
         return m_list.GetHeadPosition();
     }
