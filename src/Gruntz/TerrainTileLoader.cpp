@@ -86,7 +86,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     [m_world->m_level->m_mainPlane->m_tileRowOffsets[tileY] + tileX]
                                 + 1;
                 reg->m_world->m_level->m_mainPlane->SetCell(tileX, tileY, uncovered);
-                reg->GetTileGrid()->ComputeCellFlags(tileX, tileY, uncovered);
+                reg->m_tileGrid->ComputeCellFlags(tileX, tileY, uncovered);
                 return 1;
             }
             if (cellType == TILEKIND_REVEALED_POWERUP) {
@@ -240,7 +240,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        i32 objectId = g_gameReg->GetTileGrid()->ObjectIdAt(scanX, topY);
+                        i32 objectId = g_gameReg->m_tileGrid->ObjectIdAt(scanX, topY);
                         if (objectId != 0) {
                             CGameObject* found = NULL;
                             CGameObject* mapped = NULL;
@@ -252,7 +252,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped = found;
                             }
                             if (mapped == NULL) {
-                                g_gameReg->GetTileGrid()->SetObjectIdAt(tileX, tileY, 0);
+                                g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
@@ -305,7 +305,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        objectId = g_gameReg->GetTileGrid()->ObjectIdAt(scanX, bottomY);
+                        objectId = g_gameReg->m_tileGrid->ObjectIdAt(scanX, bottomY);
                         if (objectId != 0) {
                             CGameObject* found = NULL;
                             CGameObject* mapped = NULL;
@@ -317,7 +317,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped = found;
                             }
                             if (mapped == NULL) {
-                                g_gameReg->GetTileGrid()->SetObjectIdAt(tileX, tileY, 0);
+                                g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
@@ -374,7 +374,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        i32 objectId = g_gameReg->GetTileGrid()->ObjectIdAt(leftX, scanY);
+                        i32 objectId = g_gameReg->m_tileGrid->ObjectIdAt(leftX, scanY);
                         if (objectId != 0) {
                             CGameObject* found = NULL;
                             CGameObject* mapped = NULL;
@@ -386,7 +386,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped = found;
                             }
                             if (mapped == NULL) {
-                                g_gameReg->GetTileGrid()->SetObjectIdAt(tileX, tileY, 0);
+                                g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
@@ -439,7 +439,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        objectId = g_gameReg->GetTileGrid()->ObjectIdAt(rightX, scanY);
+                        objectId = g_gameReg->m_tileGrid->ObjectIdAt(rightX, scanY);
                         if (objectId != 0) {
                             CGameObject* found = NULL;
                             CGameObject* mapped = NULL;
@@ -451,7 +451,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 mapped = found;
                             }
                             if (mapped == NULL) {
-                                g_gameReg->GetTileGrid()->SetObjectIdAt(tileX, tileY, 0);
+                                g_gameReg->m_tileGrid->SetObjectIdAt(tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
