@@ -607,7 +607,7 @@ CMenuItem* CMenuPage::FindItemByName(const char* name) {
     while (position) {
         CMenuItem* item = NextItem(position);
         if (item) {
-            bool matches = strcmp(requestedName, item->GetItemName()) == 0;
+            bool matches = requestedName == item->GetItemName();
             if (matches) {
                 return item;
             }

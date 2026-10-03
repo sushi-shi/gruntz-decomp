@@ -3573,7 +3573,7 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
     CString s;
     if (s.LoadString(0x81ab)) {
         bool eq;
-        eq = (strcmp(s, m_strWorldFile) == 0);
+        eq = (s == m_strWorldFile);
         if (eq) {
             matched = 1;
         }

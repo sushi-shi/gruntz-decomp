@@ -1098,7 +1098,7 @@ tail:
 
     {
         CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        eq = (strcmp(*rec, "F") == 0);
+        eq = (*rec == "F");
         if (eq) {
             if (m_entranceCommitted != false) {
                 return 0;
@@ -1108,7 +1108,7 @@ tail:
     m_entranceActive = true;
     {
         CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        ne = (strcmp(*rec, "O") != 0);
+        ne = (*rec != "O");
         if (ne) {
             SET_ANIMATION_ACT("H");
             CGrunt* cellObj =

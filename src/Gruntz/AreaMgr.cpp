@@ -218,7 +218,7 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
             continue;
         }
         CString nm = e->GetName();
-        if (strcmp(name, nm) == 0) {
+        if (name.Compare(nm) == 0) {
             return e;
         }
         nm += "_";

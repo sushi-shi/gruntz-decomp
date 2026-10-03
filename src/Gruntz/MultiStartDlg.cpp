@@ -159,7 +159,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
     } else {
         CString currentName;
         worldEdit->GetWindowTextA(currentName);
-        if (strcmp(currentName, g_multiState->BuiltInLevelName())) {
+        if (currentName.Compare(g_multiState->BuiltInLevelName())) {
             worldEdit->SetWindowTextA(g_multiState->BuiltInLevelName());
         }
     }
