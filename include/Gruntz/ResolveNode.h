@@ -53,6 +53,16 @@ struct WwdDirtyRect {
 
 class CResolveNode : public CWapObj {
 public:
+    b32 IsHidden() const {
+        return HAS(m_stateFlags, SPRITE_STATE_HIDDEN);
+    }
+    void Hide() {
+        m_stateFlags |= SPRITE_STATE_HIDDEN;
+    }
+    void Show() {
+        m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    }
+
     inline void SetDrawFillReversed(ShadeMode mode, CShadeTable* table);
     inline void SetDrawFill(ShadeMode mode, CShadeTable* table);
     inline void ResetDrawFill();

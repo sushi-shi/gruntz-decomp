@@ -292,7 +292,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         }
         CWwdSpriteObject* peer = m_cursorSnapSprite;
         if (peer) {
-            peer->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            peer->Hide();
         }
         return 1;
     }
@@ -3407,7 +3407,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
             return 0;
         }
         if (this->m_cursorSnapSprite != NULL) {
-            this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            this->m_cursorSnapSprite->Hide();
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
@@ -3421,7 +3421,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
             return 0;
         }
         if (this->m_cursorSnapSprite != NULL) {
-            this->m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            this->m_cursorSnapSprite->Show();
         }
         this->m_cursorOffset.m_x = 0x10;
         this->m_cursorOffset.m_y = 0x10;
@@ -3434,7 +3434,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
             return 0;
         }
         if (this->m_cursorSnapSprite != NULL) {
-            this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            this->m_cursorSnapSprite->Hide();
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
@@ -3645,7 +3645,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
             return 0;
     }
     if (this->m_cursorSnapSprite != NULL) {
-        this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        this->m_cursorSnapSprite->Hide();
     }
     this->m_cursorOffset.m_x = 0;
     this->m_cursorOffset.m_y = 0;
@@ -3837,7 +3837,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             if (s == NULL) {
                 return 1;
             }
-            s->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            s->Hide();
             return 1;
         }
 
@@ -3846,11 +3846,11 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
 
             if (m_cursorId != 0) {
                 if (m_cursorSnapSprite != NULL) {
-                    m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    m_cursorSnapSprite->Hide();
                 }
             } else {
                 if (m_cursorSnapSprite != NULL) {
-                    m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                    m_cursorSnapSprite->Show();
                 }
             }
             CGameLevel* v = m_world->m_level;
@@ -3861,13 +3861,13 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             return 1;
         }
         if (m_cursorSnapSprite != NULL) {
-            m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_cursorSnapSprite->Hide();
         }
         return 1;
     }
 
     if (m_cursorSnapSprite != NULL) {
-        m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_cursorSnapSprite->Hide();
     }
     m_dragInProgress = true;
     m_statusBar->HandlePointerDrag(keyFlags, x, y);
@@ -5503,7 +5503,7 @@ i32 CPlay::ResetPlayState() {
         }
     }
     if (m_cursorSnapSprite != NULL) {
-        m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_cursorSnapSprite->Show();
     }
     m_inGame = false;
     if (!PlaceStartGruntz()) {
@@ -5945,7 +5945,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
 
     PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_cursorSnapSprite) {
-        m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_cursorSnapSprite->Hide();
     }
     return 1;
 }

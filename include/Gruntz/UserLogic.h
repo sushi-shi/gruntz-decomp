@@ -159,7 +159,7 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 #define SET_OBJECT_FLAGS_INLINE(bits) m_wwdObject->m_flags |= bits
 
-#define HIDE_OBJECT_INLINE() m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN
+#define HIDE_OBJECT_INLINE() m_wwdObject->Hide()
 
 #define SET_OBJECT_FLAGS_AND_HIDE_INLINE(bits)                                                     \
     SET_OBJECT_FLAGS_INLINE(bits);                                                                 \
@@ -291,11 +291,11 @@ public:
     char m_blob[0x10];
 
     void Hide() {
-        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_wwdObject->Hide();
     }
 
     void Show() {
-        m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_wwdObject->Show();
     }
 
     void SetObjectFlags(i32 bits) {

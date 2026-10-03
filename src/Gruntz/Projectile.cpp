@@ -445,7 +445,7 @@ animate:
 
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::AdvanceAnimationAndDeleteWhenComplete() {
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->Show();
 
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* sprite = m_wwdObject;

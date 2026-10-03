@@ -214,7 +214,7 @@ i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32
     CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(moveIcon, 0);
     CWwdSpriteObject* sprite = m_object;
     sprite->SetDrawFill(SHADE_PAL_16, shade);
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->Show();
     SET_ANIMATION_ACT("B");
     if (animatePlacement == false) {
         m_placed = true;
@@ -253,7 +253,7 @@ i32 CGruntPuddle::Remove() {
             m_placed = true;
             m_pending = false;
         } else {
-            o->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            o->Hide();
         }
     }
     return 0;
@@ -343,7 +343,7 @@ i32 CTeleporter::ReapplyConfig() {
     SET_ANIMATION_ACT("A");
     m_armed = true;
     m_tickHandled = false;
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->Show();
     return 1;
 }
 
@@ -419,7 +419,7 @@ i32 CTeleporter::Update() {
         if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SINGLE_USE) {
             a->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else {
-            a->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            a->Hide();
         }
         return 0;
     }

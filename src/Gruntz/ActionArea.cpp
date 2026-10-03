@@ -107,7 +107,7 @@ i32 CActionArea::ApplyColor(i32 owner) {
         default:
             return 0;
     }
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->Show();
     return 1;
 }
 

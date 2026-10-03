@@ -1131,7 +1131,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     spr->m_points = IDX(kind);
     spr->m_score = col;
     spr->m_faceDirection = moveKind;
-    spr->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    spr->Hide();
     return 1;
 }
 
