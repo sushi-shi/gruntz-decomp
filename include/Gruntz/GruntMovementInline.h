@@ -55,19 +55,12 @@ inline void RepathToward(CGrunt* grunt, CGrunt* target) {
     }
 }
 
-inline void CGrunt::MirrorAcrossArrival() {
-    Coord pa;
-    GetScreenTile(&pa);
-    Coord pb;
-    pb.m_y = pa.m_y;
-    GetScreenPos(&pb);
-    i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + pa.m_x;
-    GetScreenTile(&pa);
-    pb.m_x = pa.m_x;
-    GetScreenPos(&pb);
-    i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + pa.m_y;
-    TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
-}
+#define MIRROR_GRUNT_ACROSS_ARRIVAL()                                                              \
+    do {                                                                                           \
+        i32 gx = ScanCell().m_x - m_arrivalCell.m_x + ScanCell().m_x;                              \
+        i32 gy = ScanCell().m_y - m_arrivalCell.m_y + ScanCell().m_y;                              \
+        TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);                                               \
+    } while (0)
 
 inline void ScreenTile(Coord* pos) {
     pos->m_x >>= TILE_SHIFT_PX;
