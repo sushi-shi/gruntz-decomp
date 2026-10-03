@@ -55,7 +55,7 @@ inline void CreateLightFx(
 ) {
     CWwdSpriteObject* sprite =
         group->CreateSprite(0, x, y, sortKey, "LightFx", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
-    sprite->GetLogicRecord()->m_dispatch(sprite);
+    sprite->GetLogicRecord()->Dispatch(sprite);
     static_cast<CLightFx*>(sprite->GetLogicRecord()->m_userLogic)
         ->Activate(imageSetName, animationName, shadeTableIndex, deleteWhenComplete);
 }

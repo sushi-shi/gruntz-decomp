@@ -90,7 +90,7 @@ void CGameObject::Notify(CGameObject* p) {
         CLogicRecord* h = m_hitLogic;
         if (h != NULL) {
             m_hitSource = p;
-            h->m_dispatch(this);
+            h->Dispatch(this);
         }
     }
 }

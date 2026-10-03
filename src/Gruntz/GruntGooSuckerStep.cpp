@@ -213,7 +213,7 @@ L_scanb:
                     POINT pt;
                     pt.x = gx;
                     pt.y = gy;
-                    if (PtInRect(&isect, pt)) {
+                    if (isect.PtInRect(pt)) {
                         best = dist;
                         bestX = gx;
                         bestY = gy;

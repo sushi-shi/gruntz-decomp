@@ -124,7 +124,7 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
                         WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
                     CLogicRecord* record = obj->GetLogicRecord();
                     record->SetLogicEvent(ACT_OBJECT_REMOVED);
-                    record->m_dispatch(obj);
+                    record->Dispatch(obj);
                 }
                 m_activeGroup->RemoveAll(cur, obj);
                 if (obj != NULL) {

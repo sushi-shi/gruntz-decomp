@@ -281,7 +281,7 @@ i32 CTileTriggerLogic::Tick() {
             if (trig == NULL) {
                 return 0;
             }
-            trig->GetLogicRecord()->m_dispatch(trig);
+            trig->GetLogicRecord()->Dispatch(trig);
             trans = static_cast<CTileTriggerTransition*>(trig->GetLogicRecord()->m_userLogic);
         }
     }
@@ -370,7 +370,7 @@ i32 CTileTriggerLogic::Tick() {
                             if (o == NULL) {
                                 return 0;
                             }
-                            o->GetLogicRecord()->m_dispatch(o);
+                            o->GetLogicRecord()->Dispatch(o);
                             CTileTriggerTransition* lg = static_cast<CTileTriggerTransition*>(
                                 o->GetLogicRecord()->m_userLogic
                             );
@@ -986,7 +986,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         if (!spr) {
             return 0;
         }
-        spr->GetLogicRecord()->m_dispatch(spr);
+        spr->GetLogicRecord()->Dispatch(spr);
         spr->SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
         if (spr->m_frameImage == NULL) {
             return 0;

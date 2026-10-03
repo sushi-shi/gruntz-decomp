@@ -146,7 +146,7 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     result->m_posCache = node;
     if (HAS(static_cast<WwdGameObjectFlags>(result->m_flags),
             WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
-        result->GetLogicRecord()->m_dispatch(result);
+        result->GetLogicRecord()->Dispatch(result);
     }
     return static_cast<CWwdGameObject*>(result);
 }
@@ -207,7 +207,7 @@ i32 CWwdGameObject::WalkChildWorkers() {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* o = static_cast<CGameObject*>(m_children.GetNext(pos));
-        o->GetLogicRecord()->m_dispatch(o);
+        o->GetLogicRecord()->Dispatch(o);
         count++;
     }
     return count;

@@ -398,7 +398,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
         IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)
     );
     m_goal = spr;
-    spr->GetLogicRecord()->m_dispatch(spr);
+    spr->GetLogicRecord()->Dispatch(spr);
     m_goal->SetImageSetByName("GAME_CAMERASPRITE");
     return 1;
 }
@@ -1052,7 +1052,7 @@ i32 CTriggerMgr::SpawnPuddle(
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x400);
         return 0;
     }
-    sprite->GetLogicRecord()->m_dispatch(sprite);
+    sprite->GetLogicRecord()->Dispatch(sprite);
     sprite->m_smarts = playerIndex;
     sprite->m_score = moveIcon;
     sprite->m_points = gaugePoints;
@@ -1723,7 +1723,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                                         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                     );
                                 placed = 1;
-                                flashObject->GetLogicRecord()->m_dispatch(flashObject);
+                                flashObject->GetLogicRecord()->Dispatch(flashObject);
                                 (static_cast<CLightFx*>(flashObject->GetLogicRecord()->m_userLogic))
                                     ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, true);
                             }
@@ -1936,7 +1936,7 @@ i32 CTriggerMgr::SpawnGrunt(
     if (sprite == NULL) {
         return 0;
     }
-    sprite->GetLogicRecord()->m_dispatch(sprite);
+    sprite->GetLogicRecord()->Dispatch(sprite);
 
     CGrunt* logic = static_cast<CGrunt*>(sprite->GetLogicRecord()->m_userLogic);
 

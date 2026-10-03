@@ -497,7 +497,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
         m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* sel =
-        g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
+        g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
     CWwdSpriteObject* h = m_object;
     h->SetDrawFill(SHADE_PAL_16, sel);
 }
@@ -2136,7 +2136,7 @@ kindDispatch:
                     pick = 0x10;
                 }
                 CShadeTable* sel =
-                    g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
+                    g_gameReg->SpriteTable()->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
                 CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
                 obj->SetDrawFill(cmd, sel);

@@ -53,7 +53,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     } else {
         idx = m_object->m_smarts;
     }
-    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
+    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(idx, 0);
 
     m_object->SetDrawFill(SHADE_PAL_16, sel);
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
@@ -86,9 +86,9 @@ i32 CGruntCreationPoint::SerializeDispatch(
         } else {
             idx = m_object->m_smarts;
         }
-        CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
+        CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(idx, 0);
         if (sel == NULL) {
-            sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+            sel = g_gameReg->SpriteTable()->GetSel(1, 0);
         }
         CWwdSpriteObject* obj = m_object;
         obj->SetDrawFill(SHADE_PAL_16, sel);

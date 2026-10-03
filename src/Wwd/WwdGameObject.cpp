@@ -687,7 +687,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
         return 0;
     }
     if (record->m_eventCode == 0) {
-        record->m_dispatch(this);
+        record->Dispatch(this);
     }
 
     i32 serialTypeId = 0;

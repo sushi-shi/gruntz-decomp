@@ -299,6 +299,10 @@ public:
         return m_voiceManager;
     }
 
+    CSpriteRefTable* SpriteTable() {
+        return m_spriteFactory;
+    }
+
     CRezMgr* ResourceArchive() {
         return m_resourceArchive;
     }
