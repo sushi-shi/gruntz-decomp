@@ -575,7 +575,7 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
                 SetPlayerColorAvailable(freeColor, false);
             }
             player->m_ready = true;
-            player->m_humanControlled = false;
+            player->SetHumanControlled(false);
             player->m_difficulty =
                 static_cast<BattlezDifficulty>(static_cast<i32>(typeControl->GetCurSel()) - 1);
             player->m_active = true;
@@ -943,7 +943,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                     CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
                     typeCombo->SetCurSel(4);
                 } else {
-                    i32 selection = IDX(player->m_difficulty);
+                    i32 selection = IDX(player->GetDifficulty());
                     CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
                     typeCombo->SetCurSel(selection + 1);
                 }

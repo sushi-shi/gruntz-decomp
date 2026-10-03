@@ -3567,7 +3567,6 @@ i32 CGruntzMgr::OpenBattlezSetup() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00093170, 0x1e3)
 i32 CGruntzMgr::InitializeBattlezPlayers() {
     i32 matched = 0;
@@ -3587,8 +3586,8 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
     for (i32 i = 0; i < m_computerPlayerCount; i++) {
         BattlezDifficulty difficulty;
         if (idx == g_curPlayer) {
-            player->m_humanControlled = true;
-            difficulty = player->m_difficulty;
+            player->SetHumanControlled(true);
+            difficulty = player->GetDifficulty();
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }
@@ -3598,8 +3597,8 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
             player->m_battlezConfig.Clear();
             player++;
             idx++;
-            player->m_humanControlled = false;
-            difficulty = player->m_difficulty;
+            player->SetHumanControlled(false);
+            difficulty = player->GetDifficulty();
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }
@@ -3607,8 +3606,8 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
                 return 0;
             }
         } else {
-            player->m_humanControlled = false;
-            difficulty = player->m_difficulty;
+            player->SetHumanControlled(false);
+            difficulty = player->GetDifficulty();
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }
