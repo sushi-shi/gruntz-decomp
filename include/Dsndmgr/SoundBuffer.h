@@ -45,6 +45,9 @@ public:
     i32 SetFrequency(u32 frequency);
     u32 GetFrequency();
     u32 GetBaseFrequency();
+    u32 GetDurationMs() const {
+        return m_durationMs;
+    }
     i32 SetFrequencyOffsetPercent(i32 percentOffset);
     void UpdateDuration();
     i32 Unlock(u8* audioPtr1, u32 audioBytes1, u8* audioPtr2, u32 audioBytes2);
