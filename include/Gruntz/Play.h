@@ -394,8 +394,6 @@ public:
     i32 m_stepCountdown;
     i32 m_focusPlayerIndex;
     MidiSequence* m_savedMusicSequence;
-    // @identity-TODO: unaccessed tail retained for TransitionState's CPlay allocation.
-    i32 m_reserved51c;
 
     i32 SaveUnderAndDrawCursor(CDDrawSurfacePair* pair);
     i32 LoadCursorSprites(i32 cursorId, b32 targetValid);

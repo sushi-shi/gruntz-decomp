@@ -385,8 +385,6 @@ public:
     GameModeId m_gameMode;
     i32 m_computerPlayerCount;
     RECT m_viewBounds;
-    // @identity-TODO: unaccessed word required by m_players' retail offset.
-    char m_pad14c[0x150 - 0x14c];
     GruntzPlayer m_players[4];
 };
 

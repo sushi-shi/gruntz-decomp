@@ -55,9 +55,6 @@ public:
     ClockInterval m_driftTiming;
     ClockInterval m_peekTiming;
     CWwdSpriteObject* m_glitterSprite;
-    // @identity-TODO: DispatchInGameIconLogic allocates more than the identified
-    // members require; the unused word's placement and original type remain unproven.
-    i32 m_reserved7c;
 };
 
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H
