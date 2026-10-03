@@ -205,18 +205,11 @@
       # Runtime DLLs - proprietary libs the rebuilt EXE LOADS to run.
 
       # Miles Sound System v4.0g runtime. 269,312 bytes.
-      gruntz-mss32 = pkgs.fetchurl {
-        name = "MSS32.DLL";
-        url = "https://archive.org/download/gruntz-pc/Gruntz.iso/GAME%2FMSS32.DLL";
-        sha256 = "sha256-rM/BX6WSTF3cwhAl81r5COTn7XV2tmSrVNcTfkUyPnU=";
-      };
+      runtime-dlls = import ./nix/runtime.nix { inherit pkgs; };
+      gruntz-mss32 = runtime-dlls.mss32;
 
       # Smacker video runtime (intro/cutscene codec). 96,256 bytes.
-      gruntz-smackw32 = pkgs.fetchurl {
-        name = "SMACKW32.DLL";
-        url = "https://archive.org/download/gruntz-pc/Gruntz.iso/GAME%2FSMACKW32.DLL";
-        sha256 = "sha256-+bL9tevI5lnHrBMsIT/P0usFmhGVoSkSG7aMohaZ5eE=";
-      };
+      gruntz-smackw32 = runtime-dlls.smackw32;
 
       # SFMAN32.DLL - the Miles/AIL "SoundFont Manager" (LoadLibraryA'd to play
       # Gruntz.SF2). NOT Creative's similarly-named "SoundFont Master Manager" (the

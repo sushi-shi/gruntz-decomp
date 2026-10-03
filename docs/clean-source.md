@@ -2,7 +2,7 @@
 
 `gruntz clean` generates one C++ project with its own build support. The exporter
 stays in the reconstruction repository; its output contains source, headers,
-resources, vendor notices, licensing and a small MSVC 5.0 SP3 build.
+resources, vendor notices, licensing and a small MSVC 5.0 SP3 build and launcher.
 
 ```sh
 nix develop -c gruntz clean --out build/clean-source --verify
@@ -39,8 +39,9 @@ Miles and Smacker import libraries are built from the small checked-in C export
 bodies under `scripts/gruntz/clean/project/imports/`. VC5's `/DLL /NOENTRY
 /IMPLIB` produces correctly decorated loader imports. Only the resulting `.lib`
 files enter the game link; temporary DLLs and objects are discarded, including
-on failure. No hint padding or matching tables are needed. The real DLLs and game
-data are still required at runtime and are not included in the export.
+on failure. No hint padding or matching tables are needed. The launcher obtains
+the real DLLs through the shared `nix/runtime.nix` pins; game data is supplied
+locally and stays outside the export.
 
 `--verify` enters the exported project's own Nix shell and compiles and links
 `build/GRUNTZ.EXE`. It does not launch the game or claim gameplay verification.
@@ -54,3 +55,17 @@ Source changes rebuild their objects; header, build-support or toolchain-path
 changes invalidate all objects. Resources and import libraries are rebuilt on
 each invocation. The current compiler, MFC and DirectX APIs remain part of the
 source base; compiler modernization and platform porting are subsequent work.
+
+To build and play from the exported source directory:
+
+```sh
+nix run path:. -- --data "/path/to/your/Gruntz"
+```
+
+Nix supplies Wine, gamescope, the compiler and the real runtime DLLs. The game
+folder must contain `Gruntz.REZ`, `GRUNTZ.VRZ`, and `LARGE.FNT`, `MEDIUM.FNT`,
+`SMALL.FNT`, `TINY.FNT`. Its path is remembered; later launches need only
+`nix run path:.`. Each launch builds first, then installs the compiled EXE in
+`build/game/game/`, preserving saves. A separate game Wine prefix and CDROM
+mapping use the compiled EXE; no retail EXE is needed. The shared gamescope
+runner integer-scales the 640x480 Wine desktop and cleans up Wine on exit.

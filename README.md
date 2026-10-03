@@ -56,6 +56,22 @@ The report lands at `build/objdiff/compare-new/report.json`;
 `gruntz clean --verify` exports and builds a standalone C++ source project with
 the matching machinery removed. See [source export](docs/clean-source.md).
 
+## Branches
+
+```mermaid
+flowchart LR
+    main["main<br/>Reconstruction & matching"] -->|"gruntz clean"| source["source<br/>One clean snapshot"]
+    source -.->|"Create your branch"| port["Your port<br/>Ongoing development"]
+    style main fill:#172554,color:#dbeafe,stroke:#60a5fa
+    style source fill:#14532d,color:#dcfce7,stroke:#4ade80
+    style port fill:#451a03,color:#fef3c7,stroke:#fbbf24
+```
+
+Use [`source`](https://github.com/sushi-shi/gruntz-decomp/tree/source) to build
+and play without the matching tools. Its README starts with the one-command
+Nix launcher. The branch is a generated, single-commit snapshot; start a new
+branch from it for ongoing development.
+
 ## The pipeline
 
 ```

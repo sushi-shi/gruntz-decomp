@@ -115,6 +115,7 @@ class SnapshotInputs(unittest.TestCase):
             self.assertNotIn(name, first)
         for name in ('src/Gruntz/Gruntz.rc', 'src/Gruntz/res/gruntz.ico',
                      'imports/mss32.c', 'imports/smackw32.c', 'nix/toolchain.nix',
+                     'nix/runtime.nix', 'play.py', 'scripts/gruntzbuild/play.py',
                      'vendor/sfman-1.01/SFMAN.H'):
             self.assertIn(name, first)
         self.assertEqual(set(json.loads(first['flake.lock'])['nodes']), {'root', 'nixpkgs'})

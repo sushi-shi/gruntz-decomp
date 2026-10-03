@@ -70,9 +70,10 @@ def generate(files):
     for name in BRIDGES:
         output[f'scripts/gruntzbuild/tool/{name}'] = files[f'scripts/gruntz/tool/{name}'].replace(
             b'gruntz.', b'gruntzbuild.').replace(b'`gruntz init`', b'`python3 build.py`')
+    output['scripts/gruntzbuild/play.py'] = files['scripts/gruntz/graph/play.py']
     for name in ('scripts/gruntzbuild/__init__.py', 'scripts/gruntzbuild/core/__init__.py'):
         output[name] = b''
-    for name in ('LICENSE', 'nix/toolchain.nix'):
+    for name in ('LICENSE', 'nix/toolchain.nix', 'nix/runtime.nix'):
         output[name] = files[name]
     output['build.json'] = (json.dumps({'units': units}, indent=2) + '\n').encode()
     lock = json.loads(files['flake.lock'])
