@@ -76,6 +76,10 @@ public:
     virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual void Cleanup();
 
+    CDDrawSubMgrPages* const& GetDrawTarget() const {
+        return m_drawTarget;
+    }
+
     CDDrawChildGroup* ChildGroup() {
         return m_childGroup;
     }

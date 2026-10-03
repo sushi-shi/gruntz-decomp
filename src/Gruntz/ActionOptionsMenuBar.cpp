@@ -181,7 +181,7 @@ i32 CActionOptionsMenuBar::Render() {
     LONG sy = m_screenY;
     level->m_mainPlane->WorldToViewport(&sx, &sy);
 
-    CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
     LevelCoordRect r = g_gameReg->World()->m_level->m_viewportRect;
     m_frame->RenderFrameClipped(ctx, sx, sy, &r, 0);
 

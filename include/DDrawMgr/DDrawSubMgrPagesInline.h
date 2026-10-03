@@ -9,7 +9,7 @@
 
 inline void FlipFrontAndRestoreOverlay(CDDrawSubMgrPages* pages) {
     pages->GetFrontSurface()->GetSurface()->Flip(NULL);
-    pages->m_backPair->GetSurface()->BltFast(
+    pages->GetBackPair()->GetSurface()->BltFast(
         0,
         0,
         pages->m_overlayPair->GetSurface(),

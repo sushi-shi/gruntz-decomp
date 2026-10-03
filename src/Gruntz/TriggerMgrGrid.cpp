@@ -1055,7 +1055,6 @@ void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
     );
 }
 
-// @early-stop
 RVA(0x0006dae0, 0x4f9)
 i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     i32 hitPlayerIndex;

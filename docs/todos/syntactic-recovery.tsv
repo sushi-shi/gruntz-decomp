@@ -46,6 +46,7 @@ rva	unit	function	lost_max	cur
 0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	91.7547	91.3432
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.6613	89.4993
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660
+0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	95.7703	95.4459
 0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
 0x09c0e0	spriteloaders	?AddTime@CTimer@@QAEXHH@Z	100.0000	99.8214
@@ -56,3 +57,4 @@ rva	unit	function	lost_max	cur
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	91.2597
 0x1523f0	wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623
+0x15a210	wwdobjmgr	?DrawObjectDebugGeometry@CDDrawChildGroup@@QAEXXZ	97.8145	95.5362

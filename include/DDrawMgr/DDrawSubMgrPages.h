@@ -58,6 +58,10 @@ public:
     i32 TransTitle();
     i32 TransExit();
 
+    CDDrawSurfacePair* GetBackPair() const {
+        return m_backPair;
+    }
+
     CDDrawFrontSurface* m_frontSurface;
     CDDrawSurfacePair* m_backPair;
     CDDrawSurfacePair* m_overlayPair;

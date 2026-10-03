@@ -3988,7 +3988,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->RenderFrame(
-        g_gameReg->World()->m_drawTarget->m_backPair,
+        g_gameReg->World()->GetDrawTarget()->GetBackPair(),
         static_cast<i32>(m_currentX),
         static_cast<i32>(m_currentY),
         0

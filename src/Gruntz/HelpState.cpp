@@ -80,8 +80,8 @@ RVA(0x00095140, 0x6e)
 i32 CHelpState::EnterState(GameStateId previousState) {
     m_mgr->RestoreVideoMode(false);
 
-    if (m_world->m_drawTarget->HasOverlay() == 0
-        && m_world->m_drawTarget->CreateOverlay(0, 0x30000) == 0) {
+    if (m_world->GetDrawTarget()->HasOverlay() == 0
+        && m_world->GetDrawTarget()->CreateOverlay(0, 0x30000) == 0) {
         return 0;
     }
     if (LoadTitlePage(g_titleBuf, 0, 0, 0, 0, true) == 0) {
@@ -99,7 +99,7 @@ i32 CHelpState::LeaveState(GameStateId nextState) {
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
     IDirectDrawSurface* busy =
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x445);
@@ -128,7 +128,7 @@ i32 CHelpState::Render() {
 
 RVA(0x00095320, 0x56)
 i32 CHelpState::InputVirtual() {
-    if (m_world->m_drawTarget->PagesReady() == 0) {
+    if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {

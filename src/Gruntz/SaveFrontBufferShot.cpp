@@ -22,7 +22,7 @@ void SaveFrontBufferShot(CRegMgr* reg, CGruntzMgr* mgr, i32 w, i32 h, char* name
 
 RVA(0x00114f00, 0x3e)
 i32 SaveFrontBufferShotImpl(CRegMgr* reg, CGruntzMgr* mgr, i32 w, i32 h, char* name, i32 saveFlag) {
-    CDDrawFrontSurface* pair = mgr->m_world->m_drawTarget->GetFrontSurface();
+    CDDrawFrontSurface* pair = mgr->m_world->GetDrawTarget()->GetFrontSurface();
     if (pair == NULL) {
         return 0;
     }

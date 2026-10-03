@@ -64,12 +64,12 @@ i32 DrawPageDebugText(
     }
     CDrawSubWorker* page;
     if (useFrontPage != false) {
-        page = mgr->m_drawTarget->GetFrontSurface();
+        page = mgr->GetDrawTarget()->GetFrontSurface();
         if (page == NULL) {
             return 0;
         }
     } else {
-        page = mgr->m_drawTarget->m_backPair;
+        page = mgr->GetDrawTarget()->GetBackPair();
         if (page == NULL) {
             return 0;
         }
