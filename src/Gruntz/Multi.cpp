@@ -720,7 +720,10 @@ void CMulti::RenderGameFrame() {
             );
         }
         m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
-        m_minimap->Draw(static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()), &rc);
+        m_minimap->Draw(
+            static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()),
+            &rc
+        );
     }
     Mgr()->ChatLog()->Scroll(g_frameDelta);
     CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());

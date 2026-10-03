@@ -506,9 +506,9 @@ void CDDrawChildGroup::CollideBroadcast() {
                     mask2 = oj->AttackBits(oi);
                     if (mask1 || mask2) {
                         i32 overlap;
-                        if (!oj->HasAttackBounds()) {
+                        if (oj->m_switchRect.left == COORD_UNSET) {
                             overlap = 0;
-                        } else if (!oi->HasHitBounds()) {
+                        } else if (oi->m_area.left == COORD_UNSET) {
                             overlap = 0;
                         } else {
                             RECT ra, rb;
