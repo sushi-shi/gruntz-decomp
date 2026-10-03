@@ -8,6 +8,8 @@
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 
+#include <string.h>
+
 class CGameStats;
 struct tagRECT;
 struct BrickzNode;
@@ -64,6 +66,18 @@ struct BrickzCell {
     i32 m_count;
     BrickzCellNode* m_head;
 };
+
+inline BrickzCell CMapMgr::CellAt(i32 x, i32 y) {
+    BrickzCell cell;
+    const BrickzCell* source;
+    if (static_cast<u32>(x) < m_width && static_cast<u32>(y) < m_height) {
+        source = &m_rows[y][x];
+    } else {
+        memset(&cell, 1, sizeof(cell));
+        source = &cell;
+    }
+    return *source;
+}
 
 RVA(0x00075a40, 0x34)
 inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {

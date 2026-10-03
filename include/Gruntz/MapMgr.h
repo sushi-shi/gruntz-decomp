@@ -93,6 +93,7 @@ public:
     void RecycleClosedNodes();
 
     i32 CellFlagsAt(i32 x, i32 y);
+    BrickzCell CellAt(i32 x, i32 y);
 
     BrickzCell* m_cellPool;
 
