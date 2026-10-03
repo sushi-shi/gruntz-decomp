@@ -2836,9 +2836,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
     if (useArg == false) {
 
         while (n != NULL) {
-            POSITION cur = n;
-            unit->m_coordList.GetNext(n);
-            Coord* c = static_cast<Coord*>(unit->m_coordList.GetAt(cur));
+            Coord* c = static_cast<Coord*>(unit->m_coordList.GetNext(n));
             if (c != NULL) {
                 BrickzCell* row = m_board->m_rows[c->m_y];
                 if (row[c->m_x].m_flags & 4) {
@@ -3266,9 +3264,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
 
     n = unit->CoordHead();
     while (n != NULL) {
-        POSITION cur3 = n;
-        unit->m_coordList.GetNext(n);
-        Coord* coord = static_cast<Coord*>(unit->m_coordList.GetAt(cur3));
+        Coord* coord = static_cast<Coord*>(unit->m_coordList.GetNext(n));
         if (coord != NULL && coord->m_x == goal.m_x && coord->m_y == goal.m_y) {
             break;
         }
@@ -3335,9 +3331,7 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
     }
     BrickzCell** rows = ((m_board)->m_rows);
     while (node != NULL) {
-        POSITION cur = node;
-        unit->m_coordList.GetNext(node);
-        Coord* c = static_cast<Coord*>(unit->m_coordList.GetAt(cur));
+        Coord* c = static_cast<Coord*>(unit->m_coordList.GetNext(node));
         i32 y = c->m_y;
         i32 x = c->m_x;
         if (rows[y][x].m_flags & 4) {
@@ -3361,9 +3355,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                 if (node != NULL) {
                     CMapMgr* board = m_board;
                     for (;;) {
-                        POSITION cur = node;
-                        unit->m_coordList.GetNext(node);
-                        Coord* c = static_cast<Coord*>(unit->m_coordList.GetAt(cur));
+                        Coord* c = static_cast<Coord*>(unit->m_coordList.GetNext(node));
                         i32 x = c->m_x;
                         i32 y = c->m_y;
                         i32 tile = board->CellFlagsAt(x, y);
@@ -3381,10 +3373,8 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
             if (entranceX == qx && entranceY == qy) {
                 return 1;
             }
-            CGameObject* lvl = unit->m_object;
-            i32 currentX = lvl->m_screenX >> TILE_SHIFT_PX;
-            i32 currentY = lvl->m_screenY >> TILE_SHIFT_PX;
-            if (currentX == qx && currentY == qy) {
+            Coord current = ScreenTile(unit);
+            if (current.m_x == qx && current.m_y == qy) {
                 return 1;
             }
         }
