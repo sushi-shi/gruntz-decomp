@@ -2208,7 +2208,13 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     if (World()->m_soundStream != NULL) {
         dsound = World()->m_soundStream->m_device;
     }
-    if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
+    if (player.InitMode(
+            m_gameWnd->m_hwnd,
+            dd2,
+            front->GetDirectDrawSurface(),
+            front->m_apiDesc,
+            dsound
+        )) {
         MovieOpenFlags openFlags =
             m_isInterlaced != false ? MOVIE_OPEN_INTERLACED : MOVIE_OPEN_DEFAULT;
         if (player.Open(m_strMoviePath, IDX(entryId), MOVIE_TILE, openFlags, NULL, NULL)) {
@@ -3574,7 +3580,6 @@ i32 CGruntzMgr::OpenBattlezSetup() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00093170, 0x1e3)
 i32 CGruntzMgr::InitializeBattlezPlayers() {
     i32 matched = 0;
@@ -3594,8 +3599,8 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
     for (i32 i = 0; i < m_computerPlayerCount; i++) {
         BattlezDifficulty difficulty;
         if (idx == g_curPlayer) {
-            player->m_humanControlled = true;
-            difficulty = player->m_difficulty;
+            player->SetHumanControlled(true);
+            difficulty = player->GetDifficulty();
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }
@@ -3605,8 +3610,8 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
             player->m_battlezConfig.Clear();
             player++;
             idx++;
-            player->m_humanControlled = false;
-            difficulty = player->m_difficulty;
+            player->SetHumanControlled(false);
+            difficulty = player->GetDifficulty();
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }
@@ -3614,8 +3619,8 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
                 return 0;
             }
         } else {
-            player->m_humanControlled = false;
-            difficulty = player->m_difficulty;
+            player->SetHumanControlled(false);
+            difficulty = player->GetDifficulty();
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }

@@ -292,7 +292,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             settings->Set(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
             if (m_gameManager->m_players[i].m_active != false) {
-                settings->Set(key, IDX(m_gameManager->m_players[i].m_difficulty));
+                settings->Set(key, IDX(m_gameManager->m_players[i].GetDifficulty()));
             } else {
                 settings->Set(key, -1);
             }

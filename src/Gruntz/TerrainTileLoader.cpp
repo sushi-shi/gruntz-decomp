@@ -242,19 +242,22 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        i32 objectId = CellObjectIdAt(g_gameReg->m_tileGrid, scanX, topY);
+                        i32 objectId = g_gameReg->m_tileGrid->ObjectIdAt(scanX, topY);
                         if (objectId != 0) {
-                            CWwdGameObject* mapped = NULL;
-                            MapLookupById(
-                                g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
-                                objectId,
-                                mapped
-                            );
+                            CGameObject* found = NULL;
+                            CGameObject* mapped = NULL;
+                            if (MapLookupById(
+                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                                    objectId,
+                                    found
+                                )) {
+                                mapped = found;
+                            }
                             if (mapped == NULL) {
                                 SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
+                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
@@ -304,19 +307,22 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        objectId = CellObjectIdAt(g_gameReg->m_tileGrid, scanX, bottomY);
+                        objectId = g_gameReg->m_tileGrid->ObjectIdAt(scanX, bottomY);
                         if (objectId != 0) {
-                            CWwdGameObject* mapped = NULL;
-                            MapLookupById(
-                                g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
-                                objectId,
-                                mapped
-                            );
+                            CGameObject* found = NULL;
+                            CGameObject* mapped = NULL;
+                            if (MapLookupById(
+                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                                    objectId,
+                                    found
+                                )) {
+                                mapped = found;
+                            }
                             if (mapped == NULL) {
                                 SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
+                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
@@ -370,19 +376,22 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        i32 objectId = CellObjectIdAt(g_gameReg->m_tileGrid, leftX, scanY);
+                        i32 objectId = g_gameReg->m_tileGrid->ObjectIdAt(leftX, scanY);
                         if (objectId != 0) {
-                            CWwdGameObject* mapped = NULL;
-                            MapLookupById(
-                                g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
-                                objectId,
-                                mapped
-                            );
+                            CGameObject* found = NULL;
+                            CGameObject* mapped = NULL;
+                            if (MapLookupById(
+                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                                    objectId,
+                                    found
+                                )) {
+                                mapped = found;
+                            }
                             if (mapped == NULL) {
                                 SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
+                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
@@ -432,19 +441,22 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        objectId = CellObjectIdAt(g_gameReg->m_tileGrid, rightX, scanY);
+                        objectId = g_gameReg->m_tileGrid->ObjectIdAt(rightX, scanY);
                         if (objectId != 0) {
-                            CWwdGameObject* mapped = NULL;
-                            MapLookupById(
-                                g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
-                                objectId,
-                                mapped
-                            );
+                            CGameObject* found = NULL;
+                            CGameObject* mapped = NULL;
+                            if (MapLookupById(
+                                    g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
+                                    objectId,
+                                    found
+                                )) {
+                                mapped = found;
+                            }
                             if (mapped == NULL) {
                                 SetCellObject(g_gameReg->m_tileGrid, tileX, tileY, 0);
                             } else {
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
+                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->UserLogic());
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();

@@ -49,6 +49,14 @@ public:
     i32 Deactivate();
     CString GetDefaultName(i32);
 
+    void SetHumanControlled(b32 controlled) {
+        m_humanControlled = controlled;
+    }
+
+    BattlezDifficulty GetDifficulty() const {
+        return m_difficulty;
+    }
+
     i32 m_playerIndex;
     CString m_name;
     ColorTint m_color;

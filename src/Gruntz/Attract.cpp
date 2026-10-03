@@ -233,14 +233,14 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
         return 0;
     }
     HDC hdc = NULL;
-    s->m_ddSurface->GetDC(&hdc);
+    s->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc == NULL) {
         return 0;
     }
     SetBkMode(hdc, bkMode);
     SetTextColor(hdc, color);
     TextOutA(hdc, x, y, str, strlen(str));
-    s->m_ddSurface->ReleaseDC(hdc);
+    s->GetDirectDrawSurface()->ReleaseDC(hdc);
     return 1;
 }
 

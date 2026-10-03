@@ -1359,7 +1359,7 @@ i32 CBootyState::CheckPerfectBonus() {
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
@@ -2456,7 +2456,7 @@ void CMultiBootyState::DrawBattleStats() {
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);

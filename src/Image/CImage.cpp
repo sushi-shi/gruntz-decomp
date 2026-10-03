@@ -245,13 +245,14 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
     if (surf == NULL) {
         return 1;
     }
-    IDirectDrawSurface* s = surf->m_ddSurface;
+    IDirectDrawSurface* s = surf->GetDirectDrawSurface();
     if (s != NULL) {
         if (s->IsLost() == 0) {
             return 1;
         }
     }
     surf = m_surface;
+    // The direct COM receiver preserves the restoration-path load lifetime.
     if (surf->m_ddSurface->Restore() != 0) {
         this->Unload();
         return this->Resolve(src, keyed);

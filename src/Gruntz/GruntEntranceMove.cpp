@@ -454,9 +454,7 @@ RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (enable != false) {
         m_wingzEnabled = true;
-        m_wingzTiming.Start(
-            static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias))
-        );
+        m_wingzTiming.Start(static_cast<i32>((static_cast<double>(m_wingzTime) * 100.0 - (-0.5))));
         CreateWingzTimeSprite();
 
         m_cells[0].IdleName() = s_nwItem;

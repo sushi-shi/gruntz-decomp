@@ -91,9 +91,9 @@ inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
     return 1;
 }
 
-inline i32 CellObjectIdAt(CMapMgr* grid, u32 x, u32 y) {
-    if (x < grid->m_width && y < grid->m_height) {
-        return grid->m_rows[y][x].m_objectId;
+inline i32 CMapMgr::ObjectIdAt(u32 x, u32 y) const {
+    if (x < m_width && y < m_height) {
+        return m_rows[y][x].m_objectId;
     }
     return 0;
 }

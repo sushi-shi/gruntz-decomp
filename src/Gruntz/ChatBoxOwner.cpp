@@ -177,7 +177,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
 
     HDC hdc = NULL;
-    surface->m_ddSurface->GetDC(&hdc);
+    surface->GetDirectDrawSurface()->GetDC(&hdc);
     if (!hdc) {
         return 1;
     }
@@ -202,7 +202,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         );
         self->m_fontConfig->RenderInputText(hdc, 0x17b, &rect);
     }
-    surface->m_ddSurface->ReleaseDC(hdc);
+    surface->GetDirectDrawSurface()->ReleaseDC(hdc);
     return 1;
 }
 

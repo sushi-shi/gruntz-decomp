@@ -3159,7 +3159,7 @@ void CPlay::DrawDebugStatsFull() {
 
     CDDSurface* surface = m_world->m_drawTarget->m_backPair->GetSurface();
     HDC hdc = NULL;
-    surface->m_ddSurface->GetDC(&hdc);
+    surface->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc == NULL) {
         return;
     }
@@ -3203,7 +3203,7 @@ void CPlay::DrawDebugStatsFull() {
             TextOutA(hdc, 0, 0x70, g_brickText8, g_brickText8.GetLength());
         }
     }
-    surface->m_ddSurface->ReleaseDC(hdc);
+    surface->GetDirectDrawSurface()->ReleaseDC(hdc);
 }
 
 RVA(0x000cf770, 0x35e)
@@ -3253,7 +3253,7 @@ void CPlay::DrawDebugStats() {
 
     CDDSurface* surface = m_world->m_drawTarget->m_backPair->GetSurface();
     HDC hdc = NULL;
-    surface->m_ddSurface->GetDC(&hdc);
+    surface->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc == NULL) {
         return;
     }
@@ -3276,7 +3276,7 @@ void CPlay::DrawDebugStats() {
             TextOutA(hdc, 0, dr.top, buf, strlen(buf));
         }
     }
-    surface->m_ddSurface->ReleaseDC(hdc);
+    surface->GetDirectDrawSurface()->ReleaseDC(hdc);
 }
 
 RVA(0x000cfbb0, 0x8)
@@ -3338,7 +3338,7 @@ void CPlay::DrawCustomLevelBanner() {
         return;
     }
     HDC hdc = NULL;
-    surface->m_ddSurface->GetDC(&hdc);
+    surface->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc == NULL) {
         return;
     }
@@ -3347,7 +3347,7 @@ void CPlay::DrawCustomLevelBanner() {
     RECT rc;
     SET_RECT_COMPONENTS(rc, 0, 0x1b8, 0x27f, 0x1d6);
     DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
-    surface->m_ddSurface->ReleaseDC(hdc);
+    surface->GetDirectDrawSurface()->ReleaseDC(hdc);
 }
 
 RVA(0x000cfef0, 0xbc)
@@ -6995,7 +6995,7 @@ i32 CPlay::ClearPlacedObjects() {
         while (!done) {
             if (i < PlacedObjectCellCount(blockIdx)) {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
-                i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
+                i32 occupantId = g_gameReg->m_tileGrid->ObjectIdAt(obj->m_x, obj->m_y);
                 if (occupantId != 0) {
                     CGameObject* result = LookupObjectById(
                         g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
