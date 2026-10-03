@@ -7,6 +7,7 @@
 #include <Enums.h>
 
 #include <stddef.h>
+#include <windowsx.h>
 
 RVA(0x00037b40, 0xb3)
 i32 CLatencyList::PopulateIpxOptions() {
@@ -147,19 +148,14 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     if (combo == NULL) {
         return 0;
     }
-    SendMessageA(combo, CB_RESETCONTENT, 0, 0);
+    ComboBox_ResetContent(combo);
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
         i32 data = MAKELONG(rec->GetCommandDelay(), rec->GetResendInterval());
-        i32 idx = SendMessageA(
-            combo,
-            CB_ADDSTRING,
-            0,
-            reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(rec->GetName()))
-        );
+        i32 idx = ComboBox_AddString(combo, static_cast<LPCTSTR>(rec->GetName()));
         if (idx != CB_ERR) {
-            SendMessageA(combo, CB_SETITEMDATA, idx, data);
+            ComboBox_SetItemData(combo, idx, data);
         }
     }
     return m_list.GetCount();
@@ -176,17 +172,16 @@ i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
     if (!list) {
         return 0;
     }
-    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = SendMessageA;
     i32 searching = 1;
     i32 i = 0;
     while (searching) {
-        i32 data = pSend(list, CB_GETITEMDATA, i, 0);
+        i32 data = ComboBox_GetItemData(list, i);
         if (data != CB_ERR) {
             i32 itemLo = LOWORD(data);
             i32 itemHi = HIWORD(data);
             if (itemLo == lo && itemHi == hi) {
-                if (pSend(list, CB_GETCURSEL, 0, 0) != i) {
-                    pSend(list, CB_SETCURSEL, i, 0);
+                if (ComboBox_GetCurSel(list) != i) {
+                    ComboBox_SetCurSel(list, i);
                 }
                 return 1;
             }
@@ -204,11 +199,11 @@ i32 CLatencyList::GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     if (!list) {
         return 0;
     }
-    i32 sel = SendMessageA(list, CB_GETCURSEL, 0, 0);
+    i32 sel = ComboBox_GetCurSel(list);
     if (sel == CB_ERR) {
         return 0;
     }
-    i32 data = SendMessageA(list, CB_GETITEMDATA, sel, 0);
+    i32 data = ComboBox_GetItemData(list, sel);
     if (data == CB_ERR) {
         return 0;
     }

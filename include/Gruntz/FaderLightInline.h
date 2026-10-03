@@ -8,12 +8,10 @@
 
 #define FADER_LIGHT_SPAN_CAPACITY 1024
 
-#define FADER_MAX0(v) ((v) < 0 ? 0 : (v))
-
 inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32& right, i32& left) {
     i32 dy = row - m_center.y;
     i32 dx = -static_cast<i32>(sqrt(static_cast<double>(radiusSq - SQR(dy))));
-    right = min(FADER_MAX0(m_center.x - dx), m_width);
+    right = min(max(0, m_center.x - dx), m_width);
     i32 x = dx + m_center.x + edgeOffset;
     left = max(0, x);
     left = min(left, m_width);

@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windowsx.h>
 
 DATA(0x0022c010)
 char g_mapNameBuf[0x200] = {0};
@@ -132,7 +133,7 @@ i32 FillCustomLevelList(HWND hWnd) {
     if (!hList) {
         return 0;
     }
-    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+    ListBox_ResetContent(hList);
     if (_chdir("Custom")) {
         return 0;
     }
@@ -152,7 +153,7 @@ i32 FillCustomLevelList(HWND hWnd) {
             }
             MsgParam name;
             name.m_str = disp;
-            SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam);
+            ListBox_AddString(hList, name.m_lparam);
         }
         if (_findnext(hFile, &fd) == -1) {
             bContinue = false;
@@ -200,13 +201,13 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     if (!lb) {
         return 0;
     }
-    i32 sel = SendMessageA(lb, LB_GETCURSEL, 0, 0);
+    i32 sel = ListBox_GetCurSel(lb);
     if (sel == LB_ERR) {
         return 0;
     }
     MsgParam out;
     out.m_str = itemText;
-    if (SendMessageA(lb, LB_GETTEXT, sel, out.m_lparam) == LB_ERR) {
+    if (ListBox_GetText(lb, sel, out.m_lparam) == LB_ERR) {
         return 0;
     }
     if (!_getcwd(dirBuf, 0xfe)) {
@@ -297,13 +298,13 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     if (!hList) {
         return 0;
     }
-    i32 sel = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
+    i32 sel = ListBox_GetCurSel(hList);
     if (sel == LB_ERR) {
         return 0;
     }
     MsgParam out;
     out.m_str = szLevel;
-    if (static_cast<i32>(SendMessageA(hList, LB_GETTEXT, sel, out.m_lparam)) == LB_ERR) {
+    if (ListBox_GetText(hList, sel, out.m_lparam) == LB_ERR) {
         return 0;
     }
     g_levelStr = szLevel;

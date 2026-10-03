@@ -3837,12 +3837,12 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             {
                 i32 anchorX = m_dragClampMaxX;
                 i32 curX = m_cursorX;
-                m_hudRect.left = curX < anchorX ? curX : anchorX;
-                m_hudRect.right = curX <= anchorX ? anchorX : curX;
+                m_hudRect.left = min(curX, anchorX);
+                m_hudRect.right = max(curX, anchorX);
                 i32 anchorY = m_dragClampMaxY;
                 i32 curY = m_cursorY;
-                m_hudRect.top = curY < anchorY ? curY : anchorY;
-                m_hudRect.bottom = curY <= anchorY ? anchorY : curY;
+                m_hudRect.top = min(curY, anchorY);
+                m_hudRect.bottom = max(curY, anchorY);
             }
         rearm:
             CWwdSpriteObject* s = m_cursorSnapSprite;
@@ -3885,14 +3885,14 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     m_statusBar->HandlePointerDrag(keyFlags, x, y);
     if (m_worldReady != false) {
 
-        m_hudRect.left = m_cursorX > box.left ? m_cursorX : box.left;
-        m_hudRect.left = m_hudRect.left < m_dragClampMaxX ? m_hudRect.left : m_dragClampMaxX;
-        m_hudRect.right = m_cursorX < box.right ? m_cursorX : box.right;
-        m_hudRect.right = m_hudRect.right > m_dragClampMaxX ? m_hudRect.right : m_dragClampMaxX;
-        m_hudRect.top = m_cursorY <= box.top ? box.top : m_cursorY;
-        m_hudRect.top = m_hudRect.top < m_dragClampMaxY ? m_hudRect.top : m_dragClampMaxY;
-        m_hudRect.bottom = m_cursorY < box.bottom ? m_cursorY : box.bottom;
-        m_hudRect.bottom = m_hudRect.bottom > m_dragClampMaxY ? m_hudRect.bottom : m_dragClampMaxY;
+        m_hudRect.left = max(m_cursorX, box.left);
+        m_hudRect.left = min(m_hudRect.left, m_dragClampMaxX);
+        m_hudRect.right = min(m_cursorX, box.right);
+        m_hudRect.right = max(m_hudRect.right, m_dragClampMaxX);
+        m_hudRect.top = max(m_cursorY, box.top);
+        m_hudRect.top = min(m_hudRect.top, m_dragClampMaxY);
+        m_hudRect.bottom = min(m_cursorY, box.bottom);
+        m_hudRect.bottom = max(m_hudRect.bottom, m_dragClampMaxY);
     }
     if (m_cursorTargetValid != false && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
         FlushPendingOps();

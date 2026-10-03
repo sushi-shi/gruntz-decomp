@@ -79,6 +79,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windowsx.h>
 
 DATA(0x00245550)
 i32 g_cfgWord;
@@ -927,10 +928,9 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             g_netMgr->m_selectedProvider = NULL;
             g_netMgr->PopulateProviderList(combo, 0);
             if (g_serviceId == NET_SERVICE_NONE) {
-                SendMessageA(combo, LB_SETCURSEL, 0, 0);
-            } else if (static_cast<i32>(SendMessageA(combo, LB_SETCURSEL, g_serviceId, 0))
-                       == LB_ERR) {
-                SendMessageA(combo, LB_SETCURSEL, 0, 0);
+                ListBox_SetCurSel(combo, 0);
+            } else if (ListBox_SetCurSel(combo, g_serviceId) == LB_ERR) {
+                ListBox_SetCurSel(combo, 0);
             }
 
             DWORD cap = 0xa;
@@ -939,10 +939,10 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             g_gameReg->m_settings->Get("Game Name", gameBuf, cap, "Multiplayer Gruntz");
 
             HWND edName = GetDlgItem(hDlg, 0x51b);
-            SendMessageA(edName, EM_LIMITTEXT, 9, 0);
+            Edit_LimitText(edName, 9);
             SetDlgItemTextA(hDlg, 0x51b, nameBuf);
             HWND edGame = GetDlgItem(hDlg, 0x51c);
-            SendMessageA(edGame, EM_LIMITTEXT, 0x3f, 0);
+            Edit_LimitText(edGame, 0x3f);
             SetDlgItemTextA(hDlg, 0x51c, gameBuf);
             return true;
         }
@@ -976,7 +976,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         HWND combo = GetDlgItem(hDlg, 0x3fc);
-        i32 svc = static_cast<i32>(SendMessageA(combo, LB_GETCURSEL, 0, 0));
+        i32 svc = ListBox_GetCurSel(combo);
         if (svc != LB_ERR) {
             g_serviceId = svc;
         }
@@ -1077,7 +1077,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
         case WM_TIMER:
             KillTimer(hDlg, 1);
             {
-                i32 sel = static_cast<i32>(SendMessageA(g_sessionListHwnd, LB_GETCURSEL, 0, 0));
+                i32 sel = ListBox_GetCurSel(g_sessionListHwnd);
                 i32 hr = g_netMgr->EnumerateSessions(0, 0);
                 if (hr == DPERR_USERCANCEL) {
                     goto close;
@@ -1092,9 +1092,9 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                 }
                 FillSessionList(g_sessionListHwnd, g_netMgr);
                 if (sel != LB_ERR) {
-                    SendMessageA(g_sessionListHwnd, LB_SETCURSEL, sel, 0);
+                    ListBox_SetCurSel(g_sessionListHwnd, sel);
                 } else {
-                    SendMessageA(g_sessionListHwnd, LB_SETCURSEL, 0, 0);
+                    ListBox_SetCurSel(g_sessionListHwnd, 0);
                 }
                 RefreshSessionSelection(hDlg, g_sessionListHwnd);
                 i32 t = 0x7d0;
@@ -1221,7 +1221,7 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
     if (!manager) {
         return;
     }
-    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+    ListBox_ResetContent(hList);
     CNetSessionListNode* listing = manager->GetFirstSession();
     while (listing) {
 
@@ -1229,15 +1229,15 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
         i32 itemIndex;
         if (Sparam_Get(buf, listing->m_sessionDesc.lpszSessionNameA, "NAME")) {
             name.m_str = buf;
-            itemIndex = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
+            itemIndex = ListBox_AddString(hList, name.m_lparam);
         } else {
             name.m_str = listing->m_sessionDesc.lpszSessionNameA;
-            itemIndex = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
+            itemIndex = ListBox_AddString(hList, name.m_lparam);
         }
         if (itemIndex != LB_ERR) {
             MsgParam cookie;
             cookie.m_sessionListing = listing;
-            SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);
+            ListBox_SetItemData(hList, itemIndex, cookie.m_lparam);
         }
 
         listing = manager->GetNextSession();
@@ -2403,11 +2403,11 @@ void CMulti::AppendEditLine(HWND edit, char* str) {
     if (!edit || !str || !str[0]) {
         return;
     }
-    i32 len = GetWindowTextLengthA(edit);
+    i32 len = Edit_GetTextLength(edit);
     if (len == 0) {
-        SendMessageA(edit, EM_SETSEL, len, -1);
+        Edit_SetSel(edit, len, -1);
     } else {
-        SendMessageA(edit, EM_SETSEL, len, len);
+        Edit_SetSel(edit, len, len);
     }
     char buf[0x80];
     buf[0] = 0;
@@ -2417,8 +2417,8 @@ void CMulti::AppendEditLine(HWND edit, char* str) {
     strcat(buf, str);
     MsgParam text;
     text.m_str = buf;
-    SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
-    SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
+    Edit_ReplaceSel(edit, text.m_lparam);
+    Edit_Scroll(edit, 0x270f, 0);
 }
 
 // @early-stop
@@ -3050,7 +3050,7 @@ i32 CMulti::AutoTuneCmdDelay() {
 
     u32 ping = static_cast<u32>(GetMaxAckLatency());
     u32 tuned = ping / 30 + 2;
-    i32 base = (tuned < 3) ? 3 : static_cast<i32>(tuned);
+    i32 base = static_cast<i32>(max(3u, tuned));
 
     i32 probe = Mgr()->CountActivePlayers(false);
 
