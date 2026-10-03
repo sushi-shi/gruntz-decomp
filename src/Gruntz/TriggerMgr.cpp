@@ -603,7 +603,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     i32 dy = y;
                     WwdPlaneFlags wflags = static_cast<WwdPlaneFlags>(plane->m_flags);
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_X)) {
-                        i32 w = plane->m_planePixelWidth;
+                        i32 w = plane->GetPlanePixelWidth();
                         if (dx < 0) {
                             dx = dx + w;
                         } else if (dx >= w) {
@@ -615,7 +615,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         }
                     }
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_Y)) {
-                        i32 h = plane->m_planePixelHeight;
+                        i32 h = plane->GetPlanePixelHeight();
                         if (dy < 0) {
                             dy = dy + h;
                         } else if (dy >= h) {
@@ -1552,8 +1552,8 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 continue;
             }
             CGameLevel* board = m_world->m_level;
-            if (tx >= board->m_mainPlane->m_planePixelWidth
-                || ty >= board->m_mainPlane->m_planePixelHeight) {
+            if (tx >= board->m_mainPlane->GetPlanePixelWidth()
+                || ty >= board->m_mainPlane->GetPlanePixelHeight()) {
                 continue;
             }
             TileCollisionKind type = PbResolveCell(board, tx, ty);
@@ -2272,8 +2272,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     bbox.right = 0;
     bbox.bottom = 0;
     CDDrawWorkerHost* grid = g_gameReg->World()->m_level->m_mainPlane;
-    bbox.left = grid->m_planePixelWidth - 1;
-    bbox.top = grid->m_planePixelHeight - 1;
+    bbox.left = grid->GetPlanePixelWidth() - 1;
+    bbox.top = grid->GetPlanePixelHeight() - 1;
     do {
         POSITION cur = pos;
         Coord* payload = static_cast<Coord*>(m_selLists[slot].GetNext(pos));
@@ -2316,8 +2316,8 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     RECT bbox;
     i32 count = 0;
     CDDrawWorkerHost* dims = g_gameReg->World()->m_level->m_mainPlane;
-    bbox.left = dims->m_planePixelWidth - 1;
-    bbox.top = dims->m_planePixelHeight - 1;
+    bbox.left = dims->GetPlanePixelWidth() - 1;
+    bbox.top = dims->GetPlanePixelHeight() - 1;
     bbox.right = 0;
     bbox.bottom = 0;
     do {

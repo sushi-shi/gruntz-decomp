@@ -5227,7 +5227,7 @@ i32 CPlay::ScanBuildTiles() {
             if (x < 0) {
                 x = 0;
             } else {
-                i32 lim = ds->m_mainPlane->m_planePixelWidth;
+                i32 lim = ds->m_mainPlane->GetPlanePixelWidth();
                 if (x >= lim) {
                     x = lim - 1;
                 }
@@ -5235,7 +5235,7 @@ i32 CPlay::ScanBuildTiles() {
             if (y < 0) {
                 y = 0;
             } else {
-                i32 lim = ds->m_mainPlane->m_planePixelHeight;
+                i32 lim = ds->m_mainPlane->GetPlanePixelHeight();
                 if (y >= lim) {
                     y = lim - 1;
                 }

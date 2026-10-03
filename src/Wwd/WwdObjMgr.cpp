@@ -651,7 +651,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
                     i32 y = obj->m_screenY;
                     if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-                        i32 w = view->m_planePixelWidth;
+                        i32 w = view->GetPlanePixelWidth();
                         if (x < 0) {
                             x = x + w;
                         } else if (x >= w) {
@@ -664,7 +664,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         }
                     }
                     if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-                        i32 h = view->m_planePixelHeight;
+                        i32 h = view->GetPlanePixelHeight();
                         if (y < 0) {
                             y = y + h;
                         } else if (y >= h) {
@@ -751,7 +751,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
         rc.bottom = box.bottom;
         WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-            w = view->m_planePixelWidth;
+            w = view->GetPlanePixelWidth();
             if (box.left < 0) {
                 wl = box.left + w;
             } else if (box.left >= w) {
@@ -763,7 +763,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
             }
         }
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-            h = view->m_planePixelHeight;
+            h = view->GetPlanePixelHeight();
             if (box.top < 0) {
                 wt = box.top + h;
             } else if (box.top >= h) {

@@ -73,7 +73,7 @@ void CLightFx::Activate(
     b32 deleteWhenComplete
 ) {
     CDDrawWorker* imageSet = m_ownerLogicRecord->m_ownerCtx->FindWorker(imageSetName);
-    g_gameReg->m_lightFxMgr->ApplyShadeTable(imageSet, shadeTableIndex, SHADE_DST_BY_SRC_16);
+    g_gameReg->GetLightFxMgr()->ApplyShadeTable(imageSet, shadeTableIndex, SHADE_DST_BY_SRC_16);
     CWwdSpriteObject* object = m_wwdObject;
     if (imageSet != NULL) {
 
@@ -120,7 +120,7 @@ i32 CLightFx::SerializeDispatch(
             break;
         case SERIAL_POSTLOAD:
             g_gameReg
-                ->m_lightFxMgr
+                ->GetLightFxMgr()
 
                 ->ApplyShadeTable(m_wwdObject->m_imageSet, m_shadeTableIndex, SHADE_DST_BY_SRC_16);
             break;

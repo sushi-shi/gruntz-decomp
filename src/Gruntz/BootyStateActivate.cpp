@@ -778,7 +778,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (wh == NULL) {
         return 0;
     }
-    CLightFxMgr* lightFxMgr = g_gameReg->m_lightFxMgr;
+    CLightFxMgr* lightFxMgr = g_gameReg->GetLightFxMgr();
     CShadeTable* tint = lightFxMgr->m_tables[g_buteMgr.GetInt("Wormhole", "SecretColor", 1)];
     m_icons[7]->SetImageSetByName("GAME_WORMHOLE");
     m_icons[7]->SetAnimationByName("GAME_TELEPORTER", 0);

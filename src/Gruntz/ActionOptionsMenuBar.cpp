@@ -82,7 +82,7 @@ i32 CActionOptionsMenuBar::Init(
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = (g_gameReg->World()->m_level->m_mainPlane)->m_planePixelWidth;
+        i32 limit = (g_gameReg->World()->m_level->m_mainPlane)->GetPlanePixelWidth();
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }

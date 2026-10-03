@@ -808,8 +808,9 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     o->SetSortKey(SORTKEY_PROJECTILE);
     SetImageSetByName("GAME_TIMEBOMB");
     SET_ANIMATION_ACT("A");
+    i32 damage = m_object->m_damage;
     m_value = m_wwdObject->m_animationCursor.GetAnimation();
-    if (m_object->m_damage > 0) {
+    if (damage > 0) {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
         m_timing.Start(m_object->m_damage);
         m_fastPhase = true;
@@ -818,11 +819,12 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
         m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0));
         m_fastPhase = false;
     }
-    i32 cx = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = m_object->m_screenY >> TILE_SHIFT_PX;
+    Coord cell;
+    cell.Set(m_object->m_screenX, m_object->m_screenY);
+    ScreenTile(&cell);
     CMapMgr* g = g_gameReg->GetTileGrid();
-    if (cx < g->GetWidth() && cy < g->GetHeight()) {
-        g->CellFlagsAtUnchecked(cx, cy) |= IDX(CELL_FLAG_TIME_BOMB);
+    if (cell.m_x < g->GetWidth() && cell.m_y < g->GetHeight()) {
+        g->CellFlagsAtUnchecked(cell.m_x, cell.m_y) |= IDX(CELL_FLAG_TIME_BOMB);
     }
     m_object->m_smarts = -1;
 }

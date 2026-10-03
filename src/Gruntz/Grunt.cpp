@@ -954,8 +954,8 @@ i32 CGrunt::StepArrivalDrop(
             SetEntrancePos(1, 1);
             return 1;
         }
-        m_arrivalTargetPx.Set(pxX, pxY);
     }
+    m_arrivalTargetPx.Set(pxX, pxY);
 nudgeDone:
     if (nudged != 0) {
         goto pathGate;

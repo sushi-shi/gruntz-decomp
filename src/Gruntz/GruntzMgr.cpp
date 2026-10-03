@@ -1358,7 +1358,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
         if (m_world->m_level != NULL) {
             CDDrawWorkerHost* f = m_world->m_level->m_mainPlane;
             if (f != NULL) {
-                if (w > f->m_planePixelWidth || h > f->m_planePixelHeight) {
+                if (w > f->GetPlanePixelWidth() || h > f->GetPlanePixelHeight()) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
                     st->ResetViewport();
                     if (st->m_statusBar != NULL) {
