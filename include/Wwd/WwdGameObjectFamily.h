@@ -88,7 +88,7 @@ public:
     void Notify(CGameObject* p);
     i32 NotifyCollision(CGameObject* other) {
         m_hitOther = other;
-        LogicRecordDispatchFn dispatch = m_collisionLogic->m_dispatch;
+        LogicRecordDispatchFn dispatch = m_collisionLogic->GetDispatch();
         return dispatch(this);
     }
 

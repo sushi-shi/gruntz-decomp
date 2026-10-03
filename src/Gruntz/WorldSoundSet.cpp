@@ -603,7 +603,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
     if (record->m_eventCode == 0) {
         obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION);
         obj->Hide();
-        if (record->m_dispatch == DispatchGlobalAmbientSoundLogic) {
+        if (record->GetDispatch() == DispatchGlobalAmbientSoundLogic) {
             obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE);
         } else {
             obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE);

@@ -119,7 +119,7 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
-                if (cur->m_logicRecord->m_dispatch == DispatchGruntCreationPointLogic
+                if (cur->m_logicRecord->GetDispatch() == DispatchGruntCreationPointLogic
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
@@ -136,7 +136,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         marks.Add(mark);
                     }
                 }
-                if (cur->m_logicRecord->m_dispatch == DispatchFortressFlagLogic
+                if (cur->m_logicRecord->GetDispatch() == DispatchFortressFlagLogic
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
@@ -151,7 +151,7 @@ i32 CExitTrigger::AdvanceAnim() {
             } else {
                 GruntzPlayer* board = &g_gameReg->m_players[owningPlayer];
                 if (board != NULL && board->m_humanControlled == false) {
-                    board->m_battlezConfig.Clear();
+                    board->GetBattlezConfig()->Clear();
                 }
             }
         } else {
@@ -180,7 +180,7 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
-                LogicRecordDispatchFn dispatch = cur->m_logicRecord->m_dispatch;
+                LogicRecordDispatchFn dispatch = cur->m_logicRecord->GetDispatch();
                 if (dispatch == DispatchGruntCreationPointLogic
                     || dispatch == DispatchFortressFlagLogic) {
                     if (cur->m_smarts == m_object->m_smarts) {

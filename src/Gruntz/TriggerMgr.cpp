@@ -1111,7 +1111,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     POSITION pos = fac->m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = fac->NextChild(pos);
-        LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
+        LogicRecordDispatchFn dispatch = obj->m_logicRecord->GetDispatch();
         if (dispatch == DispatchInGameIconLogic || dispatch == DispatchInGameTextLogic) {
             i32 ox = obj->m_screenX >> TILE_SHIFT_PX;
             i32 oy = obj->m_screenY >> TILE_SHIFT_PX;
@@ -1871,7 +1871,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                     != -1) {
                     ok = true;
                 }
-            } else if (player->m_battlezConfig.TrySeedSpawnAt(tx, ty) != 0) {
+            } else if (player->GetBattlezConfig()->TrySeedSpawnAt(tx, ty) != 0) {
                 ok = true;
             }
         }
@@ -2480,7 +2480,7 @@ void CTriggerMgr::DestroyAllAnims() {
 
             LogicDispatchWord actualDispatch;
             LogicDispatchWord projectileDispatch;
-            actualDispatch.m_dispatch = record->m_dispatch;
+            actualDispatch.m_dispatch = record->GetDispatch();
             projectileDispatch.m_dispatch = DispatchProjectileLogic;
             if (actualDispatch.m_bits == projectileDispatch.m_bits) {
                 (static_cast<CGrunt*>(record->m_userLogic))->m_neighborPlayerIndex = 0;

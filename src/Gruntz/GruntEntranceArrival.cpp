@@ -1194,8 +1194,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
 // @early-stop
 RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
-    bool eq = IsAnimationAct("I");
-    if (eq) {
+    if (IsAnimationAct("I")) {
         ClearMoveTileFx(this);
     } else {
         PLAY_GRUNT_CUE_IF_VISIBLE(8);
@@ -1208,7 +1207,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         RESET_GRUNT_POWERED_STATE(this)
     }
 
-    i32 poseIdx = 0;
+    GruntItemPose pose = GRUNT_ITEM1;
     if (m_entranceReason == PICKUP_BOMB) {
         SET_ANIMATION_ACT("M");
         m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
@@ -1223,10 +1222,10 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     } else if (m_entranceReason == PICKUP_WAND) {
         i32 base;
         if (rand() % 100 < 80) {
-            poseIdx = 1;
+            pose = GRUNT_ITEM2;
             base = 0x41a;
         } else {
-            poseIdx = 0;
+            pose = GRUNT_ITEM1;
             base = 0x424;
         }
 
@@ -1251,7 +1250,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         SetEntrancePos(1, 1);
     }
 
-    SwitchAnimation(m_poseItem[poseIdx]);
+    SwitchAnimation(AT(m_poseItem, pose));
 
     char* name = EntranceCell()->ItemName().GetBuffer(0);
     SetImageSetByName(name);

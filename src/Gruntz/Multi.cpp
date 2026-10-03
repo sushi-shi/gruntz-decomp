@@ -472,12 +472,12 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
         if (e == NULL) {
             return 0;
         }
-        e->m_battlezConfig.FreeArrays();
-        if (e->m_battlezConfig.LoadConfig(Mgr(), i, e->GetDifficulty()) == 0) {
+        e->GetBattlezConfig()->FreeArrays();
+        if (e->GetBattlezConfig()->LoadConfig(Mgr(), i, e->GetDifficulty()) == 0) {
             return 0;
         }
         if (e->m_humanControlled && e->m_active) {
-            e->m_battlezConfig.Clear();
+            e->GetBattlezConfig()->Clear();
         }
     }
     ResetPlayState();

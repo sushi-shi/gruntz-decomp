@@ -816,7 +816,8 @@ CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
     while (pos != NULL) {
         m_templatesByName.GetNextAssoc(pos, key, value);
 
-        if (value != NULL && static_cast<CLogicRecord*>(value)->m_dispatch == record->m_dispatch) {
+        if (value != NULL
+            && static_cast<CLogicRecord*>(value)->GetDispatch() == record->GetDispatch()) {
             return key;
         }
     }

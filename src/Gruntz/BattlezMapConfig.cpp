@@ -162,7 +162,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
     for (CGameObject* cur = mgr->m_world->ChildGroup()->FirstChild(); cur != NULL;
          cur = mgr->m_world->ChildGroup()->NextChild()) {
-        if (cur->m_logicRecord->m_dispatch == &DispatchGruntCreationPointLogic
+        if (cur->m_logicRecord->GetDispatch() == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
             slot->m_x = cur->m_screenX / TILE_SIZE_PX;
@@ -173,7 +173,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
     for (CGameObject* cur2 = mgr->m_world->ChildGroup()->FirstChild(); cur2 != NULL;
          cur2 = mgr->m_world->ChildGroup()->NextChild()) {
-        if (cur2->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic
+        if (cur2->m_logicRecord->GetDispatch() == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
             m_marker.m_x = cur2->m_screenX / TILE_SIZE_PX;
             m_marker.m_y = cur2->m_screenY / TILE_SIZE_PX;
@@ -183,7 +183,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
     for (CGameObject* cur3 = mgr->m_world->ChildGroup()->FirstChild(); cur3 != NULL;
          cur3 = mgr->m_world->ChildGroup()->NextChild()) {
-        if (cur3->m_logicRecord->m_dispatch == &DispatchWayPointLogic
+        if (cur3->m_logicRecord->GetDispatch() == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
@@ -2010,7 +2010,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
     CGameObject* g = coll->FirstSerialChild();
     while (g != NULL) {
-        if (g->m_logicRecord->m_dispatch == &DispatchInGameIconLogic && !g->IsHidden()) {
+        if (g->m_logicRecord->GetDispatch() == &DispatchInGameIconLogic && !g->IsHidden()) {
             i32 special = 0;
 
             switch (static_cast<PickupType>(g->m_smarts)) {
@@ -3336,7 +3336,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
         }
         Coord current = ScreenTile(u);
         if (u->m_battleState == BZTASK_ADVANCE && u->m_targetTeam != -1) {
-            Coord marker = m_ctx->m_players[u->m_targetTeam].m_battlezConfig.m_marker;
+            Coord marker = m_ctx->m_players[u->m_targetTeam].GetBattlezConfig()->m_marker;
             i32 dx = marker.m_x - current.m_x;
             i32 dy = marker.m_y - current.m_y;
             dx = abs(dx);
@@ -3540,7 +3540,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     CGameObject* lvl = unit->m_object;
     i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
     i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
-    CPtrArray* coords = &m_ctx->m_players[kind].m_battlezConfig.m_attackWaypoints;
+    CPtrArray* coords = &m_ctx->m_players[kind].GetBattlezConfig()->m_attackWaypoints;
     i32 count = coords->GetSize();
     if (count != 0) {
         i32 r = rand() % count;
