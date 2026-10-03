@@ -193,7 +193,7 @@ i32 CCreditsState::Render() {
                 } else {
                     PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
                 }
-                owner()->m_owner->m_running = false;
+                owner()->m_owner->SetRunning(false);
                 break;
             }
         }

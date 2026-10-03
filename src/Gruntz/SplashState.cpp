@@ -119,7 +119,7 @@ i32 CSplashState::Render() {
         return 1;
     }
     PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
-    m_mgr->m_owner->m_running = false;
+    m_mgr->m_owner->SetRunning(false);
     return 1;
 }
 
