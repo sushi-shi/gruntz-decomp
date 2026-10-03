@@ -1744,7 +1744,6 @@ i32 CGrunt::Place(
 
 RVA(0x0004dd50, 0x2400)
 i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
-    char eq;
     if (kind == PICKUP_INVALID) {
         goto fail;
     }
@@ -1758,10 +1757,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         if (m_entranceActive != false) {
             goto fail;
         }
-        eq = IsNotAnimationAct("A");
-        if (eq) {
-            eq = IsNotAnimationAct("D");
-            if (eq) {
+        if (IsNotAnimationAct("A")) {
+            if (IsNotAnimationAct("D")) {
                 goto fail;
             }
         }
@@ -1891,7 +1888,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_arrivalState == AI_BATTLEZ_PATH) {
                 if (m_battleState != BZTASK_ADVANCE) {
                     if (this->CoordCount() != 0) {
-                        RECYCLE_GRUNT_COORDS(this)
+                        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
                     }
                     DeleteAllPayloads();
                     i32* mem = new i32[0xb];
@@ -2080,8 +2077,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2093,8 +2089,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2105,8 +2100,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2118,8 +2112,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2131,8 +2124,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2143,8 +2135,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2155,8 +2146,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2169,8 +2159,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_moveVariant = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2181,8 +2170,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2193,8 +2181,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 ConsiderArrival(0);
             }
             fresh = 1;
@@ -2420,16 +2407,14 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     LoadCellAnimNames(fresh, defer);
     LoadAnimNameTable(fresh, defer);
     if (fresh == 0) {
-        eq = IsAnimationAct("H");
-        if (eq) {
+        if (IsAnimationAct("H")) {
             DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
             SetImageFrameByName(EntranceCell()->StruckName().GetBuffer(0), handle);
         } else {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
-            eq = IsAnimationAct("D");
-            if (eq) {
+            if (IsAnimationAct("D")) {
                 SetImageSetByName(EntranceCell()->WalkName().GetBuffer(0));
                 SwitchAnimation(m_poseWalk);
             } else {
