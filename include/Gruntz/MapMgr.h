@@ -94,6 +94,14 @@ public:
 
     i32 CellFlagsAt(i32 x, i32 y);
     BrickzCell CellAt(i32 x, i32 y);
+    i32 CanStepBetween(
+        i32 sourceX,
+        i32 sourceY,
+        i32 targetX,
+        i32 targetY,
+        i32 blockedMask,
+        i32 passableMask
+    ) const;
 
     BrickzCell* m_cellPool;
 
