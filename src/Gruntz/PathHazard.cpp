@@ -238,7 +238,7 @@ i32 CRainCloud::Tick() {
         } else {
             m_strikeArmed = false;
         }
-        CShadeTable* frame = g_gameReg->GetLightFxMgr()->m_tables[idx];
+        CShadeTable* frame = g_gameReg->GetLightFxMgr()->GetShadeTable(idx);
         CWwdSpriteObject* spr = m_object;
         spr->SetDrawFillReversed(SHADE_DST_BY_SRC_16, frame);
     }
@@ -259,7 +259,7 @@ i32 CPathHazard::SiblingTick() {
         } else {
             m_strikeArmed = false;
         }
-        CShadeTable* frame = g_gameReg->GetLightFxMgr()->m_tables[sel];
+        CShadeTable* frame = g_gameReg->GetLightFxMgr()->GetShadeTable(sel);
         CWwdSpriteObject* o = m_object;
         o->SetDrawFill(SHADE_DST_BY_SRC_16, frame);
     }
@@ -299,7 +299,7 @@ i32 CPathHazard::SiblingTick() {
     CGruntzMgr* tableReg = g_gameReg;
     i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_start;
     if (legElapsed >= m_leg.m_interval) {
-        CShadeTable* frame = tableReg->GetLightFxMgr()->m_tables[5];
+        CShadeTable* frame = tableReg->GetLightFxMgr()->GetShadeTable(5);
         CWwdSpriteObject* o = m_object;
         o->SetDrawFill(SHADE_DST_BY_SRC_16, frame);
         this->BeginLeg();
@@ -365,7 +365,7 @@ i32 CPathHazard::BeginLeg() {
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdSpriteObject* o = m_object;
-    CShadeTable* n = g_gameReg->GetLightFxMgr()->m_tables[5];
+    CShadeTable* n = g_gameReg->GetLightFxMgr()->GetShadeTable(5);
     o->SetDrawFill(SHADE_DST_BY_SRC_16, n);
     SwitchAnimationByName("LEVEL_RAINCLOUD", 0);
     SET_OBJECT_AREA(1)
@@ -430,7 +430,7 @@ i32 CRainCloud::SerializeDispatch(
         return 0;
     }
     if (mode == SERIAL_POSTLOAD) {
-        CShadeTable* x = g_gameReg->GetLightFxMgr()->m_tables[5];
+        CShadeTable* x = g_gameReg->GetLightFxMgr()->GetShadeTable(5);
         CWwdSpriteObject* o = m_object;
         o->SetDrawFill(SHADE_DST_BY_SRC_16, x);
     }

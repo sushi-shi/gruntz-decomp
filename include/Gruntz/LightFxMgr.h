@@ -30,6 +30,10 @@ public:
 
     i32 ApplyShadeTable(CDDrawWorker* imageSet, i32 tableIndex, ShadeMode mode);
 
+    CShadeTable* GetShadeTable(i32 tableIndex) const {
+        return m_tables[tableIndex];
+    }
+
     class CGruntzMgr* m_owner;
     class CGruntzMgr* m_gameMgr;
     CDDrawSurfaceMgr* m_world;

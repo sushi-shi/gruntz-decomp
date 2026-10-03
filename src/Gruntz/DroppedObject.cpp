@@ -143,7 +143,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         m_scrollMode = OBJECT_DROP_PLAYER_ZERO_ONLY;
     }
-    CShadeTable* sel = g_gameReg->GetLightFxMgr()->m_tables[5];
+    CShadeTable* sel = g_gameReg->GetLightFxMgr()->GetShadeTable(5);
     m_object->SetDrawFill(SHADE_DST_BY_SRC_16, sel);
     m_dropTiming.Clear();
     SET_OBJECT_AREA(1)
@@ -294,7 +294,7 @@ i32 CObjectDropper::SerializeDispatch(
             ar->Read(&m_scrollMode, sizeof(m_scrollMode));
             break;
         case SERIAL_POSTLOAD: {
-            CShadeTable* fill = g_gameReg->GetLightFxMgr()->m_tables[5];
+            CShadeTable* fill = g_gameReg->GetLightFxMgr()->GetShadeTable(5);
             CWwdSpriteObject* o = m_object;
             o->SetDrawFillReversed(SHADE_DST_BY_SRC_16, fill);
             break;
@@ -444,7 +444,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     SetImageSetByName("LEVEL_OBJECTDROPPER_SHADOW");
     SwitchAnimationByName("LEVEL_DROPPEDOBJECTSHADOW", 0);
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
-    CShadeTable* fill = g_gameReg->GetLightFxMgr()->m_tables[5];
+    CShadeTable* fill = g_gameReg->GetLightFxMgr()->GetShadeTable(5);
     CWwdSpriteObject* draw = m_object;
     draw->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
     CWwdSpriteObject* o = m_object;
@@ -490,7 +490,7 @@ i32 CDroppedObjectShadow::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
-        CShadeTable* fill = g_gameReg->GetLightFxMgr()->m_tables[5];
+        CShadeTable* fill = g_gameReg->GetLightFxMgr()->GetShadeTable(5);
         CWwdSpriteObject* o = m_object;
         o->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
     }
