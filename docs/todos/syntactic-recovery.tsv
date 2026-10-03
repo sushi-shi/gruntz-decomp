@@ -65,3 +65,4 @@ rva	unit	function	lost_max	cur
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	91.2597
 0x1523f0	wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623
 0x15a210	wwdobjmgr	?DrawObjectDebugGeometry@CDDrawChildGroup@@QAEXXZ	97.8145	95.5362
+0x159f00	wwdobjmgr	?CollideBroadcast@CDDrawChildGroup@@UAEXXZ	100.0000	99.8571
