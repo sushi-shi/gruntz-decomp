@@ -307,6 +307,7 @@ i32 CCreditsState::InitAttractTitle() {
     return 1;
 }
 
+// @early-stop
 RVA(0x000396f0, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
     if (m_world == NULL) {
@@ -340,13 +341,13 @@ i32 CCreditsState::DrawScrollingCredits() {
         if (g_clipRegionEnabled != false) {
             SelectClipRgn(hdc, m_clipRegion);
         }
-        i32 oldColor = SetTextColor(hdc, FlashColor());
+        COLORREF oldColor = SetTextColor(hdc, FlashColor());
         DrawTextA(hdc, m_caption, -1, &m_drawRect, DT_WORDBREAK | DT_EXPANDTABS);
         SetTextColor(hdc, oldColor);
         if (m_fxEnabled != false && m_fadeCountdown != 0) {
             CString s("Now is the time at Monolith when we dance");
             RECT r = {0, 0, SCREEN_W_PX, SCREEN_H_PX};
-            i32 oldColor2 = SetTextColor(hdc, RGB(255, 255, 255));
+            COLORREF oldColor2 = SetTextColor(hdc, RGB(255, 255, 255));
             DrawTextA(
                 hdc,
                 s,
