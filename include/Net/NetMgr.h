@@ -411,6 +411,13 @@ public:
     i32 ReadProviderSelection(HWND hList);
     i32 ReadSessionSelection(HWND hList);
 
+    CNetSessionListNode* GetSelectedSession() const {
+        return m_selectedSession;
+    }
+    void SetSelectedSession(CNetSessionListNode* session) {
+        m_selectedSession = session;
+    }
+
     i32 EnumerateSessions(DWORD timeoutMs, DWORD flags);
 
     i32 Initialize(void* lobby, GUID appGuid);

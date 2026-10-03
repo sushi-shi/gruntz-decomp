@@ -806,7 +806,7 @@ i32 CMulti::StartTitle() {
     if (session == NULL) {
         return 0;
     }
-    m_netMgr->m_selectedSession = session;
+    m_netMgr->SetSelectedSession(session);
     char hostName[12];
     strcpy(hostName, connection->lpPlayerName->lpszShortNameA);
     hostName[10] = '\0';
@@ -1048,7 +1048,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
             }
 
             if (g_netMgr != NULL) {
-                g_netMgr->m_selectedSession = NULL;
+                g_netMgr->SetSelectedSession(NULL);
                 SetTimer(hDlg, 1, 0x9c4, NULL);
                 SendMessageA(hDlg, WM_TIMER, 0, 0);
                 return true;
@@ -1168,7 +1168,7 @@ i32 CMulti::DetectConnectionConfig() {
     if (r == NULL) {
         return 0;
     }
-    Network()->m_selectedSession = r;
+    Network()->SetSelectedSession(r);
     return 1;
 }
 
@@ -1288,7 +1288,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
     }
 
     g_netMgr->ReadSessionSelection(GetDlgItem(hDlg, 0x3fc));
-    CNetSessionListNode* sel = Network()->m_selectedSession;
+    CNetSessionListNode* sel = Network()->GetSelectedSession();
     if (sel == NULL) {
         return 0;
     }
@@ -2685,7 +2685,7 @@ i32 CMulti::Poll(i32 token) {
 // @early-stop
 RVA(0x000bbc90, 0x1b8)
 i32 CMulti::CreateSession() {
-    CNetSessionListNode* rec = g_netMgr->m_selectedSession;
+    CNetSessionListNode* rec = g_netMgr->GetSelectedSession();
     if (rec == NULL) {
         return 0;
     }
