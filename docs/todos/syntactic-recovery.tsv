@@ -75,10 +75,10 @@ rva	unit	function	lost_max	cur
 0x10ee20	tilelogicpump	??0CCheckpointTrigger@@QAE@PAUCGameObject@@@Z	99.9398	99.8675
 0x10f6a0	tilelogicpump	?Act@CCheckpointTrigger@@QAEHXZ	100.0000	98.3602
 0x110c10	tileswitchlogic	?Tick@CTileTriggerLogic@@UAEHXZ	95.5831	94.9255
-0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	91.9027
+0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	93.3186
 0x079520	triggermgr	?HandleTargetSelection@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	99.8538	90.7510
 0x0798d0	triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	96.9403
-0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.2161
+0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.1582
 0x078430	triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379
 0x07d5c0	triggermgr	?ToggleToyTargeting@CTriggerMgr@@QAEHXZ	100.0000	99.7297
