@@ -2643,8 +2643,8 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         spr->AddFlags(IDX(WWD_PLANE_FLAG_WRAP_X | WWD_PLANE_FLAG_WRAP_Y));
         spr->m_zCoord = 0xf4241;
         i32 parity = 1;
-        for (i32 i = 0; i < spr->m_tileRows; i++) {
-            for (i32 j = 0; j < spr->m_tileColumns; j++) {
+        for (i32 i = 0; i < spr->GetTileRows(); i++) {
+            for (i32 j = 0; j < spr->GetTileColumns(); j++) {
                 i32 val = parity ? savedIdx : -1;
                 parity ^= 1;
                 SET_WORKER_HOST_CELL(spr, j, i, val);

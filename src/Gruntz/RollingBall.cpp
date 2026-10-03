@@ -189,7 +189,7 @@ i32 CRollingBall::Update() {
             if (tileX < 0) {
                 tileX = 0;
             } else {
-                i32 w = lvl->m_mainPlane->m_tileColumns;
+                i32 w = lvl->m_mainPlane->GetTileColumns();
                 if (tileX >= w) {
                     tileX = w - 1;
                 }
@@ -197,7 +197,7 @@ i32 CRollingBall::Update() {
             if (tileY < 0) {
                 tileY = 0;
             } else {
-                i32 h = lvl->m_mainPlane->m_tileRows;
+                i32 h = lvl->m_mainPlane->GetTileRows();
                 if (tileY >= h) {
                     tileY = h - 1;
                 }
@@ -387,7 +387,7 @@ i32 CRollingBall::Update() {
             if (tileX2 < 0) {
                 tileX2 = 0;
             } else {
-                i32 w = lvl2->m_mainPlane->m_tileColumns;
+                i32 w = lvl2->m_mainPlane->GetTileColumns();
                 if (tileX2 >= w) {
                     tileX2 = w - 1;
                 }
@@ -395,7 +395,7 @@ i32 CRollingBall::Update() {
             if (tileY2 < 0) {
                 tileY2 = 0;
             } else {
-                i32 h = lvl2->m_mainPlane->m_tileRows;
+                i32 h = lvl2->m_mainPlane->GetTileRows();
                 if (tileY2 >= h) {
                     tileY2 = h - 1;
                 }

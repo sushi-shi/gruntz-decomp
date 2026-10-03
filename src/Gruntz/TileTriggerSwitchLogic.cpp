@@ -339,9 +339,11 @@ i32 CTileTriggerLogic::Tick() {
         case TILEKIND_REDPYRAMID_DOWN:
         case TILEKIND_REDPYRAMID_UP: {
             i32 pxX = 0x10;
-            for (i32 gx = 0; gx < world->m_level->m_mainPlane->m_tileColumns; gx++, pxX += 0x20) {
+            for (i32 gx = 0; gx < world->m_level->m_mainPlane->GetTileColumns();
+                 gx++, pxX += 0x20) {
                 i32 pxY = 0x10;
-                for (i32 gy = 0; gy < world->m_level->m_mainPlane->m_tileRows; gy++, pxY += 0x20) {
+                for (i32 gy = 0; gy < world->m_level->m_mainPlane->GetTileRows();
+                     gy++, pxY += 0x20) {
                     i32 hit = 0;
                     if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
