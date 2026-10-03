@@ -137,11 +137,11 @@ i32 DirectInputMgr2::EnumerateJoysticks(u32) {
 RVA(0x00132fc0, 0xb8)
 i32 __stdcall DinEnumJoystickCallback(LPCDIDEVICEINSTANCEA instance, void* ref) {
     if (instance == NULL) {
-        return 1;
+        return DIENUM_CONTINUE;
     }
     DirectInputMgr2* mgr = static_cast<DirectInputMgr2*>(ref);
     if (mgr == NULL) {
-        return 1;
+        return DIENUM_CONTINUE;
     }
     CJoystickDevice* joystick = new CJoystickDevice;
     if (joystick
@@ -150,12 +150,12 @@ i32 __stdcall DinEnumJoystickCallback(LPCDIDEVICEINSTANCEA instance, void* ref) 
         if (joystick != NULL) {
             delete joystick;
         }
-        return 1;
+        return DIENUM_CONTINUE;
     }
     if (joystick != NULL) {
         mgr->m_joysticks.Add(joystick);
     }
-    return 1;
+    return DIENUM_CONTINUE;
 }
 
 RVA(0x00133080, 0x4a)

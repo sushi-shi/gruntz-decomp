@@ -523,7 +523,7 @@ i32 CNetMgr::EnumerateAllPlayers() {
     ClearPlayers();
 
     IDirectPlay4A* directPlay = m_directPlay;
-    i32 hr = directPlay->EnumPlayers(NULL, &NetEnumPlayerCallback, this, 0);
+    i32 hr = directPlay->EnumPlayers(NULL, &NetEnumPlayerCallback, this, DPENUMPLAYERS_ALL);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x30a, hr, NULL);
         return hr;

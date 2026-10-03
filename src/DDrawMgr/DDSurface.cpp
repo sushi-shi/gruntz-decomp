@@ -431,7 +431,7 @@ HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* 
             g_imageCache.Add(item);
         }
     }
-    return 1;
+    return DDENUMRET_OK;
 }
 
 // @dead-code

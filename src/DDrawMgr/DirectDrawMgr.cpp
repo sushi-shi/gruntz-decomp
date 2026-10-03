@@ -853,7 +853,7 @@ i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused) {
     DDSURFACEDESC* copy = new DDSURFACEDESC;
     memcpy(copy, mode, sizeof(DDSURFACEDESC));
     g_modeArray.Add(copy);
-    return 1;
+    return DDENUMRET_OK;
 }
 
 RVA(0x001433d0, 0x4f)
@@ -1067,10 +1067,10 @@ CreateDirectDrawVia(
         if (dd != NULL) {
             g_directDraw = dd;
             g_ddCreateCtx = lpGuid;
-            return 0;
+            return DDENUMRET_CANCEL;
         }
     }
-    return 1;
+    return DDENUMRET_OK;
 }
 
 // @dead-code

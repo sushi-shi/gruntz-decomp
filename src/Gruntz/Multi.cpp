@@ -2683,7 +2683,7 @@ i32 CMulti::CreateSession() {
     if (rec == NULL) {
         return 0;
     }
-    Network()->EnumerateSessionPlayers(rec, 0);
+    Network()->EnumerateSessionPlayers(rec, DPENUMPLAYERS_ALL);
     if (ResolveLocalPlayer() == 0) {
         return 0;
     }

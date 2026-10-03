@@ -465,7 +465,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_gruntzWinApp.m_hInstance = m_owner->m_hInstance;
     char dpBuf[256];
     strcpy(dpBuf, szCmdLine);
-    AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, 1);
+    AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, SW_SHOWNORMAL);
     m_strWorldFile.Empty();
 
     m_world = new CDDrawSurfaceMgr;

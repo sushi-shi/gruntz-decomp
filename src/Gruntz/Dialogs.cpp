@@ -461,9 +461,9 @@ void CBattlezDlg::OnPlayerTypeSelection0() {
     UpdatePlayerSlotEnabled(0);
     OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-        GetDlgItem(1)->EnableWindow(true);
+        GetDlgItem(IDOK)->EnableWindow(true);
     } else {
-        GetDlgItem(1)->EnableWindow(false);
+        GetDlgItem(IDOK)->EnableWindow(false);
     }
 }
 
@@ -472,9 +472,9 @@ void CBattlezDlg::OnPlayerTypeSelection1() {
     UpdatePlayerSlotEnabled(1);
     OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-        GetDlgItem(1)->EnableWindow(true);
+        GetDlgItem(IDOK)->EnableWindow(true);
     } else {
-        GetDlgItem(1)->EnableWindow(false);
+        GetDlgItem(IDOK)->EnableWindow(false);
     }
 }
 
@@ -483,9 +483,9 @@ void CBattlezDlg::OnPlayerTypeSelection2() {
     UpdatePlayerSlotEnabled(2);
     OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-        GetDlgItem(1)->EnableWindow(true);
+        GetDlgItem(IDOK)->EnableWindow(true);
     } else {
-        GetDlgItem(1)->EnableWindow(false);
+        GetDlgItem(IDOK)->EnableWindow(false);
     }
 }
 
@@ -494,9 +494,9 @@ void CBattlezDlg::OnPlayerTypeSelection3() {
     UpdatePlayerSlotEnabled(3);
     OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-        GetDlgItem(1)->EnableWindow(true);
+        GetDlgItem(IDOK)->EnableWindow(true);
     } else {
-        GetDlgItem(1)->EnableWindow(false);
+        GetDlgItem(IDOK)->EnableWindow(false);
     }
 }
 
@@ -625,7 +625,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 RVA(0x00016cd0, 0x98)
 void CBattlezDlg::OnPlayerColor0() {
     CBattlezDlgColors dlg(m_gameManager, 0, 0, NULL);
-    if (dlg.DoModal() == 1) {
+    if (dlg.DoModal() == IDOK) {
         if (SetPlayerColor(0, static_cast<ColorTint>(dlg.m_pickedColor))) {
             OnPlayerOptionsChanged();
             GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, true);
@@ -637,7 +637,7 @@ RVA_COMPGEN(0x00016da0, 0x5, ??1CBattlezDlgColors@@UAE@XZ)
 RVA(0x00016dc0, 0x97)
 void CBattlezDlg::OnPlayerColor1() {
     CBattlezDlgColors dlg(m_gameManager, 1, 0, NULL);
-    if (dlg.DoModal() == 1) {
+    if (dlg.DoModal() == IDOK) {
         if (SetPlayerColor(1, static_cast<ColorTint>(dlg.m_pickedColor))) {
             OnPlayerOptionsChanged();
             GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, true);
@@ -648,7 +648,7 @@ void CBattlezDlg::OnPlayerColor1() {
 RVA(0x00016e90, 0x98)
 void CBattlezDlg::OnPlayerColor2() {
     CBattlezDlgColors dlg(m_gameManager, 2, 0, NULL);
-    if (dlg.DoModal() == 1) {
+    if (dlg.DoModal() == IDOK) {
         if (SetPlayerColor(2, static_cast<ColorTint>(dlg.m_pickedColor))) {
             OnPlayerOptionsChanged();
             GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, true);
@@ -659,7 +659,7 @@ void CBattlezDlg::OnPlayerColor2() {
 RVA(0x00016f60, 0x98)
 void CBattlezDlg::OnPlayerColor3() {
     CBattlezDlgColors dlg(m_gameManager, 3, 0, NULL);
-    if (dlg.DoModal() == 1) {
+    if (dlg.DoModal() == IDOK) {
         if (SetPlayerColor(3, static_cast<ColorTint>(dlg.m_pickedColor))) {
             OnPlayerOptionsChanged();
             GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, true);
@@ -670,7 +670,7 @@ void CBattlezDlg::OnPlayerColor3() {
 RVA(0x00017030, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
     CBattlezDlgCustom dlg(NULL);
-    if (dlg.DoModal() == 1) {
+    if (dlg.DoModal() == IDOK) {
         if (!dlg.m_customName.IsEmpty()) {
             dlg.m_customName.MakeUpper();
             CWnd* item = GetDlgItem(0x4ff);
