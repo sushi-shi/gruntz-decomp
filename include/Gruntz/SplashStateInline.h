@@ -9,7 +9,7 @@ inline b32 CSplashState::IsAdvanceRequested() {
     CInputDeviceGroup* actors = g_actorList;
     i32 count = actors->m_count;
     for (i32 i = 0; i < count; i++) {
-        if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON0)) {
+        if (actors->m_items[i]->GetPressedButtons() & IDX(INPUT_BUTTON0)) {
             return true;
         }
     }

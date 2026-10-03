@@ -155,6 +155,13 @@ public:
     i32 SetProperty(REFGUID rguid, LPCDIPROPHEADER prop);
     i32 SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwData);
 
+    u32 GetHeldButtons() const {
+        return m_heldButtons;
+    }
+    u32 GetPressedButtons() const {
+        return m_pressedButtons;
+    }
+
     IDirectInputDeviceA* m_device;
     IDirectInputDevice2A* m_device2;
     // @identity-TODO: m_deviceInfo's retail offset requires this unaccessed span;
