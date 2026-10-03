@@ -3941,7 +3941,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
         CByteArray* arr = &g_gameReg->m_triggerMgr->m_byteArr;
         arr->Add(static_cast<BYTE>(mode));
         m_owner->m_hlBusy = false;
-        if (m_owner->m_position != STATUSBAR_HIDDEN && m_owner->m_activeTab == TAB_GAME) {
+        if (m_owner->GetState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
             m_owner->ResetWidgets(false);
             m_owner->TryActivate();
         }

@@ -135,6 +135,8 @@ public:
         m_armed = true;
         LoadCameraSprite();
     }
+    void ClearCameraSprite();
+    void StopCameraTracking();
 
     i32 ApplySwitch(CGrunt* g, i32 sx, i32 sy);
 

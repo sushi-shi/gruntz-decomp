@@ -12,6 +12,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthGlyph.h>
 #include <Gruntz/LogicTypeId.h>
@@ -120,17 +121,10 @@ i32 CSBI_SideTab::BuildHandle() {
     }
     i32 val;
     if (mode == STATUS_SAMPLE_TOOL) {
-        PickupType level = unit->m_entranceReason;
-        if (level > PICKUP_EQUIPPABLE_LAST) {
-            val = IDX(unit->m_toolId);
-            if (unit->m_toolId == PICKUP_NONE) {
-                m_sampleMode = STATUS_SAMPLE_HEALTH;
-            }
-        } else {
-            val = IDX(level);
-            if (level == PICKUP_NONE) {
-                m_sampleMode = STATUS_SAMPLE_HEALTH;
-            }
+        PickupType level = unit->ArrivalPickup();
+        val = IDX(level);
+        if (level == PICKUP_NONE) {
+            m_sampleMode = STATUS_SAMPLE_HEALTH;
         }
     } else if (mode == STATUS_SAMPLE_VEHICLE) {
         val = IDX(unit->m_vehiclePickupType);

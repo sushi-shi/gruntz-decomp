@@ -390,7 +390,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             if (moveVariant != 0) {
                 i32 tier = cueTier + moveVariant - 1;
                 CGruntzMgr* g = g_gameReg;
-                const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
+                const LevelCoordRect* bounds = g->m_world->m_level->m_mainPlane->GetPlaneViewRect();
                 if (CGameLevel::PointInBounds(
                         bounds,
                         m_object->m_screenPosition.m_x,
@@ -409,7 +409,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 }
                 i32 tier = cueTier + m_moveKind - 1;
                 CGruntzMgr* g = g_gameReg;
-                const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
+                const LevelCoordRect* bounds = g->m_world->m_level->m_mainPlane->GetPlaneViewRect();
                 if (CGameLevel::PointInBounds(
                         bounds,
                         m_object->m_screenPosition.m_x,
@@ -487,7 +487,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     if (sel == 0) {
         if (::PtInRect(
-                &g->m_world->m_level->m_mainPlane->m_planeViewRect,
+                g->m_world->m_level->m_mainPlane->GetPlaneViewRect(),
                 position.m_x,
                 position.m_y
             )) {
@@ -495,7 +495,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         }
     } else {
         if (::PtInRect(
-                &g->m_world->m_level->m_mainPlane->m_planeViewRect,
+                g->m_world->m_level->m_mainPlane->GetPlaneViewRect(),
                 position.m_x,
                 position.m_y
             )) {
@@ -907,7 +907,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             CGruntzMgr* g = g_gameReg;
             i32 y = h->m_screenPosition.m_y;
             i32 x = h->m_screenPosition.m_x;
-            const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
+            const RECT& rect = *g->m_world->m_level->m_mainPlane->GetPlaneViewRect();
             if (::PtInRect(&rect, x, y)) {
                 g->VoiceMgr()->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
                 StopVehicleLoopSound();

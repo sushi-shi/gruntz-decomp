@@ -2785,7 +2785,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                         unit->m_blockedVoicePending = false;
                         CGameObject* lvl = unit->m_object;
 
-                        RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
+                        RECT* hit = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
                         if (::PtInRect(hit, lvl->m_screenPosition.m_x, lvl->m_screenPosition.m_y)) {
                             g_gameReg->m_voiceManager->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }

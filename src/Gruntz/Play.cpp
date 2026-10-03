@@ -100,6 +100,7 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TriggerMgrCameraInline.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Utils.h>
 #include <Gruntz/View.h>
@@ -1346,7 +1347,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
                 CStatusBarMgr* statusBar = self->m_statusBar;
                 i32 originX = TIMER_ORIGIN_X_STATUSBAR_RIGHT_PX;
-                if (statusBar->m_position != STATUSBAR_DOCK_RIGHT) {
+                if (statusBar->GetState() != STATUSBAR_DOCK_RIGHT) {
                     originX = TIMER_ORIGIN_X_PX;
                 }
                 if (!self->m_levelTimer->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
@@ -1679,7 +1680,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
         if (charCode == '=' || charCode == '+') {
             m_statusBar->RestoreStatusBar();
 
-            if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+            if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
                 m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
             } else {
                 m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
@@ -1792,12 +1793,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == VK_ESCAPE) {
         CTriggerMgr* triggerManager = mgr->m_triggerMgr;
-        CWwdSpriteObject* n = triggerManager->m_goal;
-        if (n != NULL) {
-            n->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-            triggerManager->m_goal = NULL;
-        }
-        triggerManager->m_armed = false;
+        triggerManager->StopCameraTracking();
         CChatBoxOwner* rec = this->m_chatBox;
         if (rec->m_inputActive != false) {
             this->FlushPendingOps();
@@ -1997,10 +1993,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != false) {
             return 1;
         }
-        if (lv->m_position == STATUSBAR_HIDDEN) {
+        if (lv->GetState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
-        if (lv->m_activeTab != TAB_GRUNTZ) {
+        if (lv->GetActiveTab() != TAB_GRUNTZ) {
             lv->SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
@@ -2022,10 +2018,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != false) {
             return 1;
         }
-        if (lv->m_position == STATUSBAR_HIDDEN) {
+        if (lv->GetState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
-        if (lv->m_activeTab != TAB_RESOURCE) {
+        if (lv->GetActiveTab() != TAB_RESOURCE) {
             lv->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
@@ -2043,10 +2039,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != false) {
             return 1;
         }
-        if (lv->m_position == STATUSBAR_HIDDEN) {
+        if (lv->GetState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
-        if (lv->m_activeTab != TAB_STATZ) {
+        if (lv->GetActiveTab() != TAB_STATZ) {
             lv->SetTabState(SBICMD_TAB_STATZ, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
@@ -2076,10 +2072,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->m_hlBusy != false) {
             return 1;
         }
-        if (lv->m_position == STATUSBAR_HIDDEN) {
+        if (lv->GetState() == STATUSBAR_HIDDEN) {
             lv->RestoreStatusBar();
         }
-        if (lv->m_activeTab != TAB_GAME) {
+        if (lv->GetActiveTab() != TAB_GAME) {
             lv->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         lv->SetTab(GAME_TAB_MENU, true);
@@ -2163,7 +2159,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 my = this->m_cursorPosition.m_y;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
             CDDrawWorkerHost* g = q->m_mainPlane;
-            RECT* view = &g->m_planeViewRect;
+            RECT* view = g->GetPlaneViewRect();
             i32 by = view->top - q->m_viewportRect.top + my;
             i32 bx = view->left - q->m_viewportRect.left + mx;
             mgr->m_triggerMgr->SpawnPuddle(bx, by, 0, 0, true, 0x19);
@@ -2178,7 +2174,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 my = this->m_cursorPosition.m_y;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
-        RECT* view = &g->m_planeViewRect;
+        RECT* view = g->GetPlaneViewRect();
         i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx =
             ((this->m_cursorPosition.m_x - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
@@ -2530,15 +2526,15 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
     xr = x;
     if (m_mgr->GetFrameGate() == false) {
-        if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-            && m_statusBar->m_activeTab != TAB_GAME) {
+        if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+            && m_statusBar->GetActiveTab() != TAB_GAME) {
             if (m_minimap->BeginMinimapPan(eventArg, xr, y)) {
                 return 1;
             }
         }
         CGameLevel* geom = m_mgr->m_world->m_level;
         CDDrawWorkerHost* cam = geom->m_mainPlane;
-        RECT* view = &cam->m_planeViewRect;
+        RECT* view = cam->GetPlaneViewRect();
         worldPosition.Set(
             view->left - geom->m_viewportRect.left + xr,
             view->top - geom->m_viewportRect.top + y
@@ -2593,7 +2589,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 }
 
                 CGameLevel* ds = m_world->m_level;
-                LevelCoordRect* vr2 = &ds->m_mainPlane->m_planeViewRect;
+                LevelCoordRect* vr2 = ds->m_mainPlane->GetPlaneViewRect();
                 Coord dropPosition(
                     vr2->left - ds->m_viewportRect.left + xr,
                     vr2->top - ds->m_viewportRect.top + y
@@ -2667,7 +2663,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         if (m_statusBar == NULL) {
             return 1;
         }
-        if (m_statusBar->m_position == STATUSBAR_HIDDEN) {
+        if (m_statusBar->GetState() == STATUSBAR_HIDDEN) {
             if (m_statusBar->HitTestLayer(xr, y)) {
                 m_dragSnapActive = true;
 
@@ -2783,8 +2779,8 @@ ret1:
 RVA(0x000ce530, 0xe3)
 i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed == false) {
-        if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-            && m_statusBar->m_activeTab != TAB_GAME) {
+        if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+            && m_statusBar->GetActiveTab() != TAB_GAME) {
             m_minimap->EndMinimapPan(keyFlags, x, y);
         }
         if (m_worldReady != false) {
@@ -2795,7 +2791,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
         }
         m_worldReady = false;
         m_dragSnapActive = false;
-        if (m_statusBar->m_position != STATUSBAR_HIDDEN) {
+        if (m_statusBar->GetState() != STATUSBAR_HIDDEN) {
             LevelCoordRect vp = m_world->m_level->GetViewportRect();
             if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
                 return m_statusBar->OnPointerRelease(keyFlags, x, y);
@@ -2817,11 +2813,11 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return this->OnLButtonDown(keyFlags, x, y);
     }
 
-    if (m_statusBar->m_position == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
+    if (m_statusBar->GetState() == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
         SoundCueRegistry* registry = m_mgr->m_world->SoundRegistry();
         registry->PlayCue("GAME_TABHIGHLIGHT1");
         m_statusBar->RestoreStatusBar();
-        if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+        if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
             m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         } else {
             m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
@@ -2865,7 +2861,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
 
     h = m_mgr->m_world->m_level;
-    vr = &h->m_mainPlane->m_planeViewRect;
+    vr = h->m_mainPlane->GetPlaneViewRect();
     position.Set(vr->left - h->m_viewportRect.left + x, vr->top - h->m_viewportRect.top + y);
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* e = StartMarkerAt(i);
@@ -2900,7 +2896,6 @@ i32 CPlay::OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     return OnRButtonDown(keyFlags, x, y);
 }
 
-// @early-stop
 RVA(0x000ceae0, 0x268)
 i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed != false) {
@@ -2934,8 +2929,9 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_mgr->GetFrameGate() != false) {
         return 1;
     }
-    if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-        && m_statusBar->m_activeTab != TAB_GAME && m_minimap->IssueMinimapCommand(keyFlags, x, y)) {
+    if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+        && m_statusBar->GetActiveTab() != TAB_GAME
+        && m_minimap->IssueMinimapCommand(keyFlags, x, y)) {
         return 1;
     }
 
@@ -2946,11 +2942,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (idx != -1) {
         m_statusBar->ClearStat(idx);
         CTriggerMgr* w = m_mgr->m_triggerMgr;
-        if (w->m_goal != NULL) {
-            w->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-            w->m_goal = NULL;
-        }
-        w->m_armed = false;
+        w->StopCameraTracking();
         return 1;
     }
     if (m_mgr->m_triggerMgr->m_recList.IsEmpty()) {
@@ -2962,8 +2954,8 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
         Coord rawPosition(
-            geom->m_planeViewRect.left - ds->m_viewportRect.left + x,
-            geom->m_planeViewRect.top - ds->m_viewportRect.top + y
+            geom->GetPlaneViewRect()->left - ds->m_viewportRect.left + x,
+            geom->GetPlaneViewRect()->top - ds->m_viewportRect.top + y
         );
         Coord snapped = rawPosition;
         SnapTileCenter(&snapped);
@@ -3810,8 +3802,8 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     if (m_paused != false) {
         return 1;
     }
-    if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
-        && m_statusBar->m_activeTab != TAB_GAME) {
+    if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
+        && m_statusBar->GetActiveTab() != TAB_GAME) {
         m_minimap->ContinueMinimapPan(keyFlags, x, y);
     }
 
@@ -3868,7 +3860,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
                 }
             }
             CGameLevel* v = m_world->m_level;
-            LevelCoordRect* vr = &v->m_mainPlane->m_planeViewRect;
+            LevelCoordRect* vr = v->m_mainPlane->GetPlaneViewRect();
             i32 wx = vr->left - v->m_viewportRect.left + x;
             i32 wy = vr->top - v->m_viewportRect.top + y;
             m_mgr->m_triggerMgr->PlaceObjectFull(wx, wy);
@@ -4111,7 +4103,7 @@ RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
 
-    RECT* vr = &v->m_mainPlane->m_planeViewRect;
+    RECT* vr = v->m_mainPlane->GetPlaneViewRect();
 
     i32 y = m_cursorPosition.m_y + (vr->top - v->m_viewportRect.top);
     i32 x = vr->left + (m_cursorPosition.m_x - v->m_viewportRect.left);
@@ -5440,10 +5432,7 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
 
     if (m_mgr->m_triggerMgr->m_goal != NULL) {
         CTriggerMgr* g = m_mgr->m_triggerMgr;
-        if (g->m_goal != NULL) {
-            g->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-            g->m_goal = NULL;
-        }
+        g->ClearCameraSprite();
         m_mgr->m_triggerMgr->LoadCameraSprite();
     }
     return 1;
@@ -5482,11 +5471,7 @@ RVA(0x000d5f00, 0x69)
 i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
     CTriggerMgr* g = w->m_triggerMgr;
-    if (g->m_goal != NULL) {
-        g->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-        g->m_goal = NULL;
-    }
-    g->m_armed = false;
+    g->StopCameraTracking();
     CDDrawWorkerHost* pg = m_mgr->m_world->m_level->m_mainPlane;
     SET_SCROLL_POSITION_SCALED_FIRST(pg, x, y);
     return 1;
@@ -5616,10 +5601,10 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     FlushPendingOps();
     if (showQuitConfirmation == false) {
         CStatusBarMgr* g = m_statusBar;
-        if (g->m_position == STATUSBAR_HIDDEN) {
+        if (g->GetState() == STATUSBAR_HIDDEN) {
             g->RestoreStatusBar();
         }
-        if (g->m_activeTab != TAB_GAME) {
+        if (g->GetActiveTab() != TAB_GAME) {
             g->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         g->SetTab(GAME_TAB_MISSION_STATUS, true);
@@ -6509,7 +6494,7 @@ i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
     tagSIZE mode = w->GetModeSize();
     i32 right = mode.cx;
-    StatusBarDock state = m_statusBar->m_position;
+    StatusBarDock state = m_statusBar->GetState();
     i32 bottom = mode.cy;
     RECT r;
     if (state == STATUSBAR_DOCK_LEFT) {
@@ -6591,7 +6576,7 @@ i32 CPlay::ExpandViewport(i32 step) {
     SET_SIZE_COMPONENTS(modeSize, manager->m_modeSize.cx, manager->m_modeSize.cy);
 
     if (resized.right - resized.left
-        < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx
+        < (statusBar->GetState() == STATUSBAR_HIDDEN ? modeSize.cx
                                                      : modeSize.cx - STATUSBAR_WIDTH_PX)) {
         resized.left -= step;
         resized.right += step;

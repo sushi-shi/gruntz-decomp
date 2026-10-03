@@ -42,17 +42,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+// @early-stop
 RVA(0x000ee800, 0x971)
 i32 CGrunt::StepDefenderBehavior() {
     Coord defenderTile = m_defenderPx;
-    defenderTile.m_x >>= TILE_SHIFT_PX;
-    defenderTile.m_y >>= TILE_SHIFT_PX;
+    ScreenTile(&defenderTile);
 
     i32 scanRadius = m_defenderRadius + m_reachRect.right - 1;
     i32 trimRadius = m_defenderRadius - 1;
-    RECT scanBounds;
-    SET_RECT_COMPONENTS(
-        scanBounds,
+    CRect scanBounds(
         defenderTile.m_x - scanRadius,
         defenderTile.m_y - scanRadius,
         defenderTile.m_x + scanRadius + 1,
@@ -136,9 +134,7 @@ i32 CGrunt::StepDefenderBehavior() {
                 m_blockedVoicePending = false;
             }
 
-            POINT target;
-            target.x = occTX;
-            target.y = occTY;
+            CPoint target(occTX, occTY);
             if (PtInRect(&scanBounds, target) != false && m_defenderRadius > 1) {
                 RECT oldBounds = g_gameReg->GetTileGrid()->m_bounds;
                 CDWordArray saved;
