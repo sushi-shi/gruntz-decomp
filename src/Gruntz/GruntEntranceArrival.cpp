@@ -1028,12 +1028,12 @@ i32 CGrunt::StepCombatReaction(
     eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_voiceManager->StopVoice(m_object->GetObjectId());
+            g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
         goto tail;
     }
-    if (GRUNT_IS_USING_TOY(eq)) {
+    if (GRUNT_IS_USING_TOY()) {
         goto restoreTool;
     }
     if (SettleActiveKnockback()) {
@@ -1044,10 +1044,10 @@ i32 CGrunt::StepCombatReaction(
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
         return 0;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
         goto tail;
     }
-    SETTLE_ACTIVE_TUBE_MOVE(eq);
+    SETTLE_ACTIVE_TUBE_MOVE();
     goto tail;
 
 restoreTool:

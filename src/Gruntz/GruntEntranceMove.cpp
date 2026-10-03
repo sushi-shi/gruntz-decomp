@@ -235,7 +235,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 s_gruntzEntrancezOne
             );
             if (onScreen) {
-                g_gameReg->m_voiceManager->PlayVoice(this, 0x37a, -1, 0, -1, -1);
+                g_gameReg->VoiceMgr()->PlayVoice(this, 0x37a, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
@@ -244,7 +244,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 s_gruntzEntrancezTwo
             );
             if (onScreen) {
-                g_gameReg->m_voiceManager->PlayVoice(this, 0x37b, -1, 0, -1, -1);
+                g_gameReg->VoiceMgr()->PlayVoice(this, 0x37b, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else {
@@ -253,7 +253,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 s_gruntzEntrancezThree
             );
             if (onScreen) {
-                g_gameReg->m_voiceManager->PlayVoice(this, 0x37c, -1, 0, -1, -1);
+                g_gameReg->VoiceMgr()->PlayVoice(this, 0x37c, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         }
@@ -613,17 +613,17 @@ i32 CGrunt::StepArrivalCommit() {
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
         return 0;
     }
-    if (GRUNT_IS_USING_TOY(eq)) {
+    if (GRUNT_IS_USING_TOY()) {
         goto idleReseed;
     }
     if (SettleActiveKnockback()) {
         goto finalize;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
         goto finalize;
     }
 
-    if (SETTLE_ACTIVE_TUBE_MOVE(eq)) {
+    if (SETTLE_ACTIVE_TUBE_MOVE()) {
         goto finalize;
     }
     if (TERMINATE_ACTIVE_BOMB_RUN(eq)) {
@@ -863,40 +863,34 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
-    bool ne;
-    ne = IsNotAnimationAct("A");
-    if (!ne) {
+    if (!IsNotAnimationAct("A")) {
         goto retZero;
     }
-    ne = IsNotAnimationAct("D");
-    if (!ne) {
+    if (!IsNotAnimationAct("D")) {
         goto retZero;
     }
-    bool eq;
-    eq = IsAnimationAct("I");
-    if (eq) {
+    if (IsAnimationAct("I")) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_voiceManager->StopVoice(m_object->GetObjectId());
+            g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
         return 1;
     }
-    if (GRUNT_IS_USING_TOY(eq)) {
+    if (GRUNT_IS_USING_TOY()) {
         goto idleReseed;
     }
     if (SettleActiveKnockback()) {
         return 1;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
         return 1;
     }
 
-    if (SETTLE_ACTIVE_TUBE_MOVE(eq)) {
+    if (SETTLE_ACTIVE_TUBE_MOVE()) {
         return 1;
     }
 
-    eq = IsAnimationAct("K");
-    if (!eq || m_entranceArmed == false) {
+    if (!IsAnimationAct("K") || m_entranceArmed == false) {
         goto retZero;
     }
 

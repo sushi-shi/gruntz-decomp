@@ -2763,7 +2763,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
                         RECT* hit = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
                         if (::PtInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
-                            g_gameReg->m_voiceManager->PlayVoice(unit, 0x366, -1, 0, -1, -1);
+                            g_gameReg->VoiceMgr()->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }
                         m_routeTiming.Clear();
                         m_routeTiming.m_intervalLo = BLOCKED_VOICE_INTERVAL_MS;

@@ -781,7 +781,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
         return 1;
     }
-    if (GRUNT_IS_USING_TOY(eq)) {
+    if (GRUNT_IS_USING_TOY()) {
         goto idleReseed;
     }
     if (SettleActiveKnockback()) {
@@ -791,7 +791,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     if (eq) {
         return 1;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
         goto applyTail;
     }
     // Direct comparison keeps the animation-name array access inline at this site.
