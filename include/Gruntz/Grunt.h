@@ -174,7 +174,6 @@ GZ_ENUM_END(GruntItemPose)
 
 class CGrunt : public CMovingLogic, public CWapX {
 public:
-    inline i32 CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY) const;
     inline i32 AddBattlezTraversalFlags(i32 flags) const;
     inline PickupType ArrivalPickupOf(PickupType entranceReason) const;
     inline PickupType ArrivalPickup() const;
