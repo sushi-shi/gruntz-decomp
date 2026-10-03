@@ -124,9 +124,9 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 && static_cast<u32>(m_dwell) > 3000) {
                 CWwdSpriteObject* mp = m_object;
                 SELECT_RANDOM_EXTENT_POINT(mp, baseX, spanX, baseY, spanY)
-                if (static_cast<u32>(baseX) < static_cast<u32>(g_gameReg->m_tileGrid->GetWidth())
+                if (static_cast<u32>(baseX) < static_cast<u32>(g_gameReg->GetTileGrid()->GetWidth())
                     && static_cast<u32>(baseY)
-                           < static_cast<u32>(g_gameReg->m_tileGrid->GetHeight())) {
+                           < static_cast<u32>(g_gameReg->GetTileGrid()->GetHeight())) {
                     TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
                 if (!m_coordList.IsEmpty()) {

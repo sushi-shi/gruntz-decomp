@@ -37,7 +37,7 @@ i32 CMinimap::Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs) {
     }
     m_gameMgr = gameMgr;
     m_triggerMgr = gameMgr->m_triggerMgr;
-    m_mapMgr = gameMgr->m_tileGrid;
+    m_mapMgr = gameMgr->GetTileGrid();
     m_world = gameMgr->m_world;
     m_refreshInterval = refreshIntervalMs;
     m_cellScale = 1;

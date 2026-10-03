@@ -456,7 +456,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         if (hitFlag != 0) {
             world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, true);
         } else {
-            CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+            CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
             i32 attr = plane->CellFlagsAt(tx, ty);
             if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & IDX(CELL_FLAG_SPECIAL)) != 0) {
                 world->LoadCursorSprites(pfk, false);
@@ -578,7 +578,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
                     return 1;
                 }
-                i32 occupantId = g_gameReg->m_tileGrid->ObjectIdAt(tx, ty);
+                i32 occupantId = g_gameReg->GetTileGrid()->ObjectIdAt(tx, ty);
                 if (occupantId != 0) {
                     CMapPtrToPtr* map =
                         &g_gameReg->m_world->ChildGroup()->m_registeredGameObjectsById;
@@ -656,7 +656,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 if (pfk == 0) {
                     break;
                 }
-                CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+                CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
                 i32 attr = plane->CellFlagsAt(tx, ty);
                 if ((attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & IDX(CELL_FLAG_SPECIAL)) == 0) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
@@ -968,7 +968,7 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         return 0;
     }
-    CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* grid = g_gameReg->GetTileGrid();
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
     i32 tile = grid->CellFlagsAt(tx, ty);
@@ -1006,7 +1006,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     if (cell->m_arrivalPending == false) {
         this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
     }
-    CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* tg = g_gameReg->GetTileGrid();
     i32 rowIdx = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
     i32 cellCol = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
     tg->CellFlagsAtUnchecked(cellCol, rowIdx) &= BRICKZ_CELL_UNOCCUPIED_MASK;
@@ -1612,10 +1612,10 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 i32 off = wg->m_tileRowOffsets[ty];
                 if (type == TILEKIND_GAUNTLET_ROCK_A) {
                     wg->m_tileHandles[off + tx] = 0x5a;
-                    (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
+                    (reg->GetTileGrid())->ComputeCellFlags(tx, ty, 0x5a);
                 } else {
                     wg->m_tileHandles[off + tx] = 0x5b;
-                    (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
+                    (reg->GetTileGrid())->ComputeCellFlags(tx, ty, 0x5b);
                 }
             }
 

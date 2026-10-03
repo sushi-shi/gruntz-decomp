@@ -166,8 +166,8 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (IsArrivalRerollPending() != 0) {
                 CWwdSpriteObject* h = m_object;
                 SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(h, baseX, spanX, baseY, spanY, outX, outY)
-                if (outX < g_gameReg->m_tileGrid->GetWidth()
-                    && outY < g_gameReg->m_tileGrid->GetHeight()) {
+                if (outX < g_gameReg->GetTileGrid()->GetWidth()
+                    && outY < g_gameReg->GetTileGrid()->GetHeight()) {
                     TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 coordCount = CoordCount();

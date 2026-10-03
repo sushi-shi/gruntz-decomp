@@ -106,7 +106,7 @@ i32 CTriggerMgr::PlaceObject(
             special = 0x100;
             wantSlot = 1;
         }
-        CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
         i32 tx = x >> TILE_SHIFT_PX;
         i32 ty = y >> TILE_SHIFT_PX;
         i32 attr = plane->CellFlagsAt(tx, ty);
@@ -1121,7 +1121,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         if (cell->CanShowStamina() == 0) {
             return 0;
         }
-        CGruntzMapMgr* map = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* map = g_gameReg->GetTileGrid();
         TileCollisionKind bute = map->CellTypeAt(bx >> TILE_SHIFT_PX, by >> TILE_SHIFT_PX);
         PickupType kind = cell->ArrivalPickup();
 
@@ -1252,7 +1252,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     i32 hitUnitIndex;
     hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
     if (hit == NULL) {
-        CGruntzMapMgr* map = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* map = g_gameReg->GetTileGrid();
         i32 flags = map->CellFlagsAt(argTileX, argTileY);
         if ((flags & 0x40939) != 0 || (flags & 0x82) != 0) {
             return 0;

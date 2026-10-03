@@ -1025,7 +1025,7 @@ RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact) {
     i32 ix = x >> TILE_SHIFT_PX;
     i32 iy = y >> TILE_SHIFT_PX;
-    CMapMgr* plane = g_gameReg->m_tileGrid;
+    CMapMgr* plane = g_gameReg->GetTileGrid();
     i32 attr;
     if (ix >= plane->GetWidth() || iy >= plane->GetHeight()) {
         attr = -1;
@@ -1098,13 +1098,14 @@ CGrunt* CTriggerMgr::FindGruntAt(
         do {
             i32 yEnd = span->bottom + trow + 1;
             for (i32 y = trow - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
-                if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->GetWidth())) {
+                if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->GetTileGrid()->GetWidth())) {
                     continue;
                 }
-                if (static_cast<u32>(y) >= static_cast<u32>(g_gameReg->m_tileGrid->GetHeight())) {
+                if (static_cast<u32>(y)
+                    >= static_cast<u32>(g_gameReg->GetTileGrid()->GetHeight())) {
                     continue;
                 }
-                i32 val = g_gameReg->m_tileGrid->OccupantAt(x, y);
+                i32 val = g_gameReg->GetTileGrid()->OccupantAt(x, y);
                 if (val == -1) {
                     continue;
                 }

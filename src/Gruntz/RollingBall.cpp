@@ -131,7 +131,7 @@ i32 CRollingBall::Update() {
         if (m_explodeTiming.Expired()) {
             SetImageSetByName("LEVEL_ROLLINGBALL_EXPLOSION");
             SwitchAnimationByName("LEVEL_ROLLINGBALLEXPLOSION", 0);
-            CMapMgr* map = g_gameReg->m_tileGrid;
+            CMapMgr* map = g_gameReg->GetTileGrid();
             CWwdSpriteObject* lg = m_object;
             i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
             i32 cy = lg->m_screenY >> TILE_SHIFT_PX;
@@ -172,11 +172,11 @@ i32 CRollingBall::Update() {
 
         i32 tx = m_target.m_x >> TILE_SHIFT_PX;
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;
-        CMapMgr* map = g_gameReg->m_tileGrid;
+        CMapMgr* map = g_gameReg->GetTileGrid();
         if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
             map->m_rowInts[ty][tx * 7] &= 0xefffffff;
         }
-        CMapMgr* map2 = g_gameReg->m_tileGrid;
+        CMapMgr* map2 = g_gameReg->GetTileGrid();
         i32 terrain = map2->CellFlagsAt(tx, ty);
 
         if ((terrain & BRICKZ_BLOCKED_MASK) != 0 || (terrain & IDX(CELL_FLAG_SPECIAL)) != 0) {
@@ -259,7 +259,7 @@ i32 CRollingBall::Update() {
                     DWORD perTile = g_buteMgr.GetDword("Hazardz", "RollingBallTimePerTile", 0x3e8);
                     m_moveSpeed = DATA_COMPGEN(0x001ea3e8, 16.0) / static_cast<double>(perTile);
 
-                    CMapMgr* board = g_gameReg->m_tileGrid;
+                    CMapMgr* board = g_gameReg->GetTileGrid();
                     CWwdSpriteObject* o2 = m_object;
                     i32 bx = o2->m_screenX >> TILE_SHIFT_PX;
                     i32 by = o2->m_screenY >> TILE_SHIFT_PX;
@@ -478,7 +478,7 @@ i32 CRollingBall::Update() {
         m_subX = static_cast<double>(out->m_screenX) + m_subX;
         m_moveDelta = 0.0;
         m_subY = static_cast<double>(out->m_screenY) + m_subY;
-        CMapMgr* board2 = g_gameReg->m_tileGrid;
+        CMapMgr* board2 = g_gameReg->GetTileGrid();
         i32 mtx = m_target.m_x >> TILE_SHIFT_PX;
         i32 mty = m_target.m_y >> TILE_SHIFT_PX;
         if (static_cast<u32>(mtx) < board2->m_width && static_cast<u32>(mty) < board2->m_height) {

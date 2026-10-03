@@ -168,7 +168,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, NULL);
 
-    TileCollisionKind tileKind = g_gameReg->m_tileGrid->CellTypeAt(
+    TileCollisionKind tileKind = g_gameReg->GetTileGrid()->CellTypeAt(
         m_lastTilePx.m_x >> TILE_SHIFT_PX,
         m_lastTilePx.m_y >> TILE_SHIFT_PX
     );
@@ -247,7 +247,7 @@ void CGrunt::FaceTowardTile(i32 tileX, i32 tileY) {
 RVA(0x00051510, 0x20f)
 i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     {
-        CGruntzMapMgr* board = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* board = g_gameReg->GetTileGrid();
         i32 x = m_commitPx.m_x >> TILE_SHIFT_PX;
         i32 y = m_commitPx.m_y >> TILE_SHIFT_PX;
         i32 owner = board->OccupantAt(x, y);
@@ -283,8 +283,8 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     i32 oldX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 newX = m_commitPx.m_x >> TILE_SHIFT_PX;
     i32 newY = m_commitPx.m_y >> TILE_SHIFT_PX;
-    g_gameReg->m_tileGrid->ReleaseCellOccupancy(oldX, oldY);
-    g_gameReg->m_tileGrid->AcquireCellOccupancy(newX, newY, m_playerIndex, m_unitIndex);
+    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(oldX, oldY);
+    g_gameReg->GetTileGrid()->AcquireCellOccupancy(newX, newY, m_playerIndex, m_unitIndex);
 
     m_lastTilePx = m_commitPx;
     m_commitPx = m_entrancePx;

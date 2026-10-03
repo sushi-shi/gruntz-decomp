@@ -129,8 +129,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 if (IsArrivalRerollPending() != 0) {
                     CGameObject* base = this->m_object;
                     SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lo, ax, lo2, ay)
-                    if (lo < g_gameReg->m_tileGrid->GetWidth()
-                        && lo2 < g_gameReg->m_tileGrid->GetHeight()) {
+                    if (lo < g_gameReg->GetTileGrid()->GetWidth()
+                        && lo2 < g_gameReg->GetTileGrid()->GetHeight()) {
                         TileSwitch(
                             static_cast<i32>(lo),
                             static_cast<i32>(lo2),
@@ -212,7 +212,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
 
         Coord* cell = GetHeadCoord();
 
-        BrickzCell& gc = g_gameReg->m_tileGrid->m_rows[cell->m_y][cell->m_x];
+        BrickzCell& gc = g_gameReg->GetTileGrid()->m_rows[cell->m_y][cell->m_x];
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {

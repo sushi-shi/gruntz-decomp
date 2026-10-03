@@ -145,7 +145,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_ctx = mgr;
     m_playerIndex = playerIndex;
     m_triggerMgr = mgr->m_triggerMgr;
-    m_board = mgr->m_tileGrid;
+    m_board = mgr->GetTileGrid();
     m_play = static_cast<CPlay*>(mgr->m_curState);
     m_cellQuery = m_play->m_tileTriggers;
     m_active = true;

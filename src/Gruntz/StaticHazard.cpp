@@ -175,7 +175,7 @@ i32 CStaticHazard::UpdateActiveState() {
                 m_object;
             SET_SORT_KEY_IF_CHANGED(o, 0)
 
-            CMapMgr* grid = g_gameReg->m_tileGrid;
+            CMapMgr* grid = g_gameReg->GetTileGrid();
             i32 row = m_tileRow;
             i32 col = m_tileCol;
             if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
@@ -213,7 +213,7 @@ i32 CStaticHazard::UpdateActiveState() {
         }
         CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, o->m_health)
-        CMapMgr* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->GetTileGrid();
         i32 row = m_tileRow;
         i32 col = m_tileCol;
         if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
@@ -221,7 +221,7 @@ i32 CStaticHazard::UpdateActiveState() {
             grid->m_rowInts[row][col * 7] |= 0x8000000;
         }
     } else {
-        CMapMgr* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->GetTileGrid();
         i32 row = m_tileRow;
         i32 col = m_tileCol;
         if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
@@ -236,7 +236,7 @@ i32 CStaticHazard::UpdateActiveState() {
         if (sub->IsComplete()) {
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
             {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CMapMgr* grid =
-                g_gameReg->m_tileGrid;
+                g_gameReg->GetTileGrid();
             i32 row = m_tileRow;
             i32 col = m_tileCol;
             if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())

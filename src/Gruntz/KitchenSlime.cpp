@@ -264,7 +264,7 @@ i32 CKitchenSlime::LoadSprites() {
 
         i32 gx = tile.m_x >> TILE_SHIFT_PX;
         i32 gy = tile.m_y >> TILE_SHIFT_PX;
-        CMapMgr* map = g_gameReg->m_tileGrid;
+        CMapMgr* map = g_gameReg->GetTileGrid();
         i32 tileFlags = map->CellFlagsAt(gx, gy);
 
         if (tile.m_y >= lvl->m_extent.top && tile.m_x <= lvl->m_extent.right

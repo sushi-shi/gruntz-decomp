@@ -532,7 +532,7 @@ i32 CPlay::Render() {
         DrawWorldView();
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
         m_statusBar->LoadMainStatusBarSprite();
-        m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
+        m_mgr->GetTileGrid()->UpdateDiagonals(m_mgr);
 
         if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
             && m_statusBar->m_activeTab != TAB_GAME) {
@@ -1272,17 +1272,17 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    self->m_mgr->m_tileGrid->Reset();
+    self->m_mgr->GetTileGrid()->Reset();
 
     {
         CDDrawWorkerHost* mainPlane =
             static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
-        CGruntzMapMgr* tileGrid = self->m_mgr->m_tileGrid;
+        CGruntzMapMgr* tileGrid = self->m_mgr->GetTileGrid();
         if (!tileGrid->BuildCellAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
             goto fail0;
         }
     }
-    if (!(static_cast<CMapMgr*>(self->m_mgr->m_tileGrid))->UpdateDiagonals(self->m_mgr)) {
+    if (!(static_cast<CMapMgr*>(self->m_mgr->GetTileGrid()))->UpdateDiagonals(self->m_mgr)) {
         goto fail0;
     }
 
@@ -1463,7 +1463,7 @@ void CPlay::OnExit() {
     if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
         g_gameReg->m_gameMode = GAMEMODE_NONE;
     }
-    g_gameReg->m_tileGrid->Reset();
+    g_gameReg->GetTileGrid()->Reset();
 }
 
 RVA(0x000cb480, 0x22c)
@@ -5121,7 +5121,7 @@ i32 CPlay::ValidateLevelTiles() {
                 for (i32 k = 3; k != 0; k--, ofs++, row++) {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
-                    CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
+                    CGruntzMapMgr* gg = g_gameReg->GetTileGrid();
                     if (static_cast<u32>(gx) >= gg->GetWidth()
                         || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
@@ -5143,7 +5143,7 @@ i32 CPlay::ValidateLevelTiles() {
                             break;
                     }
                     counts[kind]++;
-                    gg = g_gameReg->m_tileGrid;
+                    gg = g_gameReg->GetTileGrid();
                     if (static_cast<u32>(gx) >= gg->GetWidth()
                         || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
@@ -5153,7 +5153,7 @@ i32 CPlay::ValidateLevelTiles() {
                 }
             }
         } else if (dispatch == DispatchToobSpikezLogic) {
-            CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
+            CGruntzMapMgr* gg = g_gameReg->GetTileGrid();
             i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
             i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
             if (static_cast<u32>(tileX) < gg->GetWidth()
@@ -6923,7 +6923,7 @@ i32 CPlay::ClearPlacedObjects() {
         while (!done) {
             if (i < PlacedObjectCellCount(blockIdx)) {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
-                i32 occupantId = g_gameReg->m_tileGrid->ObjectIdAt(obj->m_x, obj->m_y);
+                i32 occupantId = g_gameReg->GetTileGrid()->ObjectIdAt(obj->m_x, obj->m_y);
                 if (occupantId != 0) {
                     CGameObject* result = LookupObjectById(
                         g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
@@ -6931,7 +6931,7 @@ i32 CPlay::ClearPlacedObjects() {
                     );
                     if (result == NULL) {
 
-                        g_gameReg->m_tileGrid->SetObjectIdAt(obj->m_x, obj->m_y, 0);
+                        g_gameReg->GetTileGrid()->SetObjectIdAt(obj->m_x, obj->m_y, 0);
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                         g_coordPool.Push(obj);

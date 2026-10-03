@@ -18,6 +18,7 @@ rva	unit	function	lost_max	cur
 0x057db0	gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	68.8303
 0x0597a0	gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.2468	73.1162
 0x05d210	gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	72.4686	70.5208
+0x05f310	gruntcombat	?AdvanceMotion@CGrunt@@UAEXXZ	94.9570	94.4253
 0x061940	gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5951	91.5705
 0x062110	gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	94.0473	92.3919
 0x0646b0	gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	94.8659	93.1449
@@ -33,6 +34,7 @@ rva	unit	function	lost_max	cur
 0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	91.9027
 0x07f180	grunthealthsprite	?HealthUpdate@CGruntHealthSprite@@QAEHXZ	100.0000	95.0725
 0x083450	gruntzmgr	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	100.0000	99.7523
+0x0984b0	ingameicon	?PeekCycle@CInGameIcon@@QAEHXZ	93.8843	93.7190
 0x0986b0	ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	96.3765	96.2956
 0x09c0e0	spriteloaders	?AddTime@CTimer@@QAEXHH@Z	100.0000	99.8214
 0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.3193

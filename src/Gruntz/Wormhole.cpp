@@ -229,7 +229,7 @@ i32 CGruntPuddle::Remove() {
     if (m_placed != false) {
         CGruntzMgr* reg = g_gameReg;
         i32 ty = m_tileY;
-        CMapMgr* grid = reg->m_tileGrid;
+        CMapMgr* grid = reg->GetTileGrid();
         i32 tx = m_tileX;
         i32 flags = grid->CellFlagsAt(tx, ty);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {

@@ -478,7 +478,7 @@ i32 CInGameIcon::RefreshCell() {
     i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
     if (!m_driftTiming.Expired()) {
-        CMapMgr* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->GetTileGrid();
         if (grid->ObjectIdAt(tileX, tileY) != 0) {
             return 0;
         }
@@ -509,7 +509,7 @@ i32 CInGameIcon::PeekCycle() {
     PickupType cmd = GetPickupType();
     if (cmd == PICKUP_TOYBOX) {
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
-        CMapMgr* grid = g_gameReg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->GetTileGrid();
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 cell = grid->CellFlagsAt(tileX, tileY);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
@@ -653,7 +653,7 @@ i32 CInGameIcon::Reposition() {
         CWwdSpriteObject* obj = m_object;
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
-        CMapMgr* grid = reg->m_tileGrid;
+        CMapMgr* grid = reg->GetTileGrid();
         i32 cellVal = grid->ObjectIdAt(tileX, tileY);
         if (cellVal != 0) {
 
@@ -668,10 +668,10 @@ i32 CInGameIcon::Reposition() {
             }
         }
         reg = g_gameReg;
-        grid = reg->m_tileGrid;
+        grid = reg->GetTileGrid();
         grid->SetObjectIdAt(tileX, tileY, 0);
         obj = m_object;
-        g_gameReg->m_tileGrid->SetObjectIdAt(
+        g_gameReg->GetTileGrid()->SetObjectIdAt(
             obj->m_screenX >> TILE_SHIFT_PX,
             obj->m_screenY >> TILE_SHIFT_PX,
             obj->m_objectId
