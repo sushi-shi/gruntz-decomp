@@ -386,7 +386,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (!(GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, unit))) {
                     continue;
                 }
-                if (unit->m_entranceCommitted == false) {
+                if (unit->IsEntranceCommitted() == false) {
                     continue;
                 }
                 if (unit->IsDeathAnimationStarted() != false) {
@@ -649,7 +649,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 }
                             }
                         }
-                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
+                        if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false
                             && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
@@ -734,7 +734,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (BattlezActDiffersFromCRCGLPJ(unit)) {
                                 if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
                                     && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
-                                    && unit->m_entranceCommitted != false
+                                    && unit->IsEntranceCommitted() != false
                                     && unit->IsDeathAnimationStarted() == false
                                     && unit->m_entranceActive == false) {
                                     RECT box;
@@ -778,7 +778,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (GRUNT_NOT_AT_SAVED_SCREEN_POS(unit)) {
                                 special = 0;
                             }
-                            if (unit->m_entranceCommitted == false) {
+                            if (unit->IsEntranceCommitted() == false) {
                                 special = 0;
                             }
                             if (unit->IsDeathAnimationStarted() != false) {
@@ -803,7 +803,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 }
                             }
                         }
-                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
+                        if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false
                             && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
@@ -842,7 +842,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (!unit->IsArrivalRerollPending()) {
                 BattlezTask battleTask = unit->m_battleState;
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
-                    if (unit->m_entranceCommitted != false
+                    if (unit->IsEntranceCommitted() != false
                         && unit->IsDeathAnimationStarted() == false
                         && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                         if (BattlezActDiffersFromIGLPJCR(unit)) {
@@ -857,7 +857,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
         if (unit != NULL) {
-            if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != false
+            if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->IsEntranceCommitted() != false
                 && unit->IsDeathAnimationStarted() == false && unit->m_entranceActive == false
                 && unit->m_poweredUp == false) {
                 if (BattlezActDiffersFromIGLPJCR(unit)) {
@@ -915,7 +915,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
                             && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
-                            && unit->m_entranceCommitted != false
+                            && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false
                             && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
@@ -1651,7 +1651,7 @@ void CBattlezMapConfig::Clear() {
 
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
-    if (other->m_entranceCommitted == false) {
+    if (other->IsEntranceCommitted() == false) {
         return 0;
     }
     if (other->IsAnimationAct("J")) {
@@ -2857,7 +2857,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
     for (i32 scanned = 0; scanned < TM_UNITS_PER_PLAYER; scanned++) {
         CGrunt* cand = m_triggerMgr->UnitAt(m_playerIndex, r);
         if (cand != NULL) {
-            if (IsGruntAtSavedScreenPos(cand) && cand->m_entranceCommitted != false
+            if (IsGruntAtSavedScreenPos(cand) && cand->IsEntranceCommitted() != false
                 && cand->IsDeathAnimationStarted() == false && cand->m_entranceActive == false
                 && cand->m_poweredUp == false) {
                 if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
@@ -2919,7 +2919,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
 
 RVA(0x0002f620, 0x871)
 i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
-    if (unit->m_entranceCommitted == false) {
+    if (unit->IsEntranceCommitted() == false) {
         return 0;
     }
     if (unit->IsDeathAnimationStarted() != false) {

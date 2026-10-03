@@ -579,7 +579,7 @@ void CProjectile::ScanTargets(i32 impact) {
             if (g == NULL) {
                 continue;
             }
-            if (g->m_entranceCommitted == false) {
+            if (g->IsEntranceCommitted() == false) {
                 continue;
             }
             i32 gx = g->m_object->m_screenX - 7;
@@ -600,7 +600,7 @@ void CProjectile::ScanTargets(i32 impact) {
             }
             if (m_sourcePlayerIndex == playerIndex && m_sourceUnitIndex == unitIndex) {
 
-                if (impact != 0 && g->m_entranceCommitted != false
+                if (impact != 0 && g->IsEntranceCommitted() != false
                     && g->m_entranceReason == PICKUP_NONE) {
                     g->LoadGruntTypeTable(PICKUP_BOOMERANG, 1, 0, 0);
                 }

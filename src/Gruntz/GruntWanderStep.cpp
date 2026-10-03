@@ -116,7 +116,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 ResetToSeek(this);
                 return 1;
             }
-            if (slot == NULL || slot->m_entranceCommitted == false
+            if (slot == NULL || slot->IsEntranceCommitted() == false
                 || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
@@ -148,7 +148,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             }
             CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (slot == NULL || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0
-                || slot->m_entranceCommitted == false) {
+                || slot->IsEntranceCommitted() == false) {
                 goto ph1;
             }
             if (m_neighborValid != false) {

@@ -189,6 +189,9 @@ public:
     i32 GetUnitIndex() const {
         return m_unitIndex;
     }
+    b32 IsEntranceCommitted() const {
+        return m_entranceCommitted;
+    }
 
     inline i32 GetScreenTileY() const;
     inline i32 GetScreenTileX() const;

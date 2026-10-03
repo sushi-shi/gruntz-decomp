@@ -127,7 +127,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
                 if (r.left <= box.right && r.right >= box.left && r.top <= box.bottom
                     && r.bottom >= box.top) {
                     if (i == g_curPlayer) {
-                        if (selectionReset == false && g->m_entranceCommitted != false) {
+                        if (selectionReset == false && g->IsEntranceCommitted() != false) {
                             ResetAll();
                             selectionReset = true;
                         }
@@ -1658,7 +1658,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
             if (grunt == NULL) {
                 continue;
             }
-            if (grunt->m_entranceCommitted == false) {
+            if (grunt->IsEntranceCommitted() == false) {
                 continue;
             }
             if (grunt->m_entranceDropActive != false) {
@@ -2406,7 +2406,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
             CGrunt** units = playerUnits;
             do {
                 CGrunt* g = *units;
-                if (g != NULL && g->m_entranceCommitted != false) {
+                if (g != NULL && g->IsEntranceCommitted() != false) {
                     CGameObject* o = g->m_object;
                     i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
                     i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;

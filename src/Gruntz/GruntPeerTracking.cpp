@@ -51,7 +51,7 @@ i32 CGrunt::StepToyerBehavior() {
     if (p == NULL) {
         return 1;
     }
-    if (p->m_entranceCommitted == false) {
+    if (p->IsEntranceCommitted() == false) {
         return 1;
     }
     CGameObject* a = p->m_object;

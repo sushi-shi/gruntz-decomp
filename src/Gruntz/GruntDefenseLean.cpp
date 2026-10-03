@@ -55,7 +55,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             }
             occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
-                && occ->m_entranceCommitted != false) {
+                && occ->IsEntranceCommitted() != false) {
                 if (m_combatActive != false) {
                     return 1;
                 }
@@ -87,7 +87,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 ResetToSeek(this);
                 return 1;
             }
-            if (occ == NULL || occ->m_entranceCommitted == false
+            if (occ == NULL || occ->IsEntranceCommitted() == false
                 || GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }

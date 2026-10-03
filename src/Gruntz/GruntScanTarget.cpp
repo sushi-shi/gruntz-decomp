@@ -59,7 +59,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
              candidateUnitIndex++) {
             CGrunt* cand =
                 g_gameReg->GetTriggerMgr()->UnitAt(candidatePlayerIndex, candidateUnitIndex);
-            if (cand != NULL && cand->m_entranceCommitted != false
+            if (cand != NULL && cand->IsEntranceCommitted() != false
                 && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
@@ -247,7 +247,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 PRIO(pa, m_entranceReason);
                 i32 pb;
                 PRIO(pb, sg->m_entranceReason);
-                if (pa <= pb && sg->m_entranceCommitted != false
+                if (pa <= pb && sg->IsEntranceCommitted() != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
                     RepathToward(this, sg);
                     if (m_poweredUp != false || m_stamina < STAMINA_FULL) {
@@ -281,7 +281,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     i32 pb;
                     PRIO(pb, sg->m_entranceReason);
                     if (pa <= pb && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0
-                        && sg->m_entranceCommitted != false) {
+                        && sg->IsEntranceCommitted() != false) {
                         if (m_neighborValid != false || m_combatActive != false
                             || m_stamina < STAMINA_FULL) {
                             return 1;

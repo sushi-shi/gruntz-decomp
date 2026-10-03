@@ -139,7 +139,7 @@ state0: {
     if (nb == NULL) {
         goto common;
     }
-    if (nb->m_entranceCommitted == false) {
+    if (nb->IsEntranceCommitted() == false) {
         goto common;
     }
     if (m_poweredUp == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(nb)

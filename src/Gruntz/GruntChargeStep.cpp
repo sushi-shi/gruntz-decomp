@@ -147,7 +147,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 ResetToSeek(this);
                 return 1;
             }
-            if (t == NULL || t->m_entranceCommitted == false
+            if (t == NULL || t->IsEntranceCommitted() == false
                 || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
@@ -167,7 +167,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
             if (m_poweredUp != false) {
                 CGrunt* t = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (t == NULL || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0
-                    || t->m_entranceCommitted == false) {
+                    || t->IsEntranceCommitted() == false) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;
                     return 1;

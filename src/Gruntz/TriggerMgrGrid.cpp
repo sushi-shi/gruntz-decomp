@@ -396,7 +396,7 @@ CGrunt* CTriggerMgr::CellHitTest(
         do {
             for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
                 CGrunt* g = PlayerUnits(startPlayerIndex)[unitIndex];
-                if (g != NULL && g->m_entranceCommitted != false) {
+                if (g != NULL && g->IsEntranceCommitted() != false) {
                     CWwdSpriteObject* o = g->m_object;
                     if (o->m_frameImage != NULL) {
                         RECT hitBox;
@@ -425,7 +425,7 @@ CGrunt* CTriggerMgr::CellHitTest(
 RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) {
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->m_entranceCommitted == false) {
+    if (cell == NULL || cell->IsEntranceCommitted() == false) {
         return 0;
     }
     if (playerIndex != g_curPlayer) {
@@ -1043,7 +1043,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->m_entranceCommitted == false) {
+    if (cell == NULL || cell->IsEntranceCommitted() == false) {
         return 0;
     }
     i32 cellTileX = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
@@ -1206,7 +1206,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     CGrunt* hit;
     i32 moveKind;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
+    if (cell == NULL || cell->IsEntranceCommitted() == false || cell->m_entranceActive != false) {
         return 0;
     }
     i32 argTileX = worldX >> TILE_SHIFT_PX;
@@ -1319,7 +1319,7 @@ i32 CTriggerMgr::ClearCell(
     i32 arrivalPhase
 ) {
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->m_entranceCommitted == false) {
+    if (cell == NULL || cell->IsEntranceCommitted() == false) {
         return 0;
     }
     if (cell->m_tileClaimed != false) {

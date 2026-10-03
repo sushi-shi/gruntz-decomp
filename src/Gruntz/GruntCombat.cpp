@@ -1152,7 +1152,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         hit = static_cast<i32>((static_cast<float>(hit) * 0.25f));
         if (fromProjectile == 0) {
             CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
-            if (enemy != NULL && enemy->m_entranceCommitted != false) {
+            if (enemy != NULL && enemy->IsEntranceCommitted() != false) {
                 i32 nh = enemy->m_health - hit * 3;
                 nh = max(0, nh);
                 enemy->m_health = nh;
@@ -1387,7 +1387,7 @@ i32 CGrunt::CommitNeighbor(
     m_neighborScanEnabled = true;
 
     CGrunt* nb = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
-    if (nb == NULL || nb->m_entranceCommitted == false || m_entranceCommitted == false) {
+    if (nb == NULL || nb->IsEntranceCommitted() == false || m_entranceCommitted == false) {
         return 0;
     }
 
@@ -1476,7 +1476,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     }
 
     CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
-    if (n != NULL && n->m_entranceCommitted != false) {
+    if (n != NULL && n->IsEntranceCommitted() != false) {
         if (validate != 0) {
             if (!IsGruntAtSavedScreenPos(n)) {
                 return NULL;
