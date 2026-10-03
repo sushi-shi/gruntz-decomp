@@ -2571,10 +2571,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     i32 word = m_board->m_rows[row][col].m_flags;
     if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
         CPtrList list(10);
-        CGameObject* lvl = unit->m_object;
+        Coord start = ScreenTile(unit);
         if ((m_board)->FindPathWithEndpointOverrides(
-                lvl->m_screenX >> TILE_SHIFT_PX,
-                lvl->m_screenY >> TILE_SHIFT_PX,
+                start.m_x,
+                start.m_y,
                 col,
                 row,
                 &list,
@@ -2590,9 +2590,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             if (head != NULL) {
                 POSITION n = head;
                 while (n != NULL) {
-                    POSITION cur = n;
-                    list.GetNext(n);
-                    g_coordPool.Push(static_cast<Coord*>(list.GetAt(cur)));
+                    g_coordPool.Push(static_cast<Coord*>(list.GetNext(n)));
                 }
             }
             return;
@@ -2603,10 +2601,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if (requireUnoccupied != 0) {
             if (cell != NULL && cell->m_playerFlags[m_playerIndex] == 0) {
                 CPtrList list2(10);
-                CGameObject* lvl = unit->m_object;
+                Coord start = ScreenTile(unit);
                 if ((m_board)->FindPathWithEndpointOverrides(
-                        lvl->m_screenX >> TILE_SHIFT_PX,
-                        lvl->m_screenY >> TILE_SHIFT_PX,
+                        start.m_x,
+                        start.m_y,
                         col,
                         row,
                         &list2,
@@ -2622,9 +2620,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                     if (head != NULL) {
                         POSITION n = head;
                         while (n != NULL) {
-                            POSITION cur = n;
-                            list2.GetNext(n);
-                            g_coordPool.Push(static_cast<Coord*>(list2.GetAt(cur)));
+                            g_coordPool.Push(static_cast<Coord*>(list2.GetNext(n)));
                         }
                     }
                 }
@@ -2648,10 +2644,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             }
             if (special != 0) {
                 CPtrList list3(10);
-                CGameObject* lvl = unit->m_object;
+                Coord start = ScreenTile(unit);
                 if ((m_board)->FindPathWithEndpointOverrides(
-                        lvl->m_screenX >> TILE_SHIFT_PX,
-                        lvl->m_screenY >> TILE_SHIFT_PX,
+                        start.m_x,
+                        start.m_y,
                         col,
                         row,
                         &list3,
@@ -2668,9 +2664,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         if (head != NULL) {
                             POSITION n = head;
                             while (n != NULL) {
-                                POSITION cur = n;
-                                list3.GetNext(n);
-                                g_coordPool.Push(static_cast<Coord*>(list3.GetAt(cur)));
+                                g_coordPool.Push(static_cast<Coord*>(list3.GetNext(n)));
                             }
                         }
                     }
