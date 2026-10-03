@@ -34,7 +34,6 @@ const double g_attenuationBase = 2.0;
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
 typedef enum DSoundDx5Magic {
-    DSB_RETAIL_LOOPBIT = 0x02,
     DSBUFFERDESC_SIZE = 0x14,
 } DSoundDx5Magic;
 
@@ -209,7 +208,7 @@ i32 SoundBuffer::IsLooping() {
         ReportError(DSNDMGR_FILE, 0xbb, hr);
         return 0;
     }
-    if ((status & DSB_RETAIL_LOOPBIT) == DSB_RETAIL_LOOPBIT) {
+    if ((status & DSBSTATUS_BUFFERLOST) == DSBSTATUS_BUFFERLOST) {
         return 1;
     }
     return 0;
