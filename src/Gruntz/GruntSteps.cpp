@@ -793,7 +793,10 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
         goto applyTail;
     }
-    if (SETTLE_ACTIVE_TUBE_MOVE(eq)) {
+    // Direct comparison keeps the animation-name array access inline at this site.
+    eq = GetAnimationActName() == "N";
+    if (eq) {
+        SettleTubeMove();
         goto applyTail;
     }
     if (TERMINATE_ACTIVE_BOMB_RUN(eq)) {
