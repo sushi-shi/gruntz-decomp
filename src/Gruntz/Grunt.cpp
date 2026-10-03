@@ -788,7 +788,7 @@ i32 CGrunt::StepArrivalDrop(
 ) {
     Coord* tail;
     POSITION pos;
-    i32 lastX, lastY, tileX, tileY;
+    Coord lastTile, targetTile;
     i32 passableMask, cnt, headFlags, lastFlags, hit;
     i32 reinit;
     i32 nudged;
@@ -805,21 +805,20 @@ i32 CGrunt::StepArrivalDrop(
     }
 
     this->RecycleCoords();
-    lastX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    lastY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    tileX = pxX >> TILE_SHIFT_PX;
-    tileY = pxY >> TILE_SHIFT_PX;
+    lastTile = LastTilePx();
+    ScreenTile(&lastTile);
+    targetTile.Set(pxX, pxY);
+    ScreenTile(&targetTile);
     if (blockedMask == -1) {
         blockedMask = m_arrivalFlags;
     }
-    m_arrivalTargetPx.m_x = pxX;
-    m_arrivalTargetPx.m_y = pxY;
+    m_arrivalTargetPx.Set(pxX, pxY);
     passableMask = extraPassableMask | m_passableMask;
-    if (g_gameReg->m_tileGrid->FindPathWithEndpointOverrides(
-            lastX,
-            lastY,
-            tileX,
-            tileY,
+    if (g_gameReg->GetTileGrid()->FindPathWithEndpointOverrides(
+            lastTile.m_x,
+            lastTile.m_y,
+            targetTile.m_x,
+            targetTile.m_y,
             &m_coordList,
             clearEndpointFlags,
             blockedMask,
@@ -836,8 +835,8 @@ i32 CGrunt::StepArrivalDrop(
             goto commitEntrance;
         }
         tail = GetHeadCoord();
-        headFlags = g_gameReg->m_tileGrid->CellFlagsAt(tail->m_x, tail->m_y);
-        lastFlags = g_gameReg->m_tileGrid->CellFlagsAt(lastX, lastY);
+        headFlags = g_gameReg->GetTileGrid()->CellFlagsAt(tail->m_x, tail->m_y);
+        lastFlags = g_gameReg->GetTileGrid()->CellFlagsAt(lastTile.m_x, lastTile.m_y);
         if ((lastFlags & 0x80) != 0) {
             goto commitEntrance;
         }
@@ -857,7 +856,7 @@ i32 CGrunt::StepArrivalDrop(
             SetEntrancePos(1, 1);
             if (m_object->m_screenX == m_lastTilePx.m_x
                 && m_lastTilePx.m_y == m_object->m_screenY) {
-                FaceTowardTile(tileX, tileY);
+                FaceTowardTile(targetTile.m_x, targetTile.m_y);
             }
             return 0;
         }
@@ -868,11 +867,11 @@ i32 CGrunt::StepArrivalDrop(
         {
 
             CPtrList probe(10);
-            if (g_gameReg->m_tileGrid->FindPathWithEndpointOverrides(
-                    lastX,
-                    lastY,
-                    tileX,
-                    tileY,
+            if (g_gameReg->GetTileGrid()->FindPathWithEndpointOverrides(
+                    lastTile.m_x,
+                    lastTile.m_y,
+                    targetTile.m_x,
+                    targetTile.m_y,
                     &probe,
                     clearEndpointFlags,
                     blockedMask | BRICKZ_CELL_OCCUPIED,
@@ -896,8 +895,7 @@ i32 CGrunt::StepArrivalDrop(
             }
         }
     commitEntrance:
-        m_entrancePx.m_x = pxX;
-        m_entrancePx.m_y = pxY;
+        m_entrancePx.Set(pxX, pxY);
         if (reinit != 0) {
             StepEntranceReinit();
         }
@@ -908,63 +906,67 @@ i32 CGrunt::StepArrivalDrop(
 
     nudged = 0;
 
-    CMapMgr* grid = g_gameReg->m_tileGrid;
-    if (grid->m_rows[tileY][tileX].m_typeCode != TILEKIND_GIANT_ROCK) {
+    CMapMgr* grid = g_gameReg->GetTileGrid();
+    if (grid->m_rows[targetTile.m_y][targetTile.m_x].m_typeCode != TILEKIND_GIANT_ROCK) {
         goto nudgeDone;
     }
-    free4 = (grid->m_rows[tileY + 1][tileX].m_typeCode == TILEKIND_GIANT_ROCK) ? ROCKADJ_BELOW
-                                                                               : ROCKADJ_NONE;
-    free4 |= (grid->m_rows[tileY - 1][tileX].m_typeCode == TILEKIND_GIANT_ROCK) ? ROCKADJ_ABOVE
-                                                                                : ROCKADJ_NONE;
-    free4 |= (grid->m_rows[tileY][tileX + 1].m_typeCode == TILEKIND_GIANT_ROCK) ? ROCKADJ_RIGHT
-                                                                                : ROCKADJ_NONE;
-    free4 |= (grid->m_rows[tileY][tileX - 1].m_typeCode == TILEKIND_GIANT_ROCK) ? ROCKADJ_LEFT
-                                                                                : ROCKADJ_NONE;
+    free4 = (grid->m_rows[targetTile.m_y + 1][targetTile.m_x].m_typeCode == TILEKIND_GIANT_ROCK)
+                ? ROCKADJ_BELOW
+                : ROCKADJ_NONE;
+    free4 |= (grid->m_rows[targetTile.m_y - 1][targetTile.m_x].m_typeCode == TILEKIND_GIANT_ROCK)
+                 ? ROCKADJ_ABOVE
+                 : ROCKADJ_NONE;
+    free4 |= (grid->m_rows[targetTile.m_y][targetTile.m_x + 1].m_typeCode == TILEKIND_GIANT_ROCK)
+                 ? ROCKADJ_RIGHT
+                 : ROCKADJ_NONE;
+    free4 |= (grid->m_rows[targetTile.m_y][targetTile.m_x - 1].m_typeCode == TILEKIND_GIANT_ROCK)
+                 ? ROCKADJ_LEFT
+                 : ROCKADJ_NONE;
     switch (free4) {
         case ROCKADJ_RIGHT | ROCKADJ_BELOW:
-            tileX++;
-            tileY++;
+            targetTile.m_x++;
+            targetTile.m_y++;
             break;
         case ROCKADJ_RIGHT | ROCKADJ_ABOVE:
-            tileX++;
-            tileY--;
+            targetTile.m_x++;
+            targetTile.m_y--;
             break;
         case ROCKADJ_RIGHT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
-            tileX++;
+            targetTile.m_x++;
             break;
         case ROCKADJ_LEFT | ROCKADJ_BELOW:
-            tileX--;
-            tileY++;
+            targetTile.m_x--;
+            targetTile.m_y++;
             break;
         case ROCKADJ_LEFT | ROCKADJ_ABOVE:
-            tileX--;
-            tileY--;
+            targetTile.m_x--;
+            targetTile.m_y--;
             break;
         case ROCKADJ_LEFT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
-            tileX--;
+            targetTile.m_x--;
             break;
         case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_BELOW:
-            tileY++;
+            targetTile.m_y++;
             break;
         case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_ABOVE:
-            tileY--;
+            targetTile.m_y--;
             break;
         default:
             break;
     }
 
-    for (sy = tileY - 1; sy < tileY + 2; sy++) {
-        for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            saved[sx - tileX + 1][sy - tileY + 1] = grid->m_rows[sy][sx].m_flags;
+    for (sy = targetTile.m_y - 1; sy < targetTile.m_y + 2; sy++) {
+        for (sx = targetTile.m_x - 1; sx < targetTile.m_x + 2; sx++) {
+            saved[sx - targetTile.m_x + 1][sy - targetTile.m_y + 1] = grid->m_rows[sy][sx].m_flags;
             grid->m_rows[sy][sx].m_flags = 0;
         }
     }
-    grid = g_gameReg->m_tileGrid;
+    grid = g_gameReg->GetTileGrid();
     if (grid->FindPathWithEndpointOverrides(
-            lastX,
-            lastY,
-            tileX,
-            tileY,
+            lastTile.m_x,
+            lastTile.m_y,
+            targetTile.m_x,
+            targetTile.m_y,
             &m_coordList,
             clearEndpointFlags,
             blockedMask,
@@ -982,9 +984,9 @@ i32 CGrunt::StepArrivalDrop(
             }
         }
     }
-    for (sy = tileY - 1; sy < tileY + 2; sy++) {
-        for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            grid->m_rows[sy][sx].m_flags = saved[sx - tileX + 1][sy - tileY + 1];
+    for (sy = targetTile.m_y - 1; sy < targetTile.m_y + 2; sy++) {
+        for (sx = targetTile.m_x - 1; sx < targetTile.m_x + 2; sx++) {
+            grid->m_rows[sy][sx].m_flags = saved[sx - targetTile.m_x + 1][sy - targetTile.m_y + 1];
         }
     }
     if (0 != nudged) {
@@ -994,8 +996,7 @@ i32 CGrunt::StepArrivalDrop(
             SetEntrancePos(1, 1);
             return 1;
         }
-        m_arrivalTargetPx.m_x = pxX;
-        m_arrivalTargetPx.m_y = pxY;
+        m_arrivalTargetPx.Set(pxX, pxY);
     }
 nudgeDone:
     if (nudged != 0) {
@@ -1005,19 +1006,19 @@ nudgeDone:
         SetEntrancePos(1, 1);
         return 0;
     }
-    if (lastX == tileX && lastY == tileY) {
+    if (lastTile.m_x == targetTile.m_x && lastTile.m_y == targetTile.m_y) {
         goto reCommit;
     }
 
     blocked = 0;
-    walkX = tileX;
-    walkY = tileY;
-    if (abs(tileX - lastX) > abs(tileY - lastY)) {
-        step = ((tileY - lastY) << 16) / abs(tileX - lastX);
-        CMapMgr* lineGrid = g_gameReg->m_tileGrid;
-        acc = lastY << 16;
-        sx = lastX;
-        if (tileX - lastX > 0) {
+    walkX = targetTile.m_x;
+    walkY = targetTile.m_y;
+    if (abs(targetTile.m_x - lastTile.m_x) > abs(targetTile.m_y - lastTile.m_y)) {
+        step = ((targetTile.m_y - lastTile.m_y) << 16) / abs(targetTile.m_x - lastTile.m_x);
+        CMapMgr* lineGrid = g_gameReg->GetTileGrid();
+        acc = lastTile.m_y << 16;
+        sx = lastTile.m_x;
+        if (targetTile.m_x - lastTile.m_x > 0) {
             while (blocked == 0) {
                 sy = acc >> 16;
                 err = lineGrid->CellFlagsAt(sx, sy);
@@ -1045,11 +1046,11 @@ nudgeDone:
             }
         }
     } else {
-        step = ((tileX - lastX) << 16) / abs(tileY - lastY);
-        CMapMgr* lineGrid = g_gameReg->m_tileGrid;
-        acc = lastX << 16;
-        sy = lastY;
-        if (tileY - lastY > 0) {
+        step = ((targetTile.m_x - lastTile.m_x) << 16) / abs(targetTile.m_y - lastTile.m_y);
+        CMapMgr* lineGrid = g_gameReg->GetTileGrid();
+        acc = lastTile.m_x << 16;
+        sy = lastTile.m_y;
+        if (targetTile.m_y - lastTile.m_y > 0) {
             while (blocked == 0) {
                 sx = acc >> 16;
                 err = lineGrid->CellFlagsAt(sx, sy);
@@ -1077,7 +1078,7 @@ nudgeDone:
             }
         }
     }
-    if (walkX != lastX || lastY != walkY) {
+    if (walkX != lastTile.m_x || lastTile.m_y != walkY) {
         goto reProbe;
     }
 reCommit:
@@ -1092,9 +1093,9 @@ reProbe:
     pxX = walkX * TILE_SIZE_PX + TILE_HALF_PX;
     pxY = walkY * TILE_SIZE_PX + TILE_HALF_PX;
     clearEndpointFlags = 1;
-    if (g_gameReg->m_tileGrid->FindPathWithEndpointOverrides(
-            lastX,
-            lastY,
+    if (g_gameReg->GetTileGrid()->FindPathWithEndpointOverrides(
+            lastTile.m_x,
+            lastTile.m_y,
             walkX,
             walkY,
             &m_coordList,
@@ -1797,10 +1798,8 @@ i32 CGrunt::Place(
             m_arrivalFlags = ARRIVAL_FLAGS_PLAYER_SINGLE;
         }
     }
-    m_arrivalTargetPx.m_x = -1;
-    m_arrivalTargetPx.m_y = -1;
-    m_defenderPx.m_x = -1;
-    m_defenderPx.m_y = -1;
+    m_arrivalTargetPx.Set(-1, -1);
+    m_defenderPx.Set(-1, -1);
     m_powerupDuration = 0;
     m_blockedVoicePending = true;
     m_struckCount = 0;
@@ -1816,18 +1815,13 @@ i32 CGrunt::Place(
     m_playerIndex = playerIndex;
     m_defenderQueuePosition = defenderQueuePosition;
     m_unitIndex = unitIndex;
-    m_arrivalCell.m_x = -1;
-    m_arrivalCell.m_y = -1;
+    m_arrivalCell.Set(-1, -1);
     m_defenderPickupType = static_cast<PickupType>(defenderPickupType);
     m_defenderRadius = defenderRadiusMinusOne + 1;
-    m_arrivalRerollTiming.m_startLo = 0;
-    m_arrivalRerollTiming.m_intervalLo = 0;
-    m_arrivalRerollTiming.m_startHi = 0;
-    m_arrivalRerollTiming.m_intervalHi = 0;
-    m_holdTiming.m_startLo = 0;
-    m_holdTiming.m_intervalLo = 0;
-    m_holdTiming.m_startHi = 0;
-    m_holdTiming.m_intervalHi = 0;
+    m_arrivalRerollTiming.m_start = 0;
+    m_arrivalRerollTiming.m_interval = 0;
+    m_holdTiming.m_start = 0;
+    m_holdTiming.m_interval = 0;
     m_moveIcon = moveIcon;
     m_triggerMgr = board;
     m_daFlag = 1;
@@ -1877,7 +1871,7 @@ i32 CGrunt::Place(
         return 1;
     }
 
-    g_gameReg->m_tileGrid->AcquireCellOccupancy(
+    g_gameReg->GetTileGrid()->AcquireCellOccupancy(
         m_lastTilePx.m_x >> TILE_SHIFT_PX,
         m_lastTilePx.m_y >> TILE_SHIFT_PX,
         m_playerIndex,
@@ -1897,10 +1891,12 @@ i32 CGrunt::Place(
                 m_defenderPx = m_lastTilePx;
                 m_arrivalState = AI_POSTGUARD;
             } else {
-                DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, defenderQueuePosition, defenderPickupType)
-                m_defenderPx.m_x = px;
-                m_defenderPx.m_y = py;
-                StepArrivalDrop(px, py - 0x20, 0, -1, 1, 0);
+                Coord defender;
+                m_defenderPx = *defender.Set(
+                    (defenderQueuePosition << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (defenderPickupType << TILE_SHIFT_PX) + TILE_HALF_PX
+                );
+                StepArrivalDrop(defender.m_x, defender.m_y - TILE_SIZE_PX, 0, -1, 1, 0);
             }
             break;
         case AI_DEFENDER:
