@@ -605,6 +605,7 @@ i32 CMultiStartDlg::OnInitDialog() {
 RVA(0x000c2ce0, 0xf3)
 void CMultiStartDlg::AppendChatLine(char* line) {
     CWnd* item = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
+    // Keep the cached handle: CEdit helpers reload m_hWnd across message sends.
     HWND edit = item->GetSafeHwnd();
     if (!edit || !line || !line[0]) {
         return;

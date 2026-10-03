@@ -77,7 +77,7 @@ i32 Font::LoadFont(CString szFileName) {
         return 0;
     }
 
-    CArchive ar(&file, 1, 0x1000, NULL);
+    CArchive ar(&file, CArchive::load, 0x1000, NULL);
 
     ar >> m_count;
     AllocateMemory(m_count);
@@ -111,7 +111,7 @@ i32 Font::SaveFont(CString szFileName) {
         return 0;
     }
 
-    CArchive ar(&file, 0, 0x1000, NULL);
+    CArchive ar(&file, CArchive::store, 0x1000, NULL);
 
     ar << m_count;
 
@@ -224,7 +224,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     if (RunRightEdge(rc, x) > static_cast<i32>(surf->m_apiDesc.dwWidth)) {
         rc.right = rc.right + rc.Width() + x - surf->m_apiDesc.dwWidth;
     }
-    if (y - rc.top + rc.bottom > static_cast<i32>(surf->m_apiDesc.dwHeight)) {
+    if (y + rc.Height() > static_cast<i32>(surf->m_apiDesc.dwHeight)) {
         rc.bottom = rc.bottom + rc.Height() + y - surf->m_apiDesc.dwHeight;
     }
 
