@@ -4595,6 +4595,7 @@ b32 CPlay::PlaceStartGruntz() {
     return true;
 }
 
+// @early-stop: Register and stack lifetimes remain after call, CFG, and EH closure.
 RVA(0x000d2dd0, 0x1e40)
 i32 CPlay::ValidateLevelTiles() {
     i32 validCount = 0;
