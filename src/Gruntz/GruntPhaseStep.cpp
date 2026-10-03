@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// @early-stop: Coordinate-return lifetimes remain after mirror call-boundary recovery.
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::StepTimeBomberBehavior() {
     m_neighborScanEnabled = false;
