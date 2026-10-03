@@ -62,7 +62,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         recA = &m_ctx->m_players[cell];
         cfgB = &recA->m_battlezConfig;
     }
-    if (unit->CoordCount() == 0) {
+    if (unit->CoordsEmpty()) {
         if (cell == -1) {
             if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
                 return 1;
@@ -134,7 +134,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     unit->m_arrivalCell.Set(unit->m_arrivalCell.m_x, 1);
-    if (unit->CoordCount() == 0) {
+    if (unit->CoordsEmpty()) {
         return 1;
     }
     unit->RecycleCoords();

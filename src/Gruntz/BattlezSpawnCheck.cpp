@@ -55,7 +55,7 @@
 
 RVA(0x00034c70, 0x133)
 i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
-    if (unit->CoordCount() != 0) {
+    if (!unit->CoordsEmpty()) {
         return 1;
     }
     BrickzCell* tile = &m_board->m_rows[unit->ArrivalCell().m_y][unit->ArrivalCell().m_x];

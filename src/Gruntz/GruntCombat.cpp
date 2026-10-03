@@ -636,7 +636,7 @@ i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->GetTileGrid();
 
     CPtrList* coordz = GetCoordList();
-    if (CoordCount() == 0) {
+    if (CoordsEmpty()) {
         return 1;
     }
 
@@ -1332,7 +1332,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;
         newGrid->AcquireCellOccupancy(nxt, nyt, this->m_playerIndex, this->m_unitIndex);
 
-        if (!m_coordList.IsEmpty()) {
+        if (!CoordsEmpty()) {
             Coord tile;
             m_coordList.AddHead(g_coordPool.PopCopy(*tile.Set(
                 this->m_lastTilePx.m_x >> TILE_SHIFT_PX,
@@ -1351,7 +1351,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_movePosX = static_cast<double>((this->m_object->m_screenX));
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
 
-        if (!m_coordList.IsEmpty()) {
+        if (!CoordsEmpty()) {
             this->RecycleCoords();
         }
         this->m_arrivalPending = false;
@@ -2304,7 +2304,7 @@ void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
         bool eq;
         eq = IsAnimationAct("A");
-        if (eq && CoordCount() != 0) {
+        if (eq && !CoordsEmpty()) {
             Coord* co = GetHeadCoord();
             i32 fl = MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->GetTileGrid(), co->m_x, co->m_y);
             if (!(fl & BRICKZ_CELL_OCCUPIED) && !((m_arrivalFlags & fl) & BRICKZ_CELL_OCCUPIED)
@@ -2323,7 +2323,7 @@ void CGrunt::AdvanceMotion() {
                         (h2->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (h2->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
-                    if (CoordCount() != 0) {
+                    if (!CoordsEmpty()) {
                         Coord* h3 = GetHeadCoord();
                         i32 fl2 =
                             MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->GetTileGrid(), h3->m_x, h3->m_y);

@@ -61,7 +61,7 @@ i32 g_battlezRoutePassableMask;
 
 RVA(0x00031610, 0x501)
 i32 CBattlezMapConfig::Step(CGrunt* g) {
-    if (g->CoordCount() == 0) {
+    if (g->CoordsEmpty()) {
         if (g->m_defenderState == AISTATE_ATTACK) {
             goto inflight;
         }
@@ -93,7 +93,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             Coord here;
             g->GetScreenTile(&here);
             RerouteIdleUnit(g, here.m_x, here.m_y, m_idleBurnRandX, m_idleBurnRandY, -1);
-            if (g->CoordCount() > m_idleRouteLimitY + m_idleRouteLimitX && g->CoordCount() != 0) {
+            if (g->CoordCount() > m_idleRouteLimitY + m_idleRouteLimitX && !g->CoordsEmpty()) {
                 g->RecycleCoords();
             }
             g->m_dwell = 0;
@@ -212,7 +212,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
 
             CMapMgr* board = m_board;
             board->Clip(NULL);
-            if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordCount() == 0) {
+            if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordsEmpty()) {
                 i32 flags = unit->m_routeBlockedMask;
                 unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
                 CGameObject* tl = target->m_object;
@@ -284,7 +284,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     band = unit->m_targetTeam;
     CBattlezMapConfig* bundle = &m_ctx->m_players[band].m_battlezConfig;
     Coord marker = bundle->m_marker;
-    if (unit->CoordCount() == 0) {
+    if (unit->CoordsEmpty()) {
         switch (unit->m_defenderState) {
             case AISTATE_SEEK: {
                 unit->m_routeBlockedMask = g_battlezRouteBlockedMask;

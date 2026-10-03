@@ -168,7 +168,7 @@ L_ed006b:
     }
 
 L_scanb:
-    if (CoordCount() == 0) {
+    if (CoordsEmpty()) {
         if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
             return 1;
         }

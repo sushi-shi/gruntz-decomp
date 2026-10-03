@@ -6,7 +6,7 @@
 
 RVA(0x000343f0, 0x47)
 inline void CGrunt::RecycleCoords() {
-    if (CoordCount() == 0) {
+    if (CoordsEmpty()) {
         return;
     }
     POSITION n = CoordHead();

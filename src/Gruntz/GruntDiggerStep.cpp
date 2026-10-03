@@ -140,7 +140,7 @@ i32 CGrunt::StepDiggerBehavior() {
     }
 
 L_tailc:
-    if (CoordCount() == 0) {
+    if (CoordsEmpty()) {
         if ((m_poweredUp == false) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
             i32 r = m_defenderRadius;
             CRect box(tileX - r, tileY - r, tileX + r, tileY + r);

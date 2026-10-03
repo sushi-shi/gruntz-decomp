@@ -55,7 +55,7 @@
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00035550, 0x52)
 i32 CBattlezMapConfig::ForcePlaceFromReserve(CGrunt* unit) {
-    if (unit->CoordCount() != 0) {
+    if (!unit->CoordsEmpty()) {
         return 1;
     }
     if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
