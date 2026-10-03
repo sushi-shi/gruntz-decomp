@@ -681,6 +681,7 @@ i32 CInGameIcon::Reposition() {
     return 0;
 }
 
+// @early-stop
 RVA(0x00098c90, 0x382)
 i32 CInGameIcon::SerializeDispatch(
     CFileMemBase* ar,

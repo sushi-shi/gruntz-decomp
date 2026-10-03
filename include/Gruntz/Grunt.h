@@ -178,6 +178,9 @@ public:
     inline PickupType ArrivalPickupOf(PickupType entranceReason) const;
     inline PickupType ArrivalPickup() const;
 
+    PickupType GetGruntKind() const {
+        return m_gruntKind;
+    }
     PickupType GetVehiclePickupType() const {
         return m_vehiclePickupType;
     }
