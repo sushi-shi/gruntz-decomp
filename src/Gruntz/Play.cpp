@@ -6936,7 +6936,7 @@ i32 CPlay::ClearPlacedObjects() {
         while (!done) {
             if (i < PlacedObjectCellCount(blockIdx)) {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
-                i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
+                i32 occupantId = g_gameReg->m_tileGrid->ObjectIdAt(obj->m_x, obj->m_y);
                 if (occupantId != 0) {
                     CGameObject* result = LookupObjectById(
                         g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,

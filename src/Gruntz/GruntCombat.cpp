@@ -1772,7 +1772,7 @@ void CGrunt::StepBehavior(char*) {
         CMapMgr* grid = reg->m_tileGrid;
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 cellObj = CellObjectIdAt(grid, tx, ty);
+        i32 cellObj = grid->ObjectIdAt(tx, ty);
         if (cellObj != 0) {
             CGameObject* found = NULL;
             CGameObject* result = NULL;

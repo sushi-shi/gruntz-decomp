@@ -240,7 +240,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        i32 objectId = CellObjectIdAt(g_gameReg->m_tileGrid, scanX, topY);
+                        i32 objectId = g_gameReg->m_tileGrid->ObjectIdAt(scanX, topY);
                         if (objectId != 0) {
                             CWwdGameObject* found = NULL;
                             CWwdGameObject* mapped = NULL;
@@ -305,7 +305,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        objectId = CellObjectIdAt(g_gameReg->m_tileGrid, scanX, bottomY);
+                        objectId = g_gameReg->m_tileGrid->ObjectIdAt(scanX, bottomY);
                         if (objectId != 0) {
                             CWwdGameObject* found = NULL;
                             CWwdGameObject* mapped = NULL;
@@ -374,7 +374,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        i32 objectId = CellObjectIdAt(g_gameReg->m_tileGrid, leftX, scanY);
+                        i32 objectId = g_gameReg->m_tileGrid->ObjectIdAt(leftX, scanY);
                         if (objectId != 0) {
                             CWwdGameObject* found = NULL;
                             CWwdGameObject* mapped = NULL;
@@ -439,7 +439,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                         }
 
-                        objectId = CellObjectIdAt(g_gameReg->m_tileGrid, rightX, scanY);
+                        objectId = g_gameReg->m_tileGrid->ObjectIdAt(rightX, scanY);
                         if (objectId != 0) {
                             CWwdGameObject* found = NULL;
                             CWwdGameObject* mapped = NULL;
