@@ -305,13 +305,13 @@ public:
             delete child;                                                                          \
         }                                                                                          \
     }                                                                                              \
-    m_planes.SetSize(0, -1);                                                                       \
+    m_planes.RemoveAll();                                                                          \
     for (i = 0; i < m_imageSets.GetSize(); i++) {                                                  \
         CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetAt(i));                  \
         if (child) {                                                                               \
             delete child;                                                                          \
         }                                                                                          \
     }                                                                                              \
-    m_imageSets.SetSize(0, -1)
+    m_imageSets.RemoveAll()
 
 #endif // SRC_GRUNTZ_GAMELEVEL_H

@@ -371,6 +371,7 @@ CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RE
         return NULL;
     }
 
+    // Keep the size read at the call site; Add's local changes register lifetimes.
     m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
 
     if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
@@ -410,6 +411,7 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
         return NULL;
     }
 
+    // Keep the size read at the call site; Add's local changes register lifetimes.
     m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
 
     if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {

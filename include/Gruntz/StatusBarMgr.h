@@ -322,7 +322,7 @@ public:
                 g_coordPool.Push(reward);
             }
         }
-        m_rewardQueue.SetSize(0, -1);
+        m_rewardQueue.RemoveAll();
     }
 
     b32 m_hlBusy;
