@@ -3718,8 +3718,8 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         CImage* frame = g->GetAt(idx);
         m_cursorImage = frame;
         if (frame == NULL) {
-            m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->m_minIndex);
-            m_cursorFrameIndex = g->m_minIndex;
+            m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->GetMinIndex());
+            m_cursorFrameIndex = g->GetMinIndex();
         }
     }
     return 1;

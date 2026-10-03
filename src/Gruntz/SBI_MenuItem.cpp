@@ -88,7 +88,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
     }
 
     if (frameIndex == -1) {
-        SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, rec->m_minIndex));
+        SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, rec->GetMinIndex()));
     } else {
         SetFrame(rec->GetAt(frameIndex));
     }

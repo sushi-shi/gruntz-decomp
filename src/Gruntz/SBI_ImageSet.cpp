@@ -56,7 +56,7 @@ i32 CSBI_ImageSet::SetupImage(
     i32 f;
     f = frame;
     if (f == -1) {
-        f = rec->m_minIndex;
+        f = rec->GetMinIndex();
     }
     m_frameIndex = f;
 
