@@ -1067,7 +1067,6 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
     return cell;
 }
 
-// @early-stop
 RVA(0x00075c60, 0x1ba)
 CGrunt* CTriggerMgr::FindGruntAt(
     i32 px,
@@ -1096,8 +1095,9 @@ CGrunt* CTriggerMgr::FindGruntAt(
 
     if (static_cast<u32>(x) <= static_cast<u32>(xEnd)) {
         do {
+            i32 y = trow - span->top - 1;
             i32 yEnd = span->bottom + trow + 1;
-            for (i32 y = trow - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
+            for (; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
                 if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->GetTileGrid()->GetWidth())) {
                     continue;
                 }

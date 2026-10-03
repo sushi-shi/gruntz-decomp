@@ -11,7 +11,7 @@
 
 #define LOAD_POSE(dst, sfx)                                                                        \
     ((dst) = MapFind<CAniElement>(                                                                 \
-         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                    \
+         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                            \
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
 
@@ -68,8 +68,10 @@
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
-        CAniElement* geo =                                                                         \
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key));    \
+        CAniElement* geo = MapFind<CAniElement>(                                                   \
+            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
+            (key)                                                                                  \
+        );                                                                                         \
         m_pickupGeoSrc = geo;                                                                      \
         id = (idv);                                                                                \
     } while (0)

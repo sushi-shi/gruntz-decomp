@@ -1995,17 +1995,19 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                 m_finishReasonFrame = state;
                 return;
             }
-            goto Lab_56b;
+            break;
         case FINISH_REASON_WARPSTONE_RESET:
             m_phase = FINISH_STATE_DEFEAT;
-            goto Lab_522;
+            m_cueTimer.Start(3000);
+            break;
         case FINISH_REASON_BATTLEZ_VICTORY:
             m_phase = FINISH_STATE_VICTORY;
+            m_cueTimer.Start(3000);
             break;
         case FINISH_REASON_TIME_EXPIRED:
             m_phase = FINISH_STATE_DEFEAT;
             m_cueTimer.Start(3000);
-            goto Lab_56b;
+            break;
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
             if (m_phase == FINISH_STATE_ACTIVE) {
                 m_phase = FINISH_STATE_DEFEAT;
@@ -2013,17 +2015,15 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                     m_pendingFx->ResolveDeathAnimation();
                 }
             }
-        Lab_522:
             m_cueTimer.Start(3000);
-            goto Lab_56b;
+            break;
         case FINISH_REASON_BATTLEZ_DEFEAT:
             m_phase = FINISH_STATE_DEFEAT;
+            m_cueTimer.Start(3000);
             break;
         default:
             return;
     }
-    m_cueTimer.Start(3000);
-Lab_56b:
     m_groupFlag = false;
     m_finishReasonFrame = state;
 }

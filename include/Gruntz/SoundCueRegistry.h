@@ -35,15 +35,12 @@ public:
     i32 PlayCueIfElapsed(const char* key);
 
     SoundCue* FindCue(const char* key) {
-        SoundCue* found = NULL;
-        MapLookup(m_cues, key, found);
-        return found;
+        return MapFind<SoundCue>(m_cues, key);
     }
 
     void PlayCue(const char* key) {
         if (m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(m_cues, key, found);
+            SoundCue* found = MapFind<SoundCue>(m_cues, key);
             if (found != NULL) {
                 found->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
             }

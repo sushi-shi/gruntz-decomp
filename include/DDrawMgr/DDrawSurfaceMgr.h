@@ -96,6 +96,10 @@ public:
         return m_soundRegistry;
     }
 
+    AnimationRegistry* GetAnimationRegistry() {
+        return m_animRegistry;
+    }
+
     void FreeContext();
     i32 EnsureSoundInitialized();
     i32 SetDimensions(i32 x, i32 y, ColorDepth bpp);
