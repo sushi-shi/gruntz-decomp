@@ -219,6 +219,14 @@ public:
         return m_lastTilePx;
     }
 
+    GruntAiState GetDefenderState() const {
+        return m_defenderState;
+    }
+
+    void SetDefenderState(GruntAiState state) {
+        m_defenderState = state;
+    }
+
     Coord ArrivalCell() {
         return m_arrivalCell;
     }

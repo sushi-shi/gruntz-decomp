@@ -62,7 +62,7 @@ i32 g_battlezRoutePassableMask;
 RVA(0x00031610, 0x501)
 i32 CBattlezMapConfig::Step(CGrunt* g) {
     if (g->CoordsEmpty()) {
-        if (g->m_defenderState == AISTATE_ATTACK) {
+        if (g->GetDefenderState() == AISTATE_ATTACK) {
             goto inflight;
         }
 
@@ -83,7 +83,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
                 return 1;
             }
             g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
-            g->m_defenderState = AISTATE_ATTACK;
+            g->SetDefenderState(AISTATE_ATTACK);
             g->m_dwell = 0;
             AcceptAlways(g);
             return 1;
@@ -101,7 +101,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         return 1;
     }
 
-    if (g->m_defenderState != AISTATE_ATTACK) {
+    if (g->GetDefenderState() != AISTATE_ATTACK) {
         return 1;
     }
 inflight: {
@@ -124,7 +124,7 @@ inflight: {
     if (nb != NULL && cur != nb) {
         g->RecycleCoords();
         g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
-        g->m_defenderState = AISTATE_ATTACK;
+        g->SetDefenderState(AISTATE_ATTACK);
         g->m_dwell = 0;
         {
             if (g->TileSwitch(nb->GetScreenTileX(), nb->GetScreenTileY(), 0, 0xd87, 0, 0) == 0) {
@@ -142,7 +142,7 @@ inflight: {
                 g->RecycleCoords();
                 UNSET_COORD(g->m_arrivalCell);
                 HandleUnitContact(g, cur);
-                g->m_defenderState = AISTATE_SEEK;
+                g->SetDefenderState(AISTATE_SEEK);
                 return 1;
             }
         }
@@ -180,7 +180,7 @@ inflight: {
 
 L_clear: {
     g->m_arrivalCell.m_x = -1;
-    g->m_defenderState = AISTATE_SEEK;
+    g->SetDefenderState(AISTATE_SEEK);
     g->m_arrivalCell.m_y = -1;
     return 1;
 }
@@ -231,7 +231,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
 
         UNSET_COORD(unit->m_arrivalCell);
         UNSET_COORD(unit->m_defenderPx);
-        unit->m_defenderState = AISTATE_SEEK;
+        unit->SetDefenderState(AISTATE_SEEK);
         unit->m_battleState = BZTASK_ADVANCE;
         unit->RecycleCoords();
         return 1;
@@ -239,7 +239,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
 
     UNSET_COORD(unit->m_arrivalCell);
     UNSET_COORD(unit->m_defenderPx);
-    unit->m_defenderState = AISTATE_SEEK;
+    unit->SetDefenderState(AISTATE_SEEK);
     unit->m_battleState = BZTASK_ADVANCE;
     unit->RecycleCoords();
     return 1;
@@ -247,7 +247,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
 
 RVA(0x00032060, 0x7bd)
 i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
-    i32 defenderState = unit->m_defenderState;
+    i32 defenderState = unit->GetDefenderState();
     if (defenderState == AISTATE_RETURN) {
         return 1;
     }
@@ -275,7 +275,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             UNSET_COORD(unit->m_arrivalCell);
             UNSET_COORD(unit->m_defenderPx);
             unit->m_targetTeam = -1;
-            unit->m_defenderState = AISTATE_SEEK;
+            unit->SetDefenderState(AISTATE_SEEK);
             unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
             unit->m_routePassableMask = g_battlezRoutePassableMask;
             return 1;
@@ -285,7 +285,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     CBattlezMapConfig* bundle = m_ctx->m_players[band].GetBattlezConfig();
     Coord marker = bundle->m_marker;
     if (unit->CoordsEmpty()) {
-        switch (unit->m_defenderState) {
+        switch (unit->GetDefenderState()) {
             case AISTATE_SEEK: {
                 unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
                 unit->m_routePassableMask = g_battlezRoutePassableMask;
@@ -298,7 +298,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                         goal = *PickSpawnCoord(&out, unit, band);
                     }
                     unit->m_defenderPx = goal;
-                    unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
+                    unit->SetDefenderState(AISTATE_BATTLEZ_ROUTE_TARGET);
                     return 1;
                 }
                 goal = unit->m_defenderPx;
@@ -311,9 +311,9 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 i32 goalDy = abs(marker.m_y - goal.m_y);
                 i32 goalDistanceSquared = SquaredDistance(goalDx, goalDy);
                 if (currentDistanceSquared > goalDistanceSquared) {
-                    unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
+                    unit->SetDefenderState(AISTATE_BATTLEZ_ROUTE_TARGET);
                 } else {
-                    unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
+                    unit->SetDefenderState(AISTATE_BATTLEZ_FINAL_ROUTE);
                     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
                     unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
                 }
@@ -327,7 +327,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 i32 gy = unit->m_defenderPx.m_y;
                 if (gx == -1 || gy == -1) {
 
-                    unit->m_defenderState = AISTATE_SEEK;
+                    unit->SetDefenderState(AISTATE_SEEK);
                     unit->RecycleCoords();
                     UNSET_COORD(unit->m_defenderPx);
                     return 1;
@@ -358,7 +358,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     unit->m_dwell = 0;
                     return 1;
                 }
-                unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
+                unit->SetDefenderState(AISTATE_BATTLEZ_FINAL_ROUTE);
                 unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
                 unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
                 return 1;
@@ -382,17 +382,17 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         unit->m_dwell = 0;
         return 1;
     }
-    if (unit->m_defenderState == AISTATE_SEEK) {
+    if (unit->GetDefenderState() == AISTATE_SEEK) {
         return 1;
     }
-    if (unit->m_defenderState != AISTATE_BATTLEZ_ROUTE_TARGET) {
+    if (unit->GetDefenderState() != AISTATE_BATTLEZ_ROUTE_TARGET) {
         return 1;
     }
     i32 gx = unit->m_defenderPx.m_x;
     i32 gy = unit->m_defenderPx.m_y;
     if (gx == -1 || gy == -1) {
 
-        unit->m_defenderState = AISTATE_SEEK;
+        unit->SetDefenderState(AISTATE_SEEK);
         unit->RecycleCoords();
         UNSET_COORD(unit->m_defenderPx);
         return 1;
@@ -403,7 +403,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         return 1;
     }
     unit->RecycleCoords();
-    unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
+    unit->SetDefenderState(AISTATE_BATTLEZ_FINAL_ROUTE);
     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
     unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
     return 1;
