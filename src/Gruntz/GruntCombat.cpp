@@ -865,26 +865,6 @@ CUserLogic::CUserLogic(CGameObject* obj) {
     USERLOGIC_ATTACH_TO_OBJECT(obj);
 }
 
-RVA(0x00058ee0, 0x5c)
-i32 ClockInterval::Serialize(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* object
-) {
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(&m_start, sizeof(m_start));
-            ar->Write(&m_interval, sizeof(m_interval));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(&m_start, sizeof(m_start));
-            ar->Read(&m_interval, sizeof(m_interval));
-            break;
-    }
-    return 1;
-}
-
 RVA(0x00059230, 0x450)
 i32 CGrunt::HandleCombatContact(
     i32 otherPxX,
