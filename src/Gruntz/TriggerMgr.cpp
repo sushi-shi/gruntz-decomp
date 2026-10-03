@@ -2344,18 +2344,10 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
             CGameObject* g = cell->m_object;
             i32 gx = g->m_screenX;
             i32 gy = g->m_screenY;
-            if (gx < bbox.left) {
-                bbox.left = gx;
-            }
-            if (gx > bbox.right) {
-                bbox.right = gx;
-            }
-            if (gy < bbox.top) {
-                bbox.top = gy;
-            }
-            if (gy > bbox.bottom) {
-                bbox.bottom = gy;
-            }
+            bbox.left = min(gx, bbox.left);
+            bbox.right = max(gx, bbox.right);
+            bbox.top = min(gy, bbox.top);
+            bbox.bottom = max(gy, bbox.bottom);
         }
     } while (pos != NULL);
     i32 cy = bbox.top + (bbox.bottom - bbox.top) / 2;
