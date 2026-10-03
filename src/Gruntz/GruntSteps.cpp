@@ -1126,7 +1126,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         ar->Write(&count, sizeof(count));
         POSITION cpos = m_coordList.GetHeadPosition();
         while (cpos != NULL) {
-            ar->Write(m_coordList.GetNext(cpos), 8);
+            ar->Write(GetNextCoord(cpos), 8);
         }
     }
     {

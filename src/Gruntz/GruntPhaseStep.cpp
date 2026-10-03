@@ -193,7 +193,7 @@ common: {
         i32 bx = static_cast<Coord*>(m_coordList.GetAt(head))->m_x;
         i32 by = static_cast<Coord*>(m_coordList.GetAt(head))->m_y;
         POSITION next = head;
-        m_coordList.GetNext(next);
+        GetNextCoord(next);
         Coord* nc = static_cast<Coord*>(m_coordList.GetAt(next));
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;

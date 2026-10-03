@@ -202,7 +202,7 @@ i32 CGrunt::StepDefenderBehavior() {
                     POSITION pos = m_coordList.GetHeadPosition();
                     while (pos != NULL) {
                         POSITION trimPos = pos;
-                        Coord* trimCoord = static_cast<Coord*>(m_coordList.GetNext(pos));
+                        Coord* trimCoord = GetNextCoord(pos);
                         i32 pathDx = abs(trimCoord->m_x - defenderTile.m_x);
                         i32 pathDy = abs(trimCoord->m_y - defenderTile.m_y);
                         i32 pathDist = Max(pathDx, pathDy);
@@ -216,8 +216,7 @@ i32 CGrunt::StepDefenderBehavior() {
                                     m_coordList.RemoveAt(trimPos);
                                     while (pos != NULL) {
                                         POSITION nextPos = pos;
-                                        Coord* coord =
-                                            static_cast<Coord*>(m_coordList.GetNext(pos));
+                                        Coord* coord = GetNextCoord(pos);
                                         if (coord != NULL) {
                                             g_coordPool.Push(coord);
                                         }
