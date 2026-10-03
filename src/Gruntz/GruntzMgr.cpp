@@ -2170,7 +2170,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     if (entryId < IDX(MOVIE_ENTRY_FIRST) || entryId > IDX(MOVIE_ENTRY_LAST)) {
         return 0;
     }
-    if (!FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath)))) {
+    if (!FileExists(m_strMoviePath)) {
         return 0;
     }
 
@@ -2268,7 +2268,7 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
 
     if (GetCurrentDirectoryA(GRUNTZ_PATH_BUFFER_MAX_CHARS, szDir)) {
         path.Format("%s\\%s", szDir, static_cast<const char*>(name));
-        if (!FileExists(const_cast<char*>(static_cast<const char*>(path)))) {
+        if (!FileExists(path)) {
             path.Empty();
         }
     }
@@ -2280,7 +2280,7 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
         }
     }
 
-    if (!FileExists(const_cast<char*>(static_cast<const char*>(path)))) {
+    if (!FileExists(path)) {
         path.Empty();
         return path;
     }
@@ -2292,7 +2292,7 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000901d0, 0x16)
 i32 CGruntzMgr::IsMoviePathValid() {
-    return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath))) != 0;
+    return FileExists(m_strMoviePath) != 0;
 }
 
 RVA(0x00090200, 0x8)
@@ -2540,7 +2540,7 @@ void CGruntzMgr::ClearStateStack() {
 
 RVA(0x00090aa0, 0x10)
 i32 CGruntzMgr::CheckMovieFileExists() {
-    return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath)));
+    return FileExists(m_strMoviePath);
 }
 
 RVA(0x00090ac0, 0x1cc)

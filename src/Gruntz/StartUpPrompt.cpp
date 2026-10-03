@@ -37,7 +37,7 @@ int StartUpPrompt(HWND hWnd) {
     char szText[128];
     char szCaption[62];
 
-    if (!FileExists(const_cast<char*>(static_cast<const char*>(strPath)))) {
+    if (!FileExists(strPath)) {
         g_cdPromptResult = false;
         for (;;) {
             strcpy(szText, "Please insert the game CD-ROM into the drive.");
