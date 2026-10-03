@@ -145,7 +145,8 @@ i32 CAttract::LeaveState(GameStateId nextState) {
 
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
-    IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
+    IDirectDrawSurface* busy =
+        menuRoot()->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);

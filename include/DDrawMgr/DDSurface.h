@@ -84,6 +84,10 @@ public:
     virtual i32 RestoreLost();
     virtual i32 BlitIntoDesc(CDDrawDeviceManager* manager);
 
+    IDirectDrawSurface* GetDirectDrawSurface() const {
+        return m_ddSurface;
+    }
+
     void* Lock(RECT* rect);
     i32 PixelOffset(i32 x, i32 y) const {
         return y * m_apiDesc.lPitch + x * m_bytesPerPixel;

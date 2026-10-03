@@ -80,9 +80,9 @@ i32 DrawPageDebugText(
     }
 
     HDC hdc = NULL;
-    surf->m_ddSurface->GetDC(&hdc);
+    surf->GetDirectDrawSurface()->GetDC(&hdc);
     g_gameReg->ChatLog()->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
-    surf->m_ddSurface->ReleaseDC(hdc);
+    surf->GetDirectDrawSurface()->ReleaseDC(hdc);
     return 1;
 }
 

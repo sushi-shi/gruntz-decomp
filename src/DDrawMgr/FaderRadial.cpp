@@ -104,6 +104,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
         }
     }
 
+    // The direct COM receiver preserves the frame and loop-value lifetimes.
     m_srcSurface->m_ddSurface->Unlock(NULL);
     m_dstSurface->Unlock();
     delete[] scratch;

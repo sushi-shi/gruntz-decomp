@@ -164,7 +164,8 @@ i32 CCreditsState::LeaveState(GameStateId nextState) {
 
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
-    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->GetSurface()->m_ddSurface;
+    IDirectDrawSurface* in =
+        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
@@ -334,7 +335,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     }
 
     HDC hdc = NULL;
-    prov->m_ddSurface->GetDC(&hdc);
+    prov->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc != NULL) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
         if (g_clipRegionEnabled != false) {
@@ -347,14 +348,20 @@ i32 CCreditsState::DrawScrollingCredits() {
             CString s("Now is the time at Monolith when we dance");
             RECT r = {0, 0, SCREEN_W_PX, SCREEN_H_PX};
             i32 oldColor2 = SetTextColor(hdc, RGB(255, 255, 255));
-            DrawTextA(hdc, s, -1, &r, DT_CENTER | DT_VCENTER | DT_WORDBREAK | DT_SINGLELINE | DT_EXPANDTABS);
+            DrawTextA(
+                hdc,
+                s,
+                -1,
+                &r,
+                DT_CENTER | DT_VCENTER | DT_WORDBREAK | DT_SINGLELINE | DT_EXPANDTABS
+            );
             SetTextColor(hdc, oldColor2);
         }
         if (g_clipRegionEnabled != false) {
             SelectClipRgn(hdc, NULL);
         }
         SetBkMode(hdc, oldBk);
-        prov->m_ddSurface->ReleaseDC(hdc);
+        prov->GetDirectDrawSurface()->ReleaseDC(hdc);
     }
     return 1;
 }
@@ -383,11 +390,12 @@ i32 CCreditsState::SetupTitle() {
     m_clipRegion.CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX);
     CDDSurface* prov = m_world->m_drawTarget->m_backPair->GetSurface();
     HDC hdc = NULL;
-    prov->m_ddSurface->GetDC(&hdc);
+    prov->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc) {
-        i32 h = DrawTextA(hdc, m_caption, -1, &m_drawRect, DT_WORDBREAK | DT_EXPANDTABS | DT_CALCRECT);
+        i32 h =
+            DrawTextA(hdc, m_caption, -1, &m_drawRect, DT_WORDBREAK | DT_EXPANDTABS | DT_CALCRECT);
         m_scrollRect.SetRect(0x32, SCREEN_H_PX, 0x24e, h + SCREEN_H_PX);
-        prov->m_ddSurface->ReleaseDC(hdc);
+        prov->GetDirectDrawSurface()->ReleaseDC(hdc);
     }
     m_scrollAccum = 0.0;
     m_scrollReseedTimer = static_cast<i32>((s_screenH / s_scrollRate));
@@ -412,7 +420,7 @@ i32 CCreditsState::StepVideo() {
         CDDrawSubMgrPages* v = m_world->m_drawTarget;
         CDDrawSurfacePair* dst = v->m_overlayPair;
         CDDrawSurfacePair* src = v->m_backPair;
-        if (!m_videoHandle->Advance(dst->GetSurface()->m_ddSurface, -1)) {
+        if (!m_videoHandle->Advance(dst->GetSurface()->GetDirectDrawSurface(), -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();
         }

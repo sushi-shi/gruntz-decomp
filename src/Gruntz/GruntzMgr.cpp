@@ -2194,7 +2194,13 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     if (World()->m_soundStream != NULL) {
         dsound = World()->m_soundStream->m_device;
     }
-    if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
+    if (player.InitMode(
+            m_gameWnd->m_hwnd,
+            dd2,
+            front->GetDirectDrawSurface(),
+            front->m_apiDesc,
+            dsound
+        )) {
         MovieOpenFlags openFlags =
             m_isInterlaced != false ? MOVIE_OPEN_INTERLACED : MOVIE_OPEN_DEFAULT;
         if (player.Open(m_strMoviePath, IDX(entryId), MOVIE_TILE, openFlags, NULL, NULL)) {
