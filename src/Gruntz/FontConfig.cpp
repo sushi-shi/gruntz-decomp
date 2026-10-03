@@ -519,12 +519,12 @@ i32 CFontConfig::Draw3DText(
     SetBkColor(hdc, RGB(0, 0, 0));
     CString text(*strSrc);
     DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
-    i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
-    i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
-    rc.left += hoff;
+    i32 hoff = ((dst->right - dst->left) - (rc.right - rc.left)) / 2;
+    i32 voff = ((dst->bottom - dst->top) - (rc.bottom - rc.top)) / 2;
     rc.right += hoff;
-    rc.top += voff;
+    rc.left += hoff;
     rc.bottom += voff;
+    rc.top += voff;
     if (shadow) {
         SetTextColor(hdc, RGB(0, 0, 0));
         rc.left += dx;
