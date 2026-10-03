@@ -613,11 +613,11 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
     } else if (AT(m_poseIdle, GRUNT_IDLE2) != NULL) {
         if (chooseIdleVariant != 0) {
 
-            i32 count = 1;
+            i32 idx = 1;
             if (AT(m_poseIdle, GRUNT_IDLE3) != NULL) {
-                count = 2;
+                idx = 2;
             }
-            i32 idx = GetRandom(1, count);
+            idx = GetRandom(1, idx);
             if (playVoiceCue != 0) {
                 g_gameReg->Rand();
                 b32 focused = (m_playerIndex == g_curPlayer);
