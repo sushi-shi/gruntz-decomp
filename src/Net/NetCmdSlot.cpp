@@ -106,7 +106,7 @@ inline void CNetCmdSlot::QueueRecord(GruntRec* record, u8 entryCount, char* curs
         command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
         remaining -= consumed;
         cursor += consumed;
-        m_owner->Mgr()->m_commandMgr->EnqueueCommand(false, command);
+        m_owner->Mgr()->GetCommandMgr()->EnqueueCommand(false, command);
     }
 }
 

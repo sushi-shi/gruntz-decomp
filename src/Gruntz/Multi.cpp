@@ -534,7 +534,7 @@ i32 CMulti::Render() {
     i32 newId = m_session->m_commandTick;
     if (m_processedCommandTick != newId) {
         m_processedCommandTick = newId;
-        CGruntzCmdMgr* mgr = Mgr()->m_commandMgr;
+        CGruntzCmdMgr* mgr = Mgr()->GetCommandMgr();
         CGruntzCommand* node;
         if (mgr->m_pendingLocalCommands.IsEmpty()) {
             node = NULL;
@@ -615,7 +615,7 @@ i32 CMulti::AdvanceGameFrame() {
     g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = 0x21;
     UpdateAmbientMusic();
-    Mgr()->m_commandMgr->ExecuteScheduledCommands(m_processedCommandTick % 128);
+    Mgr()->GetCommandMgr()->ExecuteScheduledCommands(m_processedCommandTick % 128);
     m_session->ComputeChecksum();
     g_frameTicks++;
     u32 t1 = g_period50CountdownMs ? g_period50CountdownMs : FRAME_CLOCK_PERIOD_50_MS;
@@ -3135,7 +3135,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     i32 end = seq + static_cast<i32>(m_commandDelay) * 3;
     for (; seq < end; seq++) {
 
-        NetGameMgr()->m_commandMgr->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
+        NetGameMgr()->GetCommandMgr()->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
         slot->RemoveRecord(seq / static_cast<i32>(m_commandDelay));
     }
     slot->ClearSequenceSet(slot->ReceivedAhead());

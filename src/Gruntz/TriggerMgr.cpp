@@ -247,7 +247,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
         }
     }
     if (count == 1) {
-        g_gameReg->m_commandMgr->EnqueueSingle(
+        g_gameReg->GetCommandMgr()->EnqueueSingle(
             isLocalCommand,
             playerIndex,
             unitIndices[0],
@@ -258,7 +258,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
             0
         );
     } else {
-        g_gameReg->m_commandMgr->EnqueueMulti(
+        g_gameReg->GetCommandMgr()->EnqueueMulti(
             isLocalCommand,
             playerIndex,
             count,
@@ -296,7 +296,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
     }
     if (count == 1) {
         if (targetIsGrunt != false) {
-            g_gameReg->m_commandMgr->EnqueueSingle(
+            g_gameReg->GetCommandMgr()->EnqueueSingle(
                 isLocalCommand,
                 playerIndex,
                 unitIndices[0],
@@ -307,7 +307,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
                 0
             );
         } else {
-            g_gameReg->m_commandMgr->EnqueueSingle(
+            g_gameReg->GetCommandMgr()->EnqueueSingle(
                 isLocalCommand,
                 playerIndex,
                 unitIndices[0],
@@ -320,7 +320,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
         }
     } else {
         if (targetIsGrunt != false) {
-            g_gameReg->m_commandMgr->EnqueueMulti(
+            g_gameReg->GetCommandMgr()->EnqueueMulti(
                 isLocalCommand,
                 playerIndex,
                 count,
@@ -331,7 +331,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
                 0
             );
         } else {
-            g_gameReg->m_commandMgr->EnqueueMulti(
+            g_gameReg->GetCommandMgr()->EnqueueMulti(
                 isLocalCommand,
                 playerIndex,
                 count,
@@ -770,7 +770,7 @@ i32 CTriggerMgr::HandleTargetSelection(
                 i32 hitUnitIndex = hit->GetUnitIndex();
                 i32 selectedUnitIndex = selectedGrunt->GetUnitIndex();
                 i32 selectedPlayerIndex = selectedGrunt->GetPlayerIndex();
-                g_gameReg->m_commandMgr->EnqueueSingle(
+                g_gameReg->GetCommandMgr()->EnqueueSingle(
                     true,
                     selectedPlayerIndex,
                     selectedUnitIndex,
@@ -783,7 +783,7 @@ i32 CTriggerMgr::HandleTargetSelection(
             } else {
                 i32 selectedUnitIndex = selectedGrunt->GetUnitIndex();
                 i32 selectedPlayerIndex = selectedGrunt->GetPlayerIndex();
-                g_gameReg->m_commandMgr->EnqueueSingle(
+                g_gameReg->GetCommandMgr()->EnqueueSingle(
                     true,
                     selectedPlayerIndex,
                     selectedUnitIndex,
@@ -2605,7 +2605,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
         } while (pos != NULL);
     }
     if (count == 1) {
-        g_gameReg->m_commandMgr->EnqueueSingle(
+        g_gameReg->GetCommandMgr()->EnqueueSingle(
             true,
             x,
             static_cast<char>(buf[0]),
@@ -2616,7 +2616,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
             0
         );
     } else {
-        g_gameReg->m_commandMgr
+        g_gameReg->GetCommandMgr()
             ->EnqueueMulti(true, x, count, buf, static_cast<char>(IDX(PLAYERCMD_STOP)), 0, 0, 0);
     }
     return 1;

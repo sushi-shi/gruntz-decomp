@@ -1030,7 +1030,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
 
 RVA(0x0006da60, 0x27)
 void CTriggerMgr::EnqueueGuardBegin(i32 playerIndex, i32 unitIndex) {
-    g_gameReg->m_commandMgr->EnqueueSingle(
+    g_gameReg->GetCommandMgr()->EnqueueSingle(
         true,
         playerIndex,
         unitIndex,
@@ -1044,7 +1044,7 @@ void CTriggerMgr::EnqueueGuardBegin(i32 playerIndex, i32 unitIndex) {
 
 RVA(0x0006daa0, 0x27)
 void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
-    g_gameReg->m_commandMgr->EnqueueSingle(
+    g_gameReg->GetCommandMgr()->EnqueueSingle(
         true,
         playerIndex,
         unitIndex,
