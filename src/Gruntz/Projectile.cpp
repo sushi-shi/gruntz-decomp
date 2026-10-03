@@ -64,18 +64,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x001eaad8)
-const double g_boomerangMidpointScale = 0.5;
-DATA(0x001eaae0)
-const double g_boomerangPixelToTileScale = 0.03125;
-DATA(0x001eaae8)
-const double g_boomerangHalfTurnRadians = 3.1415927;
-DATA(0x001eaaf0)
-const double g_boomerangHoldScale = 0.0625;
-DATA(0x001eaaf8)
-const double g_boomerangHoldBiasMs = -500.0;
-DATA(0x001eab00)
-const double g_boomerangFullTurnRadians = 6.2831854;
 DATA(0x001f04b0)
 const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)
@@ -496,15 +484,13 @@ i32 CBoomerang::LoadProjectileSprites(
         return 0;
     }
     double duration = static_cast<double>(static_cast<u32>(m_timePerTile));
-    double d =
-        g_boomerangHalfTurnRadians / (duration * (g_boomerangPixelToTileScale * m_flightDist));
+    double d = 3.1415927 / ((duration / 32.0) * m_flightDist);
     CWwdSpriteObject* owner = m_object;
     m_launchX = owner->m_screenX;
     m_launchY = owner->m_screenY;
-    double originY = (static_cast<double>(m_targetPxY) + static_cast<double>(owner->m_screenY))
-                     * g_boomerangMidpointScale;
-    m_originX = (static_cast<double>(m_targetPxX) + static_cast<double>(owner->m_screenX))
-                * g_boomerangMidpointScale;
+    double originY =
+        (static_cast<double>(m_targetPxY) + static_cast<double>(owner->m_screenY)) * 0.5;
+    m_originX = (static_cast<double>(m_targetPxX) + static_cast<double>(owner->m_screenX)) * 0.5;
     m_originY = originY;
     m_dirX = m_originX - static_cast<double>(m_launchX);
     m_dirY = originY - static_cast<double>(m_launchY);
@@ -512,11 +498,7 @@ i32 CBoomerang::LoadProjectileSprites(
     m_velScale = d;
     CGrunt* g = g_gameReg->m_triggerMgr->UnitAt(sourcePlayerIndex, sourceUnitIndex);
     if (g != NULL) {
-        g->m_holdTiming.Start(
-            static_cast<i32>(
-                (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
-            )
-        );
+        g->m_holdTiming.Start(static_cast<i32>((duration * m_flightDist * 0.0625 - (-500.0))));
         g->RecycleCoords();
     }
     m_launched = false;
@@ -527,13 +509,13 @@ RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
     double s;
     double c;
-    if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
+    if (m_launched == false && m_phase > 3.1415927) {
         SET_SCREEN_POS(m_object, m_targetPxX, m_targetPxY);
         if (m_shadow != NULL) {
             SET_SCREEN_POS(m_shadow, m_targetPxX, m_targetPxY);
         }
         m_launched = true;
-    } else if (m_phase > g_boomerangFullTurnRadians && m_launched != false) {
+    } else if (m_phase > 6.2831854 && m_launched != false) {
         ScanTargets(1);
         if (m_shadow != NULL) {
             m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
