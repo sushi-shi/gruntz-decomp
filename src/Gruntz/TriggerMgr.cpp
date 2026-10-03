@@ -16,9 +16,9 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GameRand.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntCombatClockInline.h>
