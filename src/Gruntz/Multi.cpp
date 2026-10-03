@@ -1279,7 +1279,6 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
     return failed ? NULL : enumResult;
 }
 
-// @early-stop
 RVA(0x000b8cf0, 0x23b)
 i32 CMulti::OnJoinConfirm(HWND hDlg) {
     if (hDlg == NULL) {
@@ -1312,8 +1311,9 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
         SetGameName(CString(buf));
     }
     m_syncGate = false;
+    i32 playerId = LocalPlayer()->m_playerId;
     SelectedLevelIndex() = 1;
-    m_localPlayerId = LocalPlayer()->m_playerId;
+    m_localPlayerId = playerId;
     if (Sparam_Get(buf, sel->m_sessionDesc.lpszSessionNameA, "LEVEL")) {
         SelectedLevelIndex() = atoi(buf);
     }
