@@ -758,7 +758,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         for (i32 col = colBeg; col < colEnd; col++) {
                                             if (static_cast<u32>(col) < b->m_width
                                                 && static_cast<u32>(row) < b->m_height) {
-                                                if (b->m_rows[row][col].m_flags & 0x1000000) {
+                                                if (b->CellFlagsAtUnchecked(col, row) & 0x1000000) {
                                                     goto perimSweep;
                                                 }
                                             }
@@ -982,7 +982,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     goto dropCoords;
                 }
                 {
-                    cell = m_board->m_rows[gy][gx].m_flags;
+                    cell = m_board->CellFlagsAtUnchecked(gx, gy);
                     i32 f;
                     f = unit->m_arrivalFlags & cell;
                     if (f & BRICKZ_CELL_OCCUPIED) {
@@ -1512,7 +1512,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         }
         i32 x = coord->m_x;
         i32 y = coord->m_y;
-        if ((m_board->m_rows[y][x].m_flags & 1) != 0 && (x != tail.m_x || y != tail.m_y)) {
+        if ((m_board->CellFlagsAtUnchecked(x, y) & 1) != 0 && (x != tail.m_x || y != tail.m_y)) {
             continue;
         }
         CPtrList list(10);
@@ -2419,7 +2419,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     if (g_stepRun == false) {
         return;
     }
-    i32 word = m_board->m_rows[row][col].m_flags;
+    i32 word = m_board->CellFlagsAtUnchecked(col, row);
     if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
         CPtrList list(10);
         Coord start = ScreenTile(unit);
@@ -2498,7 +2498,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
 
-    m_board->m_rows[row][col].m_flags |= IDX(CELL_FLAG_CLAIM_VISITED);
+    m_board->CellFlagsAtUnchecked(col, row) |= IDX(CELL_FLAG_CLAIM_VISITED);
     i32 cm = col - 1;
     i32 cp = col + 1;
     i32 rm = row - 1;
@@ -2508,7 +2508,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
 
     b = m_board;
     if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
-        nw = b->m_rows[row][cm].m_flags;
+        nw = b->CellFlagsAtUnchecked(cm, row);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
                 || b->CellTypeAt(cm, row) == TILEKIND_AI_PATH_BLOCKER)) {
@@ -2517,7 +2517,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     }
     b = m_board;
     if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
-        nw = b->m_rows[row][cp].m_flags;
+        nw = b->CellFlagsAtUnchecked(cp, row);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
                 || b->CellTypeAt(cp, row) == TILEKIND_AI_PATH_BLOCKER)) {
@@ -2526,7 +2526,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     }
     b = m_board;
     if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
-        nw = b->m_rows[rm][col].m_flags;
+        nw = b->CellFlagsAtUnchecked(col, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
                 || b->CellTypeAt(col, rm) == TILEKIND_AI_PATH_BLOCKER)) {
@@ -2535,7 +2535,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     }
     b = m_board;
     if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
-        nw = b->m_rows[rp][col].m_flags;
+        nw = b->CellFlagsAtUnchecked(col, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
                 || b->CellTypeAt(col, rp) == TILEKIND_AI_PATH_BLOCKER)) {
@@ -2545,7 +2545,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     b = m_board;
     if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
         && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
-        nw = b->m_rows[rm][cp].m_flags;
+        nw = b->CellFlagsAtUnchecked(cp, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
                 || b->CellTypeAt(cp, rm) == TILEKIND_AI_PATH_BLOCKER)) {
@@ -2555,7 +2555,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     b = m_board;
     if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
         && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-        nw = b->m_rows[rp][cp].m_flags;
+        nw = b->CellFlagsAtUnchecked(cp, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
                 || b->CellTypeAt(cp, rp) == TILEKIND_AI_PATH_BLOCKER)) {
@@ -2565,7 +2565,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     b = m_board;
     if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
         && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-        nw = b->m_rows[rp][cm].m_flags;
+        nw = b->CellFlagsAtUnchecked(cm, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
                 || b->CellTypeAt(cm, rp) == TILEKIND_AI_PATH_BLOCKER)) {
@@ -2576,7 +2576,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     b = m_board;
     if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
         && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
-        nw = b->m_rows[rm][cm].m_flags;
+        nw = b->CellFlagsAtUnchecked(cm, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
                 || b->CellTypeAt(cm, rm) == TILEKIND_AI_PATH_BLOCKER)) {
@@ -2639,7 +2639,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     RECT sweep = m_board->m_bounds;
     for (i32 c = sweep.left; c < sweep.right; c++) {
         for (i32 r = sweep.top; r < sweep.bottom; r++) {
-            m_board->m_rows[r][c].m_flags &= ~IDX(CELL_FLAG_CLAIM_VISITED);
+            m_board->CellFlagsAtUnchecked(c, r) &= ~IDX(CELL_FLAG_CLAIM_VISITED);
         }
     }
 

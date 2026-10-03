@@ -47,13 +47,13 @@ inline i32 CGruntzMapMgr::TileIdAt(u32 x, u32 y) const {
 }
 
 inline void CGruntzMapMgr::ReleaseCellOccupancy(i32 tileX, i32 tileY) {
-    m_rows[tileY][tileX].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
+    CellFlagsAtUnchecked(tileX, tileY) &= BRICKZ_CELL_UNOCCUPIED_MASK;
     m_rows[tileY][tileX].m_occupantId = -1;
 }
 
 inline void
 CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 playerIndex, i32 unitIndex) {
-    m_rows[tileY][tileX].m_flags |= BRICKZ_CELL_OCCUPIED;
+    CellFlagsAtUnchecked(tileX, tileY) |= BRICKZ_CELL_OCCUPIED;
     m_rows[tileY][tileX].m_occupantId = (playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | unitIndex;
 }
 

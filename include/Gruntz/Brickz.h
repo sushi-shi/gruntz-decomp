@@ -120,10 +120,17 @@ inline BrickzCell CMapMgr::CellAt(i32 x, i32 y) {
     return *source;
 }
 
+// Preserve indexed-name expansion at the two AdvanceMotion read sites.
+#define MAP_CELL_FLAGS_AT_UNCHECKED(map, x, y) ((map)->m_rows[(y)][(x)].m_flags)
+
+inline i32& CMapMgr::CellFlagsAtUnchecked(i32 x, i32 y) {
+    return m_rows[y][x].m_flags;
+}
+
 RVA(0x00075a40, 0x34)
 inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
     if (static_cast<u32>(x) < m_width && static_cast<u32>(y) < m_height) {
-        return m_rows[y][x].m_flags;
+        return CellFlagsAtUnchecked(x, y);
     }
     return 1;
 }
@@ -139,9 +146,9 @@ inline void CMapMgr::SetObjectIdAt(u32 x, u32 y, i32 objectId) {
     if (x < m_width && y < m_height) {
         m_rows[y][x].m_objectId = objectId;
         if (objectId != 0) {
-            m_rows[y][x].m_flags |= 0x40000;
+            CellFlagsAtUnchecked(x, y) |= 0x40000;
         } else {
-            m_rows[y][x].m_flags &= ~0x40000;
+            CellFlagsAtUnchecked(x, y) &= ~0x40000;
         }
     }
 }
