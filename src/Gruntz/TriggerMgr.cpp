@@ -18,6 +18,7 @@
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntCombatClockInline.h>
@@ -1692,11 +1693,10 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         }
                         i32 placed = 0;
                         do {
-                            i32 tileX = maxTileX == 0 ? static_cast<char>(rand()) & 1
-                                                      : rand() % maxTileX + 1;
-                            i32 tileY = maxTileY == 0 ? static_cast<char>(rand()) & 1
-                                                      : rand() % maxTileY + 1;
+                            i32 tileX = GetRandom(1, maxTileX);
+                            i32 tileY = GetRandom(1, maxTileY);
                             if (grunt->TryTeleportToCell(tileX, tileY, false, true)) {
+                                placed = 1;
                                 CGameObject* flashObject =
                                     g_gameReg->World()->ChildGroup()->CreateSprite(
                                         0,
@@ -1706,7 +1706,6 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                                         "LightFx",
                                         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                     );
-                                placed = 1;
                                 flashObject->GetLogicRecord()->Dispatch(flashObject);
                                 (static_cast<CLightFx*>(flashObject->GetLogicRecord()->UserLogic()))
                                     ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, true);
