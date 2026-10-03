@@ -2974,60 +2974,36 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    bool eq;
-    eq = unit->IsAnimationAct("I");
-    if (eq) {
+    if (unit->GetAnimationActName() == "I") {
         return 0;
     }
-    eq = unit->IsAnimationAct("G");
-    if (eq) {
+    if (unit->GetAnimationActName() == "G") {
         return 0;
     }
-    eq = unit->IsAnimationAct("L");
-    if (eq) {
+    if (unit->GetAnimationActName() == "L") {
         return 0;
     }
-    eq = unit->IsAnimationAct("P");
-    if (eq) {
+    if (unit->GetAnimationActName() == "P") {
         return 0;
     }
-    eq = unit->IsAnimationAct("J");
-    if (eq) {
+    if (unit->GetAnimationActName() == "J") {
         return 0;
     }
-    eq = unit->IsAnimationAct("C");
-    if (eq) {
+    if (unit->GetAnimationActName() == "C") {
         return 0;
     }
-    eq = unit->IsAnimationAct("R");
-    if (eq) {
+    if (unit->GetAnimationActName() == "R") {
         return 0;
     }
 
-    i32 bandPct = m_brickzPct;
-    i32 band;
-    if (bandPct == 0) {
-        band = static_cast<i8>(rand());
-        band &= 1;
-    } else {
-        band = rand() % bandPct;
-        band++;
-    }
+    i32 band = GetRandom(1, m_brickzPct);
     if (band <= m_toolzPct) {
 
         PickupType cur = unit->ArrivalPickup();
         if (cur != PICKUP_NONE) {
             return 1;
         }
-        i32 rollPct = m_wingzPct;
-        i32 roll;
-        if (rollPct == 0) {
-            roll = static_cast<i8>(rand());
-            roll &= 1;
-        } else {
-            roll = rand() % rollPct;
-            roll++;
-        }
+        i32 roll = GetRandom(1, m_wingzPct);
         PickupType mode = PICKUP_WINGZ;
         if (roll <= m_bombzPct) {
             mode = PICKUP_BOMB;
@@ -3098,7 +3074,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 if (u->m_poweredUp != false) {
                     continue;
                 }
-                (static_cast<CGrunt*>(u))->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
+                u->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
                 u->m_battleState = BZTASK_CARRY_BRICK;
                 u->RecycleCoords();
             }
@@ -3107,7 +3083,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 
         PickupType cur2 = unit->ArrivalPickup();
         if (cur2 == PICKUP_NONE) {
-            (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
+            unit->LoadPickupSprites(mode, 1, 0, 0, 1);
             return 1;
         }
         if (mode != PICKUP_TOOB) {
@@ -3121,15 +3097,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 
     if (band <= m_toyzPct) {
 
-        i32 rollPct = m_yoyozPct;
-        i32 roll;
-        if (rollPct == 0) {
-            roll = static_cast<i8>(rand());
-            roll &= 1;
-        } else {
-            roll = rand() % rollPct;
-            roll++;
-        }
+        i32 roll = GetRandom(1, m_yoyozPct);
         PickupType mode;
         if (roll <= m_babyWalkerzPct) {
             mode = PICKUP_BABYWALKER;
@@ -3150,19 +3118,11 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         } else {
             mode = roll > m_squeakToyzPct ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
         }
-        (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
+        unit->LoadPickupSprites(mode, 1, 0, 0, 1);
         return 1;
     } else {
 
-        i32 rollPct = m_blackBrickPct;
-        i32 roll;
-        if (rollPct == 0) {
-            roll = static_cast<i8>(rand());
-            roll &= 1;
-        } else {
-            roll = rand() % rollPct;
-            roll++;
-        }
+        i32 roll = GetRandom(1, m_blackBrickPct);
         PickupType mode = PICKUP_BLACKBRICK;
         if (roll <= m_redBrickPct) {
             mode = PICKUP_REDBRICK;
