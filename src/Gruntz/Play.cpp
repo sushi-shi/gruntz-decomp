@@ -1524,8 +1524,8 @@ void CPlay::FreeListTeardown() {
     }
     m_cameraBookmarks.RemoveAll();
     for (i = 0; i < 4; i++) {
-        m_mgr->m_players[i].m_battlezConfig.FreeArrays();
-        m_mgr->m_players[i].m_battlezConfig.Clear();
+        m_mgr->m_players[i].GetBattlezConfig()->FreeArrays();
+        m_mgr->m_players[i].GetBattlezConfig()->Clear();
     }
     m_cameraBookmarkIndex = -1;
 }
@@ -5505,7 +5505,7 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->m_players[i].m_battlezConfig.StepAllRowSpawns();
+        g_gameReg->m_players[i].GetBattlezConfig()->StepAllRowSpawns();
     }
     m_winLoseBanner = false;
     CTimer* fm = m_levelTimer;

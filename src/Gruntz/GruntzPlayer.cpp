@@ -259,9 +259,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
         ar->Write(&m_focusY, sizeof(m_focusY));
         ar->Write(&m_maxGruntz, sizeof(m_maxGruntz));
     }
-    return (static_cast<CBattlezMapConfig*>(&m_battlezConfig))
-               ->SerializeState(ar, mode, typeId, payload)
-           != 0;
+    return GetBattlezConfig()->SerializeState(ar, mode, typeId, payload) != 0;
 }
 
 RVA(0x000dafb0, 0x71)
@@ -340,7 +338,7 @@ i32 GruntzPlayer::Deactivate() {
         return 0;
     }
     if (m_humanControlled == false) {
-        (static_cast<CBattlezMapConfig*>(&m_battlezConfig))->Clear();
+        GetBattlezConfig()->Clear();
     }
     m_active = false;
     return 1;

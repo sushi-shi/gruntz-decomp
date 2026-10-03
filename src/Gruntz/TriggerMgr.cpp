@@ -1871,7 +1871,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                     != -1) {
                     ok = true;
                 }
-            } else if (player->m_battlezConfig.TrySeedSpawnAt(tx, ty) != 0) {
+            } else if (player->GetBattlezConfig()->TrySeedSpawnAt(tx, ty) != 0) {
                 ok = true;
             }
         }
