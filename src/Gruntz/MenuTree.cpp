@@ -117,7 +117,7 @@ i32 CMenuTree::DrawActivePage() {
     if (!m_activePage) {
         return 0;
     }
-    CDDrawSurfacePair* backBuffer = m_world->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* backBuffer = m_world->m_drawTarget->GetBackPair();
     if (!backBuffer) {
         return 0;
     }

@@ -462,7 +462,7 @@ i32 CPlay::Render() {
         }
 
         CDDrawSurfacePair* back =
-            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
+            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->GetBackPair());
         if (back == NULL) {
             return 0;
         }
@@ -495,7 +495,7 @@ i32 CPlay::Render() {
         UpdateAmbientMusic();
 
         if (m_region0Gate != false) {
-            m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
+            m_world->m_drawTarget->GetBackPair()->GetSurface()->Fill(0);
             m_statusBar->Deactivate();
         }
 
@@ -549,12 +549,12 @@ i32 CPlay::Render() {
                 );
             }
             m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
-            m_minimap->Draw(m_world->m_drawTarget->m_backPair, &rc);
+            m_minimap->Draw(m_world->m_drawTarget->GetBackPair(), &rc);
         }
 
         m_mgr->ChatLog()->Scroll(static_cast<i32>(g_frameDelta));
         CDDrawSurfacePair* view =
-            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
+            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->GetBackPair());
         if (view == NULL) {
             return 0;
         }
@@ -656,7 +656,7 @@ i32 CPlay::Render() {
     }
 
     RestoreCursorSaveUnder();
-    CDDrawSurfacePair* back = m_world->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* back = m_world->m_drawTarget->GetBackPair();
     if (back == NULL) {
         return 0;
     }
@@ -805,12 +805,12 @@ i32 CPlay::ProfileInputFrame() {
     hitTestMs = static_cast<i32>(tg() - static_cast<u32>(hitTestMs));
 
     i32 drawMs = static_cast<i32>(tg());
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->ChildGroup());
+    m_world->m_level->VisitVisible(m_world->m_drawTarget->GetBackPair(), m_world->ChildGroup());
     drawMs = static_cast<i32>(tg() - static_cast<u32>(drawMs));
 
     i32 fixedMs = static_cast<i32>(tg());
     m_world->m_workerList->RenderAndPruneWorkers(
-        m_world->m_drawTarget->m_backPair,
+        m_world->m_drawTarget->GetBackPair(),
         m_world->m_drawTarget->m_overlayPair
     );
     fixedMs = static_cast<i32>(tg() - static_cast<u32>(fixedMs));
@@ -1601,7 +1601,7 @@ i32 CPlay::InputVirtual() {
     while (ShowCursor(false) >= 0)
         ;
 
-    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
+    m_world->m_drawTarget->GetBackPair()->GetSurface()->Fill(0);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
 
     DrawWorldView();
@@ -3145,7 +3145,7 @@ void CPlay::DrawDebugStatsFull() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* surface = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* surface = m_world->m_drawTarget->GetBackPair()->GetSurface();
     HDC hdc = NULL;
     surface->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc == NULL) {
@@ -3239,7 +3239,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* surface = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* surface = m_world->m_drawTarget->GetBackPair()->GetSurface();
     HDC hdc = NULL;
     surface->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc == NULL) {
@@ -3356,7 +3356,7 @@ i32 CPlay::DrawStateMessage() {
         return 0;
     }
 
-    CDDrawSurfacePair* surf = m_world->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* surf = m_world->m_drawTarget->GetBackPair();
     if (surf == NULL) {
         return 0;
     }
@@ -3924,7 +3924,7 @@ i32 CPlay::RestoreCursorSaveUnder() {
         savedRect = &m_cursorSavedRects[1];
     }
 
-    CDDSurface* backSurface = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* backSurface = m_world->m_drawTarget->GetBackPair()->GetSurface();
     if (backSurface == NULL) {
         return 0;
     }
@@ -5403,7 +5403,7 @@ i32 CState::DrawScreenTextImage(const char* name) {
         return 0;
     }
     CDDrawSurfaceMgr* world = m_world;
-    CDDrawSurfacePair* page = world->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* page = world->m_drawTarget->GetBackPair();
     if (page == NULL) {
         return 0;
     }
@@ -5899,7 +5899,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
 
     if (m_initialFramePending != false) {
         m_initialFramePending = false;
-        m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
+        m_world->m_drawTarget->GetBackPair()->GetSurface()->Fill(0);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         DrawWorldView();
         m_statusBar->Deactivate();
@@ -5914,7 +5914,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
                 return 0;
             }
         } else {
-            m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
+            m_world->m_drawTarget->GetBackPair()->GetSurface()->Fill(0);
         }
     }
 
@@ -5962,7 +5962,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
 
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(b32 final) {
-    CDDrawSurfacePair* view = m_world->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* view = m_world->m_drawTarget->GetBackPair();
     if (view == NULL) {
         return 0;
     }
@@ -6513,7 +6513,7 @@ i32 CPlay::ShrinkViewport(i32 step) {
     }
 
     m_world->m_level->UpdatePlaneViewports((&resized));
-    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
+    m_world->m_drawTarget->GetBackPair()->GetSurface()->Fill(0);
     m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
     return 1;
@@ -6565,7 +6565,7 @@ i32 CPlay::ExpandViewport(i32 step) {
     }
 
     m_world->m_level->UpdatePlaneViewports((&resized));
-    m_world->m_drawTarget->m_backPair->GetSurface()->Fill(0);
+    m_world->m_drawTarget->GetBackPair()->GetSurface()->Fill(0);
     m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
     return 1;
@@ -6575,7 +6575,7 @@ RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
     const LevelCoordRect& vp = v->m_level->m_viewportRect;
-    CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* held = v->m_drawTarget->GetBackPair();
     CObList& chain = v->ChildGroup()->m_list;
 
     RECT r = vp;

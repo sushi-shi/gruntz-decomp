@@ -69,7 +69,7 @@ i32 DrawPageDebugText(
             return 0;
         }
     } else {
-        page = mgr->m_drawTarget->m_backPair;
+        page = mgr->m_drawTarget->GetBackPair();
         if (page == NULL) {
             return 0;
         }

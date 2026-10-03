@@ -1774,7 +1774,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
-        m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
+        m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->GetBackPair());
 
         CDDrawDeviceManager* deviceManager = m_world->GetDeviceManager();
         deviceManager->FlipToGDISurface();
@@ -1800,7 +1800,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         m_voiceManager->PauseAllVoices();
     }
     if (m_world) {
-        m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
+        m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->GetBackPair());
 
         CDDrawDeviceManager* deviceManager = m_world->GetDeviceManager();
         deviceManager->FlipToGDISurface();

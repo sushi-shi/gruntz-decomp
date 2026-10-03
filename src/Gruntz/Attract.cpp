@@ -194,7 +194,7 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     if (targetSurface == NULL) {
         return 0;
     }
-    CDDSurface* sourceSurface = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* sourceSurface = m_world->m_drawTarget->GetBackPair()->GetSurface();
     if (sourceSurface == NULL) {
         return 0;
     }
@@ -259,7 +259,7 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
     if (targetSurface == NULL) {
         return 0;
     }
-    CDDSurface* sourceSurface = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* sourceSurface = m_world->m_drawTarget->GetBackPair()->GetSurface();
     if (sourceSurface == NULL) {
         return 0;
     }
@@ -304,7 +304,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
     if (useOverlay != false && m_world->m_drawTarget->HasOverlay() != 0) {
         sourcePair = m_world->m_drawTarget->m_overlayPair;
     } else {
-        sourcePair = m_world->m_drawTarget->m_backPair;
+        sourcePair = m_world->m_drawTarget->GetBackPair();
     }
     CDDSurface* sourceSurface = sourcePair->GetSurface();
     if (sourceSurface == NULL) {
@@ -457,10 +457,10 @@ void CState::Present(i32 pct) {
         g_skipNextScreenEffect = false;
         return;
     }
-    m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
-    m_world->m_drawTarget->m_backPair->GetSurface()->ShadeRect(pct, static_cast<RECT*>(0));
+    m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->GetBackPair());
+    m_world->m_drawTarget->GetBackPair()->GetSurface()->ShadeRect(pct, static_cast<RECT*>(0));
     m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(static_cast<CDDSurface*>(0));
-    m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
+    m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->GetBackPair());
 }
 
 // @dead-code
@@ -472,7 +472,7 @@ i32 CState::ShadeScreen(i32 pct) {
         g_skipNextScreenEffect = false;
         return v;
     }
-    return m_world->m_drawTarget->m_backPair->GetSurface()->ShadeRect(pct, NULL);
+    return m_world->m_drawTarget->GetBackPair()->GetSurface()->ShadeRect(pct, NULL);
 }
 
 RVA(0x000fafa0, 0x3b)

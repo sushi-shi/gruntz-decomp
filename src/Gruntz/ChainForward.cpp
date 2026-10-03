@@ -25,7 +25,7 @@ i32 SaveBackBufferShot(
     char* name,
     i32 saveFlag
 ) {
-    CDDrawSurfacePair* pair = owner->m_world->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* pair = owner->m_world->m_drawTarget->GetBackPair();
     if (pair == NULL) {
         return 0;
     }

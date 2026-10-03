@@ -69,9 +69,9 @@ inline void CPlay::UpdateAmbientMusic() {
 }
 
 inline void CPlay::DrawVisibleWorld() {
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->ChildGroup());
+    m_world->m_level->VisitVisible(m_world->m_drawTarget->GetBackPair(), m_world->ChildGroup());
     m_world->m_workerList->RenderAndPruneWorkers(
-        m_world->m_drawTarget->m_backPair,
+        m_world->m_drawTarget->GetBackPair(),
         m_world->m_drawTarget->m_overlayPair
     );
 }

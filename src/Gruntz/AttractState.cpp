@@ -99,7 +99,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     s.Format("TITLE%d", idx);
     LoadAndPresentTitlePage(s, 0, 0, 1, 0);
     CDDrawSubMgrPages* page = menuRoot()->m_drawTarget;
-    page->BlitPage(page->m_backPair);
+    page->BlitPage(page->GetBackPair());
 
     i32 r = GetRandomNumber();
     const char* pick = (r % 2) ? DATA_COMPGEN(0x0020b5bc, "2") : "";
@@ -239,7 +239,7 @@ i32 CAttract::OnPaint() {
         } while (ShowCursor(false) >= 0);
     }
     menuRoot()->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
-    menuRoot()->m_drawTarget->BlitPage(menuRoot()->m_drawTarget->m_backPair);
+    menuRoot()->m_drawTarget->BlitPage(menuRoot()->m_drawTarget->GetBackPair());
     return 1;
 }
 

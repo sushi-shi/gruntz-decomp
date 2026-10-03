@@ -76,7 +76,7 @@ i32 LayerBlitFrame(
             return 0;
         }
     } else {
-        node = surfaceMgr->m_drawTarget->m_backPair;
+        node = surfaceMgr->m_drawTarget->GetBackPair();
         if (!node) {
             return 0;
         }
@@ -175,7 +175,7 @@ i32 DrawTextToBackSurface(
     i32 b,
     i32 flag
 ) {
-    CDDrawSurfacePair* backSurface = surfaceMgr->m_drawTarget->m_backPair;
+    CDDrawSurfacePair* backSurface = surfaceMgr->m_drawTarget->GetBackPair();
     if (backSurface == NULL) {
         return 0;
     }

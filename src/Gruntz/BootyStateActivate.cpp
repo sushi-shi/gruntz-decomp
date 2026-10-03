@@ -1461,7 +1461,7 @@ i32 CBootyState::Render() {
     }
 
     m_world->ChildGroup()->TickKillCues(1);
-    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
+    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->GetBackPair());
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);
     m_world->SoundRegistry()->TickVolumeRamps();
@@ -1633,7 +1633,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 }
                 ShowLevelCompleteMessage();
                 m_world->m_drawTarget->TransExit();
-                m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
+                m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->GetBackPair());
                 m_world->m_drawTarget->TransTitle();
                 RetireScene(0x50, 0x3e8, 0, true);
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
@@ -2462,7 +2462,7 @@ i32 CMultiBootyState::Render() {
         m_sequenceState = BOOTYSEQ_PERFECT_BONUS;
     }
     m_world->ChildGroup()->TickKillCues(1);
-    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->m_backPair);
+    m_world->ChildGroup()->RenderChildren(m_world->m_drawTarget->GetBackPair());
 
     u32 secs = g_gameReg->m_gameStats->m_elapsedTimeMs / MILLIS_PER_SECOND;
     CString s;

@@ -204,7 +204,7 @@ i32 CCreditsState::Render() {
 
     CDDrawSubMgrPages* drawPages = m_world->m_drawTarget;
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
-    drawPages->m_backPair->BltSelf(drawPages->m_overlayPair);
+    drawPages->GetBackPair()->BltSelf(drawPages->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
         owner()->m_midi->PlaySequence("CREDITZ", true);
@@ -300,21 +300,20 @@ i32 CCreditsState::InitAttractTitle() {
         return 0;
     }
     m_stateResources = saved;
-    CDDSurface* tgt = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* tgt = m_world->m_drawTarget->GetBackPair()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
     (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
 
-// @early-stop
 RVA(0x000396f0, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
     if (m_world == NULL) {
         return 0;
     }
 
-    CDDSurface* prov = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* prov = m_world->m_drawTarget->GetBackPair()->GetSurface();
 
     CountDown(m_scrollReseedTimer, g_frameDelta);
     if (m_fxEnabled != false) {
@@ -388,7 +387,7 @@ i32 CCreditsState::SetupTitle() {
         delete[] buf;
     }
     m_clipRegion.CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX);
-    CDDSurface* prov = m_world->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* prov = m_world->m_drawTarget->GetBackPair()->GetSurface();
     HDC hdc = NULL;
     prov->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc) {
@@ -419,7 +418,7 @@ i32 CCreditsState::StepVideo() {
     if (m_videoHandle) {
         CDDrawSubMgrPages* v = m_world->m_drawTarget;
         CDDrawSurfacePair* dst = v->m_overlayPair;
-        CDDrawSurfacePair* src = v->m_backPair;
+        CDDrawSurfacePair* src = v->GetBackPair();
         if (!m_videoHandle->Advance(dst->GetSurface()->GetDirectDrawSurface(), -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();

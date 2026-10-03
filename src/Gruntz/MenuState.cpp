@@ -202,7 +202,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         }
         m_stateResources = (saved);
 
-        CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->GetSurface();
+        CDDSurface* tgt = menuRoot()->m_drawTarget->GetBackPair()->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
@@ -328,7 +328,7 @@ i32 CMenuState::RestoreDisplay() {
         return gate;
     }
 
-    menuRoot()->m_drawTarget->m_backPair->GetSurface()->Fill(0);
+    menuRoot()->m_drawTarget->GetBackPair()->GetSurface()->Fill(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
@@ -348,7 +348,7 @@ i32 CMenuState::RestoreDisplay() {
     }
     m_stateResources = (saved);
 
-    CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->GetSurface();
+    CDDSurface* tgt = menuRoot()->m_drawTarget->GetBackPair()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
     menuRoot()->m_drawTarget->TransTitle();
 
