@@ -1360,7 +1360,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
     switch (m_itemKind) {
         case GAME_TAB_MISSION_STATUS: {
             CSBI_ImageSet* status;
-            if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+            if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
                 NEW_STATUS_BAR_ITEM(
                     status,
                     CSBI_ImageSet,
@@ -4084,7 +4084,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     );
     AddTabItem(6, dialog);
 
-    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
 
         CSBI_ImageSet* status;
         NEW_STATUS_BAR_ITEM(

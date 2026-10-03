@@ -35,6 +35,10 @@ class CGruntPuddle;
 
 class CTriggerMgr {
 public:
+    FinishLevelState GetFinishState() const {
+        return m_phase;
+    }
+
     i32 Load(CFileMemBase* ar);
 
     i32 SetLevel(CDDrawSurfaceMgr* lvl);

@@ -1720,7 +1720,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -1741,7 +1741,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'Q') {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -1755,7 +1755,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'R') {
                 if (mgr->GetGameMode() == GAMEMODE_QUESTZ
-                    && g_gameReg->m_triggerMgr->m_phase != FINISH_STATE_VICTORY) {
+                    && g_gameReg->m_triggerMgr->GetFinishState() != FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->GetHwnd(), WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
@@ -1764,7 +1764,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'N') {
                 if (mgr->GetGameMode() == GAMEMODE_QUESTZ
-                    && g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                    && g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
                 }
