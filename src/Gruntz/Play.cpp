@@ -1723,10 +1723,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
-                    return 1;
+                } else {
+                    mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                    mgr->FinalizeLevelAndShowResults();
                 }
-                mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                mgr->FinalizeLevelAndShowResults();
                 return 1;
             }
             if (vk == 'N' || vk == VK_ESCAPE) {
