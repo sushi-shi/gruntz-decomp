@@ -42,11 +42,6 @@
 
 #include <math.h>
 
-DATA(0x001ea3f0)
-const double s_spotRateNum = 3.1415927;
-DATA(0x001ea3f8)
-const double s_spotRateMul = -1.0;
-
 RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
@@ -75,15 +70,15 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_offset.m_x = m_center.m_x - px;
     m_offset.m_y = m_center.m_y - cy;
 
-    double period;
     if (m_object->m_damage == 0) {
-        period = static_cast<double>(g_buteMgr.GetDword("Hazardz", "SpotLightTime", 0xbb8));
+        m_angularVelocity =
+            DATA_COMPGEN(0x001ea3f0, 3.1415927) / static_cast<double>(g_buteMgr.GetDword("Hazardz", "SpotLightTime", 0xbb8));
     } else {
-        period = static_cast<double>(static_cast<u32>(m_object->m_damage));
+        m_angularVelocity =
+            DATA_COMPGEN(0x001ea3f0, 3.1415927) / static_cast<double>(static_cast<u32>(m_object->m_damage));
     }
-    m_angularVelocity = s_spotRateNum / period;
     if (m_object->m_direction == 1) {
-        m_angularVelocity = m_angularVelocity * s_spotRateMul;
+        m_angularVelocity = m_angularVelocity * DATA_COMPGEN(0x001ea3f8, -1.0);
     }
     if (m_object->m_points == 1) {
         m_angle = 3.1415927;

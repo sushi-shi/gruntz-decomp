@@ -37,38 +37,31 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             }
         }
         if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordCount() == 0) {
-            CMapMgr* grid = m_board;
-            RECT box;
-            SET_RECT_COMPONENTS(
-                box,
-                g->ScanCell().m_x - 5,
-                g->ScanCell().m_y - 5,
-                g->ScanCell().m_x + 5,
-                (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5
-            );
-            RECT gb;
-            SET_RECT_COMPONENTS(gb, 0, 0, m_board->m_width, m_board->m_height);
+            i32 tileY = g->GetScreenTileY();
+            CRect
+                box(g->ScanCell().m_x - 5, g->ScanCell().m_y - 5, g->ScanCell().m_x + 5, tileY + 5);
+            CRect gb(0, 0, m_board->m_width, m_board->m_height);
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
                 u32 hits = 0;
                 for (i32 row = isect.top; row < isect.bottom; row++) {
+                    BrickzCell* cell = &m_board->m_rows[row][isect.left];
                     if (hits > 4) {
                         break;
                     }
-                    BrickzCell* cell = &grid->m_rows[row][isect.left];
                     for (i32 col = isect.left; col < isect.right; col++) {
                         if (hits < 5) {
                             i32 flags = cell->m_flags;
                             if (flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    grid->Clip(NULL);
+                                    m_board->Clip(NULL);
                                     return 1;
                                 }
                                 hits++;
                             } else if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                                        && cell->m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    grid->Clip(NULL);
+                                    m_board->Clip(NULL);
                                     return 1;
                                 }
                                 hits++;
@@ -79,7 +72,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                 }
             }
             {
-                grid->Clip(NULL);
+                m_board->Clip(NULL);
             }
             if (m_attackWaypoints.GetSize() != 0) {
 
