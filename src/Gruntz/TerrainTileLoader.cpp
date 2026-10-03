@@ -242,8 +242,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
                         i32 objectId = g_gameReg->m_tileGrid->ObjectIdAt(scanX, topY);
                         if (objectId != 0) {
-                            CWwdGameObject* found = NULL;
-                            CWwdGameObject* mapped = NULL;
+                            CGameObject* found = NULL;
+                            CGameObject* mapped = NULL;
                             if (MapLookupById(
                                     g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                     objectId,
@@ -307,8 +307,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
                         objectId = g_gameReg->m_tileGrid->ObjectIdAt(scanX, bottomY);
                         if (objectId != 0) {
-                            CWwdGameObject* found = NULL;
-                            CWwdGameObject* mapped = NULL;
+                            CGameObject* found = NULL;
+                            CGameObject* mapped = NULL;
                             if (MapLookupById(
                                     g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                     objectId,
@@ -376,8 +376,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
                         i32 objectId = g_gameReg->m_tileGrid->ObjectIdAt(leftX, scanY);
                         if (objectId != 0) {
-                            CWwdGameObject* found = NULL;
-                            CWwdGameObject* mapped = NULL;
+                            CGameObject* found = NULL;
+                            CGameObject* mapped = NULL;
                             if (MapLookupById(
                                     g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                     objectId,
@@ -441,8 +441,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
                         objectId = g_gameReg->m_tileGrid->ObjectIdAt(rightX, scanY);
                         if (objectId != 0) {
-                            CWwdGameObject* found = NULL;
-                            CWwdGameObject* mapped = NULL;
+                            CGameObject* found = NULL;
+                            CGameObject* mapped = NULL;
                             if (MapLookupById(
                                     g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                                     objectId,
