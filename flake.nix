@@ -269,17 +269,7 @@
       # compiler; the .rc -> .res step drives the real tool, no python fallback).
       # All four are bundled by scripts/create-toolchain-release.py from the VS97
       # Disc 3 ISO's DEVSTUDIO/SHAREDIDE/BIN.
-      gruntz-toolchain = pkgs.runCommand "gruntz-toolchain-vc50" {
-        src = pkgs.fetchurl {
-          name = "gruntz-toolchain-vc50.tar.xz";
-          url = "https://github.com/sushi-shi/gruntz-decomp/releases/download/toolchain-vc50-sp3-r3/gruntz-toolchain-vc50.tar.xz";
-          sha256 = "sha256-sZgl957g2+6wlrAPxIa1OcaDqlcG8PXsXVOKWc5KeZ8=";
-        };
-        nativeBuildInputs = [ pkgs.gnutar pkgs.xz ];
-      } ''
-        mkdir -p "$out"
-        tar xf "$src" -C "$out" --strip-components=1
-      '';
+      gruntz-toolchain = import ./nix/toolchain.nix { inherit pkgs; };
 
       # `gruntz` as a real PATH executable so the CLI works in ANY shell (bash, fish,
       # zsh) - a shellHook function would not survive `nix develop --command fish`.

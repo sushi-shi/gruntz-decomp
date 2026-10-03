@@ -53,6 +53,9 @@ The report lands at `build/objdiff/compare-new/report.json`;
 [documentation index](docs/README.md), [build system](docs/build-system.md),
 [tooling map](docs/tooling-map.md), and [AGENTS.md](AGENTS.md) for the rules.
 
+`gruntz clean --verify` exports and builds a standalone C++ source project with
+the matching machinery removed. See [source export](docs/clean-source.md).
+
 ## The pipeline
 
 ```
