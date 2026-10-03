@@ -626,6 +626,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
     return RectSegProbe(&r, &b, &a) != 0;
 }
 
+// @early-stop
 RVA(0x0004ac10, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
@@ -650,9 +651,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
 
                     SwitchAnimation(m_poseAttackIdle);
                     {
-                        CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
-                        CAniRecordView* elem = desc->RecordAt(0);
-                        i32 frame = elem->m_param;
+                        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
                         const char* nm = EntranceCell()->AttackName().GetBuffer(0);
                         SetImageFrameByName(nm, frame);
                     }
@@ -675,9 +674,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
 
         SwitchAnimationAndMaybeAdvance(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
-            CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
-            CAniRecordView* elem = desc->RecordAt(0);
-            i32 frame = elem->m_param;
+            DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
             i32 row = facing.m_row;
             i32 column = facing.m_column;
             i32 index = 3 * row + column;
@@ -2456,10 +2453,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (fresh == 0) {
         eq = IsAnimationAct("H");
         if (eq) {
-            CAniElement* el = m_wwdObject->m_animationCursor.m_animation;
-            CAniRecordView* first;
-            first = el->RecordAt(0);
-            i32 handle = first->m_param;
+            DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
             SetImageFrameByName(EntranceCell()->StruckName().GetBuffer(0), handle);
         } else {
             if (m_poweredUp != false && m_neighborValid == false) {
