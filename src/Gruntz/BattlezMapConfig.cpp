@@ -3301,12 +3301,10 @@ i32 CBattlezMapConfig::RouteUnitTo(
                     Coord* tail = unit->GetTailCoord();
                     i32 tailX = tail->m_x;
                     i32 tailY = tail->m_y;
-                    SET_TILE_CENTER_PIXEL_PAIR(
-                        unit->m_entrancePx.m_x,
-                        unit->m_entrancePx.m_y,
-                        tailX,
-                        tailY
-                    )
+                    unit->m_entrancePx.Set(
+                        (tailX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (tailY << TILE_SHIFT_PX) + TILE_HALF_PX
+                    );
                     return 1;
                 }
             }
