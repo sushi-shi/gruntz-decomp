@@ -1147,10 +1147,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                    IDX(enemy->m_moveIcon)
                ) != 0) {
             i32 h = enemy->m_health + 0x19;
-            if (h >= HEALTH_FULL) {
-                h = HEALTH_FULL;
-            }
-            enemy->m_health = h;
+            enemy->m_health = min(h, HEALTH_FULL);
 
             SoundCueRegistry* registry =
                 (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->SoundRegistry();
