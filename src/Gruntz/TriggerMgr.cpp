@@ -1,7 +1,6 @@
 #include <StdAfx.h>
 
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/TriggerMgrCameraInline.h>
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -59,6 +58,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/TriggerMgrCameraInline.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/VoiceManager.h>
@@ -608,9 +608,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         } else if (dx >= w) {
                             dx = dx - w;
                         }
-                        if (plane->GetPlaneViewRect()->right >= w
-                            && dx < plane->GetPlaneViewRect()->left
-                            && dx <= plane->GetPlaneViewRect()->right - w) {
+                        if (plane->m_planeViewRect.right >= w && dx < plane->m_planeViewRect.left
+                            && dx <= plane->m_planeViewRect.right - w) {
                             dx = dx + w;
                         }
                     }
@@ -621,14 +620,13 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         } else if (dy >= h) {
                             dy = dy - h;
                         }
-                        if (plane->GetPlaneViewRect()->bottom >= h
-                            && dy < plane->GetPlaneViewRect()->top
-                            && dy <= plane->GetPlaneViewRect()->bottom - h) {
+                        if (plane->m_planeViewRect.bottom >= h && dy < plane->m_planeViewRect.top
+                            && dy <= plane->m_planeViewRect.bottom - h) {
                             dy = dy + h;
                         }
                     }
-                    dx += plane->m_viewportRect.left - plane->GetPlaneViewRect()->left;
-                    dy += plane->m_viewportRect.top - plane->GetPlaneViewRect()->top;
+                    dx += plane->m_viewportRect.left - plane->m_planeViewRect.left;
+                    dy += plane->m_viewportRect.top - plane->m_planeViewRect.top;
                     u16 color;
                     if (cell->RectContains(x, y)) {
                         color = PackRgb16(0xff, 0, 0);
