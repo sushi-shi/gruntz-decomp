@@ -61,8 +61,12 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             }
             if (dist <= 0xa) {
 
-                RECT box;
-                g->BuildUnitSearchBox(&box, 5);
+                CRect box(
+                    g->ScanCell().m_x - 5,
+                    g->ScanCell().m_y - 5,
+                    g->ScanCell().m_x + 5,
+                    g->ScanCell().m_y + 5
+                );
                 CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
                 grid->Clip(&box);
@@ -138,18 +142,22 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 dist2 = abs(targetPos1.m_x - gruntPos1.m_x) + abs(targetPos2.m_y - gruntPos2.m_y);
             }
             if (dist2 <= 0xa) {
-                RECT box;
-                g->BuildUnitSearchBox(&box, 5);
+                CRect box(
+                    g->ScanCell().m_x - 5,
+                    g->ScanCell().m_y - 5,
+                    g->ScanCell().m_x + 5,
+                    g->ScanCell().m_y + 5
+                );
                 CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
                 grid->Clip(&box);
             }
             {
                 Coord cp;
-                cur->GetScreenPos(&cp);
+                cur->GetScreenTile(&cp);
                 if (!g->TileSwitch(
-                        cp.m_x >> TILE_SHIFT_PX,
-                        cp.m_y >> TILE_SHIFT_PX,
+                        cp.m_x,
+                        cp.m_y,
                         0,
                         arrivalMask,
                         0,
