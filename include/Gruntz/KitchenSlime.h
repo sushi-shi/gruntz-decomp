@@ -40,5 +40,4 @@ public:
     double m_stepMag;
 };
 
-extern const double g_slimeSpeedNum;
 #endif // GRUNTZ_CKITCHENSLIME_H

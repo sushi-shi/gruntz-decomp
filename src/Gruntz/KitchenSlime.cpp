@@ -39,9 +39,6 @@
 #include <math.h>
 #include <string.h>
 
-DATA(0x001ea3e0)
-const double g_slimeSpeedNum = 32.0;
-
 RVA_DYNINIT(0x000b28a0, 0xa, CActRegPool<CKitchenSlime>::s_table)
 RVA_DYNINIT(0x000b28c0, 0x15, CActRegPool<CKitchenSlime>::s_table)
 RVA_DYNINIT(0x000b28f0, 0xe, CActRegPool<CKitchenSlime>::s_table)
@@ -349,7 +346,7 @@ i32 CKitchenSlime::LoadSprites() {
     }
 
     m_tilePosition = tile;
-    m_speed = g_slimeSpeedNum / static_cast<double>(time);
+    m_speed = 32.0 / static_cast<double>(time);
 
     if (changed != false) {
         CWwdSpriteObject* player = Anim();
