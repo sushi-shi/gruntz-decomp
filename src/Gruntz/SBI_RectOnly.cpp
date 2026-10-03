@@ -2540,9 +2540,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->m_triggerMgr;
                 if (obj->RecordListHas(playerIndex, unitIndex)) {
-                    obj->m_cameraTargetIdentity.Set(playerIndex, unitIndex);
-                    obj->m_armed = true;
-                    obj->LoadCameraSprite();
+                    obj->SetCameraTarget(playerIndex, unitIndex);
                 }
             }
             return 1;

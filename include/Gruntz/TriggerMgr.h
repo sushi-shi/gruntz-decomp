@@ -130,6 +130,11 @@ public:
     i32 ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep);
 
     i32 LoadCameraSprite();
+    void SetCameraTarget(i32 playerIndex, i32 unitIndex) {
+        m_cameraTargetIdentity.Set(playerIndex, unitIndex);
+        m_armed = true;
+        LoadCameraSprite();
+    }
 
     i32 ApplySwitch(CGrunt* g, i32 sx, i32 sy);
 
