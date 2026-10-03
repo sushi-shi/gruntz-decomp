@@ -210,6 +210,12 @@ public:
     i32 ActivateSlot(i32 idx);
     i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
 
+    StatusBarDock GetState() const {
+        return m_position;
+    }
+    StatusBarTab GetActiveTab() const {
+        return m_activeTab;
+    }
     i32 SetState(StatusBarDock state);
     i32 RestoreStatusBar();
     i32 SetSpritePos(i32 x, i32 y);

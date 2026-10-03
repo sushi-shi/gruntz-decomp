@@ -369,7 +369,7 @@ CGrunt* CTriggerMgr::ScreenToCell(
     i32 startPlayerIndex
 ) {
     CGameLevel* view = m_world->m_level;
-    RECT* r = &view->m_mainPlane->m_planeViewRect;
+    RECT* r = view->m_mainPlane->GetPlaneViewRect();
     i32 px = r->left - view->m_viewportRect.left + sx;
     i32 py = r->top - view->m_viewportRect.top + sy;
     return CellHitTest(px, py, outPlayerIndex, outUnitIndex, startPlayerIndex);
@@ -809,7 +809,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     || sw->m_checkpointType == IDX(g->m_vehiclePickupType)) {
                     sw->SwitchDown();
                 } else {
-                    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
+                    RECT* view = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
                     i32 gx = g->m_object->m_screenX;
                     i32 gy = g->m_object->m_screenY;
                     if (::PtInRect(view, gx, gy)) {
@@ -1315,7 +1315,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             CGameObject* obj = cell->m_object;
             i32 sy = obj->m_screenY;
             i32 sx = obj->m_screenX;
-            RECT* vr = &g_gameReg->World()->m_level->m_mainPlane->m_planeViewRect;
+            RECT* vr = g_gameReg->World()->m_level->m_mainPlane->GetPlaneViewRect();
             if (::PtInRect(vr, sx, sy)) {
                 g_gameReg->VoiceMgr()->PlayVoice(cell, 0x38e, -1, 0, -1, -1);
             }

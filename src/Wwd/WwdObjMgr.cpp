@@ -657,8 +657,9 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         } else if (x >= w) {
                             x = x - w;
                         }
-                        i32 farEdge = view->m_planeViewRect.right;
-                        if (farEdge >= w && x < view->m_planeViewRect.left && x <= farEdge - w) {
+                        i32 farEdge = view->GetPlaneViewRect()->right;
+                        if (farEdge >= w && x < view->GetPlaneViewRect()->left
+                            && x <= farEdge - w) {
                             x = x + w;
                         }
                     }
@@ -669,14 +670,14 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         } else if (y >= h) {
                             y = y - h;
                         }
-                        i32 farEdge = view->m_planeViewRect.bottom;
-                        if (farEdge >= h && y < view->m_planeViewRect.top && y <= farEdge - h) {
+                        i32 farEdge = view->GetPlaneViewRect()->bottom;
+                        if (farEdge >= h && y < view->GetPlaneViewRect()->top && y <= farEdge - h) {
                             y = y + h;
                         }
                     }
                     drawHost->DrawCross(
-                        view->m_viewportRect.left - view->m_planeViewRect.left + x,
-                        view->m_viewportRect.top - view->m_planeViewRect.top + y
+                        view->m_viewportRect.left - view->GetPlaneViewRect()->left + x,
+                        view->m_viewportRect.top - view->GetPlaneViewRect()->top + y
                     );
                 }
             } while (pos != NULL);
@@ -756,8 +757,8 @@ void CDDrawChildGroup::DrawObjectCounts() {
             } else if (box.left >= w) {
                 wl = box.left - w;
             }
-            i32 farEdge = view->m_planeViewRect.right;
-            if (farEdge >= w && wl < view->m_planeViewRect.left && wl <= farEdge - w) {
+            i32 farEdge = view->GetPlaneViewRect()->right;
+            if (farEdge >= w && wl < view->GetPlaneViewRect()->left && wl <= farEdge - w) {
                 wl += w;
             }
         }
@@ -768,13 +769,13 @@ void CDDrawChildGroup::DrawObjectCounts() {
             } else if (box.top >= h) {
                 wt = box.top - h;
             }
-            i32 farEdge = view->m_planeViewRect.bottom;
-            if (farEdge >= h && wt < view->m_planeViewRect.top && wt <= farEdge - h) {
+            i32 farEdge = view->GetPlaneViewRect()->bottom;
+            if (farEdge >= h && wt < view->GetPlaneViewRect()->top && wt <= farEdge - h) {
                 wt += h;
             }
         }
-        rc.left = wl - view->m_planeViewRect.left + view->m_viewportRect.left;
-        rc.top = wt - view->m_planeViewRect.top + view->m_viewportRect.top;
+        rc.left = wl - view->GetPlaneViewRect()->left + view->m_viewportRect.left;
+        rc.top = wt - view->GetPlaneViewRect()->top + view->m_viewportRect.top;
 
         view->WorldToViewport(&rc.right, &rc.bottom);
         drawHost->DrawCount(&rc, obj->m_sortKey);

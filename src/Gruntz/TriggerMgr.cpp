@@ -58,6 +58,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/TriggerMgrCameraInline.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/VoiceManager.h>
@@ -108,10 +109,10 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
     CGameLevel* view = m_world->m_level;
-    const RECT* vp = &view->m_mainPlane->m_planeViewRect;
+    const RECT* vp = view->m_mainPlane->GetPlaneViewRect();
     r.left += vp->left - view->m_viewportRect.left;
     r.top += vp->top - view->m_viewportRect.top;
-    vp = &view->m_mainPlane->m_planeViewRect;
+    vp = view->m_mainPlane->GetPlaneViewRect();
     r.right += vp->left - view->m_viewportRect.left;
     r.bottom += vp->top - view->m_viewportRect.top;
     for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
@@ -178,12 +179,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             i32 removedUnitIndex = p->m_y;
             if (removedPlayerIndex == m_cameraTargetIdentity.m_x
                 && removedUnitIndex == m_cameraTargetIdentity.m_y) {
-                CWwdSpriteObject* goal = m_goal;
-                if (goal != NULL) {
-                    goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-                    m_goal = NULL;
-                }
-                m_armed = false;
+                StopCameraTracking();
             }
             CActionOptionsMenuBar* ov = m_overlay;
             if (ov != NULL) {
@@ -217,11 +213,7 @@ void CTriggerMgr::ResetAll() {
     }
     m_recList.RemoveAll();
     StopPendingFx();
-    CWwdSpriteObject* goal = m_goal;
-    if (goal != NULL) {
-        goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-        m_goal = NULL;
-    }
+    ClearCameraSprite();
 }
 
 RVA(0x000784d0, 0x3a)
@@ -382,7 +374,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     i32 vx = g_gameReg->m_modeSize.cx;
     i32 vy = g_gameReg->m_modeSize.cy;
-    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_position;
+    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->GetState();
 
     i32 ax, cx;
     if (pos != STATUSBAR_DOCK_RIGHT) {
@@ -867,7 +859,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
         return 0;
     }
     CGameLevel* view = m_world->m_level;
-    RECT* vr = &view->m_mainPlane->m_planeViewRect;
+    RECT* vr = view->m_mainPlane->GetPlaneViewRect();
     i32 worldX = vr->left - view->m_viewportRect.left + pointerX;
     i32 worldY = vr->top - view->m_viewportRect.top + pointerY;
     this->PlaceObjectFull(worldX, worldY);
@@ -917,10 +909,10 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     plane->m_mainPlane->WorldToViewport(&outR, &outC);
     CStatusBarMgr* sbi = lvl->m_statusBar;
     if (sbi->m_hlBusy == false) {
-        if (sbi->m_position == STATUSBAR_HIDDEN) {
+        if (sbi->GetState() == STATUSBAR_HIDDEN) {
             sbi->RestoreStatusBar();
         }
-        if (sbi->m_activeTab != TAB_GAME) {
+        if (sbi->GetActiveTab() != TAB_GAME) {
             sbi->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         sbi->SetTab(GAME_TAB_MENU, true);
@@ -949,7 +941,7 @@ void CTriggerMgr::ResetSpawnState() {
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetUpperBound(), 1);
         CStatusBarMgr* ctx = world->m_statusBar;
-        if (ctx->m_position != STATUSBAR_HIDDEN && ctx->m_activeTab == TAB_GAME) {
+        if (ctx->GetState() != STATUSBAR_HIDDEN && ctx->GetActiveTab() == TAB_GAME) {
             ctx->ResetWidgets(false);
             world->m_statusBar->TryActivate();
         }

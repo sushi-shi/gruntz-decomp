@@ -1363,7 +1363,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
                     st->ResetViewport();
                     if (st->m_statusBar != NULL) {
                         st->m_statusBar->m_barFrameGate = m_modeSize.cy;
-                        if (st->m_statusBar->m_position == STATUSBAR_DOCK_RIGHT) {
+                        if (st->m_statusBar->GetState() == STATUSBAR_DOCK_RIGHT) {
                             st->m_statusBar->DockStatusBarLeft();
                             st->m_statusBar->DockStatusBarRight();
                             EnterModalUI(
@@ -1373,7 +1373,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
                             );
                             return 0;
                         }
-                        if (st->m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+                        if (st->m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
                             st->m_statusBar->DockStatusBarRight();
                             st->m_statusBar->DockStatusBarLeft();
                         }
@@ -1402,10 +1402,10 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
         st->ResetViewport();
         if (st->m_statusBar != NULL) {
             st->m_statusBar->m_barFrameGate = h;
-            if (st->m_statusBar->m_position == STATUSBAR_DOCK_RIGHT) {
+            if (st->m_statusBar->GetState() == STATUSBAR_DOCK_RIGHT) {
                 st->m_statusBar->DockStatusBarLeft();
                 st->m_statusBar->DockStatusBarRight();
-            } else if (st->m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+            } else if (st->m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
                 st->m_statusBar->DockStatusBarRight();
                 st->m_statusBar->DockStatusBarLeft();
             }
@@ -2111,10 +2111,10 @@ void CGruntzMgr::RecomputeViewScale() {
     }
     SET_RECT_COMPONENTS(
         m_viewBounds,
-        (LevelOf(World())->m_mainPlane)->m_planeViewRect.left - 0x60,
-        (LevelOf(World())->m_mainPlane)->m_planeViewRect.top - 0x60,
-        (LevelOf(World())->m_mainPlane)->m_planeViewRect.right + 0x60,
-        (LevelOf(World())->m_mainPlane)->m_planeViewRect.bottom + 0x60
+        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->left - 0x60,
+        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->top - 0x60,
+        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->right + 0x60,
+        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->bottom + 0x60
     );
 }
 

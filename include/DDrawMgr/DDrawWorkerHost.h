@@ -29,6 +29,10 @@ struct WwdPlaneHeader;
 
 class CDDrawWorkerHost : public CWapObj {
 public:
+    LevelCoordRect* GetPlaneViewRect() {
+        return &m_planeViewRect;
+    }
+
     CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
     virtual ~CDDrawWorkerHost() OVERRIDE;
 
