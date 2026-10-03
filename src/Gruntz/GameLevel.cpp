@@ -1592,7 +1592,7 @@ TileCollisionKind CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160a40, 0x201)
 i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
-    if (t->m_extent.left == COORD_UNSET) {
+    if (!t->HasMovementBounds()) {
         return 0;
     }
     if (m_mainPlane == NULL) {

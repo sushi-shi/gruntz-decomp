@@ -506,9 +506,9 @@ void CDDrawChildGroup::CollideBroadcast() {
                     mask2 = oj->AttackBits(oi);
                     if (mask1 || mask2) {
                         i32 overlap;
-                        if (oj->m_switchRect.left == COORD_UNSET) {
+                        if (!oj->HasAttackBounds()) {
                             overlap = 0;
-                        } else if (oi->m_area.left == COORD_UNSET) {
+                        } else if (!oi->HasHitBounds()) {
                             overlap = 0;
                         } else {
                             RECT ra, rb;
@@ -573,10 +573,10 @@ void CDDrawChildGroup::CollideBroadcast() {
 
 RVA(0x0015a130, 0xdc)
 i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
-    if (switchObj->m_switchRect.left == COORD_UNSET) {
+    if (!switchObj->HasAttackBounds()) {
         return 0;
     }
-    if (areaObj->m_area.left == COORD_UNSET) {
+    if (!areaObj->HasHitBounds()) {
         return 0;
     }
 
@@ -606,7 +606,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                if (obj->m_area.left != COORD_UNSET) {
+                if (obj->HasHitBounds()) {
                     DrawObjectDebugRect(obj, obj->m_area, view, drawHost);
                 }
             } while (pos != NULL);
@@ -619,7 +619,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                if (obj->m_switchRect.left != COORD_UNSET) {
+                if (obj->HasAttackBounds()) {
                     DrawObjectDebugRect(obj, obj->m_switchRect, view, drawHost);
                 }
             } while (pos != NULL);
@@ -632,7 +632,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                if (obj->m_extent.left != COORD_UNSET) {
+                if (obj->HasMovementBounds()) {
                     DrawObjectDebugRect(obj, obj->m_extent, view, drawHost);
                 }
             } while (pos != NULL);

@@ -300,13 +300,13 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     i32 zk = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(o, zk)
     memset(m_state, 0, sizeof(m_state));
-    if (m_object->m_extent.left == COORD_UNSET) {
+    if (!m_object->HasMovementBounds()) {
         m_object->m_extent.left = 0;
     }
-    if (m_object->m_area.left == COORD_UNSET) {
+    if (!m_object->HasHitBounds()) {
         m_object->m_area.left = 0;
     }
-    if (m_object->m_switchRect.left == COORD_UNSET) {
+    if (!m_object->HasAttackBounds()) {
         m_object->m_switchRect.left = 0;
     }
     if (m_object->m_clip.left == COORD_UNSET) {

@@ -5199,13 +5199,13 @@ i32 CPlay::ScanBuildTiles() {
         if (p == NULL) {
             continue;
         }
-        if (p->m_extent.left == COORD_UNSET) {
+        if (!p->HasMovementBounds()) {
             p->m_extent.left = 0;
         }
-        if (p->m_area.left == COORD_UNSET) {
+        if (!p->HasHitBounds()) {
             p->m_area.left = 0;
         }
-        if (p->m_switchRect.left == COORD_UNSET) {
+        if (!p->HasAttackBounds()) {
             p->m_switchRect.left = 0;
         }
         if (p->m_clip.left == COORD_UNSET) {
@@ -6670,13 +6670,13 @@ i32 CPlay::ScanShuffleQuads() {
             || dispatch == DispatchGuardPointLogic) {
             p->m_smarts = perm[p->m_smarts];
         } else if (dispatch == DispatchBrickzLogic) {
-            if (p->m_extent.left == COORD_UNSET) {
+            if (!p->HasMovementBounds()) {
                 p->m_extent.left = 0;
             }
-            if (p->m_area.left == COORD_UNSET) {
+            if (!p->HasHitBounds()) {
                 p->m_area.left = 0;
             }
-            if (p->m_switchRect.left == COORD_UNSET) {
+            if (!p->HasAttackBounds()) {
                 p->m_switchRect.left = 0;
             }
             if (p->m_clip.left == COORD_UNSET) {
