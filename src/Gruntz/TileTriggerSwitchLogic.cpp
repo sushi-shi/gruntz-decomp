@@ -1307,7 +1307,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
                 default:
                     spr->SetImageSetByName("GAME_BRICKBREAK");
                     if (spr->m_frameImage == NULL) {
-                        spr->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                        spr->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     }
                     break;
             }

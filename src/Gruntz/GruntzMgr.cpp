@@ -2640,7 +2640,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             return 0;
         }
         spr->m_imageSets.SetAtGrow(0, static_cast<CObject*>(rec));
-        spr->m_flags |= IDX(WWD_PLANE_FLAG_WRAP_X | WWD_PLANE_FLAG_WRAP_Y);
+        spr->AddFlags(IDX(WWD_PLANE_FLAG_WRAP_X | WWD_PLANE_FLAG_WRAP_Y));
         spr->m_zCoord = 0xf4241;
         i32 parity = 1;
         for (i32 i = 0; i < spr->m_tileRows; i++) {
@@ -2658,7 +2658,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         found->m_flags &= ~2;
         g_monologoShown = true;
     } else {
-        found->m_flags |= 2;
+        found->AddFlags(2);
         g_monologoShown = false;
     }
     return 1;

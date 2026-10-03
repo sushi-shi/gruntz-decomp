@@ -1023,7 +1023,7 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
         if (m_barSprite) {
 
             m_barSprite->Hide();
-            m_barSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            m_barSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
     m_statzTabButton = NULL;

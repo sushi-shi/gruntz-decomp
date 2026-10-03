@@ -6,7 +6,7 @@
 
 inline void CTriggerMgr::ClearCameraSprite() {
     if (m_goal != NULL) {
-        m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        m_goal->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         m_goal = NULL;
     }
 }

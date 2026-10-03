@@ -458,7 +458,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
             RESET_MAIN_PLANE_SELECTION(i)
             m_mainIndex = last;
             m_mainPlane = lp;
-            lp->m_flags |= IDX(WWD_PLANE_FLAG_MAIN);
+            lp->AddFlags(IDX(WWD_PLANE_FLAG_MAIN));
         }
     }
     return 1;
@@ -986,7 +986,7 @@ i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 
     TileCollisionKind first;
     PROBE_TILE(this, destX, hiY, first);
     if (first == TILEKIND_DEATH) {
-        t->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE);
+        t->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE));
     }
     i32 base = destY - t->m_screenY;
 
@@ -1274,7 +1274,7 @@ i32 CGameLevel::TryLandOnPlatform(
             if (CanLandOnPlatform(object, platform, destX, destY, outLandingY, moveFlags) != 0) {
                 object->m_moveMode = MOVE_GROUNDED;
                 object->m_carrier = platform;
-                object->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER);
+                object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER));
                 return 1;
             }
         }

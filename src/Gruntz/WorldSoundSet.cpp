@@ -601,10 +601,10 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
     CLogicRecord* record = obj->GetLogicRecord();
     CWwdSpriteObject* sprite = static_cast<CWwdSpriteObject*>(obj);
     if (record->m_eventCode == 0) {
-        obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION);
+        obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
         obj->Hide();
         if (record->GetDispatch() == DispatchGlobalAmbientSoundLogic) {
-            obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE);
+            obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         } else {
             obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE);
         }
@@ -639,7 +639,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
                 }
             }
         }
-        obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         record->SetEventCode(5);
     }
     return 1;
