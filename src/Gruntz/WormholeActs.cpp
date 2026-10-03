@@ -116,7 +116,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
             }
             CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
-            POSITION pos = grp->m_list.GetHeadPosition();
+            POSITION pos = grp->GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
                 if (cur->m_logicRecord->GetDispatch() == DispatchGruntCreationPointLogic
@@ -177,7 +177,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 m_warlordLogic = NULL;
             }
             CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
-            POSITION pos = grp->m_list.GetHeadPosition();
+            POSITION pos = grp->GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
                 LogicRecordDispatchFn dispatch = cur->m_logicRecord->GetDispatch();

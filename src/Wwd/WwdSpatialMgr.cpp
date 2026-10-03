@@ -110,7 +110,7 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
         centerY + m_smallRegionHalfHeight
     );
 
-    POSITION pos = m_activeGroup->m_list.GetHeadPosition();
+    POSITION pos = m_activeGroup->GetHeadPosition();
     while (pos != NULL) {
         POSITION cur = pos;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_activeGroup->NextChild(pos));

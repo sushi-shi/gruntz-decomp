@@ -3162,7 +3162,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     i32 r2 = SQR(radius);
     i32 count = 0;
     CDDrawChildGroup* children = World()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
+    POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {
@@ -3198,7 +3198,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     box.bottom = r->bottom + offY;
     i32 count = 0;
     CDDrawChildGroup* children = World()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
+    POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {

@@ -139,6 +139,10 @@ public:
 
     CObList m_list;
 
+    POSITION GetHeadPosition() const {
+        return m_list.GetHeadPosition();
+    }
+
     CGameObject* NextChild(POSITION& pos);
     CGameObject* HeadChild() const;
     CMapPtrToPtr m_activeGameObjectsById;

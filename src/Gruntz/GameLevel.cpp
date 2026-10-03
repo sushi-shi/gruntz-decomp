@@ -1267,7 +1267,7 @@ i32 CGameLevel::TryLandOnPlatform(
     }
 
     CDDrawChildGroup* children = OwnerMgr()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
+    POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* platform = children->NextChild(pos);
         if (platform->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {

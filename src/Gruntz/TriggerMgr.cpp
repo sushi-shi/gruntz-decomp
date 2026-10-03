@@ -1108,7 +1108,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
 
-    POSITION pos = fac->m_list.GetHeadPosition();
+    POSITION pos = fac->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = fac->NextChild(pos);
         LogicRecordDispatchFn dispatch = obj->m_logicRecord->GetDispatch();
@@ -2472,7 +2472,7 @@ void CTriggerMgr::DestroyAllAnims() {
     } while (r != 0);
 
     CDDrawChildGroup* children = m_world->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
+    POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj != NULL) {
