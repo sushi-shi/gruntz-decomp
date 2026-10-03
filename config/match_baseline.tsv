@@ -4249,7 +4249,7 @@ tiletriggercontainer	?AddLogicDefaults@CTileTriggerContainer@@QAEPAVCTileTrigger
 tiletriggercontainer	?AddLogicFromRecord@CTileTriggerContainer@@QAEXW4TileCollisionKind@@W4TrigLogicId@@PAUCGameObject@@@Z	100.0000	100.0000	2	492e4ad4f098	0x1164a0	100.0000	
 tiletriggercontainer	?AddSwitchActionEvent@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	99.4565	99.4565	9	5b2506d37951	0x116b80	99.4565	
 tiletriggercontainer	?AddSwitchLogic@CTileTriggerContainer@@QAEPAVCTileTriggerSwitchLogic@@W4TrigLogicId@@HHHUtagRECT@@11111HHH@Z	100.0000	100.0000	4	766e77b58327	0x115f60	100.0000	
-tiletriggercontainer	?DeserializeLogic@CTileTriggerContainer@@QAEPAXPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	95.4497	95.4497	16	2e941822b786	0x117800	95.4497	
+tiletriggercontainer	?DeserializeLogic@CTileTriggerContainer@@QAEPAXPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	16	28f4feffe400	0x117800	100.0000	
 tiletriggercontainer	?DrawPageDebugText@@YAHPAVCDDrawSurfaceMgr@@PBVCString@@PAUtagRECT@@HHHHH@Z	100.0000	100.0000	9	e6e925a08625	0x115b60	100.0000	
 tiletriggercontainer	?FindActionByCellKey@CTileTriggerContainer@@QAEPAVCTileActionEvent@@H@Z	100.0000	100.0000	3	a48848e9f561	0x1171d0	100.0000	
 tiletriggercontainer	?FindLogic@CTileTriggerContainer@@QAEPAVCTileTriggerLogic@@HW4TrigLogicId@@@Z	100.0000	100.0000	3	5aa9cb725780	0x116f20	100.0000	
