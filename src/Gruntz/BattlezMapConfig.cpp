@@ -2507,7 +2507,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     i32 nw;
 
     b = m_board;
-    if (static_cast<u32>(cm) < static_cast<u32>(b->GetWidth())) {
+    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
         nw = b->CellFlagsAtUnchecked(cm, row);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2516,7 +2516,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(cp) < static_cast<u32>(b->GetWidth())) {
+    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
         nw = b->CellFlagsAtUnchecked(cp, row);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2525,7 +2525,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(rm) < static_cast<u32>(b->GetWidth())) {
+    if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
         nw = b->CellFlagsAtUnchecked(col, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2534,7 +2534,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(rp) < static_cast<u32>(b->GetWidth())) {
+    if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
         nw = b->CellFlagsAtUnchecked(col, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2543,8 +2543,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(cp) < static_cast<u32>(b->GetWidth())
-        && static_cast<u32>(rm) < static_cast<u32>(b->GetHeight())) {
+    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
+        && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
         nw = b->CellFlagsAtUnchecked(cp, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2553,8 +2553,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(cp) < static_cast<u32>(b->GetWidth())
-        && static_cast<u32>(rp) < static_cast<u32>(b->GetHeight())) {
+    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
+        && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
         nw = b->CellFlagsAtUnchecked(cp, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2563,8 +2563,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(cm) < static_cast<u32>(b->GetWidth())
-        && static_cast<u32>(rp) < static_cast<u32>(b->GetHeight())) {
+    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
+        && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
         nw = b->CellFlagsAtUnchecked(cm, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2574,8 +2574,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     }
 
     b = m_board;
-    if (static_cast<u32>(cm) < static_cast<u32>(b->GetWidth())
-        && static_cast<u32>(rm) < static_cast<u32>(b->GetHeight())) {
+    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
+        && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
         nw = b->CellFlagsAtUnchecked(cm, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))

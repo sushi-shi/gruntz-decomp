@@ -135,7 +135,7 @@ i32 CRollingBall::Update() {
             CWwdSpriteObject* lg = m_object;
             i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
             i32 cy = lg->m_screenY >> TILE_SHIFT_PX;
-            if (static_cast<u32>(cx) < map->GetWidth() && static_cast<u32>(cy) < map->GetHeight()) {
+            if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
                 map->m_rowInts[cy][cx * 7] &= 0xefffffff;
             }
             m_explodeLatch = true;
@@ -173,7 +173,7 @@ i32 CRollingBall::Update() {
         i32 tx = m_target.m_x >> TILE_SHIFT_PX;
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;
         CMapMgr* map = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(tx) < map->GetWidth() && static_cast<u32>(ty) < map->GetHeight()) {
+        if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
             map->m_rowInts[ty][tx * 7] &= 0xefffffff;
         }
         CMapMgr* map2 = g_gameReg->m_tileGrid;
@@ -264,8 +264,8 @@ i32 CRollingBall::Update() {
                     i32 bx = o2->m_screenX >> TILE_SHIFT_PX;
                     i32 by = o2->m_screenY >> TILE_SHIFT_PX;
                     i32 sink;
-                    if (static_cast<u32>(bx) < board->GetWidth()
-                        && static_cast<u32>(by) < board->GetHeight()) {
+                    if (static_cast<u32>(bx) < board->m_width
+                        && static_cast<u32>(by) < board->m_height) {
                         sink = board->m_rowInts[by][bx * 7 + 3];
                     } else {
                         sink = 0;
@@ -481,8 +481,7 @@ i32 CRollingBall::Update() {
         CMapMgr* board2 = g_gameReg->m_tileGrid;
         i32 mtx = m_target.m_x >> TILE_SHIFT_PX;
         i32 mty = m_target.m_y >> TILE_SHIFT_PX;
-        if (static_cast<u32>(mtx) < board2->GetWidth()
-            && static_cast<u32>(mty) < board2->GetHeight()) {
+        if (static_cast<u32>(mtx) < board2->m_width && static_cast<u32>(mty) < board2->m_height) {
             board2->m_rowInts[mty][mtx * 7] |= 0x10000000;
         }
     }
