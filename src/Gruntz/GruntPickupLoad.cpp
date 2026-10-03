@@ -83,18 +83,18 @@ i32 CGrunt::LoadPickupSprites(
             && type != PICKUP_WARPSTONE) {
             g_gameReg->m_gameStats->m_toolzCollected++;
             g_gameReg->m_gameStats
-                ->m_weaponPickupsByPlayer[IDX(type) - IDX(PICKUP_BOMB) + 22 * m_playerIndex]++;
+                ->m_weaponPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_BOMB)]++;
         } else if (type >= PICKUP_TOYZ_FIRST && type <= PICKUP_TOYZ_LAST) {
             g_gameReg->m_gameStats->m_toyzCollected++;
             g_gameReg->m_gameStats
-                ->m_toyPickupsByPlayer[IDX(type) - IDX(PICKUP_BABYWALKER) + 10 * m_playerIndex]++;
+                ->m_toyPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_BABYWALKER)]++;
         } else if (type >= PICKUP_TIMEDPOWERUP_FIRST && type <= PICKUP_TIMEDPOWERUP_LAST) {
             g_gameReg->m_gameStats->m_powerupzCollected++;
             g_gameReg->m_gameStats
-                ->m_powerupPickupsByPlayer[IDX(type) - IDX(PICKUP_GHOST) + 7 * m_playerIndex]++;
+                ->m_powerupPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_GHOST)]++;
         } else if (type >= PICKUP_CURSEZ_FIRST && type <= PICKUP_CURSEZ_LAST) {
             g_gameReg->m_gameStats
-                ->m_miscPickupsByPlayer[IDX(type) - IDX(PICKUP_RANDOMCOLORZ) + 4 * m_playerIndex]++;
+                ->m_miscPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_RANDOMCOLORZ)]++;
         }
     }
 
@@ -253,11 +253,11 @@ i32 CGrunt::LoadPickupSprites(
                     && n != PICKUP_WARPSTONE) {
                     g_gameReg->m_gameStats->m_toolzCollected++;
                     g_gameReg->m_gameStats
-                        ->m_weaponPickupsByPlayer[IDX(n) - IDX(PICKUP_BOMB) + 22 * m_playerIndex]++;
+                        ->m_weaponPickupsByPlayer[m_playerIndex][IDX(n) - IDX(PICKUP_BOMB)]++;
                 } else if (n >= PICKUP_TOYZ_FIRST && n <= PICKUP_TOYZ_LAST) {
                     g_gameReg->m_gameStats->m_toyzCollected++;
-                    g_gameReg->m_gameStats->m_toyPickupsByPlayer
-                        [IDX(n) - IDX(PICKUP_BABYWALKER) + 10 * m_playerIndex]++;
+                    g_gameReg->m_gameStats
+                        ->m_toyPickupsByPlayer[m_playerIndex][IDX(n) - IDX(PICKUP_BABYWALKER)]++;
                 }
             }
             switch (n) {
