@@ -795,18 +795,17 @@ i32 CTileTriggerContainer::SerializeTriggerLogic(
     return 1;
 }
 
-#define DESERIALIZE_TRIGGER_LOGIC(base, derived, tagField)                                         \
+#define DESERIALIZE_TRIGGER_LOGIC(base, derived)                                                   \
     {                                                                                              \
         base* obj = new derived;                                                                   \
         if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {                   \
             return NULL;                                                                           \
         }                                                                                          \
-        obj->m_owner = this;                                                                       \
-        obj->tagField = id;                                                                        \
+        obj->SetOwner(this);                                                                       \
+        obj->SetType(id);                                                                          \
         return obj;                                                                                \
     }
 
-// @early-stop
 RVA(0x00117800, 0x4d6)
 void* CTileTriggerContainer::DeserializeLogic(
     CFileMemBase* reader,
@@ -824,48 +823,28 @@ void* CTileTriggerContainer::DeserializeLogic(
     reader->Read(&id, sizeof(id));
     switch (id) {
         case TRIGID_SWITCH_1:
-            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic);
         case TRIGID_SWITCH_2:
-            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic);
         case TRIGID_MULTI_SWITCH_3:
-            DESERIALIZE_TRIGGER_LOGIC(
-                CTileTriggerSwitchLogic,
-                CTileMultiTriggerSwitchLogic,
-                m_typeId
-            );
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileMultiTriggerSwitchLogic);
         case TRIGID_EXCLUSIVE_SWITCH_4:
-            DESERIALIZE_TRIGGER_LOGIC(
-                CTileTriggerSwitchLogic,
-                CTileExclusiveTriggerSwitchLogic,
-                m_typeId
-            );
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileExclusiveTriggerSwitchLogic);
         case TRIGID_SWITCH_5:
-            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic);
         case TRIGID_SECRET_SWITCH_6:
-            DESERIALIZE_TRIGGER_LOGIC(
-                CTileTriggerSwitchLogic,
-                CTileSecretTriggerSwitchLogic,
-                m_typeId
-            );
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileSecretTriggerSwitchLogic);
         case TRIGID_TIME_SWITCH_7:
-            DESERIALIZE_TRIGGER_LOGIC(
-                CTileTriggerSwitchLogic,
-                CTileTimeTriggerSwitchLogic,
-                m_typeId
-            );
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTimeTriggerSwitchLogic);
         case TRIGID_CHECKPOINT_SWITCH_8:
-            DESERIALIZE_TRIGGER_LOGIC(
-                CTileTriggerSwitchLogic,
-                CCheckpointTriggerSwitchLogic,
-                m_typeId
-            );
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CCheckpointTriggerSwitchLogic);
         case TRIGID_TILE_TRIGGER_21: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
             if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
-            obj->m_owner = this;
-            obj->m_typeTag = id;
+            obj->SetOwner(this);
+            obj->SetType(id);
 
             CGameLevel* level = g_gameReg->World()->m_level;
             TileCollisionKind tileKind = PbResolveCell(level, obj->m_tileX, obj->m_tileY);
@@ -875,15 +854,15 @@ void* CTileTriggerContainer::DeserializeLogic(
             return obj;
         }
         case TRIGID_GIANT_ROCK_22:
-            DESERIALIZE_TRIGGER_LOGIC(CGiantRockLogic, CGiantRockLogic, m_typeTag);
+            DESERIALIZE_TRIGGER_LOGIC(CGiantRockLogic, CGiantRockLogic);
         case TRIGID_TIME_TRIGGER_23:
-            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileTimeTriggerLogic, m_typeTag);
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileTimeTriggerLogic);
         case TRIGID_TILE_TRIGGER_24:
-            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileTriggerLogic, m_typeTag);
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileTriggerLogic);
         case TRIGID_SECRET_TRIGGER_25:
-            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileSecretTriggerLogic, m_typeTag);
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileSecretTriggerLogic);
         case TRIGID_COVERED_POWERUP_26:
-            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CCoveredPowerupLogic, m_typeTag);
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CCoveredPowerupLogic);
         default:
             return NULL;
     }

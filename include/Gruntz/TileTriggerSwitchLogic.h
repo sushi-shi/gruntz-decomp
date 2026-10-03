@@ -52,6 +52,14 @@ public:
 
     i32 LoadState(CFileMemBase* s);
 
+    void SetOwner(CTileTriggerContainer* owner) {
+        m_owner = owner;
+    }
+
+    void SetType(TrigLogicId type) {
+        m_typeId = type;
+    }
+
     TrigLogicId m_typeId;
 
     i32 m_tileX;

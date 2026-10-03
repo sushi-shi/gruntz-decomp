@@ -116,6 +116,14 @@ public:
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
+    void SetOwner(CTileTriggerContainer* owner) {
+        m_owner = owner;
+    }
+
+    void SetType(TrigLogicId type) {
+        m_typeTag = type;
+    }
+
     TrigLogicId m_typeTag;
     i32 m_tileX;
     i32 m_tileY;
