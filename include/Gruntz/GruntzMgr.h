@@ -295,6 +295,10 @@ public:
         return m_gameStats;
     }
 
+    CLightFxMgr* GetLightFxMgr() const {
+        return m_lightFxMgr;
+    }
+
     GameModeId GetGameMode() const {
         return m_gameMode;
     }

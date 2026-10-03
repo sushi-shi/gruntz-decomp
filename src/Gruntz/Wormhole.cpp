@@ -84,10 +84,10 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     i32 kind = m_object->m_smarts;
     CShadeTable* color;
     if (kind == -1) {
-        CLightFxMgr* lightFxMgr = g_gameReg->m_lightFxMgr;
+        CLightFxMgr* lightFxMgr = g_gameReg->GetLightFxMgr();
         color = lightFxMgr->m_tables[g_buteMgr.GetInt("Wormhole", "EntranceColor", 3)];
     } else {
-        color = g_gameReg->m_lightFxMgr->m_tables[kind];
+        color = g_gameReg->GetLightFxMgr()->m_tables[kind];
     }
     CWwdSpriteObject* s = m_object;
     s->SetDrawFill(SHADE_DST_BY_SRC_16, color);
@@ -107,10 +107,10 @@ i32 CWormhole::SerializeDispatch(
         CShadeTable* color;
         if (kind == -1) {
 
-            CLightFxMgr* lightFxMgr = g_gameReg->m_lightFxMgr;
+            CLightFxMgr* lightFxMgr = g_gameReg->GetLightFxMgr();
             color = lightFxMgr->m_tables[g_buteMgr.GetInt("Wormhole", "EntranceColor", 3)];
         } else {
-            color = g_gameReg->m_lightFxMgr->m_tables[kind];
+            color = g_gameReg->GetLightFxMgr()->m_tables[kind];
         }
 
         CWwdSpriteObject* s = m_object;
@@ -332,7 +332,7 @@ void CTeleporter::LoadColors() {
     }
 
     CWwdSpriteObject* s = m_object;
-    CShadeTable* colorEntry = g_gameReg->m_lightFxMgr->m_tables[s->m_health];
+    CShadeTable* colorEntry = g_gameReg->GetLightFxMgr()->m_tables[s->m_health];
     s->SetDrawFill(SHADE_DST_BY_SRC_16, colorEntry);
 }
 
