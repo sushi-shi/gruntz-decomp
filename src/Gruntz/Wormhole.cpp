@@ -403,10 +403,7 @@ void CTeleporter_RegisterActs() {
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, g_engineFrameDelta)
-    if (cur->m_finished == false) {
-        return 0;
-    }
-    if (cur->m_frameTicksLeft != 0) {
+    if (!cur->IsComplete()) {
         return 0;
     }
 

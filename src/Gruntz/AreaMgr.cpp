@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Enums.h>
 #include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SpawnList.h>
@@ -277,7 +278,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToOb* registryMap = &surfaceMgr->m_imageRegistry->m_workersByName;
+    CMapStringToOb* registryMap = &surfaceMgr->GetImageRegistry()->m_workersByName;
     if (registryMap == NULL) {
         return 0;
     }
@@ -301,7 +302,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
         CDDrawWorker* worker = static_cast<CDDrawWorker*>(toRemove.GetNext(pos));
-        surfaceMgr->m_imageRegistry->RemoveWorker(worker);
+        surfaceMgr->GetImageRegistry()->RemoveWorker(worker);
     }
     toRemove.RemoveAll();
 
@@ -316,7 +317,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
             if (resourceTree == NULL) {
                 return 0;
             }
-            surfaceMgr->m_imageRegistry->InstallTree(
+            surfaceMgr->GetImageRegistry()->InstallTree(
                 resourceTree,
                 const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
                 "_"
@@ -409,7 +410,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToPtr* registryMap = &surfaceMgr->m_animRegistry->m_animations;
+    CMapStringToPtr* registryMap = &surfaceMgr->GetAnimationRegistry()->m_animations;
     if (registryMap == NULL) {
         return 0;
     }
@@ -433,7 +434,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
     pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
         CAniElement* animation = static_cast<CAniElement*>(toRemove.GetNext(pos));
-        surfaceMgr->m_animRegistry->RemoveAnimation(animation);
+        surfaceMgr->GetAnimationRegistry()->RemoveAnimation(animation);
     }
     toRemove.RemoveAll();
 
@@ -447,7 +448,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
             if (resourceTree == NULL) {
                 return 0;
             }
-            surfaceMgr->m_animRegistry->LoadFromTree(
+            surfaceMgr->GetAnimationRegistry()->LoadFromTree(
                 resourceTree,
                 const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
                 "_"
@@ -665,7 +666,7 @@ b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     if (levelIndex <= 0) {
         return false;
     }
-    i32 requestedWorld = (levelIndex - 1) % 36 / 4 + 1;
-    i32 currentWorld = (m_currentLevelIndex - 1) % 36 / 4 + 1;
+    LevelArea requestedWorld = LevelAreaForLevel(levelIndex);
+    LevelArea currentWorld = LevelAreaForLevel(m_currentLevelIndex);
     return currentWorld == requestedWorld;
 }

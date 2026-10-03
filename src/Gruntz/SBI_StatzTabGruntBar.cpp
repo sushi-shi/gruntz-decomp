@@ -169,7 +169,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         }
 
         timerVal = m_timerValue;
-        if (unit->m_arrived != false) {
+        if (unit->HasArrived() != false) {
             if (m_timerTiming.Expired()) {
                 if (timerVal > 0) {
                     timerVal++;

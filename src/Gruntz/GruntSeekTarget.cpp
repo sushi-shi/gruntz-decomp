@@ -53,7 +53,7 @@ i32 CGrunt::StepToolThiefBehavior() {
     i32 reason = IDX(this->ArrivalPickup());
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->GetTriggerMgr()->UnitAt(0, reason);
-        if (slot == NULL || slot->m_entranceCommitted == false) {
+        if (slot == NULL || slot->IsEntranceCommitted() == false) {
             if (this->CoordCount() != 0) {
                 this->RecycleCoords();
             }
@@ -177,7 +177,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
-                if (sv != NULL && sv->m_entranceCommitted != false) {
+                if (sv != NULL && sv->IsEntranceCommitted() != false) {
                     PickupType k = sv->m_entranceReason;
                     if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_NONE
                         && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE

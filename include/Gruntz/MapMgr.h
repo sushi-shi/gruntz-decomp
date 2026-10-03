@@ -76,6 +76,10 @@ public:
         return m_height;
     }
 
+    const RECT& GetSearchBounds() const {
+        return m_bounds;
+    }
+
     void Clip(const tagRECT* src);
     inline i32 InSearchBounds(i32 x, i32 y) const;
     void ComputeCellFlags(i32 x, i32 y, i32 tileId);

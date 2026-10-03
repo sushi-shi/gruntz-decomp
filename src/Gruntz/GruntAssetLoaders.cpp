@@ -109,7 +109,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
                 goto pathA;
             }
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzSquash);
+            m_poseDeath =
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_deathzSquash);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzSquash, DEATH_FRAME());
             PLAY_VOICE_IF_VISIBLE(0x35b);
@@ -121,7 +122,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             goto tail;
 
         case DEATH_SINK:
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzSink);
+            m_poseDeath =
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_deathzSink);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzSink, DEATH_FRAME());
             PLAY_VOICE_IF_VISIBLE(0x35a);
@@ -130,21 +132,24 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             goto tail;
 
         case DEATH_HOLE:
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzHole);
+            m_poseDeath =
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_deathzHole);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzHole, DEATH_FRAME());
             PLAY_VOICE_IF_VISIBLE(0x357);
             goto finalize;
 
         case DEATH_SHATTER:
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzShatter);
+            m_poseDeath =
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_deathzShatter);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_FREEZE", DEATH_FRAME());
             PLAY_VOICE_IF_VISIBLE(0x354);
             goto finalize;
 
         case DEATH_BURN:
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzBurn);
+            m_poseDeath =
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_deathzBurn);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzBurn, DEATH_FRAME());
             PLAY_VOICE_IF_VISIBLE(0x352);
@@ -152,7 +157,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_QUICKFALL:
             SNAP_OBJECT_TO_TILE_CENTER(m_object)
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall);
+            m_poseDeath =
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_deathzQuickfall);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
             {
@@ -169,8 +175,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                                                      .m_typeCode;
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
-                m_poseDeath =
-                    m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall);
+                m_poseDeath = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(
+                    s_deathzQuickfall
+                );
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
@@ -178,7 +185,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
-                m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzFall);
+                m_poseDeath =
+                    m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_deathzFall);
             }
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
@@ -195,8 +203,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                                                      .m_typeCode;
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
-                m_poseDeath =
-                    m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall2);
+                m_poseDeath = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(
+                    s_deathzQuickfall2
+                );
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
@@ -205,7 +214,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
                 m_poseDeath = MapFind<CAniElement>(
-                    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                    m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                     s_deathzFall2
                 );
             }
@@ -219,7 +228,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_ELECTROCUTE: {
             m_poseDeath = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_deathzElectrocute
             );
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
@@ -231,7 +240,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         case DEATH_MELT: {
             SnapToLastTile(1);
             m_poseDeath = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 "GRUNTZ_DEATHZ_MELT"
             );
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
@@ -242,7 +251,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_KAROKE: {
             m_poseDeath = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_deathzKaroke
             );
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
@@ -257,7 +266,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 goto pathA;
             }
             m_poseDeath = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_deathzExplode
             );
             SwitchAnimation(m_poseDeath);
@@ -268,7 +277,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_DRAIN: {
             m_poseDeath = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_exitzDrain
             );
             SwitchAnimation(m_poseDeath);

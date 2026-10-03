@@ -139,8 +139,7 @@ static char s_movingDeathTime[] = "MovingDeathTime";
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
-    if (!((cur->m_finished != false && cur->m_frameTicksLeft == 0)
-          || m_entrancePickup == PICKUP_NONE)) {
+    if (!(cur->IsComplete() || m_entrancePickup == PICKUP_NONE)) {
         return 0;
     }
 
@@ -176,7 +175,8 @@ i32 CGrunt::RunEntranceMove() {
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     CGrunt* other = m_triggerMgr->UnitAt(playerIndex, unitIndex);
-    if (other != NULL && other->m_entranceCommitted != false && other->m_gruntKind != GRUNT_GHOST) {
+    if (other != NULL && other->IsEntranceCommitted() != false
+        && other->m_gruntKind != GRUNT_GHOST) {
         Coord otherTile = other->m_lastTilePx;
         ScreenTile(&otherTile);
         Coord targetTile = m_defenderPx;
@@ -208,19 +208,14 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     if (mode == GRUNT_ENTRANCE_WORMHOLE) {
         i32 onScreen = 0;
         {
-            Coord position = m_object->ScreenPos();
-            if (::PtInRect(&g_gameReg->m_viewBounds, position.m_x, position.m_y)) {
+            i32 y = m_object->m_screenPosition.m_y;
+            i32 x = m_object->m_screenPosition.m_x;
+            if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
                 onScreen = 1;
             } else {
 
                 CTriggerMgr* tm = g_gameReg->GetTriggerMgr();
-                CGrunt* focus;
-                if (tm->m_recList.GetCount() != 1) {
-                    focus = NULL;
-                } else {
-                    Coord* rec = tm->HeadRec();
-                    focus = tm->UnitAt(rec->m_x, rec->m_y);
-                }
+                CGrunt* focus = tm->SoleSelectedGrunt();
                 if (this == focus && m_playerIndex == g_curPlayer) {
                     onScreen = 1;
                 }
@@ -230,7 +225,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         i32 r = GetRandom(0, 0x1e0);
         if (r > 0x140) {
             found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezOne
             );
             if (onScreen) {
@@ -239,7 +234,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
             found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezTwo
             );
             if (onScreen) {
@@ -248,7 +243,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         } else {
             found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezThree
             );
             if (onScreen) {
@@ -258,13 +253,13 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
         found = MapFind<CAniElement>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
             s_gruntzEntrancezDrop
         );
         key = s_gruntzEntrancezDrop;
     } else {
         found = MapFind<CAniElement>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
             s_gruntzEntrancezRessurect
         );
         key = "GRUNTZ_DEATHZ_MELT";
@@ -300,9 +295,9 @@ inline void CGrunt::ResolveEntranceOccupant() {
         i32 sortKey = m_object->m_screenPosition.m_y + 0x186a0;                                    \
         m_object->SetSortKey(sortKey);                                                             \
         CAniElement* found = NULL;                                                                 \
-        CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;                          \
+        CAniElement* cached = m_wwdObject->m_animationCursor.GetAnimation();                       \
         MapLookup(                                                                                 \
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                 \
+            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
             s_gruntzEntrancezDrop,                                                                 \
             found                                                                                  \
         );                                                                                         \
@@ -354,7 +349,7 @@ i32 CGrunt::LoadEntranceConfig() {
     }
 
     CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
-    if (cur->m_finished == false || cur->m_frameTicksLeft != 0) {
+    if (!cur->IsComplete()) {
         return 0;
     }
     ResetEntranceAnimation(1, 0, 0);
@@ -923,7 +918,7 @@ CAniElement* AnimationRegistry::FindAnimation(const char* key) {
 
 RVA(0x0006b2e0, 0x39)
 void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceImmediately) {
-    m_value = m_wwdObject->m_animationCursor.m_animation;
+    m_value = m_wwdObject->m_animationCursor.GetAnimation();
     CAniAdvanceCursor* anim = &m_wwdObject->m_animationCursor;
     anim->SetAnimation(animation);
     if (advanceImmediately != 0) {

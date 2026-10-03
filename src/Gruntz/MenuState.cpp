@@ -85,13 +85,13 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    if (!m_world->m_imageRegistry->HasWithPrefix("MENU")) {
+    if (!m_world->GetImageRegistry()->HasWithPrefix("MENU")) {
         CRezDir* imageSymbols = StateResources()->GetDirFromPath("IMAGEZ");
         if (imageSymbols == NULL) {
             return 0;
         }
         g_resourceInstallActive = true;
-        m_world->m_imageRegistry->InstallTree(imageSymbols, "MENU", "_");
+        m_world->GetImageRegistry()->InstallTree(imageSymbols, "MENU", "_");
         g_resourceInstallActive = false;
     }
 
@@ -128,7 +128,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         SoundCue* activationCue = m_world->SoundRegistry()->FindCue("MENU_ACTIVATE");
         if (activationCue != NULL) {
             activationCue = m_world->SoundRegistry()->FindCue("MENU_ACTIVATE");
-            m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
+            m_activateCueDurationMs = activationCue->GetSound()->GetDurationMs();
         } else {
             m_activateCueDurationMs = 0;
         }
@@ -154,7 +154,7 @@ void CMenuTree::InitializeMembers() {
 RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
 
-    m_world->m_imageRegistry->RemoveWithPrefix("MENU", "_");
+    m_world->GetImageRegistry()->RemoveWithPrefix("MENU", "_");
     m_world->SoundRegistry()->RemoveWithPrefix("MENU", "_");
     if (m_world) {
 
@@ -255,16 +255,16 @@ void CMenuState::StopMusicChain() {
         return;
     }
     SoundCue* mus = m_menuMusicCue;
-    if (!mus->m_sound->IsPlaying()) {
+    if (!mus->GetSound()->IsPlaying()) {
         return;
     }
-    m_menuMusicCue->m_sound->RampVolumeTo(0, 0x1f4, true);
-    if (!m_menuMusicCue->m_sound->IsPlaying()) {
+    m_menuMusicCue->GetSound()->RampVolumeTo(0, 0x1f4, true);
+    if (!m_menuMusicCue->GetSound()->IsPlaying()) {
         return;
     }
     do {
         m_world->SoundRegistry()->TickVolumeRamps();
-    } while (m_menuMusicCue->m_sound->IsPlaying());
+    } while (m_menuMusicCue->GetSound()->IsPlaying());
 }
 
 RVA(0x000a06d0, 0x5f)
@@ -304,7 +304,7 @@ i32 CMenuState::InputVirtual() {
     if (tree == NULL) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(tree, "MENU", "_") == -1) {
         return 0;
     }
     if (RestoreDisplay() == 0) {

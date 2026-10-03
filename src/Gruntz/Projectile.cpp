@@ -189,24 +189,36 @@ i32 CProjectile::LoadProjectileSprites(
     }
 
     m_frames[0] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + DATA_COMPGEN(0x00213658, "1")
         );
     if (m_frames[0] == NULL) {
         return 0;
     }
-    m_frames[1] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2");
-    m_frames[2] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3");
-    m_frames[3] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4");
-    m_frames[4] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5");
-    m_frames[PF_IMPACT] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT");
-    m_frames[PF_FALL] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
+    m_frames[1] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "2"
+    );
+    m_frames[2] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "3"
+    );
+    m_frames[3] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "4"
+    );
+    m_frames[4] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "5"
+    );
+    m_frames[PF_IMPACT] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "IMPACT"
+    );
+    m_frames[PF_FALL] = MapFind<CAniElement>(
+        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        key + "FALL"
+    );
 
     SwitchAnimation(m_frames[0]);
     SetImageSetByName(key + "_OBJECT");
@@ -322,7 +334,7 @@ void CProjectile::AdvanceMotion() {
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[0]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[0]) {
                     SwitchAnimation(m_frames[0]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[0]);
@@ -331,7 +343,7 @@ void CProjectile::AdvanceMotion() {
             } else if (dist >= m_flightDist * 0.8 || dist < m_flightDist * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[1]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[1]) {
                     SwitchAnimation(m_frames[1]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[1]);
@@ -340,7 +352,7 @@ void CProjectile::AdvanceMotion() {
             } else if (dist >= m_flightDist * 0.7 || dist < m_flightDist * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[2]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[2]) {
                     SwitchAnimation(m_frames[2]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[2]);
@@ -349,7 +361,7 @@ void CProjectile::AdvanceMotion() {
             } else if (dist >= m_flightDist * 0.6 || dist < m_flightDist * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[3]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[3]) {
                     SwitchAnimation(m_frames[3]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[3]);
@@ -358,7 +370,7 @@ void CProjectile::AdvanceMotion() {
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[4]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[4]) {
                     SwitchAnimation(m_frames[4]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[4]);
@@ -584,7 +596,7 @@ void CProjectile::ScanTargets(i32 impact) {
             if (g == NULL) {
                 continue;
             }
-            if (g->m_entranceCommitted == false) {
+            if (g->IsEntranceCommitted() == false) {
                 continue;
             }
             i32 gx = g->m_object->m_screenPosition.m_x - 7;
@@ -605,7 +617,7 @@ void CProjectile::ScanTargets(i32 impact) {
             }
             if (m_sourcePlayerIndex == playerIndex && m_sourceUnitIndex == unitIndex) {
 
-                if (impact != 0 && g->m_entranceCommitted != false
+                if (impact != 0 && g->IsEntranceCommitted() != false
                     && g->m_entranceReason == PICKUP_NONE) {
                     g->LoadGruntTypeTable(PICKUP_BOOMERANG, 1, 0, 0);
                 }
@@ -845,7 +857,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     o->SetSortKey(SORTKEY_PROJECTILE);
     SetImageSetByName("GAME_TIMEBOMB");
     SET_ANIMATION_ACT("A");
-    m_value = m_wwdObject->m_animationCursor.m_animation;
+    m_value = m_wwdObject->m_animationCursor.GetAnimation();
     if (m_object->m_damage > 0) {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
         m_timing.Start(m_object->m_damage);
@@ -938,11 +950,11 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (cue == NULL) {
         goto fail;
     }
-    if (cue->m_sound == NULL) {
+    if (cue->GetSound() == NULL) {
         goto fail;
     }
 
-    m_sound = static_cast<SoundBuffer*>(cue->m_sound->AcquireInstance());
+    m_sound = static_cast<SoundBuffer*>(cue->GetSound()->AcquireInstance());
     if (m_sound != NULL) {
         m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
         return 1;

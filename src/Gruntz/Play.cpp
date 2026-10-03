@@ -312,7 +312,7 @@ void CPlay::ReleaseResources() {
     }
     OnExit();
     if (m_mgr) {
-        m_mgr->m_isBuiltInBattlezLevel = false;
+        m_mgr->SetBuiltInBattlezLevel(false);
         m_mgr->m_strWorldFile.Empty();
     }
     m_saveSlot.m_type = 0;
@@ -961,8 +961,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_initialFramePending = true;
     self->m_levelIndex = level;
     {
-        i32 r = (level - 1) % 0x24;
-        self->m_levelType = static_cast<LevelArea>(r / 4 + 1);
+        self->m_levelType = LevelAreaForLevel(level);
     }
 
     g_frameTime = 0;
@@ -1049,9 +1048,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             self->m_mgr->m_isCustomLevel = true;
         }
 
-        i32 r = (level - 1) % 0x24;
         self->m_levelIndex = level;
-        self->m_levelType = static_cast<LevelArea>(r / 4 + 1);
+        self->m_levelType = LevelAreaForLevel(level);
     }
 
     sprintf(nameBuf, "AREA%i", IDX(self->m_levelType));
@@ -1106,7 +1104,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         mgr = self->m_mgr;
         if (!mgr->m_strWorldFile.IsEmpty()) {
-            if (mgr->m_isBuiltInBattlezLevel == false
+            if (mgr->IsBuiltInBattlezLevel() == false
                 && mgr->m_isBuiltInMultiplayerLevel == false) {
                 sprintf(nameBuf, "CUSTOMLEVEL");
             }
@@ -1453,7 +1451,6 @@ fail0:
 
 #undef PTR
 
-// @early-stop
 RVA(0x000cb400, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
@@ -1461,9 +1458,9 @@ void CPlay::OnExit() {
     if (m_world) {
         m_world->ChildGroup()->ClearChildren();
     }
-    g_gameReg->m_isBuiltInBattlezLevel = false;
+    g_gameReg->SetBuiltInBattlezLevel(false);
     if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
-        g_gameReg->m_gameMode = GAMEMODE_NONE;
+        g_gameReg->SetGameMode(GAMEMODE_NONE);
     }
     g_gameReg->GetTileGrid()->Reset();
 }
@@ -1549,10 +1546,10 @@ void CPlay::ModeCleanup() {
         m_mgr->m_worldSounds->Teardown();
     }
     if (m_world) {
-        m_world->m_imageRegistry->MapTeardown();
+        m_world->GetImageRegistry()->MapTeardown();
     }
     if (m_world) {
-        m_world->m_animRegistry->ClearAnimations();
+        m_world->GetAnimationRegistry()->ClearAnimations();
     }
     if (m_world) {
         m_world->m_level->ReleaseChildren();
@@ -1577,7 +1574,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(h, "", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(h, "", "_") == -1) {
         return 0;
     }
 
@@ -1585,7 +1582,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(h, "LEVEL", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(h, "LEVEL", "_") == -1) {
         return 0;
     }
 
@@ -1593,7 +1590,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(h, "GRUNTZ", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -2493,7 +2490,6 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     i32 xr;
@@ -2548,7 +2544,8 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (::PtInRect(gr, xr, y)) {
 
             } else {
-                if (::PtInRect(&geom->m_viewportRect, xr, y)) {
+                LevelCoordRect viewport = geom->GetViewportRect();
+                if (::PtInRect(&viewport, xr, y)) {
                     if (FindStartPointAt(worldPosition.m_x, worldPosition.m_y, &x, &y)) {
                         m_mgr->GetCommandMgr()->EnqueueSingle(
                             true,
@@ -2584,9 +2581,8 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                     }
                     goto waypoint_cancel;
                 }
-                CGameLevel* geom2 = m_mgr->m_world->m_level;
-                RECT* wr = (&geom2->m_viewportRect);
-                if (!::PtInRect(wr, xr, y)) {
+                LevelCoordRect viewport = geom->GetViewportRect();
+                if (!::PtInRect(&viewport, xr, y)) {
                     goto waypoint_cancel;
                 }
 
@@ -2735,14 +2731,8 @@ drag_box: {
 
     if (m_cursorId >= IDX(CURSOR_TOOL_HANDZ)) {
         CTriggerMgr* cg = g_gameReg->GetTriggerMgr();
-        CGrunt* slot;
-        if (1 != cg->m_recList.GetCount()) {
-            slot = NULL;
-        } else {
-            i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
-            slot = cg->UnitAt(sel[0], sel[1]);
-        }
-        if (slot != NULL && slot->m_entranceCommitted != false) {
+        CGrunt* slot = cg->SoleSelectedGrunt();
+        if (slot != NULL && slot->IsEntranceCommitted() != false) {
             g_gameReg->VoiceMgr()->PlayVoice(slot, 0x324, -1, 0, -1, -1);
         }
     }
@@ -3314,7 +3304,7 @@ void CPlay::DrawCustomLevelBanner() {
             return;
         }
         CString base;
-        if (m_mgr->m_isBuiltInBattlezLevel == false
+        if (m_mgr->IsBuiltInBattlezLevel() == false
             && m_mgr->m_isBuiltInMultiplayerLevel == false) {
             base = WwdFile::GetMapBaseName(world);
         } else {
@@ -4180,7 +4170,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g != NULL && g->m_entranceCommitted != false) {
+            if (g != NULL && g->IsEntranceCommitted() != false) {
                 g->m_arrivalActive = false;
             }
             if (!m_mgr->GetTriggerMgr()->ClearCell(
@@ -4191,14 +4181,14 @@ i32 CPlay::ExecuteCommand(
                     0
                 )) {
                 if (player != static_cast<u32>(g_curPlayer) || g == NULL
-                    || g->m_entranceCommitted == false) {
+                    || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (player != static_cast<u32>(g_curPlayer) || g == NULL
-                || g->m_entranceCommitted == false) {
+                || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4263,7 +4253,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->m_entranceCommitted == false) {
+            if (g == NULL || g->IsEntranceCommitted() == false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
@@ -4287,7 +4277,7 @@ i32 CPlay::ExecuteCommand(
             }
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4296,19 +4286,19 @@ i32 CPlay::ExecuteCommand(
             if (res == -1) {
                 if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, px, py, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
-                        || g->m_entranceCommitted == false) {
+                        || g->IsEntranceCommitted() == false) {
                         return 0;
                     }
                     g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 1;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+            if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4319,7 +4309,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->m_entranceCommitted == false) {
+            if (g == NULL || g->IsEntranceCommitted() == false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
@@ -4337,7 +4327,7 @@ i32 CPlay::ExecuteCommand(
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4346,7 +4336,7 @@ i32 CPlay::ExecuteCommand(
             if (res == -1) {
                 if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, sx, sy, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
-                        || g->m_entranceCommitted == false) {
+                        || g->IsEntranceCommitted() == false) {
                         return 0;
                     }
                     g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4354,7 +4344,7 @@ i32 CPlay::ExecuteCommand(
                 }
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                    || g->m_entranceCommitted == false) {
+                    || g->IsEntranceCommitted() == false) {
                     return 1;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4362,7 +4352,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (player != static_cast<u32>(g_curPlayer)
                 || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                || g->m_entranceCommitted == false) {
+                || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4373,7 +4363,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
@@ -4396,7 +4386,7 @@ i32 CPlay::ExecuteCommand(
             }
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, px, py);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4405,19 +4395,19 @@ i32 CPlay::ExecuteCommand(
             if (res == -1) {
                 if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, px, py, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
-                        || g->m_entranceCommitted == false) {
+                        || g->IsEntranceCommitted() == false) {
                         return 0;
                     }
                     g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 1;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+            if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4428,7 +4418,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
@@ -4446,7 +4436,7 @@ i32 CPlay::ExecuteCommand(
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
+                if (player != static_cast<u32>(g_curPlayer) || g->IsEntranceCommitted() == false) {
                     return 0;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4455,7 +4445,7 @@ i32 CPlay::ExecuteCommand(
             if (res == -1) {
                 if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, sx, sy, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
-                        || g->m_entranceCommitted == false) {
+                        || g->IsEntranceCommitted() == false) {
                         return 0;
                     }
                     g_gameReg->VoiceMgr()->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4463,7 +4453,7 @@ i32 CPlay::ExecuteCommand(
                 }
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                    || g->m_entranceCommitted == false) {
+                    || g->IsEntranceCommitted() == false) {
                     return 1;
                 }
                 g_gameReg->VoiceMgr()->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4471,7 +4461,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (player != static_cast<u32>(g_curPlayer)
                 || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                || g->m_entranceCommitted == false) {
+                || g->IsEntranceCommitted() == false) {
                 return 1;
             }
             g_gameReg->VoiceMgr()->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4485,14 +4475,14 @@ i32 CPlay::ExecuteCommand(
             }
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g != NULL && g->m_entranceCommitted != false && g->m_tileClaimed != false) {
+            if (g != NULL && g->IsEntranceCommitted() != false && g->m_tileClaimed != false) {
                 END_GUARD(g);
             }
             i32 sel = 0;
             b32 live = (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(player, gi);
             i32 r;
-            if (g2 == NULL || g2->m_entranceCommitted == false) {
+            if (g2 == NULL || g2->IsEntranceCommitted() == false) {
                 r = 0;
             } else {
                 r = g2->LoadPickupSprites(
@@ -4522,7 +4512,7 @@ i32 CPlay::ExecuteCommand(
                 static_cast<u8>(playerIndex),
                 static_cast<u8>(unitIndex)
             );
-            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
                 return 0;
             }
             g->SetEntrancePos(1, 1);
@@ -6200,7 +6190,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         CImage* frame = m_cursorImage;
         i32 v = 0;
         if (frame != NULL) {
-            mc->m_imageRegistry->AnyValueMatches(frame, buf, &v);
+            mc->GetImageRegistry()->AnyValueMatches(frame, buf, &v);
         }
         s->Write(buf, SERIAL_NAME_LEN);
         s->Write(&v, sizeof(v));
@@ -6346,7 +6336,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     {
         CObject* found = NULL;
         if (strlen(nameBuf) != 0) {
-            res->m_imageRegistry->m_workersByName.Lookup(nameBuf, found);
+            res->GetImageRegistry()->m_workersByName.Lookup(nameBuf, found);
             m_cursorSprite = static_cast<CDDrawWorker*>(found);
         } else {
             m_cursorSprite = NULL;

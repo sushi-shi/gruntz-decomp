@@ -633,7 +633,7 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
         return 0;
     }
 
-    POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
+    POSITION pos = m_owner->GetIdleHeadPosition();
     b32 found = false;
 
     CTileTriggerLogic* child;
@@ -641,7 +641,7 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
         if (found != false) {
             break;
         }
-        child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+        child = m_owner->GetNextIdleLogic(pos);
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = true;
         }
@@ -692,10 +692,9 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
         if (node->m_cellKey != m_cellKey && node->m_linkGate != false) {
             node->SwitchUp();
             b32 any = false;
-            POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
+            POSITION pos = m_owner->GetIdleHeadPosition();
             while (pos != NULL) {
-                CTileTriggerLogic* o =
-                    static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+                CTileTriggerLogic* o = m_owner->GetNextIdleLogic(pos);
                 if (o != NULL && o->FindIndexByKey(node->m_cellKey)) {
                     o->Tick();
                     counter++;
@@ -1028,7 +1027,7 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
         return 0;
     }
 
-    POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
+    POSITION pos = m_owner->GetIdleHeadPosition();
     b32 found = false;
 
     CTileTriggerLogic* child;
@@ -1036,7 +1035,7 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
         if (found != false) {
             break;
         }
-        child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+        child = m_owner->GetNextIdleLogic(pos);
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = true;
         }
@@ -1776,7 +1775,7 @@ i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
     if (g_soundCueTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)
         >= static_cast<u32>(cue->m_replayDelayMs)) {
         cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-        return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
+        return cue->GetSound()->AcquireAndPlay(volumePercent, 0, 0, false);
     }
     return 0;
 }

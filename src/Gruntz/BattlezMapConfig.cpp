@@ -385,10 +385,10 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (!(GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, unit))) {
                     continue;
                 }
-                if (unit->m_entranceCommitted == false) {
+                if (unit->IsEntranceCommitted() == false) {
                     continue;
                 }
-                if (unit->m_deathAnimStarted != false) {
+                if (unit->IsDeathAnimationStarted() != false) {
                     continue;
                 }
                 if (unit->m_entranceActive != false) {
@@ -648,9 +648,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 }
                             }
                         }
-                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
-                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
-                            && unit->m_poweredUp == false) {
+                        if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
+                            && unit->IsDeathAnimationStarted() == false
+                            && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->ArrivalPickup();
                                 if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
@@ -734,8 +734,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (unit->m_object->m_screenPosition.m_x == unit->m_lastTilePx.m_x
                                     && unit->m_object->m_screenPosition.m_y
                                            == unit->m_lastTilePx.m_y
-                                    && unit->m_entranceCommitted != false
-                                    && unit->m_deathAnimStarted == false
+                                    && unit->IsEntranceCommitted() != false
+                                    && unit->IsDeathAnimationStarted() == false
                                     && unit->m_entranceActive == false) {
                                     RECT box;
                                     unit->BuildUnitSearchBox(&box, 4);
@@ -778,10 +778,10 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (GRUNT_NOT_AT_SAVED_SCREEN_POS(unit)) {
                                 special = 0;
                             }
-                            if (unit->m_entranceCommitted == false) {
+                            if (unit->IsEntranceCommitted() == false) {
                                 special = 0;
                             }
-                            if (unit->m_deathAnimStarted != false) {
+                            if (unit->IsDeathAnimationStarted() != false) {
                                 special = 0;
                             }
                             if (unit->m_entranceActive != false) {
@@ -803,9 +803,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 }
                             }
                         }
-                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
-                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
-                            && unit->m_poweredUp == false) {
+                        if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
+                            && unit->IsDeathAnimationStarted() == false
+                            && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 for (i32 j = 0; j < 4; j++) {
                                     if (j != m_playerIndex) {
@@ -842,7 +842,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (!unit->IsArrivalRerollPending()) {
                 BattlezTask battleTask = unit->m_battleState;
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
-                    if (unit->m_entranceCommitted != false && unit->m_deathAnimStarted == false
+                    if (unit->IsEntranceCommitted() != false
+                        && unit->IsDeathAnimationStarted() == false
                         && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                         if (BattlezActDiffersFromIGLPJCR(unit)) {
                             if (unit->m_battleState != BZTASK_UNASSIGNED) {
@@ -856,8 +857,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
         if (unit != NULL) {
-            if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != false
-                && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
+            if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->IsEntranceCommitted() != false
+                && unit->IsDeathAnimationStarted() == false && unit->m_entranceActive == false
                 && unit->m_poweredUp == false) {
                 if (BattlezActDiffersFromIGLPJCR(unit)) {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
@@ -916,9 +917,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         if (unit->m_object->m_screenPosition.m_x == unit->m_lastTilePx.m_x
                             && unit->m_object->m_screenPosition.m_y == unit->m_lastTilePx.m_y
-                            && unit->m_entranceCommitted != false
-                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
-                            && unit->m_poweredUp == false) {
+                            && unit->IsEntranceCommitted() != false
+                            && unit->IsDeathAnimationStarted() == false
+                            && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 goto dispatch;
                             }
@@ -1311,7 +1312,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 rx = pt.m_x;
             (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
             i32 ry = pt2.m_y;
-            CTileTriggerSwitchLogic* rec = m_cellQuery->FindSwitchLogic((rx << 8) + ry, TRIGID_ANY);
+            CTileTriggerSwitchLogic* rec =
+                m_cellQuery->FindSwitchLogic(CellKey(rx, ry), TRIGID_ANY);
             if (rec->m_typeId == TRIGID_SWITCH_2) {
                 unit->SetDefenderState(AISTATE_SEEK);
                 unit->RecycleCoords();
@@ -1659,7 +1661,7 @@ void CBattlezMapConfig::Clear() {
 
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
-    if (other->m_entranceCommitted == false) {
+    if (other->IsEntranceCommitted() == false) {
         return 0;
     }
     if (other->IsAnimationAct("J")) {
@@ -2161,7 +2163,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 }
             }
 
-            RECT scan = m_board->m_bounds;
+            RECT scan = m_board->GetSearchBounds();
 
             g->GetScreenTile(&a);
             i32 stepDy = a.m_y - first.m_y;
@@ -2224,7 +2226,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         Coord tp;
         i32 keyHi = g->GetScreenTileX();
         g->GetScreenTile(&tp);
-        i32 key = (keyHi << 8) + tp.m_y;
+        i32 key = CellKey(keyHi, tp.m_y);
         CTileTriggerSwitchLogic* r = m_cellQuery->FindSwitchLogic(key, TRIGID_ANY);
         if (r->m_typeId == TRIGID_SWITCH_2) {
             g->SetDefenderState(AISTATE_SEEK);
@@ -2315,7 +2317,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
         PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
-            CTileActionEvent* r = m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
+            CTileActionEvent* r = m_cellQuery->FindActionByCellKey(CellKey(first.m_x, first.m_y));
             if (r != NULL) {
                 if (r->GetPlayerFlags(m_playerIndex) != 0) {
                     g->RecycleCoords();
@@ -2347,7 +2349,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (t == PICKUP_GAUNTLETZ) {
             if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
                 CTileActionEvent* r =
-                    m_cellQuery->FindActionByCellKey((first.m_x << 8) + first.m_y);
+                    m_cellQuery->FindActionByCellKey(CellKey(first.m_x, first.m_y));
                 if (r != NULL) {
                     BrickTileId k = r->GetActionCode();
                     if (r->GetPlayerFlags(m_playerIndex) != 0) {
@@ -2460,7 +2462,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     if (word & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
-        CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
+        CTileActionEvent* cell = m_cellQuery->FindActionByCellKey(CellKey(col, row));
         if (requireUnoccupied != 0) {
             if (cell != NULL && cell->GetPlayerFlags(m_playerIndex) == 0) {
                 CPtrList list2(10);
@@ -2662,7 +2664,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         }
     }
 
-    RECT sweep = m_board->m_bounds;
+    RECT sweep = m_board->GetSearchBounds();
     for (i32 c = sweep.left; c < sweep.right; c++) {
         for (i32 r = sweep.top; r < sweep.bottom; r++) {
             m_board->CellFlagsAtUnchecked(c, r) &= ~IDX(CELL_FLAG_CLAIM_VISITED);
@@ -2877,8 +2879,8 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
     for (i32 scanned = 0; scanned < TM_UNITS_PER_PLAYER; scanned++) {
         CGrunt* cand = m_triggerMgr->UnitAt(m_playerIndex, r);
         if (cand != NULL) {
-            if (IsGruntAtSavedScreenPos(cand) && cand->m_entranceCommitted != false
-                && cand->m_deathAnimStarted == false && cand->m_entranceActive == false
+            if (IsGruntAtSavedScreenPos(cand) && cand->IsEntranceCommitted() != false
+                && cand->IsDeathAnimationStarted() == false && cand->m_entranceActive == false
                 && cand->m_poweredUp == false) {
                 if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
                     && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
@@ -2939,10 +2941,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
 
 RVA(0x0002f620, 0x871)
 i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
-    if (unit->m_entranceCommitted == false) {
+    if (unit->IsEntranceCommitted() == false) {
         return 0;
     }
-    if (unit->m_deathAnimStarted != false) {
+    if (unit->IsDeathAnimationStarted() != false) {
         return 0;
     }
     if (unit->m_entranceActive != false) {
@@ -3450,11 +3452,9 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     i32 bestY = row;
     Coord goal = ScreenTile(unit);
 
-    BrickzCell* tile = &m_board->m_rows[row][col];
-
     CTileTriggerLogic* cell;
 
-    if (tile->m_typeCode == TILEKIND_PYRAMID_LATCH_A) {
+    if (m_board->CellTypeAt(col, row) == TILEKIND_PYRAMID_LATCH_A) {
         cell = m_cellQuery->m_latchedLeaf;
     } else {
         cell = m_cellQuery->FindLogic(CellKey(col, row), TRIGID_ANY);

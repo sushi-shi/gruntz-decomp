@@ -136,7 +136,7 @@ i32 CGrunt::StepDefenderBehavior() {
 
             CPoint target(occTX, occTY);
             if (scanBounds.PtInRect(target) != false && m_defenderRadius > 1) {
-                RECT oldBounds = g_gameReg->GetTileGrid()->m_bounds;
+                RECT oldBounds = g_gameReg->GetTileGrid()->GetSearchBounds();
                 CDWordArray saved;
                 for (i32 y = oldBounds.top; y < oldBounds.bottom + 1; y++) {
                     for (i32 x = oldBounds.left; x < oldBounds.right + 1; x++) {

@@ -699,7 +699,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
                 CMapStringToPtr* map = &registry->m_cues;
                 SoundCue* found = MapFind<SoundCue>(*map, "GAME_DESTRUCT");
                 if (found) {
-                    SoundSample* sample = found->m_sound;
+                    SoundSample* sample = found->GetSound();
                     if (sample) {
                         SoundBuffer* voice = sample->AcquireInstance();
                         m_destructWarningSound = voice;
@@ -3921,7 +3921,7 @@ i32 CWarpStoneFly::SerializeDispatch(
             i32 index = 0;
             memset(name, 0, SERIAL_NAME_LEN);
             if (obj != NULL) {
-                lvl->m_imageRegistry->AnyValueMatches(obj, name, &index);
+                lvl->GetImageRegistry()->AnyValueMatches(obj, name, &index);
             }
             arc->Write(name, SERIAL_NAME_LEN);
             arc->Write(&index, sizeof(index));

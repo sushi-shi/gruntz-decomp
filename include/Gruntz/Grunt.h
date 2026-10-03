@@ -195,6 +195,12 @@ public:
     i32 GetUnitIndex() const {
         return m_unitIndex;
     }
+    b32 HasArrived() const {
+        return m_arrived;
+    }
+    b32 IsEntranceCommitted() const {
+        return m_entranceCommitted;
+    }
 
     inline i32 GetScreenTileY() const;
     inline i32 GetScreenTileX() const;
@@ -455,6 +461,10 @@ public:
     Coord* RemoveTailCoord() {
         return static_cast<Coord*>(m_coordList.RemoveTail());
     }
+    b32 IsDeathAnimationStarted() const {
+        return m_deathAnimStarted;
+    }
+
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
         return &m_cells[3 * c.m_row + c.m_column];

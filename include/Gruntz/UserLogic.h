@@ -170,7 +170,7 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 #define INITIALIZE_DEFAULT_CYCLE_ANIMATION                                                         \
     SET_ANIMATION_ACT("A");                                                                        \
-    if (m_wwdObject->m_animationCursor.m_animation == NULL) {                                      \
+    if (m_wwdObject->m_animationCursor.GetAnimation() == NULL) {                                   \
         SwitchAnimationByName("GAME_CYCLE100", 0);                                                 \
     }
 
@@ -180,7 +180,7 @@ typedef i32 (CUserLogic::*CActHandler)();
     }
 
 #define APPLY_CURRENT_ANIMATION_FRAME_SPRITE(name, animation, record)                              \
-    CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
+    CAniElement* animation = m_wwdObject->m_animationCursor.GetAnimation();                        \
     CAniRecordView* record = animation->RecordAt(0);                                               \
     APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
 
@@ -302,17 +302,17 @@ public:
     }
 
     void SwitchAnimation(CAniElement* anim) {
-        m_value = m_wwdObject->m_animationCursor.m_animation;
+        m_value = m_wwdObject->m_animationCursor.GetAnimation();
         m_wwdObject->m_animationCursor.SetAnimation(anim);
     }
 
     void SwitchAnimationAndMaybeAdvance(CAniElement* anim, i32 advanceImmediately) {
-        m_value = m_wwdObject->m_animationCursor.m_animation;
+        m_value = m_wwdObject->m_animationCursor.GetAnimation();
         m_wwdObject->SetAnimation(anim, advanceImmediately);
     }
 
     i32 SwitchAnimationByName(const char* key, i32 advanceImmediately) {
-        m_value = m_wwdObject->m_animationCursor.m_animation;
+        m_value = m_wwdObject->m_animationCursor.GetAnimation();
         return m_wwdObject->SetAnimationByName(key, advanceImmediately);
     }
 };

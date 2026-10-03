@@ -65,7 +65,7 @@ i32 CGruntSelectedSprite::Update() {
         m_gruntIdentity.m_playerIndex,
         m_gruntIdentity.m_unitIndex
     );
-    if (e != NULL && e->m_arrived != false) {
+    if (e != NULL && e->HasArrived() != false) {
         m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
         m_object->SetScreenPos(e->m_object->ScreenPos());
     }

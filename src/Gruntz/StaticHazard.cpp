@@ -60,7 +60,6 @@ i32 DispatchStaticHazardLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CStaticHazard)
 }
 
-// @early-stop
 RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -100,7 +99,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
         "LEVEL_STATICHAZARDGO"
     );
     if (entry != NULL) {
-        i32 durationMs = entry->m_durationMs;
+        i32 durationMs = entry->GetDurationMs();
         m_activeWindow = g_buteMgr.GetInt("Hazardz", "AniPad", 0x64) + durationMs;
     } else {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x461);

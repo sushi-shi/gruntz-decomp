@@ -2,6 +2,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActRegistry.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntMovementInline.h>
@@ -35,10 +36,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         }
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
-    if (sub->m_finished == false) {
-        return 0;
-    }
-    if (sub->m_frameTicksLeft != 0) {
+    if (!sub->IsComplete()) {
         return 0;
     }
     GruntDeathType mode = m_deathType;

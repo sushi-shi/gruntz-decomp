@@ -35,6 +35,7 @@
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayDefeatCountdown.h>
@@ -128,7 +129,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
                 if (r.left <= box.right && r.right >= box.left && r.top <= box.bottom
                     && r.bottom >= box.top) {
                     if (i == g_curPlayer) {
-                        if (selectionReset == false && g->m_entranceCommitted != false) {
+                        if (selectionReset == false && g->IsEntranceCommitted() != false) {
                             ResetAll();
                             selectionReset = true;
                         }
@@ -176,18 +177,17 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             if (cell != NULL) {
                 (static_cast<CGrunt*>(cell))->ClearAllSprites();
             }
-            i32 removedPlayerIndex = p->m_x;
-            i32 removedUnitIndex = p->m_y;
-            if (removedPlayerIndex == m_cameraTargetIdentity.m_x
-                && removedUnitIndex == m_cameraTargetIdentity.m_y) {
+            Coord removedIdentity = *p;
+            if (m_cameraTargetIdentity.m_x == removedIdentity.m_x
+                && m_cameraTargetIdentity.m_y == removedIdentity.m_y) {
                 StopCameraTracking();
             }
             CActionOptionsMenuBar* ov = m_overlay;
             if (ov != NULL) {
                 i32 selectedPlayerIndex = p->m_x;
-                i32 overlayPlayerIndex = ov->m_playerIndex;
+                i32 overlayPlayerIndex = ov->GetPlayerIndex();
                 i32 selectedUnitIndex = p->m_y;
-                i32 overlayUnitIndex = ov->m_unitIndex;
+                i32 overlayUnitIndex = ov->GetUnitIndex();
                 if (overlayPlayerIndex == selectedPlayerIndex
                     && overlayUnitIndex == selectedUnitIndex) {
                     CloseActionOptionsMenu();
@@ -1005,11 +1005,10 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     if (cell->m_arrivalPending == false) {
         this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
     }
-    CGruntzMapMgr* tg = g_gameReg->GetTileGrid();
-    Coord tile = cell->LastTilePx();
-    ScreenTile(&tile);
-    tg->CellFlagsAtUnchecked(tile.m_x, tile.m_y) &= BRICKZ_CELL_UNOCCUPIED_MASK;
-    tg->m_rows[tile.m_y][tile.m_x].m_occupantId = -1;
+    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(
+        cell->LastTilePx().m_x >> TILE_SHIFT_PX,
+        cell->LastTilePx().m_y >> TILE_SHIFT_PX
+    );
     m_units[idx] = NULL;
     m_unitCountByPlayer[playerIndex] -= 1;
 
@@ -1159,7 +1158,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
             i32 unitsRemaining = TM_UNITS_PER_PLAYER;
             do {
                 CGrunt* unit = *units;
-                if (unit != NULL && unit->m_deathAnimStarted == false) {
+                if (unit != NULL && unit->IsDeathAnimationStarted() == false) {
                     (static_cast<CGrunt*>(unit))->StartBombGruntRun();
                 }
                 units++;
@@ -1587,7 +1586,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                     && type != TILEKIND_GAUNTLET_BRICK_C) {
                     continue;
                 }
-                CTileActionEvent* o = root->m_tileTriggers->FindActionByCellKey(ty + (tx << 8));
+                CTileActionEvent* o = root->m_tileTriggers->FindActionByCellKey(CellKey(tx, ty));
                 if (o->BreakTopBrick(NULL)) {
                     root->m_tileTriggers->RemoveActionEvent(o);
                 }
@@ -1595,7 +1594,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             }
 
             CTileTriggerLogic* lo =
-                root->m_tileTriggers->FindLogic(ty + (tx << 8), TRIGID_COVERED_POWERUP_26);
+                root->m_tileTriggers->FindLogic(CellKey(tx, ty), TRIGID_COVERED_POWERUP_26);
             if (lo != NULL) {
                 lo->ApplyMove(type);
                 root->m_tileTriggers->RemoveIdleLogic(lo);
@@ -1665,7 +1664,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
             if (grunt == NULL) {
                 continue;
             }
-            if (grunt->m_entranceCommitted == false) {
+            if (grunt->IsEntranceCommitted() == false) {
                 continue;
             }
             if (grunt->m_entranceDropActive != false) {
@@ -1995,24 +1994,26 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
                 SoundCue* p = m_world->SoundRegistry()->FindCue("GAME_FINISHLEVEL");
-                m_cueTimer.Start(p->m_sound->m_durationMs + 500);
+                m_cueTimer.Start(p->GetSound()->GetDurationMs() + 500);
                 PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_FINISHLEVEL");
                 m_phase = FINISH_STATE_VICTORY;
                 m_groupFlag = false;
                 m_finishReasonFrame = state;
                 return;
             }
-            goto Lab_56b;
+            break;
         case FINISH_REASON_WARPSTONE_RESET:
             m_phase = FINISH_STATE_DEFEAT;
-            goto Lab_522;
+            m_cueTimer.Start(3000);
+            break;
         case FINISH_REASON_BATTLEZ_VICTORY:
             m_phase = FINISH_STATE_VICTORY;
+            m_cueTimer.Start(3000);
             break;
         case FINISH_REASON_TIME_EXPIRED:
             m_phase = FINISH_STATE_DEFEAT;
             m_cueTimer.Start(3000);
-            goto Lab_56b;
+            break;
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
             if (m_phase == FINISH_STATE_ACTIVE) {
                 m_phase = FINISH_STATE_DEFEAT;
@@ -2020,17 +2021,15 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                     m_pendingFx->ResolveDeathAnimation();
                 }
             }
-        Lab_522:
             m_cueTimer.Start(3000);
-            goto Lab_56b;
+            break;
         case FINISH_REASON_BATTLEZ_DEFEAT:
             m_phase = FINISH_STATE_DEFEAT;
+            m_cueTimer.Start(3000);
             break;
         default:
             return;
     }
-    m_cueTimer.Start(3000);
-Lab_56b:
     m_groupFlag = false;
     m_finishReasonFrame = state;
 }
@@ -2376,7 +2375,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     i32 unitsRemaining = TM_UNITS_PER_PLAYER;
     do {
         CGrunt* unit = *units;
-        if (unit != NULL && unit->m_deathAnimStarted == false) {
+        if (unit != NULL && unit->IsDeathAnimationStarted() == false) {
             (static_cast<CGrunt*>(unit))->BuildGruntExitAnimation();
         }
         units++;
@@ -2402,7 +2401,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
             CGrunt** units = playerUnits;
             do {
                 CGrunt* g = *units;
-                if (g != NULL && g->m_entranceCommitted != false) {
+                if (g != NULL && g->IsEntranceCommitted() != false) {
                     CGameObject* o = g->m_object;
                     i32 dx = (o->m_screenPosition.m_x >> TILE_SHIFT_PX) - tx;
                     i32 dy = (o->m_screenPosition.m_y >> TILE_SHIFT_PX) - ty;

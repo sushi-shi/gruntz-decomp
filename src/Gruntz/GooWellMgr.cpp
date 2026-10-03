@@ -33,8 +33,9 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
                 SoundCue* out = g_gameReg->World()->SoundRegistry()->FindCue("LEVEL_ROLLINGBALL");
-                if (out && out->m_sound) {
-                    m_rollingballLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
+                if (out && out->GetSound()) {
+                    m_rollingballLoop =
+                        static_cast<SoundBuffer*>(out->GetSound()->AcquireInstance());
                     if (m_rollingballLoop) {
                         m_rollingballLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
                     }
@@ -48,8 +49,8 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
                 SoundCue* out = g_gameReg->World()->SoundRegistry()->FindCue("GAME_TELEPORTLOOP");
-                if (out && out->m_sound) {
-                    m_teleportLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
+                if (out && out->GetSound()) {
+                    m_teleportLoop = static_cast<SoundBuffer*>(out->GetSound()->AcquireInstance());
                     if (m_teleportLoop) {
                         m_teleportLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
                     }

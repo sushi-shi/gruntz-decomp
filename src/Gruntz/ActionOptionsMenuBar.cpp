@@ -310,7 +310,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         CImage* frame = m_frame;
         i32 zero = 0;
         if (frame) {
-            mgr->m_imageRegistry->AnyValueMatches(frame, tmp, &zero);
+            mgr->GetImageRegistry()->AnyValueMatches(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
@@ -322,7 +322,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         CImage* frame = m_buttonFrame[0];
         i32 zero = 0;
         if (frame) {
-            mgr->m_imageRegistry->AnyValueMatches(frame, tmp, &zero);
+            mgr->GetImageRegistry()->AnyValueMatches(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
@@ -334,7 +334,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         CImage* frame = m_buttonFrame[1];
         i32 zero = 0;
         if (frame) {
-            mgr->m_imageRegistry->AnyValueMatches(frame, tmp, &zero);
+            mgr->GetImageRegistry()->AnyValueMatches(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));

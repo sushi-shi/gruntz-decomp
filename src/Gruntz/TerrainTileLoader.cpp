@@ -75,7 +75,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
             if (cellType == TILEKIND_COVERED_POWERUP) {
                 CTileTriggerLogic* found = state->m_tileTriggers->FindLogic(
-                    (tileX << 8) + tileY,
+                    CellKey(tileX, tileY),
                     TRIGID_COVERED_POWERUP_26
                 );
                 if (found != NULL) {
@@ -130,7 +130,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
             if (cellType == TILEKIND_GAUNTLET_ROCK_A || cellType == TILEKIND_GAUNTLET_ROCK_B) {
                 CTileTriggerLogic* found = state->m_tileTriggers->FindLogic(
-                    (tileX << 8) + tileY,
+                    CellKey(tileX, tileY),
                     TRIGID_COVERED_POWERUP_26
                 );
                 if (found != NULL) {
@@ -160,7 +160,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                        || cellType == TILEKIND_GAUNTLET_BRICK_B
                        || cellType == TILEKIND_GAUNTLET_BRICK_C) {
                 CTileActionEvent* event =
-                    state->m_tileTriggers->FindActionByCellKey((tileX << 8) + tileY);
+                    state->m_tileTriggers->FindActionByCellKey(CellKey(tileX, tileY));
                 if (event->BreakTopBrick(unit) != 0) {
                     state->m_tileTriggers->RemoveActionEvent(event);
                 }
@@ -525,7 +525,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         actionCode,
                         tileX,
                         tileY,
-                        (tileX << 8) + tileY,
+                        CellKey(tileX, tileY),
                         playerIndex
                     )
                     == NULL) {
@@ -540,7 +540,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             if (cellType == TILEKIND_GAUNTLET_BRICK_A || cellType == TILEKIND_GAUNTLET_BRICK_B) {
                 CTileActionEvent* event =
-                    state->m_tileTriggers->FindActionByCellKey((tileX << 8) + tileY);
+                    state->m_tileTriggers->FindActionByCellKey(CellKey(tileX, tileY));
                 if (event
                         ->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(playerIndex))
                     == 0) {

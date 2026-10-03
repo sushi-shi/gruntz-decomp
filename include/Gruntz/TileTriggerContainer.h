@@ -36,6 +36,22 @@ public:
         CTileTriggerLogic* logic
     );
 
+    POSITION GetIdleHeadPosition() const {
+        return m_idleLogics.GetHeadPosition();
+    }
+
+    CTileTriggerLogic* GetNextIdleLogic(POSITION& position) {
+        return static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(position));
+    }
+
+    POSITION GetTimedHeadPosition() const {
+        return m_timedLogics.GetHeadPosition();
+    }
+
+    CTileTriggerLogic* GetNextTimedLogic(POSITION& position) {
+        return static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(position));
+    }
+
     i32 RemoveIdleLogic(CTileTriggerLogic* logic);
 
     CTileTriggerLogic* FindLogic(i32 cellKey, TrigLogicId logicType);

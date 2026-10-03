@@ -82,7 +82,6 @@ typedef enum WarlordBattleTag {
     WARLORD_TAG_VIKING = 0x445,
 } WarlordBattleTag;
 
-// @early-stop
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     Coord position = m_object->ScreenPos();
@@ -612,6 +611,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     return 1;
 }
 
+// @early-stop
 RVA(0x00045b60, 0x161)
 i32 CWarlord::ResolveBattlecryAnimation() {
     if (m_deathStarted != false) {

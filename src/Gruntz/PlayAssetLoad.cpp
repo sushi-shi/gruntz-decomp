@@ -116,14 +116,14 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
         return 0;
     }
     if (!force
-        && (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+        && (static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
                ->HasWithPrefix("ACTION")) {
         return 1;
     }
 
-    (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    (static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
         ->RemoveWithPrefix("ACTION", "");
-    (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    (static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
         ->RemoveWithPrefix("BACK", "");
     g_resourceInstallActive = false;
 
@@ -131,7 +131,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     if (!tiles) {
         return 0;
     }
-    self->m_world->m_imageRegistry->InstallTree(tiles, "", "_");
+    self->m_world->GetImageRegistry()->InstallTree(tiles, "", "_");
     return 1;
 }
 
@@ -185,12 +185,12 @@ i32 CPlay::LoadLevelImages(i32 force) {
         return 0;
     }
     if (!force
-        && (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+        && (static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
                ->HasWithPrefix("LEVEL")) {
         return 1;
     }
 
-    (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    (static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
         ->RemoveWithPrefix("LEVEL", "_");
     g_resourceInstallActive = false;
 
@@ -198,7 +198,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
     if (!images) {
         return 0;
     }
-    self->m_world->m_imageRegistry->InstallTree(images, "LEVEL", "_");
+    self->m_world->GetImageRegistry()->InstallTree(images, "LEVEL", "_");
     g_resourceInstallActive = false;
     return 1;
 }
@@ -209,7 +209,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     if (!self->m_world) {
         return 0;
     }
-    if ((static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    if ((static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
             ->HasWithPrefix("GAME")) {
         return 1;
     }
@@ -219,7 +219,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     if (!images) {
         return 0;
     }
-    self->m_world->m_imageRegistry->InstallTree(images, "GAME", "_");
+    self->m_world->GetImageRegistry()->InstallTree(images, "GAME", "_");
     g_resourceInstallActive = false;
     return 1;
 }
@@ -249,7 +249,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!self->m_world) {
         return 0;
     }
-    if (self->m_world->m_animRegistry->HasWithPrefix("GAME")) {
+    if (self->m_world->GetAnimationRegistry()->HasWithPrefix("GAME")) {
         return 1;
     }
 
@@ -257,7 +257,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!anims) {
         return 0;
     }
-    self->m_world->m_animRegistry->LoadFromTree(static_cast<CRezDir*>(anims), "GAME", "_");
+    self->m_world->GetAnimationRegistry()->LoadFromTree(static_cast<CRezDir*>(anims), "GAME", "_");
     return 1;
 }
 
@@ -638,7 +638,7 @@ i32 CState::BuildAssetNamespacePrefixes(
 ) {
     i32 result;
     if (mode != 0) {
-        if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
+        if (m_world->GetImageRegistry()->HasWithPrefix("GRUNTZ_" + name) == 0) {
             g_gameReg->VoiceMgr()->PauseAllVoices();
             (static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))->DestroyAllAnims();
             if (lightGate != 0) {
@@ -655,7 +655,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                 result = 0;
                 goto done;
             }
-            m_world->m_imageRegistry->InstallTree(tree, "GRUNTZ_" + name, "_");
+            m_world->GetImageRegistry()->InstallTree(tree, "GRUNTZ_" + name, "_");
             g_resourceInstallActive = false;
             if (finishGate != NULL) {
                 finishGate->SendLobbyKeepAlive();
@@ -669,21 +669,21 @@ i32 CState::BuildAssetNamespacePrefixes(
                     ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + name, "_");
             }
         }
-        if (m_world->m_animRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
+        if (m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_" + name) == 0) {
             CRezDir* tree = m_gruntResources->GetDirFromPath("ANIZ_" + name);
             if (tree == NULL) {
                 result = 0;
                 goto done;
             }
-            m_world->m_animRegistry
+            m_world->GetAnimationRegistry()
                 ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + name, "_");
         }
         result = 1;
         goto done;
     }
 
-    if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->m_imageRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
+    if (m_world->GetImageRegistry()->HasWithPrefix("GRUNTZ_" + name)) {
+        m_world->GetImageRegistry()->RemoveWithPrefix("GRUNTZ_" + name, "_");
         if (finishGate != NULL) {
             finishGate->SendLobbyKeepAlive();
         }
@@ -691,8 +691,8 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + name)) {
         m_world->SoundRegistry()->RemoveWithPrefix("GRUNTZ_" + name, "_");
     }
-    if (m_world->m_animRegistry->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->m_animRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
+    if (m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_" + name)) {
+        m_world->GetAnimationRegistry()->RemoveWithPrefix("GRUNTZ_" + name, "_");
     }
     result = 1;
 done:
@@ -770,79 +770,79 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         return 0;
     }
     g_resourceInstallActive = true;
-    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
              ->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("IMAGEZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_NORMALGRUNT", "_");
+        self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
              ->HasWithPrefix("GRUNTZ_DEATHZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
         }
-        self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_DEATHZ", "_");
+        self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
              ->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("IMAGEZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
-        self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_ENTRANCEZ", "_");
+        self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
              ->HasWithPrefix("GRUNTZ_EXITZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
         }
-        self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_EXITZ", "_");
+        self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
              ->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
-        self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_GRUNTPUDDLE", "_");
+        self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
              ->HasWithPrefix("GRUNTZ_PICKUPS")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("IMAGEZ_PICKUPS");
         if (!s) {
             return 0;
         }
-        self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_PICKUPS", "_");
+        self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
+    if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
              ->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("IMAGEZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_BOMBGRUNT", "_");
+        self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
@@ -935,76 +935,78 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
     if (!self->m_world) {
         return 0;
     }
-    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
+    if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
+        self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_DEATHZ")) {
+    if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_DEATHZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_DEATHZ", "_");
+        self->m_world->GetAnimationRegistry()
+            ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
+    if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
+        self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_EXITZ")) {
+    if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_EXITZ")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_EXITZ", "_");
+        self->m_world->GetAnimationRegistry()
+            ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
+    if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
+        self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_PICKUPS")) {
+    if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_PICKUPS")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
+        self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
+    if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
         CRezDir* s = (self->m_gruntResources)->GetDirFromPath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
+        self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->SendLobbyKeepAlive();

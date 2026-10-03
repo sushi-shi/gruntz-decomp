@@ -176,7 +176,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 ResetToSeek(this);
                 return 1;
             }
-            if (o == NULL || o->m_entranceCommitted == false
+            if (o == NULL || o->IsEntranceCommitted() == false
                 || GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0
                 || GruntInRadius(m_arrivalCell.m_x, m_arrivalCell.m_y) == 0) {
                 goto resetState;

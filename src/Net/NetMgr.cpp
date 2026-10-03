@@ -594,7 +594,7 @@ CNetMgr::AddPlayer(DPID playerId, const char* shortName, const char* longName, D
         return NULL;
     }
 
-    i32 hr = m_directPlay->SetPlayerData(node->m_playerId, &node, 4, DPSET_LOCAL);
+    i32 hr = m_directPlay->SetPlayerData(node->GetPlayerId(), &node, 4, DPSET_LOCAL);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, NULL);
     } else {
@@ -727,7 +727,7 @@ CNetPlayerNode* CNetMgr::FindPlayerById(DPID playerId) {
     POSITION pos = m_players.GetHeadPosition();
     while (pos != NULL) {
         CNetPlayerNode* entry = static_cast<CNetPlayerNode*>(m_players.GetNext(pos));
-        if (entry->m_playerId == playerId) {
+        if (entry->GetPlayerId() == playerId) {
             return entry;
         }
     }
@@ -743,7 +743,7 @@ CNetPlayerNode* CNetMgr::GetPlayerNodeData(DPID playerId) {
 }
 
 static inline DPID PlayerIdOf(CNetPlayerNode* player) {
-    return player ? player->m_playerId : 0;
+    return player ? player->GetPlayerId() : 0;
 }
 
 RVA(0x00178ef0, 0x5c)
@@ -885,7 +885,7 @@ i32 CNetMgr::GetPlayerCaps(CNetPlayerNode* player, LPDPCAPS caps, DWORD flags) {
     if (!player) {
         return 0;
     }
-    if (!player->m_playerId) {
+    if (!player->GetPlayerId()) {
         return 0;
     }
     if (!caps) {
@@ -894,7 +894,7 @@ i32 CNetMgr::GetPlayerCaps(CNetPlayerNode* player, LPDPCAPS caps, DWORD flags) {
     memset(caps, 0, sizeof(*caps));
     caps->dwSize = sizeof(*caps);
     IDirectPlay4A* directPlay = m_directPlay;
-    DPID playerId = player->m_playerId;
+    DPID playerId = player->GetPlayerId();
     i32 hr = directPlay->GetPlayerCaps(playerId, caps, flags);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x553, hr, NULL);

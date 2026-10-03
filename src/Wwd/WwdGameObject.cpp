@@ -75,7 +75,8 @@ void CWwdSpriteObject::SetImageSetByName(const char* name) {
 
 RVA(0x001505b0, 0x5e)
 i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
-    CAniElement* animation = MapFind<CAniElement>(OwnerMgr()->m_animRegistry->m_animations, name);
+    CAniElement* animation =
+        MapFind<CAniElement>(OwnerMgr()->GetAnimationRegistry()->m_animations, name);
     if (!animation) {
         return 0;
     }

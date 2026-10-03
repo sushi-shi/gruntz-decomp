@@ -1026,20 +1026,15 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
     Coord position(x, y);
     Coord tile = position;
     ScreenTile(&tile);
-    CMapMgr* plane = g_gameReg->GetTileGrid();
-    i32 attr;
-    if (tile.m_x >= plane->GetWidth() || tile.m_y >= plane->GetHeight()) {
-        attr = -1;
-    } else {
-        attr = plane->m_rows[tile.m_y][tile.m_x].m_occupantId;
-    }
+    CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
+    i32 attr = plane->OccupantAt(tile.m_x, tile.m_y);
     if (attr == -1) {
         return NULL;
     }
     i32 playerIndex = (attr >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
     i32 unitIndex = attr & GRUNT_IDENTITY_COMPONENT_MASK;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->m_entranceCommitted == false) {
+    if (cell == NULL || cell->IsEntranceCommitted() == false) {
         return NULL;
     }
 
@@ -1065,7 +1060,6 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
     return cell;
 }
 
-// @early-stop
 RVA(0x00075c60, 0x1ba)
 CGrunt* CTriggerMgr::FindGruntAt(
     i32 px,
@@ -1101,8 +1095,9 @@ CGrunt* CTriggerMgr::FindGruntAt(
 
     if (static_cast<u32>(x) <= static_cast<u32>(tileBounds.right)) {
         do {
-            for (i32 y = tileBounds.top; static_cast<u32>(y) <= static_cast<u32>(tileBounds.bottom);
-                 y++) {
+            i32 y = tileBounds.top;
+            i32 yEnd = tileBounds.bottom;
+            for (; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
                 if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->GetTileGrid()->GetWidth())) {
                     continue;
                 }
@@ -1121,7 +1116,7 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 if (!g) {
                     continue;
                 }
-                if (!g->m_entranceCommitted) {
+                if (!g->IsEntranceCommitted()) {
                     continue;
                 }
                 Coord spriteLo = g->m_object->ScreenPos();

@@ -86,7 +86,6 @@ void CAttract::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-// @early-stop
 RVA(0x00014120, 0x1a9)
 i32 CAttract::EnterState(GameStateId previousState) {
 
@@ -111,9 +110,9 @@ i32 CAttract::EnterState(GameStateId previousState) {
     m_titleCue = found;
     if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {
-            m_titleCue->m_sound->ApplyAndPlay(0x64, 0, 0, false);
+            m_titleCue->GetSound()->ApplyAndPlay(0x64, 0, 0, false);
         }
-        m_titleCountdownMs = m_titleCue->m_sound->m_durationMs + 0x2710;
+        m_titleCountdownMs = m_titleCue->GetSound()->GetDurationMs() + 0x2710;
     } else {
         m_titleCountdownMs = 0x1f40;
     }
@@ -130,16 +129,16 @@ i32 CAttract::LeaveState(GameStateId nextState) {
     if (m_titleCue == NULL) {
         return 1;
     }
-    if (!m_titleCue->m_sound->IsPlaying()) {
+    if (!m_titleCue->GetSound()->IsPlaying()) {
         return 1;
     }
-    m_titleCue->m_sound->RampVolumeTo(0, 0x1f4, true);
-    if (!m_titleCue->m_sound->IsPlaying()) {
+    m_titleCue->GetSound()->RampVolumeTo(0, 0x1f4, true);
+    if (!m_titleCue->GetSound()->IsPlaying()) {
         return 1;
     }
     do {
         (menuRoot()->SoundRegistry())->TickVolumeRamps();
-    } while (m_titleCue->m_sound->IsPlaying());
+    } while (m_titleCue->GetSound()->IsPlaying());
     return 1;
 }
 

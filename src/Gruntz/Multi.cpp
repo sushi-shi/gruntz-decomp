@@ -166,7 +166,7 @@ char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
-    g_gameReg->m_gameMode = GAMEMODE_MULTIPLAYER;
+    g_gameReg->SetGameMode(GAMEMODE_MULTIPLAYER);
     if (mgr == NULL) {
         return 0;
     }
@@ -1272,7 +1272,7 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
         return NULL;
     }
 
-    m_localPlayerId = node->m_playerId;
+    m_localPlayerId = node->GetPlayerId();
     GruntzPlayer* hostPlayer = NetGameMgr()->m_players;
     ColorTint hostColor = static_cast<ColorTint>(hostPlayer->m_color);
 
@@ -1312,7 +1312,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
         SetGameName(CString(buf));
     }
     m_syncGate = false;
-    i32 playerId = LocalPlayer()->m_playerId;
+    i32 playerId = LocalPlayer()->GetPlayerId();
     SelectedLevelIndex() = 1;
     m_localPlayerId = playerId;
     if (Sparam_Get(buf, sel->m_sessionDesc.lpszSessionNameA, "LEVEL")) {
@@ -1407,7 +1407,7 @@ void CMulti::BroadcastPlayerIdMessage(NetMsgId id, i32 flag) {
     CNetValuePacket pkt;
     pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = id;
-    pkt.m_value = LocalPlayer()->m_playerId;
+    pkt.m_value = LocalPlayer()->GetPlayerId();
     BroadcastValuePacket(&pkt, flag);
 }
 
@@ -1447,7 +1447,7 @@ i32 CMulti::SendPlayerIdMessageTo(CNetPlayerNode* recipient, NetMsgId messageId,
     CNetValuePacket pkt;
     pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = messageId;
-    pkt.m_value = LocalPlayer()->m_playerId;
+    pkt.m_value = LocalPlayer()->GetPlayerId();
     return SendValuePacketTo(recipient, &pkt, flags);
 }
 
@@ -1456,8 +1456,9 @@ i32 CMulti::SendPlayerIdMessageToId(i32 recipientId, NetMsgId messageId, i32 fla
     CNetValuePacket pkt;
     pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = messageId;
-    pkt.m_value = LocalPlayer()->m_playerId;
-    i32 hr = Network()->SendById(LocalPlayer()->m_playerId, recipientId, flags, &pkt, sizeof(pkt));
+    pkt.m_value = LocalPlayer()->GetPlayerId();
+    i32 hr =
+        Network()->SendById(LocalPlayer()->GetPlayerId(), recipientId, flags, &pkt, sizeof(pkt));
     return hr == 0;
 }
 
@@ -1493,7 +1494,8 @@ i32 CMulti::SendValueMessageToId(i32 recipientId, NetMsgId messageId, i32 value,
     pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = messageId;
     pkt.m_value = value;
-    i32 hr = Network()->SendById(LocalPlayer()->m_playerId, recipientId, flags, &pkt, sizeof(pkt));
+    i32 hr =
+        Network()->SendById(LocalPlayer()->GetPlayerId(), recipientId, flags, &pkt, sizeof(pkt));
     return hr == 0;
 }
 
@@ -1509,6 +1511,7 @@ i32 CMulti::PollSession() {
         return 0;
     }
 
+    DWORD messageSize;
     i32 dispatched;
     DPID sender;
     sender = 0;
@@ -1520,11 +1523,11 @@ i32 CMulti::PollSession() {
             break;
         }
 
-        DWORD messageSize = sizeof(g_recvBuffer);
+        messageSize = sizeof(g_recvBuffer);
         hr = Network()->ReceiveMessage(&sender, LocalPlayer(), g_recvBuffer, &messageSize);
         if (hr == 0) {
             count--;
-            if (sender != LocalPlayer()->m_playerId) {
+            if (sender != LocalPlayer()->GetPlayerId()) {
                 DispatchRecvMsg(sender, g_recvBuffer, messageSize);
                 dispatched++;
             }
@@ -1551,7 +1554,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
     CNetPlayerNode* senderPlayer = Network()->GetPlayerNodeData(senderId);
     if (m_connected != false || m_pumpGuard != false) {
         if (senderPlayer != NULL) {
-            CNetCmdSlot* slot = Session()->FindSlotByPlayerId(senderPlayer->m_playerId);
+            CNetCmdSlot* slot = Session()->FindSlotByPlayerId(senderPlayer->GetPlayerId());
             if (slot != NULL) {
                 slot->m_latency = 0;
             }
@@ -2369,10 +2372,10 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
         sprintf(
             line,
             "%s: %s",
-            static_cast<const char*>(
-                static_cast<GruntzPlayer*>(Mgr()->FindPlayerByNetworkId(LocalPlayer()->m_playerId))
-                    ->GetName()
-            ),
+            static_cast<const char*>(static_cast<GruntzPlayer*>(
+                                         Mgr()->FindPlayerByNetworkId(LocalPlayer()->GetPlayerId())
+            )
+                                         ->GetName()),
             text
         );
     } else {
@@ -2914,7 +2917,7 @@ i32 CMulti::SetupTcpIpConfig() {
         return 0;
     }
 
-    m_localPlayerId = LocalPlayer()->m_playerId;
+    m_localPlayerId = LocalPlayer()->GetPlayerId();
     ColorTint hostColor = static_cast<ColorTint>(hostPlayer->m_color);
 
     if (RegisterLocalPlayer(hostPlayer->GetName(), hostColor, -1, m_localPlayerId) == 0) {
@@ -2938,7 +2941,7 @@ i32 CMulti::CreateLocalPlayer() {
         return 0;
     }
 
-    m_localPlayerId = LocalPlayer()->m_playerId;
+    m_localPlayerId = LocalPlayer()->GetPlayerId();
     if (WaitForConnect() == 0) {
         return 0;
     }
@@ -2993,7 +2996,7 @@ i32 CMulti::CreateHostPlayer(
         ReportNetError(0);
         return 0;
     }
-    m_localPlayerId = m_localPlayer->m_playerId;
+    m_localPlayerId = m_localPlayer->GetPlayerId();
     return RegisterLocalPlayer(name, color, -1, m_localPlayerId) != 0;
 }
 
