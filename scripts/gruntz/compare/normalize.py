@@ -10,6 +10,9 @@ target obj into a content-addressed, side-by-side view under `<out-dir>/`.
 The paired step states an explicit function size only when an identical
 complete window proves the other side's extra terminal COMDAT NOPs are
 alignment. Section payloads, including switch tables, remain intact.
+Enrolled data extents also allow an exact one-past DIR32 address to adopt its
+adjacent successor's name when both manifest and object prove the boundary;
+the resolved section offset is unchanged and other addends remain distinct.
 `objdiff.json` points at these copies; the real base and target objects are
 never touched, so the transform is matching-NEUTRAL (see canonicalize.py and
 the sibling homm2 docs/data-symbol-normalization).
@@ -18,7 +21,8 @@ Paired work is skipped when both copies and their sidecars are newer than
 both inputs and the normalizer modules. Editing either input rebuilds that
 unit's pair; `force=True` writes unconditionally. A `.symbols.tsv` sidecar is
 emitted next to each copy, paired size proofs live in `function_sizes/`, and a
-stamp lists the processed set.
+stamp lists the processed set. Boundary rewrites live in `data_boundaries/`;
+changing the enrolled manifest invalidates its cached comparison copies.
 
 The unit list is an ARGUMENT: callers pass the manifest census. This module
 does not read config/units.toml, and it never predicts which units have a
@@ -29,11 +33,15 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import struct
 from pathlib import Path
 
 from gruntz.compare import canonicalize as canon
+from gruntz.compare import data_boundaries
 from gruntz.compare import function_sizes
+from gruntz.core import tsv
+from gruntz.core.paths import BUILD
 from gruntz.delink import eh_band
 
 _MODULE_MTIME = max(
@@ -41,12 +49,14 @@ _MODULE_MTIME = max(
     Path(canon.msvc_names.__file__).stat().st_mtime,
     Path(eh_band.__file__).stat().st_mtime,
     Path(function_sizes.__file__).stat().st_mtime,
+    Path(data_boundaries.__file__).stat().st_mtime,
     Path(__file__).stat().st_mtime,
 )
 SYMBOL_SIZE = canon.SYMBOL_SIZE
 #: The delinker spells its per-unit objects `<unit>.c.obj`; a plain `<unit>.obj`
 #: is accepted too, so a target directory written either way still pairs.
 TARGET_SUFFIXES = (".c.obj", ".obj")
+DATA_MANIFEST = BUILD / "gen/delink_data_manifest.tsv"
 
 
 def target_object(target_dir: Path, unit: str) -> Path | None:
@@ -94,21 +104,31 @@ def _normalize_one(src: Path, out_obj: Path, out_sidecar: Path, *,
 
 
 def _normalize_pair(base_src, target_src, base_obj, target_obj,
-                    base_sidecar, target_sidecar, size_sidecar, *, force=False):
+                    base_sidecar, target_sidecar, size_sidecar, boundary_sidecar,
+                    manifest_rows, *, force=False):
     """Both inputs are dependencies of the paired size proof and both copies."""
-    outputs = (base_obj, target_obj, base_sidecar, target_sidecar, size_sidecar)
+    outputs = (base_obj, target_obj, base_sidecar, target_sidecar, size_sidecar,
+               boundary_sidecar)
     if not force and all(not _stale(src, out) for src in (base_src, target_src)
                          for out in outputs):
-        return "skip", len(size_sidecar.read_bytes().splitlines()) - 1
-    base = canon.canonicalize_coff(base_src.read_bytes())
-    target = canon.canonicalize_coff(target_src.read_bytes())
+        return ("skip", len(size_sidecar.read_bytes().splitlines()) - 1,
+                len(boundary_sidecar.read_bytes().splitlines()) - 1)
+    object_name = base_src.stem + ".c"
+    base_payload, base_rewrites = data_boundaries.canonicalize_boundaries(
+        base_src.read_bytes(), object_name, manifest_rows)
+    target_payload, target_rewrites = data_boundaries.canonicalize_boundaries(
+        target_src.read_bytes(), object_name, manifest_rows)
+    base = canon.canonicalize_coff(base_payload)
+    target = canon.canonicalize_coff(target_payload)
     base_data, target_data, proofs = function_sizes.paired_sizes(base.data, target.data)
     canon._atomic_write(base_obj, base_data)
     canon._atomic_write(target_obj, target_data)
     canon._atomic_write(base_sidecar, canon.sidecar_bytes(base.rows))
     canon._atomic_write(target_sidecar, canon.sidecar_bytes(target.rows))
     canon._atomic_write(size_sidecar, function_sizes.sidecar_bytes(proofs))
-    return "wrote", len(proofs)
+    canon._atomic_write(boundary_sidecar,
+                        data_boundaries.sidecar_bytes(base_rewrites, target_rewrites))
+    return "wrote", len(proofs), len(base_rewrites) + len(target_rewrites)
 
 
 def _weak_and_strong_names(path: Path) -> tuple[set[str], set[str]]:
@@ -167,7 +187,8 @@ def _assert_weak_externals_have_no_strong_definition(paths: list[Path]) -> int:
 
 def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
               units: list[str], *, stamp: Path | None = None,
-              force: bool = False, quiet: bool = False) -> dict:
+              force: bool = False, quiet: bool = False,
+              data_manifest: Path | None = DATA_MANIFEST) -> dict:
     """Normalize both sides of `units` into `<out_dir>/{base,target}/`.
 
     Returns the counts the stamp records. `units` comes from the caller (the
@@ -178,7 +199,20 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
     target_out = out_dir / "target"
     stamp = stamp if stamp is not None else out_dir / "normalize.stamp"
 
-    wrote = skipped = base_n = target_n = size_n = 0
+    manifest_rows = []
+    if data_manifest is not None and Path(data_manifest).is_file():
+        _banner, _header, manifest_rows = tsv.read(data_manifest)
+        for row in manifest_rows:
+            for field in ("rva", "size", "section_offset"):
+                if row.get(field, "-") != "-":
+                    row[field] = tsv.rint(row[field])
+    # Hash the same parsed snapshot used below, rather than reading a table
+    # twice while its producer may atomically replace it. Each pair owns its
+    # digest: a partial run cannot certify another pair's old evidence.
+    manifest_digest = hashlib.sha256(
+        json.dumps(manifest_rows, sort_keys=True, separators=(",", ":"))
+        .encode("utf-8")).hexdigest()
+    wrote = skipped = base_n = target_n = size_n = boundary_n = 0
     processed: list[str] = []
     ordered = sorted(units)
     inputs = [p for unit in ordered
@@ -193,34 +227,45 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
         target_src = target_object(target_dir, unit)
         target_sidecar = target_out / f"{unit}.symbols.tsv"
         size_sidecar = out_dir / "function_sizes" / f"{unit}.tsv"
+        boundary_sidecar = out_dir / "data_boundaries" / f"{unit}.tsv"
+        manifest_stamp = out_dir / "data_boundaries" / f"{unit}.sha256"
+        manifest_changed = (not manifest_stamp.exists()
+                            or manifest_stamp.read_text().strip() != manifest_digest)
         target_obj = target_out / target_src.name if target_src is not None else None
         if base_src.exists() and target_src is not None:
-            state, proofs = _normalize_pair(
+            state, proofs, boundaries = _normalize_pair(
                 base_src, target_src, base_obj, target_obj, base_sidecar,
-                target_sidecar, size_sidecar, force=force)
+                target_sidecar, size_sidecar, boundary_sidecar, manifest_rows,
+                force=force or manifest_changed)
             wrote += 2 * (state == "wrote")
             skipped += 2 * (state == "skip")
             size_n += proofs
+            boundary_n += boundaries
             base_n += 1
             target_n += 1
             processed += [f"base/{unit}", f"target/{unit}"]
+            canon._atomic_write(manifest_stamp, (manifest_digest + "\n").encode("ascii"))
         elif base_src.exists():
             state = _normalize_one(
                 base_src, base_obj, base_sidecar,
-                force=force or size_sidecar.exists())
+                force=force or size_sidecar.exists() or boundary_sidecar.exists()
+                or manifest_stamp.exists())
             wrote += state == "wrote"
             skipped += state == "skip"
             base_n += 1
             processed.append(f"base/{unit}")
         elif target_src is not None:
             state = _normalize_one(target_src, target_obj, target_sidecar,
-                                   force=force or size_sidecar.exists())
+                                   force=force or size_sidecar.exists()
+                                   or boundary_sidecar.exists() or manifest_stamp.exists())
             wrote += state == "wrote"
             skipped += state == "skip"
             target_n += 1
             processed.append(f"target/{unit}")
         if not base_src.exists() or target_src is None:
             size_sidecar.unlink(missing_ok=True)
+            boundary_sidecar.unlink(missing_ok=True)
+            manifest_stamp.unlink(missing_ok=True)
         # A unit that lost its delinked target (e.g. all names removed), or whose
         # target changed suffix, must not leave a stale normalized copy behind for
         # objdiff to pair against.
@@ -235,6 +280,7 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
     counts = {"base_objects": base_n, "target_objects": target_n,
               "wrote": wrote, "skipped": skipped, "weak_externals": weak_n,
               "function_size_proofs": size_n,
+              "data_boundary_rewrites": boundary_n,
               "set_sha256": digest}
     canon._atomic_write(
         stamp,
@@ -244,11 +290,12 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
          f"wrote\t{wrote}\n"
          f"skipped\t{skipped}\n"
          f"function_size_proofs\t{size_n}\n"
+         f"data_boundary_rewrites\t{boundary_n}\n"
          f"set_sha256\t{digest}\n").encode("utf-8"))
     if not quiet:
         print(f"[normalize] base={base_n} target={target_n} wrote={wrote} "
               f"skipped={skipped} weak-externals-resolved={weak_n} "
-              f"function-size-proofs={size_n}")
+              f"function-size-proofs={size_n} data-boundary-rewrites={boundary_n}")
     return counts
 
 
@@ -260,6 +307,8 @@ def main(argv=None) -> int:
     ap.add_argument("--target-dir", required=True, type=Path)
     ap.add_argument("--out-dir", required=True, type=Path)
     ap.add_argument("--stamp", type=Path)
+    ap.add_argument("--data-manifest", type=Path, default=DATA_MANIFEST,
+                    help="enrolled data extents (missing file disables boundary normalization)")
     ap.add_argument("--force", action="store_true",
                     help="rewrite every copy, ignoring the stale check")
     ap.add_argument("--unit", action="append", default=[], dest="units",
@@ -271,7 +320,7 @@ def main(argv=None) -> int:
         from gruntz.manifest import units as manifest_units
         units = [u["unit"] for u in manifest_units()]
     normalize(args.base_dir, args.target_dir, args.out_dir, units,
-              stamp=args.stamp, force=args.force)
+              stamp=args.stamp, force=args.force, data_manifest=args.data_manifest)
     return 0
 
 

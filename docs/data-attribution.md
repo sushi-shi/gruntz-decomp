@@ -67,6 +67,15 @@ section byte and switch-table entry. Proofs are generated under the comparison
 directory's `function_sizes/`; either input changing invalidates the proof.
 Content equality alone does not make distinct semantic data interchangeable.
 
+The enrolled data manifest can also prove that an exact one-past address of
+one datum is the next datum's start. Normalization rewrites only DIR32
+references whose unique definitions and adjacency agree in both that
+manifest and the object's data section. It preserves the resolved section
+offset, leaves definitions and other addends distinct, and records rewrites
+under `data_boundaries/` in the comparison directory. Manifest changes
+invalidate these disposable copies; missing evidence leaves the reference
+unchanged.
+
 ## Checks
 
 Run inside `nix develop`, after `gruntz build`:

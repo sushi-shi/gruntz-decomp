@@ -26,7 +26,7 @@ import argparse
 from pathlib import Path
 
 from gruntz.compare import project as project_mod
-from gruntz.compare.normalize import normalize, units_with_a_target
+from gruntz.compare.normalize import DATA_MANIFEST, normalize, units_with_a_target
 from gruntz.core.paths import BUILD
 from gruntz.tool import ToolError, objdiff
 
@@ -115,7 +115,8 @@ def print_reference_diff(reference: dict, current: dict) -> dict:
 def run(base_dir: Path = BASE_DIR, target_dir: Path = TARGET_DIR,
         out_dir: Path = OUT_DIR, *, units: list[str] | None = None,
         reference: Path | None = None, force: bool = False,
-        all_units: bool = False, quiet: bool = False) -> dict:
+        all_units: bool = False, quiet: bool = False,
+        data_manifest: Path | None = DATA_MANIFEST) -> dict:
     """normalize -> project -> objdiff-cli -> the loaded report."""
     base_dir, target_dir, out_dir = Path(base_dir), Path(target_dir), Path(out_dir)
     for label, path in (("base", base_dir), ("target", target_dir)):
@@ -127,7 +128,8 @@ def run(base_dir: Path = BASE_DIR, target_dir: Path = TARGET_DIR,
     census = manifest.get("unit", [])
     unit_names = units if units is not None else [u["unit"] for u in census]
 
-    normalize(base_dir, target_dir, out_dir, unit_names, force=force, quiet=quiet)
+    normalize(base_dir, target_dir, out_dir, unit_names, force=force, quiet=quiet,
+              data_manifest=data_manifest)
     build = manifest.get("build", {})
     # The pairing census reads the DELINKER's directory (normalize mirrors that
     # set under <out_dir>/target/ keeping each object's own file name).
@@ -163,6 +165,8 @@ def main() -> int:
                     help=f"delinked target objs (default: {TARGET_DIR})")
     ap.add_argument("--out-dir", type=Path, default=OUT_DIR,
                     help=f"normalized copies + report (default: {OUT_DIR})")
+    ap.add_argument("--data-manifest", type=Path, default=DATA_MANIFEST,
+                    help="enrolled data extents for proved one-past address normalization")
     ap.add_argument("--reference", type=Path,
                     help="an earlier report.json to diff per-function scores against")
     ap.add_argument("--force", action="store_true",
@@ -172,7 +176,7 @@ def main() -> int:
     a = ap.parse_args()
     try:
         run(a.base_dir, a.target_dir, a.out_dir, reference=a.reference,
-            force=a.force, all_units=a.all_units)
+            force=a.force, all_units=a.all_units, data_manifest=a.data_manifest)
     except ToolError as e:
         print(f"[compare] {e}", file=sys.stderr)
         return 1
