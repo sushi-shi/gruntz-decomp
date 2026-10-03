@@ -417,6 +417,12 @@ public:
     Coord* GetTailCoord() {
         return static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
     }
+    Coord* RemoveHeadCoord() {
+        return static_cast<Coord*>(m_coordList.RemoveHead());
+    }
+    Coord* RemoveTailCoord() {
+        return static_cast<Coord*>(m_coordList.RemoveTail());
+    }
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
         return &m_cells[3 * c.m_row + c.m_column];

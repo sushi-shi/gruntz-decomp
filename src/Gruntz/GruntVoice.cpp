@@ -218,7 +218,7 @@ void CGruntVoice::ResetPlayback() {
 
 RVA(0x0011a8c0, 0xf)
 i32 CGruntVoice::HideIndicator() {
-    m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    m_object->Hide();
     return 0;
 }
 
@@ -227,7 +227,7 @@ i32 CGruntVoice::UpdateIndicator() {
     if (m_stream == NULL || m_playbackTiming.Expired()) {
         m_stream = NULL;
         m_sourceObjectId = 0;
-        m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_object->Hide();
         SET_ANIMATION_ACT("A");
         m_priority = 0;
         return 0;
@@ -239,6 +239,6 @@ i32 CGruntVoice::UpdateIndicator() {
     } else if (PositionIndicatorAtSourceObject()) {
         return 0;
     }
-    m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    m_object->Hide();
     return 0;
 }

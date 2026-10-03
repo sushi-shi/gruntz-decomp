@@ -600,7 +600,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
     CWwdSpriteObject* sprite = static_cast<CWwdSpriteObject*>(obj);
     if (record->m_eventCode == 0) {
         obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION);
-        obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        obj->Hide();
         if (record->m_dispatch == DispatchGlobalAmbientSoundLogic) {
             obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE);
         } else {
@@ -676,7 +676,7 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
         return 1;
     }
 
-    obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    obj->Hide();
     obj->m_flags =
         (obj->m_flags & ~IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE))
         | IDX(

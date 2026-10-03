@@ -2032,8 +2032,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
     CGameObject* g = coll->FirstSerialChild();
     while (g != NULL) {
-        if (g->m_logicRecord->m_dispatch == &DispatchInGameIconLogic
-            && !HAS(g->m_stateFlags, SPRITE_STATE_HIDDEN)) {
+        if (g->m_logicRecord->m_dispatch == &DispatchInGameIconLogic && !g->IsHidden()) {
             i32 special = 0;
 
             switch (static_cast<PickupType>(g->m_smarts)) {

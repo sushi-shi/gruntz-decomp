@@ -455,7 +455,7 @@ animate:
 
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::AdvanceAnimationAndDeleteWhenComplete() {
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->Show();
 
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* sprite = m_wwdObject;
@@ -909,7 +909,7 @@ i32 CTimeBomb::SerializeDispatch(
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    SerializeClockPair(sa, mode, &m_timing);
+    m_timing.Serialize(sa, mode, typeId, object);
     switch (mode) {
         case SERIAL_LOAD:
             sa->Read(&m_fastPhase, sizeof(m_fastPhase));

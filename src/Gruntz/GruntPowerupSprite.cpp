@@ -66,7 +66,7 @@ i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerup
     CShadeTable* rec = g_gameReg->m_lightFxMgr->m_tables[powerupId];
     CWwdSpriteObject* r = m_object;
     r->SetDrawFill(SHADE_DST_BY_SRC_16, rec);
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->Show();
     SET_ANIMATION_ACT("A");
     return 1;
 }
