@@ -3,6 +3,7 @@
 Start with the root [README](../README.md) for setup and the build loop.
 
 - [Build system](build-system.md) and [tooling map](tooling-map.md): commands and pipeline ownership.
+- [Standalone source export](clean-source.md): generate and build the C++ base without matching tools.
 - [Compiler profiles](compiler-flags.md), [linking](linker-flags.md), [toolchain setup](toolchain-vc50-sp3.md), and [compiler identification](compiler-detection.md).
 - [Match tracking](match-status.md), [permuter](permuter.md), and the small [compiler-pattern reference](patterns/INDEX.md).
 - [Data attribution](data-attribution.md), [linked-image comparison](image-diff.md), [cleanliness](cleanliness-metrics.md), and [source markers](comment-markers.md).

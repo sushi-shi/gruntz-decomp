@@ -205,18 +205,11 @@
       # Runtime DLLs - proprietary libs the rebuilt EXE LOADS to run.
 
       # Miles Sound System v4.0g runtime. 269,312 bytes.
-      gruntz-mss32 = pkgs.fetchurl {
-        name = "MSS32.DLL";
-        url = "https://archive.org/download/gruntz-pc/Gruntz.iso/GAME%2FMSS32.DLL";
-        sha256 = "sha256-rM/BX6WSTF3cwhAl81r5COTn7XV2tmSrVNcTfkUyPnU=";
-      };
+      runtime-dlls = import ./nix/runtime.nix { inherit pkgs; };
+      gruntz-mss32 = runtime-dlls.mss32;
 
       # Smacker video runtime (intro/cutscene codec). 96,256 bytes.
-      gruntz-smackw32 = pkgs.fetchurl {
-        name = "SMACKW32.DLL";
-        url = "https://archive.org/download/gruntz-pc/Gruntz.iso/GAME%2FSMACKW32.DLL";
-        sha256 = "sha256-+bL9tevI5lnHrBMsIT/P0usFmhGVoSkSG7aMohaZ5eE=";
-      };
+      gruntz-smackw32 = runtime-dlls.smackw32;
 
       # SFMAN32.DLL - the Miles/AIL "SoundFont Manager" (LoadLibraryA'd to play
       # Gruntz.SF2). NOT Creative's similarly-named "SoundFont Master Manager" (the
@@ -269,17 +262,7 @@
       # compiler; the .rc -> .res step drives the real tool, no python fallback).
       # All four are bundled by scripts/create-toolchain-release.py from the VS97
       # Disc 3 ISO's DEVSTUDIO/SHAREDIDE/BIN.
-      gruntz-toolchain = pkgs.runCommand "gruntz-toolchain-vc50" {
-        src = pkgs.fetchurl {
-          name = "gruntz-toolchain-vc50.tar.xz";
-          url = "https://github.com/sushi-shi/gruntz-decomp/releases/download/toolchain-vc50-sp3-r3/gruntz-toolchain-vc50.tar.xz";
-          sha256 = "sha256-sZgl957g2+6wlrAPxIa1OcaDqlcG8PXsXVOKWc5KeZ8=";
-        };
-        nativeBuildInputs = [ pkgs.gnutar pkgs.xz ];
-      } ''
-        mkdir -p "$out"
-        tar xf "$src" -C "$out" --strip-components=1
-      '';
+      gruntz-toolchain = import ./nix/toolchain.nix { inherit pkgs; };
 
       # `gruntz` as a real PATH executable so the CLI works in ANY shell (bash, fish,
       # zsh) - a shellHook function would not survive `nix develop --command fish`.
