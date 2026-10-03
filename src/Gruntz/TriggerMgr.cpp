@@ -22,6 +22,7 @@
 #include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
@@ -89,9 +90,8 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
     do {
         CGrunt* candidate = *units;
         if (candidate != NULL) {
-            CGameObject* o = candidate->m_object;
-            i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
-            i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
+            i32 dx = candidate->GetScreenTileX() - tx;
+            i32 dy = candidate->GetScreenTileY() - ty;
             i32 d = SquaredDistance(dx, dy);
             if (d < bestDist && d < g->m_defenderRadius * 2) {
                 best = candidate;
