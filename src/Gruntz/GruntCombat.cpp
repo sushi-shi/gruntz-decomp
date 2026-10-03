@@ -1171,7 +1171,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     if (attackerGruntKind == GRUNT_DEATHTOUCH) {
         hit = 0x64;
     } else if (this->m_gruntKind == GRUNT_REACTIVEARMOR) {
-        hit = static_cast<i32>((static_cast<float>(hit) * g_quarterScale));
+        hit = static_cast<i32>((static_cast<float>(hit) * 0.25f));
         if (fromProjectile == 0) {
             CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
             if (enemy != NULL && enemy->m_entranceCommitted != false) {
@@ -1285,14 +1285,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     } else {
         float slope = static_cast<float>(dy) / dx;
-        if (slope > g_slopeTwo || slope < g_slopeNegTwo) {
+        if (slope > 2.0f || slope < -2.0f) {
             if (srcPxY > this->m_object->m_screenY) {
                 SETDIR(s_gruntDirSouth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
             } else {
                 SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
             }
-        } else if (slope > g_combatSlopeHalf || slope < g_combatSlopeNegHalf) {
-            if (slope > g_combatSlopeHalf) {
+        } else if (slope > 0.5 || slope < -0.5) {
+            if (slope > 0.5) {
                 if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(
                         s_gruntDirSouthEast,
@@ -1306,7 +1306,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                         this->m_lastTilePx.m_y + 0x20
                     );
                 }
-            } else if (slope < g_combatSlopeNegHalf) {
+            } else if (slope < -0.5) {
                 if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(
                         s_gruntDirNorthEast,
@@ -1686,22 +1686,6 @@ void CGrunt::Activate() {
     m_tileClaimed = false;
 }
 
-DATA(0x001e999c)
-const float g_quarterScale = 0.25f;
-
-DATA(0x001e99a0)
-const float g_slopeTwo = 2.0f;
-DATA(0x001e99a4)
-const float g_slopeNegTwo = -2.0f;
-DATA(0x001e99a8)
-const double g_combatSlopeHalf = 0.5;
-DATA(0x001e99b0)
-const double g_combatSlopeNegHalf = -0.5;
-DATA(0x001e9a48)
-const double g_wingzScale = 100.0;
-DATA(0x001e9a50)
-const double g_wingzBias = -0.5;
-
 DATA(0x001e9a68)
 const double s_fpZero = 0.0;
 
@@ -2077,9 +2061,8 @@ afterArrival:
     if (m_toyTime > 0) {
         m_toyTime = static_cast<i32>(
             static_cast<double>(m_toyTiming.Remaining())
-                / static_cast<double>(static_cast<u32>(m_toyTiming.m_intervalLo)) * g_wingzScale
-            - g_wingzBias
-        );
+            / static_cast<double>(static_cast<u32>(m_toyTiming.m_intervalLo))
+            * DATA_COMPGEN(0x001e9a48, 100.0) - DATA_COMPGEN(0x001e9a50, -0.5) );
         if (m_toyTiming.Remaining() == 0) {
             m_toyTime = 0;
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
@@ -2092,10 +2075,8 @@ afterArrival:
         } else {
             m_stamina = static_cast<i32>(
                 static_cast<double>(m_attackTiming.Elapsed())
-                    / static_cast<double>(static_cast<u32>(m_attackTiming.m_intervalLo))
-                    * g_wingzScale
-                - g_wingzBias
-            );
+                / static_cast<double>(static_cast<u32>(m_attackTiming.m_intervalLo))
+                * DATA_COMPGEN(0x001e9a48, 100.0) - DATA_COMPGEN(0x001e9a50, -0.5) );
         }
         if (m_stamina == STAMINA_FULL) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
@@ -2105,8 +2086,7 @@ afterArrival:
     if (m_wingzEnabled != false) {
         m_wingzTime = static_cast<i32>(
             static_cast<double>(m_wingzTiming.Remaining())
-            * DATA_COMPGEN(0x001e9a58, 0.01) - g_wingzBias
-            );
+            * DATA_COMPGEN(0x001e9a58, 0.01) - DATA_COMPGEN(0x001e9a50, -0.5) );
         if (m_wingzTiming.Remaining() == 0) {
             ConsiderArrival(1);
             m_wingzTime = 0;
