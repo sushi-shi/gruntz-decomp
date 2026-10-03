@@ -1427,7 +1427,7 @@ i32 CGrunt::CommitNeighbor(
     nb->CreateHealthSprite();
     ArmGruntCombatTimeout(nb);
     HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
-    SetGruntNeighbor(this, targetPlayerIndex, targetUnitIndex);
+    SetNeighbor(targetPlayerIndex, targetUnitIndex);
     m_attackTargetPx.Set(targetPxX, targetPxY);
     if (m_stamina < STAMINA_FULL || m_entranceActive != false) {
         m_neighborValid = true;

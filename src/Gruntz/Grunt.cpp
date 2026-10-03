@@ -840,7 +840,7 @@ i32 CGrunt::StepArrivalDrop(
                     this->RecycleCoords();
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
-                        m_coordList.AddTail(probe.GetNext(pos));
+                        AddTailCoord(static_cast<Coord*>(probe.GetNext(pos)));
                     }
                 } else {
                     pos = probe.GetHeadPosition();
@@ -1176,7 +1176,7 @@ i32 CGrunt::StepGruntMovement() {
             {
                 Coord* node = g_coordPool.Pop();
                 node->Set(tgtTileX, tgtTileY);
-                m_coordList.AddHead(node);
+                AddHeadCoord(node);
             }
             if (PathScan() == 0) {
                 SetFacing(0x3e8, rec);
@@ -1276,7 +1276,7 @@ label_4c6e4:
             if (co->m_x == btx && co->m_y == bty) {
                 g_coordPool.Push(co);
             } else {
-                m_coordList.AddHead(co);
+                AddHeadCoord(co);
             }
         }
         PLAY_GRUNT_CUE_IN_VIEW(8);
