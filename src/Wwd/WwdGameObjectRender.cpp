@@ -69,10 +69,8 @@ void CWwdDotObject::BltDirtyEx(
             dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
             dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
         } else {
-            i32 left = m_dirty.m_position.x < m_shadow.m_position.x ? m_dirty.m_position.x
-                                                                    : m_shadow.m_position.x;
-            i32 top = m_dirty.m_position.y < m_shadow.m_position.y ? m_dirty.m_position.y
-                                                                   : m_shadow.m_position.y;
+            i32 left = min(m_dirty.m_position.x, m_shadow.m_position.x);
+            i32 top = min(m_dirty.m_position.y, m_shadow.m_position.y);
             CPoint pos(left, top);
             CSize size(dx, dy);
             dst->BlitDirtyRect(src, pos, size);
@@ -99,10 +97,8 @@ void CWwdDotObject::BltDirtyRegions(
             dst->BlitDirtyRect(src, dirtyPos, m_dirty.m_size);
             dst->BlitDirtyRect(src, shadowPos, m_shadow.m_size);
         } else {
-            i32 left = m_dirty.m_position.x < m_shadow.m_position.x ? m_dirty.m_position.x
-                                                                    : m_shadow.m_position.x;
-            i32 top = m_dirty.m_position.y < m_shadow.m_position.y ? m_dirty.m_position.y
-                                                                   : m_shadow.m_position.y;
+            i32 left = min(m_dirty.m_position.x, m_shadow.m_position.x);
+            i32 top = min(m_dirty.m_position.y, m_shadow.m_position.y);
             CPoint pos(left, top);
             CSize size(dx, dy);
             dst->BlitDirtyRect(src, pos, size);

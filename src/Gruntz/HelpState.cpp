@@ -67,7 +67,7 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     if (!m_stateResources) {
         return 0;
     }
-    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
     return 1;
 }
 

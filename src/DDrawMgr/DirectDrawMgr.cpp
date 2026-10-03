@@ -74,7 +74,7 @@ void CDDrawDeviceManager::ReportError(char* file, i32 line, i32 hr) {
         return;
     }
 
-    i32 code = hr & 0xffff;
+    i32 code = HRESULT_CODE(hr);
 
     strcpy(szMsg, "Unknown Error Message");
     sprintf(szCode, "Unknown Error Code");
@@ -853,7 +853,7 @@ i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused) {
     DDSURFACEDESC* copy = new DDSURFACEDESC;
     memcpy(copy, mode, sizeof(DDSURFACEDESC));
     g_modeArray.Add(copy);
-    return 1;
+    return DDENUMRET_OK;
 }
 
 RVA(0x001433d0, 0x4f)
@@ -1067,10 +1067,10 @@ CreateDirectDrawVia(
         if (dd != NULL) {
             g_directDraw = dd;
             g_ddCreateCtx = lpGuid;
-            return 0;
+            return DDENUMRET_CANCEL;
         }
     }
-    return 1;
+    return DDENUMRET_OK;
 }
 
 // @dead-code
@@ -1243,7 +1243,7 @@ i32 CDDrawDeviceManager::ConfigureSurface(
         return hr;
     }
     if (ComputeColorMasks() == 0) {
-        hr = static_cast<i32>(0x80004005);
+        hr = DDERR_GENERIC;
         if (m_lastError == DDRAWERR_NONE) {
             m_lastError = DDRAWERR_COLOR_MASKS;
         }

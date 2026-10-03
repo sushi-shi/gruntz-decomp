@@ -213,15 +213,9 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
     i32 scaleX = width / static_cast<i32>(m_surface->m_apiDesc.dwWidth);
     i32 scaleY = height / static_cast<i32>(m_surface->m_apiDesc.dwHeight);
 
-    i32 scale = scaleY;
-    if (scaleX < scaleY) {
-        scale = scaleX;
-    }
+    i32 scale = min(scaleX, scaleY);
 
-    i32 cellScale = MINIMAP_MAX_CELL_SCALE;
-    if (scale <= MINIMAP_MAX_CELL_SCALE) {
-        cellScale = scale;
-    }
+    i32 cellScale = min(MINIMAP_MAX_CELL_SCALE, scale);
     m_cellScale = cellScale;
     i32 drawLeft = centerX - static_cast<i32>(m_surface->m_apiDesc.dwWidth) * cellScale / 2;
     i32 drawTop = centerY - static_cast<i32>(m_surface->m_apiDesc.dwHeight) * cellScale / 2;

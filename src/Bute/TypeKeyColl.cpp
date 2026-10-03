@@ -260,9 +260,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&zBitVec::ceh) 
             v = v * 10 + (*p - '0');
             ++p;
         }
-        if (static_cast<u32>(v) > static_cast<u32>(maxv)) {
-            maxv = v;
-        }
+        maxv = static_cast<i32>(max(static_cast<u32>(v), static_cast<u32>(maxv)));
         if (*p == 0) {
             break;
         }
@@ -283,9 +281,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&zBitVec::ceh) 
         }
     }
 
-    if (static_cast<u32>(minSize) > static_cast<u32>(maxv)) {
-        maxv = minSize;
-    }
+    maxv = static_cast<i32>(max(static_cast<u32>(minSize), static_cast<u32>(maxv)));
     if (!SetSize(maxv)) {
         goto oom;
     }
@@ -748,7 +744,7 @@ void zMinErr::catcher(const char* prefix, i32 errNum) {
     *q++ = '\n';
     *q = 0;
 
-    MessageBeep(0);
+    MessageBeep(MB_OK);
     MessageBoxA(NULL, msg, "C++ Tools error handler", MB_TASKMODAL | MB_ICONHAND);
     FatalAppExitA(0, "The error handler terminated the application");
     exit(1);

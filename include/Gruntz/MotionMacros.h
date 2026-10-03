@@ -12,9 +12,7 @@
         } else {                                                                                   \
             double delta = (targetPosition - (s)) * a;                                             \
             double disc = SQR(v) - delta * g_motionNegTwo;                                         \
-            if (g_motionZero > disc) {                                                             \
-                disc = g_motionZero;                                                               \
-            }                                                                                      \
+            disc = max(g_motionZero, disc);                                                        \
             double r = sqrt(disc);                                                                 \
             nv = (v > g_motionZero) ? r : -r;                                                      \
         }                                                                                          \

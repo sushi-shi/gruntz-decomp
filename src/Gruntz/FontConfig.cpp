@@ -32,10 +32,39 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     m_inputScrollTotal = 0;
     m_inputActive = false;
 
-    m_arialFont = CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, "ARIAL");
+    m_arialFont = CreateFontA(
+        0xc,
+        8,
+        0,
+        0,
+        FW_BOLD,
+        0,
+        0,
+        0,
+        DEFAULT_CHARSET,
+        OUT_DEFAULT_PRECIS,
+        CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY,
+        DEFAULT_PITCH | FF_DONTCARE,
+        "ARIAL"
+    );
     if (!m_arialFont) {
-        m_arialFont =
-            CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, NULL);
+        m_arialFont = CreateFontA(
+            0xc,
+            8,
+            0,
+            0,
+            FW_BOLD,
+            0,
+            0,
+            0,
+            DEFAULT_CHARSET,
+            OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE,
+            NULL
+        );
     }
 
     CString arial("ARIAL");
@@ -53,10 +82,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         0,
         0,
         DEFAULT_CHARSET,
-        0,
-        0,
-        0,
-        0,
+        OUT_DEFAULT_PRECIS,
+        CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY,
+        DEFAULT_PITCH | FF_DONTCARE,
         faceTF
     );
     if (!m_trainingFont) {
@@ -70,10 +99,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
             0,
             0,
             DEFAULT_CHARSET,
-            0,
-            0,
-            0,
-            0,
+            OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE,
             NULL
         );
     }
@@ -91,10 +120,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         0,
         0,
         DEFAULT_CHARSET,
-        0,
-        0,
-        0,
-        0,
+        OUT_DEFAULT_PRECIS,
+        CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY,
+        DEFAULT_PITCH | FF_DONTCARE,
         faceMF
     );
     if (!m_messageFont) {
@@ -108,10 +137,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
             0,
             0,
             DEFAULT_CHARSET,
-            0,
-            0,
-            0,
-            0,
+            OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE,
             NULL
         );
     }
@@ -346,23 +375,23 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
 }
 
 typedef enum TextColorRef {
-    TCLR_ORANGE = 0x0080ff,
-    TCLR_GREEN = 0x00ff00,
-    TCLR_BLUE = 0xff0000,
-    TCLR_RED = 0x0000ff,
-    TCLR_PURPLE = 0x800080,
-    TCLR_YELLOW = 0x00ffff,
-    TCLR_ROSE = 0x8000ff,
-    TCLR_BLACK = 0x000000,
-    TCLR_NAVY = 0x800000,
-    TCLR_DKGREEN = 0x008000,
-    TCLR_TEAL = 0x808000,
-    TCLR_MAROON = 0x000080,
-    TCLR_MAGENTA = 0xff00ff,
-    TCLR_OLIVE = 0x008080,
-    TCLR_GRAY = 0x808080,
-    TCLR_CYAN = 0xffff00,
-    TCLR_WHITE = 0xffffff,
+    TCLR_ORANGE = RGB(255, 128, 0),
+    TCLR_GREEN = RGB(0, 255, 0),
+    TCLR_BLUE = RGB(0, 0, 255),
+    TCLR_RED = RGB(255, 0, 0),
+    TCLR_PURPLE = RGB(128, 0, 128),
+    TCLR_YELLOW = RGB(255, 255, 0),
+    TCLR_ROSE = RGB(255, 0, 128),
+    TCLR_BLACK = RGB(0, 0, 0),
+    TCLR_NAVY = RGB(0, 0, 128),
+    TCLR_DKGREEN = RGB(0, 128, 0),
+    TCLR_TEAL = RGB(0, 128, 128),
+    TCLR_MAROON = RGB(128, 0, 0),
+    TCLR_MAGENTA = RGB(255, 0, 255),
+    TCLR_OLIVE = RGB(128, 128, 0),
+    TCLR_GRAY = RGB(128, 128, 128),
+    TCLR_CYAN = RGB(0, 255, 255),
+    TCLR_WHITE = RGB(255, 255, 255),
 } TextColorRef;
 
 // @early-stop
@@ -385,7 +414,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             delete dead;
         }
     }
-    i32 n = (count < m_list.GetCount()) ? count : m_list.GetCount();
+    i32 n = min(count, m_list.GetCount());
     if (n <= 0) {
         return 0;
     }
@@ -500,7 +529,7 @@ i32 CFontConfig::Draw3DText(
     rc.top += voff;
     rc.bottom += voff;
     if (shadow) {
-        SetTextColor(hdc, 0);
+        SetTextColor(hdc, RGB(0, 0, 0));
         rc.left += dx;
         rc.top += dy;
         rc.right += dx;

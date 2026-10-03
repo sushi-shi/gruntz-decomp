@@ -478,7 +478,7 @@ i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
 
     i32 height = ih.biHeight;
     i32 width = ih.biWidth;
-    ColorDepth bitcount = static_cast<ColorDepth>(ih.biBitCount & 0xffff);
+    ColorDepth bitcount = static_cast<ColorDepth>(LOWORD(ih.biBitCount));
     if (!Init(dc, width, height, bitcount, ctrl)) {
         return 0;
     }
@@ -1077,7 +1077,7 @@ void CDibPal::ClearSystemPalette() {
         lp.m_palPalEntry[i].peRed = 0;
         lp.m_palPalEntry[i].peGreen = 0;
         lp.m_palPalEntry[i].peBlue = 0;
-        lp.m_palPalEntry[i].peFlags = 4;
+        lp.m_palPalEntry[i].peFlags = PC_NOCOLLAPSE;
     }
     HPALETTE hpal = CreatePalette(&lp.m_lp);
     if (hpal) {

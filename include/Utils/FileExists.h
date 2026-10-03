@@ -14,7 +14,7 @@ i32 FileExists(const char* szPath) {
     if (!*szPath) {
         return 0;
     }
-    return OpenFile(szPath, &of, 0x4000) != -1;
+    return OpenFile(szPath, &of, OF_EXIST) != HFILE_ERROR;
 }
 
 #endif // UTILS_FILEEXISTS_H

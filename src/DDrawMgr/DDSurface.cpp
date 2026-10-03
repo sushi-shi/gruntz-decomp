@@ -310,7 +310,7 @@ i32 CDDSurface::SetPalette(CDDPalette* palette, i32 unused) {
 
 RVA(0x0013e6d0, 0x88)
 void* CDDSurface::Lock(RECT* rect) {
-    i32 hr = m_ddSurface->Lock(rect, &m_apiDesc, 1, NULL);
+    i32 hr = m_ddSurface->Lock(rect, &m_apiDesc, DDLOCK_WAIT, NULL);
     if (hr == 0) {
         return m_apiDesc.lpSurface;
     }
@@ -318,7 +318,7 @@ void* CDDSurface::Lock(RECT* rect) {
         if (RestoreLost() == 0) {
             return NULL;
         }
-        hr = m_ddSurface->Lock(NULL, &m_apiDesc, 1, NULL);
+        hr = m_ddSurface->Lock(NULL, &m_apiDesc, DDLOCK_WAIT, NULL);
         if (hr == 0) {
             return m_apiDesc.lpSurface;
         }
@@ -431,7 +431,7 @@ HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* 
             g_imageCache.Add(item);
         }
     }
-    return 1;
+    return DDENUMRET_OK;
 }
 
 // @dead-code
@@ -1055,14 +1055,10 @@ void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
                 rect.left = 0;
                 rect.top = 0;
                 i32 w = m_apiDesc.dwWidth - x;
-                if (w >= static_cast<i32>(src->m_apiDesc.dwWidth)) {
-                    w = src->m_apiDesc.dwWidth;
-                }
+                w = min(w, static_cast<i32>(src->m_apiDesc.dwWidth));
                 rect.right = w;
                 i32 h = m_apiDesc.dwHeight - y;
-                if (h >= static_cast<i32>(src->m_apiDesc.dwHeight)) {
-                    h = src->m_apiDesc.dwHeight;
-                }
+                h = min(h, static_cast<i32>(src->m_apiDesc.dwHeight));
                 rect.bottom = h;
                 pRect = &rect;
             }
@@ -1074,7 +1070,7 @@ void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
 RVA(0x0013fa60, 0x40)
 i32 CDDSurface::GetColorKey() {
     DDCOLORKEY key;
-    i32 hr = m_ddSurface->GetColorKey(8, &key);
+    i32 hr = m_ddSurface->GetColorKey(DDCKEY_SRCBLT, &key);
     if (hr != static_cast<i32>(DDERR_NOCOLORKEY)) {
         if (hr == 0) {
             return key.dwColorSpaceLowValue;

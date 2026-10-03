@@ -860,13 +860,13 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
 
         if (panOffsetPx >= maxPanOffsetPx || panOffsetPx >= fullPanOffsetPx) {
 
-            panOffsetPx = maxPanOffsetPx < fullPanOffsetPx ? maxPanOffsetPx : fullPanOffsetPx;
+            panOffsetPx = min(maxPanOffsetPx, fullPanOffsetPx);
         }
     } else {
 
         i32 absPanOffsetPx = abs(panOffsetPx);
         if (absPanOffsetPx >= maxPanOffsetPx || absPanOffsetPx >= fullPanOffsetPx) {
-            panOffsetPx = -(maxPanOffsetPx < fullPanOffsetPx ? maxPanOffsetPx : fullPanOffsetPx);
+            panOffsetPx = -min(maxPanOffsetPx, fullPanOffsetPx);
         }
     }
     i32 panPercent = (panOffsetPx * VOLUME_PCT_MAX) / fullPanOffsetPx;

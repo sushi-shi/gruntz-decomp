@@ -1176,7 +1176,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
             if (enemy != NULL && enemy->m_entranceCommitted != false) {
                 i32 nh = enemy->m_health - hit * 3;
-                nh = (nh < 0) ? 0 : nh;
+                nh = max(0, nh);
                 enemy->m_health = nh;
                 if (nh <= 0) {
                     m_triggerMgr->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_NORMAL, -1);
@@ -1186,7 +1186,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     i32 nh = this->m_health - hit;
-    nh = (nh < 0) ? 0 : nh;
+    nh = max(0, nh);
     this->m_health = nh;
     if (this->m_entranceReason == PICKUP_BOMB) {
         m_triggerMgr
@@ -1947,10 +1947,10 @@ void CGrunt::StepBehavior(char*) {
 
                 if (reg3->m_isEasyMode != false && reg3->m_gameMode == GAMEMODE_QUESTZ) {
                     i32 bite = m_health - 5;
-                    hp = (bite < 0) ? 0 : bite;
+                    hp = max(0, bite);
                 } else {
                     i32 bite = m_health - 0xa;
-                    hp = (bite < 0) ? 0 : bite;
+                    hp = max(0, bite);
                 }
                 m_health = hp;
                 if (hp <= 0) {
@@ -2138,7 +2138,7 @@ kindDispatch:
                 return;
             }
             i32 bite = m_health - 5;
-            i32 hp = (bite < 0) ? 0 : bite;
+            i32 hp = max(0, bite);
             m_health = hp;
             if (hp <= 0) {
                 ConsiderArrival(1);

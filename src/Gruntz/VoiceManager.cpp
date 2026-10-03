@@ -21,6 +21,8 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezTypeTag.h>
 
+#include <dsound.h>
+
 RVA(0x00085df0, 0x4a)
 CVoiceManager::~CVoiceManager() {
     Clear();
@@ -168,8 +170,14 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {
-        m_streamVoices[slotIndex] =
-            m_world->m_soundStream->OpenStream(source, 0x5000, 0x1400, 0x100e0, 0, 0);
+        m_streamVoices[slotIndex] = m_world->m_soundStream->OpenStream(
+            source,
+            0x5000,
+            0x1400,
+            DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLDEFAULT,
+            0,
+            0
+        );
         if (m_streamVoices[slotIndex] == NULL) {
             return false;
         }
@@ -264,8 +272,14 @@ i32 CVoiceManager::PlayVoice(
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {
-        m_streamVoices[slotIndex] =
-            m_world->m_soundStream->OpenStream(source, 0x5000, 0x1400, 0x100e0, 0, 0);
+        m_streamVoices[slotIndex] = m_world->m_soundStream->OpenStream(
+            source,
+            0x5000,
+            0x1400,
+            DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLDEFAULT,
+            0,
+            0
+        );
         if (m_streamVoices[slotIndex] == NULL) {
             return 0;
         }
@@ -355,8 +369,14 @@ i32 CVoiceManager::PlayVoice(
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {
-        m_streamVoices[slotIndex] =
-            m_world->m_soundStream->OpenStream(source, 0x5000, 0x1400, 0x100e0, 0, 0);
+        m_streamVoices[slotIndex] = m_world->m_soundStream->OpenStream(
+            source,
+            0x5000,
+            0x1400,
+            DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLDEFAULT,
+            0,
+            0
+        );
         if (m_streamVoices[slotIndex] == NULL) {
             return 0;
         }

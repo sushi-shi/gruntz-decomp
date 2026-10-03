@@ -79,6 +79,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windowsx.h>
 
 DATA(0x00245550)
 i32 g_cfgWord;
@@ -549,9 +550,7 @@ i32 CMulti::Render() {
         m_session->ScheduleCommand(node, static_cast<u8>(static_cast<u8>(m_commandDelay) << 1));
     }
     i32 dt = m_frameDelta;
-    if (static_cast<u32>(dt) >= g_frameDelta) {
-        dt = static_cast<i32>(g_frameDelta);
-    }
+    dt = static_cast<i32>(min(static_cast<u32>(dt), g_frameDelta));
     m_packetsRcvd = m_session->Poll(dt);
     m_packetsSent = 0;
 
@@ -927,9 +926,9 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             g_netMgr->m_selectedProvider = NULL;
             g_netMgr->PopulateProviderList(combo, 0);
             if (g_serviceId == NET_SERVICE_NONE) {
-                SendMessageA(combo, LB_SETCURSEL, 0, 0);
-            } else if (static_cast<i32>(SendMessageA(combo, LB_SETCURSEL, g_serviceId, 0)) == -1) {
-                SendMessageA(combo, LB_SETCURSEL, 0, 0);
+                ListBox_SetCurSel(combo, 0);
+            } else if (ListBox_SetCurSel(combo, g_serviceId) == LB_ERR) {
+                ListBox_SetCurSel(combo, 0);
             }
 
             DWORD cap = 0xa;
@@ -938,10 +937,10 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             g_gameReg->m_settings->Get("Game Name", gameBuf, cap, "Multiplayer Gruntz");
 
             HWND edName = GetDlgItem(hDlg, 0x51b);
-            SendMessageA(edName, EM_LIMITTEXT, 9, 0);
+            Edit_LimitText(edName, 9);
             SetDlgItemTextA(hDlg, 0x51b, nameBuf);
             HWND edGame = GetDlgItem(hDlg, 0x51c);
-            SendMessageA(edGame, EM_LIMITTEXT, 0x3f, 0);
+            Edit_LimitText(edGame, 0x3f);
             SetDlgItemTextA(hDlg, 0x51c, gameBuf);
             return true;
         }
@@ -956,11 +955,11 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         return true;
     }
 
-    if (wParam == 1) {
+    if (wParam == IDOK) {
 
         GetDlgItemTextA(hDlg, 0x51b, gameBuf, 0xa);
         if (gameBuf[0] == 0) {
-            MessageBeep(0);
+            MessageBeep(MB_OK);
             return wParam;
         }
         g_connectRptMgr->SetPlayerName(CString(gameBuf));
@@ -968,15 +967,15 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         if (g_hostServicesMode != false) {
             GetDlgItemTextA(hDlg, 0x51c, gameBuf, 0x40);
             if (gameBuf[0] == 0) {
-                MessageBeep(0);
+                MessageBeep(MB_OK);
                 return true;
             }
             g_connectRptMgr->SetGameName(CString(gameBuf));
         }
 
         HWND combo = GetDlgItem(hDlg, 0x3fc);
-        i32 svc = static_cast<i32>(SendMessageA(combo, LB_GETCURSEL, 0, 0));
-        if (svc != -1) {
+        i32 svc = ListBox_GetCurSel(combo);
+        if (svc != LB_ERR) {
             g_serviceId = svc;
         }
         g_netMgr->ReadProviderSelection(GetDlgItem(hDlg, 0x3fc));
@@ -1014,7 +1013,7 @@ void CMulti::ReportStatusId(u32 strId, i32 level) {
 RVA(0x000b7f60, 0x52)
 void CMulti::ReportNetError(i32 level) {
     char buf[512];
-    if (Mgr() && g_code != (DPERR_USERCANCEL & 0xffff)) {
+    if (Mgr() && g_code != HRESULT_CODE(DPERR_USERCANCEL)) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
         ReportVersionMsg(buf, level);
     }
@@ -1056,11 +1055,11 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                 return true;
             }
 
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 KillTimer(hDlg, 1);
 
                 if ((static_cast<CMulti*>(g_connectRptMgr))->OnJoinConfirm(hDlg) == 0) {
-                    MessageBeep(0);
+                    MessageBeep(MB_OK);
                     i32 t = 0x7d0;
                     CNetProviderNode* provider = g_netMgr->m_selectedProvider;
                     if (provider && provider->IsTcpIpProvider()) {
@@ -1076,9 +1075,9 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
         case WM_TIMER:
             KillTimer(hDlg, 1);
             {
-                i32 sel = static_cast<i32>(SendMessageA(g_sessionListHwnd, LB_GETCURSEL, 0, 0));
+                i32 sel = ListBox_GetCurSel(g_sessionListHwnd);
                 i32 hr = g_netMgr->EnumerateSessions(0, 0);
-                if (hr == static_cast<i32>(0x88770118)) {
+                if (hr == DPERR_USERCANCEL) {
                     goto close;
                 }
                 if (hr != 0) {
@@ -1090,10 +1089,10 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                     return true;
                 }
                 FillSessionList(g_sessionListHwnd, g_netMgr);
-                if (sel != -1) {
-                    SendMessageA(g_sessionListHwnd, LB_SETCURSEL, sel, 0);
+                if (sel != LB_ERR) {
+                    ListBox_SetCurSel(g_sessionListHwnd, sel);
                 } else {
-                    SendMessageA(g_sessionListHwnd, LB_SETCURSEL, 0, 0);
+                    ListBox_SetCurSel(g_sessionListHwnd, 0);
                 }
                 RefreshSessionSelection(hDlg, g_sessionListHwnd);
                 i32 t = 0x7d0;
@@ -1220,7 +1219,7 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
     if (!manager) {
         return;
     }
-    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+    ListBox_ResetContent(hList);
     CNetSessionListNode* listing = manager->GetFirstSession();
     while (listing) {
 
@@ -1228,15 +1227,15 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
         i32 itemIndex;
         if (Sparam_Get(buf, listing->m_sessionDesc.lpszSessionNameA, "NAME")) {
             name.m_str = buf;
-            itemIndex = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
+            itemIndex = ListBox_AddString(hList, name.m_lparam);
         } else {
             name.m_str = listing->m_sessionDesc.lpszSessionNameA;
-            itemIndex = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
+            itemIndex = ListBox_AddString(hList, name.m_lparam);
         }
-        if (itemIndex != -1) {
+        if (itemIndex != LB_ERR) {
             MsgParam cookie;
             cookie.m_sessionListing = listing;
-            SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);
+            ListBox_SetItemData(hList, itemIndex, cookie.m_lparam);
         }
 
         listing = manager->GetNextSession();
@@ -2402,11 +2401,11 @@ void CMulti::AppendEditLine(HWND edit, char* str) {
     if (!edit || !str || !str[0]) {
         return;
     }
-    i32 len = GetWindowTextLengthA(edit);
+    i32 len = Edit_GetTextLength(edit);
     if (len == 0) {
-        SendMessageA(edit, EM_SETSEL, len, -1);
+        Edit_SetSel(edit, len, -1);
     } else {
-        SendMessageA(edit, EM_SETSEL, len, len);
+        Edit_SetSel(edit, len, len);
     }
     char buf[0x80];
     buf[0] = 0;
@@ -2416,8 +2415,8 @@ void CMulti::AppendEditLine(HWND edit, char* str) {
     strcat(buf, str);
     MsgParam text;
     text.m_str = buf;
-    SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
-    SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
+    Edit_ReplaceSel(edit, text.m_lparam);
+    Edit_Scroll(edit, 0x270f, 0);
 }
 
 // @early-stop
@@ -2546,7 +2545,7 @@ i32 CMulti::WaitForOtherPlayers() {
                 u32 start = timeGetTime();
                 Sleep(0x32);
                 PollSession();
-                if (GetAsyncKeyState(0x1b) & 0x80000000) {
+                if (GetAsyncKeyState(VK_ESCAPE) & 0x80000000) {
                     return 0;
                 }
                 u32 elapsed = timeGetTime() - start;
@@ -2684,7 +2683,7 @@ i32 CMulti::CreateSession() {
     if (rec == NULL) {
         return 0;
     }
-    Network()->EnumerateSessionPlayers(rec, 0);
+    Network()->EnumerateSessionPlayers(rec, DPENUMPLAYERS_ALL);
     if (ResolveLocalPlayer() == 0) {
         return 0;
     }
@@ -3049,7 +3048,7 @@ i32 CMulti::AutoTuneCmdDelay() {
 
     u32 ping = static_cast<u32>(GetMaxAckLatency());
     u32 tuned = ping / 30 + 2;
-    i32 base = (tuned < 3) ? 3 : static_cast<i32>(tuned);
+    i32 base = static_cast<i32>(max(3u, tuned));
 
     i32 probe = Mgr()->CountActivePlayers(false);
 
@@ -3150,18 +3149,14 @@ u32 CMulti::GetMaxAckLatency() {
 
     if (m_isHost != false) {
         for (i32 i = 0; i < 4; i++) {
-            if (m_playerLatencyMs[i] > max) {
-                max = m_playerLatencyMs[i];
-            }
+            max = max(m_playerLatencyMs[i], max);
         }
     } else {
 
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
             if (mgr->m_players[i].m_humanControlled && mgr->m_players[i].m_active) {
-                if (mgr->m_players[i].m_latency.m_avg > max) {
-                    max = mgr->m_players[i].m_latency.m_avg;
-                }
+                max = max(mgr->m_players[i].m_latency.m_avg, max);
             }
         }
     }

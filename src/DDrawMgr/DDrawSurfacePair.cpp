@@ -388,7 +388,7 @@ void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
         return;
     }
     SetBkMode(hdc, TRANSPARENT);
-    SetTextColor(hdc, 0xffffff);
+    SetTextColor(hdc, RGB(255, 255, 255));
     DrawTextA(hdc, buf, strlen(buf), rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
     w->m_ddSurface->ReleaseDC(hdc);
 }
@@ -405,7 +405,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
         return;
     }
     SetBkMode(hdc, TRANSPARENT);
-    SetTextColor(hdc, 0xffffff);
+    SetTextColor(hdc, RGB(255, 255, 255));
     DrawTextA(hdc, text, strlen(text), rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
     w->m_ddSurface->ReleaseDC(hdc);
 }

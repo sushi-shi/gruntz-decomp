@@ -465,7 +465,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_gruntzWinApp.m_hInstance = m_owner->m_hInstance;
     char dpBuf[256];
     strcpy(dpBuf, szCmdLine);
-    AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, 1);
+    AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, SW_SHOWNORMAL);
     m_strWorldFile.Empty();
 
     m_world = new CDDrawSurfaceMgr;
@@ -2333,13 +2333,8 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
     }
 
     m_modalBusy = true;
-    i32 result = DialogBoxParamA(
-        m_owner->m_hInstance,
-        tmpl,
-        m_gameWnd->m_hwnd,
-        static_cast<DLGPROC>(dlgProc),
-        0
-    );
+    i32 result =
+        DialogBoxA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, static_cast<DLGPROC>(dlgProc));
     NetLobby::g_curDlg = NULL;
     m_modalBusy = false;
     if (m_curState && notify) {

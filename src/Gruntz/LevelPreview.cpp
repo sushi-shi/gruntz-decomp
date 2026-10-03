@@ -59,7 +59,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     }
     m_previewName = "PREVIEW0";
     m_previewIndex = 0;
-    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
     return 1;
 }
 
@@ -194,5 +194,5 @@ void CPreviewState::Cancel() {
         m_mgr->DelayedQuit();
         return;
     }
-    PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->m_hwnd)), 0x111, 0x8027, 0);
+    PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->m_hwnd)), WM_COMMAND, 0x8027, 0);
 }

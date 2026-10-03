@@ -34,7 +34,6 @@ const double g_attenuationBase = 2.0;
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
 typedef enum DSoundDx5Magic {
-    DSB_RETAIL_LOOPBIT = 0x02,
     DSBUFFERDESC_SIZE = 0x14,
 } DSoundDx5Magic;
 
@@ -46,10 +45,10 @@ i32 g_volumeTable[VOLUME_PCT_MAX + 1];
 RVA(0x001350b0, 0x5d)
 i32 SoundDevice::VolumeToAttenuation(i32 volumePct) {
     if (volumePct == VOLUME_PCT_MAX) {
-        return 0;
+        return DSBVOLUME_MAX;
     }
     if (volumePct == 0) {
-        return -10000;
+        return DSBVOLUME_MIN;
     }
 
     double ratio = acos(pow(g_volumeCurveUnit / (volumePct / g_volumePercentScale), g_decibelScale))
@@ -123,7 +122,7 @@ SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
             ReportError(DSNDMGR_FILE, 0x60, hr);
         }
     } else {
-        m_pan = 0;
+        m_pan = DSBPAN_CENTER;
     }
 
     if ((m_caps & DSBCAPS_CTRLVOLUME) == DSBCAPS_CTRLVOLUME) {
@@ -132,7 +131,7 @@ SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
             ReportError(DSNDMGR_FILE, 0x68, hr);
         }
     } else {
-        m_volume = 0;
+        m_volume = DSBVOLUME_MAX;
     }
 }
 
@@ -209,7 +208,7 @@ i32 SoundBuffer::IsLooping() {
         ReportError(DSNDMGR_FILE, 0xbb, hr);
         return 0;
     }
-    if ((status & DSB_RETAIL_LOOPBIT) == DSB_RETAIL_LOOPBIT) {
+    if ((status & DSBSTATUS_BUFFERLOST) == DSBSTATUS_BUFFERLOST) {
         return 1;
     }
     return 0;
@@ -242,9 +241,9 @@ void SoundBuffer::SetLooping(b32 enabled) {
         return;
     }
     if (enabled) {
-        m_playFlags |= 1;
+        m_playFlags |= DSBPLAY_LOOPING;
     } else {
-        m_playFlags &= ~1;
+        m_playFlags &= ~DSBPLAY_LOOPING;
     }
 }
 
@@ -255,7 +254,7 @@ i32 SoundBuffer::IsLoopingEnabled() {
     if (m_owner->m_initialized == false) {
         return 0;
     }
-    if ((m_playFlags & 1) == 1) {
+    if ((m_playFlags & DSBPLAY_LOOPING) == DSBPLAY_LOOPING) {
         return 1;
     }
     return 0;
@@ -437,11 +436,11 @@ i32 SoundBuffer::SetFrequencyOffsetPercent(i32 percentOffset) {
     }
     i32 frequency =
         percentOffset * static_cast<i32>(m_baseFrequency) / 100 + static_cast<i32>(m_baseFrequency);
-    if (static_cast<u32>(frequency) >= DSOUND_FREQUENCY_MAX) {
-        frequency = DSOUND_FREQUENCY_MAX - 1;
+    if (static_cast<u32>(frequency) >= DSBFREQUENCY_MAX) {
+        frequency = DSBFREQUENCY_MAX - 1;
     }
-    if (static_cast<u32>(frequency) <= DSOUND_FREQUENCY_MIN) {
-        frequency = DSOUND_FREQUENCY_MIN + 1;
+    if (static_cast<u32>(frequency) <= DSBFREQUENCY_MIN) {
+        frequency = DSBFREQUENCY_MIN + 1;
     }
     i32 result = SetFrequency(frequency);
     m_sampleRate = percentOffset * m_baseSampleRate / 100 + m_baseSampleRate;
@@ -1017,7 +1016,7 @@ SoundSample* SoundDevice::CreateSample(WAVEFORMATEX* format, u32 bytes, u32 flag
         result = NULL;
         goto done;
     }
-    if (format->wFormatTag != 1) {
+    if (format->wFormatTag != WAVE_FORMAT_PCM) {
         result = NULL;
         goto done;
     }
@@ -1160,7 +1159,7 @@ i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WAVEFORMATEX* format, u32 
     if (format == NULL) {
         return 0;
     }
-    if (format->wFormatTag != 1) {
+    if (format->wFormatTag != WAVE_FORMAT_PCM) {
         return 0;
     }
     return buffer->Restore() != 0;

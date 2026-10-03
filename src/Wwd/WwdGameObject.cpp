@@ -101,7 +101,7 @@ void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) 
     m_shadow = m_dirty;
     if (m_dirty.m_armed != -1) {
         RECT* r = &m_dirty.m_rect;
-        dst->GetSurface()->BltFast(r->left, r->top, src->GetSurface(), r, 0x10);
+        dst->GetSurface()->BltFast(r->left, r->top, src->GetSurface(), r, DDBLTFAST_WAIT);
         m_dirty.m_armed = -1;
     }
 }

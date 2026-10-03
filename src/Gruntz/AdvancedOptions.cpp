@@ -39,7 +39,7 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
                 if (hIcon) {
                     MsgParam icon;
                     icon.m_icon = hIcon;
-                    SendMessageA(hWnd, WM_SETICON, 1, icon.m_lparam);
+                    SendMessageA(hWnd, WM_SETICON, ICON_BIG, icon.m_lparam);
                 }
             }
             if (IsIconic(hWnd)) {
@@ -54,7 +54,7 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
                 EndDialog(hWnd, 0);
                 return true;
             }
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 SaveOptions(hWnd, &s_registryHelper);
                 EndDialog(hWnd, 1);
                 return true;
@@ -78,10 +78,10 @@ void SaveOption(HWND hWnd, CRegMgr* reg, char* szValueName, DWORD controlId) {
 
 RVA(0x0000b160, 0x37)
 void SetDefaults(HWND hWnd) {
-    CheckDlgButton(hWnd, IDC_DISABLE_VIDEO, 0);
-    CheckDlgButton(hWnd, IDC_DISABLE_AUDIO, 0);
-    CheckDlgButton(hWnd, IDC_DISABLE_SOUND, 0);
-    CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, 0);
+    CheckDlgButton(hWnd, IDC_DISABLE_VIDEO, BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_DISABLE_AUDIO, BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_DISABLE_SOUND, BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, BST_UNCHECKED);
 }
 
 RVA(0x0000b1b0, 0x90)

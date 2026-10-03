@@ -62,7 +62,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
         return;
     }
     i32 sel = static_cast<i32>(item->GetCurSel());
-    if (sel == -1) {
+    if (sel == LB_ERR) {
         return;
     }
     item->GetText(sel, m_customName);
@@ -78,7 +78,7 @@ END_MESSAGE_MAP()
 RVA(0x000183f0, 0x2e)
 void CBattlezDlgCustom::PickIfSelected() {
     CListBox* list = static_cast<CListBox*>(GetDlgItem(0x516));
-    if (list->GetCurSel() != -1) {
+    if (list->GetCurSel() != LB_ERR) {
         CDialog::OnOK();
     }
 }

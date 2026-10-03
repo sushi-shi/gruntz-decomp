@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <tlhelp32.h>
+#include <windowsx.h>
 
 typedef BOOL(WINAPI* PROCESSWALK)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
 typedef HANDLE(WINAPI* CREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
@@ -27,7 +28,7 @@ void SetActiveAndFocus(HWND hWnd) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118960, 0x20)
 void SetTopmostStyle(HWND hWnd) {
-    LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
+    LONG s = static_cast<LONG>(GetWindowExStyle(hWnd));
     if (s) {
         SetWindowLongA(hWnd, GWL_EXSTYLE, s | WS_EX_TOPMOST);
     }
@@ -37,7 +38,7 @@ void SetTopmostStyle(HWND hWnd) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118990, 0x20)
 void ClearTopmostStyle(HWND hWnd) {
-    LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
+    LONG s = static_cast<LONG>(GetWindowExStyle(hWnd));
     if (s) {
         SetWindowLongA(hWnd, GWL_EXSTYLE, s & ~WS_EX_TOPMOST);
     }

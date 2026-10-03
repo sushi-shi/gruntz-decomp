@@ -6,40 +6,40 @@
 inline COLORREF TintColorRef(ColorTint tint) {
     switch (tint) {
         case TINT_DKBLUE:
-            return 0x800000;
+            return RGB(0, 0, 128);
         case TINT_DKGREEN:
-            return 0x008000;
+            return RGB(0, 128, 0);
         case TINT_TURQ:
-            return 0x808000;
+            return RGB(0, 128, 128);
         case TINT_DKRED:
-            return 0x000080;
+            return RGB(128, 0, 0);
         case TINT_PURPLE:
-            return 0x800080;
+            return RGB(128, 0, 128);
         case TINT_DKYELLOW:
-            return 0x008080;
+            return RGB(128, 128, 0);
         case TINT_GREY:
-            return 0x808080;
+            return RGB(128, 128, 128);
         case TINT_BLUE:
-            return 0xff0000;
+            return RGB(0, 0, 255);
         case TINT_GREEN:
-            return 0x00ff00;
+            return RGB(0, 255, 0);
         case TINT_CYAN:
-            return 0xffff00;
+            return RGB(0, 255, 255);
         case TINT_RED:
-            return 0x0000ff;
+            return RGB(255, 0, 0);
         case TINT_PINK:
-            return 0xff00ff;
+            return RGB(255, 0, 255);
         case TINT_YELLOW:
-            return 0x00ffff;
+            return RGB(255, 255, 0);
         case TINT_WHITE:
-            return 0xffffff;
+            return RGB(255, 255, 255);
         case TINT_ORANGE:
-            return 0x0080ff;
+            return RGB(255, 128, 0);
         case TINT_HOTPINK:
-            return 0x8000ff;
+            return RGB(255, 0, 128);
         case TINT_BLACK:
         default:
-            return 0;
+            return RGB(0, 0, 0);
     }
 }
 

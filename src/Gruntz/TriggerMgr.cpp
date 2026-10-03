@@ -2299,18 +2299,10 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 CGameObject* disp = cell->m_object;
                 i32 x = disp->m_screenX;
                 i32 y = disp->m_screenY;
-                if (x < bbox.left) {
-                    bbox.left = x;
-                }
-                if (x > bbox.right) {
-                    bbox.right = x;
-                }
-                if (y < bbox.top) {
-                    bbox.top = y;
-                }
-                if (y > bbox.bottom) {
-                    bbox.bottom = y;
-                }
+                bbox.left = min(x, bbox.left);
+                bbox.right = max(x, bbox.right);
+                bbox.top = min(y, bbox.top);
+                bbox.bottom = max(y, bbox.bottom);
             }
         } else {
             g_coordPool.Push(payload);
@@ -2352,18 +2344,10 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
             CGameObject* g = cell->m_object;
             i32 gx = g->m_screenX;
             i32 gy = g->m_screenY;
-            if (gx < bbox.left) {
-                bbox.left = gx;
-            }
-            if (gx > bbox.right) {
-                bbox.right = gx;
-            }
-            if (gy < bbox.top) {
-                bbox.top = gy;
-            }
-            if (gy > bbox.bottom) {
-                bbox.bottom = gy;
-            }
+            bbox.left = min(gx, bbox.left);
+            bbox.right = max(gx, bbox.right);
+            bbox.top = min(gy, bbox.top);
+            bbox.bottom = max(gy, bbox.bottom);
         }
     } while (pos != NULL);
     i32 cy = bbox.top + (bbox.bottom - bbox.top) / 2;
@@ -2443,9 +2427,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
                     i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
                     i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
                     i32 d = abs(SquaredDistance(dx, dy));
-                    if (d < best) {
-                        best = d;
-                    }
+                    best = min(d, best);
                 }
                 units++;
                 unitsRemaining--;
