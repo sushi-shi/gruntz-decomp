@@ -35,6 +35,7 @@
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayDefeatCountdown.h>
@@ -1001,8 +1002,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     CGruntzMapMgr* tg = g_gameReg->GetTileGrid();
     i32 rowIdx = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
     i32 cellCol = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
-    tg->CellFlagsAtUnchecked(cellCol, rowIdx) &= BRICKZ_CELL_UNOCCUPIED_MASK;
-    tg->m_rows[rowIdx][cellCol].m_occupantId = -1;
+    tg->ReleaseCellOccupancy(cellCol, rowIdx);
     m_units[idx] = NULL;
     m_unitCountByPlayer[playerIndex] -= 1;
 
