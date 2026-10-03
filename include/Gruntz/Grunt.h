@@ -413,6 +413,12 @@ public:
     CPtrList* GetCoordList() {
         return &m_coordList;
     }
+    POSITION AddHeadCoord(Coord* coord) {
+        return m_coordList.AddHead(coord);
+    }
+    POSITION AddTailCoord(Coord* coord) {
+        return m_coordList.AddTail(coord);
+    }
     Coord* RemoveHeadCoord() {
         return static_cast<Coord*>(m_coordList.RemoveHead());
     }

@@ -190,7 +190,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     for (i32 a = 0; a < count; ++a) {
         Coord* item = g_coordPool.Pop();
         ar->Read(item, 8);
-        m_coordList.AddTail(item);
+        AddTailCoord(item);
     }
 
     DeleteAllPayloads();
