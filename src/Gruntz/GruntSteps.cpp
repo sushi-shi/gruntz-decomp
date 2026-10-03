@@ -695,9 +695,9 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
     }
 
-    i32 tx = next.m_x >> TILE_SHIFT_PX;
-    i32 ty = next.m_y >> TILE_SHIFT_PX;
-    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(tx, ty);
+    Coord cell = next;
+    ScreenTile(&cell);
+    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(cell.m_x, cell.m_y);
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
     }
@@ -705,11 +705,10 @@ i32 CGrunt::ClaimSwitchTile() {
     m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
     m_commitPx = m_lastTilePx;
-    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(
-        m_lastTilePx.m_x >> TILE_SHIFT_PX,
-        m_lastTilePx.m_y >> TILE_SHIFT_PX
-    );
-    g_gameReg->GetTileGrid()->AcquireCellOccupancy(tx, ty, m_playerIndex, m_unitIndex);
+    Coord oldCell = LastTilePx();
+    ScreenTile(&oldCell);
+    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(oldCell.m_x, oldCell.m_y);
+    g_gameReg->GetTileGrid()->AcquireCellOccupancy(cell.m_x, cell.m_y, m_playerIndex, m_unitIndex);
 
     m_lastTilePx = next;
     ComputeFacing(1.0);
