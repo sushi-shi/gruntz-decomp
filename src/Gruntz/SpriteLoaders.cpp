@@ -73,7 +73,6 @@ void CTimer::Reset() {
     RESET_TIMER_SPRITES;
 }
 
-// @early-stop
 RVA(0x0009bca0, 0x25d)
 i32 CTimer::Tick(i32 elapsedMs) {
     static_cast<void>(elapsedMs);
@@ -81,6 +80,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
         return 1;
     }
 
+    // Preserve subtraction before the start addition; Remaining reassociates this caller.
     i64 rem = m_countdown.m_interval - static_cast<u32>(g_frameTime) + m_countdown.m_start;
     i32 v = (rem < 0) ? 0 : static_cast<i32>(rem);
     m_currentMs = v;

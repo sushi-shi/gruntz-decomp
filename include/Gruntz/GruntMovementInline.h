@@ -120,8 +120,8 @@ inline void CGrunt::MirrorAcrossArrival() {
 inline Coord ScreenTile(CGrunt* unit) {
     Coord out;
     CGameObject* object = unit->m_object;
-    out.m_x = object->m_screenPosition.m_x >> TILE_SHIFT_PX;
-    out.m_y = object->m_screenPosition.m_y >> TILE_SHIFT_PX;
+    out.Set(object->m_screenPosition.m_x, object->m_screenPosition.m_y);
+    ScreenTile(&out);
     return out;
 }
 

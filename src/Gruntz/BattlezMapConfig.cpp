@@ -1693,31 +1693,24 @@ void CBattlezMapConfig::Clear() {
     m_active = false;
 }
 
-// @early-stop
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->m_entranceCommitted == false) {
         return 0;
     }
-    bool eq;
-    eq = other->IsAnimationAct("J");
-    if (eq) {
+    if (other->IsAnimationAct("J")) {
         return 0;
     }
-    eq = other->IsAnimationAct("C");
-    if (eq) {
+    if (other->IsAnimationAct("C")) {
         return 0;
     }
-    eq = other->IsAnimationAct("R");
-    if (eq) {
+    if (other->IsAnimationAct("R")) {
         return 0;
     }
-    eq = other->IsAnimationAct("G");
-    if (eq) {
+    if (other->IsAnimationAct("G")) {
         return 0;
     }
-    eq = other->IsAnimationAct("L");
-    if (eq) {
+    if (other->IsAnimationAct("L")) {
         return 0;
     }
     if (other->m_gruntKind == GRUNT_GHOST) {
@@ -1769,14 +1762,13 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     i32 xcoord = actor->GetScreenTileX();
     ycoord += rand() % 10 - 5;
     i32 r2 = rand() % 10;
-    CGameObject* tl2 = actor->m_object;
     RECT box;
-    box.left = (tl2->m_screenPosition.m_x >> TILE_SHIFT_PX) - 5;
+    box.left = actor->GetScreenTileX() - 5;
     xcoord += r2 - 5;
-    box.right = (tl2->m_screenPosition.m_x >> TILE_SHIFT_PX) + 5;
+    box.right = actor->GetScreenTileX() + 5;
     CMapMgr* board = m_board;
-    box.bottom = (tl2->m_screenPosition.m_y >> TILE_SHIFT_PX) + 5;
-    box.top = (tl2->m_screenPosition.m_y >> TILE_SHIFT_PX) - 5;
+    box.bottom = actor->GetScreenTileY() + 5;
+    box.top = actor->GetScreenTileY() - 5;
 
     board->Clip(&box);
     RouteUnitTo(

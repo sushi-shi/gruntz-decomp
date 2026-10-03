@@ -452,11 +452,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->m_durationMs;
     i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->m_durationMs;
-    i64 remainingMs = m_toyTiming.m_interval - static_cast<i64>(g_frameTime) + m_toyTiming.m_start;
-    i32 availableMs = static_cast<i32>(remainingMs);
-    if (remainingMs < 0) {
-        availableMs = 0;
-    }
+    i32 availableMs = static_cast<i32>(m_toyTiming.Remaining());
     i32 toy1ExcessMs = 0;
     if (static_cast<u32>(toy1DurationMs) > static_cast<u32>(availableMs)) {
         toy1ExcessMs = toy1DurationMs - availableMs;
