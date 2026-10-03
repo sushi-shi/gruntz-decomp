@@ -606,6 +606,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     return 1;
 }
 
+// @early-stop
 RVA(0x00045b60, 0x161)
 i32 CWarlord::ResolveBattlecryAnimation() {
     if (m_deathStarted != false) {
