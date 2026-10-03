@@ -884,7 +884,6 @@ i32 ClockInterval::Serialize(
     return 1;
 }
 
-// @early-stop
 RVA(0x00059230, 0x450)
 i32 CGrunt::HandleCombatContact(
     i32 otherPxX,
@@ -898,29 +897,24 @@ i32 CGrunt::HandleCombatContact(
             case AI_NONE:
                 break;
             case AI_SMARTCHASER:
-                m_arrivalCell.m_x = otherPlayerIndex;
-                m_arrivalCell.m_y = otherUnitIndex;
+                m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
                 break;
             case AI_DUMBCHASER:
             case AI_DEFENDER:
-                m_arrivalCell.m_x = otherPlayerIndex;
-                m_arrivalCell.m_y = otherUnitIndex;
+                m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
                 m_defenderState = AISTATE_ATTACK;
                 break;
             case AI_POSTGUARD:
-                m_arrivalCell.m_x = otherPlayerIndex;
-                m_arrivalCell.m_y = otherUnitIndex;
+                m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
                 m_defenderState = AISTATE_ATTACK;
                 break;
             case AI_HITANDRUNNER:
             case AI_OBJECTGUARD:
-                m_arrivalCell.m_x = otherPlayerIndex;
-                m_arrivalCell.m_y = otherUnitIndex;
+                m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
                 m_defenderState = AISTATE_ATTACK;
                 break;
             case AI_BATTLEZ_PATH:
-                m_arrivalCell.m_x = otherPlayerIndex;
-                m_arrivalCell.m_y = otherUnitIndex;
+                m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
                 break;
             default:
                 break;
@@ -1521,7 +1515,6 @@ i32 CGrunt::CommitNeighbor(
     return 1;
 }
 
-// @early-stop
 RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
