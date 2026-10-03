@@ -53,7 +53,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = OwnerMgr()->m_deviceManager->LoadFileSurface(path, surfaceCaps, colorKey);
+    CDDSurface* item = OwnerMgr()->GetDeviceManager()->LoadFileSurface(path, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -119,7 +119,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
 
     CDDSurface* item =
-        OwnerMgr()->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
+        OwnerMgr()->GetDeviceManager()->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -141,9 +141,9 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item =
-        OwnerMgr()
-            ->m_deviceManager->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
+    CDDSurface* item = OwnerMgr()
+                           ->GetDeviceManager()
+                           ->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -189,7 +189,7 @@ void CImage::Unload() {
     m_width = 0;
     m_height = 0;
     if (m_surface != NULL) {
-        OwnerMgr()->m_deviceManager->RemoveSurface(m_surface);
+        OwnerMgr()->GetDeviceManager()->RemoveSurface(m_surface);
         m_surface = NULL;
     }
     CDDrawShadeBlit* owned = m_owned;
@@ -274,7 +274,7 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
     }
 
     return m_surface->Resolve(
-        OwnerMgr()->m_deviceManager,
+        OwnerMgr()->GetDeviceManager(),
         resolved,
         index,
         static_cast<u32>(src->GetSize()),

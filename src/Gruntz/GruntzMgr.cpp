@@ -1294,8 +1294,8 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     SoundCueRegistry* snd = w->SoundRegistry();
     w->m_imageRegistry->SumSizesEqual(NULL, 1);
     snd->SumAudioBytes(NULL);
-    w->m_deviceManager->GetCapsChecked();
-    w->m_deviceManager->GetCapsChecked();
+    w->GetDeviceManager()->GetCapsChecked();
+    w->GetDeviceManager()->GetCapsChecked();
     w->m_imageRegistry->SumSizesEqual(NULL, 1);
     w->m_imageRegistry->SumSizesEqual("GRUNTZ", 1);
     w->m_imageRegistry->SumSizesEqual("GAME", 1);
@@ -1430,7 +1430,7 @@ i32 CGruntzMgr::TryNextResolution() {
     }
     DisplayResolution resolution;
     resolution =
-        World()->m_deviceManager->FindNextResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
+        World()->GetDeviceManager()->FindNextResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
     i32 width = resolution.m_width;
     i32 height = resolution.m_height;
     if (width > 0x514 || width == -1 || height == -1) {
@@ -1452,7 +1452,7 @@ i32 CGruntzMgr::TryPreviousResolution() {
         return 1;
     }
     DisplayResolution resolution;
-    resolution = World()->m_deviceManager->FindPreviousResolution(
+    resolution = World()->GetDeviceManager()->FindPreviousResolution(
         m_modeSize.cx,
         m_modeSize.cy,
         m_colorDepth
@@ -1776,7 +1776,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 
-        CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
+        CDDrawDeviceManager* deviceManager = m_world->GetDeviceManager();
         deviceManager->FlipToGDISurface();
     }
     i32 wasShown = ShowCursor(true);
@@ -1802,7 +1802,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 
-        CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
+        CDDrawDeviceManager* deviceManager = m_world->GetDeviceManager();
         deviceManager->FlipToGDISurface();
     }
 
@@ -2178,7 +2178,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     IDirectSound* dsound = NULL;
 
     CDDSurface* front = World()->m_drawTarget->m_frontSurface->GetSurface();
-    IDirectDraw2* dd2 = World()->m_deviceManager->GetDirectDraw();
+    IDirectDraw2* dd2 = World()->GetDeviceManager()->GetDirectDraw();
 
     if (World()->SoundRegistry()->HasWithPrefix("GAME") == 0) {
         CRezDir* snd = ResourceArchive()->GetDirFromPath("GAME_SOUNDZ");
@@ -2329,7 +2329,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
             notify = false;
         }
 
-        CDDrawDeviceManager* deviceManager = World()->m_deviceManager;
+        CDDrawDeviceManager* deviceManager = World()->GetDeviceManager();
         deviceManager->FlipToGDISurface();
     }
 
@@ -2377,7 +2377,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
             notify = false;
         }
 
-        CDDrawDeviceManager* deviceManager = World()->m_deviceManager;
+        CDDrawDeviceManager* deviceManager = World()->GetDeviceManager();
         deviceManager->FlipToGDISurface();
     }
 

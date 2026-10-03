@@ -147,7 +147,7 @@ i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadM
     if (mgr == NULL) {
         return 0;
     }
-    if (m_world->m_deviceManager == NULL) {
+    if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
     CDDSurface* surface = m_world->m_drawTarget->m_frontSurface->GetSurface();
@@ -187,7 +187,7 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     if (mgr == NULL) {
         return 0;
     }
-    if (m_world->m_deviceManager == NULL) {
+    if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
     CDDSurface* targetSurface = m_world->m_drawTarget->m_frontSurface->GetSurface();
@@ -252,7 +252,7 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
     if (mgr == NULL) {
         return 0;
     }
-    if (m_world->m_deviceManager == NULL) {
+    if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
     CDDSurface* targetSurface = m_world->m_drawTarget->m_frontSurface->GetSurface();
@@ -293,7 +293,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
     if (mgr == NULL) {
         return 0;
     }
-    if (m_world->m_deviceManager == NULL) {
+    if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
     CDDSurface* targetSurface = m_world->m_drawTarget->m_frontSurface->GetSurface();
@@ -339,7 +339,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     if (mgr == NULL) {
         return 0;
     }
-    if (m_world->m_deviceManager == NULL) {
+    if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
     CDDSurface* surface = m_world->m_drawTarget->m_frontSurface->GetSurface();

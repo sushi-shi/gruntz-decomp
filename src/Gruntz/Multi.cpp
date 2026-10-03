@@ -774,7 +774,7 @@ i32 CMulti::StartTitle() {
 
     m_world->m_drawTarget->PresentBackPage();
 
-    m_world->m_deviceManager->FlipToGDISurface();
+    m_world->GetDeviceManager()->FlipToGDISurface();
     m_stateResources = saved;
     while (ShowCursor(true) < 0) {
     }

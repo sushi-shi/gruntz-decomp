@@ -80,6 +80,10 @@ public:
         return m_childGroup;
     }
 
+    CDDrawDeviceManager* GetDeviceManager() {
+        return m_deviceManager;
+    }
+
     SoundStream* GetSoundStream() {
         return m_soundStream;
     }

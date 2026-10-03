@@ -107,7 +107,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     }
     if (m_id == IDX(DDRAW_PAGE_BACK)) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        m_surface = mgr->m_deviceManager->WrapAttachedSurface(
+        m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
             mgr->m_drawTarget->m_frontSurface->GetSurface(),
             DDSCAPS_BACKBUFFER
         );
@@ -118,9 +118,10 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     }
     if (m_id != IDX(DDRAW_PAGE_BACK)) {
         if (HAS(static_cast<DDrawSurfacePairFlags>(m_flags), SURFACEPAIR_SYSTEM_MEMORY)) {
-            m_surface = OwnerMgr()->m_deviceManager->CreateOffscreenSurface(w, h, BPP_UNSET, 0, -1);
+            m_surface =
+                OwnerMgr()->GetDeviceManager()->CreateOffscreenSurface(w, h, BPP_UNSET, 0, -1);
         } else {
-            m_surface = OwnerMgr()->m_deviceManager->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
+            m_surface = OwnerMgr()->GetDeviceManager()->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
         }
         if (m_surface == NULL) {
             OwnerMgr()->SetInitError(WORLDERR_BACK_SURFACE_CREATE);
@@ -152,7 +153,7 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
 RVA(0x00163e20, 0x2d)
 void CDDrawSurfacePair::Unload() {
     if (m_surface != NULL && m_ownsSurface != false) {
-        CDDrawDeviceManager* manager = OwnerMgr()->m_deviceManager;
+        CDDrawDeviceManager* manager = OwnerMgr()->GetDeviceManager();
         manager->RemoveSurface(m_surface);
         m_surface = NULL;
     }
@@ -162,14 +163,14 @@ void CDDrawSurfacePair::Unload() {
 RVA(0x00163e50, 0x8b)
 i32 CDDrawSurfacePair::LoadImage(CRezItm* src) {
     BEGIN_FILE_IMAGE_PARSE(src, type, buf)
-    i32 r = m_surface->Resolve(OwnerMgr()->m_deviceManager, buf, type, src->GetSize(), 0);
+    i32 r = m_surface->Resolve(OwnerMgr()->GetDeviceManager(), buf, type, src->GetSize(), 0);
     src->UnLoad();
     return r;
 }
 
 RVA(0x00163ee0, 0x19)
 i32 CDDrawSurfacePair::ResolveImageName(char* name) {
-    return m_surface->MakeImageKey(OwnerMgr()->m_deviceManager, name, 0);
+    return m_surface->MakeImageKey(OwnerMgr()->GetDeviceManager(), name, 0);
 }
 
 RVA(0x00163f00, 0x40)
@@ -324,11 +325,11 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
                 sysmem = 0;
             }
         }
-        OwnerMgr()->m_deviceManager->RemoveSurface(m_surface);
+        OwnerMgr()->GetDeviceManager()->RemoveSurface(m_surface);
         m_surface = NULL;
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
-            m_surface = mgr->m_deviceManager->WrapAttachedSurface(
+            m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
                 mgr->m_drawTarget->m_frontSurface->GetSurface(),
                 DDSCAPS_BACKBUFFER
             );
@@ -338,9 +339,10 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         }
         if (m_id != IDX(DDRAW_PAGE_BACK)) {
             if (sysmem != 0) {
-                m_surface = OwnerMgr()->m_deviceManager->CreateOffscreenSurface(w, h, bpp, 0, -1);
+                m_surface =
+                    OwnerMgr()->GetDeviceManager()->CreateOffscreenSurface(w, h, bpp, 0, -1);
             } else {
-                m_surface = OwnerMgr()->m_deviceManager->CreateKeyedSurface(w, h, bpp, 0, -1);
+                m_surface = OwnerMgr()->GetDeviceManager()->CreateKeyedSurface(w, h, bpp, 0, -1);
             }
             if (m_surface == NULL) {
                 return 0;
@@ -395,7 +397,7 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     m_width = w;
     m_height = h;
     m_bpp = bpp;
-    CDDrawDeviceManager* deviceManager = surfaceManager->m_deviceManager;
+    CDDrawDeviceManager* deviceManager = surfaceManager->GetDeviceManager();
     i32 mode = DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE;
     if (w <= 0x140) {
         mode |= DDSCL_ALLOWMODEX;
@@ -482,7 +484,7 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
     }
-    CDDrawDeviceManager* manager = OwnerMgr()->m_deviceManager;
+    CDDrawDeviceManager* manager = OwnerMgr()->GetDeviceManager();
     if (manager == NULL) {
         return 0;
     }
