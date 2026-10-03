@@ -615,7 +615,6 @@ public:
 
     void RestorePreviousAppearance();
     void ApplyEntrancePickup();
-    void ResolveEntranceOccupant();
 
     i32 StepEntranceReinit();
 
