@@ -144,7 +144,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                     continue;
                 }
                 SpriteTeamColorVariant teamColor = SPRITE_TEAM_COLOR_PRIMARY;
-                if (grunt->HasArrived() != false) {
+                if (grunt->m_arrived != false) {
                     teamColor = SPRITE_TEAM_COLOR_SECONDARY;
                 }
 
