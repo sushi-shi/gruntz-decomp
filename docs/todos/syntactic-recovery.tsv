@@ -68,6 +68,7 @@ rva	unit	function	lost_max	cur
 0x09c0e0	spriteloaders	?AddTime@CTimer@@QAEXHH@Z	100.0000	99.8214
 0x075e90	terraintileloader	?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	84.2938	84.1046
 0x10f6a0	tilelogicpump	?Act@CCheckpointTrigger@@QAEHXZ	100.0000	98.3602
+0x110c10	tileswitchlogic	?Tick@CTileTriggerLogic@@UAEHXZ	95.5831	94.9255
 0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	91.9027
 0x079520	triggermgr	?HandleTargetSelection@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	99.8538	90.7510
 0x0798d0	triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	96.9403
@@ -77,4 +78,5 @@ rva	unit	function	lost_max	cur
 0x06d300	triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	98.7466	93.6448
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	89.1185
 0x1523f0	wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623
+0x159f00	wwdobjmgr	?CollideBroadcast@CDDrawChildGroup@@UAEXXZ	100.0000	99.8571
 0x15a210	wwdobjmgr	?DrawObjectDebugGeometry@CDDrawChildGroup@@QAEXXZ	97.8145	95.5362
