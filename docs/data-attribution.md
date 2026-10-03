@@ -60,6 +60,11 @@ The [normalizer](../scripts/gruntz/compare/normalize.py) and
 [canonicalizer](../scripts/gruntz/compare/canonicalize.py) create disposable
 comparison copies. They handle compiler-private names, COMMONs, and authorized
 relocation normalization; original objects remain available for auditing.
+For paired functions, identical complete windows can prove that a larger
+aligned COMDAT adds only unreferenced terminal NOPs. Comparison copies then
+state the shorter window in COFF function-size metadata, preserving every
+section byte and switch-table entry. Proofs are generated under the comparison
+directory's `function_sizes/`; either input changing invalidates the proof.
 Content equality alone does not make distinct semantic data interchangeable.
 
 ## Checks

@@ -7,14 +7,18 @@ it is given it rewrites the compiler-private data names (`$SG`/`$T`/`name$S<n>`)
 resolves COFF weak externals to their default, and rewrites same-function
 jump-table `DIR32` labels of both the recompiled base obj and its delinked
 target obj into a content-addressed, side-by-side view under `<out-dir>/`.
+The paired step states an explicit function size only when an identical
+complete window proves the other side's extra terminal COMDAT NOPs are
+alignment. Section payloads, including switch tables, remain intact.
 `objdiff.json` points at these copies; the real base and target objects are
 never touched, so the transform is matching-NEUTRAL (see canonicalize.py and
 the sibling homm2 docs/data-symbol-normalization).
 
-Per-object work is skipped when the normalized copy is already newer than its
-input and the normalizer modules, so a single-file edit only re-normalizes that
-one obj; `force=True` writes unconditionally. A `.symbols.tsv` sidecar is
-emitted next to each copy for auditing, and a stamp lists the processed set.
+Paired work is skipped when both copies and their sidecars are newer than
+both inputs and the normalizer modules. Editing either input rebuilds that
+unit's pair; `force=True` writes unconditionally. A `.symbols.tsv` sidecar is
+emitted next to each copy, paired size proofs live in `function_sizes/`, and a
+stamp lists the processed set.
 
 The unit list is an ARGUMENT: callers pass the manifest census. This module
 does not read config/units.toml, and it never predicts which units have a
@@ -29,12 +33,14 @@ import struct
 from pathlib import Path
 
 from gruntz.compare import canonicalize as canon
+from gruntz.compare import function_sizes
 from gruntz.delink import eh_band
 
 _MODULE_MTIME = max(
     Path(canon.__file__).stat().st_mtime,
     Path(canon.msvc_names.__file__).stat().st_mtime,
     Path(eh_band.__file__).stat().st_mtime,
+    Path(function_sizes.__file__).stat().st_mtime,
     Path(__file__).stat().st_mtime,
 )
 SYMBOL_SIZE = canon.SYMBOL_SIZE
@@ -85,6 +91,24 @@ def _normalize_one(src: Path, out_obj: Path, out_sidecar: Path, *,
     canon._atomic_write(out_obj, result.data)
     canon._atomic_write(out_sidecar, canon.sidecar_bytes(result.rows))
     return "wrote"
+
+
+def _normalize_pair(base_src, target_src, base_obj, target_obj,
+                    base_sidecar, target_sidecar, size_sidecar, *, force=False):
+    """Both inputs are dependencies of the paired size proof and both copies."""
+    outputs = (base_obj, target_obj, base_sidecar, target_sidecar, size_sidecar)
+    if not force and all(not _stale(src, out) for src in (base_src, target_src)
+                         for out in outputs):
+        return "skip", len(size_sidecar.read_bytes().splitlines()) - 1
+    base = canon.canonicalize_coff(base_src.read_bytes())
+    target = canon.canonicalize_coff(target_src.read_bytes())
+    base_data, target_data, proofs = function_sizes.paired_sizes(base.data, target.data)
+    canon._atomic_write(base_obj, base_data)
+    canon._atomic_write(target_obj, target_data)
+    canon._atomic_write(base_sidecar, canon.sidecar_bytes(base.rows))
+    canon._atomic_write(target_sidecar, canon.sidecar_bytes(target.rows))
+    canon._atomic_write(size_sidecar, function_sizes.sidecar_bytes(proofs))
+    return "wrote", len(proofs)
 
 
 def _weak_and_strong_names(path: Path) -> tuple[set[str], set[str]]:
@@ -154,7 +178,7 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
     target_out = out_dir / "target"
     stamp = stamp if stamp is not None else out_dir / "normalize.stamp"
 
-    wrote = skipped = base_n = target_n = 0
+    wrote = skipped = base_n = target_n = size_n = 0
     processed: list[str] = []
     ordered = sorted(units)
     inputs = [p for unit in ordered
@@ -164,25 +188,39 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
 
     for unit in ordered:
         base_src = base_dir / f"{unit}.obj"
-        if base_src.exists():
+        base_obj = base_out / f"{unit}.obj"
+        base_sidecar = base_out / f"{unit}.symbols.tsv"
+        target_src = target_object(target_dir, unit)
+        target_sidecar = target_out / f"{unit}.symbols.tsv"
+        size_sidecar = out_dir / "function_sizes" / f"{unit}.tsv"
+        target_obj = target_out / target_src.name if target_src is not None else None
+        if base_src.exists() and target_src is not None:
+            state, proofs = _normalize_pair(
+                base_src, target_src, base_obj, target_obj, base_sidecar,
+                target_sidecar, size_sidecar, force=force)
+            wrote += 2 * (state == "wrote")
+            skipped += 2 * (state == "skip")
+            size_n += proofs
+            base_n += 1
+            target_n += 1
+            processed += [f"base/{unit}", f"target/{unit}"]
+        elif base_src.exists():
             state = _normalize_one(
-                base_src, base_out / f"{unit}.obj", base_out / f"{unit}.symbols.tsv",
-                force=force)
+                base_src, base_obj, base_sidecar,
+                force=force or size_sidecar.exists())
             wrote += state == "wrote"
             skipped += state == "skip"
             base_n += 1
             processed.append(f"base/{unit}")
-        target_src = target_object(target_dir, unit)
-        target_sidecar = target_out / f"{unit}.symbols.tsv"
-        if target_src is not None:
-            target_obj = target_out / target_src.name
-            state = _normalize_one(target_src, target_obj, target_sidecar, force=force)
+        elif target_src is not None:
+            state = _normalize_one(target_src, target_obj, target_sidecar,
+                                   force=force or size_sidecar.exists())
             wrote += state == "wrote"
             skipped += state == "skip"
             target_n += 1
             processed.append(f"target/{unit}")
-        else:
-            target_obj = None
+        if not base_src.exists() or target_src is None:
+            size_sidecar.unlink(missing_ok=True)
         # A unit that lost its delinked target (e.g. all names removed), or whose
         # target changed suffix, must not leave a stale normalized copy behind for
         # objdiff to pair against.
@@ -196,6 +234,7 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
     digest = hashlib.sha256("\n".join(processed).encode("utf-8")).hexdigest()
     counts = {"base_objects": base_n, "target_objects": target_n,
               "wrote": wrote, "skipped": skipped, "weak_externals": weak_n,
+              "function_size_proofs": size_n,
               "set_sha256": digest}
     canon._atomic_write(
         stamp,
@@ -204,10 +243,12 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
          f"target_objects\t{target_n}\n"
          f"wrote\t{wrote}\n"
          f"skipped\t{skipped}\n"
+         f"function_size_proofs\t{size_n}\n"
          f"set_sha256\t{digest}\n").encode("utf-8"))
     if not quiet:
         print(f"[normalize] base={base_n} target={target_n} wrote={wrote} "
-              f"skipped={skipped} weak-externals-resolved={weak_n}")
+              f"skipped={skipped} weak-externals-resolved={weak_n} "
+              f"function-size-proofs={size_n}")
     return counts
 
 
