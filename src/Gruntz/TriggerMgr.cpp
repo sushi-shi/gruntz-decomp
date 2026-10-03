@@ -999,10 +999,10 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     if (cell->m_arrivalPending == false) {
         this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
     }
-    CGruntzMapMgr* tg = g_gameReg->GetTileGrid();
-    i32 rowIdx = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
-    i32 cellCol = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
-    tg->ReleaseCellOccupancy(cellCol, rowIdx);
+    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(
+        cell->LastTilePx().m_x >> TILE_SHIFT_PX,
+        cell->LastTilePx().m_y >> TILE_SHIFT_PX
+    );
     m_units[idx] = NULL;
     m_unitCountByPlayer[playerIndex] -= 1;
 
