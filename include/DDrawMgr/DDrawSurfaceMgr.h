@@ -80,6 +80,10 @@ public:
         return m_childGroup;
     }
 
+    SoundStream* GetSoundStream() {
+        return m_soundStream;
+    }
+
     SoundCueRegistry* SoundRegistry() {
         return m_soundRegistry;
     }

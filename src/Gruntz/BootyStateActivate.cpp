@@ -1358,7 +1358,7 @@ i32 CBootyState::Render() {
             return 0;
         }
     }
-    SoundStream* snd = m_world->m_soundStream;
+    SoundStream* snd = m_world->GetSoundStream();
     if (snd != NULL) {
         i32 now = static_cast<i32>(timeGetTime());
         snd->TickVolumeRamps(now);

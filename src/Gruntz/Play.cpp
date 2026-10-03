@@ -442,7 +442,7 @@ i32 CPlay::Render() {
             m_world->m_level->m_mainPlane->m_scrollPixelX,
             m_world->m_level->m_mainPlane->m_scrollPixelY
         );
-        SoundStream* stream = m_world->m_soundStream;
+        SoundStream* stream = m_world->GetSoundStream();
         if (stream != NULL) {
             u32 t = timeGetTime();
             stream->TickVolumeRamps(t);
@@ -522,7 +522,7 @@ i32 CPlay::Render() {
             m_world->m_level->m_mainPlane->m_scrollPixelY
         );
         {
-            SoundStream* stream = m_world->m_soundStream;
+            SoundStream* stream = m_world->GetSoundStream();
             if (stream != NULL) {
                 u32 t = timeGetTime();
                 stream->TickVolumeRamps(t);
@@ -661,7 +661,7 @@ i32 CPlay::Render() {
         return 0;
     }
     {
-        SoundStream* stream = m_world->m_soundStream;
+        SoundStream* stream = m_world->GetSoundStream();
         if (stream != NULL) {
             u32 t = timeGetTime();
             stream->TickVolumeRamps(t);

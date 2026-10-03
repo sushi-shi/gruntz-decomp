@@ -590,7 +590,7 @@ i32 CMulti::Render() {
     }
     RenderGameFrame();
     CheckDropTimeout();
-    SoundStream* win = m_world->m_soundStream;
+    SoundStream* win = m_world->GetSoundStream();
     if (win) {
         i32 now = timeGetTime();
         win->TickVolumeRamps(now);
@@ -652,7 +652,7 @@ i32 CMulti::AdvanceGameFrame() {
     m_world->ChildGroup()->CollideBroadcast();
     Mgr()->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
     m_statusBar->UpdateStatusBar(g_frameDelta);
-    SoundStream* win = m_world->m_soundStream;
+    SoundStream* win = m_world->GetSoundStream();
     if (win) {
         i32 now = timeGetTime();
         win->TickVolumeRamps(now);
