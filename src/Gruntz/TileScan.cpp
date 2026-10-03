@@ -41,8 +41,8 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
             if (col == tileX && row == tileY) {
                 continue;
             }
-            if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width)
-                || static_cast<u32>(row) >= static_cast<u32>(m_board->m_height)) {
+            if (static_cast<u32>(col) >= static_cast<u32>(m_board->GetWidth())
+                || static_cast<u32>(row) >= static_cast<u32>(m_board->GetHeight())) {
                 continue;
             }
             i32 flags = m_board->CellFlagsAt(col, row);

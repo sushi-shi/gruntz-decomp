@@ -342,13 +342,7 @@ i32 CKitchenSlime::LoadSprites() {
     m_speed = 32.0 / static_cast<double>(time);
 
     if (changed != false) {
-        CWwdSpriteObject* player = Anim();
-        CDDrawWorker* spr = player->m_imageSet;
-        if (spr != NULL) {
-            CImage* img = spr->GetAt(1);
-            player->m_frameIndex = 1;
-            player->m_frameImage = img;
-        }
+        Anim()->SetImageFrame(1);
     }
     m_stepMag = 0.0;
     return 1;

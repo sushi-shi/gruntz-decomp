@@ -130,12 +130,6 @@ DATA(0x0020edd0)
 static char s_nItem[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
 DATA(0x0020edf4)
 static char s_nwItem[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
-DATA(0x0020ee1c)
-static char s_gruntzDeathzUnfreeze[] = "GRUNTZ_DEATHZ_UNFREEZE";
-DATA(0x0020ee38)
-static char s_freezeDelay[] = "FreezeDelay";
-DATA(0x0020ee48)
-static char s_gruntzDeathzSparkle[] = "GRUNTZ_DEATHZ_SPARKLE";
 DATA(0x0020ee64)
 static char s_movingDeathTime[] = "MovingDeathTime";
 
@@ -667,7 +661,6 @@ finalize:
     return 0;
 }
 
-// @early-stop
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
@@ -678,22 +671,20 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
             ResetEntranceAnimation(1, 0, 0);
-            if (g_gameReg->m_tileGrid->CellFlagsAt(
-                    m_lastTilePx.m_x >> TILE_SHIFT_PX,
-                    m_lastTilePx.m_y >> TILE_SHIFT_PX
-                )
-                & 0x80) {
+            Coord tile = LastTilePx();
+            ScreenTile(&tile);
+            if (g_gameReg->GetTileGrid()->CellFlagsAt(tile.m_x, tile.m_y) & 0x80) {
                 m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             }
             return 0;
         }
-        SwitchAnimationByName(s_gruntzDeathzSparkle, 0);
-        m_idleDelayTiming.Start(g_buteMgr.GetDword("Spellz", s_freezeDelay, 0x2710));
+        SwitchAnimationByName("GRUNTZ_DEATHZ_SPARKLE", 0);
+        m_idleDelayTiming.Start(g_buteMgr.GetDword("Spellz", "FreezeDelay", 0x2710));
         m_freezeDelayDone = false;
     }
     if (m_freezeDelayDone == false) {
         if (m_idleDelayTiming.Expired()) {
-            SwitchAnimationByName(s_gruntzDeathzUnfreeze, 0);
+            SwitchAnimationByName("GRUNTZ_DEATHZ_UNFREEZE", 0);
             PLAY_VOICE_IN_VIEW(0x35c);
             m_freezeUnfrozen = true;
             m_freezeDelayDone = true;
@@ -722,12 +713,12 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     CState* state = g->m_curState;
     CGruntzMapMgr* b = g->m_tileGrid;
     CWwdSpriteObject* h = m_object;
-    i32 xbound = b->m_width;
+    i32 xbound = b->GetWidth();
     i32 tileY = h->m_screenY >> TILE_SHIFT_PX;
     i32 tileX = h->m_screenX >> TILE_SHIFT_PX;
     i32 tileId;
     if (static_cast<u32>(tileX) >= static_cast<u32>(xbound)
-        || static_cast<u32>(tileY) >= static_cast<u32>(b->m_height)) {
+        || static_cast<u32>(tileY) >= static_cast<u32>(b->GetHeight())) {
         tileId = 0;
     } else {
         tileId = b->m_rowInts[tileY][tileX * 7 + 3];

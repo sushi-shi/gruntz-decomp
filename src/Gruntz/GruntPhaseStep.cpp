@@ -112,8 +112,8 @@ state2: {
         i32 px = HIWORD(pt);
         i32 py = LOWORD(pt);
         CMapMgr* pl = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(px) < g_gameReg->m_tileGrid->m_width
-            && static_cast<u32>(py) < g_gameReg->m_tileGrid->m_height) {
+        if (static_cast<u32>(px) < g_gameReg->m_tileGrid->GetWidth()
+            && static_cast<u32>(py) < g_gameReg->m_tileGrid->GetHeight()) {
             i32 flag = pl->CellFlagsAt(px, py);
             if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
                 if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {

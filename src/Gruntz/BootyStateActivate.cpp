@@ -1698,7 +1698,6 @@ i32 CBootyState::OnKeyDown(i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
-// @early-stop
 RVA(0x0001d440, 0xd7d)
 i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
@@ -1895,17 +1894,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_flagSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         SET_SCREEN_POS(m_tabSprites[t], g_bootyTabPos[t].m_x, g_bootyTabPos[t].m_y);
-        {
-
-            i32 frame = (pl->m_joined != false) ? 1 : 2;
-            CWwdSpriteObject* o = m_tabSprites[t];
-            CDDrawWorker* set = o->m_imageSet;
-            if (set != NULL) {
-                CImage* mapped = set->GetAt(frame);
-                o->m_frameImage = mapped;
-                o->m_frameIndex = frame;
-            }
-        }
+        m_tabSprites[t]->SetImageFrame((pl->m_joined != false) ? 1 : 2);
         m_tabSprites[t]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
 

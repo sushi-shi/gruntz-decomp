@@ -129,8 +129,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 if (IsArrivalRerollPending() != 0) {
                     CGameObject* base = this->m_object;
                     SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lo, ax, lo2, ay)
-                    if (lo < g_gameReg->m_tileGrid->m_width
-                        && lo2 < g_gameReg->m_tileGrid->m_height) {
+                    if (lo < g_gameReg->m_tileGrid->GetWidth()
+                        && lo2 < g_gameReg->m_tileGrid->GetHeight()) {
                         TileSwitch(
                             static_cast<i32>(lo),
                             static_cast<i32>(lo2),

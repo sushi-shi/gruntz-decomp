@@ -1348,8 +1348,8 @@ i32 CGrunt::FinishToobMoveAnimation() {
     }
     grid = g->m_tileGrid;
     char* cellObj;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->GetWidth())
+        || static_cast<u32>(ty) >= static_cast<u32>(grid->GetHeight())) {
         cellObj = NULL;
     } else {
 

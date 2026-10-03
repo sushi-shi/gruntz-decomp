@@ -57,11 +57,7 @@ RVA(0x001504d0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
     CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
     m_imageSet = spr;
-    if (spr) {
-        CImage* f = spr->GetAt(frame);
-        m_frameIndex = frame;
-        m_frameImage = f;
-    }
+    SetImageFrame(frame);
 }
 
 RVA(0x00150540, 0x65)

@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -282,6 +283,14 @@ public:
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
 
+    void SetImageFrame(i32 frame) {
+        CDDrawWorker* imageSet = m_imageSet;
+        if (imageSet != NULL) {
+            CImage* image = imageSet->GetAt(frame);
+            m_frameImage = image;
+            m_frameIndex = frame;
+        }
+    }
     void SetImageFrameByName(const char* key, i32 frame);
     void SetImageSetByName(const char* name);
     i32 SetAnimationByName(const char* key, i32 advanceImmediately);

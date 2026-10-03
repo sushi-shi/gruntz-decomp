@@ -143,8 +143,8 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                         outY
                     )
                     CMapMgr* bd = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(outX) < static_cast<u32>(bd->m_width)
-                        && static_cast<u32>(outY) < static_cast<u32>(bd->m_height)) {
+                    if (static_cast<u32>(outX) < static_cast<u32>(bd->GetWidth())
+                        && static_cast<u32>(outY) < static_cast<u32>(bd->GetHeight())) {
                         TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                     }
                     i32 coordCount = CoordCount();

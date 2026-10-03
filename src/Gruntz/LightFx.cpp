@@ -80,9 +80,7 @@ void CLightFx::Activate(
         i32 firstFrameIndex = imageSet->GetMinIndex();
 
         object->m_imageSet = imageSet;
-        CImage* firstFrame = imageSet->GetAt(firstFrameIndex);
-        object->m_frameImage = firstFrame;
-        object->m_frameIndex = firstFrameIndex;
+        object->SetImageFrame(firstFrameIndex);
     }
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     m_shadeTableIndex = shadeTableIndex;

@@ -88,9 +88,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     }
 
     {
-        i32 targetPlayerIndex = g->m_arrivalCell.m_x;
-        i32 targetUnitIndex = g->m_arrivalCell.m_y;
-        CGrunt* cur = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
+        CGrunt* cur = m_triggerMgr->UnitAt(g->ArrivalCell().m_x, g->ArrivalCell().m_y);
         if (cur != NULL) {
             CGameObject* s = cur->m_object;
             if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
@@ -155,14 +153,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             {
                 Coord cp;
                 cur->GetScreenTile(&cp);
-                if (!g->TileSwitch(
-                        cp.m_x,
-                        cp.m_y,
-                        0,
-                        arrivalMask,
-                        0,
-                        0
-                    )) {
+                if (!g->TileSwitch(cp.m_x, cp.m_y, 0, arrivalMask, 0, 0)) {
                     ResetToSeek(g);
                 }
             }

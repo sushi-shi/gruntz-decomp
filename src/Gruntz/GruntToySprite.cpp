@@ -74,15 +74,8 @@ i32 CGruntToySprite::Update() {
     }
     PickupType layer = e->m_vehiclePickupType;
     if (m_lastLayer != layer) {
-        CWwdSpriteObject* r = m_object;
         m_lastLayer = layer;
-        CDDrawWorker* h = r->m_imageSet;
-        if (h != NULL) {
-            i32 layerIndex = IDX(layer);
-            CImage* mapped = h->GetAt(layerIndex);
-            r->m_frameImage = mapped;
-            r->m_frameIndex = layerIndex;
-        }
+        m_object->SetImageFrame(IDX(layer));
     }
     SET_SCREEN_POS(m_object, e->m_object->m_screenX, e->m_object->m_screenY - 0x20);
     return 0;
