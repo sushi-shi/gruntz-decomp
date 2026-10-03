@@ -7,6 +7,7 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
+
 #include <string.h>
 
 class CGameStats;
