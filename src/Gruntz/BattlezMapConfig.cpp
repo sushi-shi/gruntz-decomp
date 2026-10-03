@@ -2426,16 +2426,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if ((m_board)
                 ->FindPathWithEndpointOverrides(start.m_x, start.m_y, col, row, &list, 1, 0x4903, 0)
             != 0) {
-            POSITION head = list.GetHeadPosition();
             g_stepRun = false;
             g_stepCol = col;
             g_stepRow = row;
-            if (head != NULL) {
-                POSITION n = head;
-                while (n != NULL) {
-                    g_coordPool.Push(static_cast<Coord*>(list.GetNext(n)));
-                }
-            }
+            RecycleCoordList(list);
             return;
         }
     }
@@ -2456,16 +2450,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         0
                     )
                     != 0) {
-                    POSITION head = list2.GetHeadPosition();
                     g_stepRun = false;
                     g_stepCol = col;
                     g_stepRow = row;
-                    if (head != NULL) {
-                        POSITION n = head;
-                        while (n != NULL) {
-                            g_coordPool.Push(static_cast<Coord*>(list2.GetNext(n)));
-                        }
-                    }
+                    RecycleCoordList(list2);
                 }
             }
         } else if (cell != NULL) {
@@ -2500,16 +2488,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                     )
                     != 0) {
                     if (!list3.IsEmpty()) {
-                        POSITION head = list3.GetHeadPosition();
                         g_stepRun = false;
                         g_stepCol = col;
                         g_stepRow = row;
-                        if (head != NULL) {
-                            POSITION n = head;
-                            while (n != NULL) {
-                                g_coordPool.Push(static_cast<Coord*>(list3.GetNext(n)));
-                            }
-                        }
+                        RecycleCoordList(list3);
                     }
                 }
             }
