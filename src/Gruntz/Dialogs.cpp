@@ -549,9 +549,9 @@ void CBattlezDlg::PaintPlayerColorControls() {
             GetRandomNumber();
             GetRandomNumber();
             i32 shade = (GetRandomNumber() % 0xff) & 0xff;
-            brush.Attach(CreateSolidBrush((shade << 8 | shade) << 8 | shade));
+            brush.CreateSolidBrush((shade << 8 | shade) << 8 | shade);
         } else {
-            brush.Attach(CreateSolidBrush(0x808080));
+            brush.CreateSolidBrush(0x808080);
         }
         rect.left += 2;
         rect.top += 2;
