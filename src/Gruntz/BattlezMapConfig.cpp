@@ -1266,8 +1266,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             while (n != NULL) {
                 POSITION cur = n;
                 unit->GetNextCoord(n);
-                if (static_cast<Coord*>(unit->m_coordList.GetAt(cur)) != NULL) {
-                    g_coordPool.Push(static_cast<Coord*>(unit->m_coordList.GetAt(cur)));
+                if (unit->GetCoordAt(cur) != NULL) {
+                    g_coordPool.Push(unit->GetCoordAt(cur));
                 }
             }
             coordList->RemoveAll();
@@ -1275,7 +1275,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
 
         POSITION head = coordList->GetHeadPosition();
-        Coord* firstCoord = static_cast<Coord*>(unit->m_coordList.GetAt(head));
+        Coord* firstCoord = unit->GetCoordAt(head);
         BrickzCell pathHeadCell = m_board->CellAt(firstCoord->m_x, firstCoord->m_y);
         if (coordList->IsEmpty()) {
             goto returnZero;
@@ -1312,11 +1312,11 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         PickupType entranceMode = unit->ArrivalPickup();
         if (entranceMode == PICKUP_TIMEBOMB && unit->CoordCount() >= 2) {
             POSITION node = unit->CoordHead();
-            Coord* ca = static_cast<Coord*>(unit->m_coordList.GetAt(node));
+            Coord* ca = unit->GetCoordAt(node);
             POSITION nn = node;
             unit->GetNextCoord(nn);
             i32 ax = ca->m_x;
-            Coord* cb = static_cast<Coord*>(unit->m_coordList.GetAt(nn));
+            Coord* cb = unit->GetCoordAt(nn);
             i32 ay = ca->m_y;
             i32 bx = cb->m_x;
             i32 by = cb->m_y;
@@ -1362,8 +1362,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                     while (n != NULL) {
                         POSITION cur = n;
                         unit->GetNextCoord(n);
-                        if (static_cast<Coord*>(unit->m_coordList.GetAt(cur)) != NULL) {
-                            g_coordPool.Push(static_cast<Coord*>(unit->m_coordList.GetAt(cur)));
+                        if (unit->GetCoordAt(cur) != NULL) {
+                            g_coordPool.Push(unit->GetCoordAt(cur));
                             coordList->RemoveAt(cur);
                         }
                     }
@@ -2828,7 +2828,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
 
             if (unit->CoordCount() != 0) {
                 POSITION p = unit->CoordHead();
-                Coord* c = static_cast<Coord*>(unit->m_coordList.GetAt(p));
+                Coord* c = unit->GetCoordAt(p);
                 CMapMgr* b = m_board;
                 i32 word = b->CellFlagsAt(c->m_x, c->m_y);
                 if (!(word & BRICKZ_CELL_OCCUPIED)) {

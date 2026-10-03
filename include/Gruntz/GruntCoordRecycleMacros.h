@@ -11,8 +11,8 @@
         while (node != NULL) {                                                                     \
             POSITION current = node;                                                               \
             (grunt)->GetNextCoord(node);                                                           \
-            if (static_cast<Coord*>((grunt)->m_coordList.GetAt(current)) != NULL) {                \
-                g_coordPool.Push(static_cast<Coord*>((grunt)->m_coordList.GetAt(current)));        \
+            if ((grunt)->GetCoordAt(current) != NULL) {                                            \
+                g_coordPool.Push((grunt)->GetCoordAt(current));                                    \
             }                                                                                      \
         }                                                                                          \
         (grunt)->m_coordList.RemoveAll();                                                          \
