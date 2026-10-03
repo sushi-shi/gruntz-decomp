@@ -39,6 +39,8 @@ public:
     void Step(double dt);
     double ArrivalVelX(double target);
     double ArrivalVelY(double target);
+    void CorrectX(double position);
+    void CorrectY(double position);
 
     double m_time;
     double m_deltaTime;

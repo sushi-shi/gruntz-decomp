@@ -9,6 +9,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MotionMacros.h>
 #include <Gruntz/MotionState.h>
+#include <Gruntz/MotionStateInline.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
@@ -55,19 +56,13 @@ void CMovingLogic::AdvanceMotion() {
     i32 sx = m_object->m_screenX;
     if (static_cast<i32>(Motion()->m_position.m_x) != sx) {
         double d = static_cast<double>(sx);
-        ms->m_velocity.m_x = ms->ArrivalVelX(d);
-        double correctedStepX = ms->m_step.m_x - (ms->m_position.m_x - d);
-        ms->m_position.m_x = d;
-        ms->m_step.m_x = correctedStepX;
+        ms->CorrectX(d);
     }
 
     i32 sy = m_object->m_screenY;
     if (static_cast<i32>(Motion()->m_position.m_y) != sy) {
         double d = static_cast<double>(sy);
-        ms->m_velocity.m_y = ms->ArrivalVelY(d);
-        double correctedStepY = ms->m_step.m_y - (ms->m_position.m_y - d);
-        ms->m_position.m_y = d;
-        ms->m_step.m_y = correctedStepY;
+        ms->CorrectY(d);
     }
 
     if (m_object->m_moveMode != MOVE_DIRECT) {

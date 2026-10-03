@@ -10,8 +10,7 @@
         if (a == 0.0) {                                                                            \
             nv = v;                                                                                \
         } else {                                                                                   \
-            double delta = (targetPosition - (s)) * a;                                             \
-            double disc = SQR(v) - delta * -2.0;                                                   \
+            double disc = SQR(v) - (targetPosition - (s)) * a * -2.0;                              \
             disc = max(0.0, disc);                                                                 \
             double r = sqrt(disc);                                                                 \
             nv = (v > 0.0) ? r : -r;                                                               \
