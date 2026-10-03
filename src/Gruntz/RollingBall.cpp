@@ -136,7 +136,7 @@ i32 CRollingBall::Update() {
             i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
             i32 cy = lg->m_screenY >> TILE_SHIFT_PX;
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
-                map->m_rowInts[cy][cx * 7] &= 0xefffffff;
+                map->CellFlagsAtUnchecked(cx, cy) &= 0xefffffff;
             }
             m_explodeLatch = true;
         }
@@ -174,7 +174,7 @@ i32 CRollingBall::Update() {
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;
         CMapMgr* map = g_gameReg->GetTileGrid();
         if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
-            map->m_rowInts[ty][tx * 7] &= 0xefffffff;
+            map->CellFlagsAtUnchecked(tx, ty) &= 0xefffffff;
         }
         CMapMgr* map2 = g_gameReg->GetTileGrid();
         i32 terrain = map2->CellFlagsAt(tx, ty);
@@ -482,7 +482,7 @@ i32 CRollingBall::Update() {
         i32 mtx = m_target.m_x >> TILE_SHIFT_PX;
         i32 mty = m_target.m_y >> TILE_SHIFT_PX;
         if (static_cast<u32>(mtx) < board2->m_width && static_cast<u32>(mty) < board2->m_height) {
-            board2->m_rowInts[mty][mtx * 7] |= 0x10000000;
+            board2->CellFlagsAtUnchecked(mtx, mty) |= 0x10000000;
         }
     }
 
