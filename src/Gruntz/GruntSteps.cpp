@@ -112,7 +112,6 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
     return r;
 }
 
-// @early-stop
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
@@ -168,13 +167,14 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, NULL);
 
-    i32 code = g_gameReg->m_tileGrid->m_rowInts[m_lastTilePx.m_y >> TILE_SHIFT_PX]
-                                               [(m_lastTilePx.m_x >> TILE_SHIFT_PX) * 7 + 4];
-    TileCollisionKind tileKind = static_cast<TileCollisionKind>(code);
+    TileCollisionKind tileKind =
+        g_gameReg->m_tileGrid
+            ->m_rows[m_lastTilePx.m_y >> TILE_SHIFT_PX][m_lastTilePx.m_x >> TILE_SHIFT_PX]
+            .m_typeCode;
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
         if (IsGruntAtSavedScreenPos(this)) {
-
-            m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            Coord tile = LastTilePx();
+            m_triggerMgr->ApplySwitch(this, tile.m_x, tile.m_y);
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         }
     }
@@ -243,20 +243,13 @@ void CGrunt::FaceTowardTile(i32 tileX, i32 tileY) {
     FaceTowardPixel(tileX * 0x20 + 0x10, tileY * 0x20 + 0x10);
 }
 
-// @early-stop
 RVA(0x00051510, 0x20f)
 i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
         i32 x = m_commitPx.m_x >> TILE_SHIFT_PX;
         i32 y = m_commitPx.m_y >> TILE_SHIFT_PX;
-        i32 owner;
-        if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
-            && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
-            owner = board->m_rowInts[y][x * 7 + 1];
-        } else {
-            owner = -1;
-        }
+        i32 owner = board->OccupantAt(x, y);
         if (owner != -1) {
             return 0;
         }
@@ -272,16 +265,9 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     }
 
     if (!m_coordList.IsEmpty()) {
-        Coord* coord = NULL;
-        CoordPoolNode* node = g_coordPool.m_freeHead;
-        i32 coordX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-        i32 coordY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        if (node->m_next != NULL) {
-            coord = &node->m_value;
-            coord->Set(coordX, coordY);
-            g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-        }
-        m_coordList.AddHead(coord);
+        Coord tile;
+        tile.Set(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
+        m_coordList.AddHead(g_coordPool.PopCopy(tile));
     }
 
     SET_SCREEN_POS(m_object, m_commitPx.m_x, m_commitPx.m_y);
@@ -394,7 +380,6 @@ i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -409,8 +394,8 @@ i32 CGrunt::StepCompassMove() {
 
     if (board->CellFlagsAt(tx, ty) & 0x80) {
 
-        i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
-        switch (static_cast<TileCollisionKind>(cmd)) {
+        TileCollisionKind cmd = board->m_rows[ty][tx].m_typeCode;
+        switch (cmd) {
             case TILEKIND_ARROW_UP_A:
             case TILEKIND_ARROW_UP_B:
                 y -= 0x20;
@@ -691,49 +676,39 @@ commit:
     return 1;
 }
 
-// @early-stop
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     Coord tile = LastTilePx();
-    i32 nextX;
-    i32 nextY;
+    Coord next;
     switch (m_entranceCell.m_direction) {
         case DIR_NORTH:
-            nextX = tile.m_x;
-            nextY = tile.m_y - 0x20;
+            next.Set(tile.m_x, tile.m_y - 0x20);
             break;
         case DIR_NORTHEAST:
-            nextX = tile.m_x + 0x20;
-            nextY = tile.m_y - 0x20;
+            next.Set(tile.m_x + 0x20, tile.m_y - 0x20);
             break;
         case DIR_EAST:
-            nextX = tile.m_x + 0x20;
-            nextY = tile.m_y;
+            next.Set(tile.m_x + 0x20, tile.m_y);
             break;
         case DIR_SOUTHEAST:
-            nextX = tile.m_x + 0x20;
-            nextY = tile.m_y + 0x20;
+            next.Set(tile.m_x + 0x20, tile.m_y + 0x20);
             break;
         case DIR_SOUTH:
-            nextX = tile.m_x;
-            nextY = tile.m_y + 0x20;
+            next.Set(tile.m_x, tile.m_y + 0x20);
             break;
         case DIR_SOUTHWEST:
-            nextX = tile.m_x - 0x20;
-            nextY = tile.m_y + 0x20;
+            next.Set(tile.m_x - 0x20, tile.m_y + 0x20);
             break;
         case DIR_WEST:
-            nextX = tile.m_x - 0x20;
-            nextY = tile.m_y;
+            next.Set(tile.m_x - 0x20, tile.m_y);
             break;
         case DIR_NORTHWEST:
-            nextX = tile.m_x - 0x20;
-            nextY = tile.m_y - 0x20;
+            next.Set(tile.m_x - 0x20, tile.m_y - 0x20);
             break;
     }
 
-    i32 tx = nextX >> TILE_SHIFT_PX;
-    i32 ty = nextY >> TILE_SHIFT_PX;
+    i32 tx = next.m_x >> TILE_SHIFT_PX;
+    i32 ty = next.m_y >> TILE_SHIFT_PX;
     i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(tx, ty);
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
@@ -748,7 +723,7 @@ i32 CGrunt::ClaimSwitchTile() {
     );
     g_gameReg->GetTileGrid()->AcquireCellOccupancy(tx, ty, m_playerIndex, m_unitIndex);
 
-    m_lastTilePx.Set(nextX, nextY);
+    m_lastTilePx = next;
     ComputeFacing(1.0);
     m_arrivalPending = true;
     return 1;
@@ -772,11 +747,10 @@ i32 CGrunt::SetArrivalTarget(
     return 1;
 }
 
-// @early-stop
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     CWwdSpriteObject* h = m_object;
-    Coord tile = m_lastTilePx;
+    Coord tile = LastTilePx();
     i32 tx = tile.m_x;
     i32 ty = tile.m_y;
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
