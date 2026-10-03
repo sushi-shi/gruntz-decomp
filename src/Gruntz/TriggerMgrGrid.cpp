@@ -588,10 +588,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     i32 cueX = g->m_object->m_screenPosition.m_x;
                     i32 cueY = g->m_object->m_screenPosition.m_y;
                     if (::PtInRect(&g_gameReg->m_viewBounds, cueX, cueY)) {
-                        g_gameReg->m_voiceManager->PlayVoice(g, 0x3f2, -1, 0, -1, -1);
+                        g_gameReg->VoiceMgr()->PlayVoice(g, 0x3f2, -1, 0, -1, -1);
                     }
                 } else if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
-                    g_gameReg->m_voiceManager->PlayVoice(NULL, 0x3f2, -1, 1, -1, -1);
+                    g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x3f2, -1, 1, -1, -1);
                 }
             }
             return 1;
@@ -841,7 +841,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     i32 gx = g->m_object->m_screenPosition.m_x;
                     i32 gy = g->m_object->m_screenPosition.m_y;
                     if (::PtInRect(view, gx, gy)) {
-                        g_gameReg->m_voiceManager->PlayVoice(g, 0x335, -1, 0, -1, -1);
+                        g_gameReg->VoiceMgr()->PlayVoice(g, 0x335, -1, 0, -1, -1);
                     }
                 }
             }

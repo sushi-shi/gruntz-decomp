@@ -3630,7 +3630,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     {
         i32 tmp = 0;
         if (m_barSprite) {
-            tmp = m_barSprite->m_objectId;
+            tmp = m_barSprite->GetObjectId();
         }
         s->Write(&tmp, sizeof(tmp));
     }

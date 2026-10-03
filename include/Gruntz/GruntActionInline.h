@@ -14,15 +14,12 @@
 
 #include <string.h>
 
-#define GRUNT_IS_USING_TOY(result)                                                                 \
-    (((result) = IsAnimationAct("G")) || ((result) = IsAnimationAct("L"))                          \
-     || ((result) = IsAnimationAct("P")))
+#define GRUNT_IS_USING_TOY() (IsAnimationAct("G") || IsAnimationAct("L") || IsAnimationAct("P"))
 
-#define APPLY_ACTIVE_ENTRANCE_PICKUP(result)                                                       \
-    (((result) = IsAnimationAct("J")) && (RestorePreviousAppearance(), ApplyEntrancePickup(), true))
+#define APPLY_ACTIVE_ENTRANCE_PICKUP()                                                             \
+    (IsAnimationAct("J") && (RestorePreviousAppearance(), ApplyEntrancePickup(), true))
 
-#define SETTLE_ACTIVE_TUBE_MOVE(result)                                                            \
-    (((result) = IsAnimationAct("N")) && (SettleTubeMove(), true))
+#define SETTLE_ACTIVE_TUBE_MOVE() (IsAnimationAct("N") && (SettleTubeMove(), true))
 
 #define TERMINATE_ACTIVE_BOMB_RUN(result)                                                          \
     (((result) = (GetAnimationActName() == "M"))                                                   \
@@ -100,7 +97,7 @@ inline bool CGrunt::SettleActiveKnockback() {
 
 inline void CGrunt::RestoreToolAfterToyUse(i32 defer) {
     if (m_entranceReason == PICKUP_SCROLL) {
-        g_gameReg->VoiceMgr()->StopVoice(m_object->m_objectId);
+        g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
     }
     LoadGruntTypeTable(m_toolId, 1, 0, defer);
     {

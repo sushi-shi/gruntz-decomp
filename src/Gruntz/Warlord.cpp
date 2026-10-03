@@ -409,7 +409,7 @@ i32 CWarlord::UpdatePanicState() {
             return 0;
         }
         if (m_cooldownTimer.Expired()) {
-            g_gameReg->VoiceMgr()->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
+            g_gameReg->VoiceMgr()->PlayVoice(m_object->GetObjectId(), 0x436, -1, -1, -1);
             m_cooldownTimer.m_interval = 0x7530;
             m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
         }
@@ -497,12 +497,12 @@ i32 CWarlord::NotifyFortUnderAttack() {
     if (m_deathStarted == false) {
         if (!IsAnimationAct("D")) {
             if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                g_gameReg->VoiceMgr()->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
+                g_gameReg->VoiceMgr()->PlayVoice(m_object->GetObjectId(), 0x436, -1, -1, -1);
                 m_cooldownTimer.m_interval = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
                 if (m_notifyTimer.Expired() && g_gameReg->GetTriggerMgr()->m_pendingFx == this) {
-                    g_gameReg->VoiceMgr()->PlayVoice(m_object->m_objectId, 0x440, -1, -1, -1);
+                    g_gameReg->VoiceMgr()->PlayVoice(m_object->GetObjectId(), 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)
                     static CString s_alert("ALERT - Your Fort is under attack!");
@@ -542,10 +542,10 @@ i32 CWarlord::NotifyFortUnderAttack() {
             i32 x = h->m_screenPosition.m_x;                                                       \
             i32 y = h->m_screenPosition.m_y;                                                       \
             if (::PtInRect(&g->m_viewBounds, x, y)) {                                              \
-                g->VoiceMgr()->PlayVoice(h->m_objectId, cue, -1, -1, -1);                          \
+                g->VoiceMgr()->PlayVoice(h->GetObjectId(), cue, -1, -1, -1);                       \
             }                                                                                      \
         } else {                                                                                   \
-            g->VoiceMgr()->PlayVoice(m_object->m_objectId, (otherCue), -1, -1, -1);                \
+            g->VoiceMgr()->PlayVoice(m_object->GetObjectId(), (otherCue), -1, -1, -1);             \
         }                                                                                          \
     }
 
@@ -561,10 +561,10 @@ i32 CWarlord::ResolveDeathAnimation() {
         CWwdSpriteObject* h = m_object;
         Coord position = h->ScreenPos();
         if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
-            g->VoiceMgr()->PlayVoice(h->m_objectId, m_ownerTag, -1, -1, -1);
+            g->VoiceMgr()->PlayVoice(h->GetObjectId(), m_ownerTag, -1, -1, -1);
         }
     } else {
-        g->VoiceMgr()->PlayVoice(m_object->m_objectId, m_ownerTag, -1, -1, -1);
+        g->VoiceMgr()->PlayVoice(m_object->GetObjectId(), m_ownerTag, -1, -1, -1);
     }
 
     SwitchAnimation(m_animDeath);

@@ -6224,7 +6224,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     {
         i32 v = 0;
         if (m_cursorSnapSprite != NULL) {
-            v = m_cursorSnapSprite->m_objectId;
+            v = m_cursorSnapSprite->GetObjectId();
         }
         s->Write(&v, sizeof(v));
     }

@@ -10,7 +10,7 @@
 
 inline void* WwdKey(CGameObject* o) {
     // API-forced: CMapPtrToPtr keys an integer id through its void* key.
-    return reinterpret_cast<void*>(o->m_objectId);
+    return reinterpret_cast<void*>(o->GetObjectId());
 }
 
 static inline i32 WorldSpaceDifference(i32 leftFlags, i32 rightFlags) {

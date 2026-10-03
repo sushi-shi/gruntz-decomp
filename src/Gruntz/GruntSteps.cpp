@@ -772,7 +772,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->VoiceMgr()->StopVoice(m_object->m_objectId);
+            g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {
@@ -781,7 +781,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
         return 1;
     }
-    if (GRUNT_IS_USING_TOY(eq)) {
+    if (GRUNT_IS_USING_TOY()) {
         goto idleReseed;
     }
     if (SettleActiveKnockback()) {
@@ -791,7 +791,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     if (eq) {
         return 1;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
         goto applyTail;
     }
     // Direct comparison keeps the animation-name array access inline at this site.
@@ -921,7 +921,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 spriteObjectId = 0;
         CWwdSpriteObject* sprite = m_selectedSprite;
         if (sprite) {
-            spriteObjectId = sprite->m_objectId;
+            spriteObjectId = sprite->GetObjectId();
         }
         ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
@@ -930,7 +930,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 spriteObjectId = 0;
         CWwdSpriteObject* sprite = m_toySprite;
         if (sprite) {
-            spriteObjectId = sprite->m_objectId;
+            spriteObjectId = sprite->GetObjectId();
         }
         ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
@@ -939,7 +939,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 spriteObjectId = 0;
         CWwdSpriteObject* sprite = m_healthSprite;
         if (sprite) {
-            spriteObjectId = sprite->m_objectId;
+            spriteObjectId = sprite->GetObjectId();
         }
         ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
@@ -948,7 +948,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 spriteObjectId = 0;
         CWwdSpriteObject* sprite = m_staminaSprite;
         if (sprite) {
-            spriteObjectId = sprite->m_objectId;
+            spriteObjectId = sprite->GetObjectId();
         }
         ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
@@ -957,7 +957,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 spriteObjectId = 0;
         CWwdSpriteObject* sprite = m_toyTimeSprite;
         if (sprite) {
-            spriteObjectId = sprite->m_objectId;
+            spriteObjectId = sprite->GetObjectId();
         }
         ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
@@ -966,7 +966,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 spriteObjectId = 0;
         CWwdSpriteObject* sprite = m_wingzTimeSprite;
         if (sprite) {
-            spriteObjectId = sprite->m_objectId;
+            spriteObjectId = sprite->GetObjectId();
         }
         ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
@@ -975,7 +975,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 spriteObjectId = 0;
         CWwdSpriteObject* sprite = m_powerupSprite;
         if (sprite) {
-            spriteObjectId = sprite->m_objectId;
+            spriteObjectId = sprite->GetObjectId();
         }
         ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }

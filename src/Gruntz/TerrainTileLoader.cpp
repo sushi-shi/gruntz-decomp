@@ -194,10 +194,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cue == WWDDRAW_TOOL_APPLIES || cue == WWDDRAW_NO_ANIMATION) {
                 i32 gaugePoints = 25;
                 i32 removed = 0;
-                POSITION pos = m_baseList.GetHeadPosition();
+                POSITION pos = GetPuddleHeadPosition();
                 while (pos != NULL && removed == 0) {
                     POSITION current = pos;
-                    CGruntPuddle* puddle = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                    CGruntPuddle* puddle = GetNextPuddle(pos);
                     if (puddle->GetTileX() == tileX && puddle->GetTileY() == tileY) {
                         if (cue == WWDDRAW_NO_ANIMATION) {
                             puddle->m_wwdObject->Show();
