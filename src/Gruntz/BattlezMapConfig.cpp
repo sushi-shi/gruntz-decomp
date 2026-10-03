@@ -3427,11 +3427,9 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     i32 bestY = row;
     Coord goal = ScreenTile(unit);
 
-    BrickzCell* tile = &m_board->m_rows[row][col];
-
     CTileTriggerLogic* cell;
 
-    if (tile->m_typeCode == TILEKIND_PYRAMID_LATCH_A) {
+    if (m_board->CellTypeAt(col, row) == TILEKIND_PYRAMID_LATCH_A) {
         cell = m_cellQuery->m_latchedLeaf;
     } else {
         cell = m_cellQuery->FindLogic(CellKey(col, row), TRIGID_ANY);

@@ -2383,7 +2383,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         i32 col = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 row = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        TileCollisionKind tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
+        TileCollisionKind tk = g_gameReg->GetTileGrid()->CellTypeAt(col, row);
         if (tk == TILEKIND_CHECKPOINT || tk == TILEKIND_CHECKPOINT_UP) {
             if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
                 m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);

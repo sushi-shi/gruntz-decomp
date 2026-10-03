@@ -387,7 +387,7 @@ i32 CGrunt::StepCompassMove() {
 
     if (board->CellFlagsAt(sourceCell.m_x, sourceCell.m_y) & 0x80) {
 
-        TileCollisionKind cmd = board->m_rows[sourceCell.m_y][sourceCell.m_x].m_typeCode;
+        TileCollisionKind cmd = board->CellTypeAt(sourceCell.m_x, sourceCell.m_y);
         switch (cmd) {
             case TILEKIND_ARROW_UP_A:
             case TILEKIND_ARROW_UP_B:
