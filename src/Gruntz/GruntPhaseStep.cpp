@@ -214,7 +214,7 @@ common: {
             return 1;
         }
     }
-    if (CoordCount() == 0) {
+    if (CoordsEmpty()) {
         return 1;
     }
     Coord* head = GetHeadCoord();

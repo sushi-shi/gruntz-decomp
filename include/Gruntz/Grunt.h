@@ -405,6 +405,9 @@ public:
     i32 CoordCount() const {
         return m_coordList.GetCount();
     }
+    i32 CoordsEmpty() const {
+        return m_coordList.IsEmpty();
+    }
     Coord* GetCoordAt(POSITION position) {
         return static_cast<Coord*>(m_coordList.GetAt(position));
     }

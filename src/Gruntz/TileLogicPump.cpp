@@ -419,7 +419,7 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    Coord tile = pad->m_tile;
+    Coord tile(pad->GetTileX(), pad->GetTileY());
     CMapMgr* grid = g_gameReg->GetTileGrid();
     i32 owner;
     if (static_cast<u32>(tile.m_x) < grid->GetWidth()

@@ -53,6 +53,22 @@ public:
 
     i32 LoadState(CFileMemBase* s);
 
+    i32 GetTileX() const {
+        return m_tile.m_x;
+    }
+
+    i32 GetTileY() const {
+        return m_tile.m_y;
+    }
+
+    void SetOwner(CTileTriggerContainer* owner) {
+        m_owner = owner;
+    }
+
+    void SetType(TrigLogicId type) {
+        m_typeId = type;
+    }
+
     TrigLogicId m_typeId;
 
     Coord m_tile;

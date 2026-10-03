@@ -198,7 +198,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (CoordCount() != 0) {
+            if (!CoordsEmpty()) {
                 return 1;
             }
             CWwdSpriteObject* base = m_object;
@@ -252,7 +252,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 && ly < g_gameReg->GetTileGrid()->GetHeight()) {
                 TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
             }
-            if (CoordCount() != 0) {
+            if (!CoordsEmpty()) {
                 ax = Max(ax, ay);
                 if (CoordCount() > ax) {
                     SetEntrancePos(1, 1);

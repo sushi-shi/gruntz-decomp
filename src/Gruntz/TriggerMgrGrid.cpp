@@ -405,12 +405,11 @@ CGrunt* CTriggerMgr::CellHitTest(
                 if (g != NULL && g->m_entranceCommitted != false) {
                     CWwdSpriteObject* o = g->m_object;
                     if (o->m_frameImage != NULL) {
-                        CRect hitBox(
-                            o->m_screenPosition.m_x - 15,
-                            o->m_screenPosition.m_y - 15,
-                            o->m_screenPosition.m_x + 15,
-                            o->m_screenPosition.m_y + 15
-                        );
+                        RECT hitBox;
+                        hitBox.left = o->m_screenPosition.m_x - 15;
+                        hitBox.top = o->m_screenPosition.m_y - 15;
+                        hitBox.right = hitBox.left + 30;
+                        hitBox.bottom = hitBox.top + 30;
                         if (::PtInRect(&hitBox, px, py)) {
                             if (outPlayerIndex != NULL) {
                                 *outPlayerIndex = startPlayerIndex;

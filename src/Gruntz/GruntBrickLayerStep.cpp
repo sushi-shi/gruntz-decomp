@@ -148,7 +148,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     m_dwell = 0;
 
 L_ed153:
-    if (CoordCount() == 0) {
+    if (CoordsEmpty()) {
         if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
             return 1;
         }

@@ -798,7 +798,7 @@ i32 CGrunt::StepEntranceReinit() {
         RESET_GRUNT_POWERED_STATE(this);
     }
     m_tileMoveCommitted = false;
-    if (CoordCount() == 0) {
+    if (CoordsEmpty()) {
         return 0;
     }
 

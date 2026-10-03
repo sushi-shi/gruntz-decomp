@@ -146,7 +146,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                             0
                         );
                     }
-                    if (this->CoordCount() != 0) {
+                    if (!this->CoordsEmpty()) {
                         ax = Max(ax, ay);
                         if (this->CoordCount() > ax) {
                             SetEntrancePos(1, 1);
@@ -220,14 +220,14 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         }
     }
 
-    if (this->CoordCount() != 0) {
+    if (!this->CoordsEmpty()) {
 
         Coord* cell = GetHeadCoord();
 
         BrickzCell& gc = g_gameReg->GetTileGrid()->m_rows[cell->m_y][cell->m_x];
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
-            if (this->CoordCount() != 0) {
+            if (!this->CoordsEmpty()) {
                 this->RecycleCoords();
             }
             g_gameReg->GetTriggerMgr()->UseEquippedToolAt(

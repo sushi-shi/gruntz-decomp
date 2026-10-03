@@ -266,7 +266,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         }
     }
 
-    if (!m_coordList.IsEmpty()) {
+    if (!CoordsEmpty()) {
         Coord tile;
         tile.Set(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
         m_coordList.AddHead(g_coordPool.PopCopy(tile));

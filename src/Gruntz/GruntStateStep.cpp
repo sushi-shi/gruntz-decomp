@@ -171,7 +171,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
 
 tail:
     if (CanPlaySpecialAnim(g)) {
-        if (g->CoordCount() == 0
+        if (g->CoordsEmpty()
             && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
             && m_attackWaypoints.GetSize() != 0) {
             Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());

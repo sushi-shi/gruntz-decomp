@@ -198,7 +198,7 @@ i32 CGrunt::StepDefenderBehavior() {
 
                 saved.RemoveAll();
 
-                if (CoordCount() != 0) {
+                if (!CoordsEmpty()) {
                     Coord* previous = NULL;
                     POSITION pos = m_coordList.GetHeadPosition();
                     while (pos != NULL) {

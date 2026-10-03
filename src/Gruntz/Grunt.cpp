@@ -831,7 +831,7 @@ i32 CGrunt::StepArrivalDrop(
             passableMask
         )
         != 0) {
-        if (CoordCount() != 0) {
+        if (!CoordsEmpty()) {
             g_coordPool.Push(RemoveHeadCoord());
         }
     pathGate:
@@ -976,11 +976,11 @@ i32 CGrunt::StepArrivalDrop(
             blockedMask,
             passableMask
         ) != 0
-        && CoordCount() != 0) {
+        && !CoordsEmpty()) {
         g_coordPool.Push(RemoveHeadCoord());
-        if (CoordCount() != 0) {
+        if (!CoordsEmpty()) {
             g_coordPool.Push(RemoveTailCoord());
-            if (CoordCount() != 0) {
+            if (!CoordsEmpty()) {
                 nudged = 1;
                 tail = GetTailCoord();
                 pixel = *tail;
@@ -1109,7 +1109,7 @@ reProbe:
             passableMask
         )
         != 0) {
-        if (CoordCount() != 0) {
+        if (!CoordsEmpty()) {
             g_coordPool.Push(RemoveHeadCoord());
         }
         goto pathGate;
@@ -1156,11 +1156,11 @@ i32 CGrunt::StepGruntMovement() {
             return 0;
         }
     }
-    if (CoordCount() == 0) {
+    if (CoordsEmpty()) {
         goto label_dropRet0;
     }
     if (m_arrivalState != AI_BATTLEZ_PATH) {
-        Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
+        Coord* co = RemoveHeadCoord();
         destination = *co;
         g_coordPool.Push(co);
     } else {
@@ -1209,7 +1209,7 @@ i32 CGrunt::StepGruntMovement() {
             if (m_arrivalState == AI_BATTLEZ_PATH) {
                 goto label_4cb2a;
             }
-            if (CoordCount() == 0) {
+            if (CoordsEmpty()) {
                 goto label_4cb2a;
             }
             {
@@ -1235,7 +1235,7 @@ i32 CGrunt::StepGruntMovement() {
                 return 0;
             }
 
-            if (CoordCount() == 0) {
+            if (CoordsEmpty()) {
                 goto label_4cb2a;
             }
             {
@@ -1254,7 +1254,7 @@ i32 CGrunt::StepGruntMovement() {
                     SetEntrancePos(1, 0);
                     return 0;
                 }
-                Coord* co2 = static_cast<Coord*>(m_coordList.RemoveHead());
+                Coord* co2 = RemoveHeadCoord();
                 g_coordPool.Push(co2);
                 goto label_4c6e4;
             }
@@ -1272,8 +1272,8 @@ i32 CGrunt::StepGruntMovement() {
     }
 
 label_4c6e4:
-    if (m_arrivalState == AI_BATTLEZ_PATH && CoordCount() != 0) {
-        Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
+    if (m_arrivalState == AI_BATTLEZ_PATH && !CoordsEmpty()) {
+        Coord* co = RemoveHeadCoord();
         g_coordPool.Push(co);
     }
     if (flagHead & 0x80) {
@@ -1322,8 +1322,8 @@ label_4c6e4:
         if (beyondFlag & 0x20000939) {
             goto label_4cb2a;
         }
-        if (CoordCount() != 0 && m_arrivalState != AI_BATTLEZ_PATH) {
-            Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
+        if (!CoordsEmpty() && m_arrivalState != AI_BATTLEZ_PATH) {
+            Coord* co = RemoveHeadCoord();
             if (co->m_x == btx && co->m_y == bty) {
                 g_coordPool.Push(co);
             } else {
@@ -1418,7 +1418,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
         m_arrivalPhase = 0;
         m_arrivalActive = false;
     }
-    if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
+    if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && !CoordsEmpty()) {
         this->RecycleCoords();
     }
 }
@@ -1898,7 +1898,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_toolConfigured = true;
             if (m_arrivalState == AI_BATTLEZ_PATH) {
                 if (m_battleState != BZTASK_ADVANCE) {
-                    if (this->CoordCount() != 0) {
+                    if (!this->CoordsEmpty()) {
                         RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
                     }
                     DeleteAllPayloads();
