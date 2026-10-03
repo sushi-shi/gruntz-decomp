@@ -29,7 +29,6 @@
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/Teleporter.h>
@@ -79,7 +78,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     SetImageSetByName("GAME_WORMHOLE");
     SwitchAnimationByName("GAME_WORMHOLE", 0);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
+    o->SetSortKey(SORTKEY_TELEPORT);
     SET_ANIMATION_ACT("A");
     i32 kind = m_object->m_smarts;
     CShadeTable* color;
@@ -174,7 +173,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_PUDDLE)
+    o->SetSortKey(SORTKEY_GRUNT_PUDDLE);
     SetImageSetByName("GRUNTZ_GRUNTPUDDLE");
     SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     SET_ANIMATION_ACT("A");
@@ -304,7 +303,7 @@ RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
+    o->SetSortKey(SORTKEY_TELEPORT);
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     LoadColors();
     ReapplyConfig();

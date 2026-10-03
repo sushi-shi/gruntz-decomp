@@ -55,7 +55,6 @@
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -492,7 +491,7 @@ i32 CBootyState::StepGlitterAnim() {
             e = m_trailSprites[i];
             e->m_screenY = g_bootyLetterCoords[i].m_y;
             e = m_trailSprites[i];
-            SET_SORT_KEY_IF_CHANGED(e, 1)
+            e->SetSortKey(1);
         }
         SET_SCREEN_POS(
             m_cursorLetter,
@@ -530,7 +529,7 @@ i32 CBootyState::StepGlitterAnim() {
 
     if (m_radius == 0) {
         CWwdSpriteObject* e = m_trailSprites[i];
-        SET_SORT_KEY_IF_CHANGED(e, 1)
+        e->SetSortKey(1);
         return 1;
     }
     return 0;
@@ -1927,7 +1926,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     m_warlordBooty->Hide();
     SET_SCREEN_POS(m_warlordBooty, 0x64, 0x64);
     CWwdSpriteObject* sorted = m_warlordBooty;
-    SET_SORT_KEY_IF_CHANGED(sorted, SORTKEY_BOOTY_WARLORD)
+    sorted->SetSortKey(SORTKEY_BOOTY_WARLORD);
     m_warlordBooty->Show();
 
     const Coord* flagPos = g_bootyFlagPos;

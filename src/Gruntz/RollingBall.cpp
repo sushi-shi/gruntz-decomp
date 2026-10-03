@@ -28,7 +28,6 @@
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Io/FileMem.h>
@@ -59,7 +58,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_subX, m_subY)
     CWwdSpriteObject* snapped = m_object;
-    SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_ROLLING_BALL_BASE + snapY)
+    snapped->SetSortKey(SORTKEY_ROLLING_BALL_BASE + snapY);
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
         CString name;
@@ -535,7 +534,7 @@ i32 CRollingBall::Update() {
     fin2->m_screenY = ny;
     CWwdSpriteObject* fin3 = m_object;
     i32 next = fin3->m_screenY + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(fin3, next)
+    fin3->SetSortKey(next);
     return 0;
 }
 

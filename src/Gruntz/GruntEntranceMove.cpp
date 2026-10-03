@@ -197,7 +197,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     m_entranceCommitted = false;
     m_entranceActive = true;
     CWwdSpriteObject* h = m_object;
-    SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
+    h->SetSortKey(SORTKEY_ACTOR);
 
     ClearAllSprites();
 
@@ -301,7 +301,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     do {                                                                                           \
         m_entranceCommitted = true;                                                                \
         i32 sortKey = m_object->m_screenY + 0x186a0;                                               \
-        SET_SORT_KEY_IF_CHANGED(m_object, sortKey)                                                 \
+        m_object->SetSortKey(sortKey);                                                             \
         CAniElement* found = NULL;                                                                 \
         CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;                          \
         MapLookup(                                                                                 \
@@ -580,7 +580,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     CWwdSpriteObject* h = m_object;
     i32 z = h->m_screenY + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(h, z)
+    h->SetSortKey(z);
     return 0;
 }
 

@@ -16,7 +16,6 @@
 #include <Gruntz/ObjTypeRegistrars.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -43,7 +42,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetImageSetByName("GAME_ACTIONAREA_RED");
     SET_ANIMATION_ACT("A");
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTION_AREA)
+    o->SetSortKey(SORTKEY_ACTION_AREA);
     m_phase = 1;
     m_timing.m_intervalLo = 0;
     m_timing.m_intervalHi = 0;

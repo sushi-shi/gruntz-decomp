@@ -46,7 +46,6 @@
 #include <Gruntz/Projectile.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
@@ -174,7 +173,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     {
         CWwdSpriteObject* h = m_object;
         i32 z = h->m_screenY + 0x186c1;
-        SET_SORT_KEY_IF_CHANGED(h, z)
+        h->SetSortKey(z);
     }
 
     SwitchAnimation(AT(m_poseAttack, pose));
@@ -333,7 +332,7 @@ i32 CGrunt::StepAttackFire() {
     }
     CWwdSpriteObject* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(h, zkey)
+    h->SetSortKey(zkey);
     i32 poweredUpSnapshot = m_poweredUp;
     m_entranceActive = false;
     if (poweredUpSnapshot != 0) {
@@ -441,7 +440,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     CWwdSpriteObject* h = m_object;
     i32 z = h->m_screenY + 0xc3500;
-    SET_SORT_KEY_IF_CHANGED(h, z)
+    h->SetSortKey(z);
 
     i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->m_durationMs;
     i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->m_durationMs;
@@ -516,7 +515,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         }
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v)
+        h->SetSortKey(v);
         return 0;
     }
 
@@ -1012,7 +1011,7 @@ i32 CGrunt::StepCombatReaction(
     {
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v)
+        h->SetSortKey(v);
     }
 
     bool ne;

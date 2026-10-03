@@ -40,7 +40,6 @@
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/Sprite.h>
@@ -99,7 +98,7 @@ RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner) {
     SET_OBJECT_FLAGS_AND_HIDE_INLINE(0x2000002)
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
+    o->SetSortKey(SORTKEY_ACTOR);
     memset(&m_frames[0], 0, 0x1c);
     m_sound = NULL;
     m_shadow = NULL;
@@ -826,7 +825,7 @@ RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_PROJECTILE)
+    o->SetSortKey(SORTKEY_PROJECTILE);
     SetImageSetByName("GAME_TIMEBOMB");
     SET_ANIMATION_ACT("A");
     m_value = m_wwdObject->m_animationCursor.m_animation;

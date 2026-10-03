@@ -149,6 +149,13 @@ public:
 
     void AttachToOwner(CDDrawSurfaceMgr* owner, i32 id);
 
+    void SetSortKey(i32 key) {
+        if (m_sortKey != key) {
+            m_sortKey = key;
+            AddFlags(IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING));
+        }
+    }
+
     i32 m_sortKey;
 
     POSITION m_posCache;

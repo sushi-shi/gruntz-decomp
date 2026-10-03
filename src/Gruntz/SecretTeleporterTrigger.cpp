@@ -21,7 +21,6 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
@@ -102,7 +101,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     } else {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0)
+        o->SetSortKey(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");
@@ -129,7 +128,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && g_gameReg->m_isCustomLevel == false) {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0)
+        o->SetSortKey(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");

@@ -26,7 +26,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -67,7 +66,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
     CWwdSpriteObject* h = m_object;
-    SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
+    h->SetSortKey(SORTKEY_ACTOR);
 
     m_wp[0].m_x = m_object->m_screenX;
     m_wp[0].m_y = m_object->m_screenY;

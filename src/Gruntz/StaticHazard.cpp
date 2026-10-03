@@ -28,7 +28,6 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
@@ -69,7 +68,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)}
 
     SNAP_OBJECT_TO_TILE_CENTER(m_object) CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0)
+    o->SetSortKey(0);
     m_tileCol = m_object->m_screenX >> TILE_SHIFT_PX;
     m_tileRow = m_object->m_screenY >> TILE_SHIFT_PX;
     m_object->m_health = 0;
@@ -164,7 +163,7 @@ i32 CStaticHazard::UpdateActiveState() {
                 {
                     APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)
                 } CWwdSpriteObject* o = m_object;
-                SET_SORT_KEY_IF_CHANGED(o, 0)
+                o->SetSortKey(0);
                 m_fired = false;
                 return 0;
             }
@@ -173,7 +172,7 @@ i32 CStaticHazard::UpdateActiveState() {
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
             {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
                 m_object;
-            SET_SORT_KEY_IF_CHANGED(o, 0)
+            o->SetSortKey(0);
 
             CMapMgr* grid = g_gameReg->GetTileGrid();
             i32 row = m_tileRow;
@@ -189,7 +188,7 @@ i32 CStaticHazard::UpdateActiveState() {
         SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
         {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
             m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0)
+        o->SetSortKey(0);
         m_fired = true;
         return 0;
     }
@@ -212,7 +211,7 @@ i32 CStaticHazard::UpdateActiveState() {
             );
         }
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, o->m_health)
+        o->SetSortKey(o->m_health);
         CMapMgr* grid = g_gameReg->GetTileGrid();
         i32 row = m_tileRow;
         i32 col = m_tileCol;
@@ -229,7 +228,7 @@ i32 CStaticHazard::UpdateActiveState() {
             grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
         }
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0)
+        o->SetSortKey(0);
     }
     {
         CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;

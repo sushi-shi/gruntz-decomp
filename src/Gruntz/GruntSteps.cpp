@@ -42,7 +42,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SerialWorkerRefMacros.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileCoordMacros.h>
@@ -273,10 +272,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
 
     SET_SCREEN_POS(m_object, m_commitPx.m_x, m_commitPx.m_y);
     object = m_object;
-    if (object->m_sortKey != object->m_screenY + 0x186a0) {
-        object->m_sortKey = object->m_screenY + 0x186a0;
-        object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING));
-    }
+    object->SetSortKey(object->m_screenY + 0x186a0);
 
     i32 oldY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     i32 oldX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -301,7 +297,7 @@ RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     SET_SCREEN_POS(m_object, m_lastTilePx.m_x, m_lastTilePx.m_y);
     CWwdSpriteObject* h = m_object;
-    SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
+    h->SetSortKey(h->m_screenY + 0x186a0);
     SetEntrancePos(clearArrivalState, 1);
     if (m_arrivalPending != false) {
 

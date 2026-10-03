@@ -14,7 +14,6 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TriggerMgr.h>
@@ -41,7 +40,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     Hide();
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
+    o->SetSortKey(SORTKEY_GRUNT_HUD);
     m_lastLayer = PICKUP_NONE;
 }
 
