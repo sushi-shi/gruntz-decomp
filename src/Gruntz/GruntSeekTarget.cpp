@@ -44,7 +44,7 @@
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
-    if (this->CoordCount() != 0
+    if (!this->CoordsEmpty()
         && g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x) == NULL) {
         this->RecycleCoords();
         this->m_arrivalCell.m_x = 0;
@@ -54,7 +54,7 @@ i32 CGrunt::StepToolThiefBehavior() {
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->GetTriggerMgr()->UnitAt(0, reason);
         if (slot == NULL || slot->m_entranceCommitted == false) {
-            if (this->CoordCount() != 0) {
+            if (!this->CoordsEmpty()) {
                 this->RecycleCoords();
             }
             this->m_arrivalCell.m_x = -1;
@@ -81,7 +81,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                 this->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
                 this->m_defenderState = AISTATE_COOLDOWN;
-                if (this->CoordCount() == 0) {
+                if (this->CoordsEmpty()) {
                     return 1;
                 }
                 this->RecycleCoords();
@@ -167,7 +167,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
     } else {
-        if (this->CoordCount() == 0) {
+        if (this->CoordsEmpty()) {
             if (this->m_defenderState != AISTATE_SEEK) {
                 return 1;
             }

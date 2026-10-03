@@ -24,7 +24,7 @@
 RVA(0x00032ce0, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= STAMINA_FULL) {
-        if (g->CoordCount() != 0) {
+        if (!g->CoordsEmpty()) {
             Coord* c = g->GetTailCoord();
             i32 col = c->m_x;
             i32 row = c->m_y;
@@ -36,7 +36,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                 return 1;
             }
         }
-        if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordCount() == 0) {
+        if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordsEmpty()) {
             i32 tileY = g->GetScreenTileY();
             CRect
                 box(g->ScanCell().m_x - 5, g->ScanCell().m_y - 5, g->ScanCell().m_x + 5, tileY + 5);
