@@ -68,7 +68,7 @@ public:
 
 RVA(0x001005d0, 0x17)
 inline CStatusBarItem::CStatusBarItem() {
-    m_enabled = false;
+    SetEnabled(false);
     m_kind = SBI_KIND_BASE;
     m_host = NULL;
     m_redrawFrames = 0;

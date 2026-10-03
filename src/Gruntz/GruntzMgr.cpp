@@ -892,7 +892,7 @@ RVA(0x000861e0, 0xc5)
 void CGruntzMgr::FinalizeLevelAndShowResults() {
     CState* currentState = m_curState;
     if (m_gameMode == GAMEMODE_QUESTZ) {
-        if (m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+        if (m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
             CommitSinglePlayerProgress();
         }
         TransitionState(GAMESTATE_BOOTY, 1, false, 0);
@@ -2033,7 +2033,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
 
     if (active) {
         RefreshGameClock();
-        if (m_frameGate != false) {
+        if (GetFrameGate() != false) {
             return;
         }
         if (m_musicEnabled == false) {

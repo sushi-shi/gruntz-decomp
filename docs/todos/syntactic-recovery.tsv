@@ -49,8 +49,9 @@ rva	unit	function	lost_max	cur
 0x162010	levelplane	?Draw@CDDrawWorkerHost@@QAEXPAVCDDrawSurfacePair@@@Z	87.7566	83.2420
 0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.3193
 0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4527	96.4054
+0x0d0db0	play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	93.5785
 0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	91.7547	91.3432
-0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.6613	89.4993
+0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.6613	88.9868
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660
 0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	95.7703	95.4459
 0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985

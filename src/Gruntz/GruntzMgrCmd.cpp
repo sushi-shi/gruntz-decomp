@@ -890,7 +890,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             return 1;
         }
         case CMD_TOGGLE_MUSIC: {
-            if (m_frameGate) {
+            if (GetFrameGate()) {
                 return 1;
             }
             m_musicEnabled ^= 1;

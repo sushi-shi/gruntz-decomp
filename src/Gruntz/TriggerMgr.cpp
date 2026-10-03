@@ -2326,7 +2326,6 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0007cf40, 0x12e)
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     POSITION pos = m_recList.GetHeadPosition();
@@ -2363,10 +2362,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
             i32 playerIndex = cell2->m_playerIndex;
             i32 unitIndex = cell2->m_unitIndex;
             if (RecordListHas(playerIndex, unitIndex)) {
-                m_cameraTargetIdentity.m_x = playerIndex;
-                m_cameraTargetIdentity.m_y = unitIndex;
-                m_armed = true;
-                LoadCameraSprite();
+                SetCameraTarget(playerIndex, unitIndex);
             }
         }
     }

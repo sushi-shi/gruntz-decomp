@@ -200,12 +200,11 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 CGrunt* entry =
                     g_gameReg->m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (entry != NULL) {
-                    CGameObject* candidateObject = entry->m_object;
                     CRect rc(
-                        (candidateObject->m_screenX >> TILE_SHIFT_PX) - 2,
-                        (candidateObject->m_screenY >> TILE_SHIFT_PX) - 2,
-                        (candidateObject->m_screenX >> TILE_SHIFT_PX) + 3,
-                        (candidateObject->m_screenY >> TILE_SHIFT_PX) + 3
+                        ScreenTile(entry).m_x - 2,
+                        ScreenTile(entry).m_y - 2,
+                        ScreenTile(entry).m_x + 3,
+                        ScreenTile(entry).m_y + 3
                     );
                     POINT pt;
                     SET_POINT_COMPONENTS(pt, px, py);

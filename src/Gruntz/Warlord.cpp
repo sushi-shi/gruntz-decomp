@@ -415,7 +415,7 @@ i32 CWarlord::FinishJoyAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (sub->IsComplete()) {
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
-        if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
+        if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
             ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
             tm->Start(0x3e8);
@@ -452,7 +452,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         }
 
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
-        if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
+        if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
             ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
             tm->Start(0x3e8);

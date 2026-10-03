@@ -92,6 +92,16 @@ public:
         return dispatch(this);
     }
 
+    BOOL HasMovementBounds() const {
+        return m_extent.left != COORD_UNSET;
+    }
+    BOOL HasHitBounds() const {
+        return m_area.left != COORD_UNSET;
+    }
+    BOOL HasAttackBounds() const {
+        return m_switchRect.left != COORD_UNSET;
+    }
+
     i32 AttackBits(CGameObject* target) const;
     i32 CollisionBits(CGameObject* target) const {
         return static_cast<i32>(target->m_objectType) & m_collMask;
