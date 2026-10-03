@@ -1767,7 +1767,7 @@ void CGrunt::StepBehavior(char*) {
             } else {
 
                 CInGameIcon* icon =
-                    static_cast<CInGameIcon*>(result->GetLogicRecord()->m_userLogic);
+                    static_cast<CInGameIcon*>(result->GetLogicRecord()->UserLogic());
                 icon->PlaceAt(m_playerIndex, m_unitIndex);
             }
         }

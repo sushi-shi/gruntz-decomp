@@ -1053,7 +1053,7 @@ i32 CTriggerMgr::SpawnPuddle(
 
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
-    CGruntPuddle* puddle = static_cast<CGruntPuddle*>(sprite->GetLogicRecord()->m_userLogic);
+    CGruntPuddle* puddle = static_cast<CGruntPuddle*>(sprite->GetLogicRecord()->UserLogic());
     i32 gaugePoints = sprite->m_points;
     if (gaugePoints == 0) {
         gaugePoints = 0x19;
@@ -1330,7 +1330,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
                 if (found == NULL) {
                     return 0;
                 }
-                cell = static_cast<CGrunt*>(found->GetLogicRecord()->m_userLogic);
+                cell = static_cast<CGrunt*>(found->GetLogicRecord()->UserLogic());
                 if (cell == NULL) {
                     return 0;
                 }
@@ -1401,7 +1401,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             if (looked == NULL) {
                 return 0;
             }
-            CWarlord* obj = static_cast<CWarlord*>(looked->GetLogicRecord()->m_userLogic);
+            CWarlord* obj = static_cast<CWarlord*>(looked->GetLogicRecord()->UserLogic());
             m_pendingFx = obj;
             if (obj == NULL) {
                 return 0;
@@ -1428,7 +1428,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (looked == NULL) {
             return 0;
         }
-        CGruntPuddle* obj = static_cast<CGruntPuddle*>(looked->GetLogicRecord()->m_userLogic);
+        CGruntPuddle* obj = static_cast<CGruntPuddle*>(looked->GetLogicRecord()->UserLogic());
         if (obj == NULL) {
             return 0;
         }
@@ -1716,7 +1716,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                                     );
                                 placed = 1;
                                 flashObject->GetLogicRecord()->Dispatch(flashObject);
-                                (static_cast<CLightFx*>(flashObject->GetLogicRecord()->m_userLogic))
+                                (static_cast<CLightFx*>(flashObject->GetLogicRecord()->UserLogic()))
                                     ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, true);
                             }
                         } while (placed == 0);
@@ -1930,7 +1930,7 @@ i32 CTriggerMgr::SpawnGrunt(
     }
     sprite->GetLogicRecord()->Dispatch(sprite);
 
-    CGrunt* logic = static_cast<CGrunt*>(sprite->GetLogicRecord()->m_userLogic);
+    CGrunt* logic = static_cast<CGrunt*>(sprite->GetLogicRecord()->UserLogic());
 
     if (logic->Place(
             this,
@@ -2481,7 +2481,7 @@ void CTriggerMgr::DestroyAllAnims() {
             actualDispatch.m_dispatch = record->GetDispatch();
             projectileDispatch.m_dispatch = DispatchProjectileLogic;
             if (actualDispatch.m_bits == projectileDispatch.m_bits) {
-                (static_cast<CGrunt*>(record->m_userLogic))->m_neighborPlayerIndex = 0;
+                (static_cast<CGrunt*>(record->UserLogic()))->m_neighborPlayerIndex = 0;
             }
         }
     }

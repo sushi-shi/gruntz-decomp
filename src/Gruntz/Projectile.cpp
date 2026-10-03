@@ -238,7 +238,7 @@ i32 CProjectile::LoadProjectileSprites(
     ));
     if (m_shadow != NULL) {
         m_shadow->GetLogicRecord()->Dispatch(m_shadow);
-        (static_cast<CLightFx*>(m_shadow->GetLogicRecord()->m_userLogic))
+        (static_cast<CLightFx*>(m_shadow->GetLogicRecord()->UserLogic()))
             ->Activate(
                 static_cast<const char*>(key + "_SHADOW"),
                 static_cast<const char*>(key + "1"),

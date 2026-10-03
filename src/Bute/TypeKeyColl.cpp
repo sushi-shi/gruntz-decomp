@@ -800,17 +800,17 @@ i32 zPTree::diffpos(const char* a, const char* b) {
 
 RVA(0x0016e4c0, 0xf)
 i32 DispatchLogicHit(CGameObject* obj) {
-    return obj->GetLogicRecord()->m_userLogic->AdvanceAnimation();
+    return obj->GetLogicRecord()->UserLogic()->AdvanceAnimation();
 }
 
 RVA(0x0016e4d0, 0xf)
 i32 DispatchLogicAttack(CGameObject* obj) {
-    return obj->GetLogicRecord()->m_userLogic->StepAttackFire();
+    return obj->GetLogicRecord()->UserLogic()->StepAttackFire();
 }
 
 RVA(0x0016e4e0, 0xf)
 i32 DispatchLogicBump(CGameObject* obj) {
-    return obj->GetLogicRecord()->m_userLogic->RecordFrameTick();
+    return obj->GetLogicRecord()->UserLogic()->RecordFrameTick();
 }
 
 RVA(0x0016e4f0, 0x19b)

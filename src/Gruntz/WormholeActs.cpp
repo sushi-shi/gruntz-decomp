@@ -110,7 +110,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
                     claimed->m_warlordObjectId
                 );
-                CWarlord* wl = static_cast<CWarlord*>(warlordObj->GetLogicRecord()->m_userLogic);
+                CWarlord* wl = static_cast<CWarlord*>(warlordObj->GetLogicRecord()->UserLogic());
                 if (wl != NULL) {
                     wl->ResolveJoyAnimation();
                 }

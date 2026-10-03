@@ -702,7 +702,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     }
 
     record = m_logicRecord;
-    CUserLogic* logic = record->m_userLogic;
+    CUserLogic* logic = record->UserLogic();
     LogicTypeId logicTypeId = LOGIC_UNSET;
     if (logic != NULL) {
         logicTypeId = logic->GetTypeTag();
