@@ -516,9 +516,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 break;
 
             case PICKUP_GOOBER: {
-                POSITION pos = m_baseList.GetHeadPosition();
+                POSITION pos = GetPuddleHeadPosition();
                 while (pos != NULL) {
-                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                    CGruntPuddle* cand = GetNextPuddle(pos);
                     if (cand->GetTileX() == tx && cand->GetTileY() == ty
                         && cand->IsPending() == false) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
@@ -1063,7 +1063,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;
     }
-    POSITION pos = m_baseList.GetHeadPosition();
+    POSITION pos = GetPuddleHeadPosition();
     i32 stop = 0;
     i32 overCapacity = stop;
     i32 replacedExisting = stop;
@@ -1072,7 +1072,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     }
     while (pos != NULL && stop == 0) {
         POSITION cur = pos;
-        CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+        CGruntPuddle* existing = GetNextPuddle(pos);
         if (existing->GetTileX() == puddle->GetTileX()
             && existing->GetTileY() == puddle->GetTileY()) {
             if (existing->IsPending() != false) {
@@ -1086,11 +1086,11 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
         }
     }
     if (overCapacity != 0 && replacedExisting == 0) {
-        pos = m_baseList.GetHeadPosition();
+        pos = GetPuddleHeadPosition();
         stop = 0;
         while (pos != NULL && stop == 0) {
             POSITION cur = pos;
-            CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+            CGruntPuddle* existing = GetNextPuddle(pos);
             if (existing->IsPending() == false) {
                 existing->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 m_baseList.RemoveAt(cur);
@@ -1267,9 +1267,9 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     n = static_cast<u32>(m_baseList.GetCount());
     ar->Write(&n, sizeof(n));
     b32 hasOv;
-    pos = m_baseList.GetHeadPosition();
+    pos = GetPuddleHeadPosition();
     while (pos != NULL) {
-        CGruntPuddle* obj = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+        CGruntPuddle* obj = GetNextPuddle(pos);
         if (obj == NULL) {
             goto fail;
         }
@@ -1801,23 +1801,21 @@ void CTriggerMgr::StopPendingFx() {
 // @early-stop
 RVA(0x0007be60, 0x21e)
 i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
-    RECT rect;
     i32 hx = cx >> TILE_SHIFT_PX;
     i32 hy = cy >> TILE_SHIFT_PX;
-    SET_RECT_COMPONENTS(rect, hx - r, hy - r, hx + r, hy + r);
+    CRect rect(hx - r, hy - r, hx + r, hy + r);
 
-    POSITION pos = m_baseList.GetHeadPosition();
+    POSITION pos = GetPuddleHeadPosition();
     while (pos != NULL) {
         POSITION cur = pos;
-        CGruntPuddle* g = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+        CGruntPuddle* g = GetNextPuddle(pos);
         if (g->IsPending() != false) {
             continue;
         }
         i32 tx = g->GetTileX();
         i32 ty = g->GetTileY();
-        POINT pt;
-        SET_POINT_COMPONENTS(pt, tx, ty);
-        if (!PtInRect(&rect, pt)) {
+        CPoint pt(tx, ty);
+        if (!rect.PtInRect(pt)) {
             continue;
         }
 
