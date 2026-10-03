@@ -925,7 +925,7 @@ i32 PumpIdleFrame() {
     if (world == NULL) {
         return 0;
     }
-    if (world->m_imageRegistry == NULL) {
+    if (world->GetImageRegistry() == NULL) {
         return 0;
     }
     if (g_gameReg->m_curState == NULL) {
@@ -1007,7 +1007,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
     }
 
     if (m_curState == NULL) {
-        m_owner->m_running = false;
+        m_owner->SetRunning(false);
         return 0;
     }
     RefreshGameClock();
@@ -1024,7 +1024,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
             return 0;
         }
         st->EnterState(previousState);
-        m_owner->m_running = true;
+        m_owner->SetRunning(true);
         g_inputMgr->ReadAll();
         RefreshGameClock();
         TRACE("TransitionState %d done\n", stateId);
@@ -1107,7 +1107,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     if (m_curState->EnterState(oldId) == GAMESTATE_NONE && m_curState->RestoreDisplay() == 0) {
         return 0;
     }
-    m_owner->m_running = true;
+    m_owner->SetRunning(true);
     RefreshGameClock();
     return 1;
 }
@@ -1292,15 +1292,15 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     }
 
     SoundCueRegistry* snd = w->SoundRegistry();
-    w->m_imageRegistry->SumSizesEqual(NULL, 1);
+    w->GetImageRegistry()->SumSizesEqual(NULL, 1);
     snd->SumAudioBytes(NULL);
     w->GetDeviceManager()->GetCapsChecked();
     w->GetDeviceManager()->GetCapsChecked();
-    w->m_imageRegistry->SumSizesEqual(NULL, 1);
-    w->m_imageRegistry->SumSizesEqual("GRUNTZ", 1);
-    w->m_imageRegistry->SumSizesEqual("GAME", 1);
-    w->m_imageRegistry->SumSizesEqual("LEVEL", 1);
-    w->m_imageRegistry->SumSizesEqual("ACTION", 1);
+    w->GetImageRegistry()->SumSizesEqual(NULL, 1);
+    w->GetImageRegistry()->SumSizesEqual("GRUNTZ", 1);
+    w->GetImageRegistry()->SumSizesEqual("GAME", 1);
+    w->GetImageRegistry()->SumSizesEqual("LEVEL", 1);
+    w->GetImageRegistry()->SumSizesEqual("ACTION", 1);
     w->SoundRegistry()->SumAudioBytes(NULL);
     w->SoundRegistry()->SumAudioBytes("GRUNTZ");
     w->SoundRegistry()->SumAudioBytes("GAME");
@@ -2001,7 +2001,7 @@ void CGruntzMgr::DelayedQuit() {
     while (timeGetTime() < deadline) {
     }
     if (m_owner) {
-        m_owner->m_running = false;
+        m_owner->SetRunning(false);
     }
     if (m_gameWnd) {
         PostMessageA(m_gameWnd->GetHwnd(), WM_CLOSE, 0, 0);

@@ -96,6 +96,10 @@ public:
         return m_soundRegistry;
     }
 
+    CDDrawWorkerRegistry* GetImageRegistry() {
+        return m_imageRegistry;
+    }
+
     AnimationRegistry* GetAnimationRegistry() {
         return m_animRegistry;
     }

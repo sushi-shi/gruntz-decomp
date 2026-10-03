@@ -1510,6 +1510,7 @@ i32 CMulti::PollSession() {
         return 0;
     }
 
+    DWORD messageSize;
     i32 dispatched;
     DPID sender;
     sender = 0;
@@ -1521,7 +1522,7 @@ i32 CMulti::PollSession() {
             break;
         }
 
-        DWORD messageSize = sizeof(g_recvBuffer);
+        messageSize = sizeof(g_recvBuffer);
         hr = Network()->ReceiveMessage(&sender, LocalPlayer(), g_recvBuffer, &messageSize);
         if (hr == 0) {
             count--;

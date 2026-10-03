@@ -3928,7 +3928,7 @@ i32 CWarpStoneFly::SerializeDispatch(
             i32 index = 0;
             memset(name, 0, SERIAL_NAME_LEN);
             if (obj != NULL) {
-                lvl->m_imageRegistry->AnyValueMatches(obj, name, &index);
+                lvl->GetImageRegistry()->AnyValueMatches(obj, name, &index);
             }
             arc->Write(name, SERIAL_NAME_LEN);
             arc->Write(&index, sizeof(index));

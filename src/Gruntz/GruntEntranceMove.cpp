@@ -296,7 +296,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         i32 sortKey = m_object->m_screenY + 0x186a0;                                               \
         m_object->SetSortKey(sortKey);                                                             \
         CAniElement* found = NULL;                                                                 \
-        CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;                          \
+        CAniElement* cached = m_wwdObject->m_animationCursor.GetAnimation();                       \
         MapLookup(                                                                                 \
             m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
             s_gruntzEntrancezDrop,                                                                 \
@@ -920,7 +920,7 @@ CAniElement* AnimationRegistry::FindAnimation(const char* key) {
 
 RVA(0x0006b2e0, 0x39)
 void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceImmediately) {
-    m_value = m_wwdObject->m_animationCursor.m_animation;
+    m_value = m_wwdObject->m_animationCursor.GetAnimation();
     CAniAdvanceCursor* anim = &m_wwdObject->m_animationCursor;
     anim->SetAnimation(animation);
     if (advanceImmediately != 0) {

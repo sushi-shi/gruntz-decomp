@@ -127,7 +127,7 @@ void CCreditsState::ReleaseResources() {
             reg->m_soundStream->StopAllStreams();
         }
         m_world->SoundRegistry()->RemoveWithPrefix("CREDITZ", "_");
-        m_world->m_imageRegistry->RemoveWithPrefix("CREDITZ", "_");
+        m_world->GetImageRegistry()->RemoveWithPrefix("CREDITZ", "_");
 
         m_world->GetAnimationRegistry()->RemoveWithPrefix("CREDITZ", "_");
     }
@@ -193,7 +193,7 @@ i32 CCreditsState::Render() {
                 } else {
                     PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
                 }
-                owner()->m_owner->m_running = false;
+                owner()->m_owner->SetRunning(false);
                 break;
             }
         }

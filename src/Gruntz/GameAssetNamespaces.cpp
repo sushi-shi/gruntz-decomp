@@ -22,7 +22,6 @@
 DATA(0x00251614)
 i32 g_buildNumber;
 
-// @early-stop
 RVA(0x000f9ea0, 0x21d)
 i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     m_mgr = mgr;
@@ -31,12 +30,11 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
 
     m_faderMgr = mgr->m_faderMgr;
     m_levelIndex = areaArg;
-    i32 t = (areaArg - 1) % 0x24;
     m_reserved44 = -1;
     m_reserved48 = -1;
     m_reserved14c = 0;
+    m_levelType = LevelAreaForLevel(areaArg);
     m_previousStateId = static_cast<GameStateId>(prevStateId);
-    m_levelType = static_cast<LevelArea>(t / 4 + 1);
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
     sprintf(area, "AREA%i", IDX(m_levelType));
@@ -45,13 +43,13 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (node == NULL) {
         return 0;
     }
-    if (m_world->m_imageRegistry->HasWithPrefix("GAME") == 0) {
+    if (m_world->GetImageRegistry()->HasWithPrefix("GAME") == 0) {
         CRezDir* img = m_resourceArchive->GetDirFromPath("GAME_IMAGEZ");
         if (img == NULL) {
             return 0;
         }
         g_resourceInstallActive = true;
-        m_world->m_imageRegistry->InstallTree(img, "GAME", "_");
+        m_world->GetImageRegistry()->InstallTree(img, "GAME", "_");
         g_resourceInstallActive = false;
     }
     if (m_world->SoundRegistry()->HasWithPrefix("GAME") == 0) {

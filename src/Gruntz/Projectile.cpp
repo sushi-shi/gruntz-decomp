@@ -324,7 +324,7 @@ void CProjectile::AdvanceMotion() {
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[0]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[0]) {
                     SwitchAnimation(m_frames[0]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[0]);
@@ -333,7 +333,7 @@ void CProjectile::AdvanceMotion() {
             } else if (dist >= m_flightDist * 0.8 || dist < m_flightDist * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[1]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[1]) {
                     SwitchAnimation(m_frames[1]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[1]);
@@ -342,7 +342,7 @@ void CProjectile::AdvanceMotion() {
             } else if (dist >= m_flightDist * 0.7 || dist < m_flightDist * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[2]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[2]) {
                     SwitchAnimation(m_frames[2]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[2]);
@@ -351,7 +351,7 @@ void CProjectile::AdvanceMotion() {
             } else if (dist >= m_flightDist * 0.6 || dist < m_flightDist * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[3]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[3]) {
                     SwitchAnimation(m_frames[3]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[3]);
@@ -360,7 +360,7 @@ void CProjectile::AdvanceMotion() {
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_wwdObject->m_animationCursor.m_animation != m_frames[4]) {
+                if (m_wwdObject->m_animationCursor.GetAnimation() != m_frames[4]) {
                     SwitchAnimation(m_frames[4]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animationCursor.SetAnimation(m_frames[4]);
@@ -840,7 +840,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     o->SetSortKey(SORTKEY_PROJECTILE);
     SetImageSetByName("GAME_TIMEBOMB");
     SET_ANIMATION_ACT("A");
-    m_value = m_wwdObject->m_animationCursor.m_animation;
+    m_value = m_wwdObject->m_animationCursor.GetAnimation();
     if (m_object->m_damage > 0) {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
         m_timing.Start(m_object->m_damage);

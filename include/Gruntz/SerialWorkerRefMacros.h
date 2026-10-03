@@ -57,7 +57,7 @@
     memset(name, 0, sizeof(name));                                                                 \
     index = 0;                                                                                     \
     if ((field) != NULL) {                                                                         \
-        (mgr)->m_imageRegistry->AnyValueMatches(field, name, &(index));                            \
+        (mgr)->GetImageRegistry()->AnyValueMatches(field, name, &(index));                         \
     }                                                                                              \
     (ar)->Write(name, SERIAL_NAME_LEN);                                                            \
     (ar)->Write(&(index), sizeof(index))
@@ -80,7 +80,7 @@
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
-        reg->m_imageRegistry->m_workersByName.Lookup(buf, out);                                    \
+        reg->GetImageRegistry()->m_workersByName.Lookup(buf, out);                                 \
         CDDrawWorker* gm = static_cast<CDDrawWorker*>(out);                                        \
         CImage* r = gm != 0 ? gm->GetAt(i) : 0;                                                    \
         field = r;                                                                                 \
@@ -93,7 +93,7 @@
     s->Read(buf, SERIAL_NAME_LEN);                                                                 \
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
-        reg->m_imageRegistry->m_workersByName.Lookup(buf, out);                                    \
+        reg->GetImageRegistry()->m_workersByName.Lookup(buf, out);                                 \
         field = static_cast<CDDrawWorker*>(out);                                                   \
     } else {                                                                                       \
         field = 0;                                                                                 \

@@ -15,7 +15,7 @@
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
 
-#define DEATH_FRAME() (m_wwdObject->m_animationCursor.m_animation->RecordAt(0)->m_param)
+#define DEATH_FRAME() (m_wwdObject->m_animationCursor.GetAnimation()->RecordAt(0)->m_param)
 
 // *_IF_VISIBLE calls the out-of-line CGameLevel::PointInBounds; *_IN_VIEW inlines ::PtInRect.
 #define PLAY_VOICE_IF_VISIBLE(tag)                                                                 \

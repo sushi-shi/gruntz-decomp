@@ -18,4 +18,8 @@ GZ_ENUM_BEGIN(LevelArea)
     AREA_TILESET_B_FIRST = AREA_HIGH_ROLLERZ
 GZ_ENUM_END(LevelArea)
 
+inline LevelArea LevelAreaForLevel(i32 levelIndex) {
+    return static_cast<LevelArea>((levelIndex - 1) % 36 / 4 + 1);
+}
+
 #endif // GRUNTZ_GRUNTZ_LEVELAREA_H

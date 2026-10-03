@@ -222,6 +222,10 @@ public:
 
     static LRESULT CALLBACK GameWindowProc(HWND, UINT, WPARAM, LPARAM);
 
+    void SetRunning(b32 running) {
+        m_running = running;
+    }
+
     CGameWnd* m_gameWnd;
     CGameMgr* m_gameMgr;
     HINSTANCE m_hInstance;

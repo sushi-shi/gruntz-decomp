@@ -283,7 +283,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         if (!imagez) {
             return 0;
         }
-        m_world->m_imageRegistry->InstallTree(imagez, "BOOTY", "_");
+        m_world->GetImageRegistry()->InstallTree(imagez, "BOOTY", "_");
     }
 
     while (ShowCursor(false) >= 0) {
@@ -322,8 +322,8 @@ void CBootyState::ReleaseResources() {
     }
     m_world->SoundRegistry()->RemoveWithPrefix("BOOTY", "_");
     m_world->SoundRegistry()->RemoveWithPrefix("GRUNTZ_WANDGRUNT", "_");
-    m_world->m_imageRegistry->RemoveWithPrefix("BOOTY", "_");
-    m_world->m_imageRegistry->RemoveWithPrefix("GRUNTZ_GOKARTGRUNT", "_");
+    m_world->GetImageRegistry()->RemoveWithPrefix("BOOTY", "_");
+    m_world->GetImageRegistry()->RemoveWithPrefix("GRUNTZ_GOKARTGRUNT", "_");
     CState::ReleaseResources();
 }
 
@@ -753,7 +753,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (img == NULL) {
         return 0;
     }
-    m_world->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
+    m_world->GetImageRegistry()->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
 
     CDDrawChildGroup* f = g_gameReg->World()->ChildGroup();
 
@@ -943,7 +943,8 @@ i32 CBootyState::LevelMsgHudDriver() {
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            if (i >= m_slot && (i != m_slot || m_expl[i]->m_animationCursor.m_animation == NULL)) {
+            if (i >= m_slot
+                && (i != m_slot || m_expl[i]->m_animationCursor.GetAnimation() == NULL)) {
                 m_expl[i]->Show();
                 m_expl[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
                 m_expl[i]->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
@@ -1473,14 +1474,14 @@ i32 CBootyState::InputVirtual() {
     if (booty == NULL) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
     CRezDir* gruntz = m_gruntResources->GetDirFromPath("IMAGEZ");
     if (gruntz == NULL) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+    if (m_world->GetImageRegistry()->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
     if (m_activation != BOOTYSEQ_DONE) {
@@ -1710,7 +1711,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     {
         char area[128];
-        sprintf(area, "AREA%i", (g_gameReg->GetGameStats()->m_levelNumber - 1) % 0x24 / 4 + 1);
+        sprintf(area, "AREA%i", IDX(LevelAreaForLevel(g_gameReg->GetGameStats()->m_levelNumber)));
         m_levelResources = m_resourceArchive->GetDirFromPath(area);
     }
     if (!m_levelResources) {
@@ -2478,7 +2479,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    CDDrawWorkerRegistry* reg = m_world->m_imageRegistry;
+    CDDrawWorkerRegistry* reg = m_world->GetImageRegistry();
     if (reg->LoadNamespace(tree, "BOOTY", "_") == -1) {
         return 0;
     }
@@ -2487,7 +2488,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    reg = m_world->m_imageRegistry;
+    reg = m_world->GetImageRegistry();
     if (reg->LoadNamespace(tree, "GRUNTZ", "_") == -1) {
         return 0;
     }
@@ -2496,7 +2497,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    reg = m_world->m_imageRegistry;
+    reg = m_world->GetImageRegistry();
     if (reg->LoadNamespace(tree, "LEVEL", "_") == -1) {
         return 0;
     }
