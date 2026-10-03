@@ -234,12 +234,12 @@ i32 CGruntPuddle::Remove() {
         i32 flags = grid->CellFlagsAt(tx, ty);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-            CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
-            POSITION pos = list.GetHeadPosition();
+            CTriggerMgr* manager = g_gameReg->m_triggerMgr;
+            POSITION pos = manager->GetPuddleHeadPosition();
             while (pos != NULL) {
                 POSITION current = pos;
-                if (list.GetNext(pos) == this) {
-                    list.RemoveAt(current);
+                if (manager->GetNextPuddle(pos) == this) {
+                    manager->m_baseList.RemoveAt(current);
                     return 0;
                 }
             }
