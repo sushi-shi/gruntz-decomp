@@ -88,6 +88,10 @@ public:
         return m_ddSurface;
     }
 
+    const DDSURFACEDESC& GetDescription() const {
+        return m_apiDesc;
+    }
+
     void* Lock(RECT* rect);
     i32 PixelOffset(i32 x, i32 y) const {
         return y * m_apiDesc.lPitch + x * m_bytesPerPixel;

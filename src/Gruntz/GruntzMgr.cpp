@@ -2198,7 +2198,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
             m_gameWnd->GetHwnd(),
             dd2,
             front->GetDirectDrawSurface(),
-            front->m_apiDesc,
+            front->GetDescription(),
             dsound
         )) {
         MovieOpenFlags openFlags =
