@@ -116,7 +116,7 @@ i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     Verify();
     if (screenshotPath != NULL) {
         CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
-        g_gameReg->World()->m_drawTarget->TransEnter();
+        g_gameReg->World()->GetDrawTarget()->TransEnter();
         state->LoadSBITextEdges(messageId);
         if (!SaveGame(g_gameReg, screenshotPath)) {
             return 0;

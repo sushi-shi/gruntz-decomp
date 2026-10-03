@@ -132,7 +132,7 @@ void CDDrawSubMgrPages::FlipAndNotify() {
     m_frontSurface->GetSurface()->Flip(NULL);
     CDDrawSurfaceMgr* n = OwnerMgr();
     CDDrawChildGroup* c = n->ChildGroup();
-    CDDrawSubMgrPages* s = n->m_drawTarget;
+    CDDrawSubMgrPages* s = n->GetDrawTarget();
     c->BltDirtyChildren(s->GetBackPair(), s->m_overlayPair);
 }
 

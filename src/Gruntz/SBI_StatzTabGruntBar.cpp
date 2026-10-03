@@ -42,7 +42,7 @@ i32 CSBI_StatzTabGruntBar::Refresh(i32 deltaMs) {
 
 RVA(0x000ea4e0, 0x172)
 i32 CSBI_StatzTabGruntBar::Render() {
-    CDDrawSurfacePair* ctx = g_gameReg->World()->m_drawTarget->GetBackPair();
+    CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
         m_statusGlyph->RenderFrame(

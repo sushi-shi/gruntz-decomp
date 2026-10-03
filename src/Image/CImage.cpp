@@ -168,7 +168,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
         return 0;
     }
 
-    ColorDepth fmt = OwnerMgr()->m_drawTarget->GetFrontSurface()->m_bpp;
+    ColorDepth fmt = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->m_bpp;
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }

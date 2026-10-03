@@ -79,9 +79,9 @@ i32 CState::LoadTitlePage(
         mode = DDRAW_PAGE_OVERLAY;
     }
 
-    if (menuRoot()->m_drawTarget->LoadPageImage(page, mode) == 0) {
+    if (menuRoot()->GetDrawTarget()->LoadPageImage(page, mode) == 0) {
         if (useOverlay != false) {
-            if (menuRoot()->m_drawTarget->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
+            if (menuRoot()->GetDrawTarget()->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
                 return 0;
             }
         }
@@ -112,7 +112,7 @@ i32 CState::PresentTitlePage(
     if (!m_stateResources) {
         return 0;
     }
-    menuRoot()->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
+    menuRoot()->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
     return 1;
 }
 
@@ -150,7 +150,7 @@ i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadM
     if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
-    CDDSurface* surface = m_world->m_drawTarget->GetFrontSurface()->GetSurface();
+    CDDSurface* surface = m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
     if (surface == NULL) {
         return 0;
     }
@@ -169,7 +169,7 @@ i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadM
     m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != false) {
         ActiveWait(durationMs);
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Fill(0);
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Fill(0);
     } else {
         f->RunFade(durationMs, leadMs, 0);
     }
@@ -190,11 +190,11 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
-    CDDSurface* targetSurface = m_world->m_drawTarget->GetFrontSurface()->GetSurface();
+    CDDSurface* targetSurface = m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
     if (targetSurface == NULL) {
         return 0;
     }
-    CDDSurface* sourceSurface = m_world->m_drawTarget->GetBackPair()->GetSurface();
+    CDDSurface* sourceSurface = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
     if (sourceSurface == NULL) {
         return 0;
     }
@@ -213,7 +213,7 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != false) {
         ActiveWait(durationMs);
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Blt(sourceSurface);
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Blt(sourceSurface);
     } else {
         f->RunFade(durationMs, leadMs, 0);
     }
@@ -227,7 +227,7 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == NULL) {
         return 0;
     }
-    CDDSurface* s = m_world->m_drawTarget->GetFrontSurface()->GetSurface();
+    CDDSurface* s = m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
     if (s == NULL) {
         return 0;
     }
@@ -255,11 +255,11 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
     if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
-    CDDSurface* targetSurface = m_world->m_drawTarget->GetFrontSurface()->GetSurface();
+    CDDSurface* targetSurface = m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
     if (targetSurface == NULL) {
         return 0;
     }
-    CDDSurface* sourceSurface = m_world->m_drawTarget->GetBackPair()->GetSurface();
+    CDDSurface* sourceSurface = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
     if (sourceSurface == NULL) {
         return 0;
     }
@@ -277,7 +277,7 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
     m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != false) {
         ActiveWait(durationMs);
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Blt(sourceSurface);
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Blt(sourceSurface);
     } else {
         f->RunFade(durationMs, leadMs, 0);
     }
@@ -296,15 +296,15 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
     if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
-    CDDSurface* targetSurface = m_world->m_drawTarget->GetFrontSurface()->GetSurface();
+    CDDSurface* targetSurface = m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
     if (targetSurface == NULL) {
         return 0;
     }
     CDDrawSurfacePair* sourcePair;
-    if (useOverlay != false && m_world->m_drawTarget->HasOverlay() != 0) {
-        sourcePair = m_world->m_drawTarget->m_overlayPair;
+    if (useOverlay != false && m_world->GetDrawTarget()->HasOverlay() != 0) {
+        sourcePair = m_world->GetDrawTarget()->m_overlayPair;
     } else {
-        sourcePair = m_world->m_drawTarget->GetBackPair();
+        sourcePair = m_world->GetDrawTarget()->GetBackPair();
     }
     CDDSurface* sourceSurface = sourcePair->GetSurface();
     if (sourceSurface == NULL) {
@@ -323,7 +323,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
 
     if (g_disableFades != false) {
         ActiveWait(dur);
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Blt(sourceSurface);
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Blt(sourceSurface);
     } else {
         f->RunFade(dur, lead, 0);
     }
@@ -342,7 +342,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     if (m_world->GetDeviceManager() == NULL) {
         return 0;
     }
-    CDDSurface* surface = m_world->m_drawTarget->GetFrontSurface()->GetSurface();
+    CDDSurface* surface = m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
     if (surface == NULL) {
         return 0;
     }
@@ -360,7 +360,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != false) {
         ActiveWait(durationMs);
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Fill(0);
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Fill(0);
     } else {
         f->RunFade(durationMs, leadMs, 0);
     }
@@ -389,11 +389,11 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     if (sym == NULL) {
         return 0;
     }
-    if (menuRoot()->m_drawTarget->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
+    if (menuRoot()->GetDrawTarget()->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
         return 0;
     }
     if (doFlip != 0) {
-        menuRoot()->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
+        menuRoot()->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
     }
     return 1;
 }
@@ -421,7 +421,7 @@ i32 CState::InputVirtual() {
 
     while (ShowCursor(false) >= 0)
         ;
-    if (m_world->m_drawTarget->PagesReady() == 0) {
+    if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;
     }
     if (g_playActive == false) {
@@ -457,10 +457,10 @@ void CState::Present(i32 pct) {
         g_skipNextScreenEffect = false;
         return;
     }
-    m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->GetBackPair());
-    m_world->m_drawTarget->GetBackPair()->GetSurface()->ShadeRect(pct, static_cast<RECT*>(0));
-    m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(static_cast<CDDSurface*>(0));
-    m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->GetBackPair());
+    m_world->GetDrawTarget()->BlitPage(m_world->GetDrawTarget()->GetBackPair());
+    m_world->GetDrawTarget()->GetBackPair()->GetSurface()->ShadeRect(pct, static_cast<RECT*>(0));
+    m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(static_cast<CDDSurface*>(0));
+    m_world->GetDrawTarget()->BlitPage(m_world->GetDrawTarget()->GetBackPair());
 }
 
 // @dead-code
@@ -472,7 +472,7 @@ i32 CState::ShadeScreen(i32 pct) {
         g_skipNextScreenEffect = false;
         return v;
     }
-    return m_world->m_drawTarget->GetBackPair()->GetSurface()->ShadeRect(pct, NULL);
+    return m_world->GetDrawTarget()->GetBackPair()->GetSurface()->ShadeRect(pct, NULL);
 }
 
 RVA(0x000fafa0, 0x3b)

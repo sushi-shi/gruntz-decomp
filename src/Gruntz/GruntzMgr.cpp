@@ -1774,7 +1774,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
-        m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->GetBackPair());
+        m_world->GetDrawTarget()->BlitPage(m_world->GetDrawTarget()->GetBackPair());
 
         CDDrawDeviceManager* deviceManager = m_world->GetDeviceManager();
         deviceManager->FlipToGDISurface();
@@ -1800,7 +1800,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         m_voiceManager->PauseAllVoices();
     }
     if (m_world) {
-        m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->GetBackPair());
+        m_world->GetDrawTarget()->BlitPage(m_world->GetDrawTarget()->GetBackPair());
 
         CDDrawDeviceManager* deviceManager = m_world->GetDeviceManager();
         deviceManager->FlipToGDISurface();
@@ -2177,7 +2177,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     CMoviePlayer player;
     IDirectSound* dsound = NULL;
 
-    CDDSurface* front = World()->m_drawTarget->GetFrontSurface()->GetSurface();
+    CDDSurface* front = World()->GetDrawTarget()->GetFrontSurface()->GetSurface();
     IDirectDraw2* dd2 = World()->GetDeviceManager()->GetDirectDraw();
 
     if (World()->SoundRegistry()->HasWithPrefix("GAME") == 0) {

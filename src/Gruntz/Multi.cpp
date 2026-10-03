@@ -417,7 +417,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
-        m_world->m_drawTarget->m_overlayPair->GetSurface()->Fill(0);
+        m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
         CString s;
         s.LoadString(0x81a9);
         tagSIZE mode = m_mgr->GetModeSize();
@@ -674,19 +674,19 @@ void CMulti::RenderGameFrame() {
         DrawVisibleWorld();
         m_statusBar->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h =
-            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->GetBackPair());
+            static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
         if (h == NULL) {
             return;
         }
         AdvanceCursorAnimation(g_frameDelta);
         SaveUnderAndDrawCursor(h);
-        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
+        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
         return;
     }
     RestoreCursorSaveUnder();
     StepViewportResize();
     if (m_region0Gate != false) {
-        (static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->GetBackPair()))
+        (static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()))
             ->GetSurface()
             ->Fill(0);
         m_statusBar->Deactivate();
@@ -720,10 +720,10 @@ void CMulti::RenderGameFrame() {
             );
         }
         m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
-        m_minimap->Draw(static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->GetBackPair()), &rc);
+        m_minimap->Draw(static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()), &rc);
     }
     Mgr()->ChatLog()->Scroll(g_frameDelta);
-    CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->GetBackPair());
+    CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
     if (h == NULL) {
         return;
     }
@@ -735,7 +735,7 @@ void CMulti::RenderGameFrame() {
     if (m_worldReady != false) {
         h->DrawBox(&m_hudRect, 0xff);
     }
-    m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
+    m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
     if (m_world->m_level->m_mainPlane != NULL) {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();
@@ -775,7 +775,7 @@ i32 CMulti::StartTitle() {
         return 0;
     }
 
-    m_world->m_drawTarget->PresentBackPage();
+    m_world->GetDrawTarget()->PresentBackPage();
 
     m_world->GetDeviceManager()->FlipToGDISurface();
     m_stateResources = saved;
@@ -837,7 +837,7 @@ i32 CMulti::Open() {
         return 0;
     }
     LoadAndPresentTitlePage("BACKGND", 0, 0, 1, 0);
-    m_world->m_drawTarget->PresentBackPage();
+    m_world->GetDrawTarget()->PresentBackPage();
     CNetProviderNode* provider = SelectNetworkProvider();
     if (!provider) {
         return 0;
