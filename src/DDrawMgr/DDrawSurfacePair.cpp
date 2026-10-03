@@ -553,7 +553,7 @@ i32 CLogicRecord::SerializeDispatch(
         case SERIAL_PRESAVE:
             m_targetId = 0;
             if (m_target) {
-                m_targetId = m_target->m_objectId;
+                m_targetId = m_target->GetObjectId();
             }
             break;
         case SERIAL_SAVE:
@@ -596,7 +596,7 @@ i32 CLogicRecord::CacheTargetId(void* context) {
     }
     m_targetId = 0;
     if (m_target) {
-        m_targetId = m_target->m_objectId;
+        m_targetId = m_target->GetObjectId();
     }
     return 1;
 }

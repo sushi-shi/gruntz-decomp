@@ -1028,7 +1028,7 @@ i32 CGrunt::StepCombatReaction(
     eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
+            g_gameReg->m_voiceManager->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
         goto tail;

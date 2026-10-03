@@ -604,7 +604,7 @@ i32 CGrunt::StepArrivalCommit() {
     eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->VoiceMgr()->StopVoice(m_object->m_objectId);
+            g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {
@@ -876,7 +876,7 @@ i32 CGrunt::FinishActiveAction() {
     eq = IsAnimationAct("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
+            g_gameReg->m_voiceManager->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
         return 1;

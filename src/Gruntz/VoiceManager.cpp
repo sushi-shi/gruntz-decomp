@@ -150,7 +150,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
     i32 slotIndex;
     if (firstPriority <= secondPriority) {
         slotIndex = 0;
-        if (secondSourceObjectId == grunt->m_object->m_objectId) {
+        if (secondSourceObjectId == grunt->m_object->GetObjectId()) {
             slotIndex = 1;
             if (firstPriority != 0 && m_streamVoices[0] != NULL) {
                 m_streamVoices[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
@@ -160,7 +160,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
         }
     } else {
         slotIndex = 1;
-        if (firstSourceObjectId == grunt->m_object->m_objectId) {
+        if (firstSourceObjectId == grunt->m_object->GetObjectId()) {
             slotIndex = 0;
             if (secondPriority != 0 && m_streamVoices[1] != NULL) {
                 m_streamVoices[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
@@ -184,7 +184,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
     }
     if (m_streamVoices[slotIndex]->PlaySource(source, m_voiceVolume, 0, 0, false) != 0) {
         if (m_indicators[slotIndex]->BeginPlayback(
-                grunt->m_object->m_objectId,
+                grunt->m_object->GetObjectId(),
                 m_streamVoices[slotIndex],
                 priority,
                 VOICE_INDICATOR_AT_LOGIC_OBJECT
@@ -234,7 +234,7 @@ i32 CVoiceManager::PlayVoice(
     }
     i32 sourceObjectId = 0;
     if (unpositioned == 0 && sourceGrunt != NULL) {
-        sourceObjectId = sourceGrunt->m_object->m_objectId;
+        sourceObjectId = sourceGrunt->m_object->GetObjectId();
     }
     CRezItm* source = SelectVoiceVariant(voiceGroup, variantIndex);
     if (source == NULL) {

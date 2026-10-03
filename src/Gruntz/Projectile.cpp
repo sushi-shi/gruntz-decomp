@@ -716,7 +716,7 @@ i32 CProjectile::SerializeDispatch(
             g_serialCounter++;
             i32 count = 0;
             if (m_shadow != NULL) {
-                count = m_shadow->m_objectId;
+                count = m_shadow->GetObjectId();
             }
             s->Write(&count, sizeof(count));
 

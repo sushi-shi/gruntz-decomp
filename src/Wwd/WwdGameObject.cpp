@@ -427,7 +427,7 @@ i32 CGameObject::SerializeDispatch(
         case SERIAL_PRESAVE:
             m_carrierId = 0;
             if (m_carrier != NULL) {
-                m_carrierId = m_carrier->m_objectId;
+                m_carrierId = m_carrier->GetObjectId();
             }
             if (!NotifyLogicForEventCode(this, ACT_PREPARE_SAVE)) {
                 goto fail;
@@ -486,7 +486,7 @@ i32 CGameObject::PrepareSave(CFileMemBase* ar) {
     }
     m_carrierId = 0;
     if (m_carrier != NULL) {
-        m_carrierId = m_carrier->m_objectId;
+        m_carrierId = m_carrier->GetObjectId();
     }
     return 1;
 }

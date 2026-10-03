@@ -92,6 +92,10 @@ public:
         return dispatch(this);
     }
 
+    i32 GetObjectId() const {
+        return m_objectId;
+    }
+
     BOOL HasMovementBounds() const {
         return m_extent.left != COORD_UNSET;
     }

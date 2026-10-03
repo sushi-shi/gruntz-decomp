@@ -1213,7 +1213,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             CGrunt* g = *cell;
             i32 id = 0;
             if (g != NULL) {
-                id = g->m_object->m_objectId;
+                id = g->m_object->GetObjectId();
                 CGameObject* found = NULL;
                 MapLookupById(lvl->ChildGroup()->m_registeredGameObjectsById, id, found);
             }
@@ -1254,13 +1254,13 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     CWwdSpriteObject* goal = m_goal;
     i32 objId = 0;
     if (goal != NULL) {
-        objId = goal->m_objectId;
+        objId = goal->GetObjectId();
     }
     ar->Write(&objId, sizeof(objId));
     CWarlord* ov = m_pendingFx;
     objId = 0;
     if (ov != NULL && ov->m_object != NULL) {
-        objId = ov->m_object->m_objectId;
+        objId = ov->m_object->GetObjectId();
     }
     ar->Write(&objId, sizeof(objId));
     ar->Write(m_reserved274, 0x10);
@@ -1273,7 +1273,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         if (obj == NULL) {
             goto fail;
         }
-        objId = obj->m_object->m_objectId;
+        objId = obj->m_object->GetObjectId();
         CGameObject* found = NULL;
         MapLookupById(lvl->ChildGroup()->m_registeredGameObjectsById, objId, found);
         ar->Write(&objId, sizeof(objId));
