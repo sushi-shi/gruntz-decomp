@@ -915,7 +915,6 @@ i32 CBootyState::LoadGruntEffectSprites() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0001a700, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {
     if (m_initGate != false) {
@@ -933,16 +932,15 @@ i32 CBootyState::LevelMsgHudDriver() {
 
         i32 shown = 0;
         for (i32 i = 0; i < 8; i++) {
-            RECT box;
             m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_icons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             SET_SCREEN_POS(m_icons[i], g_levelMsgIconPos[i].m_x, g_levelMsgIconPos[i].m_y);
-            CopyRect(&box, &g_levelMsgRectsA[i]);
+            CRect box(g_levelMsgRectsA[i]);
             CString text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            CopyRect(&box, &g_levelMsgRectsB[i]);
+            box.CopyRect(&g_levelMsgRectsB[i]);
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -978,9 +976,8 @@ i32 CBootyState::LevelMsgHudDriver() {
 
         if (m_templateFlags[s] == 0
             && gx >= (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2) {
-            RECT box;
             m_templateFlags[s] = 1;
-            CopyRect(&box, &g_levelMsgRectsA[m_slot]);
+            CRect box(g_levelMsgRectsA[m_slot]);
             CString text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -1006,9 +1003,8 @@ i32 CBootyState::LevelMsgHudDriver() {
 
     for (i32 i = m_slot; i < 8; i++) {
         if (m_gokart[i]->m_screenX >= m_bomb[i]->m_screenX) {
-            RECT box;
             CString text;
-            CopyRect(&box, &g_levelMsgRectsB[i]);
+            CRect box(g_levelMsgRectsB[i]);
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -1506,14 +1502,12 @@ RVA(0x0001c9d0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {
         if (m_templateFlags[i]) {
-            RECT r1;
-            CopyRect(&r1, &g_levelMsgRectsA[i]);
+            CRect r1(g_levelMsgRectsA[i]);
             CString t(g_levelMsgStrings[i]);
             DrawTextToOverlaySurface(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         if (m_readyFlags[i]) {
-            RECT r2;
-            CopyRect(&r2, &g_levelMsgRectsB[i]);
+            CRect r2(g_levelMsgRectsB[i]);
             CString t2;
             FormatHudText(&t2, static_cast<BootyStatRow>(i));
             DrawTextToOverlaySurface(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
