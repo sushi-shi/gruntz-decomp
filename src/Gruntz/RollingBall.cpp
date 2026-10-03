@@ -87,7 +87,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
         time = g_buteMgr.GetDword("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CGruntzMgr* reg = g_gameReg;
-    if (false != reg->m_isEasyMode && reg->GetGameMode() == GAMEMODE_QUESTZ
+    if (false != reg->GetEasyMode() && reg->GetGameMode() == GAMEMODE_QUESTZ
         && m_object->m_smarts != 1) {
         time += 1000;
     }
@@ -146,12 +146,12 @@ i32 CRollingBall::Update() {
         i32 sx = lg->m_screenPosition.m_x;
         i32 sy = lg->m_screenPosition.m_y;
         if (::PtInRect(&g_gameReg->m_viewBounds, sx, sy)) {
-            g_gameReg->m_triggerMgr->m_rollingballWanted = true;
+            g_gameReg->GetTriggerMgr()->m_rollingballWanted = true;
         }
         CWwdSpriteObject* lg2 = m_object;
         i32 playerIndex;
         i32 unitIndex;
-        if (g_gameReg->m_triggerMgr->FindGruntAt(
+        if (g_gameReg->GetTriggerMgr()->FindGruntAt(
                 lg2->m_screenPosition.m_x,
                 lg2->m_screenPosition.m_y,
                 &lg2->m_area,
@@ -159,15 +159,15 @@ i32 CRollingBall::Update() {
                 &unitIndex,
                 NULL
             )) {
-            g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, -1);
+            g_gameReg->GetTriggerMgr()->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, -1);
         }
     }
 
     CWwdSpriteObject* cur = m_object;
     if (cur->m_screenPosition.m_x == m_target.m_x && cur->m_screenPosition.m_y == m_target.m_y) {
 
-        g_gameReg->m_triggerMgr->WireTileSwitchLogic(NULL, m_target.m_x, m_target.m_y);
-        g_gameReg->m_triggerMgr->ApplySwitch(NULL, m_target.m_x, m_target.m_y);
+        g_gameReg->GetTriggerMgr()->WireTileSwitchLogic(NULL, m_target.m_x, m_target.m_y);
+        g_gameReg->GetTriggerMgr()->ApplySwitch(NULL, m_target.m_x, m_target.m_y);
 
         i32 tx = m_target.m_x >> TILE_SHIFT_PX;
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;

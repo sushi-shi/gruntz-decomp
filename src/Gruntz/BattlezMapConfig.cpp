@@ -143,7 +143,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_repickTimer = 0;
     m_ctx = mgr;
     m_playerIndex = playerIndex;
-    m_triggerMgr = mgr->m_triggerMgr;
+    m_triggerMgr = mgr->GetTriggerMgr();
     m_board = mgr->GetTileGrid();
     m_play = static_cast<CPlay*>(mgr->m_curState);
     m_cellQuery = m_play->m_tileTriggers;
@@ -328,7 +328,7 @@ i32 CBattlezMapConfig::StepBoard() {
     if (m_active == false) {
         return 1;
     }
-    if (m_ctx->m_triggerMgr == NULL) {
+    if (m_ctx->GetTriggerMgr() == NULL) {
         return 0;
     }
     if (m_spawnTimer - m_spawnLastFire > m_gruntCreationTime) {
@@ -520,7 +520,7 @@ candidateFound:
     m_ctx->m_world->m_level->m_mainPlane->SnapToTileCenter(&screen, pixel.m_x, pixel.m_y);
     i32 cell;
     if (allowReserved != false) {
-        cell = m_ctx->m_triggerMgr->PlaceObject(
+        cell = m_ctx->GetTriggerMgr()->PlaceObject(
             m_playerIndex,
             screen.m_x,
             screen.m_y,
@@ -536,7 +536,7 @@ candidateFound:
             NULL
         );
     } else {
-        cell = m_ctx->m_triggerMgr->PlaceObject(
+        cell = m_ctx->GetTriggerMgr()->PlaceObject(
             m_playerIndex,
             screen.m_x,
             screen.m_y,
@@ -556,7 +556,7 @@ candidateFound:
         return 0;
     }
 
-    CGrunt* unit = m_ctx->m_triggerMgr->UnitAt(m_playerIndex, cell);
+    CGrunt* unit = m_ctx->GetTriggerMgr()->UnitAt(m_playerIndex, cell);
     if (unit == NULL) {
         return 0;
     }
@@ -3415,7 +3415,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (cell == -1) {
         return 0;
     }
-    CGrunt* unit = m_ctx->m_triggerMgr->UnitAt(m_playerIndex, cell);
+    CGrunt* unit = m_ctx->GetTriggerMgr()->UnitAt(m_playerIndex, cell);
     if (unit == NULL) {
         return 0;
     }

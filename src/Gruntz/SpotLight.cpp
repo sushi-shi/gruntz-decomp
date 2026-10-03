@@ -123,8 +123,8 @@ void RegisterSpotLightActions() {
 
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
-    if (g_gameReg->m_isEasyMode == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-        CGrunt* tgt = g_gameReg->m_triggerMgr->FindGruntAt(
+    if (g_gameReg->GetEasyMode() == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+        CGrunt* tgt = g_gameReg->GetTriggerMgr()->FindGruntAt(
             m_object->m_screenPosition.m_x,
             m_object->m_screenPosition.m_y,
             &m_object->m_area,
@@ -141,7 +141,7 @@ i32 CSpotLight::Tick() {
                 tgt->m_object->m_screenPosition.m_y
             );
             if (m_object->m_score == 1) {
-                g_gameReg->m_triggerMgr
+                g_gameReg->GetTriggerMgr()
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);
                 i32 laser = GetRandomNumber() % 2 + 1;
                 CString name;
@@ -150,7 +150,7 @@ i32 CSpotLight::Tick() {
                 return 0;
             } else {
                 tgt->SnapToLastTile(1);
-                g_gameReg->m_triggerMgr
+                g_gameReg->GetTriggerMgr()
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_KAROKE, -1);
                 return 0;
             }

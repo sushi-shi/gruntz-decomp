@@ -203,7 +203,7 @@ common: {
         i32 fy = nc->m_y;
         if ((g_gameReg->GetTileGrid()->CellFlagsAt(fx, fy) & 0x20) != 0) {
             this->RecycleCoords();
-            g_gameReg->m_triggerMgr->UseEquippedToolAt(
+            g_gameReg->GetTriggerMgr()->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
                 (bx << TILE_SHIFT_PX) + TILE_HALF_PX,

@@ -45,14 +45,14 @@ RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
-        && g_gameReg->m_triggerMgr->UnitAt(0, this->m_arrivalCell.m_x) == NULL) {
+        && g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x) == NULL) {
         this->RecycleCoords();
         this->m_arrivalCell.m_x = 0;
     }
 
     i32 reason = IDX(this->ArrivalPickup());
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
-        CGrunt* slot = g_gameReg->m_triggerMgr->UnitAt(0, reason);
+        CGrunt* slot = g_gameReg->GetTriggerMgr()->UnitAt(0, reason);
         if (slot == NULL || slot->m_entranceCommitted == false) {
             if (this->CoordCount() != 0) {
                 this->RecycleCoords();
@@ -173,7 +173,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             }
             i32 best = INT_MAX;
             i32 bestIdx = -1;
-            CGrunt** slots = g_gameReg->m_triggerMgr->m_units;
+            CGrunt** slots = g_gameReg->GetTriggerMgr()->m_units;
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
@@ -205,7 +205,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCell.m_x = bestIdx;
-                CGameObject* base = g_gameReg->m_triggerMgr->m_units[bestIdx]->m_object;
+                CGameObject* base = g_gameReg->GetTriggerMgr()->m_units[bestIdx]->m_object;
                 if (TileSwitch(
                         base->m_screenPosition.m_x >> TILE_SHIFT_PX,
                         base->m_screenPosition.m_y >> TILE_SHIFT_PX,
@@ -227,7 +227,8 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (static_cast<u32>(this->m_dwell) <= 0x3e8) {
             return 1;
         }
-        CGameObject* base = g_gameReg->m_triggerMgr->UnitAt(0, this->m_arrivalCell.m_x)->m_object;
+        CGameObject* base =
+            g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x)->m_object;
         TileSwitch(
             base->m_screenPosition.m_x >> TILE_SHIFT_PX,
             base->m_screenPosition.m_y >> TILE_SHIFT_PX,

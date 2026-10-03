@@ -64,13 +64,13 @@ i32 CExitTrigger::AdvanceAnim() {
         CWwdSpriteObject* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;
-        g_gameReg->m_triggerMgr
+        g_gameReg->GetTriggerMgr()
             ->HitTestApply(trig->m_screenPosition.m_x, trig->m_screenPosition.m_y, span);
     } else if (m_resolved != false) {
         i32 hitPlayerIndex;
         i32 hitUnitIndex;
         CWwdSpriteObject* obj = m_object;
-        if (g_gameReg->m_triggerMgr->FindGruntAt(
+        if (g_gameReg->GetTriggerMgr()->FindGruntAt(
                 obj->m_screenPosition.m_x,
                 obj->m_screenPosition.m_y,
                 &obj->m_area,
@@ -98,8 +98,9 @@ i32 CExitTrigger::AdvanceAnim() {
                 loser->m_clearedRound = true;
             }
             g_gameReg->m_gameStats->RecordFlagCapture(hitPlayerIndex, owningPlayer);
-            g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(owningPlayer);
-            g_gameReg->m_triggerMgr->StartUnitDeath(hitPlayerIndex, hitUnitIndex, DEATH_EXIT, -1);
+            g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(owningPlayer);
+            g_gameReg->GetTriggerMgr()
+                ->StartUnitDeath(hitPlayerIndex, hitUnitIndex, DEATH_EXIT, -1);
             if (m_warlordLogic != NULL) {
                 m_warlordLogic->ResolveDeathAnimation();
                 m_warlordLogic = NULL;
@@ -147,7 +148,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
             }
             if (owningPlayer == g_curPlayer) {
-                g_gameReg->m_triggerMgr->LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
+                g_gameReg->GetTriggerMgr()->LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
             } else {
                 GruntzPlayer* board = &g_gameReg->m_players[owningPlayer];
                 if (board != NULL && board->m_humanControlled == false) {
@@ -205,7 +206,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     }
                 }
             }
-            g_gameReg->m_triggerMgr->StartPlayerVictorySequence(m_object->m_smarts);
+            g_gameReg->GetTriggerMgr()->StartPlayerVictorySequence(m_object->m_smarts);
         }
     }
     return 0;

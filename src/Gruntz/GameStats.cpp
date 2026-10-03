@@ -387,7 +387,7 @@ void CGameStats::UpdateLevelRecord(i32 levelNumber, b32 writeAvailableCounts) {
         levelStats->m_secretsFound = m_secretsFound;
         levelStats->m_coinsCollected = m_coinsCollected;
         levelStats->m_warpLetterFound = m_warpLetterFound;
-        levelStats->m_isEasyMode = g_gameReg->m_isEasyMode;
+        levelStats->m_isEasyMode = g_gameReg->GetEasyMode();
     } else {
         levelStats->m_toyzAvailable = m_toyzAvailable;
         levelStats->m_toolzAvailable = m_toolzAvailable;

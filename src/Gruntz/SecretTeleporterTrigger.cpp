@@ -96,7 +96,7 @@ RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
-    if (g_gameReg->m_isEasyMode != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     } else {
         Coord position = m_object->ScreenPos();
@@ -157,7 +157,7 @@ RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* spr = m_object;
-    CGrunt* hit = g_gameReg->m_triggerMgr->HitTestCell(
+    CGrunt* hit = g_gameReg->GetTriggerMgr()->HitTestCell(
         spr->m_screenPosition.m_x,
         spr->m_screenPosition.m_y,
         &playerIndex,
@@ -177,7 +177,7 @@ i32 CSecretLevelTrigger::Tick() {
             ok = false;
         }
         if (ok) {
-            g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_DRAIN, -1);
+            g_gameReg->GetTriggerMgr()->StartUnitDeath(playerIndex, unitIndex, DEATH_DRAIN, -1);
         }
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
@@ -188,7 +188,7 @@ RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* o = m_object;
-    CGrunt* hit = g_gameReg->m_triggerMgr->HitTestCell(
+    CGrunt* hit = g_gameReg->GetTriggerMgr()->HitTestCell(
         o->m_screenPosition.m_x,
         o->m_screenPosition.m_y,
         &playerIndex,

@@ -1492,7 +1492,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
         PickupType alt = cell->ArrivalPickup();
         if (alt == PICKUP_WAND) {
-            g_gameReg->m_triggerMgr->HandleTargetSelection(
+            g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                 cell->LastTilePx().m_x,
                 cell->LastTilePx().m_y,
                 0,
@@ -1511,7 +1511,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
         PickupType alt = cell->m_vehiclePickupType;
         if (alt == PICKUP_SCROLL) {
             CGameObject* o = cell->m_object;
-            g_gameReg->m_triggerMgr->HandleTargetSelection(
+            g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                 o->m_screenPosition.m_x,
                 o->m_screenPosition.m_y,
                 0,
@@ -2524,7 +2524,7 @@ i32 CTriggerMgr::ToggleToolTargeting() {
         } else {
             PickupType v = cell->ArrivalPickup();
             if (v == PICKUP_WAND) {
-                g_gameReg->m_triggerMgr->HandleTargetSelection(
+                g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                     cell->LastTilePx().m_x,
                     cell->LastTilePx().m_y,
                     0,
@@ -2560,7 +2560,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
             PickupType kind = cell->m_vehiclePickupType;
             if (kind == PICKUP_SCROLL) {
                 CGameObject* o = cell->m_object;
-                g_gameReg->m_triggerMgr->HandleTargetSelection(
+                g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                     o->m_screenPosition.m_x,
                     o->m_screenPosition.m_y,
                     0,

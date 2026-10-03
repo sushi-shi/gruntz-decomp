@@ -114,7 +114,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == STATUS_SAMPLE_NONE) {
         return 0;
     }
-    CGrunt* unit = g_gameReg->m_triggerMgr->UnitAt(m_rowIndex, m_colIndex);
+    CGrunt* unit = g_gameReg->GetTriggerMgr()->UnitAt(m_rowIndex, m_colIndex);
     if (unit == NULL) {
         m_owner->ClearStat(m_colIndex);
         return 0;

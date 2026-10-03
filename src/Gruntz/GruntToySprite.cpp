@@ -68,8 +68,10 @@ i32 CGruntToySprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
 
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGrunt* e =
-        g_gameReg->m_triggerMgr->UnitAt(m_gruntIdentity.m_playerIndex, m_gruntIdentity.m_unitIndex);
+    CGrunt* e = g_gameReg->GetTriggerMgr()->UnitAt(
+        m_gruntIdentity.m_playerIndex,
+        m_gruntIdentity.m_unitIndex
+    );
     if (e == NULL) {
         return 0;
     }

@@ -45,7 +45,7 @@ RVA(0x000f0db0, 0x48)
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
     Coord tile(tileX, tileY);
-    CTriggerMgr* manager = g_gameReg->m_triggerMgr;
+    CTriggerMgr* manager = g_gameReg->GetTriggerMgr();
     POSITION pos = manager->GetPuddleHeadPosition();
 
     if (pos != NULL) {

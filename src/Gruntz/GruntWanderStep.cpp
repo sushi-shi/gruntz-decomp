@@ -210,7 +210,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
                 CGrunt* entry =
-                    g_gameReg->m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
+                    g_gameReg->GetTriggerMgr()->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (entry != NULL) {
                     CRect rc(
                         ScreenTile(entry).m_x - 2,

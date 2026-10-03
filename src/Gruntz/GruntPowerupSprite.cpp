@@ -74,8 +74,10 @@ i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerup
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    CGrunt* e =
-        g_gameReg->m_triggerMgr->UnitAt(m_gruntIdentity.m_playerIndex, m_gruntIdentity.m_unitIndex);
+    CGrunt* e = g_gameReg->GetTriggerMgr()->UnitAt(
+        m_gruntIdentity.m_playerIndex,
+        m_gruntIdentity.m_unitIndex
+    );
     if (e != NULL) {
         SET_SCREEN_POS(
             m_object,

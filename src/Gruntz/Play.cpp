@@ -387,7 +387,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
         if (previousState != GAMESTATE_HELP) {
             m_mgr->m_worldSounds->Resume();
         }
-        (static_cast<CTriggerMgr*>(m_mgr->m_triggerMgr))->DestroyAllAnims();
+        (static_cast<CTriggerMgr*>(m_mgr->GetTriggerMgr()))->DestroyAllAnims();
         (static_cast<CVoiceManager*>(m_mgr->VoiceMgr()))->PauseAllVoices();
     }
     return 1;
@@ -412,8 +412,8 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         r.top = 0;
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
-        if (m_mgr && m_mgr->m_triggerMgr) {
-            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
+        if (m_mgr && m_mgr->GetTriggerMgr()) {
+            m_mgr->GetTriggerMgr()->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
         }
     }
     return 1;
@@ -707,7 +707,7 @@ void CPlay::UpdateWorldFrame() {
     g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
     m_world->ChildGroup()->TickKillCues(0);
-    m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
+    m_mgr->GetTriggerMgr()->UpdateFrame(static_cast<i32>(g_frameDelta));
     if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
 
         (g_gameReg)->AdvanceComputerPlayerTurns();
@@ -758,7 +758,7 @@ i32 CPlay::UpdateWorldFixedSteps() {
                 }
             }
             m_world->ChildGroup()->TickKillCues(0);
-            m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
+            m_mgr->GetTriggerMgr()->UpdateFrame(static_cast<i32>(g_frameDelta));
             if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
                 (g_gameReg)->AdvanceComputerPlayerTurns();
             }
@@ -796,7 +796,7 @@ i32 CPlay::ProfileInputFrame() {
 
     i32 updateMs = static_cast<i32>(tg());
     m_world->ChildGroup()->TickKillCues(1);
-    m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
+    m_mgr->GetTriggerMgr()->UpdateFrame(static_cast<i32>(g_frameDelta));
     m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
     updateMs = static_cast<i32>(tg() - static_cast<u32>(updateMs));
 
@@ -1320,13 +1320,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         ->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, self->m_mgr);
     {
         CString key;
-        g_gameReg->m_triggerMgr->m_pendingFx = NULL;
+        g_gameReg->GetTriggerMgr()->m_pendingFx = NULL;
         i32 count = self->m_levelIndex;
         i32 i = count - ((count - 1) % 4);
         for (; i < self->m_levelIndex; ++i) {
 
             key.Format("Level%i", i);
-            CTriggerMgr* bm = g_gameReg->m_triggerMgr;
+            CTriggerMgr* bm = g_gameReg->GetTriggerMgr();
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
             bm->m_byteArr.Add(static_cast<u8>(v));
         }
@@ -1478,8 +1478,8 @@ void CPlay::FreeListTeardown() {
     if (m_mgr == NULL) {
         return;
     }
-    if (m_mgr->m_triggerMgr != NULL) {
-        m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
+    if (m_mgr->GetTriggerMgr() != NULL) {
+        m_mgr->GetTriggerMgr()->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
     }
     ForwardReady();
     {
@@ -1492,7 +1492,7 @@ void CPlay::FreeListTeardown() {
     m_mgr->m_midi->ClearSequences();
     m_mgr->m_worldSounds->Teardown();
     m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
-    g_gameReg->m_triggerMgr->DestroyAllAnims();
+    g_gameReg->GetTriggerMgr()->DestroyAllAnims();
     m_world->m_level->ReleaseChildren();
     (m_world->ChildGroup())->PruneList();
     if (m_statusBar != NULL) {
@@ -1505,13 +1505,13 @@ void CPlay::FreeListTeardown() {
         m_levelTimer->Reset();
     }
     m_cursorSnapSprite = NULL;
-    m_mgr->m_triggerMgr->CloseActionOptionsMenu();
-    CTriggerMgr* triggerManager = m_mgr->m_triggerMgr;
+    m_mgr->GetTriggerMgr()->CloseActionOptionsMenu();
+    CTriggerMgr* triggerManager = m_mgr->GetTriggerMgr();
 
     triggerManager->m_byteArr.RemoveAll();
     triggerManager->m_groupInitialized = false;
-    m_mgr->m_triggerMgr->m_baseList.RemoveAll();
-    m_mgr->m_triggerMgr->m_pendingFx = NULL;
+    m_mgr->GetTriggerMgr()->m_baseList.RemoveAll();
+    m_mgr->GetTriggerMgr()->m_pendingFx = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
     FreeStartMarkers();
     for (k = 0; k < 4; k++) {
@@ -1718,7 +1718,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -1739,7 +1739,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'Q') {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -1753,7 +1753,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'R') {
                 if (mgr->GetGameMode() == GAMEMODE_QUESTZ
-                    && g_gameReg->m_triggerMgr->GetFinishState() != FINISH_STATE_VICTORY) {
+                    && g_gameReg->GetTriggerMgr()->GetFinishState() != FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->GetHwnd(), WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
@@ -1762,7 +1762,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'N') {
                 if (mgr->GetGameMode() == GAMEMODE_QUESTZ
-                    && g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
+                    && g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
                 }
@@ -1792,7 +1792,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == VK_ESCAPE) {
-        CTriggerMgr* triggerManager = mgr->m_triggerMgr;
+        CTriggerMgr* triggerManager = mgr->GetTriggerMgr();
         triggerManager->StopCameraTracking();
         CChatBoxOwner* rec = this->m_chatBox;
         if (rec->m_inputActive != false) {
@@ -1816,7 +1816,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (this->m_chatBox->m_inputActive != false) {
         return 1;
     }
-    if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
+    if (g_gameReg->GetTriggerMgr()->m_groupFlag == false) {
         return 1;
     }
 
@@ -1889,24 +1889,26 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'Z') {
-        g_gameReg->m_triggerMgr->EnqueueGroupCells();
+        g_gameReg->GetTriggerMgr()->EnqueueGroupCells();
         return 1;
     }
 
     if (vk == 'C') {
-        g_gameReg->m_triggerMgr->CenterOnGroup(g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5));
+        g_gameReg->GetTriggerMgr()->CenterOnGroup(
+            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
+        );
         return 1;
     }
 
     if (vk == 'T') {
         this->FlushPendingOps();
-        g_gameReg->m_triggerMgr->ToggleToolTargeting();
+        g_gameReg->GetTriggerMgr()->ToggleToolTargeting();
         return 1;
     }
 
     if (vk == 'Y') {
         this->FlushPendingOps();
-        g_gameReg->m_triggerMgr->ToggleToyTargeting();
+        g_gameReg->GetTriggerMgr()->ToggleToyTargeting();
         return 1;
     }
 
@@ -2123,7 +2125,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        if (g_gameReg->m_triggerMgr->m_unitCountByPlayer[g_curPlayer] >= a->m_maxGruntz) {
+        if (g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[g_curPlayer] >= a->m_maxGruntz) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
@@ -2162,7 +2164,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             RECT* view = g->GetPlaneViewRect();
             i32 by = view->top - q->m_viewportRect.top + my;
             i32 bx = view->left - q->m_viewportRect.left + mx;
-            mgr->m_triggerMgr->SpawnPuddle(bx, by, 0, 0, true, 0x19);
+            mgr->GetTriggerMgr()->SpawnPuddle(bx, by, 0, 0, true, 0x19);
         }
     }
 
@@ -2179,7 +2181,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 bx =
             ((this->m_cursorPosition.m_x - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
             + TILE_HALF_PX;
-        g_gameReg->m_triggerMgr->LoadExplosionSprites(bx, by, -1, 1);
+        g_gameReg->GetTriggerMgr()->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
 
@@ -2189,7 +2191,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         i32 playerIndex;
         i32 unitIndex;
-        CGrunt* r = mgr->m_triggerMgr->ScreenToCell(
+        CGrunt* r = mgr->GetTriggerMgr()->ScreenToCell(
             this->m_cursorPosition.m_x,
             this->m_cursorPosition.m_y,
             &playerIndex,
@@ -2199,79 +2201,79 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (r == NULL) {
             return 1;
         }
-        mgr->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, -1);
+        mgr->GetTriggerMgr()->StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, -1);
         return 1;
     }
 
     if (vk == '1') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(1);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(1);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(1);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(1);
         }
         return 1;
     }
     if (vk == '2') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(2);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(2);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(2);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(2);
         }
         return 1;
     }
     if (vk == '3') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(3);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(3);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(3);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(3);
         }
         return 1;
     }
     if (vk == '4') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(4);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(4);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(4);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(4);
         }
         return 1;
     }
     if (vk == '5') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(5);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(5);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(5);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(5);
         }
         return 1;
     }
     if (vk == '6') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(6);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(6);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(6);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(6);
         }
         return 1;
     }
     if (vk == '7') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(7);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(7);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(7);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(7);
         }
         return 1;
     }
     if (vk == '8') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(8);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(8);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(8);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(8);
         }
         return 1;
     }
     if (vk == '9') {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
-            g_gameReg->m_triggerMgr->RebuildSelectionList(9);
+            g_gameReg->GetTriggerMgr()->RebuildSelectionList(9);
         } else {
-            g_gameReg->m_triggerMgr->CenterSelectionGroup(9);
+            g_gameReg->GetTriggerMgr()->CenterSelectionGroup(9);
         }
         return 1;
     }
@@ -2410,7 +2412,7 @@ recorder_place:
 tail_default:
 
 {
-    g_gameReg->m_triggerMgr->m_pendingFxKind = 0;
+    g_gameReg->GetTriggerMgr()->m_pendingFxKind = 0;
     this->LoadCursorSprites(0, false);
 }
 tail_default2:
@@ -2520,7 +2522,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         return 1;
     }
 
-    if (m_levelOverlayOpen != false || g_gameReg->m_triggerMgr->m_groupFlag == false) {
+    if (m_levelOverlayOpen != false || g_gameReg->GetTriggerMgr()->m_groupFlag == false) {
         return m_statusBar->UpdateStatusBarTabHighlight(eventArg, x, y);
     }
 
@@ -2594,7 +2596,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                     vr2->left - ds->m_viewportRect.left + xr,
                     vr2->top - ds->m_viewportRect.top + y
                 );
-                if (g_gameReg->m_triggerMgr->CellHitTest(
+                if (g_gameReg->GetTriggerMgr()->CellHitTest(
                         dropPosition.m_x,
                         dropPosition.m_y,
                         &eventArg,
@@ -2624,7 +2626,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 );
 
                 CRect span(0, 0, 0, 0);
-                CGrunt* p = g_gameReg->m_triggerMgr->FindGruntAt(
+                CGrunt* p = g_gameReg->GetTriggerMgr()->FindGruntAt(
                     dropPosition.m_x,
                     dropPosition.m_y,
                     &span,
@@ -2706,7 +2708,7 @@ drag_box: {
         i32 lv = m_cursorId - IDX(CURSOR_TOOL_HANDZ);
         PickupType item = static_cast<PickupType>(lv);
         if (item <= PICKUP_EQUIPPABLE_LAST) {
-            g_gameReg->m_triggerMgr->HandleTargetSelection(
+            g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                 snapped.m_x,
                 snapped.m_y,
                 0,
@@ -2716,22 +2718,23 @@ drag_box: {
                 1
             );
         } else if (item >= PICKUP_TOYZ_FIRST && item <= PICKUP_TOYZ_LAST) {
-            g_gameReg->m_triggerMgr
+            g_gameReg->GetTriggerMgr()
                 ->HandleTargetSelection(snapped.m_x, snapped.m_y, 0, 0, 0, TARGET_SELECTION_TOY, 1);
         }
-        g_gameReg->m_triggerMgr->m_pendingFxKind = 0;
+        g_gameReg->GetTriggerMgr()->m_pendingFxKind = 0;
         LoadCursorSprites(0, false);
         m_dragClampMax.Set(xr, y);
         m_hudRect = MakeRect(xr, y, xr, y);
         m_worldReady = true;
         return 1;
     }
-    if (g_gameReg->m_triggerMgr->HandleActionOptionsPointer(worldPosition.m_x, worldPosition.m_y)) {
+    if (g_gameReg->GetTriggerMgr()
+            ->HandleActionOptionsPointer(worldPosition.m_x, worldPosition.m_y)) {
         return 1;
     }
 
     if (m_cursorId >= IDX(CURSOR_TOOL_HANDZ)) {
-        CTriggerMgr* cg = g_gameReg->m_triggerMgr;
+        CTriggerMgr* cg = g_gameReg->GetTriggerMgr();
         CGrunt* slot;
         if (1 != cg->m_recList.GetCount()) {
             slot = NULL;
@@ -2751,10 +2754,10 @@ drag_box: {
     }
 
     CGrunt* picked = static_cast<CGrunt*>(
-        m_mgr->m_triggerMgr->ScreenToCell(xr, y, &eventArg, &x, PLAYER_SLOT_ALL)
+        m_mgr->GetTriggerMgr()->ScreenToCell(xr, y, &eventArg, &x, PLAYER_SLOT_ALL)
     );
     if (picked != NULL) {
-        m_mgr->m_triggerMgr
+        m_mgr->GetTriggerMgr()
             ->ResetCell(eventArg, x, g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5), 0);
         if (eventArg == g_curPlayer) {
             if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
@@ -2784,7 +2787,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
             m_minimap->EndMinimapPan(keyFlags, x, y);
         }
         if (m_worldReady != false) {
-            m_mgr->m_triggerMgr->HudRect(
+            m_mgr->GetTriggerMgr()->HudRect(
                 m_hudRect,
                 g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
             );
@@ -2806,7 +2809,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed != false || m_statusBar == NULL) {
         return 1;
     }
-    if (m_levelOverlayOpen != false || g_gameReg->m_triggerMgr->m_groupFlag == false) {
+    if (m_levelOverlayOpen != false || g_gameReg->GetTriggerMgr()->m_groupFlag == false) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
     if (m_dragInhibit1 != false || m_dragInhibit2 != false) {
@@ -2839,7 +2842,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     i32 playerIndex;
     {
         i32 unitIndex;
-        if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
+        if (m_mgr->GetTriggerMgr()->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
             m_statusBar->ToggleStat(unitIndex);
             return 1;
@@ -2856,7 +2859,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     playerIndex = g_curPlayer;
     GruntzPlayer* cfg = &g_gameReg->m_players[playerIndex];
     if (cfg == NULL
-        || g_gameReg->m_triggerMgr->m_unitCountByPlayer[playerIndex] >= cfg->m_maxGruntz) {
+        || g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[playerIndex] >= cfg->m_maxGruntz) {
         return 0;
     }
 
@@ -2923,7 +2926,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_levelOverlayOpen != false) {
         return 1;
     }
-    if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
+    if (g_gameReg->GetTriggerMgr()->m_groupFlag == false) {
         return 1;
     }
     if (m_mgr->GetFrameGate() != false) {
@@ -2941,11 +2944,11 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     i32 idx = m_statusBar->HitTest(x, y);
     if (idx != -1) {
         m_statusBar->ClearStat(idx);
-        CTriggerMgr* w = m_mgr->m_triggerMgr;
+        CTriggerMgr* w = m_mgr->GetTriggerMgr();
         w->StopCameraTracking();
         return 1;
     }
-    if (m_mgr->m_triggerMgr->m_recList.IsEmpty()) {
+    if (m_mgr->GetTriggerMgr()->m_recList.IsEmpty()) {
         return 1;
     }
     CGameLevel* ph = m_mgr->m_world->m_level;
@@ -2960,7 +2963,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         Coord snapped = rawPosition;
         SnapTileCenter(&snapped);
         m_tileClick = snapped;
-        CTriggerMgr* w = m_mgr->m_triggerMgr;
+        CTriggerMgr* w = m_mgr->GetTriggerMgr();
         if (w->m_overlay != NULL && w->m_overlay->m_active != false) {
             w->CloseActionOptionsMenu();
             return 1;
@@ -3863,7 +3866,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             LevelCoordRect* vr = v->m_mainPlane->GetPlaneViewRect();
             i32 wx = vr->left - v->m_viewportRect.left + x;
             i32 wy = vr->top - v->m_viewportRect.top + y;
-            m_mgr->m_triggerMgr->PlaceObjectFull(wx, wy);
+            m_mgr->GetTriggerMgr()->PlaceObjectFull(wx, wy);
             return 1;
         }
         if (m_cursorSnapSprite != NULL) {
@@ -3888,7 +3891,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_hudRect.bottom = min(m_cursorPosition.m_y, box.bottom);
         m_hudRect.bottom = max(m_hudRect.bottom, m_dragClampMax.m_y);
     }
-    if (m_cursorTargetValid != false && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
+    if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->m_pendingFxKind == 0) {
         FlushPendingOps();
     }
     return 1;
@@ -4143,7 +4146,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_PLACE_GRUNT: {
             u32 currentPlayer = static_cast<u32>(g_curPlayer);
 
-            i32 r = mgr->m_triggerMgr->PlaceObject(
+            i32 r = mgr->GetTriggerMgr()->PlaceObject(
                 static_cast<u8>(playerIndex),
                 static_cast<u16>(targetXOrPlayerIndex),
                 static_cast<u16>(targetYOrUnitIndex),
@@ -4169,7 +4172,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (static_cast<u8>(playerIndex) == currentPlayer) {
-                g_gameReg->m_triggerMgr->ResetAll();
+                g_gameReg->GetTriggerMgr()->ResetAll();
             }
             return 1;
         }
@@ -4177,11 +4180,11 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_MOVE: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g != NULL && g->m_entranceCommitted != false) {
                 g->m_arrivalActive = false;
             }
-            if (!m_mgr->m_triggerMgr->ClearCell(
+            if (!m_mgr->GetTriggerMgr()->ClearCell(
                     player,
                     gi,
                     static_cast<u16>(targetXOrPlayerIndex),
@@ -4204,8 +4207,10 @@ i32 CPlay::ExecuteCommand(
         }
 
         case PLAYERCMD_GUARD_BEGIN: {
-            CGrunt* g =
-                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(
+                static_cast<u8>(playerIndex),
+                static_cast<u8>(unitIndex)
+            );
             if (g != NULL) {
                 if (g->m_tileClaimed != true) {
                     g->m_arrivalRerollTiming.Clear();
@@ -4244,8 +4249,10 @@ i32 CPlay::ExecuteCommand(
 
         case PLAYERCMD_GUARD_END: {
 
-            CGrunt* g =
-                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(
+                static_cast<u8>(playerIndex),
+                static_cast<u8>(unitIndex)
+            );
             if (g == NULL || g->m_tileClaimed == false) {
                 return 1;
             }
@@ -4256,7 +4263,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOOL_AT_POINT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false) {
                 return 0;
             }
@@ -4267,7 +4274,7 @@ i32 CPlay::ExecuteCommand(
             i32 py = static_cast<u16>(targetYOrUnitIndex);
 
             CGrunt* node =
-                m_mgr->m_triggerMgr
+                m_mgr->GetTriggerMgr()
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
@@ -4279,7 +4286,7 @@ i32 CPlay::ExecuteCommand(
             } else {
                 g->m_arrivalActive = false;
             }
-            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, px, py);
+            res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4288,7 +4295,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 2)) {
+                if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, px, py, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4312,7 +4319,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOOL_ON_GRUNT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false) {
                 return 0;
             }
@@ -4321,7 +4328,7 @@ i32 CPlay::ExecuteCommand(
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
+            CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_entranceActive != false) {
                 g->m_arrivalActive = false;
                 return 0;
@@ -4329,7 +4336,7 @@ i32 CPlay::ExecuteCommand(
             i32 sx = g2->m_object->m_screenPosition.m_x;
             i32 sy = g2->m_object->m_screenPosition.m_y;
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
-            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, sx, sy);
+            res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4338,7 +4345,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 2)) {
+                if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, sx, sy, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4366,7 +4373,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOY_AT_POINT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
@@ -4376,7 +4383,7 @@ i32 CPlay::ExecuteCommand(
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* node =
-                m_mgr->m_triggerMgr
+                m_mgr->GetTriggerMgr()
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
@@ -4388,7 +4395,7 @@ i32 CPlay::ExecuteCommand(
             } else {
                 g->m_arrivalActive = false;
             }
-            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, px, py);
+            res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4397,7 +4404,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 3)) {
+                if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, px, py, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4421,7 +4428,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOY_ON_GRUNT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
@@ -4430,7 +4437,7 @@ i32 CPlay::ExecuteCommand(
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
+            CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_entranceActive != false) {
                 g->m_arrivalActive = false;
                 return 0;
@@ -4438,7 +4445,7 @@ i32 CPlay::ExecuteCommand(
             i32 sx = g2->m_object->m_screenPosition.m_x;
             i32 sy = g2->m_object->m_screenPosition.m_y;
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
-            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, sx, sy);
+            res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4447,7 +4454,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 3)) {
+                if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, sx, sy, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4478,13 +4485,13 @@ i32 CPlay::ExecuteCommand(
                 m_playerCommandPending = false;
             }
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g != NULL && g->m_entranceCommitted != false && g->m_tileClaimed != false) {
                 END_GUARD(g);
             }
             i32 sel = 0;
             b32 live = (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ);
-            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(player, gi);
+            CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(player, gi);
             i32 r;
             if (g2 == NULL || g2->m_entranceCommitted == false) {
                 r = 0;
@@ -4499,7 +4506,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (r != 0) {
                 if (player == static_cast<u32>(g_curPlayer)) {
-                    m_mgr->m_triggerMgr->ResetCell(player, gi, 0, 0);
+                    m_mgr->GetTriggerMgr()->ResetCell(player, gi, 0, 0);
                 }
                 sel = 1;
             }
@@ -4512,8 +4519,10 @@ i32 CPlay::ExecuteCommand(
         }
 
         case PLAYERCMD_STOP: {
-            CGrunt* g =
-                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
+            CGrunt* g = mgr->GetTriggerMgr()->UnitAt(
+                static_cast<u8>(playerIndex),
+                static_cast<u8>(unitIndex)
+            );
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
@@ -4549,7 +4558,7 @@ b32 CPlay::PlaceStartGruntz() {
             LogicRecordDispatchFn dispatch = record->m_dispatch;
             if (dispatch == DispatchGruntStartingPointLogic) {
                 DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
-                i32 idx = m_mgr->m_triggerMgr->PlaceObject(
+                i32 idx = m_mgr->GetTriggerMgr()->PlaceObject(
                     obj->m_smarts,
                     x,
                     y,
@@ -5102,7 +5111,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (dispatch == DispatchLevelTimeLogic) {
 
             if (m_levelTimer != NULL && m_mgr->GetGameMode() != GAMEMODE_MULTIPLAYER
-                && g_gameReg->m_isEasyMode != false
+                && g_gameReg->GetEasyMode() != false
                 && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 i32 seconds = obj->m_points;
                 i32 minutes = obj->m_score;
@@ -5159,7 +5168,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (dispatch == DispatchGruntPuddleLogic) {
 
-            m_mgr->m_triggerMgr->PlacePuddle(obj, false);
+            m_mgr->GetTriggerMgr()->PlacePuddle(obj, false);
         } else if (dispatch == DispatchGuardPointLogic) {
 
             i32 col = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
@@ -5374,7 +5383,7 @@ i32 CPlay::AddLevelGruntz() {
         i32 x = (SNAP_TILE_CENTER_COMPONENT(g->m_screenPosition.m_x));
         i32 y = (SNAP_TILE_CENTER_COMPONENT(g->m_screenPosition.m_y));
 
-        if (m_mgr->m_triggerMgr->PlaceObject(
+        if (m_mgr->GetTriggerMgr()->PlaceObject(
                 g->m_smarts,
                 x,
                 y,
@@ -5430,10 +5439,10 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
         }
     }
 
-    if (m_mgr->m_triggerMgr->m_goal != NULL) {
-        CTriggerMgr* g = m_mgr->m_triggerMgr;
+    if (m_mgr->GetTriggerMgr()->m_goal != NULL) {
+        CTriggerMgr* g = m_mgr->GetTriggerMgr();
         g->ClearCameraSprite();
-        m_mgr->m_triggerMgr->LoadCameraSprite();
+        m_mgr->GetTriggerMgr()->LoadCameraSprite();
     }
     return 1;
 }
@@ -5470,7 +5479,7 @@ RVA_COMPGEN(0x000d5e80, 0x5b, ??1CImage@@UAE@XZ)
 RVA(0x000d5f00, 0x69)
 i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
-    CTriggerMgr* g = w->m_triggerMgr;
+    CTriggerMgr* g = w->GetTriggerMgr();
     g->StopCameraTracking();
     CDDrawWorkerHost* pg = m_mgr->m_world->m_level->m_mainPlane;
     SET_SCROLL_POSITION_SCALED_FIRST(pg, x, y);
@@ -5483,7 +5492,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     i32 id = g_curPlayer;
     GruntzPlayer* slot = &g_gameReg->m_players[id];
 
-    if (slot != NULL && g_gameReg->m_triggerMgr->m_unitCountByPlayer[id] < slot->m_maxGruntz) {
+    if (slot != NULL && g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[id] < slot->m_maxGruntz) {
         i32 i = 0;
         if (i < StartMarkerCount()) {
             do {
@@ -5577,7 +5586,7 @@ i32 CPlay::ResetPlayState() {
             fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
         }
     }
-    CTriggerMgr* tl = m_mgr->m_triggerMgr;
+    CTriggerMgr* tl = m_mgr->GetTriggerMgr();
     tl->m_countdownActive = true;
     tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
@@ -6483,7 +6492,7 @@ i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
     } else {
         m_region3Gate = false;
         RegionLeave();
-        g_gameReg->m_triggerMgr->CycleMoveIcons(-1, false);
+        g_gameReg->GetTriggerMgr()->CycleMoveIcons(-1, false);
     }
     m_region3Timing.Start(REGION_INTERVAL_MS);
     return 1;
@@ -7031,7 +7040,7 @@ i32 CPlay::FlushPendingOps() {
         SetCursorFrame(0);
         changed = true;
     }
-    CTriggerMgr* fx = g_gameReg->m_triggerMgr;
+    CTriggerMgr* fx = g_gameReg->GetTriggerMgr();
     if (fx->m_pendingFxKind != 0) {
         changed = true;
     }
@@ -7046,7 +7055,7 @@ i32 CPlay::CanQuickSave() {
         && m_defeatCountdownActive == false && m_statusBar->m_hlBusy == false
         && m_statusBar->m_levelOverlayActive == false
         && m_statusBar->m_quitConfirmationActive == false && g_gameReg->GetFrameGate() == false
-        && g_gameReg->m_triggerMgr->m_groupFlag != false) {
+        && g_gameReg->GetTriggerMgr()->m_groupFlag != false) {
         return 1;
     }
     return 0;
@@ -7055,7 +7064,7 @@ i32 CPlay::CanQuickSave() {
 RVA(0x000da440, 0x60)
 i32 CPlay::PostHudRect() {
     if (m_worldReady != false) {
-        m_mgr->m_triggerMgr->HudRect(
+        m_mgr->GetTriggerMgr()->HudRect(
             m_hudRect,
             g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
         );

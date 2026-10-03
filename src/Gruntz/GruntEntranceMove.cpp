@@ -214,7 +214,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             } else {
 
                 CGrunt* focus;
-                CTriggerMgr* tm = g_gameReg->m_triggerMgr;
+                CTriggerMgr* tm = g_gameReg->GetTriggerMgr();
                 if (tm->m_recList.GetCount() != 1) {
                     focus = NULL;
                 } else {

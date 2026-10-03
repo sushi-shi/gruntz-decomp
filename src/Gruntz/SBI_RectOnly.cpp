@@ -633,7 +633,7 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     SbiCommandId cmd = r->m_cmd;
     switch (r->m_tab) {
         case TAB_STATZ:
-            if (m_chatBoxDisabled == false && g_gameReg->m_triggerMgr->m_groupFlag != false
+            if (m_chatBoxDisabled == false && g_gameReg->GetTriggerMgr()->m_groupFlag != false
                 && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
                 HiCueTimed();
                 PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
@@ -1354,7 +1354,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
     switch (m_itemKind) {
         case GAME_TAB_MISSION_STATUS: {
             CSBI_ImageSet* status;
-            if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
+            if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                 NEW_STATUS_BAR_ITEM(
                     status,
                     CSBI_ImageSet,
@@ -2164,7 +2164,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 0
             );
             AddTabItem(5, it);
-            if ((static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
+            if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                     ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
                 NEW_STATUS_BAR_ITEM(
                     it,
@@ -2178,7 +2178,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     0
                 );
                 AddTabItem(5, it);
-                if ((static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
+                if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                         ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
                     NEW_STATUS_BAR_ITEM(
                         it,
@@ -2192,7 +2192,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         0
                     );
                     AddTabItem(5, it);
-                    if ((static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
+                    if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                             ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
                         NEW_STATUS_BAR_ITEM(
                             it,
@@ -2206,7 +2206,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             0
                         );
                         AddTabItem(5, it);
-                        if ((static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
+                        if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                                 ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
                             NEW_STATUS_BAR_ITEM(
                                 it,
@@ -2289,7 +2289,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         return 1;
     }
 
-    if (g_gameReg->m_triggerMgr->UnitAt(g_curPlayer, idx) == NULL) {
+    if (g_gameReg->GetTriggerMgr()->UnitAt(g_curPlayer, idx) == NULL) {
         return 0;
     }
 
@@ -2525,9 +2525,9 @@ void CStatusBarMgr::SetGruntWell(i32 value) {
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;
-    if (g_gameReg->m_triggerMgr->ResetCell(playerIndex, unitIndex, 0, 0) != 0) {
+    if (g_gameReg->GetTriggerMgr()->ResetCell(playerIndex, unitIndex, 0, 0) != 0) {
 
-        CGrunt* entry = g_gameReg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
+        CGrunt* entry = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
             (static_cast<CPlay*>(g_gameReg->m_curState))
                 ->ResetGoals(
@@ -2535,7 +2535,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
                     entry->m_object->m_screenPosition.m_y
                 );
             if (activateCamera != 0) {
-                CTriggerMgr* obj = g_gameReg->m_triggerMgr;
+                CTriggerMgr* obj = g_gameReg->GetTriggerMgr();
                 if (obj->RecordListHas(playerIndex, unitIndex)) {
                     obj->SetCameraTarget(playerIndex, unitIndex);
                 }
@@ -3938,7 +3938,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     i32 cellX = static_cast<i32>(m_current.m_x);
     if (cellX == m_target.m_x && cellY == m_target.m_y) {
         i32 mode = m_arrivalMode;
-        CByteArray* arr = &g_gameReg->m_triggerMgr->m_byteArr;
+        CByteArray* arr = &g_gameReg->GetTriggerMgr()->m_byteArr;
         arr->Add(static_cast<BYTE>(mode));
         m_owner->m_hlBusy = false;
         if (m_owner->GetState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
@@ -4059,7 +4059,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     cx -= 0x8e;
     cy -= 0x48;
 
-    i32 reason = IDX(g_gameReg->m_triggerMgr->m_finishReasonFrame);
+    i32 reason = IDX(g_gameReg->GetTriggerMgr()->m_finishReasonFrame);
 
     CSBI_Image* dialog;
     NEW_STATUS_BAR_ITEM(
@@ -4075,7 +4075,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     );
     AddTabItem(6, dialog);
 
-    if (g_gameReg->m_triggerMgr->GetFinishState() == FINISH_STATE_VICTORY) {
+    if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
 
         CSBI_ImageSet* status;
         NEW_STATUS_BAR_ITEM(

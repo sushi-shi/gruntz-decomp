@@ -92,6 +92,10 @@ public:
         return m_tileGrid;
     }
 
+    CTriggerMgr* GetTriggerMgr() {
+        return m_triggerMgr;
+    }
+
     void RegisterLevelAssetKeys();
     char GetGruntzDriveLetter();
     i32 IsInPlayState();
@@ -277,6 +281,10 @@ public:
     RVA(0x00020f20, 0x4)
     CCheatMgr* CheatMgr() {
         return m_cheatMgr;
+    }
+
+    b32 GetEasyMode() const {
+        return m_isEasyMode;
     }
 
     GameModeId GetGameMode() const {

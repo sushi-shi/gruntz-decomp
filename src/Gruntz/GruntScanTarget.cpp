@@ -59,7 +59,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         for (i32 candidateUnitIndex = 0; candidateUnitIndex < TM_UNITS_PER_PLAYER;
              candidateUnitIndex++) {
             CGrunt* cand =
-                g_gameReg->m_triggerMgr->UnitAt(candidatePlayerIndex, candidateUnitIndex);
+                g_gameReg->GetTriggerMgr()->UnitAt(candidatePlayerIndex, candidateUnitIndex);
             if (cand != NULL && cand->m_entranceCommitted != false
                 && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
