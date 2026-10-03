@@ -33,6 +33,10 @@ public:
     CSpawnEntry* FindByName(const CString& name);
     void AddVoiceSound(CString resourceName, i32 data);
 
+    i32 GetCount() const {
+        return m_list.GetCount();
+    }
+
     CPtrList m_list;
 
     CSpawnEntry* NextEntry(POSITION& pos) {
@@ -40,6 +44,7 @@ public:
     }
     CSpawnEntry* FirstEntry();
     CSpawnEntry* NextEntry();
+    CSpawnEntry* GetEntry(i32 index);
     POSITION m_cursor;
     i32 m_lastPicked;
 };

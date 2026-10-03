@@ -2136,24 +2136,19 @@ afterTile:
 
 afterArrival:
     if (m_toyTime > 0) {
-        i64 durationMinusNow = m_toyTiming.m_interval - static_cast<i64>(g_frameTime);
-        i64 left = durationMinusNow + m_toyTiming.m_start;
         m_toyTime = static_cast<i32>(
-            static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
+            static_cast<double>(m_toyTiming.Remaining())
                 / static_cast<double>(static_cast<u32>(m_toyTiming.m_intervalLo)) * g_wingzScale
             - g_wingzBias
         );
-        i64 left2 = m_toyTiming.m_interval - static_cast<i64>(g_frameTime) + m_toyTiming.m_start;
-        if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
+        if (m_toyTiming.Remaining() == 0) {
             m_toyTime = 0;
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         }
     }
 
     if (m_stamina < STAMINA_FULL) {
-        i64 left =
-            m_attackTiming.m_interval + m_attackTiming.m_start - static_cast<i64>(g_frameTime);
-        if (static_cast<u32>((left < 0 ? 0 : static_cast<u32>(left))) == 0) {
+        if (m_attackTiming.Remaining() == 0) {
             m_stamina = STAMINA_FULL;
         } else {
             m_stamina = static_cast<i32>(
@@ -2169,14 +2164,11 @@ afterArrival:
     }
 
     if (m_wingzEnabled != false) {
-        i64 left = m_wingzTiming.m_interval - static_cast<i64>(g_frameTime) + m_wingzTiming.m_start;
         m_wingzTime = static_cast<i32>(
-            static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
+            static_cast<double>(m_wingzTiming.Remaining())
             * DATA_COMPGEN(0x001e9a58, 0.01) - g_wingzBias
             );
-        i64 left2 =
-            m_wingzTiming.m_interval - static_cast<i64>(g_frameTime) + m_wingzTiming.m_start;
-        if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
+        if (m_wingzTiming.Remaining() == 0) {
             ConsiderArrival(1);
             m_wingzTime = 0;
             LoadWingzGruntSprites(false);
@@ -2231,15 +2223,11 @@ kindDispatch:
                 obj->SetDrawFill(cmd, sel);
             }
         }
-        i64 left = m_conversionTiming.m_interval + m_conversionTiming.m_start
-                   - static_cast<i64>(g_frameTime);
-        i32 leftMs = (left < 0 ? 0 : static_cast<i32>(left));
+        i32 leftMs = static_cast<i32>(m_conversionTiming.Remaining());
         if (leftMs <= 0xbb8) {
             if (m_gruntKind == GRUNT_GHOST) {
 
-                i64 rem = m_conversionTiming.m_interval + m_conversionTiming.m_start
-                          - static_cast<i64>(g_frameTime);
-                u32 remMs = (rem < 0 ? 0 : static_cast<u32>(rem));
+                u32 remMs = m_conversionTiming.Remaining();
                 i32 frac = static_cast<i32>(
                     static_cast<double>(
                         g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0x100)

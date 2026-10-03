@@ -417,7 +417,6 @@ i32 CPlay::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c8cf0, 0xc14)
 i32 CPlay::Render() {
 
@@ -561,12 +560,7 @@ i32 CPlay::Render() {
         }
 
         if (m_defeatCountdownActive != false) {
-            i64 deadline = m_defeatCountdownTiming.Deadline();
-            i64 left = deadline - static_cast<i64>(g_frameTime);
-            u32 leftMs = static_cast<u32>(left);
-            if (left < 0) {
-                leftMs = 0;
-            }
+            u32 leftMs = m_defeatCountdownTiming.Remaining();
             i32 secsLeft = static_cast<i32>(leftMs / MILLIS_PER_SECOND) + 1;
             if (m_defeatCountdownTiming.Expired()) {
 

@@ -50,6 +50,11 @@ struct ClockInterval {
         return m_interval + m_start;
     }
 
+    u32 Remaining() const {
+        i64 left = Deadline() - static_cast<i64>(g_frameTime);
+        return left < 0 ? 0 : static_cast<u32>(left);
+    }
+
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
 };
 

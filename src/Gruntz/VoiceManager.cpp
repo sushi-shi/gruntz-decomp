@@ -487,49 +487,32 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
     }
 
     i32 selectedIndex = variantIndex;
-    if (selectedIndex == -1 || selectedIndex >= group->m_list.GetCount()) {
-        i32 lastIndex = group->m_list.GetCount() - 1;
+    if (selectedIndex == -1 || selectedIndex >= group->GetCount()) {
+        i32 lastIndex = group->GetCount() - 1;
 
         CGruntzMgr* game = g_gameReg;
         i32 variantCount = lastIndex + 1;
         if (variantCount == 0) {
-            i32 seed;
             const i32 rnd = GetRandomNumber();
             selectedIndex = ((rnd & 1)) ? 0 : lastIndex;
         } else {
             selectedIndex = game->Rand() % variantCount;
         }
-        if (group->m_list.GetCount() > 1) {
+        if (group->GetCount() > 1) {
             i32 tries = 5;
             while (selectedIndex == group->m_lastPicked && tries > 0) {
-                i32 retryLastIndex = group->m_list.GetCount() - 1;
-                i32 retryVariantCount = retryLastIndex + 1;
-
-                if (retryVariantCount == 0) {
-                    selectedIndex = (GetRandomNumber() & 1) ? 0 : retryLastIndex;
-                } else {
-                    selectedIndex = GetRandomNumber() % retryVariantCount;
-                }
+                selectedIndex = RandRange(0, group->GetCount() - 1);
                 tries--;
             }
         }
     }
 
     group->m_lastPicked = selectedIndex;
-    CSpawnEntry* variant;
-    if (selectedIndex >= group->m_list.GetCount()) {
-        variant = NULL;
-    } else {
-
-        variant = group->FirstEntry();
-        for (i32 i = selectedIndex; i > 0; i--) {
-            variant = group->NextEntry();
-        }
-    }
+    CSpawnEntry* variant = group->GetEntry(selectedIndex);
     if (variant == NULL) {
         return NULL;
     }
-    return m_game->m_resourceArchive->GetRezFromPath(
+    return m_game->ResourceArchive()->GetRezFromPath(
         static_cast<LPCTSTR>(variant->GetName()),
         REZ_TAG_WAV
     );
@@ -582,7 +565,7 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
                     static_cast<LPCTSTR>(soundName)
                 );
             }
-            CRezItm* source = m_game->m_resourceArchive->GetRezFromPath(
+            CRezItm* source = m_game->ResourceArchive()->GetRezFromPath(
                 static_cast<LPCTSTR>(resourceName),
                 REZ_TAG_WAV
             );
