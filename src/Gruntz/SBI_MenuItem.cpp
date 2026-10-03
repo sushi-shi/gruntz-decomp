@@ -48,6 +48,7 @@ i32 CSBI_MenuItem::SetupImage(
         return 0;
     }
     if (host != NULL && owner != NULL) {
+        // Keep redraw and enable stores after the menu-specific setup.
         m_owner = owner;
         m_host = host;
         m_tab = tab;

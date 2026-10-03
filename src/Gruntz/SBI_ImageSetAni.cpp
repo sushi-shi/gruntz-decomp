@@ -16,7 +16,6 @@
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
-#include <Gruntz/StatusBarItemInline.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
@@ -44,7 +43,7 @@ i32 CSBI_ImageSetAni::Init(
     if (owner == NULL) {
         goto fail;
     }
-    INITIALIZE_STATUS_BAR_ITEM(owner, tab, host)
+    Initialize(owner, tab, host);
 
     m_rect = rc;
     m_cmd = cmd;

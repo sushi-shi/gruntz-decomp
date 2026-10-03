@@ -48,11 +48,7 @@ i32 CSBI_WellGoo::Setup(
     if (owner == NULL) {
         goto fail;
     }
-    m_owner = owner;
-    m_host = host;
-    m_tab = tab;
-    m_redrawFrames = 0;
-    SetEnabled(1);
+    Initialize(owner, tab, host);
     m_rect = rc;
     m_cmd = cmd;
     m_fillScale = fillScale;
