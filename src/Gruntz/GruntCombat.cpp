@@ -54,6 +54,7 @@
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
+#include <Gruntz/MapTraversalInline.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
@@ -1347,56 +1348,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
         i32 nxt = newPos.m_x >> TILE_SHIFT_PX;
         i32 oxt = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oyt = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        if (!(oxt == nxt && nyt == oyt)) {
-            i32 w = grid->m_width;
-            if (static_cast<u32>(nxt) >= static_cast<u32>(w)) {
-                return 1;
-            }
-            if (static_cast<u32>(nyt) >= static_cast<u32>(grid->m_height)) {
-                return 1;
-            }
-            BrickzCell* cell = &grid->m_rows[nyt][nxt];
-            i32 t = flags & cell->m_flags;
-            if (t & BRICKZ_CELL_OCCUPIED) {
-                return 1;
-            }
-            if (t != 0 && (cell->m_flags & (this->m_passableMask | 0x18000482)) == 0) {
-                return 1;
-            }
-            BrickzCell* ocell = &grid->m_rows[oyt][oxt];
-            i32 dxt = nxt - oxt;
-            i32 dyt = nyt - oyt;
-            if (dxt != 0 && dyt != 0) {
-                if (dxt > 0 && dyt > 0) {
-                    if (((ocell + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((ocell + w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((cell - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((cell - w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {
-                        return 1;
-                    }
-                } else if (dxt < 0 && dyt > 0) {
-                    if (((ocell - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((ocell + w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((cell + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((cell - w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {
-                        return 1;
-                    }
-                } else if (dxt > 0 && dyt < 0) {
-                    if (((ocell + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((ocell - w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((cell - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((cell + w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {
-                        return 1;
-                    }
-                } else if (dxt < 0 && dyt < 0) {
-                    if (((ocell - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((ocell - w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((cell + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
-                        || ((cell + w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {
-                        return 1;
-                    }
-                }
-            }
+        if (!grid->CanStepBetween(oxt, oyt, nxt, nyt, flags, this->m_passableMask | 0x18000482)) {
+            return 1;
         }
 
         if (this->m_arrivalPending == false) {
