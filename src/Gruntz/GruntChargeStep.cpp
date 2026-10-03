@@ -131,7 +131,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 }
                 if (!CoordsEmpty()) {
                     spanX = Max(spanX, spanY);
-                    if (m_coordList.GetCount() > spanX) {
+                    if (CoordCount() > spanX) {
                         SetEntrancePos(1, 1);
                     }
                 }
