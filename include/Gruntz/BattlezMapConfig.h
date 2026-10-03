@@ -152,6 +152,10 @@ public:
     CPtrArray m_candArray;
     CPtrArray m_attackWaypoints;
 
+    i32 GetAttackWaypointCount() const {
+        return m_attackWaypoints.GetSize();
+    }
+
     Coord* CoordAt(i32 index) {
         return static_cast<Coord*>(m_attackWaypoints.GetAt(index));
     }

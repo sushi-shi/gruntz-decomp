@@ -670,8 +670,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
             ResetEntranceAnimation(1, 0, 0);
-            Coord tile = LastTilePx();
-            ScreenTile(&tile);
+            Coord tile = ScreenTile(LastTilePx());
             if (g_gameReg->GetTileGrid()->CellFlagsAt(tile.m_x, tile.m_y) & 0x80) {
                 m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             }

@@ -762,8 +762,7 @@ i32 CGrunt::StepArrivalDrop(
     }
 
     this->RecycleCoords();
-    lastTile = LastTilePx();
-    ScreenTile(&lastTile);
+    lastTile = ScreenTile(LastTilePx());
     targetTile.Set(pxX, pxY);
     ScreenTile(&targetTile);
     if (blockedMask == -1) {

@@ -1069,7 +1069,10 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     i32 argTileX = worldX >> TILE_SHIFT_PX;
     i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
-    if (o->m_screenX == cell->m_lastTilePx.m_x) {
+    if (o->m_screenX != cell->m_lastTilePx.m_x) {
+        goto outOfRange;
+    }
+    {
         if (o->m_screenY != cell->m_lastTilePx.m_y) {
             return -1;
         }
@@ -1109,7 +1112,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
         if (cell->RectContains(bx, by) == 0) {
-            return -1;
+            goto outOfRange;
         }
         cell->m_arrivalPhase = 0;
         CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
@@ -1145,8 +1148,8 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 POSITION pos = m_baseList.GetHeadPosition();
                 while (pos != NULL) {
                     CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                    if (cand->m_pending == false && cand->m_tileX == argTileX
-                        && cand->m_tileY == argTileY) {
+                    if (cand->IsPending() == false && cand->GetTileX() == argTileX
+                        && cand->GetTileY() == argTileY) {
                         cell->RunMoveConfig(argTileX, argTileY);
                         cand->SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                         cand->m_pending = true;
@@ -1195,6 +1198,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         }
         return 0;
     }
+outOfRange:
     return -1;
 }
 

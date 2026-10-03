@@ -45,7 +45,7 @@ rva	unit	function	lost_max	cur
 0x0f0e20	gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	91.6483	85.3241
 0x07f180	grunthealthsprite	?HealthUpdate@CGruntHealthSprite@@QAEHXZ	100.0000	95.0725
 0x0f42f0	gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.8975	95.7157
-0x051c00	gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.1106	62.4042
+0x051c00	gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	74.9682	62.8182
 0x032ce0	grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	80.2577
 0x0ed9f0	gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	89.5283	89.4658
 0x083450	gruntzmgr	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	100.0000	99.7523

@@ -67,6 +67,11 @@ inline void ScreenTile(Coord* pos) {
     pos->m_y >>= TILE_SHIFT_PX;
 }
 
+inline Coord ScreenTile(Coord pos) {
+    ScreenTile(&pos);
+    return pos;
+}
+
 inline Coord ScreenTile(CGrunt* unit) {
     Coord out;
     CGameObject* object = unit->m_object;
