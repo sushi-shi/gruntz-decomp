@@ -2493,7 +2493,6 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     i32 xr;
@@ -2722,13 +2721,7 @@ drag_box: {
 
     if (m_cursorId >= IDX(CURSOR_TOOL_HANDZ)) {
         CTriggerMgr* cg = g_gameReg->GetTriggerMgr();
-        CGrunt* slot;
-        if (1 != cg->m_recList.GetCount()) {
-            slot = NULL;
-        } else {
-            i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
-            slot = cg->UnitAt(sel[0], sel[1]);
-        }
+        CGrunt* slot = cg->SoleSelectedGrunt();
         if (slot != NULL && slot->m_entranceCommitted != false) {
             g_gameReg->VoiceMgr()->PlayVoice(slot, 0x324, -1, 0, -1, -1);
         }
