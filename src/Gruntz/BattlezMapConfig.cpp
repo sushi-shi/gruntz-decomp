@@ -2880,36 +2880,14 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
             if (IsGruntAtSavedScreenPos(cand) && cand->m_entranceCommitted != false
                 && cand->m_deathAnimStarted == false && cand->m_entranceActive == false
                 && cand->m_poweredUp == false) {
-                bool eq;
-                eq = cand->IsAnimationAct("I");
-                if (!eq) {
-                    eq = cand->IsAnimationAct("G");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("L");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("P");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("J");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("C");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("R");
-                }
-                if (!eq && cand != unit && cand->m_defenderState != AISTATE_RETURN
+                if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
+                    && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
+                    && !cand->IsAnimationAct("J") && !cand->IsAnimationAct("C")
+                    && !cand->IsAnimationAct("R") && cand != unit
+                    && cand->m_defenderState != AISTATE_RETURN
                     && cand->m_defenderState != AISTATE_RETREAT) {
-                    CGameObject* ul = unit->m_object;
-                    CGameObject* cl = cand->m_object;
-                    i32 cx = cl->m_screenX >> TILE_SHIFT_PX;
-                    i32 cy = cl->m_screenY >> TILE_SHIFT_PX;
-                    i32 dx = (ul->m_screenX >> TILE_SHIFT_PX) - cx;
-                    i32 dy = (ul->m_screenY >> TILE_SHIFT_PX) - cy;
-                    dx = abs(dx);
-                    dy = abs(dy);
+                    i32 dx = abs(cand->GetScreenTileX() - unit->GetScreenTileX());
+                    i32 dy = abs(cand->GetScreenTileY() - unit->GetScreenTileY());
                     if (SquaredDistance(dx, dy) <= 0x190) {
 
                         i32 flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER;
