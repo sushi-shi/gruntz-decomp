@@ -267,6 +267,9 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
             size_sidecar.unlink(missing_ok=True)
             boundary_sidecar.unlink(missing_ok=True)
             manifest_stamp.unlink(missing_ok=True)
+        if not base_src.exists():
+            base_obj.unlink(missing_ok=True)
+            base_sidecar.unlink(missing_ok=True)
         # A unit that lost its delinked target (e.g. all names removed), or whose
         # target changed suffix, must not leave a stale normalized copy behind for
         # objdiff to pair against.

@@ -258,6 +258,10 @@ class ManifestCacheControls(unittest.TestCase):
                 path = output / ("target/other.c.obj" if lost_side == "base" else "base/other.obj")
                 self.assertEqual(resolved(path.read_bytes())[3], 0x40)
                 self.assertFalse((output / "data_boundaries/other.sha256").exists())
+                missing = output / ("base/other.obj" if lost_side == "base" else "target/other.c.obj")
+                self.assertFalse(missing.exists())
+                missing = missing.with_name("other.symbols.tsv")
+                self.assertFalse(missing.exists())
 
 
 if __name__ == "__main__":
