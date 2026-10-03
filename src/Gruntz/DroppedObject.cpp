@@ -165,7 +165,7 @@ void CObjectDropper::RegisterActs() {
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (m_dropTiming.Expired()) {
-        if (g_gameReg->m_isEasyMode == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetEasyMode() == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
             RECT box;
             SET_RECT_XY_EXTENTS(

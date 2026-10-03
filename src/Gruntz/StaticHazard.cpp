@@ -131,7 +131,7 @@ void CStaticHazard::RegisterActs() {
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::UpdateIdleState() {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {
+    if (reg->GetEasyMode() != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {
         return 0;
     }
     u32 phase = g_frameTime - m_pulseEpoch;

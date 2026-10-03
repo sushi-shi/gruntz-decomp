@@ -152,7 +152,7 @@ i32 CPathHazard::Tick() {
     rect.bottom = obj->m_frameImage->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {
+    if (reg->GetEasyMode() == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {
         i32 playerIndex, unitIndex;
         CGrunt* ent = reg->m_triggerMgr->FindGruntAt(
             obj->m_screenX,
@@ -270,7 +270,7 @@ i32 CPathHazard::SiblingTick() {
     rect.bottom = obj->m_frameImage->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {
+    if (reg->GetEasyMode() != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {
 
     } else {
         i32 playerIndex, unitIndex;

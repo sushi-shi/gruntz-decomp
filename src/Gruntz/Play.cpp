@@ -5050,7 +5050,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (dispatch == DispatchLevelTimeLogic) {
 
             if (m_levelTimer != NULL && m_mgr->GetGameMode() != GAMEMODE_MULTIPLAYER
-                && g_gameReg->m_isEasyMode != false
+                && g_gameReg->GetEasyMode() != false
                 && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 i32 seconds = obj->m_points;
                 i32 minutes = obj->m_score;

@@ -279,6 +279,10 @@ public:
         return m_cheatMgr;
     }
 
+    b32 GetEasyMode() const {
+        return m_isEasyMode;
+    }
+
     GameModeId GetGameMode() const {
         return m_gameMode;
     }
