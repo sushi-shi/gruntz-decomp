@@ -389,7 +389,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (unit->m_entranceCommitted == false) {
                     continue;
                 }
-                if (unit->m_deathAnimStarted != false) {
+                if (unit->IsDeathAnimationStarted() != false) {
                     continue;
                 }
                 if (unit->m_entranceActive != false) {
@@ -650,8 +650,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
-                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
-                            && unit->m_poweredUp == false) {
+                            && unit->IsDeathAnimationStarted() == false
+                            && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->ArrivalPickup();
                                 if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
@@ -735,7 +735,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
                                     && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
                                     && unit->m_entranceCommitted != false
-                                    && unit->m_deathAnimStarted == false
+                                    && unit->IsDeathAnimationStarted() == false
                                     && unit->m_entranceActive == false) {
                                     RECT box;
                                     unit->BuildUnitSearchBox(&box, 4);
@@ -781,7 +781,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (unit->m_entranceCommitted == false) {
                                 special = 0;
                             }
-                            if (unit->m_deathAnimStarted != false) {
+                            if (unit->IsDeathAnimationStarted() != false) {
                                 special = 0;
                             }
                             if (unit->m_entranceActive != false) {
@@ -804,8 +804,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
-                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
-                            && unit->m_poweredUp == false) {
+                            && unit->IsDeathAnimationStarted() == false
+                            && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 for (i32 j = 0; j < 4; j++) {
                                     if (j != m_playerIndex) {
@@ -842,7 +842,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (!unit->IsArrivalRerollPending()) {
                 BattlezTask battleTask = unit->m_battleState;
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
-                    if (unit->m_entranceCommitted != false && unit->m_deathAnimStarted == false
+                    if (unit->m_entranceCommitted != false
+                        && unit->IsDeathAnimationStarted() == false
                         && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                         if (BattlezActDiffersFromIGLPJCR(unit)) {
                             if (unit->m_battleState != BZTASK_UNASSIGNED) {
@@ -857,7 +858,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         }
         if (unit != NULL) {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != false
-                && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
+                && unit->IsDeathAnimationStarted() == false && unit->m_entranceActive == false
                 && unit->m_poweredUp == false) {
                 if (BattlezActDiffersFromIGLPJCR(unit)) {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
@@ -915,8 +916,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
                             && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
                             && unit->m_entranceCommitted != false
-                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
-                            && unit->m_poweredUp == false) {
+                            && unit->IsDeathAnimationStarted() == false
+                            && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 goto dispatch;
                             }
@@ -2857,7 +2858,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         CGrunt* cand = m_triggerMgr->UnitAt(m_playerIndex, r);
         if (cand != NULL) {
             if (IsGruntAtSavedScreenPos(cand) && cand->m_entranceCommitted != false
-                && cand->m_deathAnimStarted == false && cand->m_entranceActive == false
+                && cand->IsDeathAnimationStarted() == false && cand->m_entranceActive == false
                 && cand->m_poweredUp == false) {
                 if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
                     && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
@@ -2921,7 +2922,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->m_entranceCommitted == false) {
         return 0;
     }
-    if (unit->m_deathAnimStarted != false) {
+    if (unit->IsDeathAnimationStarted() != false) {
         return 0;
     }
     if (unit->m_entranceActive != false) {

@@ -1152,7 +1152,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
             i32 unitsRemaining = TM_UNITS_PER_PLAYER;
             do {
                 CGrunt* unit = *units;
-                if (unit != NULL && unit->m_deathAnimStarted == false) {
+                if (unit != NULL && unit->IsDeathAnimationStarted() == false) {
                     (static_cast<CGrunt*>(unit))->StartBombGruntRun();
                 }
                 units++;
@@ -2380,7 +2380,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     i32 unitsRemaining = TM_UNITS_PER_PLAYER;
     do {
         CGrunt* unit = *units;
-        if (unit != NULL && unit->m_deathAnimStarted == false) {
+        if (unit != NULL && unit->IsDeathAnimationStarted() == false) {
             (static_cast<CGrunt*>(unit))->BuildGruntExitAnimation();
         }
         units++;

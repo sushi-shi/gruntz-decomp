@@ -317,7 +317,7 @@ i32 CTriggerMgr::StartUnitDeath(
     if (unit == NULL) {
         return 0;
     }
-    if (unit->m_deathAnimStarted != false) {
+    if (unit->IsDeathAnimationStarted() != false) {
         UnregisterUnit(playerIndex, unitIndex, 0);
         return 0;
     }
@@ -677,7 +677,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_UP_A:
         case TILEKIND_ARROW_UP_B:
-            if (g == NULL || g->m_deathAnimStarted != false) {
+            if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
             g->m_entranceActive = true;
@@ -686,7 +686,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_RIGHT_A:
         case TILEKIND_ARROW_RIGHT_B:
-            if (g == NULL || g->m_deathAnimStarted != false) {
+            if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
             g->m_entranceActive = true;
@@ -695,7 +695,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_DOWN_A:
         case TILEKIND_ARROW_DOWN_B:
-            if (g == NULL || g->m_deathAnimStarted != false) {
+            if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
             g->m_entranceActive = true;
@@ -704,7 +704,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_LEFT_A:
         case TILEKIND_ARROW_LEFT_B:
-            if (g == NULL || g->m_deathAnimStarted != false) {
+            if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
             g->m_entranceActive = true;
@@ -712,7 +712,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
-            if (g != NULL && g->m_deathAnimStarted == false) {
+            if (g != NULL && g->IsDeathAnimationStarted() == false) {
                 g->m_entranceActive = true;
                 switch (static_cast<GruntDirection>(g->m_entranceCell.m_direction)) {
                     case DIR_NORTH:

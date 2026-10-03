@@ -444,6 +444,10 @@ public:
     Coord* RemoveTailCoord() {
         return static_cast<Coord*>(m_coordList.RemoveTail());
     }
+    b32 IsDeathAnimationStarted() const {
+        return m_deathAnimStarted;
+    }
+
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
         return &m_cells[3 * c.m_row + c.m_column];
