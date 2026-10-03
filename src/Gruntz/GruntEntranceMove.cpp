@@ -138,8 +138,7 @@ static char s_movingDeathTime[] = "MovingDeathTime";
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
-    if (!((cur->m_finished != false && cur->m_frameTicksLeft == 0)
-          || m_entrancePickup == PICKUP_NONE)) {
+    if (!(cur->IsComplete() || m_entrancePickup == PICKUP_NONE)) {
         return 0;
     }
 
@@ -352,7 +351,7 @@ i32 CGrunt::LoadEntranceConfig() {
     }
 
     CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
-    if (cur->m_finished == false || cur->m_frameTicksLeft != 0) {
+    if (!cur->IsComplete()) {
         return 0;
     }
     ResetEntranceAnimation(1, 0, 0);

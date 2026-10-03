@@ -324,7 +324,7 @@ i32 CGrunt::StepAttackFire() {
     }
 
     CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
-    if ((cur->m_finished == false || cur->m_frameTicksLeft != 0) && flag == 0) {
+    if (!cur->IsComplete() && flag == 0) {
         return 0;
     }
     if (m_entranceReason == GRUNT_BOOMERANG) {
