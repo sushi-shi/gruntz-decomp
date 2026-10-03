@@ -82,15 +82,11 @@ void CFaderFlat::RenderFrame(i32 frame) {
     }
     i32 lastRow = h - 1;
     i32 y0 = lastRow;
-    if (y0 >= end) {
-        y0 = end;
-    }
+    y0 = min(y0, end);
     i32 y2 = y0;
     for (;;) {
         i32 stop = y0 + frame - m_previousFrame;
-        if (lastRow < stop) {
-            stop = lastRow;
-        }
+        stop = min(lastRow, stop);
         if (y2 >= stop) {
             break;
         }

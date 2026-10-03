@@ -3968,9 +3968,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         if (self->m_scrollEdgeActive & 1) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
-                if (d > 0x64) {
-                    d = 0x64;
-                }
+                d = min(0x64, d);
                 sx -= d;
                 self->m_lastScrollTimeX = timeGetTime();
                 changed = true;
@@ -3987,9 +3985,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         if (self->m_scrollEdgeActive & 4) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
-                if (d > 0x64) {
-                    d = 0x64;
-                }
+                d = min(0x64, d);
                 sx += d;
                 self->m_lastScrollTimeX = timeGetTime();
                 changed = true;
@@ -4006,9 +4002,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         if (self->m_scrollEdgeActive & 2) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
-                if (d > 0x64) {
-                    d = 0x64;
-                }
+                d = min(0x64, d);
                 sy -= d;
                 self->m_lastScrollTimeY = timeGetTime();
                 changed = true;
@@ -4027,9 +4021,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         if (self->m_scrollEdgeActive & 8) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
-                if (d > 0x64) {
-                    d = 0x64;
-                }
+                d = min(0x64, d);
                 sy += d;
                 self->m_lastScrollTimeY = timeGetTime();
                 changed = true;

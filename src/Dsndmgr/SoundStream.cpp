@@ -370,9 +370,7 @@ i32 SoundStream::ParseWave(
             i32 nextChunk = source->GetSeekPos() + chunkSize;
 
             u32 formatBytes = 0x12;
-            if (chunkSize < formatBytes) {
-                formatBytes = chunkSize;
-            }
+            formatBytes = min(chunkSize, formatBytes);
             source->Read(outFormat, static_cast<i32>(formatBytes), -1);
             source->Seek(nextChunk);
             foundFormat = 1;

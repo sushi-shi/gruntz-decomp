@@ -199,13 +199,9 @@ void CTimer::AddTime(i32 minutes, i32 seconds) {
         return;
     }
     u32 secs = static_cast<u32>(seconds);
-    if (secs > 0x3b) {
-        secs = 0x3b;
-    }
+    secs = min(0x3b, secs);
     u32 mins = static_cast<u32>(minutes);
-    if (mins > 0x63) {
-        mins = 0x63;
-    }
+    mins = min(0x63, mins);
     u32 cur = static_cast<u32>(m_currentMs);
     u32 carry = 0;
     u32 onClock;

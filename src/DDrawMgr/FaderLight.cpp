@@ -95,9 +95,7 @@ void CFaderLight::RenderFrame(i32 frame) {
         i32 row = max(0, v);
         for (;;) {
             i32 stop = delta + r + m_center.y;
-            if (stop >= m_height) {
-                stop = m_height;
-            }
+            stop = min(stop, m_height);
             if (row >= stop) {
                 break;
             }
@@ -131,9 +129,7 @@ void CFaderLight::RenderFrame(i32 frame) {
         i32 row = max(0, v);
         for (;;) {
             i32 stop = delta + frame + m_spanCount + m_center.y;
-            if (stop >= m_height) {
-                stop = m_height;
-            }
+            stop = min(stop, m_height);
             if (row >= stop) {
                 break;
             }

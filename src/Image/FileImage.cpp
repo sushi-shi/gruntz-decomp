@@ -787,9 +787,9 @@ i32 CDDSurface::DecodePcxData(
         return 0;
     }
     if (HAS(flags, PID_SYSTEM_MEMORY)) {
-        surfaceCaps = (surfaceCaps & ~0x4000) | 0x800;
+        surfaceCaps = (surfaceCaps & ~DDSCAPS_VIDEOMEMORY) | DDSCAPS_SYSTEMMEMORY;
     } else if (HAS(flags, PID_VIDEO_MEMORY)) {
-        surfaceCaps = surfaceCaps & ~0x800;
+        surfaceCaps = surfaceCaps & ~DDSCAPS_SYSTEMMEMORY;
     }
 
     i32 remap = 0;

@@ -1051,9 +1051,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
             i32 cap = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
             i32 cur = STAT(SumToolzCollectedForCurrentArea, m_toolzCollected);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1061,9 +1059,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
             i32 cap = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
             i32 cur = STAT(SumToyzCollectedForCurrentArea, m_toyzCollected);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1071,9 +1067,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
             i32 cap = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
             i32 cur = STAT(SumPowerupzCollectedForCurrentArea, m_powerupzCollected);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1081,9 +1075,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
             i32 cap = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
             i32 cur = STAT(SumCoinsCollectedForCurrentArea, m_coinsCollected);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1091,9 +1083,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
             i32 cap = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
             i32 cur = STAT(SumSecretsFoundForCurrentArea, m_secretsFound);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }

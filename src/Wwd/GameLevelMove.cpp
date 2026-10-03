@@ -138,9 +138,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             yLo++;
         } else {
             yLo += t->m_strideY;
-            if (yLo > yHi) {
-                yLo = yHi;
-            }
+            yLo = min(yHi, yLo);
         }
     }
     if (BroadPhase(t, x, y) != 0) {
@@ -177,9 +175,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             yLo++;
         } else {
             yLo += t->m_strideY;
-            if (yLo > yHi) {
-                yLo = yHi;
-            }
+            yLo = min(yHi, yLo);
         }
     }
     if (BroadPhase(t, x, y) != 0) {
@@ -216,9 +212,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             col++;
         } else {
             col += t->m_strideX;
-            if (col > colHi) {
-                col = colHi;
-            }
+            col = min(colHi, col);
         }
     }
     if (BroadPhase(t, x, y) != 0) {
@@ -255,9 +249,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             col++;
         } else {
             col += t->m_strideX;
-            if (col > colHi) {
-                col = colHi;
-            }
+            col = min(colHi, col);
         }
     }
     if (BroadPhase(t, x, y) != 0) {

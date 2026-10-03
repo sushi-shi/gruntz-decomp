@@ -879,9 +879,7 @@ i32 CGameLevel::StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
             ++cur;
         } else {
             cur += t->m_strideY;
-            if (cur > hi) {
-                cur = hi;
-            }
+            cur = min(hi, cur);
         }
     }
 
@@ -907,9 +905,7 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
             ++cur;
         } else {
             cur += t->m_strideY;
-            if (cur > hi) {
-                cur = hi;
-            }
+            cur = min(hi, cur);
         }
     }
 

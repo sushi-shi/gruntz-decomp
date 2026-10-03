@@ -93,9 +93,7 @@ i32 Font::LoadFont(CString szFileName) {
 
     i32 maxHeight = 0;
     for (i32 j = 0; j < m_count; j++) {
-        if (maxHeight <= m_glyphs[j].cy) {
-            maxHeight = m_glyphs[j].cy;
-        }
+        maxHeight = max(maxHeight, m_glyphs[j].cy);
     }
     m_maxHeight = maxHeight;
 
@@ -525,9 +523,7 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
             if (m_font->GetMaxHeight() + y <= rc.bottom) {
                 CSize lw = MeasureText(line);
                 i32 w = lw.cx;
-                if (maxExtent.cx <= w) {
-                    maxExtent.cx = w;
-                }
+                maxExtent.cx = max(maxExtent.cx, w);
             }
         } else {
             i32 i = 0;
@@ -555,9 +551,7 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
             } else if (headW < rc.Width()) {
                 CSize lw = MeasureText(line);
                 i32 w = lw.cx;
-                if (maxExtent.cx <= w) {
-                    maxExtent.cx = w;
-                }
+                maxExtent.cx = max(maxExtent.cx, w);
                 y = y + m_font->GetMaxHeight();
                 x = rc.left;
                 line = "";
@@ -579,9 +573,7 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
                         x = rc.left;
                         CSize lw = MeasureText(line);
                         i32 w = lw.cx;
-                        if (maxExtent.cx <= w) {
-                            maxExtent.cx = w;
-                        }
+                        maxExtent.cx = max(maxExtent.cx, w);
                     }
                     if (m_font->GetMaxHeight() + y >= rc.bottom) {
                         break;
