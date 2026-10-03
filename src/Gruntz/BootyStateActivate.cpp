@@ -943,7 +943,8 @@ i32 CBootyState::LevelMsgHudDriver() {
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            if (i >= m_slot && (i != m_slot || m_expl[i]->m_animationCursor.m_animation == NULL)) {
+            if (i >= m_slot
+                && (i != m_slot || m_expl[i]->m_animationCursor.GetAnimation() == NULL)) {
                 m_expl[i]->Show();
                 m_expl[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
                 m_expl[i]->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;

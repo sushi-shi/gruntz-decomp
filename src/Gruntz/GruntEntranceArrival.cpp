@@ -466,7 +466,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     }
 
     CAniElement* want = m_poseToy[sel];
-    if (m_wwdObject->m_animationCursor.m_animation != want) {
+    if (m_wwdObject->m_animationCursor.GetAnimation() != want) {
         SwitchAnimation(want);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
         char* buf = (&m_frameSetName)->GetBuffer(0);
@@ -641,7 +641,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
             applied = 1;
         } else {
 
-            if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
+            if (m_wwdObject->m_animationCursor.GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
                 SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
                 {
                     i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
@@ -662,7 +662,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
     }
 
     GruntDirectionCell cell = m_entranceCell;
-    if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
+    if (m_wwdObject->m_animationCursor.GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
         switch (m_entranceCell.m_direction) {
             case DIR_NORTHEAST:
                 cell = g_gruntDirEast;
@@ -751,7 +751,7 @@ i32 CGrunt::ResolveEntranceArrival() {
     }
 
 tail:
-    if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
+    if (m_wwdObject->m_animationCursor.GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
 
         if (m_wwdObject->m_animationCursor.IsComplete()) {
             ResetEntranceAnimation(0, 0, 0);
@@ -967,7 +967,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 
     CWapX::ApplyAnimation(found, 0);
     i32 frame =
-        static_cast<CAniRecordView*>(m_wwdObject->m_animationCursor.m_animation->AtChecked(0))
+        static_cast<CAniRecordView*>(m_wwdObject->m_animationCursor.GetAnimation()->AtChecked(0))
             ->m_param;
     SetImageFrameByName("GRUNTZ_EXITZ", frame);
     return 0;
@@ -1111,7 +1111,7 @@ tail:
     SwitchAnimation(pose);
     i32 frame;
     {
-        CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
+        CAniElement* desc = m_wwdObject->m_animationCursor.GetAnimation();
         CAniRecordView* elem = desc->RecordAt(0);
         frame = elem->m_param;
     }

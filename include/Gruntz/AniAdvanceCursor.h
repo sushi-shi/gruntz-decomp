@@ -52,6 +52,9 @@ public:
     virtual void Unload() OVERRIDE;
 
     void BindSprite(CWwdSpriteObject* src);
+    CAniElement* GetAnimation() const {
+        return m_animation;
+    }
     void SetAnimation(CAniElement* animation);
     void RestartAnimation(i32 resetElapsedTime);
 
