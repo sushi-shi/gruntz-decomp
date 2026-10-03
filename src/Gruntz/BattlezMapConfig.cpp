@@ -3389,14 +3389,14 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
 
 // @early-stop
 RVA(0x00030730, 0x1da)
-i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
+i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i32) {
     if (m_active == false) {
         return 0;
     }
-    if (cellX == m_playerIndex) {
+    if (targetPlayer == m_playerIndex) {
         return 1;
     }
-    CGrunt* src = m_triggerMgr->UnitAt(cellX, cellY);
+    CGrunt* src = m_triggerMgr->UnitAt(targetPlayer, targetUnit);
     if (src == NULL) {
         return 0;
     }
@@ -3415,29 +3415,25 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         }
         b32 ok = true;
         if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
-            i32 ux = u->m_arrivalCell.m_x;
-            i32 uy = u->m_arrivalCell.m_y;
-            if (ux == cellX && uy == cellY) {
+            Coord arrival = u->ArrivalCell();
+            if (arrival.m_x == targetPlayer && arrival.m_y == targetUnit) {
                 ok = false;
             }
         }
         if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
-            i32 ux = u->m_arrivalCell.m_x;
-            i32 uy = u->m_arrivalCell.m_y;
-            if (!(ux == cellX && uy == cellY) && (rand() % 3) != 0) {
+            Coord arrival = u->ArrivalCell();
+            if (!(arrival.m_x == targetPlayer && arrival.m_y == targetUnit) && (rand() % 3) != 0) {
                 ok = false;
             }
         }
         if (ok == false) {
             continue;
         }
-        CGameObject* lvl = u->m_object;
-        i32 lx = lvl->m_screenX >> TILE_SHIFT_PX;
-        i32 ly = lvl->m_screenY >> TILE_SHIFT_PX;
+        Coord current = ScreenTile(u);
         if (u->m_battleState == BZTASK_ADVANCE && u->m_targetTeam != -1) {
-            CBattlezMapConfig* bundle = &m_ctx->m_players[u->m_targetTeam].m_battlezConfig;
-            i32 dx = bundle->m_marker.m_x - lx;
-            i32 dy = bundle->m_marker.m_y - ly;
+            Coord marker = m_ctx->m_players[u->m_targetTeam].m_battlezConfig.m_marker;
+            i32 dx = marker.m_x - current.m_x;
+            i32 dy = marker.m_y - current.m_y;
             dx = abs(dx);
             dy = abs(dy);
 
@@ -3448,9 +3444,9 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         if (ok == false) {
             continue;
         }
-        u->m_arrivalCell.m_x = cellX;
+        u->m_arrivalCell.m_x = targetPlayer;
         u->m_battleState = BZTASK_ASSIGNED_TARGET;
-        u->m_arrivalCell.m_y = cellY;
+        u->m_arrivalCell.m_y = targetUnit;
         u->m_defenderState = AISTATE_ATTACK;
         u->m_routeBlockedMask = 0xd87;
         u->m_routePassableMask = 0;
