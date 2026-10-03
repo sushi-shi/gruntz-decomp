@@ -567,7 +567,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
             flag = false;
         }
         sub = obj->m_faceDirection;
-        cell = reg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
+        cell = reg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
         if (cell == NULL || cell->m_entranceCommitted == false) {
             ok = false;
         } else if (matchActive) {
@@ -595,7 +595,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
 
     sub = obj->m_faceDirection;
     cmd = GetPickupType();
-    cell = reg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
+    cell = reg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         ok = false;
     } else {
@@ -604,7 +604,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     reg = g_gameReg;
     if (ok != false) {
         if (cmd == PICKUP_WARPSTONE) {
-            placed = reg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
+            placed = reg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
             if (placed != NULL) {
                 placed->m_warpstoneAnchorIndex = m_object->m_health;
                 reg = g_gameReg;
@@ -866,7 +866,7 @@ i32 CInGameText::Update() {
     i32 playerIndex;
     i32 unitIndex;
     CGrunt* found =
-        g_gameReg->m_triggerMgr
+        g_gameReg->GetTriggerMgr()
             ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 1);
 
     if (found != NULL) {

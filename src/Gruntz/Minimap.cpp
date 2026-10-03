@@ -37,7 +37,7 @@ i32 CMinimap::Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs) {
         return 0;
     }
     m_gameMgr = gameMgr;
-    m_triggerMgr = gameMgr->m_triggerMgr;
+    m_triggerMgr = gameMgr->GetTriggerMgr();
     m_mapMgr = gameMgr->GetTileGrid();
     m_world = gameMgr->m_world;
     m_refreshInterval = refreshIntervalMs;
@@ -1038,7 +1038,7 @@ i32 CMinimap::IssueMinimapCommand(i32, i32 cursorX, i32 cursorY) {
     if (!ScreenPointToCell(cursorX, cursorY, cell, MINIMAP_SNAP_MARGIN_PX)) {
         return 0;
     }
-    g_gameReg->m_triggerMgr->HandleTargetSelection(
+    g_gameReg->GetTriggerMgr()->HandleTargetSelection(
         cell[0] * TILE_SIZE_PX + TILE_HALF_PX,
         cell[1] * TILE_SIZE_PX + TILE_HALF_PX,
         0,

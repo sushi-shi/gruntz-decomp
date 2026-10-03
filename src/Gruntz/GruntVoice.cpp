@@ -162,7 +162,7 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 playerIndex, unitIndex;
-    CGrunt* hit = g_gameReg->m_triggerMgr->FindGruntAt(
+    CGrunt* hit = g_gameReg->GetTriggerMgr()->FindGruntAt(
         m_object->m_screenX,
         m_object->m_screenY,
         &m_object->m_extent,

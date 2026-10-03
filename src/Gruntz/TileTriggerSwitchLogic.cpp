@@ -759,7 +759,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     }
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(cx, cy, m_tileX, m_tileY)
-    g_gameReg->m_triggerMgr
+    g_gameReg->GetTriggerMgr()
         ->SpawnPowerupIcon(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
@@ -827,7 +827,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     }
     CGruntzMgr* reg = g_gameReg;
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
-    reg->m_triggerMgr
+    reg->GetTriggerMgr()
         ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
         CGameObject* rec =
@@ -1236,7 +1236,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             grunt->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
             grunt->m_entranceActive = false;
         } else if (brickEffect == BRICKTILE_BLUE_1) {
-            g_gameReg->m_triggerMgr->ApplyGruntAreaEffect(
+            g_gameReg->GetTriggerMgr()->ApplyGruntAreaEffect(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                 1,
@@ -1268,7 +1268,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (brickEffect == BRICKTILE_BLACK_1) {
-            g_gameReg->m_triggerMgr->LoadExplosionSprites(
+            g_gameReg->GetTriggerMgr()->LoadExplosionSprites(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                 -1,

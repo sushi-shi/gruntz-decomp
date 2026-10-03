@@ -154,7 +154,7 @@ RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* spr = m_object;
-    CGrunt* hit = g_gameReg->m_triggerMgr
+    CGrunt* hit = g_gameReg->GetTriggerMgr()
                       ->HitTestCell(spr->m_screenX, spr->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         spr = m_object;
@@ -169,7 +169,7 @@ i32 CSecretLevelTrigger::Tick() {
             ok = false;
         }
         if (ok) {
-            g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_DRAIN, -1);
+            g_gameReg->GetTriggerMgr()->StartUnitDeath(playerIndex, unitIndex, DEATH_DRAIN, -1);
         }
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
@@ -180,7 +180,7 @@ RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* o = m_object;
-    CGrunt* hit = g_gameReg->m_triggerMgr
+    CGrunt* hit = g_gameReg->GetTriggerMgr()
                       ->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         o = m_object;

@@ -92,7 +92,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
         ls->m_winLoseBanner = true;
         ls->m_cueTiming.Start(0x1f4);
-        g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(g_curPlayer);
+        g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {
             slot->m_clearedRound = true;

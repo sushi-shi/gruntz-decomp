@@ -196,7 +196,7 @@ i32 CStaticHazard::UpdateActiveState() {
 
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
-        CGrunt* victim = g_gameReg->m_triggerMgr->HitTestCell(
+        CGrunt* victim = g_gameReg->GetTriggerMgr()->HitTestCell(
             m_object->m_screenX,
             m_object->m_screenY,
             &playerIndex,
@@ -204,7 +204,7 @@ i32 CStaticHazard::UpdateActiveState() {
             0
         );
         if (victim != NULL) {
-            g_gameReg->m_triggerMgr->StartUnitDeath(
+            g_gameReg->GetTriggerMgr()->StartUnitDeath(
                 playerIndex,
                 unitIndex,
                 static_cast<GruntDeathType>(m_object->m_smarts),

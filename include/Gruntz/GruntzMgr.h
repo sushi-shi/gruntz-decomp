@@ -92,6 +92,10 @@ public:
         return m_tileGrid;
     }
 
+    CTriggerMgr* GetTriggerMgr() {
+        return m_triggerMgr;
+    }
+
     void RegisterLevelAssetKeys();
     char GetGruntzDriveLetter();
     i32 IsInPlayState();

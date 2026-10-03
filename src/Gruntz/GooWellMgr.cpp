@@ -144,7 +144,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         }
                     } else {
                         if (g_curPlayer == i) {
-                            g_gameReg->m_triggerMgr->LoadFinishLevelSprite(
+                            g_gameReg->GetTriggerMgr()->LoadFinishLevelSprite(
                                 FINISH_REASON_BATTLEZ_VICTORY
                             );
                         }

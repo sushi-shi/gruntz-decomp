@@ -94,7 +94,7 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00035210, 0x4f)
 i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
-    CTriggerMgr* manager = m_ctx->m_triggerMgr;
+    CTriggerMgr* manager = m_ctx->GetTriggerMgr();
     POSITION pos = manager->GetPuddleHeadPosition();
     while (pos != NULL) {
         CGruntPuddle* cand = manager->GetNextPuddle(pos);

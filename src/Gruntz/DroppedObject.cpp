@@ -177,7 +177,7 @@ i32 CObjectDropper::Update() {
             );
             i32 playerIndex;
             i32 unitIndex;
-            CGrunt* found = g_gameReg->m_triggerMgr->FindGruntAt(
+            CGrunt* found = g_gameReg->GetTriggerMgr()->FindGruntAt(
                 o->m_screenX,
                 o->m_screenY,
                 &o->m_area,
@@ -398,7 +398,7 @@ i32 CDroppedObject::AdvanceFall() {
         }
         SwitchAnimationByName("LEVEL_DROPPEDOBJECTHIT", 0);
         SET_ANIMATION_ACT("B");
-        g_gameReg->m_triggerMgr
+        g_gameReg->GetTriggerMgr()
             ->ApplyGruntAreaEffect(m_object->m_screenX, m_landY, 1, GRUNT_AREA_EFFECT_SQUASH, -1);
         return 0;
     }
