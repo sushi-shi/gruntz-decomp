@@ -198,6 +198,9 @@ public:
     b32 HasArrived() const {
         return m_arrived;
     }
+    b32 IsPoweredUp() const {
+        return m_poweredUp;
+    }
     b32 IsEntranceDropActive() const {
         return m_entranceDropActive;
     }

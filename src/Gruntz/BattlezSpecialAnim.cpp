@@ -72,7 +72,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     if (unit->m_entranceActive != false) {
         return 0;
     }
-    if (unit->m_poweredUp != false) {
+    if (unit->IsPoweredUp() != false) {
         return 0;
     }
 
