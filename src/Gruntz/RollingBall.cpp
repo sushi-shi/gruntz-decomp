@@ -118,7 +118,7 @@ i32 CRollingBall::Update() {
 
     CWwdSpriteObject* anim = m_wwdObject;
     if (anim->m_animationCursor.IsComplete()) {
-        anim->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        anim->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
     if (m_explodeLatch != false) {

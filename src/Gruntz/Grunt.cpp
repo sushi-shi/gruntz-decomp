@@ -728,28 +728,28 @@ i32 CGrunt::CommitArrival() {
 RVA(0x0004b240, 0xaa)
 void CGrunt::ClearAllSprites() {
     if (m_selectedSprite) {
-        m_selectedSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        m_selectedSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         m_selectedSprite = NULL;
     }
     if (m_healthSprite) {
-        m_healthSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        m_healthSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         m_healthSprite = NULL;
     }
     if (m_toySprite) {
-        m_toySprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        m_toySprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         m_toySprite = NULL;
     }
     if (m_entranceCommitted == false) {
         if (m_staminaSprite) {
-            m_staminaSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            m_staminaSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             m_staminaSprite = NULL;
         }
         if (m_toyTimeSprite) {
-            m_toyTimeSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            m_toyTimeSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             m_toyTimeSprite = NULL;
         }
         if (m_wingzTimeSprite) {
-            m_wingzTimeSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            m_wingzTimeSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             m_wingzTimeSprite = NULL;
         }
     }

@@ -82,6 +82,10 @@ public:
         m_ownerCtx = owner;
     }
 
+    void AddFlags(i32 flags) {
+        m_flags |= flags;
+    }
+
     CDDrawSurfaceMgr* OwnerMgr() const {
         return m_ownerCtx;
     }

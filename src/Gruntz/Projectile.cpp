@@ -380,7 +380,7 @@ void CProjectile::AdvanceMotion() {
     }
     ScanTargets(0);
     if (m_shadow != NULL) {
-        m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        m_shadow->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         m_shadow = NULL;
     }
     m_arrived = true;
@@ -460,7 +460,7 @@ i32 CProjectile::AdvanceAnimationAndDeleteWhenComplete() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* sprite = m_wwdObject;
     if (sprite->m_animationCursor.IsComplete()) {
-        sprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        sprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;
 }
@@ -531,7 +531,7 @@ void CBoomerang::AdvanceMotion() {
     } else if (m_phase > 6.2831854 && m_launched != false) {
         ScanTargets(1);
         if (m_shadow != NULL) {
-            m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            m_shadow->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             m_shadow = NULL;
         }
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

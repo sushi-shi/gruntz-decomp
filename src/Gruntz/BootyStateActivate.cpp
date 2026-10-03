@@ -1343,7 +1343,7 @@ i32 CBootyState::CheckPerfectBonus() {
         }
     }
     if (phase >= 0x302) {
-        m_bootyPerfectSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        m_bootyPerfectSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 1;
     }
     m_bootyPerfectSprite->m_screenPosition.m_x = phase + 0xa;

@@ -193,7 +193,7 @@ i32 CParticlez::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* o = m_wwdObject;
     if (o->m_animationCursor.IsComplete()) {
-        o->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        o->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;
 }

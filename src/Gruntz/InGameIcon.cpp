@@ -484,7 +484,7 @@ i32 CInGameIcon::RefreshCell() {
         }
     }
     CWwdSpriteObject* r = m_wwdObject;
-    r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+    r->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
 
@@ -664,7 +664,7 @@ i32 CInGameIcon::Reposition() {
                     found
                 )
                 && found != NULL) {
-                found->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                found->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             }
         }
         reg = g_gameReg;

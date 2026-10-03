@@ -160,7 +160,7 @@ typedef i32 (CUserLogic::*CActHandler)();
     CAniRecordView* record = animation->RecordAt(0);                                               \
     i32 frame = record->m_param;
 
-#define SET_OBJECT_FLAGS_INLINE(bits) m_wwdObject->m_flags |= bits
+#define SET_OBJECT_FLAGS_INLINE(bits) m_wwdObject->AddFlags(bits)
 
 #define HIDE_OBJECT_INLINE() m_wwdObject->Hide()
 
@@ -290,7 +290,7 @@ public:
     }
 
     void SetObjectFlags(i32 bits) {
-        m_wwdObject->m_flags |= bits;
+        m_wwdObject->AddFlags(bits);
     }
 
     void SetImageFrameByName(const char* name, i32 flag) {

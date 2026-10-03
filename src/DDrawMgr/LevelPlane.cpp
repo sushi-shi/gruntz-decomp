@@ -613,7 +613,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE);
+    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE));
 
     CLogicRecord* anim = obj->GetLogicRecord();
     if (anim == NULL) {
@@ -640,7 +640,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     p++;
 
-    obj->m_flags |= static_cast<u32>(*p++);
+    obj->AddFlags(static_cast<u32>(*p++));
     obj->m_stateFlags = static_cast<SpriteStateFlags>(*p++);
     anim->m_userFlags = *p++;
 

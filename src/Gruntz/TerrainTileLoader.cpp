@@ -208,7 +208,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             return 1;
                         }
                         gaugePoints = puddle->m_gaugePoints;
-                        puddle->m_wwdObject->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                        puddle->m_wwdObject->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                         m_baseList.RemoveAt(current);
                         removed = 1;
                     }

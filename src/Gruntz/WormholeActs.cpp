@@ -202,7 +202,7 @@ i32 CExitTrigger::AdvanceAnim() {
                                 fx->m_score = 0;
                             }
                         }
-                        cur->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                        cur->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     }
                 }
             }

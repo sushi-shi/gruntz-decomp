@@ -276,8 +276,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     object = m_object;
     if (object->m_sortKey != object->m_screenPosition.m_y + 0x186a0) {
         object->m_sortKey = object->m_screenPosition.m_y + 0x186a0;
-        i32 flags = object->m_flags;
-        object->m_flags = flags | IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
+        object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING));
     }
 
     i32 oldY = m_lastTilePx.m_y >> TILE_SHIFT_PX;

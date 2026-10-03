@@ -4578,7 +4578,7 @@ b32 CPlay::PlaceStartGruntz() {
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return false;
                 }
-                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             } else if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ
                        && dispatch == DispatchGruntCreationPointLogic
                        && obj->m_smarts == g_curPlayer) {
@@ -4734,7 +4734,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_EXCLUSIVE_SWITCH:
                 case TILEKIND_EXCLUSIVE_SWITCH_UP:
@@ -4761,7 +4761,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_SECRET_SWITCH:
                     g_gameReg->m_gameStats->m_secretsAvailable++;
@@ -4790,7 +4790,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_TIME_SWITCH:
                 case TILEKIND_TIME_SWITCH_UP:
@@ -4817,7 +4817,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_CHECKPOINT:
                 case TILEKIND_CHECKPOINT_UP:
@@ -4844,7 +4844,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_SWITCH_A:
                 case TILEKIND_SWITCH_A_UP:
@@ -4873,7 +4873,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_SWITCH_B:
                 case TILEKIND_SWITCH_B_UP:
@@ -4902,7 +4902,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 case TILEKIND_SWITCH_C:
                 case TILEKIND_SWITCH_C_UP:
@@ -4931,7 +4931,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                    obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     break;
                 default: {
                     MODAL_REPORT_AT(
@@ -5045,7 +5045,7 @@ i32 CPlay::ValidateLevelTiles() {
                     return 0;
                 }
                 validCount++;
-                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             } else {
                 if (!m_tileTriggers->AddLogic(
                         static_cast<TileCollisionKind>(type),
@@ -5072,7 +5072,7 @@ i32 CPlay::ValidateLevelTiles() {
                     return 0;
                 }
                 validCount++;
-                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             }
         } else if (dispatch == DispatchTileSecretTriggerLogic) {
             TileCollisionKind type = LookupTileTypeDirect(
@@ -5105,7 +5105,7 @@ i32 CPlay::ValidateLevelTiles() {
                 return 0;
             }
             validCount++;
-            obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchLevelTimeLogic) {
 
             if (m_levelTimer != NULL && m_mgr->GetGameMode() != GAMEMODE_MULTIPLAYER
@@ -5121,7 +5121,7 @@ i32 CPlay::ValidateLevelTiles() {
                 }
                 m_levelTimer->SetTime(minutes, seconds);
             }
-            obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchInGameIconLogic) {
             if (obj->m_smarts == IDX(PICKUP_MEGAPHONE)) {
 
@@ -5155,7 +5155,7 @@ i32 CPlay::ValidateLevelTiles() {
                     return 0;
                 }
                 validCount++;
-                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+                obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             } else {
                 MODAL_REPORT_AT(
                     "Bad brickz at: x=%d, y=%d",
@@ -5294,7 +5294,7 @@ i32 CPlay::ScanBuildTiles() {
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
                 m_statusBar->QueuePickupReward(p->m_points, p->m_score);
             }
-            p->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->m_level;
             i32 x = p->m_screenPosition.m_x;
@@ -5352,7 +5352,7 @@ i32 CPlay::ScanBuildTiles() {
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
                 m_statusBar->QueuePickupReward(p->m_points, p->m_score);
             }
-            p->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+            p->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
     return 1;
@@ -5401,7 +5401,7 @@ i32 CPlay::AddLevelGruntz() {
             (g_gameReg)->EnterModalUI(msg);
             return 0;
         }
-        g->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        g->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 1;
 }
