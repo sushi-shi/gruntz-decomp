@@ -9,7 +9,8 @@
       runtime = import ./nix/runtime.nix { inherit pkgs; };
       launcher = pkgs.writeShellApplication {
         name = "gruntz-play";
-        runtimeInputs = [ pkgs.python3 pkgs.wineWow64Packages.staging pkgs.gamescope ];
+        runtimeInputs = [ pkgs.python3 pkgs.wineWow64Packages.staging pkgs.gamescope
+                          pkgs.bash pkgs.coreutils ];
         text = ''
           export MSVC_DIR="${toolchain}/msvc"
           export DXSDK_DIR="${toolchain}/dx"
