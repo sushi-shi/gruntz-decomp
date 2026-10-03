@@ -2546,7 +2546,8 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (::PtInRect(gr, xr, y)) {
 
             } else {
-                if (::PtInRect(&geom->m_viewportRect, xr, y)) {
+                LevelCoordRect viewport = geom->GetViewportRect();
+                if (::PtInRect(&viewport, xr, y)) {
                     if (FindStartPointAt(sx, sy, &x, &y)) {
                         m_mgr->GetCommandMgr()->EnqueueSingle(
                             true,
@@ -2582,9 +2583,8 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                     }
                     goto waypoint_cancel;
                 }
-                CGameLevel* geom2 = m_mgr->m_world->m_level;
-                RECT* wr = (&geom2->m_viewportRect);
-                if (!::PtInRect(wr, xr, y)) {
+                LevelCoordRect viewport = geom->GetViewportRect();
+                if (!::PtInRect(&viewport, xr, y)) {
                     goto waypoint_cancel;
                 }
 
