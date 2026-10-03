@@ -2309,18 +2309,10 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 CGameObject* disp = cell->m_object;
                 i32 x = disp->m_screenPosition.m_x;
                 i32 y = disp->m_screenPosition.m_y;
-                if (x < bbox.left) {
-                    bbox.left = x;
-                }
-                if (x > bbox.right) {
-                    bbox.right = x;
-                }
-                if (y < bbox.top) {
-                    bbox.top = y;
-                }
-                if (y > bbox.bottom) {
-                    bbox.bottom = y;
-                }
+                bbox.left = min(x, bbox.left);
+                bbox.right = max(x, bbox.right);
+                bbox.top = min(y, bbox.top);
+                bbox.bottom = max(y, bbox.bottom);
             }
         } else {
             g_coordPool.Push(payload);
@@ -2433,9 +2425,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
                     i32 dx = (o->m_screenPosition.m_x >> TILE_SHIFT_PX) - tx;
                     i32 dy = (o->m_screenPosition.m_y >> TILE_SHIFT_PX) - ty;
                     i32 d = abs(SquaredDistance(dx, dy));
-                    if (d < best) {
-                        best = d;
-                    }
+                    best = min(d, best);
                 }
                 units++;
                 unitsRemaining--;

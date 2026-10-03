@@ -182,7 +182,7 @@ void CFaderShape::RenderFrame(i32 frame) {
     if (m_stripCopy == false && frame == 0) {
         i32 targetPitch = m_targetSurface->m_apiDesc.lPitch;
         i32 sourcePitch = m_sourceSurface->m_apiDesc.lPitch;
-        i32 n = (targetPitch < sourcePitch) ? targetPitch : sourcePitch;
+        i32 n = min(targetPitch, sourcePitch);
         i32 row = 0;
         while (row < m_targetSize.cy) {
             u8* src = m_straightBase + m_sourceRowOffsets[row];

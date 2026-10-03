@@ -124,14 +124,11 @@ CShadeTable* CShadeTableCache::FlashTable(
         }
 
         i32 br = static_cast<i32>(pal[i].peRed) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peRed =
-            static_cast<u8>((br < FLASH_SHADE_CHANNEL_MAX ? br : FLASH_SHADE_CHANNEL_MAX));
+        pal[i].peRed = static_cast<u8>(min(br, FLASH_SHADE_CHANNEL_MAX));
         i32 bg = static_cast<i32>(pal[i].peGreen) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peGreen =
-            static_cast<u8>((bg < FLASH_SHADE_CHANNEL_MAX ? bg : FLASH_SHADE_CHANNEL_MAX));
+        pal[i].peGreen = static_cast<u8>(min(bg, FLASH_SHADE_CHANNEL_MAX));
         i32 bb = static_cast<i32>(pal[i].peBlue) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peBlue =
-            static_cast<u8>((bb < FLASH_SHADE_CHANNEL_MAX ? bb : FLASH_SHADE_CHANNEL_MAX));
+        pal[i].peBlue = static_cast<u8>(min(bb, FLASH_SHADE_CHANNEL_MAX));
 
         for (i32 k = darkRampSteps; k < total; k++) {
             float uu =
@@ -552,8 +549,8 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
     u8 ib = *static_cast<const u8*>(b);
     ColorHSV ha, hb;
-    ha = RgbToHsv((g_pal[ia].peBlue << 0x10) | (g_pal[ia].peGreen << 8) | g_pal[ia].peRed);
-    hb = RgbToHsv((g_pal[ib].peBlue << 0x10) | (g_pal[ib].peGreen << 8) | g_pal[ib].peRed);
+    ha = RgbToHsv(RGB(g_pal[ia].peRed, g_pal[ia].peGreen, g_pal[ia].peBlue));
+    hb = RgbToHsv(RGB(g_pal[ib].peRed, g_pal[ib].peGreen, g_pal[ib].peBlue));
     if (ha.m_h < hb.m_h) {
         return -1;
     }

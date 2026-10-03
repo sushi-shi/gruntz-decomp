@@ -107,6 +107,7 @@
 #include <new>
 #include <stdio.h>
 #include <string.h>
+#include <windowsx.h>
 
 class CImage;
 
@@ -181,18 +182,12 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (cb == NULL) {
         return 0;
     }
-    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = SendMessageA;
-    pSend(cb, CB_RESETCONTENT, 0, 0);
+    ComboBox_ResetContent(cb);
     for (i32 i = 0; i < 0x11; i++) {
-        pSend(
-            cb,
-            CB_ADDSTRING,
-            0,
-            reinterpret_cast<LPARAM>(static_cast<const char*>(GetColorName(i, false)))
-        );
+        ComboBox_AddString(cb, static_cast<const char*>(GetColorName(i, false)));
     }
     if (curSel >= 0) {
-        pSend(cb, CB_SETCURSEL, curSel, 0);
+        ComboBox_SetCurSel(cb, curSel);
     }
     return 1;
 }
@@ -208,18 +203,12 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (cb == NULL) {
         return 0;
     }
-    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = SendMessageA;
-    pSend(cb, CB_RESETCONTENT, 0, 0);
+    ComboBox_ResetContent(cb);
     for (i32 i = 0; i < 3; i++) {
-        pSend(
-            cb,
-            CB_ADDSTRING,
-            0,
-            reinterpret_cast<LPARAM>(static_cast<const char*>(GetDifficultyName(i, false)))
-        );
+        ComboBox_AddString(cb, static_cast<const char*>(GetDifficultyName(i, false)));
     }
     if (curSel >= 0) {
-        pSend(cb, CB_SETCURSEL, curSel, 0);
+        ComboBox_SetCurSel(cb, curSel);
     }
     return 1;
 }

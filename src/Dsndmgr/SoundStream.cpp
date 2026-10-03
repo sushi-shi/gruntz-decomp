@@ -200,7 +200,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
     if (format == NULL) {
         return NULL;
     }
-    if (format->wFormatTag != 1) {
+    if (format->wFormatTag != WAVE_FORMAT_PCM) {
         return NULL;
     }
 
@@ -370,9 +370,7 @@ i32 SoundStream::ParseWave(
             i32 nextChunk = source->GetSeekPos() + chunkSize;
 
             u32 formatBytes = 0x12;
-            if (chunkSize < formatBytes) {
-                formatBytes = chunkSize;
-            }
+            formatBytes = min(chunkSize, formatBytes);
             source->Read(outFormat, static_cast<i32>(formatBytes), -1);
             source->Seek(nextChunk);
             foundFormat = 1;
@@ -616,7 +614,7 @@ void SoundBuffer::ReportError(char* file, i32 line, i32 hr) {
         return;
     }
 
-    i32 code = hr & 0xffff;
+    i32 code = HRESULT_CODE(hr);
 
     strcpy(szMsg, "Unknown Error Message");
     sprintf(szCode, "Unknown Error Code");

@@ -33,6 +33,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <windowsx.h>
 
 RVA_DYNINIT(0x000c1690, 0xa, g_defaultPlayerNames)
 RVA_DYNINIT(0x000c16b0, 0x3d, g_defaultPlayerNames)
@@ -610,7 +611,7 @@ void CMultiStartDlg::AppendChatLine(char* line) {
     if (!edit || !line || !line[0]) {
         return;
     }
-    i32 len = ::GetWindowTextLengthA(edit);
+    i32 len = ::Edit_GetTextLength(edit);
     if (len == 0) {
         ::SendMessageA(edit, EM_SETSEL, len, -1);
     } else {
@@ -650,7 +651,7 @@ i32 CMultiStartDlg::PaintPlayerColorControls() {
             i32 shade = (GetRandomNumber() % 0xff) & 0xff;
             brush.CreateSolidBrush((shade << 8 | shade) << 8 | shade);
         } else {
-            brush.CreateSolidBrush(0x808080);
+            brush.CreateSolidBrush(RGB(128, 128, 128));
         }
         dc.FillRect(&rect, &brush);
     }
@@ -671,7 +672,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
                 color = TintColorRef(m_gameManager->m_players[0].m_color);
             } else {
-                color = 0xc8c8c8;
+                color = RGB(200, 200, 200);
             }
             shouldDraw = true;
             break;
@@ -679,7 +680,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
                 color = TintColorRef(m_gameManager->m_players[1].m_color);
             } else {
-                color = 0xc8c8c8;
+                color = RGB(200, 200, 200);
             }
             shouldDraw = true;
             break;
@@ -687,7 +688,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
                 color = TintColorRef(m_gameManager->m_players[2].m_color);
             } else {
-                color = 0xc8c8c8;
+                color = RGB(200, 200, 200);
             }
             shouldDraw = true;
             break;
@@ -695,7 +696,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
                 color = TintColorRef(m_gameManager->m_players[3].m_color);
             } else {
-                color = 0xc8c8c8;
+                color = RGB(200, 200, 200);
             }
             shouldDraw = true;
             break;
@@ -719,7 +720,7 @@ void CMultiStartDlg::OnPlayerColor0() {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 0, 1, NULL);
-    if (colorDialog.DoModal() == 1) {
+    if (colorDialog.DoModal() == IDOK) {
         if (SetPlayerColor(0, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
             BroadcastPlayerSlotChanges();
             GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, true);
@@ -736,7 +737,7 @@ void CMultiStartDlg::OnPlayerColor1() {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 1, 1, NULL);
-    if (colorDialog.DoModal() == 1) {
+    if (colorDialog.DoModal() == IDOK) {
         if (SetPlayerColor(1, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
             BroadcastPlayerSlotChanges();
             GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, true);
@@ -753,7 +754,7 @@ void CMultiStartDlg::OnPlayerColor2() {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 2, 1, NULL);
-    if (colorDialog.DoModal() == 1) {
+    if (colorDialog.DoModal() == IDOK) {
         if (SetPlayerColor(2, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
             BroadcastPlayerSlotChanges();
             GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, true);
@@ -770,7 +771,7 @@ void CMultiStartDlg::OnPlayerColor3() {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 3, 1, NULL);
-    if (colorDialog.DoModal() == 1) {
+    if (colorDialog.DoModal() == IDOK) {
         if (SetPlayerColor(3, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
             BroadcastPlayerSlotChanges();
             GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, true);
@@ -784,7 +785,7 @@ void CMultiStartDlg::OnCustomWorld() {
         return;
     }
     CBattlezDlgCustom dlg(NULL);
-    if (dlg.DoModal() == 1 && !dlg.m_customName.IsEmpty()) {
+    if (dlg.DoModal() == IDOK && !dlg.m_customName.IsEmpty()) {
 
         CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
         CWnd* worldEdit = worldCombo->GetWindow(GW_CHILD);
@@ -808,7 +809,7 @@ void CMultiStartDlg::CommitWorldSelection() {
         CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
         if (worldCombo != NULL) {
             i32 selection = worldCombo->GetCurSel();
-            if (selection != -1) {
+            if (selection != CB_ERR) {
                 CString worldName;
                 (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
                 if (!worldName.IsEmpty()) {
@@ -910,15 +911,15 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             }
             if (player->m_ready == false) {
                 if (player->m_active) {
-                    readyControl->SetCheck(0);
+                    readyControl->SetCheck(BST_UNCHECKED);
                     allLivePlayersReady = false;
                 } else {
-                    readyControl->SetCheck(0);
+                    readyControl->SetCheck(BST_UNCHECKED);
                 }
             } else if (player->m_active) {
-                readyControl->SetCheck(1);
+                readyControl->SetCheck(BST_CHECKED);
             } else {
-                readyControl->SetCheck(0);
+                readyControl->SetCheck(BST_UNCHECKED);
             }
             CComboBox* maxGruntzControl = GetMaxGruntzControl(slotIndex);
             maxGruntzControl->EnableWindow(
@@ -956,7 +957,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
         }
     }
     if (g_multiState->m_isHost) {
-        CWnd* ok = this->GetDlgItem(1);
+        CWnd* ok = this->GetDlgItem(IDOK);
         if (ok == NULL) {
             return 0;
         }
@@ -984,7 +985,7 @@ void CMultiStartDlg::Watchdog() {
     if (session == NULL) {
         return;
     }
-    g_multiState->m_netMgr->EnumerateSessionPlayers(session, 0);
+    g_multiState->m_netMgr->EnumerateSessionPlayers(session, DPENUMPLAYERS_ALL);
     g_multiState->ResolveLocalPlayer();
     if (g_netStatsTick == 0) {
         g_multiState->BroadcastValueMessage(NETMSG_LATENCY_PROBE, timeGetTime(), 0);

@@ -35,7 +35,8 @@ i32 MidiManager::Initialize(HINSTANCE instanceHandle, HWND ownerWindow, b32 disa
         SetEnabled(false);
     } else {
         AIL_startup();
-        if (AIL_midiOutOpen(&g_ailMidiDriver, NULL, -1) != 0 || g_ailMidiDriver == NULL) {
+        if (AIL_midiOutOpen(&g_ailMidiDriver, NULL, static_cast<i32>(MIDI_MAPPER)) != 0
+            || g_ailMidiDriver == NULL) {
             SetEnabled(false);
         }
     }

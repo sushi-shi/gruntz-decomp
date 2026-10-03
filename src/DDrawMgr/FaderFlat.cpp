@@ -51,7 +51,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
     i32 half = (m_splitPercent * surfaceSize.cx / 100) / 2 + surfaceSize.cx / 2;
     i32 rest = surfaceSize.cx - half;
     i32 end = span + base;
-    i32 y = (base < 0) ? 0 : base;
+    i32 y = max(0, base);
     while (y < end) {
         double s = sin(static_cast<float>(y - base) / span * 1.570795f);
         i32 n1 = static_cast<i32>(s * half);
@@ -81,15 +81,11 @@ void CFaderFlat::RenderFrame(i32 frame) {
     }
     i32 lastRow = surfaceSize.cy - 1;
     i32 y0 = lastRow;
-    if (y0 >= end) {
-        y0 = end;
-    }
+    y0 = min(y0, end);
     i32 y2 = y0;
     for (;;) {
         i32 stop = y0 + frame - m_previousFrame;
-        if (lastRow < stop) {
-            stop = lastRow;
-        }
+        stop = min(lastRow, stop);
         if (y2 >= stop) {
             break;
         }

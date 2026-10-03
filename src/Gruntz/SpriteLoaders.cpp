@@ -82,7 +82,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
 
     // Preserve subtraction before the start addition; Remaining reassociates this caller.
     i64 rem = m_countdown.m_interval - static_cast<u32>(g_frameTime) + m_countdown.m_start;
-    i32 v = (rem < 0) ? 0 : static_cast<i32>(rem);
+    i32 v = static_cast<i32>(max(0, rem));
     m_currentMs = v;
 
     if (v == 0) {
@@ -186,9 +186,9 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
 RVA(0x0009c090, 0x37)
 void CTimer::SetTime(i32 minutes, i32 seconds) {
     u32 clampedMinutes = static_cast<u32>(minutes);
-    CLAMP_UPPER_INPLACE(clampedMinutes, 0x63);
+    clampedMinutes = min(0x63, clampedMinutes);
     u32 clampedSeconds = static_cast<u32>(seconds);
-    CLAMP_UPPER_INPLACE(clampedSeconds, 0x3b);
+    clampedSeconds = min(0x3b, clampedSeconds);
     m_currentMs = static_cast<i32>((clampedMinutes * 60 + clampedSeconds) * MILLIS_PER_SECOND);
 }
 

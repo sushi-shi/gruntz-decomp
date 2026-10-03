@@ -15,12 +15,12 @@
 #undef s64
 
 inline void CMoviePlayer::DecodeFrame() {
-    i32 hr = m_srcSurf->Lock(NULL, &m_srcDesc, 1, NULL);
+    i32 hr = m_srcSurf->Lock(NULL, &m_srcDesc, DDLOCK_WAIT, NULL);
     while (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (m_srcSurf->Restore() != 0) {
             return;
         }
-        hr = m_srcSurf->Lock(NULL, &m_srcDesc, 1, NULL);
+        hr = m_srcSurf->Lock(NULL, &m_srcDesc, DDLOCK_WAIT, NULL);
     }
     if (hr == 0) {
         SmackToBuffer(

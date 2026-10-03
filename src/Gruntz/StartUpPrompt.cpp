@@ -44,7 +44,7 @@ int StartUpPrompt(HWND hWnd) {
             if (!LoadStringA(g_appResHandle, 0x8003, szCaption, 0x3e)) {
                 strcpy(szCaption, "Gruntz");
             }
-            if (MessageBoxA(hWnd, szText, szCaption, 0x31) != IDOK) {
+            if (MessageBoxA(hWnd, szText, szCaption, MB_OKCANCEL | MB_ICONEXCLAMATION) != IDOK) {
                 return 0;
             }
             {
@@ -66,7 +66,7 @@ int StartUpPrompt(HWND hWnd) {
     if (!LoadStringA(g_appResHandle, 0x8003, szCaption, 0x3e)) {
         strcpy(szCaption, "Gruntz");
     }
-    if (MessageBoxA(hWnd, szText, szCaption, 0x34) == IDYES) {
+    if (MessageBoxA(hWnd, szText, szCaption, MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
         g_cdPromptResult = true;
         return 1;
     }

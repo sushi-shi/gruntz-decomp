@@ -139,9 +139,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             yLo++;
         } else {
             yLo += t->m_stride.m_y;
-            if (yLo > yHi) {
-                yLo = yHi;
-            }
+            yLo = min(yHi, yLo);
         }
     }
     if (BroadPhase(t, x, y) != 0) {
@@ -178,9 +176,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             yLo++;
         } else {
             yLo += t->m_stride.m_y;
-            if (yLo > yHi) {
-                yLo = yHi;
-            }
+            yLo = min(yHi, yLo);
         }
     }
     if (BroadPhase(t, x, y) != 0) {
@@ -217,9 +213,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             col++;
         } else {
             col += t->m_stride.m_x;
-            if (col > colHi) {
-                col = colHi;
-            }
+            col = min(colHi, col);
         }
     }
     if (BroadPhase(t, x, y) != 0) {
@@ -256,9 +250,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             col++;
         } else {
             col += t->m_stride.m_x;
-            if (col > colHi) {
-                col = colHi;
-            }
+            col = min(colHi, col);
         }
     }
     if (BroadPhase(t, x, y) != 0) {
@@ -347,7 +339,12 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
             && (t->CollisionBits(obj)) && t->m_extent.left != COORD_UNSET
             && obj->m_extent.left != COORD_UNSET) {
             RECT bounds;
-            if (!t->ExtentsOverlapAt(t->m_screenPosition.m_x, t->m_screenPosition.m_y, obj, bounds)) {
+            if (!t->ExtentsOverlapAt(
+                    t->m_screenPosition.m_x,
+                    t->m_screenPosition.m_y,
+                    obj,
+                    bounds
+                )) {
                 if (t->ExtentsOverlapAt(candX, candY, obj, bounds)) {
                     i32 fire;
                     if (t->m_collisionLogic != NULL) {

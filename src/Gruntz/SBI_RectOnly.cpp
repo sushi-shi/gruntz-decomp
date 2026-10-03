@@ -2388,7 +2388,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
         if (tab->m_state == SLOT_FILLING) {
             i64 d = static_cast<i64>(g_frameTime) - tab->m_clock.m_start;
 
-            i32 elapsed = (d < 0) ? 0 : static_cast<i32>(d);
+            i32 elapsed = static_cast<i32>(max(0, d));
             u32 delay = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
             if (frame >= 0x1a) {
@@ -2496,9 +2496,7 @@ i32 CStatusBarMgr::AnySlotActive() {
 RVA(0x00105750, 0x1f)
 void CStatusBarMgr::AdvanceGruntWell(i32 delta) {
     i32 v = m_gruntWellLevel + delta;
-    if (v >= GRUNT_WELL_FULL) {
-        v = GRUNT_WELL_FULL;
-    }
+    v = min(v, GRUNT_WELL_FULL);
     m_gruntWellTargetLevel = v;
 }
 
@@ -2506,8 +2504,7 @@ void CStatusBarMgr::AdvanceGruntWell(i32 delta) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00105780, 0x1f)
 void CStatusBarMgr::DrainGruntWell(i32 delta) {
-    m_gruntWellTargetLevel =
-        m_gruntWellLevel - delta > GRUNT_WELL_EMPTY ? m_gruntWellLevel - delta : GRUNT_WELL_EMPTY;
+    m_gruntWellTargetLevel = max(m_gruntWellLevel - delta, GRUNT_WELL_EMPTY);
 }
 
 // @dead-code

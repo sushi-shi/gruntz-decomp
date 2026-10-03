@@ -148,9 +148,7 @@ double CMotionState::ArrivalVelX(double target) {
     }
     double disc = m_velocity.m_x * m_velocity.m_x
                   - (target - m_position.m_x) * m_acceleration.m_x * g_motionNegTwo;
-    if (g_motionZero > disc) {
-        disc = g_motionZero;
-    }
+    disc = max(g_motionZero, disc);
     double r = sqrt(disc);
     return (m_velocity.m_x > g_motionZero) ? r : -r;
 }
@@ -162,9 +160,7 @@ double CMotionState::ArrivalVelY(double target) {
     }
     double disc = m_velocity.m_y * m_velocity.m_y
                   - (target - m_position.m_y) * m_acceleration.m_y * g_motionNegTwo;
-    if (g_motionZero > disc) {
-        disc = g_motionZero;
-    }
+    disc = max(g_motionZero, disc);
     double r = sqrt(disc);
     return (m_velocity.m_y > g_motionZero) ? r : -r;
 }

@@ -297,7 +297,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     while (ShowCursor(false) >= 0) {
     }
 
-    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
 
     m_secretHudHandled = false;
 
@@ -1059,9 +1059,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
             i32 cap = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
             i32 cur = STAT(SumToolzCollectedForCurrentArea, m_toolzCollected);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1069,9 +1067,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
             i32 cap = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
             i32 cur = STAT(SumToyzCollectedForCurrentArea, m_toyzCollected);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1079,9 +1075,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
             i32 cap = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
             i32 cur = STAT(SumPowerupzCollectedForCurrentArea, m_powerupzCollected);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1089,9 +1083,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
             i32 cap = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
             i32 cur = STAT(SumCoinsCollectedForCurrentArea, m_coinsCollected);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1099,9 +1091,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             i32 total = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
             i32 cap = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
             i32 cur = STAT(SumSecretsFoundForCurrentArea, m_secretsFound);
-            if (cur >= cap) {
-                cur = cap;
-            }
+            cur = min(cur, cap);
             buf->Format("%d of %d", cur, total);
             return;
         }
@@ -1751,7 +1741,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     while (ShowCursor(false) >= 0) {
     }
-    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
 
     m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {
@@ -2391,55 +2381,55 @@ void CMultiBootyState::DrawBattleStats() {
             i32 color;
             switch (g_gameReg->m_players[i].m_color) {
                 case TINT_ORANGE:
-                    color = 0x80ff;
+                    color = RGB(255, 128, 0);
                     break;
                 case TINT_GREEN:
-                    color = 0xff00;
+                    color = RGB(0, 255, 0);
                     break;
                 case TINT_BLUE:
-                    color = 0xff0000;
+                    color = RGB(0, 0, 255);
                     break;
                 case TINT_RED:
-                    color = 0xff;
+                    color = RGB(255, 0, 0);
                     break;
                 case TINT_PURPLE:
-                    color = 0x800080;
+                    color = RGB(128, 0, 128);
                     break;
                 case TINT_YELLOW:
-                    color = 0xffff;
+                    color = RGB(255, 255, 0);
                     break;
                 case TINT_HOTPINK:
-                    color = 0x8000ff;
+                    color = RGB(255, 0, 128);
                     break;
                 case TINT_DKBLUE:
-                    color = 0x800000;
+                    color = RGB(0, 0, 128);
                     break;
                 case TINT_DKGREEN:
-                    color = 0x8000;
+                    color = RGB(0, 128, 0);
                     break;
                 case TINT_TURQ:
-                    color = 0x808000;
+                    color = RGB(0, 128, 128);
                     break;
                 case TINT_DKRED:
-                    color = 0x80;
+                    color = RGB(128, 0, 0);
                     break;
                 case TINT_PINK:
-                    color = 0xff00ff;
+                    color = RGB(255, 0, 255);
                     break;
                 case TINT_DKYELLOW:
-                    color = 0x8080;
+                    color = RGB(128, 128, 0);
                     break;
                 case TINT_GREY:
-                    color = 0x808080;
+                    color = RGB(128, 128, 128);
                     break;
                 case TINT_CYAN:
-                    color = 0xffff00;
+                    color = RGB(0, 255, 255);
                     break;
                 case TINT_WHITE:
-                    color = 0xffffff;
+                    color = RGB(255, 255, 255);
                     break;
                 default:
-                    color = 0;
+                    color = RGB(0, 0, 0);
                     break;
             }
             s.Format("%s", static_cast<const char*>(g_gameReg->m_players[i].GetName()));

@@ -81,7 +81,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 SoundCue* _cueMiniature;
                 SoundCue* _cueSpace;
                 SoundCue* _c;
-                switch (static_cast<GruntzCommandId>(IDX(nID) & 0xffff)) {
+                switch (static_cast<GruntzCommandId>(LOWORD(IDX(nID)))) {
                     case CHEAT_PROGRAMMING_GOD: {
                         if (m_world->SoundRegistry()->m_silentMode == false) {
                             SoundCue* _c = static_cast<SoundCue*>(

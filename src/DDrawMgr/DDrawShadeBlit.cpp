@@ -617,7 +617,7 @@ void CDDrawShadeBlit::BlitCopyForward(
                 i32 bytes;
                 if (x + static_cast<i32>(m_rleData[pos]) >= clip->right) {
                     i32 vis = (clip->right - x) * m_srcBpp;
-                    bytes = vis < 0 ? 0 : vis;
+                    bytes = max(0, vis);
                 } else {
                     bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
                 }
@@ -726,7 +726,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 u8* sd = &m_rleData[pos + 1];
                 if (x - m_rleData[pos] <= clip->left) {
                     i32 vis = (x - clip->left) * m_srcBpp;
-                    CopyRowFlip(base + (x - clip->left) * m_dstBpp, sd, vis < 0 ? 0 : vis);
+                    CopyRowFlip(base + (x - clip->left) * m_dstBpp, sd, max(0, vis));
                 } else {
                     CopyRowFlip(
                         base + (x - clip->left) * m_dstBpp,
@@ -938,13 +938,13 @@ void CDDrawShadeBlit::BlitShadedForward(
                             ConvertRowDoubleFwd(
                                 base + x * m_dstBpp,
                                 &m_rleData[pos + 1],
-                                v < 0 ? 0 : v,
+                                max(0, v),
                                 pitch
                             );
                         }
                     } else {
                         i32 v = clip->right - x;
-                        ConvertRow(base + x * m_dstBpp, &m_rleData[pos + 1], v < 0 ? 0 : v);
+                        ConvertRow(base + x * m_dstBpp, &m_rleData[pos + 1], max(0, v));
                     }
                 } else {
                     if (m_doubleScanlines) {
@@ -1058,12 +1058,12 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                     if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
                             i32 v = x - clip->left;
-                            i32 vis = v < 0 ? 0 : v;
+                            i32 vis = max(0, v);
                             ConvertRowDouble(base + v * m_dstBpp, &m_rleData[pos + 1], vis, pitch);
                         }
                     } else {
                         i32 v = x - clip->left;
-                        i32 vis = v < 0 ? 0 : v;
+                        i32 vis = max(0, v);
                         ConvertRowFlip(base + v * m_dstBpp, &m_rleData[pos + 1], vis);
                     }
                     x -= m_rleData[pos];

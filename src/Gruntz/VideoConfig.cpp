@@ -91,8 +91,8 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
     switch (msg) {
         case WM_HSCROLL: {
-            i32 code = static_cast<i32>((wParam & 0xffff));
-            i32 pos = static_cast<i32>((wParam >> 0x10));
+            i32 code = static_cast<i32>(LOWORD(wParam));
+            i32 pos = static_cast<i32>(HIWORD(wParam));
 
             MsgParam from;
             from.m_lparam = lParam;

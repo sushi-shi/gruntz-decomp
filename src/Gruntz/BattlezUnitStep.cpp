@@ -84,8 +84,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             if (g->TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
-            g->m_arrivalCell.m_x = nb->m_playerIndex;
-            g->m_arrivalCell.m_y = nb->m_unitIndex;
+            g->m_arrivalCell.Set(nb->m_playerIndex, nb->m_unitIndex);
             g->m_defenderState = AISTATE_ATTACK;
             g->m_dwell = 0;
             AcceptAlways(g);
@@ -94,15 +93,8 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
 
         if (static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleRerouteDelay)) {
             Coord here;
-            g->GetScreenPos((&here));
-            RerouteIdleUnit(
-                g,
-                here.m_x >> TILE_SHIFT_PX,
-                here.m_y >> TILE_SHIFT_PX,
-                m_idleBurnRand.m_x,
-                m_idleBurnRand.m_y,
-                -1
-            );
+            g->GetScreenTile(&here);
+            RerouteIdleUnit(g, here.m_x, here.m_y, m_idleBurnRand.m_x, m_idleBurnRand.m_y, -1);
             if (g->CoordCount() > m_idleRouteLimit.m_y + m_idleRouteLimit.m_x
                 && g->CoordCount() != 0) {
                 g->RecycleCoords();
@@ -134,21 +126,11 @@ inflight: {
     }
     if (nb != NULL && cur != nb) {
         g->RecycleCoords();
-        g->m_arrivalCell.m_x = nb->m_playerIndex;
-        g->m_arrivalCell.m_y = nb->m_unitIndex;
+        g->m_arrivalCell.Set(nb->m_playerIndex, nb->m_unitIndex);
         g->m_defenderState = AISTATE_ATTACK;
         g->m_dwell = 0;
         {
-            CGameObject* s = static_cast<CGameObject*>(nb->m_object);
-            if (g->TileSwitch(
-                    s->m_screenPosition.m_x >> TILE_SHIFT_PX,
-                    s->m_screenPosition.m_y >> TILE_SHIFT_PX,
-                    0,
-                    0xd87,
-                    0,
-                    0
-                )
-                == 0) {
+            if (g->TileSwitch(nb->GetScreenTileX(), nb->GetScreenTileY(), 0, 0xd87, 0, 0) == 0) {
                 return 1;
             }
         }
@@ -173,9 +155,9 @@ inflight: {
         }
         {
             Coord here;
-            g->GetScreenPos((&here));
-            i32 x5 = here.m_x >> TILE_SHIFT_PX;
-            i32 y5 = here.m_y >> TILE_SHIFT_PX;
+            g->GetScreenTile(&here);
+            i32 x5 = here.m_x;
+            i32 y5 = here.m_y;
             Coord nbpos;
             nbpos = cur->GetTilePos();
             i32 dx = nbpos.m_x - x5;
@@ -188,16 +170,7 @@ inflight: {
                 goto L_clearAt;
             }
             g->RecycleCoords();
-            CGameObject* s = cur->m_object;
-            if (g->TileSwitch(
-                    s->m_screenPosition.m_x >> TILE_SHIFT_PX,
-                    s->m_screenPosition.m_y >> TILE_SHIFT_PX,
-                    0,
-                    0xd87,
-                    0,
-                    0
-                )
-                != 0) {
+            if (g->TileSwitch(cur->GetScreenTileX(), cur->GetScreenTileY(), 0, 0xd87, 0, 0) != 0) {
                 goto L_done;
             }
         }
@@ -333,9 +306,9 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     return 1;
                 }
                 goal = unit->m_defenderPx;
-                (static_cast<CUserLogic*>(unit))->GetScreenPos((&currentScreenPos));
+                unit->GetScreenPos(&currentScreenPos);
                 i32 currentDx = abs(marker.m_x - (currentScreenPos.m_x >> TILE_SHIFT_PX));
-                (static_cast<CUserLogic*>(unit))->GetScreenPos((&currentScreenPos));
+                unit->GetScreenPos(&currentScreenPos);
                 i32 currentDy = abs(marker.m_y - (currentScreenPos.m_y >> TILE_SHIFT_PX));
                 i32 currentDistanceSquared = SquaredDistance(currentDx, currentDy);
                 i32 goalDx = abs(marker.m_x - goal.m_x);
@@ -363,9 +336,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     UNSET_COORD(unit->m_defenderPx);
                     return 1;
                 }
-                CGameObject* lvl = unit->m_object;
-                i32 dx = abs(gx - (lvl->m_screenPosition.m_x >> TILE_SHIFT_PX));
-                i32 dy = abs(gy - (lvl->m_screenPosition.m_y >> TILE_SHIFT_PX));
+                i32 dx = abs(gx - unit->GetScreenTileX());
+                i32 dy = abs(gy - unit->GetScreenTileY());
                 if (SquaredDistance(dx, dy) > 0x10) {
                     i32 cfg = unit->m_routeBlockedMask;
                     i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
@@ -429,9 +401,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         UNSET_COORD(unit->m_defenderPx);
         return 1;
     }
-    CGameObject* lvl = unit->m_object;
-    i32 dx = abs(gx - (lvl->m_screenPosition.m_x >> TILE_SHIFT_PX));
-    i32 dy = abs(gy - (lvl->m_screenPosition.m_y >> TILE_SHIFT_PX));
+    i32 dx = abs(gx - unit->GetScreenTileX());
+    i32 dy = abs(gy - unit->GetScreenTileY());
     if (SquaredDistance(dx, dy) > 0x10) {
         return 1;
     }

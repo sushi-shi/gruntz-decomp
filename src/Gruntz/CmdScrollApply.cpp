@@ -113,9 +113,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
 RVA(0x000ec1c0, 0x43)
 void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX) {
     i32 t = durationMs + g_frameTime;
-    if (g_scrollClock <= static_cast<u32>(t)) {
-        g_scrollClock = t;
-    }
+    g_scrollClock = max(g_scrollClock, static_cast<u32>(t));
     g_jitterX = jitterX;
     g_jitterY = jitterY;
     g_panMinX = panMinX;

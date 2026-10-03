@@ -35,39 +35,39 @@ i32 CLightFxMgr::Init(CGruntzMgr* gameMgr, CGruntzMgr* owner) {
     if (!m_tables[0]) {
         return 0;
     }
-    m_tables[1] = m_cache->SubTable(0xff);
+    m_tables[1] = m_cache->SubTable(RGB(255, 0, 0));
     if (!m_tables[1]) {
         return 0;
     }
-    m_tables[2] = m_cache->SubTable(0xff00);
+    m_tables[2] = m_cache->SubTable(RGB(0, 255, 0));
     if (!m_tables[1]) {
         return 0;
     }
-    m_tables[3] = m_cache->SubTable(0xff0000);
+    m_tables[3] = m_cache->SubTable(RGB(0, 0, 255));
     if (!m_tables[3]) {
         return 0;
     }
-    m_tables[4] = m_cache->SubTable(0xffff);
+    m_tables[4] = m_cache->SubTable(RGB(255, 255, 0));
     if (!m_tables[4]) {
         return 0;
     }
-    m_tables[5] = m_cache->SubTable(0x202020);
+    m_tables[5] = m_cache->SubTable(RGB(32, 32, 32));
     if (!m_tables[5]) {
         return 0;
     }
-    m_tables[6] = m_cache->SubTable(0xff8080);
+    m_tables[6] = m_cache->SubTable(RGB(128, 128, 255));
     if (!m_tables[6]) {
         return 0;
     }
-    m_tables[7] = m_cache->SubTable(0xc000c0);
+    m_tables[7] = m_cache->SubTable(RGB(192, 0, 192));
     if (!m_tables[7]) {
         return 0;
     }
-    m_tables[8] = m_cache->SubTable(0x60c0);
+    m_tables[8] = m_cache->SubTable(RGB(192, 96, 0));
     if (!m_tables[8]) {
         return 0;
     }
-    m_tables[9] = m_cache->SubTable(0xc0c0c0);
+    m_tables[9] = m_cache->SubTable(RGB(192, 192, 192));
     if (!m_tables[9]) {
         return 0;
     }

@@ -200,8 +200,8 @@ i32 CDDSurface::Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfa
     }
     memset(&m_apiDesc, 0, sizeof(DDSURFACEDESC));
     m_apiDesc.dwSize = sizeof(DDSURFACEDESC);
-    m_apiDesc.ddsCaps.dwCaps = surfaceCaps | 0x40;
-    m_apiDesc.dwFlags = 7;
+    m_apiDesc.ddsCaps.dwCaps = surfaceCaps | DDSCAPS_OFFSCREENPLAIN;
+    m_apiDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
     m_apiDesc.dwWidth = imageSize.cx;
     m_apiDesc.dwHeight = imageSize.cy;
     if (!CDDSurface::CreateFromDesc(manager, NULL)) {
@@ -258,7 +258,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     info.m_bmiHeader.biHeight = height;
     info.m_bmiHeader.biPlanes = 1;
     info.m_bmiHeader.biBitCount = 8;
-    info.m_bmiHeader.biCompression = 0;
+    info.m_bmiHeader.biCompression = BI_RGB;
     info.m_bmiHeader.biSizeImage = 0;
 
     PALETTEENTRY* spal = src->m_srcPalette;
@@ -330,7 +330,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     CSize imageSize(this->m_apiDesc.dwWidth, this->m_apiDesc.dwHeight);
     BmpFileHeaderStamp bfh;
     memset(&bfh, 0, sizeof(bfh));
-    bi.bmiHeader.biCompression = 0;
+    bi.bmiHeader.biCompression = BI_RGB;
     bi.bmiHeader.biSizeImage = 0;
     strcpy(bfh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = imageSize.cy;
@@ -417,7 +417,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     CSize imageSize(m_apiDesc.dwWidth, m_apiDesc.dwHeight);
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
-    bi.bmiHeader.biCompression = 0;
+    bi.bmiHeader.biCompression = BI_RGB;
     bi.bmiHeader.biSizeImage = 0;
     strcpy(fh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = imageSize.cy;
@@ -784,9 +784,9 @@ i32 CDDSurface::DecodePcxData(
         return 0;
     }
     if (HAS(flags, PID_SYSTEM_MEMORY)) {
-        surfaceCaps = (surfaceCaps & ~0x4000) | 0x800;
+        surfaceCaps = (surfaceCaps & ~DDSCAPS_VIDEOMEMORY) | DDSCAPS_SYSTEMMEMORY;
     } else if (HAS(flags, PID_VIDEO_MEMORY)) {
-        surfaceCaps = surfaceCaps & ~0x800;
+        surfaceCaps = surfaceCaps & ~DDSCAPS_SYSTEMMEMORY;
     }
 
     i32 remap = 0;

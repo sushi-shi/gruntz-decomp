@@ -840,14 +840,7 @@ i32 CGrunt::StepEntranceReinit() {
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    i64 diff = static_cast<i64>(g_frameTime) - m_arrivalVoiceTiming.m_start;
-
-    u32 elapsed;
-    if (diff < 0) {
-        elapsed = 0;
-    } else {
-        elapsed = static_cast<u32>(diff);
-    }
+    u32 elapsed = m_arrivalVoiceTiming.Elapsed();
     if (elapsed <= 0x2710) {
         return 0;
     }

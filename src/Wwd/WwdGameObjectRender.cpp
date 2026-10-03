@@ -101,12 +101,8 @@ void CWwdDotObject::BltDirtyRegions(
             dst->BlitDirtyRect(src, dirtyPos, m_dirty.m_size);
             dst->BlitDirtyRect(src, shadowPos, m_shadow.m_size);
         } else {
-            i32 left = m_dirty.m_lastPosition.x < m_shadow.m_lastPosition.x
-                           ? m_dirty.m_lastPosition.x
-                           : m_shadow.m_lastPosition.x;
-            i32 top = m_dirty.m_lastPosition.y < m_shadow.m_lastPosition.y
-                          ? m_dirty.m_lastPosition.y
-                          : m_shadow.m_lastPosition.y;
+            i32 left = min(m_dirty.m_lastPosition.x, m_shadow.m_lastPosition.x);
+            i32 top = min(m_dirty.m_lastPosition.y, m_shadow.m_lastPosition.y);
             CPoint pos(left, top);
             CSize size(dx, dy);
             dst->BlitDirtyRect(src, pos, size);

@@ -2088,7 +2088,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (lparam & 0x1000000) {
+    if (lparam & (KF_EXTENDED << 16)) {
         if (vk == VK_LEFT) {
             this->m_scrollEdgeLock |= 1;
             return 1;
@@ -2482,7 +2482,7 @@ tail_default2:
 
 RVA(0x000cda70, 0x7a)
 i32 CPlay::OnKeyUp(i32 key, i32 flags) {
-    if (flags & 0x01000000) {
+    if (flags & (KF_EXTENDED << 16)) {
         if (key == VK_LEFT) {
             m_scrollEdgeLock &= ~1;
         } else if (key == VK_RIGHT) {
@@ -3343,7 +3343,7 @@ void CPlay::DrawCustomLevelBanner() {
         return;
     }
     SetBkMode(hdc, TRANSPARENT);
-    SetTextColor(hdc, 0);
+    SetTextColor(hdc, RGB(0, 0, 0));
     RECT rc;
     SET_RECT_COMPONENTS(rc, 0, 0x1b8, 0x27f, 0x1d6);
     DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
@@ -3777,7 +3777,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         return 0;
     }
 
-    i32 result = savedPixels->BltFast(0, 0, target, screenRect, 0x10);
+    i32 result = savedPixels->BltFast(0, 0, target, screenRect, DDBLTFAST_WAIT);
     if (result != 0) {
         CDDrawDeviceManager::ReportError(NULL, 0, result);
     }
@@ -3845,12 +3845,12 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             {
                 i32 anchorX = m_dragClampMax.m_x;
                 i32 curX = m_cursorPosition.m_x;
-                m_hudRect.left = curX < anchorX ? curX : anchorX;
-                m_hudRect.right = curX <= anchorX ? anchorX : curX;
+                m_hudRect.left = min(curX, anchorX);
+                m_hudRect.right = max(curX, anchorX);
                 i32 anchorY = m_dragClampMax.m_y;
                 i32 curY = m_cursorPosition.m_y;
-                m_hudRect.top = curY < anchorY ? curY : anchorY;
-                m_hudRect.bottom = curY <= anchorY ? anchorY : curY;
+                m_hudRect.top = min(curY, anchorY);
+                m_hudRect.bottom = max(curY, anchorY);
             }
         rearm:
             CWwdSpriteObject* s = m_cursorSnapSprite;
@@ -3893,16 +3893,14 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     m_statusBar->HandlePointerDrag(keyFlags, x, y);
     if (m_worldReady != false) {
 
-        m_hudRect.left = m_cursorPosition.m_x > box.left ? m_cursorPosition.m_x : box.left;
-        m_hudRect.left = m_hudRect.left < m_dragClampMax.m_x ? m_hudRect.left : m_dragClampMax.m_x;
-        m_hudRect.right = m_cursorPosition.m_x < box.right ? m_cursorPosition.m_x : box.right;
-        m_hudRect.right =
-            m_hudRect.right > m_dragClampMax.m_x ? m_hudRect.right : m_dragClampMax.m_x;
-        m_hudRect.top = m_cursorPosition.m_y <= box.top ? box.top : m_cursorPosition.m_y;
-        m_hudRect.top = m_hudRect.top < m_dragClampMax.m_y ? m_hudRect.top : m_dragClampMax.m_y;
-        m_hudRect.bottom = m_cursorPosition.m_y < box.bottom ? m_cursorPosition.m_y : box.bottom;
-        m_hudRect.bottom =
-            m_hudRect.bottom > m_dragClampMax.m_y ? m_hudRect.bottom : m_dragClampMax.m_y;
+        m_hudRect.left = max(m_cursorPosition.m_x, box.left);
+        m_hudRect.left = min(m_hudRect.left, m_dragClampMax.m_x);
+        m_hudRect.right = min(m_cursorPosition.m_x, box.right);
+        m_hudRect.right = max(m_hudRect.right, m_dragClampMax.m_x);
+        m_hudRect.top = max(m_cursorPosition.m_y, box.top);
+        m_hudRect.top = min(m_hudRect.top, m_dragClampMax.m_y);
+        m_hudRect.bottom = min(m_cursorPosition.m_y, box.bottom);
+        m_hudRect.bottom = max(m_hudRect.bottom, m_dragClampMax.m_y);
     }
     if (m_cursorTargetValid != false && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
         FlushPendingOps();
@@ -3940,7 +3938,8 @@ i32 CPlay::RestoreCursorSaveUnder() {
     }
 
     i32 result =
-        backSurface->BltFast(screenRect->left, screenRect->top, savedPixels, savedRect, 0x10);
+        backSurface
+            ->BltFast(screenRect->left, screenRect->top, savedPixels, savedRect, DDBLTFAST_WAIT);
     if (result != 0) {
         CDDrawDeviceManager::ReportError(NULL, 0, result);
     }
@@ -3974,9 +3973,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_LEFT)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
-                if (d > 0x64) {
-                    d = 0x64;
-                }
+                d = min(0x64, d);
                 scrollPosition.m_x -= d;
                 self->m_lastScrollTimeX = timeGetTime();
                 changed = true;
@@ -3994,9 +3991,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_RIGHT)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
-                if (d > 0x64) {
-                    d = 0x64;
-                }
+                d = min(0x64, d);
                 scrollPosition.m_x += d;
                 self->m_lastScrollTimeX = timeGetTime();
                 changed = true;
@@ -4013,9 +4008,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_UP)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
-                if (d > 0x64) {
-                    d = 0x64;
-                }
+                d = min(0x64, d);
                 scrollPosition.m_y -= d;
                 self->m_lastScrollTimeY = timeGetTime();
                 changed = true;
@@ -4035,9 +4028,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
         if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_DOWN)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
-                if (d > 0x64) {
-                    d = 0x64;
-                }
+                d = min(0x64, d);
                 scrollPosition.m_y += d;
                 self->m_lastScrollTimeY = timeGetTime();
                 changed = true;
@@ -6683,15 +6674,15 @@ i32 CPlay::NotifyVisibleEntities() {
 
 RVA(0x000d9160, 0xac)
 i32 CPlay::RegisterInputBindings() {
-    m_mgr->m_gameWnd->PumpMessages(0x102, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x200, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x201, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x202, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x203, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x204, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x205, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(0x206, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_CHAR, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_MOUSEMOVE, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONDOWN, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONUP, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONDBLCLK, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONDOWN, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONUP, 0x40);
+    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONDBLCLK, 0x40);
     return 1;
 }
 

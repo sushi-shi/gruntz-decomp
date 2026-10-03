@@ -64,6 +64,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
@@ -242,7 +243,6 @@ RVA_COMPGEN(0x0000f400, 0x1b, ??0CGruntCellRec@@QAE@XZ)
 
 RVA_COMPGEN(0x0000f430, 0x10, ??1CGruntCellRec@@QAE@XZ)
 
-// @early-stop
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCALE), CWapX(owner) {
     m_entranceCell = g_gruntMoveDirSouth;
@@ -270,6 +270,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_playerIndex = -1;
     m_unitIndex = -1;
     m_neighborPlayerIndex = -1;
+    m_neighborUnitIndex = -1;
     m_warpstoneAnchorIndex = 0;
     m_entranceReason = PICKUP_NONE;
     m_vehiclePickupType = PICKUP_NONE;
@@ -277,7 +278,6 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_gruntKind = GRUNT_NORMAL;
     m_toolId = PICKUP_NONE;
     m_animSetName = "NORMALGRUNT";
-    m_neighborUnitIndex = -1;
     m_entranceCommitted = true;
     m_healthSprite = NULL;
     m_staminaSprite = NULL;
@@ -362,10 +362,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     {
         CWwdSpriteObject* h = m_object;
         i32 lim = h->m_screenPosition.m_y + 0x186a0;
-        if (h->m_sortKey != lim) {
-            h->m_sortKey = lim;
-            h->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
-        }
+        SET_SORT_KEY_IF_CHANGED(h, lim);
     }
     m_blockedVoicePending = true;
 }
@@ -1135,7 +1132,6 @@ reProbe:
 }
 
 #include <Gruntz/GruntMovementMacros.h>
-#include <Gruntz/SortKeyMacros.h>
 
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {

@@ -10,6 +10,8 @@
 #include <Gruntz/String.h>
 #include <MsgParam.h>
 
+#include <windowsx.h>
+
 RVA(0x000387c0, 0xd4)
 CString CInputConfig::LoadInputDeviceConfig(i32 uppercase) {
     CString name("None");
@@ -47,21 +49,21 @@ i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
     if (!ctrl) {
         return 0;
     }
-    SendMessageA(ctrl, CB_RESETCONTENT, 0, 0);
+    ComboBox_ResetContent(ctrl);
     MsgParam item;
     item.m_str = "None";
-    SendMessageA(ctrl, CB_ADDSTRING, 0, item.m_lparam);
+    ComboBox_AddString(ctrl, item.m_lparam);
     item.m_str = "Keyboard";
-    SendMessageA(ctrl, CB_ADDSTRING, 0, item.m_lparam);
+    ComboBox_AddString(ctrl, item.m_lparam);
     i32 i = 0;
     while (i < g_inputMgr->m_joysticks.GetSize()) {
         CString s;
         i++;
         s.Format("Joystick %i", i);
-        SendMessageA(ctrl, CB_ADDSTRING, 0, (item.m_str = static_cast<LPCTSTR>(s), item.m_lparam));
+        ComboBox_AddString(ctrl, (item.m_str = static_cast<LPCTSTR>(s), item.m_lparam));
     }
     if (selIndex >= 0) {
-        SendMessageA(ctrl, CB_SETCURSEL, selIndex, 0);
+        ComboBox_SetCurSel(ctrl, selIndex);
     }
     return 1;
 }

@@ -16,27 +16,29 @@
 
 #include <dplay.h>
 #include <dplobby.h>
+#include <objbase.h>
 #include <string.h>
+#include <windowsx.h>
 
 DATA(0x002bf840)
 b32 g_validateProviders = false;
 
 // clang-format off
 DATA(0x00224d58)
-u8 g_directPlayIpxProviderGuid[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
-                                   0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
+GUID g_directPlayIpxProviderGuid = {
+    0x685bc400, 0x9d2c, 0x11cf, {0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3}};
 DATA(0x00224d68)
-u8 g_directPlayTcpIpProviderGuid[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
-                                   0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82};
+GUID g_directPlayTcpIpProviderGuid = {
+    0x36e95ee0, 0x8577, 0x11cf, {0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82}};
 DATA(0x00224d78)
-u8 g_directPlayModemProviderGuid[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
-                                   0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
+GUID g_directPlayModemProviderGuid = {
+    0x44eaa760, 0xcb68, 0x11cf, {0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e}};
 DATA(0x00224d88)
-u8 g_directPlaySerialProviderGuid[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
-                                   0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
+GUID g_directPlaySerialProviderGuid = {
+    0x0f1d6860, 0x88d9, 0x11cf, {0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e}};
 DATA(0x00224d98)
-u8 g_unclassifiedProviderGuid[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
-                                   0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
+GUID g_unclassifiedProviderGuid = {
+    0xd223b400, 0x0a7d, 0x11d1, {0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40}};
 
 
 
@@ -238,7 +240,7 @@ void CNetMgr::PopulateProviderList(HWND hList, i32 excludedProviderKinds) {
         return;
     }
 
-    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+    ListBox_ResetContent(hList);
 
     CNetProviderNode* provider = GetFirstProvider();
     while (provider != NULL) {
@@ -246,14 +248,9 @@ void CNetMgr::PopulateProviderList(HWND hList, i32 excludedProviderKinds) {
             || ((excludedProviderKinds & 2) && provider->IsIpxProvider())) {
             provider = GetNextProvider();
         } else {
-            i32 idx = static_cast<i32>(SendMessageA(
-                hList,
-                LB_ADDSTRING,
-                0,
-                reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(provider->ProviderName()))
-            ));
+            i32 idx = ListBox_AddString(hList, static_cast<LPCTSTR>(provider->ProviderName()));
             if (idx != LB_ERR) {
-                SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(provider));
+                ListBox_SetItemData(hList, idx, reinterpret_cast<LPARAM>(provider));
             }
             provider = GetNextProvider();
         }
@@ -265,8 +262,8 @@ i32 CNetMgr::ReadProviderSelection(HWND hList) {
     if (hList == NULL) {
         return 0;
     }
-    i32 selection = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
-    if (selection == -1) {
+    i32 selection = ListBox_GetCurSel(hList);
+    if (selection == LB_ERR) {
         return 0;
     }
     if (selection < 0) {
@@ -275,8 +272,8 @@ i32 CNetMgr::ReadProviderSelection(HWND hList) {
     if (selection >= static_cast<i32>(m_providers.GetCount())) {
         return 0;
     }
-    i32 itemData = static_cast<i32>(SendMessageA(hList, LB_GETITEMDATA, selection, 0));
-    if (itemData == -1) {
+    i32 itemData = static_cast<i32>(ListBox_GetItemData(hList, selection));
+    if (itemData == LB_ERR) {
         return 0;
     }
     if (itemData == 0) {
@@ -385,22 +382,20 @@ void CNetMgr::PopulateSessionList(HWND hList) {
         return;
     }
 
-    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+    ListBox_ResetContent(hList);
 
     CNetSessionListNode* listing = GetFirstSession();
 
     while (listing != NULL) {
         MsgParam name;
-        i32 itemIndex = static_cast<i32>(SendMessageA(
+        i32 itemIndex = ListBox_AddString(
             hList,
-            LB_ADDSTRING,
-            0,
             (name.m_str = listing->m_sessionDesc.lpszSessionNameA, name.m_lparam)
-        ));
-        if (itemIndex != -1) {
+        );
+        if (itemIndex != LB_ERR) {
             MsgParam cookie;
             cookie.m_sessionListing = listing;
-            SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);
+            ListBox_SetItemData(hList, itemIndex, cookie.m_lparam);
         }
 
 
@@ -414,8 +409,8 @@ i32 CNetMgr::ReadSessionSelection(HWND hList) {
     if (hList == NULL) {
         return 0;
     }
-    i32 selection = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
-    if (selection == -1) {
+    i32 selection = ListBox_GetCurSel(hList);
+    if (selection == LB_ERR) {
         return 0;
     }
     if (selection < 0) {
@@ -424,8 +419,8 @@ i32 CNetMgr::ReadSessionSelection(HWND hList) {
     if (selection >= static_cast<i32>(m_sessionListings.GetCount())) {
         return 0;
     }
-    i32 itemData = static_cast<i32>(SendMessageA(hList, LB_GETITEMDATA, selection, 0));
-    if (itemData == -1) {
+    i32 itemData = static_cast<i32>(ListBox_GetItemData(hList, selection));
+    if (itemData == LB_ERR) {
         return 0;
     }
     if (itemData == 0) {
@@ -529,7 +524,7 @@ i32 CNetMgr::EnumerateAllPlayers() {
     ClearPlayers();
 
     IDirectPlay4A* directPlay = m_directPlay;
-    i32 hr = directPlay->EnumPlayers(NULL, &NetEnumPlayerCallback, this, 0);
+    i32 hr = directPlay->EnumPlayers(NULL, &NetEnumPlayerCallback, this, DPENUMPLAYERS_ALL);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x30a, hr, NULL);
         return hr;
@@ -680,22 +675,20 @@ void CNetMgr::PopulatePlayerList(HWND hList) {
         return;
     }
 
-    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+    ListBox_ResetContent(hList);
 
     CNetPlayerNode* player = GetFirstPlayer();
 
     while (player != NULL) {
         MsgParam name;
-        i32 itemIndex = static_cast<i32>(SendMessageA(
+        i32 itemIndex = ListBox_AddString(
             hList,
-            LB_ADDSTRING,
-            0,
             (name.m_str = static_cast<const char*>(player->ShortName()), name.m_lparam)
-        ));
-        if (itemIndex != -1) {
+        );
+        if (itemIndex != LB_ERR) {
             MsgParam cookie;
             cookie.m_player = player;
-            SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);
+            ListBox_SetItemData(hList, itemIndex, cookie.m_lparam);
         }
 
 
@@ -795,7 +788,7 @@ i32 CNetMgr::SendEx(
         context,
         messageId
     );
-    if (hr && hr != static_cast<i32>(0x8000000a)) {
+    if (hr && hr != DPERR_PENDING) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, NULL);
     }
     return hr;
@@ -1016,7 +1009,7 @@ i32 CNetProviderNode::IsIpxProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_directPlayIpxProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_directPlayIpxProviderGuid);
 }
 
 RVA(0x001794e0, 0x21)
@@ -1024,7 +1017,7 @@ i32 CNetProviderNode::IsTcpIpProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_directPlayTcpIpProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_directPlayTcpIpProviderGuid);
 }
 
 RVA(0x00179510, 0x21)
@@ -1032,7 +1025,7 @@ i32 CNetProviderNode::IsModemProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_directPlayModemProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_directPlayModemProviderGuid);
 }
 
 RVA(0x00179540, 0x21)
@@ -1040,7 +1033,7 @@ i32 CNetProviderNode::IsSerialProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_directPlaySerialProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_directPlaySerialProviderGuid);
 }
 
 RVA(0x00179570, 0x21)
@@ -1048,7 +1041,7 @@ i32 CNetProviderNode::MatchesUnclassifiedProvider() {
     if (!m_providerGuid) {
         return 0;
     }
-    return memcmp(m_providerGuid, g_unclassifiedProviderGuid, 16) == 0 ? 1 : 0;
+    return IsEqualGUID(*m_providerGuid, g_unclassifiedProviderGuid);
 }
 
 RVA(0x001795a0, 0xdb)

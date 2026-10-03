@@ -73,24 +73,16 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
-    m_object->m_extent.left = (m_object->m_screenPosition.m_x < m_object->m_speed.m_x)
-                                  ? m_object->m_screenPosition.m_x
-                                  : m_object->m_speed.m_x;
+    m_object->m_extent.left = min(m_object->m_screenPosition.m_x, m_object->m_speed.m_x);
 
     i32 exRight = m_object->m_speed.m_x;
-    if (m_object->m_screenPosition.m_x > exRight) {
-        exRight = m_object->m_screenPosition.m_x;
-    }
+    exRight = max(m_object->m_screenPosition.m_x, exRight);
     m_object->m_extent.right = exRight;
     i32 exTop = m_object->m_speed.m_y;
-    if (m_object->m_screenPosition.m_y < exTop) {
-        exTop = m_object->m_screenPosition.m_y;
-    }
+    exTop = min(m_object->m_screenPosition.m_y, exTop);
     m_object->m_extent.top = exTop;
     i32 exBottom = m_object->m_speed.m_y;
-    if (m_object->m_screenPosition.m_y > exBottom) {
-        exBottom = m_object->m_screenPosition.m_y;
-    }
+    exBottom = max(m_object->m_screenPosition.m_y, exBottom);
     m_object->m_extent.bottom = exBottom;
 
     CDDrawWorker* frameSet = Anim()->m_imageSet;
