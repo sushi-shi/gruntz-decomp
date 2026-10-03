@@ -22,7 +22,6 @@
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarItem.h>
-#include <Gruntz/StatusBarItemInline.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/CImage.h>
@@ -89,7 +88,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         goto fail;
     }
     h = host;
-    INITIALIZE_STATUS_BAR_ITEM(owner, tab, h)
+    Initialize(owner, tab, h);
 
     m_rect = g;
 

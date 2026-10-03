@@ -18,11 +18,11 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
-#include <Gruntz/StatusBarItemInline.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
 
+// @early-stop
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,
@@ -42,7 +42,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (owner == NULL) {
         goto fail;
     }
-    INITIALIZE_STATUS_BAR_ITEM(owner, obj, host)
+    Initialize(owner, obj, host);
 
     m_rect = rect;
     m_cmd = cmd;
@@ -57,7 +57,7 @@ i32 CSBI_ImageSet::SetupImage(
     i32 f;
     f = frame;
     if (f == -1) {
-        f = rec->m_minIndex;
+        f = rec->GetMinIndex();
     }
     m_frameIndex = f;
 

@@ -172,5 +172,4 @@ inline void CMovingLogic::BeginMotion() {
     CMovingLogic::AdvanceMotion();
 }
 
-extern const double g_motionTimeScale;
 #endif // GRUNTZ_CMOVINGLOGIC_H
