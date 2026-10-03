@@ -407,8 +407,8 @@ i32 CState::OnPaint() {
         return 0;
     }
     PAINTSTRUCT ps;
-    BeginPaint(m_mgr->m_gameWnd->m_hwnd, &ps);
-    EndPaint(m_mgr->m_gameWnd->m_hwnd, &ps);
+    BeginPaint(m_mgr->m_gameWnd->GetHwnd(), &ps);
+    EndPaint(m_mgr->m_gameWnd->GetHwnd(), &ps);
     return 1;
 }
 

@@ -477,7 +477,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         flags |= 0x10;
     }
     m_colorDepth = BPP_RGB_16;
-    if (!m_world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, BPP_RGB_16, flags)) {
+    if (!m_world->Init(m_gameWnd->GetHwnd(), SCREEN_W_PX, SCREEN_H_PX, BPP_RGB_16, flags)) {
         ReportWorldStatus(WORLD_REPORT_STARTUP_INIT);
         return 0;
     }
@@ -524,7 +524,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_cheatMgr = new CCheatMgr;
-    if (!CheatMgr()->Init(m_gameWnd->m_hwnd)) {
+    if (!CheatMgr()->Init(m_gameWnd->GetHwnd())) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40b);
         return 0;
     }
@@ -537,7 +537,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     m_midi = new MidiManager;
-    if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->m_hwnd, false)) {
+    if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->GetHwnd(), false)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40c);
         return 0;
     }
@@ -561,7 +561,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     g_inputMgr = new DirectInputMgr2;
     if (!g_inputMgr->Create(
-            m_gameWnd->m_hwnd,
+            m_gameWnd->GetHwnd(),
             m_owner->m_hInstance,
             IDX(DIN_CREATE_ASYNC_KEYBOARD | DIN_CREATE_NO_MOUSE | DIN_CREATE_NO_JOYSTICKS)
         )) {
@@ -1493,7 +1493,7 @@ i32 CGruntzMgr::HandleDebugPosition() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
         r = RunModalDialog("DEBUG_POSITION", WarpDialogProc, true);
         if (r == 1) {
-            HWND hwnd = m_gameWnd->m_hwnd;
+            HWND hwnd = m_gameWnd->GetHwnd();
             PostMessageA(hwnd, WM_COMMAND, 0x805c, 0);
         }
     }
@@ -1550,7 +1550,7 @@ void CGruntzMgr::OnCheckpointReached() {
     }
     CCheckpointDlg dlg(NULL);
     if (ExitModalUI(&dlg, false) == 1) {
-        SendMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_QUICK_SAVE_PROMPT), 0);
+        SendMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_QUICK_SAVE_PROMPT), 0);
     }
 }
 
@@ -1689,7 +1689,7 @@ i32 CGruntzMgr::WarpCheat() {
                     ReportError(IDX(IDS_SET_GAME_STATE), 0x43b);
                     return 0;
                 }
-                PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x80ca, 0);
+                PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, 0x80ca, 0);
                 return 1;
             }
         } else {
@@ -1724,7 +1724,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     i32 hr = DirectPlayLobbyCreate(NULL, &m_lobby, NULL, NULL, 0);
     if (hr) {
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, m_gameWnd->m_hwnd);
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, m_gameWnd->GetHwnd());
         return 0;
     }
     if (!m_lobby) {
@@ -1742,7 +1742,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     DWORD dwSize = 0;
     hr = m_lobby->GetConnectionSettings(0, NULL, &dwSize);
     if (hr != 0 && hr != static_cast<i32>(DPERR_BUFFERTOOSMALL)) {
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->GetHwnd());
         m_lobby->Release();
         m_lobby = NULL;
         return 0;
@@ -1759,7 +1759,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     hr = m_lobby->GetConnectionSettings(0, m_connSettings, &dwSize);
     if (hr) {
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr, m_gameWnd->m_hwnd);
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr, m_gameWnd->GetHwnd());
         m_lobby->Release();
         m_lobby = NULL;
         return 0;
@@ -1782,7 +1782,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     i32 wasShown = ShowCursor(true);
     while (ShowCursor(true) < 0) {
     }
-    i32 result = MessageBoxA(m_gameWnd->m_hwnd, text, "Gruntz", type);
+    i32 result = MessageBoxA(m_gameWnd->GetHwnd(), text, "Gruntz", type);
     if (wasShown <= 0) {
         while (ShowCursor(false) >= 0) {
         }
@@ -1812,7 +1812,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     }
 
     m_modalBusy = true;
-    static_cast<CGruntzApp*>(app)->ShowMessage(msg, m_gameWnd->m_hwnd);
+    static_cast<CGruntzApp*>(app)->ShowMessage(msg, m_gameWnd->GetHwnd());
     NetLobby::g_curDlg = NULL;
     m_modalBusy = false;
     if (shown <= 0) {
@@ -1946,14 +1946,14 @@ i32 CGruntzMgr::CaptureWorldFile() {
         && st != GAMESTATE_DEMO) {
         return 0;
     }
-    CString name = RunCustomWorldDialog(m_gameWnd->m_hwnd, NULL);
+    CString name = RunCustomWorldDialog(m_gameWnd->GetHwnd(), NULL);
     if (name.IsEmpty()) {
         return 0;
     }
     m_strWorldFile = name;
     m_isBuiltInMultiplayerLevel = false;
     m_isBuiltInBattlezLevel = false;
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEW_GAME), 0);
+    PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEW_GAME), 0);
     return 1;
 }
 
@@ -1964,7 +1964,7 @@ i32 CGruntzMgr::ClearWorldFile() {
     GameStateId mode = m_curState->Update();
     if (mode == GAMESTATE_MENU || mode == GAMESTATE_ATTRACT || mode == GAMESTATE_PLAY) {
         m_strWorldFile.Empty();
-        PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEW_GAME), 0);
+        PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEW_GAME), 0);
         return 1;
     }
     return 0;
@@ -2004,7 +2004,7 @@ void CGruntzMgr::DelayedQuit() {
         m_owner->m_running = false;
     }
     if (m_gameWnd) {
-        PostMessageA(m_gameWnd->m_hwnd, WM_CLOSE, 0, 0);
+        PostMessageA(m_gameWnd->GetHwnd(), WM_CLOSE, 0, 0);
     }
 }
 
@@ -2195,7 +2195,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
         dsound = World()->m_soundStream->m_device;
     }
     if (player.InitMode(
-            m_gameWnd->m_hwnd,
+            m_gameWnd->GetHwnd(),
             dd2,
             front->GetDirectDrawSurface(),
             front->m_apiDesc,
@@ -2304,7 +2304,7 @@ RVA(0x00090220, 0x2f)
 void CGruntzMgr::Post(i32 code) {
     if (code > 0 && code <= IDX(QUESTLEVEL_POST_LAST)) {
         i32 v = (code == IDX(QUESTLEVEL_RESTART)) ? IDX(QUESTLEVEL_FIRST) : code;
-        PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), v);
+        PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_LOAD_WORLD), v);
     }
 }
 
@@ -2340,7 +2340,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
 
     m_modalBusy = true;
     i32 result =
-        DialogBoxA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, static_cast<DLGPROC>(dlgProc));
+        DialogBoxA(m_owner->m_hInstance, tmpl, m_gameWnd->GetHwnd(), static_cast<DLGPROC>(dlgProc));
     NetLobby::g_curDlg = NULL;
     m_modalBusy = false;
     if (m_curState && notify) {
@@ -2991,7 +2991,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     if (g_disableAudio != false) {
         kind = 5;
     }
-    if (m_world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, m_colorDepth, kind) == 0) {
+    if (m_world->Init(m_gameWnd->GetHwnd(), SCREEN_W_PX, SCREEN_H_PX, m_colorDepth, kind) == 0) {
         ReportWorldStatus(WORLD_REPORT_COLOR_DEPTH_REINIT);
         return 0;
     }
@@ -3115,7 +3115,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
         return 0;
     }
     CAssetRootStorage::s_value = path;
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_STATE0), 0);
+    PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_SHOW_STATE0), 0);
     return 1;
 }
 
@@ -3135,7 +3135,7 @@ i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     if (slot < 0 || slot >= 4) {
         return 0;
     }
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x80b1, slot);
+    PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, 0x80b1, slot);
     return 1;
 }
 
@@ -3148,7 +3148,7 @@ i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     if (slot < 0 || slot >= 4) {
         return 0;
     }
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x80b6, slot);
+    PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, 0x80b6, slot);
     return 1;
 }
 
@@ -3331,7 +3331,7 @@ i32 CGruntzMgr::Quickload() {
         if (m_saveGame->VerifySlot(m_saveInfoRec) == 0) {
             return 1;
         }
-        PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
+        PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
         ChatLog()->AddItem("Game Quickloaded successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
         return 1;
     }
@@ -3563,7 +3563,7 @@ i32 CGruntzMgr::OpenBattlezSetup() {
     if (m_strWorldFile.IsEmpty()) {
         return 0;
     }
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_START_BATTLEZ_GAME), 0);
+    PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_START_BATTLEZ_GAME), 0);
     return 1;
 }
 

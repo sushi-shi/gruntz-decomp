@@ -1104,7 +1104,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     {
         prevTiles = self->m_stateResources;
         self->m_stateResources = (self->m_levelResources);
-        UpdateWindow(self->m_mgr->m_gameWnd->m_hwnd);
+        UpdateWindow(self->m_mgr->m_gameWnd->GetHwnd());
 
         mgr = self->m_mgr;
         if (!mgr->m_strWorldFile.IsEmpty()) {
@@ -1658,7 +1658,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     }
     if (m_paused != false) {
         m_paused = false;
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
@@ -1723,7 +1723,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
-                    PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                     return 1;
                 }
                 mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -1744,7 +1744,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
-                    PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 }
                 return 1;
             }
@@ -1758,7 +1758,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     && g_gameReg->m_triggerMgr->m_phase != FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     CGameWnd* r = g_gameReg->m_gameWnd;
-                    PostMessageA(r->m_hwnd, WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
+                    PostMessageA(r->GetHwnd(), WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
                 }
                 return 1;
             }
@@ -2523,7 +2523,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     }
     if (m_paused != false) {
         m_paused = false;
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
@@ -2921,7 +2921,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     }
     if (m_paused != false) {
         m_paused = false;
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
     if (m_levelOverlayOpen != false) {
@@ -3286,11 +3286,11 @@ i32 CPlay::CompleteLevel() {
         m_mgr->m_midi->ClearSequences();
         m_mgr->m_worldSounds->Teardown();
         m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     if (m_returnToMenuOnComplete) {
-        PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     m_mgr->Post(m_levelIndex + 1);
@@ -5953,7 +5953,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
     m_stepCountdown = 2;
     m_paused = true;
 
-    PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+    PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_cursorSnapSprite) {
         m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }

@@ -195,5 +195,5 @@ void CPreviewState::Cancel() {
         m_mgr->DelayedQuit();
         return;
     }
-    PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->m_hwnd)), WM_COMMAND, 0x8027, 0);
+    PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->GetHwnd())), WM_COMMAND, 0x8027, 0);
 }
