@@ -107,7 +107,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             {
                 Coord entrance = EntrancePx();
                 Coord tile = LastTilePx();
-                if (tile.m_x != entrance.m_x || tile.m_y != entrance.m_y) {
+                if (tile != entrance) {
                     return 1;
                 }
             }

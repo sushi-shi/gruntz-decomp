@@ -657,8 +657,7 @@ i32 CGrunt::PathScan() {
         Coord* co = static_cast<Coord*>(coordz->GetNext(node));
         if (co != NULL) {
 
-            if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0
-                || (co->m_x == target.m_x && co->m_y == target.m_y)) {
+            if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0 || (*co == target)) {
 
                 CPtrList s(0xa);
                 i32 res = grid->FindPathWithEndpointOverrides(
@@ -686,7 +685,7 @@ i32 CGrunt::PathScan() {
                             do {
                                 Coord* d = static_cast<Coord*>(s.GetNext(p));
                                 if (d != NULL) {
-                                    if (d->m_x != start.m_x || d->m_y != start.m_y) {
+                                    if (*d != start) {
                                         coordz->AddTail(d);
                                     }
                                 }
@@ -2482,6 +2481,7 @@ void CGrunt::AdvanceMotion() {
             return;
         }
         Coord entrance = EntrancePx();
+        // Scalar comparison preserves nested array error-handler and reallocation calls.
         if (m_lastTilePx.m_x == entrance.m_x && m_lastTilePx.m_y == entrance.m_y) {
             m_arrivalPhase = 0;
             ResetEntranceAnimation(1, 0, 0);
