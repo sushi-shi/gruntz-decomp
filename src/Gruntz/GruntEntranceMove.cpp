@@ -312,10 +312,7 @@ inline void CGrunt::ResolveEntranceOccupant() {
                 m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                         \
             }                                                                                      \
             m_entranceDropActive = true;                                                           \
-            m_entranceTiming.m_intervalLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000); \
-            m_entranceTiming.m_intervalHi = 0;                                                     \
-            m_entranceTiming.m_startLo = g_frameTime;                                              \
-            m_entranceTiming.m_startHi = 0;                                                        \
+            m_entranceTiming.Start(g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000));         \
             m_flashTiming.m_intervalLo = 0;                                                        \
             m_flashTiming.m_intervalHi = 0;                                                        \
         } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {                      \
