@@ -293,7 +293,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 Coord currentScreenPos = unit->m_defenderPx;
                 i32 gx = currentScreenPos.m_x;
                 if (gx == -1) {
-                    if (bundle->m_attackWaypoints.GetSize() != 0) {
+                    if (bundle->GetAttackWaypointCount() != 0) {
                         Coord out;
                         goal = *PickSpawnCoord(&out, unit, band);
                     }

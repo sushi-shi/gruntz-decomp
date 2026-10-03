@@ -74,9 +74,9 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             {
                 m_board->Clip(NULL);
             }
-            if (m_attackWaypoints.GetSize() != 0) {
+            if (GetAttackWaypointCount() != 0) {
 
-                Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
+                Coord* e = CoordAt(rand() % GetAttackWaypointCount());
                 g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
             g->m_dwell = 0;
