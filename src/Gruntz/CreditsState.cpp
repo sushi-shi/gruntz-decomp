@@ -165,7 +165,7 @@ i32 CCreditsState::LeaveState(GameStateId nextState) {
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
     IDirectDrawSurface* in =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
+        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
@@ -203,7 +203,7 @@ i32 CCreditsState::Render() {
     DrawScrollingCredits();
 
     CDDrawSubMgrPages* drawPages = m_world->m_drawTarget;
-    drawPages->m_frontSurface->GetSurface()->Flip(NULL);
+    drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
     drawPages->m_backPair->BltSelf(drawPages->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {

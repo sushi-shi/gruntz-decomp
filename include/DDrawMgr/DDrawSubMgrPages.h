@@ -38,6 +38,10 @@ public:
     }
     virtual i32 CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags);
 
+    CDDrawFrontSurface* GetFrontSurface() {
+        return m_frontSurface;
+    }
+
     i32 ResolvePageImage(char* name, DDrawPageKind pageIndex);
     i32 LoadPageImage(struct CRezItm* src, DDrawPageKind pageIndex);
     void BltDirtyChildrenEx();

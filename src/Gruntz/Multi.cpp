@@ -679,7 +679,7 @@ void CMulti::RenderGameFrame() {
         }
         AdvanceCursorAnimation(g_frameDelta);
         SaveUnderAndDrawCursor(h);
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
+        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
         return;
     }
     RestoreCursorSaveUnder();
@@ -732,7 +732,7 @@ void CMulti::RenderGameFrame() {
     if (m_worldReady != false) {
         h->DrawBox(&m_hudRect, 0xff);
     }
-    m_world->m_drawTarget->m_frontSurface->GetSurface()->Flip(NULL);
+    m_world->m_drawTarget->GetFrontSurface()->GetSurface()->Flip(NULL);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
     if (m_world->m_level->m_mainPlane != NULL) {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();

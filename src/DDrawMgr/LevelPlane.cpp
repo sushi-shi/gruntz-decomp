@@ -890,7 +890,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
 
 RVA(0x00163670, 0x95)
 void CDDrawWorkerHost::ResolveColorKey() {
-    ColorDepth format = OwnerMgr()->m_drawTarget->m_frontSurface->m_bpp;
+    ColorDepth format = OwnerMgr()->m_drawTarget->GetFrontSurface()->m_bpp;
     if (format == BPP_PALETTED_8) {
         return;
     }

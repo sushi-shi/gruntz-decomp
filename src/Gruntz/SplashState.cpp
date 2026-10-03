@@ -92,7 +92,7 @@ i32 CSplashState::LeaveState(GameStateId nextState) {
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
     IDirectDrawSurface* in =
-        m_world->m_drawTarget->m_frontSurface->GetSurface()->GetDirectDrawSurface();
+        m_world->m_drawTarget->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x447);
