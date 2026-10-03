@@ -287,6 +287,10 @@ public:
         return m_isEasyMode;
     }
 
+    CGameStats* GetGameStats() const {
+        return m_gameStats;
+    }
+
     GameModeId GetGameMode() const {
         return m_gameMode;
     }

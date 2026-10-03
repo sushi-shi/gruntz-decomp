@@ -166,7 +166,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         }
                     }
                 }
-                g_gameReg->m_gameStats->RecordFlagCapture(idx, i);
+                g_gameReg->GetGameStats()->RecordFlagCapture(idx, i);
                 return 0;
             }
         }

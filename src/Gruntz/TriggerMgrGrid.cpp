@@ -271,7 +271,7 @@ i32 CTriggerMgr::PlaceObject(
             m_units[base + unitIndex] = logic;
             m_unitCountByPlayer[playerIndex] += 1;
             m_unitExited[base + unitIndex] = 0;
-            game->m_gameStats->m_gruntzByPlayer[playerIndex] += 1;
+            game->GetGameStats()->m_gruntzByPlayer[playerIndex] += 1;
             return unitIndex;
         }
     }
@@ -549,7 +549,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 0;
             }
             {
-                g_gameReg->m_gameStats->m_secretsFound++;
+                g_gameReg->GetGameStats()->m_secretsFound++;
                 {
                     SoundCueRegistry* set = m_world->m_soundRegistry;
                     set->PlayCue("GAME_SECRETSWITCH");
