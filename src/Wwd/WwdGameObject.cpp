@@ -315,7 +315,7 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     m_reservede0 = 0;
     m_reserved180 = 0;
 
-    if (record->Init(logicTemplate->m_dispatch, logicTemplate->m_flags) == 0) {
+    if (record->Init(logicTemplate->GetDispatch(), logicTemplate->m_flags) == 0) {
         return 0;
     }
     m_hitLogic = NULL;
@@ -359,7 +359,7 @@ i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
         return 0;
     }
 
-    return m_hitLogic->Init(logicTemplate->m_dispatch, 0);
+    return m_hitLogic->Init(logicTemplate->GetDispatch(), 0);
 }
 
 RVA(0x00150f50, 0x35)
@@ -381,7 +381,7 @@ i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
         return 0;
     }
 
-    return m_attackLogic->Init(logicTemplate->m_dispatch, 0);
+    return m_attackLogic->Init(logicTemplate->GetDispatch(), 0);
 }
 
 RVA(0x00151030, 0x35)
@@ -403,7 +403,7 @@ i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
         return 0;
     }
 
-    return m_collisionLogic->Init(logicTemplate->m_dispatch, 0);
+    return m_collisionLogic->Init(logicTemplate->GetDispatch(), 0);
 }
 
 RVA(0x00151110, 0x35)
