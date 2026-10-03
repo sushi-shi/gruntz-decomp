@@ -62,11 +62,11 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         scrollX = cx - 1;
     }
     CDDrawWorkerHost* boundsPlane = pm->m_world->m_level->m_mainPlane;
-    CLAMP_UPPER_INPLACE(scrollX, boundsPlane->m_planePixelWidth - cx);
+    CLAMP_UPPER_INPLACE(scrollX, boundsPlane->GetPlanePixelWidth() - cx);
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
     }
-    CLAMP_UPPER_INPLACE(scrollY, boundsPlane->m_planePixelHeight - cy);
+    CLAMP_UPPER_INPLACE(scrollY, boundsPlane->GetPlanePixelHeight() - cy);
 
     i32 deltaX = scrollX - g_lastScrollX;
     i32 deltaY = scrollY - g_lastScrollY;

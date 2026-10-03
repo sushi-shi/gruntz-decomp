@@ -153,9 +153,9 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
         case DEMO_MOVER_CHOOSE_TARGET: {
 
             st->m_scrollTargetX =
-                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->m_planePixelWidth);
+                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->GetPlanePixelWidth());
             st->m_scrollTargetY =
-                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->m_planePixelHeight);
+                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->GetPlanePixelHeight());
             st->SetEventCode(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }

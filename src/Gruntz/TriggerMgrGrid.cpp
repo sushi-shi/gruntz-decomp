@@ -845,7 +845,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (x < 0) {
         x = 0;
     } else {
-        i32 w = view->m_mainPlane->m_planePixelWidth;
+        i32 w = view->m_mainPlane->GetPlanePixelWidth();
         if (x >= w) {
             x = w - 1;
         }
@@ -853,7 +853,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (y < 0) {
         y = 0;
     } else {
-        i32 h = view->m_mainPlane->m_planePixelHeight;
+        i32 h = view->m_mainPlane->GetPlanePixelHeight();
         if (y >= h) {
             y = h - 1;
         }

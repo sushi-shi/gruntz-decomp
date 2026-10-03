@@ -33,6 +33,13 @@ public:
         return &m_planeViewRect;
     }
 
+    i32 GetPlanePixelWidth() const {
+        return m_planePixelWidth;
+    }
+    i32 GetPlanePixelHeight() const {
+        return m_planePixelHeight;
+    }
+
     i32 GetTileColumns() const {
         return m_tileColumns;
     }
@@ -201,7 +208,7 @@ public:
     CLAMP_TO_EXTENT(tileY, (plane)->GetTileRows())
 
 #define CLAMP_PIXEL_TO_PLANE(pixelX, pixelY, plane)                                                \
-    CLAMP_TO_EXTENT(pixelX, (plane)->m_planePixelWidth)                                            \
-    CLAMP_TO_EXTENT(pixelY, (plane)->m_planePixelHeight)
+    CLAMP_TO_EXTENT(pixelX, (plane)->GetPlanePixelWidth())                                         \
+    CLAMP_TO_EXTENT(pixelY, (plane)->GetPlanePixelHeight())
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

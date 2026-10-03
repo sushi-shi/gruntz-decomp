@@ -1606,7 +1606,7 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     PROBE_TILE(this, px, row, result);
 
     i32 startRow = row;
-    i32 wrapH = m_mainPlane->m_planePixelHeight;
+    i32 wrapH = m_mainPlane->GetPlanePixelHeight();
     while (result != TILEKIND_SOLID) {
         if (result == TILEKIND_GROUND || result == TILEKIND_CLIMB) {
             break;
@@ -1792,9 +1792,9 @@ RVA(0x00161270, 0xb2)
 TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
 
     i32 px = coord;
-    CLAMP_TO_EXTENT(px, m_mainPlane->m_planePixelWidth);
+    CLAMP_TO_EXTENT(px, m_mainPlane->GetPlanePixelWidth());
     i32 py = limit;
-    CLAMP_TO_EXTENT(py, m_mainPlane->m_planePixelHeight);
+    CLAMP_TO_EXTENT(py, m_mainPlane->GetPlanePixelHeight());
     CDDrawWorkerHost* pl = m_mainPlane;
     i32 qx = px >> pl->m_shiftX;
     i32 qy = py >> pl->m_shiftY;
