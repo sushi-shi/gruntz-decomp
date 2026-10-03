@@ -42,16 +42,16 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     }
     SwitchAnimationByName("GAME_CYCLE100", 0);
 
-    i32 idx = m_object->m_smarts;
+    i32 idx;
     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
-        if (g_gameReg->m_players[idx].m_active != false) {
-            idx = IDX(g_gameReg->m_players[idx].m_color);
+        if (g_gameReg->m_players[m_object->m_smarts].m_active != false) {
+            idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-
-            // byte-evidenced: the shade-table selector is keyed by the object address.
-            idx = reinterpret_cast<i32>(obj);
+            // Retail leaves the inactive-player shade index unassigned.
         }
+    } else {
+        idx = m_object->m_smarts;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 
