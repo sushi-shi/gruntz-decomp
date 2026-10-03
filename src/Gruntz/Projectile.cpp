@@ -822,7 +822,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     i32 cy = m_object->m_screenY >> TILE_SHIFT_PX;
     CMapMgr* g = g_gameReg->GetTileGrid();
     if (cx < g->GetWidth() && cy < g->GetHeight()) {
-        g->m_rowInts[cy][cx * 7] |= 0x1000000;
+        g->CellFlagsAtUnchecked(cx, cy) |= IDX(CELL_FLAG_TIME_BOMB);
     }
     m_object->m_smarts = -1;
 }

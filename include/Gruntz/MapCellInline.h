@@ -8,6 +8,7 @@
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
@@ -63,7 +64,7 @@ static inline void TBombGridClear(CGameObject* obj) {
     i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->GetWidth())
         && static_cast<u32>(cy) < static_cast<u32>(g->GetHeight())) {
-        g->m_rowInts[cy][cx * 7] &= ~0x1000000;
+        g->CellFlagsAtUnchecked(cx, cy) &= ~IDX(CELL_FLAG_TIME_BOMB);
     }
 }
 

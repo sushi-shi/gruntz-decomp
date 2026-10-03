@@ -339,9 +339,11 @@ i32 CTileTriggerLogic::Tick() {
         case TILEKIND_REDPYRAMID_DOWN:
         case TILEKIND_REDPYRAMID_UP: {
             i32 pxX = 0x10;
-            for (i32 gx = 0; gx < world->m_level->m_mainPlane->m_tileColumns; gx++, pxX += 0x20) {
+            for (i32 gx = 0; gx < world->m_level->m_mainPlane->GetTileColumns();
+                 gx++, pxX += 0x20) {
                 i32 pxY = 0x10;
-                for (i32 gy = 0; gy < world->m_level->m_mainPlane->m_tileRows; gy++, pxY += 0x20) {
+                for (i32 gy = 0; gy < world->m_level->m_mainPlane->GetTileRows();
+                     gy++, pxY += 0x20) {
                     i32 hit = 0;
                     if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
@@ -1071,7 +1073,7 @@ CTileActionEvent::CTileActionEvent() {
 RVA(0x00112da0, 0x100)
 i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     m_actionCode = code;
-    if (m_playerFlags[g_curPlayer] == 0
+    if (GetPlayerFlags(g_curPlayer) == 0
         && static_cast<u32>(IDX(code) - IDX(BRICKTILE_BROWN_1)) <= 0x1a) {
         switch (code) {
             case BRICKTILE_BROWN_1:
@@ -1110,16 +1112,16 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
         }
     }
 
-    CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = g_gameReg->World()->m_level->m_mainPlane;
-    i32 tx = m_tileX;
     i32 ty = m_tileY;
+    CGruntzMgr* reg = g_gameReg;
+    CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
+    i32 tx = m_tileX;
     if (layer->m_tileHandles[tx + layer->m_tileRowOffsets[ty]] == IDX(code)) {
         return 0;
     }
-    CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tx, ty, IDX(code));
-    g_gameReg->GetTileGrid()->ComputeCellFlags(tx, ty, IDX(code));
+    reg->GetTileGrid()->ComputeCellFlags(tx, ty, IDX(code));
     return 1;
 }
 

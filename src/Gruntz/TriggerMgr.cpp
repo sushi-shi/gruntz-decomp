@@ -1647,8 +1647,8 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
         y - radiusPx - 7,
         y + radiusPx + 7
     );
-    i32 maxTileX = m_world->m_level->m_mainPlane->m_tileColumns - 2;
-    i32 maxTileY = m_world->m_level->m_mainPlane->m_tileRows - 2;
+    i32 maxTileX = m_world->m_level->m_mainPlane->GetTileColumns() - 2;
+    i32 maxTileY = m_world->m_level->m_mainPlane->GetTileRows() - 2;
 
     CGrunt** units = m_units;
     for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {

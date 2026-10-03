@@ -1277,7 +1277,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CDDrawWorkerHost* mainPlane =
             static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
         CGruntzMapMgr* tileGrid = self->m_mgr->GetTileGrid();
-        if (!tileGrid->BuildCellAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
+        if (!tileGrid->BuildCellAttributes(mainPlane->GetTileColumns(), mainPlane->GetTileRows())) {
             goto fail0;
         }
     }

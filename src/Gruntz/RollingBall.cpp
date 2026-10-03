@@ -136,7 +136,7 @@ i32 CRollingBall::Update() {
             i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
             i32 cy = lg->m_screenY >> TILE_SHIFT_PX;
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
-                map->m_rowInts[cy][cx * 7] &= 0xefffffff;
+                map->CellFlagsAtUnchecked(cx, cy) &= 0xefffffff;
             }
             m_explodeLatch = true;
         }
@@ -174,7 +174,7 @@ i32 CRollingBall::Update() {
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;
         CMapMgr* map = g_gameReg->GetTileGrid();
         if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
-            map->m_rowInts[ty][tx * 7] &= 0xefffffff;
+            map->CellFlagsAtUnchecked(tx, ty) &= 0xefffffff;
         }
         CMapMgr* map2 = g_gameReg->GetTileGrid();
         i32 terrain = map2->CellFlagsAt(tx, ty);
@@ -189,7 +189,7 @@ i32 CRollingBall::Update() {
             if (tileX < 0) {
                 tileX = 0;
             } else {
-                i32 w = lvl->m_mainPlane->m_tileColumns;
+                i32 w = lvl->m_mainPlane->GetTileColumns();
                 if (tileX >= w) {
                     tileX = w - 1;
                 }
@@ -197,7 +197,7 @@ i32 CRollingBall::Update() {
             if (tileY < 0) {
                 tileY = 0;
             } else {
-                i32 h = lvl->m_mainPlane->m_tileRows;
+                i32 h = lvl->m_mainPlane->GetTileRows();
                 if (tileY >= h) {
                     tileY = h - 1;
                 }
@@ -387,7 +387,7 @@ i32 CRollingBall::Update() {
             if (tileX2 < 0) {
                 tileX2 = 0;
             } else {
-                i32 w = lvl2->m_mainPlane->m_tileColumns;
+                i32 w = lvl2->m_mainPlane->GetTileColumns();
                 if (tileX2 >= w) {
                     tileX2 = w - 1;
                 }
@@ -395,7 +395,7 @@ i32 CRollingBall::Update() {
             if (tileY2 < 0) {
                 tileY2 = 0;
             } else {
-                i32 h = lvl2->m_mainPlane->m_tileRows;
+                i32 h = lvl2->m_mainPlane->GetTileRows();
                 if (tileY2 >= h) {
                     tileY2 = h - 1;
                 }
@@ -482,7 +482,7 @@ i32 CRollingBall::Update() {
         i32 mtx = m_target.m_x >> TILE_SHIFT_PX;
         i32 mty = m_target.m_y >> TILE_SHIFT_PX;
         if (static_cast<u32>(mtx) < board2->m_width && static_cast<u32>(mty) < board2->m_height) {
-            board2->m_rowInts[mty][mtx * 7] |= 0x10000000;
+            board2->CellFlagsAtUnchecked(mtx, mty) |= 0x10000000;
         }
     }
 

@@ -761,7 +761,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         for (i32 col = colBeg; col < colEnd; col++) {
                                             if (static_cast<u32>(col) < b->m_width
                                                 && static_cast<u32>(row) < b->m_height) {
-                                                if (b->CellFlagsAtUnchecked(col, row) & 0x1000000) {
+                                                if (b->CellFlagsAtUnchecked(col, row)
+                                                    & IDX(CELL_FLAG_TIME_BOMB)) {
                                                     goto perimSweep;
                                                 }
                                             }
