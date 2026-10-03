@@ -54,10 +54,18 @@ def canonicalize_boundaries(payload: bytes, object_name: str, rows: list[dict]):
         return (extent, relocations, lines) == (section.raw_size, section.reloc_count, line_count)
 
     def definition(row):
+        ordinal = row.get("section_ordinal", "-")
+        if type(ordinal) not in (int, str):
+            return None
+        try:
+            ordinal = int(ordinal)
+        except ValueError:
+            return None
         if (len(by_name[msvc_names.mask(row["name"])]) != 1
                 or row.get("provenance") != "src-DATA-sizeof"
                 or row["size"] <= 0 or row.get("storage") not in ("data", "rdata")
-                or row.get("section_ordinal", "-") == "-"
+                or row["rva"] < 0 or row["rva"] + row["size"] > 0x100000000
+                or ordinal <= 0
                 or row.get("section_offset", "-") == "-"):
             return None
         matches = symbols.get(msvc_names.mask(row["name"]), ())

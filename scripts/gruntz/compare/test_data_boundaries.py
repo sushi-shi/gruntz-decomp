@@ -140,6 +140,26 @@ class BoundaryControls(unittest.TestCase):
             with self.subTest(alias=alias):
                 self.assert_unchanged(obj(aliases=[alias]))
 
+    def test_enrolled_section_ordinals_must_be_positive_decimal_integers(self):
+        for ordinal in ("invalid", "0", "-1", "2.0", "0x2", 0, -1, None, 2.5, True):
+            with self.subTest(ordinal=ordinal):
+                rows = claims()
+                for row in rows:
+                    row["section_ordinal"] = ordinal
+                self.assert_unchanged(rows=rows)
+        rows = claims()
+        for row in rows:
+            row["section_ordinal"] = 2
+        _normalized, proof = canonicalize_boundaries(obj(), "example.c", rows)
+        self.assertEqual(len(proof), 1)
+
+    def test_retail_extents_cannot_leave_the_unsigned_rva_domain(self):
+        for start in (-0x80, 0xFFFFFFF0):
+            with self.subTest(start=start):
+                rows = claims()
+                rows[0]["rva"], rows[1]["rva"] = start, start + 0x40
+                self.assert_unchanged(rows=rows)
+
     def test_auxiliary_records_do_not_hide_data_aliases(self):
         metadata = struct.pack("<IHHIHB3s", 0xB0, 0, 0, 0, 0, 0, bytes(3))
         for name in ("_alias", "_first$S22", ".rdata"):
