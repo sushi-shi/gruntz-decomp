@@ -60,7 +60,7 @@ void CExitTrigger::RegisterActs() {
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         CWwdSpriteObject* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;

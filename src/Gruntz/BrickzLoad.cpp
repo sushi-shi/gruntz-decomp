@@ -58,7 +58,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
             cell->m_objectId = 0;
             cell->m_tileId = -1;
 
-            if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (g_gameReg->m_isEasyMode != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 BridgeTileId bridgeTile = static_cast<BridgeTileId>(tileId);
                 if (bridgeTile == BRIDGETILE_WATER_UP_ALT) {
                     tileId = IDX(BRIDGETILE_WATER_UP);
@@ -69,7 +69,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                 }
             }
 
-            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+            if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                 switch (static_cast<BrickTileId>(tileId)) {
                     case BRICKTILE_BROWN_1:
                     case BRICKTILE_RED_1:

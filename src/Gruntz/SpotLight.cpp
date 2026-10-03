@@ -95,7 +95,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_targetPlayerIndex = -1;
     m_targetUnitIndex = -1;
     m_storyMode = false;
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         m_storyMode = true;
     }
 }
@@ -123,7 +123,7 @@ void RegisterSpotLightActions() {
 
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
-    if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (g_gameReg->m_isEasyMode == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         CGrunt* tgt = g_gameReg->m_triggerMgr->FindGruntAt(
             m_object->m_screenX,
             m_object->m_screenY,

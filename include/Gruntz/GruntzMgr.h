@@ -279,6 +279,10 @@ public:
         return m_cheatMgr;
     }
 
+    GameModeId GetGameMode() const {
+        return m_gameMode;
+    }
+
     CDDrawSurfaceMgr* World() {
         return m_world;
     }

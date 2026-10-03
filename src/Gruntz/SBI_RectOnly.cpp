@@ -423,7 +423,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     SetTab(GAME_TAB_MENU, false);
                     return 1;
                 case SBICMD_DESTRUCT:
-                    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+                    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                         break;
                     }
                     if (m_destructButtonLocked != false) {
@@ -583,7 +583,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         HiCueLookup();
                         g_gameReg->FinalizeLevelAndShowResults();
-                    } else if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                    } else if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         HiCueLookup();
                         HiPost(0x806b);
                     } else {
@@ -592,7 +592,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     }
                     return 1;
                 case SBICMD_DIALOG_SECONDARY:
-                    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
@@ -604,7 +604,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     }
                     return 1;
                 case SBICMD_DIALOG_YES:
-                    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
@@ -1405,7 +1405,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         );
         AddTabItem(5, load);
         m_gameLoadButton = load;
-        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             load->SetEnabled(0);
         }
 
@@ -1423,7 +1423,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         );
         AddTabItem(5, save);
         m_gameSaveButton = save;
-        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             save->SetEnabled(0);
         }
 
@@ -1456,7 +1456,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         );
         AddTabItem(5, help);
         m_gameHelpButton = help;
-        if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             help->SetEnabled(0);
         }
 
@@ -1489,7 +1489,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         );
         AddTabItem(5, destruct);
         m_destructButtonImage = destruct;
-        if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             destruct->SetEnabled(0);
             m_destructButtonFrame = DESTRUCT_FRAME_DISABLED;
             m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
@@ -2471,7 +2471,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != SLOT_ARMED) {
         return 0;
     }
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_hlBusy == false) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_hlBusy == false) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -3274,7 +3274,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     memset(m_statFlags, 0, sizeof(m_statFlags));
     Reset();
 
-    GameModeId mode = g_gameReg->m_gameMode;
+    GameModeId mode = g_gameReg->GetGameMode();
     if (mode == GAMEMODE_MULTIPLAYER) {
         for (i32 i = 0; i < g_buteMgr.GetInt("Multiplayer", "StartingGruntz", 0); i++) {
             m_slots[i].m_value = s_slotCommitLevel;
@@ -3300,7 +3300,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
             Coord* p = GetReward(0);
             result = static_cast<PickupType>(p->m_x);
@@ -3995,7 +3995,6 @@ i32 CWarpStoneFly::Draw() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
     if (m_levelOverlayActive == false) {
@@ -4112,7 +4111,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         );
         AddTabItem(6, rsn);
 
-        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             CSBI_MenuItem* next;
             NEW_STATUS_BAR_ITEM(
                 next,
@@ -4190,7 +4189,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     );
     AddTabItem(6, rsn);
 
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         CSBI_MenuItem* replay;
         NEW_STATUS_BAR_ITEM(
             replay,
@@ -4294,7 +4293,7 @@ void CStatusBarMgr::ExitMode() {
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
     m_hlBusy = false;
-    if (wasQuitConfirmation == false && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (wasQuitConfirmation == false && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -4357,7 +4356,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     if (m_hlBusy != false) {
         return;
     }
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         return;
     }
     if (m_position == STATUSBAR_HIDDEN) {

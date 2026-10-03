@@ -43,7 +43,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     SwitchAnimationByName("GAME_CYCLE100", 0);
 
     i32 idx;
-    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         if (g_gameReg->m_players[m_object->m_smarts].m_active != false) {
             idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
         } else {
@@ -77,7 +77,7 @@ i32 CGruntCreationPoint::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     if (mode != SERIAL_SAVE && mode == SERIAL_POSTLOAD) {
         i32 idx;
-        if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             if (g_gameReg->m_players[m_object->m_smarts].m_active != false) {
                 idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
             } else {
