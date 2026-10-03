@@ -768,21 +768,17 @@ tail:
 // @early-stop
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
-    bool eq;
-    eq = IsAnimationAct("D");
-    if (eq) {
+    if (IsAnimationAct("D")) {
         return 0;
     }
-    eq = IsAnimationAct("L");
-    if (eq) {
+    if (IsAnimationAct("L")) {
         return 0;
     }
 
     m_arrivalVoiceTiming.Start(0x7530);
     m_neighborScanEnabled = false;
 
-    eq = IsAnimationAct("I");
-    if (eq) {
+    if (IsAnimationAct("I")) {
         ClearMoveTileFx(this);
     }
     if (m_poweredUp != false && m_neighborValid == false) {
