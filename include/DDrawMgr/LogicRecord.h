@@ -61,9 +61,17 @@ struct CLogicRecord : public CWapObj {
 
     i32 ResolveTarget(void* context);
 
+    i32 Dispatch(CGameObject* object) const {
+        return m_dispatch(object);
+    }
+
     LogicRecordDispatchFn m_dispatch;
     u8* m_payload;
     CUserLogic* m_userLogic;
+
+    CUserLogic* UserLogic() const {
+        return m_userLogic;
+    }
 
     i32 EventCode() const {
         return m_eventCode;
