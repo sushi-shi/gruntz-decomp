@@ -144,10 +144,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     m_abilityValue = -1;
     m_statusValue = -1;
     m_selectValue = 0;
-    m_timerTiming.m_startLo = 0;
-    m_timerTiming.m_intervalLo = 0;
-    m_timerTiming.m_startHi = 0;
-    m_timerTiming.m_intervalHi = 0;
+    m_timerTiming.Clear();
     Update();
     return 1;
 fail:

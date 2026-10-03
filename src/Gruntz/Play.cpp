@@ -4215,13 +4215,9 @@ i32 CPlay::ExecuteCommand(
                 mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
             if (g != NULL) {
                 if (g->m_tileClaimed != true) {
-                    g->m_arrivalRerollTiming.m_startLo = 0;
-                    g->m_arrivalRerollTiming.m_intervalLo = 0;
-                    g->m_arrivalRerollTiming.m_startHi = 0;
-                    g->m_arrivalRerollTiming.m_intervalHi = 0;
-                    g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
+                    g->m_arrivalRerollTiming.Clear();
                     g->m_tileClaimed = true;
-                    g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
+                    g->m_defenderPx = g->LastTilePx();
 
                     switch (g->m_entranceReason) {
                         case PICKUP_BOOMERANG:
@@ -4241,10 +4237,9 @@ i32 CPlay::ExecuteCommand(
                                 g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
                     }
                     g->m_arrivalFlags |= 0x18040402;
-                    g->m_arrivalCell.m_x = -1;
                     g->m_arrivalState = AI_DEFENDER;
                     g->m_defenderState = AISTATE_SEEK;
-                    g->m_arrivalCell.m_y = -1;
+                    UNSET_COORD(g->m_arrivalCell);
                     g->m_arrivalActive = false;
                     SET_RECT_XY_EXTENTS(g->m_object->m_extent, 0, 0, 0, 0);
                     g->SetEntrancePos(1, 1);
@@ -5486,10 +5481,7 @@ i32 CPlay::ResetPlayState() {
         if (gameManager->m_musicEnabled != false && gameManager->m_gameMode == GAMEMODE_BATTLEZ) {
             m_mgr->m_midi->PlaySequence(sequenceName, true);
         }
-        m_ambientTiming.m_startLo = 0;
-        m_ambientTiming.m_intervalLo = 0;
-        m_ambientTiming.m_startHi = 0;
-        m_ambientTiming.m_intervalHi = 0;
+        m_ambientTiming.Clear();
         m_ambientInitDone = true;
     }
     if (m_mgr->m_gameMode == GAMEMODE_QUESTZ) {
@@ -5546,10 +5538,8 @@ i32 CPlay::ResetPlayState() {
     tl->m_countdownActive = true;
     tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
-    tl->m_gooTimer.m_start = 0;
-    tl->m_gooTimer.m_interval = 0;
-    tl->m_resourceTimer.m_start = 0;
-    tl->m_resourceTimer.m_interval = 0;
+    tl->m_gooTimer.Clear();
+    tl->m_resourceTimer.Clear();
     tl->m_finishReasonFrame = FINISH_REASON_NONE;
     tl->m_rollingballWanted = false;
     tl->m_teleportWanted = false;
@@ -6944,7 +6934,7 @@ i32 CPlay::ClearPlacedObjects() {
                     );
                     if (result == NULL) {
 
-                        SetCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y, 0);
+                        g_gameReg->m_tileGrid->SetObjectIdAt(obj->m_x, obj->m_y, 0);
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                         g_coordPool.Push(obj);

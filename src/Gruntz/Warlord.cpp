@@ -175,8 +175,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
         "GRUNTZ_" + m_warlordName + s_panicSuffix
     );
 
-    m_notifyTimer.m_start = 0;
-    m_notifyTimer.m_interval = 0;
+    m_notifyTimer.Clear();
     m_deathStarted = false;
     ResolveMovingAnimation();
 }

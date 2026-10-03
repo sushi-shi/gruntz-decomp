@@ -33,6 +33,43 @@ struct BrickzNode {
     BrickzCellNode* m_cellLink;
 };
 
+inline BrickzNode* CBrickzNodePool::Pop() {
+    BrickzNode* node = m_freeList;
+    BrickzNode* next = node->m_openNext;
+    if (next == NULL) {
+        node = NULL;
+    } else {
+        m_freeList = next;
+        next->m_openPrev = NULL;
+    }
+    return node;
+}
+
+inline void CBrickzNodePool::Push(BrickzNode* node) {
+    node->m_openNext = m_freeList;
+    node->m_openPrev = NULL;
+    m_freeList->m_openPrev = node;
+    m_freeList = node;
+}
+
+inline BrickzCellNode* CBrickzCellNodePool::Pop() {
+    BrickzCellNode* node = m_freeList;
+    BrickzCellNode* next = node->m_cellNext;
+    if (next == NULL) {
+        return NULL;
+    }
+    m_freeList = next;
+    next->m_cellPrev = NULL;
+    return node;
+}
+
+inline void CBrickzCellNodePool::Push(BrickzCellNode* node) {
+    node->m_cellNext = m_freeList;
+    node->m_cellPrev = NULL;
+    m_freeList->m_cellPrev = node;
+    m_freeList = node;
+}
+
 GZ_ENUM_CONST_BEGIN(BrickzCellMask)
     BRICKZ_BLOCKED_MASK = 0x939,
     BRICKZ_CELL_ROUTE_MASKB = 0x2000,
@@ -98,13 +135,13 @@ inline i32 CMapMgr::ObjectIdAt(u32 x, u32 y) const {
     return 0;
 }
 
-inline void SetCellObject(CMapMgr* grid, u32 x, u32 y, i32 objectId) {
-    if (x < grid->m_width && y < grid->m_height) {
-        grid->m_rows[y][x].m_objectId = objectId;
+inline void CMapMgr::SetObjectIdAt(u32 x, u32 y, i32 objectId) {
+    if (x < m_width && y < m_height) {
+        m_rows[y][x].m_objectId = objectId;
         if (objectId != 0) {
-            grid->m_rows[y][x].m_flags |= 0x40000;
+            m_rows[y][x].m_flags |= 0x40000;
         } else {
-            grid->m_rows[y][x].m_flags &= ~0x40000;
+            m_rows[y][x].m_flags &= ~0x40000;
         }
     }
 }

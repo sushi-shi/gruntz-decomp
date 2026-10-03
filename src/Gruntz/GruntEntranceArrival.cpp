@@ -720,12 +720,9 @@ i32 CGrunt::ResolveEntranceArrival() {
                 }
                 if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
                     && m_arrived == false && m_tileClaimed != true) {
-                    m_arrivalRerollTiming.m_startLo = 0;
-                    m_arrivalRerollTiming.m_intervalLo = 0;
-                    m_arrivalRerollTiming.m_startHi = 0;
-                    m_arrivalRerollTiming.m_intervalHi = 0;
-                    m_defenderPx = m_lastTilePx;
+                    m_arrivalRerollTiming.Clear();
                     m_tileClaimed = true;
+                    m_defenderPx = m_lastTilePx;
                     PickupType kind = m_entranceReason;
 
                     switch (kind) {
@@ -742,14 +739,13 @@ i32 CGrunt::ResolveEntranceArrival() {
                                 g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
                             break;
                     }
-                    m_arrivalCell.m_x = -1;
-                    m_arrivalCell.m_y = -1;
                     m_arrivalState = AI_DEFENDER;
                     m_defenderState = AISTATE_SEEK;
+                    UNSET_COORD(m_arrivalCell);
                     m_arrivalActive = false;
                     m_arrivalFlags |= 0x18040402;
                     SET_RECT_XY_EXTENTS(m_object->m_extent, 0, 0, 0, 0);
-                    SetEntrancePos(0, 0);
+                    SetEntrancePos(1, 1);
                 }
             }
         }
@@ -1369,7 +1365,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
     );
     if (found == NULL) {
         grid = g_gameReg->m_tileGrid;
-        SetCellObject(grid, tx, ty, 0);
+        grid->SetObjectIdAt(tx, ty, 0);
         return 0;
     }
     CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_logicRecord->m_userLogic);

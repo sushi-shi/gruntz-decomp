@@ -12,12 +12,8 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    SetCellObject(
-        reg->m_tileGrid,
-        owner->m_screenX >> TILE_SHIFT_PX,
-        owner->m_screenY >> TILE_SHIFT_PX,
-        0
-    );
+    reg->m_tileGrid
+        ->SetObjectIdAt(owner->m_screenX >> TILE_SHIFT_PX, owner->m_screenY >> TILE_SHIFT_PX, 0);
 }
 
 #define SET_MAIN_PLANE_TILE(reg, tileX, tileY, tile)                                               \
@@ -26,17 +22,6 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
         SET_WORKER_HOST_CELL(plane, tileX, tileY, tile);                                           \
         (reg)->m_tileGrid->ComputeCellFlags(tileX, tileY, tile);                                   \
     }
-
-static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {
-    BrickzCellNode* node = freeList;
-    BrickzCellNode* next = node->m_cellNext;
-    if (next == NULL) {
-        return NULL;
-    }
-    freeList = next;
-    next->m_cellPrev = NULL;
-    return node;
-}
 
 inline SIZE
 CGruntzMapMgr::GetGridSize() const {

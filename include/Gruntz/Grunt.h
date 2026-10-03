@@ -501,10 +501,7 @@ public:
 
     void ResetArrivalReroll() {
         ResetEntranceAnimation(1, 1, 0);
-        m_arrivalRerollTiming.m_startLo = 0;
-        m_arrivalRerollTiming.m_intervalLo = 0;
-        m_arrivalRerollTiming.m_startHi = 0;
-        m_arrivalRerollTiming.m_intervalHi = 0;
+        m_arrivalRerollTiming.Clear();
         m_arrivalRerollTiming.Start(rand() % 30000 + 30000);
     }
     i32 ResolveEntranceArrival();
