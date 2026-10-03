@@ -873,7 +873,6 @@ i32 CMultiStartDlg::EnableChatControls() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c4230, 0x38e)
 i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
     CWnd::GetFocus();
@@ -909,13 +908,9 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             } else {
                 readyControl->EnableWindow(false);
             }
-            if (player->m_ready == false) {
-                if (player->m_active) {
-                    readyControl->SetCheck(BST_UNCHECKED);
-                    allLivePlayersReady = false;
-                } else {
-                    readyControl->SetCheck(BST_UNCHECKED);
-                }
+            if (player->m_ready == false && player->m_active) {
+                readyControl->SetCheck(BST_UNCHECKED);
+                allLivePlayersReady = false;
             } else if (player->m_active) {
                 readyControl->SetCheck(BST_CHECKED);
             } else {
@@ -935,10 +930,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                 }
             }
             if (player->m_active) {
-                {
-                    force = 0;
-                    GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
-                }
+                GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
                 if (player->m_humanControlled) {
                     CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
                     typeCombo->SetCurSel(4);
@@ -963,15 +955,10 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
         }
         ok->EnableWindow(hasRemoteHumanPlayer & allLivePlayersReady);
     }
-    // HWND temporaries preserve the handle-register allocation across invalidation calls.
-    HWND color0 = this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd;
-    ::InvalidateRect(color0, NULL, true);
-    HWND color1 = this->GetDlgItem(CTRL_PLAYER_COLOR1)->m_hWnd;
-    ::InvalidateRect(color1, NULL, true);
-    HWND color2 = this->GetDlgItem(CTRL_PLAYER_COLOR2)->m_hWnd;
-    ::InvalidateRect(color2, NULL, true);
-    HWND color3 = this->GetDlgItem(CTRL_PLAYER_COLOR3)->m_hWnd;
-    ::InvalidateRect(color3, NULL, true);
+    GetDlgItem(CTRL_PLAYER_COLOR0)->Invalidate();
+    GetDlgItem(CTRL_PLAYER_COLOR1)->Invalidate();
+    GetDlgItem(CTRL_PLAYER_COLOR2)->Invalidate();
+    GetDlgItem(CTRL_PLAYER_COLOR3)->Invalidate();
     return 1;
 }
 
