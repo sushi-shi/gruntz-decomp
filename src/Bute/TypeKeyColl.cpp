@@ -260,9 +260,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&zBitVec::ceh) 
             v = v * 10 + (*p - '0');
             ++p;
         }
-        if (static_cast<u32>(v) > static_cast<u32>(maxv)) {
-            maxv = v;
-        }
+        maxv = static_cast<i32>(max(static_cast<u32>(v), static_cast<u32>(maxv)));
         if (*p == 0) {
             break;
         }
@@ -283,9 +281,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&zBitVec::ceh) 
         }
     }
 
-    if (static_cast<u32>(minSize) > static_cast<u32>(maxv)) {
-        maxv = minSize;
-    }
+    maxv = static_cast<i32>(max(static_cast<u32>(minSize), static_cast<u32>(maxv)));
     if (!SetSize(maxv)) {
         goto oom;
     }
