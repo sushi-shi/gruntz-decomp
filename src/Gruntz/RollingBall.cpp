@@ -47,9 +47,6 @@ RVA_DYNINIT(0x000afdb0, 0x1f, CActRegPool<CRollingBall>::s_table)
 template<> DATA(0x002461b0)
 CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-DATA(0x001ea3e8)
-static const double s_rollingBallSpeedNum = 16.0;
-
 RVA_COMPGEN(0x00012f50, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 
@@ -259,7 +256,7 @@ i32 CRollingBall::Update() {
                         return 0;
                     }
                     DWORD perTile = g_buteMgr.GetDword("Hazardz", "RollingBallTimePerTile", 0x3e8);
-                    m_moveSpeed = s_rollingBallSpeedNum / static_cast<double>(perTile);
+                    m_moveSpeed = DATA_COMPGEN(0x001ea3e8, 16.0) / static_cast<double>(perTile);
 
                     CMapMgr* board = g_gameReg->m_tileGrid;
                     CWwdSpriteObject* o2 = m_object;

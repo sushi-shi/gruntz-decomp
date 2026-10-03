@@ -2149,7 +2149,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 box.bottom = a.m_y + 2;
                 g->GetScreenTile(&b);
                 box.right = b.m_x + 2;
-                box.top = (g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX) - 1;
+                box.top = g->GetScreenTileY() - 1;
                 {
                     Coord c;
                     g->GetScreenPos(&c);
@@ -2178,10 +2178,9 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     for (i32 scanCol = scan.left; scanCol < scan.right; scanCol++) {
                         CPtrList path(0xa);
                         if (!(rowCell->m_flags & BRICKZ_CELL_OCCUPIED)) {
-                            CGameObject* lvl = g->m_object;
                             if (m_board->FindPathWithEndpointOverrides(
-                                    lvl->m_screenPosition.m_x >> TILE_SHIFT_PX,
-                                    lvl->m_screenPosition.m_y >> TILE_SHIFT_PX,
+                                    g->GetScreenTileX(),
+                                    g->GetScreenTileY(),
                                     scanCol,
                                     scanRow,
                                     &path,
@@ -2224,7 +2223,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if ((dest.m_flags & 4) && g->m_battleState != BZTASK_SEEK_SWITCH) {
         Coord tp;
-        i32 keyHi = g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 keyHi = g->GetScreenTileX();
         g->GetScreenTile(&tp);
         i32 key = (keyHi << 8) + tp.m_y;
         CTileTriggerSwitchLogic* r = m_cellQuery->FindSwitchLogic(key, TRIGID_ANY);
@@ -2418,8 +2417,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         }
     }
     {
-        i32 oy = g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX;
-        i32 ox = g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 oy = g->GetScreenTileY();
+        i32 ox = g->GetScreenTileX();
         i32 row = rand() % 3 + oy - 1;
         i32 col = rand() % 3 + ox - 1;
         if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width)
@@ -2727,25 +2726,19 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (u->m_poweredUp != false) {
                 continue;
             }
-            bool ne;
-            ne = u->IsNotAnimationAct("C");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("C")) {
                 continue;
             }
-            ne = u->IsNotAnimationAct("R");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("R")) {
                 continue;
             }
-            ne = u->IsNotAnimationAct("J");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("J")) {
                 continue;
             }
-            ne = u->IsNotAnimationAct("G");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("G")) {
                 continue;
             }
-            ne = u->IsNotAnimationAct("L");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("L")) {
                 continue;
             }
             if (u->m_gruntKind == GRUNT_GHOST) {
