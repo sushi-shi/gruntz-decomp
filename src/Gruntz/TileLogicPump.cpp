@@ -382,7 +382,7 @@ i32 CCheckpointTrigger::Act() {
     if (play->m_levelTimer != NULL) {
         i32 minutes = m_object->m_score;
         i32 seconds = m_object->m_points;
-        if (g_gameReg->m_isEasyMode != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             seconds += seconds;
             minutes += minutes;
             if (seconds > 0x3b) {

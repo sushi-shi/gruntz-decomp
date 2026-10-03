@@ -884,7 +884,7 @@ i32 CGrunt::SerializeDispatch(
             }
             break;
         case SERIAL_POSTLOAD:
-            m_triggerMgr = g_gameReg->m_triggerMgr;
+            m_triggerMgr = g_gameReg->GetTriggerMgr();
             break;
     }
     m_entranceCell.Serialize(ar, mode, typeId, object);

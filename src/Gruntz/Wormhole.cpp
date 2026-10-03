@@ -234,7 +234,7 @@ i32 CGruntPuddle::Remove() {
         i32 flags = grid->CellFlagsAt(tx, ty);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-            CTriggerMgr* manager = g_gameReg->m_triggerMgr;
+            CTriggerMgr* manager = g_gameReg->GetTriggerMgr();
             POSITION pos = manager->GetPuddleHeadPosition();
             while (pos != NULL) {
                 POSITION current = pos;
@@ -431,7 +431,7 @@ i32 CTeleporter::Update() {
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         if (::PtInRect(&mgr->m_viewBounds, x, y)) {
-            (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_teleportWanted = true;
+            (static_cast<CTriggerMgr*>(mgr->GetTriggerMgr()))->m_teleportWanted = true;
         }
     }
     mgr = g_gameReg;
@@ -453,7 +453,7 @@ i32 CTeleporter::Update() {
     i32 playerIndex;
     i32 unitIndex;
     CGrunt* found =
-        mgr->m_triggerMgr->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
+        mgr->GetTriggerMgr()->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (found == NULL) {
         return 0;
     }
@@ -498,7 +498,7 @@ i32 CTeleporter::Update() {
     m_armed = false;
     m_tickHandled = true;
     mgr = g_gameReg;
-    if (found == mgr->m_triggerMgr->SoleSelectedGrunt() && playerIndex == g_curPlayer) {
+    if (found == mgr->GetTriggerMgr()->SoleSelectedGrunt() && playerIndex == g_curPlayer) {
         CGameObject* g = found->m_object;
         (static_cast<CPlay*>(mgr->m_curState))->ResetGoals(g->m_screenX, g->m_screenY);
     }

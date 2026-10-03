@@ -165,7 +165,7 @@ void CObjectDropper::RegisterActs() {
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (m_dropTiming.Expired()) {
-        if (g_gameReg->m_isEasyMode == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+        if (g_gameReg->GetEasyMode() == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
             RECT box;
             SET_RECT_XY_EXTENTS(
@@ -177,7 +177,7 @@ i32 CObjectDropper::Update() {
             );
             i32 playerIndex;
             i32 unitIndex;
-            CGrunt* found = g_gameReg->m_triggerMgr->FindGruntAt(
+            CGrunt* found = g_gameReg->GetTriggerMgr()->FindGruntAt(
                 o->m_screenX,
                 o->m_screenY,
                 &o->m_area,
@@ -398,7 +398,7 @@ i32 CDroppedObject::AdvanceFall() {
         }
         SwitchAnimationByName("LEVEL_DROPPEDOBJECTHIT", 0);
         SET_ANIMATION_ACT("B");
-        g_gameReg->m_triggerMgr
+        g_gameReg->GetTriggerMgr()
             ->ApplyGruntAreaEffect(m_object->m_screenX, m_landY, 1, GRUNT_AREA_EFFECT_SQUASH, -1);
         return 0;
     }

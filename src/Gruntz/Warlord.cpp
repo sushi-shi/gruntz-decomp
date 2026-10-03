@@ -363,7 +363,7 @@ i32 CWarlord::UpdateMovingState() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->GetGameMode() != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
-        i32 dist = reg->m_triggerMgr
+        i32 dist = reg->GetTriggerMgr()
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
@@ -389,7 +389,7 @@ i32 CWarlord::UpdatePanicState() {
 
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
-        i32 dist = g_gameReg->m_triggerMgr
+        i32 dist = g_gameReg->GetTriggerMgr()
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             ResolveJoyAnimation();
@@ -414,10 +414,10 @@ RVA(0x00044e70, 0x87)
 i32 CWarlord::FinishJoyAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (sub->IsComplete()) {
-        CTriggerMgr* h = g_gameReg->m_triggerMgr;
+        CTriggerMgr* h = g_gameReg->GetTriggerMgr();
         if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
+            ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_cueTimer;
             tm->Start(0x3e8);
         }
         ResolveMovingAnimation();
@@ -451,10 +451,10 @@ i32 CWarlord::BuildFortSplashParticles() {
             );
         }
 
-        CTriggerMgr* h = g_gameReg->m_triggerMgr;
+        CTriggerMgr* h = g_gameReg->GetTriggerMgr();
         if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
+            ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_cueTimer;
             tm->Start(0x3e8);
         }
 
@@ -494,7 +494,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 m_cooldownTimer.m_interval = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
-                if (m_notifyTimer.Expired() && g_gameReg->m_triggerMgr->m_pendingFx == this) {
+                if (m_notifyTimer.Expired() && g_gameReg->GetTriggerMgr()->m_pendingFx == this) {
                     g_gameReg->VoiceMgr()->PlayVoice(m_object->m_objectId, 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)

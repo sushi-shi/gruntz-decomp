@@ -218,7 +218,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             if (this->CoordCount() != 0) {
                 this->RecycleCoords();
             }
-            g_gameReg->m_triggerMgr->UseEquippedToolAt(
+            g_gameReg->GetTriggerMgr()->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
                 cell->m_x * 0x20 + 0x10,

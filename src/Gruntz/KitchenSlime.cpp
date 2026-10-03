@@ -124,10 +124,10 @@ i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {
+    if (reg->GetEasyMode() == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {
         CGameObject* lvl = Level();
         i32 playerIndex, unitIndex;
-        CGrunt* ent = static_cast<CGrunt*>(reg->m_triggerMgr->FindGruntAt(
+        CGrunt* ent = static_cast<CGrunt*>(reg->GetTriggerMgr()->FindGruntAt(
             lvl->m_screenX,
             lvl->m_screenY,
             &lvl->m_area,
@@ -136,7 +136,7 @@ i32 CKitchenSlime::Tick() {
             static_cast<RECT*>(0)
         ));
         if (ent && ent->m_gruntKind != GRUNT_INVULNERABLE) {
-            (static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
+            (static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                 ->StartUnitDeath(playerIndex, unitIndex, DEATH_MELT, -1);
         }
     }

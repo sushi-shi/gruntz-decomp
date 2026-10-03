@@ -125,7 +125,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
     i32 playerIndex = m_playerIndex;
     i32 unitIndex = m_unitIndex;
-    CTriggerMgr* table = g_gameReg->m_triggerMgr;
+    CTriggerMgr* table = g_gameReg->GetTriggerMgr();
     CGrunt* unit = table->UnitAt(playerIndex, unitIndex);
 
     i32 statusVal;

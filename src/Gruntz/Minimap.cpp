@@ -26,6 +26,7 @@
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
+#include <Rez/FrameCountdown.h>
 #include <Wap32/TileGeometry.h>
 
 #include <ddraw.h>
@@ -36,7 +37,7 @@ i32 CMinimap::Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs) {
         return 0;
     }
     m_gameMgr = gameMgr;
-    m_triggerMgr = gameMgr->m_triggerMgr;
+    m_triggerMgr = gameMgr->GetTriggerMgr();
     m_mapMgr = gameMgr->GetTileGrid();
     m_world = gameMgr->m_world;
     m_refreshInterval = refreshIntervalMs;
@@ -106,11 +107,7 @@ RVA(0x000a3460, 0x2f3)
 i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
     if (forceRefresh == false) {
 
-        if (static_cast<u32>(elapsedMs) >= static_cast<u32>(m_refreshRemaining)) {
-            m_refreshRemaining = 0;
-        } else {
-            m_refreshRemaining -= elapsedMs;
-        }
+        CountDown(m_refreshRemaining, static_cast<u32>(elapsedMs));
         if (m_refreshRemaining != 0) {
             return 1;
         }
@@ -1041,7 +1038,7 @@ i32 CMinimap::IssueMinimapCommand(i32, i32 cursorX, i32 cursorY) {
     if (!ScreenPointToCell(cursorX, cursorY, cell, MINIMAP_SNAP_MARGIN_PX)) {
         return 0;
     }
-    g_gameReg->m_triggerMgr->HandleTargetSelection(
+    g_gameReg->GetTriggerMgr()->HandleTargetSelection(
         cell[0] * TILE_SIZE_PX + TILE_HALF_PX,
         cell[1] * TILE_SIZE_PX + TILE_HALF_PX,
         0,

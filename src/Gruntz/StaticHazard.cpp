@@ -131,7 +131,7 @@ void CStaticHazard::RegisterActs() {
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::UpdateIdleState() {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {
+    if (reg->GetEasyMode() != false && reg->GetGameMode() == GAMEMODE_QUESTZ) {
         return 0;
     }
     u32 phase = g_frameTime - m_pulseEpoch;
@@ -196,7 +196,7 @@ i32 CStaticHazard::UpdateActiveState() {
 
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
-        CGrunt* victim = g_gameReg->m_triggerMgr->HitTestCell(
+        CGrunt* victim = g_gameReg->GetTriggerMgr()->HitTestCell(
             m_object->m_screenX,
             m_object->m_screenY,
             &playerIndex,
@@ -204,7 +204,7 @@ i32 CStaticHazard::UpdateActiveState() {
             0
         );
         if (victim != NULL) {
-            g_gameReg->m_triggerMgr->StartUnitDeath(
+            g_gameReg->GetTriggerMgr()->StartUnitDeath(
                 playerIndex,
                 unitIndex,
                 static_cast<GruntDeathType>(m_object->m_smarts),

@@ -640,7 +640,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (mode != 0) {
         if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
             g_gameReg->VoiceMgr()->PauseAllVoices();
-            (static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))->DestroyAllAnims();
+            (static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(IDS_LOADING);
