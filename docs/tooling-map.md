@@ -108,6 +108,12 @@ offsets/types/identities/addends. A state-bearing exact candidate is retained as
 `exact-disposable.cpp`, never as an apply-ready source file. See
 [`permuter.md`](permuter.md).
 
+## Standalone export
+
+`gruntz clean [--ref REVISION | --working-tree] [--out DIRECTORY] [--verify]`
+is owned by `gruntz.clean`. It generates one source-only C++ project with a
+separate build; see [source export](clean-source.md).
+
 ## The read-only query surfaces
 
 | verb | module | what it does |

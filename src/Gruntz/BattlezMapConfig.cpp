@@ -1464,13 +1464,12 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         PickupType pk = unit->ArrivalPickup();
         if (pk == PICKUP_GOOBER) {
-            POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
+            POSITION opos = m_triggerMgr->GetPuddleHeadPosition();
             while (opos != NULL) {
-                CGruntPuddle* cand =
-                    static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(opos));
-                if (cand->m_pending == false) {
-                    i32 ox = cand->m_tile.m_x;
-                    i32 oy = cand->m_tile.m_y;
+                CGruntPuddle* cand = m_triggerMgr->GetNextPuddle(opos);
+                if (cand->IsPending() == false) {
+                    i32 ox = cand->GetTileX();
+                    i32 oy = cand->GetTileY();
                     if ((static_cast<CGrunt*>(unit))
                             ->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
                         != 0) {

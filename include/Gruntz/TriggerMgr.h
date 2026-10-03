@@ -97,6 +97,16 @@ public:
 
     i32 PlacePuddle(CGameObject* sprite, b32 animatePlacement);
 
+    POSITION GetPuddleHeadPosition() const {
+        return m_baseList.GetHeadPosition();
+    }
+    CGruntPuddle* GetNextPuddle(POSITION& position) {
+        return static_cast<CGruntPuddle*>(m_baseList.GetNext(position));
+    }
+    CGruntPuddle* GetPuddleAt(POSITION position) {
+        return static_cast<CGruntPuddle*>(m_baseList.GetAt(position));
+    }
+
     i32 PlaceObject(
         i32 playerIndex,
         i32 x,

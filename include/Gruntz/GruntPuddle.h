@@ -27,6 +27,16 @@ public:
     CGruntPuddle() {}
     CGruntPuddle(CGameObject* obj);
 
+    i32 GetTileX() const {
+        return m_tile.m_x;
+    }
+    i32 GetTileY() const {
+        return m_tile.m_y;
+    }
+    b32 IsPending() const {
+        return m_pending;
+    }
+
     i32 Idle();
     i32 Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
     i32 Remove();

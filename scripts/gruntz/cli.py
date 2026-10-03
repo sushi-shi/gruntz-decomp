@@ -14,6 +14,7 @@
     gruntz play                      build + link, install the candidate into
                                      the game env, run it under gamescope
                                      (integer-scaled; --retail = the control)
+    gruntz clean [--verify]          export a standalone C++ source project
     gruntz configure                 re-emit build/build.ninja
     gruntz sema <sub>                read-only investigation views (disasm,
                                      xref, rva, vtable, classof, strings, ...)
@@ -75,7 +76,7 @@ def _dispatch(argv: list[str]) -> int:
              "delink": "gruntz.delink.run", "compare": "gruntz.compare.run"}[cmd])
         sys.argv = [f"gruntz {cmd}", *rest]
         return mod.main()
-    if cmd in ("sema", "walls", "ghidra", "verify", "rsrc", "lsp", "lineage"):
+    if cmd in ("sema", "walls", "ghidra", "verify", "rsrc", "lsp", "lineage", "clean"):
         import importlib
         return importlib.import_module(f"gruntz.{cmd}").main(rest)
     if cmd == "permute":

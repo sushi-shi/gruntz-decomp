@@ -198,7 +198,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 while (pos != NULL && removed == 0) {
                     POSITION current = pos;
                     CGruntPuddle* puddle = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                    if (puddle->m_tile.m_x == tileX && puddle->m_tile.m_y == tileY) {
+                    if (puddle->GetTileX() == tileX && puddle->GetTileY() == tileY) {
                         if (cue == WWDDRAW_NO_ANIMATION) {
                             puddle->m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                             puddle->SetBute("B");

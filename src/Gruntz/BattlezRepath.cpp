@@ -57,13 +57,13 @@
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
-        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
+        POSITION pos = m_triggerMgr->GetPuddleHeadPosition();
         CGruntPuddle* best = NULL;
         i32 bestDist = INT_MAX;
         while (pos != NULL) {
-            CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetAt(pos));
-            m_triggerMgr->m_baseList.GetNext(pos);
-            if (cand->m_pending == false) {
+            CGruntPuddle* cand = m_triggerMgr->GetPuddleAt(pos);
+            m_triggerMgr->GetNextPuddle(pos);
+            if (cand->IsPending() == false) {
                 Coord candidate = cand->m_tile;
                 CGameObject* object = unit->m_object;
                 Coord screen = object->ScreenPos();
@@ -81,8 +81,8 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
         if (best != NULL) {
             RouteUnitTo(
                 unit,
-                best->m_tile.m_x,
-                best->m_tile.m_y,
+                best->GetTileX(),
+                best->GetTileY(),
                 IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
                     | CELL_FLAG_WATER | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD),
                 0,
@@ -98,12 +98,12 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00035210, 0x4f)
 i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
-    CPtrList& lst = m_ctx->m_triggerMgr->m_baseList;
-    POSITION pos = lst.GetHeadPosition();
+    CTriggerMgr* manager = m_ctx->m_triggerMgr;
+    POSITION pos = manager->GetPuddleHeadPosition();
     while (pos != NULL) {
-        CGruntPuddle* cand = static_cast<CGruntPuddle*>(lst.GetNext(pos));
-        if (cand != NULL && cand->m_tile.m_x == x && cand->m_tile.m_y == y
-            && cand->m_pending == false) {
+        CGruntPuddle* cand = manager->GetNextPuddle(pos);
+        if (cand != NULL && cand->GetTileX() == x && cand->GetTileY() == y
+            && cand->IsPending() == false) {
             return 1;
         }
     }

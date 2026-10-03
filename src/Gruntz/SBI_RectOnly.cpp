@@ -1351,174 +1351,177 @@ i32 CStatusBarMgr::BuildGameMenu() {
     i32 bx = m_barRect.left;
     i32 by = m_barRect.top;
 
-    if (m_itemKind != GAME_TAB_MISSION_STATUS) {
+    switch (m_itemKind) {
+        case GAME_TAB_MISSION_STATUS: {
+            CSBI_ImageSet* status;
+            if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                NEW_STATUS_BAR_ITEM(
+                    status,
+                    CSBI_ImageSet,
+                    code,
+                    SBICMD_MISSION_STATUS,
+                    TAB_GAME,
+                    CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+                    "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
+                    1,
+                    0
+                );
+                AddTabItem(5, status);
+            } else {
+                NEW_STATUS_BAR_ITEM(
+                    status,
+                    CSBI_ImageSet,
+                    code,
+                    SBICMD_MISSION_STATUS,
+                    TAB_GAME,
+                    CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+                    "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
+                    2,
+                    0
+                );
+                AddTabItem(5, status);
+            }
+            break;
+        }
+        default: {
+            if (m_chatBoxDisabled != false && g_gameReg->m_frameGate != false) {
+                CSBI_MenuItem* resume;
+                NEW_STATUS_BAR_ITEM(
+                    resume,
+                    CSBI_MenuItem,
+                    code,
+                    SBICMD_PAUSE,
+                    TAB_GAME,
+                    CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                    "GAME_STATUSBAR_TABZ_GAMETAB_RESUME",
+                    -1,
+                    0
+                );
+                AddTabItem(5, resume);
+                m_gameResumePauseButton = resume;
+            } else {
+                CSBI_MenuItem* pause;
+                NEW_STATUS_BAR_ITEM(
+                    pause,
+                    CSBI_MenuItem,
+                    code,
+                    SBICMD_PAUSE,
+                    TAB_GAME,
+                    CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                    "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE",
+                    -1,
+                    0
+                );
+                AddTabItem(5, pause);
+                m_gameResumePauseButton = pause;
+            }
 
-        if (m_chatBoxDisabled != false && g_gameReg->m_frameGate != false) {
-            CSBI_MenuItem* resume;
+            CSBI_MenuItem* load;
             NEW_STATUS_BAR_ITEM(
-                resume,
+                load,
                 CSBI_MenuItem,
                 code,
-                SBICMD_PAUSE,
+                SBICMD_LOAD_GAME,
                 TAB_GAME,
-                CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
-                "GAME_STATUSBAR_TABZ_GAMETAB_RESUME",
+                CRect(bx, by + 0x125, bx + 0x9f, by + 0x13c),
+                "GAME_STATUSBAR_TABZ_GAMETAB_LOAD",
                 -1,
                 0
             );
-            AddTabItem(5, resume);
-            m_gameResumePauseButton = resume;
-        } else {
-            CSBI_MenuItem* pause;
+            AddTabItem(5, load);
+            m_gameLoadButton = load;
+            if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
+                load->SetEnabled(0);
+            }
+
+            CSBI_MenuItem* save;
             NEW_STATUS_BAR_ITEM(
-                pause,
+                save,
                 CSBI_MenuItem,
                 code,
-                SBICMD_PAUSE,
+                SBICMD_SAVE_GAME,
                 TAB_GAME,
-                CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
-                "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE",
+                CRect(bx, by + 0xfd, bx + 0x9f, by + 0x114),
+                "GAME_STATUSBAR_TABZ_GAMETAB_SAVE",
                 -1,
                 0
             );
-            AddTabItem(5, pause);
-            m_gameResumePauseButton = pause;
+            AddTabItem(5, save);
+            m_gameSaveButton = save;
+            if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
+                save->SetEnabled(0);
+            }
+
+            CSBI_MenuItem* settings;
+            NEW_STATUS_BAR_ITEM(
+                settings,
+                CSBI_MenuItem,
+                code,
+                SBICMD_SETTINGS,
+                TAB_GAME,
+                CRect(bx, by + 0x14d, bx + 0x9f, by + 0x164),
+                "GAME_STATUSBAR_TABZ_GAMETAB_SETTINGS",
+                -1,
+                0
+            );
+            AddTabItem(5, settings);
+            m_gameSettingsButton = settings;
+
+            CSBI_MenuItem* help;
+            NEW_STATUS_BAR_ITEM(
+                help,
+                CSBI_MenuItem,
+                code,
+                SBICMD_BOOTY_STATE,
+                TAB_GAME,
+                CRect(bx, by + 0x175, bx + 0x9f, by + 0x18c),
+                "GAME_STATUSBAR_TABZ_GAMETAB_HELP",
+                -1,
+                0
+            );
+            AddTabItem(5, help);
+            m_gameHelpButton = help;
+            if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
+                help->SetEnabled(0);
+            }
+
+            CSBI_MenuItem* quit;
+            NEW_STATUS_BAR_ITEM(
+                quit,
+                CSBI_MenuItem,
+                code,
+                SBICMD_QUIT,
+                TAB_GAME,
+                CRect(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
+                "GAME_STATUSBAR_TABZ_GAMETAB_QUIT",
+                -1,
+                0
+            );
+            AddTabItem(5, quit);
+            m_gameQuitButton = quit;
+
+            CSBI_ImageSet* destruct;
+            NEW_STATUS_BAR_ITEM(
+                destruct,
+                CSBI_ImageSet,
+                code,
+                SBICMD_DESTRUCT,
+                TAB_GAME,
+                CRect(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
+                "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
+                IDX(m_destructButtonFrame),
+                0
+            );
+            AddTabItem(5, destruct);
+            m_destructButtonImage = destruct;
+            if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+                destruct->SetEnabled(0);
+                m_destructButtonFrame = DESTRUCT_FRAME_DISABLED;
+                m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
+                m_destructButtonImage->Notify(IDX(DESTRUCT_FRAME_DISABLED));
+            }
+            break;
         }
-
-        CSBI_MenuItem* load;
-        NEW_STATUS_BAR_ITEM(
-            load,
-            CSBI_MenuItem,
-            code,
-            SBICMD_LOAD_GAME,
-            TAB_GAME,
-            CRect(bx, by + 0x125, bx + 0x9f, by + 0x13c),
-            "GAME_STATUSBAR_TABZ_GAMETAB_LOAD",
-            -1,
-            0
-        );
-        AddTabItem(5, load);
-        m_gameLoadButton = load;
-        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
-            load->SetEnabled(0);
-        }
-
-        CSBI_MenuItem* save;
-        NEW_STATUS_BAR_ITEM(
-            save,
-            CSBI_MenuItem,
-            code,
-            SBICMD_SAVE_GAME,
-            TAB_GAME,
-            CRect(bx, by + 0xfd, bx + 0x9f, by + 0x114),
-            "GAME_STATUSBAR_TABZ_GAMETAB_SAVE",
-            -1,
-            0
-        );
-        AddTabItem(5, save);
-        m_gameSaveButton = save;
-        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
-            save->SetEnabled(0);
-        }
-
-        CSBI_MenuItem* settings;
-        NEW_STATUS_BAR_ITEM(
-            settings,
-            CSBI_MenuItem,
-            code,
-            SBICMD_SETTINGS,
-            TAB_GAME,
-            CRect(bx, by + 0x14d, bx + 0x9f, by + 0x164),
-            "GAME_STATUSBAR_TABZ_GAMETAB_SETTINGS",
-            -1,
-            0
-        );
-        AddTabItem(5, settings);
-        m_gameSettingsButton = settings;
-
-        CSBI_MenuItem* help;
-        NEW_STATUS_BAR_ITEM(
-            help,
-            CSBI_MenuItem,
-            code,
-            SBICMD_BOOTY_STATE,
-            TAB_GAME,
-            CRect(bx, by + 0x175, bx + 0x9f, by + 0x18c),
-            "GAME_STATUSBAR_TABZ_GAMETAB_HELP",
-            -1,
-            0
-        );
-        AddTabItem(5, help);
-        m_gameHelpButton = help;
-        if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
-            help->SetEnabled(0);
-        }
-
-        CSBI_MenuItem* quit;
-        NEW_STATUS_BAR_ITEM(
-            quit,
-            CSBI_MenuItem,
-            code,
-            SBICMD_QUIT,
-            TAB_GAME,
-            CRect(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
-            "GAME_STATUSBAR_TABZ_GAMETAB_QUIT",
-            -1,
-            0
-        );
-        AddTabItem(5, quit);
-        m_gameQuitButton = quit;
-
-        CSBI_ImageSet* destruct;
-        NEW_STATUS_BAR_ITEM(
-            destruct,
-            CSBI_ImageSet,
-            code,
-            SBICMD_DESTRUCT,
-            TAB_GAME,
-            CRect(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
-            "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
-            IDX(m_destructButtonFrame),
-            0
-        );
-        AddTabItem(5, destruct);
-        m_destructButtonImage = destruct;
-        if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-            destruct->SetEnabled(0);
-            m_destructButtonFrame = DESTRUCT_FRAME_DISABLED;
-            m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
-            m_destructButtonImage->Notify(IDX(DESTRUCT_FRAME_DISABLED));
-        }
-        return 1;
-    }
-
-    CSBI_ImageSet* status;
-    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-        NEW_STATUS_BAR_ITEM(
-            status,
-            CSBI_ImageSet,
-            code,
-            SBICMD_MISSION_STATUS,
-            TAB_GAME,
-            CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
-            "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
-            1,
-            0
-        );
-        AddTabItem(5, status);
-    } else {
-        NEW_STATUS_BAR_ITEM(
-            status,
-            CSBI_ImageSet,
-            code,
-            SBICMD_MISSION_STATUS,
-            TAB_GAME,
-            CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
-            "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
-            2,
-            0
-        );
-        AddTabItem(5, status);
     }
     return 1;
 }

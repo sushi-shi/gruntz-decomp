@@ -1,6 +1,7 @@
 # Runtime DLLs
 
-[flake.nix](../flake.nix) owns the pinned runtime artifacts. The dev shell exposes
+[nix/runtime.nix](../nix/runtime.nix) pins the Miles and Smacker DLLs, shared by
+the reconstruction flake and the standalone source export. The dev shell exposes
 their directory as `GRUNTZ_RUNTIME`; the runtime package contains `MSS32.DLL`
 and `SMACKW32.DLL`.
 
@@ -15,6 +16,7 @@ not removing the guard or weakening the fetch check.
 
 `gruntz play` is the runtime entry point; consult its help for candidate versus
 retail mode. Do not treat a successful link as a successful runtime check.
+The standalone export provides `nix run path:.`; see [source export](clean-source.md).
 Generated installations and fetched binaries belong outside `docs/`.
 
 Previous download searches and hashes are recoverable through Git history.
