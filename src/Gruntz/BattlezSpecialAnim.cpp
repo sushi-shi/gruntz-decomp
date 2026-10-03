@@ -86,19 +86,28 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    if (unit->IsAnimationAct("P")) {
+    CString* recs;
+    CString* sel;
+    i32 ci;
+
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    if (*recs == "P") {
         return 0;
     }
 
-    if (unit->IsAnimationAct("J")) {
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    if (*recs == "J") {
         return 0;
     }
 
-    if (unit->IsAnimationAct("C")) {
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    if (*recs == "C") {
         goto fail;
     }
 
-    return unit->IsNotAnimationAct("R");
+    ci = unit->m_logicRecord->EventCode();
+    sel = &g_typeColl[ci];
+    return *sel != "R";
 fail:
     return 0;
 }
