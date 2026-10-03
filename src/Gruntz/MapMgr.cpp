@@ -308,6 +308,7 @@ reached:
 
 RVA(0x0009f010, 0x2a1)
 i32 CMapMgr::ExpandNeighbor(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diagonal) {
+    BrickzNode* open = NULL;
     i32 ng = node->m_gCost + cost;
     i32 ncol = node->m_col + dx;
     i32 nrow = node->m_row + dy;
@@ -324,28 +325,36 @@ i32 CMapMgr::ExpandNeighbor(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag
         return 1;
     }
     if (diagonal != 0 && m_diagonalMask != 0) {
-        BrickzCell *horizontalNeighbor, *verticalNeighbor;
         if (dx > 0 && dy > 0) {
-            verticalNeighbor = cell + m_width;
-            horizontalNeighbor = cell + 1;
+            BrickzCell* verticalNeighbor = cell + m_width;
+            BrickzCell* horizontalNeighbor = cell + 1;
+            if ((m_diagonalMask & horizontalNeighbor->m_flags) != 0
+                || (m_diagonalMask & verticalNeighbor->m_flags) != 0) {
+                return 1;
+            }
         } else if (dx < 0 && dy > 0) {
-            verticalNeighbor = cell + m_width;
-            horizontalNeighbor = cell - 1;
+            BrickzCell* verticalNeighbor = cell + m_width;
+            BrickzCell* horizontalNeighbor = cell - 1;
+            if ((m_diagonalMask & horizontalNeighbor->m_flags) != 0
+                || (m_diagonalMask & verticalNeighbor->m_flags) != 0) {
+                return 1;
+            }
         } else if (dx > 0 && dy < 0) {
-            verticalNeighbor = cell - m_width;
-            horizontalNeighbor = cell + 1;
+            BrickzCell* verticalNeighbor = cell - m_width;
+            BrickzCell* horizontalNeighbor = cell + 1;
+            if ((m_diagonalMask & horizontalNeighbor->m_flags) != 0
+                || (m_diagonalMask & verticalNeighbor->m_flags) != 0) {
+                return 1;
+            }
         } else if (dx < 0 && dy < 0) {
-            verticalNeighbor = cell - m_width;
-            horizontalNeighbor = cell - 1;
-        } else {
-            goto relax;
-        }
-        if ((m_diagonalMask & horizontalNeighbor->m_flags) != 0
-            || (m_diagonalMask & verticalNeighbor->m_flags) != 0) {
-            return 1;
+            BrickzCell* verticalNeighbor = cell - m_width;
+            BrickzCell* horizontalNeighbor = cell - 1;
+            if ((m_diagonalMask & horizontalNeighbor->m_flags) != 0
+                || (m_diagonalMask & verticalNeighbor->m_flags) != 0) {
+                return 1;
+            }
         }
     }
-relax:
     BrickzNode* closed = NULL;
     BrickzCellNode* head = ncell->m_head;
     if (head != NULL) {
@@ -356,11 +365,8 @@ relax:
             return 1;
         }
     }
-    BrickzNode* open;
     if (ncell->m_count != 0) {
         open = FindOpenNode(ncol, nrow);
-    } else {
-        open = NULL;
     }
     if (open != NULL && ng >= open->m_gCost) {
         return 1;

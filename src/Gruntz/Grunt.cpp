@@ -415,7 +415,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     } else {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
     }
-    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), kind);
+    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), kind);
     CWwdSpriteObject* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 

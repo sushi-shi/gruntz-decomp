@@ -19,7 +19,7 @@ inline i32 CWwdSpatialMgr::DeactivateRegionObject(
         if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
             CLogicRecord* record = obj->GetLogicRecord();
             record->SetLogicEvent(ACT_OBJECT_REMOVED);
-            record->m_dispatch(obj);
+            record->Dispatch(obj);
         }
         m_activeGroup->RemoveAll(pos, obj);
         delete obj;
@@ -28,7 +28,7 @@ inline i32 CWwdSpatialMgr::DeactivateRegionObject(
             CLogicRecord* record = obj->GetLogicRecord();
             i32 saved = record->EventCode();
             record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
-            record->m_dispatch(obj);
+            record->Dispatch(obj);
             if (record->LogicEvent() == ACT_LEAVE_ACTIVE_REGION) {
                 record->SetEventCode(saved);
             }

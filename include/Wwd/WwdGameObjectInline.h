@@ -13,7 +13,7 @@ static inline i32 NotifyLogicForEventCode(CGameObject* object, i32 eventCode) {
     }
     i32 savedEventCode = record->m_eventCode;
     record->SetEventCode(eventCode);
-    object->GetLogicRecord()->m_dispatch(object);
+    object->GetLogicRecord()->Dispatch(object);
     if (object->GetLogicRecord()->m_eventCode == eventCode) {
         object->GetLogicRecord()->SetEventCode(savedEventCode);
     }

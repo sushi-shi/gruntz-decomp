@@ -2059,7 +2059,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             i32 gx = g->m_screenX >> TILE_SHIFT_PX;
             i32 gy = g->m_screenY >> TILE_SHIFT_PX;
             CPoint wpt(gx, gy);
-            if (PtInRect(&box, wpt)) {
+            if (box.PtInRect(wpt)) {
                 if (special != 0 && unit->m_gruntKind == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                         CMapMgr* bd = m_board;
@@ -2704,7 +2704,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             Coord c;
             u->GetScreenTile(&c);
             CPoint wpt(c.m_x, c.m_y);
-            if (!PtInRect(&box, wpt)) {
+            if (!box.PtInRect(wpt)) {
                 continue;
             }
             Coord unitPos1;
