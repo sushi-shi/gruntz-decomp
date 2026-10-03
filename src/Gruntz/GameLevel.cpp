@@ -1623,13 +1623,13 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     return 1;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160c50, 0x289)
 i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
+    i32 col = x0;
     if (x1 > x0) {
-        for (i32 col = x0; col <= x1; col += step) {
+        for (; col <= x1; col += step) {
             TileCollisionKind r;
             PROBE_TILE(this, col, y, r);
             if (r == TILEKIND_SOLID) {
@@ -1637,7 +1637,7 @@ i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
             }
         }
     } else {
-        for (i32 col = x0; col >= x1; col -= step) {
+        for (; col >= x1; col -= step) {
             TileCollisionKind r;
             PROBE_TILE(this, col, y, r);
             if (r == TILEKIND_SOLID) {
