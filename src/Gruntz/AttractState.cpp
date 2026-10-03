@@ -86,7 +86,6 @@ void CAttract::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-// @early-stop
 RVA(0x00014120, 0x1a9)
 i32 CAttract::EnterState(GameStateId previousState) {
 
