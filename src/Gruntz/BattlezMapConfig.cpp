@@ -3627,22 +3627,19 @@ i32 __stdcall BattlezMapConfigAcceptAlwaysSixArgs(i32, i32, i32, i32, i32, i32) 
 
 RVA(0x00030b20, 0x328)
 i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
-    CGameObject* lvl = unit->m_object;
-    i32 goalX = lvl->m_screenX >> TILE_SHIFT_PX;
-    i32 goalY = lvl->m_screenY >> TILE_SHIFT_PX;
-
-    BrickzCell* tile = &(static_cast<BrickzCell*>((m_board)->m_rows[row]))[col];
-
+    i32 bestDist = INT_MAX;
     i32 bestX = col;
     i32 bestY = row;
-    i32 bestDist = INT_MAX;
+    Coord goal = ScreenTile(unit);
+
+    BrickzCell* tile = &m_board->m_rows[row][col];
 
     CTileTriggerLogic* cell;
 
     if (tile->m_typeCode == TILEKIND_PYRAMID_LATCH_A) {
         cell = m_cellQuery->m_latchedLeaf;
     } else {
-        cell = m_cellQuery->FindLogic((col << 8) + row, TRIGID_ANY);
+        cell = m_cellQuery->FindLogic(CellKey(col, row), TRIGID_ANY);
     }
     if (cell != NULL) {
 
@@ -3671,8 +3668,8 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             if (rec != NULL) {
                 i32 cx = rec->m_tileX;
                 i32 cy = rec->m_tileY;
-                i32 dx = cx - goalX;
-                i32 dy = cy - goalY;
+                i32 dx = cx - goal.m_x;
+                i32 dy = cy - goal.m_y;
                 dx = abs(dx);
                 dy = abs(dy);
                 i32 dist = SquaredDistance(dx, dy);
@@ -3700,10 +3697,10 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     if (unit->ArrivalPickupOf(er) == PICKUP_TOOB) {
         flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
     }
-    CGameObject* lvl2 = unit->m_object;
+    Coord start = ScreenTile(unit);
     if ((m_board)->FindPathWithEndpointOverrides(
-            lvl2->m_screenX >> TILE_SHIFT_PX,
-            lvl2->m_screenY >> TILE_SHIFT_PX,
+            start.m_x,
+            start.m_y,
             bestX,
             bestY,
             &list,
