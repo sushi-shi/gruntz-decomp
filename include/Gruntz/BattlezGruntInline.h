@@ -55,8 +55,7 @@ static inline bool BattlezActDiffersFromCRCGLPJ(CGrunt* unit) {
 }
 
 static inline void ExcludeBattlezSpecialAct(CGrunt* unit, const char* name, i32& eligible) {
-    char equal = unit->IsAnimationAct(name);
-    if (equal) {
+    if (unit->IsAnimationAct(name)) {
         eligible = 0;
     }
 }
@@ -65,8 +64,7 @@ static inline bool UpdateBattlezSpecialEligibility(CGrunt* unit, i32& eligible) 
     ExcludeBattlezSpecialAct(unit, "I", eligible);
     ExcludeBattlezSpecialAct(unit, "G", eligible);
     ExcludeBattlezSpecialAct(unit, "L", eligible);
-    char equal = unit->IsAnimationAct("P");
-    if (equal) {
+    if (unit->IsAnimationAct("P")) {
         return false;
     }
     ExcludeBattlezSpecialAct(unit, "J", eligible);
