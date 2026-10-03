@@ -51,7 +51,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     }
     m_defenderPx = m_lastTilePx;
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_CLIP_NULL(grid);
+    grid->Clip(NULL);
 
     Coord c1;
     GetScreenPos(&c1);
@@ -104,12 +104,12 @@ i32 CGrunt::StepBrickLayerBehavior() {
         if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
                 return 1;
             }
         } else {
             if (atTarget) {
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
                 return 1;
             }
         }
@@ -174,7 +174,7 @@ L_ed153:
         i32 best = INT_MAX;
         i32 bestCol = -1;
         i32 bestRow = -1;
-        GRID_CLIP_INL_FIELDS(grid, &isect);
+        grid->Clip(&isect);
         for (i32 row = isect.top; row < isect.bottom; row++) {
             BrickzCell* cell = &grid->m_rows[row][isect.left];
             for (i32 col = isect.left; col < isect.right; col++) {
@@ -212,7 +212,7 @@ L_ed153:
                 TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
             }
         }
-        GRID_RECT_INLINE(grid);
+        grid->Clip(NULL);
         m_dwell = 0;
         return 1;
     }

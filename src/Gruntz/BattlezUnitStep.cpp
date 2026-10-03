@@ -61,7 +61,6 @@
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
 
-// @early-stop
 RVA(0x00031610, 0x501)
 i32 CBattlezMapConfig::Step(CGrunt* g) {
     if (g->CoordCount() == 0) {
@@ -106,7 +105,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             );
             if (g->CoordCount() > m_idleRouteLimit.m_y + m_idleRouteLimit.m_x
                 && g->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g)
+                g->RecycleCoords();
             }
             g->m_dwell = 0;
         }
@@ -134,7 +133,7 @@ inflight: {
         goto L_clear;
     }
     if (nb != NULL && cur != nb) {
-        RecycleGruntCoords(g);
+        g->RecycleCoords();
         g->m_arrivalCell.m_x = nb->m_playerIndex;
         g->m_arrivalCell.m_y = nb->m_unitIndex;
         g->m_defenderState = AISTATE_ATTACK;
@@ -161,7 +160,7 @@ inflight: {
             CGameObject* s = cur->m_object;
             if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
 
-                RecycleGruntCoords(g);
+                g->RecycleCoords();
                 UNSET_COORD(g->m_arrivalCell);
                 HandleUnitContact(g, cur);
                 g->m_defenderState = AISTATE_SEEK;
@@ -185,10 +184,10 @@ inflight: {
             i32 ady = abs(dy);
             i32 dist = static_cast<i32>(sqrt(static_cast<double>(SquaredDistance(adx, ady))));
             if (dist > m_assignedTargetMaxDistance) {
-                RecycleGruntCoords(g);
+                g->RecycleCoords();
                 goto L_clearAt;
             }
-            RecycleGruntCoords(g);
+            g->RecycleCoords();
             CGameObject* s = cur->m_object;
             if (g->TileSwitch(
                     s->m_screenPosition.m_x >> TILE_SHIFT_PX,
@@ -236,14 +235,14 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             if ((static_cast<CGrunt*>(unit))
                     ->RectContains(lvl->m_screenPosition.m_x, lvl->m_screenPosition.m_y)
                 != 0) {
-                RecycleGruntCoords(unit);
+                unit->RecycleCoords();
                 UNSET_COORD(unit->m_arrivalCell);
                 HandleUnitContact(unit, target);
                 return 1;
             }
 
             CMapMgr* board = m_board;
-            GRID_CLIP_NULL(board);
+            board->Clip(NULL);
             if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordCount() == 0) {
                 i32 flags = unit->m_routeBlockedMask;
                 unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
@@ -265,7 +264,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         UNSET_COORD(unit->m_defenderPx);
         unit->m_defenderState = AISTATE_SEEK;
         unit->m_battleState = BZTASK_ADVANCE;
-        RecycleGruntCoords(unit);
+        unit->RecycleCoords();
         return 1;
     }
 
@@ -273,7 +272,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     UNSET_COORD(unit->m_defenderPx);
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_battleState = BZTASK_ADVANCE;
-    RecycleGruntCoords(unit);
+    unit->RecycleCoords();
     return 1;
 }
 
@@ -303,7 +302,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         GruntzPlayer* slot = &m_ctx->m_players[band];
         if (slot->m_clearedRound != false || slot->m_active == false) {
 
-            RecycleGruntCoords(unit);
+            unit->RecycleCoords();
             UNSET_COORD(unit->m_arrivalCell);
             UNSET_COORD(unit->m_defenderPx);
             unit->m_targetTeam = -1;
@@ -360,7 +359,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 if (gx == -1 || gy == -1) {
 
                     unit->m_defenderState = AISTATE_SEEK;
-                    RecycleGruntCoords(unit);
+                    unit->RecycleCoords();
                     UNSET_COORD(unit->m_defenderPx);
                     return 1;
                 }
@@ -398,7 +397,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             }
             case AISTATE_BATTLEZ_FINAL_ROUTE: {
                 CMapMgr* board = m_board;
-                SCAN_BOUNDS_PLAINCLIP(board);
+                board->Clip(NULL);
                 i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
                 if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     goto routeSuccess;
@@ -426,7 +425,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (gx == -1 || gy == -1) {
 
         unit->m_defenderState = AISTATE_SEEK;
-        RecycleGruntCoords(unit);
+        unit->RecycleCoords();
         UNSET_COORD(unit->m_defenderPx);
         return 1;
     }
@@ -436,7 +435,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (SquaredDistance(dx, dy) > 0x10) {
         return 1;
     }
-    RECYCLE_GRUNT_COORDS(unit)
+    unit->RecycleCoords();
     unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
     unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;

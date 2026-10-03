@@ -73,10 +73,10 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
         }
         unit->m_battleState = BZTASK_ADVANCE;
 
-        RecycleGruntCoords(unit);
+        unit->RecycleCoords();
     } else {
         unit->m_battleState = BZTASK_ADVANCE;
-        RecycleGruntCoords(unit);
+        unit->RecycleCoords();
     }
     ResetToSeek(unit);
     unit->m_dwell = 0;

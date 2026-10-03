@@ -111,7 +111,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     if (recA->m_humanControlled == false && cfgB->m_active == false) {
-        RECYCLE_GRUNT_COORDS(unit)
+        unit->RecycleCoords();
         UNSET_COORD(unit->m_arrivalCell);
         return 1;
     }
@@ -141,6 +141,6 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 1;
     }
-    RECYCLE_GRUNT_COORDS(unit)
+    unit->RecycleCoords();
     return 1;
 }

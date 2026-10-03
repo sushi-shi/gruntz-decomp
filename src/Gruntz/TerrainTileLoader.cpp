@@ -16,6 +16,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
@@ -50,20 +51,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = m_world->m_level;
 
-    i32 cx = tileX;
-    i32 cy = tileY;
-    CLAMP_TILE_TO_PLANE(cx, cy, grid->m_mainPlane);
-
-    TileCollisionKind cellType;
-    i32 cell = grid->m_mainPlane->m_tileHandles[grid->m_mainPlane->m_tileRowOffsets[cy] + cx];
-    if (cell == UNINIT_FILL || cell == -1) {
-        cellType = TILEKIND_PASSABLE;
-    } else {
-        CTileImageSet* tc = static_cast<CTileImageSet*>(
-            grid->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
-        );
-        cellType = tc->GetCollisionAt(0, 0);
-    }
+    TileCollisionKind cellType = PbResolveCell(grid, tileX, tileY);
 
     i32 px = tileX * TILE_SIZE_PX + TILE_HALF_PX;
     i32 py = tileY * TILE_SIZE_PX + TILE_HALF_PX;

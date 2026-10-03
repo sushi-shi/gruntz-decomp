@@ -1,6 +1,10 @@
 #ifndef GRUNTZ_GRUNTCOORDRECYCLEMACROS_H
 #define GRUNTZ_GRUNTCOORDRECYCLEMACROS_H
 
+#include <Gruntz/GruntCoordInline.h>
+
+// These macros preserve nested call boundaries in StepBoard, StepRowUnits
+// and LoadGruntTypeTable.
 #define RECYCLE_GRUNT_COORDS(grunt)                                                                \
     {                                                                                              \
         POSITION node = (grunt)->CoordHead();                                                      \

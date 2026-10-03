@@ -529,7 +529,7 @@ i32 CBoomerang::LoadProjectileSprites(
                 (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
             )
         );
-        RecycleGruntCoords(g);
+        g->RecycleCoords();
     }
     m_launched = false;
     return 1;

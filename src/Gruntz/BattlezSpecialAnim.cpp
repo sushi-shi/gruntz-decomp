@@ -20,6 +20,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
@@ -49,25 +50,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
-RVA(0x000343f0, 0x47)
-void CGrunt::RecycleCoords() {
-    if (CoordCount() == 0) {
-        return;
-    }
-    POSITION n = CoordHead();
-    if (n != NULL) {
-        do {
-            POSITION cur = n;
-            m_coordList.GetNext(n);
-            Coord* coord = static_cast<Coord*>(m_coordList.GetAt(cur));
-            if (coord != NULL) {
-                g_coordPool.Push(coord);
-            }
-        } while (n != NULL);
-    }
-    m_coordList.RemoveAll();
-}
 
 RVA(0x00034460, 0x3fc)
 i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {

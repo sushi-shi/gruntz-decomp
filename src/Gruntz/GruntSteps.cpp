@@ -837,7 +837,7 @@ applyTail:
         );
         m_lastTilePx.Set(-1, -1);
         SetEntrancePos(1, 1);
-        RecycleGruntCoords(this);
+        this->RecycleCoords();
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;
             m_routePassableMask = 0;

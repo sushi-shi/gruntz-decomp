@@ -48,6 +48,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeTableInline.h>
@@ -645,32 +646,12 @@ i32 CGrunt::PathScan() {
 
     POSITION node = coordz->GetHeadPosition();
 
-    Coord start;
-    start.Set(
-        m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
-        m_object->m_screenPosition.m_y >> TILE_SHIFT_PX
-    );
+    Coord start = ScreenTile(this);
 
     {
-        RECT gb;
-        SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
         RECT rs;
         SET_RECT_COMPONENTS(rs, start.m_x - 2, start.m_y - 2, start.m_x + 2, start.m_y + 2);
-        RECT box;
-        const RECT* pr = &rs;
-        if (pr != NULL) {
-
-            box = *pr;
-            box.right++;
-            box.bottom++;
-        } else {
-            box = CRect(0, 0, grid->m_width, grid->m_height);
-        }
-        if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
-            grid->m_bounds = box;
-        }
-        grid->m_gridSize.cx = grid->m_bounds.right - grid->m_bounds.left;
-        grid->m_gridSize.cy = grid->m_bounds.bottom - grid->m_bounds.top;
+        grid->Clip(&rs);
     }
 
     Coord target = *GetTailCoord();
@@ -699,25 +680,10 @@ i32 CGrunt::PathScan() {
 
                         while (node != NULL) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
-                            Coord* fresh = g_coordPool.Pop();
-                            if (fresh != NULL) {
-                                *fresh = *src;
-                            }
-                            s.AddTail(fresh);
+                            s.AddTail(g_coordPool.PopCopy(*src));
                         }
 
-                        if (CoordCount() != 0) {
-                            POSITION pos = m_coordList.GetHeadPosition();
-                            if (pos != NULL) {
-                                do {
-                                    Coord* d = static_cast<Coord*>(m_coordList.GetNext(pos));
-                                    if (d != NULL) {
-                                        g_coordPool.Push(d);
-                                    }
-                                } while (pos != NULL);
-                            }
-                            coordz->RemoveAll();
-                        }
+                        this->RecycleCoords();
 
                         POSITION p = s.GetHeadPosition();
                         if (p != NULL) {
@@ -732,7 +698,7 @@ i32 CGrunt::PathScan() {
                         }
                         RECYCLE_HEAD_COORD(s)
                         s.RemoveAll();
-                        SCAN_BOUNDS_PLAINCLIP(grid);
+                        grid->Clip(NULL);
                         return 1;
                     }
                 } else {
@@ -742,18 +708,18 @@ i32 CGrunt::PathScan() {
         }
 
         if (hits == GRUNT_COMBAT_FULL_SCAN_HITS) {
-            GRID_CLIP_NULL(grid);
+            grid->Clip(NULL);
             break;
         }
     }
 
-    GRID_CLIP_NULL(grid);
+    grid->Clip(NULL);
 
     RECT nb;
     SET_RECT_COMPONENTS(nb, target.m_x - 4, target.m_y - 4, target.m_x + 4, target.m_y + 4);
     if (::PtInRect(&nb, start.m_x, start.m_y)) {
 
-        GRID_CLIP(grid, &nb);
+        grid->Clip(&nb);
 
         for (i32 dy = -1; dy < 2; dy++) {
             for (i32 dx = -1; dx < 2; dx++) {
@@ -788,18 +754,7 @@ i32 CGrunt::PathScan() {
                         RECYCLE_HEAD_COORD(s)
                         if (!s.IsEmpty()) {
 
-                            if (CoordCount() != 0) {
-                                POSITION pos = m_coordList.GetHeadPosition();
-                                if (pos != NULL) {
-                                    do {
-                                        Coord* d = static_cast<Coord*>(coordz->GetNext(pos));
-                                        if (d != NULL) {
-                                            g_coordPool.Push(d);
-                                        }
-                                    } while (pos != NULL);
-                                }
-                                coordz->RemoveAll();
-                            }
+                            this->RecycleCoords();
 
                             POSITION p = s.GetHeadPosition();
                             if (p != NULL) {
@@ -833,7 +788,7 @@ i32 CGrunt::PathScan() {
                                     }
                                 }
                             }
-                            GRID_CLIP_NULL(grid);
+                            grid->Clip(NULL);
                             return 1;
                         }
                     }
@@ -1469,17 +1424,17 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         this->m_lastTilePx = newPos;
         SET_ANIMATION_ACT("O");
-        double ddx =
-            static_cast<double>(this->m_lastTilePx.m_x) - this->m_object->m_screenPosition.m_x;
-        double ddy =
-            static_cast<double>(this->m_lastTilePx.m_y) - this->m_object->m_screenPosition.m_y;
+        double ddx = static_cast<double>(this->m_lastTilePx.m_x);
+        ddx -= this->m_object->m_screenPosition.m_x;
+        double ddy = static_cast<double>(this->m_lastTilePx.m_y);
+        ddy -= this->m_object->m_screenPosition.m_y;
         double dist = sqrt(SQR(ddx) + SQR(ddy));
         m_moveSpeed = dist / static_cast<double>(g_buteMgr.GetDword("Grunt", s_knockKey, 200));
         m_movePosition.m_x = static_cast<double>((this->m_object->m_screenPosition.m_x));
         m_movePosition.m_y = static_cast<double>((this->m_object->m_screenPosition.m_y));
 
         if (!m_coordList.IsEmpty()) {
-            RECYCLE_GRUNT_COORDS(this)
+            this->RecycleCoords();
         }
         this->m_arrivalPending = false;
     }
@@ -1990,20 +1945,7 @@ void CGrunt::StepBehavior(char*) {
             i32 ptx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 pty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
             CGameLevel* level = g_gameReg->World()->m_level;
-            i32 cx = ptx;
-            i32 cy = pty;
-            CLAMP_TILE_TO_PLANE(cx, cy, level->m_mainPlane);
-            i32 raw =
-                level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
-            TileCollisionKind kind;
-            if (raw == UNINIT_FILL || raw == -1) {
-                kind = TILEKIND_PASSABLE;
-            } else {
-                CTileImageSet* ts = static_cast<CTileImageSet*>(
-                    level->m_imageSets.GetAt(raw & WWD_TILE_IMAGE_SET_INDEX_MASK)
-                );
-                kind = ts->GetCollisionAt(0, 0);
-            }
+            TileCollisionKind kind = PbResolveCell(level, ptx, pty);
 
             b32 gate = true;
             GruntDeathType hazard;
@@ -2017,7 +1959,6 @@ void CGrunt::StepBehavior(char*) {
                     hazard = DEATH_SINK;
                     break;
                 case TILEKIND_SPIKES:
-                    hazard = static_cast<GruntDeathType>(cx);
                     gate = false;
                     break;
                 default: {
@@ -2134,7 +2075,7 @@ afterTile:
 
             RECT rs;
             SET_RECT_COMPONENTS(rs, col5 - reach, row5 - reach, reach + col5 + 1, reach + row5 + 1);
-            GRID_CLIP_INL(grid, &rs)
+            grid->Clip(&rs);
         }
         if (m_arrivalState != AI_NONE) {
             if (!IsHoldPending()) {
@@ -2196,7 +2137,7 @@ afterTile:
         {
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            SCAN_BOUNDS_PLAINCLIP(grid)
+            grid->Clip(NULL);
         }
     }
 

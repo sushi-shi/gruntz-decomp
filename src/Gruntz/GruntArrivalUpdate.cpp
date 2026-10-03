@@ -228,7 +228,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(this)
+                this->RecycleCoords();
             }
             g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,

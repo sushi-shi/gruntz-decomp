@@ -3,6 +3,7 @@
 
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
+#include <Gruntz/MapClipInline.h>
 
 #define GRID_CLIP(grid, srcRect)                                                                   \
     {                                                                                              \

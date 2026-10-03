@@ -369,7 +369,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
 
 RVA(0x00048360, 0x7e)
 void CGrunt::OnObjectRemoved() {
-    RecycleGruntCoords(this);
+    this->RecycleCoords();
 
     DeleteAllPayloads();
 }
@@ -814,9 +814,7 @@ i32 CGrunt::StepArrivalDrop(
         goto commitPhase;
     }
 
-    if (CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS(this);
-    }
+    this->RecycleCoords();
     lastTile = m_lastTilePx;
     ScreenTile(&lastTile);
     tile = pixel;
@@ -892,7 +890,7 @@ i32 CGrunt::StepArrivalDrop(
                 && !probe.IsEmpty()) {
                 if (probe.GetCount() <= cnt + 3) {
                     g_coordPool.Push(probe.RemoveHead());
-                    RecycleGruntCoords(this);
+                    this->RecycleCoords();
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
                         m_coordList.AddTail(probe.GetNext(pos));
@@ -1594,7 +1592,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
         m_arrivalActive = false;
     }
     if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS(this)
+        this->RecycleCoords();
     }
 }
 
@@ -1935,7 +1933,6 @@ i32 CGrunt::Place(
     return 1;
 }
 
-// @early-stop
 RVA(0x0004dd50, 0x2400)
 i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
     char eq;

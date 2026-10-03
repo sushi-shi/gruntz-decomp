@@ -46,7 +46,7 @@ i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
         && g_gameReg->m_triggerMgr->UnitAt(0, this->m_arrivalCell.m_x) == NULL) {
-        RecycleGruntCoords(this);
+        this->RecycleCoords();
         this->m_arrivalCell.m_x = 0;
     }
 
@@ -55,7 +55,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         CGrunt* slot = g_gameReg->m_triggerMgr->UnitAt(0, reason);
         if (slot == NULL || slot->m_entranceCommitted == false) {
             if (this->CoordCount() != 0) {
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
             }
             this->m_arrivalCell.m_x = -1;
             return 1;
@@ -84,7 +84,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                 if (this->CoordCount() == 0) {
                     return 1;
                 }
-                RecycleGruntCoords(this);
+                this->RecycleCoords();
                 return 1;
             }
         }

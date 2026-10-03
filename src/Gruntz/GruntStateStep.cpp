@@ -45,7 +45,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             );
         }
         if (nb != NULL) {
-            RecycleGruntCoords(g);
+            g->RecycleCoords();
 
             i32 arrivalMask = 0xdc7;
             i32 dist;
@@ -66,7 +66,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 g->BuildUnitSearchBox(&box, 5);
                 CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
-                GRID_CLIP(grid, &box);
+                grid->Clip(&box);
             }
             {
                 Coord p;
@@ -78,7 +78,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 }
             }
             if (dist <= 0xa) {
-                GRID_CLIP_NULL(m_board);
+                m_board->Clip(NULL);
             }
         }
         goto tail;
@@ -92,7 +92,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             CGameObject* s = cur->m_object;
             if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
 
-                RecycleGruntCoords(g);
+                g->RecycleCoords();
                 UNSET_COORD(g->m_arrivalCell);
                 if (g != NULL && g->IsAtSavedScreenPos() && g->m_entranceCommitted != false
                     && g->m_deathAnimStarted == false && g->m_entranceActive == false
@@ -119,12 +119,12 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 UNSET_COORD(g->m_arrivalCell);
                 g->m_dwell = 0;
                 g->m_defenderState = AISTATE_SEEK;
-                RecycleGruntCoords(g);
+                g->RecycleCoords();
                 g->m_dwell = 0;
                 goto tail;
             }
 
-            RecycleGruntCoords(g);
+            g->RecycleCoords();
             i32 arrivalMask = 0xdc7;
             i32 dist2;
             {
@@ -143,7 +143,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 g->BuildUnitSearchBox(&box, 5);
                 CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
-                GRID_CLIP(grid, &box);
+                grid->Clip(&box);
             }
             {
                 Coord cp;
