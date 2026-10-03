@@ -1480,7 +1480,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
         *out = local;
         return out;
     }
-    local = LevelOf(World())->m_viewportRect;
+    local = LevelOf(World())->GetViewportRect();
     *out = local;
     return out;
 }
@@ -2087,7 +2087,7 @@ void CGruntzMgr::RecomputeViewScale() {
         return;
     }
     CGameLevel* view = LevelOf(World());
-    LevelCoordRect ext = view->m_viewportRect;
+    LevelCoordRect ext = view->GetViewportRect();
     i32 iw = ext.right - ext.left + 1;
     i32 ih = ext.bottom - ext.top + 1;
 

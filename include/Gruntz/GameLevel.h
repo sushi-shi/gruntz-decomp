@@ -70,6 +70,10 @@ GZ_ENUM_CONST_END(LevelPlaneLayout)
 
 class CGameLevel : public CWapObj {
 public:
+    LevelCoordRect GetViewportRect() const {
+        return m_viewportRect;
+    }
+
     TileCollisionKind CollisionAtHandle(i32 cell, i32 x, i32 y) {
         if (cell == UNINIT_FILL || cell == s_tileClear) {
             return TILEKIND_PASSABLE;
