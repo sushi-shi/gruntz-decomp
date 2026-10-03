@@ -320,6 +320,7 @@ i32 CGrunt::LoadPickupSprites(
                     break;
                 case PICKUP_WARPSTONE:
                     id = 0x3b4;
+                    forced = 1;
                     break;
                 case PICKUP_WELDER:
                     id = 0x3b5;

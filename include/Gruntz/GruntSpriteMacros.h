@@ -68,8 +68,8 @@
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
-        CAniElement* geo = NULL;                                                                   \
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key), geo);              \
+        CAniElement* geo =                                                                         \
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key));    \
         m_pickupGeoSrc = geo;                                                                      \
         id = (idv);                                                                                \
     } while (0)
