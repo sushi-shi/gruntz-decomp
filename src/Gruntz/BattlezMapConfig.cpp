@@ -1628,10 +1628,9 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (u->m_entranceDropActive != false) {
                 continue;
             }
-            CGameObject* lvl = u->m_object;
             POINT wpt;
-            wpt.y = lvl->m_screenY >> TILE_SHIFT_PX;
-            wpt.x = lvl->m_screenX >> TILE_SHIFT_PX;
+            wpt.y = u->GetScreenTileY();
+            wpt.x = u->GetScreenTileX();
             if (!PtInRect(&rect, wpt)) {
                 continue;
             }
@@ -1644,9 +1643,8 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (keep == 0) {
                 continue;
             }
-            lvl = u->m_object;
-            i32 dx = abs((lvl->m_screenX >> TILE_SHIFT_PX) - cx);
-            i32 dy = abs((lvl->m_screenY >> TILE_SHIFT_PX) - cy);
+            i32 dx = abs(u->GetScreenTileX() - cx);
+            i32 dy = abs(u->GetScreenTileY() - cy);
             i32 dist = dx + dy;
             if (dist >= bestDist) {
                 continue;
@@ -2813,15 +2811,10 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     }
 
     RECT sweep = m_board->m_bounds;
-    if (sweep.left < sweep.right) {
-        i32 colOff = (sweep.left * 7) << 2;
-        i32 w = sweep.right - sweep.left;
-        do {
-            for (i32 r = sweep.top; r < sweep.bottom; r++) {
-                m_board->m_rowBytes[r][colOff + 2] &= 0xfd;
-            }
-            colOff += 0x1c;
-        } while (--w != 0);
+    for (i32 c = sweep.left; c < sweep.right; c++) {
+        for (i32 r = sweep.top; r < sweep.bottom; r++) {
+            m_board->m_rows[r][c].m_flags &= ~IDX(CELL_FLAG_CLAIM_VISITED);
+        }
     }
 
     {
