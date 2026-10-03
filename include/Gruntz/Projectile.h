@@ -49,7 +49,7 @@ public:
     i32 m_sourcePlayerIndex, m_sourceUnitIndex;
     i32 m_targetPxX, m_targetPxY;
     double m_flightDist;
-    i32 m_timePerTile;
+    u32 m_timePerTile;
     double m_velScale;
     double m_posX;
     double m_posY;

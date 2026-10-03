@@ -208,7 +208,7 @@ i32 CProjectile::LoadProjectileSprites(
     SwitchAnimation(m_frames[0]);
     SetImageSetByName(key + "_OBJECT");
 
-    u32 totalTime = static_cast<u32>((count * m_timePerTile));
+    u32 totalTime = count * m_timePerTile;
     double len = sqrt(Sqr(dx) + Sqr(dy));
     double t = static_cast<double>(totalTime);
     double vx = dx / len;
@@ -483,7 +483,7 @@ i32 CBoomerang::LoadProjectileSprites(
         == 0) {
         return 0;
     }
-    double duration = static_cast<double>(static_cast<u32>(m_timePerTile));
+    double duration = static_cast<double>(m_timePerTile);
     double d = 3.1415927 / ((duration / 32.0) * m_flightDist);
     CWwdSpriteObject* owner = m_object;
     m_launchX = owner->m_screenX;
