@@ -406,7 +406,7 @@ void FontRenderer::DrawWrapped(
                     if (y >= rc.bottom) {
                         break;
                     }
-                    size = MeasureText(std::string((head)[0], 1));
+                    size = MeasureText(std::string(1, head[0]));
                     i32 chW = size.cx;
                     if (chW + x > rc.right) {
                         y = y + lineAdvance;
@@ -540,7 +540,7 @@ CSize FontRenderer::MeasureWrapped(std::string text, CRect rc) {
                         break;
                     }
                     CSize ce;
-                    ce = MeasureText(std::string((head)[j], 1));
+                    ce = MeasureText(std::string(1, head[j]));
                     i32 chW = ce.cx;
                     if (chW + x > rc.right) {
                         y = y + m_font->GetMaxHeight();
@@ -634,7 +634,7 @@ CSize FontRenderer::LayoutWrapped(std::string text, CRect rc, i32* outLen) {
                         break;
                     }
                     CSize ce;
-                    ce = MeasureText(std::string((head)[0], 1));
+                    ce = MeasureText(std::string(1, head[0]));
                     i32 chW = ce.cx;
                     if (chW + x > rc.right) {
                         y = y + m_font->GetMaxHeight();

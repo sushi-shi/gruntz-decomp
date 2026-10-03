@@ -5521,7 +5521,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     }
 
     std::list<CGameObject*>* head = &this->m_world->ChildGroup()->m_list;
-    std::list<CGameObject*>::iterator pos = head == NULL ? NULL : head->begin();
+    std::list<CGameObject*>::iterator pos = head->begin();
     while (pos != head->end()) {
         CGameObject* obj = this->m_world->ChildGroup()->NextChild(pos);
         if (obj) {

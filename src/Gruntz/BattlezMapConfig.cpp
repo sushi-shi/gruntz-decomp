@@ -2840,10 +2840,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                                 flags
                             )
                             != 0) {
-                            if (list.begin() != NULL) {
+                            if (!list.empty()) {
                                 RECYCLE_HEAD_COORD(list)
                             }
-                            if (list.begin() != NULL) {
+                            if (!list.empty()) {
                                 unit->RecycleCoords();
                                 cand->RecycleCoords();
                                 std::list<Coord*>::iterator pp = list.begin();
