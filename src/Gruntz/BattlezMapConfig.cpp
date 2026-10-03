@@ -2700,25 +2700,19 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (u->m_poweredUp != false) {
                 continue;
             }
-            bool ne;
-            ne = u->IsNotAnimationAct("C");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("C")) {
                 continue;
             }
-            ne = u->IsNotAnimationAct("R");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("R")) {
                 continue;
             }
-            ne = u->IsNotAnimationAct("J");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("J")) {
                 continue;
             }
-            ne = u->IsNotAnimationAct("G");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("G")) {
                 continue;
             }
-            ne = u->IsNotAnimationAct("L");
-            if (!ne) {
+            if (!u->IsNotAnimationAct("L")) {
                 continue;
             }
             if (u->m_gruntKind == GRUNT_GHOST) {
