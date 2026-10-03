@@ -57,6 +57,10 @@ public:
         return m_difficulty;
     }
 
+    CBattlezMapConfig* GetBattlezConfig() {
+        return &m_battlezConfig;
+    }
+
     i32 m_playerIndex;
     CString m_name;
     ColorTint m_color;

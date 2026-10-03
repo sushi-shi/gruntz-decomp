@@ -858,7 +858,7 @@ CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicR
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id) {
 
             CLogicRecord* record = obj->m_logicRecord;
-            if (record->m_dispatch == logicRecord->m_dispatch) {
+            if (record->GetDispatch() == logicRecord->GetDispatch()) {
                 return obj;
             }
         }
@@ -877,7 +877,7 @@ CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
         CGameObject* obj = NextChild(pos);
         LoadableClassId tag = obj->GetClassId();
         if (tag == CLASSID_WWD_SPRITE_OBJECT && obj->m_id == id
-            && obj->m_logicRecord->m_dispatch == logicTemplate->m_dispatch) {
+            && obj->m_logicRecord->GetDispatch() == logicTemplate->GetDispatch()) {
             return obj;
         }
     }

@@ -1525,8 +1525,8 @@ void CPlay::FreeListTeardown() {
     }
     m_cameraBookmarks.RemoveAll();
     for (i = 0; i < 4; i++) {
-        m_mgr->m_players[i].m_battlezConfig.FreeArrays();
-        m_mgr->m_players[i].m_battlezConfig.Clear();
+        m_mgr->m_players[i].GetBattlezConfig()->FreeArrays();
+        m_mgr->m_players[i].GetBattlezConfig()->Clear();
     }
     m_cameraBookmarkIndex = -1;
 }
@@ -1722,10 +1722,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
-                    return 1;
+                } else {
+                    mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                    mgr->FinalizeLevelAndShowResults();
                 }
-                mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                mgr->FinalizeLevelAndShowResults();
                 return 1;
             }
             if (vk == 'N' || vk == VK_ESCAPE) {
@@ -4554,7 +4554,7 @@ b32 CPlay::PlaceStartGruntz() {
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
 
-            LogicRecordDispatchFn dispatch = record->m_dispatch;
+            LogicRecordDispatchFn dispatch = record->GetDispatch();
             if (dispatch == DispatchGruntStartingPointLogic) {
                 DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                 i32 idx = m_mgr->GetTriggerMgr()->PlaceObject(
@@ -4628,7 +4628,7 @@ i32 CPlay::ValidateLevelTiles() {
             continue;
         }
 
-        LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
+        LogicRecordDispatchFn dispatch = obj->m_logicRecord->GetDispatch();
 
         if (dispatch == DispatchTileTriggerSwitchLogic) {
             TileCollisionKind type = LookupTileType(
@@ -5262,7 +5262,7 @@ i32 CPlay::ScanBuildTiles() {
         if (p->m_clip.left == COORD_UNSET) {
             p->m_clip.left = 0;
         }
-        LogicRecordDispatchFn dispatch = p->m_logicRecord->m_dispatch;
+        LogicRecordDispatchFn dispatch = p->m_logicRecord->GetDispatch();
         if (dispatch == DispatchGiantRockLogic) {
             i32 buf[9];
             buf[0] = p->m_extent.left;
@@ -5370,7 +5370,7 @@ i32 CPlay::AddLevelGruntz() {
         if (g == NULL) {
             continue;
         }
-        if (g->m_logicRecord->m_dispatch != DispatchGruntStartingPointLogic) {
+        if (g->m_logicRecord->GetDispatch() != DispatchGruntStartingPointLogic) {
             continue;
         }
         if (g->m_smarts == g_curPlayer) {
@@ -5568,7 +5568,7 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->m_players[i].m_battlezConfig.StepAllRowSpawns();
+        g_gameReg->m_players[i].GetBattlezConfig()->StepAllRowSpawns();
     }
     m_winLoseBanner = false;
     CTimer* fm = m_levelTimer;
@@ -5700,7 +5700,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     while (pos != NULL) {
         CGameObject* obj = this->m_world->ChildGroup()->NextChild(pos);
         if (obj) {
-            LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
+            LogicRecordDispatchFn dispatch = obj->m_logicRecord->GetDispatch();
             if (dispatch == DispatchGruntStartingPointLogic) {
                 i32 v = obj->m_powerup;
                 if (v) {
@@ -6630,7 +6630,7 @@ i32 CPlay::NotifyVisibleEntities() {
 
     while (pos != NULL) {
         CGameObject* o = v->ChildGroup()->NextChild(pos);
-        LogicRecordDispatchFn dispatch = o->m_logicRecord->m_dispatch;
+        LogicRecordDispatchFn dispatch = o->m_logicRecord->GetDispatch();
         if (dispatch == DispatchGruntLogic || dispatch == DispatchInGameIconLogic
             || dispatch == DispatchGruntPuddleLogic || dispatch == DispatchGruntToySpriteLogic
             || dispatch == DispatchGruntStaminaSpriteLogic

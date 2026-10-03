@@ -286,7 +286,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         }
     }
     band = unit->m_targetTeam;
-    CBattlezMapConfig* bundle = &m_ctx->m_players[band].m_battlezConfig;
+    CBattlezMapConfig* bundle = m_ctx->m_players[band].GetBattlezConfig();
     Coord marker = bundle->m_marker;
     if (unit->CoordsEmpty()) {
         switch (unit->m_defenderState) {

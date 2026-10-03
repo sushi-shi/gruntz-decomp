@@ -3604,10 +3604,10 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }
-            if (!player->m_battlezConfig.LoadConfig(this, idx, difficulty)) {
+            if (!player->GetBattlezConfig()->LoadConfig(this, idx, difficulty)) {
                 return 0;
             }
-            player->m_battlezConfig.Clear();
+            player->GetBattlezConfig()->Clear();
             player++;
             idx++;
             player->SetHumanControlled(false);
@@ -3615,7 +3615,7 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }
-            if (!player->m_battlezConfig.LoadConfig(this, idx, difficulty)) {
+            if (!player->GetBattlezConfig()->LoadConfig(this, idx, difficulty)) {
                 return 0;
             }
         } else {
@@ -3624,7 +3624,7 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
             if (matched) {
                 difficulty = BZDIFF_EASY;
             }
-            if (!player->m_battlezConfig.LoadConfig(this, idx, difficulty)) {
+            if (!player->GetBattlezConfig()->LoadConfig(this, idx, difficulty)) {
                 return 0;
             }
         }
@@ -3641,7 +3641,7 @@ i32 CGruntzMgr::AdvanceComputerPlayerTurns() {
     for (i32 i = 0; i < m_computerPlayerCount + 1; i++) {
         GruntzPlayer* slot = &m_players[i];
         if (cursor == i && slot->m_humanControlled == false && slot->m_active != false) {
-            slot->m_battlezConfig.StepBoard();
+            slot->GetBattlezConfig()->StepBoard();
             cursor = g_battlezTurnPlayerIndex;
         }
     }
