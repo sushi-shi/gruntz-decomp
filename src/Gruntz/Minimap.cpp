@@ -122,8 +122,8 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
             return 0;
         }
     }
-    if (m_surface->GetWidth() != static_cast<i32>(m_mapMgr->m_width)
-        || m_surface->GetHeight() != static_cast<i32>(m_mapMgr->m_height)) {
+    if (m_surface->GetWidth() != static_cast<i32>(m_mapMgr->GetWidth())
+        || m_surface->GetHeight() != static_cast<i32>(m_mapMgr->GetHeight())) {
         if (!AllocSurface()) {
             return 0;
         }
@@ -132,8 +132,8 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
     if (pixels == NULL) {
         return 0;
     }
-    for (u32 y = 0; y < m_mapMgr->m_height; y++) {
-        for (u32 x = 0; x < m_mapMgr->m_width; x++) {
+    for (u32 y = 0; y < m_mapMgr->GetHeight(); y++) {
+        for (u32 x = 0; x < m_mapMgr->GetWidth(); x++) {
             u16* pixel = Pix16(pixels + m_surface->PixelOffset(x, y));
             i32 occupantId = m_mapMgr->OccupantAt(x, y);
 

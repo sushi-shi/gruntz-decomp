@@ -61,8 +61,8 @@ static inline void TBombGridClear(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
     i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
     i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
+    if (static_cast<u32>(cx) < static_cast<u32>(g->GetWidth())
+        && static_cast<u32>(cy) < static_cast<u32>(g->GetHeight())) {
         g->m_rowInts[cy][cx * 7] &= ~0x1000000;
     }
 }

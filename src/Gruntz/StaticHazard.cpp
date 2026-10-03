@@ -178,8 +178,8 @@ i32 CStaticHazard::UpdateActiveState() {
             CMapMgr* grid = g_gameReg->m_tileGrid;
             i32 row = m_tileRow;
             i32 col = m_tileCol;
-            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
+                && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
                 grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
             }
             return 0;
@@ -216,16 +216,16 @@ i32 CStaticHazard::UpdateActiveState() {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 row = m_tileRow;
         i32 col = m_tileCol;
-        if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+        if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
+            && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
             grid->m_rowInts[row][col * 7] |= 0x8000000;
         }
     } else {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 row = m_tileRow;
         i32 col = m_tileCol;
-        if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+        if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
+            && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
             grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
         }
         CWwdSpriteObject* o = m_object;
@@ -239,8 +239,8 @@ i32 CStaticHazard::UpdateActiveState() {
                 g_gameReg->m_tileGrid;
             i32 row = m_tileRow;
             i32 col = m_tileCol;
-            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(col) < static_cast<u32>(grid->GetWidth())
+                && static_cast<u32>(row) < static_cast<u32>(grid->GetHeight())) {
                 grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
             }
         }

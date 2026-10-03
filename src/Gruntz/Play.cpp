@@ -5127,8 +5127,8 @@ i32 CPlay::ValidateLevelTiles() {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
                     CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_width
-                        || static_cast<u32>(gyy) >= gg->m_height) {
+                    if (static_cast<u32>(gx) >= gg->GetWidth()
+                        || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
                     }
                     i32 kind = obj->m_smarts;
@@ -5149,8 +5149,8 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                     counts[kind]++;
                     gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_width
-                        || static_cast<u32>(gyy) >= gg->m_height) {
+                    if (static_cast<u32>(gx) >= gg->GetWidth()
+                        || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
                     }
                     i32* cellRow = gg->m_rowInts[ofs];
@@ -5161,7 +5161,8 @@ i32 CPlay::ValidateLevelTiles() {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
             i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
             i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
-            if (static_cast<u32>(tileX) < gg->m_width && static_cast<u32>(tileY) < gg->m_height) {
+            if (static_cast<u32>(tileX) < gg->GetWidth()
+                && static_cast<u32>(tileY) < gg->GetHeight()) {
                 gg->m_rowInts[tileY][tileX * 7] |= 0x2000000;
             }
         } else if (dispatch == DispatchWarpStonePadLogic) {

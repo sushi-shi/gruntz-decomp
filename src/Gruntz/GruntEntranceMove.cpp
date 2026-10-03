@@ -722,12 +722,12 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     CState* state = g->m_curState;
     CGruntzMapMgr* b = g->m_tileGrid;
     CWwdSpriteObject* h = m_object;
-    i32 xbound = b->m_width;
+    i32 xbound = b->GetWidth();
     i32 tileY = h->m_screenY >> TILE_SHIFT_PX;
     i32 tileX = h->m_screenX >> TILE_SHIFT_PX;
     i32 tileId;
     if (static_cast<u32>(tileX) >= static_cast<u32>(xbound)
-        || static_cast<u32>(tileY) >= static_cast<u32>(b->m_height)) {
+        || static_cast<u32>(tileY) >= static_cast<u32>(b->GetHeight())) {
         tileId = 0;
     } else {
         tileId = b->m_rowInts[tileY][tileX * 7 + 3];

@@ -241,9 +241,9 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_idleRouteLimitX = 6;
     m_idleRouteLimitY = 6;
     m_defenderTargetMaxDistance = 8;
-    m_idleBurnRandX = m_board->m_width / 3;
-    m_idleBurnRandY = m_board->m_width / 3;
-    m_assignedTargetMaxDistance = m_board->m_width >> 2;
+    m_idleBurnRandX = m_board->GetWidth() / 3;
+    m_idleBurnRandY = m_board->GetWidth() / 3;
+    m_assignedTargetMaxDistance = m_board->GetWidth() >> 2;
     m_roundRobinTick = 0;
 
     m_toolzPct = g_buteMgr.GetInt("Battlez", "ToolzPercent");
@@ -2263,8 +2263,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             if (g->ArrivalPickupOf(er) == PICKUP_TIMEBOMB) {
                 for (i32 row = first.m_y - 1; row < first.m_y + 2; row++) {
                     for (i32 col = first.m_x - 1; col < first.m_x + 2; col++) {
-                        if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
-                            && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
+                        if (static_cast<u32>(col) < static_cast<u32>(m_board->GetWidth())
+                            && static_cast<u32>(row) < static_cast<u32>(m_board->GetHeight())) {
                             i32 cf = m_board->CellFlagsAt(col, row);
                             if (cf & BRICKZ_BLOCKED_MASK) {
                                 return 1;
@@ -2394,8 +2394,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 ox = g->GetScreenTileX();
         i32 row = rand() % 3 + oy - 1;
         i32 col = rand() % 3 + ox - 1;
-        if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width)
-            || static_cast<u32>(row) >= static_cast<u32>(m_board->m_height)) {
+        if (static_cast<u32>(col) >= static_cast<u32>(m_board->GetWidth())
+            || static_cast<u32>(row) >= static_cast<u32>(m_board->GetHeight())) {
             return 1;
         }
         i32 c0 = m_board->CellFlagsAt(col, row);
@@ -2507,7 +2507,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     i32 nw;
 
     b = m_board;
-    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
+    if (static_cast<u32>(cm) < static_cast<u32>(b->GetWidth())) {
         nw = b->CellFlagsAtUnchecked(cm, row);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2516,7 +2516,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
+    if (static_cast<u32>(cp) < static_cast<u32>(b->GetWidth())) {
         nw = b->CellFlagsAtUnchecked(cp, row);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2525,7 +2525,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
+    if (static_cast<u32>(rm) < static_cast<u32>(b->GetWidth())) {
         nw = b->CellFlagsAtUnchecked(col, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2534,7 +2534,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
+    if (static_cast<u32>(rp) < static_cast<u32>(b->GetWidth())) {
         nw = b->CellFlagsAtUnchecked(col, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2543,8 +2543,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
-        && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
+    if (static_cast<u32>(cp) < static_cast<u32>(b->GetWidth())
+        && static_cast<u32>(rm) < static_cast<u32>(b->GetHeight())) {
         nw = b->CellFlagsAtUnchecked(cp, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2553,8 +2553,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
-        && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
+    if (static_cast<u32>(cp) < static_cast<u32>(b->GetWidth())
+        && static_cast<u32>(rp) < static_cast<u32>(b->GetHeight())) {
         nw = b->CellFlagsAtUnchecked(cp, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2563,8 +2563,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     b = m_board;
-    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
-        && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
+    if (static_cast<u32>(cm) < static_cast<u32>(b->GetWidth())
+        && static_cast<u32>(rp) < static_cast<u32>(b->GetHeight())) {
         nw = b->CellFlagsAtUnchecked(cm, rp);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
@@ -2574,8 +2574,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     }
 
     b = m_board;
-    if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
-        && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
+    if (static_cast<u32>(cm) < static_cast<u32>(b->GetWidth())
+        && static_cast<u32>(rm) < static_cast<u32>(b->GetHeight())) {
         nw = b->CellFlagsAtUnchecked(cm, rm);
         if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
             && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))

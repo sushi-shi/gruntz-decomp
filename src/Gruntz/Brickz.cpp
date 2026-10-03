@@ -22,8 +22,10 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
     i32 passableMask
 ) {
     CMapMgr* self = this;
-    if (static_cast<u32>(startX) >= self->m_width || static_cast<u32>(startY) >= self->m_height
-        || static_cast<u32>(goalX) >= self->m_width || static_cast<u32>(goalY) >= self->m_height) {
+    if (static_cast<u32>(startX) >= self->GetWidth()
+        || static_cast<u32>(startY) >= self->GetHeight()
+        || static_cast<u32>(goalX) >= self->GetWidth()
+        || static_cast<u32>(goalY) >= self->GetHeight()) {
         return 0;
     }
     BrickzCell* goalCell = &self->m_rows[goalY][goalX];
