@@ -6,6 +6,7 @@
 
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCellInline.h>
@@ -84,8 +85,11 @@ i32 CGruntHealthSprite::HealthUpdate() {
         m_object->SetImageFrame(slot);
         m_displayedValue = result;
     }
-    m_object->m_screenX = e->m_object->m_screenX;
-    m_object->m_screenY = m_yOffset + e->m_object->m_screenY;
+    SET_VECTOR2_COMPONENTS(
+        m_object->m_screenPosition,
+        e->m_object->m_screenPosition.m_x,
+        m_yOffset + e->m_object->m_screenPosition.m_y
+    );
     return 0;
 }
 

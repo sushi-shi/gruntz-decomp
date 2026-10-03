@@ -23,10 +23,12 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -62,7 +64,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         recA = &m_ctx->m_players[cell];
         cfgB = recA->GetBattlezConfig();
     }
-    if (unit->CoordsEmpty()) {
+    if (unit->CoordCount() == 0) {
         if (cell == -1) {
             if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
                 return 1;
@@ -115,8 +117,8 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     CGameObject* lvl = unit->m_object;
-    i32 px = lvl->m_screenX >> TILE_SHIFT_PX;
-    i32 py = lvl->m_screenY >> TILE_SHIFT_PX;
+    i32 px = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
+    i32 py = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
     i32 nearBand = 0;
 
     i32 cnt2 = cfgB->GetAttackWaypointCount();
@@ -134,7 +136,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     unit->m_arrivalCell.Set(unit->m_arrivalCell.m_x, 1);
-    if (unit->CoordsEmpty()) {
+    if (unit->CoordCount() == 0) {
         return 1;
     }
     unit->RecycleCoords();

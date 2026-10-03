@@ -6,6 +6,7 @@
 
 #include <Gruntz/BrickzNeighborMacros.h>
 #include <Gruntz/GameStats.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/SerialArchive.h>
 
 #include <stdlib.h>
@@ -78,7 +79,7 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     if (m_dirty != false) {
         for (u32 r = 0; r < m_height; r++) {
             for (u32 c = 0; c < m_width; c++) {
-                if ((cell->m_flags & 0x100) != 0) {
+                if ((cell->m_flags & IDX(CELL_FLAG_WATER)) != 0) {
                     BrickzCell* down = NULL;
                     BrickzCell* right = NULL;
                     BrickzCell* left = NULL;
@@ -111,9 +112,9 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
                     if (down && left) {
                         dl = down - 1;
                     }
-                    cell->m_flags &= ~0x1000;
+                    cell->m_flags &= ~IDX(CELL_FLAG_WATER_DIAGONAL_PASSAGE);
                     if (BRICKZ_OPPOSITE_NEIGHBORS_OPEN) {
-                        cell->m_flags |= 0x1000;
+                        cell->m_flags |= IDX(CELL_FLAG_WATER_DIAGONAL_PASSAGE);
                     }
                 }
                 cell++;

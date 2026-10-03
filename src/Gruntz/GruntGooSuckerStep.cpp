@@ -31,6 +31,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
@@ -40,10 +41,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f0db0, 0x48)
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
+    Coord tile(tileX, tileY);
     CTriggerMgr* manager = g_gameReg->GetTriggerMgr();
     POSITION pos = manager->GetPuddleHeadPosition();
 
@@ -51,9 +52,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
         do {
             CGruntPuddle* p = manager->GetNextPuddle(pos);
             if (p->IsPending() == false) {
-                i32 puddleX = p->GetTileX();
-                i32 puddleY = p->GetTileY();
-                if (puddleX == tileX && puddleY == tileY) {
+                if (p->m_tile == tile) {
                     return 1;
                 }
             }
@@ -145,7 +144,8 @@ L_ed006b:
         goto L_scanb;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
+               != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
     }
     if (m_poweredUp != false) {
@@ -206,8 +206,8 @@ L_scanb:
                     grid->Clip(NULL);
                     return 1;
                 }
-                i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
-                i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
+                i32 dx = gx - (m_object->m_screenPosition.m_x >> TILE_SHIFT_PX);
+                i32 dy = gy - (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX);
                 i32 dist = abs(dx) + abs(dy);
                 if (dist < best) {
                     POINT pt;

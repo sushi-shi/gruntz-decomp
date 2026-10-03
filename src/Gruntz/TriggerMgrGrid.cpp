@@ -107,22 +107,28 @@ i32 CTriggerMgr::PlaceObject(
             wantSlot = 1;
         }
         CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
-        i32 tx = x >> TILE_SHIFT_PX;
-        i32 ty = y >> TILE_SHIFT_PX;
-        i32 attr = plane->CellFlagsAt(tx, ty);
-        if ((attr & 0x4000911) != 0 && (special & attr) == 0) {
+        Coord position(x, y);
+        Coord tile = position;
+        ScreenTile(&tile);
+        i32 attr = plane->CellFlagsAt(tile.m_x, tile.m_y);
+        if ((attr
+             & IDX(
+                 CELL_FLAG_SOLID | CELL_FLAG_GRUNT_ENTRANCE_AREA | CELL_FLAG_WATER
+                 | CELL_FLAG_SINK_HAZARD | CELL_FLAG_LOWERED_PYRAMID
+             )) != 0
+            && (special & attr) == 0) {
             goto fail;
         }
-        if ((attr & 0x82) != 0) {
+        if ((attr & IDX(CELL_FLAG_SPECIAL | CELL_FLAG_ARROW)) != 0) {
             goto fail;
         }
-        if ((attr & 0x400) != 0) {
+        if ((attr & IDX(CELL_FLAG_SPIKES)) != 0) {
             goto fail;
         }
 
         i32 unitIndex = 0;
         i32 onSpecialTile;
-        if (wantSlot != unitIndex && (attr & 0x100) != 0) {
+        if (wantSlot != unitIndex && (attr & IDX(CELL_FLAG_WATER)) != 0) {
             onSpecialTile = 1;
             if (mode != GRUNT_ENTRANCE_NONE) {
                 goto fail;
@@ -400,8 +406,8 @@ CGrunt* CTriggerMgr::CellHitTest(
                     CWwdSpriteObject* o = g->m_object;
                     if (o->m_frameImage != NULL) {
                         RECT hitBox;
-                        hitBox.left = o->m_screenX - 15;
-                        hitBox.top = o->m_screenY - 15;
+                        hitBox.left = o->m_screenPosition.m_x - 15;
+                        hitBox.top = o->m_screenPosition.m_y - 15;
                         hitBox.right = hitBox.left + 30;
                         hitBox.bottom = hitBox.top + 30;
                         if (::PtInRect(&hitBox, px, py)) {
@@ -462,8 +468,32 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     }
 
     CGameLevel* level = m_world->m_level;
+    i32 cx = x;
+    i32 cy = y;
+    if (cx < 0) {
+        cx = 0;
+    } else if (cx >= level->m_mainPlane->m_planePixelSize.cx) {
+        cx = level->m_mainPlane->m_planePixelSize.cx - 1;
+    }
+    if (cy < 0) {
+        cy = 0;
+    } else if (cy >= level->m_mainPlane->m_planePixelSize.cy) {
+        cy = level->m_mainPlane->m_planePixelSize.cy - 1;
+    }
+    i32 tx = cx >> level->m_mainPlane->m_tileShift.m_x;
+    i32 ty = cy >> level->m_mainPlane->m_tileShift.m_y;
+    i32 subX = cx - (tx << level->m_mainPlane->m_tileShift.m_x);
+    i32 subY = cy - (ty << level->m_mainPlane->m_tileShift.m_y);
+    i32 raw = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[ty] + tx];
     TileCollisionKind tag;
-    PROBE_TILE(level, x, y, tag);
+    if (raw == UNINIT_FILL || raw == -1) {
+        tag = TILEKIND_PASSABLE;
+    } else {
+        CTileImageSet* ts = static_cast<CTileImageSet*>(
+            level->m_imageSets.GetAt(raw & WWD_TILE_IMAGE_SET_INDEX_MASK)
+        );
+        tag = ts->GetCollisionAt(subX, subY);
+    }
 
     if (static_cast<u32>((IDX(tag) - 0xb)) > 0x65) {
         return 0;
@@ -549,8 +579,8 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     set->PlayCue("GAME_SECRETSWITCH");
                 }
                 if (g != NULL) {
-                    i32 cueX = g->m_object->m_screenX;
-                    i32 cueY = g->m_object->m_screenY;
+                    i32 cueX = g->m_object->m_screenPosition.m_x;
+                    i32 cueY = g->m_object->m_screenPosition.m_y;
                     if (::PtInRect(&g_gameReg->m_viewBounds, cueX, cueY)) {
                         g_gameReg->VoiceMgr()->PlayVoice(g, 0x3f2, -1, 0, -1, -1);
                     }
@@ -727,9 +757,6 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     case DIR_WEST:
                         g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
                         break;
-                    default:
-                        g->StepArrivalDrop(x, y, 0, -1, 1, 0);
-                        break;
                 }
                 return 1;
             }
@@ -799,8 +826,8 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     sw->SwitchDown();
                 } else {
                     RECT* view = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
-                    i32 gx = g->m_object->m_screenX;
-                    i32 gy = g->m_object->m_screenY;
+                    i32 gx = g->m_object->m_screenPosition.m_x;
+                    i32 gy = g->m_object->m_screenPosition.m_y;
                     if (::PtInRect(view, gx, gy)) {
                         g_gameReg->VoiceMgr()->PlayVoice(g, 0x335, -1, 0, -1, -1);
                     }
@@ -845,7 +872,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (x < 0) {
         x = 0;
     } else {
-        i32 w = view->m_mainPlane->m_planePixelWidth;
+        i32 w = view->m_mainPlane->m_planePixelSize.cx;
         if (x >= w) {
             x = w - 1;
         }
@@ -853,14 +880,14 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (y < 0) {
         y = 0;
     } else {
-        i32 h = view->m_mainPlane->m_planePixelHeight;
+        i32 h = view->m_mainPlane->m_planePixelSize.cy;
         if (y >= h) {
             y = h - 1;
         }
     }
     CDDrawWorkerHost* scroll = view->m_mainPlane;
-    i32 sh = scroll->m_shiftX;
-    i32 sw = scroll->m_shiftY;
+    i32 sh = scroll->m_tileShift.m_x;
+    i32 sw = scroll->m_tileShift.m_y;
     i32 tx = x >> sh;
     i32 ty = y >> sw;
     i32 subX = x - (tx << sh);
@@ -1051,11 +1078,11 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     i32 argTileX = worldX >> TILE_SHIFT_PX;
     i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
-    if (o->m_screenX != cell->m_lastTilePx.m_x) {
+    if (o->m_screenPosition.m_x != cell->m_lastTilePx.m_x) {
         goto outOfRange;
     }
     {
-        if (o->m_screenY != cell->m_lastTilePx.m_y) {
+        if (o->m_screenPosition.m_y != cell->m_lastTilePx.m_y) {
             return -1;
         }
         PickupType k = cell->ArrivalPickup();
@@ -1214,10 +1241,10 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     i32 cellTileX = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
     i32 cellTileY = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
-    if (o->m_screenX != cell->LastTilePx().m_x) {
+    if (o->m_screenPosition.m_x != cell->LastTilePx().m_x) {
         goto bad;
     }
-    if (o->m_screenY != cell->LastTilePx().m_y) {
+    if (o->m_screenPosition.m_y != cell->LastTilePx().m_y) {
         return -1;
     }
 
@@ -1262,11 +1289,13 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         return 1;
     }
 
-    Coord hitTile = hit->LastTilePx();
-    if (hitTile != destination) {
-        Coord hitCommit = hit->m_commitPx;
-        if (hitCommit != destination) {
-            return 0;
+    {
+        Coord hitTile = hit->LastTilePx();
+        if (hitTile.m_x != destination.m_x || hitTile.m_y != destination.m_y) {
+            Coord hitCommit = hit->m_commitPx;
+            if (hitCommit.m_x != destination.m_x || hitCommit.m_y != destination.m_y) {
+                return 0;
+            }
         }
     }
 
@@ -1290,8 +1319,8 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
 
         if (hit->GetPlayerIndex() != playerIndex) {
             CGameObject* obj = cell->m_object;
-            i32 sy = obj->m_screenY;
-            i32 sx = obj->m_screenX;
+            i32 sy = obj->m_screenPosition.m_y;
+            i32 sx = obj->m_screenPosition.m_x;
             RECT* vr = g_gameReg->World()->m_level->m_mainPlane->GetPlaneViewRect();
             if (::PtInRect(vr, sx, sy)) {
                 g_gameReg->VoiceMgr()->PlayVoice(cell, 0x38e, -1, 0, -1, -1);

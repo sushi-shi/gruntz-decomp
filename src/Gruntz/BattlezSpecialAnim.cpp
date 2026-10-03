@@ -57,10 +57,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
     CGameObject* lvl = unit->m_object;
-    if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(lvl, unit)) {
-        goto fail;
-    }
-    if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(lvl, unit)) {
+    if (lvl->ScreenPos() != unit->m_lastTilePx) {
         return 0;
     }
     if (unit->IsEntranceCommitted() == false) {

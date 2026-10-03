@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_TILECOORDMACROS_H
 #define GRUNTZ_TILECOORDMACROS_H
 
+#include <Gruntz/CoordNode.h>
+
 #define SET_TILE_CENTER_PIXEL_PAIR(dstX, dstY, tileX, tileY)                                       \
     dstX = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;                                                \
     dstY = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;

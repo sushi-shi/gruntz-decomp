@@ -90,6 +90,11 @@ class CGruntPuddle;
 
 class CArchive;
 
+struct GruntCellMotion {
+    DoubleVector2 m_direction;
+    DoubleVector2 m_step;
+};
+
 struct CGruntCellRec {
     GZ_ENUM_BEGIN(NameSlot)
         NAME_ATTACK = 0,
@@ -174,6 +179,7 @@ GZ_ENUM_END(GruntItemPose)
 
 class CGrunt : public CMovingLogic, public CWapX {
 public:
+    inline i32 CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY) const;
     inline i32 AddBattlezTraversalFlags(i32 flags) const;
     inline PickupType ArrivalPickupOf(PickupType entranceReason) const;
     inline PickupType ArrivalPickup() const;
@@ -204,6 +210,7 @@ public:
 
     inline i32 GetScreenTileY() const;
     inline i32 GetScreenTileX() const;
+    inline void MirrorAcrossArrival();
     virtual ~CGrunt() OVERRIDE;
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
@@ -275,7 +282,6 @@ public:
 
     void RecycleCoords();
     i32 VehicleContactContains(i32 x, i32 y);
-    void SetNeighbor(i32 playerIndex, i32 unitIndex);
     i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     CGrunt* FindGridNeighbor(i32 validate);
 
@@ -316,6 +322,11 @@ public:
     i32 LoadTypeTableClearMove(PickupType typeId);
 
     void FaceTowardTile(i32 tileX, i32 tileY);
+
+    void FaceTowardTile(Coord tile) {
+        FaceTowardTile(tile.m_x, tile.m_y);
+    }
+
     void SnapToLastTile(i32 clearArrivalState);
     i32 ClaimSwitchTile();
     i32 SetArrivalTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
@@ -516,8 +527,7 @@ public:
     i32 m_wingzTime;
 
     double m_moveSpeed;
-    double m_movePosX;
-    double m_movePosY;
+    DoubleVector2 m_movePosition;
     i32 m_reserved418;
     u32 m_timePerTile;
     b32 m_tileClaimed;
@@ -651,6 +661,7 @@ public:
 
     void RestorePreviousAppearance();
     void ApplyEntrancePickup();
+    void ResolveEntranceOccupant();
 
     i32 StepEntranceReinit();
 

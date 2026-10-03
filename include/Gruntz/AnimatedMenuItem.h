@@ -79,4 +79,6 @@ inline CAnimatedMenuItem::CAnimatedMenuItem() {
     SetFramePeriod(0x64);
 }
 
+#define SET_ANIMATED_MENU_ITEM_FRAME_PERIOD_INLINE(value) m_framePeriodMs = value
+
 #endif // GRUNTZ_ANIMATED_MENU_ITEM_H

@@ -5,12 +5,68 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordInline.h>
+#include <Gruntz/GruntDirectionOffset.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Wwd/WwdAniDrawValue.h>
 
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
-    return grunt->m_object->m_screenX == grunt->m_lastTilePx.m_x
-           && grunt->m_object->m_screenY == grunt->m_lastTilePx.m_y;
+    return COORD_EQUALS_COMPONENTS(
+        grunt->m_object->m_screenPosition,
+        grunt->m_lastTilePx.m_x,
+        grunt->m_lastTilePx.m_y
+    );
+}
+
+inline i32 IsObjectAtGruntSavedScreenPos(CGameObject* object, CGrunt* grunt) {
+    return object->ScreenPos() == grunt->m_lastTilePx;
+}
+
+inline void CopyLastTileToDefender(CGrunt* grunt) {
+    grunt->m_defenderPx = grunt->m_lastTilePx;
+}
+
+inline i32 CommitGruntNeighbor(CGrunt* grunt, CGrunt* target) {
+    return grunt->CommitNeighbor(
+        target->GetPlayerIndex(),
+        target->GetUnitIndex(),
+        target->LastTilePx().m_x,
+        target->LastTilePx().m_y
+    );
+}
+
+inline void SetGruntArrivalTarget(CGrunt* grunt, CGrunt* target) {
+    grunt->SetEntrancePos(1, 1);
+    grunt->m_arrivalCell.Set(target->GetPlayerIndex(), target->GetUnitIndex());
+}
+
+inline void BeginGruntEntranceAndReleaseCell(CGrunt* grunt) {
+    grunt->m_entranceActive = true;
+    grunt->m_triggerMgr->RemoveCellRecord(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), 1);
+}
+
+inline void ResetGruntPoweredState(CGrunt* grunt) {
+    grunt->m_entranceActive = false;
+    grunt->m_combatActive = false;
+    grunt->m_neighborValid = false;
+    grunt->m_poweredUp = false;
+    grunt->ResetEntranceAnimation(1, 0, 0);
+}
+
+inline void MarkNearestEnemyAtTarget(CGrunt* grunt, CGrunt* target, i32* atTarget) {
+    if (target != NULL) {
+        Coord screenPosition = target->m_object->ScreenPos();
+        if (screenPosition == target->m_lastTilePx
+            && grunt->RectContains(screenPosition.m_x, screenPosition.m_y) != 0) {
+            *atTarget = 1;
+        }
+    }
+}
+
+inline CGrunt* FindNearestEnemyAtTarget(CGrunt* grunt, i32* atTarget) {
+    CGrunt* target = grunt->m_triggerMgr->FindNearestEnemy(grunt);
+    *atTarget = 0;
+    MarkNearestEnemyAtTarget(grunt, target, atTarget);
+    return target;
 }
 
 inline void ClearMoveTileFx(CGrunt* grunt) {
@@ -31,9 +87,9 @@ inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
     }
 }
 
-inline void CGrunt::SetNeighbor(i32 playerIndex, i32 unitIndex) {
-    m_neighborPlayerIndex = playerIndex;
-    m_neighborUnitIndex = unitIndex;
+inline void SetGruntNeighbor(CGrunt* grunt, i32 playerIndex, i32 unitIndex) {
+    grunt->m_neighborPlayerIndex = playerIndex;
+    grunt->m_neighborUnitIndex = unitIndex;
 }
 
 inline void ResetToSeek(CGrunt* grunt) {
@@ -55,16 +111,11 @@ inline void RepathToward(CGrunt* grunt, CGrunt* target) {
     }
 }
 
-#define MIRROR_GRUNT_ACROSS_ARRIVAL()                                                              \
-    do {                                                                                           \
-        i32 gx = ScanCell().m_x - m_arrivalCell.m_x + ScanCell().m_x;                              \
-        i32 gy = ScanCell().m_y - m_arrivalCell.m_y + ScanCell().m_y;                              \
-        TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);                                               \
-    } while (0)
-
-inline void ScreenTile(Coord* pos) {
-    pos->m_x >>= TILE_SHIFT_PX;
-    pos->m_y >>= TILE_SHIFT_PX;
+inline void CGrunt::MirrorAcrossArrival() {
+    Coord current;
+    GetScreenTile(&current);
+    Coord mirrored = current * 2 - m_arrivalCell;
+    TileSwitch(mirrored.m_x, mirrored.m_y, 0, m_arrivalFlags, 1, 0);
 }
 
 inline Coord ScreenTile(Coord pos) {
@@ -75,17 +126,17 @@ inline Coord ScreenTile(Coord pos) {
 inline Coord ScreenTile(CGrunt* unit) {
     Coord out;
     CGameObject* object = unit->m_object;
-    out.Set(object->m_screenX, object->m_screenY);
+    out.Set(object->m_screenPosition.m_x, object->m_screenPosition.m_y);
     ScreenTile(&out);
     return out;
 }
 
 inline i32 CGrunt::GetScreenTileX() const {
-    return m_object->m_screenX >> TILE_SHIFT_PX;
+    return m_object->m_screenPosition.m_x >> TILE_SHIFT_PX;
 }
 
 inline i32 CGrunt::GetScreenTileY() const {
-    return m_object->m_screenY >> TILE_SHIFT_PX;
+    return m_object->m_screenPosition.m_y >> TILE_SHIFT_PX;
 }
 
 inline Coord CGrunt::ScanCell() {
@@ -94,9 +145,22 @@ inline Coord CGrunt::ScanCell() {
     return t;
 }
 
-inline void BeginGruntEntranceAndReleaseCell(CGrunt* grunt) {
-    grunt->m_entranceActive = true;
-    grunt->m_triggerMgr->RemoveCellRecord(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), 1);
+inline void
+SetEntranceDirection(CGrunt* grunt, const GruntDirectionCell& direction, Coord* newPosition) {
+    grunt->m_entranceCell = direction;
+    *newPosition = grunt->m_lastTilePx - GruntDirectionPixelOffset(direction);
+}
+
+inline void SetMovingDeathDirection(CGrunt* grunt, const GruntDirectionCell& direction) {
+    grunt->m_entranceCell = direction;
+    grunt->m_lastTilePx += GruntDirectionPixelOffset(direction) / 2;
+}
+
+inline void InitializeVehicleContactRegion(CGrunt* grunt) {
+    CRect contact(-1, -1, 1, 1);
+    grunt->m_vehicleContactRect = contact;
+    contact.SetRectEmpty();
+    grunt->m_vehicleContactExclusionRect = contact;
 }
 
 #endif // GRUNTZ_GRUNTMOVEMENTINLINE_H

@@ -131,7 +131,7 @@ public:
 
     i32 LoadCameraSprite();
     void SetCameraTarget(i32 playerIndex, i32 unitIndex) {
-        m_cameraTargetIdentity.Set(playerIndex, unitIndex);
+        m_cameraTargetIdentity = Coord(playerIndex, unitIndex);
         m_armed = true;
         LoadCameraSprite();
     }

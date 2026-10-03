@@ -30,7 +30,6 @@
 #include <Gruntz/GruntActionInline.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntMovementInline.h>
@@ -41,6 +40,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Projectile.h>
@@ -111,12 +111,15 @@ i32 CGrunt::UpdateGruntStatus() {
             m_neighborValid = false;
             CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
             if (n != NULL && n->IsEntranceCommitted() != false) {
-                if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
+                if (RectContains(
+                        n->m_object->m_screenPosition.m_x,
+                        n->m_object->m_screenPosition.m_y
+                    )) {
                     CommitNeighbor(
                         m_neighborPlayerIndex,
                         m_neighborUnitIndex,
-                        n->m_object->m_screenX,
-                        n->m_object->m_screenY
+                        n->m_object->m_screenPosition.m_x,
+                        n->m_object->m_screenPosition.m_y
                     );
                 }
             }
@@ -137,7 +140,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
         return 0;
     }
 
-    SetNeighbor(targetPlayerIndex, targetUnitIndex);
+    SetGruntNeighbor(this, targetPlayerIndex, targetUnitIndex);
     SET_ANIMATION_ACT("F");
 
     m_combatActive = true;
@@ -172,7 +175,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 
     {
         CWwdSpriteObject* h = m_object;
-        i32 z = h->m_screenY + 0x186c1;
+        i32 z = h->m_screenPosition.m_y + 0x186c1;
         h->SetSortKey(z);
     }
 
@@ -215,8 +218,8 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_WINGZ: {
                 CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
                     0,
-                    m_object->m_screenX,
-                    m_object->m_screenY,
+                    m_object->m_screenPosition.m_x,
+                    m_object->m_screenPosition.m_y,
                     0,
                     "Projectile",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -229,8 +232,8 @@ i32 CGrunt::StepAttackFire() {
                         m_unitIndex,
                         m_attackTargetPx.m_x,
                         m_attackTargetPx.m_y,
-                        m_object->m_screenX,
-                        m_object->m_screenY
+                        m_object->m_screenPosition.m_x,
+                        m_object->m_screenPosition.m_y
                     )
                     == 0) {
                     s->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -240,8 +243,8 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_BOOMERANG: {
                 CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
                     0,
-                    m_object->m_screenX,
-                    m_object->m_screenY,
+                    m_object->m_screenPosition.m_x,
+                    m_object->m_screenPosition.m_y,
                     0,
                     "Boomerang",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -254,8 +257,8 @@ i32 CGrunt::StepAttackFire() {
                         m_unitIndex,
                         m_attackTargetPx.m_x,
                         m_attackTargetPx.m_y,
-                        m_object->m_screenX,
-                        m_object->m_screenY
+                        m_object->m_screenPosition.m_x,
+                        m_object->m_screenPosition.m_y
                     )
                     == 0) {
                     s->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -287,8 +290,8 @@ i32 CGrunt::StepAttackFire() {
                         m_struckPose,
                         m_playerIndex,
                         m_unitIndex,
-                        m_object->m_screenX,
-                        m_object->m_screenY,
+                        m_object->m_screenPosition.m_x,
+                        m_object->m_screenPosition.m_y,
                         0,
                         m_gruntKind
                     );
@@ -331,7 +334,7 @@ i32 CGrunt::StepAttackFire() {
         LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
     }
     CWwdSpriteObject* h = m_object;
-    i32 zkey = h->m_screenY + 0x186a0;
+    i32 zkey = h->m_screenPosition.m_y + 0x186a0;
     h->SetSortKey(zkey);
     i32 poweredUpSnapshot = m_poweredUp;
     m_entranceActive = false;
@@ -351,18 +354,17 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
-                i32 innerY = inner->m_screenY;
-                i32 innerX = inner->m_screenX;
-                i32 xMasked = (innerX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 yMasked = (innerY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                if (VehicleContactContains(xMasked, yMasked) != 0) {
-                    m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, innerX, innerY);
+                Coord position = inner->ScreenPos();
+                Coord snapped = position;
+                SnapTileCenter(&snapped);
+                if (VehicleContactContains(snapped.m_x, snapped.m_y) != 0) {
+                    m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, position.m_x, position.m_y);
                 }
             }
         }
 
         if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_POWERED_STATE(this);
         }
         m_entranceActive = true;
         SetEntrancePos(1, 1);
@@ -388,7 +390,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 i32 tier = cueTier + moveVariant - 1;
                 CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds = g->m_world->m_level->m_mainPlane->GetPlaneViewRect();
-                if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
+                if (CGameLevel::PointInBounds(
+                        bounds,
+                        m_object->m_screenPosition.m_x,
+                        m_object->m_screenPosition.m_y
+                    )
                     != 0) {
                     g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
@@ -403,7 +409,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 i32 tier = cueTier + m_moveKind - 1;
                 CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds = g->m_world->m_level->m_mainPlane->GetPlaneViewRect();
-                if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
+                if (CGameLevel::PointInBounds(
+                        bounds,
+                        m_object->m_screenPosition.m_x,
+                        m_object->m_screenPosition.m_y
+                    )
                     != 0) {
                     g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
@@ -421,14 +431,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
         m_toyTileIndex = 0;
         if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_POWERED_STATE(this);
         }
         SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
-        GruntDirectionCell cell = m_entranceCell;
-        i32 colv = cell.m_column + cell.m_row * 2;
-        i32 basev = cell.m_row + colv;
-        char* nm = m_cells[basev].WalkName().GetBuffer(0);
+        char* nm = EntranceCell()->WalkName().GetBuffer(0);
         SetImageSetByName(nm);
 
         DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
@@ -439,7 +446,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     SET_ANIMATION_ACT("G");
 
     CWwdSpriteObject* h = m_object;
-    i32 z = h->m_screenY + 0xc3500;
+    i32 z = h->m_screenPosition.m_y + 0xc3500;
     h->SetSortKey(z);
 
     i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->GetDurationMs();
@@ -475,15 +482,22 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     CWwdSpriteObject* object = m_object;
     CGruntzMgr* g = g_gameReg;
-    i32 yy = object->m_screenY;
-    i32 xx = object->m_screenX;
+    Coord position = object->ScreenPos();
 
     if (sel == 0) {
-        if (::PtInRect(g->m_world->m_level->m_mainPlane->GetPlaneViewRect(), xx, yy)) {
+        if (::PtInRect(
+                g->m_world->m_level->m_mainPlane->GetPlaneViewRect(),
+                position.m_x,
+                position.m_y
+            )) {
             g->VoiceMgr()->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
         }
     } else {
-        if (::PtInRect(g->m_world->m_level->m_mainPlane->GetPlaneViewRect(), xx, yy)) {
+        if (::PtInRect(
+                g->m_world->m_level->m_mainPlane->GetPlaneViewRect(),
+                position.m_x,
+                position.m_y
+            )) {
             g->VoiceMgr()->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
         }
     }
@@ -514,7 +528,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
             return 0;
         }
         CWwdSpriteObject* h = m_object;
-        i32 v = h->m_screenY + 0x186a0;
+        i32 v = h->m_screenPosition.m_y + 0x186a0;
         h->SetSortKey(v);
         return 0;
     }
@@ -546,13 +560,13 @@ i32 CGrunt::RecordFrameTick() {
 // @early-stop
 RVA(0x00062b70, 0x205)
 i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
-    i32 e1y = e1->y;
-    i32 e2y = e2->y;
+    CPoint first = *e1;
+    CPoint second = *e2;
 
     i32 py = p->top;
-    if ((e1y < py) != (e2y < py)) {
-        float t = static_cast<float>((py - e1y)) / static_cast<float>((e2y - e1y));
-        float ix = static_cast<float>(e1->x) + t * static_cast<float>((e2->x - e1->x));
+    if ((first.y < py) != (second.y < py)) {
+        float t = static_cast<float>((py - first.y)) / static_cast<float>((second.y - first.y));
+        float ix = static_cast<float>(first.x) + t * static_cast<float>((second.x - first.x));
 
         if (ix >= static_cast<float>(p->left) && ix <= static_cast<float>(p->right)) {
             return 1;
@@ -560,22 +574,20 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     }
 
     i32 pyc = p->bottom;
-    if ((e1y < pyc) != (e2y < pyc)) {
-        float t = static_cast<float>((pyc - e1y)) / static_cast<float>((e2y - e1y));
-        float ix = static_cast<float>(e1->x) + t * static_cast<float>((e2->x - e1->x));
+    if ((first.y < pyc) != (second.y < pyc)) {
+        float t = static_cast<float>((pyc - first.y)) / static_cast<float>((second.y - first.y));
+        float ix = static_cast<float>(first.x) + t * static_cast<float>((second.x - first.x));
 
         if (ix >= static_cast<float>(p->left) && ix <= static_cast<float>(p->right)) {
             return 1;
         }
     }
 
-    i32 e1x = e1->x;
-    i32 e2x = e2->x;
     i32 px = p->left;
-    if ((e1x > px) != (e2x > px)) {
+    if ((first.x > px) != (second.x > px)) {
 
-        float t = static_cast<float>((px - e1x)) / static_cast<float>((e2x - e1x));
-        float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
+        float t = static_cast<float>((px - first.x)) / static_cast<float>((second.x - first.x));
+        float iy = static_cast<float>(first.y) + t * static_cast<float>((second.y - first.y));
 
         if (iy < static_cast<float>(p->bottom) && iy > static_cast<float>(p->top)) {
             return 1;
@@ -583,10 +595,10 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     }
 
     i32 pxr = p->right;
-    if ((e1x > pxr) != (e2x > pxr)) {
+    if ((first.x > pxr) != (second.x > pxr)) {
 
-        float t = static_cast<float>((pxr - e1x)) / static_cast<float>((e2x - e1x));
-        float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
+        float t = static_cast<float>((pxr - first.x)) / static_cast<float>((second.x - first.x));
+        float iy = static_cast<float>(first.y) + t * static_cast<float>((second.y - first.y));
 
         if (iy < static_cast<float>(p->bottom) && iy > static_cast<float>(p->top)) {
             return 1;
@@ -694,10 +706,10 @@ i32 CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != false && IsGruntAtSavedScreenPos(this)) {
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->GetTileGrid();
-        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
-        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
-        i32 flags = grid->CellFlagsAt(tx, ty);
-        if (!(flags & 0x80)) {
+        Coord tile;
+        GetScreenTile(&tile);
+        i32 flags = grid->CellFlagsAt(tile.m_x, tile.m_y);
+        if (!(flags & IDX(CELL_FLAG_ARROW))) {
             m_entranceActive = false;
         }
     }
@@ -742,7 +754,9 @@ i32 CGrunt::ResolveEntranceArrival() {
                     m_defenderState = AISTATE_SEEK;
                     UNSET_COORD(m_arrivalCell);
                     m_arrivalActive = false;
-                    m_arrivalFlags |= 0x18040402;
+                    m_arrivalFlags |=
+                        IDX(CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                            | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL);
                     SET_RECT_XY_EXTENTS(m_object->m_extent, 0, 0, 0, 0);
                     SetEntrancePos(1, 1);
                 }
@@ -764,7 +778,6 @@ tail:
     return 0;
 }
 
-// @early-stop
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
     if (IsAnimationAct("D")) {
@@ -781,7 +794,7 @@ i32 CGrunt::StepEntranceReinit() {
         ClearMoveTileFx(this);
     }
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        RESET_GRUNT_POWERED_STATE(this);
     }
     m_tileMoveCommitted = false;
     if (CoordsEmpty()) {
@@ -801,7 +814,7 @@ i32 CGrunt::StepEntranceReinit() {
 
         Coord currentTile = ScreenTile(this);
         i32 currentCellFlags = tileGrid->CellFlagsAt(currentTile.m_x, currentTile.m_y);
-        if (!(currentCellFlags & 0x80)) {
+        if (!(currentCellFlags & IDX(CELL_FLAG_ARROW))) {
             return 0;
         }
         m_entranceActive = true;
@@ -885,8 +898,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
             CWwdSpriteObject* h = m_object;
             CGruntzMgr* g = g_gameReg;
-            i32 y = h->m_screenY;
-            i32 x = h->m_screenX;
+            i32 y = h->m_screenPosition.m_y;
+            i32 x = h->m_screenPosition.m_x;
             const RECT& rect = *g->m_world->m_level->m_mainPlane->GetPlaneViewRect();
             if (::PtInRect(&rect, x, y)) {
                 g->VoiceMgr()->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
@@ -905,8 +918,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
     CWwdSpriteObject* h2 = m_object;
     CGruntzMgr* g2 = g_gameReg;
-    i32 hy = h2->m_screenY;
-    i32 hx = h2->m_screenX;
+    i32 hy = h2->m_screenPosition.m_y;
+    i32 hx = h2->m_screenPosition.m_x;
     if (::PtInRect(&g2->m_viewBounds, hx, hy)) {
         if (m_entranceReason == PICKUP_GOKART) {
             EnsureVehicleLoopSound(s_gruntzGokartgrunt);
@@ -1010,7 +1023,7 @@ i32 CGrunt::StepCombatReaction(
     }
     {
         CWwdSpriteObject* h = m_object;
-        i32 v = h->m_screenY + 0x186a0;
+        i32 v = h->m_screenPosition.m_y + 0x186a0;
         h->SetSortKey(v);
     }
 
@@ -1090,8 +1103,8 @@ tail:
             CGrunt* cellObj = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
             if (cellObj != NULL) {
                 CGameObject* oh = cellObj->m_object;
-                i32 cx = oh->m_screenX;
-                i32 cy = oh->m_screenY;
+                i32 cx = oh->m_screenPosition.m_x;
+                i32 cy = oh->m_screenPosition.m_y;
                 if (m_neighborScanEnabled != false && m_entranceCommitted != false
                     && RectContains(cx, cy)) {
                     if (!(g_gameReg->GetTileGrid()->CellFlagsAt(
@@ -1137,8 +1150,8 @@ i32 CGrunt::FinishStruckAnimation() {
     m_entranceActive = false;
 
     CMapMgr* grid = g_gameReg->GetTileGrid();
-    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 tx = SCREEN_TILE_COMPONENT(m_lastTilePx.m_x);
+    i32 ty = SCREEN_TILE_COMPONENT(m_lastTilePx.m_y);
     i32 flags = grid->CellFlagsAt(tx, ty);
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
@@ -1176,8 +1189,8 @@ i32 CGrunt::FinishKnockbackAnimation() {
     }
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->GetTileGrid();
-    i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 tx = SCREEN_TILE_COMPONENT(m_lastTilePx.m_x);
+    i32 ty = SCREEN_TILE_COMPONENT(m_lastTilePx.m_y);
     i32 flags = grid->CellFlagsAt(tx, ty);
     if (flags & 0x80) {
         return 0;
@@ -1190,7 +1203,6 @@ i32 CGrunt::FinishKnockbackAnimation() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     if (IsAnimationAct("I")) {
@@ -1344,7 +1356,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
     } else {
 
         // byte-evidenced: the cell word holds the object key.
-        cellObj = reinterpret_cast<char*>(grid->m_rowInts[ty][tx * 7 + 2]);
+        cellObj = reinterpret_cast<char*>(grid->m_rows[ty][tx].m_objectId);
     }
     if (cellObj == NULL) {
         return 0;

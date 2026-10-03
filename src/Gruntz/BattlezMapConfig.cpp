@@ -58,7 +58,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 #include <ZTools/BitVec.h>
@@ -74,7 +74,9 @@ DATA(0x001e96ec)
 const float g_diffScale = 0.01f;
 
 DATA(0x0020ccc0)
-i32 g_battlezRouteBlockedMask = 0x98f;
+i32 g_battlezRouteBlockedMask =
+    IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_BRIDGE | CELL_FLAG_ARROW
+        | CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD);
 DATA(0x0022b6dc)
 b32 g_stepRun;
 DATA(0x0022b730)
@@ -97,13 +99,10 @@ CBattlezMapConfig::CBattlezMapConfig() {
     m_reserved020 = 0x40;
     m_reserved024 = 0x40;
     m_reserved028 = 0x40;
-    m_defenderSearchRadiusX = 5;
-    m_defenderSearchRadiusY = 5;
+    m_defenderSearchRadius.Set(5, 5);
     m_reserved02c = 0x32;
-    m_idleRouteLimitX = 8;
-    m_idleRouteLimitY = 8;
-    m_idleBurnRandX = 8;
-    m_idleBurnRandY = 8;
+    m_idleRouteLimit.Set(8, 8);
+    m_idleBurnRand.Set(8, 8);
     m_defenderChance = 0x32;
     m_reserveBudget = 0x3e8;
     m_moveBudget = 0x3e8;
@@ -166,8 +165,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         if (cur->GetLogicRecord()->GetDispatch() == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
-            slot->m_x = cur->m_screenX / TILE_SIZE_PX;
-            slot->m_y = cur->m_screenY / TILE_SIZE_PX;
+            slot->m_x = cur->m_screenPosition.m_x / TILE_SIZE_PX;
+            slot->m_y = cur->m_screenPosition.m_y / TILE_SIZE_PX;
             m_candArray.Add(slot);
         }
     }
@@ -176,8 +175,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur2 = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur2->GetLogicRecord()->GetDispatch() == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
-            m_marker.m_x = cur2->m_screenX / TILE_SIZE_PX;
-            m_marker.m_y = cur2->m_screenY / TILE_SIZE_PX;
+            m_marker.m_x = cur2->m_screenPosition.m_x / TILE_SIZE_PX;
+            m_marker.m_y = cur2->m_screenPosition.m_y / TILE_SIZE_PX;
             break;
         }
     }
@@ -187,8 +186,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         if (cur3->GetLogicRecord()->GetDispatch() == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
-            slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
-            slot->m_y = cur3->m_screenY >> TILE_SHIFT_PX;
+            slot->m_x = cur3->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            slot->m_y = cur3->m_screenPosition.m_y >> TILE_SHIFT_PX;
             m_attackWaypoints.Add(slot);
             cur3->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
@@ -237,13 +236,13 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         m_reserved144 = ((rv % 4) + 5) * 125 * 8;
     }
     m_claimTimer = 0;
-    m_defenderSearchRadiusX = 6;
-    m_defenderSearchRadiusY = 6;
-    m_idleRouteLimitX = 6;
-    m_idleRouteLimitY = 6;
+    m_defenderSearchRadius.m_x = 6;
+    m_defenderSearchRadius.m_y = 6;
+    m_idleRouteLimit.m_x = 6;
+    m_idleRouteLimit.m_y = 6;
     m_defenderTargetMaxDistance = 8;
-    m_idleBurnRandX = m_board->GetWidth() / 3;
-    m_idleBurnRandY = m_board->GetWidth() / 3;
+    m_idleBurnRand.m_x = m_board->GetWidth() / 3;
+    m_idleBurnRand.m_y = m_board->GetWidth() / 3;
     m_assignedTargetMaxDistance = m_board->GetWidth() >> 2;
     m_roundRobinTick = 0;
 
@@ -520,8 +519,8 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
 
 candidateFound:
     Coord screen;
-    m_ctx->m_world->m_level->m_mainPlane
-        ->SnapToTileCenter(&screen, cand->m_x << TILE_SHIFT_PX, cand->m_y << TILE_SHIFT_PX);
+    Coord pixel = *cand * TILE_SIZE_PX;
+    m_ctx->m_world->m_level->m_mainPlane->SnapToTileCenter(&screen, pixel.m_x, pixel.m_y);
     i32 cell;
     if (allowReserved != false) {
         cell = m_ctx->GetTriggerMgr()->PlaceObject(
@@ -733,8 +732,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             if (BattlezActDiffersFromCRCGLPJ(unit)) {
-                                if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
-                                    && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
+                                if (unit->m_object->m_screenPosition.m_x == unit->m_lastTilePx.m_x
+                                    && unit->m_object->m_screenPosition.m_y
+                                           == unit->m_lastTilePx.m_y
                                     && unit->IsEntranceCommitted() != false
                                     && unit->IsDeathAnimationStarted() == false
                                     && unit->m_entranceActive == false) {
@@ -792,7 +792,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (!UpdateBattlezSpecialEligibility(unit, special)) {
                                 return 0;
                             }
-                            if (unit->GetGruntKind() == GRUNT_GHOST) {
+                            if (unit->m_gruntKind == GRUNT_GHOST) {
                                 special = 0;
                             }
                             if (special != 0) {
@@ -815,11 +815,11 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                             CGrunt* other = m_triggerMgr->UnitAt(j, k);
                                             if (other != NULL) {
                                                 if (unit->RectContains(
-                                                        other->m_object->m_screenX,
-                                                        other->m_object->m_screenY
+                                                        other->m_object->m_screenPosition.m_x,
+                                                        other->m_object->m_screenPosition.m_y
                                                     )
                                                     != 0) {
-                                                    if (unit->GetGruntKind() != PICKUP_GHOST) {
+                                                    if (unit->m_gruntKind != PICKUP_GHOST) {
                                                         if (other->m_poweredUp == false) {
                                                             if (HandleUnitContact(unit, other)
                                                                 != 0) {
@@ -871,8 +871,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (rand() % g_diffTier == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
                                     RECT spell;
-                                    i32 px = unit->m_object->m_screenX;
-                                    i32 py = unit->m_object->m_screenY;
+                                    i32 px = unit->m_object->m_screenPosition.m_x;
+                                    i32 py = unit->m_object->m_screenPosition.m_y;
                                     SET_RECT_COMPONENTS(
                                         spell,
                                         (px >> TILE_SHIFT_PX) - r,
@@ -888,8 +888,10 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     POINT pt;
                                                     SET_POINT_COMPONENTS(
                                                         pt,
-                                                        o->m_object->m_screenX >> TILE_SHIFT_PX,
-                                                        o->m_object->m_screenY >> TILE_SHIFT_PX
+                                                        o->m_object->m_screenPosition.m_x
+                                                            >> TILE_SHIFT_PX,
+                                                        o->m_object->m_screenPosition.m_y
+                                                            >> TILE_SHIFT_PX
                                                     );
                                                     if (PtInRect(&spell, pt) != false) {
                                                         goto spellHit;
@@ -915,8 +917,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 ResolveArrival(unit);
                             }
                         }
-                        if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
-                            && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
+                        if (unit->m_object->m_screenPosition.m_x == unit->m_lastTilePx.m_x
+                            && unit->m_object->m_screenPosition.m_y == unit->m_lastTilePx.m_y
                             && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false
                             && unit->m_entranceActive == false && unit->m_poweredUp == false) {
@@ -981,8 +983,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 Coord* gc = unit->GetHeadCoord();
                 i32 gx = gc->m_x;
                 i32 gy = gc->m_y;
-                i32 sx = unit->m_object->m_screenX >> TILE_SHIFT_PX;
-                i32 sy = unit->m_object->m_screenY >> TILE_SHIFT_PX;
+                i32 sx = unit->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX;
+                i32 sy = unit->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX;
                 if (abs(gx - sx) >= 2 || abs(gy - sy) >= 2) {
                     goto dropCoords;
                 }
@@ -1212,8 +1214,8 @@ secondColumnProbeHit: {
 RVA(0x00029a50, 0x15)
 void CUserLogic::GetScreenPos(Coord* out) {
     CWwdSpriteObject* o = m_object;
-    i32 y = o->m_screenY;
-    i32 x = o->m_screenX;
+    i32 y = o->m_screenPosition.m_y;
+    i32 x = o->m_screenPosition.m_x;
     out->Set(x, y);
 }
 
@@ -1237,7 +1239,15 @@ void CBattlezMapConfig::RerouteIdleUnit(
     if (burnSecondRandom) {
         rand();
     }
-    unit->TileSwitch(col, row, 0, 0x9c7, 0, 0);
+    unit->TileSwitch(
+        col,
+        row,
+        0,
+        IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_REVEALED_POWERUP
+            | CELL_FLAG_ARROW | CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD),
+        0,
+        0
+    );
 }
 
 RVA(0x00029b40, 0x813)
@@ -1555,7 +1565,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 POSITION qp = list.GetHeadPosition();
                 while (qp != NULL) {
                     Coord* c3 = static_cast<Coord*>(list.GetNext(qp));
-                    if (c3 != NULL && (*c3 != center)) {
+                    if (c3 != NULL && (c3->m_x != center.m_x || c3->m_y != center.m_y)) {
                         coordList->AddTail(c3);
                     }
                 }
@@ -1680,23 +1690,24 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     i32 roll = rand() % 4;
     if (actor->GetVehiclePickupType() != PICKUP_NONE && roll == 0) {
         CGameObject* ul = other->m_object;
-        if ((static_cast<CGrunt*>(actor))->VehicleContactContains(ul->m_screenX, ul->m_screenY)
+        if ((static_cast<CGrunt*>(actor))
+                ->VehicleContactContains(ul->m_screenPosition.m_x, ul->m_screenPosition.m_y)
             != 0) {
             if (actor->GetVehiclePickupType() == PICKUP_SCROLL) {
                 CGameObject* tl = actor->m_object;
                 m_triggerMgr->UseToyAt(
                     actor->GetPlayerIndex(),
                     actor->GetUnitIndex(),
-                    tl->m_screenX,
-                    tl->m_screenY
+                    tl->m_screenPosition.m_x,
+                    tl->m_screenPosition.m_y
                 );
             } else {
                 CGameObject* ul2 = other->m_object;
                 m_triggerMgr->UseToyAt(
                     actor->GetPlayerIndex(),
                     actor->GetUnitIndex(),
-                    ul2->m_screenX,
-                    ul2->m_screenY
+                    ul2->m_screenPosition.m_x,
+                    ul2->m_screenPosition.m_y
                 );
             }
             return 1;
@@ -1707,8 +1718,8 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
         ->CommitNeighbor(
             other->GetPlayerIndex(),
             other->GetUnitIndex(),
-            ul3->m_screenX,
-            ul3->m_screenY
+            ul3->m_screenPosition.m_x,
+            ul3->m_screenPosition.m_y
         );
     PickupType prim = actor->ArrivalPickup();
     if (prim != PICKUP_TIMEBOMB) {
@@ -1728,7 +1739,18 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     box.top = actor->GetScreenTileY() - 5;
 
     board->Clip(&box);
-    RouteUnitTo(actor, xcoord, ycoord, 0x20000d87, 0, 0);
+    RouteUnitTo(
+        actor,
+        xcoord,
+        ycoord,
+        BRICKZ_CELL_OCCUPIED
+            | IDX(
+                CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
+                | CELL_FLAG_WATER | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD
+            ),
+        0,
+        0
+    );
     m_board->Clip(static_cast<const RECT*>(0));
     return 1;
 }
@@ -1764,16 +1786,16 @@ i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
     ar->Write(&m_gooberzChance, sizeof(m_gooberzChance));
     ar->Write(&m_gruntRatio, sizeof(m_gruntRatio));
     ar->Write(&m_reserved088, sizeof(m_reserved088));
-    ar->Write(&m_defenderSearchRadiusX, sizeof(m_defenderSearchRadiusX));
-    ar->Write(&m_defenderSearchRadiusY, sizeof(m_defenderSearchRadiusY));
-    ar->Write(&m_idleRouteLimitX, sizeof(m_idleRouteLimitX));
-    ar->Write(&m_idleRouteLimitY, sizeof(m_idleRouteLimitY));
+    ar->Write(&m_defenderSearchRadius.m_x, sizeof(m_defenderSearchRadius.m_x));
+    ar->Write(&m_defenderSearchRadius.m_y, sizeof(m_defenderSearchRadius.m_y));
+    ar->Write(&m_idleRouteLimit.m_x, sizeof(m_idleRouteLimit.m_x));
+    ar->Write(&m_idleRouteLimit.m_y, sizeof(m_idleRouteLimit.m_y));
     ar->Write(&m_reserved09c, sizeof(m_reserved09c));
     ar->Write(&m_idleAttackWaypointDelay, sizeof(m_idleAttackWaypointDelay));
     ar->Write(&m_defenderTargetMaxDistance, sizeof(m_defenderTargetMaxDistance));
     ar->Write(&m_reserved0a8, sizeof(m_reserved0a8));
-    ar->Write(&m_idleBurnRandX, sizeof(m_idleBurnRandX));
-    ar->Write(&m_idleBurnRandY, sizeof(m_idleBurnRandY));
+    ar->Write(&m_idleBurnRand.m_x, sizeof(m_idleBurnRand.m_x));
+    ar->Write(&m_idleBurnRand.m_y, sizeof(m_idleBurnRand.m_y));
     ar->Write(&m_reserveBudget, sizeof(m_reserveBudget));
     ar->Write(&m_idleRerouteDelay, sizeof(m_idleRerouteDelay));
     ar->Write(&m_moveBudget, sizeof(m_moveBudget));
@@ -1853,16 +1875,16 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_gooberzChance, sizeof(m_gooberzChance));
     ar->Read(&m_gruntRatio, sizeof(m_gruntRatio));
     ar->Read(&m_reserved088, sizeof(m_reserved088));
-    ar->Read(&m_defenderSearchRadiusX, sizeof(m_defenderSearchRadiusX));
-    ar->Read(&m_defenderSearchRadiusY, sizeof(m_defenderSearchRadiusY));
-    ar->Read(&m_idleRouteLimitX, sizeof(m_idleRouteLimitX));
-    ar->Read(&m_idleRouteLimitY, sizeof(m_idleRouteLimitY));
+    ar->Read(&m_defenderSearchRadius.m_x, sizeof(m_defenderSearchRadius.m_x));
+    ar->Read(&m_defenderSearchRadius.m_y, sizeof(m_defenderSearchRadius.m_y));
+    ar->Read(&m_idleRouteLimit.m_x, sizeof(m_idleRouteLimit.m_x));
+    ar->Read(&m_idleRouteLimit.m_y, sizeof(m_idleRouteLimit.m_y));
     ar->Read(&m_reserved09c, sizeof(m_reserved09c));
     ar->Read(&m_idleAttackWaypointDelay, sizeof(m_idleAttackWaypointDelay));
     ar->Read(&m_defenderTargetMaxDistance, sizeof(m_defenderTargetMaxDistance));
     ar->Read(&m_reserved0a8, sizeof(m_reserved0a8));
-    ar->Read(&m_idleBurnRandX, sizeof(m_idleBurnRandX));
-    ar->Read(&m_idleBurnRandY, sizeof(m_idleBurnRandY));
+    ar->Read(&m_idleBurnRand.m_x, sizeof(m_idleBurnRand.m_x));
+    ar->Read(&m_idleBurnRand.m_y, sizeof(m_idleBurnRand.m_y));
     ar->Read(&m_reserveBudget, sizeof(m_reserveBudget));
     ar->Read(&m_idleRerouteDelay, sizeof(m_idleRerouteDelay));
     ar->Read(&m_moveBudget, sizeof(m_moveBudget));
@@ -2052,8 +2074,8 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                     special = 1;
                     break;
             }
-            i32 gx = g->m_screenX >> TILE_SHIFT_PX;
-            i32 gy = g->m_screenY >> TILE_SHIFT_PX;
+            i32 gx = g->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            i32 gy = g->m_screenPosition.m_y >> TILE_SHIFT_PX;
             CPoint wpt(gx, gy);
             if (box.PtInRect(wpt)) {
                 if (special != 0 && unit->GetGruntKind() == GRUNT_NORMAL) {
@@ -2758,7 +2780,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                         CGameObject* lvl = unit->m_object;
 
                         RECT* hit = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
-                        if (::PtInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
+                        if (::PtInRect(hit, lvl->m_screenPosition.m_x, lvl->m_screenPosition.m_y)) {
                             g_gameReg->VoiceMgr()->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }
                         m_routeTiming.Clear();
@@ -3100,11 +3122,11 @@ i32 CBattlezMapConfig::RouteUnitTo(
 ) {
     CPtrList list(10);
     CGameObject* lvl = unit->m_object;
-    i32 screenX = lvl->m_screenX;
+    i32 screenX = lvl->m_screenPosition.m_x;
     if (unit->GetScreenTileX() != goalCol || unit->GetScreenTileY() != goalRow) {
         if ((m_board)->FindPathWithEndpointOverrides(
                 screenX >> TILE_SHIFT_PX,
-                lvl->m_screenY >> TILE_SHIFT_PX,
+                lvl->m_screenPosition.m_y >> TILE_SHIFT_PX,
                 goalCol,
                 goalRow,
                 &list,
@@ -3165,7 +3187,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
     n = unit->CoordHead();
     while (n != NULL) {
         Coord* coord = unit->GetNextCoord(n);
-        if (coord != NULL && *coord == goal) {
+        if (coord != NULL && coord->m_x == goal.m_x && coord->m_y == goal.m_y) {
             break;
         }
     }
@@ -3259,7 +3281,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                         i32 x = c->m_x;
                         i32 y = c->m_y;
                         i32 tile = board->CellFlagsAt(x, y);
-                        if ((tile & 4) && x == qx && y == qy) {
+                        if ((tile & IDX(CELL_FLAG_TRIGGER)) && x == qx && y == qy) {
                             return 1;
                         }
                         if (node == NULL) {
@@ -3287,7 +3309,6 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00030730, 0x1da)
 i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i32) {
     if (m_active == false) {
@@ -3336,7 +3357,6 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
             i32 dy = marker.m_y - current.m_y;
             dx = abs(dx);
             dy = abs(dy);
-
             if (SquaredDistance(dx, dy) <= 0x19) {
                 ok = false;
             }
@@ -3348,7 +3368,9 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
         u->SetBattlezTask(BZTASK_ASSIGNED_TARGET);
         u->m_arrivalCell.m_y = targetUnit;
         u->SetDefenderState(AISTATE_ATTACK);
-        u->m_routeBlockedMask = 0xd87;
+        u->m_routeBlockedMask =
+            IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
+                | CELL_FLAG_WATER | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD);
         u->m_routePassableMask = 0;
     }
     return 1;
@@ -3367,10 +3389,12 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (occupied >= m_ctx->m_players[m_playerIndex].m_maxGruntz) {
         return 0;
     }
+    Coord spawn(ax, ay);
+    TileCenter(&spawn);
     i32 cell = m_triggerMgr->PlaceObject(
         m_playerIndex,
-        (ax << TILE_SHIFT_PX) + TILE_HALF_PX,
-        (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
+        spawn.m_x,
+        spawn.m_y,
         0x186a0,
         GRUNT_ENTRANCE_RESURRECT,
         IDX(m_ctx->m_players[m_playerIndex].m_color),
@@ -3525,14 +3549,14 @@ RVA(0x00030f20, 0x16d)
 Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     if (kind < 0 || kind >= 4) {
         CGameObject* lvl = unit->m_object;
-        i32 sx = lvl->m_screenX >> TILE_SHIFT_PX;
-        i32 sy = lvl->m_screenY >> TILE_SHIFT_PX;
+        i32 sx = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 sy = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
         o->Set(sx, sy);
         return o;
     }
     CGameObject* lvl = unit->m_object;
-    i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
-    i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
+    i32 rx = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
+    i32 ry = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
     CPtrArray* coords = &m_ctx->m_players[kind].GetBattlezConfig()->m_attackWaypoints;
     i32 count = coords->GetSize();
     if (count != 0) {
@@ -3546,7 +3570,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
                 CGrunt* u = grid->UnitAt(cell, j);
                 if (u != NULL && !u->CoordsEmpty()) {
                     Coord node = *u->GetTailCoord();
-                    if (node == cand) {
+                    if (node.m_x == cand.m_x && node.m_y == cand.m_y) {
                         ok = false;
                     }
                 }
@@ -3575,13 +3599,13 @@ RVA_COMPGEN(0x000311b0, 0x14, ?Push@?$FreeNodePool@UCoord@@@@QAEXPAX@Z)
 RVA(0x000311e0, 0x4c)
 void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     Coord result;
-    i32 sx = m_shiftX;
-    i32 sy = m_shiftY;
+    i32 sx = m_tileShift.m_x;
+    i32 sy = m_tileShift.m_y;
     result.Set(x >> sx, y >> sy);
     result.m_x <<= sx;
     result.m_y <<= sy;
-    result.m_x += m_tileWidthPx / 2;
-    result.m_y += m_tileHeightPx / 2;
+    result.m_x += m_tilePixelSize.cx / 2;
+    result.m_y += m_tilePixelSize.cy / 2;
     *out = result;
 }
 

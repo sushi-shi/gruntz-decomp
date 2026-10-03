@@ -13,8 +13,11 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    reg->GetTileGrid()
-        ->SetObjectIdAt(owner->m_screenX >> TILE_SHIFT_PX, owner->m_screenY >> TILE_SHIFT_PX, 0);
+    reg->GetTileGrid()->SetObjectIdAt(
+        owner->m_screenPosition.m_x >> TILE_SHIFT_PX,
+        owner->m_screenPosition.m_y >> TILE_SHIFT_PX,
+        0
+    );
 }
 
 #define SET_MAIN_PLANE_TILE(reg, tileX, tileY, tile)                                               \
@@ -60,8 +63,8 @@ CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 playerIndex, i32 u
 
 static inline void TBombGridClear(CGameObject* obj) {
     CMapMgr* g = g_gameReg->GetTileGrid();
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
+    i32 cy = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
+    i32 cx = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->GetWidth())
         && static_cast<u32>(cy) < static_cast<u32>(g->GetHeight())) {
         g->CellFlagsAtUnchecked(cx, cy) &= ~IDX(CELL_FLAG_TIME_BOMB);

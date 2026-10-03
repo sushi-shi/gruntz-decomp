@@ -2,7 +2,7 @@
 #define GRUNTZ_GRUNTZ_GAMELEVELINLINE_H
 
 #include <Gruntz/GameLevel.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 
 #include <stdlib.h>
 

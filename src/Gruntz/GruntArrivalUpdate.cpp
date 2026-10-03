@@ -4,6 +4,7 @@
 
 #include <Enums.h>
 #include <Globals.h>
+#include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
@@ -23,7 +24,9 @@
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -100,7 +103,10 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             Coord c;
             if (g != NULL && this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
-                && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+                && RectContains(
+                       g->m_object->m_screenPosition.m_x,
+                       g->m_object->m_screenPosition.m_y
+                   ) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 break;
             }
@@ -170,7 +176,10 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         0x20
                     );
                     if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
-                        && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                        && RectContains(
+                               slot->m_object->m_screenPosition.m_x,
+                               slot->m_object->m_screenPosition.m_y
+                           ) != 0
                         && IsGruntAtSavedScreenPos(slot)) {
                         COMMIT_GRUNT_NEIGHBOR(slot);
                         this->m_defenderState = AISTATE_ATTACK;
@@ -193,7 +202,10 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     || m_stamina < STAMINA_FULL) {
                     break;
                 }
-                if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                if (RectContains(
+                        slot->m_object->m_screenPosition.m_x,
+                        slot->m_object->m_screenPosition.m_y
+                    ) != 0
                     && IsGruntAtSavedScreenPos(slot)) {
                     COMMIT_GRUNT_NEIGHBOR(slot);
                     break;

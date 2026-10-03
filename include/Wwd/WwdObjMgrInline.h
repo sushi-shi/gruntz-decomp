@@ -27,13 +27,8 @@ static inline void DrawObjectDebugRect(
     CDDrawWorkerHost* view,
     CDDrawSurfacePair* drawHost
 ) {
-    i32 ox = obj->m_screenX;
-    RECT rc;
-    rc.left = objectRect.left + ox;
-    i32 oy = obj->m_screenY;
-    rc.top = objectRect.top + oy;
-    rc.right = objectRect.right + ox;
-    rc.bottom = objectRect.bottom + oy;
+    CRect rc = objectRect;
+    rc.OffsetRect(obj->m_screenPosition.m_x, obj->m_screenPosition.m_y);
     view->WorldToViewport(&rc.left, &rc.top);
     view->WorldToViewport(&rc.right, &rc.bottom);
     drawHost->DrawBox(&rc, 0xff);
@@ -53,6 +48,14 @@ inline CWwdGameObject* LookupActiveObject(CMapPtrToPtr& map, void* key) {
         found = NULL;
     }
     return found;
+}
+
+static inline void
+PlaceObjectRect(RECT& destination, const RECT& objectRect, const Coord& position) {
+    destination.left = objectRect.left + position.m_x;
+    destination.top = objectRect.top + position.m_y;
+    destination.right = objectRect.right + position.m_x;
+    destination.bottom = objectRect.bottom + position.m_y;
 }
 
 #endif // GRUNTZ_WWD_WWDOBJMGRINLINE_H

@@ -36,6 +36,7 @@
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/Demo.h>
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FaderSettings.h>
@@ -91,6 +92,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Utils.h>
+#include <Gruntz/VideoModeInline.h>
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/WaitCursorScope.h>
 #include <Gruntz/WorldSoundSet.h>
@@ -489,8 +491,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     SET_SIZE_COMPONENTS(m_modeSize, SCREEN_W_PX, SCREEN_H_PX);
     m_world->SetRestoreHandler(&PumpIdleFrame);
     CGameLevel* view = LevelOf(m_world);
-    view->m_maxStepX = 0xe;
-    view->m_maxStepY = 0xe;
+    view->m_maxStep.m_x = 0xe;
+    view->m_maxStep.m_y = 0xe;
     m_world->m_drawTarget->CreateOverlay(0, 0x30000);
     RecomputeViewScale();
     RegisterGameObjectLogicTypes(m_world);
@@ -797,10 +799,9 @@ void CGruntzMgr::Close() {
         m_settings->Set("Scroll Speed", m_scrollSpeed);
         m_settings->Set("Easy Mode", m_isEasyMode);
         Resolution res = RES_640X480;
-        if (m_savedModeSize.cx == DISPLAY_WIDTH_1024 && m_savedModeSize.cy == DISPLAY_HEIGHT_768) {
+        if (SIZE_EQUALS_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768)) {
             res = RES_1024X768;
-        } else if (m_savedModeSize.cx == DISPLAY_WIDTH_800
-                   && m_savedModeSize.cy == DISPLAY_HEIGHT_600) {
+        } else if (SIZE_EQUALS_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600)) {
             res = RES_800X600;
         }
         m_settings->Set("Resolution", IDX(res));
@@ -1322,7 +1323,7 @@ i32 CDDrawDeviceManager::GetCapsChecked() {
 
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(b32 save) {
-    if (IS_STANDARD_VIDEO_MODE) {
+    if (IsStandardVideoMode(m_modeSize)) {
         if (save) {
             m_savedModeSize = m_modeSize;
         }
@@ -1358,7 +1359,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
         if (m_world->m_level != NULL) {
             CDDrawWorkerHost* f = m_world->m_level->m_mainPlane;
             if (f != NULL) {
-                if (w > f->m_planePixelWidth || h > f->m_planePixelHeight) {
+                if (w > f->m_planePixelSize.cx || h > f->m_planePixelSize.cy) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
                     st->ResetViewport();
                     if (st->m_statusBar != NULL) {
@@ -1393,10 +1394,10 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     }
     while (ShowCursor(false) >= 0) {
     }
-    SET_SIZE_COMPONENTS(m_modeSize, w, h);
+    m_modeSize = CSize(w, h);
     if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
         if (saveMode) {
-            SET_SIZE_COMPONENTS(m_savedModeSize, w, h);
+            m_savedModeSize = CSize(w, h);
         }
         CPlay* st = static_cast<CPlay*>(m_curState);
         st->ResetViewport();
@@ -1431,12 +1432,10 @@ i32 CGruntzMgr::TryNextResolution() {
     DisplayResolution resolution;
     resolution =
         World()->GetDeviceManager()->FindNextResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
-    i32 width = resolution.m_width;
-    i32 height = resolution.m_height;
-    if (width > 0x514 || width == -1 || height == -1) {
+    if (resolution.m_width > 0x514 || resolution.m_width == -1 || resolution.m_height == -1) {
         return 1;
     }
-    if (SetVideoMode(width, height, true)) {
+    if (SetVideoMode(resolution.m_width, resolution.m_height, true)) {
         return 1;
     }
     if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, true)) {
@@ -1457,12 +1456,11 @@ i32 CGruntzMgr::TryPreviousResolution() {
         m_modeSize.cy,
         m_colorDepth
     );
-    i32 width = resolution.m_width;
-    i32 height = resolution.m_height;
-    if (width == -1 || height == -1 || width < SCREEN_HALF_W_PX || height < 0xc8) {
+    if (resolution.m_width == -1 || resolution.m_height == -1
+        || resolution.m_width < SCREEN_HALF_W_PX || resolution.m_height < 0xc8) {
         return 1;
     }
-    if (SetVideoMode(width, height, true)) {
+    if (SetVideoMode(resolution.m_width, resolution.m_height, true)) {
         return 1;
     }
     if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, true)) {
@@ -1508,8 +1506,8 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
         case WM_INITDIALOG: {
 
             CDDrawWorkerHost* warp = LevelOf(g_gameReg->World())->m_mainPlane;
-            i32 seedX = warp->m_scrollPixelX;
-            i32 seedY = warp->m_scrollPixelY;
+            i32 seedX = warp->m_scrollPixel.m_x;
+            i32 seedY = warp->m_scrollPixel.m_y;
             SetDlgItemInt(hDlg, 0x40e, seedX, false);
             SetDlgItemInt(hDlg, 0x40f, seedY, false);
             return true;
@@ -1677,11 +1675,12 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
 RVA(0x0008eaf0, 0x10b)
 i32 CGruntzMgr::WarpCheat() {
     char key[64];
+    Coord warp;
     sprintf(key, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
-    i32 wx = m_settings->Get(key, -1);
+    warp.m_x = m_settings->Get(key, -1);
     sprintf(key, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
-    i32 wy = m_settings->Get(key, -1);
-    if (wx != -1 && wy != -1) {
+    warp.m_y = m_settings->Get(key, -1);
+    if (warp.m_x != -1 && warp.m_y != -1) {
         if (m_curState->Update() != GAMESTATE_PLAY) {
             i32 last = m_settings->Get("Last Warp Level", -1);
             if (last != -1) {
@@ -2091,18 +2090,33 @@ void CGruntzMgr::RecomputeViewScale() {
     i32 iw = ext.right - ext.left + 1;
     i32 ih = ext.bottom - ext.top + 1;
 
-    view->m_defaultActiveRegionSize.m_w = static_cast<i32>((static_cast<float>(iw) * 1.4f));
-    view->m_defaultActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 1.4f));
+    VECTOR2_SCALE_TO_I32(
+        view->m_defaultActiveRegionSize.m_w,
+        view->m_defaultActiveRegionSize.m_h,
+        static_cast<float>(iw),
+        static_cast<float>(ih),
+        1.4f
+    );
     view->MainPlaneNotify();
 
     view = LevelOf(World());
-    view->m_largeActiveRegionSize.m_w = static_cast<i32>((static_cast<float>(iw) * 5.3f));
-    view->m_largeActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 5.3f));
+    VECTOR2_SCALE_TO_I32(
+        view->m_largeActiveRegionSize.m_w,
+        view->m_largeActiveRegionSize.m_h,
+        static_cast<float>(iw),
+        static_cast<float>(ih),
+        5.3f
+    );
     view->MainPlaneNotify();
 
     view = LevelOf(World());
-    view->m_smallActiveRegionSize.m_w = static_cast<i32>((static_cast<float>(iw) * 1.12f));
-    view->m_smallActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 1.12f));
+    VECTOR2_SCALE_TO_I32(
+        view->m_smallActiveRegionSize.m_w,
+        view->m_smallActiveRegionSize.m_h,
+        static_cast<float>(iw),
+        static_cast<float>(ih),
+        1.12f
+    );
     view->MainPlaneNotify();
 
     CGameLevel* v = LevelOf(World());
@@ -2122,7 +2136,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
-    if (IS_STANDARD_VIDEO_MODE) {
+    if (IsStandardVideoMode(m_modeSize)) {
         return 1;
     }
     return 0;
@@ -2622,16 +2636,15 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     if (e == NULL) {
         return 0;
     }
-    i32 monolithWidth = e->m_width;
-    i32 monolithHeight = e->m_height;
+    CSize monolithSize(e->m_width, e->m_height);
     CDDrawWorkerHost* found =
         static_cast<CDDrawWorkerHost*>(m_world->m_level->FindPlaneByName("MONOLITH"));
     if (found == NULL) {
         CDDrawWorkerHost* spr = m_world->m_level->ReadObjectPlane(
             0x20,
             0x20,
-            monolithWidth,
-            monolithHeight,
+            monolithSize.cx,
+            monolithSize.cy,
             -0x19,
             -0x19,
             const_cast<char*>("MONOLITH")
@@ -2654,11 +2667,11 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         g_monologoShown = true;
         return 1;
     }
-    if (found->m_flags & 2) {
-        found->m_flags &= ~2;
+    if (found->m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) {
+        found->m_flags &= ~IDX(WWD_PLANE_FLAG_NO_DRAW);
         g_monologoShown = true;
     } else {
-        found->AddFlags(2);
+        found->AddFlags(IDX(WWD_PLANE_FLAG_NO_DRAW));
         g_monologoShown = false;
     }
     return 1;
@@ -2998,8 +3011,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     m_world->SetRestoreHandler(&PumpIdleFrame);
     CGameLevel* view = m_world->m_level;
-    view->m_maxStepX = 0xe;
-    view->m_maxStepY = 0xe;
+    view->m_maxStep.Set(0xe, 0xe);
     RegisterGameObjectLogicTypes(m_world);
     if (MakeRezPath() == 0) {
         return 0;
@@ -3030,7 +3042,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     CWorldSoundSet* ni = new CWorldSoundSet();
     m_worldSounds = ni;
-    if (ni->Init(m_world->m_soundRegistry, m_soundVolume) == 0) {
+    if (ni->Init(m_world->SoundRegistry(), m_soundVolume) == 0) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x442);
         return 0;
     }
@@ -3166,8 +3178,8 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {
-            i32 adx = abs(obj->m_screenX - x);
-            i32 ady = abs(obj->m_screenY - y);
+            i32 adx = abs(obj->m_screenPosition.m_x - x);
+            i32 ady = abs(obj->m_screenPosition.m_y - y);
             if (SQR(adx) + ady + ady < r2) {
                 count++;
                 if (cb(obj, user) == 0) {
@@ -3197,10 +3209,9 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {
-            i32 ox = obj->m_screenX;
-            if (ox >= box.left && ox <= box.right) {
-                i32 oy = obj->m_screenY;
-                if (oy >= box.top && oy <= box.bottom) {
+            Coord position = obj->ScreenPos();
+            if (position.m_x >= box.left && position.m_x <= box.right) {
+                if (position.m_y >= box.top && position.m_y <= box.bottom) {
                     count++;
                     if (cb(obj, user) == 0) {
                         return count;
@@ -3293,7 +3304,7 @@ i32 CGruntzMgr::Quicksave() {
         EnterModalUI(name);
         return 1;
     }
-    if (m_saveInfoRec == NULL || !(m_saveInfoRec->m_flags & 1)) {
+    if (m_saveInfoRec == NULL || !(m_saveInfoRec->m_flags & SAVESLOT_PRESENT)) {
         return LoadSaveMessageSprite();
     }
 
@@ -3321,7 +3332,7 @@ i32 CGruntzMgr::Quickload() {
     if (m_voiceManager) {
         VoiceMgr()->PauseAllVoices();
     }
-    if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
+    if (m_saveInfoRec && (m_saveInfoRec->m_flags & SAVESLOT_PRESENT)) {
 
         if (m_saveGame->VerifySlot(m_saveInfoRec) == 0) {
             return 1;

@@ -44,7 +44,7 @@
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
-    if (!this->CoordsEmpty()
+    if (this->CoordCount() != 0
         && g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x) == NULL) {
         this->RecycleCoords();
         this->m_arrivalCell.m_x = 0;
@@ -54,7 +54,7 @@ i32 CGrunt::StepToolThiefBehavior() {
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->GetTriggerMgr()->UnitAt(0, reason);
         if (slot == NULL || slot->IsEntranceCommitted() == false) {
-            if (!this->CoordsEmpty()) {
+            if (this->CoordCount() != 0) {
                 this->RecycleCoords();
             }
             this->m_arrivalCell.m_x = -1;
@@ -81,7 +81,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                 this->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
                 this->m_defenderState = AISTATE_COOLDOWN;
-                if (this->CoordsEmpty()) {
+                if (this->CoordCount() == 0) {
                     return 1;
                 }
                 this->RecycleCoords();
@@ -139,10 +139,10 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL) {
-            i32 x = g->m_object->m_screenX;
-            if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
+            i32 x = g->m_object->m_screenPosition.m_x;
+            if (GRUNT_X_AT_SAVED_POS(x, g) && GRUNT_SCREEN_Y_AT_SAVED_POS(g->m_object, g)
 
-                && RectContains(x, g->m_object->m_screenY) != 0) {
+                && RectContains(x, g->m_object->m_screenPosition.m_y) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
             }
         }
@@ -150,8 +150,8 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (TileSwitch(
-                g->m_object->m_screenX >> TILE_SHIFT_PX,
-                g->m_object->m_screenY >> TILE_SHIFT_PX,
+                g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
                 0,
                 this->m_arrivalFlags,
                 1,
@@ -167,7 +167,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
     } else {
-        if (this->CoordsEmpty()) {
+        if (this->CoordCount() == 0) {
             if (this->m_defenderState != AISTATE_SEEK) {
                 return 1;
             }
@@ -207,8 +207,8 @@ i32 CGrunt::StepToolThiefBehavior() {
                 this->m_arrivalCell.m_x = bestIdx;
                 CGameObject* base = g_gameReg->GetTriggerMgr()->UnitAt(0, bestIdx)->m_object;
                 if (TileSwitch(
-                        base->m_screenX >> TILE_SHIFT_PX,
-                        base->m_screenY >> TILE_SHIFT_PX,
+                        base->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                        base->m_screenPosition.m_y >> TILE_SHIFT_PX,
                         0,
                         this->m_arrivalFlags,
                         1,
@@ -230,8 +230,8 @@ i32 CGrunt::StepToolThiefBehavior() {
         CGameObject* base =
             g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x)->m_object;
         TileSwitch(
-            base->m_screenX >> TILE_SHIFT_PX,
-            base->m_screenY >> TILE_SHIFT_PX,
+            base->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            base->m_screenPosition.m_y >> TILE_SHIFT_PX,
             0,
             this->m_arrivalFlags,
             1,

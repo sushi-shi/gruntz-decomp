@@ -35,7 +35,6 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -84,10 +83,11 @@ typedef enum WarlordBattleTag {
     WARLORD_TAG_VIKING = 0x445,
 } WarlordBattleTag;
 
-// @early-stop
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
 
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_WARLORD);
@@ -131,47 +131,47 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, NULL);
 
     m_idleAnims[0] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE1"
     );
     m_idleAnims[1] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE2"
     );
     m_idleAnims[2] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE3"
     );
     m_idleAnims[3] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE4"
     );
     m_battlecryAnims[0] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry1Suffix
     );
     m_battlecryAnims[1] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry2Suffix
     );
     m_battlecryAnims[2] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry3Suffix
     );
     m_animJoy = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_joySuffix
     );
     m_animDeath = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_DEATH"
     );
     m_animMoving = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_movingSuffix
     );
     m_animPanic = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_panicSuffix
     );
 
@@ -337,8 +337,11 @@ i32 CWarlord::UpdateMovingState() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->GetGameMode() != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
-        i32 dist = reg->GetTriggerMgr()
-                       ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
+        i32 dist = reg->GetTriggerMgr()->NearestOtherPlayerUnitDistSq(
+            o->m_smarts,
+            o->m_screenPosition.m_x,
+            o->m_screenPosition.m_y
+        );
         if (dist < g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
@@ -363,8 +366,11 @@ i32 CWarlord::UpdatePanicState() {
 
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
-        i32 dist = g_gameReg->GetTriggerMgr()
-                       ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
+        i32 dist = g_gameReg->GetTriggerMgr()->NearestOtherPlayerUnitDistSq(
+            o->m_smarts,
+            o->m_screenPosition.m_x,
+            o->m_screenPosition.m_y
+        );
         if (dist >= g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             ResolveJoyAnimation();
             return 0;
@@ -413,8 +419,8 @@ i32 CWarlord::BuildFortSplashParticles() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (sub->IsComplete()) {
         CWwdSpriteObject* o = m_object;
-        i32 y = o->m_screenY;
-        i32 x = o->m_screenX;
+        i32 y = o->m_screenPosition.m_y;
+        i32 x = o->m_screenPosition.m_x;
         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
             CreateParticlez(
                 g_gameReg->World()->ChildGroup(),
@@ -506,8 +512,8 @@ i32 CWarlord::NotifyFortUnderAttack() {
         if (g->GetGameMode() == GAMEMODE_QUESTZ) {                                                 \
             CWwdSpriteObject* h = m_object;                                                        \
             i32 cue = (questzCue);                                                                 \
-            i32 x = h->m_screenX;                                                                  \
-            i32 y = h->m_screenY;                                                                  \
+            i32 x = h->m_screenPosition.m_x;                                                       \
+            i32 y = h->m_screenPosition.m_y;                                                       \
             if (::PtInRect(&g->m_viewBounds, x, y)) {                                              \
                 g->VoiceMgr()->PlayVoice(h->GetObjectId(), cue, -1, -1, -1);                       \
             }                                                                                      \
@@ -526,9 +532,8 @@ i32 CWarlord::ResolveDeathAnimation() {
     CGruntzMgr* g = g_gameReg;
     if (g->GetGameMode() == GAMEMODE_QUESTZ) {
         CWwdSpriteObject* h = m_object;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
+        Coord position = h->ScreenPos();
+        if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
             g->VoiceMgr()->PlayVoice(h->GetObjectId(), m_ownerTag, -1, -1, -1);
         }
     } else {

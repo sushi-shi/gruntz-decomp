@@ -41,8 +41,6 @@
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementInline.h>
-#include <Gruntz/GruntMovementMacros.h>
-#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -53,6 +51,7 @@
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
 #include <Gruntz/MapTraversalInline.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -304,26 +303,65 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_vehicleContactRect = zero;
     m_vehicleContactExclusionRect = zero;
 
-    m_toyTiming.Clear();
-    m_idleDelayTiming.Clear();
-    m_idleWindowTiming.Clear();
-    m_entranceTiming.Clear();
-    m_flashTiming.Clear();
-    m_attackTiming.Clear();
-    m_combatTiming.Clear();
-    m_hudRetireTiming.Clear();
-    m_wingzTiming.Clear();
-    m_conversionTiming.Clear();
-    m_shimmerTiming.Clear();
-    m_arrivalVoiceTiming.Clear();
-    m_arrivalRerollTiming.Clear();
+    m_toyTiming.m_startLo = 0;
+    m_toyTiming.m_intervalLo = 0;
+    m_toyTiming.m_startHi = 0;
+    m_toyTiming.m_intervalHi = 0;
+    m_idleDelayTiming.m_startLo = 0;
+    m_idleDelayTiming.m_intervalLo = 0;
+    m_idleDelayTiming.m_startHi = 0;
+    m_idleDelayTiming.m_intervalHi = 0;
+    m_idleWindowTiming.m_startLo = 0;
+    m_idleWindowTiming.m_intervalLo = 0;
+    m_idleWindowTiming.m_startHi = 0;
+    m_idleWindowTiming.m_intervalHi = 0;
+    m_entranceTiming.m_startLo = 0;
+    m_entranceTiming.m_intervalLo = 0;
+    m_entranceTiming.m_startHi = 0;
+    m_entranceTiming.m_intervalHi = 0;
+    m_flashTiming.m_startLo = 0;
+    m_flashTiming.m_intervalLo = 0;
+    m_flashTiming.m_startHi = 0;
+    m_flashTiming.m_intervalHi = 0;
+    m_attackTiming.m_startLo = 0;
+    m_attackTiming.m_intervalLo = 0;
+    m_attackTiming.m_startHi = 0;
+    m_attackTiming.m_intervalHi = 0;
+    m_combatTiming.m_startLo = 0;
+    m_combatTiming.m_intervalLo = 0;
+    m_combatTiming.m_startHi = 0;
+    m_combatTiming.m_intervalHi = 0;
+    m_hudRetireTiming.m_startLo = 0;
+    m_hudRetireTiming.m_intervalLo = 0;
+    m_hudRetireTiming.m_startHi = 0;
+    m_hudRetireTiming.m_intervalHi = 0;
+    m_wingzTiming.m_startLo = 0;
+    m_wingzTiming.m_intervalLo = 0;
+    m_wingzTiming.m_startHi = 0;
+    m_wingzTiming.m_intervalHi = 0;
+    m_conversionTiming.m_startLo = 0;
+    m_conversionTiming.m_intervalLo = 0;
+    m_conversionTiming.m_startHi = 0;
+    m_conversionTiming.m_intervalHi = 0;
+    m_shimmerTiming.m_startLo = 0;
+    m_shimmerTiming.m_intervalLo = 0;
+    m_shimmerTiming.m_startHi = 0;
+    m_shimmerTiming.m_intervalHi = 0;
+    m_arrivalVoiceTiming.m_startLo = 0;
+    m_arrivalVoiceTiming.m_intervalLo = 0;
+    m_arrivalVoiceTiming.m_startHi = 0;
+    m_arrivalVoiceTiming.m_intervalHi = 0;
+    m_arrivalRerollTiming.m_startLo = 0;
+    m_arrivalRerollTiming.m_intervalLo = 0;
+    m_arrivalRerollTiming.m_startHi = 0;
+    m_arrivalRerollTiming.m_intervalHi = 0;
     m_unusedBattleCell.Set(-1, -1);
     m_arrivalNotified = false;
     m_defenderState = AISTATE_SEEK;
     m_battleState = BZTASK_UNASSIGNED;
     {
         CWwdSpriteObject* h = m_object;
-        i32 lim = h->m_screenY + 0x186a0;
+        i32 lim = h->m_screenPosition.m_y + 0x186a0;
         SET_SORT_KEY_IF_CHANGED(h, lim);
     }
     m_blockedVoicePending = true;
@@ -447,18 +485,20 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     } else {
         LOAD_POSE(AT(m_poseToy, GRUNT_TOY1), s_pose_TOY1);
 
-        i32 x = AT(m_poseToy, GRUNT_TOY1)->m_records.GetSize();
+        i32 toy1FrameCount = AT(m_poseToy, GRUNT_TOY1)->m_records.GetSize();
         LOAD_POSE(AT(m_poseToy, GRUNT_TOY2), s_pose_TOY2);
-        i32 y = AT(m_poseToy, GRUNT_TOY2)->m_records.GetSize();
+        i32 toy2FrameCount = AT(m_poseToy, GRUNT_TOY2)->m_records.GetSize();
 
-        if (x < y) {
+        if (toy1FrameCount < toy2FrameCount) {
             double blend =
-                DATA_COMPGEN(0x001e9748, 100.0) / (static_cast<double>(y) / x - DATA_COMPGEN(0x001e9740, -1.0)) - g_slopeNegHalf;
+                DATA_COMPGEN(0x001e9748, 100.0) / (static_cast<double>(toy2FrameCount) / toy1FrameCount - DATA_COMPGEN(0x001e9740, -1.0)) - g_slopeNegHalf;
             i32 pct = static_cast<i32>(blend);
             m_toyBlendPct = 100 - pct;
         } else {
-            m_toyBlendPct =
-                static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - g_slopeNegHalf));
+            m_toyBlendPct = static_cast<i32>(
+                100.0 / (static_cast<double>(toy1FrameCount) / toy2FrameCount - -1.0)
+                - g_slopeNegHalf
+            );
         }
     }
 
@@ -467,7 +507,6 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 
 #undef LOAD_POSE
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0004a780, 0x1ec)
@@ -475,14 +514,14 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == NULL) {
         return &g_gruntMoveDirCenter;
     }
-    i32 horizontalDelta = static_cast<i32>((other->m_positionX - m_positionX));
-    double otherY = other->m_positionY;
-    i32 verticalDelta = static_cast<i32>((m_positionY - otherY));
-    if (horizontalDelta == 0) {
-        if (verticalDelta > 0) {
+    DoubleVector2 delta = other->m_position - m_position;
+    delta.m_y = -delta.m_y;
+    Coord integerDelta = delta.ToCoord();
+    if (integerDelta.m_x == 0) {
+        if (integerDelta.m_y > 0) {
             return &g_gruntMoveDirNorth;
         }
-        if (verticalDelta < 0) {
+        if (integerDelta.m_y < 0) {
             return &g_gruntMoveDirSouth;
         }
         return &g_gruntMoveDirCenter;
@@ -490,14 +529,11 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
 
     char onCell = exact;
     if (onCell) {
-        onCell =
-            (static_cast<i32>(m_positionX) == m_gridX && static_cast<i32>(m_positionY) == m_gridY)
-                ? 1
-                : 0;
+        onCell = (m_position.ToCoord() == m_gridPosition) ? 1 : 0;
     }
-    double ratio = static_cast<double>(verticalDelta) / static_cast<double>(horizontalDelta);
+    double ratio = static_cast<double>(integerDelta.m_y) / static_cast<double>(integerDelta.m_x);
 
-    if (verticalDelta >= 0 && horizontalDelta > 0) {
+    if (integerDelta.m_y >= 0 && integerDelta.m_x > 0) {
         if (onCell) {
             return &g_gruntMoveDirNorthEast;
         }
@@ -509,7 +545,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirNorth;
     }
-    if (verticalDelta >= 0 && horizontalDelta < 0) {
+    if (integerDelta.m_y >= 0 && integerDelta.m_x < 0) {
         if (onCell) {
             return &g_gruntMoveDirNorthWest;
         }
@@ -521,7 +557,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirWest;
     }
-    if (verticalDelta <= 0 && horizontalDelta > 0) {
+    if (integerDelta.m_y <= 0 && integerDelta.m_x > 0) {
         if (onCell) {
             return &g_gruntMoveDirSouthEast;
         }
@@ -550,41 +586,57 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0004a9f0, 0x1aa)
 i32 CGrunt::IntersectsTileObjectAxes() {
-    CGrunt* tgt = m_triggerMgr->FindAtPixel(m_object->m_screenX, m_object->m_screenY);
+    CGrunt* tgt =
+        m_triggerMgr->FindAtPixel(m_object->m_screenPosition.m_x, m_object->m_screenPosition.m_y);
     if (tgt == NULL) {
         return 0;
     }
     RECT r;
     CopyRect(&r, &tgt->m_wwdObject->m_area);
     CGameObject* th = tgt->m_object;
-    OffsetRect(&r, th->m_screenX, th->m_screenY);
+    OffsetRect(&r, th->m_screenPosition.m_x, th->m_screenPosition.m_y);
 
     POINT a, b;
 
-    SET_POINT_COMPONENTS(b, m_object->m_screenX, m_object->m_screenY - 0x3e8);
-    SET_POINT_COMPONENTS(a, m_object->m_screenX, m_object->m_screenY + 0x3e8);
+    SET_POINT_COMPONENTS(b, m_object->m_screenPosition.m_x, m_object->m_screenPosition.m_y - 0x3e8);
+    SET_POINT_COMPONENTS(a, m_object->m_screenPosition.m_x, m_object->m_screenPosition.m_y + 0x3e8);
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    SET_POINT_COMPONENTS(b, m_object->m_screenX - 0x3e8, m_object->m_screenY);
-    SET_POINT_COMPONENTS(a, m_object->m_screenX + 0x3e8, m_object->m_screenY);
+    SET_POINT_COMPONENTS(b, m_object->m_screenPosition.m_x - 0x3e8, m_object->m_screenPosition.m_y);
+    SET_POINT_COMPONENTS(a, m_object->m_screenPosition.m_x + 0x3e8, m_object->m_screenPosition.m_y);
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    SET_POINT_COMPONENTS(b, m_object->m_screenX - 0x3e8, m_object->m_screenY - 0x3e8);
-    SET_POINT_COMPONENTS(a, m_object->m_screenX + 0x3e8, m_object->m_screenY + 0x3e8);
+    SET_POINT_COMPONENTS(
+        b,
+        m_object->m_screenPosition.m_x - 0x3e8,
+        m_object->m_screenPosition.m_y - 0x3e8
+    );
+    SET_POINT_COMPONENTS(
+        a,
+        m_object->m_screenPosition.m_x + 0x3e8,
+        m_object->m_screenPosition.m_y + 0x3e8
+    );
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    SET_POINT_COMPONENTS(b, m_object->m_screenX - 0x3e8, m_object->m_screenY + 0x3e8);
-    SET_POINT_COMPONENTS(a, m_object->m_screenX + 0x3e8, m_object->m_screenY - 0x3e8);
+    SET_POINT_COMPONENTS(
+        b,
+        m_object->m_screenPosition.m_x - 0x3e8,
+        m_object->m_screenPosition.m_y + 0x3e8
+    );
+    SET_POINT_COMPONENTS(
+        a,
+        m_object->m_screenPosition.m_x + 0x3e8,
+        m_object->m_screenPosition.m_y - 0x3e8
+    );
     return RectSegProbe(&r, &b, &a) != 0;
 }
 
-// @early-stop
 RVA(0x0004ac10, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
@@ -633,11 +685,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
         SwitchAnimationAndMaybeAdvance(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
             DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-            i32 row = facing.m_row;
-            i32 column = facing.m_column;
-            i32 index = 3 * row + column;
-
-            const char* nm = m_cells[index].IdleName().GetBuffer(0);
+            const char* nm = m_cells[3 * facing.m_row + facing.m_column].IdleName().GetBuffer(0);
             SetImageFrameByName(nm, frame);
         }
         goto store;
@@ -647,11 +695,7 @@ walk:
 
     SwitchAnimation(m_poseWalk);
     {
-        i32 row = facing.m_row;
-        i32 column = facing.m_column;
-        i32 index = 3 * row + column;
-
-        const char* nm = m_cells[index].WalkName().GetBuffer(0);
+        const char* nm = m_cells[3 * facing.m_row + facing.m_column].WalkName().GetBuffer(0);
         SetImageSetByName(nm);
     }
 
@@ -722,8 +766,7 @@ i32 CGrunt::TileSwitch(
     i32 extraPassableMask
 ) {
     Coord center;
-    Coord* point =
-        center.Set((col << TILE_SHIFT_PX) + TILE_HALF_PX, (row << TILE_SHIFT_PX) + TILE_HALF_PX);
+    Coord* point = center.Set(TILE_CENTER_COMPONENT(col), TILE_CENTER_COMPONENT(row));
     return StepArrivalDrop(
         point->m_x,
         point->m_y,
@@ -745,36 +788,42 @@ i32 CGrunt::StepArrivalDrop(
 ) {
     Coord* tail;
     POSITION pos;
-    Coord lastTile, targetTile;
+    Coord lastTile;
+    Coord tile;
     i32 passableMask, cnt, headFlags, lastFlags, hit;
     i32 reinit;
     i32 nudged;
     RockNeighborMask free4;
-    i32 step, acc, err, walkX, walkY, blocked;
+    i32 step, acc, err, blocked;
+    Coord walk;
+    Coord delta;
+    Coord distance;
+    Coord pixel;
     i32 saved[3][3];
-    i32 sx, sy;
+    Coord scan;
     bool eq;
 
+    pixel.Set(pxX, pxY);
     m_pendingTrigger = false;
     eq = IsNotAnimationAct("D");
-    if (!eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
+    if (!eq && pixel == m_entrancePx) {
         goto commitPhase;
     }
 
     this->RecycleCoords();
     lastTile = ScreenTile(LastTilePx());
-    targetTile.Set(pxX, pxY);
-    ScreenTile(&targetTile);
+    tile = pixel;
+    ScreenTile(&tile);
     if (blockedMask == -1) {
         blockedMask = m_arrivalFlags;
     }
-    m_arrivalTargetPx.Set(pxX, pxY);
+    m_arrivalTargetPx = pixel;
     passableMask = extraPassableMask | m_passableMask;
     if (g_gameReg->GetTileGrid()->FindPathWithEndpointOverrides(
             lastTile.m_x,
             lastTile.m_y,
-            targetTile.m_x,
-            targetTile.m_y,
+            tile.m_x,
+            tile.m_y,
             GetCoordList(),
             clearEndpointFlags,
             blockedMask,
@@ -793,7 +842,7 @@ i32 CGrunt::StepArrivalDrop(
         tail = GetHeadCoord();
         headFlags = g_gameReg->GetTileGrid()->CellFlagsAt(tail->m_x, tail->m_y);
         lastFlags = g_gameReg->GetTileGrid()->CellFlagsAt(lastTile.m_x, lastTile.m_y);
-        if ((lastFlags & 0x80) != 0) {
+        if ((lastFlags & IDX(CELL_FLAG_ARROW)) != 0) {
             goto commitEntrance;
         }
         if ((headFlags & BRICKZ_CELL_OCCUPIED) == 0) {
@@ -810,10 +859,10 @@ i32 CGrunt::StepArrivalDrop(
         if (cnt == 1 && m_arrivalPending == false) {
 
             SetEntrancePos(1, 1);
-            if (m_object->m_screenX == m_lastTilePx.m_x
-                && m_lastTilePx.m_y == m_object->m_screenY) {
-                FaceTowardTile(targetTile.m_x, targetTile.m_y);
+            if (m_object->ScreenPos() == m_lastTilePx) {
+                FaceTowardTile(tile);
             }
+        returnZero:
             return 0;
         }
         if (m_arrivalState == AI_BATTLEZ_PATH) {
@@ -826,8 +875,8 @@ i32 CGrunt::StepArrivalDrop(
             if (g_gameReg->GetTileGrid()->FindPathWithEndpointOverrides(
                     lastTile.m_x,
                     lastTile.m_y,
-                    targetTile.m_x,
-                    targetTile.m_y,
+                    tile.m_x,
+                    tile.m_y,
                     &probe,
                     clearEndpointFlags,
                     blockedMask | BRICKZ_CELL_OCCUPIED,
@@ -851,79 +900,76 @@ i32 CGrunt::StepArrivalDrop(
             }
         }
     commitEntrance:
-        m_entrancePx.Set(pxX, pxY);
+        m_entrancePx = pixel;
         if (reinit != 0) {
             StepEntranceReinit();
         }
     commitPhase:
         m_arrivalPhase = arrivalPhase;
+    returnOne:
         return 1;
     }
 
     nudged = 0;
 
     CMapMgr* grid = g_gameReg->GetTileGrid();
-    if (grid->CellTypeAt(targetTile.m_x, targetTile.m_y) != TILEKIND_GIANT_ROCK) {
+    if (grid->CellTypeAt(tile.m_x, tile.m_y) != TILEKIND_GIANT_ROCK) {
         goto nudgeDone;
     }
-    free4 = (grid->CellTypeAt(targetTile.m_x, targetTile.m_y + 1) == TILEKIND_GIANT_ROCK)
-                ? ROCKADJ_BELOW
-                : ROCKADJ_NONE;
-    free4 |= (grid->CellTypeAt(targetTile.m_x, targetTile.m_y - 1) == TILEKIND_GIANT_ROCK)
-                 ? ROCKADJ_ABOVE
-                 : ROCKADJ_NONE;
-    free4 |= (grid->CellTypeAt(targetTile.m_x + 1, targetTile.m_y) == TILEKIND_GIANT_ROCK)
-                 ? ROCKADJ_RIGHT
-                 : ROCKADJ_NONE;
-    free4 |= (grid->CellTypeAt(targetTile.m_x - 1, targetTile.m_y) == TILEKIND_GIANT_ROCK)
-                 ? ROCKADJ_LEFT
-                 : ROCKADJ_NONE;
+    free4 = (grid->CellTypeAt(tile.m_x, tile.m_y + 1) == TILEKIND_GIANT_ROCK) ? ROCKADJ_BELOW
+                                                                              : ROCKADJ_NONE;
+    free4 |= (grid->CellTypeAt(tile.m_x, tile.m_y - 1) == TILEKIND_GIANT_ROCK) ? ROCKADJ_ABOVE
+                                                                               : ROCKADJ_NONE;
+    free4 |= (grid->CellTypeAt(tile.m_x + 1, tile.m_y) == TILEKIND_GIANT_ROCK) ? ROCKADJ_RIGHT
+                                                                               : ROCKADJ_NONE;
+    free4 |= (grid->CellTypeAt(tile.m_x - 1, tile.m_y) == TILEKIND_GIANT_ROCK) ? ROCKADJ_LEFT
+                                                                               : ROCKADJ_NONE;
     switch (free4) {
         case ROCKADJ_RIGHT | ROCKADJ_BELOW:
-            targetTile.m_x++;
-            targetTile.m_y++;
+            tile.m_x++;
+            tile.m_y++;
             break;
         case ROCKADJ_RIGHT | ROCKADJ_ABOVE:
-            targetTile.m_x++;
-            targetTile.m_y--;
+            tile.m_x++;
+            tile.m_y--;
             break;
         case ROCKADJ_RIGHT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
-            targetTile.m_x++;
+            tile.m_x++;
             break;
         case ROCKADJ_LEFT | ROCKADJ_BELOW:
-            targetTile.m_x--;
-            targetTile.m_y++;
+            tile.m_x--;
+            tile.m_y++;
             break;
         case ROCKADJ_LEFT | ROCKADJ_ABOVE:
-            targetTile.m_x--;
-            targetTile.m_y--;
+            tile.m_x--;
+            tile.m_y--;
             break;
         case ROCKADJ_LEFT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
-            targetTile.m_x--;
+            tile.m_x--;
             break;
         case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_BELOW:
-            targetTile.m_y++;
+            tile.m_y++;
             break;
         case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_ABOVE:
-            targetTile.m_y--;
+            tile.m_y--;
             break;
         default:
             break;
     }
 
-    for (sy = targetTile.m_y - 1; sy < targetTile.m_y + 2; sy++) {
-        for (sx = targetTile.m_x - 1; sx < targetTile.m_x + 2; sx++) {
-            saved[sx - targetTile.m_x + 1][sy - targetTile.m_y + 1] =
-                grid->CellFlagsAtUnchecked(sx, sy);
-            grid->CellFlagsAtUnchecked(sx, sy) = 0;
+    for (scan.m_y = tile.m_y - 1; scan.m_y < tile.m_y + 2; scan.m_y++) {
+        for (scan.m_x = tile.m_x - 1; scan.m_x < tile.m_x + 2; scan.m_x++) {
+            saved[scan.m_x - tile.m_x + 1][scan.m_y - tile.m_y + 1] =
+                grid->CellFlagsAtUnchecked(scan.m_x, scan.m_y);
+            grid->CellFlagsAtUnchecked(scan.m_x, scan.m_y) = 0;
         }
     }
     grid = g_gameReg->GetTileGrid();
     if (grid->FindPathWithEndpointOverrides(
             lastTile.m_x,
             lastTile.m_y,
-            targetTile.m_x,
-            targetTile.m_y,
+            tile.m_x,
+            tile.m_y,
             GetCoordList(),
             clearEndpointFlags,
             blockedMask,
@@ -936,25 +982,25 @@ i32 CGrunt::StepArrivalDrop(
             if (!CoordsEmpty()) {
                 nudged = 1;
                 tail = GetTailCoord();
-                pxX = tail->m_x * TILE_SIZE_PX + TILE_HALF_PX;
-                pxY = tail->m_y * TILE_SIZE_PX + TILE_HALF_PX;
+                pixel = *tail;
+                TileCenter(&pixel);
             }
         }
     }
-    for (sy = targetTile.m_y - 1; sy < targetTile.m_y + 2; sy++) {
-        for (sx = targetTile.m_x - 1; sx < targetTile.m_x + 2; sx++) {
-            grid->CellFlagsAtUnchecked(sx, sy) =
-                saved[sx - targetTile.m_x + 1][sy - targetTile.m_y + 1];
+    for (scan.m_y = tile.m_y - 1; scan.m_y < tile.m_y + 2; scan.m_y++) {
+        for (scan.m_x = tile.m_x - 1; scan.m_x < tile.m_x + 2; scan.m_x++) {
+            grid->CellFlagsAtUnchecked(scan.m_x, scan.m_y) =
+                saved[scan.m_x - tile.m_x + 1][scan.m_y - tile.m_y + 1];
         }
     }
     if (0 != nudged) {
         if (CoordCount() == 1 && arrivalPhase == IDX(PICKUP_BOOMERANG)
             && m_entranceReason == PICKUP_GAUNTLETZ) {
-            m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, pxX, pxY);
+            m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, pixel.m_x, pixel.m_y);
             SetEntrancePos(1, 1);
             return 1;
         }
-        m_arrivalTargetPx.Set(pxX, pxY);
+        m_arrivalTargetPx = pixel;
     }
 nudgeDone:
     if (nudged != 0) {
@@ -964,79 +1010,76 @@ nudgeDone:
         SetEntrancePos(1, 1);
         return 0;
     }
-    if (lastTile == targetTile) {
+    if (lastTile == tile) {
         goto reCommit;
     }
 
     blocked = 0;
-    walkX = targetTile.m_x;
-    walkY = targetTile.m_y;
-    if (abs(targetTile.m_x - lastTile.m_x) > abs(targetTile.m_y - lastTile.m_y)) {
-        step = ((targetTile.m_y - lastTile.m_y) << 16) / abs(targetTile.m_x - lastTile.m_x);
+    walk = tile;
+    delta = tile - lastTile;
+    distance = delta.GetAbs();
+    if (distance.m_x > distance.m_y) {
+        step = (delta.m_y << 16) / distance.m_x;
         CMapMgr* lineGrid = g_gameReg->GetTileGrid();
         acc = lastTile.m_y << 16;
-        sx = lastTile.m_x;
-        if (targetTile.m_x - lastTile.m_x > 0) {
+        scan.m_x = lastTile.m_x;
+        if (delta.m_x > 0) {
             while (blocked == 0) {
-                sy = acc >> 16;
-                err = lineGrid->CellFlagsAt(sx, sy);
+                scan.m_y = acc >> 16;
+                err = lineGrid->CellFlagsAt(scan.m_x, scan.m_y);
                 if ((blockedMask & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
-                    walkX = sx;
-                    walkY = sy;
+                    walk = scan;
                 }
                 acc += step;
-                sx++;
+                scan.m_x++;
             }
         } else {
             while (blocked == 0) {
-                sy = acc >> 16;
-                err = lineGrid->CellFlagsAt(sx, sy);
+                scan.m_y = acc >> 16;
+                err = lineGrid->CellFlagsAt(scan.m_x, scan.m_y);
                 if ((blockedMask & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
-                    walkX = sx;
-                    walkY = sy;
+                    walk = scan;
                 }
                 acc += step;
-                sx--;
+                scan.m_x--;
             }
         }
     } else {
-        step = ((targetTile.m_x - lastTile.m_x) << 16) / abs(targetTile.m_y - lastTile.m_y);
+        step = (delta.m_x << 16) / distance.m_y;
         CMapMgr* lineGrid = g_gameReg->GetTileGrid();
         acc = lastTile.m_x << 16;
-        sy = lastTile.m_y;
-        if (targetTile.m_y - lastTile.m_y > 0) {
+        scan.m_y = lastTile.m_y;
+        if (delta.m_y > 0) {
             while (blocked == 0) {
-                sx = acc >> 16;
-                err = lineGrid->CellFlagsAt(sx, sy);
+                scan.m_x = acc >> 16;
+                err = lineGrid->CellFlagsAt(scan.m_x, scan.m_y);
                 if ((blockedMask & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
-                    walkY = sy;
-                    walkX = sx;
+                    walk = scan;
                 }
                 acc += step;
-                sy++;
+                scan.m_y++;
             }
         } else {
             while (blocked == 0) {
-                sx = acc >> 16;
-                err = lineGrid->CellFlagsAt(sx, sy);
+                scan.m_x = acc >> 16;
+                err = lineGrid->CellFlagsAt(scan.m_x, scan.m_y);
                 if ((blockedMask & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
-                    walkY = sy;
-                    walkX = sx;
+                    walk = scan;
                 }
                 acc += step;
-                sy--;
+                scan.m_y--;
             }
         }
     }
-    if (walkX != lastTile.m_x || lastTile.m_y != walkY) {
+    if (walk != lastTile) {
         goto reProbe;
     }
 reCommit:
@@ -1045,17 +1088,20 @@ reCommit:
         return 0;
     }
     m_arrivalPhase = arrivalPhase;
-    return arrivalPhase != 0;
+    if (arrivalPhase != 0) {
+        goto returnOne;
+    }
+    goto returnZero;
 
 reProbe:
-    pxX = walkX * TILE_SIZE_PX + TILE_HALF_PX;
-    pxY = walkY * TILE_SIZE_PX + TILE_HALF_PX;
+    pixel = walk;
+    TileCenter(&pixel);
     clearEndpointFlags = 1;
     if (g_gameReg->GetTileGrid()->FindPathWithEndpointOverrides(
             lastTile.m_x,
             lastTile.m_y,
-            walkX,
-            walkY,
+            walk.m_x,
+            walk.m_y,
             GetCoordList(),
             clearEndpointFlags,
             blockedMask,
@@ -1069,14 +1115,19 @@ reProbe:
     }
     SetEntrancePos(1, 1);
     if (IsGruntAtSavedScreenPos(this) != 0) {
-        FaceTowardTile(walkX, walkY);
+        FaceTowardTile(walk);
     }
     if (m_arrivalPending == false) {
         return 0;
     }
     m_arrivalPhase = arrivalPhase;
-    return arrivalPhase != 0;
+    if (arrivalPhase != 0) {
+        goto returnOne;
+    }
+    goto returnZero;
 }
+
+#include <Gruntz/GruntMovementMacros.h>
 
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
@@ -1175,7 +1226,7 @@ i32 CGrunt::StepGruntMovement() {
             {
                 Coord* node = g_coordPool.Pop();
                 node->Set(tgtTileX, tgtTileY);
-                AddHeadCoord(node);
+                m_coordList.AddHead(node);
             }
             if (PathScan() == 0) {
                 SetFacing(0x3e8, rec);
@@ -1275,7 +1326,7 @@ label_4c6e4:
             if (co->m_x == btx && co->m_y == bty) {
                 g_coordPool.Push(co);
             } else {
-                AddHeadCoord(co);
+                m_coordList.AddHead(co);
             }
         }
         PLAY_GRUNT_CUE_IN_VIEW(8);
@@ -1380,8 +1431,8 @@ i32 CGrunt::CreateHealthSprite() {
 
     m_healthSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY - 0x19,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y - 0x19,
         SORTKEY_GRUNT_HUD,
         "GruntHealthSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -1407,8 +1458,8 @@ i32 CGrunt::CreateToySprite() {
 
     m_toySprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY - 0x19,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y - 0x19,
         SORTKEY_GRUNT_HUD,
         "GruntToySprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -1434,8 +1485,8 @@ i32 CGrunt::CreateStaminaSprite() {
 
     m_staminaSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY - 0x20,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y - 0x20,
         SORTKEY_GRUNT_HUD,
         "GruntStaminaSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -1452,6 +1503,9 @@ i32 CGrunt::CreateStaminaSprite() {
     return 1;
 }
 
+#include <Gruntz/GruntPoweredStateMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
+
 // @early-stop
 RVA(0x0004d3e0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
@@ -1464,8 +1518,8 @@ i32 CGrunt::CreateToyTimeSprite() {
 
     m_toyTimeSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY - 0x20,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y - 0x20,
         SORTKEY_GRUNT_HUD,
         "GruntToyTimeSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -1493,8 +1547,8 @@ i32 CGrunt::CreateWingzTimeSprite() {
 
     m_wingzTimeSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY - 0x26,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y - 0x26,
         SORTKEY_GRUNT_HUD,
         "GruntWingzTimeSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -1520,8 +1574,8 @@ i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
 
     m_powerupSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         0x15,
         "GruntPowerupSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -1547,8 +1601,8 @@ i32 CGrunt::CreateSelectedSprite() {
 
     m_selectedSprite = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         0x14,
         "GruntSelectedSprite",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -2273,10 +2327,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             CStatusBarMgr* sb = play->m_statusBar;
             if (sb->m_hlBusy == false) {
-                if (sb->GetState() == STATUSBAR_HIDDEN) {
+                if (sb->m_position == STATUSBAR_HIDDEN) {
                     sb->RestoreStatusBar();
                 }
-                if (sb->GetActiveTab() != TAB_RESOURCE) {
+                if (sb->m_activeTab != TAB_RESOURCE) {
                     sb->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
                 }
                 sb->Deactivate();
@@ -2399,7 +2453,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
     }
     if (kind == PICKUP_WARPSTONE) {
-        m_triggerMgr->ReinitGroup(m_object->m_screenX, m_object->m_screenY);
+        m_triggerMgr->ReinitGroup(m_object->m_screenPosition.m_x, m_object->m_screenPosition.m_y);
     }
     return 1;
 fail:

@@ -5,6 +5,8 @@
 
 #include <Enums.h>
 #include <Gruntz/ClockInterval.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -34,10 +36,8 @@ public:
     static void RegisterActs();
 
     double m_speed;
-    double m_posX;
-    double m_posY;
-    i32 m_travelDx;
-    i32 m_travelDy;
+    DoubleVector2 m_position;
+    Coord m_travelDirection;
     i32 m_lastDropPlayerIndex;
     i32 m_lastDropUnitIndex;
     ObjectDropScope m_scrollMode;

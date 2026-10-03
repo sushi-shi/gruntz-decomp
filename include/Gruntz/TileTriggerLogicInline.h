@@ -50,8 +50,8 @@ __inline i32 CTileTriggerLogic::Setup(
     if (m_initGate != false) {
         return 0;
     }
-    m_tileY = tileY;
-    m_tileX = tileX;
+    m_tile.m_y = tileY;
+    m_tile.m_x = tileX;
     m_owner = owner;
     m_typeTag = typeTag;
     m_cellKey = cellKey;
@@ -86,8 +86,8 @@ __inline i32 CGiantRockLogic::Build(
     m_powerupType = powerupType;
     m_textId = textId;
     m_typeTag = TRIGID_GIANT_ROCK_22;
-    m_tileX = tileX;
-    m_tileY = tileY;
+    m_tile.m_x = tileX;
+    m_tile.m_y = tileY;
     m_cellKey = cellKey;
     m_owner = owner;
     m_initGate = true;

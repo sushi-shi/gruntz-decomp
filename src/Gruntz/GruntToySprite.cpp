@@ -7,6 +7,7 @@
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
@@ -78,7 +79,11 @@ i32 CGruntToySprite::Update() {
         m_lastLayer = layer;
         m_object->SetImageFrame(IDX(layer));
     }
-    SET_SCREEN_POS(m_object, e->m_object->m_screenX, e->m_object->m_screenY - 0x20);
+    SET_SCREEN_POS(
+        m_object,
+        e->m_object->m_screenPosition.m_x,
+        e->m_object->m_screenPosition.m_y - 0x20
+    );
     return 0;
 }
 

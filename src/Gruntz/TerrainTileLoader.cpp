@@ -3,6 +3,7 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <Globals.h>
 #include <Gruntz/BrickTileId.h>
@@ -17,6 +18,7 @@
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/PickupType.h>
@@ -558,8 +560,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cue != WWDDRAW_TOOL_APPLIES) {
                 return 1;
             }
-            i32 waterX = unit->m_object->m_screenX;
-            i32 waterY = unit->m_object->m_screenY;
+            i32 waterX = unit->m_object->m_screenPosition.m_x;
+            i32 waterY = unit->m_object->m_screenPosition.m_y;
             if (::PtInRect(&g_gameReg->m_viewBounds, waterX, waterY)) {
                 CWwdSpriteObject* splash = m_world->ChildGroup()->CreateSprite(
                     0,

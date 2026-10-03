@@ -43,7 +43,7 @@ i32 CSBI_ImageSetAni::Init(
     if (owner == NULL) {
         goto fail;
     }
-    Initialize(owner, tab, host);
+    InitializeBase(owner, tab, host);
 
     m_rect = rc;
     m_cmd = cmd;
@@ -101,8 +101,8 @@ i32 CSBI_ImageSetAni::Render() {
             CDDrawSurfacePair* surfaceCtx = g_gameReg->World()->m_drawTarget->m_backPair;
             cel->RenderFrame(
                 surfaceCtx,
-                cel->m_anchorX + m_rect.left,
-                cel->m_anchorY + m_rect.top,
+                cel->m_anchor.x + m_rect.left,
+                cel->m_anchor.y + m_rect.top,
                 0
             );
         }

@@ -8,6 +8,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
@@ -77,7 +78,11 @@ i32 CGruntPowerupSprite::Update() {
         m_gruntIdentity.m_unitIndex
     );
     if (e != NULL) {
-        SET_SCREEN_POS(m_object, e->m_object->m_screenX, e->m_object->m_screenY);
+        SET_SCREEN_POS(
+            m_object,
+            e->m_object->m_screenPosition.m_x,
+            e->m_object->m_screenPosition.m_y
+        );
     }
     return 0;
 }
@@ -101,7 +106,7 @@ i32 CGruntPowerupSprite::SerializeDispatch(
             i32 id = m_powerupId;
             CWwdSpriteObject* r = m_object;
             CShadeTable* v = g_gameReg->m_lightFxMgr->m_tables[id];
-            r->SetDrawFillReversed(SHADE_DST_BY_SRC_16, v);
+            r->SetDrawFill(SHADE_DST_BY_SRC_16, v);
             break;
         }
     }

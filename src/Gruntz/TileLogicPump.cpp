@@ -224,7 +224,6 @@ i32 CTileTriggerSwitch::AdvanceAnim() {
     return 0;
 }
 
-// @early-stop
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -233,11 +232,10 @@ CTileTrigger::CTileTrigger(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     Hide();
 
-    i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
-    m_object->m_speedX = tileX;
-    m_object->m_speedY = tileY;
-    m_object->m_id = CellKey(tileX, tileY);
+    Coord tile;
+    GetScreenTile(&tile);
+    m_object->m_speed = tile;
+    m_object->m_id = CellKey(tile.m_x, tile.m_y);
 }
 
 RVA(0x0010e4a0, 0x102)
@@ -252,7 +250,6 @@ void CTileTrigger::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
 }
 
-// @early-stop
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -260,11 +257,10 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), C
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     Hide();
 
-    i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
-    m_object->m_speedX = tileX;
-    m_object->m_speedY = tileY;
-    m_object->m_id = CellKey(tileX, tileY);
+    Coord tile;
+    GetScreenTile(&tile);
+    m_object->m_speed = tile;
+    m_object->m_id = CellKey(tile.m_x, tile.m_y);
 }
 
 RVA(0x0010ea80, 0x102)
@@ -297,7 +293,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
 
     CWwdSpriteObject* o = m_object;
-    i32 zk = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
+    i32 zk = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
     o->SetSortKey(zk);
     memset(m_state, 0, sizeof(m_state));
     if (!m_object->HasMovementBounds()) {
@@ -421,10 +417,9 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    i32 gy = pad->GetTileY();
-    i32 gx = pad->GetTileX();
+    Coord tile(pad->GetTileX(), pad->GetTileY());
     CGruntzMapMgr* grid = g_gameReg->GetTileGrid();
-    i32 owner = grid->OccupantAt(gx, gy);
+    i32 owner = grid->OccupantAt(tile.m_x, tile.m_y);
     if (owner == -1) {
         return 0;
     }
@@ -438,8 +433,8 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    i32 sy = g->m_object->m_screenY;
-    i32 sx = g->m_object->m_screenX;
+    i32 sy = g->m_object->m_screenPosition.m_y;
+    i32 sx = g->m_object->m_screenPosition.m_x;
     const RECT* view = &g_gameReg->World()->m_level->m_mainPlane->m_planeViewRect;
     if (!PtInRect(view, sx, sy)) {
         return 0;

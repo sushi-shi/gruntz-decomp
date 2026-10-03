@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -27,10 +28,10 @@ public:
     CGruntPuddle(CGameObject* obj);
 
     i32 GetTileX() const {
-        return m_tileX;
+        return m_tile.m_x;
     }
     i32 GetTileY() const {
-        return m_tileY;
+        return m_tile.m_y;
     }
     b32 IsPending() const {
         return m_pending;
@@ -43,8 +44,7 @@ public:
 
     virtual void FireActivation(i32 id) OVERRIDE;
 
-    i32 m_tileX;
-    i32 m_tileY;
+    Coord m_tile;
     b32 m_pending;
 
     b32 m_placed;

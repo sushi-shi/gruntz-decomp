@@ -26,6 +26,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -63,18 +64,13 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
             CGruntPuddle* cand = m_triggerMgr->GetPuddleAt(pos);
             m_triggerMgr->GetNextPuddle(pos);
             if (cand->IsPending() == false) {
-                i32 candX = cand->GetTileX();
-                i32 candY = cand->GetTileY();
+                Coord candidate = cand->m_tile;
                 CGameObject* object = unit->m_object;
-                i32 screenX = object->m_screenX;
-                i32 screenY = object->m_screenY;
+                Coord screen = object->ScreenPos();
                 Coord current = ScreenTile(unit);
-                if (candX != current.m_x || candY != current.m_y) {
-                    i32 dx = candX - (screenX >> TILE_SHIFT_PX);
-                    dx = abs(dx);
-                    i32 dy = candY - (screenY >> TILE_SHIFT_PX);
-                    dy = abs(dy);
-                    i32 dist = SquaredDistance(dx, dy);
+                if (candidate != current) {
+                    ScreenTile(&screen);
+                    i32 dist = candidate.DistSqr(screen);
                     if (dist < bestDist) {
                         bestDist = dist;
                         best = cand;
@@ -83,7 +79,15 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
             }
         }
         if (best != NULL) {
-            RouteUnitTo(unit, best->GetTileX(), best->GetTileY(), 0xd87, 0, 0);
+            RouteUnitTo(
+                unit,
+                best->GetTileX(),
+                best->GetTileY(),
+                IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
+                    | CELL_FLAG_WATER | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD),
+                0,
+                0
+            );
         }
         unit->m_dwell = 0;
     }

@@ -22,7 +22,6 @@
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/VoiceManager.h>
 #include <Wap32/TileGeometry.h>
@@ -99,7 +98,9 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     } else {
-        SNAP_OBJECT_TO_TILE_CENTER(m_object)
+        Coord position = m_object->ScreenPos();
+        SnapTileCenter(&position);
+        m_object->SetScreenPos(position);
         CWwdSpriteObject* o = m_object;
         o->SetSortKey(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
@@ -126,7 +127,9 @@ RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && g_gameReg->m_isCustomLevel == false) {
-        SNAP_OBJECT_TO_TILE_CENTER(m_object)
+        Coord position = m_object->ScreenPos();
+        SnapTileCenter(&position);
+        m_object->SetScreenPos(position);
         CWwdSpriteObject* o = m_object;
         o->SetSortKey(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
@@ -153,8 +156,13 @@ RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* spr = m_object;
-    CGrunt* hit = g_gameReg->GetTriggerMgr()
-                      ->HitTestCell(spr->m_screenX, spr->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* hit = g_gameReg->GetTriggerMgr()->HitTestCell(
+        spr->m_screenPosition.m_x,
+        spr->m_screenPosition.m_y,
+        &playerIndex,
+        &unitIndex,
+        1
+    );
     if (hit) {
         spr = m_object;
         b32 ok = true;
@@ -179,14 +187,19 @@ RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* o = m_object;
-    CGrunt* hit = g_gameReg->GetTriggerMgr()
-                      ->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* hit = g_gameReg->GetTriggerMgr()->HitTestCell(
+        o->m_screenPosition.m_x,
+        o->m_screenPosition.m_y,
+        &playerIndex,
+        &unitIndex,
+        1
+    );
     if (hit) {
         o = m_object;
         CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
-            (o->m_score << TILE_SHIFT_PX) + TILE_HALF_PX,
-            (o->m_points << TILE_SHIFT_PX) + TILE_HALF_PX,
+            TILE_CENTER_COMPONENT(o->m_score),
+            TILE_CENTER_COMPONENT(o->m_points),
             0,
             "Teleporter",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -194,8 +207,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         if (spr) {
             spr->m_smarts = 2;
             spr->GetLogicRecord()->m_speed = m_object->GetLogicRecord()->m_speed;
-            spr->m_speedX = m_object->m_speedX;
-            spr->m_speedY = m_object->m_speedY;
+            SET_VECTOR2_COMPONENTS(spr->m_speed, m_object->m_speed.m_x, m_object->m_speed.m_y);
             spr->m_powerup = m_object->m_powerup;
             spr->m_damage = m_object->m_damage;
             spr->m_score = m_object->m_score;
@@ -203,8 +215,8 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->m_health = 0;
             CWwdSpriteObject* eo = hit->m_object;
             CGruntzMgr* g = g_gameReg;
-            i32 ey = eo->m_screenY;
-            i32 ex = eo->m_screenX;
+            i32 ey = eo->m_screenPosition.m_y;
+            i32 ex = eo->m_screenPosition.m_x;
             CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
             if (::PtInRect(rc->GetPlaneViewRect(), ex, ey)) {
                 g->VoiceMgr()->PlayVoice(hit, 0x3fc, -1, 0, -1, -1);

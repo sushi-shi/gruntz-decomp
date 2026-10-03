@@ -5,9 +5,12 @@
 
 #include <DDrawMgr/DDrawWorker.h>
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdPlaneFlags.h>
 
@@ -34,10 +37,10 @@ public:
     }
 
     i32 GetTileColumns() const {
-        return m_tileColumns;
+        return m_tileGridSize.cx;
     }
     i32 GetTileRows() const {
-        return m_tileRows;
+        return m_tileGridSize.cy;
     }
 
     CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
@@ -68,6 +71,15 @@ public:
 
     void SetCell(i32 tileX, i32 tileY, i32 tileHandle);
     void UpdatePlaneViewRect();
+    inline void SetScrollPosition(i32 x, i32 y) {
+        FloatVector2 position(static_cast<float>(x), static_cast<float>(y));
+        if (!HAS(static_cast<WwdPlaneFlags>(m_flags), WWD_PLANE_FLAG_MAIN)) {
+            position.m_x *= m_scrollScale.m_x;
+            position.m_y *= m_scrollScale.m_y;
+        }
+        m_scrollCenter = position;
+        UpdatePlaneViewRect();
+    }
     void SetViewportRect(LevelCoordRect* coords);
     void SetTileSize(i32 tileWidthPx, i32 tileHeightPx);
 
@@ -102,34 +114,29 @@ public:
         return static_cast<CDDrawWorker*>(m_imageSets[static_cast<int>(index)]);
     }
 
-    float m_scrollCenterX;
-    float m_scrollCenterY;
-    float m_scrollScaleX;
-    float m_scrollScaleY;
+    FloatVector2 m_scrollCenter;
+    FloatVector2 m_scrollScale;
     i32* m_tileHandles;
     i32* m_tileRowOffsets;
-    i32 m_tileColumns;
-    i32 m_tileRows;
-    i32 m_planePixelWidth;
-    i32 m_planePixelHeight;
-    i32 m_tileWidthPx;
-    i32 m_tileHeightPx;
+    SIZE
+    m_tileGridSize;
+    SIZE
+    m_planePixelSize;
+    SIZE
+    m_tilePixelSize;
     RECT m_planeViewRect;
 
     LevelCoordRect m_viewportRect;
     RECT m_tileRect;
 
-    i32 m_viewportWidth;
-    i32 m_viewportHeight;
-    i32 m_viewHalfWidth;
-    i32 m_viewHalfHeight;
+    SIZE
+    m_viewportSize;
+    SIZE
+    m_viewHalfSize;
     i32 m_zCoord;
-    i32 m_scrollPixelX;
-    i32 m_scrollPixelY;
-    i32 m_shiftX;
-    i32 m_shiftY;
-    i32 m_movementXPercent;
-    i32 m_movementYPercent;
+    Coord m_scrollPixel;
+    Coord m_tileShift;
+    Coord m_movementPercent;
     CObArray m_imageSets;
 
     CWwdSpatialMgr* m_spatialMgr;
@@ -140,41 +147,41 @@ public:
 
 #define SET_SCROLL_POSITION_SCALED_FIRST(plane, x, y)                                              \
     if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
-        plane->m_scrollCenterX = static_cast<float>(x) * plane->m_scrollScaleX;                    \
-        plane->m_scrollCenterY = static_cast<float>(y) * plane->m_scrollScaleY;                    \
+        plane->m_scrollCenter.m_x = static_cast<float>(x) * plane->m_scrollScale.m_x;              \
+        plane->m_scrollCenter.m_y = static_cast<float>(y) * plane->m_scrollScale.m_y;              \
     } else {                                                                                       \
-        plane->m_scrollCenterX = static_cast<float>(x);                                            \
-        plane->m_scrollCenterY = static_cast<float>(y);                                            \
+        plane->m_scrollCenter.m_x = static_cast<float>(x);                                         \
+        plane->m_scrollCenter.m_y = static_cast<float>(y);                                         \
     }                                                                                              \
     plane->UpdatePlaneViewRect()
 
 #define SET_SCROLL_POSITION_RAW_FIRST(plane, x, y)                                                 \
     if (HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                  \
-        plane->m_scrollCenterX = static_cast<float>(x);                                            \
-        plane->m_scrollCenterY = static_cast<float>(y);                                            \
+        plane->m_scrollCenter.m_x = static_cast<float>(x);                                         \
+        plane->m_scrollCenter.m_y = static_cast<float>(y);                                         \
     } else {                                                                                       \
-        plane->m_scrollCenterX = static_cast<float>(x) * plane->m_scrollScaleX;                    \
-        plane->m_scrollCenterY = static_cast<float>(y) * plane->m_scrollScaleY;                    \
+        plane->m_scrollCenter.m_x = static_cast<float>(x) * plane->m_scrollScale.m_x;              \
+        plane->m_scrollCenter.m_y = static_cast<float>(y) * plane->m_scrollScale.m_y;              \
     }                                                                                              \
     plane->UpdatePlaneViewRect()
 
 #define SET_SCROLL_POSITION_PRODUCT_CAST(plane, x, y)                                              \
     if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
-        plane->m_scrollCenterX = static_cast<float>(x * plane->m_scrollScaleX);                    \
-        plane->m_scrollCenterY = static_cast<float>(y * plane->m_scrollScaleY);                    \
+        plane->m_scrollCenter.m_x = static_cast<float>(x * plane->m_scrollScale.m_x);              \
+        plane->m_scrollCenter.m_y = static_cast<float>(y * plane->m_scrollScale.m_y);              \
     } else {                                                                                       \
-        plane->m_scrollCenterX = static_cast<float>(x);                                            \
-        plane->m_scrollCenterY = static_cast<float>(y);                                            \
+        plane->m_scrollCenter.m_x = static_cast<float>(x);                                         \
+        plane->m_scrollCenter.m_y = static_cast<float>(y);                                         \
     }                                                                                              \
     plane->UpdatePlaneViewRect()
 
 #define SET_SCROLL_POSITION_ZERO(plane)                                                            \
     if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
-        plane->m_scrollCenterX = 0.0f * plane->m_scrollScaleX;                                     \
-        plane->m_scrollCenterY = 0.0f * plane->m_scrollScaleY;                                     \
+        plane->m_scrollCenter.m_x = 0.0f * plane->m_scrollScale.m_x;                               \
+        plane->m_scrollCenter.m_y = 0.0f * plane->m_scrollScale.m_y;                               \
     } else {                                                                                       \
-        plane->m_scrollCenterX = 0.0f;                                                             \
-        plane->m_scrollCenterY = 0.0f;                                                             \
+        plane->m_scrollCenter.m_x = 0.0f;                                                          \
+        plane->m_scrollCenter.m_y = 0.0f;                                                          \
     }                                                                                              \
     plane->UpdatePlaneViewRect()
 
@@ -201,7 +208,7 @@ public:
     CLAMP_TO_EXTENT(tileY, (plane)->GetTileRows())
 
 #define CLAMP_PIXEL_TO_PLANE(pixelX, pixelY, plane)                                                \
-    CLAMP_TO_EXTENT(pixelX, (plane)->m_planePixelWidth)                                            \
-    CLAMP_TO_EXTENT(pixelY, (plane)->m_planePixelHeight)
+    CLAMP_TO_EXTENT(pixelX, (plane)->m_planePixelSize.cx)                                          \
+    CLAMP_TO_EXTENT(pixelY, (plane)->m_planePixelSize.cy)
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

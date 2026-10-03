@@ -15,7 +15,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/TileSnapMacros.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/Warlord.h>
@@ -34,10 +34,12 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     SET_ANIMATION_ACT("A");
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
     CWwdSpriteObject* o = m_object;
-    o->SetSortKey(SORTKEY_EXIT_TRIGGER);
-    SET_OBJECT_AREA(1)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_EXIT_TRIGGER);
+    SET_OBJECT_AREA(1);
     SwitchAnimationByName("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;
     GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
@@ -45,14 +47,12 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
         m_resolved = false;
         return;
     }
-    i32 focusX = m_object->m_screenX;
-    i32 focusY = m_object->m_screenY;
-    slot->m_focusX = focusX;
-    slot->m_focusY = focusY;
+    Coord focus = m_object->ScreenPos();
+    slot->m_focus = focus;
     CGameObject* e = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         0,
         "Warlord",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -61,7 +61,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
         e->m_smarts = m_object->m_smarts;
         e->GetLogicRecord()->Dispatch(e);
 
-        m_warlordLogic = static_cast<CWarlord*>(e->GetLogicRecord()->UserLogic());
+        m_warlordLogic = static_cast<CWarlord*>(e->GetLogicRecord()->m_userLogic);
         if (m_object->m_smarts == g_curPlayer) {
             g_gameReg->GetTriggerMgr()->m_pendingFx = m_warlordLogic;
         }

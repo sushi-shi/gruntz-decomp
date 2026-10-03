@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileTriggerLogic.h>
@@ -53,11 +54,11 @@ public:
     i32 LoadState(CFileMemBase* s);
 
     i32 GetTileX() const {
-        return m_tileX;
+        return m_tile.m_x;
     }
 
     i32 GetTileY() const {
-        return m_tileY;
+        return m_tile.m_y;
     }
 
     void SetOwner(CTileTriggerContainer* owner) {
@@ -70,8 +71,7 @@ public:
 
     TrigLogicId m_typeId;
 
-    i32 m_tileX;
-    i32 m_tileY;
+    Coord m_tile;
     i32 m_cellKey;
     b32 m_linkGate;
     i32 m_damageParam;

@@ -74,7 +74,8 @@ i32 CGrunt::StepPostGuardBehavior() {
     if (m_stamina < STAMINA_FULL) {
         return 1;
     }
-    if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
+    if (RectContains(occ->m_object->m_screenPosition.m_x, occ->m_object->m_screenPosition.m_y)
+        == 0) {
         return 1;
     }
     if (!IsGruntAtSavedScreenPos(occ)) {

@@ -10,7 +10,7 @@
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/ColorTintRef.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <RectMacros.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 
 #include <string.h>
@@ -363,9 +363,9 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         MeasureLabel(hdc, rect);
     }
     int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
-    RECT rc = *rect;
+    CRect rc = *rect;
     pDraw(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
-    i32 fmt = ((rc.right - rc.left) > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
+    i32 fmt = (rc.Width() > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
     g_lastDrawTextFormat = fmt;
     pDraw(hdc, text, text.GetLength(), rect, fmt);
     if (prev) {

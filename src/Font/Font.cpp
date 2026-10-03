@@ -220,10 +220,10 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     if (RunRightEdge(rc, x) > surf->GetWidth()) {
-        rc.right = rc.right + rc.Width() + x - surf->GetWidth();
+        rc.right += rc.Width() + x - surf->GetWidth();
     }
     if (y + rc.Height() > surf->GetHeight()) {
-        rc.bottom = rc.bottom + rc.Height() + y - surf->GetHeight();
+        rc.bottom += rc.Height() + y - surf->GetHeight();
     }
 
     CSize m = MeasureText(text);
@@ -346,7 +346,7 @@ void FontRenderer::DrawWrapped(
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
         CSize m = MeasureWrapped(text, rc);
-        rc.top = rc.top + rc.Height() / 2 - m.cy / 2;
+        rc.top += rc.Height() / 2 - m.cy / 2;
     }
 
     i32 y = rc.top;

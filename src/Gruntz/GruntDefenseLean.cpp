@@ -23,6 +23,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -62,7 +63,10 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 if (m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
+                if (RectContains(
+                        occ->m_object->m_screenPosition.m_x,
+                        occ->m_object->m_screenPosition.m_y
+                    ) != 0
                     && IsGruntAtSavedScreenPos(occ)) {
                     COMMIT_GRUNT_NEIGHBOR(occ);
                     return 1;
@@ -98,7 +102,11 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
+            if (RectContains(
+                    occ->m_object->m_screenPosition.m_x,
+                    occ->m_object->m_screenPosition.m_y
+                )
+                == 0) {
                 return 1;
             }
             if (!IsGruntAtSavedScreenPos(occ)) {

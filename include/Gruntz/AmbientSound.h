@@ -18,6 +18,10 @@ GZ_ENUM_CONST_END(AmbientSoundActState)
 #include <Lith/BDefs.h>
 
 struct AmbientPoint {
+    AmbientPoint() {}
+
+    AmbientPoint(i32 pointX, i32 pointY) : m_x(pointX), m_y(pointY) {}
+
     i32 m_x;
     i32 m_y;
 };

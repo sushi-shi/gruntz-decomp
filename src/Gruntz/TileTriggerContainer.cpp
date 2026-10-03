@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
@@ -206,7 +207,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    RECT empty = {0, 0, 0, 0};
+    CRect empty(0, 0, 0, 0);
     return AddLogic(
         tileType,
         logicType,
@@ -237,8 +238,8 @@ void CTileTriggerContainer::AddLogicFromRecord(
     AddLogic(
         tileType,
         logicType,
-        object->m_speedX,
-        object->m_speedY,
+        object->m_speed.m_x,
+        object->m_speed.m_y,
         object->m_id,
         object->m_extent,
         object->m_area,
@@ -913,14 +914,7 @@ RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     CTileActionEvent* elem = FindActionByCellKey(CellKey(tileX, tileY));
     if (elem != NULL) {
-        if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
-            i32* flags = elem->m_playerFlags;
-            for (i32 i = 0; i < 4; i++) {
-                flags[i] = 1;
-            }
-        } else {
-            elem->m_playerFlags[playerSlot] = 1;
-        }
+        ENABLE_PLAYER_SLOT_FLAGS(elem->m_playerFlags, playerSlot);
         elem->SetActionCode(elem->GetActionCode());
         return 1;
     }

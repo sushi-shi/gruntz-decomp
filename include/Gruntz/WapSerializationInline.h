@@ -12,7 +12,6 @@
 
 #include <string.h>
 
-// @early-stop
 RVA(0x00008c00, 0x152)
 inline i32 CWapX::SerializeAnimationState(
     CFileMemBase* archive,

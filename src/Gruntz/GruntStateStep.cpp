@@ -11,6 +11,7 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeColl.h>
@@ -26,7 +27,7 @@
 
 RVA(0x00033520, 0xbc3)
 i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
-    GruntAiState state = g->GetDefenderState();
+    GruntAiState state = g->m_defenderState;
     if (state == AISTATE_RETURN) {
         return 1;
     }
@@ -39,8 +40,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             nb = FindIdleGruntInBox(
                 tp.m_x,
                 tp.m_y,
-                m_defenderSearchRadiusX,
-                m_defenderSearchRadiusY
+                m_defenderSearchRadius.m_x,
+                m_defenderSearchRadius.m_y
             );
         }
         if (nb != NULL) {
@@ -75,7 +76,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 Coord p;
                 nb->GetScreenTile(&p);
                 if (g->TileSwitch(p.m_x, p.m_y, 0, arrivalMask, 0, 0)) {
-                    g->SetDefenderState(AISTATE_ATTACK);
+                    g->m_defenderState = AISTATE_ATTACK;
                     g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
                     g->m_dwell = 0;
                 }
@@ -88,10 +89,11 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     }
 
     {
-        CGrunt* cur = m_triggerMgr->UnitAt(g->ArrivalCell().m_x, g->ArrivalCell().m_y);
+        Coord target = g->ArrivalCell();
+        CGrunt* cur = m_triggerMgr->UnitAt(target.m_x, target.m_y);
         if (cur != NULL) {
             CGameObject* s = cur->m_object;
-            if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
+            if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
 
                 g->RecycleCoords();
                 UNSET_COORD(g->m_arrivalCell);
@@ -100,7 +102,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     && g->m_poweredUp == false && BattlezActDiffersFromIGLPJCR(g)) {
                     HandleUnitContact(g, cur);
                 }
-                g->SetDefenderState(AISTATE_SEEK);
+                g->m_defenderState = AISTATE_SEEK;
                 goto tail;
             }
 
@@ -119,7 +121,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 }
                 UNSET_COORD(g->m_arrivalCell);
                 g->m_dwell = 0;
-                g->SetDefenderState(AISTATE_SEEK);
+                g->m_defenderState = AISTATE_SEEK;
                 g->RecycleCoords();
                 g->m_dwell = 0;
                 goto tail;

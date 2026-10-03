@@ -18,17 +18,17 @@ inline void CMapMgr::Clip(const RECT* src) {
     if (!IntersectRect(dst, &clip, &bounds)) {
         *dst = clip;
     }
-    m_gridW = dst->right - dst->left;
-    m_gridH = dst->bottom - dst->top;
+    m_gridSize.cx = dst->right - dst->left;
+    m_gridSize.cy = dst->bottom - dst->top;
 }
 
 inline i32 CMapMgr::InSearchBounds(i32 x, i32 y) const {
     x -= m_bounds.left;
-    if (static_cast<u32>(x) >= static_cast<u32>(m_gridW)) {
+    if (static_cast<u32>(x) >= static_cast<u32>(m_gridSize.cx)) {
         return 0;
     }
     y -= m_bounds.top;
-    if (static_cast<u32>(y) >= static_cast<u32>(m_gridH)) {
+    if (static_cast<u32>(y) >= static_cast<u32>(m_gridSize.cy)) {
         return 0;
     }
     return 1;

@@ -23,6 +23,7 @@
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
+#include <Wwd/WwdTileHandle.h>
 
 #include <stdlib.h>
 
@@ -329,8 +330,8 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
          obj = g_gameReg->m_world->m_childGroup->NextChild()) {
 
         if (obj->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic) {
-            i32 tileX = obj->m_screenX / TILE_SIZE_PX;
-            i32 tileY = obj->m_screenY / TILE_SIZE_PX;
+            i32 tileX = obj->m_screenPosition.m_x / TILE_SIZE_PX;
+            i32 tileY = obj->m_screenPosition.m_y / TILE_SIZE_PX;
             for (i32 xo = -1; xo < 2; xo++) {
                 i32 cx = tileX + xo;
                 for (i32 yo = -1; yo < 2; yo++) {

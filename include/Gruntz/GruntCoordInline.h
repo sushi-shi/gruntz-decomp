@@ -6,13 +6,15 @@
 
 RVA(0x000343f0, 0x47)
 inline void CGrunt::RecycleCoords() {
-    if (CoordsEmpty()) {
+    if (CoordCount() == 0) {
         return;
     }
     POSITION n = CoordHead();
     if (n != NULL) {
         do {
-            Coord* coord = static_cast<Coord*>(m_coordList.GetNext(n));
+            POSITION cur = n;
+            m_coordList.GetNext(n);
+            Coord* coord = static_cast<Coord*>(m_coordList.GetAt(cur));
             if (coord != NULL) {
                 g_coordPool.Push(coord);
             }

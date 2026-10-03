@@ -38,7 +38,7 @@ i32 CSBI_Image::SetupImage(
     i32 extra
 ) {
     if (host != NULL && owner != NULL) {
-        Initialize(owner, tab, host, false);
+        InitializeBase(owner, tab, host, false);
         m_rect = rc;
         m_cmd = cmd;
         if (key != NULL) {
@@ -66,9 +66,13 @@ i32 CSBI_Image::Render() {
         m_redrawFrames--;
         CImage* cel = m_frame;
         if (cel != NULL) {
-            i32 y = m_rect.top + cel->m_anchorY;
-            i32 x = m_rect.left + cel->m_anchorX;
-            cel->RenderFrame(g_gameReg->m_world->GetDrawTarget()->GetBackPair(), x, y, 0);
+            CPoint position(m_rect.left + cel->m_anchor.x, m_rect.top + cel->m_anchor.y);
+            cel->RenderFrame(
+                g_gameReg->m_world->GetDrawTarget()->GetBackPair(),
+                position.x,
+                position.y,
+                0
+            );
         }
     }
     return 1;
