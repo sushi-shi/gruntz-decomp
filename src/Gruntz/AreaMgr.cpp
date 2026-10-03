@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Enums.h>
 #include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/LevelArea.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SpawnList.h>
@@ -665,7 +666,7 @@ b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     if (levelIndex <= 0) {
         return false;
     }
-    i32 requestedWorld = (levelIndex - 1) % 36 / 4 + 1;
-    i32 currentWorld = (m_currentLevelIndex - 1) % 36 / 4 + 1;
+    LevelArea requestedWorld = LevelAreaForLevel(levelIndex);
+    LevelArea currentWorld = LevelAreaForLevel(m_currentLevelIndex);
     return currentWorld == requestedWorld;
 }

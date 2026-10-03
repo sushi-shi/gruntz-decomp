@@ -4,6 +4,7 @@
 
 #include <Enums.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelArea.h>
 #include <Io/FileStream.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>
@@ -83,7 +84,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
     } else {
         WwdHeader buf;
         char scratch[32];
-        sprintf(scratch, "AREA%i_WORLDZ", ((levelId - 1) % 0x24) / 4 + 1);
+        sprintf(scratch, "AREA%i_WORLDZ", IDX(LevelAreaForLevel(levelId)));
         CRezDir* node = m_resourceArchive->GetDirFromPath(scratch);
         if (node == NULL) {
             return 0;

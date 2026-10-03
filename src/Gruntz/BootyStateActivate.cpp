@@ -1710,7 +1710,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     {
         char area[128];
-        sprintf(area, "AREA%i", (g_gameReg->GetGameStats()->m_levelNumber - 1) % 0x24 / 4 + 1);
+        sprintf(area, "AREA%i", IDX(LevelAreaForLevel(g_gameReg->GetGameStats()->m_levelNumber)));
         m_levelResources = m_resourceArchive->GetDirFromPath(area);
     }
     if (!m_levelResources) {

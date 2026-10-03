@@ -31,12 +31,11 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
 
     m_faderMgr = mgr->m_faderMgr;
     m_levelIndex = areaArg;
-    i32 t = (areaArg - 1) % 0x24;
     m_reserved44 = -1;
     m_reserved48 = -1;
     m_reserved14c = 0;
     m_previousStateId = static_cast<GameStateId>(prevStateId);
-    m_levelType = static_cast<LevelArea>(t / 4 + 1);
+    m_levelType = LevelAreaForLevel(areaArg);
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
     sprintf(area, "AREA%i", IDX(m_levelType));

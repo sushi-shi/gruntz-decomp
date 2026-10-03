@@ -962,8 +962,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_initialFramePending = true;
     self->m_levelIndex = level;
     {
-        i32 r = (level - 1) % 0x24;
-        self->m_levelType = static_cast<LevelArea>(r / 4 + 1);
+        self->m_levelType = LevelAreaForLevel(level);
     }
 
     g_frameTime = 0;
@@ -1050,9 +1049,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             self->m_mgr->m_isCustomLevel = true;
         }
 
-        i32 r = (level - 1) % 0x24;
         self->m_levelIndex = level;
-        self->m_levelType = static_cast<LevelArea>(r / 4 + 1);
+        self->m_levelType = LevelAreaForLevel(level);
     }
 
     sprintf(nameBuf, "AREA%i", IDX(self->m_levelType));
