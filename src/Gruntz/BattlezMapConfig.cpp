@@ -313,8 +313,8 @@ void CBattlezMapConfig::FreeArrays() {
     }
     m_candArray.RemoveAll();
 
-    for (i = 0; i < m_attackWaypoints.GetSize(); i++) {
-        g_coordPool.Push(m_attackWaypoints[i]);
+    for (i = 0; i < GetAttackWaypointCount(); i++) {
+        g_coordPool.Push(CoordAt(i));
     }
     m_attackWaypoints.RemoveAll();
 
@@ -1826,10 +1826,10 @@ i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
         ar->Write(&m_reserved12c[k], sizeof(m_reserved12c[k]));
     }
 
-    n = m_attackWaypoints.GetSize();
+    n = GetAttackWaypointCount();
     ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
-        ar->Write(m_attackWaypoints[i], 8);
+        ar->Write(CoordAt(i), 8);
     }
 
     n = m_candArray.GetSize();
@@ -1921,8 +1921,8 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
         ar->Read(&m_reserved12c[k], sizeof(m_reserved12c[k]));
     }
 
-    for (j = 0; j < m_attackWaypoints.GetSize(); j++) {
-        Coord* q = static_cast<Coord*>(m_attackWaypoints[j]);
+    for (j = 0; j < GetAttackWaypointCount(); j++) {
+        Coord* q = CoordAt(j);
         if (q != NULL) {
             g_coordPool.Push(q);
         }

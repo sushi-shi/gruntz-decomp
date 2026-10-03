@@ -118,6 +118,11 @@ inline void CGrunt::MirrorAcrossArrival() {
     TileSwitch(mirrored.m_x, mirrored.m_y, 0, m_arrivalFlags, 1, 0);
 }
 
+inline Coord ScreenTile(Coord pos) {
+    ScreenTile(&pos);
+    return pos;
+}
+
 inline Coord ScreenTile(CGrunt* unit) {
     Coord out;
     CGameObject* object = unit->m_object;

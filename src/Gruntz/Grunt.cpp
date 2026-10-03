@@ -811,8 +811,7 @@ i32 CGrunt::StepArrivalDrop(
     }
 
     this->RecycleCoords();
-    lastTile = LastTilePx();
-    ScreenTile(&lastTile);
+    lastTile = ScreenTile(LastTilePx());
     tile = pixel;
     ScreenTile(&tile);
     if (blockedMask == -1) {
