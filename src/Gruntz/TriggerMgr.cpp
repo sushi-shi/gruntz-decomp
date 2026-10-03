@@ -664,7 +664,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00079520, 0x2e3)
 i32 CTriggerMgr::HandleTargetSelection(
     i32 targetX,
