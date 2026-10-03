@@ -177,6 +177,10 @@ public:
     inline i32 AddBattlezTraversalFlags(i32 flags) const;
     inline PickupType ArrivalPickupOf(PickupType entranceReason) const;
     inline PickupType ArrivalPickup() const;
+
+    PickupType GetVehiclePickupType() const {
+        return m_vehiclePickupType;
+    }
     inline void BuildUnitSearchBox(RECT* box, i32 radius);
     inline Coord ScanCell();
     i32 GetPlayerIndex() const {

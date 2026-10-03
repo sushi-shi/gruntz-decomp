@@ -164,7 +164,7 @@ i32 CSecretLevelTrigger::Tick() {
         if (lvl != IDX(PICKUP_NONE) && IDX(hit->m_entranceReason) != lvl) {
             ok = false;
         }
-        if (lyr != IDX(PICKUP_NONE) && IDX(hit->m_vehiclePickupType) != lyr) {
+        if (lyr != IDX(PICKUP_NONE) && IDX(hit->GetVehiclePickupType()) != lyr) {
             ok = false;
         }
         if (ok) {
