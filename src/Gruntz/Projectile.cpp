@@ -637,6 +637,7 @@ void CProjectile::ScanTargets(i32 impact) {
     }
 }
 
+// @early-stop
 RVA(0x000e0d40, 0x6c2)
 i32 CProjectile::SerializeDispatch(
     CFileMemBase* s,
