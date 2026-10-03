@@ -3149,8 +3149,7 @@ void CPlay::DrawDebugStatsFull() {
     PostSetup(hdc);
 
     {
-        RECT* src = &m_world->m_level->m_viewportRect;
-        RECT lr = *src;
+        RECT lr = m_world->m_level->GetViewportRect();
         RECT dr;
         SET_RECT_COMPONENTS(dr, lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
@@ -3949,8 +3948,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     i32 speed = static_cast<i32>(frac * s_scrollSpeedRange + s_minScrollSpeed);
 
     SIZE
-    extent;
-    SET_SIZE_COMPONENTS(extent, w->m_modeSize.cx, w->m_modeSize.cy);
+    extent = w->GetModeSize();
 
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
@@ -6484,8 +6482,7 @@ RVA(0x000d8dc0, 0xce)
 i32 CPlay::ShrinkViewport(i32 step) {
     CDDrawSurfaceMgr* world = m_world;
     b32 changed = false;
-    LevelCoordRect* viewport = &world->m_level->m_viewportRect;
-    RECT resized = *viewport;
+    RECT resized = world->m_level->GetViewportRect();
 
     if (resized.right - resized.left > 0xc0) {
         resized.left += step;
@@ -6517,8 +6514,7 @@ i32 CPlay::ExpandViewport(i32 step) {
     CGruntzMgr* manager = m_mgr;
     CStatusBarMgr* statusBar = m_statusBar;
 
-    LevelCoordRect* viewport = &world->m_level->m_viewportRect;
-    RECT resized = *viewport;
+    RECT resized = world->m_level->GetViewportRect();
 
     SIZE
     modeSize;
@@ -6564,11 +6560,10 @@ i32 CPlay::ExpandViewport(i32 step) {
 RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
-    const LevelCoordRect& vp = v->m_level->m_viewportRect;
     CDDrawSurfacePair* held = v->GetDrawTarget()->GetBackPair();
     CObList& chain = v->ChildGroup()->m_list;
 
-    RECT r = vp;
+    RECT r = v->m_level->GetViewportRect();
     r.right = r.right + 1;
     r.bottom = r.bottom + 1;
     held->GetSurface()->Restore(&r, 0);
