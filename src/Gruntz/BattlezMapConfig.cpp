@@ -477,7 +477,6 @@ i32 CBattlezMapConfig::StepBoard() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     i32 occupied = 0;
@@ -584,9 +583,9 @@ candidateFound:
     }
     unit->m_arrivalState = AI_BATTLEZ_PATH;
     unit->m_defenderState = AISTATE_SEEK;
-    unit->m_arrivalCell.Set(-1, -1);
-    unit->m_unusedBattleCell.Set(-1, -1);
-    unit->m_defenderPx.Set(-1, -1);
+    UNSET_COORD(unit->m_arrivalCell);
+    UNSET_COORD(unit->m_unusedBattleCell);
+    UNSET_COORD(unit->m_defenderPx);
     unit->m_targetTeam = -1;
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
@@ -3454,7 +3453,6 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
     return 1;
 }
 
-// @early-stop
 RVA(0x00030990, 0x11b)
 i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     i32 occupied = 0;
@@ -3490,15 +3488,12 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (unit == NULL) {
         return 0;
     }
-    unit->m_arrivalCell.m_x = -1;
-    unit->m_unusedBattleCell.m_x = -1;
-    unit->m_defenderPx.m_x = -1;
     unit->m_arrivalState = AI_BATTLEZ_PATH;
-    unit->m_arrivalCell.m_y = -1;
+    UNSET_COORD(unit->m_arrivalCell);
     unit->m_targetTeam = -1;
-    unit->m_unusedBattleCell.m_y = -1;
+    UNSET_COORD(unit->m_unusedBattleCell);
     unit->m_defenderState = AISTATE_SEEK;
-    unit->m_defenderPx.m_y = -1;
+    UNSET_COORD(unit->m_defenderPx);
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
     unit->m_dwell = 0;
