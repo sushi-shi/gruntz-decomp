@@ -214,14 +214,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 onScreen = 1;
             } else {
 
-                CGrunt* focus;
                 CTriggerMgr* tm = g_gameReg->GetTriggerMgr();
-                if (tm->m_recList.GetCount() != 1) {
-                    focus = NULL;
-                } else {
-                    Coord* rec = tm->HeadRec();
-                    focus = tm->UnitAt(rec->m_x, rec->m_y);
-                }
+                CGrunt* focus = tm->SoleSelectedGrunt();
                 if (this == focus && m_playerIndex == g_curPlayer) {
                     onScreen = 1;
                 }

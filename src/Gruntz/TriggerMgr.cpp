@@ -1472,13 +1472,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     if (ov == NULL || ov->m_active == false) {
         return 0;
     }
-    CGrunt* cell;
-    if (m_recList.GetCount() != 1) {
-        cell = NULL;
-    } else {
-        Coord* rec = HeadRec();
-        cell = UnitAt(rec->m_x, rec->m_y);
-    }
+    CGrunt* cell = SoleSelectedGrunt();
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     ActionOptionHit kind = ov->HitHover(x, y);
     if (kind == ACTIONOPTION_HIT_PRIMARY) {

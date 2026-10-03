@@ -43,12 +43,7 @@
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell = m_triggerMgr->m_recList.GetCount() != 1                                    \
-                            ? 0                                                                    \
-                            : m_triggerMgr->UnitAt(                                                \
-                                  m_triggerMgr->HeadRec()->m_x,                                    \
-                                  m_triggerMgr->HeadRec()->m_y                                     \
-                              );                                                                   \
+        CGrunt* _cell = m_triggerMgr->SoleSelectedGrunt();                                         \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->GetPlayerIndex() != g_curPlayer)                                                \
@@ -66,12 +61,7 @@
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell = m_triggerMgr->m_recList.GetCount() != 1                                    \
-                            ? 0                                                                    \
-                            : m_triggerMgr->UnitAt(                                                \
-                                  m_triggerMgr->HeadRec()->m_x,                                    \
-                                  m_triggerMgr->HeadRec()->m_y                                     \
-                              );                                                                   \
+        CGrunt* _cell = m_triggerMgr->SoleSelectedGrunt();                                         \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->GetPlayerIndex() != g_curPlayer)                                                \
