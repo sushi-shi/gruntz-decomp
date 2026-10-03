@@ -244,43 +244,40 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
         cue = out;                                                                                 \
     } while (0)
 
-// @early-stop
 RVA(0x00056f80, 0xb0)
-i32* CGrunt::EntranceTileOffset(i32* out) {
-    i32 x = m_lastTilePx.m_x;
-    i32 y = m_lastTilePx.m_y;
+Coord* CGrunt::EntranceTileOffset(Coord* out) {
+    Coord pos = LastTilePx();
     switch (m_entranceCell.m_direction) {
         case DIR_NORTH:
-            y -= 0x20;
+            pos.m_y -= 0x20;
             break;
         case DIR_NORTHEAST:
-            x += 0x20;
-            y -= 0x20;
+            pos.m_x += 0x20;
+            pos.m_y -= 0x20;
             break;
         case DIR_EAST:
-            x += 0x20;
+            pos.m_x += 0x20;
             break;
         case DIR_SOUTHEAST:
-            x += 0x20;
-            y += 0x20;
+            pos.m_x += 0x20;
+            pos.m_y += 0x20;
             break;
         case DIR_SOUTH:
-            y += 0x20;
+            pos.m_y += 0x20;
             break;
         case DIR_SOUTHWEST:
-            x -= 0x20;
-            y += 0x20;
+            pos.m_x -= 0x20;
+            pos.m_y += 0x20;
             break;
         case DIR_WEST:
-            x -= 0x20;
+            pos.m_x -= 0x20;
             break;
         case DIR_NORTHWEST:
-            x -= 0x20;
-            y -= 0x20;
+            pos.m_x -= 0x20;
+            pos.m_y -= 0x20;
             break;
     }
-    out[0] = x;
-    out[1] = y;
+    *out = pos;
     return out;
 }
 
@@ -1439,7 +1436,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
     return 1;
 }
 
-// @early-stop
 RVA(0x0005b050, 0x40b)
 i32 CGrunt::CommitNeighbor(
     i32 targetPlayerIndex,
@@ -2312,7 +2308,6 @@ kindDispatch:
     }
 }
 
-// @early-stop
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);

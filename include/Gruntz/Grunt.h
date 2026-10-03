@@ -531,7 +531,7 @@ public:
     void EnsurePowerupLoopSound(const char* key);
 
     i32 CanShowStamina();
-    i32* EntranceTileOffset(i32* out);
+    Coord* EntranceTileOffset(Coord* out);
     void ComputeFacing(double dt);
     i32 ResetGeometry();
     i32 StepAttackAction();
