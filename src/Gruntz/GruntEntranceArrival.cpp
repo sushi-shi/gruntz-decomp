@@ -796,30 +796,26 @@ i32 CGrunt::StepEntranceReinit() {
     Coord* targetCoord = GetHeadCoord();
     CMapMgr* tileGrid = g_gameReg->GetTileGrid();
     i32 targetCellFlags = tileGrid->CellFlagsAt(targetCoord->m_x, targetCoord->m_y);
-    GruntDirectionCell cell;
     if (!(targetCellFlags & BRICKZ_CELL_OCCUPIED)) {
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        cell = m_entranceCell;
+        char* walkAnimationName = EntranceCell()->WalkName().GetBuffer(0);
+        SetImageSetByName(walkAnimationName);
+        return 0;
     } else {
 
-        i32 currentTileX = m_object->m_screenX >> TILE_SHIFT_PX;
-        i32 currentTileY = m_object->m_screenY >> TILE_SHIFT_PX;
-        i32 currentCellFlags = tileGrid->CellFlagsAt(currentTileX, currentTileY);
+        Coord currentTile = ScreenTile(this);
+        i32 currentCellFlags = tileGrid->CellFlagsAt(currentTile.m_x, currentTile.m_y);
         if (!(currentCellFlags & 0x80)) {
             return 0;
         }
+        m_entranceActive = true;
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        cell = m_entranceCell;
-        m_entranceActive = true;
+        char* walkAnimationName = EntranceCell()->WalkName().GetBuffer(0);
+        SetImageSetByName(walkAnimationName);
+        return 0;
     }
-    i32 col = cell.m_column + cell.m_row * 2;
-    i32 base = cell.m_row + col;
-
-    char* walkAnimationName = m_cells[base].WalkName().GetBuffer(0);
-    SetImageSetByName(walkAnimationName);
-    return 0;
 }
 
 // @early-stop
