@@ -477,6 +477,7 @@ i32 CBattlezMapConfig::StepBoard() {
     return 1;
 }
 
+// @early-stop
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     i32 occupied = 0;
@@ -497,8 +498,7 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
         cand = static_cast<Coord*>(m_candArray.GetAt(i));
         if (cand != NULL) {
 
-            const i32* tilePtr = &m_board->m_rowInts[cand->m_y][cand->m_x * 7];
-            memcpy(&tileRec, tilePtr, sizeof(tileRec));
+            tileRec = m_board->m_rows[cand->m_y][cand->m_x];
             b32 usable = true;
             if (tileRec.m_flags & BRICKZ_CELL_OCCUPIED) {
 
@@ -2623,18 +2623,17 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     i32 top;
     i32 left;
     {
-        CGameObject* lvl = unit->m_object;
-        bottom = lvl->m_screenY >> TILE_SHIFT_PX;
+        bottom = unit->GetScreenTileY();
         Coord g0;
         Coord g1;
         Coord g2;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g0);
+        unit->GetScreenTile(&g0);
         g2.m_y = g0.m_y;
         right = g0.m_x;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g1);
+        unit->GetScreenTile(&g1);
         g2.m_x = g1.m_x;
         top = g1.m_y;
-        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g2);
+        unit->GetScreenTile(&g2);
         left = g2.m_x;
     }
     RECT box;
