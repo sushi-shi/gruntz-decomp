@@ -69,17 +69,13 @@ i32 CGrunt::StepGooSuckerBehavior() {
         return 1;
     }
     m_defenderPx = m_lastTilePx;
-    CMapMgr* grid = g_gameReg->m_tileGrid;
+    CMapMgr* grid = g_gameReg->GetTileGrid();
     grid->Clip(NULL);
 
-    Coord c1;
-    GetScreenPos(&c1);
-    c1.m_x >>= TILE_SHIFT_PX;
-    Coord c2;
-    GetScreenPos(&c2);
-    c2.m_y >>= TILE_SHIFT_PX;
+    i32 tileX = ScanCell().m_x;
+    i32 tileY = ScanCell().m_y;
 
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
     b32 powered = m_poweredUp;
     if (powered != false) {
@@ -179,10 +175,10 @@ L_scanb:
 
         i32 r = m_defenderRadius;
         RECT box;
-        box.left = c1.m_x - r;
-        box.right = c1.m_x + r;
-        box.top = c2.m_y - r;
-        box.bottom = c2.m_y + r;
+        box.left = tileX - r;
+        box.right = tileX + r;
+        box.top = tileY - r;
+        box.bottom = tileY + r;
         RECT gb;
         SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
         RECT isect;
@@ -231,9 +227,9 @@ L_scanb:
             }
         }
         if (best != INT_MAX) {
-            i32 dx = bestX - c1.m_x;
+            i32 dx = bestX - tileX;
             dx = abs(dx);
-            i32 dy = bestY - c2.m_y;
+            i32 dy = bestY - tileY;
             dy = abs(dy);
             if (dx <= 1 && dy <= 1) {
                 m_triggerMgr->UseEquippedToolAt(

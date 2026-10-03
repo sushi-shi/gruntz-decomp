@@ -48,21 +48,19 @@
     m_arrivalCell.m_x = target->m_playerIndex;                                                     \
     m_arrivalCell.m_y = target->m_unitIndex
 
-#define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
+#define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget)                                              \
     CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
     i32 atTarget = 0;                                                                              \
-    MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)
+    MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget)
 
-#define FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(grunt, atTarget, screenX)                           \
+#define FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(grunt, atTarget)                                    \
     CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
-    MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)
+    MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget)
 
-#define MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
+#define MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget)                                              \
     if (grunt != NULL) {                                                                           \
-        i32 screenX = grunt->m_object->m_screenX;                                                  \
-        if (GRUNT_X_AT_SAVED_POS(screenX, grunt)                                                   \
-            && grunt->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, grunt)                                 \
-            && RectContains(screenX, grunt->m_object->m_screenY) != 0) {                           \
+        if (IsGruntAtSavedScreenPos(grunt)                                                         \
+            && RectContains(grunt->m_object->m_screenX, grunt->m_object->m_screenY) != 0) {        \
             atTarget = 1;                                                                          \
         }                                                                                          \
     }

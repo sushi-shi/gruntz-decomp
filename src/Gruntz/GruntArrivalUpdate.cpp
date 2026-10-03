@@ -46,7 +46,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         return 1;
     }
     this->m_defenderPx = this->m_lastTilePx;
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
     b32 poweredUp = this->m_poweredUp;
     if (poweredUp != false) {

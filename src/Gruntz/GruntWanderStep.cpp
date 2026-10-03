@@ -46,7 +46,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
     m_defenderPx = m_lastTilePx;
 
     i32 flag = 0;
-    FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(g, flag, gx)
+    FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(g, flag)
 
     b32 powered = m_poweredUp;
     if (powered != false) {
