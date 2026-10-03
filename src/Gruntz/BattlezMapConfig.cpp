@@ -6,6 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawChildGroupScanInline.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Globals.h>
 #include <Gruntz/ActReg.h>
@@ -2018,18 +2019,19 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         return 0;
     }
 
-    RECT box;
-    unit->BuildUnitSearchBox(&box, 3);
-    box.right++;
-    box.bottom++;
+    CRect box(
+        unit->ScanCell().m_x - 3,
+        unit->ScanCell().m_y - 3,
+        unit->ScanCell().m_x + 4,
+        unit->ScanCell().m_y + 4
+    );
     {
         CMapMgr* board = m_board;
         board->Clip(&box);
     }
 
     CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
-    coll->m_scanCursor = coll->m_list.GetHeadPosition();
-    CGameObject* g = static_cast<CGameObject*>(coll->Drain());
+    CGameObject* g = coll->FirstSerialChild();
     while (g != NULL) {
         if (g->m_logicRecord->m_dispatch == &DispatchInGameIconLogic
             && !HAS(g->m_stateFlags, SPRITE_STATE_HIDDEN)) {
@@ -2081,8 +2083,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
             i32 gx = g->m_screenPosition.m_x >> TILE_SHIFT_PX;
             i32 gy = g->m_screenPosition.m_y >> TILE_SHIFT_PX;
-            POINT wpt;
-            SET_POINT_COMPONENTS(wpt, gx, gy);
+            CPoint wpt(gx, gy);
             if (PtInRect(&box, wpt)) {
                 if (special != 0 && unit->m_gruntKind == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
@@ -2103,17 +2104,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
 
-        CDDrawChildGroup* c = m_ctx->m_world->ChildGroup();
-        if (c->m_scanCursor == NULL) {
-            g = NULL;
-        } else {
-            CGameObject* pp = c->NextChild(c->m_scanCursor);
-            if (pp->GetClassId() == CLASSID_SERIALREF) {
-                g = pp;
-            } else {
-                g = static_cast<CGameObject*>(c->Drain());
-            }
-        }
+        g = m_ctx->m_world->ChildGroup()->Drain();
     }
     m_board->Clip(static_cast<const RECT*>(0));
     return 0;
@@ -2916,36 +2907,14 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
             if (IsGruntAtSavedScreenPos(cand) && cand->m_entranceCommitted != false
                 && cand->m_deathAnimStarted == false && cand->m_entranceActive == false
                 && cand->m_poweredUp == false) {
-                bool eq;
-                eq = cand->IsAnimationAct("I");
-                if (!eq) {
-                    eq = cand->IsAnimationAct("G");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("L");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("P");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("J");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("C");
-                }
-                if (!eq) {
-                    eq = cand->IsAnimationAct("R");
-                }
-                if (!eq && cand != unit && cand->m_defenderState != AISTATE_RETURN
+                if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
+                    && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
+                    && !cand->IsAnimationAct("J") && !cand->IsAnimationAct("C")
+                    && !cand->IsAnimationAct("R") && cand != unit
+                    && cand->m_defenderState != AISTATE_RETURN
                     && cand->m_defenderState != AISTATE_RETREAT) {
-                    CGameObject* ul = unit->m_object;
-                    CGameObject* cl = cand->m_object;
-                    i32 cx = cl->m_screenPosition.m_x >> TILE_SHIFT_PX;
-                    i32 cy = cl->m_screenPosition.m_y >> TILE_SHIFT_PX;
-                    i32 dx = (ul->m_screenPosition.m_x >> TILE_SHIFT_PX) - cx;
-                    i32 dy = (ul->m_screenPosition.m_y >> TILE_SHIFT_PX) - cy;
-                    dx = abs(dx);
-                    dy = abs(dy);
+                    i32 dx = abs(cand->GetScreenTileX() - unit->GetScreenTileX());
+                    i32 dy = abs(cand->GetScreenTileY() - unit->GetScreenTileY());
                     if (SquaredDistance(dx, dy) <= 0x190) {
 
                         i32 flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER;
@@ -3010,60 +2979,36 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    bool eq;
-    eq = unit->IsAnimationAct("I");
-    if (eq) {
+    if (unit->GetAnimationActName() == "I") {
         return 0;
     }
-    eq = unit->IsAnimationAct("G");
-    if (eq) {
+    if (unit->GetAnimationActName() == "G") {
         return 0;
     }
-    eq = unit->IsAnimationAct("L");
-    if (eq) {
+    if (unit->GetAnimationActName() == "L") {
         return 0;
     }
-    eq = unit->IsAnimationAct("P");
-    if (eq) {
+    if (unit->GetAnimationActName() == "P") {
         return 0;
     }
-    eq = unit->IsAnimationAct("J");
-    if (eq) {
+    if (unit->GetAnimationActName() == "J") {
         return 0;
     }
-    eq = unit->IsAnimationAct("C");
-    if (eq) {
+    if (unit->GetAnimationActName() == "C") {
         return 0;
     }
-    eq = unit->IsAnimationAct("R");
-    if (eq) {
+    if (unit->GetAnimationActName() == "R") {
         return 0;
     }
 
-    i32 bandPct = m_brickzPct;
-    i32 band;
-    if (bandPct == 0) {
-        band = static_cast<i8>(rand());
-        band &= 1;
-    } else {
-        band = rand() % bandPct;
-        band++;
-    }
+    i32 band = GetRandom(1, m_brickzPct);
     if (band <= m_toolzPct) {
 
         PickupType cur = unit->ArrivalPickup();
         if (cur != PICKUP_NONE) {
             return 1;
         }
-        i32 rollPct = m_wingzPct;
-        i32 roll;
-        if (rollPct == 0) {
-            roll = static_cast<i8>(rand());
-            roll &= 1;
-        } else {
-            roll = rand() % rollPct;
-            roll++;
-        }
+        i32 roll = GetRandom(1, m_wingzPct);
         PickupType mode = PICKUP_WINGZ;
         if (roll <= m_bombzPct) {
             mode = PICKUP_BOMB;
@@ -3134,7 +3079,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 if (u->m_poweredUp != false) {
                     continue;
                 }
-                (static_cast<CGrunt*>(u))->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
+                u->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
                 u->m_battleState = BZTASK_CARRY_BRICK;
                 u->RecycleCoords();
             }
@@ -3143,7 +3088,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 
         PickupType cur2 = unit->ArrivalPickup();
         if (cur2 == PICKUP_NONE) {
-            (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
+            unit->LoadPickupSprites(mode, 1, 0, 0, 1);
             return 1;
         }
         if (mode != PICKUP_TOOB) {
@@ -3157,15 +3102,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 
     if (band <= m_toyzPct) {
 
-        i32 rollPct = m_yoyozPct;
-        i32 roll;
-        if (rollPct == 0) {
-            roll = static_cast<i8>(rand());
-            roll &= 1;
-        } else {
-            roll = rand() % rollPct;
-            roll++;
-        }
+        i32 roll = GetRandom(1, m_yoyozPct);
         PickupType mode;
         if (roll <= m_babyWalkerzPct) {
             mode = PICKUP_BABYWALKER;
@@ -3186,19 +3123,11 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         } else {
             mode = roll > m_squeakToyzPct ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
         }
-        (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
+        unit->LoadPickupSprites(mode, 1, 0, 0, 1);
         return 1;
     } else {
 
-        i32 rollPct = m_blackBrickPct;
-        i32 roll;
-        if (rollPct == 0) {
-            roll = static_cast<i8>(rand());
-            roll &= 1;
-        } else {
-            roll = rand() % rollPct;
-            roll++;
-        }
+        i32 roll = GetRandom(1, m_blackBrickPct);
         PickupType mode = PICKUP_BLACKBRICK;
         if (roll <= m_redBrickPct) {
             mode = PICKUP_REDBRICK;
@@ -3715,19 +3644,6 @@ void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     result.m_x += m_tilePixelSize.cx / 2;
     result.m_y += m_tilePixelSize.cy / 2;
     *out = result;
-}
-
-RVA(0x00031250, 0x33)
-CGameObject* CDDrawChildGroup::Drain() {
-    for (;;) {
-        if (m_scanCursor == NULL) {
-            return NULL;
-        }
-        CGameObject* data = NextChild(m_scanCursor);
-        if (data->GetClassId() == CLASSID_SERIALREF) {
-            return data;
-        }
-    }
 }
 
 RVA_COMPGEN(0x000312a0, 0x74, ?get@_zdvec@@IAEPAXH@Z)

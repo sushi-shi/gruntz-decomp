@@ -21,7 +21,6 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/KitchenSlime.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
@@ -99,7 +98,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
     m_target = snappedPosition;
     m_explodeLatch = false;
     m_fallLatch = 0;
-    m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<u32>(time));
+    m_moveSpeed = 32.0 / static_cast<double>(static_cast<u32>(time));
     CLEAR_OBJECT_AREA
     m_moveDelta = 0.0;
 }
