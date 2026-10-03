@@ -2290,35 +2290,34 @@ i32 CMultiBootyState::QueryGruntSlots() {
 RVA(0x0001ed30, 0x5ac)
 void CMultiBootyState::DrawBattleStats() {
     CString s;
-    RECT rc;
-    BOOL(WINAPI * copyRect)(LPRECT, const RECT*) = CopyRect;
+    CRect rc;
     i32 i;
     i32 c;
 
     for (i = 0; i < 4; i++) {
         if (g_gameReg->m_players[i].m_joined != false) {
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->m_miscPickupsByPlayer[i], 4));
-            copyRect(&rc, &s_col1Rects[i]);
+            rc.CopyRect(&s_col1Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->m_powerupPickupsByPlayer[i], 7));
-            copyRect(&rc, &s_col2Rects[i]);
+            rc.CopyRect(&s_col2Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->m_toyPickupsByPlayer[i], 10));
-            copyRect(&rc, &s_col3Rects[i]);
+            rc.CopyRect(&s_col3Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->m_weaponPickupsByPlayer[i], 22));
-            copyRect(&rc, &s_col4Rects[i]);
+            rc.CopyRect(&s_col4Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", g_gameReg->GetGameStats()->m_gruntzByPlayer[i]);
-            copyRect(&rc, &s_col5Rects[i]);
+            rc.CopyRect(&s_col5Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", (g_gameReg->GetGameStats())->CountKillsForPlayer(i));
-            copyRect(&rc, &s_col6Rects[i]);
+            rc.CopyRect(&s_col6Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
@@ -2348,35 +2347,15 @@ void CMultiBootyState::DrawBattleStats() {
                 s = "Cursez:";
                 break;
         }
-        copyRect(&rc, &s_labelRects[c]);
+        rc.CopyRect(&s_labelRects[c]);
         DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
     for (i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].m_joined != false) {
+        GruntzPlayer* player = &g_gameReg->m_players[i];
+        if (player->m_joined != false) {
             i32 color;
-            switch (g_gameReg->m_players[i].m_color) {
-                case TINT_ORANGE:
-                    color = RGB(255, 128, 0);
-                    break;
-                case TINT_GREEN:
-                    color = RGB(0, 255, 0);
-                    break;
-                case TINT_BLUE:
-                    color = RGB(0, 0, 255);
-                    break;
-                case TINT_RED:
-                    color = RGB(255, 0, 0);
-                    break;
-                case TINT_PURPLE:
-                    color = RGB(128, 0, 128);
-                    break;
-                case TINT_YELLOW:
-                    color = RGB(255, 255, 0);
-                    break;
-                case TINT_HOTPINK:
-                    color = RGB(255, 0, 128);
-                    break;
+            switch (player->m_color) {
                 case TINT_DKBLUE:
                     color = RGB(0, 0, 128);
                     break;
@@ -2389,8 +2368,8 @@ void CMultiBootyState::DrawBattleStats() {
                 case TINT_DKRED:
                     color = RGB(128, 0, 0);
                     break;
-                case TINT_PINK:
-                    color = RGB(255, 0, 255);
+                case TINT_PURPLE:
+                    color = RGB(128, 0, 128);
                     break;
                 case TINT_DKYELLOW:
                     color = RGB(128, 128, 0);
@@ -2398,18 +2377,39 @@ void CMultiBootyState::DrawBattleStats() {
                 case TINT_GREY:
                     color = RGB(128, 128, 128);
                     break;
+                case TINT_BLUE:
+                    color = RGB(0, 0, 255);
+                    break;
+                case TINT_GREEN:
+                    color = RGB(0, 255, 0);
+                    break;
                 case TINT_CYAN:
                     color = RGB(0, 255, 255);
                     break;
+                case TINT_RED:
+                    color = RGB(255, 0, 0);
+                    break;
+                case TINT_PINK:
+                    color = RGB(255, 0, 255);
+                    break;
+                case TINT_YELLOW:
+                    color = RGB(255, 255, 0);
+                    break;
                 case TINT_WHITE:
                     color = RGB(255, 255, 255);
+                    break;
+                case TINT_ORANGE:
+                    color = RGB(255, 128, 0);
+                    break;
+                case TINT_HOTPINK:
+                    color = RGB(255, 0, 128);
                     break;
                 default:
                     color = RGB(0, 0, 0);
                     break;
             }
-            s.Format("%s", static_cast<const char*>(g_gameReg->m_players[i].GetName()));
-            copyRect(&rc, &s_colorRects[i]);
+            s.Format("%s", static_cast<const char*>(player->GetName()));
+            rc.CopyRect(&s_colorRects[i]);
             DrawTextToOverlaySurface(
                 m_world,
                 &s,
@@ -2425,7 +2425,10 @@ void CMultiBootyState::DrawBattleStats() {
     }
 
     s.Format("BATTLE STATZ");
-    SET_RECT_COMPONENTS(rc, 0x96, 0xf, SCREEN_W_PX, 0x73);
+    rc.top = 0xf;
+    rc.bottom = 0x73;
+    rc.left = 0x96;
+    rc.right = SCREEN_W_PX;
     DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
 
