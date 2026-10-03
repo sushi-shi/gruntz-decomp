@@ -488,21 +488,17 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 0;
             }
             sw->SwitchDown();
-            pos = state->m_tileTriggers->m_timedLogics.GetHeadPosition();
+            pos = state->m_tileTriggers->GetTimedHeadPosition();
             while (pos != NULL) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_timedLogics.GetNext(pos)
-                );
+                CTileTriggerLogic* el = state->m_tileTriggers->GetNextTimedLogic(pos);
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     return 1;
                 }
             }
             anyHit = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+            pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
-                );
+                CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     el->RecordMove();
                     anyHit = 1;
@@ -531,11 +527,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             sw->SwitchDown();
             anyHit = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+            pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
-                );
+                CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     el->RecordMove();
                     anyHit = 1;
@@ -583,11 +577,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             sw->SwitchDown();
             anyHit = 0;
             stop = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+            pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL && stop == 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
-                );
+                CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;
@@ -622,11 +614,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             anyHit = 0;
             stop = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+            pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL && stop == 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
-                );
+                CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;
@@ -663,11 +653,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             anyHit = 0;
             stop = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+            pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL && stop == 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
-                );
+                CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;
@@ -823,11 +811,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             anyHit = 0;
             stop = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+            pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL && stop == 0) {
-                CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
-                );
+                CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;
@@ -926,16 +912,14 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             }
             obj->SwitchUp();
 
-            POSITION pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+            POSITION pos = state->m_tileTriggers->GetIdleHeadPosition();
             b32 found = false;
             b32 stop = false;
             while (pos != NULL) {
                 if (stop != false) {
                     break;
                 }
-                CTileTriggerLogic* child = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
-                );
+                CTileTriggerLogic* child = state->m_tileTriggers->GetNextIdleLogic(pos);
                 if (child->FindIndexByKey(obj->m_cellKey) != 0) {
                     if (child->Tick() == 0) {
                         stop = true;
@@ -966,15 +950,13 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             }
             b32 found = false;
             if (obj->AreMultiSwitchLinksActive() != 0) {
-                POSITION pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+                POSITION pos = state->m_tileTriggers->GetIdleHeadPosition();
                 b32 stop = false;
                 while (pos != NULL) {
                     if (stop != false) {
                         break;
                     }
-                    CTileTriggerLogic* child = static_cast<CTileTriggerLogic*>(
-                        state->m_tileTriggers->m_idleLogics.GetNext(pos)
-                    );
+                    CTileTriggerLogic* child = state->m_tileTriggers->GetNextIdleLogic(pos);
                     if (child->FindIndexByKey(obj->m_cellKey) != 0) {
                         if (child->Tick() == 0) {
                             stop = true;
