@@ -3769,7 +3769,7 @@ sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	13	65c4
 sbi_rectonly	?BuildTabzDialog@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	25	189dc8732fc8	0x10a340	100.0000	
 sbi_rectonly	?ClearButtonHighlights@CStatusBarMgr@@QAEHW4StatusBarTab@@@Z	100.0000	100.0000	3	371a5cc3fb75	0x101420	100.0000	
 sbi_rectonly	?ClearHlCell@CStatusBarMgr@@QAEXHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	2	39821914feb1	0x1069c0	100.0000	
-sbi_rectonly	?ClearStat@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	11	896dd06b7358	0x104f90	100.0000	
+sbi_rectonly	?ClearUnitSample@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	11	896dd06b7358	0x104f90	100.0000	
 sbi_rectonly	?ClearTabGroup@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	6	0b9b5ee6faee	0x100b00	100.0000	
 sbi_rectonly	?CommitSlot@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	22ff35e2e23b	0x106790	100.0000	
 sbi_rectonly	?CreateCollapsedSprite@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	6	2d8d11571b59	0x104dd0	100.0000	
@@ -3786,7 +3786,7 @@ sbi_rectonly	?GetActiveValue@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	6	9e482b6e9
 sbi_rectonly	?HandleDoubleClick@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	15	1f82a1bb5eb2	0xff850	100.0000	
 sbi_rectonly	?HandlePointerDrag@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	8	733ef3755490	0xff9f0	100.0000	
 sbi_rectonly	?HideStatusBar@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	4	e040d7424501	0xfe600	100.0000	
-sbi_rectonly	?HitTest@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	8	29f0dd7c615a	0x105280	100.0000	
+sbi_rectonly	?HitTestSideTabs@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	8	29f0dd7c615a	0x105280	100.0000	
 sbi_rectonly	?HitTestCollapsedSprite@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	6	676306045575	0xfe8a0	100.0000	
 sbi_rectonly	?HitTestRects@CStatusBarMgr@@QAEPAVCStatusBarItem@@HH@Z	100.0000	100.0000	6	38dfae5f56a7	0xffcb0	100.0000	
 sbi_rectonly	?Init@CWarpStoneFly@@QAEHPAVCStatusBarMgr@@HHW4WarpStoneFragment@@@Z	100.0000	100.0000	22	7d27689b4ea1	0x109bd0	100.0000	
@@ -3796,7 +3796,7 @@ sbi_rectonly	?LoadChipMachineConfig@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	24	4
 sbi_rectonly	?LoadGooCookingSprite@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	15	9e463b9961de	0x1055b0	100.0000	
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	17	9e0e805c8b9e	0x107ae0	100.0000	
 sbi_rectonly	?LoadRezMachineConfig@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	21	762907255a9c	0x105e40	100.0000	
-sbi_rectonly	?LoadStatzTabToggleSprite@CStatusBarMgr@@QAEHHW4StatusSampleMode@@@Z	100.0000	100.0000	17	d7ee87bff18d	0x104e60	100.0000	
+sbi_rectonly	?SetUnitSampleMode@CStatusBarMgr@@QAEHHW4StatusSampleMode@@@Z	100.0000	100.0000	17	d7ee87bff18d	0x104e60	100.0000	
 sbi_rectonly	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	95.0502	95.0502	31	ac6757fc7f2a	0x102250	95.8091	
 sbi_rectonly	?LockDestructButton@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	cb0c3a749c03	0x10bb90	100.0000	
 sbi_rectonly	?NotifyAllSlots@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	02dcf5a9d65c	0x106a00	100.0000	
@@ -3840,7 +3840,7 @@ sbi_rectonly	?StartWarpStoneFly@CStatusBarMgr@@QAEHHHW4WarpStoneFragment@@@Z	100
 sbi_rectonly	?Teardown@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	8	7d67c6ed3ccb	0xfe350	100.0000	
 sbi_rectonly	?Tick@CWarpStoneFly@@QAEHI@Z	97.4603	97.4603	11	bfeb50f5b4db	0x10a0f0	97.4603	
 sbi_rectonly	?TickGruntWell@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	4	12d6db950039	0x105480	100.0000	
-sbi_rectonly	?ToggleStat@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	0ce52b692d5e	0x107aa0	100.0000	
+sbi_rectonly	?ToggleUnitSample@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	0ce52b692d5e	0x107aa0	100.0000	
 sbi_rectonly	?TryActivate@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	3	d8700b4e512a	0x104d60	100.0000	
 sbi_rectonly	?UnusedPointerAction@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	1	386d8b544f2f	0x100570	100.0000	
 sbi_rectonly	?UpdateChipGrinderStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	19	4843c01cacf4	0x1076a0	100.0000	

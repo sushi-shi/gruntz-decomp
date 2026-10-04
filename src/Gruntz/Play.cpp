@@ -2717,7 +2717,7 @@ drag_box: {
         }
     }
     LoadCursorSprites(0, false);
-    i32 hit = m_statusBar->HitTest(xr, y);
+    i32 hit = m_statusBar->HitTestSideTabs(xr, y);
     if (hit != -1) {
         m_statusBar->PlaceCursorTarget(hit, 0);
         return 1;
@@ -2804,7 +2804,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
 
-    i32 idx = m_statusBar->HitTest(x, y);
+    i32 idx = m_statusBar->HitTestSideTabs(x, y);
     if (idx != -1) {
         m_statusBar->PlaceCursorTarget(idx, 1);
         return 1;
@@ -2821,7 +2821,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         if (m_mgr->GetTriggerMgr()
                 ->PickGruntAtScreenPoint(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
-            m_statusBar->ToggleStat(unitIndex);
+            m_statusBar->ToggleUnitSample(unitIndex);
             return 1;
         }
     }
@@ -2922,9 +2922,9 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (::PtInRect(m_statusBar->GetBarRect(), x, y)) {
         return 1;
     }
-    i32 idx = m_statusBar->HitTest(x, y);
+    i32 idx = m_statusBar->HitTestSideTabs(x, y);
     if (idx != -1) {
-        m_statusBar->ClearStat(idx);
+        m_statusBar->ClearUnitSample(idx);
         CTriggerMgr* w = m_mgr->GetTriggerMgr();
         w->StopCameraTracking();
         return 1;

@@ -116,7 +116,7 @@ i32 CSBI_SideTab::UpdateSampleIcon() {
     }
     CGrunt* unit = g_gameReg->GetTriggerMgr()->UnitAt(m_playerIndex, m_unitIndex);
     if (unit == NULL) {
-        m_owner->ClearStat(m_unitIndex);
+        m_owner->ClearUnitSample(m_unitIndex);
         return 0;
     }
     i32 val;

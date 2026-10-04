@@ -123,7 +123,7 @@ public:
     void SetGruntWell(i32 value);
     void UpdateStatusSystems();
     void Reset();
-    void ToggleStat(i32 idx);
+    void ToggleUnitSample(i32 unitIndex);
     void SetLeftRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void SetRightRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void CommitSlot(b32 active);
@@ -158,7 +158,7 @@ public:
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     i32 GetActiveValue();
-    i32 LoadStatzTabToggleSprite(i32 idx, StatusSampleMode value);
+    i32 SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode);
     void UpdateGruntOvenStatusBar();
     void TickGruntWell();
     void UpdateChipGrinderStatusBar();
@@ -175,7 +175,7 @@ public:
     i32 SelectBrickResource(StatusBarHighlightRow row);
     i32 SetTab(GameTabContent tab, b32 forceReload);
     i32 ClearButtonHighlights(StatusBarTab idx);
-    i32 HitTest(i32 x, i32 y);
+    i32 HitTestSideTabs(i32 x, i32 y);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
@@ -202,7 +202,7 @@ public:
     void AddTabItem(i32 tab, CStatusBarItem* item) {
         m_tabLists[tab].AddTail(item);
     }
-    i32 ClearStat(i32 idx);
+    i32 ClearUnitSample(i32 unitIndex);
     void EnterHlRow(i32 row, i32 group);
     void InitTabRects();
     i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
@@ -248,10 +248,10 @@ public:
     CPtrList m_tabLists[8];
     StatusBarTab m_activeTab;
     GameTabContent m_itemKind;
-    StatusSampleMode m_statFlags[TM_UNITS_PER_PLAYER];
-    CSBI_SideTab* m_hitRects[TM_UNITS_PER_PLAYER];
+    StatusSampleMode m_unitSampleModes[TM_UNITS_PER_PLAYER];
+    CSBI_SideTab* m_unitSideTabs[TM_UNITS_PER_PLAYER];
 
-    CSBI_StatzTabArrow* m_statObj[TM_UNITS_PER_PLAYER];
+    CSBI_StatzTabArrow* m_unitSampleArrows[TM_UNITS_PER_PLAYER];
     CSBI_MenuItem* m_statzTabButton;
     CSBI_MenuItem* m_resourceTabButton;
     CSBI_MenuItem* m_gruntzTabButton;
@@ -379,9 +379,9 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_quitConfirmationActive = false;
     m_displayHeight = 0x1e0;
     m_tabCycle = 0;
-    memset(m_statFlags, 0, sizeof(m_statFlags));
-    memset(m_hitRects, 0, sizeof(m_hitRects));
-    memset(m_statObj, 0, sizeof(m_statObj));
+    memset(m_unitSampleModes, 0, sizeof(m_unitSampleModes));
+    memset(m_unitSideTabs, 0, sizeof(m_unitSideTabs));
+    memset(m_unitSampleArrows, 0, sizeof(m_unitSampleArrows));
     memset(m_slotNotify, 0, sizeof(m_slotNotify));
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));

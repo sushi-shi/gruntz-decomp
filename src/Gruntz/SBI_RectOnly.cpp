@@ -533,7 +533,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_STAT_TOGGLE_FIRST + 0xd:
                 case SBICMD_STAT_TOGGLE_FIRST + 0xe:
                     HiCueLookup();
-                    ToggleStat(IDX(cmd) - IDX(SBICMD_STAT_TOGGLE_FIRST));
+                    ToggleUnitSample(IDX(cmd) - IDX(SBICMD_STAT_TOGGLE_FIRST));
                     return 1;
                 default:
                     return 0;
@@ -1077,8 +1077,8 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     m_confirmNoButton = NULL;
     m_collapsedSprite = NULL;
     i32 i;
-    memset(m_hitRects, 0, sizeof(m_hitRects));
-    memset(m_statObj, 0, sizeof(m_statObj));
+    memset(m_unitSideTabs, 0, sizeof(m_unitSideTabs));
+    memset(m_unitSampleArrows, 0, sizeof(m_unitSampleArrows));
     memset(m_slotNotify, 0, sizeof(m_slotNotify));
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
@@ -1114,7 +1114,7 @@ void CStatusBarMgr::ClearTabGroup() {
             break;
         case TAB_STATZ:
 
-            memset(m_statObj, 0, sizeof(m_statObj));
+            memset(m_unitSampleArrows, 0, sizeof(m_unitSampleArrows));
             break;
         case TAB_MULTIPLAYER:
             memset(m_warlordHead, 0, sizeof(m_warlordHead));
@@ -2152,9 +2152,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete arrow;
                         return 0;
                     }
-                    m_statObj[i] = arrow;
+                    m_unitSampleArrows[i] = arrow;
                     AddTabItem(1, arrow);
-                    if (m_statFlags[i] != STATUS_SAMPLE_NONE) {
+                    if (m_unitSampleModes[i] != STATUS_SAMPLE_NONE) {
                         arrow->SetSampledDirection(m_position, false);
                     } else {
                         arrow->SetUnsampledDirection(m_position, false);
@@ -2325,42 +2325,42 @@ i32 CStatusBarMgr::CreateCollapsedSprite() {
 }
 
 RVA(0x00104e60, 0xed)
-i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
-    if (m_statFlags[idx] == mode) {
+i32 CStatusBarMgr::SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode) {
+    if (m_unitSampleModes[unitIndex] == sampleMode) {
         return 1;
     }
 
-    if (g_gameReg->GetTriggerMgr()->UnitAt(g_curPlayer, idx) == NULL) {
+    if (g_gameReg->GetTriggerMgr()->UnitAt(g_curPlayer, unitIndex) == NULL) {
         return 0;
     }
 
-    CSBI_SideTab* r = m_hitRects[idx];
+    CSBI_SideTab* r = m_unitSideTabs[unitIndex];
     if (r != NULL) {
-        r->m_sampleMode = mode;
+        r->m_sampleMode = sampleMode;
         r->SetEnabled(1);
         if (m_activeTab == TAB_STATZ) {
 
-            m_statObj[idx]->SetSampledDirection(m_position, true);
+            m_unitSampleArrows[unitIndex]->SetSampledDirection(m_position, true);
             PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_STATZTABTOGGLE");
         }
     }
-    m_statFlags[idx] = mode;
+    m_unitSampleModes[unitIndex] = sampleMode;
     return 1;
 }
 
 RVA(0x00104f90, 0xa8)
-i32 CStatusBarMgr::ClearStat(i32 idx) {
-    CSBI_SideTab* r = m_hitRects[idx];
+i32 CStatusBarMgr::ClearUnitSample(i32 unitIndex) {
+    CSBI_SideTab* r = m_unitSideTabs[unitIndex];
     if (r != NULL) {
         r->m_sampleMode = STATUS_SAMPLE_NONE;
         r->SetEnabled(0);
         if (m_activeTab == TAB_STATZ) {
 
-            m_statObj[idx]->SetUnsampledDirection(m_position, true);
+            m_unitSampleArrows[unitIndex]->SetUnsampledDirection(m_position, true);
             PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_STATZTABTOGGLE");
         }
     }
-    m_statFlags[idx] = STATUS_SAMPLE_NONE;
+    m_unitSampleModes[unitIndex] = STATUS_SAMPLE_NONE;
     return 1;
 }
 
@@ -2389,7 +2389,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
             g_curPlayer,
             i,
-            m_statFlags[i],
+            m_unitSampleModes[i],
             m_position == STATUSBAR_DOCK_RIGHT
         );
         if (ok == false) {
@@ -2397,18 +2397,18 @@ i32 CStatusBarMgr::BuildSideTabs() {
             return 0;
         }
         AddTabItem(0, newobj);
-        m_hitRects[i] = newobj;
+        m_unitSideTabs[i] = newobj;
         i++;
     }
     return 1;
 }
 
 RVA(0x00105280, 0x61)
-i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
+i32 CStatusBarMgr::HitTestSideTabs(i32 x, i32 y) {
     if (m_chatBoxDisabled == false) {
         for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-            if (m_hitRects[i] && m_hitRects[i]->IsEnabled()) {
-                CSBI_SideTab* p = m_hitRects[i];
+            if (m_unitSideTabs[i] && m_unitSideTabs[i]->IsEnabled()) {
+                CSBI_SideTab* p = m_unitSideTabs[i];
                 b32 hit = p->IsEnabled() ? p->ContainsPoint(x, y) : false;
                 if (hit) {
                     return i;
@@ -3285,11 +3285,11 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
 }
 
 RVA(0x00107aa0, 0x23)
-void CStatusBarMgr::ToggleStat(i32 idx) {
-    if (m_statFlags[idx] != STATUS_SAMPLE_NONE) {
-        ClearStat(idx);
+void CStatusBarMgr::ToggleUnitSample(i32 unitIndex) {
+    if (m_unitSampleModes[unitIndex] != STATUS_SAMPLE_NONE) {
+        ClearUnitSample(unitIndex);
     } else {
-        LoadStatzTabToggleSprite(idx, STATUS_SAMPLE_HEALTH);
+        SetUnitSampleMode(unitIndex, STATUS_SAMPLE_HEALTH);
     }
 }
 
@@ -3304,7 +3304,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         m_activeTab = TAB_GAME;
     }
     SetTab(GAME_TAB_MENU, true);
-    memset(m_statFlags, 0, sizeof(m_statFlags));
+    memset(m_unitSampleModes, 0, sizeof(m_unitSampleModes));
     Reset();
 
     GameModeId mode = g_gameReg->GetGameMode();
@@ -3566,8 +3566,8 @@ i32 CStatusBarMgr::SerializeDispatch(
     {
         i32 i = 0;
         do {
-            SER(m_hitRects[i])
-            SER(m_statObj[i])
+            SER(m_unitSideTabs[i])
+            SER(m_unitSampleArrows[i])
             i++;
         } while (i < 0xf);
     }
@@ -3675,7 +3675,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_itemKind, sizeof(m_itemKind));
     s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
-    StatusSampleMode* p = m_statFlags;
+    StatusSampleMode* p = m_unitSampleModes;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         s->Write(p, sizeof(*p));
         p += 1;
@@ -3763,7 +3763,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_itemKind, sizeof(m_itemKind));
     ar->Read(&m_tabCycle, sizeof(m_tabCycle));
 
-    StatusSampleMode* p = m_statFlags;
+    StatusSampleMode* p = m_unitSampleModes;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         ar->Read(p, sizeof(*p));
         p += 1;
