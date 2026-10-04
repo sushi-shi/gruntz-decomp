@@ -547,7 +547,7 @@ battlezmapconfig	?PathToNearbyUnit@CBattlezAiController@@QAEHPAVCGrunt@@@Z	100.0
 battlezmapconfig	?PathToNearestCandidate@CBattlezAiController@@QAEHPAVCGrunt@@HHH@Z	95.1628	95.1628	39	086bb47b5aa4	0x2edb0	95.1628	
 battlezmapconfig	?PathToNearestGoal@CBattlezAiController@@QAEHPAVCGrunt@@HH@Z	92.9655	92.9655	30	469c06000f46	0x30b20	92.9655	
 battlezmapconfig	?PickRandomIdleUnit@CBattlezAiController@@QAEPAVCGrunt@@H@Z	100.0000	100.0000	11	abe29a82554d	0x2ad40	100.0000	
-battlezmapconfig	?PickSpawnCoord@CBattlezAiController@@QAEPAUCoord@@PAU2@PAVCGrunt@@H@Z	97.9048	97.9048	17	4201fa3fb685	0x30f20	97.9048	
+battlezmapconfig	?PickAttackWaypoint@CBattlezAiController@@QAEPAUCoord@@PAU2@PAVCGrunt@@H@Z	97.9048	97.9048	17	4201fa3fb685	0x30f20	97.9048	
 battlezmapconfig	?Push@?$FreeNodePool@UCoord@@@@QAEXPAX@Z	100.0000	100.0000	4	760c822fd49d	0x311b0	100.0000	
 battlezmapconfig	?RepathAroundBlockedTiles@CBattlezAiController@@QAEHPAVCGrunt@@@Z	97.4156	97.4156	31	643fe35b8374	0x2a570	97.4156	
 battlezmapconfig	?RerouteIdleUnit@CBattlezAiController@@QAEXPAVCGrunt@@HHHHH@Z	100.0000	100.0000	5	6731fd524a70	0x29af0	100.0000	

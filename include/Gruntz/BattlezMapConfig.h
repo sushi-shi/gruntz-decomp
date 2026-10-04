@@ -43,7 +43,7 @@ public:
     i32 RepathToFreeCell(CGrunt*);
     i32 ProbeUnoccupiedAt(i32, i32);
     i32 ForcePlaceFromReserve(CGrunt*);
-    Coord* PickSpawnCoord(Coord*, CGrunt*, i32);
+    Coord* PickAttackWaypoint(Coord* out, CGrunt* unit, i32 targetPlayerIndex);
 
     i32 RouteUnitTo(
         CGrunt* unit,

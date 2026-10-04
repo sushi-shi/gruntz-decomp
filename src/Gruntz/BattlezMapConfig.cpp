@@ -3494,48 +3494,49 @@ i32 CBattlezAiController::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
 // @early-stop
 RVA(0x00030f20, 0x16d)
-Coord* CBattlezAiController::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
-    if (kind < 0 || kind >= 4) {
-        CGameObject* lvl = unit->m_object;
-        i32 sx = lvl->m_screenX >> TILE_SHIFT_PX;
-        i32 sy = lvl->m_screenY >> TILE_SHIFT_PX;
-        o->Set(sx, sy);
-        return o;
+Coord* CBattlezAiController::PickAttackWaypoint(Coord* out, CGrunt* unit, i32 targetPlayerIndex) {
+    if (targetPlayerIndex < 0 || targetPlayerIndex >= 4) {
+        CGameObject* object = unit->m_object;
+        i32 currentTileX = object->m_screenX >> TILE_SHIFT_PX;
+        i32 currentTileY = object->m_screenY >> TILE_SHIFT_PX;
+        out->Set(currentTileX, currentTileY);
+        return out;
     }
-    CGameObject* lvl = unit->m_object;
-    i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
-    i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
-    CPtrArray* coords = &m_game->GetPlayer(kind).GetBattlezAiController()->m_attackWaypoints;
-    i32 count = coords->GetSize();
-    if (count != 0) {
-        i32 r = rand() % count;
-        for (i32 k = 0; k < count; k++) {
-            CTriggerMgr* grid = m_triggerMgr;
-            i32 cell = m_playerIndex;
-            Coord cand = *static_cast<Coord*>(coords->GetAt(r));
-            b32 ok = true;
-            for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
-                CGrunt* u = grid->UnitAt(cell, j);
-                if (u != NULL && !u->CoordsEmpty()) {
-                    Coord node = *u->GetTailCoord();
-                    if (node == cand) {
-                        ok = false;
+    CGameObject* object = unit->m_object;
+    i32 tileX = object->m_screenX >> TILE_SHIFT_PX;
+    i32 tileY = object->m_screenY >> TILE_SHIFT_PX;
+    CPtrArray* attackWaypoints =
+        &m_game->GetPlayer(targetPlayerIndex).GetBattlezAiController()->m_attackWaypoints;
+    i32 waypointCount = attackWaypoints->GetSize();
+    if (waypointCount != 0) {
+        i32 waypointIndex = rand() % waypointCount;
+        for (i32 attempt = 0; attempt < waypointCount; attempt++) {
+            CTriggerMgr* triggerMgr = m_triggerMgr;
+            i32 playerIndex = m_playerIndex;
+            Coord waypoint = *static_cast<Coord*>(attackWaypoints->GetAt(waypointIndex));
+            b32 available = true;
+            for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
+                CGrunt* other = triggerMgr->UnitAt(playerIndex, unitIndex);
+                if (other != NULL && !other->CoordsEmpty()) {
+                    Coord otherGoal = *other->GetTailCoord();
+                    if (otherGoal == waypoint) {
+                        available = false;
                     }
                 }
             }
-            if (ok != false) {
-                *o = cand;
-                return o;
+            if (available != false) {
+                *out = waypoint;
+                return out;
             }
-            r = (r + 1) % count;
+            waypointIndex = (waypointIndex + 1) % waypointCount;
         }
-        r = rand() % count;
-        Coord* cand = static_cast<Coord*>(coords->GetAt(r));
-        rx = cand->m_x;
-        ry = cand->m_y;
+        waypointIndex = rand() % waypointCount;
+        Coord* waypoint = static_cast<Coord*>(attackWaypoints->GetAt(waypointIndex));
+        tileX = waypoint->m_x;
+        tileY = waypoint->m_y;
     }
-    o->Set(rx, ry);
-    return o;
+    out->Set(tileX, tileY);
+    return out;
 }
 
 template CString& zDArray<CString>::operator[](i32 i);
