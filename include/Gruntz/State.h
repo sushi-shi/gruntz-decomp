@@ -58,6 +58,7 @@ public:
     virtual i32 RestoreDisplay() {
         return 0;
     }
+    virtual i32 RestoreArrival(GameStateId previousState) { return RestoreDisplay(); }
     virtual i32 OnPaint();
 
     virtual i32 InputVirtual();
@@ -159,10 +160,12 @@ public:
 
     i32 RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay);
     i32 BeginSceneFade(i32 intensityPercent, u32 durationMs, u32 leadMs, bool useOverlay);
-    i32 AdvanceSceneFade(u32 deltaMs);
+    virtual i32 AdvanceSceneFade(u32 deltaMs);
     i32 BeginScenePresentation();
     void CancelSceneFade();
-    bool IsSceneFading() const { return m_sceneFade.active(); }
+    virtual bool IsSceneFading() const { return m_sceneFade.active(); }
+    virtual void OnSceneFadeCancelled() {}
+    virtual i32 RecoverScene() { CancelSceneFade(); return InputVirtual(); }
     virtual void OnSceneFadeComplete() {}
     virtual i32 RestoreAfterSceneFade() { return InputVirtual(); }
 

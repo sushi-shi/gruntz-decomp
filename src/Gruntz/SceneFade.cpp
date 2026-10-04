@@ -68,6 +68,7 @@ i32 CState::BeginScenePresentation() {
 void CState::CancelSceneFade() {
     m_sceneFade.cancel();
     m_scenePresentation = false;
+    OnSceneFadeCancelled();
 }
 
 i32 CState::AdvanceSceneFade(u32 deltaMs) {

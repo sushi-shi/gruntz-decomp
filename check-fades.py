@@ -6,7 +6,7 @@ import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parent
-SOURCES = ["src/Runtime/FrameTiming.cpp", "src/Runtime/FrameScheduler.cpp", "src/Runtime/FadePlayback.cpp", "tests/fades.cpp"]
+SOURCES = ["src/Runtime/FrameTiming.cpp", "src/Runtime/FrameScheduler.cpp", "src/Runtime/FadePlayback.cpp", "tests/fades.cpp", "tests/gameplay_presentations.cpp"]
 FLAGS = ["-std=c++17", "-Wall", "-Wextra", "-Werror", "-g", "-O1",
          "-DGRUNTZ_PORTABLE_TEST", "-I" + str(ROOT / "include")]
 

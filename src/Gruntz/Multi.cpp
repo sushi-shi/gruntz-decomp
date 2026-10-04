@@ -362,10 +362,8 @@ void CMulti::OnExit() {
     CPlay::OnExit();
 }
 
-i32 CMulti::EnterState(GameStateId previousState) {
-    if (CPlay::EnterState(previousState) == GAMESTATE_NONE) {
-        return 0;
-    }
+void CMulti::FinishStateEntry(GameStateId previousState) {
+    CPlay::FinishStateEntry(previousState);
     m_mgr->RefreshGameClock();
     g_frameTime = m_savedClock;
     DWORD(WINAPI * tg)(void) = timeGetTime;
@@ -379,7 +377,6 @@ i32 CMulti::EnterState(GameStateId previousState) {
     if (m_connected != false) {
         BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), DPSEND_GUARANTEED);
     }
-    return 1;
 }
 
 i32 CMulti::LeaveState(GameStateId nextState) {
@@ -481,8 +478,10 @@ i32 CMulti::FinishConnect() {
 }
 
 i32 CMulti::Render() {
+    if (GameplayFrameInterrupted()) return 1;
     m_drewThisFrame = false;
     HandleDragMove(0, m_cursorX, m_cursorY);
+    if (GameplayFrameInterrupted()) return 1;
     i32 oldT = m_lastTime;
     i32 t = timeGetTime();
     m_lastTime = t;
@@ -562,6 +561,7 @@ i32 CMulti::AdvanceGameFrame() {
     b32 ready = FrameSyncWait();
     if (m_roundComplete == false && Mgr()->m_frameGate != false && ready == false) {
         RenderGameFrame();
+        if (GameplayFrameInterrupted()) return 1;
         return 1;
     }
 
@@ -618,16 +618,21 @@ i32 CMulti::AdvanceGameFrame() {
     (static_cast<CMapMgr*>(Mgr()->m_tileGrid))->UpdateDiagonals(Mgr());
     if (ready == false) {
         RenderGameFrame();
+        if (GameplayFrameInterrupted()) return 1;
     }
     Mgr()->AdvanceComputerPlayerTurns();
     return 1;
 }
 
 void CMulti::RenderGameFrame() {
+    if (GameplayFrameInterrupted()) return;
     if (m_roundComplete == false && Mgr()->m_frameGate != false) {
         RestoreCursorSaveUnder();
+        if (GameplayFrameInterrupted()) return;
         DrawVisibleWorld();
+        if (GameplayFrameInterrupted()) return;
         m_statusBar->LoadMainStatusBarSprite();
+        if (GameplayFrameInterrupted()) return;
         CDDrawSurfacePair* h =
             static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
         if (h == NULL) {
@@ -635,11 +640,15 @@ void CMulti::RenderGameFrame() {
         }
         AdvanceCursorAnimation(g_frameDelta);
         SaveUnderAndDrawCursor(h);
+        if (GameplayFrameInterrupted()) return;
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
+        if (GameplayFrameInterrupted()) return;
         return;
     }
     RestoreCursorSaveUnder();
+    if (GameplayFrameInterrupted()) return;
     StepViewportResize();
+    if (GameplayFrameInterrupted()) return;
     if (m_region0Gate != false) {
         (static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()))
             ->GetSurface()
@@ -659,7 +668,9 @@ void CMulti::RenderGameFrame() {
         (m_world->m_level->m_mainPlane)->m_scrollPixelY
     );
     DrawWorldView();
+    if (GameplayFrameInterrupted()) return;
     m_statusBar->LoadMainStatusBarSprite();
+    if (GameplayFrameInterrupted()) return;
     if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
         && m_statusBar->m_activeTab != TAB_GAME) {
         RECT rc;
@@ -690,7 +701,9 @@ void CMulti::RenderGameFrame() {
     if (m_worldReady != false) {
         h->DrawBox(&m_hudRect, 0xff);
     }
+    if (GameplayFrameInterrupted()) return;
     m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    if (GameplayFrameInterrupted()) return;
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
     if (m_world->m_level->m_mainPlane != NULL) {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();

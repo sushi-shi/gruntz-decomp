@@ -63,7 +63,7 @@ public:
     virtual GameStateId Update()  ;
 
     virtual i32 Render()  ;
-    virtual i32 EnterState(GameStateId previousState)  ;
+    virtual void FinishStateEntry(GameStateId previousState);
     virtual i32 LeaveState(GameStateId nextState)  ;
     virtual i32 OnChar(i32 charCode, i32 keyData)  ;
     virtual i32 CompleteLevel()  ;

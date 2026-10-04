@@ -400,6 +400,7 @@ private:
     StateTransition m_stateTransition;
     StateChange m_stateChange;
     bool m_completingStateChange;
+    bool m_arrivalRestoreAttempted;
     bool QueueStateChange(const StateChange& change);
     virtual bool BeginDeparture();
     virtual TransitionProgress AdvanceDeparture(u32 deltaMs);

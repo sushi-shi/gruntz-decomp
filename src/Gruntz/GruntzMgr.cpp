@@ -204,6 +204,7 @@ i32 g_warpY = -1;
 CGruntzMgr::CGruntzMgr() {
     m_curState = NULL;
     m_completingStateChange = false;
+    m_arrivalRestoreAttempted = false;
     m_world = NULL;
     m_resourceArchive = NULL;
     m_settings = NULL;
@@ -886,10 +887,9 @@ i32 PumpIdleFrame() {
         return 0;
     }
     CState* state = g_gameReg->m_curState;
-    state->CancelSceneFade();
     const bool restored = state->IsLoading() ? state->RestoreLoading() != 0
         : state->IsDeparting() ? state->RecoverDeparture() != 0
-        : state->InputVirtual() != 0;
+        : state->RecoverScene() != 0;
     if (!restored) {
         g_gameReg->ReportError(IDX(IDS_RESTORE_GAME), 0x435);
         return 0;
@@ -1004,9 +1004,11 @@ TransitionProgress CGruntzMgr::AdvanceInstallation(u32 deltaMs) {
 }
 
 bool CGruntzMgr::BeginArrival() {
+    m_arrivalRestoreAttempted = false;
     if (IsQuitPending() || !m_stateTransition.active() || !m_curState) return false;
     if (!m_curState->EnterState(m_stateChange.previous)) {
-        if (m_stateChange.kind != ResumeStackedState || !m_curState->RestoreDisplay()) {
+        m_arrivalRestoreAttempted = true;
+        if (m_stateChange.kind != ResumeStackedState || !m_curState->RestoreArrival(m_stateChange.previous)) {
             if (m_stateChange.kind == ReplaceState) {
                 delete m_curState;
                 m_curState = NULL;
@@ -1024,7 +1026,14 @@ bool CGruntzMgr::BeginArrival() {
 TransitionProgress CGruntzMgr::AdvanceArrival(u32 deltaMs) {
     if (!m_curState) return TransitionFailed;
     if (m_curState->IsSceneFading()) {
-        if (m_curState->AdvanceSceneFade(deltaMs) < 0) return TransitionFailed;
+        if (m_curState->AdvanceSceneFade(deltaMs) < 0) {
+            if (m_stateChange.kind != ResumeStackedState || m_arrivalRestoreAttempted
+                || IsQuitPending()) return TransitionFailed;
+            m_arrivalRestoreAttempted = true;
+            m_curState->CancelSceneFade();
+            if (!m_curState->RestoreArrival(m_stateChange.previous)) return TransitionFailed;
+            return TransitionPending;
+        }
         if (m_curState->IsSceneFading()) return TransitionPending;
     }
     return TransitionComplete;

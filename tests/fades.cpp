@@ -146,7 +146,10 @@ static void hostDeltas() {
     assert(fade.advance(frames.timing().deltaMs()) == FadeFinished && log.frames.back() == 100);
 }
 
+void testGameplayPresentations();
+
 int main() {
+    testGameplayPresentations();
     playback(); ownershipAndFailure(); boundaries(); deferredSurface(); boundedPresentation(); hostDeltas();
     std::puts("Returning fade playback tests passed.");
 }
