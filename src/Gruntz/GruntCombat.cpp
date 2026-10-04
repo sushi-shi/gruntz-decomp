@@ -951,9 +951,9 @@ inline void CGrunt::SelectCombatHitCue(
     SoundCue*& cue,
     PickupType attackKind,
     i32 struckPose,
-    PickupType attackerGruntKind
+    PickupType attackerPowerupType
 ) {
-    if (attackerGruntKind == GRUNT_DEATHTOUCH) {
+    if (attackerPowerupType == GRUNT_DEATHTOUCH) {
         LK(s_deathtouchhit);
         return;
     }
@@ -1105,7 +1105,7 @@ inline void CGrunt::SelectCombatHitCue(
 }
 
 RVA(0x000597a0, 0x13c0)
-i32 CGrunt::LoadGruntCombatAnimations(
+i32 CGrunt::ApplyCombatHitEffects(
     PickupType attackKind,
     i32 struckPose,
     i32 srcPlayerIndex,
@@ -1113,13 +1113,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 srcPxX,
     i32 srcPxY,
     i32 fromProjectile,
-    PickupType attackerGruntKind
+    PickupType attackerPowerupType
 ) {
     if (this->m_powerupType == GRUNT_INVULNERABLE && this->m_activePickupType != PICKUP_BOMB) {
         return 1;
     }
 
-    if (attackerGruntKind == GRUNT_CONVERSION) {
+    if (attackerPowerupType == GRUNT_CONVERSION) {
         CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
         if (enemy != NULL
             && m_triggerMgr->ConvertGrunt(
@@ -1150,7 +1150,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         hit = t + t % 5;
     }
 
-    if (attackerGruntKind == GRUNT_DEATHTOUCH) {
+    if (attackerPowerupType == GRUNT_DEATHTOUCH) {
         hit = 0x64;
     } else if (this->m_powerupType == GRUNT_REACTIVEARMOR) {
         hit = static_cast<i32>((static_cast<float>(hit) * 0.25f));
@@ -1185,7 +1185,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 vy = this->m_object->m_screenY;
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, vx, vy)) {
-        SelectCombatHitCue(reg, cue, attackKind, struckPose, attackerGruntKind);
+        SelectCombatHitCue(reg, cue, attackKind, struckPose, attackerPowerupType);
 
         if (cue != NULL) {
             PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);

@@ -980,7 +980,7 @@ i32 CGrunt::StepCombatReaction(
     i32 srcPxX,
     i32 srcPxY,
     i32 fromProjectile,
-    PickupType attackerGruntKind
+    PickupType attackerPowerupType
 ) {
     if (m_entranceCommitted == false || m_spawnProtectionActive != false) {
         return 0;
@@ -1029,7 +1029,7 @@ tail:
     if (GRUNT_NOT_AT_SAVED_SCREEN_POS(this)) {
         ConsiderArrival(1);
     }
-    if (LoadGruntCombatAnimations(
+    if (ApplyCombatHitEffects(
             attackKind,
             struckPose,
             srcPlayerIndex,
@@ -1037,7 +1037,7 @@ tail:
             srcPxX,
             srcPxY,
             fromProjectile,
-            attackerGruntKind
+            attackerPowerupType
         )
         == 0) {
         return 0;

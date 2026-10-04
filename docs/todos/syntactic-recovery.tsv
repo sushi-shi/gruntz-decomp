@@ -36,7 +36,7 @@ rva	unit	function	lost_max	cur
 0x0ef6b0	gruntchargestep	?StepDumbChaserBehavior@CGrunt@@QAEHXZ	95.9763	95.8860
 0x05f310	gruntcombat	?AdvanceMotion@CGrunt@@UAEXXZ	94.9570	88.8077
 0x059230	gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	99.1168	97.4074
-0x0597a0	gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.2468	73.1162
+0x0597a0	gruntcombat	?ApplyCombatHitEffects@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.2468	73.1162
 0x057db0	gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	68.8303
 0x05d210	gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	88.1116	87.5067
 0x0f8240	gruntdefenselean	?StepMagicWandGruntBehavior@CGrunt@@QAEHXZ	96.3499	95.6614

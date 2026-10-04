@@ -723,10 +723,10 @@ public:
         SoundCue*& cue,
         PickupType attackKind,
         i32 struckPose,
-        PickupType attackerGruntKind
+        PickupType attackerPowerupType
     );
 
-    i32 LoadGruntCombatAnimations(
+    i32 ApplyCombatHitEffects(
         PickupType attackKind,
         i32 struckPose,
         i32 srcPlayerIndex,
@@ -734,7 +734,7 @@ public:
         i32 srcPxX,
         i32 srcPxY,
         i32 fromProjectile,
-        PickupType attackerGruntKind
+        PickupType attackerPowerupType
     );
 
     i32 UpdateArrival(i32 walking, i32 commit);
@@ -818,7 +818,7 @@ public:
         i32 srcPxX,
         i32 srcPxY,
         i32 fromProjectile,
-        PickupType attackerGruntKind
+        PickupType attackerPowerupType
     );
 
     i32 TileSwitch(
