@@ -49,40 +49,41 @@ RVA_DYNINIT(0x00115ed0, 0x1a, s_gruntDirCenter)
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00115b60, 0x97)
-i32 DrawPageDebugText(
-    CDDrawSurfaceMgr* mgr,
+i32 DrawCenteredPageText(
+    CDDrawSurfaceMgr* world,
     const CString* text,
-    RECT* dst,
-    i32 fontFlag,
+    RECT* bounds,
+    i32 useMessageFont,
     b32 useFrontPage,
-    i32 r,
-    i32 g,
-    i32 b
+    i32 red,
+    i32 green,
+    i32 blue
 ) {
-    if (mgr == NULL) {
+    if (world == NULL) {
         return 0;
     }
-    CRenderSurface* page;
+    CRenderSurface* renderSurface;
     if (useFrontPage != false) {
-        page = mgr->GetDisplayBuffers()->GetFrontSurface();
-        if (page == NULL) {
+        renderSurface = world->GetDisplayBuffers()->GetFrontSurface();
+        if (renderSurface == NULL) {
             return 0;
         }
     } else {
-        page = mgr->GetDisplayBuffers()->GetBackBuffer();
-        if (page == NULL) {
+        renderSurface = world->GetDisplayBuffers()->GetBackBuffer();
+        if (renderSurface == NULL) {
             return 0;
         }
     }
-    CDDSurface* surf = page->GetSurface();
-    if (surf == NULL) {
+    CDDSurface* surface = renderSurface->GetSurface();
+    if (surface == NULL) {
         return 0;
     }
 
     HDC hdc = NULL;
-    surf->GetDirectDrawSurface()->GetDC(&hdc);
-    g_gameReg->ChatLog()->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
-    surf->GetDirectDrawSurface()->ReleaseDC(hdc);
+    surface->GetDirectDrawSurface()->GetDC(&hdc);
+    g_gameReg->ChatLog()
+        ->DrawCenteredText(text, hdc, bounds, useMessageFont, red, green, blue, 1, 2, 3);
+    surface->GetDirectDrawSurface()->ReleaseDC(hdc);
     return 1;
 }
 

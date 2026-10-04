@@ -1749,7 +1749,7 @@ fontconfig	??1GameTextLine@@QAE@XZ	100.0000	100.0000	1	cpp:1c54d09168ac	0x21c40	
 fontconfig	?AddMessage@CGameText@@QAEHPBDHH@Z	100.0000	100.0000	4	f6f8a32b2045	0x21c60	100.0000	
 fontconfig	?AdvanceMessageTimer@CGameText@@QAEXH@Z	100.0000	100.0000	5	814c343052f4	0x21d80	100.0000	
 fontconfig	?ClearMessages@CGameText@@QAEXXZ	100.0000	100.0000	3	56504c5a5e1e	0x21bd0	100.0000	
-fontconfig	?Draw3DText@CGameText@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	94.5365	94.5365	7	1c4f0100af82	0x22810	94.5365	
+fontconfig	?DrawCenteredText@CGameText@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	94.5365	94.5365	7	1c4f0100af82	0x22810	94.5365	
 fontconfig	?DrawInputCaret@CGameText@@QAEHPAUHDC__@@PAUtagRECT@@@Z	100.0000	100.0000	5	9d81aa0e314e	0x21f20	100.0000	
 fontconfig	?DrawTextLines@CGameText@@QAEHHPAUHDC__@@PAUtagRECT@@I@Z	100.0000	100.0000	12	2148499f5713	0x22360	100.0000	
 fontconfig	?DrawWithFont@CGameText@@QAEHPBDPAUHDC__@@PAUtagRECT@@I@Z	100.0000	100.0000	3	6b66832ab151	0x22770	100.0000	
@@ -4251,7 +4251,7 @@ tiletriggercontainer	?AddLogicFromRecord@CTileTriggerContainer@@QAEXW4TileCollis
 tiletriggercontainer	?AddPlayerBrickStack@CTileTriggerContainer@@QAEPAVCBrickStack@@W4BrickTileId@@HHHH@Z	99.4565	99.4565	10	7b5b722f54d4	0x116b80	99.4565	
 tiletriggercontainer	?AddSwitchLogic@CTileTriggerContainer@@QAEPAVCTileTriggerSwitchLogic@@W4TrigLogicId@@HHHUtagRECT@@11111HHH@Z	100.0000	100.0000	5	5da2f29964b5	0x115f60	100.0000	
 tiletriggercontainer	?DeserializeLogic@CTileTriggerContainer@@QAEPAXPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	17	4cf39202ebde	0x117800	100.0000	
-tiletriggercontainer	?DrawPageDebugText@@YAHPAVCDDrawSurfaceMgr@@PBVCString@@PAUtagRECT@@HHHHH@Z	100.0000	100.0000	10	3f32be863649	0x115b60	100.0000	
+tiletriggercontainer	?DrawCenteredPageText@@YAHPAVCDDrawSurfaceMgr@@PBVCString@@PAUtagRECT@@HHHHH@Z	100.0000	100.0000	10	3f32be863649	0x115b60	100.0000	
 tiletriggercontainer	?FindBrickStackByCellKey@CTileTriggerContainer@@QAEPAVCBrickStack@@H@Z	100.0000	100.0000	4	e40090bb3f73	0x1171d0	100.0000	
 tiletriggercontainer	?FindLogic@CTileTriggerContainer@@QAEPAVCTileTriggerLogic@@HW4TrigLogicId@@@Z	100.0000	100.0000	3	5aa9cb725780	0x116f20	100.0000	
 tiletriggercontainer	?FindNearbyGiantRock@CTileTriggerContainer@@QAEPAVCGiantRockLogic@@HH@Z	100.0000	100.0000	5	6086ddc50e68	0x117ec0	100.0000	

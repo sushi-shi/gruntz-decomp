@@ -46,17 +46,17 @@ public:
 
     i32 RenderInputText(HDC hdc, i32 maxWidth, RECT* rect);
     i32 DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format);
-    i32 Draw3DText(
-        const CString* strSrc,
+    i32 DrawCenteredText(
+        const CString* sourceText,
         HDC hdc,
-        RECT* dst,
-        i32 fontFlag,
-        i32 r,
-        i32 g,
-        i32 b,
-        i32 shadow,
-        i32 dx,
-        i32 dy
+        RECT* bounds,
+        i32 useMessageFont,
+        i32 red,
+        i32 green,
+        i32 blue,
+        i32 drawShadow,
+        i32 shadowOffsetX,
+        i32 shadowOffsetY
     );
 
     CString m_inputText;

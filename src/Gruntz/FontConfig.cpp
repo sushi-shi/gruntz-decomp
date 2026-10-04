@@ -483,64 +483,64 @@ i32 CGameText::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) 
 
 // @early-stop
 RVA(0x00022810, 0x22a)
-i32 CGameText::Draw3DText(
-    const CString* strSrc,
+i32 CGameText::DrawCenteredText(
+    const CString* sourceText,
     HDC hdc,
-    RECT* dst,
-    i32 fontFlag,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 shadow,
-    i32 dx,
-    i32 dy
+    RECT* bounds,
+    i32 useMessageFont,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 drawShadow,
+    i32 shadowOffsetX,
+    i32 shadowOffsetY
 ) {
     if (hdc == NULL) {
         return 0;
     }
-    if (dst == NULL) {
+    if (bounds == NULL) {
         return 0;
     }
-    if (strSrc == NULL) {
+    if (sourceText == NULL) {
         return 0;
     }
-    HGDIOBJ selPrev = NULL;
-    RECT rc = *dst;
-    if (fontFlag == 0) {
+    HGDIOBJ previousFont = NULL;
+    RECT textBounds = *bounds;
+    if (useMessageFont == 0) {
         if (m_trainingFont) {
-            selPrev = SelectObject(hdc, m_trainingFont);
+            previousFont = SelectObject(hdc, m_trainingFont);
         }
     } else {
         if (m_messageFont) {
-            selPrev = SelectObject(hdc, m_messageFont);
+            previousFont = SelectObject(hdc, m_messageFont);
         }
     }
     SetBkMode(hdc, TRANSPARENT);
     SetBkColor(hdc, RGB(0, 0, 0));
-    CString text(*strSrc);
-    DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
-    i32 hoff = ((dst->right - dst->left) - (rc.right - rc.left)) / 2;
-    i32 voff = ((dst->bottom - dst->top) - (rc.bottom - rc.top)) / 2;
-    rc.right += hoff;
-    rc.left += hoff;
-    rc.bottom += voff;
-    rc.top += voff;
-    if (shadow) {
+    CString text(*sourceText);
+    DrawTextA(hdc, text, strlen(text), &textBounds, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
+    i32 centerOffsetX = ((bounds->right - bounds->left) - (textBounds.right - textBounds.left)) / 2;
+    i32 centerOffsetY = ((bounds->bottom - bounds->top) - (textBounds.bottom - textBounds.top)) / 2;
+    textBounds.right += centerOffsetX;
+    textBounds.left += centerOffsetX;
+    textBounds.bottom += centerOffsetY;
+    textBounds.top += centerOffsetY;
+    if (drawShadow) {
         SetTextColor(hdc, RGB(0, 0, 0));
-        rc.left += dx;
-        rc.top += dy;
-        rc.right += dx;
-        rc.bottom += dy;
-        DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
-        rc.right -= dx;
-        rc.left -= dx;
-        rc.bottom -= dy;
-        rc.top -= dy;
+        textBounds.left += shadowOffsetX;
+        textBounds.top += shadowOffsetY;
+        textBounds.right += shadowOffsetX;
+        textBounds.bottom += shadowOffsetY;
+        DrawTextA(hdc, text, strlen(text), &textBounds, DT_WORDBREAK | DT_CENTER);
+        textBounds.right -= shadowOffsetX;
+        textBounds.left -= shadowOffsetX;
+        textBounds.bottom -= shadowOffsetY;
+        textBounds.top -= shadowOffsetY;
     }
-    SetTextColor(hdc, RGB(r, g, b));
-    DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
-    if (selPrev) {
-        SelectObject(hdc, selPrev);
+    SetTextColor(hdc, RGB(red, green, blue));
+    DrawTextA(hdc, text, strlen(text), &textBounds, DT_WORDBREAK | DT_CENTER);
+    if (previousFont) {
+        SelectObject(hdc, previousFont);
     }
     return 1;
 }
