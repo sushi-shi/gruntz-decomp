@@ -10,6 +10,8 @@ public:
     virtual bool BeginDeparture() = 0;
     virtual TransitionProgress AdvanceDeparture(u32 deltaMs) = 0;
     virtual bool InstallDestination() = 0;
+    virtual TransitionProgress AdvanceInstallation(u32 deltaMs) = 0;
+    virtual bool BeginArrival() = 0;
     virtual TransitionProgress AdvanceArrival(u32 deltaMs) = 0;
 };
 
@@ -23,7 +25,7 @@ public:
     void cancel() { m_phase = Idle; ++m_generation; }
     bool active() const { return m_phase != Idle; }
 private:
-    enum Phase { Idle, Begin, Depart, Install, Arrive };
+    enum Phase { Idle, Begin, Depart, Install, Load, Enter, Arrive };
     Phase m_phase;
     u32 m_generation;
 };

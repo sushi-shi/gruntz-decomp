@@ -295,9 +295,11 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
 
-    if (LoadByMode(1, 1) == 0) {
-        return 0;
-    }
+    CompleteNamespacesAfterLoading();
+    return LoadByMode(1, 1);
+}
+
+i32 CMulti::FinishNamespaceLoad() {
     m_pumpGuard = true;
     m_allPlayersReady = false;
     i32 wr = WaitForOtherPlayers();
@@ -324,6 +326,7 @@ CNetMgr::~CNetMgr() {
 }
 
 void CMulti::ReleaseResources() {
+    CancelLoading();
     if (m_netMgr && m_localPlayer && m_session && m_connected) {
         BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), DPSEND_GUARANTEED);
         BroadcastPlayerIdMessage(NETMSG_PLAYER_LEFT, DPSEND_GUARANTEED);
@@ -419,9 +422,10 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_processedCommandTick = m_session->m_commandTick - 1;
     m_outOfSync = false;
 
-    if (CPlay::LoadByMode(mode, 0) == 0) {
-        return 0;
-    }
+    return CPlay::LoadByMode(mode, 0);
+}
+
+i32 CMulti::FinishLevelLoad() {
     for (i32 i = 0; i < 4; ++i) {
         GruntzPlayer* e = &Mgr()->m_players[i];
         if (e == NULL) {

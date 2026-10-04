@@ -38,6 +38,10 @@ public:
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId);
 
     virtual void ReleaseResources();
+    virtual TransitionProgress AdvanceLoading(u32 deltaMs) { return TransitionComplete; }
+    virtual bool IsLoading() const { return false; }
+    virtual void CancelLoading() {}
+    virtual i32 RestoreLoading() { return 0; }
 
     virtual i32 IsActive() {
         return m_ready;

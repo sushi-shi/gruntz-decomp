@@ -887,7 +887,8 @@ i32 PumpIdleFrame() {
     }
     CState* state = g_gameReg->m_curState;
     state->CancelSceneFade();
-    const bool restored = state->IsDeparting() ? state->RecoverDeparture() != 0
+    const bool restored = state->IsLoading() ? state->RestoreLoading() != 0
+        : state->IsDeparting() ? state->RecoverDeparture() != 0
         : state->InputVirtual() != 0;
     if (!restored) {
         g_gameReg->ReportError(IDX(IDS_RESTORE_GAME), 0x435);
@@ -989,7 +990,21 @@ bool CGruntzMgr::InstallDestination() {
             return false;
         }
     }
-    if (IsQuitPending() || !m_stateTransition.active()) return false;
+    return !IsQuitPending() && m_stateTransition.active();
+}
+
+TransitionProgress CGruntzMgr::AdvanceInstallation(u32 deltaMs) {
+    if (IsQuitPending() || !m_curState) return TransitionFailed;
+    const TransitionProgress result = m_curState->AdvanceLoading(deltaMs);
+    if (result == TransitionFailed && m_stateChange.kind == ReplaceState) {
+        delete m_curState;
+        m_curState = NULL;
+    }
+    return result;
+}
+
+bool CGruntzMgr::BeginArrival() {
+    if (IsQuitPending() || !m_stateTransition.active() || !m_curState) return false;
     if (!m_curState->EnterState(m_stateChange.previous)) {
         if (m_stateChange.kind != ResumeStackedState || !m_curState->RestoreDisplay()) {
             if (m_stateChange.kind == ReplaceState) {
@@ -1019,7 +1034,10 @@ void CGruntzMgr::CancelStateChange() {
     m_stateTransition.cancel();
     m_stateChange = StateChange();
     m_loadingSaveGame = false;
-    if (m_curState) m_curState->CancelDeparture();
+    if (m_curState) {
+        m_curState->CancelLoading();
+        m_curState->CancelDeparture();
+    }
 }
 
 void CGruntzMgr::AdvanceStateChange(u32 deltaMs) {
@@ -1027,10 +1045,15 @@ void CGruntzMgr::AdvanceStateChange(u32 deltaMs) {
     const TransitionProgress result = m_stateTransition.advance(*this, deltaMs);
     if (IsQuitPending() || result == TransitionPending) return;
     StateChangeOptions options = m_stateChange.options;
+    const bool failedLoading = result == TransitionFailed && m_curState && m_curState->IsLoading();
     m_stateChange = StateChange();
     if (result == TransitionFailed) {
         m_loadingSaveGame = false;
-        if (m_curState) m_curState->CancelDeparture();
+        if (m_curState) {
+            m_curState->CancelLoading();
+            m_curState->CancelDeparture();
+            if (failedLoading) { delete m_curState; m_curState = NULL; }
+        }
         if (options.fallback != GAMESTATE_NONE) {
             const GameStateId fallback = options.fallback;
             options.fallback = GAMESTATE_NONE;
