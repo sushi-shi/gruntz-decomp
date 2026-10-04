@@ -45,7 +45,7 @@ rva	unit	function	lost_max	cur
 0x061940	gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5951	91.5705
 0x0646b0	gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	94.8659	93.1449
 0x062110	gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	94.1261	92.4707
-0x067bd0	gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	99.1475
+0x067bd0	gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	99.5161
 0x06a6d0	gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	92.1188	91.5107
 0x067b00	gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9592	90.9388
 0x0f0e20	gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	91.6483	85.3241
@@ -63,13 +63,13 @@ rva	unit	function	lost_max	cur
 0x0984b0	ingameicon	?PeekCycle@CInGameIcon@@QAEHXZ	93.8843	93.7190
 0x0986b0	ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	96.3765	96.2956
 0x162010	levelplane	?Draw@CDDrawWorkerHost@@QAEXPAVCDDrawSurfacePair@@@Z	87.7566	83.2420
-0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.3193
+0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.2899
 0x183b60	menupage	?Draw@CMenuPage@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9806
 0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4662	96.4054
 0x0d0db0	play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	93.5785
 0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	92.6943	92.2827
 0x0ce660	play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.9791	96.4843
-0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.6613	88.9868
+0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	91.0339	90.1178
 0x0d0b30	play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9755
 0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660
@@ -85,11 +85,11 @@ rva	unit	function	lost_max	cur
 0x10f6a0	tilelogicpump	?Act@CCheckpointTrigger@@QAEHXZ	100.0000	98.3602
 0x110c10	tileswitchlogic	?Tick@CTileTriggerLogic@@UAEHXZ	95.5831	94.9255
 0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	93.3186
+0x078430	triggermgr	?ClearSelection@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x07b1b0	triggermgr	?HandleActionOptionsPointer@CTriggerMgr@@QAEHHH@Z	100.0000	95.5098
 0x079520	triggermgr	?HandleTargetSelection@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	99.8538	90.7510
 0x0798d0	triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	96.9403
 0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.1017
-0x078430	triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379
 0x07d450	triggermgr	?ToggleToolTargeting@CTriggerMgr@@QAEHXZ	100.0000	92.0121
 0x07d5c0	triggermgr	?ToggleToyTargeting@CTriggerMgr@@QAEHXZ	100.0000	99.1892

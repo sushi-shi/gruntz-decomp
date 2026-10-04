@@ -38,7 +38,7 @@
 
 RVA(0x000f26f0, 0x106)
 i32 CGrunt::StepPostGuardBehavior() {
-    switch (m_defenderState) {
+    switch (m_aiState) {
         case AISTATE_SEEK:
             return 1;
         case AISTATE_ATTACK:
@@ -48,7 +48,7 @@ i32 CGrunt::StepPostGuardBehavior() {
     }
 
     if (m_inCombat == false) {
-        m_defenderState = AISTATE_SEEK;
+        m_aiState = AISTATE_SEEK;
     }
     if (m_inCombat != false) {
         if (m_attackQueued != false) {

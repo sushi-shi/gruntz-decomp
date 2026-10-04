@@ -2532,7 +2532,7 @@ void CStatusBarMgr::SetGruntWell(i32 value) {
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;
-    if (g_gameReg->GetTriggerMgr()->ResetCell(playerIndex, unitIndex, 0, 0) != 0) {
+    if (g_gameReg->GetTriggerMgr()->SelectUnit(playerIndex, unitIndex, 0, 0) != 0) {
 
         CGrunt* entry = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
@@ -2540,7 +2540,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
                 ->ResetGoals(entry->m_object->m_screenX, entry->m_object->m_screenY);
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->GetTriggerMgr();
-                if (obj->RecordListHas(playerIndex, unitIndex)) {
+                if (obj->IsUnitSelected(playerIndex, unitIndex)) {
                     obj->SetCameraTarget(playerIndex, unitIndex);
                 }
             }

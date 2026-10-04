@@ -872,7 +872,7 @@ i32 CGrunt::HandleCombatContact(
     i32 otherUnitIndex
 ) {
     if (isAttacker == false) {
-        switch (m_arrivalState) {
+        switch (m_aiType) {
             case AI_NONE:
                 break;
             case AI_SMARTCHASER:
@@ -881,16 +881,16 @@ i32 CGrunt::HandleCombatContact(
             case AI_DUMBCHASER:
             case AI_DEFENDER:
                 m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
                 break;
             case AI_POSTGUARD:
                 m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
                 break;
             case AI_HITANDRUNNER:
             case AI_OBJECTGUARD:
                 m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
                 break;
             case AI_BATTLEZ_PATH:
                 m_arrivalCell.Set(otherPlayerIndex, otherUnitIndex);
@@ -1657,7 +1657,7 @@ void CGrunt::Activate() {
     m_wingzTime = 0;
     m_entranceActive = false;
     m_arrivalPending = false;
-    m_arrivalState = AI_NONE;
+    m_aiType = AI_NONE;
     m_inCombat = false;
     m_resetApplied = false;
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
@@ -1693,19 +1693,19 @@ void CGrunt::StepBehavior(char*) {
     }
     m_dwell += g_frameDelta;
 
-    if (m_entranceDropActive != false) {
+    if (m_spawnProtectionActive != false) {
         bool differs = IsNotAnimationAct("A");
         if (differs) {
             differs = IsNotAnimationAct("K");
             if (differs) {
-                goto dropExpire;
+                goto expireSpawnProtection;
             }
         }
 
         if (m_entranceTiming.Expired()) {
-        dropExpire: {
+        expireSpawnProtection: {
             CWwdSpriteObject* obj = m_object;
-            m_entranceDropActive = false;
+            m_spawnProtectionActive = false;
             obj->m_drawActive = true;
             obj->m_drawFillCmd = SHADE_PAL_16;
         }
@@ -1957,8 +1957,7 @@ afterTile:
         }
         {
             i32 hp = m_health;
-            if (hp <= 5 && hp > 0
-                && (m_arrivalState == AI_SMARTCHASER || m_arrivalState == AI_HITANDRUNNER)) {
+            if (hp <= 5 && hp > 0 && (m_aiType == AI_SMARTCHASER || m_aiType == AI_HITANDRUNNER)) {
                 if (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
 
                     i32 baseRow = sy >> TILE_SHIFT_PX;
@@ -1982,9 +1981,9 @@ afterTile:
             SET_RECT_COMPONENTS(rs, col5 - reach, row5 - reach, reach + col5 + 1, reach + row5 + 1);
             grid->Clip(&rs);
         }
-        if (m_arrivalState != AI_NONE) {
+        if (m_aiType != AI_NONE) {
             if (!IsHoldPending()) {
-                switch (m_arrivalState) {
+                switch (m_aiType) {
                     case AI_DUMBCHASER:
                         StepDumbChaserBehavior();
                         break;
@@ -2084,14 +2083,14 @@ afterArrival:
         }
     }
 
-    if (m_arrivalState == AI_BATTLEZ_PATH) {
+    if (m_aiType == AI_BATTLEZ_PATH) {
         ExpireBattlezCombatState(this);
     } else {
         if (IsCombatTimeoutExpired()) {
             if (m_inCombat != false && m_attackQueued == false) {
                 RESET_GRUNT_COMBAT_STATE(this)
             }
-            if (m_arrived == false && m_hudRetireTiming.Expired()) {
+            if (m_selected == false && m_hudRetireTiming.Expired()) {
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
@@ -2310,7 +2309,7 @@ void CGrunt::FinalizeStep(char* name) {
 
 RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
-    if (m_arrivalState != AI_BATTLEZ_PATH) {
+    if (m_aiType != AI_BATTLEZ_PATH) {
         bool isIdle;
         isIdle = IsAnimationAct("A");
         if (isIdle && !CoordsEmpty()) {

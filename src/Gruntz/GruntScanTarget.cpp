@@ -154,7 +154,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         return 1;
     }
 
-    switch (m_defenderState) {
+    switch (m_aiState) {
         case AISTATE_SEEK: {
 
             if (best != NULL) {
@@ -198,7 +198,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                             )
                             != 0) {
                             SET_GRUNT_ARRIVAL_TARGET(best);
-                            m_defenderState = AISTATE_CHASE;
+                            m_aiState = AISTATE_CHASE;
                             PLAY_VOICE_IF_VISIBLE(0x366);
                         }
                     }
@@ -260,16 +260,16 @@ i32 CGrunt::StepSmartChaserBehavior() {
                         return 1;
                     }
                     COMMIT_GRUNT_NEIGHBOR(sg);
-                    m_defenderState = AISTATE_ATTACK;
+                    m_aiState = AISTATE_ATTACK;
                     return 1;
                 }
             }
-            m_defenderState = AISTATE_SEEK;
+            m_aiState = AISTATE_SEEK;
             return 1;
         }
         case AISTATE_ATTACK: {
             if (m_inCombat == false) {
-                m_defenderState = AISTATE_CHASE;
+                m_aiState = AISTATE_CHASE;
                 m_dwell = DWELL_REPATH_MS;
                 return 1;
             }
@@ -294,7 +294,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                         }
                     }
                 }
-                m_defenderState = AISTATE_CHASE;
+                m_aiState = AISTATE_CHASE;
                 m_dwell = DWELL_REPATH_MS;
                 return 1;
             }

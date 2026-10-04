@@ -194,8 +194,8 @@ public:
     i32 GetUnitIndex() const {
         return m_unitIndex;
     }
-    b32 HasArrived() const {
-        return m_arrived;
+    b32 IsSelected() const {
+        return m_selected;
     }
     b32 IsInCombat() const {
         return m_inCombat;
@@ -203,8 +203,8 @@ public:
     b32 IsGuarding() const {
         return m_tileClaimed;
     }
-    b32 IsEntranceDropActive() const {
-        return m_entranceDropActive;
+    b32 IsSpawnProtected() const {
+        return m_spawnProtectionActive;
     }
     b32 IsEntranceCommitted() const {
         return m_entranceCommitted;
@@ -287,12 +287,12 @@ public:
         m_targetTeam = team;
     }
 
-    GruntAiState GetDefenderState() const {
-        return m_defenderState;
+    GruntAiState GetAiState() const {
+        return m_aiState;
     }
 
-    void SetDefenderState(GruntAiState state) {
-        m_defenderState = state;
+    void SetAiState(GruntAiState state) {
+        m_aiState = state;
     }
 
     PickupType GetDefenderPickupType() const {
@@ -427,7 +427,7 @@ public:
     CWwdSpriteObject* m_toyTimeSprite;
     CWwdSpriteObject* m_wingzTimeSprite;
     CWwdSpriteObject* m_powerupSprite;
-    b32 m_arrived;
+    b32 m_selected;
     Coord m_reserved1dc;
     b32 m_entranceActive;
     b32 m_arrivalPending;
@@ -472,8 +472,8 @@ public:
 
     RECT m_vehicleContactRect;
     RECT m_vehicleContactExclusionRect;
-    EnemyAiType m_arrivalState;
-    GruntAiState m_defenderState;
+    EnemyAiType m_aiType;
+    GruntAiState m_aiState;
     BattlezTask m_battleState;
     i32 m_defenderRadius;
     i32 m_defenderQueuePosition;
@@ -561,7 +561,7 @@ public:
     b32 m_neighborScanEnabled;
     b32 m_tileMoveCommitted;
     GruntDeathType m_deathType;
-    b32 m_entranceDropActive;
+    b32 m_spawnProtectionActive;
     b32 m_deathAnimStarted;
     b32 m_cellRemovalNotified;
     i32 m_killerPlayerIndex;
@@ -656,7 +656,7 @@ public:
         m_arrivalRerollTiming.Start(rand() % 30000 + 30000);
     }
     i32 ResolveEntranceArrival();
-    void ClearAllSprites();
+    void Deselect();
     i32 BuildEntranceAnimation(GruntEntranceMode mode);
     i32 LoadEntranceConfig();
 
@@ -667,7 +667,7 @@ public:
     i32 Save(CFileMemBase* ar);
 
     i32 LoadStateRecord(CFileMemBase* ar);
-    i32 CommitArrival();
+    i32 Select();
     void StopVehicleLoopSound();
     void StopPowerupLoopSound();
     void ReapplyLoopSoundParams();
@@ -818,7 +818,7 @@ public:
         PickupType moveIcon,
         PickupType typeKind,
         i32 vehicleKind,
-        EnemyAiType kind,
+        EnemyAiType aiType,
         i32 defenderRadiusMinusOne,
         i32 defenderQueuePosition,
         i32 defenderPickupType,

@@ -91,7 +91,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
         return 1;
     }
 
-    switch (m_defenderState) {
+    switch (m_aiState) {
         case AISTATE_SEEK: {
 
             if (g != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
@@ -114,7 +114,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     )
                     != 0) {
                     SET_GRUNT_ARRIVAL_TARGET(g);
-                    m_defenderState = AISTATE_CHASE;
+                    m_aiState = AISTATE_CHASE;
                     PLAY_VOICE_IF_VISIBLE(0x366);
                 }
                 m_dwell = 0;
@@ -149,7 +149,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
             }
             if (t == NULL || t->IsEntranceCommitted() == false
                 || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0) {
-                m_defenderState = AISTATE_SEEK;
+                m_aiState = AISTATE_SEEK;
                 return 1;
             }
             RepathToward(this, t);
@@ -157,7 +157,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && IsGruntAtSavedScreenPos(t)) {
                 COMMIT_GRUNT_NEIGHBOR(t);
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
                 return 1;
             }
             break;
@@ -168,7 +168,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 CGrunt* t = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (t == NULL || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0
                     || t->IsEntranceCommitted() == false) {
-                    m_defenderState = AISTATE_CHASE;
+                    m_aiState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
@@ -178,14 +178,14 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 }
                 if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
                     || !IsGruntAtSavedScreenPos(t)) {
-                    m_defenderState = AISTATE_CHASE;
+                    m_aiState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
                 COMMIT_GRUNT_NEIGHBOR(t);
                 return 1;
             }
-            m_defenderState = AISTATE_CHASE;
+            m_aiState = AISTATE_CHASE;
             m_dwell = DWELL_REPATH_MS;
             return 1;
         }

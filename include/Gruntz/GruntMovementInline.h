@@ -38,7 +38,7 @@ inline void CGrunt::SetNeighbor(i32 playerIndex, i32 unitIndex) {
 
 inline void ResetToSeek(CGrunt* grunt) {
     UNSET_COORD(grunt->m_arrivalCell);
-    grunt->SetDefenderState(AISTATE_SEEK);
+    grunt->SetAiState(AISTATE_SEEK);
 }
 
 inline void RepathToward(CGrunt* grunt, CGrunt* target) {
@@ -96,7 +96,7 @@ inline Coord CGrunt::ScanCell() {
 
 inline void BeginGruntEntranceAndReleaseCell(CGrunt* grunt) {
     grunt->m_entranceActive = true;
-    grunt->m_triggerMgr->RemoveCellRecord(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), 1);
+    grunt->m_triggerMgr->RemoveUnitFromSelection(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), 1);
 }
 
 #endif // GRUNTZ_GRUNTMOVEMENTINLINE_H

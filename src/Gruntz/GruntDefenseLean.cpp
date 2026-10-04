@@ -47,10 +47,10 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
         return 1;
     }
     CGrunt* occ;
-    switch (m_defenderState) {
+    switch (m_aiState) {
         case AISTATE_ATTACK:
             if (m_inCombat == false) {
-                m_defenderState = AISTATE_CHASE;
+                m_aiState = AISTATE_CHASE;
                 return 1;
             }
             occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
@@ -68,14 +68,14 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                     return 1;
                 }
                 PLAY_VOICE_IN_VIEW(0x366);
-                m_defenderState = AISTATE_CHASE;
+                m_aiState = AISTATE_CHASE;
                 m_dwell = DWELL_REPATH_MS;
                 return 1;
             }
             if (occ == NULL) {
                 goto seek;
             }
-            m_defenderState = AISTATE_CHASE;
+            m_aiState = AISTATE_CHASE;
             m_dwell = DWELL_REPATH_MS;
             PLAY_VOICE_IN_VIEW(0x366);
             return 1;
@@ -105,7 +105,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(occ);
-            m_defenderState = AISTATE_ATTACK;
+            m_aiState = AISTATE_ATTACK;
             return 1;
         }
 
@@ -167,6 +167,6 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             return 1;
     }
 seek:
-    m_defenderState = AISTATE_SEEK;
+    m_aiState = AISTATE_SEEK;
     return 1;
 }

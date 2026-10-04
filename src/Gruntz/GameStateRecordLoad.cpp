@@ -84,7 +84,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_reserved1ac, sizeof(m_reserved1ac));
     ar->Read(&m_reserved1b0, sizeof(m_reserved1b0));
     ar->Read(&m_reserved1b4, sizeof(m_reserved1b4));
-    ar->Read(&m_arrived, sizeof(m_arrived));
+    ar->Read(&m_selected, sizeof(m_selected));
     ar->Read(&m_entrancePx, sizeof(m_entrancePx));
     ar->Read(&m_lastTilePx, sizeof(m_lastTilePx));
     ar->Read(&m_commitPx, sizeof(m_commitPx));
@@ -121,8 +121,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_reserved430, sizeof(m_reserved430));
     ar->Read(&m_startingItemId, sizeof(m_startingItemId));
     ar->Read(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
-    ar->Read(&m_arrivalState, sizeof(m_arrivalState));
-    ar->Read(&m_defenderState, sizeof(m_defenderState));
+    ar->Read(&m_aiType, sizeof(m_aiType));
+    ar->Read(&m_aiState, sizeof(m_aiState));
     ar->Read(&m_battleState, sizeof(m_battleState));
     ar->Read(&m_defenderRadius, sizeof(m_defenderRadius));
     ar->Read(&m_defenderQueuePosition, sizeof(m_defenderQueuePosition));
@@ -150,7 +150,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_gruntKind, sizeof(m_gruntKind));
     ar->Read(&m_entranceArmed, sizeof(m_entranceArmed));
     ar->Read(&m_deathType, sizeof(m_deathType));
-    ar->Read(&m_entranceDropActive, sizeof(m_entranceDropActive));
+    ar->Read(&m_spawnProtectionActive, sizeof(m_spawnProtectionActive));
     ar->Read(&m_hasExtent, sizeof(m_hasExtent));
     ar->Read(&m_unusedBattleCell, sizeof(m_unusedBattleCell));
     ar->Read(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));

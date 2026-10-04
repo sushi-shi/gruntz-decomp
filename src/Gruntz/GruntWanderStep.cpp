@@ -55,7 +55,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (m_attackWindupActive == false) {
                 if (m_stamina >= STAMINA_FULL) {
                     if (FindGridNeighbor(1) != NULL) {
-                        m_defenderState = AISTATE_RETREAT;
+                        m_aiState = AISTATE_RETREAT;
                         return 1;
                     }
                     if (flag != 0 && g == NULL) {
@@ -79,10 +79,10 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             m_attackQueued = false;
         }
     retreat:
-        m_defenderState = AISTATE_RETREAT;
+        m_aiState = AISTATE_RETREAT;
     }
 
-    switch (m_defenderState) {
+    switch (m_aiState) {
         case AISTATE_SEEK: {
             Coord c;
             if (g != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
@@ -96,7 +96,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                     g->GetScreenTile(&c);
                     if (TileSwitch(c.m_x, c.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(g);
-                        m_defenderState = AISTATE_CHASE;
+                        m_aiState = AISTATE_CHASE;
                         PLAY_VOICE_IF_VISIBLE(0x366);
                     }
                 }
@@ -115,7 +115,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             }
             if (slot == NULL || slot->IsEntranceCommitted() == false
                 || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
-                m_defenderState = AISTATE_SEEK;
+                m_aiState = AISTATE_SEEK;
                 return 1;
             }
             RepathToward(this, slot);
@@ -137,7 +137,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
 
         case AISTATE_ATTACK: {
             if (m_inCombat == false) {
-                m_defenderState = AISTATE_SEEK;
+                m_aiState = AISTATE_SEEK;
                 return 1;
             }
             CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
@@ -164,7 +164,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             m_dwell = DWELL_REPATH_MS;
             return 1;
         ph1:
-            m_defenderState = AISTATE_CHASE;
+            m_aiState = AISTATE_CHASE;
             m_dwell = DWELL_REPATH_MS;
             return 1;
         }
@@ -174,7 +174,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
-                m_defenderState = AISTATE_SEEK;
+                m_aiState = AISTATE_SEEK;
                 return 1;
             }
             if (!CoordsEmpty()) {

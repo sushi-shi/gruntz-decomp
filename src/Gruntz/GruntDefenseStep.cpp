@@ -43,10 +43,10 @@ RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepScrollGruntBehavior() {
     m_defenderPx = m_lastTilePx;
     CGrunt* occ;
-    switch (m_defenderState) {
+    switch (m_aiState) {
         case AISTATE_ATTACK:
             if (m_inCombat == false) {
-                m_defenderState = AISTATE_CHASE;
+                m_aiState = AISTATE_CHASE;
                 return 1;
             }
             occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
@@ -78,7 +78,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             } else if (occ == NULL) {
                 goto seek;
             }
-            m_defenderState = AISTATE_CHASE;
+            m_aiState = AISTATE_CHASE;
             PLAY_VOICE_IN_VIEW(0x366);
             return 1;
 
@@ -110,13 +110,13 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     occ->m_object->m_screenX,
                     occ->m_object->m_screenY
                 );
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
                 return 1;
             }
             if (IsGruntAtSavedScreenPos(occ)) {
                 COMMIT_GRUNT_NEIGHBOR(occ);
             }
-            m_defenderState = AISTATE_ATTACK;
+            m_aiState = AISTATE_ATTACK;
             return 1;
         }
 
@@ -147,7 +147,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     ScreenTile(&sp);
                     if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(occ);
-                        m_defenderState = AISTATE_CHASE;
+                        m_aiState = AISTATE_CHASE;
                         PLAY_VOICE_IF_VISIBLE(0x366);
                     }
                 }
@@ -187,6 +187,6 @@ i32 CGrunt::StepScrollGruntBehavior() {
             return 1;
     }
 seek:
-    m_defenderState = AISTATE_SEEK;
+    m_aiState = AISTATE_SEEK;
     return 1;
 }

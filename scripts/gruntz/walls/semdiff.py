@@ -82,7 +82,7 @@ applied mechanically are applied, the rest are for the reader:
                             `bar+1` for the same address. FILTERED: no.
 
 FALSE-NEGATIVE LIMIT: identical operand multisets and ordered referents do
-not prove identical side-effect reachability. Moving ResetCell across the
+not prove identical side-effect reachability. Moving SelectUnit across the
 current-player guard in LoadEntranceConfig preserved both. Audit branch
 destinations and per-edge call traces.
 

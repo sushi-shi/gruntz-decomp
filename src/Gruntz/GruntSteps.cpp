@@ -820,8 +820,8 @@ applyTail:
         m_lastTilePx.Set(-1, -1);
         SetEntrancePos(1, 1);
         this->RecycleCoords();
-        if (m_arrivalState == AI_BATTLEZ_PATH) {
-            m_defenderState = AISTATE_SEEK;
+        if (m_aiType == AI_BATTLEZ_PATH) {
+            m_aiState = AISTATE_SEEK;
             m_routePassableMask = 0;
         }
         if (spawnWormhole != false) {
@@ -1014,7 +1014,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_reserved1ac, sizeof(m_reserved1ac));
     ar->Write(&m_reserved1b0, sizeof(m_reserved1b0));
     ar->Write(&m_reserved1b4, sizeof(m_reserved1b4));
-    ar->Write(&m_arrived, sizeof(m_arrived));
+    ar->Write(&m_selected, sizeof(m_selected));
     ar->Write(&m_entrancePx, sizeof(m_entrancePx));
     ar->Write(&m_lastTilePx, sizeof(m_lastTilePx));
     ar->Write(&m_commitPx, sizeof(m_commitPx));
@@ -1051,8 +1051,8 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_reserved430, sizeof(m_reserved430));
     ar->Write(&m_startingItemId, sizeof(m_startingItemId));
     ar->Write(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
-    ar->Write(&m_arrivalState, sizeof(m_arrivalState));
-    ar->Write(&m_defenderState, sizeof(m_defenderState));
+    ar->Write(&m_aiType, sizeof(m_aiType));
+    ar->Write(&m_aiState, sizeof(m_aiState));
     ar->Write(&m_battleState, sizeof(m_battleState));
     ar->Write(&m_defenderRadius, sizeof(m_defenderRadius));
     ar->Write(&m_defenderQueuePosition, sizeof(m_defenderQueuePosition));
@@ -1080,7 +1080,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_gruntKind, sizeof(m_gruntKind));
     ar->Write(&m_entranceArmed, sizeof(m_entranceArmed));
     ar->Write(&m_deathType, sizeof(m_deathType));
-    ar->Write(&m_entranceDropActive, sizeof(m_entranceDropActive));
+    ar->Write(&m_spawnProtectionActive, sizeof(m_spawnProtectionActive));
     ar->Write(&m_hasExtent, sizeof(m_hasExtent));
     ar->Write(&m_unusedBattleCell, sizeof(m_unusedBattleCell));
     ar->Write(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));

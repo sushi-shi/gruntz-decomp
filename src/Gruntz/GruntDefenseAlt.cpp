@@ -88,7 +88,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
         return 1;
     }
 
-    switch (m_defenderState) {
+    switch (m_aiState) {
         case AISTATE_SEEK: {
             CGrunt* o = m_triggerMgr->FindNearestEnemy(this);
             if (o != NULL) {
@@ -190,12 +190,12 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(o);
-            m_defenderState = AISTATE_ATTACK;
+            m_aiState = AISTATE_ATTACK;
             return 1;
         }
 
         case AISTATE_ATTACK:
-            m_defenderState = AISTATE_SEEK;
+            m_aiState = AISTATE_SEEK;
             return 1;
 
         case AISTATE_RETURN: {
@@ -209,7 +209,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             );
             if (m_object->m_screenX == m_defenderPx.m_x - 0x20
                 && m_object->m_screenY == m_defenderPx.m_y - 0x20) {
-                m_defenderState = AISTATE_SEEK;
+                m_aiState = AISTATE_SEEK;
                 return 1;
             }
             CGrunt* o = m_triggerMgr->FindNearestEnemy(this);
@@ -219,14 +219,14 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (m_inCombat == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
                 && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(o);
-                m_defenderState = AISTATE_ATTACK;
+                m_aiState = AISTATE_ATTACK;
             }
             if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
                 return 1;
             }
             m_arrivalCell.m_x = o->m_playerIndex;
             m_arrivalCell.m_y = o->m_unitIndex;
-            m_defenderState = AISTATE_CHASE;
+            m_aiState = AISTATE_CHASE;
             PLAY_VOICE_IN_VIEW(0x366);
             return 1;
         }
@@ -236,6 +236,6 @@ i32 CGrunt::StepObjectGuardBehavior() {
     }
 
 resetState:
-    m_defenderState = AISTATE_RETURN;
+    m_aiState = AISTATE_RETURN;
     return 1;
 }

@@ -18,9 +18,9 @@ GZ_ENUM_CONST_BEGIN(ArrivalFlagsPreset)
 GZ_ENUM_CONST_END(ArrivalFlagsPreset)
 
 inline void ResetArrivalFlags(CGrunt* grunt) {
-    if (grunt->m_arrivalState == AI_NONE) {
+    if (grunt->m_aiType == AI_NONE) {
         grunt->m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-    } else if (grunt->m_arrivalState == AI_BATTLEZ_PATH) {
+    } else if (grunt->m_aiType == AI_BATTLEZ_PATH) {
         grunt->m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
     } else {
         grunt->m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
@@ -54,8 +54,8 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
                     g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;                      \
                 break;                                                                             \
         }                                                                                          \
-        (grunt)->m_arrivalState = AI_DEFENDER;                                                     \
-        (grunt)->m_defenderState = AISTATE_SEEK;                                                   \
+        (grunt)->m_aiType = AI_DEFENDER;                                                           \
+        (grunt)->m_aiState = AISTATE_SEEK;                                                         \
         UNSET_COORD((grunt)->m_arrivalCell);                                                       \
         (grunt)->m_arrivalActive = false;                                                          \
         (grunt)->m_arrivalFlags |= 0x18040402;                                                     \
@@ -67,7 +67,7 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
     {                                                                                              \
         (grunt)->m_arrivalRerollTiming.Clear();                                                    \
         (grunt)->m_tileClaimed = false;                                                            \
-        (grunt)->m_arrivalState = AI_NONE;                                                         \
+        (grunt)->m_aiType = AI_NONE;                                                               \
         (grunt)->m_arrivalFlags &= 0xe7fbfbfd;                                                     \
         (grunt)->SetEntrancePos(1, 1);                                                             \
     }

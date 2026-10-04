@@ -95,7 +95,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         return 1;
     }
 
-    switch (this->m_defenderState) {
+    switch (this->m_aiState) {
         case AISTATE_SEEK: {
             Coord c;
             if (g != NULL && this->m_inCombat == false && this->m_stamina >= STAMINA_FULL
@@ -117,7 +117,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         )
                         != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(g);
-                        this->m_defenderState = AISTATE_CHASE;
+                        this->m_aiState = AISTATE_CHASE;
                         PLAY_VOICE_IF_VISIBLE(0x366);
                     }
                 }
@@ -159,7 +159,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             if (found == NULL || found == slot) {
                 if (slot == NULL || slot->IsEntranceCommitted() == false
                     || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
-                    this->m_defenderState = AISTATE_SEEK;
+                    this->m_aiState = AISTATE_SEEK;
                 } else {
                     StepArrivalDrop(
                         slot->m_lastTilePx.m_x,
@@ -173,7 +173,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && IsGruntAtSavedScreenPos(slot)) {
                         COMMIT_GRUNT_NEIGHBOR(slot);
-                        this->m_defenderState = AISTATE_ATTACK;
+                        this->m_aiState = AISTATE_ATTACK;
                     }
                 }
             } else {
@@ -183,7 +183,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         }
         case AISTATE_ATTACK: {
             if (m_inCombat == false) {
-                m_defenderState = AISTATE_CHASE;
+                m_aiState = AISTATE_CHASE;
                 break;
             }
             CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
@@ -199,10 +199,10 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     break;
                 }
             } else if (slot == NULL) {
-                m_defenderState = AISTATE_SEEK;
+                m_aiState = AISTATE_SEEK;
                 break;
             }
-            m_defenderState = AISTATE_CHASE;
+            m_aiState = AISTATE_CHASE;
             PLAY_VOICE_IN_VIEW(0x366);
             break;
         }

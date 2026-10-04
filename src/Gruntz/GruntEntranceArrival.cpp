@@ -146,7 +146,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     GruntAttackPose pose;
     switch (m_activePickupType) {
         case PICKUP_BOOMERANG:
-            if (m_arrivalState != AI_NONE) {
+            if (m_aiType != AI_NONE) {
                 m_entranceActive = true;
             }
             pose = GRUNT_ATTACK2;
@@ -496,7 +496,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
     b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
     if (sub->IsComplete()) {
-        if (m_arrived != false) {
+        if (m_selected != false) {
             CreateHealthSprite();
             CreateStaminaSprite();
             CreateToySprite();
@@ -713,13 +713,13 @@ i32 CGrunt::ResolveEntranceArrival() {
             if (slot != NULL && slot->IsHumanControlled() != false) {
                 if (m_tileClaimed == false && m_arrivalNotified == false
                     && mode == GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
-                    && m_arrived == false) {
+                    && m_selected == false) {
                     m_triggerMgr->EnqueueGuardBegin(m_playerIndex, m_unitIndex);
                     m_arrivalNotified = true;
                     goto tail;
                 }
                 if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
-                    && m_arrived == false && m_tileClaimed != true) {
+                    && m_selected == false && m_tileClaimed != true) {
                     BEGIN_GUARD(this);
                 }
             }
@@ -827,7 +827,7 @@ RVA(0x00063db0, 0x32f)
 i32 CGrunt::UpdateVehicleUseAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (sub->IsComplete()) {
-        if (m_arrived) {
+        if (m_selected) {
             CreateHealthSprite();
             CreateStaminaSprite();
             CreateToySprite();
@@ -980,7 +980,7 @@ i32 CGrunt::StepCombatReaction(
     i32 fromProjectile,
     PickupType attackerGruntKind
 ) {
-    if (m_entranceCommitted == false || m_entranceDropActive != false) {
+    if (m_entranceCommitted == false || m_spawnProtectionActive != false) {
         return 0;
     }
     {
@@ -1287,7 +1287,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         return 0;
     }
     m_entranceActive = false;
-    if (m_arrived != false) {
+    if (m_selected != false) {
         CreateHealthSprite();
         CreateStaminaSprite();
         CreateToySprite();

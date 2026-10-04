@@ -86,7 +86,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
-    m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
+    m_triggerMgr->RemoveUnitFromSelection(m_playerIndex, m_unitIndex, 1);
 
     SET_ANIMATION_ACT(DATA_COMPGEN(0x0020cc90, "C"));
 
@@ -313,7 +313,7 @@ tail:
     if (m_activePickupType == PICKUP_WARPSTONE && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         m_triggerMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
     }
-    if (m_arrivalState == AI_TOOLTHIEF) {
+    if (m_aiType == AI_TOOLTHIEF) {
         TryPowerupAtTile();
     }
     m_gruntKind = GRUNT_NORMAL;
