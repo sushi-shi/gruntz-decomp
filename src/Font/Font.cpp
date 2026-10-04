@@ -160,8 +160,8 @@ RVA(0x00179c00, 0x1)
 FontRenderer::~FontRenderer() {}
 
 RVA(0x00179c10, 0x9)
-void FontRenderer::SetFont(Font* f) {
-    m_font = f;
+void FontRenderer::SetFont(Font* font) {
+    m_font = font;
 }
 
 RVA(0x00179c20, 0xa)
@@ -521,224 +521,224 @@ void FontRenderer::DrawWrapped(
 
 RVA(0x0017ac50, 0xbd)
 CSize FontRenderer::MeasureText(CString text) {
-    CSize ext;
+    CSize textExtent;
 
-    CSize g;
-    g.cy = 0;
-    i32 i = 0;
-    i32 width = 0;
+    CSize glyphExtent;
+    glyphExtent.cy = 0;
+    i32 characterIndex = 0;
+    i32 textWidth = 0;
     if (m_font == NULL) {
         return CSize(0, 0);
     }
-    for (; i < text.GetLength(); i++) {
-        u8 c = text[i];
+    for (; characterIndex < text.GetLength(); characterIndex++) {
+        u8 character = text[characterIndex];
 
-        width += m_font->GetGlyphSize(g, c).cx;
+        textWidth += m_font->GetGlyphSize(glyphExtent, character).cx;
     }
-    ext = CSize(width, m_font->GetMaxHeight());
-    return ext;
+    textExtent = CSize(textWidth, m_font->GetMaxHeight());
+    return textExtent;
 }
 
 // @early-stop
 RVA(0x0017ad10, 0x402)
-CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
-    i32 y = rc.top;
+CSize FontRenderer::MeasureWrapped(CString remainingText, CRect bounds) {
+    i32 y = bounds.top;
     CSize maxExtent;
     maxExtent.cx = 0;
-    i32 x = rc.left;
+    i32 x = bounds.left;
 
     CString line;
-    while (y < rc.bottom) {
-        i32 len = text.GetLength();
-        if (len <= 0) {
+    while (y < bounds.bottom) {
+        i32 textLength = remainingText.GetLength();
+        if (textLength <= 0) {
             break;
         }
 
-        i32 nl = 0;
-        for (i32 k = 0; k < len; k++) {
-            if (text[k] == '\n') {
-                nl = 1;
+        i32 hasNewline = 0;
+        for (i32 characterIndex = 0; characterIndex < textLength; characterIndex++) {
+            if (remainingText[characterIndex] == '\n') {
+                hasNewline = 1;
                 break;
             }
         }
 
-        CSize e;
-        e = MeasureText(text);
-        if (e.cx + x <= rc.right && !nl) {
-            line += text;
-            text = "";
-            if (m_font->GetMaxHeight() + y <= rc.bottom) {
-                CSize lw = MeasureText(line);
-                i32 w = lw.cx;
-                maxExtent.cx = max(maxExtent.cx, w);
+        CSize remainingExtent;
+        remainingExtent = MeasureText(remainingText);
+        if (remainingExtent.cx + x <= bounds.right && !hasNewline) {
+            line += remainingText;
+            remainingText = "";
+            if (m_font->GetMaxHeight() + y <= bounds.bottom) {
+                CSize lineExtent = MeasureText(line);
+                i32 lineWidth = lineExtent.cx;
+                maxExtent.cx = max(maxExtent.cx, lineWidth);
             }
         } else {
-            i32 i = 0;
-            i32 breakNL = 0;
+            i32 wordLength = 0;
+            i32 newlineAfterWord = 0;
 
-            while (i < text.GetLength()) {
-                u8 ch = text[i];
-                if (ch == ' ' || ch == '\n') {
+            while (wordLength < remainingText.GetLength()) {
+                u8 character = remainingText[wordLength];
+                if (character == ' ' || character == '\n') {
                     break;
                 }
-                i++;
+                wordLength++;
             }
-            if (i < text.GetLength() && text[i] == '\n') {
-                breakNL = 1;
+            if (wordLength < remainingText.GetLength() && remainingText[wordLength] == '\n') {
+                newlineAfterWord = 1;
             }
-            CString head = text.Left(i + 1);
+            CString word = remainingText.Left(wordLength + 1);
 
-            CSize he;
-            he = MeasureText(head);
-            i32 headW = he.cx;
-            text = text.Right(text.GetLength() - i - 1);
-            if (headW + x < rc.right) {
-                line += head;
-                x = headW + x;
-            } else if (headW < rc.Width()) {
-                CSize lw = MeasureText(line);
-                i32 w = lw.cx;
-                maxExtent.cx = max(maxExtent.cx, w);
+            CSize wordExtent;
+            wordExtent = MeasureText(word);
+            i32 wordWidth = wordExtent.cx;
+            remainingText = remainingText.Right(remainingText.GetLength() - wordLength - 1);
+            if (wordWidth + x < bounds.right) {
+                line += word;
+                x = wordWidth + x;
+            } else if (wordWidth < bounds.Width()) {
+                CSize lineExtent = MeasureText(line);
+                i32 lineWidth = lineExtent.cx;
+                maxExtent.cx = max(maxExtent.cx, lineWidth);
                 y = y + m_font->GetMaxHeight();
-                x = rc.left;
+                x = bounds.left;
                 line = "";
-                if (m_font->GetMaxHeight() + y < rc.bottom) {
-                    line += head;
-                    x = headW + rc.left;
+                if (m_font->GetMaxHeight() + y < bounds.bottom) {
+                    line += word;
+                    x = wordWidth + bounds.left;
                 }
             } else {
 
-                for (i32 j = 0; j < head.GetLength(); j++) {
-                    if (y >= rc.bottom) {
+                for (i32 glyphIndex = 0; glyphIndex < word.GetLength(); glyphIndex++) {
+                    if (y >= bounds.bottom) {
                         break;
                     }
-                    CSize ce;
-                    ce = MeasureText(CString(head.GetAt(j), 1));
-                    i32 chW = ce.cx;
-                    if (chW + x > rc.right) {
+                    CSize glyphExtent;
+                    glyphExtent = MeasureText(CString(word.GetAt(glyphIndex), 1));
+                    i32 glyphWidth = glyphExtent.cx;
+                    if (glyphWidth + x > bounds.right) {
                         y = y + m_font->GetMaxHeight();
-                        x = rc.left;
-                        CSize lw = MeasureText(line);
-                        i32 w = lw.cx;
-                        maxExtent.cx = max(maxExtent.cx, w);
+                        x = bounds.left;
+                        CSize lineExtent = MeasureText(line);
+                        i32 lineWidth = lineExtent.cx;
+                        maxExtent.cx = max(maxExtent.cx, lineWidth);
                     }
-                    if (m_font->GetMaxHeight() + y >= rc.bottom) {
+                    if (m_font->GetMaxHeight() + y >= bounds.bottom) {
                         break;
                     }
-                    line += head[j];
-                    x += chW;
+                    line += word[glyphIndex];
+                    x += glyphWidth;
                 }
             }
-            if (breakNL) {
+            if (newlineAfterWord) {
                 y = y + m_font->GetMaxHeight();
-                x = rc.left;
+                x = bounds.left;
                 line = "";
             }
         }
     }
-    return CSize(maxExtent.cx - rc.left + 1, m_font->GetMaxHeight() + (y - rc.top) + 1);
+    return CSize(maxExtent.cx - bounds.left + 1, m_font->GetMaxHeight() + (y - bounds.top) + 1);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017b120, 0x3c6)
-CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
-    i32 y = rc.top;
-    i32 totalChars = 0;
-    i32 x = rc.left;
+CSize FontRenderer::LayoutWrapped(CString remainingText, CRect bounds, i32* outCharacterCount) {
+    i32 y = bounds.top;
+    i32 characterCount = 0;
+    i32 x = bounds.left;
 
     CString line;
-    while (y < rc.bottom) {
-        i32 len = text.GetLength();
-        if (len <= 0) {
+    while (y < bounds.bottom) {
+        i32 textLength = remainingText.GetLength();
+        if (textLength <= 0) {
             break;
         }
 
-        i32 nl = 0;
-        for (i32 k = 0; k < len; k++) {
-            if (text[k] == '\n') {
-                nl = 1;
+        i32 hasNewline = 0;
+        for (i32 characterIndex = 0; characterIndex < textLength; characterIndex++) {
+            if (remainingText[characterIndex] == '\n') {
+                hasNewline = 1;
                 break;
             }
         }
 
-        CSize e;
-        e = MeasureText(text);
-        if (e.cx + x <= rc.right && !nl) {
-            line += text;
-            text = "";
-            if (m_font->GetMaxHeight() + y <= rc.bottom) {
-                totalChars += line.GetLength();
+        CSize remainingExtent;
+        remainingExtent = MeasureText(remainingText);
+        if (remainingExtent.cx + x <= bounds.right && !hasNewline) {
+            line += remainingText;
+            remainingText = "";
+            if (m_font->GetMaxHeight() + y <= bounds.bottom) {
+                characterCount += line.GetLength();
             }
             line = "";
         } else {
-            i32 i = 0;
-            i32 breakNL = 0;
+            i32 wordLength = 0;
+            i32 newlineAfterWord = 0;
 
-            while (i < text.GetLength()) {
-                u8 ch = text[i];
-                if (ch == ' ' || ch == '\n') {
+            while (wordLength < remainingText.GetLength()) {
+                u8 character = remainingText[wordLength];
+                if (character == ' ' || character == '\n') {
                     break;
                 }
-                i++;
+                wordLength++;
             }
-            if (i < text.GetLength() && text[i] == '\n') {
-                breakNL = 1;
+            if (wordLength < remainingText.GetLength() && remainingText[wordLength] == '\n') {
+                newlineAfterWord = 1;
             }
-            CString head = text.Left(i + 1);
+            CString word = remainingText.Left(wordLength + 1);
 
-            CSize he;
-            he = MeasureText(head);
-            i32 headW = he.cx;
-            text = text.Right(text.GetLength() - i - 1);
-            if (headW + x < rc.right) {
-                line += head;
-                x = headW + x;
-            } else if (headW < rc.Width()) {
-                totalChars += line.GetLength();
+            CSize wordExtent;
+            wordExtent = MeasureText(word);
+            i32 wordWidth = wordExtent.cx;
+            remainingText = remainingText.Right(remainingText.GetLength() - wordLength - 1);
+            if (wordWidth + x < bounds.right) {
+                line += word;
+                x = wordWidth + x;
+            } else if (wordWidth < bounds.Width()) {
+                characterCount += line.GetLength();
                 y = y + m_font->GetMaxHeight();
-                x = rc.left;
+                x = bounds.left;
                 line = "";
-                if (m_font->GetMaxHeight() + y < rc.bottom) {
-                    line += head;
-                    x = headW + rc.left;
+                if (m_font->GetMaxHeight() + y < bounds.bottom) {
+                    line += word;
+                    x = wordWidth + bounds.left;
                 }
             } else {
 
                 // The signed length guard is required; IsEmpty emits a zero-only test.
-                while (head.GetLength() > 0) {
-                    if (y >= rc.bottom) {
+                while (word.GetLength() > 0) {
+                    if (y >= bounds.bottom) {
                         break;
                     }
-                    CSize ce;
-                    ce = MeasureText(CString(head.GetAt(0), 1));
-                    i32 chW = ce.cx;
-                    if (chW + x > rc.right) {
+                    CSize glyphExtent;
+                    glyphExtent = MeasureText(CString(word.GetAt(0), 1));
+                    i32 glyphWidth = glyphExtent.cx;
+                    if (glyphWidth + x > bounds.right) {
                         y = y + m_font->GetMaxHeight();
-                        x = rc.left;
-                        totalChars += line.GetLength();
+                        x = bounds.left;
+                        characterCount += line.GetLength();
                         line = "";
                     }
-                    if (m_font->GetMaxHeight() + y >= rc.bottom) {
+                    if (m_font->GetMaxHeight() + y >= bounds.bottom) {
                         break;
                     }
-                    line += head[0];
-                    x += chW;
+                    line += word[0];
+                    x += glyphWidth;
                 }
             }
-            if (breakNL) {
-                totalChars += line.GetLength();
+            if (newlineAfterWord) {
+                characterCount += line.GetLength();
                 y = y + m_font->GetMaxHeight();
-                x = rc.left;
+                x = bounds.left;
                 line = "";
             }
         }
     }
-    if (m_font->GetMaxHeight() + y <= rc.bottom && line.GetLength() > 0) {
-        totalChars += line.GetLength();
+    if (m_font->GetMaxHeight() + y <= bounds.bottom && line.GetLength() > 0) {
+        characterCount += line.GetLength();
     }
-    if (outLen) {
-        *outLen = totalChars;
+    if (outCharacterCount) {
+        *outCharacterCount = characterCount;
     }
     return CSize(x, m_font->GetMaxHeight() + y + 1);
 }
