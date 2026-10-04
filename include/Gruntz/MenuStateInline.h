@@ -47,7 +47,7 @@ inline void CMenuState::HandleControllerInput() {
         if (devices->m_items[i]->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
             if (!m_menuTree->ReturnToPreviousPage()) {
                 PostMessageA(
-                    owner()->GetGameWindow()->GetHwnd(),
+                    GetGameManager()->GetGameWindow()->GetHwnd(),
                     WM_COMMAND,
                     IDX(CMD_NEXT_STATE),
                     0

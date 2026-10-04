@@ -375,7 +375,12 @@ i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     } else if (key == VK_ESCAPE) {
         if (m_menuTree->ReturnToPreviousPage() == 0) {
             m_activateCueDurationMs = 0;
-            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+            PostMessageA(
+                GetGameManager()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_ATTRACT),
+                0
+            );
         }
     }
     return 1;

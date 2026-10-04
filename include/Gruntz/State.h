@@ -165,7 +165,7 @@ public:
     CRezMgr* ResourceArchive() {
         return static_cast<CRezMgr*>(m_resourceArchive);
     }
-    CGruntzMgr* owner() {
+    CGruntzMgr* GetGameManager() {
         return m_mgr;
     }
     i32 SetAssetGroupLoaded(

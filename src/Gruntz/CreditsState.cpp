@@ -158,8 +158,8 @@ i32 CCreditsState::EnterState(GameStateId previousState) {
 
 RVA(0x00039160, 0x46)
 i32 CCreditsState::LeaveState(GameStateId nextState) {
-    owner()->GetMidiManager()->EndCurrent();
-    owner()->GetMidiManager()->ClearSequences();
+    GetGameManager()->GetMidiManager()->EndCurrent();
+    GetGameManager()->GetMidiManager()->ClearSequences();
     m_stateResources = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     LoadAndPresentTitlePage("TITLE", 0, 0, 1, 0);
     return 1;
@@ -171,7 +171,7 @@ i32 CCreditsState::Render() {
         m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!RestoreGraphics()) {
-            owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
+            GetGameManager()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
         }
     }
@@ -193,20 +193,20 @@ i32 CCreditsState::Render() {
 
                 if (m_previousStateId == GAMESTATE_MENU) {
                     PostMessageA(
-                        owner()->GetGameWindow()->GetHwnd(),
+                        GetGameManager()->GetGameWindow()->GetHwnd(),
                         WM_COMMAND,
                         IDX(CMD_MAIN_MENU),
                         0
                     );
                 } else {
                     PostMessageA(
-                        owner()->GetGameWindow()->GetHwnd(),
+                        GetGameManager()->GetGameWindow()->GetHwnd(),
                         WM_COMMAND,
                         IDX(CMD_ATTRACT),
                         0
                     );
                 }
-                owner()->m_owner->SetRunning(false);
+                GetGameManager()->m_owner->SetRunning(false);
                 break;
             }
         }
@@ -219,13 +219,14 @@ i32 CCreditsState::Render() {
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
     drawPages->GetBackBuffer()->CopyFrom(drawPages->m_overlayBuffer);
 
-    if (!m_musicStarted && owner()->IsMusicEnabled()) {
-        owner()->GetMidiManager()->PlaySequence("CREDITZ", true);
+    if (!m_musicStarted && GetGameManager()->IsMusicEnabled()) {
+        GetGameManager()->GetMidiManager()->PlaySequence("CREDITZ", true);
         m_musicStarted = true;
     }
 
     if (m_fxEnabled) {
-        MidiSequence* monolithSequence = owner()->GetMidiManager()->FindSequence("MONOLITH");
+        MidiSequence* monolithSequence =
+            GetGameManager()->GetMidiManager()->FindSequence("MONOLITH");
         if (monolithSequence && !monolithSequence->IsPlaying()) {
             LoadCreditzAssets();
         }
@@ -263,9 +264,19 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == GAMESTATE_MENU) {
-            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(
+                GetGameManager()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_MAIN_MENU),
+                0
+            );
         } else {
-            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+            PostMessageA(
+                GetGameManager()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_ATTRACT),
+                0
+            );
         }
     }
     return 1;
@@ -280,9 +291,14 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
         return 1;
     }
     if (m_previousStateId == GAMESTATE_MENU) {
-        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(
+            GetGameManager()->GetGameWindow()->GetHwnd(),
+            WM_COMMAND,
+            IDX(CMD_MAIN_MENU),
+            0
+        );
     } else {
-        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+        PostMessageA(GetGameManager()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
     }
     return 1;
 }

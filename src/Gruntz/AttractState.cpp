@@ -45,7 +45,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         } while (ShowCursor(false) >= 0);
     }
 
-    owner()->EnsureStandardVideoMode(false);
+    GetGameManager()->EnsureStandardVideoMode(false);
 
     CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     m_stateResources = (state);
@@ -148,7 +148,7 @@ i32 CAttract::Render() {
         World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
         if (RestoreGraphics() == 0) {
-            owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
+            GetGameManager()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
             return 0;
         }
     }
@@ -166,7 +166,12 @@ i32 CAttract::Render() {
     i32 n = g_joystickDevices->GetCount();
     for (i = 0; i < n; i++) {
         if (g_joystickDevices->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
-            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(
+                GetGameManager()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_MAIN_MENU),
+                0
+            );
             return 1;
         }
     }
@@ -209,14 +214,19 @@ i32 CAttract::RestoreDisplay() {
 RVA(0x00014720, 0x37)
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_SPACE || code == VK_RETURN || code == VK_ESCAPE) {
-        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(
+            GetGameManager()->GetGameWindow()->GetHwnd(),
+            WM_COMMAND,
+            IDX(CMD_MAIN_MENU),
+            0
+        );
     }
     return 1;
 }
 
 RVA(0x00014770, 0x24)
 i32 CAttract::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    PostMessageA(GetGameManager()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;
 }
 
