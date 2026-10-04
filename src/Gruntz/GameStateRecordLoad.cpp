@@ -173,11 +173,11 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_targetTeam, sizeof(m_targetTeam));
     ar->Read(&m_arrivalTargetPx, sizeof(m_arrivalTargetPx));
 
-    CGruntCellRec* row = m_cells;
+    CGruntDirectionData* row = m_directionData;
     for (i32 gi = 0; gi < 3; ++gi, row += 3) {
-        CGruntCellRec* cell = row;
+        CGruntDirectionData* cell = row;
         for (i32 gj = 0; gj < 3; ++gj, ++cell) {
-            if (cell->DeserializeStrings(ar) == 0) {
+            if (cell->Load(ar) == 0) {
                 return 0;
             }
         }

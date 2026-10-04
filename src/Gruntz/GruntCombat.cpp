@@ -247,7 +247,7 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA(0x00056f80, 0xb0)
 Coord* CGrunt::EntranceTileOffset(Coord* out) {
     Coord pos = LastTilePx();
-    switch (m_entranceCell.m_direction) {
+    switch (m_facing.m_direction) {
         case DIR_NORTH:
             pos.m_y -= 0x20;
             break;
@@ -1547,96 +1547,109 @@ void CGrunt::Activate() {
     double s = 1.0 / diag;
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction,
         0.0,
         -1.0
     );
     VEC2_SET(
-        m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step,
+        m_directionData[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step,
         0.0,
         -0.5
     );
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column]
+            .m_motion.m_direction,
         s,
         -1.0 / diag
     );
     VEC2_SET(
-        m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_step,
+        m_directionData[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column]
+            .m_motion.m_step,
         0.5,
         -0.5
     );
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction,
         1.0,
         0.0
     );
-    VEC2_SET(m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step, 0.5, 0.0);
+    VEC2_SET(
+        m_directionData[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step,
+        0.5,
+        0.0
+    );
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column]
+            .m_motion.m_direction,
         s,
         s
     );
     VEC2_SET(
-        m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_step,
+        m_directionData[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column]
+            .m_motion.m_step,
         0.5,
         0.5
     );
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction,
         0.0,
         1.0
     );
     VEC2_SET(
-        m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step,
+        m_directionData[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step,
         0.0,
         0.5
     );
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column]
+            .m_motion.m_direction,
         -1.0 / diag,
         s
     );
     VEC2_SET(
-        m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_step,
+        m_directionData[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column]
+            .m_motion.m_step,
         -0.5,
         0.5
     );
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction,
         -1.0,
         0.0
     );
     VEC2_SET(
-        m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step,
+        m_directionData[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step,
         -0.5,
         0.0
     );
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column]
+            .m_motion.m_direction,
         -1.0 / diag,
         -1.0 / diag
     );
     VEC2_SET(
-        m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_step,
+        m_directionData[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column]
+            .m_motion.m_step,
         -0.5,
         -0.5
     );
 
     VEC2_SET(
-        m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_direction,
+        m_directionData[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column]
+            .m_motion.m_direction,
         0.0,
         0.0
     );
     VEC2_SET(
-        m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step,
+        m_directionData[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step,
         0.0,
         0.0
     );
@@ -2246,17 +2259,19 @@ void CGrunt::FinalizeStep(char* name) {
     }
     bool eqO = IsAnimationAct("O");
     if (eqO && !IsGruntAtSavedScreenPos(this)) {
-        GruntDirectionCell c = m_entranceCell;
+        GruntDirectionCell c = m_facing;
         i32 row = OppositeGridIndex(c.m_row);
         i32 column = OppositeGridIndex(c.m_column);
-        double moveDirectionX = GruntCellAt(this, row, column)->m_motion.m_direction.m_x;
-        double moveDirectionY = GruntCellAt(this, row, column)->m_motion.m_direction.m_y;
+        double moveDirectionX = GruntDirectionDataAt(this, row, column)->m_motion.m_direction.m_x;
+        double moveDirectionY = GruntDirectionDataAt(this, row, column)->m_motion.m_direction.m_y;
         m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
         m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
-        i32 nx =
-            static_cast<i32>((GruntCellAt(this, row, column)->m_motion.m_step.m_x + m_movePosX));
-        i32 ny =
-            static_cast<i32>((GruntCellAt(this, row, column)->m_motion.m_step.m_y + m_movePosY));
+        i32 nx = static_cast<i32>(
+            (GruntDirectionDataAt(this, row, column)->m_motion.m_step.m_x + m_movePosX)
+        );
+        i32 ny = static_cast<i32>(
+            (GruntDirectionDataAt(this, row, column)->m_motion.m_step.m_y + m_movePosY)
+        );
         if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
@@ -2282,12 +2297,12 @@ void CGrunt::FinalizeStep(char* name) {
         if (IsGruntAtSavedScreenPos(this)) {
             return;
         }
-        double moveDirectionX = EntranceCell()->m_motion.m_direction.m_x;
-        double moveDirectionY = EntranceCell()->m_motion.m_direction.m_y;
+        double moveDirectionX = FacingData()->m_motion.m_direction.m_x;
+        double moveDirectionY = FacingData()->m_motion.m_direction.m_y;
         m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
         m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.m_x + m_movePosX));
-        i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.m_y + m_movePosY));
+        i32 nx = static_cast<i32>((FacingData()->m_motion.m_step.m_x + m_movePosX));
+        i32 ny = static_cast<i32>((FacingData()->m_motion.m_step.m_y + m_movePosY));
         if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
@@ -2500,12 +2515,12 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    double dirX = EntranceCell()->m_motion.m_direction.m_x;
-    double dirY = EntranceCell()->m_motion.m_direction.m_y;
+    double dirX = FacingData()->m_motion.m_direction.m_x;
+    double dirY = FacingData()->m_motion.m_direction.m_y;
     m_movePosX = static_cast<double>(g_frameDelta) * dirX * m_moveSpeed + m_movePosX;
     m_movePosY = static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosY;
-    i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.m_x + m_movePosX);
-    i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.m_y + m_movePosY);
+    i32 x = static_cast<i32>(FacingData()->m_motion.m_step.m_x + m_movePosX);
+    i32 y = static_cast<i32>(FacingData()->m_motion.m_step.m_y + m_movePosY);
     if (dirX > s_fpZero) {
         CLAMP_UPPER_INPLACE(x, m_lastTilePx.m_x);
     } else if (dirX < s_fpZero && x < m_lastTilePx.m_x) {

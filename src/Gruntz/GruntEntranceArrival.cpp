@@ -91,7 +91,7 @@ i32 CGrunt::StartAttackIdleAnimation() {
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-    const char* name = EntranceCell()->AttackName().GetBuffer(0);
+    const char* name = FacingData()->AttackName().GetBuffer(0);
     SetImageFrameByName(name, frame);
 
     SET_ANIMATION_ACT("E");
@@ -181,7 +181,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
-    char* buf = EntranceCell()->AttackName().GetBuffer(0);
+    char* buf = FacingData()->AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
     m_struckPose = 1;
     return 0;
@@ -196,7 +196,7 @@ i32 CGrunt::StartRangedAttackAnimation() {
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
-    char* buf = EntranceCell()->AttackName().GetBuffer(0);
+    char* buf = FacingData()->AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
     m_struckPose = 1;
     return 0;
@@ -428,10 +428,10 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         }
         SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
-        GruntDirectionCell cell = m_entranceCell;
+        GruntDirectionCell cell = m_facing;
         i32 colv = cell.m_column + cell.m_row * 2;
         i32 basev = cell.m_row + colv;
-        char* nm = m_cells[basev].WalkName().GetBuffer(0);
+        char* nm = m_directionData[basev].WalkName().GetBuffer(0);
         SetImageSetByName(nm);
 
         DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
@@ -664,9 +664,9 @@ void CGrunt::ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 pla
         return;
     }
 
-    GruntDirectionCell cell = m_entranceCell;
+    GruntDirectionCell cell = m_facing;
     if (m_wwdObject->m_animationCursor.GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
-        switch (m_entranceCell.m_direction) {
+        switch (m_facing.m_direction) {
             case DIR_NORTHEAST:
                 cell = g_gruntDirEast;
                 break;
@@ -685,7 +685,7 @@ void CGrunt::ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 pla
     {
         i32 col = cell.m_column + cell.m_row * 2;
         i32 base = cell.m_row + col;
-        CString key = m_cells[base].IdleName();
+        CString key = m_directionData[base].IdleName();
 
         APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
     }
@@ -772,7 +772,7 @@ i32 CGrunt::StartWalkAnimation() {
     if (!(targetCellFlags & BRICKZ_CELL_OCCUPIED)) {
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        char* walkAnimationName = EntranceCell()->WalkName().GetBuffer(0);
+        char* walkAnimationName = FacingData()->WalkName().GetBuffer(0);
         SetImageSetByName(walkAnimationName);
         return 0;
     } else {
@@ -785,7 +785,7 @@ i32 CGrunt::StartWalkAnimation() {
         m_entranceActive = true;
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        char* walkAnimationName = EntranceCell()->WalkName().GetBuffer(0);
+        char* walkAnimationName = FacingData()->WalkName().GetBuffer(0);
         SetImageSetByName(walkAnimationName);
         return 0;
     }
@@ -1085,7 +1085,7 @@ tail:
         frame = elem->m_param;
     }
     {
-        char* cn = EntranceCell()->StruckName().GetBuffer(0);
+        char* cn = FacingData()->StruckName().GetBuffer(0);
         SetImageFrameByName(cn, frame);
     }
     PLAY_GRUNT_CUE_IN_VIEW(7);
@@ -1220,7 +1220,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
 
     SwitchAnimation(AT(m_poseItem, pose));
 
-    char* name = EntranceCell()->ItemName().GetBuffer(0);
+    char* name = FacingData()->ItemName().GetBuffer(0);
     SetImageSetByName(name);
     return 0;
 }

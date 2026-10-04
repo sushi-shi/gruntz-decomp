@@ -29,8 +29,8 @@ inline i32 OppositeGridIndex(i32 index) {
     return index;
 }
 
-inline CGruntCellRec* GruntCellAt(CGrunt* grunt, i32 row, i32 column) {
-    return &grunt->m_cells[GRUNT_DIRECTION_GRID_WIDTH * row + column];
+inline CGruntDirectionData* GruntDirectionDataAt(CGrunt* grunt, i32 row, i32 column) {
+    return &grunt->m_directionData[GRUNT_DIRECTION_GRID_WIDTH * row + column];
 }
 
 #endif // GRUNTZ_GRUNTZ_GRUNTCOMBATDIRECTION_H

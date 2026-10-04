@@ -90,7 +90,7 @@ class CGruntPuddle;
 
 class CArchive;
 
-struct CGruntCellRec {
+struct CGruntDirectionData {
     GZ_ENUM_BEGIN(NameSlot)
         NAME_ATTACK = 0,
         NAME_STRUCK = 1,
@@ -125,9 +125,9 @@ struct CGruntCellRec {
         DoubleVector2 m_step;
     } m_motion;
 
-    i32 SerializeStrings(class CFileMemBase* ar);
+    i32 Save(class CFileMemBase* ar);
 
-    i32 DeserializeStrings(class CFileMemBase* ar);
+    i32 Load(class CFileMemBase* ar);
 };
 extern GruntDirectionCell g_gruntMoveDirNorth;
 extern GruntDirectionCell g_gruntMoveDirNorthEast;
@@ -536,9 +536,9 @@ public:
         return m_deathAnimStarted;
     }
 
-    CGruntCellRec* EntranceCell() {
-        GruntDirectionCell c = m_entranceCell;
-        return &m_cells[3 * c.m_row + c.m_column];
+    CGruntDirectionData* FacingData() {
+        GruntDirectionCell c = m_facing;
+        return &m_directionData[3 * c.m_row + c.m_column];
     }
     i32 PayloadCount() const {
         return m_payloads.GetCount();
@@ -603,7 +603,7 @@ public:
     i32 m_reserved430;
     i32 m_startingItemId;
     i32 m_recordedFrameTick;
-    GruntDirectionCell m_entranceCell;
+    GruntDirectionCell m_facing;
     CString m_frameSetName;
     CString m_deathFrameSetName;
     i32 m_arrivalPhase;
@@ -612,7 +612,7 @@ public:
     b32 m_lowStaminaCued;
     b32 m_guardCommandPending;
 
-    CGruntCellRec m_cells[9];
+    CGruntDirectionData m_directionData[9];
 
     ClockInterval m_toyTiming;
     ClockInterval m_idleDelayTiming;

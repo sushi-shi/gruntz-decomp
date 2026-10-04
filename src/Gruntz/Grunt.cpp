@@ -240,13 +240,13 @@ CGrunt::~CGrunt() {
     OnObjectRemoved();
 }
 
-RVA_COMPGEN(0x0000f400, 0x1b, ??0CGruntCellRec@@QAE@XZ)
+RVA_COMPGEN(0x0000f400, 0x1b, ??0CGruntDirectionData@@QAE@XZ)
 
-RVA_COMPGEN(0x0000f430, 0x10, ??1CGruntCellRec@@QAE@XZ)
+RVA_COMPGEN(0x0000f430, 0x10, ??1CGruntDirectionData@@QAE@XZ)
 
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCALE), CWapX(owner) {
-    m_entranceCell = g_gruntMoveDirSouth;
+    m_facing = g_gruntMoveDirSouth;
     m_startingItemId = m_object->m_powerup;
     m_recordedFrameTick = g_frameTicks;
     m_object->m_moveMode = MOVE_GROUNDED;
@@ -355,62 +355,88 @@ void CGrunt::ReadConfigFromButeMgr() {
 RVA(0x00048470, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     if (kind == 0) {
-        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_WALK;
-        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
-        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_WALK;
-        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_WALK;
-        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
-        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_WALK;
-        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_WALK;
-        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_WALK;
-        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_WALK;
-        m_cells[0].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_STRUCK;
-        m_cells[1].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
-        m_cells[2].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_STRUCK;
-        m_cells[3].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_STRUCK;
-        m_cells[4].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
-        m_cells[5].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_STRUCK;
-        m_cells[6].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_STRUCK;
-        m_cells[7].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_STRUCK;
-        m_cells[8].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_STRUCK;
-        m_cells[0].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ATTACK;
-        m_cells[1].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
-        m_cells[2].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ATTACK;
-        m_cells[3].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ATTACK;
-        m_cells[4].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
-        m_cells[5].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ATTACK;
-        m_cells[6].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ATTACK;
-        m_cells[7].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ATTACK;
-        m_cells[8].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ATTACK;
-        m_cells[0].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_IDLE;
-        m_cells[1].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
-        m_cells[2].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_IDLE;
-        m_cells[3].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_IDLE;
-        m_cells[4].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
-        m_cells[5].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_IDLE;
-        m_cells[6].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_IDLE;
-        m_cells[7].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_IDLE;
-        m_cells[8].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_IDLE;
-        m_cells[0].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ITEM;
-        m_cells[1].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
-        m_cells[2].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ITEM;
-        m_cells[3].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ITEM;
-        m_cells[4].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
-        m_cells[5].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ITEM;
-        m_cells[6].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ITEM;
-        m_cells[7].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ITEM;
-        m_cells[8].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ITEM;
+        m_directionData[0].WalkName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_WALK;
+        m_directionData[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
+        m_directionData[2].WalkName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_WALK;
+        m_directionData[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_WALK;
+        m_directionData[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
+        m_directionData[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_WALK;
+        m_directionData[6].WalkName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_WALK;
+        m_directionData[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_WALK;
+        m_directionData[8].WalkName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_WALK;
+        m_directionData[0].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_STRUCK;
+        m_directionData[1].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
+        m_directionData[2].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_STRUCK;
+        m_directionData[3].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_STRUCK;
+        m_directionData[4].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
+        m_directionData[5].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_STRUCK;
+        m_directionData[6].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_STRUCK;
+        m_directionData[7].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_STRUCK;
+        m_directionData[8].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_STRUCK;
+        m_directionData[0].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ATTACK;
+        m_directionData[1].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
+        m_directionData[2].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ATTACK;
+        m_directionData[3].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ATTACK;
+        m_directionData[4].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
+        m_directionData[5].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ATTACK;
+        m_directionData[6].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ATTACK;
+        m_directionData[7].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ATTACK;
+        m_directionData[8].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ATTACK;
+        m_directionData[0].IdleName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_IDLE;
+        m_directionData[1].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
+        m_directionData[2].IdleName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_IDLE;
+        m_directionData[3].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_IDLE;
+        m_directionData[4].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
+        m_directionData[5].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_IDLE;
+        m_directionData[6].IdleName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_IDLE;
+        m_directionData[7].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_IDLE;
+        m_directionData[8].IdleName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_IDLE;
+        m_directionData[0].ItemName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ITEM;
+        m_directionData[1].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
+        m_directionData[2].ItemName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ITEM;
+        m_directionData[3].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ITEM;
+        m_directionData[4].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
+        m_directionData[5].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ITEM;
+        m_directionData[6].ItemName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ITEM;
+        m_directionData[7].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ITEM;
+        m_directionData[8].ItemName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ITEM;
         m_deathFrameSetName = "GRUNTZ_" + m_animSetName + "_DEATH";
     } else if (dirOnly != 0) {
-        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST;
-        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
-        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST;
-        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST;
-        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
-        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST;
-        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST;
-        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH;
-        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST;
+        m_directionData[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST;
+        m_directionData[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
+        m_directionData[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST;
+        m_directionData[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST;
+        m_directionData[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
+        m_directionData[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST;
+        m_directionData[6].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST;
+        m_directionData[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH;
+        m_directionData[8].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST;
         m_frameSetName = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_BREAK;
     } else {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
@@ -588,7 +614,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 RVA(0x0004ac10, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
-    if (SameCellTag(&m_entranceCell, &facing)) {
+    if (SameCellTag(&m_facing, &facing)) {
         return;
     }
 
@@ -610,7 +636,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     SwitchAnimation(m_poseAttackIdle);
                     {
                         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-                        const char* nm = EntranceCell()->AttackName().GetBuffer(0);
+                        const char* nm = FacingData()->AttackName().GetBuffer(0);
                         SetImageFrameByName(nm, frame);
                     }
                     goto store;
@@ -623,7 +649,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     }
                 }
 
-                m_entranceCell = facing;
+                m_facing = facing;
                 SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE2));
                 ResetIdleAnimation(1, 0, 0);
                 return;
@@ -637,7 +663,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
             i32 column = facing.m_column;
             i32 index = 3 * row + column;
 
-            const char* nm = m_cells[index].IdleName().GetBuffer(0);
+            const char* nm = m_directionData[index].IdleName().GetBuffer(0);
             SetImageFrameByName(nm, frame);
         }
         goto store;
@@ -651,12 +677,12 @@ walk:
         i32 column = facing.m_column;
         i32 index = 3 * row + column;
 
-        const char* nm = m_cells[index].WalkName().GetBuffer(0);
+        const char* nm = m_directionData[index].WalkName().GetBuffer(0);
         SetImageSetByName(nm);
     }
 
 store:
-    m_entranceCell = facing;
+    m_facing = facing;
 }
 
 // @early-stop
@@ -2370,13 +2396,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (fresh == 0) {
         if (IsAnimationAct("H")) {
             DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
-            SetImageFrameByName(EntranceCell()->StruckName().GetBuffer(0), handle);
+            SetImageFrameByName(FacingData()->StruckName().GetBuffer(0), handle);
         } else {
             if (m_inCombat != false && m_attackQueued == false) {
                 RESET_GRUNT_COMBAT_STATE(this)
             }
             if (IsAnimationAct("D")) {
-                SetImageSetByName(EntranceCell()->WalkName().GetBuffer(0));
+                SetImageSetByName(FacingData()->WalkName().GetBuffer(0));
                 SwitchAnimation(m_poseWalk);
             } else {
                 ResetIdleAnimation(1, 0, 0);

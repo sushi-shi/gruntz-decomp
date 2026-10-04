@@ -714,7 +714,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         case TILEKIND_ARROW_CURRENT:
             if (g != NULL && g->IsDeathAnimationStarted() == false) {
                 g->m_entranceActive = true;
-                switch (static_cast<GruntDirection>(g->m_entranceCell.m_direction)) {
+                switch (static_cast<GruntDirection>(g->m_facing.m_direction)) {
                     case DIR_NORTH:
                         g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
                         break;

@@ -40,10 +40,10 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
     }
 
     if (IsAnimationAct("D")) {
-        GruntDirectionCell cell = m_entranceCell;
+        GruntDirectionCell cell = m_facing;
         i32 col = cell.m_column + cell.m_row * 2;
         i32 base = cell.m_row + col;
-        char* buf = m_cells[base].WalkName().GetBuffer(0);
+        char* buf = m_directionData[base].WalkName().GetBuffer(0);
         SetImageSetByName(buf);
         SwitchAnimation(m_poseWalk);
         return 1;

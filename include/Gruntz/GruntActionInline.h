@@ -34,7 +34,7 @@ inline void CGrunt::RestorePreviousAppearance() {
         m_tileMoveCommitted = false;
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        char* name = EntranceCell()->WalkName().GetBuffer(0);
+        char* name = FacingData()->WalkName().GetBuffer(0);
         SetImageSetByName(name);
     } else {
         ResetIdleAnimation(1, 0, 0);

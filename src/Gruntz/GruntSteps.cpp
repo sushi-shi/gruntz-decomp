@@ -414,7 +414,7 @@ i32 CGrunt::StepCompassMove() {
                 facing = g_gruntMoveDirWest;
                 break;
             case TILEKIND_ARROW_CURRENT:
-                switch (m_entranceCell.m_direction) {
+                switch (m_facing.m_direction) {
                     case DIR_NORTH:
                         tile.m_y -= 0x20;
                         next = tile;
@@ -505,7 +505,7 @@ i32 CGrunt::StepCompassMove() {
         u32 toyCount =
             g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_toyTiles, 1);
         if (m_toyTileIndex < toyCount) {
-            switch (m_entranceCell.m_direction) {
+            switch (m_facing.m_direction) {
                 case DIR_NORTH:
                     next.Set(tile.m_x, tile.m_y - 0x20);
                     facing = g_gruntMoveDirNorth;
@@ -663,7 +663,7 @@ RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     Coord tile = LastTilePx();
     Coord next;
-    switch (m_entranceCell.m_direction) {
+    switch (m_facing.m_direction) {
         case DIR_NORTH:
             next.Set(tile.m_x, tile.m_y - 0x20);
             break;
@@ -879,7 +879,7 @@ i32 CGrunt::SerializeDispatch(
             m_triggerMgr = g_gameReg->GetTriggerMgr();
             break;
     }
-    m_entranceCell.Serialize(ar, mode, typeId, object);
+    m_facing.Serialize(ar, mode, typeId, object);
     m_toyTiming.Serialize(ar, mode, typeId, object);
     m_idleDelayTiming.Serialize(ar, mode, typeId, object);
     m_idleWindowTiming.Serialize(ar, mode, typeId, object);
@@ -1107,7 +1107,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 row, col;
         for (row = 0; row < 3; row++) {
             for (col = 0; col < 3; col++) {
-                if (m_cells[3 * row + col].SerializeStrings(ar) == 0) {
+                if (m_directionData[3 * row + col].Save(ar) == 0) {
                     return 0;
                 }
             }

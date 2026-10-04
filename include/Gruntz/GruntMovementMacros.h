@@ -77,10 +77,10 @@
     do {                                                                                           \
         newPos.m_y = (ny);                                                                         \
         newPos.m_x = (nx);                                                                         \
-        this->m_entranceCell = (cell);                                                             \
+        this->m_facing = (cell);                                                                   \
     } while (0)
 
-#define MV_VEC(V) m_entranceCell = g_gruntDir##V
+#define MV_VEC(V) m_facing = g_gruntDir##V
 
 #define MV_N                                                                                       \
     MV_VEC(North);                                                                                 \
