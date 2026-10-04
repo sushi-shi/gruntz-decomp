@@ -913,7 +913,7 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
             sbi->RestoreStatusBar();
         }
         if (sbi->GetActiveTab() != TAB_GAME) {
-            sbi->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
+            sbi->SetButtonState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         sbi->SetGameTabContent(GAME_TAB_MENU, true);
         sbi->RequestRedraw();

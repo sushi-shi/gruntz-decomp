@@ -165,7 +165,7 @@ public:
     void RefreshResourceImages();
     void UpdateDestructWarningAnimation();
     i32 CreateCollapsedSprite();
-    i32 SetTabState(SbiCommandId cmd, SbiMenuItemState state);
+    i32 SetButtonState(SbiCommandId cmd, SbiMenuItemState state);
 
     void Teardown();
     i32 TryActivate();
@@ -197,7 +197,7 @@ public:
     i32 OnPointerRelease(i32 keyFlags, i32 x, i32 y);
     i32 HandlePointerDrag(i32 keyFlags, i32 x, i32 y);
     CStatusBarItem* HitTestItems(i32 x, i32 y);
-    void ResetWidgets(b32 keepLists);
+    void ResetWidgets(b32 deleteCollapsedSprite);
     void ClearActiveTabContent();
     void AddTabItem(i32 tab, CStatusBarItem* item) {
         m_tabLists[tab].AddTail(item);

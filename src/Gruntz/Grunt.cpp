@@ -2305,7 +2305,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
                     sb->RestoreStatusBar();
                 }
                 if (sb->GetActiveTab() != TAB_RESOURCE) {
-                    sb->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
+                    sb->SetButtonState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
                 }
                 sb->RequestRedraw();
             }
