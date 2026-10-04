@@ -27,7 +27,7 @@ class CSBI_WellGoo : public CSBI_Image {
 public:
     CSBI_WellGoo() {
         m_kind = SBI_KIND_WELL_GOO;
-        m_gooSrc = NULL;
+        m_fillSurface = NULL;
     }
 
     virtual ~CSBI_WellGoo() OVERRIDE;
@@ -41,27 +41,27 @@ public:
         StatusBarTab tab,
         RECT rc,
         const char* key,
-        i32 fillScale
+        i32 fillPercent
     ) OVERRIDE;
     RVA(0x00104c80, 0x1f)
     virtual void Reset() OVERRIDE {
-        if (m_gooSrc != NULL) {
-            m_host->GetDeviceManager()->RemoveSurface(m_gooSrc);
-            m_gooSrc = NULL;
+        if (m_fillSurface != NULL) {
+            m_host->GetDeviceManager()->RemoveSurface(m_fillSurface);
+            m_fillSurface = NULL;
         }
     }
     virtual i32 Refresh(i32 deltaMs) OVERRIDE;
     virtual i32 Render() OVERRIDE;
 
-    CDDSurface* m_gooSrc;
-    CDDrawShadeBlit* m_blitter;
-    CImage* m_fgFrame;
-    CImage* m_baseFrame;
-    i32 m_fillScale;
-    i32 m_drawX;
+    CDDSurface* m_fillSurface;
+    CDDrawShadeBlit* m_fillBlitter;
+    CImage* m_topImage;
+    CImage* m_bottomImage;
+    i32 m_fillPercent;
+    i32 m_centerX;
 
-    RECT m_srcRect;
-    RECT m_dstRect;
+    RECT m_fillSourceRect;
+    RECT m_fillDestRect;
 };
 
 #endif // SBI_WELLGOO_H

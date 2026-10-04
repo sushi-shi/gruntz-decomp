@@ -2480,7 +2480,7 @@ noChange:;
             m_gruntWellBackground->RequestRedraw();
             i32 fill = m_gruntWellLevel;
             CSBI_WellGoo* sink = m_gruntWellGoo;
-            sink->m_fillScale = fill;
+            sink->m_fillPercent = fill;
             sink->RequestRedraw();
         }
     }

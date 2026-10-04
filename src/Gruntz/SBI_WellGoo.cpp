@@ -34,12 +34,12 @@ i32 CSBI_WellGoo::Setup(
     StatusBarTab tab,
     RECT rc,
     const char* key,
-    i32 fillScale
+    i32 fillPercent
 ) {
 
-    i32 sel;
-    CShadeTable* node;
-    CDDrawWorker* set;
+    i32 colorIndex;
+    CShadeTable* shadeTable;
+    CDDrawWorker* frames;
 
     CImage* f;
     if (host == NULL) {
@@ -51,26 +51,26 @@ i32 CSBI_WellGoo::Setup(
     Initialize(owner, tab, host);
     m_rect = rc;
     m_cmd = cmd;
-    m_fillScale = fillScale;
-    m_dstRect.left = m_rect.left;
-    m_dstRect.right = m_rect.right + 1;
-    m_dstRect.bottom = m_rect.bottom + 1;
+    m_fillPercent = fillPercent;
+    m_fillDestRect.left = m_rect.left;
+    m_fillDestRect.right = m_rect.right + 1;
+    m_fillDestRect.bottom = m_rect.bottom + 1;
     if (key == NULL) {
         goto fail;
     }
-    m_gooSrc =
+    m_fillSurface =
         g_gameReg->World()->GetDeviceManager()->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
-    if (m_gooSrc == NULL) {
+    if (m_fillSurface == NULL) {
         goto fail;
     }
-    sel = IDX(g_gameReg->GetPlayer(g_curPlayer).GetColor());
-    node = g_gameReg->GruntPalettes()->GetShadeTable(sel, 0);
-    if (node == NULL) {
-        node = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
+    colorIndex = IDX(g_gameReg->GetPlayer(g_curPlayer).GetColor());
+    shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(colorIndex, 0);
+    if (shadeTable == NULL) {
+        shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
     }
 
-    set = m_host->FindWorker(key);
-    SetFrame((set != NULL) ? set->GetAt(4) : NULL);
+    frames = m_host->FindWorker(key);
+    SetFrame((frames != NULL) ? frames->GetAt(4) : NULL);
     if (m_frame == NULL) {
         goto fail;
     }
@@ -78,42 +78,42 @@ i32 CSBI_WellGoo::Setup(
         m_frame->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
     }
     f = m_frame;
-    if (node != NULL && f->GetShadeBlitter() != NULL) {
-        f->GetShadeBlitter()->m_palDescr = node;
+    if (shadeTable != NULL && f->GetShadeBlitter() != NULL) {
+        f->GetShadeBlitter()->m_palDescr = shadeTable;
     }
-    m_blitter = m_frame->GetShadeBlitter();
-    if (m_blitter == NULL) {
+    m_fillBlitter = m_frame->GetShadeBlitter();
+    if (m_fillBlitter == NULL) {
         goto fail;
     }
 
-    set = m_host->FindWorker(key);
-    m_baseFrame = (set != NULL) ? set->GetAt(2) : NULL;
-    if (m_baseFrame == NULL) {
+    frames = m_host->FindWorker(key);
+    m_bottomImage = (frames != NULL) ? frames->GetAt(2) : NULL;
+    if (m_bottomImage == NULL) {
         goto fail;
     }
-    if (m_baseFrame->GetShadeBlitter() != NULL) {
-        m_baseFrame->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
+    if (m_bottomImage->GetShadeBlitter() != NULL) {
+        m_bottomImage->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
     }
-    f = m_baseFrame;
-    if (node != NULL && f->GetShadeBlitter() != NULL) {
-        f->GetShadeBlitter()->m_palDescr = node;
+    f = m_bottomImage;
+    if (shadeTable != NULL && f->GetShadeBlitter() != NULL) {
+        f->GetShadeBlitter()->m_palDescr = shadeTable;
     }
 
-    set = m_host->FindWorker(key);
-    m_fgFrame = (set != NULL) ? set->GetAt(3) : NULL;
-    if (m_fgFrame != NULL) {
-        if (m_fgFrame->GetShadeBlitter() != NULL) {
-            m_fgFrame->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
+    frames = m_host->FindWorker(key);
+    m_topImage = (frames != NULL) ? frames->GetAt(3) : NULL;
+    if (m_topImage != NULL) {
+        if (m_topImage->GetShadeBlitter() != NULL) {
+            m_topImage->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
         }
-        f = m_fgFrame;
-        if (node != NULL && f->GetShadeBlitter() != NULL) {
-            f->GetShadeBlitter()->m_palDescr = node;
+        f = m_topImage;
+        if (shadeTable != NULL && f->GetShadeBlitter() != NULL) {
+            f->GetShadeBlitter()->m_palDescr = shadeTable;
         }
 
         SetRect(&rc, 0, 0, m_frame->GetWidth() - 1, m_frame->GetHeight() - 1);
-        m_srcRect = rc;
+        m_fillSourceRect = rc;
 
-        m_drawX = m_rect.left + ((m_rect.right - m_rect.left) >> 1) + 1;
+        m_centerX = m_rect.left + ((m_rect.right - m_rect.left) >> 1) + 1;
         return 1;
     }
 fail:
@@ -131,28 +131,30 @@ i32 CSBI_WellGoo::Render() {
         return 1;
     }
     m_redrawFrames--;
-    if (m_fillScale == 0) {
+    if (m_fillPercent == 0) {
         return 1;
     }
 
-    CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
-    m_baseFrame->RenderFrame(ctx, m_drawX, m_rect.bottom + 3, 0);
+    CDDrawSurfacePair* backPair = g_gameReg->World()->GetDrawTarget()->GetBackPair();
+    m_bottomImage->RenderFrame(backPair, m_centerX, m_rect.bottom + 3, 0);
 
-    double fill = static_cast<float>((m_rect.bottom - m_rect.top)) * m_fillScale * 0.01f - 3.0f;
-    if (fill <= 1.0) {
-        fill = 1.0;
+    double fillHeight =
+        static_cast<float>((m_rect.bottom - m_rect.top)) * m_fillPercent * 0.01f - 3.0f;
+    if (fillHeight <= 1.0) {
+        fillHeight = 1.0;
     }
-    m_dstRect.top = static_cast<i32>((static_cast<double>(m_rect.bottom) - fill));
+    m_fillDestRect.top = static_cast<i32>((static_cast<double>(m_rect.bottom) - fillHeight));
 
-    m_blitter->Blit(&m_srcRect, m_gooSrc, &m_srcRect, 0, 0);
+    m_fillBlitter->Blit(&m_fillSourceRect, m_fillSurface, &m_fillSourceRect, 0, 0);
 
-    m_srcRect.right++;
-    m_srcRect.bottom++;
-    ctx->GetSurface()->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, DDBLT_WAIT, NULL);
-    m_srcRect.right--;
-    m_srcRect.bottom--;
+    m_fillSourceRect.right++;
+    m_fillSourceRect.bottom++;
+    backPair->GetSurface()
+        ->BltEx(&m_fillDestRect, m_fillSurface, &m_fillSourceRect, DDBLT_WAIT, NULL);
+    m_fillSourceRect.right--;
+    m_fillSourceRect.bottom--;
 
-    m_fgFrame->RenderFrame(ctx, m_drawX, m_dstRect.top - 2, 0);
+    m_topImage->RenderFrame(backPair, m_centerX, m_fillDestRect.top - 2, 0);
     return 1;
 }
 
@@ -178,64 +180,64 @@ i32 CSBI_WellGoo::SerializeFields(
     switch (mode) {
         case SERIAL_SAVE: {
 
-            arc->Write(&m_fillScale, sizeof(m_fillScale));
-            arc->Write(&m_drawX, sizeof(m_drawX));
-            arc->Write(&m_srcRect, sizeof(m_srcRect));
-            arc->Write(&m_dstRect, sizeof(m_dstRect));
+            arc->Write(&m_fillPercent, sizeof(m_fillPercent));
+            arc->Write(&m_centerX, sizeof(m_centerX));
+            arc->Write(&m_fillSourceRect, sizeof(m_fillSourceRect));
+            arc->Write(&m_fillDestRect, sizeof(m_fillDestRect));
             char buf[SERIAL_NAME_LEN];
             i32 idx;
-            SERIAL_WRITE_FRAME(arc, mgr, buf, idx, m_fgFrame);
-            SERIAL_WRITE_FRAME(arc, mgr, buf, idx, m_baseFrame);
+            SERIAL_WRITE_FRAME(arc, mgr, buf, idx, m_topImage);
+            SERIAL_WRITE_FRAME(arc, mgr, buf, idx, m_bottomImage);
             return 1;
         }
         case SERIAL_LOAD: {
 
-            arc->Read(&m_fillScale, sizeof(m_fillScale));
-            arc->Read(&m_drawX, sizeof(m_drawX));
-            arc->Read(&m_srcRect, sizeof(m_srcRect));
-            arc->Read(&m_dstRect, sizeof(m_dstRect));
+            arc->Read(&m_fillPercent, sizeof(m_fillPercent));
+            arc->Read(&m_centerX, sizeof(m_centerX));
+            arc->Read(&m_fillSourceRect, sizeof(m_fillSourceRect));
+            arc->Read(&m_fillDestRect, sizeof(m_fillDestRect));
             char buf[SERIAL_NAME_LEN];
             i32 idx;
-            SERIAL_READ_FRAME(arc, mgr, buf, idx, m_fgFrame);
-            SERIAL_READ_FRAME(arc, mgr, buf, idx, m_baseFrame);
+            SERIAL_READ_FRAME(arc, mgr, buf, idx, m_topImage);
+            SERIAL_READ_FRAME(arc, mgr, buf, idx, m_bottomImage);
             return 1;
         }
         case SERIAL_POSTLOAD: {
 
-            m_gooSrc = g_gameReg->World()
-                           ->GetDeviceManager()
-                           ->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
-            if (m_gooSrc == NULL) {
+            m_fillSurface = g_gameReg->World()
+                                ->GetDeviceManager()
+                                ->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
+            if (m_fillSurface == NULL) {
                 return 0;
             }
-            i32 sel = IDX(g_gameReg->GetPlayer(g_curPlayer).GetColor());
-            CShadeTable* node = g_gameReg->GruntPalettes()->GetShadeTable(sel, 0);
-            if (node == NULL) {
-                node = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
+            i32 colorIndex = IDX(g_gameReg->GetPlayer(g_curPlayer).GetColor());
+            CShadeTable* shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(colorIndex, 0);
+            if (shadeTable == NULL) {
+                shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
             }
             CImage* fr = m_frame;
             if (fr->GetShadeBlitter() != NULL) {
                 fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
             fr = m_frame;
-            if (node != NULL && fr->GetShadeBlitter() != NULL) {
-                fr->GetShadeBlitter()->m_palDescr = node;
+            if (shadeTable != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = shadeTable;
             }
-            fr = m_baseFrame;
+            fr = m_bottomImage;
             if (fr->GetShadeBlitter() != NULL) {
                 fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
-            fr = m_baseFrame;
-            if (node != NULL && fr->GetShadeBlitter() != NULL) {
-                fr->GetShadeBlitter()->m_palDescr = node;
+            fr = m_bottomImage;
+            if (shadeTable != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = shadeTable;
             }
-            fr = m_fgFrame;
+            fr = m_topImage;
             if (fr->GetShadeBlitter() != NULL) {
                 fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
-            fr = m_fgFrame;
-            if (node != NULL && fr->GetShadeBlitter() != NULL) {
-                fr->GetShadeBlitter()->m_palDescr = node;
+            fr = m_topImage;
+            if (shadeTable != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = shadeTable;
             }
             break;
         }
@@ -246,8 +248,8 @@ i32 CSBI_WellGoo::SerializeFields(
 RVA_COMPGEN(0x00104b80, 0x1e, ??_GCSBI_WellGoo@@UAEPAXI@Z)
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
-    if (m_gooSrc != NULL) {
-        m_host->GetDeviceManager()->RemoveSurface(m_gooSrc);
-        m_gooSrc = NULL;
+    if (m_fillSurface != NULL) {
+        m_host->GetDeviceManager()->RemoveSurface(m_fillSurface);
+        m_fillSurface = NULL;
     }
 }
