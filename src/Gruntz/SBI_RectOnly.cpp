@@ -1388,175 +1388,175 @@ i32 CStatusBarMgr::ClearButtonHighlights(StatusBarTab idx) {
 
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameTabContent() {
-    CGameWorld* code = m_world;
-    i32 bx = m_barRect.left;
-    i32 by = m_barRect.top;
+    CGameWorld* world = m_world;
+    i32 barLeft = m_barRect.left;
+    i32 barTop = m_barRect.top;
 
     switch (m_gameTabContent) {
         case GAME_TAB_MISSION_STATUS: {
-            CSBI_ImageSet* status;
+            CSBI_ImageSet* missionStatusImage;
             if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                 NEW_STATUS_BAR_ITEM(
-                    status,
+                    missionStatusImage,
                     CSBI_ImageSet,
-                    code,
+                    world,
                     SBICMD_MISSION_STATUS,
                     TAB_GAME,
-                    CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+                    CRect(barLeft, barTop + 0xd7, barLeft + 0x9f, barTop + 0x118),
                     "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
                     1,
                     0
                 );
-                AddTabItem(5, status);
+                AddTabItem(5, missionStatusImage);
             } else {
                 NEW_STATUS_BAR_ITEM(
-                    status,
+                    missionStatusImage,
                     CSBI_ImageSet,
-                    code,
+                    world,
                     SBICMD_MISSION_STATUS,
                     TAB_GAME,
-                    CRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+                    CRect(barLeft, barTop + 0xd7, barLeft + 0x9f, barTop + 0x118),
                     "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
                     2,
                     0
                 );
-                AddTabItem(5, status);
+                AddTabItem(5, missionStatusImage);
             }
             break;
         }
         default: {
             if (m_gameplayControlsDisabled != false && g_gameReg->GetFrameGate() != false) {
-                CSBI_MenuItem* resume;
+                CSBI_MenuItem* resumeButton;
                 NEW_STATUS_BAR_ITEM(
-                    resume,
+                    resumeButton,
                     CSBI_MenuItem,
-                    code,
+                    world,
                     SBICMD_PAUSE,
                     TAB_GAME,
-                    CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                    CRect(barLeft, barTop + 0xd5, barLeft + 0x9f, barTop + 0xec),
                     "GAME_STATUSBAR_TABZ_GAMETAB_RESUME",
                     -1,
                     0
                 );
-                AddTabItem(5, resume);
-                m_gameResumePauseButton = resume;
+                AddTabItem(5, resumeButton);
+                m_gameResumePauseButton = resumeButton;
             } else {
-                CSBI_MenuItem* pause;
+                CSBI_MenuItem* pauseButton;
                 NEW_STATUS_BAR_ITEM(
-                    pause,
+                    pauseButton,
                     CSBI_MenuItem,
-                    code,
+                    world,
                     SBICMD_PAUSE,
                     TAB_GAME,
-                    CRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                    CRect(barLeft, barTop + 0xd5, barLeft + 0x9f, barTop + 0xec),
                     "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE",
                     -1,
                     0
                 );
-                AddTabItem(5, pause);
-                m_gameResumePauseButton = pause;
+                AddTabItem(5, pauseButton);
+                m_gameResumePauseButton = pauseButton;
             }
 
-            CSBI_MenuItem* load;
+            CSBI_MenuItem* loadButton;
             NEW_STATUS_BAR_ITEM(
-                load,
+                loadButton,
                 CSBI_MenuItem,
-                code,
+                world,
                 SBICMD_LOAD_GAME,
                 TAB_GAME,
-                CRect(bx, by + 0x125, bx + 0x9f, by + 0x13c),
+                CRect(barLeft, barTop + 0x125, barLeft + 0x9f, barTop + 0x13c),
                 "GAME_STATUSBAR_TABZ_GAMETAB_LOAD",
                 -1,
                 0
             );
-            AddTabItem(5, load);
-            m_gameLoadButton = load;
+            AddTabItem(5, loadButton);
+            m_gameLoadButton = loadButton;
             if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
-                load->SetEnabled(0);
+                loadButton->SetEnabled(0);
             }
 
-            CSBI_MenuItem* save;
+            CSBI_MenuItem* saveButton;
             NEW_STATUS_BAR_ITEM(
-                save,
+                saveButton,
                 CSBI_MenuItem,
-                code,
+                world,
                 SBICMD_SAVE_GAME,
                 TAB_GAME,
-                CRect(bx, by + 0xfd, bx + 0x9f, by + 0x114),
+                CRect(barLeft, barTop + 0xfd, barLeft + 0x9f, barTop + 0x114),
                 "GAME_STATUSBAR_TABZ_GAMETAB_SAVE",
                 -1,
                 0
             );
-            AddTabItem(5, save);
-            m_gameSaveButton = save;
+            AddTabItem(5, saveButton);
+            m_gameSaveButton = saveButton;
             if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
-                save->SetEnabled(0);
+                saveButton->SetEnabled(0);
             }
 
-            CSBI_MenuItem* settings;
+            CSBI_MenuItem* settingsButton;
             NEW_STATUS_BAR_ITEM(
-                settings,
+                settingsButton,
                 CSBI_MenuItem,
-                code,
+                world,
                 SBICMD_SETTINGS,
                 TAB_GAME,
-                CRect(bx, by + 0x14d, bx + 0x9f, by + 0x164),
+                CRect(barLeft, barTop + 0x14d, barLeft + 0x9f, barTop + 0x164),
                 "GAME_STATUSBAR_TABZ_GAMETAB_SETTINGS",
                 -1,
                 0
             );
-            AddTabItem(5, settings);
-            m_gameSettingsButton = settings;
+            AddTabItem(5, settingsButton);
+            m_gameSettingsButton = settingsButton;
 
-            CSBI_MenuItem* help;
+            CSBI_MenuItem* helpButton;
             NEW_STATUS_BAR_ITEM(
-                help,
+                helpButton,
                 CSBI_MenuItem,
-                code,
+                world,
                 SBICMD_BOOTY_STATE,
                 TAB_GAME,
-                CRect(bx, by + 0x175, bx + 0x9f, by + 0x18c),
+                CRect(barLeft, barTop + 0x175, barLeft + 0x9f, barTop + 0x18c),
                 "GAME_STATUSBAR_TABZ_GAMETAB_HELP",
                 -1,
                 0
             );
-            AddTabItem(5, help);
-            m_gameHelpButton = help;
+            AddTabItem(5, helpButton);
+            m_gameHelpButton = helpButton;
             if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
-                help->SetEnabled(0);
+                helpButton->SetEnabled(0);
             }
 
-            CSBI_MenuItem* quit;
+            CSBI_MenuItem* quitButton;
             NEW_STATUS_BAR_ITEM(
-                quit,
+                quitButton,
                 CSBI_MenuItem,
-                code,
+                world,
                 SBICMD_QUIT,
                 TAB_GAME,
-                CRect(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
+                CRect(barLeft, barTop + 0x19d, barLeft + 0x9f, barTop + 0x1b4),
                 "GAME_STATUSBAR_TABZ_GAMETAB_QUIT",
                 -1,
                 0
             );
-            AddTabItem(5, quit);
-            m_gameQuitButton = quit;
+            AddTabItem(5, quitButton);
+            m_gameQuitButton = quitButton;
 
-            CSBI_ImageSet* destruct;
+            CSBI_ImageSet* destructButtonImage;
             NEW_STATUS_BAR_ITEM(
-                destruct,
+                destructButtonImage,
                 CSBI_ImageSet,
-                code,
+                world,
                 SBICMD_DESTRUCT,
                 TAB_GAME,
-                CRect(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
+                CRect(barLeft + 0x22, barTop + 0x1be, barLeft + 0x7d, barTop + 0x1d6),
                 "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
                 IDX(m_destructButtonFrame),
                 0
             );
-            AddTabItem(5, destruct);
-            m_destructButtonImage = destruct;
+            AddTabItem(5, destructButtonImage);
+            m_destructButtonImage = destructButtonImage;
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-                destruct->SetEnabled(0);
+                destructButtonImage->SetEnabled(0);
                 m_destructButtonFrame = DESTRUCT_FRAME_DISABLED;
                 m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
                 m_destructButtonImage->SetFrameIndex(IDX(DESTRUCT_FRAME_DISABLED));
@@ -1621,327 +1621,327 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 
 RVA(0x00102250, 0x1de4)
 i32 CStatusBarMgr::BuildActiveTabContent() {
-    CGameWorld* code = m_world;
-    i32 bx = m_barRect.left;
-    i32 by = m_barRect.top;
+    CGameWorld* world = m_world;
+    i32 barLeft = m_barRect.left;
+    i32 barTop = m_barRect.top;
 
-    CSBI_Image* it;
-    CSBI_ImageSet* imgSet;
-    CSBI_WellGoo* goo;
-    CSBI_WarlordHead* head;
-    CSBI_ImageSetAni* ani;
-    CSBI_StatzTabArrow* arrow;
-    CSBI_GruntMachine* mach;
-    CSBI_StatzTabGruntBar* bar;
+    CSBI_Image* imageItem;
+    CSBI_ImageSet* imageSetItem;
+    CSBI_WellGoo* wellGoo;
+    CSBI_WarlordHead* warlordHead;
+    CSBI_ImageSetAni* shredderAnimation;
+    CSBI_StatzTabArrow* sampleArrow;
+    CSBI_GruntMachine* gruntMachine;
+    CSBI_StatzTabGruntBar* gruntBar;
     i32 i;
 
     switch (m_activeTab) {
         case TAB_GRUNTZ:
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_GRUNTZ,
-                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(barLeft + 0x18, barTop + 0xaf, barLeft + 0x70, barTop + 0xbe),
                 "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT",
                 -1,
                 0
             );
-            AddTabItem(2, it);
+            AddTabItem(2, imageItem);
 
             {
-                CSBI_ImageSet** aptr = m_gruntOvenImages;
-                GruntOvenSlot* slot = m_gruntOvenSlots;
-                i32 y = by + 0xfe;
+                CSBI_ImageSet** ovenImageSlot = m_gruntOvenImages;
+                GruntOvenSlot* ovenSlot = m_gruntOvenSlots;
+                i32 rowBottom = barTop + 0xfe;
                 for (i = 0; i < 5; i++) {
-                    CSBI_ImageSet* set;
+                    CSBI_ImageSet* ovenImage;
                     NEW_STATUS_BAR_ITEM(
-                        set,
+                        ovenImage,
                         CSBI_ImageSet,
-                        code,
+                        world,
                         static_cast<SbiCommandId>(IDX(SBICMD_GRUNT_SLOT_FIRST) + i),
                         TAB_GRUNTZ,
-                        CRect(bx + 0xe, y - 0x32, bx + 0x39, y),
+                        CRect(barLeft + 0xe, rowBottom - 0x32, barLeft + 0x39, rowBottom),
                         "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
-                        slot->m_frameIndex,
+                        ovenSlot->m_frameIndex,
                         0
                     );
-                    AddTabItem(2, set);
-                    *aptr = set;
-                    CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(
+                    AddTabItem(2, ovenImage);
+                    *ovenImageSlot = ovenImage;
+                    CShadeTable* shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(
                         IDX(g_gameReg->m_players[g_curPlayer].GetColor()),
                         0
                     );
-                    if (sel == NULL) {
-                        sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
+                    if (shadeTable == NULL) {
+                        shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
                     }
-                    set->GetFrameSet()->SetAllShadeModes(SHADE_PAL_16);
-                    set->GetFrameSet()->SetAllShadeTables(sel);
-                    aptr++;
-                    slot++;
-                    y += 0x36;
+                    ovenImage->GetFrameSet()->SetAllShadeModes(SHADE_PAL_16);
+                    ovenImage->GetFrameSet()->SetAllShadeTables(shadeTable);
+                    ovenImageSlot++;
+                    ovenSlot++;
+                    rowBottom += 0x36;
                 }
             }
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_GRUNT_WELL,
                 TAB_GRUNTZ,
-                CRect(bx + 0x4c, by + 0xc8, bx + 0x97, by + 0x1cd),
+                CRect(barLeft + 0x4c, barTop + 0xc8, barLeft + 0x97, barTop + 0x1cd),
                 "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL",
                 -1,
                 0
             );
-            AddTabItem(2, it);
-            m_gruntWellBackground = it;
-            it->SetEnabled(1);
+            AddTabItem(2, imageItem);
+            m_gruntWellBackground = imageItem;
+            imageItem->SetEnabled(1);
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_GRUNT_OVENS_TEXT,
                 TAB_GRUNTZ,
-                CRect(bx + 0x1e, by + 0xc4, bx + 0x3d, by + 0xcd),
+                CRect(barLeft + 0x1e, barTop + 0xc4, barLeft + 0x3d, barTop + 0xcd),
                 "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT",
                 -1,
                 0
             );
-            AddTabItem(2, it);
+            AddTabItem(2, imageItem);
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_GRUNT_WELL_TEXT,
                 TAB_GRUNTZ,
-                CRect(bx + 0x68, by + 0x1cf, bx + 0x87, by + 0x1d8),
+                CRect(barLeft + 0x68, barTop + 0x1cf, barLeft + 0x87, barTop + 0x1d8),
                 "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT",
                 -1,
                 0
             );
-            AddTabItem(2, it);
-            goo = new CSBI_WellGoo;
-            if (!goo->Setup(
+            AddTabItem(2, imageItem);
+            wellGoo = new CSBI_WellGoo;
+            if (!wellGoo->Setup(
                     this,
-                    code,
+                    world,
                     SBICMD_GRUNT_WELL_GOO,
                     TAB_GRUNTZ,
-                    CRect(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3),
+                    CRect(barLeft + 0x6e, barTop + 0xf8, barLeft + 0x81, barTop + 0x1b3),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
                     m_gruntWellLevel
                 )) {
-                delete goo;
+                delete wellGoo;
                 return 0;
             }
-            m_gruntWellGoo = goo;
-            AddTabItem(2, goo);
+            m_gruntWellGoo = wellGoo;
+            AddTabItem(2, wellGoo);
             return 1;
 
         case TAB_RESOURCE:
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_RESOURCE,
-                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(barLeft + 0x18, barTop + 0xaf, barLeft + 0x70, barTop + 0xbe),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT",
                 -1,
                 0
             );
-            AddTabItem(3, it);
+            AddTabItem(3, imageItem);
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_RESOURCE_MAIN_BACKGROUND,
                 TAB_RESOURCE,
-                CRect(bx, by + 0x135, bx + 0x9f, by + 0x1be),
+                CRect(barLeft, barTop + 0x135, barLeft + 0x9f, barTop + 0x1be),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND",
                 -1,
                 0
             );
-            AddTabItem(3, it);
-            m_resourceMainBackground = it;
+            AddTabItem(3, imageItem);
+            m_resourceMainBackground = imageItem;
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_RESOURCE_UPPER_BACKGROUND,
                 TAB_RESOURCE,
-                CRect(bx, by + 0xfb, bx + 0x9f, by + 0x134),
+                CRect(barLeft, barTop + 0xfb, barLeft + 0x9f, barTop + 0x134),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND",
                 -1,
                 0
             );
-            AddTabItem(3, it);
-            m_resourceUpperBackground = it;
+            AddTabItem(3, imageItem);
+            m_resourceUpperBackground = imageItem;
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_RESOURCE_WINDOW_BACKGROUND,
                 TAB_RESOURCE,
-                CRect(bx + 0x48, by + 0xd3, bx + 0x67, by + 0xf3),
+                CRect(barLeft + 0x48, barTop + 0xd3, barLeft + 0x67, barTop + 0xf3),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND",
                 -1,
                 0
             );
-            AddTabItem(3, it);
-            m_resourceWindowBackground = it;
+            AddTabItem(3, imageItem);
+            m_resourceWindowBackground = imageItem;
 
             NEW_STATUS_BAR_ITEM(
-                imgSet,
+                imageSetItem,
                 CSBI_ImageSet,
-                code,
+                world,
                 SBICMD_RESOURCE_BELT_TOOLS,
                 TAB_RESOURCE,
-                CRect(bx + 0x19, by + 0x11c, bx + 0x3c, by + 0x130),
+                CRect(barLeft + 0x19, barTop + 0x11c, barLeft + 0x3c, barTop + 0x130),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                 m_conveyorSlots[0].m_value,
                 0
             );
-            AddTabItem(3, imgSet);
-            m_conveyorSprites[0] = imgSet;
+            AddTabItem(3, imageSetItem);
+            m_conveyorSprites[0] = imageSetItem;
             NEW_STATUS_BAR_ITEM(
-                imgSet,
+                imageSetItem,
                 CSBI_ImageSet,
-                code,
+                world,
                 SBICMD_RESOURCE_BELT_TOYS,
                 TAB_RESOURCE,
-                CRect(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130),
+                CRect(barLeft + 0x40, barTop + 0x11c, barLeft + 0x63, barTop + 0x130),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                 m_conveyorSlots[1].m_value,
                 0
             );
-            AddTabItem(3, imgSet);
-            m_conveyorSprites[1] = imgSet;
+            AddTabItem(3, imageSetItem);
+            m_conveyorSprites[1] = imageSetItem;
             NEW_STATUS_BAR_ITEM(
-                imgSet,
+                imageSetItem,
                 CSBI_ImageSet,
-                code,
+                world,
                 SBICMD_RESOURCE_BELT_BRICKS,
                 TAB_RESOURCE,
-                CRect(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130),
+                CRect(barLeft + 0x68, barTop + 0x11c, barLeft + 0x8b, barTop + 0x130),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                 m_conveyorSlots[2].m_value,
                 0
             );
-            AddTabItem(3, imgSet);
-            m_conveyorSprites[2] = imgSet;
+            AddTabItem(3, imageSetItem);
+            m_conveyorSprites[2] = imageSetItem;
 
             NEW_STATUS_BAR_ITEM(
-                imgSet,
+                imageSetItem,
                 CSBI_ImageSet,
-                code,
+                world,
                 SBICMD_RESOURCE_CURRENT_ITEM,
                 TAB_RESOURCE,
                 CRect(
-                    m_deliveryItemRect.left + bx,
-                    m_deliveryItemRect.top + by,
-                    m_deliveryItemRect.right + bx,
-                    m_deliveryItemRect.bottom + by
+                    m_deliveryItemRect.left + barLeft,
+                    m_deliveryItemRect.top + barTop,
+                    m_deliveryItemRect.right + barLeft,
+                    m_deliveryItemRect.bottom + barTop
                 ),
                 "GAME_INGAMEICONZ_GREYCHIPZ",
                 m_deliveryPickupType,
                 0
             );
-            AddTabItem(3, imgSet);
-            m_deliveryItemDisplay = imgSet;
-            imgSet->SetEnabled(0);
+            AddTabItem(3, imageSetItem);
+            m_deliveryItemDisplay = imageSetItem;
+            imageSetItem->SetEnabled(0);
 
             {
-                i32* cfgp = &m_resourceSlots[4].m_value;
-                CSBI_ImageSet** cachep = &m_resourceSlotSprites[4];
-                i32 y = by + 0x155;
+                i32* toySlotValue = &m_resourceSlots[4].m_value;
+                CSBI_ImageSet** toyImageSlot = &m_resourceSlotSprites[4];
+                i32 rowBottom = barTop + 0x155;
                 for (i = 0; i < 4; i++) {
                     CSBI_ImageSet* toolIcon;
                     NEW_STATUS_BAR_ITEM(
                         toolIcon,
                         CSBI_ImageSet,
-                        code,
+                        world,
                         static_cast<SbiCommandId>(IDX(SBICMD_TOOL_RESOURCE_FIRST) + i),
                         TAB_RESOURCE,
-                        CRect(bx + 0x1d, y - 0x17, bx + 0x34, y),
+                        CRect(barLeft + 0x1d, rowBottom - 0x17, barLeft + 0x34, rowBottom),
                         "GAME_INGAMEICONZ_NORMCHIPZ",
-                        cfgp[-24],
+                        toySlotValue[-24],
                         0
                     );
                     AddTabItem(3, toolIcon);
-                    cachep[-4] = toolIcon;
+                    toyImageSlot[-4] = toolIcon;
                     CSBI_ImageSet* toyIcon;
                     NEW_STATUS_BAR_ITEM(
                         toyIcon,
                         CSBI_ImageSet,
-                        code,
+                        world,
                         static_cast<SbiCommandId>(IDX(SBICMD_TOY_RESOURCE_FIRST) + i),
                         TAB_RESOURCE,
-                        CRect(bx + 0x45, y - 0x17, bx + 0x5c, y),
+                        CRect(barLeft + 0x45, rowBottom - 0x17, barLeft + 0x5c, rowBottom),
                         "GAME_INGAMEICONZ_NORMCHIPZ",
-                        cfgp[0],
+                        toySlotValue[0],
                         0
                     );
                     AddTabItem(3, toyIcon);
-                    cachep[0] = toyIcon;
+                    toyImageSlot[0] = toyIcon;
                     CSBI_ImageSet* brickIcon;
                     NEW_STATUS_BAR_ITEM(
                         brickIcon,
                         CSBI_ImageSet,
-                        code,
+                        world,
                         static_cast<SbiCommandId>(IDX(SBICMD_BRICK_RESOURCE_FIRST) + i),
                         TAB_RESOURCE,
-                        CRect(bx + 0x6d, y - 0x17, bx + 0x84, y),
+                        CRect(barLeft + 0x6d, rowBottom - 0x17, barLeft + 0x84, rowBottom),
                         "GAME_INGAMEICONZ_NORMCHIPZ",
-                        cfgp[24],
+                        toySlotValue[24],
                         0
                     );
                     AddTabItem(3, brickIcon);
-                    cachep[4] = brickIcon;
-                    cfgp += 6;
-                    cachep += 1;
-                    y += 0x20;
+                    toyImageSlot[4] = brickIcon;
+                    toySlotValue += 6;
+                    toyImageSlot += 1;
+                    rowBottom += 0x20;
                 }
             }
 
-            mach = new CSBI_GruntMachine;
-            if (!mach->Initialize(
+            gruntMachine = new CSBI_GruntMachine;
+            if (!gruntMachine->Initialize(
                     this,
-                    code,
+                    world,
                     SBICMD_RESOURCE_MACHINE_BACKGROUND,
                     TAB_RESOURCE,
-                    CRect(bx, by + 0xc8, bx + 0x9f, by + 0xfa),
+                    CRect(barLeft, barTop + 0xc8, barLeft + 0x9f, barTop + 0xfa),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINE",
                     m_leftMachine.m_counter,
                     m_rightMachine.m_counter
                 )) {
-                delete mach;
+                delete gruntMachine;
                 return 0;
             }
-            m_machineDisplay = mach;
-            AddTabItem(3, mach);
+            m_machineDisplay = gruntMachine;
+            AddTabItem(3, gruntMachine);
 
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_RESOURCE_MACHINE_FOREGROUND,
                 TAB_RESOURCE,
-                CRect(bx, by + 0x135, bx + 0x9f, by + 0x1df),
+                CRect(barLeft, barTop + 0x135, barLeft + 0x9f, barTop + 0x1df),
                 "GAME_STATUSBAR_TABZ_RESOURCETAB_FRAMEWORK",
                 -1,
                 0
             );
-            AddTabItem(3, it);
-            m_resourceMachineFramework = it;
+            AddTabItem(3, imageItem);
+            m_resourceMachineFramework = imageItem;
 
-            ani = new CSBI_ImageSetAni;
-            if (!ani->Init(
+            shredderAnimation = new CSBI_ImageSetAni;
+            if (!shredderAnimation->Init(
                     this,
-                    code,
+                    world,
                     SBICMD_CONVEYOR_TOP,
                     TAB_RESOURCE,
-                    CRect(bx, by + 0x1bf, bx + 0x9f, by + 0x1cc),
+                    CRect(barLeft, barTop + 0x1bf, barLeft + 0x9f, barTop + 0x1cc),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_TOPSHREDDER",
                     -1,
                     -1,
@@ -1949,38 +1949,38 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                     1,
                     1
                 )) {
-                delete ani;
+                delete shredderAnimation;
                 return 0;
             }
-            AddTabItem(3, ani);
+            AddTabItem(3, shredderAnimation);
 
             NEW_STATUS_BAR_ITEM(
-                imgSet,
+                imageSetItem,
                 CSBI_ImageSet,
-                code,
+                world,
                 SBICMD_RESOURCE_FALLING_ITEM,
                 TAB_RESOURCE,
                 CRect(
-                    m_grinderItemRect.left + bx,
-                    m_grinderItemRect.top + by,
-                    m_grinderItemRect.right + bx,
-                    m_grinderItemRect.bottom + by
+                    m_grinderItemRect.left + barLeft,
+                    m_grinderItemRect.top + barTop,
+                    m_grinderItemRect.right + barLeft,
+                    m_grinderItemRect.bottom + barTop
                 ),
                 "GAME_INGAMEICONZ_NORMCHIPZ",
                 m_grinderPickupType,
                 0
             );
-            AddTabItem(3, imgSet);
-            m_grinderItemDisplay = imgSet;
-            imgSet->SetEnabled(0);
+            AddTabItem(3, imageSetItem);
+            m_grinderItemDisplay = imageSetItem;
+            imageSetItem->SetEnabled(0);
 
-            ani = new CSBI_ImageSetAni;
-            if (!ani->Init(
+            shredderAnimation = new CSBI_ImageSetAni;
+            if (!shredderAnimation->Init(
                     this,
-                    code,
+                    world,
                     SBICMD_CONVEYOR_BOTTOM,
                     TAB_RESOURCE,
-                    CRect(bx, by + 0x1c7, bx + 0x9f, by + 0x1df),
+                    CRect(barLeft, barTop + 0x1c7, barLeft + 0x9f, barTop + 0x1df),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BOTTOMSHREDDER",
                     -1,
                     -1,
@@ -1988,161 +1988,162 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                     1,
                     1
                 )) {
-                delete ani;
+                delete shredderAnimation;
                 return 0;
             }
-            AddTabItem(3, ani);
+            AddTabItem(3, shredderAnimation);
             return 1;
 
         case TAB_MULTIPLAYER:
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_MULTIPLAYER,
-                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(barLeft + 0x18, barTop + 0xaf, barLeft + 0x70, barTop + 0xbe),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT",
                 -1,
                 0
             );
-            AddTabItem(4, it);
+            AddTabItem(4, imageItem);
 
             NEW_STATUS_BAR_ITEM(
-                head,
+                warlordHead,
                 CSBI_WarlordHead,
-                code,
+                world,
                 SBICMD_MULTIPLAYER_HEAD1,
                 TAB_MULTIPLAYER,
-                CRect(bx + 0x53, by + 0xcf, bx + 0x8e, by + 0x10a),
+                CRect(barLeft + 0x53, barTop + 0xcf, barLeft + 0x8e, barTop + 0x10a),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1",
                 1,
                 0
             );
-            m_multiplayerHeadButtons[0] = head;
-            AddTabItem(4, head);
+            m_multiplayerHeadButtons[0] = warlordHead;
+            AddTabItem(4, warlordHead);
             NEW_STATUS_BAR_ITEM(
-                head,
+                warlordHead,
                 CSBI_WarlordHead,
-                code,
+                world,
                 SBICMD_MULTIPLAYER_HEAD2,
                 TAB_MULTIPLAYER,
-                CRect(bx + 0x53, by + 0x112, bx + 0x8e, by + 0x14d),
+                CRect(barLeft + 0x53, barTop + 0x112, barLeft + 0x8e, barTop + 0x14d),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2",
                 1,
                 0
             );
-            m_multiplayerHeadButtons[1] = head;
-            AddTabItem(4, head);
+            m_multiplayerHeadButtons[1] = warlordHead;
+            AddTabItem(4, warlordHead);
             NEW_STATUS_BAR_ITEM(
-                head,
+                warlordHead,
                 CSBI_WarlordHead,
-                code,
+                world,
                 SBICMD_MULTIPLAYER_HEAD3,
                 TAB_MULTIPLAYER,
-                CRect(bx + 0x53, by + 0x155, bx + 0x8e, by + 0x190),
+                CRect(barLeft + 0x53, barTop + 0x155, barLeft + 0x8e, barTop + 0x190),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3",
                 1,
                 0
             );
-            m_multiplayerHeadButtons[2] = head;
-            AddTabItem(4, head);
+            m_multiplayerHeadButtons[2] = warlordHead;
+            AddTabItem(4, warlordHead);
             NEW_STATUS_BAR_ITEM(
-                head,
+                warlordHead,
                 CSBI_WarlordHead,
-                code,
+                world,
                 SBICMD_MULTIPLAYER_HEAD4,
                 TAB_MULTIPLAYER,
-                CRect(bx + 0x53, by + 0x197, bx + 0x8e, by + 0x1d2),
+                CRect(barLeft + 0x53, barTop + 0x197, barLeft + 0x8e, barTop + 0x1d2),
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4",
                 1,
                 0
             );
-            m_multiplayerHeadButtons[3] = head;
-            AddTabItem(4, head);
+            m_multiplayerHeadButtons[3] = warlordHead;
+            AddTabItem(4, warlordHead);
 
             {
-                CSBI_WarlordHead** slot = m_multiplayerHeadButtons;
-                i32 pi = 0;
+                CSBI_WarlordHead** headButtonSlot = m_multiplayerHeadButtons;
+                i32 playerIndex = 0;
                 do {
-                    GruntzPlayer* p = &g_gameReg->m_players[pi];
-                    CShadeTable* sel;
-                    if (p->HasJoinedRound() != false && p->HasDropped() == false) {
-                        sel = g_gameReg->GruntPalettes()->GetShadeTable(IDX(p->GetColor()), 0);
-                        if (pi == m_multiplayerPlayerIndex) {
-                            (*slot)->SetDisplayState(1);
+                    GruntzPlayer* player = &g_gameReg->m_players[playerIndex];
+                    CShadeTable* shadeTable;
+                    if (player->HasJoinedRound() != false && player->HasDropped() == false) {
+                        shadeTable =
+                            g_gameReg->GruntPalettes()->GetShadeTable(IDX(player->GetColor()), 0);
+                        if (playerIndex == m_multiplayerPlayerIndex) {
+                            (*headButtonSlot)->SetDisplayState(1);
                         }
                     } else {
-                        sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
-                        (*slot)->SetDisplayState(2);
+                        shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
+                        (*headButtonSlot)->SetDisplayState(2);
                     }
 
-                    (*slot)->SetHeadShading(SHADE_PAL_16, sel);
-                    slot++;
-                    pi++;
-                } while (pi < 4);
+                    (*headButtonSlot)->SetHeadShading(SHADE_PAL_16, shadeTable);
+                    headButtonSlot++;
+                    playerIndex++;
+                } while (playerIndex < 4);
             }
 
             {
-                i32 gruntBarLeft = bx + 0x17;
-                i32 gruntBarRight = bx + 0x52;
-                i32 y = by + 0xd9;
+                i32 gruntBarLeft = barLeft + 0x17;
+                i32 gruntBarRight = barLeft + 0x52;
+                i32 rowBottom = barTop + 0xd9;
                 for (i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-                    bar = new CSBI_StatzTabGruntBar;
-                    if (!bar->Initialize(
+                    gruntBar = new CSBI_StatzTabGruntBar;
+                    if (!gruntBar->Initialize(
                             this,
-                            code,
+                            world,
                             static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i),
                             TAB_MULTIPLAYER,
-                            CRect(gruntBarLeft, y - 0x11, gruntBarRight, y),
+                            CRect(gruntBarLeft, rowBottom - 0x11, gruntBarRight, rowBottom),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             m_multiplayerPlayerIndex,
                             i,
                             0
                         )) {
-                        delete bar;
+                        delete gruntBar;
                         return 0;
                     }
-                    AddTabItem(4, bar);
-                    y += 0x12;
+                    AddTabItem(4, gruntBar);
+                    rowBottom += 0x12;
                 }
             }
             return 1;
 
         case TAB_STATZ:
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_STATZ,
-                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(barLeft + 0x18, barTop + 0xaf, barLeft + 0x70, barTop + 0xbe),
                 "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT",
                 -1,
                 0
             );
-            AddTabItem(1, it);
+            AddTabItem(1, imageItem);
 
             {
-                i32 aOff = 0xa;
-                i32 cOff = 0x21;
+                i32 arrowLeftOffset = 0xa;
+                i32 arrowRightOffset = 0x21;
                 if (m_position == STATUSBAR_DOCK_LEFT) {
-                    aOff = 0x7d;
-                    cOff = 0x95;
+                    arrowLeftOffset = 0x7d;
+                    arrowRightOffset = 0x95;
                 }
-                i32 arrowL = bx + aOff;
-                i32 arrowR = bx + cOff;
-                i32 y = by + 0xd9;
+                i32 arrowLeft = barLeft + arrowLeftOffset;
+                i32 arrowRight = barLeft + arrowRightOffset;
+                i32 rowBottom = barTop + 0xd9;
                 for (i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-                    SbiCommandId id =
+                    SbiCommandId gruntCommand =
                         static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i);
-                    arrow = new CSBI_StatzTabArrow;
-                    if (!arrow->Init(
+                    sampleArrow = new CSBI_StatzTabArrow;
+                    if (!sampleArrow->Init(
                             this,
-                            code,
+                            world,
                             static_cast<SbiCommandId>(IDX(SBICMD_STAT_TOGGLE_FIRST) + i),
                             TAB_STATZ,
-                            CRect(arrowL, y - 0x11, arrowR, y),
+                            CRect(arrowLeft, rowBottom - 0x11, arrowRight, rowBottom),
                             "GAME_STATUSBAR_TABZ_STATZTAB_ARROW",
                             -1,
                             -1,
@@ -2150,119 +2151,119 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                             0,
                             0
                         )) {
-                        delete arrow;
+                        delete sampleArrow;
                         return 0;
                     }
-                    m_unitSampleArrows[i] = arrow;
-                    AddTabItem(1, arrow);
+                    m_unitSampleArrows[i] = sampleArrow;
+                    AddTabItem(1, sampleArrow);
                     if (m_unitSampleModes[i] != STATUS_SAMPLE_NONE) {
-                        arrow->SetSampledDirection(m_position, false);
+                        sampleArrow->SetSampledDirection(m_position, false);
                     } else {
-                        arrow->SetUnsampledDirection(m_position, false);
+                        sampleArrow->SetUnsampledDirection(m_position, false);
                     }
-                    bar = new CSBI_StatzTabGruntBar;
-                    if (!bar->Initialize(
+                    gruntBar = new CSBI_StatzTabGruntBar;
+                    if (!gruntBar->Initialize(
                             this,
-                            code,
-                            id,
+                            world,
+                            gruntCommand,
                             TAB_STATZ,
-                            CRect(bx + 0x28, y - 0x11, bx + 0x77, y),
+                            CRect(barLeft + 0x28, rowBottom - 0x11, barLeft + 0x77, rowBottom),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             g_curPlayer,
                             i,
                             1
                         )) {
-                        delete bar;
+                        delete gruntBar;
                         return 0;
                     }
-                    AddTabItem(1, bar);
-                    y += 0x12;
+                    AddTabItem(1, gruntBar);
+                    rowBottom += 0x12;
                 }
             }
             return 1;
 
         case TAB_GAME:
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_Image,
-                code,
+                world,
                 SBICMD_TAB_TITLE_TEXT,
                 TAB_GAME,
-                CRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                CRect(barLeft + 0x18, barTop + 0xaf, barLeft + 0x70, barTop + 0xbe),
                 "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT",
                 -1,
                 0
             );
-            AddTabItem(5, it);
+            AddTabItem(5, imageItem);
 
             NEW_STATUS_BAR_ITEM(
-                it,
+                imageItem,
                 CSBI_ImageSet,
-                code,
+                world,
                 SBICMD_WARPSTONE_BASE,
                 TAB_GAME,
-                CRect(bx, by, bx + 0x9f, by + 0x7f),
+                CRect(barLeft, barTop, barLeft + 0x9f, barTop + 0x7f),
                 "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                 1,
                 0
             );
-            AddTabItem(5, it);
+            AddTabItem(5, imageItem);
             if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                     ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_FIRST)) {
                 NEW_STATUS_BAR_ITEM(
-                    it,
+                    imageItem,
                     CSBI_ImageSet,
-                    code,
+                    world,
                     SBICMD_WARPSTONE_FRAGMENT1,
                     TAB_GAME,
-                    CRect(bx + 0x17, by + 0xe, bx + 0x52, by + 0x44),
+                    CRect(barLeft + 0x17, barTop + 0xe, barLeft + 0x52, barTop + 0x44),
                     "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                     2,
                     0
                 );
-                AddTabItem(5, it);
+                AddTabItem(5, imageItem);
                 if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                         ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_SECOND)) {
                     NEW_STATUS_BAR_ITEM(
-                        it,
+                        imageItem,
                         CSBI_ImageSet,
-                        code,
+                        world,
                         SBICMD_WARPSTONE_FRAGMENT2,
                         TAB_GAME,
-                        CRect(bx + 0x4c, by + 0xf, bx + 0x87, by + 0x3e),
+                        CRect(barLeft + 0x4c, barTop + 0xf, barLeft + 0x87, barTop + 0x3e),
                         "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                         3,
                         0
                     );
-                    AddTabItem(5, it);
+                    AddTabItem(5, imageItem);
                     if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                             ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_THIRD)) {
                         NEW_STATUS_BAR_ITEM(
-                            it,
+                            imageItem,
                             CSBI_ImageSet,
-                            code,
+                            world,
                             SBICMD_WARPSTONE_FRAGMENT3,
                             TAB_GAME,
-                            CRect(bx + 0x1b, by + 0x3b, bx + 0x52, by + 0x71),
+                            CRect(barLeft + 0x1b, barTop + 0x3b, barLeft + 0x52, barTop + 0x71),
                             "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                             4,
                             0
                         );
-                        AddTabItem(5, it);
+                        AddTabItem(5, imageItem);
                         if ((static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                                 ->HasWarpStoneFragment(WARPSTONE_FRAGMENT_FOURTH)) {
                             NEW_STATUS_BAR_ITEM(
-                                it,
+                                imageItem,
                                 CSBI_ImageSet,
-                                code,
+                                world,
                                 SBICMD_WARPSTONE_FRAGMENT4,
                                 TAB_GAME,
-                                CRect(bx + 0x4a, by + 0x35, bx + 0x89, by + 0x74),
+                                CRect(barLeft + 0x4a, barTop + 0x35, barLeft + 0x89, barTop + 0x74),
                                 "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                                 5,
                                 0
                             );
-                            AddTabItem(5, it);
+                            AddTabItem(5, imageItem);
                         }
                     }
                 }
