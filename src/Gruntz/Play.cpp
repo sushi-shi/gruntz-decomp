@@ -2696,7 +2696,7 @@ drag_box: {
     LoadCursorSprites(0, false);
     i32 hit = m_statusBar->HitTestSideTabs(xr, y);
     if (hit != -1) {
-        m_statusBar->PlaceCursorTarget(hit, 0);
+        m_statusBar->SelectUnitAndCenterCamera(hit, 0);
         return 1;
     }
 
@@ -2784,7 +2784,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
 
     i32 idx = m_statusBar->HitTestSideTabs(x, y);
     if (idx != -1) {
-        m_statusBar->PlaceCursorTarget(idx, 1);
+        m_statusBar->SelectUnitAndCenterCamera(idx, 1);
         return 1;
     }
 

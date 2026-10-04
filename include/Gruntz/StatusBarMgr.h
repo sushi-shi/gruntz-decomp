@@ -196,7 +196,7 @@ public:
     i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
     void CloseLevelOverlay();
     i32 SelectGruntOvenForPlacement(i32 idx);
-    i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
+    i32 SelectUnitAndCenterCamera(i32 unitIndex, i32 trackUnit);
 
     const RECT* GetBarRect() const {
         return &m_barRect;

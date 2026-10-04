@@ -517,7 +517,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 screenX, i32 screenY) {
                 case SBICMD_CURSOR_TARGET_FIRST + 0xd:
                 case SBICMD_CURSOR_TARGET_FIRST + 0xe:
                     HiCueLookup();
-                    PlaceCursorTarget(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
+                    SelectUnitAndCenterCamera(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
                     return 1;
                 case SBICMD_STAT_TOGGLE_FIRST + 0x0:
                 case SBICMD_STAT_TOGGLE_FIRST + 0x1:
@@ -675,7 +675,7 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 screenX, i32 screenY) {
                 && g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() != false
                 && command >= SBICMD_CURSOR_TARGET_FIRST && command <= SBICMD_CURSOR_TARGET_LAST) {
                 HiCueTimed();
-                PlaceCursorTarget(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
+                SelectUnitAndCenterCamera(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
                 return 1;
             }
             break;
@@ -2563,21 +2563,21 @@ void CStatusBarMgr::SetGruntWell(i32 value) {
 }
 
 RVA(0x00105800, 0x9e)
-i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
+i32 CStatusBarMgr::SelectUnitAndCenterCamera(i32 unitIndex, i32 trackUnit) {
     i32 playerIndex = g_curPlayer;
     if (g_gameReg->GetTriggerMgr()->SelectUnit(playerIndex, unitIndex, 0, 0) != 0) {
 
-        CGrunt* entry = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
-        if (entry != NULL) {
+        CGrunt* grunt = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
+        if (grunt != NULL) {
             (static_cast<CPlay*>(g_gameReg->GetCurrentState()))
                 ->SetCameraPosition(
-                    entry->GetSpriteObject()->m_screenX,
-                    entry->GetSpriteObject()->m_screenY
+                    grunt->GetSpriteObject()->m_screenX,
+                    grunt->GetSpriteObject()->m_screenY
                 );
-            if (activateCamera != 0) {
-                CTriggerMgr* obj = g_gameReg->GetTriggerMgr();
-                if (obj->IsUnitSelected(playerIndex, unitIndex)) {
-                    obj->SetCameraTarget(playerIndex, unitIndex);
+            if (trackUnit != 0) {
+                CTriggerMgr* triggerMgr = g_gameReg->GetTriggerMgr();
+                if (triggerMgr->IsUnitSelected(playerIndex, unitIndex)) {
+                    triggerMgr->SetCameraTarget(playerIndex, unitIndex);
                 }
             }
             return 1;
