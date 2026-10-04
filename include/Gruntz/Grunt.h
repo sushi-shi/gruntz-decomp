@@ -445,8 +445,8 @@ public:
     b32 m_attackQueued;
     b32 m_inCombat;
     i32 m_daFlag;
-    b32 m_entranceStamped;
-    b32 m_bombRunActive;
+    b32 m_toyBreakStarted;
+    b32 m_bombRunStarting;
     b32 m_arrivalActive;
     b32 m_coordToggle;
     b32 m_wingzEnabled;
@@ -658,12 +658,12 @@ public:
     i32 UpdateIdleAnimation();
     void Deselect();
     i32 BuildEntranceAnimation(GruntEntranceMode mode);
-    i32 LoadEntranceConfig();
+    i32 UpdateEntranceAnimation();
 
     void SetEntrancePos(i32 clearArrivalState, i32 recycleRoute);
 
     void EnsureVehicleLoopSound(const char* key);
-    i32 UpdateEntranceAnim();
+    i32 UpdateScrollUseAnimation();
     i32 Save(CFileMemBase* ar);
 
     i32 LoadStateRecord(CFileMemBase* ar);
@@ -687,7 +687,7 @@ public:
     void SetFacing(i32 unused, GruntDirectionCell facing);
     void OnStruck(b32 wasHit);
     i32 StepPostGuardBehavior();
-    i32 RearmEntranceDrop();
+    i32 UpdateBombRunAnimation();
 
     i32 HandleCombatContact(
         i32 otherPxX,

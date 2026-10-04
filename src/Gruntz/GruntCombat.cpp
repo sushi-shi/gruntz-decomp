@@ -1529,12 +1529,12 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "H", &CGrunt::FinishStruckAnimation);
     REGISTER_ACT(registry, "I", &CGrunt::UpdateToolUseAnimation);
     REGISTER_ACT(registry, "J", &CGrunt::UpdatePickupAnimation);
-    REGISTER_ACT(registry, "K", &CGrunt::LoadEntranceConfig);
+    REGISTER_ACT(registry, "K", &CGrunt::UpdateEntranceAnimation);
     REGISTER_ACT(registry, "L", &CGrunt::UpdateVehicleUseAnimation);
-    REGISTER_ACT(registry, "M", &CGrunt::RearmEntranceDrop);
+    REGISTER_ACT(registry, "M", &CGrunt::UpdateBombRunAnimation);
     REGISTER_ACT(registry, "N", &CGrunt::FinishToobMoveAnimation);
     REGISTER_ACT(registry, "O", &CGrunt::FinishKnockbackAnimation);
-    REGISTER_ACT(registry, "P", &CGrunt::UpdateEntranceAnim);
+    REGISTER_ACT(registry, "P", &CGrunt::UpdateScrollUseAnimation);
     REGISTER_ACT(registry, "Q", &CGrunt::UpdateFreezeAnimation);
     REGISTER_ACT(registry, "R", &CGrunt::UpdateDecayFade);
     REGISTER_ACT(registry, "S", &CGrunt::FinishEntranceMove);
@@ -2377,10 +2377,10 @@ void CGrunt::AdvanceMotion() {
                 if (IsNotAnimationAct("M")) {
                     return;
                 }
-                if (m_bombRunActive != false) {
+                if (m_bombRunStarting != false) {
                     return;
                 }
-            } else if (m_entranceStamped != false) {
+            } else if (m_toyBreakStarted != false) {
                 return;
             }
         }

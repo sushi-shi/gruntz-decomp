@@ -18,7 +18,7 @@ The ladder (AGENTS.md): the FIRST divergence class decides the wall.
   regalloc   same call multiset and branch/return counts, different bytes -
              provisional register/schedule candidate, NOT CFG equivalence.
              The ladder does not compare branch destinations or which calls
-             each edge reaches. LoadEntranceConfig's misplaced SelectUnit
+             each edge reaches. UpdateEntranceAnimation's misplaced SelectUnit
              passed this screen; audit semantic edges before steering. Lever:
              https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md;
              a disposable A/B as described in
