@@ -2380,7 +2380,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
         rc.bottom = strid;
         CSBI_SideTab* newobj = new CSBI_SideTab;
 
-        b32 ok = newobj->BuildStatzTabStatusBar(
+        b32 ok = newobj->Initialize(
             this,
             g_gameReg->World(),
             static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + i),
