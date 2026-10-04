@@ -31,7 +31,7 @@ i32 CLevelTimer::Deserialize(CFileMemBase* s) {
     s->Read(&m_baseX, sizeof(m_baseX));
     s->Read(&m_baseY, sizeof(m_baseY));
 
-    SERIAL_READ_WORKER(s, reg, buf, m_sprite);
+    SERIAL_READ_IMAGE_SET(s, reg, buf, m_sprite);
 
     s->Read(&m_active, sizeof(m_active));
 

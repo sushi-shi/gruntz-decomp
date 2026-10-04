@@ -2614,13 +2614,13 @@ i32 CGruntzMgr::ToggleMonolithOverlay() {
 
     CImageSet* rec;
     {
-        rec = m_world->FindWorker("GAME_MONOLITH");
+        rec = m_world->FindImageSet("GAME_MONOLITH");
     }
     if (rec == NULL) {
         return 0;
     }
     i32 savedIdx = rec->GetMinIndex();
-    CImage* e = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, savedIdx);
+    CImage* e = IMAGE_SET_FRAME_AT_UNCHECKED(rec, savedIdx);
     if (e == NULL) {
         return 0;
     }
@@ -2679,7 +2679,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_world == NULL) {
         return 0;
     }
-    CImageSet* out = World()->FindWorker("GAME_DEVHEADS");
+    CImageSet* out = World()->FindImageSet("GAME_DEVHEADS");
     if (out == NULL) {
         return 0;
     }
@@ -2705,9 +2705,9 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
     if (sink && key) {
-        CImageSet* row = World()->FindWorker(key);
+        CImageSet* row = World()->FindImageSet(key);
         if (row) {
-            CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->GetMinIndex());
+            CImage* dst = IMAGE_SET_FRAME_AT_UNCHECKED(row, row->GetMinIndex());
             if (dst) {
                 CImage* src = sink->GetAt(idx);
                 if (src != NULL) {
@@ -2757,20 +2757,20 @@ void CGruntzMgr::CheatSkeletonToggle() {
 
         CImageSet* set;
         {
-            set = World()->FindWorker("Gruntz");
+            set = World()->FindImageSet("Gruntz");
         }
         if (set) {
-            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
+            CImage* fr = IMAGE_SET_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->GetShadeBlitter();
                 if (fmt) {
                     switch (fmt->m_drawType) {
                         case SHADE_DST_BY_SRC:
-                            set->SetAllTypes(SHADE_COPY);
+                            set->SetAllShadeModes(SHADE_COPY);
                             AppendChatMessage(const_cast<char*>("Back from the dead?"));
                             break;
                         default:
-                            set->SetAllTypes(SHADE_DST_BY_SRC);
+                            set->SetAllShadeModes(SHADE_DST_BY_SRC);
                             AppendChatMessage(const_cast<char*>("You're scaring me..."));
                             break;
                     }
@@ -2789,20 +2789,20 @@ void CGruntzMgr::CheatEclipseToggle() {
 
         CImageSet* set;
         {
-            set = World()->FindWorker("Gruntz");
+            set = World()->FindImageSet("Gruntz");
         }
         if (set) {
-            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
+            CImage* fr = IMAGE_SET_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->GetShadeBlitter();
                 if (fmt) {
                     ShadeMode st = fmt->m_drawType;
                     if (st != SHADE_DST_BY_LEVEL) {
-                        set->SetAllTypes(SHADE_DST_BY_LEVEL);
+                        set->SetAllShadeModes(SHADE_DST_BY_LEVEL);
                         set->SetAllLightLevels(GetRandom(255));
                         AppendChatMessage(const_cast<char*>("Me and my..."));
                     } else {
-                        set->SetAllTypes(SHADE_COPY);
+                        set->SetAllShadeModes(SHADE_COPY);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
                     PlayRegistryCueIfElapsed(World()->SoundRegistry(), "GAME_MINORCHEAT");

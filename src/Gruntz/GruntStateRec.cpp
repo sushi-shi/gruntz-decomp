@@ -55,9 +55,9 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             s->Write(&m_playerIndex, sizeof(m_playerIndex));
             s->Write(&m_unitIndex, sizeof(m_unitIndex));
 
-            SERIAL_WRITE_WORKER(s, buf, m_iconFrames);
+            SERIAL_WRITE_IMAGE_SET(s, buf, m_iconFrames);
 
-            SERIAL_WRITE_WORKER(s, buf, m_selectionFrames);
+            SERIAL_WRITE_IMAGE_SET(s, buf, m_selectionFrames);
             break;
         }
 

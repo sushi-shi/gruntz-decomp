@@ -55,14 +55,14 @@ b32 g_logicTypesRegistered;
 
 RVA(0x001504d0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
-    CImageSet* spr = OwnerMgr()->FindWorker(name);
+    CImageSet* spr = OwnerMgr()->FindImageSet(name);
     m_imageSet = spr;
     SetImageFrame(frame);
 }
 
 RVA(0x00150540, 0x65)
 void CWwdSpriteObject::SetImageSetByName(const char* name) {
-    CImageSet* spr = OwnerMgr()->FindWorker(name);
+    CImageSet* spr = OwnerMgr()->FindImageSet(name);
     m_imageSet = spr;
     if (spr) {
         i32 n = spr->GetMinIndex();
@@ -269,7 +269,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        CImageSet* imageSet = OwnerMgr()->FindWorker(name);
+        CImageSet* imageSet = OwnerMgr()->FindImageSet(name);
         m_imageSet = imageSet;
         if (imageSet != NULL && hasFrameImage == true) {
             i32 idx = m_frameIndex;
@@ -796,13 +796,13 @@ void CLogicRecord::Unload() {
 
 RVA(0x00151eb0, 0x43)
 void CImageSet::Unload() {
-    for (i32 i = 0; i < m_items.GetSize(); i++) {
-        CImage* el = static_cast<CImage*>(m_items.GetAt(i));
+    for (i32 i = 0; i < m_frames.GetSize(); i++) {
+        CImage* el = static_cast<CImage*>(m_frames.GetAt(i));
         if (el != NULL) {
             delete el;
         }
     }
-    m_items.RemoveAll();
+    m_frames.RemoveAll();
 
     m_minIndex = 99999;
     m_maxIndex = 0;
@@ -810,7 +810,7 @@ void CImageSet::Unload() {
 
 RVA(0x00151f00, 0xa4)
 CImage* CImageSet::InsertFrame(CRezItm* src, i32 n, i32 mode) {
-    if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
+    if (n < m_frames.GetSize() && static_cast<CImage*>(m_frames.GetAt(n)) != NULL) {
         return NULL;
     }
 
@@ -827,7 +827,7 @@ CImage* CImageSet::InsertFrame(CRezItm* src, i32 n, i32 mode) {
 
 RVA(0x00151fb0, 0xa4)
 CImage* CImageSet::LoadFrame(char* path, i32 index, i32 keyed) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < m_frames.GetSize() && static_cast<CImage*>(m_frames.GetAt(index)) != NULL) {
         return NULL;
     }
 
@@ -847,7 +847,7 @@ CImage* CImageSet::LoadFrame(char* path, i32 index, i32 keyed) {
 RVA(0x00152060, 0xab)
 CImage*
 CImageSet::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < m_frames.GetSize() && static_cast<CImage*>(m_frames.GetAt(index)) != NULL) {
         return NULL;
     }
 
@@ -866,7 +866,7 @@ CImageSet::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 inde
 
 RVA(0x00152110, 0xa9)
 CImage* CImageSet::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < m_frames.GetSize() && static_cast<CImage*>(m_frames.GetAt(index)) != NULL) {
         return NULL;
     }
 
@@ -924,7 +924,7 @@ i32 CImageSet::ReloadFramesFromArchive(CRezDir* tab) {
 
     i32 matched = 0;
     i32 liveFrames = 0;
-    i32 n = m_items.GetSize();
+    i32 n = m_frames.GetSize();
     for (i32 i = 0; i < n; i++) {
         if (GetAt(i) != NULL) {
             liveFrames++;
@@ -992,12 +992,12 @@ i32 CImageSet::GetMemoryUsage(i32 raw) {
 }
 
 RVA(0x00152480, 0x4e)
-i32 CImageSet::SetAllTypes(ShadeMode type) {
+i32 CImageSet::SetAllShadeModes(ShadeMode mode) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame && frame->GetShadeBlitter()) {
-            frame->GetShadeBlitter()->Select(type, NULL);
+            frame->GetShadeBlitter()->Select(mode, NULL);
             count++;
         }
     }
@@ -1018,15 +1018,15 @@ i32 CImageSet::SetAllLightLevels(i32 value) {
 }
 
 RVA(0x00152520, 0x4b)
-i32 CImageSet::SetAllFormats(CShadeTable* format) {
-    if (!format) {
+i32 CImageSet::SetAllShadeTables(CShadeTable* shadeTable) {
+    if (!shadeTable) {
         return 0;
     }
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame && frame->GetShadeBlitter()) {
-            frame->GetShadeBlitter()->m_palDescr = format;
+            frame->GetShadeBlitter()->m_palDescr = shadeTable;
             count++;
         }
     }
@@ -1036,8 +1036,8 @@ i32 CImageSet::SetAllFormats(CShadeTable* format) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152570, 0x24)
-ShadeMode CImageSet::GetFirstFrameState() {
-    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+ShadeMode CImageSet::GetFirstFrameShadeMode() {
+    CImage* frame = static_cast<CImage*>(m_frames.GetAt(m_minIndex));
     if (frame == NULL) {
         return SHADE_COPY;
     }
@@ -1052,7 +1052,7 @@ ShadeMode CImageSet::GetFirstFrameState() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001525a0, 0x1f)
 i32 CImageSet::GetFirstFrameLightLevel() {
-    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+    CImage* frame = static_cast<CImage*>(m_frames.GetAt(m_minIndex));
     if (frame == NULL) {
         return 1;
     }
@@ -1066,8 +1066,8 @@ i32 CImageSet::GetFirstFrameLightLevel() {
 RVA(0x001525c0, 0x76)
 i32 CImageSet::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     if (frame) {
-        for (i32 i = 0; i < m_items.GetSize(); i++) {
-            CImage* cur = static_cast<CImage*>(m_items.GetAt(i));
+        for (i32 i = 0; i < m_frames.GetSize(); i++) {
+            CImage* cur = static_cast<CImage*>(m_frames.GetAt(i));
             if (cur && cur == frame) {
                 if (outName) {
                     strcpy(outName, m_name);

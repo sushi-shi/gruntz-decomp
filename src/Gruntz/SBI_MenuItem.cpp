@@ -81,14 +81,14 @@ i32 CSBI_MenuItem::ResolveFrame(const char* frameSetName, i32 frameIndex) {
         return 0;
     }
 
-    CImageSet* frames = m_host->FindWorker(frameSetName);
+    CImageSet* frames = m_host->FindImageSet(frameSetName);
     m_stateFrames = frames;
     if (frames == NULL) {
         return 0;
     }
 
     if (frameIndex == -1) {
-        SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(frames, frames->GetMinIndex()));
+        SetFrame(IMAGE_SET_FRAME_AT_UNCHECKED(frames, frames->GetMinIndex()));
     } else {
         SetFrame(frames->GetAt(frameIndex));
     }
@@ -176,11 +176,11 @@ i32 CSBI_MenuItem::SerializeFields(
     switch (mode) {
         case SERIAL_LOAD:
             ar->Read(&m_state, sizeof(m_state));
-            SERIAL_READ_WORKER(ar, world, frameSetName, m_stateFrames);
+            SERIAL_READ_IMAGE_SET(ar, world, frameSetName, m_stateFrames);
             break;
         case SERIAL_SAVE:
             ar->Write(&m_state, sizeof(m_state));
-            SERIAL_WRITE_WORKER(ar, frameSetName, m_stateFrames);
+            SERIAL_WRITE_IMAGE_SET(ar, frameSetName, m_stateFrames);
             break;
     }
 

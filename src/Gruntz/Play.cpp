@@ -3294,7 +3294,7 @@ RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
-    CImageSet* set = m_world->FindWorker("GAME_MESSAGEZ");
+    CImageSet* set = m_world->FindImageSet("GAME_MESSAGEZ");
     if (set == NULL) {
         return 0;
     }
@@ -3625,7 +3625,7 @@ i32 CPlay::LoadCursorAnimation(
     if (m_world == NULL) {
         return 0;
     }
-    CImageSet* grid = m_world->FindWorker(spriteKey);
+    CImageSet* grid = m_world->FindImageSet(spriteKey);
     m_cursorSprite = grid;
     if (grid == NULL) {
         return 0;
@@ -3638,8 +3638,8 @@ i32 CPlay::LoadCursorAnimation(
         if (spr == NULL) {
             spr = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
         }
-        m_cursorSprite->SetAllTypes(SHADE_PAL_16);
-        m_cursorSprite->SetAllFormats(spr);
+        m_cursorSprite->SetAllShadeModes(SHADE_PAL_16);
+        m_cursorSprite->SetAllShadeTables(spr);
     }
     CImage* frame = m_cursorSprite->GetAt(initialFrame);
     m_cursorImage = frame;
@@ -3668,7 +3668,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         CImage* frame = g->GetAt(idx);
         m_cursorImage = frame;
         if (frame == NULL) {
-            m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->GetMinIndex());
+            m_cursorImage = IMAGE_SET_FRAME_AT_UNCHECKED(g, g->GetMinIndex());
             m_cursorFrameIndex = g->GetMinIndex();
         }
     }
@@ -3994,7 +3994,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
-    CImageSet* set = m_world->FindWorker("GAME_MESSAGEZ");
+    CImageSet* set = m_world->FindImageSet("GAME_MESSAGEZ");
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
@@ -5956,7 +5956,7 @@ i32 CPlay::AdvanceLoadingBar(b32 final) {
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
-    CImageSet* spr = m_world->FindWorker("GAME_LOADINGBAR");
+    CImageSet* spr = m_world->FindImageSet("GAME_LOADINGBAR");
     if (!spr) {
         return 0;
     }
@@ -5998,8 +5998,8 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
                 if (shadeTable == NULL) {
                     shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
                 }
-                m_cursorSprite->SetAllTypes(SHADE_PAL_16);
-                m_cursorSprite->SetAllFormats(shadeTable);
+                m_cursorSprite->SetAllShadeModes(SHADE_PAL_16);
+                m_cursorSprite->SetAllShadeTables(shadeTable);
             }
             char sequenceName[0x40];
             wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());

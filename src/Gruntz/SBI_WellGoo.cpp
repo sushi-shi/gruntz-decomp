@@ -69,7 +69,7 @@ i32 CSBI_WellGoo::Setup(
         shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
     }
 
-    frames = m_host->FindWorker(key);
+    frames = m_host->FindImageSet(key);
     SetFrame((frames != NULL) ? frames->GetAt(4) : NULL);
     if (m_frame == NULL) {
         goto fail;
@@ -86,7 +86,7 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
 
-    frames = m_host->FindWorker(key);
+    frames = m_host->FindImageSet(key);
     m_bottomImage = (frames != NULL) ? frames->GetAt(2) : NULL;
     if (m_bottomImage == NULL) {
         goto fail;
@@ -99,7 +99,7 @@ i32 CSBI_WellGoo::Setup(
         f->GetShadeBlitter()->m_palDescr = shadeTable;
     }
 
-    frames = m_host->FindWorker(key);
+    frames = m_host->FindImageSet(key);
     m_topImage = (frames != NULL) ? frames->GetAt(3) : NULL;
     if (m_topImage != NULL) {
         if (m_topImage->GetShadeBlitter() != NULL) {

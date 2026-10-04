@@ -6,16 +6,16 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Utils/MapTyped.h>
 
-inline CImageSet* CDDrawSurfaceMgr::FindWorker(LPCTSTR name) {
+inline CImageSet* CDDrawSurfaceMgr::FindImageSet(LPCTSTR name) {
     return MapFind<CImageSet>(m_imageRegistry->m_imageSetsByName, name);
 }
 
 inline CImage* CDDrawSurfaceMgr::FindFrame(LPCTSTR name, i32 index) {
-    CImageSet* worker = FindWorker(name);
-    if (worker == NULL) {
+    CImageSet* imageSet = FindImageSet(name);
+    if (imageSet == NULL) {
         return NULL;
     }
-    return worker->GetAt(index);
+    return imageSet->GetAt(index);
 }
 
 #endif // DDRAWMGR_WORKERLOOKUP_H

@@ -70,7 +70,7 @@ RVA(0x00061570, 0x11d)
 i32 CGrunt::UpdateDecayFade() {
     if (m_idleWindowTiming.Expired()) {
         Hide();
-        m_wwdObject->GetImageSet()->SetAllTypes(SHADE_COPY);
+        m_wwdObject->GetImageSet()->SetAllShadeModes(SHADE_COPY);
         UnregisterFromBoard(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;

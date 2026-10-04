@@ -60,13 +60,13 @@ GZ_ENUM_FLAGS_BEGIN(DDrawSurfaceMgrFlags, i32)
     SURFACEMGR_DIRECT_OBJECT_MOVEMENT = 0x20,
     SURFACEMGR_CONSUME_ANIMATION_EVENTS = 0x40,
     SURFACEMGR_SOUND_PRIORITY = 0x80,
-    SURFACEMGR_SINGLE_FRAME_WORKERS = 0x100
+    SURFACEMGR_SINGLE_FRAME_IMAGE_SETS = 0x100
 GZ_ENUM_FLAGS_END(DDrawSurfaceMgrFlags, i32)
 GZ_ENUM_FLAGS_OPS(DDrawSurfaceMgrFlags)
 
 class CDDrawSurfaceMgr : public CObject {
 public:
-    inline CImageSet* FindWorker(LPCTSTR name);
+    inline CImageSet* FindImageSet(LPCTSTR name);
     inline class CImage* FindFrame(LPCTSTR name, i32 index);
     CDDrawSurfaceMgr();
 

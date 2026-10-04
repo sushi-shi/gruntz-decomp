@@ -188,12 +188,12 @@ i32 CMenuTree::ConfigureLeftCursorAnimation(
     if (!m_world) {
         return 0;
     }
-    CImageSet* animation = m_world->FindWorker(animationKey);
+    CImageSet* animation = m_world->FindImageSet(animationKey);
     m_leftCursorAnimation = animation;
     if (!animation) {
         return 0;
     }
-    m_leftCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->GetMinIndex());
+    m_leftCursorFrame = IMAGE_SET_FRAME_AT_UNCHECKED(animation, animation->GetMinIndex());
     m_leftCursorFrameIndex = animation->GetMinIndex();
     m_leftCursorFramePeriodMs = framePeriodMs;
     m_leftCursorFrameTimerMs = framePeriodMs;
@@ -210,12 +210,12 @@ i32 CMenuTree::ConfigureRightCursorAnimation(
     if (!m_world) {
         return 0;
     }
-    CImageSet* animation = m_world->FindWorker(animationKey);
+    CImageSet* animation = m_world->FindImageSet(animationKey);
     m_rightCursorAnimation = animation;
     if (!animation) {
         return 0;
     }
-    m_rightCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->GetMinIndex());
+    m_rightCursorFrame = IMAGE_SET_FRAME_AT_UNCHECKED(animation, animation->GetMinIndex());
     m_rightCursorFrameIndex = animation->GetMinIndex();
     m_rightCursorFramePeriodMs = framePeriodMs;
     m_rightCursorFrameTimerMs = framePeriodMs;
@@ -235,7 +235,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
             m_leftCursorFrame = frame;
             if (frame == NULL) {
                 m_leftCursorFrame =
-                    DDRAW_WORKER_FRAME_AT_UNCHECKED(leftAnimation, leftAnimation->GetMinIndex());
+                    IMAGE_SET_FRAME_AT_UNCHECKED(leftAnimation, leftAnimation->GetMinIndex());
                 m_leftCursorFrameIndex = leftAnimation->GetMinIndex();
             }
         }
@@ -251,7 +251,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
         m_rightCursorFrame = frame;
         if (frame == NULL) {
             m_rightCursorFrame =
-                DDRAW_WORKER_FRAME_AT_UNCHECKED(rightAnimation, rightAnimation->GetMinIndex());
+                IMAGE_SET_FRAME_AT_UNCHECKED(rightAnimation, rightAnimation->GetMinIndex());
             m_rightCursorFrameIndex = rightAnimation->GetMinIndex();
         }
     }

@@ -93,14 +93,14 @@ i32 CActionArea::ApplyColor(i32 owner) {
             SetImageSetByName("GAME_ACTIONAREA_BLUE");
 
             CImageSet* rec = m_wwdObject->GetImageSet();
-            rec->SetAllTypes(SHADE_ALPHA_16);
+            rec->SetAllShadeModes(SHADE_ALPHA_16);
             break;
         }
         case ACTION_AREA_RED_OWNER: {
             SetImageSetByName("GAME_ACTIONAREA_RED");
 
             CImageSet* rec = m_wwdObject->GetImageSet();
-            rec->SetAllTypes(SHADE_ALPHA_16);
+            rec->SetAllShadeModes(SHADE_ALPHA_16);
             break;
         }
         default:

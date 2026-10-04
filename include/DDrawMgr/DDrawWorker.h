@@ -45,10 +45,10 @@ public:
 
     virtual i32 ReloadFrame(CRezItm* rec, i32 n, i32 flag);
 
-    i32 SetAllTypes(ShadeMode type);
-    i32 SetAllFormats(CShadeTable* shade);
+    i32 SetAllShadeModes(ShadeMode mode);
+    i32 SetAllShadeTables(CShadeTable* shadeTable);
     i32 SetAllLightLevels(i32 value);
-    ShadeMode GetFirstFrameState();
+    ShadeMode GetFirstFrameShadeMode();
     i32 GetFirstFrameLightLevel();
     i32 GetMemoryUsage(i32 raw);
     i32 FindFrame(CImage* frame, char* outName, i32* outIndex);
@@ -70,7 +70,7 @@ public:
             return NULL;
         }
 
-        return static_cast<CImage*>(m_items.GetAt(index));
+        return static_cast<CImage*>(m_frames.GetAt(index));
     }
 
     CImage* GetFrame(i32 n);
@@ -81,7 +81,7 @@ public:
 
     void AddFrameAt(CObject* elem, i32 index);
 
-    CObArray m_items;
+    CObArray m_frames;
     char m_name[0x40];
 
     i32 m_minIndex;
@@ -89,13 +89,13 @@ public:
 };
 
 // Caller-shape fallbacks for sites where VC5 cannot preserve the GetAt expansion.
-#define DDRAW_WORKER_CONTAINS_FRAME(worker, index)                                                 \
-    worker->GetMinIndex() <= index && worker->GetMaxIndex() >= index
-#define DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, index)                                             \
-    static_cast<CImage*>(worker->m_items.GetAt(index))
+#define IMAGE_SET_CONTAINS_FRAME(imageSet, index)                                                  \
+    imageSet->GetMinIndex() <= index && imageSet->GetMaxIndex() >= index
+#define IMAGE_SET_FRAME_AT_UNCHECKED(imageSet, index)                                              \
+    static_cast<CImage*>(imageSet->m_frames.GetAt(index))
 
 #define ADD_FRAME_AT(elem, index)                                                                  \
-    m_items.SetAtGrow(index, elem);                                                                \
+    m_frames.SetAtGrow(index, elem);                                                               \
     if (index < m_minIndex) {                                                                      \
         m_minIndex = index;                                                                        \
     }                                                                                              \

@@ -48,7 +48,7 @@ i32 CMenuItem::Init(
         m_state = MENUSTATE_NORMAL;
     }
     if (!UsesStateAnimations()) {
-        m_animation = m_world->FindWorker(animationKey);
+        m_animation = m_world->FindImageSet(animationKey);
         if (!m_animation) {
             return 0;
         }
@@ -193,13 +193,13 @@ i32 CAnimatedMenuItem::Init(
     char animationName[0x80];
 
     sprintf(animationName, "%s_NORMAL", animationKey);
-    m_normalAnimation = m_world->FindWorker(animationName);
+    m_normalAnimation = m_world->FindImageSet(animationName);
 
     sprintf(animationName, "%s_SELECTED", animationKey);
-    m_selectedAnimation = m_world->FindWorker(animationName);
+    m_selectedAnimation = m_world->FindImageSet(animationName);
 
     sprintf(animationName, "%s_DISABLED", animationKey);
-    m_disabledAnimation = m_world->FindWorker(animationName);
+    m_disabledAnimation = m_world->FindImageSet(animationName);
 
     return 1;
 }

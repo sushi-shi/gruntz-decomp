@@ -79,7 +79,7 @@ i32 CDDrawWorkerHost::Read(
         nameBuf[len] = 0;
         if (len > 0) {
 
-            m_imageSets.SetAtGrow(static_cast<char>(n), (OwnerMgr())->FindWorker(nameBuf));
+            m_imageSets.SetAtGrow(static_cast<char>(n), (OwnerMgr())->FindImageSet(nameBuf));
         }
     }
 
@@ -102,7 +102,7 @@ i32 CDDrawWorkerHost::Read(
     if (m_flags & IDX(WWD_PLANE_FLAG_AUTO_TILE_SIZE)) {
 
         CImageSet* set = (m_imageSets.GetSize() > 0) ? ImageSetAt(0) : NULL;
-        for (i32 f = 0; f < set->m_items.GetSize(); f++) {
+        for (i32 f = 0; f < set->m_frames.GetSize(); f++) {
             if (set->GetAt(f) != NULL) {
                 CImage* first = set->GetAt(f);
                 SET_TILE_SIZE_FROM_IMAGE(first);
@@ -230,7 +230,7 @@ void CDDrawWorkerHost::Unload() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
-    m_imageSets.SetAtGrow(index, OwnerMgr()->FindWorker(key));
+    m_imageSets.SetAtGrow(index, OwnerMgr()->FindImageSet(key));
 }
 
 // @early-stop
@@ -350,7 +350,7 @@ void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161fa0, 0x6c)
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
-    for (i32 i = 0; i < set->m_items.GetSize(); i++) {
+    for (i32 i = 0; i < set->m_frames.GetSize(); i++) {
         if (set->GetAt(i) != NULL) {
             CImage* f = set->GetAt(i);
             SET_TILE_SIZE_FROM_IMAGE(f);

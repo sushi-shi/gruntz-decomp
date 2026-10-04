@@ -140,7 +140,7 @@ public:
 };
 
 #define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \
-    CImageSet* animation = m_world->FindWorker(animationKey);                                      \
+    CImageSet* animation = m_world->FindImageSet(animationKey);                                    \
     m_headerAnimation = animation;                                                                 \
     return animation != NULL
 

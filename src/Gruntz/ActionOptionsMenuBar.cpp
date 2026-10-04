@@ -45,19 +45,19 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    CImageSet* spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
+    CImageSet* spr = g_gameReg->World()->FindImageSet("GAME_INGAMEICONZ_NORMCHIPZ");
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_HIGHCHIPZ");
+    spr = g_gameReg->World()->FindImageSet("GAME_INGAMEICONZ_HIGHCHIPZ");
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_GREYCHIPZ");
+    spr = g_gameReg->World()->FindImageSet("GAME_INGAMEICONZ_GREYCHIPZ");
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
@@ -293,11 +293,11 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
 
     char tmp[SERIAL_NAME_LEN];
 
-    SERIAL_WRITE_WORKER(ar, tmp, m_normChipSprite);
+    SERIAL_WRITE_IMAGE_SET(ar, tmp, m_normChipSprite);
 
-    SERIAL_WRITE_WORKER(ar, tmp, m_highChipSprite);
+    SERIAL_WRITE_IMAGE_SET(ar, tmp, m_highChipSprite);
 
-    SERIAL_WRITE_WORKER(ar, tmp, m_greyChipSprite);
+    SERIAL_WRITE_IMAGE_SET(ar, tmp, m_greyChipSprite);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
@@ -362,11 +362,11 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&m_buttonState[0], 8);
     s->Read(&m_buttonIcon[0], 8);
 
-    SERIAL_READ_WORKER(s, mgr, buf, m_normChipSprite);
+    SERIAL_READ_IMAGE_SET(s, mgr, buf, m_normChipSprite);
 
-    SERIAL_READ_WORKER(s, mgr, buf, m_highChipSprite);
+    SERIAL_READ_IMAGE_SET(s, mgr, buf, m_highChipSprite);
 
-    SERIAL_READ_WORKER(s, mgr, buf, m_greyChipSprite);
+    SERIAL_READ_IMAGE_SET(s, mgr, buf, m_greyChipSprite);
 
     SERIAL_READ_FRAME(s, mgr, buf, idx, m_frame);
 
