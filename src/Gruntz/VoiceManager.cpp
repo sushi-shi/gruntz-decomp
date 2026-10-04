@@ -45,7 +45,7 @@ BOOL CVoiceManager::Init(CGruntzMgr* game) {
 RVA(0x0011ae30, 0x95)
 void CVoiceManager::Clear() {
     for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
-        CSpawnList* group = static_cast<CSpawnList*>(m_voiceGroups[i]);
+        CResourceNameList* group = static_cast<CResourceNameList*>(m_voiceGroups[i]);
 
         delete group;
     }
@@ -501,7 +501,7 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
     if (voiceGroup >= m_voiceGroups.GetSize()) {
         return NULL;
     }
-    CSpawnList* group = static_cast<CSpawnList*>(m_voiceGroups[voiceGroup]);
+    CResourceNameList* group = static_cast<CResourceNameList*>(m_voiceGroups[voiceGroup]);
     if (group == NULL) {
         return NULL;
     }
@@ -528,7 +528,7 @@ CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
     }
 
     group->SetLastPicked(selectedIndex);
-    CSpawnEntry* variant = group->GetEntry(selectedIndex);
+    CResourceNameEntry* variant = group->GetEntry(selectedIndex);
     if (variant == NULL) {
         return NULL;
     }
@@ -550,7 +550,7 @@ BOOL CVoiceManager::BuildVoiceGroups() {
 
 // @early-stop
 RVA(0x0011c210, 0x29d)
-CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
+CResourceNameList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
     if (voiceGroup <= 0) {
         return NULL;
     }
@@ -558,7 +558,7 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
         return NULL;
     }
 
-    CSpawnList* group = NULL;
+    CResourceNameList* group = NULL;
     CString fallback, section, key, resourceName;
     section.Format("SG%i", voiceGroup);
     CString directory = *g_buteMgr.GetString(static_cast<LPCTSTR>(section), "DIR", &fallback);
@@ -569,7 +569,7 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
 
     i32 missingResource = 0;
     if (!soundName.IsEmpty()) {
-        group = new CSpawnList();
+        group = new CResourceNameList();
     }
 
     if (!soundName.IsEmpty()) {
@@ -591,7 +591,7 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
             );
             if (source != NULL) {
 
-                group->AddVoiceSound(resourceName, 0);
+                group->AddEntry(resourceName, 0);
                 key.Format("S%i", i);
                 soundName = *g_buteMgr.GetString(
                     static_cast<LPCTSTR>(section),
@@ -607,17 +607,17 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
 }
 
 RVA(0x0011c560, 0x91)
-void CSpawnList::AddVoiceSound(CString resourceName, i32 data) {
-    CSpawnEntry* node = new CSpawnEntry(resourceName, data);
+void CResourceNameList::AddEntry(CString resourceName, i32 data) {
+    CResourceNameEntry* node = new CResourceNameEntry(resourceName, data);
     if (node != NULL) {
-        m_list.AddTail(node);
+        m_entries.AddTail(node);
     }
 }
 
 RVA(0x0011c630, 0x6e)
-CSpawnEntry::CSpawnEntry(CString name, i32 data) {
+CResourceNameEntry::CResourceNameEntry(CString name, i32 data) {
     m_name = name;
-    m_flag = false;
+    m_resourcePresent = false;
     m_data = data;
 }
 
@@ -686,7 +686,7 @@ RVA(0x0011c7f0, 0x2b)
 void CVoiceManager::ResetVoiceSelections() {
     PauseAllVoices();
     for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
-        CSpawnList* group = static_cast<CSpawnList*>(m_voiceGroups[i]);
+        CResourceNameList* group = static_cast<CResourceNameList*>(m_voiceGroups[i]);
         if (group != NULL) {
             group->SetLastPicked(-1);
         }

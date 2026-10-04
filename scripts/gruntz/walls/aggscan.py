@@ -323,7 +323,7 @@ def _hermetic() -> int:
 #: a real signature defect: a callee retail hands one block and our source
 #: declared as separate scalars. They must keep matching, in both columns.
 CONTROL = {
-    "?AddActionEvent@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId"
+    "?AddBrickStack@CTileTriggerContainer@@QAEPAVCBrickStack@@W4BrickTileId"
     "@@HHHUtagRECT@@@Z": (16, 1,
         "the level record's extent rect, which our source read as four i32 "
         "named player0..3 - the second live instance of the pattern, and the "

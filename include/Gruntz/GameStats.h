@@ -33,20 +33,20 @@ public:
     void RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
     void ClearFlagCaptures();
 
-    const i32* GetWeaponPickupCounts(i32 playerIndex) const {
-        return m_weaponPickupsByPlayer[playerIndex];
+    const i32* GetToolPickupCounts(i32 playerIndex) const {
+        return m_toolPickupsByPlayer[playerIndex];
     }
 
     const i32* GetToyPickupCounts(i32 playerIndex) const {
         return m_toyPickupsByPlayer[playerIndex];
     }
 
-    const i32* GetPowerupPickupCounts(i32 playerIndex) const {
-        return m_powerupPickupsByPlayer[playerIndex];
+    const i32* GetTimedPowerupPickupCounts(i32 playerIndex) const {
+        return m_timedPowerupPickupsByPlayer[playerIndex];
     }
 
-    const i32* GetMiscPickupCounts(i32 playerIndex) const {
-        return m_miscPickupsByPlayer[playerIndex];
+    const i32* GetCursePickupCounts(i32 playerIndex) const {
+        return m_cursePickupsByPlayer[playerIndex];
     }
 
     i32 CountAllFlagCaptures(i32 validatedPlayerIndex);
@@ -94,14 +94,14 @@ public:
     i32 m_secretsAvailable;
     i32 m_coinsAvailable;
     b32 m_warpLetterFound;
-    i32 m_gruntzByPlayer[PLAYER_SLOT_COUNT];
+    i32 m_gruntzSpawnedByPlayer[PLAYER_SLOT_COUNT];
     i32 m_killsByPlayer[PLAYER_SLOT_COUNT][PLAYER_SLOT_COUNT];
     i32 m_flagCapturesByPlayer[PLAYER_SLOT_COUNT][PLAYER_SLOT_COUNT];
 
-    i32 m_weaponPickupsByPlayer[PLAYER_SLOT_COUNT][22];
+    i32 m_toolPickupsByPlayer[PLAYER_SLOT_COUNT][22];
     i32 m_toyPickupsByPlayer[PLAYER_SLOT_COUNT][10];
-    i32 m_powerupPickupsByPlayer[PLAYER_SLOT_COUNT][7];
-    i32 m_miscPickupsByPlayer[PLAYER_SLOT_COUNT][4];
+    i32 m_timedPowerupPickupsByPlayer[PLAYER_SLOT_COUNT][7];
+    i32 m_cursePickupsByPlayer[PLAYER_SLOT_COUNT][4];
 };
 
 inline CGameStats::CGameStats() {

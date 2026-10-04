@@ -2275,9 +2275,9 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
         PickupType t = EQUIPPED_TOOL_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
-            CTileActionEvent* r = m_cellQuery->FindActionAt(first.m_x, first.m_y);
+            CBrickStack* r = m_cellQuery->FindBrickStackAt(first.m_x, first.m_y);
             if (r != NULL) {
-                if (r->GetPlayerFlags(m_playerIndex) != 0) {
+                if (r->IsRevealedToPlayer(m_playerIndex) != 0) {
                     g->RecycleCoords();
                     ResolveTileClaim(g, first.m_x, first.m_y, 1);
                     return 1;
@@ -2306,10 +2306,10 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         PickupType t = EQUIPPED_TOOL_TERNARY_GT(g);
         if (t == PICKUP_GAUNTLETZ) {
             if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
-                CTileActionEvent* r = m_cellQuery->FindActionAt(first.m_x, first.m_y);
+                CBrickStack* r = m_cellQuery->FindBrickStackAt(first.m_x, first.m_y);
                 if (r != NULL) {
-                    BrickTileId k = r->GetActionCode();
-                    if (r->GetPlayerFlags(m_playerIndex) != 0) {
+                    BrickTileId k = r->GetBrickTile();
+                    if (r->IsRevealedToPlayer(m_playerIndex) != 0) {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
                             ResolveTileClaim(g, first.m_x, first.m_y, 0);
@@ -2317,7 +2317,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     } else {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
-                            m_play->GetTileTriggers()->SetCell(first.m_x, first.m_y, m_playerIndex);
+                            m_play->GetTileTriggers()
+                                ->RevealTileContents(first.m_x, first.m_y, m_playerIndex);
                         }
                     }
                 }
@@ -2419,9 +2420,9 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         }
     }
     if (word & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
-        CTileActionEvent* cell = m_cellQuery->FindActionAt(col, row);
+        CBrickStack* cell = m_cellQuery->FindBrickStackAt(col, row);
         if (requireUnoccupied != 0) {
-            if (cell != NULL && cell->GetPlayerFlags(m_playerIndex) == 0) {
+            if (cell != NULL && cell->IsRevealedToPlayer(m_playerIndex) == 0) {
                 CPtrList list2(10);
                 Coord start = ScreenTile(unit);
                 if ((m_board)->FindPathWithEndpointOverrides(
@@ -2442,8 +2443,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 }
             }
         } else if (cell != NULL) {
-            BrickTileId id = cell->GetActionCode();
-            i32 occ = cell->GetPlayerFlags(m_playerIndex);
+            BrickTileId id = cell->GetBrickTile();
+            i32 occ = cell->IsRevealedToPlayer(m_playerIndex);
             i32 special = 0;
             if (occ == 0) {
                 special = 1;

@@ -812,7 +812,7 @@ i32 CPlay::ProfileInputFrame() {
     m_statusBar->Render();
     statusBarMs = static_cast<i32>(tg() - static_cast<u32>(statusBarMs));
 
-    g_brickText1.Format(
+    g_profileTextLine1.Format(
         "Input=%i, Activate=%i, Deact=%i, Update=%i, HitTest=%i, Draw=%i, Fixed=%i, "
         "StatusBar=%i, Flip=%i  ",
         activateMs,
@@ -863,7 +863,7 @@ i32 CPlay::ProfileDeltaFrame() {
     u32 t2 = tg();
     DrawVisibleWorld();
     i32 presentMs = static_cast<i32>((tg() - t2));
-    g_brickText1.Format(
+    g_profileTextLine1.Format(
         "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
         static_cast<i32>(g_frameDelta),
         renderMs,
@@ -3154,29 +3154,29 @@ void CPlay::DrawDebugStatsFull() {
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_PROFILE_TEXT)) {
         SetBkMode(hdc, OPAQUE);
-        if (!g_brickText1.IsEmpty()) {
-            TextOutA(hdc, 0, 0x00, g_brickText1, g_brickText1.GetLength());
+        if (!g_profileTextLine1.IsEmpty()) {
+            TextOutA(hdc, 0, 0x00, g_profileTextLine1, g_profileTextLine1.GetLength());
         }
-        if (!g_brickText2.IsEmpty()) {
-            TextOutA(hdc, 0, 0x10, g_brickText2, g_brickText2.GetLength());
+        if (!g_profileTextLine2.IsEmpty()) {
+            TextOutA(hdc, 0, 0x10, g_profileTextLine2, g_profileTextLine2.GetLength());
         }
-        if (!g_brickText3.IsEmpty()) {
-            TextOutA(hdc, 0, 0x20, g_brickText3, g_brickText3.GetLength());
+        if (!g_profileTextLine3.IsEmpty()) {
+            TextOutA(hdc, 0, 0x20, g_profileTextLine3, g_profileTextLine3.GetLength());
         }
-        if (!g_brickText4.IsEmpty()) {
-            TextOutA(hdc, 0, 0x30, g_brickText4, g_brickText4.GetLength());
+        if (!g_profileTextLine4.IsEmpty()) {
+            TextOutA(hdc, 0, 0x30, g_profileTextLine4, g_profileTextLine4.GetLength());
         }
-        if (!g_brickText5.IsEmpty()) {
-            TextOutA(hdc, 0, 0x40, g_brickText5, g_brickText5.GetLength());
+        if (!g_profileTextLine5.IsEmpty()) {
+            TextOutA(hdc, 0, 0x40, g_profileTextLine5, g_profileTextLine5.GetLength());
         }
-        if (!g_brickText6.IsEmpty()) {
-            TextOutA(hdc, 0, 0x50, g_brickText6, g_brickText6.GetLength());
+        if (!g_profileTextLine6.IsEmpty()) {
+            TextOutA(hdc, 0, 0x50, g_profileTextLine6, g_profileTextLine6.GetLength());
         }
-        if (!g_brickText7.IsEmpty()) {
-            TextOutA(hdc, 0, 0x60, g_brickText7, g_brickText7.GetLength());
+        if (!g_profileTextLine7.IsEmpty()) {
+            TextOutA(hdc, 0, 0x60, g_profileTextLine7, g_profileTextLine7.GetLength());
         }
-        if (!g_brickText8.IsEmpty()) {
-            TextOutA(hdc, 0, 0x70, g_brickText8, g_brickText8.GetLength());
+        if (!g_profileTextLine8.IsEmpty()) {
+            TextOutA(hdc, 0, 0x70, g_profileTextLine8, g_profileTextLine8.GetLength());
         }
     }
     surface->GetDirectDrawSurface()->ReleaseDC(hdc);
@@ -5071,7 +5071,7 @@ i32 CPlay::ValidateLevelTiles() {
             CDDrawWorkerHost* pl = m_world->GetLevel()->m_mainPlane;
             i32 tile = pl->m_tileHandles[pl->m_tileRowOffsets[obj->m_speedY] + obj->m_speedX];
             if (tile >= 0x12f && tile <= 0x149) {
-                if (m_tileTriggers->AddActionEvent(
+                if (m_tileTriggers->AddBrickStack(
                         static_cast<BrickTileId>(tile),
                         obj->m_speedX,
                         obj->m_speedY,

@@ -8,10 +8,10 @@
 extern const i32 g_idleSpriteIds[4];
 extern const char g_secretChars[];
 
-extern const Coord g_bootyMiscPos[4];
-extern const Coord g_bootyPowerupPos[4];
+extern const Coord g_bootyCursePos[4];
+extern const Coord g_bootyTimedPowerupPos[4];
 extern const Coord g_bootyToyPos[4];
-extern const Coord g_bootyWeaponPos[4];
+extern const Coord g_bootyToolPos[4];
 extern const Coord g_bootyGruntPos[4];
 extern const Coord g_bootyPuddlePos[4];
 extern const Coord g_bootyFlagPos[4];

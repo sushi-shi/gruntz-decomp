@@ -110,13 +110,13 @@ const Coord g_bootyLetterCoords[16] = {
 DATA(0x001e9068)
 const i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
 DATA(0x001e9078)
-const Coord g_bootyMiscPos[4] = {{190, 437}, {306, 437}, {422, 437}, {538, 437}};
+const Coord g_bootyCursePos[4] = {{190, 437}, {306, 437}, {422, 437}, {538, 437}};
 DATA(0x001e9098)
-const Coord g_bootyPowerupPos[4] = {{190, 394}, {306, 394}, {422, 394}, {538, 394}};
+const Coord g_bootyTimedPowerupPos[4] = {{190, 394}, {306, 394}, {422, 394}, {538, 394}};
 DATA(0x001e90b8)
 const Coord g_bootyToyPos[4] = {{190, 351}, {306, 351}, {422, 351}, {538, 351}};
 DATA(0x001e90d8)
-const Coord g_bootyWeaponPos[4] = {{190, 308}, {306, 308}, {422, 308}, {538, 308}};
+const Coord g_bootyToolPos[4] = {{190, 308}, {306, 308}, {422, 308}, {538, 308}};
 DATA(0x001e90f8)
 const Coord g_bootyGruntPos[4] = {{190, 265}, {306, 265}, {422, 265}, {538, 265}};
 DATA(0x001e9118)
@@ -1731,7 +1731,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         (m_puddleSprites[i])->SetDrawFill(SHADE_PAL_16, tint);
         m_puddleSprites[i]->Hide();
 
-        if (i == QueryGruntSlots()) {
+        if (i == GetWinningPlayerIndex()) {
             m_gruntSprites[i] = CreateSimpleAnimationSprite(0);
             if (m_gruntSprites[i] == NULL) {
                 return 0;
@@ -1752,25 +1752,25 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_gruntSprites[i]->Hide();
         }
 
-        BuildPowerupIconKeys(
+        BuildPickupIconKey(
             &key,
-            maxRunIndex(g_gameReg->GetGameStats()->GetWeaponPickupCounts(i), 22) + 1
+            maxRunIndex(g_gameReg->GetGameStats()->GetToolPickupCounts(i), 22) + 1
         );
-        m_weaponIcons[i] = CreateSimpleAnimationSprite(0);
-        if (m_weaponIcons[i] == NULL) {
+        m_toolIcons[i] = CreateSimpleAnimationSprite(0);
+        if (m_toolIcons[i] == NULL) {
             return 0;
         }
-        m_weaponIcons[i]->SetImageSetByName(key);
-        m_weaponIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-        (m_weaponIcons[i])->SetDrawFill(SHADE_PAL_16, tint);
-        m_weaponIcons[i]->Hide();
+        m_toolIcons[i]->SetImageSetByName(key);
+        m_toolIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
+        (m_toolIcons[i])->SetDrawFill(SHADE_PAL_16, tint);
+        m_toolIcons[i]->Hide();
 
         {
             CShadeTable* iconTint = g_gameReg->m_gruntPalettes->GetShadeTable(0x10, 0);
             if (iconTint == NULL) {
                 return 0;
             }
-            BuildPowerupIconKeys(
+            BuildPickupIconKey(
                 &key,
                 maxRunIndex(g_gameReg->GetGameStats()->GetToyPickupCounts(i), 10) + 0x17
             );
@@ -1783,45 +1783,49 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             (m_toyIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_toyIcons[i]->Hide();
 
-            BuildPowerupIconKeys(
+            BuildPickupIconKey(
                 &key,
-                maxRunIndex(g_gameReg->GetGameStats()->GetPowerupPickupCounts(i), 7) + 0x36
+                maxRunIndex(g_gameReg->GetGameStats()->GetTimedPowerupPickupCounts(i), 7) + 0x36
             );
-            m_powerupIcons[i] = CreateSimpleAnimationSprite(0);
-            if (m_powerupIcons[i] == NULL) {
+            m_timedPowerupIcons[i] = CreateSimpleAnimationSprite(0);
+            if (m_timedPowerupIcons[i] == NULL) {
                 return 0;
             }
-            m_powerupIcons[i]->SetImageSetByName(key);
-            m_powerupIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-            (m_powerupIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
-            m_powerupIcons[i]->Hide();
+            m_timedPowerupIcons[i]->SetImageSetByName(key);
+            m_timedPowerupIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
+            (m_timedPowerupIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
+            m_timedPowerupIcons[i]->Hide();
 
-            BuildPowerupIconKeys(
+            BuildPickupIconKey(
                 &key,
-                maxRunIndex(g_gameReg->GetGameStats()->GetMiscPickupCounts(i), 4) + 0x3d
+                maxRunIndex(g_gameReg->GetGameStats()->GetCursePickupCounts(i), 4) + 0x3d
             );
-            m_miscIcons[i] = CreateSimpleAnimationSprite(0);
-            if (m_miscIcons[i] == NULL) {
+            m_curseIcons[i] = CreateSimpleAnimationSprite(0);
+            if (m_curseIcons[i] == NULL) {
                 return 0;
             }
-            m_miscIcons[i]->SetImageSetByName(key);
-            m_miscIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-            (m_miscIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
-            m_miscIcons[i]->Hide();
+            m_curseIcons[i]->SetImageSetByName(key);
+            m_curseIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
+            (m_curseIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
+            m_curseIcons[i]->Hide();
         }
 
         SET_SCREEN_POS(m_puddleSprites[i], g_bootyPuddlePos[i].m_x, g_bootyPuddlePos[i].m_y);
         m_puddleSprites[i]->Show();
         SET_SCREEN_POS(m_gruntSprites[i], g_bootyGruntPos[i].m_x, g_bootyGruntPos[i].m_y);
         m_gruntSprites[i]->Show();
-        SET_SCREEN_POS(m_weaponIcons[i], g_bootyWeaponPos[i].m_x, g_bootyWeaponPos[i].m_y);
-        m_weaponIcons[i]->Show();
+        SET_SCREEN_POS(m_toolIcons[i], g_bootyToolPos[i].m_x, g_bootyToolPos[i].m_y);
+        m_toolIcons[i]->Show();
         SET_SCREEN_POS(m_toyIcons[i], g_bootyToyPos[i].m_x, g_bootyToyPos[i].m_y);
         m_toyIcons[i]->Show();
-        SET_SCREEN_POS(m_powerupIcons[i], g_bootyPowerupPos[i].m_x, g_bootyPowerupPos[i].m_y);
-        m_powerupIcons[i]->Show();
-        SET_SCREEN_POS(m_miscIcons[i], g_bootyMiscPos[i].m_x, g_bootyMiscPos[i].m_y);
-        m_miscIcons[i]->Show();
+        SET_SCREEN_POS(
+            m_timedPowerupIcons[i],
+            g_bootyTimedPowerupPos[i].m_x,
+            g_bootyTimedPowerupPos[i].m_y
+        );
+        m_timedPowerupIcons[i]->Show();
+        SET_SCREEN_POS(m_curseIcons[i], g_bootyCursePos[i].m_x, g_bootyCursePos[i].m_y);
+        m_curseIcons[i]->Show();
     }
 
     for (i32 t = 0; t < 4; t++) {
@@ -1873,7 +1877,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
 
     CShadeTable* tint = g_gameReg->m_gruntPalettes->GetShadeTable(
-        IDX(g_gameReg->GetPlayer(QueryGruntSlots()).GetColor()),
+        IDX(g_gameReg->GetPlayer(GetWinningPlayerIndex()).GetColor()),
         0
     );
     if (tint == NULL) {
@@ -1894,11 +1898,11 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     CString bootyKey;
     joyKey.Format(
         "GRUNTZ_WARLORDZ_%s_JOY",
-        static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
+        static_cast<const char*>(GetWarlordName(GetWinningPlayerIndex()))
     );
     bootyKey.Format(
         "GRUNTZ_WARLORDZ_%s_BOOTY",
-        static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
+        static_cast<const char*>(GetWarlordName(GetWinningPlayerIndex()))
     );
     m_warlordBooty = CreateSimpleAnimationSprite(0);
     if (m_warlordBooty == NULL) {
@@ -1993,143 +1997,143 @@ i32 CMultiBootyState::LeaveState(GameStateId nextState) {
 }
 
 RVA(0x0001e720, 0x400)
-void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
-    *reg = "GAME_INGAMEICONZ_";
-    switch (static_cast<PickupType>(key)) {
+void CMultiBootyState::BuildPickupIconKey(CString* imageSetName, i32 pickupType) {
+    *imageSetName = "GAME_INGAMEICONZ_";
+    switch (static_cast<PickupType>(pickupType)) {
         case PICKUP_BOMB:
-            *reg += "TOOLZ_BOMBZ";
+            *imageSetName += "TOOLZ_BOMBZ";
             return;
         case PICKUP_BOOMERANG:
-            *reg += "TOOLZ_BOOMERANGZ";
+            *imageSetName += "TOOLZ_BOOMERANGZ";
             return;
         case PICKUP_BRICK:
-            *reg += "TOOLZ_BRICKZ";
+            *imageSetName += "TOOLZ_BRICKZ";
             return;
         case PICKUP_CLUB:
-            *reg += "TOOLZ_CLUBZ";
+            *imageSetName += "TOOLZ_CLUBZ";
             return;
         case PICKUP_GAUNTLETZ:
-            *reg += "TOOLZ_GAUNTLETZ";
+            *imageSetName += "TOOLZ_GAUNTLETZ";
             return;
         case PICKUP_GLOVEZ:
-            *reg += "TOOLZ_GLOVEZ";
+            *imageSetName += "TOOLZ_GLOVEZ";
             return;
         case PICKUP_GOOBER:
-            *reg += "TOOLZ_GOOBERZ";
+            *imageSetName += "TOOLZ_GOOBERZ";
             return;
         case PICKUP_GRAVITYBOOTZ:
-            *reg += "TOOLZ_GRAVITYBOOTZ";
+            *imageSetName += "TOOLZ_GRAVITYBOOTZ";
             return;
         case PICKUP_GUNHAT:
-            *reg += "TOOLZ_GUNHATZ";
+            *imageSetName += "TOOLZ_GUNHATZ";
             return;
         case PICKUP_NERFGUN:
-            *reg += "TOOLZ_NERFGUNZ";
+            *imageSetName += "TOOLZ_NERFGUNZ";
             return;
         case PICKUP_ROCK:
-            *reg += "TOOLZ_ROCKZ";
+            *imageSetName += "TOOLZ_ROCKZ";
             return;
         case PICKUP_SHIELD:
-            *reg += "TOOLZ_SHIELDZ";
+            *imageSetName += "TOOLZ_SHIELDZ";
             return;
         case PICKUP_SHOVEL:
-            *reg += "TOOLZ_SHOVELZ";
+            *imageSetName += "TOOLZ_SHOVELZ";
             return;
         case PICKUP_SPRING:
-            *reg += "TOOLZ_SPRINGZ";
+            *imageSetName += "TOOLZ_SPRINGZ";
             return;
         case PICKUP_SPY:
-            *reg += "TOOLZ_SPYZ";
+            *imageSetName += "TOOLZ_SPYZ";
             return;
         case PICKUP_SWORD:
-            *reg += "TOOLZ_SWORDZ";
+            *imageSetName += "TOOLZ_SWORDZ";
             return;
         case PICKUP_TIMEBOMB:
-            *reg += "TOOLZ_TIMEBOMBZ";
+            *imageSetName += "TOOLZ_TIMEBOMBZ";
             return;
         case PICKUP_TOOB:
-            *reg += "TOOLZ_TOOBZ";
+            *imageSetName += "TOOLZ_TOOBZ";
             return;
         case PICKUP_WAND:
-            *reg += "TOOLZ_WANDZ";
+            *imageSetName += "TOOLZ_WANDZ";
             return;
         case PICKUP_WARPSTONE:
-            *reg += "TOOLZ_WARPSTONEZ1";
+            *imageSetName += "TOOLZ_WARPSTONEZ1";
             return;
         case PICKUP_WELDER:
-            *reg += "TOOLZ_WELDERZ";
+            *imageSetName += "TOOLZ_WELDERZ";
             return;
         case PICKUP_WINGZ:
-            *reg += "TOOLZ_WINGZ";
+            *imageSetName += "TOOLZ_WINGZ";
             return;
         case PICKUP_BABYWALKER:
-            *reg += "TOYZ_BABYWALKERZ";
+            *imageSetName += "TOYZ_BABYWALKERZ";
             return;
         case PICKUP_BEACHBALL:
-            *reg += "TOYZ_BEACHBALLZ";
+            *imageSetName += "TOYZ_BEACHBALLZ";
             return;
         case PICKUP_BIGWHEEL:
-            *reg += "TOYZ_BIGWHEELZ";
+            *imageSetName += "TOYZ_BIGWHEELZ";
             return;
         case PICKUP_GOKART:
-            *reg += "TOYZ_GOKARTZ";
+            *imageSetName += "TOYZ_GOKARTZ";
             return;
         case PICKUP_JACKINTHEBOX:
-            *reg += "TOYZ_JACKINTHEBOXZ";
+            *imageSetName += "TOYZ_JACKINTHEBOXZ";
             return;
         case PICKUP_JUMPROPE:
-            *reg += "TOYZ_JUMPROPEZ";
+            *imageSetName += "TOYZ_JUMPROPEZ";
             return;
         case PICKUP_POGOSTICK:
-            *reg += "TOYZ_POGOSTICKZ";
+            *imageSetName += "TOYZ_POGOSTICKZ";
             return;
         case PICKUP_SCROLL:
-            *reg += "TOYZ_SCROLLZ";
+            *imageSetName += "TOYZ_SCROLLZ";
             return;
         case PICKUP_SQUEAKTOY:
-            *reg += "TOYZ_SQUEAKTOYZ";
+            *imageSetName += "TOYZ_SQUEAKTOYZ";
             return;
         case PICKUP_YOYO:
-            *reg += "TOYZ_YOYOZ";
+            *imageSetName += "TOYZ_YOYOZ";
             return;
         case PICKUP_MEGAPHONE:
-            *reg += "POWERUPZ_MEGAPHONEZ";
+            *imageSetName += "POWERUPZ_MEGAPHONEZ";
             return;
         case PICKUP_GHOST:
-            *reg += "POWERUPZ_GHOST";
+            *imageSetName += "POWERUPZ_GHOST";
             return;
         case PICKUP_SUPERSPEED:
-            *reg += "POWERUPZ_SUPERSPEED";
+            *imageSetName += "POWERUPZ_SUPERSPEED";
             return;
         case PICKUP_INVULNERABILITY:
-            *reg += "POWERUPZ_INVULNERABILITY";
+            *imageSetName += "POWERUPZ_INVULNERABILITY";
             return;
         case PICKUP_CONVERSION:
-            *reg += "POWERUPZ_CONVERSION";
+            *imageSetName += "POWERUPZ_CONVERSION";
             return;
         case PICKUP_DEATHTOUCH:
-            *reg += "POWERUPZ_DEATHTOUCH";
+            *imageSetName += "POWERUPZ_DEATHTOUCH";
             return;
         case PICKUP_ROIDZ:
-            *reg += "POWERUPZ_ROIDZ";
+            *imageSetName += "POWERUPZ_ROIDZ";
             return;
         case PICKUP_REACTIVEARMOR:
-            *reg += "POWERUPZ_REACTIVEARMOR";
+            *imageSetName += "POWERUPZ_REACTIVEARMOR";
             return;
         case PICKUP_RANDOMCOLORZ:
-            *reg += "POWERUPZ_RANDOMCOLORZ";
+            *imageSetName += "POWERUPZ_RANDOMCOLORZ";
             return;
         case PICKUP_SCREENSHAKE:
-            *reg += "POWERUPZ_SCREENSHAKE";
+            *imageSetName += "POWERUPZ_SCREENSHAKE";
             return;
         case PICKUP_BLACKSCREEN:
-            *reg += "POWERUPZ_BLACKSCREEN";
+            *imageSetName += "POWERUPZ_BLACKSCREEN";
             return;
         case PICKUP_MINICAM:
-            *reg += "POWERUPZ_MINICAM";
+            *imageSetName += "POWERUPZ_MINICAM";
             return;
         default:
-            *reg += "POWERUPZ_COIN";
+            *imageSetName += "POWERUPZ_COIN";
             return;
     }
 }
@@ -2172,61 +2176,61 @@ i32 g_screenShakeMinDelayMs;
 DATA(0x0024550c)
 i32 g_screenShakeMaxDelayMs;
 
-RVA_DYNINIT(0x00082b80, 0xa, g_brickText1)
-RVA_DYNINIT(0x00082ba0, 0xa, g_brickText1)
-RVA_DYNINIT(0x00082bc0, 0xe, g_brickText1)
-RVA_DYNINIT(0x00082be0, 0xa, g_brickText1)
+RVA_DYNINIT(0x00082b80, 0xa, g_profileTextLine1)
+RVA_DYNINIT(0x00082ba0, 0xa, g_profileTextLine1)
+RVA_DYNINIT(0x00082bc0, 0xe, g_profileTextLine1)
+RVA_DYNINIT(0x00082be0, 0xa, g_profileTextLine1)
 DATA(0x00245524)
-CString g_brickText1;
+CString g_profileTextLine1;
 
-RVA_DYNINIT(0x00082c00, 0xa, g_brickText2)
-RVA_DYNINIT(0x00082c20, 0xa, g_brickText2)
-RVA_DYNINIT(0x00082c40, 0xe, g_brickText2)
-RVA_DYNINIT(0x00082c60, 0xa, g_brickText2)
+RVA_DYNINIT(0x00082c00, 0xa, g_profileTextLine2)
+RVA_DYNINIT(0x00082c20, 0xa, g_profileTextLine2)
+RVA_DYNINIT(0x00082c40, 0xe, g_profileTextLine2)
+RVA_DYNINIT(0x00082c60, 0xa, g_profileTextLine2)
 DATA(0x00245528)
-CString g_brickText2;
+CString g_profileTextLine2;
 
-RVA_DYNINIT(0x00082c80, 0xa, g_brickText3)
-RVA_DYNINIT(0x00082ca0, 0xa, g_brickText3)
-RVA_DYNINIT(0x00082cc0, 0xe, g_brickText3)
-RVA_DYNINIT(0x00082ce0, 0xa, g_brickText3)
+RVA_DYNINIT(0x00082c80, 0xa, g_profileTextLine3)
+RVA_DYNINIT(0x00082ca0, 0xa, g_profileTextLine3)
+RVA_DYNINIT(0x00082cc0, 0xe, g_profileTextLine3)
+RVA_DYNINIT(0x00082ce0, 0xa, g_profileTextLine3)
 DATA(0x0024552c)
-CString g_brickText3;
+CString g_profileTextLine3;
 
-RVA_DYNINIT(0x00082d00, 0xa, g_brickText4)
-RVA_DYNINIT(0x00082d20, 0xa, g_brickText4)
-RVA_DYNINIT(0x00082d40, 0xe, g_brickText4)
-RVA_DYNINIT(0x00082d60, 0xa, g_brickText4)
+RVA_DYNINIT(0x00082d00, 0xa, g_profileTextLine4)
+RVA_DYNINIT(0x00082d20, 0xa, g_profileTextLine4)
+RVA_DYNINIT(0x00082d40, 0xe, g_profileTextLine4)
+RVA_DYNINIT(0x00082d60, 0xa, g_profileTextLine4)
 DATA(0x00245530)
-CString g_brickText4;
+CString g_profileTextLine4;
 
-RVA_DYNINIT(0x00082d80, 0xa, g_brickText5)
-RVA_DYNINIT(0x00082da0, 0xa, g_brickText5)
-RVA_DYNINIT(0x00082dc0, 0xe, g_brickText5)
-RVA_DYNINIT(0x00082de0, 0xa, g_brickText5)
+RVA_DYNINIT(0x00082d80, 0xa, g_profileTextLine5)
+RVA_DYNINIT(0x00082da0, 0xa, g_profileTextLine5)
+RVA_DYNINIT(0x00082dc0, 0xe, g_profileTextLine5)
+RVA_DYNINIT(0x00082de0, 0xa, g_profileTextLine5)
 DATA(0x00245514)
-CString g_brickText5;
+CString g_profileTextLine5;
 
-RVA_DYNINIT(0x00082e00, 0xa, g_brickText6)
-RVA_DYNINIT(0x00082e20, 0xa, g_brickText6)
-RVA_DYNINIT(0x00082e40, 0xe, g_brickText6)
-RVA_DYNINIT(0x00082e60, 0xa, g_brickText6)
+RVA_DYNINIT(0x00082e00, 0xa, g_profileTextLine6)
+RVA_DYNINIT(0x00082e20, 0xa, g_profileTextLine6)
+RVA_DYNINIT(0x00082e40, 0xe, g_profileTextLine6)
+RVA_DYNINIT(0x00082e60, 0xa, g_profileTextLine6)
 DATA(0x00245518)
-CString g_brickText6;
+CString g_profileTextLine6;
 
-RVA_DYNINIT(0x00082e80, 0xa, g_brickText7)
-RVA_DYNINIT(0x00082ea0, 0xa, g_brickText7)
-RVA_DYNINIT(0x00082ec0, 0xe, g_brickText7)
-RVA_DYNINIT(0x00082ee0, 0xa, g_brickText7)
+RVA_DYNINIT(0x00082e80, 0xa, g_profileTextLine7)
+RVA_DYNINIT(0x00082ea0, 0xa, g_profileTextLine7)
+RVA_DYNINIT(0x00082ec0, 0xe, g_profileTextLine7)
+RVA_DYNINIT(0x00082ee0, 0xa, g_profileTextLine7)
 DATA(0x0024551c)
-CString g_brickText7;
+CString g_profileTextLine7;
 
-RVA_DYNINIT(0x00082f00, 0xa, g_brickText8)
-RVA_DYNINIT(0x00082f20, 0xa, g_brickText8)
-RVA_DYNINIT(0x00082f40, 0xe, g_brickText8)
-RVA_DYNINIT(0x00082f60, 0xa, g_brickText8)
+RVA_DYNINIT(0x00082f00, 0xa, g_profileTextLine8)
+RVA_DYNINIT(0x00082f20, 0xa, g_profileTextLine8)
+RVA_DYNINIT(0x00082f40, 0xe, g_profileTextLine8)
+RVA_DYNINIT(0x00082f60, 0xa, g_profileTextLine8)
 DATA(0x00245520)
-CString g_brickText8;
+CString g_profileTextLine8;
 
 DATA(0x00245534)
 i32 g_attractStateCount = 0;
@@ -2257,14 +2261,14 @@ CString CMultiBootyState::GetWarlordName(i32 id) {
 }
 
 RVA(0x0001ecf0, 0x2a)
-i32 CMultiBootyState::QueryGruntSlots() {
-    i32 i = 0;
-    while (i < 4) {
-        GruntzPlayer* p = &g_gameReg->GetPlayer(i);
-        if (p->HasJoinedRound() != false && p->IsEliminated() == false) {
-            return p->GetPlayerIndex();
+i32 CMultiBootyState::GetWinningPlayerIndex() {
+    i32 playerIndex = 0;
+    while (playerIndex < 4) {
+        GruntzPlayer* player = &g_gameReg->GetPlayer(playerIndex);
+        if (player->HasJoinedRound() != false && player->IsEliminated() == false) {
+            return player->GetPlayerIndex();
         }
-        i++;
+        playerIndex++;
     }
     return 0;
 }
@@ -2279,11 +2283,11 @@ void CMultiBootyState::DrawBattleStats() {
 
     for (i = 0; i < 4; i++) {
         if (g_gameReg->GetPlayer(i).HasJoinedRound() != false) {
-            s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetMiscPickupCounts(i), 4));
+            s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetCursePickupCounts(i), 4));
             rc.CopyRect(&s_col1Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetPowerupPickupCounts(i), 7));
+            s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetTimedPowerupPickupCounts(i), 7));
             rc.CopyRect(&s_col2Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
@@ -2291,11 +2295,11 @@ void CMultiBootyState::DrawBattleStats() {
             rc.CopyRect(&s_col3Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetWeaponPickupCounts(i), 22));
+            s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetToolPickupCounts(i), 22));
             rc.CopyRect(&s_col4Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", g_gameReg->GetGameStats()->m_gruntzByPlayer[i]);
+            s.Format("%d", g_gameReg->GetGameStats()->m_gruntzSpawnedByPlayer[i]);
             rc.CopyRect(&s_col5Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 

@@ -261,9 +261,9 @@ public:
 
     void DrawBattleStats();
 
-    i32 QueryGruntSlots();
+    i32 GetWinningPlayerIndex();
 
-    void BuildPowerupIconKeys(CString* reg, i32 key);
+    void BuildPickupIconKey(CString* imageSetName, i32 pickupType);
 
     CString GetWarlordName(i32 id);
 
@@ -280,10 +280,10 @@ public:
     BootySeqPhase m_sequenceState;
     CWwdSpriteObject* m_puddleSprites[4];
     CWwdSpriteObject* m_gruntSprites[4];
-    CWwdSpriteObject* m_weaponIcons[4];
+    CWwdSpriteObject* m_toolIcons[4];
     CWwdSpriteObject* m_toyIcons[4];
-    CWwdSpriteObject* m_powerupIcons[4];
-    CWwdSpriteObject* m_miscIcons[4];
+    CWwdSpriteObject* m_timedPowerupIcons[4];
+    CWwdSpriteObject* m_curseIcons[4];
     CWwdSpriteObject* m_tabSprites[4];
     CWwdSpriteObject* m_flagSprites[4];
     CWwdSpriteObject* m_warlordBooty;

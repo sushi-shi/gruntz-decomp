@@ -3,23 +3,23 @@
 
 #include <Gruntz/SpawnList.h>
 
-inline CSpawnEntry* CSpawnList::FirstEntry() {
-    m_cursor = m_list.GetHeadPosition();
+inline CResourceNameEntry* CResourceNameList::FirstEntry() {
+    m_cursor = m_entries.GetHeadPosition();
     return NextEntry();
 }
 
-inline CSpawnEntry* CSpawnList::NextEntry() {
+inline CResourceNameEntry* CResourceNameList::NextEntry() {
     if (m_cursor == NULL) {
         return NULL;
     }
     return NextEntry(m_cursor);
 }
 
-inline CSpawnEntry* CSpawnList::GetEntry(i32 index) {
+inline CResourceNameEntry* CResourceNameList::GetEntry(i32 index) {
     if (index >= GetCount()) {
         return NULL;
     }
-    CSpawnEntry* entry = FirstEntry();
+    CResourceNameEntry* entry = FirstEntry();
     for (i32 remaining = index; remaining > 0; remaining--) {
         entry = NextEntry();
     }

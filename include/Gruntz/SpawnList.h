@@ -6,35 +6,36 @@
 #include <Enums.h>
 #include <Ints.h>
 
-class CSpawnEntry {
+class CResourceNameEntry {
 public:
-    CSpawnEntry(CString name, i32 data);
+    CResourceNameEntry(CString name, i32 data);
     RVA(0x0009a260, 0x1d)
     CString GetName() {
         return m_name;
     }
-    CString GetTail();
+    CString GetObjectResourceSuffix();
 
     CString m_name;
-    b32 m_flag;
+    b32 m_resourcePresent;
+    // @identity-TODO: constructor-written payload; no consumer establishes its meaning.
     i32 m_data;
 };
 
-class CSpawnList {
+class CResourceNameList {
 public:
-    CSpawnList() {
+    CResourceNameList() {
         m_cursor = NULL;
         m_lastPicked = -1;
     }
-    ~CSpawnList();
-    void ClearFlags();
+    ~CResourceNameList();
+    void ClearPresenceMarks();
     void DeleteAllEntries();
-    CSpawnEntry* FindEntry(CString name, b32 useHash);
-    CSpawnEntry* FindByName(const CString& name);
-    void AddVoiceSound(CString resourceName, i32 data);
+    CResourceNameEntry* FindEntry(CString name, b32 allowPrefixMatch);
+    CResourceNameEntry* FindByName(const CString& name);
+    void AddEntry(CString resourceName, i32 data);
 
     i32 GetCount() const {
-        return m_list.GetCount();
+        return m_entries.GetCount();
     }
 
     i32 GetLastPicked() const {
@@ -45,19 +46,19 @@ public:
         m_lastPicked = index;
     }
 
-    CPtrList m_list;
+    CPtrList m_entries;
 
-    CSpawnEntry* NextEntry(POSITION& pos) {
-        return static_cast<CSpawnEntry*>(m_list.GetNext(pos));
+    CResourceNameEntry* NextEntry(POSITION& pos) {
+        return static_cast<CResourceNameEntry*>(m_entries.GetNext(pos));
     }
-    CSpawnEntry* FirstEntry();
-    CSpawnEntry* NextEntry();
-    CSpawnEntry* GetEntry(i32 index);
+    CResourceNameEntry* FirstEntry();
+    CResourceNameEntry* NextEntry();
+    CResourceNameEntry* GetEntry(i32 index);
     POSITION m_cursor;
     i32 m_lastPicked;
 };
 
-inline CSpawnList::~CSpawnList() {
+inline CResourceNameList::~CResourceNameList() {
     DeleteAllEntries();
 }
 

@@ -52,11 +52,11 @@ void CGameStats::Reset() {
     ClearFlagCaptures();
     i32 i;
     for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
-        m_gruntzByPlayer[i] = 0;
+        m_gruntzSpawnedByPlayer[i] = 0;
     }
     for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
         for (i32 pickup = 0; pickup < 22; ++pickup) {
-            m_weaponPickupsByPlayer[i][pickup] = 0;
+            m_toolPickupsByPlayer[i][pickup] = 0;
         }
     }
     for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
@@ -66,12 +66,12 @@ void CGameStats::Reset() {
     }
     for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
         for (i32 pickup = 0; pickup < 7; ++pickup) {
-            m_powerupPickupsByPlayer[i][pickup] = 0;
+            m_timedPowerupPickupsByPlayer[i][pickup] = 0;
         }
     }
     for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
         for (i32 pickup = 0; pickup < 4; ++pickup) {
-            m_miscPickupsByPlayer[i][pickup] = 0;
+            m_cursePickupsByPlayer[i][pickup] = 0;
         }
     }
 }
@@ -426,7 +426,7 @@ i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, 
             s->Read(&m_coinsAvailable, sizeof(m_coinsAvailable));
             s->Read(&m_warpLetterFound, sizeof(m_warpLetterFound));
             for (i = 0; i < 4; i++) {
-                s->Read(&m_gruntzByPlayer[i], sizeof(m_gruntzByPlayer[i]));
+                s->Read(&m_gruntzSpawnedByPlayer[i], sizeof(m_gruntzSpawnedByPlayer[i]));
             }
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 4; c++) {
@@ -440,7 +440,7 @@ i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, 
             }
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 22; c++) {
-                    s->Read(&m_weaponPickupsByPlayer[r][c], sizeof(m_weaponPickupsByPlayer[0][0]));
+                    s->Read(&m_toolPickupsByPlayer[r][c], sizeof(m_toolPickupsByPlayer[0][0]));
                 }
             }
             for (r = 0; r < 4; r++) {
@@ -451,14 +451,14 @@ i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, 
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 7; c++) {
                     s->Read(
-                        &m_powerupPickupsByPlayer[r][c],
-                        sizeof(m_powerupPickupsByPlayer[0][0])
+                        &m_timedPowerupPickupsByPlayer[r][c],
+                        sizeof(m_timedPowerupPickupsByPlayer[0][0])
                     );
                 }
             }
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 4; c++) {
-                    s->Read(&m_miscPickupsByPlayer[r][c], sizeof(m_miscPickupsByPlayer[0][0]));
+                    s->Read(&m_cursePickupsByPlayer[r][c], sizeof(m_cursePickupsByPlayer[0][0]));
                 }
             }
         }
@@ -481,7 +481,7 @@ i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, 
         s->Write(&m_coinsAvailable, sizeof(m_coinsAvailable));
         s->Write(&m_warpLetterFound, sizeof(m_warpLetterFound));
         for (i = 0; i < 4; i++) {
-            s->Write(&m_gruntzByPlayer[i], sizeof(m_gruntzByPlayer[i]));
+            s->Write(&m_gruntzSpawnedByPlayer[i], sizeof(m_gruntzSpawnedByPlayer[i]));
         }
         for (r = 0; r < 4; r++) {
             for (c = 0; c < 4; c++) {
@@ -495,7 +495,7 @@ i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, 
         }
         for (r = 0; r < 4; r++) {
             for (c = 0; c < 22; c++) {
-                s->Write(&m_weaponPickupsByPlayer[r][c], sizeof(m_weaponPickupsByPlayer[0][0]));
+                s->Write(&m_toolPickupsByPlayer[r][c], sizeof(m_toolPickupsByPlayer[0][0]));
             }
         }
         for (r = 0; r < 4; r++) {
@@ -505,12 +505,15 @@ i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, 
         }
         for (r = 0; r < 4; r++) {
             for (c = 0; c < 7; c++) {
-                s->Write(&m_powerupPickupsByPlayer[r][c], sizeof(m_powerupPickupsByPlayer[0][0]));
+                s->Write(
+                    &m_timedPowerupPickupsByPlayer[r][c],
+                    sizeof(m_timedPowerupPickupsByPlayer[0][0])
+                );
             }
         }
         for (r = 0; r < 4; r++) {
             for (c = 0; c < 4; c++) {
-                s->Write(&m_miscPickupsByPlayer[r][c], sizeof(m_miscPickupsByPlayer[0][0]));
+                s->Write(&m_cursePickupsByPlayer[r][c], sizeof(m_cursePickupsByPlayer[0][0]));
             }
         }
     }

@@ -14,12 +14,12 @@ GZ_ENUM_FORWARD(BrickTileId);
 class CTileTriggerContainer;
 class CGrunt;
 
-class CTileActionEvent {
+class CBrickStack {
 public:
-    CTileActionEvent();
+    CBrickStack();
 
-    ~CTileActionEvent() {
-        m_live = false;
+    ~CBrickStack() {
+        m_initialized = false;
     }
 
     i32 Build(
@@ -28,38 +28,38 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        const RECT& playerFlags
+        const RECT& revealedToPlayer
     ) {
-        if (m_live != false) {
+        if (m_initialized != false) {
             return 0;
         }
-        m_actionCode = code;
+        m_brickTile = code;
         m_tileX = tileX;
         m_tileY = tileY;
         m_cellKey = cellKey;
         m_owner = owner;
-        m_live = true;
-        m_playerFlags[0] = playerFlags.left;
-        m_playerFlags[1] = playerFlags.top;
-        m_playerFlags[2] = playerFlags.right;
-        m_playerFlags[3] = playerFlags.bottom;
-        SetActionCode(code);
+        m_initialized = true;
+        m_revealedToPlayer[0] = revealedToPlayer.left;
+        m_revealedToPlayer[1] = revealedToPlayer.top;
+        m_revealedToPlayer[2] = revealedToPlayer.right;
+        m_revealedToPlayer[3] = revealedToPlayer.bottom;
+        SetBrickTile(code);
         return 1;
     }
 
-    i32 GetPlayerFlags(i32 playerIndex) const {
-        return m_playerFlags[playerIndex];
+    i32 IsRevealedToPlayer(i32 playerIndex) const {
+        return m_revealedToPlayer[playerIndex];
     }
 
-    BrickTileId GetActionCode() const {
-        return m_actionCode;
+    BrickTileId GetBrickTile() const {
+        return m_brickTile;
     }
 
-    i32 SetActionCode(BrickTileId code);
+    i32 SetBrickTile(BrickTileId code);
 
     i32 BreakTopBrick(CGrunt* grunt);
 
-    i32 MorphByTool(PickupType toolId, PlayerSlot playerSlot);
+    i32 AddTopBrick(PickupType toolId, PlayerSlot playerSlot);
 
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
@@ -67,14 +67,14 @@ public:
 
     i32 SerializeFields(CFileMemBase* ar);
 
-    BrickTileId m_actionCode;
+    BrickTileId m_brickTile;
     i32 m_tileX;
     i32 m_tileY;
     i32 m_cellKey;
-    b32 m_live;
+    b32 m_initialized;
 
     CTileTriggerContainer* m_owner;
-    i32 m_playerFlags[4];
+    i32 m_revealedToPlayer[4];
 };
 
 #endif // GRUNTZ_TILEACTIONEVENT_H
