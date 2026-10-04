@@ -3133,7 +3133,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     }
 
     slot->BeginDrain();
-    i32 seq = (slot->m_contiguousSequence + 1) * static_cast<i32>(m_commandDelay);
+    i32 seq = (slot->GetContiguousSequence() + 1) * static_cast<i32>(m_commandDelay);
     i32 end = seq + static_cast<i32>(m_commandDelay) * 3;
     for (; seq < end; seq++) {
 

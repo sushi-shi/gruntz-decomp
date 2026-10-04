@@ -180,6 +180,9 @@ struct CNetCmdSlot {
     i32* PeerReceivedAhead() {
         return m_peerReceivedAhead;
     }
+    i32 GetContiguousSequence() const {
+        return m_contiguousSequence;
+    }
     b32 HasReceivedThrough(i32 sequence) const {
         return !(m_contiguousSequence < sequence);
     }

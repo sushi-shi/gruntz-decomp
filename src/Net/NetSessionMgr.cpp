@@ -440,7 +440,7 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
         return 1;
     }
     unsigned char flags = 0;
-    i32 baseSeq = slot->m_contiguousSequence;
+    i32 baseSeq = slot->GetContiguousSequence();
     if (slot->ContainsSequence(slot->ReceivedAhead(), baseSeq + 2)) {
         flags = 0x10;
     }
@@ -450,7 +450,7 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     GruntRec* entry = &m_commandRecords[sequence % 0x80];
     g_netCmdSendMsg.m_flags = flags;
     g_netCmdSendMsg.m_sequence = sequence;
-    g_netCmdSendMsg.m_windowBase = slot->m_contiguousSequence;
+    g_netCmdSendMsg.m_windowBase = slot->GetContiguousSequence();
     g_netCmdSendMsg.m_checksum = entry->m_checksum;
     g_netCmdSendMsg.m_entryCount = entry->m_entryCount;
     memcpy(g_netCmdSendMsg.m_payload, entry->m_payload, entry->m_payloadLength);
@@ -583,7 +583,7 @@ i32 CNetSession::ReadyForSequence(i32 sequence) {
                 if (slot->DrainAcknowledged() == 0) {
                     return 0;
                 }
-                if (slot->m_drainSequence != slot->m_contiguousSequence) {
+                if (slot->m_drainSequence != slot->GetContiguousSequence()) {
                     return 0;
                 }
             }

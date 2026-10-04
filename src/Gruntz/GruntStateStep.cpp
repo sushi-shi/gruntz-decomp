@@ -159,7 +159,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                 Coord targetTile;
                 target->GetScreenTile(&targetTile);
                 if (!defender->MoveToTile(targetTile.m_x, targetTile.m_y, 0, arrivalMask, 0, 0)) {
-                    ResetToSeek(defender);
+                    defender->ResetToSeek();
                 }
             }
             if (manhattanDistance <= 0xa) {
@@ -168,7 +168,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
             defender->m_dwell = 0;
             goto checkIdleWander;
         }
-        ResetToSeek(defender);
+        defender->ResetToSeek();
         defender->RecycleCoords();
     }
 

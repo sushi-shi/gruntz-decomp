@@ -110,7 +110,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* active = m_triggerMgr->FindNearestEnemy(this);
             if (active != NULL && active != slot) {
-                ResetToSeek(this);
+                ResetToSeek();
                 return 1;
             }
             if (slot == NULL || slot->IsEntranceCommitted() == false

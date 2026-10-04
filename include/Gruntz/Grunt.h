@@ -314,6 +314,8 @@ public:
         m_targetTeam = team;
     }
 
+    void ResetToSeek();
+
     GruntAiState GetAiState() const {
         return m_aiState;
     }

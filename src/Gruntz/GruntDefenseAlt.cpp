@@ -140,7 +140,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             CGrunt* o = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != o) {
-                ResetToSeek(this);
+                ResetToSeek();
                 return 1;
             }
             if (o == NULL || o->IsEntranceCommitted() == false

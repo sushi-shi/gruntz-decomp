@@ -144,7 +144,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
             CGrunt* t = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* cur = m_triggerMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
-                ResetToSeek(this);
+                ResetToSeek();
                 return 1;
             }
             if (t == NULL || t->IsEntranceCommitted() == false
