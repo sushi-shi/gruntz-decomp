@@ -2051,7 +2051,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
             packet.m_rows[i].m_ready = static_cast<u8>(v);
             v = player->GetMaxGruntz();
             packet.m_rows[i].m_maxGruntz = static_cast<u8>(v);
-            packet.m_rows[i].m_networkPlayerId = player->m_networkPlayerId;
+            packet.m_rows[i].m_networkPlayerId = player->GetNetworkPlayerId();
             strcpy(packet.m_rows[i].m_name, static_cast<const char*>(player->GetName()));
         }
     }
@@ -2278,7 +2278,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     packet.m_active = true;
     v = player->GetMaxGruntz();
     packet.m_maxGruntz = static_cast<u8>(v);
-    v = player->m_networkPlayerId;
+    v = player->GetNetworkPlayerId();
     packet.m_networkPlayerId = v;
     strcpy(packet.m_name, static_cast<const char*>(player->GetName()));
 
@@ -2442,7 +2442,7 @@ i32 CMulti::DropLobbyPlayer(i32 slotIndex) {
         return 0;
     }
 
-    CNetPlayerNode* player = Network()->GetPlayerNodeData(slot->m_networkPlayerId);
+    CNetPlayerNode* player = Network()->GetPlayerNodeData(slot->GetNetworkPlayerId());
 
     b32 humanControlled = slot->IsHumanControlled();
     if (player == NULL) {
@@ -2660,7 +2660,7 @@ i32 CMulti::Poll(i32 token) {
 
         for (i32 i = 0; i < 4; i++) {
             GruntzPlayer* player = &g_gameReg->GetPlayer(i);
-            if (player->m_networkPlayerId != m_localPlayerId && player->IsActive() != false
+            if (player->GetNetworkPlayerId() != m_localPlayerId && player->IsActive() != false
                 && player->IsHumanControlled() != false) {
                 if (m_levelChecksumReceived[i] == 0) {
                     allAcked = 0;
@@ -2721,7 +2721,7 @@ i32 CMulti::CreateSession() {
         if (player->IsActive() != false && player->IsHumanControlled() != false) {
 
             state = NETSLOT_LOCAL;
-            if (player->m_networkPlayerId != m_localPlayerId) {
+            if (player->GetNetworkPlayerId() != m_localPlayerId) {
                 state = NETSLOT_REMOTE;
             }
         }
@@ -2864,7 +2864,7 @@ void CMulti::CheckDropTimeout() {
     if (slot == NULL) {
         return;
     }
-    g_dropPlayerId = slot->GetPlayer()->m_networkPlayerId;
+    g_dropPlayerId = slot->GetPlayer()->GetNetworkPlayerId();
     g_sessionName = slot->GetPlayerName();
     BroadcastValueMessage(NETMSG_DROP_TIMEOUT, g_dropPlayerId, DPSEND_GUARANTEED);
     ShowDropPlayerDialog();

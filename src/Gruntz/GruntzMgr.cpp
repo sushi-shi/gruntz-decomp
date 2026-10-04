@@ -3517,7 +3517,7 @@ GruntzPlayer* CGruntzMgr::FindPlayerByNetworkId(i32 networkPlayerId) {
 
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* slot = &m_players[i];
-        if (slot && slot->m_networkPlayerId == networkPlayerId) {
+        if (slot && slot->GetNetworkPlayerId() == networkPlayerId) {
             return slot;
         }
     }

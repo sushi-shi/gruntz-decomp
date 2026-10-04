@@ -56,6 +56,10 @@ public:
         m_humanControlled = controlled;
     }
 
+    i32 GetNetworkPlayerId() const {
+        return m_networkPlayerId;
+    }
+
     ColorTint GetColor() const {
         return m_color;
     }
