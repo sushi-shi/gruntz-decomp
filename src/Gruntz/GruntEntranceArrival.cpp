@@ -86,7 +86,7 @@ DATA(0x0020e250)
 static char s_gruntzExitzOne[] = "GRUNTZ_EXITZ_ONE";
 
 RVA(0x000616e0, 0xa8)
-i32 CGrunt::ResetGeometry() {
+i32 CGrunt::StartAttackIdleAnimation() {
     SwitchAnimation(m_poseAttackIdle);
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
@@ -99,7 +99,7 @@ i32 CGrunt::ResetGeometry() {
 }
 
 RVA(0x000617c0, 0x127)
-i32 CGrunt::UpdateGruntStatus() {
+i32 CGrunt::UpdateAttackIdleAnimation() {
     if (m_poweredUp == false) {
         ResetEntranceAnimation(1, 0, 0);
         return 0;
@@ -337,7 +337,7 @@ i32 CGrunt::StepAttackFire() {
     i32 poweredUpSnapshot = m_poweredUp;
     m_entranceActive = false;
     if (poweredUpSnapshot != 0) {
-        ResetGeometry();
+        StartAttackIdleAnimation();
         return 0;
     }
     ResetEntranceAnimation(1, 0, 0);
@@ -1120,7 +1120,7 @@ i32 CGrunt::FinishStruckAnimation() {
         ResetEntranceAnimation(1, 0, 0);
         return 0;
     }
-    ResetGeometry();
+    StartAttackIdleAnimation();
     return 0;
 }
 
@@ -1153,7 +1153,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
         StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
         return 0;
     }
-    ResetGeometry();
+    StartAttackIdleAnimation();
     return 0;
 }
 
@@ -1224,7 +1224,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
 }
 
 RVA(0x00065a60, 0x159)
-i32 CGrunt::LoadWandGruntItemConfig() {
+i32 CGrunt::UpdateToolUseAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     if (advanced > 0) {
         WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);

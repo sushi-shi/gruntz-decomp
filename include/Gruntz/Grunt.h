@@ -346,7 +346,7 @@ public:
     i32 StepDumbChaserBehavior();
 
     i32 StepSmartChaserBehavior();
-    i32 UpdateGruntStatus();
+    i32 UpdateAttackIdleAnimation();
 
     i32 StepCompassMove();
 
@@ -366,7 +366,7 @@ public:
 
     i32 UpdateDeathAnimation();
     i32 UpdateDecayFade();
-    i32 LoadWandGruntItemConfig();
+    i32 UpdateToolUseAnimation();
 
     i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex);
 
@@ -671,7 +671,7 @@ public:
     i32 CanShowStamina();
     Coord* EntranceTileOffset(Coord* out);
     void ComputeFacing(double dt);
-    i32 ResetGeometry();
+    i32 StartAttackIdleAnimation();
     i32 StepAttackAction();
 
     void FaceTowardPixel(i32 x, i32 y);

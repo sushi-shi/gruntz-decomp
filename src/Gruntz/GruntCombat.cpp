@@ -934,7 +934,7 @@ i32 CGrunt::HandleCombatContact(
         if (IsNotAnimationAct("H")) {
             if (IsNotAnimationAct(DATA_COMPGEN(0x0020d2e8, "F"))) {
                 if (IsNotAnimationAct("O")) {
-                    ResetGeometry();
+                    StartAttackIdleAnimation();
                 }
             }
         }
@@ -1521,11 +1521,11 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "B", &CGrunt::StepWarpExit);
     REGISTER_ACT(registry, "C", &CGrunt::UpdateDeathAnimation);
     REGISTER_ACT(registry, "D", &CGrunt::UpdateWalkAnimation);
-    REGISTER_ACT(registry, "E", &CGrunt::UpdateGruntStatus);
+    REGISTER_ACT(registry, "E", &CGrunt::UpdateAttackIdleAnimation);
     REGISTER_ACT(registry, "F", &CGrunt::StepAttackAction);
     REGISTER_ACT(registry, "G", &CGrunt::UpdateToyUseAnimation);
     REGISTER_ACT(registry, "H", &CGrunt::FinishStruckAnimation);
-    REGISTER_ACT(registry, "I", &CGrunt::LoadWandGruntItemConfig);
+    REGISTER_ACT(registry, "I", &CGrunt::UpdateToolUseAnimation);
     REGISTER_ACT(registry, "J", &CGrunt::RunEntranceMove);
     REGISTER_ACT(registry, "K", &CGrunt::LoadEntranceConfig);
     REGISTER_ACT(registry, "L", &CGrunt::UpdateVehicleUseAnimation);
