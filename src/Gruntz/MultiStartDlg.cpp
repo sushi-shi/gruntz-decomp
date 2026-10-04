@@ -1024,7 +1024,7 @@ void CMultiStartDlg::Watchdog() {
             }
             if (player->IsActive() != false && player->IsHumanControlled() != false) {
                 char latencyText[0x20];
-                wsprintfA(latencyText, "%d", player->m_latency.m_avg);
+                wsprintfA(latencyText, "%d", player->m_latency.m_averageRoundTripMs);
                 latencyValueControl->SetWindowTextA(latencyText);
                 latencyUnitControl->SetWindowTextA("ms");
             } else {
