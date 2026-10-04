@@ -70,8 +70,8 @@ i32 CSplashState::LoadGameAssetNamespaces(
 RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
     SoundCueRegistry* reg = m_world->SoundRegistry();
-    if (reg->m_soundStream != NULL) {
-        reg->m_soundStream->StopAllStreams();
+    if (reg->GetSoundStream() != NULL) {
+        reg->GetSoundStream()->StopAllStreams();
     }
     m_world->SoundRegistry()->ClearCues();
     CState::ReleaseResources();

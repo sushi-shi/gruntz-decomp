@@ -168,46 +168,52 @@ void CGameText::Reset() {
 
 RVA(0x00021bd0, 0x45)
 void CGameText::ClearMessages() {
-    POSITION pos = m_lines.GetHeadPosition();
-    while (pos) {
-        GameTextLine* item = static_cast<GameTextLine*>(m_lines.GetNext(pos));
-        if (item) {
-            delete item;
+    POSITION messagePosition = m_messages.GetHeadPosition();
+    while (messagePosition) {
+        GameTextMessage* message =
+            static_cast<GameTextMessage*>(m_messages.GetNext(messagePosition));
+        if (message) {
+            delete message;
         }
     }
-    m_lines.RemoveAll();
+    m_messages.RemoveAll();
     m_inputText.Empty();
     m_inputActive = false;
 }
 
-RVA_COMPGEN(0x00021c40, 0x8, ??1GameTextLine@@QAE@XZ)
+RVA_COMPGEN(0x00021c40, 0x8, ??1GameTextMessage@@QAE@XZ)
 
 RVA(0x00021c60, 0xde)
-i32 CGameText::AddMessage(const char* str, GZ_ENUM_PARAM(GameTextFlags, i32) flags, i32 colorTint) {
-    if (!str) {
+i32 CGameText::AddMessage(
+    const char* messageText,
+    GZ_ENUM_PARAM(GameTextFlags, i32) flags,
+    i32 colorTint
+) {
+    if (!messageText) {
         return 0;
     }
-    if (!*str) {
+    if (!*messageText) {
         return 0;
     }
     if (HAS(flags, GAME_TEXT_CLEAR_EXISTING)) {
-        POSITION pos = m_lines.GetHeadPosition();
-        while (pos) {
-            GameTextLine* item = static_cast<GameTextLine*>(m_lines.GetNext(pos));
-            if (item) {
-                delete item;
+        POSITION messagePosition = m_messages.GetHeadPosition();
+        while (messagePosition) {
+            GameTextMessage* message =
+                static_cast<GameTextMessage*>(m_messages.GetNext(messagePosition));
+            if (message) {
+                delete message;
             }
         }
-        m_lines.RemoveAll();
+        m_messages.RemoveAll();
     }
-    GameTextLine* item = new GameTextLine;
-    item->m_text = str;
-    item->m_flags = flags;
-    item->m_colorTint = colorTint;
+    GameTextMessage* message = new GameTextMessage;
+    message->m_text = messageText;
+    message->m_flags = flags;
+    message->m_colorTint = colorTint;
     if (HAS(flags, GAME_TEXT_PREPEND)) {
-        m_lines.AddHead(item);
+        m_messages.AddHead(message);
     } else {
-        m_lines.AddTail(item);
+        m_messages.AddTail(message);
     }
     return 1;
 }
@@ -217,37 +223,37 @@ void CGameText::AdvanceMessageTimer(i32 deltaMs) {
     if (m_inputActive) {
         m_inputElapsedMs += deltaMs;
     }
-    i32 count = m_lines.GetCount();
-    if (!count) {
+    i32 messageCount = m_messages.GetCount();
+    if (!messageCount) {
         m_messageElapsedMs = 0;
     }
     m_messageElapsedMs += deltaMs;
 
-    GameTextLine* item;
-    if (count > 3) {
+    GameTextMessage* expiredMessage;
+    if (messageCount > 3) {
         if (m_messageElapsedMs < m_crowdedMessageHoldMs) {
             return;
         }
-        item = static_cast<GameTextLine*>(m_lines.RemoveHead());
-        if (!item) {
+        expiredMessage = static_cast<GameTextMessage*>(m_messages.RemoveHead());
+        if (!expiredMessage) {
             return;
         }
     } else {
         if (m_messageElapsedMs < m_messageHoldMs) {
             return;
         }
-        if (!count) {
+        if (!messageCount) {
             return;
         }
-        item = static_cast<GameTextLine*>(m_lines.RemoveHead());
-        if (!item) {
+        expiredMessage = static_cast<GameTextMessage*>(m_messages.RemoveHead());
+        if (!expiredMessage) {
             return;
         }
     }
-    item->m_text.Empty();
+    expiredMessage->m_text.Empty();
     // Retail destroys and frees without a delete-expression null check.
-    item->~GameTextLine();
-    ::operator delete(item);
+    expiredMessage->~GameTextMessage();
+    ::operator delete(expiredMessage);
     m_messageElapsedMs = 0;
 }
 
@@ -395,59 +401,66 @@ typedef enum TextColorRef {
 } TextColorRef;
 
 RVA(0x00022360, 0x338)
-i32 CGameText::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
+i32 CGameText::DrawMessages(i32 maxMessages, HDC hdc, RECT* bounds, UINT format) {
     if (hdc == NULL) {
         return 0;
     }
-    if (count <= 0) {
+    if (maxMessages <= 0) {
         return 0;
     }
-    // The signed count guard is required; IsEmpty emits a zero-only test.
-    if (m_lines.GetCount() <= 0) {
+    // The signed maxMessages guard is required; IsEmpty emits a zero-only test.
+    if (m_messages.GetCount() <= 0) {
         return 0;
     }
-    while (m_lines.GetCount() > count) {
-        GameTextLine* dead = static_cast<GameTextLine*>(m_lines.RemoveHead());
-        if (dead != NULL) {
-            dead->m_text.Empty();
-            delete dead;
+    while (m_messages.GetCount() > maxMessages) {
+        GameTextMessage* expiredMessage = static_cast<GameTextMessage*>(m_messages.RemoveHead());
+        if (expiredMessage != NULL) {
+            expiredMessage->m_text.Empty();
+            delete expiredMessage;
         }
     }
-    i32 n = min(count, m_lines.GetCount());
-    if (n <= 0) {
+    i32 messageCount = min(maxMessages, m_messages.GetCount());
+    if (messageCount <= 0) {
         return 0;
     }
-    RECT calc;
-    RECT cur = *rect;
-    RECT work = *rect;
-    for (i32 i = 0; i < n; i++) {
+    RECT measuredBounds;
+    RECT messageBounds = *bounds;
+    RECT shadowBounds = *bounds;
+    for (i32 messageIndex = 0; messageIndex < messageCount; messageIndex++) {
         HGDIOBJ savedFont = NULL;
         if (m_arialFont) {
             savedFont = SelectObject(hdc, m_arialFont);
         }
-        GameTextLine* item = static_cast<GameTextLine*>(m_lines.GetAt(m_lines.FindIndex(i)));
-        if (item != NULL) {
-            if (HAS(item->m_flags, GAME_TEXT_SHADOW)) {
+        GameTextMessage* message =
+            static_cast<GameTextMessage*>(m_messages.GetAt(m_messages.FindIndex(messageIndex)));
+        if (message != NULL) {
+            if (HAS(message->m_flags, GAME_TEXT_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
-                work = cur;
-                OFFSET_RECT_X_EDGES(work, 1, 1);
-                OFFSET_RECT_Y_EDGES(work, 1, 1);
-                DrawTextA(hdc, item->m_text, strlen(item->m_text), &work, format);
+                shadowBounds = messageBounds;
+                OFFSET_RECT_X_EDGES(shadowBounds, 1, 1);
+                OFFSET_RECT_Y_EDGES(shadowBounds, 1, 1);
+                DrawTextA(hdc, message->m_text, strlen(message->m_text), &shadowBounds, format);
             }
-            if (HAS(item->m_flags, GAME_TEXT_COLORED)) {
+            if (HAS(message->m_flags, GAME_TEXT_COLORED)) {
                 COLORREF color;
-                color = TintColorRef(static_cast<ColorTint>(item->m_colorTint));
+                color = TintColorRef(static_cast<ColorTint>(message->m_colorTint));
                 SetTextColor(hdc, color);
             } else {
                 SetTextColor(hdc, TCLR_WHITE);
             }
-            calc = cur;
-            DrawTextA(hdc, item->m_text, strlen(item->m_text), &calc, format | DT_CALCRECT);
-            DrawTextA(hdc, item->m_text, strlen(item->m_text), &cur, format);
-            calc.top = calc.bottom;
-            calc.bottom = rect->bottom;
-            calc.right = rect->right;
-            cur = calc;
+            measuredBounds = messageBounds;
+            DrawTextA(
+                hdc,
+                message->m_text,
+                strlen(message->m_text),
+                &measuredBounds,
+                format | DT_CALCRECT
+            );
+            DrawTextA(hdc, message->m_text, strlen(message->m_text), &messageBounds, format);
+            measuredBounds.top = measuredBounds.bottom;
+            measuredBounds.bottom = bounds->bottom;
+            measuredBounds.right = bounds->right;
+            messageBounds = measuredBounds;
             SetTextColor(hdc, TCLR_WHITE);
             if (savedFont) {
                 SelectObject(hdc, savedFont);
@@ -483,64 +496,64 @@ i32 CGameText::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) 
 
 // @early-stop
 RVA(0x00022810, 0x22a)
-i32 CGameText::Draw3DText(
-    const CString* strSrc,
+i32 CGameText::DrawCenteredText(
+    const CString* sourceText,
     HDC hdc,
-    RECT* dst,
-    i32 fontFlag,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 shadow,
-    i32 dx,
-    i32 dy
+    RECT* bounds,
+    i32 useMessageFont,
+    i32 red,
+    i32 green,
+    i32 blue,
+    i32 drawShadow,
+    i32 shadowOffsetX,
+    i32 shadowOffsetY
 ) {
     if (hdc == NULL) {
         return 0;
     }
-    if (dst == NULL) {
+    if (bounds == NULL) {
         return 0;
     }
-    if (strSrc == NULL) {
+    if (sourceText == NULL) {
         return 0;
     }
-    HGDIOBJ selPrev = NULL;
-    RECT rc = *dst;
-    if (fontFlag == 0) {
+    HGDIOBJ previousFont = NULL;
+    RECT textBounds = *bounds;
+    if (useMessageFont == 0) {
         if (m_trainingFont) {
-            selPrev = SelectObject(hdc, m_trainingFont);
+            previousFont = SelectObject(hdc, m_trainingFont);
         }
     } else {
         if (m_messageFont) {
-            selPrev = SelectObject(hdc, m_messageFont);
+            previousFont = SelectObject(hdc, m_messageFont);
         }
     }
     SetBkMode(hdc, TRANSPARENT);
     SetBkColor(hdc, RGB(0, 0, 0));
-    CString text(*strSrc);
-    DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
-    i32 hoff = ((dst->right - dst->left) - (rc.right - rc.left)) / 2;
-    i32 voff = ((dst->bottom - dst->top) - (rc.bottom - rc.top)) / 2;
-    rc.right += hoff;
-    rc.left += hoff;
-    rc.bottom += voff;
-    rc.top += voff;
-    if (shadow) {
+    CString text(*sourceText);
+    DrawTextA(hdc, text, strlen(text), &textBounds, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
+    i32 centerOffsetX = ((bounds->right - bounds->left) - (textBounds.right - textBounds.left)) / 2;
+    i32 centerOffsetY = ((bounds->bottom - bounds->top) - (textBounds.bottom - textBounds.top)) / 2;
+    textBounds.right += centerOffsetX;
+    textBounds.left += centerOffsetX;
+    textBounds.bottom += centerOffsetY;
+    textBounds.top += centerOffsetY;
+    if (drawShadow) {
         SetTextColor(hdc, RGB(0, 0, 0));
-        rc.left += dx;
-        rc.top += dy;
-        rc.right += dx;
-        rc.bottom += dy;
-        DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
-        rc.right -= dx;
-        rc.left -= dx;
-        rc.bottom -= dy;
-        rc.top -= dy;
+        textBounds.left += shadowOffsetX;
+        textBounds.top += shadowOffsetY;
+        textBounds.right += shadowOffsetX;
+        textBounds.bottom += shadowOffsetY;
+        DrawTextA(hdc, text, strlen(text), &textBounds, DT_WORDBREAK | DT_CENTER);
+        textBounds.right -= shadowOffsetX;
+        textBounds.left -= shadowOffsetX;
+        textBounds.bottom -= shadowOffsetY;
+        textBounds.top -= shadowOffsetY;
     }
-    SetTextColor(hdc, RGB(r, g, b));
-    DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
-    if (selPrev) {
-        SelectObject(hdc, selPrev);
+    SetTextColor(hdc, RGB(red, green, blue));
+    DrawTextA(hdc, text, strlen(text), &textBounds, DT_WORDBREAK | DT_CENTER);
+    if (previousFont) {
+        SelectObject(hdc, previousFont);
     }
     return 1;
 }

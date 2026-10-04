@@ -1011,7 +1011,7 @@ rva	size	name	owner	class
 0x002515d8	0xc	?s_gruntDirSouthWest_2515d8@@3UGruntDirectionCell@@A	gruntspawnconfig	copy
 0x002bf29c	0x1	_?$S@?1??RenderFrameClipped@CImage@@QAEXPAVCRenderBuffer@@HHPAUtagRECT@@H@Z@4EA$S	cimage	copy
 0x002bf314	0x1	_?$S@?1??RenderFrame@CImage@@QAEXPAVCRenderBuffer@@HHH@Z@4EA$S	cimage	copy
-0x002bf388	0x1	_?$S@?1??TickKillCues@CDDrawChildGroup@@UAEXH@Z@4EA$S	wwdobjmgr	copy
+0x002bf388	0x1	_?$S@?1??UpdateObjects@CDDrawChildGroup@@UAEXH@Z@4EA$S	wwdobjmgr	copy
 0x002bf67c	0x1	_?$S@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4EA$S	butemgr	copy
 0x002bf680	0x1	_?$S@?1??GetRange@CButeMgr@@QAEAAVCARange@@PBD0@Z@4EA$S	butemgr	copy
 0x002bf684	0x1	_?$S@?1??GetVector@CButeMgr@@QAEAAVCAVector@@PBD0@Z@4EA$S	butemgr	copy

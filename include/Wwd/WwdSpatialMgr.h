@@ -59,8 +59,8 @@ struct CWwdSpatialMgr {
     i32 DeactivateOutside(i32 centerX, i32 centerY);
     i32 PruneCount();
     void ParkObject(CWwdGameObject* obj);
-    i32 FlushAll();
-    i32 FlushGrid(CWwdGrid* grid);
+    i32 ActivateAllObjects();
+    i32 ActivateObjectsFromGrid(CWwdGrid* grid);
     i32 ForEach(void(__cdecl* cb)(CGameObject*));
     i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*));
     CGameObject* GetFirstObject();

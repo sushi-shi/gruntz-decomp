@@ -118,7 +118,7 @@ public:
         return m_animRegistry;
     }
 
-    void FreeContext();
+    void ShutdownSound();
     i32 EnsureSoundInitialized();
     i32 SetDimensions(i32 x, i32 y, ColorDepth bpp);
 

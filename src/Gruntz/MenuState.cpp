@@ -162,8 +162,8 @@ void CMenuState::ReleaseResources() {
     if (m_world) {
 
         SoundCueRegistry* soundRegistry = m_world->SoundRegistry();
-        if (soundRegistry->m_soundStream) {
-            soundRegistry->m_soundStream->StopAllStreams();
+        if (soundRegistry->GetSoundStream()) {
+            soundRegistry->GetSoundStream()->StopAllStreams();
         }
         m_world->m_transientDrawList->Clear();
     }
@@ -214,7 +214,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         World()->GetDisplayBuffers()->CopyBackToOverlay();
     } else {
         World()->GetDisplayBuffers()->CopyFrontToOverlay();
-        CDDSurface* tgt = World()->GetDisplayBuffers()->m_overlayBuffer->GetSurface();
+        CDDSurface* tgt = World()->GetDisplayBuffers()->GetOverlayBuffer()->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),

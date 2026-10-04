@@ -291,7 +291,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 }
 
 RVA(0x00159a70, 0x200)
-void CDDrawChildGroup::TickKillCues(i32 advance) {
+void CDDrawChildGroup::UpdateObjects(i32 advanceClock) {
     RVA_DYNINIT(0x00159c80, 0xa, s_killQueue)
     DATA(0x002bf3a8)
     static CObArray s_killQueue;
@@ -301,7 +301,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     s_killQueue.RemoveAll();
     s_sortQueue.RemoveAll();
 
-    if (advance != 0) {
+    if (advanceClock != 0) {
         u32 now = timeGetTime();
         u32 delta = now - g_soundCueTimeMs;
         g_engineFrameDelta = delta;
@@ -1001,13 +1001,13 @@ i32 CDDrawChildGroup::SumWeighted() {
 }
 
 RVA(0x0015ab30, 0x38)
-void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
+void CDDrawChildGroup::UnregisterObjectAt(POSITION pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
     m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015ab70, 0x27)
-void CDDrawChildGroup::RemoveByPosition(POSITION pos, CGameObject* obj) {
+void CDDrawChildGroup::DeactivateObjectAt(POSITION pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
 }
 
@@ -1017,24 +1017,24 @@ void CDDrawChildGroup::RegisterObjectId(CWwdGameObject* obj) {
 }
 
 RVA(0x0015abc0, 0x5e)
-i32 CDDrawChildGroup::CountActive() {
-    i32 n = 0;
+i32 CDDrawChildGroup::CountSerializableObjects() {
+    i32 objectCount = 0;
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
     if (pos != NULL) {
         do {
             void* key = NULL;
-            CWwdGameObject* val = NULL;
-            MapGetNext(m_registeredGameObjectsById, pos, key, val);
-            if (val != NULL
+            CWwdGameObject* object = NULL;
+            MapGetNext(m_registeredGameObjectsById, pos, key, object);
+            if (object != NULL
                 && !HAS(
-                    static_cast<WwdGameObjectFlags>(val->m_flags),
-                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                    static_cast<WwdGameObjectFlags>(object->m_flags),
+                    WWD_GAME_OBJECT_FLAG_SKIP_SERIALIZATION
                 )) {
-                ++n;
+                ++objectCount;
             }
         } while (pos != NULL);
     }
-    return n;
+    return objectCount;
 }
 
 RVA(0x0015ac20, 0x81)
@@ -1055,7 +1055,7 @@ i32 CDDrawChildGroup::DispatchSerializationToObjects(
             if (val != NULL
                 && !HAS(
                     static_cast<WwdGameObjectFlags>(val->m_flags),
-                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                    WWD_GAME_OBJECT_FLAG_SKIP_SERIALIZATION
                 )) {
                 val->SerializeDispatch(ar, mode, typeId, val);
             }
@@ -1078,7 +1078,7 @@ i32 CDDrawChildGroup::WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId)
             if (val != NULL
                 && !HAS(
                     static_cast<WwdGameObjectFlags>(val->m_flags),
-                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                    WWD_GAME_OBJECT_FLAG_SKIP_SERIALIZATION
                 )) {
 
                 val->WriteSnapshot(ar, typeId);
@@ -1231,7 +1231,7 @@ i32 CDDrawChildGroup::SerializeObjects(CFileMemBase* ar, LogicTypeId typeId) {
         if (val != NULL
             && !HAS(
                 static_cast<WwdGameObjectFlags>(val->m_flags),
-                WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                WWD_GAME_OBJECT_FLAG_SKIP_SERIALIZATION
             )) {
             i32 objectId = val->GetObjectId();
             ar->Write(&objectId, sizeof(objectId));

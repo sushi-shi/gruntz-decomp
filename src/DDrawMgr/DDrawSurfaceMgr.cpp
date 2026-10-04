@@ -184,10 +184,10 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00155fc0, 0x2e)
-void CDDrawSurfaceMgr::FreeContext() {
+void CDDrawSurfaceMgr::ShutdownSound() {
     if (m_soundRegistry != NULL) {
 
-        SoundStream* inner = m_soundRegistry->m_soundStream;
+        SoundStream* inner = m_soundRegistry->GetSoundStream();
         if (inner != NULL) {
             inner->StopAllStreams();
         }
@@ -238,7 +238,7 @@ i32 CDDrawSurfaceMgr::SaveSnapshot(
     header.m_day = now.GetDay();
     header.m_year = now.GetYear();
     strcpy(header.m_name, snapshotName);
-    header.m_childCount = ChildGroup()->CountActive();
+    header.m_childCount = ChildGroup()->CountSerializableObjects();
     header.m_objIdCounter = g_wwdObjIdCounter;
     archive.Write(&header, sizeof(header));
 

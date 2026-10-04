@@ -911,7 +911,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         }
         case CMD_TOGGLE_SOUND: {
             if (m_world) {
-                SoundStream* soundStream = m_world->SoundRegistry()->m_soundStream;
+                SoundStream* soundStream = m_world->SoundRegistry()->GetSoundStream();
                 if (soundStream) {
                     soundStream->StopAllStreams();
                 }

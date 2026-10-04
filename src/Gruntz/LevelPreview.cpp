@@ -69,8 +69,8 @@ i32 CPreviewState::LoadPreviewAssets(CGruntzMgr* gameManager, i32 levelIndex, i3
 RVA(0x000de140, 0x33)
 void CPreviewState::ReleasePreviewAssets() {
     SoundCueRegistry* soundRegistry = m_world->SoundRegistry();
-    if (soundRegistry->m_soundStream != NULL) {
-        soundRegistry->m_soundStream->StopAllStreams();
+    if (soundRegistry->GetSoundStream() != NULL) {
+        soundRegistry->GetSoundStream()->StopAllStreams();
     }
     m_world->SoundRegistry()->RemoveWithPrefix("PREVIEW", "_");
     CState::ReleaseResources();

@@ -62,6 +62,9 @@ public:
     CRenderBuffer* GetBackBuffer() const {
         return m_backBuffer;
     }
+    CRenderBuffer* GetOverlayBuffer() const {
+        return m_overlayBuffer;
+    }
 
     CDDrawFrontSurface* m_frontSurface;
     CRenderBuffer* m_backBuffer;

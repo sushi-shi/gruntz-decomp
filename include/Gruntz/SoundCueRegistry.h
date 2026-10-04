@@ -32,6 +32,10 @@ public:
 
     virtual void Unload() OVERRIDE;
 
+    SoundStream* GetSoundStream() const {
+        return m_soundStream;
+    }
+
     b32 IsSilent() const {
         return m_silentMode;
     }

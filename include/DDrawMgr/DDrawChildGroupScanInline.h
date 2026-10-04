@@ -5,20 +5,20 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 RVA(0x00031250, 0x33)
-inline CGameObject* CDDrawChildGroup::Drain() {
-    if (m_scanCursor == NULL) {
+inline CGameObject* CDDrawChildGroup::NextSerialChild() {
+    if (m_serialScanCursor == NULL) {
         return NULL;
     }
-    CGameObject* data = NextChild(m_scanCursor);
-    if (data->GetClassId() == CLASSID_SERIALREF) {
-        return data;
+    CGameObject* object = NextChild(m_serialScanCursor);
+    if (object->GetClassId() == CLASSID_SERIALREF) {
+        return object;
     }
-    return Drain();
+    return NextSerialChild();
 }
 
 inline CGameObject* CDDrawChildGroup::FirstSerialChild() {
-    m_scanCursor = m_list.GetHeadPosition();
-    return Drain();
+    m_serialScanCursor = m_list.GetHeadPosition();
+    return NextSerialChild();
 }
 
 #endif // GRUNTZ_DDRAWCHILDGROUPSCANINLINE_H

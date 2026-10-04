@@ -417,7 +417,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
-        m_world->GetDisplayBuffers()->m_overlayBuffer->GetSurface()->Fill(0);
+        m_world->GetDisplayBuffers()->GetOverlayBuffer()->GetSurface()->Fill(0);
         CString s;
         s.LoadString(0x81a9);
         tagSIZE mode = m_mgr->GetModeSize();
@@ -649,7 +649,7 @@ i32 CMulti::AdvanceGameFrame() {
     } else {
         g_period500CountdownMs = t5 - g_frameDelta;
     }
-    m_world->ChildGroup()->TickKillCues(0);
+    m_world->ChildGroup()->UpdateObjects(0);
     m_world->ChildGroup()->CollideBroadcast();
     Mgr()->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
     m_statusBar->UpdateStatusBar(g_frameDelta);

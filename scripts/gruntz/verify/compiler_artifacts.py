@@ -52,7 +52,7 @@ DTOR_CALL_ALLOW = Counter({
     ("include/ZTools/ZDArray.h", "T"): 1,
     ("include/ZTools/PTree.h", "T"): 1,
     # Rule exception (docs/todos/rule-exceptions.tsv): CGameText::AdvanceMessageTimer.
-    ("src/Gruntz/FontConfig.cpp", "GameTextLine"): 1,
+    ("src/Gruntz/FontConfig.cpp", "GameTextMessage"): 1,
 })
 
 # Rule exceptions only; each entry has a row in docs/todos/rule-exceptions.tsv.

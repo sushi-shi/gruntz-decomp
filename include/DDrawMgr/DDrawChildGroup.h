@@ -29,7 +29,7 @@ public:
     inline CGameObject* FirstChild();
     CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_walkCursor = NULL;
-        m_scanCursor = NULL;
+        m_serialScanCursor = NULL;
     }
 
     virtual ~CDDrawChildGroup() OVERRIDE;
@@ -38,7 +38,7 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual void TickKillCues(i32 advance);
+    virtual void UpdateObjects(i32 advanceClock);
     virtual void RenderChildren(class CRenderBuffer* target);
 
     virtual void BltDirtyChildren(CRenderBuffer* dst, CRenderBuffer* src);
@@ -108,11 +108,11 @@ public:
 
     i32 LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused);
 
-    void RemoveAll(POSITION pos, CGameObject* obj);
-    void RemoveByPosition(POSITION pos, CGameObject* obj);
+    void UnregisterObjectAt(POSITION pos, CGameObject* obj);
+    void DeactivateObjectAt(POSITION pos, CGameObject* obj);
     void RegisterObjectId(CWwdGameObject* obj);
     void PruneList();
-    i32 CountActive();
+    i32 CountSerializableObjects();
 
     i32 DispatchSerializationToObjects(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId);
     i32 WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId);
@@ -160,7 +160,7 @@ public:
 
     POSITION m_walkCursor;
 
-    POSITION m_scanCursor;
+    POSITION m_serialScanCursor;
 
     void DrawObjectDebugGeometry();
     void DrawObjectCounts();
@@ -170,7 +170,7 @@ public:
     i32 RectsOverlap(RECT* a, RECT* b);
     i32 BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj);
 
-    inline CGameObject* Drain();
+    inline CGameObject* NextSerialChild();
     inline CGameObject* FirstSerialChild();
 };
 

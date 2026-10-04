@@ -371,9 +371,9 @@ CGrunt* CTriggerMgr::PickGruntAtScreenPoint(
     i32 playerSelector
 ) {
     CGameLevel* level = m_world->GetLevel();
-    RECT* planeView = level->m_mainPlane->GetPlaneViewRect();
-    i32 worldX = planeView->left - level->m_viewportRect.left + screenX;
-    i32 worldY = planeView->top - level->m_viewportRect.top + screenY;
+    CPoint worldPoint = level->ViewportToWorld(CPoint(screenX, screenY));
+    i32 worldX = worldPoint.x;
+    i32 worldY = worldPoint.y;
     return PickGruntAtWorldPoint(worldX, worldY, outPlayerIndex, outUnitIndex, playerSelector);
 }
 

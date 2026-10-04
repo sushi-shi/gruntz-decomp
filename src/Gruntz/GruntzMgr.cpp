@@ -1644,8 +1644,8 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
         }
         if (m_world) {
             SoundCueRegistry* sub = World()->SoundRegistry();
-            if (sub && sub->m_soundStream) {
-                sub->m_soundStream->StopAllStreams();
+            if (sub && sub->GetSoundStream()) {
+                sub->GetSoundStream()->StopAllStreams();
             }
         }
         if (m_midi->IsCurrentPlaying() && pauseMusic) {
@@ -2067,7 +2067,7 @@ void CGruntzMgr::StopAudioPlayback() {
     if (m_world) {
         SoundCueRegistry* soundRegistry = World()->SoundRegistry();
         if (soundRegistry) {
-            SoundStream* soundStream = soundRegistry->m_soundStream;
+            SoundStream* soundStream = soundRegistry->GetSoundStream();
             if (soundStream) {
                 soundStream->StopAllStreams();
             }
@@ -3218,7 +3218,7 @@ void CGruntzMgr::SetSoundEnabled(b32 enabled) {
     if (m_world == NULL) {
         return;
     }
-    SoundStream* soundStream = World()->SoundRegistry()->m_soundStream;
+    SoundStream* soundStream = World()->SoundRegistry()->GetSoundStream();
     if (soundStream) {
         soundStream->StopAllStreams();
     }

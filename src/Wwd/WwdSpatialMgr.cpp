@@ -125,7 +125,7 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
                     record->SetLogicEvent(ACT_OBJECT_REMOVED);
                     record->Dispatch(obj);
                 }
-                m_activeGroup->RemoveAll(cur, obj);
+                m_activeGroup->UnregisterObjectAt(cur, obj);
                 if (obj != NULL) {
                     delete obj;
                 }
@@ -222,24 +222,25 @@ void CWwdSpatialMgr::ParkObject(CWwdGameObject* obj) {
 }
 
 RVA(0x00168960, 0x2e)
-i32 CWwdSpatialMgr::FlushAll() {
-    i32 n = FlushGrid(m_defaultRegionGrid);
-    n += FlushGrid(m_largeRegionGrid);
-    n += FlushGrid(m_smallRegionGrid);
-    return n;
+i32 CWwdSpatialMgr::ActivateAllObjects() {
+    i32 activatedCount = ActivateObjectsFromGrid(m_defaultRegionGrid);
+    activatedCount += ActivateObjectsFromGrid(m_largeRegionGrid);
+    activatedCount += ActivateObjectsFromGrid(m_smallRegionGrid);
+    return activatedCount;
 }
 
 RVA(0x00168990, 0x85)
-i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
-    i32 count = 0;
-    CWwdGridIter it;
-    for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
-        CGameObject* record = obj->m_object;
-        m_activeGroup->InsertSorted(record, 1);
-        grid->Remove(obj);
-        ++count;
+i32 CWwdSpatialMgr::ActivateObjectsFromGrid(CWwdGrid* grid) {
+    i32 activatedCount = 0;
+    CWwdGridIter regionIterator;
+    for (WwdRegion* region = regionIterator.Start(grid, 0); region != NULL;
+         region = regionIterator.GetNext()) {
+        CGameObject* object = region->m_object;
+        m_activeGroup->InsertSorted(object, 1);
+        grid->Remove(region);
+        ++activatedCount;
     }
-    return count;
+    return activatedCount;
 }
 
 // @dead-code

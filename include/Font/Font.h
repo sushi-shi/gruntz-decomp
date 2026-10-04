@@ -35,7 +35,7 @@ class FontRenderer {
 public:
     FontRenderer();
     ~FontRenderer();
-    void SetFont(Font* f);
+    void SetFont(Font* font);
     void SetColor(i32 color);
 
     CSize MeasureText(CString text);
@@ -53,7 +53,7 @@ public:
         i32 blendGlyphs
     );
 
-    CSize MeasureWrapped(CString text, CRect rc);
+    CSize MeasureWrapped(CString remainingText, CRect bounds);
 
     void DrawWrapped(
         CString remainingText,
@@ -64,7 +64,7 @@ public:
         i32 lineSpacing
     );
 
-    CSize LayoutWrapped(CString text, CRect rc, i32* outLen);
+    CSize LayoutWrapped(CString remainingText, CRect bounds, i32* outCharacterCount);
 
     Font* m_font;
     COLORREF m_color;

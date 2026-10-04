@@ -96,7 +96,7 @@ inline void CPlay::DrawVisibleWorld() {
     );
     m_world->m_transientDrawList->RenderAndPrune(
         m_world->GetDisplayBuffers()->GetBackBuffer(),
-        m_world->GetDisplayBuffers()->m_overlayBuffer
+        m_world->GetDisplayBuffers()->GetOverlayBuffer()
     );
 }
 

@@ -784,11 +784,11 @@ i32 CLevelPlane::ActivateKeepActiveObjects() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00163400, 0x12)
-i32 CLevelPlane::FlushAllObjects() {
+i32 CLevelPlane::ActivateAllObjects() {
     if (m_spatialMgr == NULL) {
         return 0;
     }
-    return m_spatialMgr->FlushAll();
+    return m_spatialMgr->ActivateAllObjects();
 }
 
 RVA(0x00163420, 0xf0)

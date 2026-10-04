@@ -82,8 +82,8 @@ i32 CAttract::LoadGameAssetNamespaces(
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
     SoundCueRegistry* reg = World()->SoundRegistry();
-    if (reg->m_soundStream) {
-        reg->m_soundStream->StopAllStreams();
+    if (reg->GetSoundStream()) {
+        reg->GetSoundStream()->StopAllStreams();
     }
     World()->SoundRegistry()->RemoveWithPrefix("ATTRACT", "_");
 
