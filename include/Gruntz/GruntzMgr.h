@@ -327,6 +327,10 @@ public:
         m_gameMode = mode;
     }
 
+    b32 IsCustomLevel() const {
+        return m_isCustomLevel;
+    }
+
     b32 IsBuiltInBattlezLevel() const {
         return m_isBuiltInBattlezLevel;
     }
