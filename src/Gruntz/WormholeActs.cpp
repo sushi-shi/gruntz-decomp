@@ -132,7 +132,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         mark->m_x = (cur->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                         mark->m_y = (cur->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                         CPtrArray& marks =
-                            static_cast<CPlay*>(g_gameReg->m_curState)->m_startMarkers;
+                            static_cast<CPlay*>(g_gameReg->GetCurrentState())->m_startMarkers;
                         marks.Add(mark);
                     }
                 }

@@ -36,7 +36,7 @@ i32 CBattlezAiController::StepDefenderUnit(CGrunt* defender) {
         {
             Coord searchTile;
             defender->GetScreenTile(&searchTile);
-            target = FindIdleGruntInBox(
+            target = FindNearestEnemyInBox(
                 searchTile.m_x,
                 searchTile.m_y,
                 m_defenderSearchRadiusX,
@@ -173,7 +173,7 @@ i32 CBattlezAiController::StepDefenderUnit(CGrunt* defender) {
     }
 
 checkIdleWander:
-    if (CanPlaySpecialAnim(defender)) {
+    if (CanIssueAiOrders(defender)) {
         if (defender->CoordsEmpty()
             && static_cast<u32>(defender->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
             && GetAttackWaypointCount() != 0) {

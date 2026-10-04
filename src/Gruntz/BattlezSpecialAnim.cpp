@@ -52,15 +52,15 @@
 #include <string.h>
 
 RVA(0x00034460, 0x3fc)
-i32 CBattlezAiController::CanPlaySpecialAnim(CGrunt* unit) {
+i32 CBattlezAiController::CanIssueAiOrders(CGrunt* unit) {
     if (unit == NULL) {
         return 0;
     }
-    CGameObject* lvl = unit->m_object;
-    if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(lvl, unit)) {
+    CGameObject* object = unit->m_object;
+    if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(object, unit)) {
         goto fail;
     }
-    if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(lvl, unit)) {
+    if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(object, unit)) {
         return 0;
     }
     if (unit->IsEntranceCommitted() == false) {
@@ -86,28 +86,28 @@ i32 CBattlezAiController::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    CString* recs;
-    CString* sel;
-    i32 ci;
+    CString* actName;
+    CString* finalActName;
+    i32 actCode;
 
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    if (*recs == "P") {
+    actName = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    if (*actName == "P") {
         return 0;
     }
 
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    if (*recs == "J") {
+    actName = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    if (*actName == "J") {
         return 0;
     }
 
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    if (*recs == "C") {
+    actName = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    if (*actName == "C") {
         goto fail;
     }
 
-    ci = unit->m_logicRecord->EventCode();
-    sel = &g_typeColl[ci];
-    return *sel != "R";
+    actCode = unit->m_logicRecord->EventCode();
+    finalActName = &g_typeColl[actCode];
+    return *finalActName != "R";
 fail:
     return 0;
 }

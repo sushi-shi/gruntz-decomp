@@ -11,19 +11,19 @@
 
 struct PlayerLatency {
     PlayerLatency() {
-        m_avg = 0;
-        m_count = 0;
+        m_averageRoundTripMs = 0;
+        m_sampleCount = 0;
     }
     RVA(0x000832e0, 0x1)
     ~PlayerLatency() {}
 
     void Clear() {
-        m_avg = 0;
-        m_count = 0;
+        m_averageRoundTripMs = 0;
+        m_sampleCount = 0;
     }
 
-    i32 m_avg;
-    i32 m_count;
+    i32 m_averageRoundTripMs;
+    i32 m_sampleCount;
 };
 
 class GruntzPlayer {

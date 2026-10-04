@@ -64,7 +64,7 @@ CMultiStartDlg::CMultiStartDlg(CGruntzMgr* gameManager, CWnd* pParent)
     m_gameManager = gameManager;
     m_usesCustomMap = false;
     m_latencyOptions = NULL;
-    g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
+    g_multiState = static_cast<CMulti*>(g_gameReg->GetCurrentState());
 }
 
 RVA_COMPGEN(0x000c1810, 0x1e, ??_GCMultiStartDlg@@UAEPAXI@Z)
@@ -1024,7 +1024,7 @@ void CMultiStartDlg::Watchdog() {
             }
             if (player->IsActive() != false && player->IsHumanControlled() != false) {
                 char latencyText[0x20];
-                wsprintfA(latencyText, "%d", player->m_latency.m_avg);
+                wsprintfA(latencyText, "%d", player->m_latency.m_averageRoundTripMs);
                 latencyValueControl->SetWindowTextA(latencyText);
                 latencyUnitControl->SetWindowTextA("ms");
             } else {

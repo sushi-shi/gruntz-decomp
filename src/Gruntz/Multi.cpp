@@ -1769,10 +1769,11 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (player == NULL) {
                 return 1;
             }
-            i32 num = player->m_latency.m_avg * player->m_latency.m_count + delta;
-            i32 np1 = player->m_latency.m_count + 1;
-            player->m_latency.m_count = np1;
-            player->m_latency.m_avg = num / np1;
+            i32 num =
+                player->m_latency.m_averageRoundTripMs * player->m_latency.m_sampleCount + delta;
+            i32 np1 = player->m_latency.m_sampleCount + 1;
+            player->m_latency.m_sampleCount = np1;
+            player->m_latency.m_averageRoundTripMs = num / np1;
             break;
         }
 
@@ -3173,7 +3174,7 @@ u32 CMulti::GetMaxAckLatency() {
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
             if (mgr->GetPlayer(i).IsHumanControlled() && mgr->GetPlayer(i).IsActive()) {
-                max = max(mgr->GetPlayer(i).m_latency.m_avg, max);
+                max = max(mgr->GetPlayer(i).m_latency.m_averageRoundTripMs, max);
             }
         }
     }

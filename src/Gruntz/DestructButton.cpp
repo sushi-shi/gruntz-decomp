@@ -11,7 +11,7 @@
 
 RVA(0x0010bc30, 0x78)
 void CStatusBarMgr::StartDestructWarning(i32 countdownMs) {
-    CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* play = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     m_destructWarningState = DESTRUCT_WARNING_FORWARD;
     m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;
     m_destructWarningClock.Start(

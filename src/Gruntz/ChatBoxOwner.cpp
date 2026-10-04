@@ -66,8 +66,8 @@ void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
         return;
     }
 
-    if (g_gameReg->m_curState->GetStateId() == GAMESTATE_MULTI) {
-        CMulti* multi = static_cast<CMulti*>(g_gameReg->m_curState);
+    if (g_gameReg->GetCurrentState()->GetStateId() == GAMESTATE_MULTI) {
+        CMulti* multi = static_cast<CMulti*>(g_gameReg->GetCurrentState());
         char* input = const_cast<char*>(static_cast<const char*>(m_gameText->GetInputText()));
         multi->BroadcastChatLine(input, 1, 1, NULL);
     } else {

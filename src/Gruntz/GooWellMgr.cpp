@@ -73,7 +73,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
     }
     if (count <= 1) {
-        CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+        CPlay* play = static_cast<CPlay*>(g_gameReg->GetCurrentState());
         if (m_finishState == FINISH_STATE_DEFEAT && play->m_statusBar->m_levelOverlayActive == false
             && play->m_statusBar->m_quitConfirmationActive == false && m_localWarlord == NULL) {
             if (m_finishDelayTiming.Expired()) {
@@ -93,9 +93,9 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (m_finishDelayTiming.Expired()) {
             if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
 
-                (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = true;
+                (static_cast<CMulti*>(g_gameReg->GetCurrentState()))->m_roundComplete = true;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);
+            (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->OpenLevelOverlay(false);
             m_countdownActive = false;
             return 0;
         }
@@ -109,13 +109,13 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_localWarlord != NULL) {
             return 0;
         }
-        (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);
+        (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->OpenLevelOverlay(false);
         m_countdownActive = false;
         return 0;
     }
 
     {
-        CPlay* obj = static_cast<CPlay*>(g_gameReg->m_curState);
+        CPlay* obj = static_cast<CPlay*>(g_gameReg->GetCurrentState());
         if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {

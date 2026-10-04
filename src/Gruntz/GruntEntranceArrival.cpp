@@ -958,7 +958,7 @@ i32 CGrunt::UpdateExitAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (sub->IsComplete()) {
         if (m_deathType == GRUNT_DEATH_WARPOUT) {
-            CState* st = g_gameReg->m_curState;
+            CState* st = g_gameReg->GetCurrentState();
             i32 lvl = st->m_levelIndex + 0x64;
             CString s;
             s.Format("WORLDZ\\LEVEL%i", lvl);

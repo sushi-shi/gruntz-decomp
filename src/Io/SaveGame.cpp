@@ -115,7 +115,7 @@ i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     file.Close();
     Verify();
     if (screenshotPath != NULL) {
-        CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
+        CPlay* state = static_cast<CPlay*>(g_gameReg->GetCurrentState());
         g_gameReg->World()->GetDrawTarget()->TransEnter();
         state->DrawSaveMessage(messageId);
         if (!SaveGame(g_gameReg, screenshotPath)) {
@@ -169,7 +169,7 @@ i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* 
         return 0;
     }
     dst->m_type = SAVESLOT_PRESENT;
-    dst->m_levelId = (static_cast<CPlay*>(reg->m_curState))->m_levelIndex;
+    dst->m_levelId = (static_cast<CPlay*>(reg->GetCurrentState()))->m_levelIndex;
     dst->m_count = 0;
     dst->m_active = true;
     if (reg->CheatMgr()->HasUsedCheats() != false) {

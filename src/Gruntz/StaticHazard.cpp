@@ -72,7 +72,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_tileCol = m_object->m_screenX >> TILE_SHIFT_PX;
     m_tileRow = m_object->m_screenY >> TILE_SHIFT_PX;
     m_object->SetHealth(0);
-    switch (g_gameReg->m_curState->m_levelType) {
+    switch (g_gameReg->GetCurrentState()->m_levelType) {
         case AREA_TROUBLE_IN_THE_TROPICZ:
         case AREA_HIGH_ON_SWEETZ:
         case AREA_MINIATURE_MASTERZ:

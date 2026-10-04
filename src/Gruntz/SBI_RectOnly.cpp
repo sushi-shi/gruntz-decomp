@@ -222,7 +222,7 @@ i32 CStatusBarMgr::SetDockState(StatusBarDock state) {
     }
     old = m_position;
     m_position = state;
-    (static_cast<CPlay*>(g_gameReg->m_curState))->OnStatusBarDockChanged(state, old);
+    (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->OnStatusBarDockChanged(state, old);
     return 1;
 }
 
@@ -232,7 +232,7 @@ i32 CStatusBarMgr::DockStatusBarLeft() {
         ResetWidgets(true);
         SetRect(&m_barRect, 0, 0, 0xa0, SCREEN_H_PX);
         SetDockState(STATUSBAR_DOCK_LEFT);
-        (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
+        (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
             g_gameReg->ReportError(s_activateErrId, 0x448);
             return 0;
@@ -255,7 +255,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     tagSIZE screenSize = g_gameReg->m_modeSize;
     SetRect(&m_barRect, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
     SetDockState(STATUSBAR_DOCK_RIGHT);
-    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
+    (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
         g_gameReg->ReportError(s_activateErrId, 0x449);
         return 0;
@@ -270,7 +270,7 @@ i32 CStatusBarMgr::HideStatusBar() {
         ResetWidgets(true);
         SetRect(&m_barRect, -1, -1, -1, -1);
         SetDockState(STATUSBAR_HIDDEN);
-        (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
+        (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->ResetViewport();
     }
     return 1;
 }
@@ -2569,7 +2569,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
 
         CGrunt* entry = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
-            (static_cast<CPlay*>(g_gameReg->m_curState))
+            (static_cast<CPlay*>(g_gameReg->GetCurrentState()))
                 ->SetCameraPosition(entry->m_object->m_screenX, entry->m_object->m_screenY);
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->GetTriggerMgr();
@@ -3494,7 +3494,7 @@ i32 CStatusBarMgr::SerializeDispatch(
             }
             break;
         case SERIAL_POSTLOAD:
-            (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
+            (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->ResetViewport();
             if (m_position == STATUSBAR_DOCK_RIGHT) {
                 DockStatusBarLeft();
                 DockStatusBarRight();
@@ -4415,11 +4415,11 @@ void CStatusBarMgr::CycleMultiplayerPlayer(i32 reverse) {
 RVA(0x0010b5d0, 0xdd)
 i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
+    if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex].m_value;
         i32* slot = &m_resourceSlots[rowIndex].m_value;
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->SelectCursor(handle)) {
             HiCueTimed();
             m_selectedResourceRow = row;
             *slot = 0;
@@ -4433,11 +4433,11 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
 RVA(0x0010b6f0, 0xdd)
 i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
+    if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex + 4].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex + 4].m_value;
         i32* slot = &m_resourceSlots[rowIndex + 4].m_value;
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->SelectCursor(handle)) {
             HiCueTimed();
             m_selectedResourceRow = row;
             *slot = 0;
@@ -4451,11 +4451,11 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
 RVA(0x0010b810, 0xdd)
 i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
+    if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex + 8].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex + 8].m_value;
         i32* slot = &m_resourceSlots[rowIndex + 8].m_value;
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->SelectCursor(handle)) {
             HiCueTimed();
             m_selectedResourceRow = row;
             *slot = 0;
@@ -4468,7 +4468,7 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
 
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::SelectGruntOvenForPlacement(i32 idx) {
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false) {
+    if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false) {
         if (idx == -1) {
             for (i32 slot = 0; slot < 5; slot++) {
                 if (m_gruntOvenSlots[slot].m_state == GRUNT_OVEN_READY) {

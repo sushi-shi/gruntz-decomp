@@ -39,11 +39,11 @@ public:
     i32 Serialize(CFileMemBase*);
     i32 Deserialize(CFileMemBase*);
     i32 ClaimCellFromRow(i32, i32, i32, i32);
-    i32 TrySeedSpawnAt(i32, i32);
-    i32 RepathToFreeCell(CGrunt*);
-    i32 ProbeUnoccupiedAt(i32, i32);
+    i32 TryResurrectGruntAt(i32 tileX, i32 tileY);
+    i32 RouteToNearestGooPuddle(CGrunt* unit);
+    i32 HasAvailableGooPuddleAt(i32 tileX, i32 tileY);
     i32 ForcePlaceFromReserve(CGrunt*);
-    Coord* PickSpawnCoord(Coord*, CGrunt*, i32);
+    Coord* PickAttackWaypoint(Coord* out, CGrunt* unit, i32 targetPlayerIndex);
 
     i32 RouteUnitTo(
         CGrunt* unit,
@@ -56,7 +56,7 @@ public:
 
     i32 RouteUnitToGoal(CGrunt* unit, Coord goal, i32 blockedMask, i32 passableMask);
     i32 TrySpawnGrunt(b32 allowReserved);
-    i32 CanPlaySpecialAnim(CGrunt*);
+    i32 CanIssueAiOrders(CGrunt*);
     i32 Update();
     i32 ChooseIdleBehavior(CGrunt*);
 
@@ -81,8 +81,8 @@ public:
     i32 RetargetIdleUnit(CGrunt*);
     i32 UpdateUnits();
     i32 RepathAroundBlockedTiles(CGrunt*);
-    CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
-    CGrunt* FindNearbyIdleGrunt(CGrunt* unit);
+    CGrunt* FindNearestEnemyInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
+    CGrunt* FindNearbyEnemy(CGrunt* unit);
     i32 HandleUnitContact(CGrunt* actor, CGrunt* other);
     i32 RouteToNearbyPickup(CGrunt*);
 
@@ -92,7 +92,7 @@ public:
     i32 AdvanceToEnemyBase(CGrunt*);
 
     i32 ResolveArrival(CGrunt* g);
-    i32 Step(CGrunt* g);
+    i32 PursueNearbyEnemy(CGrunt* unit);
     i32 StepDefenderUnit(CGrunt* grunt);
 
     i32 ScanRegion(CGrunt* g);
@@ -149,7 +149,7 @@ public:
     i32 m_idleRerouteDelay;
     i32 m_moveBudget;
     i32 m_assignedTargetMaxDistance;
-    i32 m_repathBudget;
+    i32 m_gooPuddleSearchDelay;
     i32 m_inactiveTargetRerouteDelay;
     i32 m_nearbyRouteSearchDelay;
     Coord m_baseTile;

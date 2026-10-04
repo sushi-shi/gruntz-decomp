@@ -678,6 +678,14 @@ public:
     CString m_frameSetName;
     CString m_deathFrameSetName;
     i32 m_arrivalAction;
+
+    i32 GetArrivalAction() const {
+        return m_arrivalAction;
+    }
+
+    void ClearArrivalAction() {
+        m_arrivalAction = ARRIVAL_ACTION_NONE;
+    }
     b32 m_pendingTrigger;
     Coord m_pendingTriggerPx;
     b32 m_lowStaminaCued;

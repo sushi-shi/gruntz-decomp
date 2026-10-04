@@ -456,7 +456,7 @@ i32 CTriggerMgr::SelectUnit(i32 playerIndex, i32 unitIndex, i32 extendSelection,
 RVA(0x0006c130, 0xe38)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
-    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* state = static_cast<CPlay*>(g_gameReg->GetCurrentState());
 
     if (g != NULL) {
         g->m_neighborScanEnabled = true;
@@ -839,35 +839,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 // @early-stop
 RVA(0x0006d300, 0x5db)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
-    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* state = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     CGameLevel* view = m_world->GetLevel();
-    i32 x = sx;
-    i32 y = sy;
-    if (x < 0) {
-        x = 0;
-    } else {
-        i32 w = view->m_mainPlane->GetPlanePixelWidth();
-        if (x >= w) {
-            x = w - 1;
-        }
-    }
-    if (y < 0) {
-        y = 0;
-    } else {
-        i32 h = view->m_mainPlane->GetPlanePixelHeight();
-        if (y >= h) {
-            y = h - 1;
-        }
-    }
-    CDDrawWorkerHost* scroll = view->m_mainPlane;
-    i32 sh = scroll->m_shiftX;
-    i32 sw = scroll->m_shiftY;
-    i32 tx = x >> sh;
-    i32 ty = y >> sw;
-    i32 subX = x - (tx << sh);
-    i32 subY = y - (ty << sw);
-    i32 attr = scroll->m_tileHandles[scroll->m_tileRowOffsets[ty] + tx];
-    TileCollisionKind kind = view->CollisionAtHandle(attr, subX, subY);
+    TileCollisionKind kind;
+    PROBE_TILE(view, sx, sy, kind);
     switch (kind) {
         case TILEKIND_TIME_SWITCH_UP: {
             CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
@@ -1235,7 +1210,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         goto bad;
     }
 
-    cell->m_arrivalAction = 0;
+    cell->ClearArrivalAction();
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
     hit = PickGruntAtWorldPoint(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
@@ -1345,7 +1320,7 @@ void CTriggerMgr::CheckWarpStoneExit(i32 x, i32 y, HitSpanArg span) {
         return;
     }
     if (grunt->IsNotAnimationAct("B") && grunt->GetEquippedToolType() == PICKUP_WARPSTONE) {
-        CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+        CPlay* play = static_cast<CPlay*>(g_gameReg->GetCurrentState());
         g_gameReg->m_gameStats->m_elapsedTimeMs += play->m_levelTimer->m_stamp.Elapsed();
         play->m_levelTimer->Stop();
         play->CancelDefeatCountdown();

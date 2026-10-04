@@ -109,15 +109,17 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_COMMAND:
             switch (wParam) {
                 case IDCANCEL:
-                    if (g_gameReg->m_curState->GetStateId() == GAMESTATE_MULTI) {
-                        (static_cast<CMulti*>(g_gameReg->m_curState))->AnnounceOptionsClosed();
+                    if (g_gameReg->GetCurrentState()->GetStateId() == GAMESTATE_MULTI) {
+                        (static_cast<CMulti*>(g_gameReg->GetCurrentState()))
+                            ->AnnounceOptionsClosed();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return true;
                 case IDOK: {
-                    if (g_gameReg->m_curState->GetStateId() == GAMESTATE_MULTI) {
-                        (static_cast<CMulti*>(g_gameReg->m_curState))->AnnounceOptionsClosed();
+                    if (g_gameReg->GetCurrentState()->GetStateId() == GAMESTATE_MULTI) {
+                        (static_cast<CMulti*>(g_gameReg->GetCurrentState()))
+                            ->AnnounceOptionsClosed();
                     }
                     ReadMenuOptionsDialog(hDlg);
                     EndDialog(hDlg, 1);
@@ -180,9 +182,9 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             g_optHwndSoundVolume = GetDlgItem(hDlg, 0x470);
             g_optHwndVoiceVolume = GetDlgItem(hDlg, 0x476);
 
-            if (g_gameReg->m_curState->GetStateId() != GAMESTATE_PLAY) {
-                if (g_gameReg->m_curState->GetStateId() == GAMESTATE_MULTI) {
-                    (static_cast<CMulti*>(g_gameReg->m_curState))->AnnounceOptionsOpened();
+            if (g_gameReg->GetCurrentState()->GetStateId() != GAMESTATE_PLAY) {
+                if (g_gameReg->GetCurrentState()->GetStateId() == GAMESTATE_MULTI) {
+                    (static_cast<CMulti*>(g_gameReg->GetCurrentState()))->AnnounceOptionsOpened();
                 } else {
                     EnableWindow(g_optHwndEasy, g_cdPromptResult == false);
                 }

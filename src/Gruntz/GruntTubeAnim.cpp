@@ -30,7 +30,7 @@ i32 CGrunt::SetToobWaterMode(b32 isWater) {
     } else {
         m_animSetName = "TOOBGRUNT";
     }
-    g_gameReg->m_curState->SetAssetGroupLoaded(m_animSetName, 1, 1, NULL);
+    g_gameReg->GetCurrentState()->SetAssetGroupLoaded(m_animSetName, 1, 1, NULL);
     ReadConfigFromButeMgr();
     BuildImageSetNames(0, 0);
     LoadAnimationSet(0, 0);

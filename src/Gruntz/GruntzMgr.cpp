@@ -929,10 +929,10 @@ i32 RestoreGameGraphics() {
     if (world->GetImageRegistry() == NULL) {
         return 0;
     }
-    if (g_gameReg->m_curState == NULL) {
+    if (g_gameReg->GetCurrentState() == NULL) {
         return 0;
     }
-    if (g_gameReg->m_curState->RestoreGraphics() == 0) {
+    if (g_gameReg->GetCurrentState()->RestoreGraphics() == 0) {
         g_gameReg->ReportError(IDX(IDS_RESTORE_GAME), 0x435);
         return 0;
     }
@@ -1528,13 +1528,13 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
                 g_warpX = valX;
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
-                    sprintf(szValue, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
+                    sprintf(szValue, "Level %i Warp X", g_gameReg->GetCurrentState()->m_levelIndex);
                     g_gameReg->m_settings->Set(szValue, valX);
-                    sprintf(szValue, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
+                    sprintf(szValue, "Level %i Warp Y", g_gameReg->GetCurrentState()->m_levelIndex);
                     g_gameReg->m_settings->Set(szValue, valY);
                     g_gameReg->m_settings->Set(
                         "Last Warp Level",
-                        g_gameReg->m_curState->m_levelIndex
+                        g_gameReg->GetCurrentState()->m_levelIndex
                     );
                 }
                 EndDialog(hDlg, 1);
@@ -1571,7 +1571,7 @@ RVA(0x0008e7c0, 0x86)
 BOOL CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, false);
+            SetDlgItemInt(hDlg, 0x40c, g_gameReg->GetCurrentState()->m_levelIndex, false);
             return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
@@ -1601,7 +1601,7 @@ RVA(0x0008e8c0, 0x86)
 BOOL CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, false);
+            SetDlgItemInt(hDlg, 0x40c, g_gameReg->GetCurrentState()->m_levelIndex, false);
             return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {

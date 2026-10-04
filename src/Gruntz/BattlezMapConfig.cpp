@@ -115,7 +115,7 @@ CBattlezAiController::CBattlezAiController() {
     m_repickLastFire = 0;
     m_repickTimer = 0;
     m_spawnTimer = 0;
-    m_repathBudget = 0xbb8;
+    m_gooPuddleSearchDelay = 0xbb8;
     m_nearbyRouteSearchDelay = 0xbb8;
     m_reserved13c = 0;
     m_roundRobinTick = 0;
@@ -151,7 +151,7 @@ i32 CBattlezAiController::LoadConfig(
     m_playerIndex = playerIndex;
     m_triggerMgr = mgr->GetTriggerMgr();
     m_tileGrid = mgr->GetTileGrid();
-    m_play = static_cast<CPlay*>(mgr->m_curState);
+    m_play = static_cast<CPlay*>(mgr->GetCurrentState());
     m_tileTriggers = m_play->GetTileTriggers();
     m_active = true;
 
@@ -946,7 +946,7 @@ i32 CBattlezAiController::UpdateUnits() {
                     break;
                 }
                 case BZTASK_STEP: {
-                    Step(unit);
+                    PursueNearbyEnemy(unit);
                     break;
                 }
                 case BZTASK_ASSIGNED_TARGET: {
@@ -958,7 +958,7 @@ i32 CBattlezAiController::UpdateUnits() {
                     break;
                 }
                 case BZTASK_CARRY_GOOBER: {
-                    RepathToFreeCell(unit);
+                    RouteToNearestGooPuddle(unit);
                     break;
                 }
                 case BZTASK_CHECK_QUEUED_SPAWN: {
@@ -1575,7 +1575,7 @@ i32 CBattlezAiController::RepathAroundBlockedTiles(CGrunt* unit) {
 }
 
 RVA(0x0002ab80, 0x15e)
-CGrunt* CBattlezAiController::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
+CGrunt* CBattlezAiController::FindNearestEnemyInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
     SET_RECT_COMPONENTS(rect, cx - halfW, cy - halfH, cx + halfW, cy + halfH);
     CGrunt* best = NULL;
@@ -1775,7 +1775,7 @@ i32 CBattlezAiController::Serialize(CFileMemBase* ar) {
     ar->Write(&m_idleRerouteDelay, sizeof(m_idleRerouteDelay));
     ar->Write(&m_moveBudget, sizeof(m_moveBudget));
     ar->Write(&m_assignedTargetMaxDistance, sizeof(m_assignedTargetMaxDistance));
-    ar->Write(&m_repathBudget, sizeof(m_repathBudget));
+    ar->Write(&m_gooPuddleSearchDelay, sizeof(m_gooPuddleSearchDelay));
     ar->Write(&m_inactiveTargetRerouteDelay, sizeof(m_inactiveTargetRerouteDelay));
     ar->Write(&m_nearbyRouteSearchDelay, sizeof(m_nearbyRouteSearchDelay));
     ar->Write(&m_baseTile, sizeof(m_baseTile));
@@ -1864,7 +1864,7 @@ i32 CBattlezAiController::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_idleRerouteDelay, sizeof(m_idleRerouteDelay));
     ar->Read(&m_moveBudget, sizeof(m_moveBudget));
     ar->Read(&m_assignedTargetMaxDistance, sizeof(m_assignedTargetMaxDistance));
-    ar->Read(&m_repathBudget, sizeof(m_repathBudget));
+    ar->Read(&m_gooPuddleSearchDelay, sizeof(m_gooPuddleSearchDelay));
     ar->Read(&m_inactiveTargetRerouteDelay, sizeof(m_inactiveTargetRerouteDelay));
     ar->Read(&m_nearbyRouteSearchDelay, sizeof(m_nearbyRouteSearchDelay));
     ar->Read(&m_baseTile, sizeof(m_baseTile));
@@ -3329,7 +3329,7 @@ i32 CBattlezAiController::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32
 }
 
 RVA(0x00030990, 0x11b)
-i32 CBattlezAiController::TrySeedSpawnAt(i32 ax, i32 ay) {
+i32 CBattlezAiController::TryResurrectGruntAt(i32 tileX, i32 tileY) {
     i32 occupied = 0;
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (i32 unitsRemaining = TM_UNITS_PER_PLAYER; unitsRemaining != 0; unitsRemaining--) {
@@ -3341,10 +3341,10 @@ i32 CBattlezAiController::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (occupied >= m_game->GetPlayer(m_playerIndex).GetMaxGruntz()) {
         return 0;
     }
-    i32 cell = m_triggerMgr->SpawnGrunt(
+    i32 unitIndex = m_triggerMgr->SpawnGrunt(
         m_playerIndex,
-        (ax << TILE_SHIFT_PX) + TILE_HALF_PX,
-        (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
+        (tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
+        (tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         GRUNT_ENTRANCE_RESURRECT,
         IDX(m_game->GetPlayer(m_playerIndex).GetColor()),
@@ -3356,10 +3356,10 @@ i32 CBattlezAiController::TrySeedSpawnAt(i32 ax, i32 ay) {
         0,
         NULL
     );
-    if (cell == -1) {
+    if (unitIndex == -1) {
         return 0;
     }
-    CGrunt* unit = m_game->GetTriggerMgr()->UnitAt(m_playerIndex, cell);
+    CGrunt* unit = m_game->GetTriggerMgr()->UnitAt(m_playerIndex, unitIndex);
     if (unit == NULL) {
         return 0;
     }
@@ -3494,48 +3494,49 @@ i32 CBattlezAiController::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
 // @early-stop
 RVA(0x00030f20, 0x16d)
-Coord* CBattlezAiController::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
-    if (kind < 0 || kind >= 4) {
-        CGameObject* lvl = unit->m_object;
-        i32 sx = lvl->m_screenX >> TILE_SHIFT_PX;
-        i32 sy = lvl->m_screenY >> TILE_SHIFT_PX;
-        o->Set(sx, sy);
-        return o;
+Coord* CBattlezAiController::PickAttackWaypoint(Coord* out, CGrunt* unit, i32 targetPlayerIndex) {
+    if (targetPlayerIndex < 0 || targetPlayerIndex >= 4) {
+        CGameObject* object = unit->m_object;
+        i32 currentTileX = object->m_screenX >> TILE_SHIFT_PX;
+        i32 currentTileY = object->m_screenY >> TILE_SHIFT_PX;
+        out->Set(currentTileX, currentTileY);
+        return out;
     }
-    CGameObject* lvl = unit->m_object;
-    i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
-    i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
-    CPtrArray* coords = &m_game->GetPlayer(kind).GetBattlezAiController()->m_attackWaypoints;
-    i32 count = coords->GetSize();
-    if (count != 0) {
-        i32 r = rand() % count;
-        for (i32 k = 0; k < count; k++) {
-            CTriggerMgr* grid = m_triggerMgr;
-            i32 cell = m_playerIndex;
-            Coord cand = *static_cast<Coord*>(coords->GetAt(r));
-            b32 ok = true;
-            for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
-                CGrunt* u = grid->UnitAt(cell, j);
-                if (u != NULL && !u->CoordsEmpty()) {
-                    Coord node = *u->GetTailCoord();
-                    if (node == cand) {
-                        ok = false;
+    CGameObject* object = unit->m_object;
+    i32 tileX = object->m_screenX >> TILE_SHIFT_PX;
+    i32 tileY = object->m_screenY >> TILE_SHIFT_PX;
+    CPtrArray* attackWaypoints =
+        &m_game->GetPlayer(targetPlayerIndex).GetBattlezAiController()->m_attackWaypoints;
+    i32 waypointCount = attackWaypoints->GetSize();
+    if (waypointCount != 0) {
+        i32 waypointIndex = rand() % waypointCount;
+        for (i32 attempt = 0; attempt < waypointCount; attempt++) {
+            CTriggerMgr* triggerMgr = m_triggerMgr;
+            i32 playerIndex = m_playerIndex;
+            Coord waypoint = *static_cast<Coord*>(attackWaypoints->GetAt(waypointIndex));
+            b32 available = true;
+            for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
+                CGrunt* other = triggerMgr->UnitAt(playerIndex, unitIndex);
+                if (other != NULL && !other->CoordsEmpty()) {
+                    Coord otherGoal = *other->GetTailCoord();
+                    if (otherGoal == waypoint) {
+                        available = false;
                     }
                 }
             }
-            if (ok != false) {
-                *o = cand;
-                return o;
+            if (available != false) {
+                *out = waypoint;
+                return out;
             }
-            r = (r + 1) % count;
+            waypointIndex = (waypointIndex + 1) % waypointCount;
         }
-        r = rand() % count;
-        Coord* cand = static_cast<Coord*>(coords->GetAt(r));
-        rx = cand->m_x;
-        ry = cand->m_y;
+        waypointIndex = rand() % waypointCount;
+        Coord* waypoint = static_cast<Coord*>(attackWaypoints->GetAt(waypointIndex));
+        tileX = waypoint->m_x;
+        tileY = waypoint->m_y;
     }
-    o->Set(rx, ry);
-    return o;
+    out->Set(tileX, tileY);
+    return out;
 }
 
 template CString& zDArray<CString>::operator[](i32 i);
