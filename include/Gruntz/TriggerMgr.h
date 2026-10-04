@@ -269,7 +269,7 @@ public:
         i32 tileX,
         i32 tileY,
         PickupType toolType,
-        WwdAniDrawValue cue
+        AnimationEventCode cue
     );
 
     i32

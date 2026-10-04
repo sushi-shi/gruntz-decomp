@@ -203,7 +203,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
 
     CString key;
 
-    CAniElement* found;
+    CAnimationSequence* found;
 
     if (mode == GRUNT_ENTRANCE_WORMHOLE) {
         i32 onScreen = 0;
@@ -224,7 +224,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
 
         i32 r = GetRandom(0, 0x1e0);
         if (r > 0x140) {
-            found = MapFind<CAniElement>(
+            found = MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezOne
             );
@@ -233,7 +233,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
-            found = MapFind<CAniElement>(
+            found = MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezTwo
             );
@@ -242,7 +242,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else {
-            found = MapFind<CAniElement>(
+            found = MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezThree
             );
@@ -252,13 +252,13 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
-        found = MapFind<CAniElement>(
+        found = MapFind<CAnimationSequence>(
             m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
             s_gruntzEntrancezDrop
         );
         key = s_gruntzEntrancezDrop;
     } else {
-        found = MapFind<CAniElement>(
+        found = MapFind<CAnimationSequence>(
             m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
             s_gruntzEntrancezRessurect
         );
@@ -294,8 +294,8 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
         m_entranceCommitted = true;                                                                \
         i32 sortKey = m_object->m_screenY + 0x186a0;                                               \
         m_object->SetSortKey(sortKey);                                                             \
-        CAniElement* found = NULL;                                                                 \
-        CAniElement* cached = m_wwdObject->m_animationCursor.GetAnimation();                       \
+        CAnimationSequence* found = NULL;                                                          \
+        CAnimationSequence* cached = m_wwdObject->m_animationCursor.GetAnimation();                \
         MapLookup(                                                                                 \
             m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
             s_gruntzEntrancezDrop,                                                                 \
@@ -463,10 +463,14 @@ i32 CGrunt::SetWingzEnabled(b32 enable) {
         m_directionData[7].WalkName() = s_sItem;
         m_directionData[8].WalkName() = s_seItem;
 
-        m_poseWalk =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
-        CAniElement* pose =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
+        m_poseWalk = MapFind<CAnimationSequence>(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            s_wgItem
+        );
+        CAnimationSequence* pose = MapFind<CAnimationSequence>(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            s_wgItem
+        );
         AT(m_poseIdle, GRUNT_IDLE3) = NULL;
         AT(m_poseIdle, GRUNT_IDLE1) = pose;
         AT(m_poseIdle, GRUNT_IDLE2) = pose;
@@ -499,18 +503,30 @@ i32 CGrunt::SetWingzEnabled(b32 enable) {
         m_directionData[7].IdleName() = s_sIdle;
         m_directionData[8].IdleName() = s_seIdle;
 
-        m_poseWalk =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgWalk);
-        AT(m_poseIdle, GRUNT_IDLE1) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle1);
-        AT(m_poseIdle, GRUNT_IDLE2) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle2);
-        AT(m_poseIdle, GRUNT_IDLE3) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle3);
-        AT(m_poseIdle, GRUNT_IDLE4) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle4);
-        AT(m_poseIdle, GRUNT_IDLE5) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
+        m_poseWalk = MapFind<CAnimationSequence>(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            s_wgWalk
+        );
+        AT(m_poseIdle, GRUNT_IDLE1) = MapFind<CAnimationSequence>(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            s_wgIdle1
+        );
+        AT(m_poseIdle, GRUNT_IDLE2) = MapFind<CAnimationSequence>(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            s_wgIdle2
+        );
+        AT(m_poseIdle, GRUNT_IDLE3) = MapFind<CAnimationSequence>(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            s_wgIdle3
+        );
+        AT(m_poseIdle, GRUNT_IDLE4) = MapFind<CAnimationSequence>(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            s_wgIdle4
+        );
+        AT(m_poseIdle, GRUNT_IDLE5) = MapFind<CAnimationSequence>(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            s_wgIdle5
+        );
     }
 
     if (IsAnimationAct("D")) {
@@ -905,18 +921,18 @@ i32 CGrunt::StepAttackAction() {
 }
 
 RVA(0x0006b270, 0x1b)
-CObject* CAniElement::AtChecked(i32 i) const {
+CObject* CAnimationSequence::AtChecked(i32 i) const {
     return GetAt(i);
 }
 
 RVA(0x0006b2a0, 0x23)
-CAniElement* AnimationRegistry::FindAnimation(const char* key) {
-    CAniElement* animation = MapFind<CAniElement>(m_animations, key);
+CAnimationSequence* AnimationRegistry::FindAnimation(const char* key) {
+    CAnimationSequence* animation = MapFind<CAnimationSequence>(m_animations, key);
     return animation;
 }
 
 RVA(0x0006b2e0, 0x39)
-void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceImmediately) {
+void CWapX::ApplyAnimation(CAnimationSequence* animation, i32 advanceImmediately) {
     m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
     CAniAdvanceCursor* cursor = &m_wwdObject->m_animationCursor;
     cursor->SetAnimation(animation);

@@ -34,7 +34,7 @@ i32 CAniFrameRecord::Parse(SoundCueRegistry* soundRegistry, const i16* recordWor
     m_positionMode = static_cast<WwdAnimPositionMode>(*p++);
     m_frameParameter = *p++;
     m_duration = *p++;
-    m_drawValue = *p++;
+    m_eventCode = *p++;
     m_positionDeltaX = *p++;
     m_positionDeltaY = *p++;
     m_reserved28 = static_cast<u16>(*p++);

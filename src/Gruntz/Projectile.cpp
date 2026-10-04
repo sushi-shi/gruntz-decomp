@@ -185,34 +185,34 @@ i32 CProjectile::LoadProjectileSprites(
             return 0;
     }
 
-    m_frames[0] = MapFind<CAniElement>(
+    m_frames[0] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + DATA_COMPGEN(0x00213658, "1")
         );
     if (m_frames[0] == NULL) {
         return 0;
     }
-    m_frames[1] = MapFind<CAniElement>(
+    m_frames[1] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + "2"
     );
-    m_frames[2] = MapFind<CAniElement>(
+    m_frames[2] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + "3"
     );
-    m_frames[3] = MapFind<CAniElement>(
+    m_frames[3] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + "4"
     );
-    m_frames[4] = MapFind<CAniElement>(
+    m_frames[4] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + "5"
     );
-    m_frames[PF_IMPACT] = MapFind<CAniElement>(
+    m_frames[PF_IMPACT] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + "IMPACT"
     );
-    m_frames[PF_FALL] = MapFind<CAniElement>(
+    m_frames[PF_FALL] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         key + "FALL"
     );
@@ -436,7 +436,7 @@ void CProjectile::AdvanceMotion() {
             return;
         }
     }
-    CAniElement* sprite;
+    CAnimationSequence* sprite;
     if (tier != 0) {
         sprite = m_frames[PF_FALL];
         if (sprite != NULL) {
@@ -719,7 +719,7 @@ i32 CProjectile::SerializeDispatch(
             s->Write(&m_sourcePxX, sizeof(m_sourcePxX));
             s->Write(&m_sourcePxY, sizeof(m_sourcePxY));
 
-            CAniElement** fp = m_frames;
+            CAnimationSequence** fp = m_frames;
             for (i32 fi = 0; fi < 7; fi++) {
                 SERIAL_WRITE_ANIMATION(s, reg, buf, *fp);
                 fp++;

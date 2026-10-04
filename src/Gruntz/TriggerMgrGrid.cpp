@@ -1218,7 +1218,7 @@ outOfRange:
                 (unit)->ToolTargetTile().m_x,                                                      \
                 (unit)->ToolTargetTile().m_y,                                                      \
                 (unit)->m_activePickupType,                                                        \
-                WWDDRAW_NO_ANIMATION                                                               \
+                ANIM_EVENT_NO_ANIMATION                                                            \
             );                                                                                     \
         }                                                                                          \
     }

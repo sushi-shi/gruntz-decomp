@@ -24,13 +24,13 @@ void AnimationRegistry::Unload() {
 }
 
 RVA(0x00152660, 0xb2)
-void AnimationRegistry::RemoveAnimation(CAniElement* target) {
+void AnimationRegistry::RemoveAnimation(CAnimationSequence* target) {
     if (target == NULL) {
         return;
     }
     POSITION pos = m_animations.GetStartPosition();
     CString key;
-    CAniElement* animation = NULL;
+    CAnimationSequence* animation = NULL;
     while (pos != NULL) {
         MapGetNext(m_animations, pos, key, animation);
         if (target == animation) {
@@ -45,7 +45,7 @@ RVA(0x00152720, 0xa2)
 void AnimationRegistry::ClearAnimations() {
     POSITION pos = m_animations.GetStartPosition();
     CString key;
-    CAniElement* animation = NULL;
+    CAnimationSequence* animation = NULL;
     if (pos != NULL) {
         do {
             MapGetNext(m_animations, pos, key, animation);
@@ -63,7 +63,7 @@ i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separato
     match += separator;
     i32 prefixLength = match.GetLength();
     CString key;
-    CAniElement* animation = NULL;
+    CAnimationSequence* animation = NULL;
     POSITION pos = m_animations.GetStartPosition();
     i32 removedCount = 0;
     while (pos != NULL) {
@@ -80,12 +80,12 @@ i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separato
 }
 
 RVA(0x001528d0, 0xdd)
-CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm* source) {
-    CAniElement* animation = new CAniElement;
+CAnimationSequence* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm* source) {
+    CAnimationSequence* animation = new CAnimationSequence;
     if (animation == NULL) {
         return NULL;
     }
-    if (animation->Configure(OwnerMgr()->SoundRegistry(), source, 0) == 0) {
+    if (animation->LoadResource(OwnerMgr()->SoundRegistry(), source, 0) == 0) {
 
         delete animation;
         return NULL;
@@ -97,8 +97,8 @@ CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001529b0, 0xdd)
-CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const char* path) {
-    CAniElement* animation = new CAniElement;
+CAnimationSequence* AnimationRegistry::LoadAnimationFromFile(const char* key, const char* path) {
+    CAnimationSequence* animation = new CAnimationSequence;
     if (animation == NULL) {
         return NULL;
     }
@@ -114,7 +114,7 @@ CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const cha
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152a90, 0x17)
-CAniElement* AnimationRegistry::LoadNamedAnimation(CRezItm* source) {
+CAnimationSequence* AnimationRegistry::LoadNamedAnimation(CRezItm* source) {
     if (source == NULL) {
         return NULL;
     }
@@ -124,7 +124,7 @@ CAniElement* AnimationRegistry::LoadNamedAnimation(CRezItm* source) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152ab0, 0x16)
-void AnimationRegistry::AddAnimation(CAniElement* animation, const char* key) {
+void AnimationRegistry::AddAnimation(CAnimationSequence* animation, const char* key) {
     RegisterAnimation(animation, key);
 }
 
@@ -175,7 +175,7 @@ RVA(0x00152c50, 0xdc)
 i32 AnimationRegistry::HasWithPrefix(const char* prefix) {
     i32 prefixLength = strlen(prefix);
     CString key;
-    CAniElement* animation = NULL;
+    CAnimationSequence* animation = NULL;
     POSITION pos = m_animations.GetStartPosition();
     while (pos != NULL) {
         MapGetNext(m_animations, pos, key, animation);
@@ -187,12 +187,12 @@ i32 AnimationRegistry::HasWithPrefix(const char* prefix) {
 }
 
 RVA(0x00152d30, 0xd4)
-CString AnimationRegistry::FindAnimationKey(CAniElement* target) {
+CString AnimationRegistry::FindAnimationKey(CAnimationSequence* target) {
     CString key;
     if (target == NULL) {
         return key;
     }
-    CAniElement* animation = NULL;
+    CAnimationSequence* animation = NULL;
     POSITION pos = m_animations.GetStartPosition();
     while (pos != NULL) {
         MapGetNext(m_animations, pos, key, animation);
@@ -204,8 +204,8 @@ CString AnimationRegistry::FindAnimationKey(CAniElement* target) {
     return key;
 }
 
-RVA_COMPGEN(0x00152e10, 0x1e, ??_GCAniElement@@UAEPAXI@Z)
+RVA_COMPGEN(0x00152e10, 0x1e, ??_GCAnimationSequence@@UAEPAXI@Z)
 RVA(0x00152e30, 0x53)
-CAniElement::~CAniElement() {
+CAnimationSequence::~CAnimationSequence() {
     DeleteAll();
 }

@@ -189,6 +189,10 @@ public:
 
     i32 Rand();
     i32 RandRange(i32 lo, i32 hi);
+    MidiManager* GetMidiManager() const {
+        return m_midi;
+    }
+
     i32 GetVoiceVolume() const {
         return m_voiceVolume;
     }

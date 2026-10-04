@@ -1792,10 +1792,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_gruntSprites[i]->Hide();
         }
 
-        BuildPickupIconKey(
-            &key,
-            maxRunIndex(g_gameReg->GetGameStats()->GetToolPickupCounts(i), 22) + 1
-        );
+        BuildPickupIconKey(&key, IDX(g_gameReg->GetGameStats()->GetMostCollectedTool(i)));
         m_toolIcons[i] = CreateSimpleAnimationSprite(0);
         if (m_toolIcons[i] == NULL) {
             return 0;
@@ -1810,10 +1807,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             if (iconTint == NULL) {
                 return 0;
             }
-            BuildPickupIconKey(
-                &key,
-                maxRunIndex(g_gameReg->GetGameStats()->GetToyPickupCounts(i), 10) + 0x17
-            );
+            BuildPickupIconKey(&key, IDX(g_gameReg->GetGameStats()->GetMostCollectedToy(i)));
             m_toyIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_toyIcons[i] == NULL) {
                 return 0;
@@ -1825,7 +1819,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
             BuildPickupIconKey(
                 &key,
-                maxRunIndex(g_gameReg->GetGameStats()->GetTimedPowerupPickupCounts(i), 7) + 0x36
+                IDX(g_gameReg->GetGameStats()->GetMostCollectedTimedPowerup(i))
             );
             m_timedPowerupIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_timedPowerupIcons[i] == NULL) {
@@ -1836,10 +1830,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             (m_timedPowerupIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_timedPowerupIcons[i]->Hide();
 
-            BuildPickupIconKey(
-                &key,
-                maxRunIndex(g_gameReg->GetGameStats()->GetCursePickupCounts(i), 4) + 0x3d
-            );
+            BuildPickupIconKey(&key, IDX(g_gameReg->GetGameStats()->GetMostCollectedCurse(i)));
             m_curseIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_curseIcons[i] == NULL) {
                 return 0;

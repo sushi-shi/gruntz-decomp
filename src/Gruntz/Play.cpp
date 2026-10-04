@@ -912,7 +912,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     if (grid != NULL) {
         grid->StopAllStreams();
     }
-    self->m_mgr->m_midi->ClearSequences();
+    self->m_mgr->GetMidiManager()->ClearSequences();
     self->m_mgr->m_worldSounds->Teardown();
     self->m_mgr->VoiceMgr()->PauseAllVoices();
     self->m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
@@ -1475,7 +1475,7 @@ void CPlay::ClearLevelState() {
             reg->m_soundStream->StopAllStreams();
         }
     }
-    m_mgr->m_midi->ClearSequences();
+    m_mgr->GetMidiManager()->ClearSequences();
     m_mgr->m_worldSounds->Teardown();
     m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
     g_gameReg->GetTriggerMgr()->DestroyAllAnims();
@@ -1530,7 +1530,7 @@ void CPlay::ModeCleanup() {
         m_world->SoundRegistry()->ClearCues();
     }
     if (m_mgr) {
-        m_mgr->m_midi->ClearSequences();
+        m_mgr->GetMidiManager()->ClearSequences();
 
         m_mgr->m_worldSounds->Teardown();
     }
@@ -1822,7 +1822,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 idx = this->m_focusPlayerIndex;
         i32 pick;
         GruntzPlayer* area;
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)) {
+        if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON0)) {
             pick = idx - 1;
             if (pick < 0) {
                 pick = 3;
@@ -1874,7 +1874,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'Q') {
-        if ((g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) == 0) {
+        if ((g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) == 0) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
@@ -1893,7 +1893,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == 'C') {
         g_gameReg->GetTriggerMgr()->CenterOnGroup(
-            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
+            g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)
         );
         return 1;
     }
@@ -1911,7 +1911,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == VK_SPACE) {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
+        if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
             CDDrawWorkerHost* obj = this->m_world->GetLevel()->m_mainPlane;
             i32 bookmarkScrollX = obj->GetScrollPixelX();
             i32 bookmarkScrollY = obj->GetScrollPixelY();
@@ -1939,7 +1939,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (this->CameraBookmarkCount() == 0) {
             return 1;
         }
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)) {
+        if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON0)) {
             if (--this->m_cameraBookmarkIndex < 0) {
                 this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
             }
@@ -1974,12 +1974,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (vk == 'M' && (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5))) {
+    if (vk == 'M' && (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5))) {
         g_gameReg->SetMusicEnabled(g_gameReg->m_musicEnabled == false);
         return 1;
     }
 
-    if (vk == 'V' && (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5))) {
+    if (vk == 'V' && (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5))) {
         g_gameReg->m_isVoiceEnabled = (g_gameReg->m_isVoiceEnabled == false);
         return 1;
     }
@@ -2006,7 +2006,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'S') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
+        if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
             g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == false);
             return 1;
         }
@@ -2060,7 +2060,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         this->m_statusBar->CycleMultiplayerPlayer(
-            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)
+            g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON0)
         );
         return 1;
     }
@@ -2738,7 +2738,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
         if (m_selectionDragActive != false) {
             m_mgr->GetTriggerMgr()->SelectUnitsInRect(
                 m_selectionRect,
-                g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
+                g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)
             );
         }
         m_selectionDragActive = false;
@@ -3235,7 +3235,7 @@ i32 CPlay::CompleteLevel() {
         if (reg->m_soundStream) {
             reg->m_soundStream->StopAllStreams();
         }
-        m_mgr->m_midi->ClearSequences();
+        m_mgr->GetMidiManager()->ClearSequences();
         m_mgr->m_worldSounds->Teardown();
         m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
         PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -5408,17 +5408,17 @@ i32 CPlay::StartLevelPlay() {
         m_introMusicTimer.Start(INTRO_MUSIC_DURATION_MS);
         wsprintfA(sequenceName, "INTRO%d", GetMusicVariant());
         if (g_gameReg->m_musicEnabled != false) {
-            m_mgr->m_midi->PlaySequence(sequenceName, false);
+            m_mgr->GetMidiManager()->PlaySequence(sequenceName, false);
         }
         m_introMusicComplete = false;
     } else {
         wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());
-        m_mgr->m_midi->SelectSequence(sequenceName);
-        m_mgr->m_midi->SetCurrentLooping(true);
+        m_mgr->GetMidiManager()->SelectSequence(sequenceName);
+        m_mgr->GetMidiManager()->SetCurrentLooping(true);
         CGruntzMgr* gameManager = g_gameReg;
         if (gameManager->m_musicEnabled != false
             && gameManager->GetGameMode() == GAMEMODE_BATTLEZ) {
-            m_mgr->m_midi->PlaySequence(sequenceName, true);
+            m_mgr->GetMidiManager()->PlaySequence(sequenceName, true);
         }
         m_introMusicTimer.Clear();
         m_introMusicComplete = true;
@@ -6004,7 +6004,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
             char sequenceName[0x40];
             wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());
             if (g_gameReg->m_musicEnabled) {
-                m_mgr->m_midi->PlaySequence(sequenceName, true);
+                m_mgr->GetMidiManager()->PlaySequence(sequenceName, true);
             }
             m_introMusicComplete = true;
             break;
@@ -6314,11 +6314,11 @@ RVA(0x000d88f0, 0x44)
 void CPlay::PlayCurseMusic() {
     if (m_savedMusicSequence == NULL) {
         CGruntzMgr* gameManager = m_mgr;
-        m_savedMusicSequence = gameManager->m_midi->m_currentSequence;
-        gameManager->m_midi->PauseCurrent();
+        m_savedMusicSequence = gameManager->GetMidiManager()->m_currentSequence;
+        gameManager->GetMidiManager()->PauseCurrent();
     }
     if (g_gameReg->m_musicEnabled != false) {
-        m_mgr->m_midi->PlaySequence("CURSE", false);
+        m_mgr->GetMidiManager()->PlaySequence("CURSE", false);
     }
 }
 
@@ -6327,10 +6327,10 @@ void CPlay::RestoreMusicAfterCurses() {
     if (m_tinyViewportCurseActive == false && m_darknessCurseActive == false
         && m_monitorCurseActive == false && m_randomColorsCurseActive == false
         && m_savedMusicSequence != NULL) {
-        m_mgr->m_midi->EndCurrent();
-        m_mgr->m_midi->m_currentSequence = m_savedMusicSequence;
+        m_mgr->GetMidiManager()->EndCurrent();
+        m_mgr->GetMidiManager()->m_currentSequence = m_savedMusicSequence;
         if (g_gameReg->m_musicEnabled != false) {
-            m_mgr->m_midi->RestartCurrent(true);
+            m_mgr->GetMidiManager()->RestartCurrent(true);
         }
         m_savedMusicSequence = NULL;
     }
@@ -6965,7 +6965,7 @@ i32 CPlay::FinishSelectionDrag() {
     if (m_selectionDragActive != false) {
         m_mgr->GetTriggerMgr()->SelectUnitsInRect(
             m_selectionRect,
-            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
+            g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)
         );
     }
     m_selectionDragActive = false;

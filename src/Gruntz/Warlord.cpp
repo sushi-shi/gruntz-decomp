@@ -130,47 +130,47 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     g_gameReg->GetCurrentState()->SetAssetGroupLoaded(m_warlordName, 1, 0, NULL);
 
-    m_idleAnims[0] = MapFind<CAniElement>(
+    m_idleAnims[0] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE1"
     );
-    m_idleAnims[1] = MapFind<CAniElement>(
+    m_idleAnims[1] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE2"
     );
-    m_idleAnims[2] = MapFind<CAniElement>(
+    m_idleAnims[2] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE3"
     );
-    m_idleAnims[3] = MapFind<CAniElement>(
+    m_idleAnims[3] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE4"
     );
-    m_battlecryAnims[0] = MapFind<CAniElement>(
+    m_battlecryAnims[0] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry1Suffix
     );
-    m_battlecryAnims[1] = MapFind<CAniElement>(
+    m_battlecryAnims[1] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry2Suffix
     );
-    m_battlecryAnims[2] = MapFind<CAniElement>(
+    m_battlecryAnims[2] = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry3Suffix
     );
-    m_animJoy = MapFind<CAniElement>(
+    m_animJoy = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_joySuffix
     );
-    m_animDeath = MapFind<CAniElement>(
+    m_animDeath = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_DEATH"
     );
-    m_animMoving = MapFind<CAniElement>(
+    m_animMoving = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_movingSuffix
     );
-    m_animPanic = MapFind<CAniElement>(
+    m_animPanic = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_panicSuffix
     );
@@ -209,7 +209,7 @@ i32 CWarlord::SerializeDispatch(
             } else {
                 CMapStringToPtr* map =
                     &m_ownerLogicRecord->OwnerMgr()->m_animRegistry->m_animations;
-                CAniElement* previousAnimation = MapFind<CAniElement>(*map, hdr);
+                CAnimationSequence* previousAnimation = MapFind<CAnimationSequence>(*map, hdr);
                 m_previousAnimation = previousAnimation;
             }
             break;
@@ -551,7 +551,7 @@ i32 CWarlord::ResolveJoyAnimation() {
 
     PLAY_WARLORD_VOICE(0x435, 0x43f);
 
-    CAniElement* anim = m_animJoy;
+    CAnimationSequence* anim = m_animJoy;
     SwitchAnimation(anim);
 
     SetImageSetByName("GRUNTZ_" + m_warlordName + s_joySuffix);
@@ -570,7 +570,7 @@ i32 CWarlord::ResolveIdleAnimation() {
 
     PLAY_WARLORD_VOICE(idx + 0x431, idx + 0x43b);
 
-    CAniElement* anim = m_idleAnims[idx];
+    CAnimationSequence* anim = m_idleAnims[idx];
     SwitchAnimation(anim);
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
@@ -592,7 +592,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
 
     PLAY_WARLORD_VOICE(idx + 0x42e, idx + 0x438);
 
-    CAniElement* anim = m_battlecryAnims[idx];
+    CAnimationSequence* anim = m_battlecryAnims[idx];
     SwitchAnimation(anim);
 
     SetImageSetByName("GRUNTZ_" + m_warlordName + s_battleCrySuffix);

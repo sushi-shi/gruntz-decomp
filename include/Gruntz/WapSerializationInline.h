@@ -37,7 +37,7 @@ inline i32 CWapX::SerializeAnimationState(
             } else {
                 CMapStringToPtr* map =
                     &m_ownerLogicRecord->OwnerMgr()->m_animRegistry->m_animations;
-                CAniElement* previousAnimation = MapFind<CAniElement>(*map, name);
+                CAnimationSequence* previousAnimation = MapFind<CAnimationSequence>(*map, name);
                 m_previousAnimation = previousAnimation;
             }
             break;

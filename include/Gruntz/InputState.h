@@ -47,6 +47,10 @@ public:
         m_heldButtonsSnapshot = 0;
     }
 
+    u32 GetHeldButtons() const {
+        return m_heldButtons;
+    }
+
     u8 GetDirectionBits();
     i32 SetDirectionBits(i32 flags);
 

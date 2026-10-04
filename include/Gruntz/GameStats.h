@@ -5,6 +5,7 @@
 
 #include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerSlot.h>
 #include <Gruntz/QuestLevelStats.h>
 #include <Gruntz/SerialArchive.h>
@@ -53,6 +54,54 @@ public:
 
     const i32* GetCursePickupCounts(i32 playerIndex) const {
         return m_cursePickupsByPlayer[playerIndex];
+    }
+
+    PickupType GetMostCollectedTool(i32 playerIndex) const {
+        i32 best = -1;
+        i32 bestIndex = 0;
+        for (i32 i = 0; i < 22; i++) {
+            if (m_toolPickupsByPlayer[playerIndex][i] > best) {
+                best = m_toolPickupsByPlayer[playerIndex][i];
+                bestIndex = i;
+            }
+        }
+        return static_cast<PickupType>(bestIndex + IDX(PICKUP_EQUIPPABLE_FIRST));
+    }
+
+    PickupType GetMostCollectedToy(i32 playerIndex) const {
+        i32 best = -1;
+        i32 bestIndex = 0;
+        for (i32 i = 0; i < 10; i++) {
+            if (m_toyPickupsByPlayer[playerIndex][i] > best) {
+                best = m_toyPickupsByPlayer[playerIndex][i];
+                bestIndex = i;
+            }
+        }
+        return static_cast<PickupType>(bestIndex + IDX(PICKUP_TOYZ_FIRST));
+    }
+
+    PickupType GetMostCollectedTimedPowerup(i32 playerIndex) const {
+        i32 best = -1;
+        i32 bestIndex = 0;
+        for (i32 i = 0; i < 7; i++) {
+            if (m_timedPowerupPickupsByPlayer[playerIndex][i] > best) {
+                best = m_timedPowerupPickupsByPlayer[playerIndex][i];
+                bestIndex = i;
+            }
+        }
+        return static_cast<PickupType>(bestIndex + IDX(PICKUP_TIMEDPOWERUP_FIRST));
+    }
+
+    PickupType GetMostCollectedCurse(i32 playerIndex) const {
+        i32 best = -1;
+        i32 bestIndex = 0;
+        for (i32 i = 0; i < 4; i++) {
+            if (m_cursePickupsByPlayer[playerIndex][i] > best) {
+                best = m_cursePickupsByPlayer[playerIndex][i];
+                bestIndex = i;
+            }
+        }
+        return static_cast<PickupType>(bestIndex + IDX(PICKUP_CURSEZ_FIRST));
     }
 
     i32 CountAllFlagCaptures(i32 validatedPlayerIndex);

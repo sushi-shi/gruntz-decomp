@@ -6,14 +6,14 @@
 
 #include <stddef.h>
 
-inline CObject* CAniElement::GetAt(i32 i) const {
+inline CObject* CAnimationSequence::GetAt(i32 i) const {
     if (i >= 0 && i < m_records.GetSize()) {
         return m_records.GetAt(i);
     }
     return NULL;
 }
 
-inline CAniFrameRecord* CAniElement::RecordAt(i32 index) const {
+inline CAniFrameRecord* CAnimationSequence::RecordAt(i32 index) const {
     return static_cast<CAniFrameRecord*>(GetAt(index));
 }
 

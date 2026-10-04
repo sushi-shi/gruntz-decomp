@@ -85,13 +85,13 @@ void CLightFx::Activate(
     m_shadeTableIndex = shadeTableIndex;
     m_deleteWhenComplete = deleteWhenComplete;
 
-    CAniElement* node = MapFind<CAniElement>(
+    CAnimationSequence* node = MapFind<CAnimationSequence>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
         animationName
     );
     if (node != NULL) {
         SwitchAnimation(
-            MapFind<CAniElement>(
+            MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 animationName
             )

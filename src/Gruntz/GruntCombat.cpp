@@ -840,7 +840,7 @@ void CGrunt::PlaySelectionVoice(b32 isOwnedByLocalPlayer) {
 }
 
 RVA(0x00058b60, 0x2d)
-void CWwdSpriteObject::SetAnimation(CAniElement* animation, i32 advanceImmediately){
+void CWwdSpriteObject::SetAnimation(CAnimationSequence* animation, i32 advanceImmediately){
     SET_ANIMATION_AND_MAYBE_ADVANCE(this, animation, advanceImmediately)
 }
 

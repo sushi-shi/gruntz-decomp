@@ -91,12 +91,12 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     );
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
-    m_object->m_animationCursor.SetConsumeDraw(false);
+    m_object->m_animationCursor.SetConsumeAnimationEvents(false);
     m_object->SetSmarts(IDX(g_areaHazardDeath));
     m_activeWindow = 0;
     m_idleWindow = m_object->GetDamage();
     m_pulseEpoch = g_frameTime;
-    CAniElement* entry = MapFind<CAniElement>(
+    CAnimationSequence* entry = MapFind<CAnimationSequence>(
         g_gameReg->World()->GetAnimationRegistry()->m_animations,
         "LEVEL_STATICHAZARDGO"
     );
@@ -193,7 +193,7 @@ i32 CStaticHazard::UpdateActiveState() {
         return 0;
     }
 
-    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
+    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == ANIM_EVENT_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
         CGrunt* victim = g_gameReg->GetTriggerMgr()->FindGruntAtPoint(
             m_object->m_screenX,

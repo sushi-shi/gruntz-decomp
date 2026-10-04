@@ -206,7 +206,7 @@ RVA(0x00061cb0, 0x380)
 i32 CGrunt::StepAttackFire() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     i32 flag = 0;
-    if (advanced == WWDDRAW_EFFECT_FRAME) {
+    if (advanced == ANIM_EVENT_EFFECT_FRAME) {
 
         switch (m_activePickupType) {
             case GRUNT_GUNHAT:
@@ -469,7 +469,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         sel = (static_cast<u32>(toy1ExcessMs) < static_cast<u32>(toy2ExcessMs)) ? 0 : 1;
     }
 
-    CAniElement* want = m_poseToy[sel];
+    CAnimationSequence* want = m_poseToy[sel];
     if (m_wwdObject->m_animationCursor.GetAnimation() != want) {
         SwitchAnimation(want);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
@@ -931,7 +931,7 @@ i32 CGrunt::StartExitAnimation() {
 
     SET_ANIMATION_ACT("B");
 
-    CAniElement* found;
+    CAnimationSequence* found;
     i32 r = GetRandom(480);
     if (r > 0x140) {
         found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzOne);
@@ -1082,11 +1082,11 @@ tail:
     }
 
     m_attackWindupActive = false;
-    CAniElement* pose = m_poseStruck[struckPose];
+    CAnimationSequence* pose = m_poseStruck[struckPose];
     SwitchAnimation(pose);
     i32 frame;
     {
-        CAniElement* desc = m_wwdObject->m_animationCursor.GetAnimation();
+        CAnimationSequence* desc = m_wwdObject->m_animationCursor.GetAnimation();
         CAniFrameRecord* elem = desc->RecordAt(0);
         frame = elem->m_frameParameter;
     }
@@ -1235,8 +1235,8 @@ RVA(0x00065a60, 0x159)
 i32 CGrunt::UpdateToolUseAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     if (advanced > 0) {
-        WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
-        if (cue == WWDDRAW_TOOL_APPLIES) {
+        AnimationEventCode cue = static_cast<AnimationEventCode>(advanced);
+        if (cue == ANIM_EVENT_TOOL_APPLIES) {
             m_busy = true;
             u32 downtime =
                 g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "ItemDowntime");
@@ -1280,7 +1280,7 @@ RVA(0x00065c20, 0x1d5)
 i32 CGrunt::FinishToobMoveAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {
-        WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
+        AnimationEventCode cue = static_cast<AnimationEventCode>(advanced);
         m_triggerMgr->HandleToolAnimationCue(
             m_playerIndex,
             m_unitIndex,

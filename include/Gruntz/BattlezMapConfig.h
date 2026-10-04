@@ -43,7 +43,7 @@ public:
     i32 RouteToNearestGooPuddle(CGrunt* unit);
     i32 HasAvailableGooPuddleAt(i32 tileX, i32 tileY);
     i32 ForcePlaceFromReserve(CGrunt*);
-    Coord* PickAttackWaypoint(Coord* out, CGrunt* unit, i32 targetPlayerIndex);
+    Coord PickAttackWaypoint(CGrunt* unit, i32 targetPlayerIndex);
 
     i32 RouteUnitTo(
         CGrunt* unit,
@@ -157,6 +157,10 @@ public:
 
     CPtrArray m_spawnTiles;
     CPtrArray m_attackWaypoints;
+
+    CPtrArray* GetAttackWaypoints() {
+        return &m_attackWaypoints;
+    }
 
     i32 GetAttackWaypointCount() const {
         return m_attackWaypoints.GetSize();

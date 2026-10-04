@@ -43,7 +43,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
     i32 tileX,
     i32 tileY,
     PickupType toolType,
-    WwdAniDrawValue cue
+    AnimationEventCode cue
 ) {
     CGrunt* unit = UnitAt(playerIndex, unitIndex);
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -56,10 +56,10 @@ i32 CTriggerMgr::HandleToolAnimationCue(
 
     switch (toolType) {
         case PICKUP_SHOVEL:
-            if (cue == WWDDRAW_NO_ANIMATION) {
+            if (cue == ANIM_EVENT_NO_ANIMATION) {
                 return 1;
             }
-            if (cue == WWDDRAW_EFFECT_FRAME) {
+            if (cue == ANIM_EVENT_EFFECT_FRAME) {
                 POINT pt;
                 SET_POINT_COMPONENTS(pt, px, py);
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
@@ -67,7 +67,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                 }
                 return 1;
             }
-            if (cue != WWDDRAW_TOOL_APPLIES) {
+            if (cue != ANIM_EVENT_TOOL_APPLIES) {
                 return 1;
             }
 
@@ -99,10 +99,10 @@ i32 CTriggerMgr::HandleToolAnimationCue(
             return 0;
 
         case PICKUP_GAUNTLETZ:
-            if (cue == WWDDRAW_NO_ANIMATION) {
+            if (cue == ANIM_EVENT_NO_ANIMATION) {
                 return 1;
             }
-            if (cue == WWDDRAW_EFFECT_FRAME) {
+            if (cue == ANIM_EVENT_EFFECT_FRAME) {
                 POINT pt;
                 SET_POINT_COMPONENTS(pt, px, py);
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
@@ -122,7 +122,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                 }
                 return 1;
             }
-            if (cue != WWDDRAW_TOOL_APPLIES) {
+            if (cue != ANIM_EVENT_TOOL_APPLIES) {
                 return 1;
             }
 
@@ -188,7 +188,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
             return 1;
 
         case PICKUP_GOOBER:
-            if (cue == WWDDRAW_TOOL_APPLIES || cue == WWDDRAW_NO_ANIMATION) {
+            if (cue == ANIM_EVENT_TOOL_APPLIES || cue == ANIM_EVENT_NO_ANIMATION) {
                 i32 gaugePoints = 25;
                 i32 removed = 0;
                 POSITION pos = GetPuddleHeadPosition();
@@ -196,7 +196,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                     POSITION current = pos;
                     CGruntPuddle* puddle = GetNextPuddle(pos);
                     if (puddle->GetTileX() == tileX && puddle->GetTileY() == tileY) {
-                        if (cue == WWDDRAW_NO_ANIMATION) {
+                        if (cue == ANIM_EVENT_NO_ANIMATION) {
                             puddle->m_wwdObject->Show();
                             puddle->SetBute("B");
                             puddle->m_placed = true;
@@ -218,7 +218,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
             return 1;
 
         case PICKUP_SPY:
-            if (cue == WWDDRAW_TOOL_APPLIES) {
+            if (cue == ANIM_EVENT_TOOL_APPLIES) {
                 for (i32 radius = 1; radius <= 2; radius++) {
                     i32 topY = tileY - radius;
                     i32 bottomY = tileY + radius;
@@ -495,7 +495,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
             return 1;
 
         case PICKUP_BRICK:
-            if (cue != WWDDRAW_TOOL_APPLIES) {
+            if (cue != ANIM_EVENT_TOOL_APPLIES) {
                 return 1;
             }
             if (cellType == TILEKIND_HIDDEN_POWERUP) {
@@ -552,7 +552,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
             return 0;
 
         case PICKUP_TOOB: {
-            if (cue != WWDDRAW_TOOL_APPLIES) {
+            if (cue != ANIM_EVENT_TOOL_APPLIES) {
                 return 1;
             }
             i32 waterX = unit->m_object->m_screenX;

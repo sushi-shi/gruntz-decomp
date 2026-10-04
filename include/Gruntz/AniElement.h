@@ -15,25 +15,26 @@ struct CAniSource {
     // m_data; neither retained header span is interpreted by the ANI readers.
     char m_pad00[0x8];
     i32 m_flags;
-    i32 m_count;
+    i32 m_recordCount;
 
-    u32 m_namelen;
+    u32 m_nameLengthBytes;
     char m_pad14[0xc];
     char m_data[1];
 };
 
-class CAniElement : public CObject {
+// @identity-TODO: the original class spelling is not established.
+class CAnimationSequence : public CObject {
 public:
     inline CObject* GetAt(i32 i) const;
-    CAniElement() {
+    CAnimationSequence() {
         m_flags = 0;
         m_name = NULL;
     }
-    virtual ~CAniElement() OVERRIDE;
+    virtual ~CAnimationSequence() OVERRIDE;
     CObject* AtChecked(i32 i) const;
     inline CAniFrameRecord* RecordAt(i32 index) const;
     i32 Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags);
-    i32 Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags);
+    i32 LoadResource(SoundCueRegistry* ctx, CRezItm* entry, i32 flags);
     i32 LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused);
 
     void DeleteAll();
@@ -45,11 +46,11 @@ public:
     i32 m_flags;
     CObArray m_records;
     char* m_name;
-    float m_scale;
+    float m_durationScale;
     i32 m_durationMs;
 };
 
-#define DELETE_ANI_ELEMENT_CONTENTS(index)                                                         \
+#define DELETE_ANIMATION_SEQUENCE_CONTENTS(index)                                                  \
     for (index = 0; index < m_records.GetSize(); index++) {                                        \
         CObject* item = m_records.GetAt(index);                                                    \
         if (item != NULL) {                                                                        \

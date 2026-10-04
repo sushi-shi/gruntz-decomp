@@ -296,8 +296,7 @@ i32 CBattlezAiController::AdvanceToEnemyBase(CGrunt* unit) {
                 i32 gx = currentScreenPos.m_x;
                 if (gx == -1) {
                     if (bundle->GetAttackWaypointCount() != 0) {
-                        Coord out;
-                        goal = *PickAttackWaypoint(&out, unit, targetPlayerIndex);
+                        goal = PickAttackWaypoint(unit, targetPlayerIndex);
                     }
                     unit->m_defenderPx = goal;
                     unit->SetAiState(AISTATE_BATTLEZ_ROUTE_TARGET);
