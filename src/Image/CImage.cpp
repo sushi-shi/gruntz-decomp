@@ -487,7 +487,7 @@ void CImage::BlitShadeFlipHV(CRenderState* info, CRenderBuffer* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_hasShadeOverride) {
-        m_owned->Select(info->GetShadeMode(), info->m_shadeTable);
+        m_owned->Select(info->m_shadeMode, info->m_shadeTable);
         m_owned->m_light = info->m_fillFraction;
     }
     m_owned->Blit(&d, dst->GetSurface(), &s, 0, 0);
@@ -506,7 +506,7 @@ void CImage::BlitShadeNorm(CRenderState* info, CRenderBuffer* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_hasShadeOverride) {
-        m_owned->Select(info->GetShadeMode(), info->m_shadeTable);
+        m_owned->Select(info->m_shadeMode, info->m_shadeTable);
     }
     m_owned->Blit(&d, dst->GetSurface(), &s, 1, 1);
     info->m_dirty.Set(d, w, h);
@@ -524,7 +524,7 @@ void CImage::BlitShadeFlipV(CRenderState* info, CRenderBuffer* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_hasShadeOverride) {
-        m_owned->Select(info->GetShadeMode(), info->m_shadeTable);
+        m_owned->Select(info->m_shadeMode, info->m_shadeTable);
     }
     m_owned->Blit(&d, dst->GetSurface(), &s, 1, 0);
     info->m_dirty.Set(d, w, h);
@@ -542,7 +542,7 @@ void CImage::BlitShadeFlipH(CRenderState* info, CRenderBuffer* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_hasShadeOverride) {
-        m_owned->Select(info->GetShadeMode(), info->m_shadeTable);
+        m_owned->Select(info->m_shadeMode, info->m_shadeTable);
     }
     m_owned->Blit(&d, dst->GetSurface(), &s, 0, 1);
     info->m_dirty.Set(d, w, h);
