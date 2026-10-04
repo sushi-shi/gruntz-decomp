@@ -2759,7 +2759,7 @@ ingameicon	?SerializeAnimationState@CWapX@@QAEHPAVCFileMemBase@@W4SerialMode@@W4
 ingameicon	?SerializeDispatch@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	99.9414	99.9414	29	d808976f5cca	0x98c90	99.9414	
 ingameicon	?SerializeDispatch@CInGameText@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	5	29ea54ac30bb	0x99a30	100.0000	
 ingameicon	?SerializeDispatch@CToyPeek@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	7	51a73681ff86	0x983e0	100.0000	
-ingameicon	?SetupSprite@CInGameIcon@@QAEXPBD@Z	100.0000	100.0000	4	139c9e35a769	0x99b10	100.0000	
+ingameicon	?SetPickupSoundCue@CInGameIcon@@QAEXPBD@Z	100.0000	100.0000	4	139c9e35a769	0x99b10	100.0000	
 ingameicon	?Update@CInGameText@@QAEHXZ	100.0000	100.0000	30	25ad9731ab92	0x997c0	100.0000	
 ingameuilogicdispatch	?DispatchInGameIconLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	6	01a41b27e3cd	0x95750	100.0000	
 ingameuilogicdispatch	?DispatchInGameTextLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	6	04f53a541d9b	0x95890	100.0000	

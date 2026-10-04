@@ -58,7 +58,7 @@ public:
         m_object->SetScore(playerIndex);
     }
 
-    void SetupSprite(const char* cat);
+    void SetPickupSoundCue(const char* soundKey);
 
     i32 HandleInput();
     virtual void FireActivation(i32 id) OVERRIDE;
@@ -68,7 +68,7 @@ public:
     i32 PlaceAt(i32 playerIndex, i32 unitIndex);
     i32 Reposition();
 
-    SoundCue* m_cue;
+    SoundCue* m_pickupSoundCue;
     ClockInterval m_driftTiming;
     ClockInterval m_peekTiming;
     CWwdSpriteObject* m_glitterSprite;

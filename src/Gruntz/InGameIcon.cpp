@@ -98,7 +98,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SwitchAnimationByName("GAME_CYCLE100", 0);
 
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
-    SetupSprite(NULL);
+    SetPickupSoundCue(NULL);
 
     m_glitterSprite = NULL;
     m_peekTiming.Clear();
@@ -111,61 +111,61 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
         if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BOMB));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BOOMERANG));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BRICKZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BRICK));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_CLUBZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_CLUB));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GAUNTLETZ));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GLOVEZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GLOVEZ));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GOOBERZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GOOBER));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GRAVITYBOOTZ));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GUNHATZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GUNHAT));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_NERFGUNZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_NERFGUN));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_ROCKZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_ROCK));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SHIELDZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SHIELD));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SHOVELZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SHOVEL));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SPRINGZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SPRING));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SPYZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SPY));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SWORDZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SWORD));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_TIMEBOMB));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_TOOBZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_TOOB));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WANDZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WAND));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
             m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_FIRST));
@@ -174,7 +174,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             i32 anchorY = m_object->m_screenY;
             lvl->m_anchors[0].m_x = anchorX;
             lvl->m_anchors[0].m_y = anchorY;
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
             m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_SECOND));
@@ -183,7 +183,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             i32 anchorY = m_object->m_screenY;
             lvl->m_anchors[1].m_x = anchorX;
             lvl->m_anchors[1].m_y = anchorY;
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
             m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_THIRD));
@@ -192,7 +192,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             i32 anchorY = m_object->m_screenY;
             lvl->m_anchors[2].m_x = anchorX;
             lvl->m_anchors[2].m_y = anchorY;
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
             m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_FOURTH));
@@ -201,82 +201,82 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             i32 anchorY = m_object->m_screenY;
             lvl->m_anchors[3].m_x = anchorX;
             lvl->m_anchors[3].m_y = anchorY;
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WELDER));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WINGZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WINGZ));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BABYWALKERZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BABYWALKER));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BEACHBALL));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BIGWHEELZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BIGWHEEL));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_GOKARTZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GOKART));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_JACKINTHEBOX));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_JUMPROPEZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_JUMPROPE));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_POGOSTICKZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_POGOSTICK));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_SCROLLZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SCROLL));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SQUEAKTOY));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_YOYOZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_YOYO));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_MEGAPHONE));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH1") == 0) {
             m_object->SetSmarts(IDX(PICKUP_HEALTH1));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH2") == 0) {
             m_object->SetSmarts(IDX(PICKUP_HEALTH2));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH3") == 0) {
             m_object->SetSmarts(IDX(PICKUP_HEALTH3));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_CONVERSION") == 0) {
             m_object->SetSmarts(IDX(PICKUP_CONVERSION));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH") == 0) {
             m_object->SetSmarts(IDX(PICKUP_DEATHTOUCH));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_GHOST") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GHOST));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY") == 0) {
             m_object->SetSmarts(IDX(PICKUP_INVULNERABILITY));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR") == 0) {
             m_object->SetSmarts(IDX(PICKUP_REACTIVEARMOR));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_ROIDZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_ROIDZ));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SUPERSPEED));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_SECRETW") == 0) {
             if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
@@ -284,53 +284,53 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
                 return;
             }
             m_object->SetSmarts(IDX(PICKUP_W));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
         } else if (name.Compare("GAME_INGAMEICONZ_SECRETA") == 0) {
             if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->SetSmarts(IDX(PICKUP_A));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
         } else if (name.Compare("GAME_INGAMEICONZ_SECRETR") == 0) {
             if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->SetSmarts(IDX(PICKUP_R));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
         } else if (name.Compare("GAME_INGAMEICONZ_SECRETP") == 0) {
             if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->SetSmarts(IDX(PICKUP_P));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH") == 0) {
             m_object->SetSmarts(IDX(PICKUP_STOPWATCH));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_COIN") == 0) {
             m_object->SetSmarts(IDX(PICKUP_COIN));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_TOYBOX") == 0) {
             m_object->SetSmarts(IDX(PICKUP_TOYBOX));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_MINICAM") == 0) {
             m_object->SetSmarts(IDX(PICKUP_MINICAM));
             glitter = ICON_GLITTER_CURSE_GREEN;
-            SetupSprite("GAME_CURSE");
+            SetPickupSoundCue("GAME_CURSE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_SCREENSHAKE") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SCREENSHAKE));
             glitter = ICON_GLITTER_CURSE_GREEN;
-            SetupSprite("GAME_CURSE");
+            SetPickupSoundCue("GAME_CURSE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_RANDOMCOLORZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_RANDOMCOLORZ));
             glitter = ICON_GLITTER_CURSE_GREEN;
-            SetupSprite("GAME_CURSE");
+            SetPickupSoundCue("GAME_CURSE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_BLACKSCREEN") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BLACKSCREEN));
             glitter = ICON_GLITTER_CURSE_GREEN;
-            SetupSprite("GAME_CURSE");
+            SetPickupSoundCue("GAME_CURSE");
         }
     }
 
@@ -580,11 +580,11 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         if (ok == false) {
             goto fail;
         }
-        if (m_cue != NULL) {
+        if (m_pickupSoundCue != NULL) {
             o = m_object;
             if (::PtInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
-                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
+                m_pickupSoundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 reg = g_gameReg;
             }
         }
@@ -611,11 +611,11 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
                 reg = g_gameReg;
             }
         }
-        if (m_cue != NULL) {
+        if (m_pickupSoundCue != NULL) {
             o = m_object;
             if (::PtInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
-                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
+                m_pickupSoundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 reg = g_gameReg;
             }
         }
@@ -703,12 +703,11 @@ i32 CInGameIcon::SerializeDispatch(
     switch (mode) {
         case SERIAL_SAVE: {
             memset(name, 0, sizeof(name));
-            if (m_cue != NULL) {
+            if (m_pickupSoundCue != NULL) {
                 strcpy(
                     name,
-                    static_cast<const char*>(
-                        m_ownerLogicRecord->GetWorld()->m_soundRegistry->FindCueKey(m_cue)
-                    )
+                    static_cast<const char*>(m_ownerLogicRecord->GetWorld()
+                                                 ->m_soundRegistry->FindCueKey(m_pickupSoundCue))
                 );
             }
             ar->Write(name, SERIAL_NAME_LEN);
@@ -724,9 +723,9 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = m_ownerLogicRecord->GetWorld()->m_soundRegistry->FindCue(name);
+                m_pickupSoundCue = m_ownerLogicRecord->GetWorld()->m_soundRegistry->FindCue(name);
             } else {
-                m_cue = NULL;
+                m_pickupSoundCue = NULL;
             }
             g_serialCounter++;
             i32 id;
@@ -873,11 +872,11 @@ i32 CInGameText::SerializeDispatch(
 }
 
 RVA(0x00099b10, 0x36)
-void CInGameIcon::SetupSprite(const char* category) {
+void CInGameIcon::SetPickupSoundCue(const char* soundKey) {
     SoundCue* found = NULL;
-    if (category != NULL) {
+    if (soundKey != NULL) {
         found = NULL;
-        MapLookup(g_gameReg->World()->SoundRegistry()->m_cues, category, found);
+        MapLookup(g_gameReg->World()->SoundRegistry()->m_cues, soundKey, found);
     }
-    m_cue = found;
+    m_pickupSoundCue = found;
 }
