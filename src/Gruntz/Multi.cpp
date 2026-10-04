@@ -297,7 +297,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
 
     CStatusBarMgr* sess = new CStatusBarMgr;
     m_statusBar = sess;
-    if (sess->LoadBattlezItemConfig(m_world) == 0) {
+    if (sess->Initialize(m_world) == 0) {
         if (m_statusBar == NULL) {
             return 0;
         }

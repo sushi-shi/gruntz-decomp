@@ -137,7 +137,7 @@ public:
 
     i32 BuildTabzDialog();
     i32 StartChipMachineCycle();
-    i32 LoadBattlezItemConfig(CDDrawSurfaceMgr* world);
+    i32 Initialize(CDDrawSurfaceMgr* world);
     i32 Render();
     i32 UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y);
     i32 UpdateStatusBar(i32 deltaMs);
@@ -344,7 +344,7 @@ public:
     CSBI_ImageSet* m_destructButtonImage;
     b32 m_destructButtonLocked;
     b32 m_observerTabAvailable;
-    i32 m_battlezPct[38];
+    i32 m_randomRewardThresholds[38];
     i32 m_displayHeight;
     SoundBuffer* m_destructWarningSound;
 

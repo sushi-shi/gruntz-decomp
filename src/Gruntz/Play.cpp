@@ -241,7 +241,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
 
         m_statusBar = new CStatusBarMgr;
-        if (m_statusBar->LoadBattlezItemConfig(m_world) == 0) {
+        if (m_statusBar->Initialize(m_world) == 0) {
             if (m_statusBar == NULL) {
                 return 0;
             }

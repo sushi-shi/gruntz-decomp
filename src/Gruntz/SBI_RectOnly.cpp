@@ -95,7 +95,7 @@ i32 g_curPlayer = 0;
 
 // @early-stop
 RVA(0x000fdc00, 0x5c2)
-i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
+i32 CStatusBarMgr::Initialize(CDDrawSurfaceMgr* world) {
     m_world = world;
     m_restorePosition = STATUSBAR_DOCK_RIGHT;
     m_position = STATUSBAR_DOCK_RIGHT;
@@ -117,44 +117,78 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_rezTick = 0;
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
-    m_battlezPct[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
-    m_battlezPct[1] = m_battlezPct[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
-    m_battlezPct[2] = m_battlezPct[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
-    m_battlezPct[3] = g_buteMgr.GetInt("Multiplayer", "RedBrick");
-    m_battlezPct[4] = m_battlezPct[3] + g_buteMgr.GetInt("Multiplayer", "BlueBrick");
-    m_battlezPct[5] = m_battlezPct[4] + g_buteMgr.GetInt("Multiplayer", "GoldBrick");
-    m_battlezPct[6] = m_battlezPct[5] + g_buteMgr.GetInt("Multiplayer", "BlackBrick");
-    m_battlezPct[7] = g_buteMgr.GetInt("Multiplayer", "BabyWalkerz");
-    m_battlezPct[8] = m_battlezPct[7] + g_buteMgr.GetInt("Multiplayer", "BeachBallz");
-    m_battlezPct[9] = m_battlezPct[8] + g_buteMgr.GetInt("Multiplayer", "BigWheelz");
-    m_battlezPct[10] = m_battlezPct[9] + g_buteMgr.GetInt("Multiplayer", "GoKartz");
-    m_battlezPct[11] = m_battlezPct[10] + g_buteMgr.GetInt("Multiplayer", "JackInTheBoxz");
-    m_battlezPct[12] = m_battlezPct[11] + g_buteMgr.GetInt("Multiplayer", "JumpRopez");
-    m_battlezPct[13] = m_battlezPct[12] + g_buteMgr.GetInt("Multiplayer", "PogoStickz");
-    m_battlezPct[14] = m_battlezPct[13] + g_buteMgr.GetInt("Multiplayer", "Scrollz");
-    m_battlezPct[15] = m_battlezPct[14] + g_buteMgr.GetInt("Multiplayer", "SqueakToyz");
-    m_battlezPct[16] = m_battlezPct[15] + g_buteMgr.GetInt("Multiplayer", "Yoyoz");
-    m_battlezPct[17] = g_buteMgr.GetInt("Multiplayer", "Bombz");
-    m_battlezPct[18] = m_battlezPct[17] + g_buteMgr.GetInt("Multiplayer", "Boomerangz");
-    m_battlezPct[19] = m_battlezPct[18] + g_buteMgr.GetInt("Multiplayer", "Brickz");
-    m_battlezPct[20] = m_battlezPct[19] + g_buteMgr.GetInt("Multiplayer", "Clubz");
-    m_battlezPct[21] = m_battlezPct[20] + g_buteMgr.GetInt("Multiplayer", "Gauntletz");
-    m_battlezPct[22] = m_battlezPct[21] + g_buteMgr.GetInt("Multiplayer", "Glovez");
-    m_battlezPct[23] = m_battlezPct[22] + g_buteMgr.GetInt("Multiplayer", "Gooberz");
-    m_battlezPct[24] = m_battlezPct[23] + g_buteMgr.GetInt("Multiplayer", "GravityBootz");
-    m_battlezPct[25] = m_battlezPct[24] + g_buteMgr.GetInt("Multiplayer", "GunHatz");
-    m_battlezPct[26] = m_battlezPct[25] + g_buteMgr.GetInt("Multiplayer", "NerfGunz");
-    m_battlezPct[27] = m_battlezPct[26] + g_buteMgr.GetInt("Multiplayer", "Rockz");
-    m_battlezPct[28] = m_battlezPct[27] + g_buteMgr.GetInt("Multiplayer", "Shieldz");
-    m_battlezPct[29] = m_battlezPct[28] + g_buteMgr.GetInt("Multiplayer", "Shovelz");
-    m_battlezPct[30] = m_battlezPct[29] + g_buteMgr.GetInt("Multiplayer", "Springz");
-    m_battlezPct[31] = m_battlezPct[30] + g_buteMgr.GetInt("Multiplayer", "Spyz");
-    m_battlezPct[32] = m_battlezPct[31] + g_buteMgr.GetInt("Multiplayer", "Swordz");
-    m_battlezPct[33] = m_battlezPct[32] + g_buteMgr.GetInt("Multiplayer", "TimeBombz");
-    m_battlezPct[34] = m_battlezPct[33] + g_buteMgr.GetInt("Multiplayer", "Toobz");
-    m_battlezPct[35] = m_battlezPct[34] + g_buteMgr.GetInt("Multiplayer", "Wandz");
-    m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
-    m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
+    m_randomRewardThresholds[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
+    m_randomRewardThresholds[1] =
+        m_randomRewardThresholds[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
+    m_randomRewardThresholds[2] =
+        m_randomRewardThresholds[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
+    m_randomRewardThresholds[3] = g_buteMgr.GetInt("Multiplayer", "RedBrick");
+    m_randomRewardThresholds[4] =
+        m_randomRewardThresholds[3] + g_buteMgr.GetInt("Multiplayer", "BlueBrick");
+    m_randomRewardThresholds[5] =
+        m_randomRewardThresholds[4] + g_buteMgr.GetInt("Multiplayer", "GoldBrick");
+    m_randomRewardThresholds[6] =
+        m_randomRewardThresholds[5] + g_buteMgr.GetInt("Multiplayer", "BlackBrick");
+    m_randomRewardThresholds[7] = g_buteMgr.GetInt("Multiplayer", "BabyWalkerz");
+    m_randomRewardThresholds[8] =
+        m_randomRewardThresholds[7] + g_buteMgr.GetInt("Multiplayer", "BeachBallz");
+    m_randomRewardThresholds[9] =
+        m_randomRewardThresholds[8] + g_buteMgr.GetInt("Multiplayer", "BigWheelz");
+    m_randomRewardThresholds[10] =
+        m_randomRewardThresholds[9] + g_buteMgr.GetInt("Multiplayer", "GoKartz");
+    m_randomRewardThresholds[11] =
+        m_randomRewardThresholds[10] + g_buteMgr.GetInt("Multiplayer", "JackInTheBoxz");
+    m_randomRewardThresholds[12] =
+        m_randomRewardThresholds[11] + g_buteMgr.GetInt("Multiplayer", "JumpRopez");
+    m_randomRewardThresholds[13] =
+        m_randomRewardThresholds[12] + g_buteMgr.GetInt("Multiplayer", "PogoStickz");
+    m_randomRewardThresholds[14] =
+        m_randomRewardThresholds[13] + g_buteMgr.GetInt("Multiplayer", "Scrollz");
+    m_randomRewardThresholds[15] =
+        m_randomRewardThresholds[14] + g_buteMgr.GetInt("Multiplayer", "SqueakToyz");
+    m_randomRewardThresholds[16] =
+        m_randomRewardThresholds[15] + g_buteMgr.GetInt("Multiplayer", "Yoyoz");
+    m_randomRewardThresholds[17] = g_buteMgr.GetInt("Multiplayer", "Bombz");
+    m_randomRewardThresholds[18] =
+        m_randomRewardThresholds[17] + g_buteMgr.GetInt("Multiplayer", "Boomerangz");
+    m_randomRewardThresholds[19] =
+        m_randomRewardThresholds[18] + g_buteMgr.GetInt("Multiplayer", "Brickz");
+    m_randomRewardThresholds[20] =
+        m_randomRewardThresholds[19] + g_buteMgr.GetInt("Multiplayer", "Clubz");
+    m_randomRewardThresholds[21] =
+        m_randomRewardThresholds[20] + g_buteMgr.GetInt("Multiplayer", "Gauntletz");
+    m_randomRewardThresholds[22] =
+        m_randomRewardThresholds[21] + g_buteMgr.GetInt("Multiplayer", "Glovez");
+    m_randomRewardThresholds[23] =
+        m_randomRewardThresholds[22] + g_buteMgr.GetInt("Multiplayer", "Gooberz");
+    m_randomRewardThresholds[24] =
+        m_randomRewardThresholds[23] + g_buteMgr.GetInt("Multiplayer", "GravityBootz");
+    m_randomRewardThresholds[25] =
+        m_randomRewardThresholds[24] + g_buteMgr.GetInt("Multiplayer", "GunHatz");
+    m_randomRewardThresholds[26] =
+        m_randomRewardThresholds[25] + g_buteMgr.GetInt("Multiplayer", "NerfGunz");
+    m_randomRewardThresholds[27] =
+        m_randomRewardThresholds[26] + g_buteMgr.GetInt("Multiplayer", "Rockz");
+    m_randomRewardThresholds[28] =
+        m_randomRewardThresholds[27] + g_buteMgr.GetInt("Multiplayer", "Shieldz");
+    m_randomRewardThresholds[29] =
+        m_randomRewardThresholds[28] + g_buteMgr.GetInt("Multiplayer", "Shovelz");
+    m_randomRewardThresholds[30] =
+        m_randomRewardThresholds[29] + g_buteMgr.GetInt("Multiplayer", "Springz");
+    m_randomRewardThresholds[31] =
+        m_randomRewardThresholds[30] + g_buteMgr.GetInt("Multiplayer", "Spyz");
+    m_randomRewardThresholds[32] =
+        m_randomRewardThresholds[31] + g_buteMgr.GetInt("Multiplayer", "Swordz");
+    m_randomRewardThresholds[33] =
+        m_randomRewardThresholds[32] + g_buteMgr.GetInt("Multiplayer", "TimeBombz");
+    m_randomRewardThresholds[34] =
+        m_randomRewardThresholds[33] + g_buteMgr.GetInt("Multiplayer", "Toobz");
+    m_randomRewardThresholds[35] =
+        m_randomRewardThresholds[34] + g_buteMgr.GetInt("Multiplayer", "Wandz");
+    m_randomRewardThresholds[36] =
+        m_randomRewardThresholds[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
+    m_randomRewardThresholds[37] =
+        m_randomRewardThresholds[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
     SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
     if ((static_cast<CRegMgr*>(g_gameReg->m_settings))->Get("StatusBar Position", 0) == 1) {
         DockStatusBarLeft();
@@ -3312,79 +3346,79 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
             }
         }
     } else {
-        i32 r1 = WapRand(m_battlezPct[2]);
-        if (r1 <= m_battlezPct[0]) {
-            i32 r = WapRand(m_battlezPct[37]);
-            if (r <= m_battlezPct[17]) {
+        i32 r1 = WapRand(m_randomRewardThresholds[2]);
+        if (r1 <= m_randomRewardThresholds[0]) {
+            i32 r = WapRand(m_randomRewardThresholds[37]);
+            if (r <= m_randomRewardThresholds[17]) {
                 result = PICKUP_BOMB;
-            } else if (r <= m_battlezPct[18]) {
+            } else if (r <= m_randomRewardThresholds[18]) {
                 result = PICKUP_BOOMERANG;
-            } else if (r <= m_battlezPct[19]) {
+            } else if (r <= m_randomRewardThresholds[19]) {
                 result = PICKUP_BRICK;
-            } else if (r <= m_battlezPct[20]) {
+            } else if (r <= m_randomRewardThresholds[20]) {
                 result = PICKUP_CLUB;
-            } else if (r <= m_battlezPct[21]) {
+            } else if (r <= m_randomRewardThresholds[21]) {
                 result = PICKUP_GAUNTLETZ;
-            } else if (r <= m_battlezPct[22]) {
+            } else if (r <= m_randomRewardThresholds[22]) {
                 result = PICKUP_GLOVEZ;
-            } else if (r <= m_battlezPct[23]) {
+            } else if (r <= m_randomRewardThresholds[23]) {
                 result = PICKUP_GOOBER;
-            } else if (r <= m_battlezPct[24]) {
+            } else if (r <= m_randomRewardThresholds[24]) {
                 result = PICKUP_GRAVITYBOOTZ;
-            } else if (r <= m_battlezPct[25]) {
+            } else if (r <= m_randomRewardThresholds[25]) {
                 result = PICKUP_GUNHAT;
-            } else if (r <= m_battlezPct[26]) {
+            } else if (r <= m_randomRewardThresholds[26]) {
                 result = PICKUP_NERFGUN;
-            } else if (r <= m_battlezPct[27]) {
+            } else if (r <= m_randomRewardThresholds[27]) {
                 result = PICKUP_ROCK;
-            } else if (r <= m_battlezPct[28]) {
+            } else if (r <= m_randomRewardThresholds[28]) {
                 result = PICKUP_SHIELD;
-            } else if (r <= m_battlezPct[29]) {
+            } else if (r <= m_randomRewardThresholds[29]) {
                 result = PICKUP_SHOVEL;
-            } else if (r <= m_battlezPct[30]) {
+            } else if (r <= m_randomRewardThresholds[30]) {
                 result = PICKUP_SPRING;
-            } else if (r <= m_battlezPct[31]) {
+            } else if (r <= m_randomRewardThresholds[31]) {
                 result = PICKUP_SPY;
-            } else if (r <= m_battlezPct[32]) {
+            } else if (r <= m_randomRewardThresholds[32]) {
                 result = PICKUP_SWORD;
-            } else if (r <= m_battlezPct[33]) {
+            } else if (r <= m_randomRewardThresholds[33]) {
                 result = PICKUP_TIMEBOMB;
-            } else if (r <= m_battlezPct[34]) {
+            } else if (r <= m_randomRewardThresholds[34]) {
                 result = PICKUP_TOOB;
-            } else if (r <= m_battlezPct[35]) {
+            } else if (r <= m_randomRewardThresholds[35]) {
                 result = PICKUP_WAND;
             } else {
-                result = r > m_battlezPct[36] ? PICKUP_WINGZ : PICKUP_WELDER;
+                result = r > m_randomRewardThresholds[36] ? PICKUP_WINGZ : PICKUP_WELDER;
             }
-        } else if (r1 <= m_battlezPct[1]) {
-            i32 r = WapRand(m_battlezPct[16]);
-            if (r <= m_battlezPct[7]) {
+        } else if (r1 <= m_randomRewardThresholds[1]) {
+            i32 r = WapRand(m_randomRewardThresholds[16]);
+            if (r <= m_randomRewardThresholds[7]) {
                 result = PICKUP_BABYWALKER;
-            } else if (r <= m_battlezPct[8]) {
+            } else if (r <= m_randomRewardThresholds[8]) {
                 result = PICKUP_BEACHBALL;
-            } else if (r <= m_battlezPct[9]) {
+            } else if (r <= m_randomRewardThresholds[9]) {
                 result = PICKUP_BIGWHEEL;
-            } else if (r <= m_battlezPct[10]) {
+            } else if (r <= m_randomRewardThresholds[10]) {
                 result = PICKUP_GOKART;
-            } else if (r <= m_battlezPct[11]) {
+            } else if (r <= m_randomRewardThresholds[11]) {
                 result = PICKUP_JACKINTHEBOX;
-            } else if (r <= m_battlezPct[12]) {
+            } else if (r <= m_randomRewardThresholds[12]) {
                 result = PICKUP_JUMPROPE;
-            } else if (r <= m_battlezPct[13]) {
+            } else if (r <= m_randomRewardThresholds[13]) {
                 result = PICKUP_POGOSTICK;
-            } else if (r <= m_battlezPct[14]) {
+            } else if (r <= m_randomRewardThresholds[14]) {
                 result = PICKUP_SCROLL;
             } else {
-                result = r > m_battlezPct[15] ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
+                result = r > m_randomRewardThresholds[15] ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
             }
         } else {
-            i32 r = WapRand(m_battlezPct[6]);
-            if (r <= m_battlezPct[3]) {
+            i32 r = WapRand(m_randomRewardThresholds[6]);
+            if (r <= m_randomRewardThresholds[3]) {
                 result = PICKUP_REDBRICK;
-            } else if (r <= m_battlezPct[4]) {
+            } else if (r <= m_randomRewardThresholds[4]) {
                 result = PICKUP_BLUEBRICK;
             } else {
-                result = r > m_battlezPct[5] ? PICKUP_BLACKBRICK : PICKUP_GOLDBRICK;
+                result = r > m_randomRewardThresholds[5] ? PICKUP_BLACKBRICK : PICKUP_GOLDBRICK;
             }
         }
         if (result == PICKUP_WARPSTONE) {
