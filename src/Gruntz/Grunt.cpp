@@ -2309,7 +2309,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
                 }
                 sb->RequestRedraw();
             }
-            play->m_statusBar->UpdateRezMachineWakeStatusBar();
+            play->m_statusBar->RequestResourceDelivery();
             return 1;
         }
         case PICKUP_RANDOMCOLORZ: {

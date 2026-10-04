@@ -136,7 +136,7 @@ public:
     i32 BuildStatusBarTabs();
 
     i32 BuildLevelOverlay();
-    i32 StartChipMachineCycle();
+    i32 PrepareNextResource();
     i32 Initialize(CDDrawSurfaceMgr* world);
     i32 Render();
     i32 HandleClick(i32 mouseFlags, i32 x, i32 y);
@@ -150,14 +150,14 @@ public:
     void UpdateRezMachineSnoozeStatusBar();
     void LoadChipMachineConfig();
     i32 UpdateFallingItemStatusBar(i32 item, i32 x, i32 y);
-    i32 UpdateRezMachineWakeStatusBar();
+    i32 RequestResourceDelivery();
     void LoadMultiplayerBattlezConfig(i32);
 
     void ResetConveyorBelts();
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    i32 GetActiveValue();
+    i32 GetNextResourcePickup();
     i32 SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode);
     void UpdateGruntOvenStatusBar();
     void TickGruntWell();
@@ -314,8 +314,8 @@ public:
     RECT m_fallingItemRect;
     RECT m_machineItemRect;
     i32 m_machineItemTargetX;
-    b32 m_rezActive;
-    i32 m_rezTick;
+    b32 m_resourceDeliveryActive;
+    i32 m_pendingResourceDeliveries;
 
     CPtrArray m_rewardQueue;
     // @identity-TODO: initialized to 1 and save-streamed; reward processing never reads it.

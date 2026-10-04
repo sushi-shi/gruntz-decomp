@@ -1349,7 +1349,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
                     && BuildRockAndCoveredPowerupLogics() && ValidateLevelTiles()
                     && AddLevelGruntz()) {
                     self->m_world->ChildGroup()->TickKillCues(0);
-                    self->m_statusBar->StartChipMachineCycle();
+                    self->m_statusBar->PrepareNextResource();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                     while (ShowCursor(false) >= 0)
                         ;

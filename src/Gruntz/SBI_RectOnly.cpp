@@ -113,8 +113,8 @@ i32 CStatusBarMgr::Initialize(CDDrawSurfaceMgr* world) {
     }
     m_selectedGruntOvenSlot = -1;
     m_pendingHlRow = STATUS_HL_ROW_NONE;
-    m_rezActive = false;
-    m_rezTick = 0;
+    m_resourceDeliveryActive = false;
+    m_pendingResourceDeliveries = 0;
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
     m_randomRewardThresholds[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
@@ -2630,7 +2630,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             m_machineItemRect.left + 0xc,
                             m_machineItemRect.top + 0xc
                         );
-                        StartChipMachineCycle();
+                        PrepareNextResource();
                     }
                 }
                 break;
@@ -2852,8 +2852,8 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     if (m_machineDisplay) {
         m_machineDisplay->SetFrames(m_leftMachine.m_counter, m_rightMachine.m_counter);
     }
-    m_rezActive = false;
-    m_rezTick = 0;
+    m_resourceDeliveryActive = false;
+    m_pendingResourceDeliveries = 0;
 }
 
 RVA(0x001066f0, 0x3b)
@@ -3134,7 +3134,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (m_machineItemRect.top >= row * 0x20 + 0x13e) {
                 PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
                 SetHlCell(col, m_machineItem, row);
-                StartChipMachineCycle();
+                PrepareNextResource();
             }
             refreshFlag = 1;
             break;
@@ -3269,8 +3269,8 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
 }
 
 RVA(0x00107a10, 0x62)
-i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
-    if (m_rezActive == false) {
+i32 CStatusBarMgr::RequestResourceDelivery() {
+    if (m_resourceDeliveryActive == false) {
         if (m_machineItem == 0) {
             return 0;
         }
@@ -3279,9 +3279,9 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
             MACHINE_WAKING,
             g_buteMgr.GetDword("StatusBar", "LeftMachineWakingDelay", 100)
         );
-        m_rezActive = true;
+        m_resourceDeliveryActive = true;
     } else {
-        m_rezTick++;
+        m_pendingResourceDeliveries++;
     }
     return 1;
 }
@@ -3333,7 +3333,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     TryActivate();
 }
 RVA(0x00107d00, 0x591)
-i32 CStatusBarMgr::StartChipMachineCycle() {
+i32 CStatusBarMgr::PrepareNextResource() {
     PickupType result;
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
@@ -3444,11 +3444,11 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
         m_machineItemSprite->m_rect = rc;
     }
     NotifyAllSlots();
-    i32 c = m_rezTick;
-    m_rezActive = false;
+    i32 c = m_pendingResourceDeliveries;
+    m_resourceDeliveryActive = false;
     if (c > 0) {
-        m_rezTick = c - 1;
-        UpdateRezMachineWakeStatusBar();
+        m_pendingResourceDeliveries = c - 1;
+        RequestResourceDelivery();
     }
     return 1;
 }
@@ -3692,8 +3692,8 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
     s->Write(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
     s->Write(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
-    s->Write(&m_rezTick, sizeof(m_rezTick));
-    s->Write(&m_rezActive, sizeof(m_rezActive));
+    s->Write(&m_pendingResourceDeliveries, sizeof(m_pendingResourceDeliveries));
+    s->Write(&m_resourceDeliveryActive, sizeof(m_resourceDeliveryActive));
     s->Write(&m_reserved544, sizeof(m_reserved544));
     s->Write(&m_fallingItemRect, sizeof(m_fallingItemRect));
     s->Write(&m_machineItemRect, sizeof(m_machineItemRect));
@@ -3780,8 +3780,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
     ar->Read(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
     ar->Read(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
-    ar->Read(&m_rezTick, sizeof(m_rezTick));
-    ar->Read(&m_rezActive, sizeof(m_rezActive));
+    ar->Read(&m_pendingResourceDeliveries, sizeof(m_pendingResourceDeliveries));
+    ar->Read(&m_resourceDeliveryActive, sizeof(m_resourceDeliveryActive));
     ar->Read(&m_reserved544, sizeof(m_reserved544));
     ar->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
     ar->Read(&m_machineItemRect, sizeof(m_machineItemRect));
@@ -4501,12 +4501,12 @@ void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
 }
 
 RVA(0x0010bbe0, 0x34)
-i32 CStatusBarMgr::GetActiveValue() {
-    if (m_rezActive == false) {
+i32 CStatusBarMgr::GetNextResourcePickup() {
+    if (m_resourceDeliveryActive == false) {
         return m_machineItem;
     }
-    if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
-        return GetReward(m_rezTick)->m_x;
+    if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_pendingResourceDeliveries) {
+        return GetReward(m_pendingResourceDeliveries)->m_x;
     }
     return 0;
 }

@@ -200,7 +200,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
 
         if (m_resourceTimer.Expired()) {
-            obj->m_statusBar->UpdateRezMachineWakeStatusBar();
+            obj->m_statusBar->RequestResourceDelivery();
             m_resourceTimer.Start(g_buteMgr.GetDword("Multiplayer", "TimePerResource", 0x7530));
         }
 

@@ -247,7 +247,7 @@ i32 CGrunt::BeginPickupAnimation(
                 "GRUNTZ_PICKUPS_MEGAPHONE"
             );
             m_pickupAnimation = pickupAnimation;
-            PickupType n = static_cast<PickupType>(play->m_statusBar->GetActiveValue());
+            PickupType n = static_cast<PickupType>(play->m_statusBar->GetNextResourcePickup());
             if (countStats != 0) {
                 if (n >= PICKUP_EQUIPPABLE_FIRST && n <= PICKUP_EQUIPPABLE_LAST
                     && n != PICKUP_WARPSTONE) {
