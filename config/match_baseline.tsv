@@ -3149,7 +3149,7 @@ multi	?ShowMultiplayerPauseDialog@CMulti@@QAEXXZ	100.0000	100.0000	6	b36b38bac27
 multi	?StartTitle@CMulti@@QAEHXZ	100.0000	100.0000	13	05b46081c0c5	0xb72c0	100.0000	
 multi	?TickStateMgrs@CMulti@@UAEXXZ	100.0000	100.0000	1	711e932a66db	0xbd3c0	100.0000	
 multi	?VerifyCustomLevel@CMulti@@QAEHPAVCNetSessionListNode@@PAVCNetPlayerNode@@@Z	100.0000	100.0000	7	150e86c9e177	0xb8fc0	100.0000	
-multi	?WaitForConnect@CMulti@@QAEHXZ	100.0000	100.0000	5	bafda007ce77	0xbca50	100.0000	
+multi	?WaitForGameConfig@CMulti@@QAEHXZ	100.0000	100.0000	5	bafda007ce77	0xbca50	100.0000	
 multi	?WaitForOtherPlayers@CMulti@@QAEHXZ	100.0000	100.0000	14	8adceb4bb4d1	0xbb700	100.0000	
 multihelpdlg	??0CMultiHelpDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	0563c1c8aa56	0xbeb60	100.0000	
 multihelpdlg	??1CMultiHelpDlg@@UAE@XZ	100.0000	100.0000	1	cpp:1efa94aa90cb	0xbebc0	100.0000	

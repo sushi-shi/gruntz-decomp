@@ -210,7 +210,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_minimap = NULL;
     m_savedClock = 0;
     m_rngSeed = static_cast<i32>(timeGetTime());
-    m_connectAccepted = false;
+    m_gameConfigUpdated = false;
     m_roundComplete = false;
 
     for (i32 i = 0; i < 4; i++) {
@@ -245,7 +245,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     }
 
     if (m_isHost != false) {
-        m_connectAccepted = true;
+        m_gameConfigUpdated = true;
     }
     NetGameMgr()->m_modalBusy = false;
     memset(&m_saveSlot, 0, sizeof(m_saveSlot));
@@ -1848,7 +1848,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (ApplyGameConfig(wire.m_gameConfig) == 0) {
                 break;
             }
-            m_connectAccepted = true;
+            m_gameConfigUpdated = true;
             break;
 
         case NETMSG_VERSION_CHECK:
@@ -2941,7 +2941,7 @@ i32 CMulti::CreateLocalPlayer() {
     }
 
     m_localPlayerId = LocalPlayer()->GetPlayerId();
-    if (WaitForConnect() == 0) {
+    if (WaitForGameConfig() == 0) {
         return 0;
     }
 
@@ -3000,7 +3000,7 @@ i32 CMulti::CreateHostPlayer(
 }
 
 RVA(0x000bca50, 0x155)
-i32 CMulti::WaitForConnect() {
+i32 CMulti::WaitForGameConfig() {
     if (Network() == NULL) {
         return 0;
     }
@@ -3009,11 +3009,11 @@ i32 CMulti::WaitForConnect() {
     }
 
     BroadcastPlayerIdMessage(STAT_REQUEST_CONFIG, DPSEND_GUARANTEED);
-    m_connectAccepted = false;
+    m_gameConfigUpdated = false;
 
     u32 deadline = timeGetTime() + 60000;
 
-    while (m_connectAccepted == false) {
+    while (m_gameConfigUpdated == false) {
 
         if (timeGetTime() > deadline
             || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {

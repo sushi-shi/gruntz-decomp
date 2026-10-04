@@ -214,7 +214,7 @@ public:
     u32 FrameSyncWait();
     i32 SetupTcpIpConfig();
     i32 CreateLocalPlayer();
-    i32 WaitForConnect();
+    i32 WaitForGameConfig();
     i32 SendGameConfig(CNetPlayerNode* recipient);
     i32 ApplyGameConfig(CNetGameConfigPacket* config);
     i32 ResetPlayerCommands(i32 playerId);
@@ -246,7 +246,7 @@ public:
     b32 m_gameStarted;
     b32 m_waitDialogReplyReceived;
     b32 m_lobbyLaunch;
-    b32 m_connectAccepted;
+    b32 m_gameConfigUpdated;
     b32 m_savedEffectsEnabled;
     b32 m_roundComplete;
     CString m_providerConfigPrefix;
