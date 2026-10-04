@@ -1425,9 +1425,10 @@ i32 CGrunt::CommitNeighbor(
     nb->CreateHealthSprite();
     ArmGruntCombatTimeout(nb);
     HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
+    i32 stamina = m_stamina;
     SetNeighbor(targetPlayerIndex, targetUnitIndex);
     m_attackTargetPx.Set(targetPxX, targetPxY);
-    if (m_stamina < STAMINA_FULL || m_entranceActive != false) {
+    if (stamina < STAMINA_FULL || m_entranceActive != false) {
         m_attackQueued = true;
         return 1;
     }
