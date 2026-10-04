@@ -21,11 +21,11 @@ inline i32 PlaySoundCueIfElapsed(
     if (g_soundEnabled == false) {
         return 0;
     }
-    if (g_soundCueTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)
+    if (g_engineTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)
         < static_cast<u32>(cue->m_replayDelayMs)) {
         return 0;
     }
-    cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+    cue->m_lastPlayTimeMs = g_engineTimeMs;
     return cue->GetSound()
         ->AcquireAndPlay(volumePercent, panPercent, frequencyOffsetPercent, looping);
 }

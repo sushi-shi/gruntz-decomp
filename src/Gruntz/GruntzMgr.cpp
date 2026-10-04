@@ -2023,7 +2023,7 @@ void CGruntzMgr::RefreshGameClock() {
     ResetFrameTiming();
 
     if (m_world) {
-        g_soundCueTimeMs = timeGetTime();
+        g_engineTimeMs = timeGetTime();
         g_engineFrameDelta = 0;
     }
 
@@ -2083,7 +2083,7 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_lastNow = now;
     g_frameDelta = delta;
     g_frameTime = abs;
-    g_soundCueTimeMs = now;
+    g_engineTimeMs = now;
     g_engineFrameDelta = delta;
 }
 

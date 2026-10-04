@@ -613,7 +613,7 @@ i32 CMulti::AdvanceGameFrame() {
     g_frameDelta = 0x21;
     g_lastNow += 0x21;
     g_frameTime += 0x21;
-    g_soundCueTimeMs = g_lastNow;
+    g_engineTimeMs = g_lastNow;
     g_engineFrameDelta = 0x21;
     UpdateAmbientMusic();
     Mgr()->GetCommandMgr()->ExecuteScheduledCommands(m_processedCommandTick % 128);
