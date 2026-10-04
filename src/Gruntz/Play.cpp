@@ -501,8 +501,8 @@ i32 CPlay::Render() {
         }
 
         if (m_worldReady == false) {
-            if (m_mgr->m_triggerMgr->m_armed != false) {
-                m_mgr->m_triggerMgr->ScrollToActiveRecord();
+            if (m_mgr->m_triggerMgr->m_cameraTrackingActive != false) {
+                m_mgr->m_triggerMgr->UpdateCameraTracking();
             }
             LoadScrollSpeedOptions();
         }
@@ -5342,7 +5342,7 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
         }
     }
 
-    if (m_mgr->GetTriggerMgr()->m_goal != NULL) {
+    if (m_mgr->GetTriggerMgr()->m_cameraSprite != NULL) {
         CTriggerMgr* g = m_mgr->GetTriggerMgr();
         g->ClearCameraSprite();
         m_mgr->GetTriggerMgr()->LoadCameraSprite();

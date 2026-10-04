@@ -360,18 +360,19 @@ void CTriggerMgr::ClearSelectedUnitIds() {
 }
 
 RVA(0x000788d0, 0x64)
-i32 CTriggerMgr::ScrollToActiveRecord() {
-    CGameObject* src = UnitAt(m_cameraTargetIdentity.m_x, m_cameraTargetIdentity.m_y)->m_object;
-    i32 y = src->m_screenY;
-    i32 x = src->m_screenX;
-    CDDrawWorkerHost* t = m_world->GetLevel()->m_mainPlane;
-    t->SetScrollPosition(x, y);
+i32 CTriggerMgr::UpdateCameraTracking() {
+    CGameObject* targetObject =
+        UnitAt(m_cameraTargetIdentity.m_x, m_cameraTargetIdentity.m_y)->m_object;
+    i32 y = targetObject->m_screenY;
+    i32 x = targetObject->m_screenX;
+    CDDrawWorkerHost* mainPlane = m_world->GetLevel()->m_mainPlane;
+    mainPlane->SetScrollPosition(x, y);
     return 1;
 }
 
 RVA(0x00078960, 0x9b)
 i32 CTriggerMgr::LoadCameraSprite() {
-    if (m_goal != NULL) {
+    if (m_cameraSprite != NULL) {
         return 0;
     }
 
@@ -399,9 +400,9 @@ i32 CTriggerMgr::LoadCameraSprite() {
         "DoNothing",
         IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)
     );
-    m_goal = spr;
+    m_cameraSprite = spr;
     spr->GetLogicRecord()->Dispatch(spr);
-    m_goal->SetImageSetByName("GAME_CAMERASPRITE");
+    m_cameraSprite->SetImageSetByName("GAME_CAMERASPRITE");
     return 1;
 }
 
@@ -1252,10 +1253,10 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         list++;
         k--;
     } while (k != 0);
-    CWwdSpriteObject* goal = m_goal;
+    CWwdSpriteObject* cameraSprite = m_cameraSprite;
     i32 objId = 0;
-    if (goal != NULL) {
-        objId = goal->GetObjectId();
+    if (cameraSprite != NULL) {
+        objId = cameraSprite->GetObjectId();
     }
     ar->Write(&objId, sizeof(objId));
     CWarlord* ov = m_pendingFx;
@@ -1286,7 +1287,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             goto fail;
         }
     }
-    ar->Write(&m_armed, sizeof(m_armed));
+    ar->Write(&m_cameraTrackingActive, sizeof(m_cameraTrackingActive));
     ar->Write(&m_groupInitialized, sizeof(m_groupInitialized));
     ar->Write(&m_phase, sizeof(m_phase));
     ar->Write(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
@@ -1382,7 +1383,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key != 0) {
             CWwdSpriteObject* obj =
                 LookupSerialRef(world->ChildGroup()->m_registeredGameObjectsById, key);
-            m_goal = obj;
+            m_cameraSprite = obj;
             if (obj == NULL) {
                 return 0;
             }
@@ -1452,7 +1453,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
     }
 
-    ar->Read(&m_armed, sizeof(m_armed));
+    ar->Read(&m_cameraTrackingActive, sizeof(m_cameraTrackingActive));
     ar->Read(&m_groupInitialized, sizeof(m_groupInitialized));
     ar->Read(&m_phase, sizeof(m_phase));
     ar->Read(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));

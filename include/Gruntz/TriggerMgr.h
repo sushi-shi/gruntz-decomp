@@ -47,7 +47,7 @@ public:
 
     i32 SetLevel(CDDrawSurfaceMgr* lvl);
 
-    i32 ScrollToActiveRecord();
+    i32 UpdateCameraTracking();
 
     void CloseActionOptionsMenu();
 
@@ -142,7 +142,7 @@ public:
     i32 LoadCameraSprite();
     void SetCameraTarget(i32 playerIndex, i32 unitIndex) {
         m_cameraTargetIdentity.Set(playerIndex, unitIndex);
-        m_armed = true;
+        m_cameraTrackingActive = true;
         LoadCameraSprite();
     }
     void ClearCameraSprite();
@@ -247,7 +247,7 @@ public:
         memset(m_gruntzExitedByPlayer, 0, sizeof(m_gruntzExitedByPlayer));
         memset(m_gruntzLostByPlayer, 0, sizeof(m_gruntzLostByPlayer));
         m_lastRecalledGroup = -1;
-        m_goal = NULL;
+        m_cameraSprite = NULL;
         m_overlay = NULL;
         m_world = NULL;
         m_countdownActive = true;
@@ -289,9 +289,9 @@ public:
 
     CDDrawSurfaceMgr* m_world;
 
-    b32 m_armed;
+    b32 m_cameraTrackingActive;
     Coord m_cameraTargetIdentity;
-    CWwdSpriteObject* m_goal;
+    CWwdSpriteObject* m_cameraSprite;
 
     CPtrList m_selectedUnitIds;
 

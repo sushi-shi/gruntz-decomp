@@ -60,7 +60,7 @@ i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
         return 0;
     }
     m_world = lvl;
-    m_armed = false;
+    m_cameraTrackingActive = false;
     m_pendingFx = NULL;
     m_countdownActive = true;
     return 1;

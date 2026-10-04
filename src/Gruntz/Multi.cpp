@@ -692,8 +692,8 @@ void CMulti::RenderGameFrame() {
         m_statusBar->Deactivate();
     }
     if (m_worldReady == false) {
-        if (Mgr()->m_triggerMgr->m_armed != false) {
-            Mgr()->m_triggerMgr->ScrollToActiveRecord();
+        if (Mgr()->m_triggerMgr->m_cameraTrackingActive != false) {
+            Mgr()->m_triggerMgr->UpdateCameraTracking();
         } else {
             LoadScrollSpeedOptions();
         }
