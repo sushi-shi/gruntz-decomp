@@ -3408,7 +3408,7 @@ play	?FindStartPointAt@CPlay@@QAEHHHPAH0@Z	100.0000	100.0000	8	fce3bc79fae7	0xd5
 play	?FinishSelectionDrag@CPlay@@QAEHXZ	100.0000	100.0000	7	a8c534d9bb17	0xda440	100.0000	
 play	?FlipBoth@CImage@@UAEXPAX@Z	100.0000	100.0000	1	c59c57547a67	0xd5e20	100.0000	
 play	?FlipHorizontal@CImage@@UAEXPAX@Z	100.0000	100.0000	1	943780ed0842	0xd5e00	100.0000	
-play	?FlushPendingOps@CPlay@@QAEHXZ	100.0000	100.0000	7	5d26e150fb0b	0xda2d0	100.0000	
+play	?CancelCursorAction@CPlay@@QAEHXZ	100.0000	100.0000	7	5d26e150fb0b	0xda2d0	100.0000	
 play	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	1	a609e028be41	0xcee70	100.0000	
 play	?FreeListTeardown@CPlay@@UAEXXZ	100.0000	100.0000	27	09b7c9d2bed1	0xcb480	100.0000	
 play	?GetAmbientId@CPlay@@QAEHXZ	100.0000	100.0000	5	09c585130342	0xda200	100.0000	
@@ -3468,7 +3468,7 @@ play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.975
 play	?BuildRockAndCoveredPowerupLogics@CPlay@@QAEHXZ	99.5915	99.5915	47	1a9fbb719de0	0xd53d0	99.5915	
 play	?RandomizePlayerAssignments@CPlay@@QAEHXZ	100.0000	99.8477	10	a12635a43754	0xd9290	100.0000	
 play	?SerializeDispatch@CPlay@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	18	1a5b90ded6f5	0xd7520	100.0000	
-play	?SetCursorFrame@CPlay@@QAEHH@Z	100.0000	100.0000	2	5c65a40d247f	0xd1b30	100.0000	
+play	?SelectCursor@CPlay@@QAEHH@Z	100.0000	100.0000	2	5c65a40d247f	0xd1b30	100.0000	
 play	?SetDarknessCurse@CPlay@@QAEHH@Z	100.0000	100.0000	5	62d63a68befe	0xd8aa0	100.0000	
 play	?SetDefeatCountdown@CPlay@@QAEHHH@Z	100.0000	100.0000	5	a30870cedd80	0xd9240	100.0000	
 play	?SetMonitorCurse@CPlay@@QAEHH@Z	100.0000	100.0000	5	a119526637db	0xd8b20	100.0000	

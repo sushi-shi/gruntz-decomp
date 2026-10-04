@@ -373,8 +373,8 @@ i32 CPlay::EnterState(GameStateId previousState) {
     }
     m_statusBarDragActive = false;
     m_dragInProgress = false;
-    m_dragInhibit1 = false;
-    m_dragInhibit2 = false;
+    m_gruntPlacementActive = false;
+    m_pickupPlacementActive = false;
     m_cursorTargetValid = false;
     m_selectionDragActive = false;
     if (m_renderDisabled == false) {
@@ -479,9 +479,9 @@ i32 CPlay::Render() {
         m_mgr->GetCommandMgr()->ExecuteScheduledCommands(0);
 
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
-            if (m_bootyTiming.Expired()) {
+            if (m_carriedGruntVoiceTimer.Expired()) {
                 g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-                m_bootyTiming.Start(BOOTY_INTERVAL_MS);
+                m_carriedGruntVoiceTimer.Start(CARRIED_GRUNT_VOICE_INTERVAL_MS);
             }
         }
 
@@ -1785,12 +1785,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         triggerManager->StopCameraTracking();
         CChatBox* rec = this->m_chatBox;
         if (rec->IsInputActive() != false) {
-            this->FlushPendingOps();
+            this->CancelCursorAction();
             this->m_chatBox->m_gameText->EndInput();
             this->m_chatBox->SetInputActive(false);
             return 1;
         }
-        if (this->FlushPendingOps() != 0) {
+        if (this->CancelCursorAction() != 0) {
             return 1;
         }
         g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -1890,13 +1890,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'T') {
-        this->FlushPendingOps();
+        this->CancelCursorAction();
         g_gameReg->GetTriggerMgr()->ToggleToolTargeting();
         return 1;
     }
 
     if (vk == 'Y') {
-        this->FlushPendingOps();
+        this->CancelCursorAction();
         g_gameReg->GetTriggerMgr()->ToggleToyTargeting();
         return 1;
     }
@@ -2273,19 +2273,19 @@ recorder_place:
     if (this->m_playerCommandPending != false) {
         return 1;
     }
-    if (this->m_dragInhibit1 != false) {
-        this->m_dragInhibit1 = false;
+    if (this->m_gruntPlacementActive != false) {
+        this->m_gruntPlacementActive = false;
         this->m_statusBar->CommitSlot(false);
-        this->SetCursorFrame(0);
+        this->SelectCursor(0);
         if (vk != VK_INSERT) {
             goto tail_default;
         }
         return 1;
     }
-    if (this->m_dragInhibit2 == false) {
+    if (this->m_pickupPlacementActive == false) {
         goto tail_default2;
     }
-    i32 st = this->m_cursorFrame;
+    i32 st = this->m_selectedCursorId;
     StatusBarHighlightRow ph = this->m_statusBar->m_pendingHlRow;
     i32 lvl;
     if (st >= 0x22) {
@@ -2293,14 +2293,14 @@ recorder_place:
     } else {
         lvl = (st >= 0x17);
     }
-    this->m_dragInhibit2 = false;
+    this->m_pickupPlacementActive = false;
     if (vk == VK_DELETE || vk == VK_DECIMAL) {
         statusBar->ReportTab(st);
-        this->SetCursorFrame(0);
+        this->SelectCursor(0);
         return 1;
     }
     statusBar->EnterHlRow(0, st);
-    this->SetCursorFrame(0);
+    this->SelectCursor(0);
     if (lvl == 0) {
         if (ph == STATUS_HL_ROW_CATEGORY) {
             if (vk != VK_NUMLOCK) {
@@ -2529,7 +2529,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         sx = view->left - geom->m_viewportRect.left + xr;
         sy = view->top - geom->m_viewportRect.top + y;
 
-        if (m_dragInhibit1 != false && m_playerCommandPending == false) {
+        if (m_gruntPlacementActive != false && m_playerCommandPending == false) {
             eventArg = 0;
             const RECT* gr = m_statusBar->GetBarRect();
             if (::PtInRect(gr, xr, y)) {
@@ -2555,19 +2555,19 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (eventArg == 0) {
                 g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x340, -1, 1, -1, -1);
             }
-            m_dragInhibit1 = false;
+            m_gruntPlacementActive = false;
             m_statusBar->CommitSlot(eventArg);
-            SetCursorFrame(0);
+            SelectCursor(0);
             return 1;
         }
 
-        if (m_dragInhibit2 != false && m_playerCommandPending == false) {
+        if (m_pickupPlacementActive != false && m_playerCommandPending == false) {
             {
                 const RECT* gr = m_statusBar->GetBarRect();
                 if (::PtInRect(gr, xr, y)) {
-                    if (m_statusBar->DropFallingItemAt(xr, y, m_cursorFrame)) {
-                        m_dragInhibit2 = false;
-                        SetCursorFrame(0);
+                    if (m_statusBar->DropFallingItemAt(xr, y, m_selectedCursorId)) {
+                        m_pickupPlacementActive = false;
+                        SelectCursor(0);
                         return 1;
                     }
                     goto waypoint_cancel;
@@ -2591,7 +2591,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                         static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
                         0,
                         0,
-                        static_cast<char>(m_cursorFrame),
+                        static_cast<char>(m_selectedCursorId),
                         0
                     );
                     m_playerCommandPending = true;
@@ -2617,16 +2617,16 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                     static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
                     0,
                     0,
-                    static_cast<char>(m_cursorFrame),
+                    static_cast<char>(m_selectedCursorId),
                     0
                 );
                 return 1;
             }
 
         waypoint_cancel:
-            m_dragInhibit2 = false;
-            m_statusBar->EnterHlRow(0, m_cursorFrame);
-            SetCursorFrame(0);
+            m_pickupPlacementActive = false;
+            m_statusBar->EnterHlRow(0, m_selectedCursorId);
+            SelectCursor(0);
             return 1;
         }
     } else {
@@ -2662,7 +2662,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
         const RECT* gr = m_statusBar->GetBarRect();
         if (::PtInRect(gr, xr, y)) {
-            FlushPendingOps();
+            CancelCursorAction();
             return m_statusBar->UpdateStatusBarTabHighlight(eventArg, xr, y);
         }
         if (m_chatBox->HitTest(xr, y)) {
@@ -2788,7 +2788,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         || g_gameReg->GetTriggerMgr()->m_playerControlEnabled == false) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
-    if (m_dragInhibit1 != false || m_dragInhibit2 != false) {
+    if (m_gruntPlacementActive != false || m_pickupPlacementActive != false) {
         return this->OnLButtonDown(keyFlags, x, y);
     }
 
@@ -2826,7 +2826,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         }
     }
 
-    if (m_dragInhibit1 != false) {
+    if (m_gruntPlacementActive != false) {
         return 1;
     }
     CGameLevel* h;
@@ -2987,7 +2987,7 @@ i32 CPlay::ForwardReady() {
 
 RVA(0x000cee90, 0x49)
 i32 CPlay::PauseGame() {
-    FlushPendingOps();
+    CancelCursorAction();
     if (m_paused) {
         m_statusBar->BuildGameTabResumeButton(false);
     } else {
@@ -3395,7 +3395,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
-        this->m_dragInhibit2 = true;
+        this->m_pickupPlacementActive = true;
         this->m_cursorTargetValid = false;
         this->m_cursorId = cursorId;
         return 1;
@@ -3422,13 +3422,13 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
-        this->m_dragInhibit1 = true;
+        this->m_gruntPlacementActive = true;
         this->m_cursorTargetValid = false;
         g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-        this->m_bootyTiming.m_intervalLo = BOOTY_INTERVAL_MS;
-        this->m_bootyTiming.m_intervalHi = 0;
-        this->m_bootyTiming.m_startLo = g_frameTime;
-        this->m_bootyTiming.m_startHi = 0;
+        this->m_carriedGruntVoiceTimer.m_intervalLo = CARRIED_GRUNT_VOICE_INTERVAL_MS;
+        this->m_carriedGruntVoiceTimer.m_intervalHi = 0;
+        this->m_carriedGruntVoiceTimer.m_startLo = g_frameTime;
+        this->m_carriedGruntVoiceTimer.m_startHi = 0;
         this->m_cursorId = cursorId;
         return 1;
     }
@@ -3825,7 +3825,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         }
 
         if (m_chatBox->HitTest(x, y) == 0 && m_mgr->GetFrameGate() == false && m_inGame == false
-            && m_dragInhibit1 == false && m_dragInhibit2 == false) {
+            && m_gruntPlacementActive == false && m_pickupPlacementActive == false) {
 
             if (m_cursorId != 0) {
                 if (m_cursorSnapSprite != NULL) {
@@ -3866,7 +3866,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_selectionRect.bottom = max(m_selectionRect.bottom, m_selectionAnchorY);
     }
     if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->IsTargeting() == false) {
-        FlushPendingOps();
+        CancelCursorAction();
     }
     return 1;
 }
@@ -4092,9 +4092,9 @@ void CPlay::StepScroll() {
 }
 
 RVA(0x000d1b30, 0x20)
-i32 CPlay::SetCursorFrame(i32 item) {
-    LoadCursorSprites(item, false);
-    m_cursorFrame = item;
+i32 CPlay::SelectCursor(i32 cursorId) {
+    LoadCursorSprites(cursorId, false);
+    m_selectedCursorId = cursorId;
     return 1;
 }
 
@@ -4466,9 +4466,9 @@ i32 CPlay::ExecuteCommand(
                 sel = 1;
             }
             if (player == static_cast<u32>(g_curPlayer)) {
-                m_dragInhibit2 = false;
-                m_statusBar->EnterHlRow(sel, m_cursorFrame);
-                SetCursorFrame(0);
+                m_pickupPlacementActive = false;
+                m_statusBar->EnterHlRow(sel, m_selectedCursorId);
+                SelectCursor(0);
             }
             return r;
         }
@@ -5507,7 +5507,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     m_levelOverlayOpen = true;
     m_selectionDragActive = false;
     m_statusBarDragActive = false;
-    FlushPendingOps();
+    CancelCursorAction();
     if (showQuitConfirmation == false) {
         CStatusBarMgr* g = m_statusBar;
         if (g->GetState() == STATUSBAR_HIDDEN) {
@@ -6045,7 +6045,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
     SerializeClockPair(ar, mode, &m_defeatCountdownTiming);
     SerializeClockPair(ar, mode, &m_monitorCurseTimer);
     SerializeClockPair(ar, mode, &m_randomColorsCurseTimer);
-    SerializeClockPair(ar, mode, &m_bootyTiming);
+    SerializeClockPair(ar, mode, &m_carriedGruntVoiceTimer);
     return 1;
 }
 
@@ -6067,12 +6067,12 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_rngSeed, sizeof(m_rngSeed));
     s->Write(&m_dragInProgress, sizeof(m_dragInProgress));
     s->Write(&m_reserved2f0, sizeof(m_reserved2f0));
-    s->Write(&m_cursorFrame, sizeof(m_cursorFrame));
+    s->Write(&m_selectedCursorId, sizeof(m_selectedCursorId));
     s->Write(&m_cursorId, sizeof(m_cursorId));
     s->Write(&m_cursorOffset, sizeof(m_cursorOffset));
     s->Write(&m_tileClick, sizeof(m_tileClick));
-    s->Write(&m_dragInhibit1, sizeof(m_dragInhibit1));
-    s->Write(&m_dragInhibit2, sizeof(m_dragInhibit2));
+    s->Write(&m_gruntPlacementActive, sizeof(m_gruntPlacementActive));
+    s->Write(&m_pickupPlacementActive, sizeof(m_pickupPlacementActive));
 
     count = StartMarkerCount();
     s->Write(&count, sizeof(count));
@@ -6198,12 +6198,12 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_rngSeed, sizeof(m_rngSeed));
     ar->Read(&m_dragInProgress, sizeof(m_dragInProgress));
     ar->Read(&m_reserved2f0, sizeof(m_reserved2f0));
-    ar->Read(&m_cursorFrame, sizeof(m_cursorFrame));
+    ar->Read(&m_selectedCursorId, sizeof(m_selectedCursorId));
     ar->Read(&m_cursorId, sizeof(m_cursorId));
     ar->Read(&m_cursorOffset, sizeof(m_cursorOffset));
     ar->Read(&m_tileClick, sizeof(m_tileClick));
-    ar->Read(&m_dragInhibit1, sizeof(m_dragInhibit1));
-    ar->Read(&m_dragInhibit2, sizeof(m_dragInhibit2));
+    ar->Read(&m_gruntPlacementActive, sizeof(m_gruntPlacementActive));
+    ar->Read(&m_pickupPlacementActive, sizeof(m_pickupPlacementActive));
 
     {
 
@@ -6937,31 +6937,31 @@ i32 CPlay::GetAmbientId() {
 }
 
 RVA(0x000da2d0, 0xa5)
-i32 CPlay::FlushPendingOps() {
+i32 CPlay::CancelCursorAction() {
     if (m_playerCommandPending != false) {
         return 0;
     }
     b32 changed = false;
-    if (m_dragInhibit1 != false) {
-        CStatusBarMgr* worker = m_statusBar;
-        m_dragInhibit1 = false;
-        worker->CommitSlot(false);
-        SetCursorFrame(0);
+    if (m_gruntPlacementActive != false) {
+        CStatusBarMgr* statusBar = m_statusBar;
+        m_gruntPlacementActive = false;
+        statusBar->CommitSlot(false);
+        SelectCursor(0);
         changed = true;
     }
-    if (m_dragInhibit2 != false) {
-        i32 spr = m_cursorFrame;
-        CStatusBarMgr* worker = m_statusBar;
-        m_dragInhibit2 = false;
-        worker->EnterHlRow(0, spr);
-        SetCursorFrame(0);
+    if (m_pickupPlacementActive != false) {
+        i32 cursorId = m_selectedCursorId;
+        CStatusBarMgr* statusBar = m_statusBar;
+        m_pickupPlacementActive = false;
+        statusBar->EnterHlRow(0, cursorId);
+        SelectCursor(0);
         changed = true;
     }
-    CTriggerMgr* fx = g_gameReg->GetTriggerMgr();
-    if (fx->IsTargeting() != false) {
+    CTriggerMgr* triggerManager = g_gameReg->GetTriggerMgr();
+    if (triggerManager->IsTargeting() != false) {
         changed = true;
     }
-    fx->m_targetingCursorId = 0;
+    triggerManager->m_targetingCursorId = 0;
     LoadCursorSprites(0, false);
     return changed;
 }

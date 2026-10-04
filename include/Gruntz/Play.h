@@ -240,7 +240,7 @@ public:
 
     i32 QuitToMenu();
 
-    i32 SetCursorFrame(i32 item);
+    i32 SelectCursor(i32 cursorId);
 
     i32 ExecuteCommand(
         u8 playerIndex,
@@ -255,7 +255,7 @@ public:
 
     i32 CloseLevelOverlay(i32 unused);
     i32 ClearPlacedObjects();
-    i32 FlushPendingOps();
+    i32 CancelCursorAction();
 
     i32 SetDefeatCountdown(b32 active, i32 durationMs);
     inline void CancelDefeatCountdown();
@@ -320,7 +320,7 @@ public:
     b32 m_dragInProgress;
     // @identity-TODO: initialized and save-streamed, but never used by play logic.
     i32 m_reserved2f0;
-    i32 m_cursorFrame;
+    i32 m_selectedCursorId;
     i32 m_cursorId;
     Coord m_cursorOffset;
     i32 m_selectionAnchorX;
@@ -329,14 +329,14 @@ public:
     RECT m_selectionRect;
 
     CMinimap* m_minimap;
-    ClockInterval m_bootyTiming;
+    ClockInterval m_carriedGruntVoiceTimer;
 
     ClockInterval m_ambientTiming;
     b32 m_ambientInitDone;
     ClockInterval m_syncTiming;
     Coord m_tileClick;
-    b32 m_dragInhibit1;
-    b32 m_dragInhibit2;
+    b32 m_gruntPlacementActive;
+    b32 m_pickupPlacementActive;
 
     CPtrArray m_startMarkers;
 
@@ -473,7 +473,7 @@ inline CPlay::CPlay() {
     m_reserved2f0 = 0;
     m_packetsRcvd = 0;
     m_packetsSent = 0;
-    m_cursorFrame = 0;
+    m_selectedCursorId = 0;
     m_cursorId = -1;
     m_minimap = NULL;
     m_cursorUsesPlayerTint = false;
@@ -484,8 +484,8 @@ inline CPlay::CPlay() {
     m_selectionDragActive = false;
     m_statusBarDragActive = false;
     m_playerCommandPending = false;
-    m_dragInhibit1 = false;
-    m_dragInhibit2 = false;
+    m_gruntPlacementActive = false;
+    m_pickupPlacementActive = false;
     m_dragInProgress = false;
     m_cursorTargetValid = false;
 }

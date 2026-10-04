@@ -23,7 +23,7 @@
         CPlay* _g = PickPlayOrPausedState();                                                       \
         if (!_g)                                                                                   \
             return 0;                                                                              \
-        _g->SetCursorFrame(N);                                                                     \
+        _g->SelectCursor(N);                                                                       \
         PLAYCUE("GAME_MAJORCHEAT");                                                                \
         AppendChatMessage(MSG);                                                                    \
         return 1;                                                                                  \

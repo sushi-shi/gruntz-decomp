@@ -1169,7 +1169,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
     }
 
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    world->FlushPendingOps();
+    world->CancelCursorAction();
     world->CancelDefeatCountdown();
     return 1;
 }
@@ -2400,7 +2400,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     if (playerIndex == g_curPlayer) {
         m_playerControlEnabled = false;
     }
-    (static_cast<CPlay*>(g_gameReg->m_curState))->FlushPendingOps();
+    (static_cast<CPlay*>(g_gameReg->m_curState))->CancelCursorAction();
     return 1;
 }
 

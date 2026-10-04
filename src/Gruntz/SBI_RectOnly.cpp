@@ -4382,7 +4382,7 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
         && m_resourceSlots[rowIndex].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex].m_value;
         i32* slot = &m_resourceSlots[rowIndex].m_value;
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
             HiCueTimed();
             m_pendingHlRow = row;
             *slot = 0;
@@ -4400,7 +4400,7 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
         && m_resourceSlots[rowIndex + 4].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex + 4].m_value;
         i32* slot = &m_resourceSlots[rowIndex + 4].m_value;
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
             HiCueTimed();
             m_pendingHlRow = row;
             *slot = 0;
@@ -4418,7 +4418,7 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
         && m_resourceSlots[rowIndex + 8].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex + 8].m_value;
         i32* slot = &m_resourceSlots[rowIndex + 8].m_value;
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
             HiCueTimed();
             m_pendingHlRow = row;
             *slot = 0;
