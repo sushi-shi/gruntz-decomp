@@ -1095,7 +1095,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     {
         prevTiles = self->m_stateResources;
         self->m_stateResources = (self->m_levelResources);
-        UpdateWindow(self->m_mgr->m_gameWnd->GetHwnd());
+        UpdateWindow(self->m_mgr->GetGameWindow()->GetHwnd());
 
         mgr = self->m_mgr;
         if (!mgr->m_strWorldFile.IsEmpty()) {
@@ -1645,7 +1645,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     }
     if (m_helpMessageActive != false) {
         m_helpMessageActive = false;
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
@@ -1710,7 +1710,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
-                    PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(
+                        mgr->GetGameWindow()->GetHwnd(),
+                        WM_COMMAND,
+                        IDX(CMD_MAIN_MENU),
+                        0
+                    );
                 } else {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
@@ -1731,7 +1736,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
-                    PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(
+                        mgr->GetGameWindow()->GetHwnd(),
+                        WM_COMMAND,
+                        IDX(CMD_MAIN_MENU),
+                        0
+                    );
                 }
                 return 1;
             }
@@ -1744,7 +1754,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (mgr->GetGameMode() == GAMEMODE_QUESTZ
                     && g_gameReg->GetTriggerMgr()->GetFinishState() != FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                    CGameWnd* r = g_gameReg->m_gameWnd;
+                    CGameWnd* r = g_gameReg->GetGameWindow();
                     PostMessageA(r->GetHwnd(), WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
                 }
                 return 1;
@@ -2508,7 +2518,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     }
     if (m_helpMessageActive != false) {
         m_helpMessageActive = false;
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
@@ -2903,7 +2913,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     }
     if (m_helpMessageActive != false) {
         m_helpMessageActive = false;
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
     if (m_levelOverlayOpen != false) {
@@ -3264,11 +3274,11 @@ i32 CPlay::CompleteLevel() {
         m_mgr->m_midi->ClearSequences();
         m_mgr->m_worldSounds->Teardown();
         m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     if (m_returnToMenuOnComplete) {
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     m_mgr->Post(m_levelIndex + 1);
@@ -5922,7 +5932,7 @@ i32 CPlay::ShowHelpMessage(i32 messageId) {
     m_stepCountdown = 2;
     m_helpMessageActive = true;
 
-    PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+    PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_cursorSnapSprite) {
         m_cursorSnapSprite->Hide();
     }
@@ -6572,15 +6582,15 @@ i32 CPlay::DrawDarknessView() {
 
 RVA(0x000d9160, 0xac)
 i32 CPlay::DiscardQueuedInput() {
-    m_mgr->m_gameWnd->DiscardMessages(WM_CHAR, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_MOUSEMOVE, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONDOWN, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONUP, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONDBLCLK, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONDOWN, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONUP, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONDBLCLK, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_CHAR, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_KEYDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_MOUSEMOVE, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_LBUTTONDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_LBUTTONUP, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_LBUTTONDBLCLK, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_RBUTTONDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_RBUTTONUP, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_RBUTTONDBLCLK, 0x40);
     return 1;
 }
 

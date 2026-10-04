@@ -284,7 +284,12 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
                 return 1;
             }
             g_gameReg->SetSaveSlot(slot);
-            PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
+            PostMessageA(
+                g_gameReg->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_LOAD_SAVED_GAME),
+                0
+            );
             EndDialog(hwnd, 1);
             return 1;
         }

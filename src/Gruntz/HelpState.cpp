@@ -67,7 +67,7 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     if (!m_stateResources) {
         return 0;
     }
-    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_KEYDOWN, 0x40);
     return 1;
 }
 
@@ -118,7 +118,7 @@ i32 CHelpState::Render() {
     i32 n = g_actorList->GetCount();
     for (i = 0; i < n; i++) {
         if (g_actorList->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
-            PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
+            PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
             m_mgr->m_owner->SetRunning(false);
             return 1;
         }
@@ -152,13 +152,13 @@ i32 CHelpState::RestoreDisplay() {
 RVA(0x000953f0, 0x37)
 i32 CHelpState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
     }
     return 1;
 }
 
 RVA(0x00095440, 0x24)
 i32 CHelpState::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
+    PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
     return 1;
 }

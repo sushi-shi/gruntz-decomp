@@ -39,7 +39,7 @@ static __inline void PlayTabCue(CStatusBarMgr* statusBar, StatusBarTab tab, cons
 }
 
 static __inline void HiPost(i32 cmdId) {
-    PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, cmdId, 0);
+    PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, cmdId, 0);
 }
 
 inline b32 CStatusBarMgr::ActivateReadySlot(i32 slot) {

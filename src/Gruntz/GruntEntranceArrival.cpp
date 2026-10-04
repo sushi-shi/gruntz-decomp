@@ -962,7 +962,12 @@ i32 CGrunt::UpdateExitAnimation() {
             CString s;
             s.Format("WORLDZ\\LEVEL%i", lvl);
             if (st->m_levelResources->GetRezFromPath(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
-                PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
+                PostMessageA(
+                    g_gameReg->GetGameWindow()->GetHwnd(),
+                    WM_COMMAND,
+                    IDX(CMD_LOAD_WORLD),
+                    lvl
+                );
             }
         }
         UnregisterFromBoard(1);
