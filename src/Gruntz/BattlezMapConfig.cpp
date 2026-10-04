@@ -2723,7 +2723,8 @@ i32 CBattlezAiController::RouteToNearbyEnemy(CGrunt* unit) {
                     unit->SetRoutePassableMask(0);
                 }
                 if (unit->IsBlockedVoicePending() != false) {
-                    __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeTiming.m_start;
+                    __int64 elapsed =
+                        static_cast<__int64>(g_frameTime) - m_routeTiming.GetStartTime();
                     if (elapsed >= m_routeTiming.GetInterval()) {
                         unit->SetBlockedVoicePending(false);
                         CGameObject* lvl = unit->m_object;

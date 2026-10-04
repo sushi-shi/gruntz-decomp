@@ -430,7 +430,7 @@ i32 CTeleporter::Update() {
     CWwdSpriteObject* o = m_object;
     if (o->GetLogicRecord()->GetSpeed() != 0) {
         i64 delta = static_cast<i64>(g_frameTime) - m_armTiming.m_start;
-        if (delta >= m_armTiming.GetInterval()) {
+        if (delta >= m_armTiming.m_interval) {
             SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
             m_object->GetLogicRecord()->SetSpeed(0);
             m_tickHandled = true;

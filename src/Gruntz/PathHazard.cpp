@@ -253,7 +253,7 @@ RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::UpdateWaypointPause() {
     if (m_flashActive != false) {
         i32 sel = 5;
-        i64 elapsed = static_cast<i64>(g_frameTime) - m_flashTimer.m_start;
+        i64 elapsed = static_cast<i64>(g_frameTime) - m_flashTimer.GetStartTime();
 
         if (elapsed < m_flashTimer.GetInterval()) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
@@ -300,7 +300,7 @@ i32 CPathHazard::UpdateWaypointPause() {
     }
 
     CGruntzMgr* tableReg = g_gameReg;
-    i64 pauseElapsed = static_cast<i64>(g_frameTime) - m_waypointPauseTimer.m_start;
+    i64 pauseElapsed = static_cast<i64>(g_frameTime) - m_waypointPauseTimer.GetStartTime();
     if (pauseElapsed >= m_waypointPauseTimer.GetInterval()) {
         CShadeTable* frame = tableReg->GetLightFxMgr()->GetShadeTable(5);
         CWwdSpriteObject* o = m_object;

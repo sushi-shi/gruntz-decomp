@@ -51,6 +51,10 @@ struct ClockInterval {
         return elapsed < 0 ? 0 : static_cast<u32>(elapsed);
     }
 
+    const i64& GetStartTime() const {
+        return m_start;
+    }
+
     const i64& GetInterval() const {
         return m_interval;
     }

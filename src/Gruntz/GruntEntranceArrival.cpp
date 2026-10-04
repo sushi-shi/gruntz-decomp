@@ -523,7 +523,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         return 0;
     }
 
-    i64 diff = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
+    i64 diff = static_cast<i64>(g_frameTime) - m_toyTiming.GetStartTime();
     if (diff >= m_toyTiming.GetInterval() && m_toyBreakStarted == false && ready == true) {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
@@ -850,7 +850,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
         return 0;
     }
 
-    i64 toyElapsedMs = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
+    i64 toyElapsedMs = static_cast<i64>(g_frameTime) - m_toyTiming.GetStartTime();
     if (toyElapsedMs >= m_toyTiming.GetInterval()) {
         if (m_toyBreakStarted == false && IsGruntAtSavedScreenPos(this)) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
@@ -877,7 +877,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
         return 0;
     }
 
-    i64 idleCueElapsedMs = static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start;
+    i64 idleCueElapsedMs = static_cast<i64>(g_frameTime) - m_idleDelayTiming.GetStartTime();
     if (idleCueElapsedMs >= m_idleDelayTiming.GetInterval()) {
         PLAY_GRUNT_CUE_IN_VIEW(0xd);
     }

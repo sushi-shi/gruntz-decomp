@@ -1335,7 +1335,7 @@ i32 CBootyState::Render() {
         snd->TickStreams(now);
     }
 
-    i64 elapsed = static_cast<i64>(g_frameTime) - m_frameTiming.m_start;
+    i64 elapsed = static_cast<i64>(g_frameTime) - m_frameTiming.GetStartTime();
     if (elapsed < m_frameTiming.GetInterval()) {
         return 0;
     }
