@@ -42,6 +42,14 @@ public:
     virtual i32 OnPointerDrag(i32 keyFlags, i32 x, i32 y);
     virtual void RequestRedraw();
 
+    SbiCommandId GetCommandId() const {
+        return m_cmd;
+    }
+
+    StatusBarTab GetTab() const {
+        return m_tab;
+    }
+
     void SetEnabled(i32 on) {
         m_enabled = on;
     }
