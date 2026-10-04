@@ -2426,7 +2426,7 @@ gruntzmgr	?LoadLevel@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	5	23bf3b472823	0x8d
 gruntzmgr	?ToggleMonolithOverlay@CGruntzMgr@@QAEHXZ	100.0000	100.0000	17	0e15cc35b34d	0x90d10	100.0000	
 gruntzmgr	?RunSaveGameDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	b252dfcf4a4d	0x92420	100.0000	
 gruntzmgr	?LoadState@CGruntzMgr@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	7	1d1f6c5f1625	0x93920	100.0000	
-gruntzmgr	?LoadWorldMode@CGruntzMgr@@QAEHW4ColorDepth@@@Z	98.3246	98.3246	14	1476db9408f4	0x91a40	98.3246	
+gruntzmgr	?ReinitializeWorldForColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	98.3246	98.3246	14	1476db9408f4	0x91a40	98.3246	
 gruntzmgr	?MakeRezPath@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	de39aecd2019	0x91670	100.0000	
 gruntzmgr	?MuteMusicIfActive@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	4	f7509f5e9de6	0x915d0	100.0000	
 gruntzmgr	?OnCheckpointReached@CGruntzMgr@@QAEXXZ	100.0000	100.0000	4	83b48e752126	0x8e6c0	100.0000	
@@ -2461,7 +2461,7 @@ gruntzmgr	?ReportWorldStatus@CGruntzMgr@@QAEXW4WorldInitReportTag@@@Z	100.0000	1
 gruntzmgr	?ResetAllPlayerSlots@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	ff4a86644a49	0x92df0	100.0000	
 gruntzmgr	?ResetClockGlobals@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	c213ab24db6d	0x8f4f0	100.0000	
 gruntzmgr	?ResetPlayerSlot@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	4	0c1240acf8f3	0x92da0	100.0000	
-gruntzmgr	?ResetWorldState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	552f1a0abc08	0x91e20	100.0000	
+gruntzmgr	?ToggleColorDepth@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	552f1a0abc08	0x91e20	100.0000	
 gruntzmgr	?RestoreGameGraphics@@YAHXZ	100.0000	100.0000	6	76a4228a3c8e	0x8b8c0	100.0000	
 gruntzmgr	?RestoreMusicVolumeIfActive@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	4	ba8d58a76f33	0x91620	100.0000	
 gruntzmgr	?EnsureStandardVideoMode@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	f15d2fbee6c4	0x8ddd0	100.0000	
@@ -2475,7 +2475,7 @@ gruntzmgr	?ScanObjectsInRadius@CGruntzMgr@@QAEHHHHHP6AHPAUCGameObject@@H@ZH@Z	10
 gruntzmgr	?ScanObjectsInRect@CGruntzMgr@@QAEHHHPAUtagRECT@@HP6AHPAUCGameObject@@H@ZH@Z	100.0000	100.0000	5	672a6393a016	0x92250	100.0000	
 gruntzmgr	?SerializeGameState@CGruntzMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	8	39669f8c96af	0x93460	100.0000	
 gruntzmgr	?SetAssetRoot@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	2	8ad8fe2489f7	0x92060	100.0000	
-gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	100.0000	100.0000	1	8bab5f986b4a	0x91170	100.0000	
+gruntzmgr	?ConfigureSurfaceColorKey@CGruntzMgr@@QAEHW4ColorDepth@@@Z	100.0000	100.0000	1	8bab5f986b4a	0x91170	100.0000	
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	2	f0ceb7ca02d1	0x8f7b0	100.0000	
 gruntzmgr	?SetGruntColor@CGruntzMgr@@QAEHPAVCDDrawWorker@@PBDH@Z	100.0000	100.0000	7	5ee69a2f2292	0x910d0	100.0000	
 gruntzmgr	?SetInactivePlayerName@CGruntzMgr@@QAEHHHHHHABVCString@@H@Z	100.0000	100.0000	4	889fa0ca3f69	0x92d50	100.0000	

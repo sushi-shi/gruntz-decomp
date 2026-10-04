@@ -169,10 +169,10 @@ public:
     i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user);
 
     i32 ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user);
-    i32 SetColorDepth(ColorDepth depth);
-    i32 LoadWorldMode(ColorDepth mode);
+    i32 ConfigureSurfaceColorKey(ColorDepth depth);
+    i32 ReinitializeWorldForColorDepth(ColorDepth depth);
     void OnWorldModeLoaded(ColorDepth mode);
-    i32 ResetWorldState();
+    i32 ToggleColorDepth();
     void PauseMusicIfEnabled();
     void ResumeMusicIfEnabled();
 
@@ -407,7 +407,7 @@ public:
     // @identity-TODO: initialized to zero; no reader identifies this word.
     i32 m_reserveda8;
     b32 m_modalBusy;
-    b32 m_renderGate;
+    b32 m_renderSuspended;
 
     // @identity-TODO: construction and lobby startup only zero this word.
     i32 m_reservedb4;

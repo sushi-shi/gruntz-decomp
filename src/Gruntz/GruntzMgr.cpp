@@ -239,7 +239,7 @@ CGruntzMgr::CGruntzMgr() {
     m_delayedQuitPending = false;
     m_reserveda8 = 0;
     m_modalBusy = false;
-    m_renderGate = false;
+    m_renderSuspended = false;
     m_reservedb4 = 0;
     m_loadingSaveGame = false;
     m_isCheckpointPrompts = true;
@@ -403,7 +403,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         g_enableEmulation = true;
     }
     m_modalBusy = false;
-    m_renderGate = false;
+    m_renderSuspended = false;
     m_driveLetterProbed = false;
     m_driveLetter = 0;
     GetGruntzDriveLetter();
@@ -516,7 +516,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.ZZZ"), true);
     ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.XXX"), true);
-    SetColorDepth(m_colorDepth);
+    ConfigureSurfaceColorKey(m_colorDepth);
 
     m_faderMgr = new CFaderMgr;
     if (!m_faderMgr->SetDefaults(NULL, NULL, NULL)) {
@@ -2720,7 +2720,7 @@ i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
 }
 
 RVA(0x00091170, 0xad)
-i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
+i32 CGruntzMgr::ConfigureSurfaceColorKey(ColorDepth depth) {
     if (depth != BPP_PALETTED_8 && depth != BPP_RGB_16 && depth != BPP_RGB_24) {
         return 0;
     }
@@ -2961,14 +2961,14 @@ i32 CGruntzMgr::SetVoiceVolume(i32 v) {
 
 // @early-stop
 RVA(0x00091a40, 0x2f9)
-i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
+i32 CGruntzMgr::ReinitializeWorldForColorDepth(ColorDepth depth) {
     if (m_world == NULL) {
         return 0;
     }
-    if (m_colorDepth == mode) {
+    if (m_colorDepth == depth) {
         return 1;
     }
-    if (mode != BPP_PALETTED_8 && mode != BPP_RGB_16) {
+    if (depth != BPP_PALETTED_8 && depth != BPP_RGB_16) {
         return 0;
     }
 
@@ -2980,7 +2980,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     }
     m_resourceArchive = NULL;
 
-    m_colorDepth = mode;
+    m_colorDepth = depth;
     g_enableTrueColor = false;
     g_enableHiColor = false;
     if (m_colorDepth == BPP_RGB_16) {
@@ -3025,7 +3025,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    SetColorDepth(m_colorDepth);
+    ConfigureSurfaceColorKey(m_colorDepth);
 
     SAFE_DELETE(m_worldSounds)
 
@@ -3041,7 +3041,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     return 1;
 }
 
-// @identity-TODO: placement after LoadWorldMode is the only evidence for the hook's name.
+// @identity-TODO: placement after ReinitializeWorldForColorDepth is the only evidence for the hook's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091e00, 0x3)
@@ -3050,7 +3050,7 @@ void CGruntzMgr::OnWorldModeLoaded(ColorDepth mode) {}
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091e20, 0x17d)
-i32 CGruntzMgr::ResetWorldState() {
+i32 CGruntzMgr::ToggleColorDepth() {
     CState* st = m_curState;
     if (st == NULL) {
         return 1;
@@ -3062,7 +3062,7 @@ i32 CGruntzMgr::ResetWorldState() {
 
     CState* s = m_curState;
     m_modalBusy = true;
-    m_renderGate = true;
+    m_renderSuspended = true;
     if (s) {
         delete s;
         m_curState = NULL;
@@ -3075,12 +3075,12 @@ i32 CGruntzMgr::ResetWorldState() {
     CWaitCursorScope waitCursor;
 
     if (m_colorDepth == BPP_PALETTED_8) {
-        if (LoadWorldMode(BPP_RGB_16) == BPP_UNSET) {
+        if (ReinitializeWorldForColorDepth(BPP_RGB_16) == BPP_UNSET) {
             ReportError(IDX(IDS_CHANGE_COLOR_DEPTH), 0x443);
             return 0;
         }
     } else {
-        if (LoadWorldMode(BPP_PALETTED_8) == BPP_UNSET) {
+        if (ReinitializeWorldForColorDepth(BPP_PALETTED_8) == BPP_UNSET) {
             ReportError(IDX(IDS_CHANGE_COLOR_DEPTH), 0x444);
             return 0;
         }
@@ -3090,7 +3090,7 @@ i32 CGruntzMgr::ResetWorldState() {
     }
     TransitionState(stateId, 1, false, 0);
     m_modalBusy = false;
-    m_renderGate = false;
+    m_renderSuspended = false;
     return 1;
 }
 
