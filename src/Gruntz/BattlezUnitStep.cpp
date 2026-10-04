@@ -60,12 +60,12 @@
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
 
-inline CGrunt* CBattlezAiController::FindNearbyIdleGrunt(CGrunt* unit) {
+inline CGrunt* CBattlezAiController::FindNearbyEnemy(CGrunt* unit) {
     i32 width = m_tileGrid->GetWidth();
     i32 height = m_tileGrid->GetHeight();
     Coord searchTile;
     unit->GetScreenTile(&searchTile);
-    return FindIdleGruntInBox(
+    return FindNearestEnemyInBox(
         searchTile.m_x,
         searchTile.m_y,
         static_cast<i32>(static_cast<u32>(width) / 3),
@@ -74,106 +74,124 @@ inline CGrunt* CBattlezAiController::FindNearbyIdleGrunt(CGrunt* unit) {
 }
 
 RVA(0x00031610, 0x501)
-i32 CBattlezAiController::Step(CGrunt* g) {
-    if (g->CoordsEmpty()) {
-        if (g->GetAiState() == AISTATE_ATTACK) {
+i32 CBattlezAiController::PursueNearbyEnemy(CGrunt* unit) {
+    if (unit->CoordsEmpty()) {
+        if (unit->GetAiState() == AISTATE_ATTACK) {
             goto inflight;
         }
 
-        CGrunt* nb = FindNearbyIdleGrunt(g);
-        if (nb != NULL) {
-            Coord c1;
-            nb->GetScreenTile((&c1));
-            if (g->MoveToTile(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
+        CGrunt* candidateTarget = FindNearbyEnemy(unit);
+        if (candidateTarget != NULL) {
+            Coord targetTile;
+            candidateTarget->GetScreenTile((&targetTile));
+            if (unit->MoveToTile(targetTile.m_x, targetTile.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
-            g->SetAiAttackTarget(nb);
-            AcceptAlways(g);
+            unit->SetAiAttackTarget(candidateTarget);
+            AcceptAlways(unit);
             return 1;
         }
 
-        if (static_cast<u32>(g->GetDwell()) > static_cast<u32>(m_idleRerouteDelay)) {
-            Coord here;
-            g->GetScreenTile(&here);
-            RerouteIdleUnit(g, here.m_x, here.m_y, m_idleBurnRandX, m_idleBurnRandY, -1);
-            if (g->CoordCount() > m_idleRouteLimitY + m_idleRouteLimitX && !g->CoordsEmpty()) {
-                g->RecycleCoords();
+        if (static_cast<u32>(unit->GetDwell()) > static_cast<u32>(m_idleRerouteDelay)) {
+            Coord currentTile;
+            unit->GetScreenTile(&currentTile);
+            RerouteIdleUnit(
+                unit,
+                currentTile.m_x,
+                currentTile.m_y,
+                m_idleBurnRandX,
+                m_idleBurnRandY,
+                -1
+            );
+            if (unit->CoordCount() > m_idleRouteLimitY + m_idleRouteLimitX
+                && !unit->CoordsEmpty()) {
+                unit->RecycleCoords();
             }
-            g->ResetDwell();
+            unit->ResetDwell();
         }
         return 1;
     }
 
-    if (g->GetAiState() != AISTATE_ATTACK) {
+    if (unit->GetAiState() != AISTATE_ATTACK) {
         return 1;
     }
 inflight: {
 
-    CGrunt* cur = m_triggerMgr->UnitAt(g->ArrivalCell().m_x, g->ArrivalCell().m_y);
-    CGrunt* nb = FindNearbyIdleGrunt(g);
+    CGrunt* target = m_triggerMgr->UnitAt(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y);
+    CGrunt* candidateTarget = FindNearbyEnemy(unit);
 
-    if (cur == NULL) {
+    if (target == NULL) {
         goto L_clear;
     }
-    if (nb != NULL && cur != nb) {
-        g->RecycleCoords();
-        g->SetAiAttackTarget(nb);
+    if (candidateTarget != NULL && target != candidateTarget) {
+        unit->RecycleCoords();
+        unit->SetAiAttackTarget(candidateTarget);
         {
-            if (g->MoveToTile(nb->GetScreenTileX(), nb->GetScreenTileY(), 0, 0xd87, 0, 0) == 0) {
+            if (unit->MoveToTile(
+                    candidateTarget->GetScreenTileX(),
+                    candidateTarget->GetScreenTileY(),
+                    0,
+                    0xd87,
+                    0,
+                    0
+                )
+                == 0) {
                 return 1;
             }
         }
-        cur = nb;
+        target = candidateTarget;
     }
 
-    if (cur != NULL) {
+    if (target != NULL) {
         {
-            CGameObject* s = cur->m_object;
-            if (g->IsWithinReach(s->m_screenX, s->m_screenY) != 0) {
+            CGameObject* s = target->m_object;
+            if (unit->IsWithinReach(s->m_screenX, s->m_screenY) != 0) {
 
-                g->RecycleCoords();
-                UNSET_COORD(g->m_arrivalCell);
-                HandleUnitContact(g, cur);
-                g->SetAiState(AISTATE_SEEK);
+                unit->RecycleCoords();
+                UNSET_COORD(unit->m_arrivalCell);
+                HandleUnitContact(unit, target);
+                unit->SetAiState(AISTATE_SEEK);
                 return 1;
             }
         }
 
-        if (static_cast<u32>(g->GetDwell()) <= static_cast<u32>(m_reserveBudget)) {
+        if (static_cast<u32>(unit->GetDwell()) <= static_cast<u32>(m_reserveBudget)) {
             return 1;
         }
         {
-            Coord here;
-            g->GetScreenTile(&here);
-            i32 x5 = here.m_x;
-            i32 y5 = here.m_y;
-            Coord nbpos;
-            nbpos = cur->GetTilePos();
-            i32 dx = nbpos.m_x - x5;
-            i32 dy = nbpos.m_y - y5;
-            i32 adx = abs(dx);
-            i32 ady = abs(dy);
-            i32 dist = static_cast<i32>(sqrt(static_cast<double>(SquaredDistance(adx, ady))));
-            if (dist > m_assignedTargetMaxDistance) {
-                g->RecycleCoords();
+            Coord currentTile;
+            unit->GetScreenTile(&currentTile);
+            i32 tileX = currentTile.m_x;
+            i32 tileY = currentTile.m_y;
+            Coord targetTile;
+            targetTile = target->GetTilePos();
+            i32 dx = targetTile.m_x - tileX;
+            i32 dy = targetTile.m_y - tileY;
+            i32 absDx = abs(dx);
+            i32 absDy = abs(dy);
+            i32 distance =
+                static_cast<i32>(sqrt(static_cast<double>(SquaredDistance(absDx, absDy))));
+            if (distance > m_assignedTargetMaxDistance) {
+                unit->RecycleCoords();
                 goto L_clearAt;
             }
-            g->RecycleCoords();
-            if (g->MoveToTile(cur->GetScreenTileX(), cur->GetScreenTileY(), 0, 0xd87, 0, 0) != 0) {
+            unit->RecycleCoords();
+            if (unit->MoveToTile(target->GetScreenTileX(), target->GetScreenTileY(), 0, 0xd87, 0, 0)
+                != 0) {
                 goto L_done;
             }
         }
     L_clearAt:
-        g->ResetToSeek();
+        unit->ResetToSeek();
     L_done:
-        g->ResetDwell();
+        unit->ResetDwell();
         return 1;
     }
 
 L_clear: {
-    g->m_arrivalCell.m_x = -1;
-    g->SetAiState(AISTATE_SEEK);
-    g->m_arrivalCell.m_y = -1;
+    unit->m_arrivalCell.m_x = -1;
+    unit->SetAiState(AISTATE_SEEK);
+    unit->m_arrivalCell.m_y = -1;
     return 1;
 }
 }

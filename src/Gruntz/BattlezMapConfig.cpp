@@ -946,7 +946,7 @@ i32 CBattlezAiController::UpdateUnits() {
                     break;
                 }
                 case BZTASK_STEP: {
-                    Step(unit);
+                    PursueNearbyEnemy(unit);
                     break;
                 }
                 case BZTASK_ASSIGNED_TARGET: {
@@ -1575,7 +1575,7 @@ i32 CBattlezAiController::RepathAroundBlockedTiles(CGrunt* unit) {
 }
 
 RVA(0x0002ab80, 0x15e)
-CGrunt* CBattlezAiController::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
+CGrunt* CBattlezAiController::FindNearestEnemyInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
     SET_RECT_COMPONENTS(rect, cx - halfW, cy - halfH, cx + halfW, cy + halfH);
     CGrunt* best = NULL;

@@ -36,7 +36,7 @@ i32 CBattlezAiController::StepDefenderUnit(CGrunt* defender) {
         {
             Coord searchTile;
             defender->GetScreenTile(&searchTile);
-            target = FindIdleGruntInBox(
+            target = FindNearestEnemyInBox(
                 searchTile.m_x,
                 searchTile.m_y,
                 m_defenderSearchRadiusX,

@@ -11,7 +11,7 @@ rva	unit	function	lost_max	cur
 0x0350d0	battlezrepath	?RepathToFreeCell@CBattlezAiController@@QAEHPAVCGrunt@@@Z	89.6742	89.5618
 0x0358a0	battlezretarget	?RetargetIdleUnit@CBattlezAiController@@QAEHPAVCGrunt@@@Z	91.3524	90.8018
 0x032060	battlezunitstep	?AdvanceToEnemyBase@CBattlezAiController@@QAEHPAVCGrunt@@@Z	83.5371	80.4525
-0x031610	battlezunitstep	?Step@CBattlezAiController@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
+0x031610	battlezunitstep	?PursueNearbyEnemy@CBattlezAiController@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
 0x077df0	brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	93.2718	92.7476
 0x153470	cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	98.0233
 0x14a200	ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	79.9049	79.8770

@@ -81,8 +81,8 @@ public:
     i32 RetargetIdleUnit(CGrunt*);
     i32 UpdateUnits();
     i32 RepathAroundBlockedTiles(CGrunt*);
-    CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
-    CGrunt* FindNearbyIdleGrunt(CGrunt* unit);
+    CGrunt* FindNearestEnemyInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
+    CGrunt* FindNearbyEnemy(CGrunt* unit);
     i32 HandleUnitContact(CGrunt* actor, CGrunt* other);
     i32 RouteToNearbyPickup(CGrunt*);
 
@@ -92,7 +92,7 @@ public:
     i32 AdvanceToEnemyBase(CGrunt*);
 
     i32 ResolveArrival(CGrunt* g);
-    i32 Step(CGrunt* g);
+    i32 PursueNearbyEnemy(CGrunt* unit);
     i32 StepDefenderUnit(CGrunt* grunt);
 
     i32 ScanRegion(CGrunt* g);
