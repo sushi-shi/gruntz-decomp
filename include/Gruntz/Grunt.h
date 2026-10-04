@@ -272,6 +272,10 @@ public:
         return m_targetTeam;
     }
 
+    void SetTargetTeam(i32 team) {
+        m_targetTeam = team;
+    }
+
     GruntAiState GetDefenderState() const {
         return m_defenderState;
     }
