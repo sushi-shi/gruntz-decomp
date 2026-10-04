@@ -248,7 +248,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         g_bootyCheatBuilt = true;
     }
 
-    m_mgr->RestoreVideoMode(false);
+    m_mgr->EnsureStandardVideoMode(false);
 
     m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_BOOTY");
     if (!m_stateResources) {
@@ -1647,8 +1647,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
         } else {
 
-            g_gameReg
-                ->LoadLevel((nextLevelStats->GetLevelNumber() % 0x28) + 1, false, 1);
+            g_gameReg->LoadLevel((nextLevelStats->GetLevelNumber() % 0x28) + 1, false, 1);
         }
     }
     return 1;
@@ -1674,7 +1673,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
-    m_mgr->RestoreVideoMode(false);
+    m_mgr->EnsureStandardVideoMode(false);
     m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_BOOTY");
     if (!m_stateResources) {
         return 0;

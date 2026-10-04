@@ -2365,7 +2365,7 @@ gruntzmgr	?CheatRevealTreasures@CGruntzMgr@@QAEHXZ	100.0000	100.0000	6	107435982
 gruntzmgr	?CheatSkeletonToggle@CGruntzMgr@@QAEXXZ	99.2500	99.2500	20	7ab2f3f81c47	0x91250	99.2500	
 gruntzmgr	?CheckMovieFileExists@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	52533a9035c1	0x90aa0	100.0000	
 gruntzmgr	?CheckPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	d8f6c99680e5	0x8ec50	100.0000	
-gruntzmgr	?CheckSavedMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	10d82a10fd17	0x8de70	100.0000	
+gruntzmgr	?ApplySavedVideoMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	10d82a10fd17	0x8de70	100.0000	
 gruntzmgr	?ClearStateStack@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	a2efc4475a97	0x90a50	100.0000	
 gruntzmgr	?ClearWorldFile@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	11ad4fe60332	0x8f480	100.0000	
 gruntzmgr	?Close@CGruntzMgr@@UAEXXZ	100.0000	100.0000	19	58d25a9881e6	0x855e0	100.0000	
@@ -2415,7 +2415,7 @@ gruntzmgr	?IsBattlezMapFile@CGruntzMgr@@QAEHVCString@@@Z	100.0000	100.0000	3	323
 gruntzmgr	?IsInPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	7098b2de7942	0x8fa40	100.0000	
 gruntzmgr	?PaintCurrentState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	60de26591d21	0x91500	100.0000	
 gruntzmgr	?IsMoviePathValid@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	a7091dd0e6d2	0x901d0	100.0000	
-gruntzmgr	?IsStandardMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	fbeb77044cc2	0x8f980	100.0000	
+gruntzmgr	?IsStandardVideoMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	fbeb77044cc2	0x8f980	100.0000	
 gruntzmgr	?JumpLevelDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	f7e442166d13	0x8e7c0	100.0000	
 gruntzmgr	?LaunchPortal@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	2	2defc4052c72	0x907c0	100.0000	
 gruntzmgr	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	3	cd18773e7ea0	0x90550	100.0000	
@@ -2464,7 +2464,7 @@ gruntzmgr	?ResetPlayerSlot@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	4	0c1240acf8f3	
 gruntzmgr	?ResetWorldState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	552f1a0abc08	0x91e20	100.0000	
 gruntzmgr	?RestoreGameGraphics@@YAHXZ	100.0000	100.0000	6	76a4228a3c8e	0x8b8c0	100.0000	
 gruntzmgr	?RestoreMusicVolumeIfActive@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	4	ba8d58a76f33	0x91620	100.0000	
-gruntzmgr	?RestoreVideoMode@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	f15d2fbee6c4	0x8ddd0	100.0000	
+gruntzmgr	?EnsureStandardVideoMode@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	f15d2fbee6c4	0x8ddd0	100.0000	
 gruntzmgr	?ResumeMusicIfEnabled@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	2f837f75b41a	0x92030	100.0000	
 gruntzmgr	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	99.4146	99.1669	80	9b31b540fb67	0x83450	100.0000	
 gruntzmgr	?RunDebugGruntTypeDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	2f71ae927230	0x929e0	100.0000	

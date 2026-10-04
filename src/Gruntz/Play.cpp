@@ -917,7 +917,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     self->m_mgr->m_worldSounds->Teardown();
     self->m_mgr->VoiceMgr()->PauseAllVoices();
     self->m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
-    self->m_mgr->RestoreVideoMode(false);
+    self->m_mgr->EnsureStandardVideoMode(false);
 
     if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
@@ -1429,7 +1429,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
         if ((g_gameReg)->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             g_skipNextRestoreMessage = true;
             self->m_loadingScreenVisible = false;
-            self->m_mgr->CheckSavedMode();
+            self->m_mgr->ApplySavedVideoMode();
         }
         self->m_mgr->ChatLog()->ClearMessages();
         return 1;
@@ -5856,7 +5856,7 @@ i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAs
 
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(GameStateId mode) {
-    (g_gameReg)->CheckSavedMode();
+    (g_gameReg)->ApplySavedVideoMode();
     m_statusBar->Deactivate();
     m_statusBar->UpdateStatusBar(0);
     m_mgr->RefreshGameClock();

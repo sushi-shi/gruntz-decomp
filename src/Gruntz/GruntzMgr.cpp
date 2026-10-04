@@ -1321,7 +1321,7 @@ i32 CDDrawDeviceManager::GetCapsChecked() {
 }
 
 RVA(0x0008ddd0, 0x7e)
-i32 CGruntzMgr::RestoreVideoMode(b32 save) {
+i32 CGruntzMgr::EnsureStandardVideoMode(b32 save) {
     if (IS_STANDARD_VIDEO_MODE) {
         if (save) {
             m_savedModeSize = m_modeSize;
@@ -1336,10 +1336,11 @@ i32 CGruntzMgr::RestoreVideoMode(b32 save) {
 }
 
 RVA(0x0008de70, 0x61)
-i32 CGruntzMgr::CheckSavedMode() {
+i32 CGruntzMgr::ApplySavedVideoMode() {
 
     if ((m_modeSize.cx == m_savedModeSize.cx && m_modeSize.cy == m_savedModeSize.cy)
-        || SetVideoMode(m_savedModeSize.cx, m_savedModeSize.cy, true) || RestoreVideoMode(true)) {
+        || SetVideoMode(m_savedModeSize.cx, m_savedModeSize.cy, true)
+        || EnsureStandardVideoMode(true)) {
         return 1;
     }
     ReportError(IDX(IDS_SET_VIDEO_MODE), 0x45e);
@@ -2121,7 +2122,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f980, 0x21)
-i32 CGruntzMgr::IsStandardMode() {
+i32 CGruntzMgr::IsStandardVideoMode() {
     if (IS_STANDARD_VIDEO_MODE) {
         return 1;
     }

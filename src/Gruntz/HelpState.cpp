@@ -78,7 +78,7 @@ void CHelpState::ReleaseResources() {
 
 RVA(0x00095140, 0x6e)
 i32 CHelpState::EnterState(GameStateId previousState) {
-    m_mgr->RestoreVideoMode(false);
+    m_mgr->EnsureStandardVideoMode(false);
 
     if (m_world->GetDrawTarget()->HasOverlay() == 0
         && m_world->GetDrawTarget()->CreateOverlay(0, 0x30000) == 0) {

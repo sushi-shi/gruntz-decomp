@@ -79,7 +79,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
-    m_mgr->RestoreVideoMode(false);
+    m_mgr->EnsureStandardVideoMode(false);
     m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_MENU");
     if (m_stateResources == NULL) {
         return 0;

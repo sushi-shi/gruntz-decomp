@@ -121,7 +121,7 @@ public:
     void RefreshGameClock();
     void HandleAppActivation(b32 active, i32 unused);
     i32 CheckPlayState();
-    i32 RestoreVideoMode(b32 save);
+    i32 EnsureStandardVideoMode(b32 save);
     i32 SetVideoMode(i32 w, i32 h, b32 saveMode);
 
     i32 TryNextResolution();
@@ -250,7 +250,7 @@ public:
     void ResetClockGlobals();
     i32 UpdateGameplayInput();
     void SetSoundEnabled(b32 enabled);
-    i32 CheckSavedMode();
+    i32 ApplySavedVideoMode();
     i32 PaintCurrentState();
     void OnMusicMuteBegin();
     void OnMusicMuteEnd();
@@ -285,7 +285,7 @@ public:
     GruntzPlayer* FindPlayerByNetworkId(i32 networkPlayerId);
     i32 ResetPlayerSlot(i32 slot);
     void ResetAllPlayerSlots();
-    i32 IsStandardMode();
+    i32 IsStandardVideoMode();
     i32 DebugJumpLevel();
     i32 PostSlotCommandB1(i32 slot);
     i32 PostSlotCommandB6(i32 slot);

@@ -45,7 +45,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         } while (ShowCursor(false) >= 0);
     }
 
-    owner()->RestoreVideoMode(false);
+    owner()->EnsureStandardVideoMode(false);
 
     CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     m_stateResources = (state);
