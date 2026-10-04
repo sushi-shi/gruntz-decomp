@@ -174,7 +174,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = SetDlgItemTextA;
-    if (g_gameReg->World()->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+    if (g_gameReg->World()->GetLevel()->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
         char* p = info.m_levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
@@ -233,7 +233,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
         return -1;
     }
 
-    CGameLevel* lvl = g_gameReg->World()->m_level;
+    CGameLevel* lvl = g_gameReg->World()->GetLevel();
     if (lvl == NULL) {
         return -1;
     }
@@ -258,7 +258,7 @@ BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
             char num[0x20];
             i32 bad = 1;
             if (g_customWorldSurfaceMgr != NULL && FileExists(g_pathStr)
-                && g_customWorldSurfaceMgr->m_level
+                && g_customWorldSurfaceMgr->GetLevel()
                        ->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
                 SetDlgItemTextA(hDlg, 0x428, info.m_author);

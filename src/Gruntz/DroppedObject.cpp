@@ -216,7 +216,7 @@ i32 CObjectDropper::Update() {
     if (m_travelDx > 0) {
         m_posX += drift;
         if (m_posX >= static_cast<double>(
-                g_gameReg->World()->m_level->m_mainPlane->GetPlanePixelWidth()
+                g_gameReg->World()->GetLevel()->m_mainPlane->GetPlanePixelWidth()
             )) {
             m_posX = 0.0;
             m_lastDropPlayerIndex = -1;
@@ -226,7 +226,7 @@ i32 CObjectDropper::Update() {
         m_posX -= drift;
         if (m_posX < 0.0) {
             m_posX = static_cast<double>(
-                (g_gameReg->World()->m_level->m_mainPlane->GetPlanePixelWidth() - 1)
+                (g_gameReg->World()->GetLevel()->m_mainPlane->GetPlanePixelWidth() - 1)
             );
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
@@ -235,7 +235,7 @@ i32 CObjectDropper::Update() {
     if (m_travelDy > 0) {
         m_posY += drift;
         if (m_posY > static_cast<double>(
-                g_gameReg->World()->m_level->m_mainPlane->GetPlanePixelHeight()
+                g_gameReg->World()->GetLevel()->m_mainPlane->GetPlanePixelHeight()
             )) {
             m_posY = 0.0;
             m_lastDropPlayerIndex = -1;
@@ -245,7 +245,7 @@ i32 CObjectDropper::Update() {
         m_posY -= drift;
         if (m_posY < 0.0) {
             m_posY = static_cast<double>(
-                (g_gameReg->World()->m_level->m_mainPlane->GetPlanePixelHeight() - 1)
+                (g_gameReg->World()->GetLevel()->m_mainPlane->GetPlanePixelHeight() - 1)
             );
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;

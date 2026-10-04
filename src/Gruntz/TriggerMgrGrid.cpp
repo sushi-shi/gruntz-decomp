@@ -368,7 +368,7 @@ CGrunt* CTriggerMgr::ScreenToCell(
     i32* outUnitIndex,
     i32 startPlayerIndex
 ) {
-    CGameLevel* view = m_world->m_level;
+    CGameLevel* view = m_world->GetLevel();
     RECT* r = view->m_mainPlane->GetPlaneViewRect();
     i32 px = r->left - view->m_viewportRect.left + sx;
     i32 py = r->top - view->m_viewportRect.top + sy;
@@ -461,7 +461,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         g->m_neighborScanEnabled = true;
     }
 
-    CGameLevel* level = m_world->m_level;
+    CGameLevel* level = m_world->GetLevel();
     TileCollisionKind tag;
     PROBE_TILE(level, x, y, tag);
 
@@ -798,7 +798,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     || sw->m_checkpointType == IDX(g->GetVehiclePickupType())) {
                     sw->SwitchDown();
                 } else {
-                    RECT* view = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
+                    RECT* view = g_gameReg->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
                     i32 gx = g->m_object->m_screenX;
                     i32 gy = g->m_object->m_screenY;
                     if (::PtInRect(view, gx, gy)) {
@@ -839,7 +839,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 RVA(0x0006d300, 0x5db)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
-    CGameLevel* view = m_world->m_level;
+    CGameLevel* view = m_world->GetLevel();
     i32 x = sx;
     i32 y = sy;
     if (x < 0) {

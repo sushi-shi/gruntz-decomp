@@ -568,7 +568,7 @@ i32 CMulti::Render() {
         fin = 1;
     }
     TickStateMgrs();
-    CDDrawWorkerHost* mainPlane = m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* mainPlane = m_world->GetLevel()->m_mainPlane;
     if (mainPlane) {
         mainPlane->ActivateVisibleObjects();
     }

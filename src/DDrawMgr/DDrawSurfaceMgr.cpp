@@ -248,7 +248,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_PRESAVE, typeId)) {
         return 0;
     }
-    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_SAVE, LOGIC_UNSET, NULL)) {
@@ -257,7 +257,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (!ChildGroup()->SerializeObjects(&S, typeId)) {
         return 0;
     }
-    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_POSTSAVE, LOGIC_UNSET, NULL)) {
@@ -266,7 +266,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_POSTSAVE, typeId)) {
         return 0;
     }
-    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
 
@@ -307,7 +307,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_PRELOAD, typeId)) {
         return 0;
     }
-    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_LOAD, typeId, &header)) {
@@ -316,7 +316,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (!ChildGroup()->DeserializeObjects(&S, header.m_childCount, typeId)) {
         return 0;
     }
-    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
     if (!InvokeCallbackInline(&S, SERIAL_POSTLOAD, typeId, &header)) {
@@ -325,12 +325,12 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_POSTLOAD, typeId)) {
         return 0;
     }
-    if (!LevelOf(this)->SerializeDispatch(&S, SERIAL_POSTLOAD, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_POSTLOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
 
     S.Ready();
-    LevelOf(this)->DeactivateDistantObjectsOnMainPlane();
+    this->GetLevel()->DeactivateDistantObjectsOnMainPlane();
     return 1;
 }
 

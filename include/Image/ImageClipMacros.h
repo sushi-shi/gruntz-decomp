@@ -17,7 +17,7 @@
     rect.right = right;                                                                            \
     rect.bottom = bottom;                                                                          \
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {                                   \
-        CRect clip(OwnerMgr()->m_level->GetViewportRect());                                        \
+        CRect clip(OwnerMgr()->GetLevel()->GetViewportRect());                                     \
         if (x < clip.left) {                                                                       \
             rect.left += clip.left - x;                                                            \
         }                                                                                          \

@@ -326,7 +326,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
 RVA(0x000dbc80, 0x309)
 i32 CPlay::BuildWorldLevelPath(i32 unused) {
-    m_world->m_level->ReleaseChildren();
+    m_world->GetLevel()->ReleaseChildren();
     if (!m_mgr->m_strWorldFile.IsEmpty()) {
         if (m_mgr->m_isBuiltInBattlezLevel != false) {
             CString key = "BATTLEZ_" + m_mgr->GetWorldFileName();
@@ -334,7 +334,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
             if (node == NULL) {
                 return 0;
             }
-            if (m_world->m_level->LoadFromSource(node) == 0) {
+            if (m_world->GetLevel()->LoadFromSource(node) == 0) {
                 return 0;
             }
         } else if (m_mgr->m_isBuiltInMultiplayerLevel != false) {
@@ -343,11 +343,11 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
             if (node == NULL) {
                 return 0;
             }
-            if (m_world->m_level->LoadFromSource(node) == 0) {
+            if (m_world->GetLevel()->LoadFromSource(node) == 0) {
                 return 0;
             }
         } else {
-            if (m_world->m_level->LoadFromFile(m_mgr->GetWorldFileName()) == 0) {
+            if (m_world->GetLevel()->LoadFromFile(m_mgr->GetWorldFileName()) == 0) {
                 return 0;
             }
         }
@@ -366,13 +366,13 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
         if (node == NULL) {
             return 0;
         }
-        if (m_world->m_level->LoadFromSource(node) == 0) {
+        if (m_world->GetLevel()->LoadFromSource(node) == 0) {
             return 0;
         }
     }
-    m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->AddFlags(4);
-    g_backView = m_world->m_level->FindPlaneByName("BACK");
+    m_world->GetLevel()->NotifyAllPlanes();
+    m_world->GetLevel()->AddFlags(4);
+    g_backView = m_world->GetLevel()->FindPlaneByName("BACK");
     return 1;
 }
 
@@ -644,7 +644,7 @@ i32 CState::BuildAssetNamespacePrefixes(
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(IDS_LOADING);
-                RECT r = g_gameReg->World()->m_level->GetViewportRect();
+                RECT r = g_gameReg->World()->GetLevel()->GetViewportRect();
                 RECT r2;
                 CopyRect(&r2, &r);
                 DrawTextToFrontSurface(g_gameReg->World(), &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);

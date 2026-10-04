@@ -110,7 +110,7 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
 // @early-stop
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
-    CGameLevel* view = m_world->m_level;
+    CGameLevel* view = m_world->GetLevel();
     const RECT* vp = view->m_mainPlane->GetPlaneViewRect();
     r.left += vp->left - view->m_viewportRect.left;
     r.top += vp->top - view->m_viewportRect.top;
@@ -362,7 +362,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src = UnitAt(m_cameraTargetIdentity.m_x, m_cameraTargetIdentity.m_y)->m_object;
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
-    CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
+    CDDrawWorkerHost* t = m_world->GetLevel()->m_mainPlane;
     t->SetScrollPosition(x, y);
     return 1;
 }
@@ -441,7 +441,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
-    TileCollisionKind collision = PbResolveCell(m_world->m_level, tx, ty);
+    TileCollisionKind collision = PbResolveCell(m_world->GetLevel(), tx, ty);
 
     i32 pfk = m_pendingFxKind;
     if (pfk >= 0xdf) {
@@ -476,8 +476,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             }
 
             POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-            m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
-            m_world->m_level->m_mainPlane->WorldToViewport(
+            m_world->GetLevel()->m_mainPlane->WorldToViewport(&source.x, &source.y);
+            m_world->GetLevel()->m_mainPlane->WorldToViewport(
                 reinterpret_cast<LONG*>(&x), // PROVEN: i32/LONG argument-slot alias.
                 reinterpret_cast<LONG*>(&y)  // PROVEN: i32/LONG argument-slot alias.
             );
@@ -597,8 +597,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             case PICKUP_WINGZ:
                 if (pfk != 0) {
                     POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-                    m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
-                    CDDrawWorkerHost* plane = m_world->m_level->m_mainPlane;
+                    m_world->GetLevel()->m_mainPlane->WorldToViewport(&source.x, &source.y);
+                    CDDrawWorkerHost* plane = m_world->GetLevel()->m_mainPlane;
                     i32 dx = x;
                     i32 dy = y;
                     WwdPlaneFlags wflags = static_cast<WwdPlaneFlags>(plane->m_flags);
@@ -858,7 +858,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
         == ACTIONOPTION_HIDDEN) {
         return 0;
     }
-    CGameLevel* view = m_world->m_level;
+    CGameLevel* view = m_world->GetLevel();
     RECT* vr = view->m_mainPlane->GetPlaneViewRect();
     i32 worldX = vr->left - view->m_viewportRect.left + pointerX;
     i32 worldY = vr->top - view->m_viewportRect.top + pointerY;
@@ -903,7 +903,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         lvl->ResetGoals(col, row);
     }
 
-    CGameLevel* plane = g_gameReg->World()->m_level;
+    CGameLevel* plane = g_gameReg->World()->GetLevel();
     LONG outR = col;
     LONG outC = row;
     plane->m_mainPlane->WorldToViewport(&outR, &outC);
@@ -1551,11 +1551,11 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
-            if (tx >= m_world->m_level->m_mainPlane->GetPlanePixelWidth()
-                || ty >= m_world->m_level->m_mainPlane->GetPlanePixelHeight()) {
+            if (tx >= m_world->GetLevel()->m_mainPlane->GetPlanePixelWidth()
+                || ty >= m_world->GetLevel()->m_mainPlane->GetPlanePixelHeight()) {
                 continue;
             }
-            TileCollisionKind type = PbResolveCell(m_world->m_level, tx, ty);
+            TileCollisionKind type = PbResolveCell(m_world->GetLevel(), tx, ty);
 
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {
@@ -1641,8 +1641,8 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
         y - radiusPx - 7,
         y + radiusPx + 7
     );
-    i32 maxTileX = m_world->m_level->m_mainPlane->GetTileColumns() - 2;
-    i32 maxTileY = m_world->m_level->m_mainPlane->GetTileRows() - 2;
+    i32 maxTileX = m_world->GetLevel()->m_mainPlane->GetTileColumns() - 2;
+    i32 maxTileY = m_world->GetLevel()->m_mainPlane->GetTileRows() - 2;
 
     CGrunt** units = m_units;
     for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {
@@ -2265,7 +2265,7 @@ i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
     RECT bbox;
     bbox.right = 0;
     bbox.bottom = 0;
-    CDDrawWorkerHost* grid = g_gameReg->World()->m_level->m_mainPlane;
+    CDDrawWorkerHost* grid = g_gameReg->World()->GetLevel()->m_mainPlane;
     bbox.left = grid->GetPlanePixelWidth() - 1;
     bbox.top = grid->GetPlanePixelHeight() - 1;
     do {
@@ -2309,7 +2309,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     }
     RECT bbox;
     i32 count = 0;
-    CDDrawWorkerHost* dims = g_gameReg->World()->m_level->m_mainPlane;
+    CDDrawWorkerHost* dims = g_gameReg->World()->GetLevel()->m_mainPlane;
     bbox.left = dims->GetPlanePixelWidth() - 1;
     bbox.top = dims->GetPlanePixelHeight() - 1;
     bbox.right = 0;

@@ -71,6 +71,7 @@ rva	unit	function	lost_max	cur
 0x0ce660	play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.9791	96.4843
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	91.0339	90.1178
 0x0d0b30	play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9755
+0x0d1ac0	play	?StepScroll@CPlay@@QAEXXZ	100.0000	78.2069
 0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660
 0x0e7440	sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	100.0000	87.8421

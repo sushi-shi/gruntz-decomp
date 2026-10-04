@@ -25,7 +25,7 @@ RVA(0x00077790, 0x4f0)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
 
     BrickzCell* cell = &m_rows[y][x];
-    TileCollisionKind typeCode = PbResolveCell(m_attrMgr->m_level, x, y);
+    TileCollisionKind typeCode = PbResolveCell(m_attrMgr->GetLevel(), x, y);
     i32 oldFlags = cell->m_flags;
     i32 edgeBit = oldFlags & BRICKZ_CELL_OCCUPIED;
     i32 keep = oldFlags & 0x1bf40000;

@@ -343,7 +343,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        CRect destClip(OwnerMgr()->m_level->GetViewportRect());
+        CRect destClip(OwnerMgr()->GetLevel()->GetViewportRect());
         if (x < destClip.left) {
             d.left += destClip.left - x;
         }

@@ -651,7 +651,7 @@ i32 SoundCueRegistry::PlaySpatializedCue(
     i32 maxPanOffsetPx,
     i32 fullPanOffsetPx
 ) {
-    CGameLevel* level = OwnerMgr()->m_level;
+    CGameLevel* level = OwnerMgr()->GetLevel();
     if (level != NULL && level->m_mainPlane != NULL && m_silentMode == false) {
         SoundCue* cue = FindCue(key);
         if (cue != NULL) {
@@ -846,7 +846,7 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
         return 0;
     }
     if (listenerX <= 0) {
-        listenerX = OwnerMgr()->m_level->m_mainPlane->GetScrollPixelX();
+        listenerX = OwnerMgr()->GetLevel()->m_mainPlane->GetScrollPixelX();
     }
     if (maxPanOffsetPx <= 0) {
         maxPanOffsetPx = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->GetWidth() << 2;
