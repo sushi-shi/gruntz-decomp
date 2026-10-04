@@ -939,7 +939,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     CStatusBarMgr* st = world->m_statusBar;
-    SAFE_DELETE(st->m_retabNotify);
+    SAFE_DELETE(st->m_warpStoneFly);
     world->m_statusBar->m_layoutLocked = false;
     if (m_collectedWarpStoneFragments.GetSize() > 0) {
         m_collectedWarpStoneFragments.RemoveAt(m_collectedWarpStoneFragments.GetUpperBound(), 1);

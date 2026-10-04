@@ -302,8 +302,8 @@ i32 CStatusBarMgr::Render() {
                 cur->Render();
             }
         }
-        if (m_retabNotify) {
-            m_retabNotify->Draw();
+        if (m_warpStoneFly) {
+            m_warpStoneFly->Draw();
         }
     }
 
@@ -746,8 +746,8 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
             cur->Refresh(deltaMs);
         }
     }
-    if (m_retabNotify) {
-        m_retabNotify->Tick(deltaMs);
+    if (m_warpStoneFly) {
+        m_warpStoneFly->Tick(deltaMs);
         RequestRedraw();
     }
     return 1;
@@ -3290,7 +3290,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     ClockInterval* clock = &m_reserved2b0;
     clock->Clear();
     m_layoutLocked = false;
-    SAFE_DELETE(m_retabNotify);
+    SAFE_DELETE(m_warpStoneFly);
     ExitMode();
     m_observerTabAvailable = false;
     m_destructButtonLocked = false;
@@ -3464,7 +3464,7 @@ i32 CStatusBarMgr::SerializeDispatch(
             break;
     }
 
-    if (m_retabNotify != NULL) {
+    if (m_warpStoneFly != NULL) {
         i32 tmp = 1;
         if (mode == SERIAL_SAVE) {
             s->Write(&tmp, sizeof(tmp));
@@ -3477,14 +3477,14 @@ i32 CStatusBarMgr::SerializeDispatch(
             s->Read(&tmp, sizeof(tmp));
             if (tmp != 0) {
                 CWarpStoneFly* c = new CWarpStoneFly();
-                m_retabNotify = c;
+                m_warpStoneFly = c;
                 c->m_owner = this;
             }
         }
     }
 
-    if (m_retabNotify != NULL) {
-        if (m_retabNotify->SerializeDispatch(s, mode, typeId, payload) == 0) {
+    if (m_warpStoneFly != NULL) {
+        if (m_warpStoneFly->SerializeDispatch(s, mode, typeId, payload) == 0) {
             return 0;
         }
     }
@@ -3809,11 +3809,11 @@ i32 CStatusBarMgr::FindReadySlot() {
 
 RVA(0x00109ad0, 0xa9)
 i32 CStatusBarMgr::StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment) {
-    if (m_retabNotify) {
+    if (m_warpStoneFly) {
         return 0;
     }
     CWarpStoneFly* o = new CWarpStoneFly();
-    m_retabNotify = o;
+    m_warpStoneFly = o;
     if (o == NULL) {
         return 0;
     }
@@ -3822,7 +3822,7 @@ i32 CStatusBarMgr::StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragm
 
 RVA(0x00109bb0, 0xb)
 CWarpStoneFly::CWarpStoneFly() {
-    m_sprite = NULL;
+    m_frameImage = NULL;
     m_owner = NULL;
 }
 
@@ -3832,7 +3832,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
 
     i32 n = IDX(fragment) + 1;
     CImage* frame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", n);
-    m_sprite = frame;
+    m_frameImage = frame;
     if (frame == NULL) {
 
         return 0;
@@ -3865,7 +3865,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDword("WarpStone", "FlyTime", 0x5dc);
 
-    m_velocityScale = dist / static_cast<double>(flyTime);
+    m_speedPixelsPerMs = dist / static_cast<double>(flyTime);
     m_xDirection = static_cast<double>(deltaX) / dist;
     m_yDirection = static_cast<double>(dyv) / dist;
 
@@ -3899,12 +3899,12 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Read(&m_targetY, sizeof(m_targetY));
             arc->Read(&m_currentX, sizeof(m_currentX));
             arc->Read(&m_currentY, sizeof(m_currentY));
-            arc->Read(&m_velocityScale, sizeof(m_velocityScale));
+            arc->Read(&m_speedPixelsPerMs, sizeof(m_speedPixelsPerMs));
             arc->Read(&m_xDirection, sizeof(m_xDirection));
             arc->Read(&m_yDirection, sizeof(m_yDirection));
             char name[SERIAL_NAME_LEN];
             i32 index;
-            SERIAL_READ_FRAME(arc, lvl, name, index, m_sprite);
+            SERIAL_READ_FRAME(arc, lvl, name, index, m_frameImage);
             return 1;
         }
         case SERIAL_SAVE: {
@@ -3914,12 +3914,12 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Write(&m_targetY, sizeof(m_targetY));
             arc->Write(&m_currentX, sizeof(m_currentX));
             arc->Write(&m_currentY, sizeof(m_currentY));
-            arc->Write(&m_velocityScale, sizeof(m_velocityScale));
+            arc->Write(&m_speedPixelsPerMs, sizeof(m_speedPixelsPerMs));
             arc->Write(&m_xDirection, sizeof(m_xDirection));
             arc->Write(&m_yDirection, sizeof(m_yDirection));
             g_serialCounter++;
 
-            CImage* obj = m_sprite;
+            CImage* obj = m_frameImage;
             char name[SERIAL_NAME_LEN];
             i32 index = 0;
             memset(name, 0, SERIAL_NAME_LEN);
@@ -3948,13 +3948,13 @@ i32 CWarpStoneFly::Tick(u32 dt) {
             m_owner->TryActivate();
         }
         CStatusBarMgr* owner = m_owner;
-        SAFE_DELETE(owner->m_retabNotify);
+        SAFE_DELETE(owner->m_warpStoneFly);
         return 1;
     }
 
     double t = static_cast<double>(dt);
-    double newX = m_currentX + (t * m_velocityScale) * m_xDirection;
-    double newY = m_currentY + (t * m_yDirection) * m_velocityScale;
+    double newX = m_currentX + (t * m_speedPixelsPerMs) * m_xDirection;
+    double newY = m_currentY + (t * m_yDirection) * m_speedPixelsPerMs;
     m_currentX = newX;
     m_currentY = newY;
 
@@ -3982,7 +3982,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
 
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
-    m_sprite->RenderFrame(
+    m_frameImage->RenderFrame(
         g_gameReg->World()->GetDrawTarget()->GetBackPair(),
         static_cast<i32>(m_currentX),
         static_cast<i32>(m_currentY),

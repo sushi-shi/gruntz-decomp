@@ -335,7 +335,7 @@ public:
     }
 
     b32 m_layoutLocked;
-    CWarpStoneFly* m_retabNotify;
+    CWarpStoneFly* m_warpStoneFly;
     b32 m_levelOverlayActive;
     b32 m_quitConfirmationActive;
     DestructWarningState m_destructWarningState;
@@ -400,7 +400,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_gruntWellLevel = GRUNT_WELL_EMPTY;
     m_reserved544 = 1;
     m_layoutLocked = false;
-    m_retabNotify = NULL;
+    m_warpStoneFly = NULL;
     m_destructButtonLocked = false;
 }
 
