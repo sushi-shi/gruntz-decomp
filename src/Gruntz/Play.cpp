@@ -6188,12 +6188,12 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_gruntPlacementActive, sizeof(m_gruntPlacementActive));
     ar->Read(&m_pickupPlacementActive, sizeof(m_pickupPlacementActive));
 
+    i32 count;
     {
 
         FreeStartMarkers();
-        i32 n;
-        ar->Read(&n, sizeof(n));
-        for (u32 j = 0; j < static_cast<u32>(n); j++) {
+        ar->Read(&count, sizeof(count));
+        for (u32 j = 0; j < static_cast<u32>(count); j++) {
             Coord* node = g_coordPool.Pop();
             ar->Read(node, sizeof(*node));
             m_startMarkers.Add(node);
@@ -6213,9 +6213,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
         for (i32 k = 0; k < 4; k++) {
             FreePlacedObjectCells(k);
-            i32 n;
-            ar->Read(&n, sizeof(n));
-            for (u32 j = 0; j < static_cast<u32>(n); j++) {
+            ar->Read(&count, sizeof(count));
+            for (u32 j = 0; j < static_cast<u32>(count); j++) {
                 Coord* node = g_coordPool.Pop();
                 ar->Read(node, sizeof(*node));
                 m_placedObjectCells[k].Add(node);
@@ -6239,17 +6238,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         SERIAL_READ_FRAME(ar, res, nameBuf, idx, m_cursorImage);
     }
 
-    g_serialCounter++;
-    ar->Read(nameBuf, SERIAL_NAME_LEN);
+    SERIAL_READ_IMAGE_SET(ar, res, nameBuf, m_cursorSprite);
     {
-        CObject* found = NULL;
-        if (strlen(nameBuf) != 0) {
-            res->GetImageRegistry()->m_imageSetsByName.Lookup(nameBuf, found);
-            m_cursorSprite = static_cast<CImageSet*>(found);
-        } else {
-            m_cursorSprite = NULL;
-        }
-
         ar->Read(&m_cursorFrameDelayMs, sizeof(m_cursorFrameDelayMs));
         ar->Read(&m_cursorFrameCountdownMs, sizeof(m_cursorFrameCountdownMs));
         ar->Read(&m_cursorFrameIndex, sizeof(m_cursorFrameIndex));
@@ -6292,8 +6282,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_focusPlayerIndex, sizeof(m_focusPlayerIndex));
 
     {
-        i32 cameraBookmarkCount;
-        ar->Read(&cameraBookmarkCount, sizeof(cameraBookmarkCount));
+        ar->Read(&count, sizeof(count));
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
             Coord* node = CameraBookmarkAt(i);
             if (node) {
@@ -6301,8 +6290,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             }
         }
         m_cameraBookmarks.RemoveAll();
-        m_cameraBookmarks.SetSize(cameraBookmarkCount, -1);
-        for (u32 j = 0; j < static_cast<u32>(cameraBookmarkCount); j++) {
+        m_cameraBookmarks.SetSize(count, -1);
+        for (u32 j = 0; j < static_cast<u32>(count); j++) {
             Coord* node = g_coordPool.Pop();
             ar->Read(node, 8);
             SetCameraBookmarkAt(j, node);
