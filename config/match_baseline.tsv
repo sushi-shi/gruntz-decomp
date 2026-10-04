@@ -3106,7 +3106,7 @@ multi	?OnExit@CMulti@@UAEXXZ	100.0000	100.0000	1	ed2ad497211f	0xb6310	100.0000
 multi	?OnJoinConfirm@CMulti@@QAEHPAUHWND__@@@Z	100.0000	100.0000	14	46bc8d552172	0xb8cf0	100.0000	
 multi	?OnOutOfSync@CMulti@@QAEXXZ	100.0000	100.0000	6	966dbe96f3ea	0xbae40	100.0000	
 multi	?OnPlayerLeft@CMulti@@QAEHH@Z	100.0000	100.0000	15	7c8c067a76ea	0xba3b0	100.0000	
-multi	?Open@CMulti@@QAEHXZ	100.0000	100.0000	6	f8296d452f18	0xb77a0	100.0000	
+multi	?SetupNetworkConnection@CMulti@@QAEHXZ	100.0000	100.0000	6	f8296d452f18	0xb77a0	100.0000	
 multi	?PlayerName@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0xb7ad0	100.0000	
 multi	?Poll@CMulti@@QAEHH@Z	100.0000	100.0000	12	0a052ba8e668	0xbba10	100.0000	
 multi	?PollSession@CMulti@@QAEHXZ	94.4660	94.4660	11	26a47951d756	0xb95f0	94.4660	
@@ -3146,7 +3146,7 @@ multi	?ShowDropPlayerDialog@CMulti@@QAEXXZ	100.0000	100.0000	7	1f3d652fc77a	0xbc
 multi	?ShowMultiStartDlg@CMulti@@QAEHXZ	100.0000	100.0000	20	98db1a878eb9	0xb86c0	100.0000	
 multi	?ShowMultiplayerOptionsDialog@CMulti@@QAEXXZ	100.0000	100.0000	4	60ffdc400c8b	0xbadd0	100.0000	
 multi	?ShowMultiplayerPauseDialog@CMulti@@QAEXXZ	100.0000	100.0000	7	1b9e74b60997	0xbad40	100.0000	
-multi	?StartTitle@CMulti@@QAEHXZ	100.0000	100.0000	13	05b46081c0c5	0xb72c0	100.0000	
+multi	?SetupLobbyConnection@CMulti@@QAEHXZ	100.0000	100.0000	13	05b46081c0c5	0xb72c0	100.0000	
 multi	?TickStateMgrs@CMulti@@UAEXXZ	100.0000	100.0000	1	711e932a66db	0xbd3c0	100.0000	
 multi	?VerifyCustomLevel@CMulti@@QAEHPAVCNetSessionListNode@@PAVCNetPlayerNode@@@Z	100.0000	100.0000	7	150e86c9e177	0xb8fc0	100.0000	
 multi	?WaitForGameConfig@CMulti@@QAEHXZ	100.0000	100.0000	6	8739617ee273	0xbca50	100.0000	

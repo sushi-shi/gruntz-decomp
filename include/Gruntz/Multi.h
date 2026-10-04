@@ -121,7 +121,7 @@ public:
     void SendKeepAlive();
 
     i32 LoadAndSynchronizeLevel(i32 level);
-    i32 StartTitle();
+    i32 SetupLobbyConnection();
     void CheckDropTimeout();
 
     i32 CreateHostPlayer(
@@ -165,7 +165,7 @@ public:
     void RenderGameFrame();
     void OnOutOfSync();
 
-    i32 Open();
+    i32 SetupNetworkConnection();
     void Close();
     CNetProviderNode* SelectNetworkProvider();
     i32 DetectConnectionConfig();

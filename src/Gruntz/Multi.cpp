@@ -230,13 +230,13 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
 
     NetGameMgr()->m_modalBusy = true;
     if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
-        if (StartTitle() == 0) {
+        if (SetupLobbyConnection() == 0) {
             NetGameMgr()->m_modalBusy = false;
             ReleaseResources();
             return 0;
         }
     } else {
-        if (Open() == 0) {
+        if (SetupNetworkConnection() == 0) {
             NetGameMgr()->m_modalBusy = false;
             while (ShowCursor(false) >= 0) {
             }
@@ -757,7 +757,7 @@ void CMulti::RenderGameFrame() {
 }
 
 RVA(0x000b72c0, 0x30b)
-i32 CMulti::StartTitle() {
+i32 CMulti::SetupLobbyConnection() {
     Mgr()->m_lobbyResult = 0;
     m_lobbyLaunch = true;
     if (!m_netMgr) {
@@ -835,7 +835,7 @@ void CMulti::SetPlayerName(CString s) {
 }
 
 RVA(0x000b77a0, 0xb5)
-i32 CMulti::Open() {
+i32 CMulti::SetupNetworkConnection() {
     if (!Network()) {
         return 0;
     }
@@ -862,7 +862,7 @@ i32 CMulti::Open() {
     return 1;
 }
 
-// @identity-TODO: adjacency to Open is the only evidence for the method's name.
+// @identity-TODO: adjacency to SetupNetworkConnection is the only evidence for the method's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000b7890, 0x1)
