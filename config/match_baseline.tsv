@@ -1339,7 +1339,7 @@ dialogs	?UpdatePlayerSlotEnabled@CBattlezDlg@@QAEXH@Z	100.0000	100.0000	8	0eaceb
 dircellmethods	??_Difstream@@QAEXXZ	100.0000	100.0000	1	cpp:9c0350c06d8b	0x3cbc0	100.0000	
 dircellmethods	??_Dofstream@@QAEXXZ	100.0000	100.0000	1	cpp:9c0350c06d8b	0x3cbf0	100.0000	
 dircellmethods	?ButeAttributezDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	a1912c2b7773	0x3c990	100.0000	
-dircellmethods	?DifferentCellTag@@YA_NPBUGruntDirectionCell@@0@Z	100.0000	100.0000	2	5c1e41d68af5	0x3c820	100.0000	
+dircellmethods	?DifferentGruntDirection@@YA_NPBUGruntDirectionCell@@0@Z	100.0000	100.0000	2	5c1e41d68af5	0x3c820	100.0000	
 dircellmethods	?DispatchExitTriggerLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	6	774b1a79e11c	0x3d3f0	100.0000	
 dircellmethods	?DispatchFortressFlagLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	6	80df616b2c9c	0x3dcb0	100.0000	
 dircellmethods	?DispatchGruntCreationPointLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	6	b5dd7a4add6e	0x3d530	100.0000	
@@ -1354,8 +1354,8 @@ dircellmethods	?EditDwRectsDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	8a32
 dircellmethods	?Parse@CButeMgr@@QAE_NVCString@@H@Z	100.0000	100.0000	6	ffb21fb337a9	0x3cc20	100.0000	
 dircellmethods	?RotateClockwise@GruntDirectionCell@@QAEXH@Z	100.0000	100.0000	2	76db55f445f8	0x3c850	100.0000	
 dircellmethods	?RotateCounterclockwise@GruntDirectionCell@@QAEXH@Z	100.0000	100.0000	2	8bc021475b02	0x3c8a0	100.0000	
-dircellmethods	?SameCellTag@@YA_NPBUGruntDirectionCell@@0@Z	100.0000	100.0000	2	56d73bff87f4	0x3c7f0	100.0000	
-dircellmethods	?Serialize@CTriRecord@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	a6fd30e57809	0x3c8f0	100.0000	
+dircellmethods	?SameGruntDirection@@YA_NPBUGruntDirectionCell@@0@Z	100.0000	100.0000	2	56d73bff87f4	0x3c7f0	100.0000	
+dircellmethods	?Serialize@CGruntDirectionRecord@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	a6fd30e57809	0x3c8f0	100.0000	
 directdrawmgr	??0CDDrawDeviceManager@@QAE@XZ	100.0000	100.0000	4	bd81685ccca0	0x141cc0	100.0000	
 directdrawmgr	??1CDDrawDeviceManager@@QAE@XZ	100.0000	100.0000	2	7c077639adc0	0x141d50	100.0000	
 directdrawmgr	??1CDDrawOverlaySurface@@UAE@XZ	100.0000	100.0000	2	45fc920a0a2d	0x142820	100.0000	

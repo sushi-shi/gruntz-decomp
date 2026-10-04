@@ -863,8 +863,8 @@ union LogicDispatchWord {
 
 typedef i32 (CGrunt::*GruntActHandler)();
 
-bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
-bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
+bool SameGruntDirection(const GruntDirectionCell* a, const GruntDirectionCell* b);
+bool DifferentGruntDirection(const GruntDirectionCell* a, const GruntDirectionCell* b);
 
 static void GruntScratchTeardown();
 

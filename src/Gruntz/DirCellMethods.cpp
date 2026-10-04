@@ -43,7 +43,7 @@
 #include <string.h>
 
 DATA(0x0020d008)
-CTriRecord g_directionClockwiseTable[9] = {
+CGruntDirectionRecord g_directionClockwiseTable[9] = {
     {0, 1, DIR_NORTH},
     {0, 2, DIR_NORTHEAST},
     {1, 2, DIR_EAST},
@@ -55,7 +55,7 @@ CTriRecord g_directionClockwiseTable[9] = {
     {2, 1, DIR_SOUTH},
 };
 DATA(0x0020d078)
-CTriRecord g_directionCounterclockwiseTable[9] = {
+CGruntDirectionRecord g_directionCounterclockwiseTable[9] = {
     {1, 0, DIR_WEST},
     {0, 0, DIR_NORTHWEST},
     {0, 1, DIR_NORTH},
@@ -78,14 +78,14 @@ DATA(0x00243790)
 i32 g_dwRectsEditLen;
 
 RVA(0x0003c7f0, 0x18)
-bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
+bool SameGruntDirection(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->m_direction == b->m_direction;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003c820, 0x18)
-bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
+bool DifferentGruntDirection(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->m_direction != b->m_direction;
 }
 
@@ -95,7 +95,7 @@ RVA(0x0003c850, 0x38)
 void GruntDirectionCell::RotateClockwise(i32 steps) {
     if (steps > 0) {
         do {
-            CTriRecord next = g_directionClockwiseTable[m_row * 3 + m_column];
+            CGruntDirectionRecord next = g_directionClockwiseTable[m_row * 3 + m_column];
             m_row = next.m_row;
             m_column = next.m_column;
             m_direction = next.m_direction;
@@ -109,7 +109,7 @@ RVA(0x0003c8a0, 0x38)
 void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
     if (steps > 0) {
         do {
-            CTriRecord next = g_directionCounterclockwiseTable[m_row * 3 + m_column];
+            CGruntDirectionRecord next = g_directionCounterclockwiseTable[m_row * 3 + m_column];
             m_row = next.m_row;
             m_column = next.m_column;
             m_direction = next.m_direction;
@@ -118,7 +118,7 @@ void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
 }
 
 RVA(0x0003c8f0, 0x76)
-i32 CTriRecord::Serialize(
+i32 CGruntDirectionRecord::Serialize(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
