@@ -73,6 +73,8 @@ i32 CMenuSparkle::SerializeDispatch(
         if (mode != SERIAL_LOAD) {
             return 1;
         }
+        // Unsafe archive path: retail passes read-only storage to Read.
+        // Writing to the const objects modeled here is undefined behavior and may fault.
         arc->Read(const_cast<i32*>(&g_menuSparkleLo), sizeof(g_menuSparkleLo));
         arc->Read(const_cast<i32*>(&g_menuSparkleHi), sizeof(g_menuSparkleHi));
         return 1;
