@@ -302,7 +302,7 @@ i32 CState::FadeSineToBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs, b
     }
     CRenderBuffer* sourceBuffer;
     if (useOverlay != false && m_world->GetDisplayBuffers()->HasOverlay() != 0) {
-        sourceBuffer = m_world->GetDisplayBuffers()->m_overlayBuffer;
+        sourceBuffer = m_world->GetDisplayBuffers()->GetOverlayBuffer();
     } else {
         sourceBuffer = m_world->GetDisplayBuffers()->GetBackBuffer();
     }

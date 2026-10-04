@@ -145,7 +145,7 @@ i32 DrawTextToOverlaySurface(
     i32 blue,
     i32 centerText
 ) {
-    CRenderBuffer* overlaySurface = surfaceMgr->GetDisplayBuffers()->m_overlayBuffer;
+    CRenderBuffer* overlaySurface = surfaceMgr->GetDisplayBuffers()->GetOverlayBuffer();
 
     if (overlaySurface == NULL) {
         return 0;

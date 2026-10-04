@@ -45,7 +45,7 @@ i32 SaveOverlayBufferShot(
     char* name,
     i32 saveFlag
 ) {
-    CRenderBuffer* pair = owner->World()->GetDisplayBuffers()->m_overlayBuffer;
+    CRenderBuffer* pair = owner->World()->GetDisplayBuffers()->GetOverlayBuffer();
     if (pair == NULL) {
         return 0;
     }

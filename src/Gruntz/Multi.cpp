@@ -417,7 +417,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
-        m_world->GetDisplayBuffers()->m_overlayBuffer->GetSurface()->Fill(0);
+        m_world->GetDisplayBuffers()->GetOverlayBuffer()->GetSurface()->Fill(0);
         CString s;
         s.LoadString(0x81a9);
         tagSIZE mode = m_mgr->GetModeSize();

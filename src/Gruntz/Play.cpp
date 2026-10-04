@@ -396,7 +396,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
     }
     if (nextState != GAMESTATE_HELP) {
         RECT r;
-        m_world->GetDisplayBuffers()->m_overlayBuffer->GetSurface()->Fill(0);
+        m_world->GetDisplayBuffers()->GetOverlayBuffer()->GetSurface()->Fill(0);
         CString s;
         s.LoadString(IDS_PLEASE_WAIT);
         tagSIZE mode = m_mgr->GetModeSize();
@@ -807,7 +807,7 @@ i32 CPlay::ProfileInputFrame() {
     i32 fixedMs = static_cast<i32>(tg());
     m_world->m_transientDrawList->RenderAndPrune(
         m_world->GetDisplayBuffers()->GetBackBuffer(),
-        m_world->GetDisplayBuffers()->m_overlayBuffer
+        m_world->GetDisplayBuffers()->GetOverlayBuffer()
     );
     fixedMs = static_cast<i32>(tg() - static_cast<u32>(fixedMs));
 

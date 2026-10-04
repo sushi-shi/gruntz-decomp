@@ -221,7 +221,7 @@ i32 CCreditsState::Render() {
 
     CDisplayBuffers* drawPages = m_world->GetDisplayBuffers();
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
-    drawPages->GetBackBuffer()->CopyFrom(drawPages->m_overlayBuffer);
+    drawPages->GetBackBuffer()->CopyFrom(drawPages->GetOverlayBuffer());
 
     if (!m_musicStarted && GetGameManager()->IsMusicEnabled()) {
         GetGameManager()->GetMidiManager()->PlaySequence("CREDITZ", true);
@@ -313,7 +313,7 @@ i32 CCreditsState::InitAttractTitle() {
         (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->CopyFrontToBackBuffers();
         (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->CopyBackToOverlay();
         (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->ClearAllPages(0);
-        m_world->GetDisplayBuffers()->m_overlayBuffer->GetSurface()->Fill(0);
+        m_world->GetDisplayBuffers()->GetOverlayBuffer()->GetSurface()->Fill(0);
         return 1;
     }
     char stateName[0x20];
@@ -451,7 +451,7 @@ i32 CCreditsState::StepVideo() {
     i32 ret = 0;
     if (m_videoHandle) {
         CDisplayBuffers* v = m_world->GetDisplayBuffers();
-        CRenderBuffer* dst = v->m_overlayBuffer;
+        CRenderBuffer* dst = v->GetOverlayBuffer();
         CRenderBuffer* src = v->GetBackBuffer();
         if (!m_videoHandle->Advance(dst->GetSurface()->GetDirectDrawSurface(), -1)) {
             m_videoHandle->CloseSmacker();

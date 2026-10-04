@@ -133,7 +133,7 @@ void CDisplayBuffers::FlipAndNotify() {
     CDDrawSurfaceMgr* n = OwnerMgr();
     CDDrawChildGroup* c = n->ChildGroup();
     CDisplayBuffers* s = n->GetDisplayBuffers();
-    c->BltDirtyChildren(s->GetBackBuffer(), s->m_overlayBuffer);
+    c->BltDirtyChildren(s->GetBackBuffer(), s->GetOverlayBuffer());
 }
 
 RVA(0x00158bc0, 0x2e)

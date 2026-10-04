@@ -12,8 +12,8 @@ inline void FlipFrontAndRestoreOverlay(CDisplayBuffers* pages) {
     pages->GetBackBuffer()->GetSurface()->BltFast(
         0,
         0,
-        pages->m_overlayBuffer->GetSurface(),
-        &pages->m_overlayBuffer->m_srcRect,
+        pages->GetOverlayBuffer()->GetSurface(),
+        &pages->GetOverlayBuffer()->m_srcRect,
         DDBLTFAST_WAIT
     );
 }
