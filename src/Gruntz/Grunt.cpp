@@ -1870,9 +1870,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_toolConfigured = true;
             if (m_aiType == AI_BATTLEZ_PATH) {
                 if (m_battlezTask != BZTASK_ADVANCE) {
-                    if (!this->CoordsEmpty()) {
-                        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
-                    }
+                    this->RecycleCoords();
                     DeleteAllPayloads();
                     i32* mem = new i32[0xb];
                     i32* payload;
