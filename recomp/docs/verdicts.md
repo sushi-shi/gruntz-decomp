@@ -159,7 +159,7 @@ test, so it was swept over both of its screen-coordinate arguments (0, 1, 100, 3
 | `CFaderShape::RenderTile` | 59.02 | never fired |
 | `CMotionState::Step` | 63.79 | fired 4–24× in probe sessions, 0× in five capture sessions |
 | `CWwdSpatialMgr::ScrollTo` | 34.99 | fired 249–2980× in probe sessions, 0× in four capture sessions |
-| `CTriggerMgr::HitTestCell` / `CellHitTest` | 80–86 | same |
+| `CTriggerMgr::FindGruntAtPoint` / `PickGruntAtWorldPoint` | 80–86 | same |
 | `CGameLevel::MoveToward` and the four `MoveHandler`s | 70–83 | same; one MoveToward capture would give all six via `--cross` |
 
 All of these except `CGrunt::Activate` are HOOKABLE and BIND CLEANLY — the plumbing is

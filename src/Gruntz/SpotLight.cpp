@@ -122,7 +122,7 @@ void RegisterSpotLightActions() {
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     if (g_gameReg->GetEasyMode() == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-        CGrunt* tgt = g_gameReg->GetTriggerMgr()->FindGruntAt(
+        CGrunt* tgt = g_gameReg->GetTriggerMgr()->FindGruntInArea(
             m_object->m_screenX,
             m_object->m_screenY,
             &m_object->m_area,

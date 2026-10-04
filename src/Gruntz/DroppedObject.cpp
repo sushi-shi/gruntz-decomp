@@ -171,7 +171,7 @@ i32 CObjectDropper::Update() {
             );
             i32 playerIndex;
             i32 unitIndex;
-            CGrunt* found = g_gameReg->GetTriggerMgr()->FindGruntAt(
+            CGrunt* found = g_gameReg->GetTriggerMgr()->FindGruntInArea(
                 o->m_screenX,
                 o->m_screenY,
                 &o->m_area,

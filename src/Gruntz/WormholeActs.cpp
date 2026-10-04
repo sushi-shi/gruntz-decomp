@@ -69,7 +69,7 @@ i32 CExitTrigger::AdvanceAnim() {
         i32 hitPlayerIndex;
         i32 hitUnitIndex;
         CWwdSpriteObject* obj = m_object;
-        if (g_gameReg->GetTriggerMgr()->FindGruntAt(
+        if (g_gameReg->GetTriggerMgr()->FindGruntInArea(
                 obj->m_screenX,
                 obj->m_screenY,
                 &obj->m_area,

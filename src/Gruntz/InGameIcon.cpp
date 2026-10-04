@@ -809,9 +809,13 @@ i32 CInGameText::Update() {
 
     i32 playerIndex;
     i32 unitIndex;
-    CGrunt* found =
-        g_gameReg->GetTriggerMgr()
-            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* found = g_gameReg->GetTriggerMgr()->FindGruntAtPoint(
+        m_object->m_screenX,
+        m_object->m_screenY,
+        &playerIndex,
+        &unitIndex,
+        1
+    );
 
     if (found != NULL) {
         if (playerIndex != g_curPlayer) {

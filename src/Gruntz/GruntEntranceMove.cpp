@@ -374,8 +374,13 @@ i32 CGrunt::UpdateBombRunAnimation() {
         i32 playerIndex;
         i32 unitIndex;
         m_entranceCommitted = false;
-        if (m_triggerMgr
-                ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 0)
+        if (m_triggerMgr->FindGruntAtPoint(
+                m_object->m_screenX,
+                m_object->m_screenY,
+                &playerIndex,
+                &unitIndex,
+                0
+            )
             != NULL) {
             m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_EXPLODE, -1);
             m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);

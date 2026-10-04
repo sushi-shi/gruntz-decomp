@@ -195,7 +195,7 @@ i32 CStaticHazard::UpdateActiveState() {
 
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
-        CGrunt* victim = g_gameReg->GetTriggerMgr()->HitTestCell(
+        CGrunt* victim = g_gameReg->GetTriggerMgr()->FindGruntAtPoint(
             m_object->m_screenX,
             m_object->m_screenY,
             &playerIndex,

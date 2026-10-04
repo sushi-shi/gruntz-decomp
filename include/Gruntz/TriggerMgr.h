@@ -86,11 +86,21 @@ public:
 
     void UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel);
 
-    CGrunt*
-    CellHitTest(i32 px, i32 py, i32* outPlayerIndex, i32* outUnitIndex, i32 startPlayerIndex);
+    CGrunt* PickGruntAtWorldPoint(
+        i32 worldX,
+        i32 worldY,
+        i32* outPlayerIndex,
+        i32* outUnitIndex,
+        i32 playerSelector
+    );
 
-    CGrunt*
-    ScreenToCell(i32 sx, i32 sy, i32* outPlayerIndex, i32* outUnitIndex, i32 startPlayerIndex);
+    CGrunt* PickGruntAtScreenPoint(
+        i32 screenX,
+        i32 screenY,
+        i32* outPlayerIndex,
+        i32* outUnitIndex,
+        i32 playerSelector
+    );
 
     void Cleanup();
 
@@ -164,10 +174,22 @@ public:
     };
     void HitTestApply(i32 x, i32 y, HitSpanArg span);
 
-    CGrunt* HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact);
+    CGrunt* FindGruntAtPoint(
+        i32 worldX,
+        i32 worldY,
+        i32* outPlayerIndex,
+        i32* outUnitIndex,
+        i32 requireExactPosition
+    );
 
-    CGrunt*
-    FindGruntAt(i32 px, i32 py, RECT* span, i32* outPlayerIndex, i32* outUnitIndex, RECT* src);
+    CGrunt* FindGruntInArea(
+        i32 worldX,
+        i32 worldY,
+        RECT* tileExtents,
+        i32* outPlayerIndex,
+        i32* outUnitIndex,
+        RECT* collisionBounds
+    );
 
     void EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targetY);
     void EnqueueSelectedToolUse(b32 isLocalCommand, i32 targetX, i32 targetY, b32 targetIsGrunt);

@@ -2177,7 +2177,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         i32 playerIndex;
         i32 unitIndex;
-        CGrunt* r = mgr->GetTriggerMgr()->ScreenToCell(
+        CGrunt* r = mgr->GetTriggerMgr()->PickGruntAtScreenPoint(
             this->m_cursorX,
             this->m_cursorY,
             &playerIndex,
@@ -2579,7 +2579,8 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 LevelCoordRect* vr2 = ds->m_mainPlane->GetPlaneViewRect();
                 i32 wx = vr2->left - ds->m_viewportRect.left + xr;
                 i32 wy = vr2->top - ds->m_viewportRect.top + y;
-                if (g_gameReg->GetTriggerMgr()->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer)
+                if (g_gameReg->GetTriggerMgr()
+                        ->PickGruntAtWorldPoint(wx, wy, &eventArg, &y, g_curPlayer)
                     != NULL) {
                     m_mgr->GetCommandMgr()->EnqueueSingle(
                         true,
@@ -2603,7 +2604,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
                 RECT span = {0, 0, 0, 0};
                 CGrunt* p =
-                    g_gameReg->GetTriggerMgr()->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
+                    g_gameReg->GetTriggerMgr()->FindGruntInArea(wx, wy, &span, &eventArg, &y, &box);
                 if (p == NULL || g_curPlayer != p->GetPlayerIndex()) {
                     goto waypoint_cancel;
                 }
@@ -2721,7 +2722,7 @@ drag_box: {
     }
 
     CGrunt* picked = static_cast<CGrunt*>(
-        m_mgr->GetTriggerMgr()->ScreenToCell(xr, y, &eventArg, &x, PLAYER_SLOT_ALL)
+        m_mgr->GetTriggerMgr()->PickGruntAtScreenPoint(xr, y, &eventArg, &x, PLAYER_SLOT_ALL)
     );
     if (picked != NULL) {
         m_mgr->GetTriggerMgr()
@@ -2815,7 +2816,8 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     i32 playerIndex;
     {
         i32 unitIndex;
-        if (m_mgr->GetTriggerMgr()->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
+        if (m_mgr->GetTriggerMgr()
+                ->PickGruntAtScreenPoint(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
             m_statusBar->ToggleStat(unitIndex);
             return 1;
@@ -4216,9 +4218,13 @@ i32 CPlay::ExecuteCommand(
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
 
-            CGrunt* node =
-                m_mgr->GetTriggerMgr()
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
+            CGrunt* node = m_mgr->GetTriggerMgr()->PickGruntAtWorldPoint(
+                px,
+                py,
+                &hitPlayerIndex,
+                &hitUnitIndex,
+                PLAYER_SLOT_ALL
+            );
             if (node != NULL && g->m_busy == false) {
                 g->SetGruntActionTarget(
                     hitPlayerIndex,
@@ -4325,9 +4331,13 @@ i32 CPlay::ExecuteCommand(
             }
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* node =
-                m_mgr->GetTriggerMgr()
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
+            CGrunt* node = m_mgr->GetTriggerMgr()->PickGruntAtWorldPoint(
+                px,
+                py,
+                &hitPlayerIndex,
+                &hitUnitIndex,
+                PLAYER_SLOT_ALL
+            );
             if (node != NULL && g->m_busy == false) {
                 g->SetGruntActionTarget(
                     hitPlayerIndex,

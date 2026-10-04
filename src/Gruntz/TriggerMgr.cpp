@@ -438,7 +438,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
     }
 
     i32 hitFlag = 0;
-    if (CellHitTest(x, y, NULL, NULL, PLAYER_SLOT_ALL)) {
+    if (PickGruntAtWorldPoint(x, y, NULL, NULL, PLAYER_SLOT_ALL)) {
         hitFlag = 1;
     }
 
@@ -681,7 +681,7 @@ i32 CTriggerMgr::HandleTargetSelection(
     if (m_playerControlEnabled == false) {
         return 0;
     }
-    CGrunt* hit = CellHitTest(targetX, targetY, NULL, NULL, PLAYER_SLOT_ALL);
+    CGrunt* hit = PickGruntAtWorldPoint(targetX, targetY, NULL, NULL, PLAYER_SLOT_ALL);
     CGrunt* selectedGrunt = SoleSelectedGrunt();
 
     TargetSelectionKind targetKind;

@@ -361,63 +361,63 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
 
 // @early-stop
 RVA(0x0006be30, 0x47)
-CGrunt* CTriggerMgr::ScreenToCell(
-    i32 sx,
-    i32 sy,
+CGrunt* CTriggerMgr::PickGruntAtScreenPoint(
+    i32 screenX,
+    i32 screenY,
     i32* outPlayerIndex,
     i32* outUnitIndex,
-    i32 startPlayerIndex
+    i32 playerSelector
 ) {
-    CGameLevel* view = m_world->GetLevel();
-    RECT* r = view->m_mainPlane->GetPlaneViewRect();
-    i32 px = r->left - view->m_viewportRect.left + sx;
-    i32 py = r->top - view->m_viewportRect.top + sy;
-    return CellHitTest(px, py, outPlayerIndex, outUnitIndex, startPlayerIndex);
+    CGameLevel* level = m_world->GetLevel();
+    RECT* planeView = level->m_mainPlane->GetPlaneViewRect();
+    i32 worldX = planeView->left - level->m_viewportRect.left + screenX;
+    i32 worldY = planeView->top - level->m_viewportRect.top + screenY;
+    return PickGruntAtWorldPoint(worldX, worldY, outPlayerIndex, outUnitIndex, playerSelector);
 }
 
 // @early-stop
 RVA(0x0006bea0, 0xe2)
-CGrunt* CTriggerMgr::CellHitTest(
-    i32 px,
-    i32 py,
+CGrunt* CTriggerMgr::PickGruntAtWorldPoint(
+    i32 worldX,
+    i32 worldY,
     i32* outPlayerIndex,
     i32* outUnitIndex,
-    i32 startPlayerIndex
+    i32 playerSelector
 ) {
-    i32 last;
-    if (startPlayerIndex == PLAYER_SLOT_ALL) {
-        startPlayerIndex = 0;
-        last = 3;
+    i32 lastPlayerIndex;
+    if (playerSelector == PLAYER_SLOT_ALL) {
+        playerSelector = 0;
+        lastPlayerIndex = 3;
     } else {
-        last = startPlayerIndex;
+        lastPlayerIndex = playerSelector;
     }
 
-    if (startPlayerIndex <= last) {
+    if (playerSelector <= lastPlayerIndex) {
         do {
             for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
-                CGrunt* g = PlayerUnits(startPlayerIndex)[unitIndex];
-                if (g != NULL && g->IsEntranceCommitted() != false) {
-                    CWwdSpriteObject* o = g->m_object;
-                    if (o->m_frameImage != NULL) {
+                CGrunt* grunt = PlayerUnits(playerSelector)[unitIndex];
+                if (grunt != NULL && grunt->IsEntranceCommitted() != false) {
+                    CWwdSpriteObject* object = grunt->m_object;
+                    if (object->m_frameImage != NULL) {
                         RECT hitBox;
-                        hitBox.left = o->m_screenX - 15;
-                        hitBox.top = o->m_screenY - 15;
+                        hitBox.left = object->m_screenX - 15;
+                        hitBox.top = object->m_screenY - 15;
                         hitBox.right = hitBox.left + 30;
                         hitBox.bottom = hitBox.top + 30;
-                        if (::PtInRect(&hitBox, px, py)) {
+                        if (::PtInRect(&hitBox, worldX, worldY)) {
                             if (outPlayerIndex != NULL) {
-                                *outPlayerIndex = startPlayerIndex;
+                                *outPlayerIndex = playerSelector;
                             }
                             if (outUnitIndex != NULL) {
                                 *outUnitIndex = unitIndex;
                             }
-                            return PlayerUnits(startPlayerIndex)[unitIndex];
+                            return PlayerUnits(playerSelector)[unitIndex];
                         }
                     }
                 }
             }
-            startPlayerIndex++;
-        } while (startPlayerIndex <= last);
+            playerSelector++;
+        } while (playerSelector <= lastPlayerIndex);
     }
     return NULL;
 }
@@ -1099,7 +1099,8 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             goto outOfRange;
         }
         cell->m_arrivalAction = 0;
-        CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
+        CGrunt* hit =
+            PickGruntAtWorldPoint(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
         if (hit != NULL) {
             if (hit->GetPlayerIndex() == cell->GetPlayerIndex() && g_traitorMode == false) {
                 return 0;
@@ -1236,7 +1237,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     cell->m_arrivalAction = 0;
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
-    hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
+    hit = PickGruntAtWorldPoint(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
     if (hit == NULL) {
         CGruntzMapMgr* map = g_gameReg->GetTileGrid();
         i32 flags = map->CellFlagsAt(argTileX, argTileY);
@@ -1338,7 +1339,7 @@ i32 CTriggerMgr::MoveUnitTo(
 RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
 
-    CGrunt* cell = FindGruntAt(x, y, span.m_span, &span.m_outPlayerIndex, &y, NULL);
+    CGrunt* cell = FindGruntInArea(x, y, span.m_span, &span.m_outPlayerIndex, &y, NULL);
     if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }

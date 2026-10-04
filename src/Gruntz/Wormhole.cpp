@@ -440,8 +440,8 @@ i32 CTeleporter::Update() {
 
     i32 playerIndex;
     i32 unitIndex;
-    CGrunt* found =
-        mgr->GetTriggerMgr()->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* found = mgr->GetTriggerMgr()
+                        ->FindGruntAtPoint(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (found == NULL) {
         return 0;
     }

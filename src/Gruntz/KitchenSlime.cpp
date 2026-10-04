@@ -126,7 +126,7 @@ i32 CKitchenSlime::Tick() {
     if (reg->GetEasyMode() == false || reg->GetGameMode() != GAMEMODE_QUESTZ) {
         CGameObject* lvl = Level();
         i32 playerIndex, unitIndex;
-        CGrunt* ent = static_cast<CGrunt*>(reg->GetTriggerMgr()->FindGruntAt(
+        CGrunt* ent = static_cast<CGrunt*>(reg->GetTriggerMgr()->FindGruntInArea(
             lvl->m_screenX,
             lvl->m_screenY,
             &lvl->m_area,

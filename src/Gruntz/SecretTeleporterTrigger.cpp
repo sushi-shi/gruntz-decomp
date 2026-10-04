@@ -153,8 +153,9 @@ RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* spr = m_object;
-    CGrunt* hit = g_gameReg->GetTriggerMgr()
-                      ->HitTestCell(spr->m_screenX, spr->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* hit =
+        g_gameReg->GetTriggerMgr()
+            ->FindGruntAtPoint(spr->m_screenX, spr->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         spr = m_object;
         b32 ok = true;
@@ -180,7 +181,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* o = m_object;
     CGrunt* hit = g_gameReg->GetTriggerMgr()
-                      ->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
+                      ->FindGruntAtPoint(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         o = m_object;
         CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
