@@ -2964,7 +2964,6 @@ i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     return v;
 }
 
-// @early-stop
 RVA(0x00091a40, 0x2f9)
 i32 CGruntzMgr::ReinitializeWorldForColorDepth(ColorDepth depth) {
     if (m_world == NULL) {
@@ -2979,11 +2978,7 @@ i32 CGruntzMgr::ReinitializeWorldForColorDepth(ColorDepth depth) {
 
     SAFE_DELETE(m_worldSounds)
 
-    CRezMgr* surf = m_resourceArchive;
-    if (surf) {
-        delete surf;
-    }
-    m_resourceArchive = NULL;
+    SAFE_DELETE(m_resourceArchive)
 
     m_colorDepth = depth;
     g_enableTrueColor = false;
@@ -3011,11 +3006,7 @@ i32 CGruntzMgr::ReinitializeWorldForColorDepth(ColorDepth depth) {
         return 0;
     }
 
-    CRezMgr* old = m_resourceArchive;
-    if (old) {
-        delete old;
-        m_resourceArchive = NULL;
-    }
+    SAFE_DELETE(m_resourceArchive)
 
     m_resourceArchive = new CRezMgr;
 
@@ -3036,7 +3027,7 @@ i32 CGruntzMgr::ReinitializeWorldForColorDepth(ColorDepth depth) {
 
     CWorldSoundSet* ni = new CWorldSoundSet();
     m_worldSounds = ni;
-    if (ni->Init(m_world->m_soundRegistry, m_soundVolume) == 0) {
+    if (ni->Init(m_world->SoundRegistry(), m_soundVolume) == 0) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x442);
         return 0;
     }
