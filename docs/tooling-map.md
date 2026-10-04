@@ -70,7 +70,7 @@ count a written verdict certifies against today's normalized pair — BOTH store
 `gruntz walls priors` reads, the review ledger and the `//` block above each
 `RVA()` pin (`gruntz walls recheck --source`) — which is the
 drift the MAX gate structurally cannot see — the MAX gate watches the SCORE, and
-the commit that broke `PlaceObjectFull`'s `24 calls / 96 branches / 64 relocs`
+the commit that broke `UpdateTargetingCursor`'s `24 calls / 96 branches / 64 relocs`
 certification (trading one cross-jump for another) raised it.
 
 ## The walls slice — the remaining matching campaign

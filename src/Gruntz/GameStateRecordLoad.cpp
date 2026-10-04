@@ -73,7 +73,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     SERIAL_READ_ANIMATION(ar, dir, buf, m_pickupAnimation);
 
     ar->Read(&m_reserved18c, sizeof(m_reserved18c));
-    ar->Read(&m_toyBlendPct, sizeof(m_toyBlendPct));
+    ar->Read(&m_toyVariantThreshold, sizeof(m_toyVariantThreshold));
     ar->Read(&m_brickPickupType, sizeof(m_brickPickupType));
     ar->Read(&m_activePickupType, sizeof(m_activePickupType));
     ar->Read(&m_carriedToyType, sizeof(m_carriedToyType));

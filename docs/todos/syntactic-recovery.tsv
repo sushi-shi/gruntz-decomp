@@ -1,6 +1,6 @@
 rva	unit	function	lost_max	cur
-0x009650	actionoptionsmenubar	?HitClick@CActionOptionsMenuBar@@QAEHHH@Z	100.0000	94.0741
 0x009330	actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	100.0000	93.2432
+0x009650	actionoptionsmenubar	?UpdateHoverState@CActionOptionsMenuBar@@QAEHHH@Z	100.0000	94.0741
 0x0e5c10	aniplayer	?RenderCel@CAniPlayer@@QAEHXZ	98.4848	76.0000
 0x09b430	areamgr	?IsSameWorld@CAreaMgr@@QAEHH@Z	100.0000	58.5000
 0x02ae00	battlezmapconfig	?HandleUnitContact@CBattlezMapConfig@@QAEHPAVCGrunt@@0@Z	86.5862	65.2709
@@ -72,7 +72,7 @@ rva	unit	function	lost_max	cur
 0x0d0db0	play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	93.5785
 0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	92.6943	92.2827
 0x0ce660	play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.9791	96.4843
-0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	91.0339	90.1178
+0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	91.0339	90.0368
 0x0d0b30	play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9755
 0x0d1ac0	play	?StepScroll@CPlay@@QAEXXZ	100.0000	78.2069
 0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
@@ -90,13 +90,13 @@ rva	unit	function	lost_max	cur
 0x110c10	tileswitchlogic	?Tick@CTileTriggerLogic@@UAEHXZ	95.5831	94.9255
 0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.9381	93.3186
 0x078430	triggermgr	?ClearSelection@CTriggerMgr@@QAEXXZ	100.0000	99.3902
-0x07b1b0	triggermgr	?HandleActionOptionsPointer@CTriggerMgr@@QAEHHH@Z	100.0000	95.5098
+0x07b1b0	triggermgr	?HandleActionOptionsPointer@CTriggerMgr@@QAEHHH@Z	100.0000	95.7549
 0x079520	triggermgr	?HandleTargetSelection@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	99.8538	90.7510
 0x0798d0	triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	96.6045
-0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.1017
 0x07d450	triggermgr	?ToggleToolTargeting@CTriggerMgr@@QAEHXZ	100.0000	92.0121
 0x07d5c0	triggermgr	?ToggleToyTargeting@CTriggerMgr@@QAEHXZ	100.0000	99.1892
 0x0788d0	triggermgr	?UpdateCameraTracking@CTriggerMgr@@QAEHXZ	100.0000	99.1379
+0x078a50	triggermgr	?UpdateTargetingCursor@CTriggerMgr@@QAEHHH@Z	91.3955	91.1017
 0x06d300	triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	98.7466	93.6448
 0x06dae0	triggermgrgrid	?UseEquippedToolAt@CTriggerMgr@@QAEHHHHH@Z	90.2044	90.1934
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	89.1185

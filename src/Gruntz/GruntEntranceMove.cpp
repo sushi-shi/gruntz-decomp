@@ -315,8 +315,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         }                                                                                          \
         m_entranceActive = false;                                                                  \
         ReadConfigFromButeMgr();                                                                   \
-        LoadCellAnimNames(0, 0);                                                                   \
-        LoadAnimNameTable(0, 0);                                                                   \
+        BuildImageSetNames(0, 0);                                                                  \
+        LoadAnimationSet(0, 0);                                                                    \
     } while (0)
 
 RVA(0x00067f80, 0x313)
@@ -433,7 +433,7 @@ i32 CGrunt::StartBombGruntRun() {
 
 // @early-stop
 RVA(0x00068880, 0x67c)
-i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
+i32 CGrunt::SetWingzEnabled(b32 enable) {
     if (enable != false) {
         m_wingzEnabled = true;
         m_wingzTiming.Start(static_cast<i32>((static_cast<double>(m_wingzTime) * 100.0 - (-0.5))));
@@ -598,7 +598,7 @@ i32 CGrunt::BeginFreezeAnimation() {
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
         if (m_activePickupType != PICKUP_BOMB) {
             goto finalize;
         }
@@ -660,8 +660,8 @@ i32 CGrunt::UpdateFreezeAnimation() {
         if (m_freezeUnfrozen != false) {
             m_entranceActive = false;
             ReadConfigFromButeMgr();
-            LoadCellAnimNames(0, 0);
-            LoadAnimNameTable(0, 0);
+            BuildImageSetNames(0, 0);
+            LoadAnimationSet(0, 0);
             ResetIdleAnimation(1, 0, 0);
             Coord tile = ScreenTile(LastTilePx());
             if (g_gameReg->GetTileGrid()->CellFlagsAt(tile.m_x, tile.m_y) & 0x80) {
@@ -857,7 +857,7 @@ i32 CGrunt::FinishActiveAction() {
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
         return 1;
     }
     if (GRUNT_IS_USING_TOY()) {

@@ -11,7 +11,7 @@
 #include <Ints.h>
 
 enum {
-    kPendingFxIdBase = 0xc8
+    kPickupCursorIdBase = 0xc8
 };
 
 class CGruntPuddle;

@@ -767,7 +767,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
         if (m_activePickupType != PICKUP_BOMB) {
             goto applyTail;
         }
@@ -804,7 +804,7 @@ idleReseed:
 applyTail:
 
     if (m_wingzEnabled != false) {
-        LoadWingzGruntSprites(false);
+        SetWingzEnabled(false);
     }
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
@@ -1003,7 +1003,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseItem, GRUNT_ITEM2));
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_pickupAnimation);
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
-    ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
+    ar->Write(&m_toyVariantThreshold, sizeof(m_toyVariantThreshold));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));
     ar->Write(&m_activePickupType, sizeof(m_activePickupType));
     ar->Write(&m_carriedToyType, sizeof(m_carriedToyType));

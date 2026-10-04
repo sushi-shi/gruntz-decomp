@@ -63,10 +63,10 @@ public:
 
     i32 GetUnitSelectionGroupMarker(i32 playerIndex, i32 unitIndex);
 
-    b32 HasPendingFx() const {
-        return m_pendingFxKind != 0;
+    b32 IsTargeting() const {
+        return m_targetingCursorId != 0;
     }
-    void StopPendingFx();
+    void CancelTargeting();
 
     void ClearSelectionGroups();
 
@@ -169,7 +169,7 @@ public:
     void EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targetY);
     void EnqueueSelectedToolUse(b32 isLocalCommand, i32 targetX, i32 targetY, b32 targetIsGrunt);
 
-    i32 PlaceObjectFull(i32 x, i32 y);
+    i32 UpdateTargetingCursor(i32 x, i32 y);
 
     void EnqueueGuardBegin(i32 playerIndex, i32 unitIndex);
     void EnqueueGuardEnd(i32 playerIndex, i32 unitIndex);
@@ -322,9 +322,9 @@ public:
 
     ClockInterval m_finishDelayTiming;
 
-    CWarlord* m_pendingFx;
+    CWarlord* m_localWarlord;
     b32 m_countdownActive;
-    i32 m_pendingFxKind;
+    i32 m_targetingCursorId;
 
     ClockInterval m_gooTimer;
     ClockInterval m_resourceTimer;

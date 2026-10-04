@@ -63,7 +63,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
 
         m_warlordLogic = static_cast<CWarlord*>(e->GetLogicRecord()->UserLogic());
         if (m_object->GetSmarts() == g_curPlayer) {
-            g_gameReg->GetTriggerMgr()->m_pendingFx = m_warlordLogic;
+            g_gameReg->GetTriggerMgr()->m_localWarlord = m_warlordLogic;
         }
         GruntzPlayer* slot2 = &g_gameReg->m_players[m_object->GetSmarts()];
         if (slot2 != NULL) {

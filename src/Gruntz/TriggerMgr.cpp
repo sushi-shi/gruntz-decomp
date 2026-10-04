@@ -174,7 +174,7 @@ i32 CTriggerMgr::RemoveUnitFromSelection(i32 playerIndex, i32 unitIndex, i32 rem
         Coord* p = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         if (p->m_x == playerIndex && p->m_y == unitIndex) {
             if (m_selectedUnitIds.GetCount() == 1) {
-                StopPendingFx();
+                CancelTargeting();
             }
             CGrunt* cell = UnitAt(playerIndex, unitIndex);
             if (cell != NULL) {
@@ -215,7 +215,7 @@ void CTriggerMgr::ClearSelection() {
         }
     }
     m_selectedUnitIds.RemoveAll();
-    StopPendingFx();
+    CancelTargeting();
     ClearCameraSprite();
 }
 
@@ -416,7 +416,7 @@ void CTriggerMgr::CloseActionOptionsMenu() {
 
 // @early-stop
 RVA(0x00078a50, 0x8a0)
-i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
+i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
 
     CGrunt* cell = SoleSelectedGrunt();
     if (cell == NULL || cell->GetPlayerIndex() != g_curPlayer) {
@@ -425,11 +425,11 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != NULL && ov->m_active != false) {
-        ov->HitClick(x, y);
+        ov->UpdateHoverState(x, y);
         return 1;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    if (m_pendingFxKind == 0) {
+    if (m_targetingCursorId == 0) {
 
         if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
             world->LoadCursorSprites(0, false);
@@ -446,35 +446,35 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     i32 ty = y >> TILE_SHIFT_PX;
     TileCollisionKind collision = PbResolveCell(m_world->GetLevel(), tx, ty);
 
-    i32 pfk = m_pendingFxKind;
-    if (pfk >= 0xdf) {
+    i32 targetingCursorId = m_targetingCursorId;
+    if (targetingCursorId >= 0xdf) {
         PickupType alt = cell->GetCarriedToyType();
         if (hitFlag != 0) {
-            world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, true);
+            world->LoadCursorSprites(IDX(alt) + kPickupCursorIdBase, true);
         } else {
             CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
             i32 attr = plane->CellFlagsAt(tx, ty);
             if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & IDX(CELL_FLAG_SPECIAL)) != 0) {
-                world->LoadCursorSprites(pfk, false);
+                world->LoadCursorSprites(targetingCursorId, false);
             } else {
-                world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, true);
+                world->LoadCursorSprites(IDX(alt) + kPickupCursorIdBase, true);
             }
         }
         return 1;
     }
 
-    PickupType gruntKind = EQUIPPED_TOOL_TERNARY_GT(cell);
+    PickupType toolType = EQUIPPED_TOOL_TERNARY_GT(cell);
 
     if (hitFlag != 0) {
-        if (pfk == 0) {
+        if (targetingCursorId == 0) {
             world->LoadCursorSprites(0, false);
             return 1;
         }
         {
-            if (gruntKind != GRUNT_ROCK && gruntKind != GRUNT_WELDER && gruntKind != GRUNT_BOOMERANG
-                && gruntKind != GRUNT_GUNHAT && gruntKind != GRUNT_NERFGUN
-                && gruntKind != GRUNT_WINGZ) {
-                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+            if (toolType != GRUNT_ROCK && toolType != GRUNT_WELDER && toolType != GRUNT_BOOMERANG
+                && toolType != GRUNT_GUNHAT && toolType != GRUNT_NERFGUN
+                && toolType != GRUNT_WINGZ) {
+                world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                 return 1;
             }
 
@@ -487,10 +487,10 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             u16 color;
             if (cell->RectContains(x, y)) {
                 color = PackRgb16(0xff, 0, 0);
-                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
             } else {
                 color = PackRgb16(0x20, 0x20, 0x20);
-                world->LoadCursorSprites(pfk, false);
+                world->LoadCursorSprites(targetingCursorId, false);
             }
             world->m_pathPreviewSource = source;
             world->m_pathPreviewDestination.x = x;
@@ -500,13 +500,13 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             return 1;
         }
     } else {
-        switch (gruntKind) {
+        switch (toolType) {
             case PICKUP_GAUNTLETZ:
                 if (collision == TILEKIND_GAUNTLET_ROCK_A || collision == TILEKIND_GAUNTLET_ROCK_B
                     || collision == TILEKIND_GIANT_ROCK || collision == TILEKIND_GAUNTLET_BRICK_A
                     || collision == TILEKIND_GAUNTLET_BRICK_B
                     || collision == TILEKIND_GAUNTLET_BRICK_C) {
-                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                    world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                     return 1;
                 }
                 break;
@@ -514,7 +514,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             case PICKUP_SHOVEL:
                 if (collision == TILEKIND_COVERED_POWERUP
                     || collision == TILEKIND_REVEALED_POWERUP) {
-                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                    world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                     return 1;
                 }
                 break;
@@ -525,7 +525,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     CGruntPuddle* cand = GetNextPuddle(pos);
                     if (cand->GetTileX() == tx && cand->GetTileY() == ty
                         && cand->IsPending() == false) {
-                        world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                        world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                         return 1;
                     }
                 }
@@ -534,14 +534,14 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             case PICKUP_BRICK:
                 if (collision == TILEKIND_HIDDEN_POWERUP || collision == TILEKIND_GAUNTLET_BRICK_A
                     || collision == TILEKIND_GAUNTLET_BRICK_B) {
-                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                    world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                     return 1;
                 }
                 break;
 
             case PICKUP_BOMB:
-                if (pfk != 0) {
-                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                if (targetingCursorId != 0) {
+                    world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                 } else {
                     world->LoadCursorSprites(0, false);
                 }
@@ -549,8 +549,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
             case PICKUP_WARPSTONE:
                 if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-                    if (pfk != 0) {
-                        world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                    if (targetingCursorId != 0) {
+                        world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                     } else {
                         world->LoadCursorSprites(0, false);
                     }
@@ -558,20 +558,20 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 }
                 break;
             case PICKUP_SPRING:
-                if (pfk != 0) {
-                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                if (targetingCursorId != 0) {
+                    world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                 } else {
                     world->LoadCursorSprites(0, false);
                 }
                 return 1;
 
             case PICKUP_SPY: {
-                if (pfk != 0 || collision == TILEKIND_GAUNTLET_ROCK_A
+                if (targetingCursorId != 0 || collision == TILEKIND_GAUNTLET_ROCK_A
                     || collision == TILEKIND_GAUNTLET_ROCK_B || collision == TILEKIND_GIANT_ROCK
                     || collision == TILEKIND_GAUNTLET_BRICK_A
                     || collision == TILEKIND_GAUNTLET_BRICK_B
                     || collision == TILEKIND_GAUNTLET_BRICK_C) {
-                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                    world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                     return 1;
                 }
                 i32 occupantId = g_gameReg->GetTileGrid()->ObjectIdAt(tx, ty);
@@ -584,7 +584,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         CInGameIcon* icon =
                             static_cast<CInGameIcon*>(occupant->GetLogicRecord()->UserLogic());
                         if (icon != NULL && icon->GetPickupType() == PICKUP_TOYBOX) {
-                            world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                            world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                             return 1;
                         }
                     }
@@ -598,7 +598,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             case PICKUP_ROCK:
             case PICKUP_WELDER:
             case PICKUP_WINGZ:
-                if (pfk != 0) {
+                if (targetingCursorId != 0) {
                     POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
                     m_world->GetLevel()->m_mainPlane->WorldToViewport(&source.x, &source.y);
                     CDDrawWorkerHost* plane = m_world->GetLevel()->m_mainPlane;
@@ -634,10 +634,10 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     u16 color;
                     if (cell->RectContains(x, y)) {
                         color = PackRgb16(0xff, 0, 0);
-                        world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                        world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                     } else {
                         color = PackRgb16(0x20, 0x20, 0x20);
-                        world->LoadCursorSprites(m_pendingFxKind, false);
+                        world->LoadCursorSprites(m_targetingCursorId, false);
                     }
                     world->m_pathPreviewSource = source;
                     world->m_pathPreviewDestination.x = dx;
@@ -649,13 +649,13 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 break;
 
             case PICKUP_TIMEBOMB: {
-                if (pfk == 0) {
+                if (targetingCursorId == 0) {
                     break;
                 }
                 CGruntzMapMgr* plane = g_gameReg->GetTileGrid();
                 i32 attr = plane->CellFlagsAt(tx, ty);
                 if ((attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & IDX(CELL_FLAG_SPECIAL)) == 0) {
-                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
+                    world->LoadCursorSprites(IDX(toolType) + kPickupCursorIdBase, true);
                     return 1;
                 }
                 break;
@@ -663,7 +663,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         }
     }
 
-    world->LoadCursorSprites(m_pendingFxKind, false);
+    world->LoadCursorSprites(m_targetingCursorId, false);
     return 1;
 }
 
@@ -693,7 +693,7 @@ i32 CTriggerMgr::HandleTargetSelection(
             targetKind = selector;
         } else if (hit != NULL) {
             if (hit == selectedGrunt) {
-                m_pendingFxKind = 0;
+                m_targetingCursorId = 0;
                 (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, false);
                 CGameObject* sprite = hit->m_object;
 
@@ -865,7 +865,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     RECT* vr = view->m_mainPlane->GetPlaneViewRect();
     i32 worldX = vr->left - view->m_viewportRect.left + pointerX;
     i32 worldY = vr->top - view->m_viewportRect.top + pointerY;
-    this->PlaceObjectFull(worldX, worldY);
+    this->UpdateTargetingCursor(worldX, worldY);
     return 1;
 }
 
@@ -950,7 +950,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
         }
     }
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-        CWarlord* fx = m_pendingFx;
+        CWarlord* fx = m_localWarlord;
         if (fx != NULL) {
             fx->ResolveDeathAnimation();
         }
@@ -1013,7 +1013,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
         m_gruntzExitedByPlayer[playerIndex] += 1;
         if (cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
             if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                CWarlord* fx = m_pendingFx;
+                CWarlord* fx = m_localWarlord;
                 if (fx != NULL) {
                     fx->ResolveJoyAnimation();
                 }
@@ -1259,7 +1259,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         objId = cameraSprite->GetObjectId();
     }
     ar->Write(&objId, sizeof(objId));
-    CWarlord* ov = m_pendingFx;
+    CWarlord* ov = m_localWarlord;
     objId = 0;
     if (ov != NULL && ov->m_object != NULL) {
         objId = ov->m_object->GetObjectId();
@@ -1296,7 +1296,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     ar->Write(&m_playerControlEnabled, sizeof(m_playerControlEnabled));
     ar->Write(&g_curPlayer, sizeof(g_curPlayer));
     ar->Write(&g_groupSentinel, sizeof(g_groupSentinel));
-    ar->Write(&m_pendingFxKind, sizeof(m_pendingFxKind));
+    ar->Write(&m_targetingCursorId, sizeof(m_targetingCursorId));
     ar->Write(&m_lastRecalledGroup, sizeof(m_lastRecalledGroup));
     return 1;
 fail:
@@ -1404,12 +1404,12 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
                 return 0;
             }
             CWarlord* obj = static_cast<CWarlord*>(looked->GetLogicRecord()->UserLogic());
-            m_pendingFx = obj;
+            m_localWarlord = obj;
             if (obj == NULL) {
                 return 0;
             }
         } else {
-            m_pendingFx = NULL;
+            m_localWarlord = NULL;
         }
     }
 
@@ -1462,7 +1462,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ar->Read(&m_playerControlEnabled, sizeof(m_playerControlEnabled));
     ar->Read(&g_curPlayer, sizeof(g_curPlayer));
     ar->Read(&g_groupSentinel, sizeof(g_groupSentinel));
-    ar->Read(&m_pendingFxKind, sizeof(m_pendingFxKind));
+    ar->Read(&m_targetingCursorId, sizeof(m_targetingCursorId));
     ar->Read(&m_lastRecalledGroup, sizeof(m_lastRecalledGroup));
     return 1;
 }
@@ -1470,13 +1470,13 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_overlay;
-    m_pendingFxKind = 0;
+    m_targetingCursorId = 0;
     if (ov == NULL || ov->m_active == false) {
         return 0;
     }
     CGrunt* cell = SoleSelectedGrunt();
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    ActionOptionHit kind = ov->HitHover(x, y);
+    ActionOptionHit kind = ov->HitTestButtons(x, y);
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
         PickupType alt = cell->GetEquippedToolType();
         if (alt == PICKUP_WAND) {
@@ -1490,8 +1490,8 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
                 1
             );
         } else {
-            i32 v = IDX(alt) + kPendingFxIdBase;
-            m_pendingFxKind = v;
+            i32 v = IDX(alt) + kPickupCursorIdBase;
+            m_targetingCursorId = v;
             world->LoadCursorSprites(v, false);
         }
     } else if (kind == ACTIONOPTION_HIT_SECONDARY) {
@@ -1509,13 +1509,13 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
                 1
             );
         } else if (alt != PICKUP_NONE) {
-            i32 v = IDX(alt) + kPendingFxIdBase;
-            m_pendingFxKind = v;
+            i32 v = IDX(alt) + kPickupCursorIdBase;
+            m_targetingCursorId = v;
             world->LoadCursorSprites(v, false);
         }
     }
     this->CloseActionOptionsMenu();
-    this->PlaceObjectFull(x, y);
+    this->UpdateTargetingCursor(x, y);
     return 1;
 }
 
@@ -1777,13 +1777,13 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
 }
 
 RVA(0x0007be10, 0x34)
-void CTriggerMgr::StopPendingFx() {
+void CTriggerMgr::CancelTargeting() {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    if (m_pendingFxKind == 0 && world->m_cursorTargetValid == false) {
+    if (m_targetingCursorId == 0 && world->m_cursorTargetValid == false) {
         return;
     }
     world->LoadCursorSprites(0, false);
-    m_pendingFxKind = 0;
+    m_targetingCursorId = 0;
 }
 
 // @early-stop
@@ -2011,8 +2011,8 @@ void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
             if (m_finishState == FINISH_STATE_ACTIVE) {
                 m_finishState = FINISH_STATE_DEFEAT;
-                if (m_pendingFx != NULL) {
-                    m_pendingFx->ResolveDeathAnimation();
+                if (m_localWarlord != NULL) {
+                    m_localWarlord->ResolveDeathAnimation();
                 }
             }
             m_finishDelayTiming.Start(3000);
@@ -2505,12 +2505,12 @@ void CTriggerMgr::DestroyAllAnims() {
 
 RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleToolTargeting() {
-    if (m_pendingFxKind != 0) {
-        m_pendingFxKind = 0;
+    if (m_targetingCursorId != 0) {
+        m_targetingCursorId = 0;
         (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, false);
         return 0;
     }
-    m_pendingFxKind = 0;
+    m_targetingCursorId = 0;
 
     CGrunt* cell = SoleSelectedGrunt();
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
@@ -2529,9 +2529,9 @@ i32 CTriggerMgr::ToggleToolTargeting() {
                     1
                 );
             } else {
-                m_pendingFxKind = IDX(v) + kPendingFxIdBase;
+                m_targetingCursorId = IDX(v) + kPickupCursorIdBase;
                 (static_cast<CPlay*>(g_gameReg->m_curState))
-                    ->LoadCursorSprites(IDX(v) + kPendingFxIdBase, false);
+                    ->LoadCursorSprites(IDX(v) + kPickupCursorIdBase, false);
             }
             CloseActionOptionsMenu();
         }
@@ -2541,12 +2541,12 @@ i32 CTriggerMgr::ToggleToolTargeting() {
 
 RVA(0x0007d5c0, 0xdc)
 i32 CTriggerMgr::ToggleToyTargeting() {
-    if (m_pendingFxKind != 0) {
-        m_pendingFxKind = 0;
+    if (m_targetingCursorId != 0) {
+        m_targetingCursorId = 0;
         (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, false);
         return 0;
     }
-    m_pendingFxKind = 0;
+    m_targetingCursorId = 0;
     CGrunt* cell = SoleSelectedGrunt();
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
         if (cell->GetActivePickupType() >= PICKUP_TOYZ_FIRST) {
@@ -2565,9 +2565,9 @@ i32 CTriggerMgr::ToggleToyTargeting() {
                     1
                 );
             } else if (kind != PICKUP_NONE) {
-                m_pendingFxKind = IDX(kind) + kPendingFxIdBase;
+                m_targetingCursorId = IDX(kind) + kPickupCursorIdBase;
                 (static_cast<CPlay*>(g_gameReg->m_curState))
-                    ->LoadCursorSprites(IDX(kind) + kPendingFxIdBase, false);
+                    ->LoadCursorSprites(IDX(kind) + kPickupCursorIdBase, false);
             }
             CloseActionOptionsMenu();
         }

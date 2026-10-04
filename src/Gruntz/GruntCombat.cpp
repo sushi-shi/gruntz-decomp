@@ -1414,7 +1414,7 @@ i32 CGrunt::CommitNeighbor(
 
     eq = IsAnimationAct("I");
     if (eq) {
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
     } else {
         eq = IsAnimationAct("N");
         if (eq) {
@@ -1828,11 +1828,11 @@ void CGrunt::StepBehavior(char*) {
         if (onWingzTile != 0) {
             if (flags & 0xd02) {
                 if (m_wingzEnabled == false) {
-                    LoadWingzGruntSprites(true);
+                    SetWingzEnabled(true);
                     return;
                 }
             } else if (m_wingzEnabled != false) {
-                LoadWingzGruntSprites(false);
+                SetWingzEnabled(false);
                 return;
             }
         } else if (onMoveTile != 0) {
@@ -1845,7 +1845,10 @@ void CGrunt::StepBehavior(char*) {
                     return;
                 }
             } else if (m_coordToggle != false) {
-                StartToolUseAnimation(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
+                StartToolUseAnimation(
+                    m_lastTilePx.m_x >> TILE_SHIFT_PX,
+                    m_lastTilePx.m_y >> TILE_SHIFT_PX
+                );
                 return;
             }
         }
@@ -2095,7 +2098,7 @@ afterArrival:
         if (m_wingzTiming.Remaining() == 0) {
             ConsiderArrival(1);
             m_wingzTime = 0;
-            LoadWingzGruntSprites(false);
+            SetWingzEnabled(false);
             BuildGruntLoseItemAnimation();
         }
     }
@@ -2219,8 +2222,8 @@ updatePowerup:
                             break;
                     }
                 }
-                LoadCellAnimNames(vehicle, variant);
-                LoadAnimNameTable(vehicle, variant);
+                BuildImageSetNames(vehicle, variant);
+                LoadAnimationSet(vehicle, variant);
             }
         }
     }
