@@ -274,7 +274,7 @@ i32 CGrunt::StepAttackFire() {
                     "TimeBomb",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
-                spr->m_damage = 0;
+                spr->SetDamage(0);
                 spr->GetLogicRecord()->Dispatch(spr);
                 spr->SetSmarts(m_playerIndex);
                 break;

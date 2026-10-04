@@ -102,6 +102,9 @@ public:
     i32 GetDamage() const {
         return m_damage;
     }
+    void SetDamage(i32 damage) {
+        m_damage = damage;
+    }
 
     i32 GetScore() const {
         return m_score;
