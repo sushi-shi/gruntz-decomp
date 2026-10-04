@@ -40,8 +40,8 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SwitchAnimationByName("GAME_CYCLE100", 0);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
-    m_object->m_speedX = m_object->m_screenX >> TILE_SHIFT_PX;
-    m_object->m_speedY = m_object->m_screenY >> TILE_SHIFT_PX;
+    m_object->SetSpeedX(m_object->m_screenX >> TILE_SHIFT_PX);
+    m_object->SetSpeedY(m_object->m_screenY >> TILE_SHIFT_PX);
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_TOOB_SPIKE);
 }

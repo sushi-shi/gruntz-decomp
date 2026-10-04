@@ -92,6 +92,13 @@ public:
         return dispatch(this);
     }
 
+    void SetSpeedX(i32 speed) {
+        m_speedX = speed;
+    }
+    void SetSpeedY(i32 speed) {
+        m_speedY = speed;
+    }
+
     i32 GetObjectId() const {
         return m_objectId;
     }

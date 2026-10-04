@@ -63,8 +63,8 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     m_tilePosition.m_y = snapY;
     m_tilePosition.m_x = snapX;
 
-    m_object->m_speedX = (m_object->m_speedX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_object->m_speedY = (m_object->m_speedY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_object->SetSpeedX((m_object->m_speedX << TILE_SHIFT_PX) + TILE_HALF_PX);
+    m_object->SetSpeedY((m_object->m_speedY << TILE_SHIFT_PX) + TILE_HALF_PX);
     if (m_object->m_screenX == m_object->m_speedX && m_object->m_screenY == m_object->m_speedY) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;

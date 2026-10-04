@@ -462,8 +462,8 @@ i32 CTeleporter::Update() {
         if (spawned != NULL) {
             spawned->m_smarts = IDX(TELEPORTER_SINGLE_USE);
             spawned->m_health = m_object->m_health;
-            spawned->m_speedX = m_object->m_score;
-            spawned->m_speedY = m_object->m_points;
+            spawned->SetSpeedX(m_object->m_score);
+            spawned->SetSpeedY(m_object->m_points);
             spawned->GetLogicRecord()->m_speed = 0;
         }
     } else {
@@ -476,8 +476,8 @@ i32 CTeleporter::Update() {
             "Wormhole",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
-        spawned->m_speedX = m_object->m_screenX;
-        spawned->m_speedY = m_object->m_screenY;
+        spawned->SetSpeedX(m_object->m_screenX);
+        spawned->SetSpeedY(m_object->m_screenY);
         spawned->m_smarts = m_object->m_health;
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, false, false);
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
