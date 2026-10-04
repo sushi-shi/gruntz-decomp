@@ -1663,7 +1663,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
             return 1;
         }
         if (charCode == '-') {
-            m_statusBar->HideRect();
+            m_statusBar->HideStatusBar();
             return 1;
         }
         if (charCode == '=' || charCode == '+') {
@@ -2640,16 +2640,16 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             return 1;
         }
         if (m_statusBar->GetState() == STATUSBAR_HIDDEN) {
-            if (m_statusBar->HitTestLayer(xr, y)) {
+            if (m_statusBar->HitTestCollapsedSprite(xr, y)) {
                 m_statusBarDragActive = true;
 
-                CGameObject* xAnchorSprite = m_statusBar->m_barSprite;
+                CGameObject* xAnchorSprite = m_statusBar->m_collapsedSprite;
                 i32 dx = 0;
                 if (xAnchorSprite != NULL) {
                     dx = xAnchorSprite->m_screenX - xr;
                 }
                 m_statusBarDragOffsetX = dx;
-                CGameObject* yAnchorSprite = m_statusBar->m_barSprite;
+                CGameObject* yAnchorSprite = m_statusBar->m_collapsedSprite;
                 if (yAnchorSprite == NULL) {
                     m_statusBarDragOffsetY = 0;
                     return 1;
@@ -2792,7 +2792,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return this->OnLButtonDown(keyFlags, x, y);
     }
 
-    if (m_statusBar->GetState() == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
+    if (m_statusBar->GetState() == STATUSBAR_HIDDEN && m_statusBar->HitTestCollapsedSprite(x, y)) {
         SoundCueRegistry* registry = m_mgr->World()->SoundRegistry();
         registry->PlayCue("GAME_TABHIGHLIGHT1");
         m_statusBar->RestoreStatusBar();
@@ -3788,7 +3788,10 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         if (m_statusBar == NULL) {
             return 1;
         }
-        m_statusBar->SetSpritePos(m_statusBarDragOffsetX + x, m_statusBarDragOffsetY + y);
+        m_statusBar->SetCollapsedSpritePosition(
+            m_statusBarDragOffsetX + x,
+            m_statusBarDragOffsetY + y
+        );
         goto rearm;
     }
 

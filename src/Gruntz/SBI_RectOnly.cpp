@@ -103,8 +103,8 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     i32 vy = g_gameReg->m_modeSize.cy;
     SetRect(&m_barRect, vx - 0xa0, 0, vx, SCREEN_H_PX);
     m_redrawFrames = 0;
-    m_barX = vx - 0x45;
-    m_barY = vy - 0x30;
+    m_collapsedSpriteX = vx - 0x45;
+    m_collapsedSpriteY = vy - 0x30;
     m_itemKind = GAME_TAB_MENU;
     m_tabCycle = g_curPlayer;
     Reset();
@@ -179,7 +179,7 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
         return 1;
     }
     if (state == STATUSBAR_HIDDEN) {
-        if (Activate() == 0) {
+        if (CreateCollapsedSprite() == 0) {
             return 0;
         }
         m_restorePosition = m_position;
@@ -231,7 +231,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
 }
 
 RVA(0x000fe600, 0x49)
-i32 CStatusBarMgr::HideRect() {
+i32 CStatusBarMgr::HideStatusBar() {
     if (m_layoutLocked == false && m_position != STATUSBAR_HIDDEN) {
         ResetWidgets(true);
         SetRect(&m_barRect, -1, -1, -1, -1);
@@ -320,19 +320,19 @@ i32 CStatusBarMgr::Render() {
 
 // @early-stop
 RVA(0x000fe860, 0x2d)
-i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
-    if (m_barSprite == NULL) {
+i32 CStatusBarMgr::SetCollapsedSpritePosition(i32 x, i32 y) {
+    if (m_collapsedSprite == NULL) {
         return 0;
     }
-    SET_SCREEN_POS(m_barSprite, x, y);
-    m_barX = x;
-    m_barY = y;
+    SET_SCREEN_POS(m_collapsedSprite, x, y);
+    m_collapsedSpriteX = x;
+    m_collapsedSpriteY = y;
     return 1;
 }
 
 RVA(0x000fe8a0, 0x4e)
-i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
-    CWwdSpriteObject* r = m_barSprite;
+i32 CStatusBarMgr::HitTestCollapsedSprite(i32 x, i32 y) {
+    CWwdSpriteObject* r = m_collapsedSprite;
     CImage* L = r->GetFrameImage();
     i32 xlo = r->m_screenX - L->GetAnchorX();
     i32 ylo = r->m_screenY - L->GetAnchorY();
@@ -379,7 +379,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     return 1;
                 case SBICMD_HIDE:
                     HiCueFind();
-                    HideRect();
+                    HideStatusBar();
                     return 1;
                 default:
                     return 0;
@@ -1020,10 +1020,10 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
         DELETE_STATUS_ITEMS(m_tabLists[t])
     }
     if (keepHost) {
-        if (m_barSprite) {
+        if (m_collapsedSprite) {
 
-            m_barSprite->Hide();
-            m_barSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+            m_collapsedSprite->Hide();
+            m_collapsedSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
     m_statzTabButton = NULL;
@@ -1041,7 +1041,7 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     m_endSecondaryButton = NULL;
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
-    m_barSprite = NULL;
+    m_collapsedSprite = NULL;
     i32 i;
     memset(m_hitRects, 0, sizeof(m_hitRects));
     memset(m_statObj, 0, sizeof(m_statObj));
@@ -1115,9 +1115,9 @@ i32 CStatusBarMgr::RequestRedraw() {
 
         i32 w = g_gameReg->m_modeSize.cx;
         i32 h = g_gameReg->m_modeSize.cy;
-        m_barX = w - 0x45;
-        m_barY = h - 0x30;
-        SetSpritePos(w - 0x45, h - 0x30);
+        m_collapsedSpriteX = w - 0x45;
+        m_collapsedSpriteY = h - 0x30;
+        SetCollapsedSpritePosition(w - 0x45, h - 0x30);
     }
 
     POSITION n = m_tabLists[0].GetHeadPosition();
@@ -2258,7 +2258,7 @@ RVA(0x00104d60, 0x48)
 i32 CStatusBarMgr::TryActivate() {
 
     if (m_position == STATUSBAR_HIDDEN) {
-        return Activate();
+        return CreateCollapsedSprite();
     }
     if (!BuildStatusBarTabs()) {
         g_gameReg->ReportError(s_activateErrId, s_activateErrTag);
@@ -2269,25 +2269,25 @@ i32 CStatusBarMgr::TryActivate() {
 }
 
 RVA(0x00104dd0, 0x6b)
-i32 CStatusBarMgr::Activate() {
-    if (m_barSprite != NULL) {
+i32 CStatusBarMgr::CreateCollapsedSprite() {
+    if (m_collapsedSprite != NULL) {
         return 0;
     }
     i32 w = g_gameReg->m_modeSize.cx;
     i32 d = g_gameReg->m_modeSize.cy;
-    CLAMP_UPPER_INPLACE(m_barX, w - 0x22);
-    if (m_barY > d - 9) {
-        m_barY = d - 0x22;
+    CLAMP_UPPER_INPLACE(m_collapsedSpriteX, w - 0x22);
+    if (m_collapsedSpriteY > d - 9) {
+        m_collapsedSpriteY = d - 0x22;
     }
-    m_barSprite = (m_world)->ChildGroup()->CreateSprite(
+    m_collapsedSprite = (m_world)->ChildGroup()->CreateSprite(
         0,
-        m_barX,
-        m_barY,
+        m_collapsedSpriteX,
+        m_collapsedSpriteY,
         SORTKEY_OVERLAY,
         "StatusBarSprite",
         IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)
     );
-    return m_barSprite != NULL;
+    return m_collapsedSprite != NULL;
 }
 
 RVA(0x00104e60, 0xed)
@@ -3628,16 +3628,16 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 
     {
         i32 tmp = 0;
-        if (m_barSprite) {
-            tmp = m_barSprite->GetObjectId();
+        if (m_collapsedSprite) {
+            tmp = m_collapsedSprite->GetObjectId();
         }
         s->Write(&tmp, sizeof(tmp));
     }
 
     s->Write(&m_barRect.left, sizeof(m_barRect));
     s->Write(&m_redrawFrames, sizeof(m_redrawFrames));
-    s->Write(&m_barX, sizeof(m_barX));
-    s->Write(&m_barY, sizeof(m_barY));
+    s->Write(&m_collapsedSpriteX, sizeof(m_collapsedSpriteX));
+    s->Write(&m_collapsedSpriteY, sizeof(m_collapsedSpriteY));
     s->Write(&m_itemKind, sizeof(m_itemKind));
     s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
@@ -3720,12 +3720,12 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(this, 4);
     ar->Read(&m_restorePosition, sizeof(m_restorePosition));
 
-    SERIALREF(m_barSprite);
+    SERIALREF(m_collapsedSprite);
 
     ar->Read(&m_barRect.left, sizeof(m_barRect));
     ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
-    ar->Read(&m_barX, sizeof(m_barX));
-    ar->Read(&m_barY, sizeof(m_barY));
+    ar->Read(&m_collapsedSpriteX, sizeof(m_collapsedSpriteX));
+    ar->Read(&m_collapsedSpriteY, sizeof(m_collapsedSpriteY));
     ar->Read(&m_itemKind, sizeof(m_itemKind));
     ar->Read(&m_tabCycle, sizeof(m_tabCycle));
 

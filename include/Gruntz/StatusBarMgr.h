@@ -164,7 +164,7 @@ public:
     void UpdateChipGrinderStatusBar();
     void NotifyAllSlots();
     void UpdateDestructWarningAnimation();
-    i32 Activate();
+    i32 CreateCollapsedSprite();
     i32 SetTabState(SbiCommandId cmd, SbiMenuItemState state);
 
     void Teardown();
@@ -221,13 +221,13 @@ public:
     }
     i32 SetState(StatusBarDock state);
     i32 RestoreStatusBar();
-    i32 SetSpritePos(i32 x, i32 y);
-    i32 HitTestLayer(i32 x, i32 y);
+    i32 SetCollapsedSpritePosition(i32 x, i32 y);
+    i32 HitTestCollapsedSprite(i32 x, i32 y);
     i32 QueuePickupReward(i32 pickupValue, i32 score);
     void ReportTab(i32 tab);
 
     i32 DockStatusBarLeft();
-    i32 HideRect();
+    i32 HideStatusBar();
 
     void AdvanceTab(i32 reverse);
 
@@ -236,14 +236,14 @@ public:
     StatusBarDock m_position;
     StatusBarDock m_restorePosition;
 
-    class CWwdSpriteObject* m_barSprite;
+    class CWwdSpriteObject* m_collapsedSprite;
 
     CDDrawSurfaceMgr* m_world;
 
     RECT m_barRect;
     i32 m_redrawFrames;
-    i32 m_barX;
-    i32 m_barY;
+    i32 m_collapsedSpriteX;
+    i32 m_collapsedSpriteY;
 
     CPtrList m_tabLists[8];
     StatusBarTab m_activeTab;
@@ -369,7 +369,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_endSecondaryButton = NULL;
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
-    m_barSprite = NULL;
+    m_collapsedSprite = NULL;
     m_world = NULL;
     m_redrawFrames = 0;
     m_activeTab = TAB_NONE;
