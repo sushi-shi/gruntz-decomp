@@ -71,7 +71,7 @@ void CLightFx::Activate(
     i32 shadeTableIndex,
     b32 deleteWhenComplete
 ) {
-    CImageSet* imageSet = m_ownerLogicRecord->OwnerMgr()->FindImageSet(imageSetName);
+    CImageSet* imageSet = m_ownerLogicRecord->GetWorld()->FindImageSet(imageSetName);
     g_gameReg->GetLightFxMgr()->ApplyShadeTable(imageSet, shadeTableIndex, SHADE_DST_BY_SRC_16);
     CWwdSpriteObject* object = m_wwdObject;
     if (imageSet != NULL) {
@@ -86,13 +86,13 @@ void CLightFx::Activate(
     m_deleteWhenComplete = deleteWhenComplete;
 
     CAnimationSequence* node = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         animationName
     );
     if (node != NULL) {
         SwitchAnimation(
             MapFind<CAnimationSequence>(
-                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+                m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
                 animationName
             )
         );

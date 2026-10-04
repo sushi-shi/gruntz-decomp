@@ -53,7 +53,7 @@ void CDDrawChildGroup::Unload() {
 
 RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
-    CGameLevel* p = OwnerMgr()->GetLevel();
+    CGameLevel* p = GetWorld()->GetLevel();
     if (p != NULL) {
 
         CLevelPlane* q = static_cast<CLevelPlane*>(p->m_mainPlane);
@@ -84,7 +84,7 @@ CWwdDotObject* CDDrawChildGroup::CreateDotObject(
     int dotColor,
     int objectFlags
 ) {
-    CWwdDotObject* result = new CWwdDotObject(OwnerMgr(), id, objectFlags);
+    CWwdDotObject* result = new CWwdDotObject(GetWorld(), id, objectFlags);
     if (result->SetupDot(x, y, sortKey, logicTemplate, dotColor) == 0) {
         if (result != NULL) {
             delete result;
@@ -117,7 +117,7 @@ CWwdDotObject* CDDrawChildGroup::CreateNamedDotObject(
         x,
         y,
         sortKey,
-        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name),
+        MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, name),
         dotColor,
         objectFlags
     );
@@ -130,7 +130,7 @@ CWwdDeferredObject* CDDrawChildGroup::CreateDeferredObject(
     CLogicRecord* logicTemplate,
     int objectFlags
 ) {
-    CWwdDeferredObject* result = new CWwdDeferredObject(OwnerMgr(), id, objectFlags);
+    CWwdDeferredObject* result = new CWwdDeferredObject(GetWorld(), id, objectFlags);
     if (result->SetupDeferred(sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
@@ -157,7 +157,7 @@ CWwdDeferredObject* CDDrawChildGroup::CreateNamedDeferredObject(
     return CreateDeferredObject(
         id,
         sortKey,
-        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name),
+        MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, name),
         objectFlags
     );
 }
@@ -172,7 +172,7 @@ CWwdSpriteObject* CDDrawChildGroup::CreateSpriteObject(
     i32 objectFlags
 ) {
     CWwdSpriteObject* result =
-        new CWwdSpriteObject(OwnerMgr(), id, objectFlags, CGameObject::INLINE_BASE);
+        new CWwdSpriteObject(GetWorld(), id, objectFlags, CGameObject::INLINE_BASE);
     if (result->Setup(x, y, sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
@@ -197,7 +197,7 @@ CWwdSpriteObject* CDDrawChildGroup::CreateSprite(
     i32 objectFlags
 ) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name);
+        MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, name);
     if (!logicTemplate) {
         return NULL;
     }
@@ -229,7 +229,7 @@ i32 CDDrawChildGroup::AttachSprite(
         return 0;
     }
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name);
+        MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, name);
     if (!logicTemplate) {
         return 0;
     }
@@ -256,7 +256,7 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     CLogicRecord* logicTemplate,
     int objectFlags
 ) {
-    CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), id, objectFlags);
+    CWwdGameObject* result = new CWwdGameObject(GetWorld(), id, objectFlags);
     if (result->Setup(x, y, sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
@@ -283,7 +283,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     int objectFlags
 ) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name);
+        MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, name);
     if (logicTemplate == NULL) {
         return NULL;
     }
@@ -602,8 +602,8 @@ RVA(0x0015a210, 0x432)
 void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_HIT_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
-        CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-        CRenderBuffer* drawHost = OwnerMgr()->GetDisplayBuffers()->GetBackBuffer();
+        CLevelPlane* view = GetWorld()->GetLevel()->m_mainPlane;
+        CRenderBuffer* drawHost = GetWorld()->GetDisplayBuffers()->GetBackBuffer();
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -615,8 +615,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ATTACK_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
-        CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-        CRenderBuffer* drawHost = OwnerMgr()->GetDisplayBuffers()->GetBackBuffer();
+        CLevelPlane* view = GetWorld()->GetLevel()->m_mainPlane;
+        CRenderBuffer* drawHost = GetWorld()->GetDisplayBuffers()->GetBackBuffer();
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -628,8 +628,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_MOVE_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
-        CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-        CRenderBuffer* drawHost = OwnerMgr()->GetDisplayBuffers()->GetBackBuffer();
+        CLevelPlane* view = GetWorld()->GetLevel()->m_mainPlane;
+        CRenderBuffer* drawHost = GetWorld()->GetDisplayBuffers()->GetBackBuffer();
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -641,8 +641,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ORIGIN)) {
         POSITION pos = m_list.GetHeadPosition();
-        CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-        CRenderBuffer* drawHost = OwnerMgr()->GetDisplayBuffers()->GetBackBuffer();
+        CLevelPlane* view = GetWorld()->GetLevel()->m_mainPlane;
+        CRenderBuffer* drawHost = GetWorld()->GetDisplayBuffers()->GetBackBuffer();
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -686,8 +686,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SURFACE_MEMORY)) {
         POSITION pos = m_list.GetHeadPosition();
-        CRenderBuffer* drawHost = OwnerMgr()->GetDisplayBuffers()->GetBackBuffer();
-        CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
+        CRenderBuffer* drawHost = GetWorld()->GetDisplayBuffers()->GetBackBuffer();
+        CLevelPlane* view = GetWorld()->GetLevel()->m_mainPlane;
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -734,8 +734,8 @@ void CDDrawChildGroup::DrawObjectCounts() {
         return;
     }
     POSITION pos = m_list.GetHeadPosition();
-    CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-    CRenderBuffer* drawHost = OwnerMgr()->GetDisplayBuffers()->GetBackBuffer();
+    CLevelPlane* view = GetWorld()->GetLevel()->m_mainPlane;
+    CRenderBuffer* drawHost = GetWorld()->GetDisplayBuffers()->GetBackBuffer();
     if (pos == NULL) {
         return;
     }
@@ -874,7 +874,7 @@ CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicR
 RVA(0x0015a8c0, 0x7d)
 CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, key);
+        MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, key);
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = NextChild(pos);
@@ -1115,7 +1115,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                     id,
                     sortKey,
                     MapFind<CLogicRecord>(
-                        OwnerMgr()->GetLogicRegistry()->m_templatesByName,
+                        GetWorld()->GetLogicRegistry()->m_templatesByName,
                         desc.m_logicTypeName
                     ),
                     0
@@ -1128,7 +1128,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 i32 x = desc.m_screenX;
                 i32 id = desc.m_id;
                 CLogicRecord* logicTemplate = MapFind<CLogicRecord>(
-                    OwnerMgr()->GetLogicRegistry()->m_templatesByName,
+                    GetWorld()->GetLogicRegistry()->m_templatesByName,
                     desc.m_logicTypeName
                 );
                 if (logicTemplate == NULL) {
@@ -1144,7 +1144,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 i32 x = desc.m_screenX;
                 i32 id = desc.m_id;
                 CLogicRecord* logicTemplate = MapFind<CLogicRecord>(
-                    OwnerMgr()->GetLogicRegistry()->m_templatesByName,
+                    GetWorld()->GetLogicRegistry()->m_templatesByName,
                     desc.m_logicTypeName
                 );
                 if (logicTemplate == NULL) {
@@ -1157,7 +1157,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
             case CLASSID_CALLBACKOBJ: {
 
                 CWwdGameObject* rec = NULL;
-                if (OwnerMgr()->DispatchSerializationCallback(
+                if (GetWorld()->DispatchSerializationCallback(
                         reader,
                         SERIAL_CREATE_BY_SERIAL_ID,
                         static_cast<LogicTypeId>(desc.m_serialTypeId),
@@ -1199,7 +1199,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         if (desc.m_logicTypeId != LOGIC_UNSET) {
 
             child = NULL;
-            if (OwnerMgr()->DispatchSerializationCallback(
+            if (GetWorld()->DispatchSerializationCallback(
                     reader,
                     SERIAL_CREATE,
                     desc.m_logicTypeId,

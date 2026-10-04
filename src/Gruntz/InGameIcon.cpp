@@ -707,7 +707,7 @@ i32 CInGameIcon::SerializeDispatch(
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_ownerLogicRecord->OwnerMgr()->m_soundRegistry->FindCueKey(m_cue)
+                        m_ownerLogicRecord->GetWorld()->m_soundRegistry->FindCueKey(m_cue)
                     )
                 );
             }
@@ -724,7 +724,7 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = m_ownerLogicRecord->OwnerMgr()->m_soundRegistry->FindCue(name);
+                m_cue = m_ownerLogicRecord->GetWorld()->m_soundRegistry->FindCue(name);
             } else {
                 m_cue = NULL;
             }
@@ -732,7 +732,7 @@ i32 CInGameIcon::SerializeDispatch(
             i32 id;
             ar->Read(&id, sizeof(id));
             CWwdSpriteObject* sprite = LookupSpriteObjectById(
-                m_ownerLogicRecord->OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
+                m_ownerLogicRecord->GetWorld()->ChildGroup()->m_registeredGameObjectsById,
                 id
             );
             m_glitterSprite = sprite;

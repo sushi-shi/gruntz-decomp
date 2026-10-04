@@ -937,13 +937,13 @@ i32 CGrunt::StartExitAnimation() {
     CAnimationSequence* found;
     i32 r = GetRandom(480);
     if (r > 0x140) {
-        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzOne);
+        found = m_wwdObject->GetWorld()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzOne);
         PLAY_VOICE_IF_VISIBLE(0x384);
     } else if (r > 0xa0) {
-        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzTwo);
+        found = m_wwdObject->GetWorld()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzTwo);
         PLAY_VOICE_IF_VISIBLE(0x385);
     } else {
-        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzThree);
+        found = m_wwdObject->GetWorld()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzThree);
         PLAY_VOICE_IF_VISIBLE(0x386);
     }
 

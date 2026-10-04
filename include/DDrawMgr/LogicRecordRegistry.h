@@ -17,7 +17,7 @@ public:
 
     RVA(0x001576d0, 0x16)
     virtual i32 IsLoaded() OVERRIDE {
-        if (m_ownerCtx == NULL) {
+        if (m_world == NULL) {
             goto fail;
         }
         if (m_id != -1) {

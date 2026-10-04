@@ -330,7 +330,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))) {
         return 0;
     }
-    CDDrawChildGroup* children = OwnerMgr()->ChildGroup();
+    CDDrawChildGroup* children = GetWorld()->ChildGroup();
     POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
@@ -364,7 +364,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 RVA(0x00168060, 0x18)
 void CWwdGridShell::OnFound(WwdRegion* r) {
     CGameObject* obj = r->m_object;
-    obj->OwnerMgr()->ChildGroup()->InsertSorted(obj, 1);
+    obj->GetWorld()->ChildGroup()->InsertSorted(obj, 1);
 }
 
 RVA(0x00168080, 0x1f6)

@@ -76,7 +76,7 @@ public:
     CImage* GetFrame(i32 n);
 
     CGameWorld* Owner() const {
-        return OwnerMgr();
+        return GetWorld();
     }
 
     void AddFrameAt(CObject* elem, i32 index);

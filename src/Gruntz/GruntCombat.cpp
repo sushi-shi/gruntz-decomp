@@ -308,7 +308,7 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
     }
 
     SoundCueRegistry* sounds =
-        (static_cast<CGameWorld*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
+        (static_cast<CGameWorld*>(m_ownerLogicRecord->GetWorld()))->SoundRegistry();
     sounds->PlayCue(s_gameAttack);
 
     switch (spell) {
@@ -1141,7 +1141,7 @@ i32 CGrunt::ApplyCombatHitEffects(
             enemy->SetHealth(min(h, HEALTH_FULL));
 
             SoundCueRegistry* registry =
-                (static_cast<CGameWorld*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
+                (static_cast<CGameWorld*>(m_ownerLogicRecord->GetWorld()))->SoundRegistry();
             if (registry->IsSilent() == false) {
                 SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {

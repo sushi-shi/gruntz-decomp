@@ -393,7 +393,7 @@ i32 CCheckpointTrigger::TryActivateCheckpoint() {
         play->m_levelTimer->AddTime(minutes, seconds);
     }
 
-    CObject* cue = m_wwdObject->OwnerMgr()->SoundRegistry()->Lookup("GAME_FLAGRISE");
+    CObject* cue = m_wwdObject->GetWorld()->SoundRegistry()->Lookup("GAME_FLAGRISE");
     if (cue != NULL) {
         static_cast<SoundCue*>(cue)->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
     }

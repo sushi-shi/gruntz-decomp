@@ -131,47 +131,47 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     g_gameReg->GetCurrentState()->SetAssetGroupLoaded(m_warlordName, 1, 0, NULL);
 
     m_idleAnims[0] = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE1"
     );
     m_idleAnims[1] = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE2"
     );
     m_idleAnims[2] = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE3"
     );
     m_idleAnims[3] = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE4"
     );
     m_battlecryAnims[0] = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry1Suffix
     );
     m_battlecryAnims[1] = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry2Suffix
     );
     m_battlecryAnims[2] = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry3Suffix
     );
     m_animJoy = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_joySuffix
     );
     m_animDeath = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + "_DEATH"
     );
     m_animMoving = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_movingSuffix
     );
     m_animPanic = MapFind<CAnimationSequence>(
-        m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+        m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
         "GRUNTZ_" + m_warlordName + s_panicSuffix
     );
 
@@ -208,7 +208,7 @@ i32 CWarlord::SerializeDispatch(
                 m_previousAnimation = NULL;
             } else {
                 CMapStringToPtr* map =
-                    &m_ownerLogicRecord->OwnerMgr()->m_animRegistry->m_animations;
+                    &m_ownerLogicRecord->GetWorld()->m_animRegistry->m_animations;
                 CAnimationSequence* previousAnimation = MapFind<CAnimationSequence>(*map, hdr);
                 m_previousAnimation = previousAnimation;
             }
@@ -220,7 +220,7 @@ i32 CWarlord::SerializeDispatch(
                 strcpy(
                     buf,
                     static_cast<const char*>(
-                        m_ownerLogicRecord->OwnerMgr()->m_animRegistry->FindAnimationKey(
+                        m_ownerLogicRecord->GetWorld()->m_animRegistry->FindAnimationKey(
                             m_previousAnimation
                         )
                     )
@@ -234,7 +234,7 @@ i32 CWarlord::SerializeDispatch(
 
     switch (mode) {
         case SERIAL_SAVE: {
-            CGameWorld* world = m_ownerLogicRecord->OwnerMgr();
+            CGameWorld* world = m_ownerLogicRecord->GetWorld();
             if (world == NULL) {
                 goto fail;
             }
@@ -258,7 +258,7 @@ i32 CWarlord::SerializeDispatch(
             break;
         }
         case SERIAL_LOAD: {
-            CGameWorld* world = m_ownerLogicRecord->OwnerMgr();
+            CGameWorld* world = m_ownerLogicRecord->GetWorld();
             if (world == NULL) {
                 return 0;
             }

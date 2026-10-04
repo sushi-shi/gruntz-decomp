@@ -903,7 +903,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         return 0;
     }
 
-    CGameWorld* world = m_ownerLogicRecord->OwnerMgr();
+    CGameWorld* world = m_ownerLogicRecord->GetWorld();
     if (!world) {
         return 0;
     }

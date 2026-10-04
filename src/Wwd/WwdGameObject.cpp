@@ -54,14 +54,14 @@ b32 g_logicTypesRegistered;
 
 RVA(0x001504d0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
-    CImageSet* spr = OwnerMgr()->FindImageSet(name);
+    CImageSet* spr = GetWorld()->FindImageSet(name);
     m_imageSet = spr;
     SetImageFrame(frame);
 }
 
 RVA(0x00150540, 0x65)
 void CWwdSpriteObject::SetImageSetByName(const char* name) {
-    CImageSet* spr = OwnerMgr()->FindImageSet(name);
+    CImageSet* spr = GetWorld()->FindImageSet(name);
     m_imageSet = spr;
     if (spr) {
         i32 n = spr->GetMinIndex();
@@ -73,7 +73,7 @@ void CWwdSpriteObject::SetImageSetByName(const char* name) {
 RVA(0x001505b0, 0x5e)
 i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
     CAnimationSequence* animation =
-        MapFind<CAnimationSequence>(OwnerMgr()->GetAnimationRegistry()->m_animations, name);
+        MapFind<CAnimationSequence>(GetWorld()->GetAnimationRegistry()->m_animations, name);
     if (!animation) {
         return 0;
     }
@@ -83,7 +83,7 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
 
 RVA(0x00150610, 0x41)
 i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
-    SoundCue* cue = OwnerMgr()->SoundRegistry()->FindCue(name);
+    SoundCue* cue = GetWorld()->SoundRegistry()->FindCue(name);
     if (cue == NULL) {
         return 0;
     }
@@ -165,7 +165,7 @@ i32 CWwdSpriteObject::IntersectsViewport() {
     i32 bottom = m_screenY + m_frameImage->GetAnchorY();
     if (HAS(static_cast<WwdGameObjectFlags>(m_flags), WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
 
-        RECT* r = OwnerMgr()->GetLevel()->m_mainPlane->GetPlaneViewRect();
+        RECT* r = GetWorld()->GetLevel()->m_mainPlane->GetPlaneViewRect();
         if (right < r->left) {
             return 0;
         }
@@ -178,7 +178,7 @@ i32 CWwdSpriteObject::IntersectsViewport() {
         return top <= r->bottom;
     } else {
 
-        CDDrawFrontSurface* g = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface();
+        CDDrawFrontSurface* g = GetWorld()->GetDisplayBuffers()->GetFrontSurface();
 
         i32 gw = g->GetWidth();
         i32 gh = g->GetHeight();
@@ -246,7 +246,7 @@ i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
 
     memset(tmp, 0, SERIAL_NAME_LEN);
     {
-        strcpy(tmp, OwnerMgr()->SoundRegistry()->FindCueKey(m_soundCue));
+        strcpy(tmp, GetWorld()->SoundRegistry()->FindCueKey(m_soundCue));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -268,7 +268,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        CImageSet* imageSet = OwnerMgr()->FindImageSet(name);
+        CImageSet* imageSet = GetWorld()->FindImageSet(name);
         m_imageSet = imageSet;
         if (imageSet != NULL && hasFrameImage == true) {
             i32 idx = m_frameIndex;
@@ -281,7 +281,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        CGameWorld* mgr = OwnerMgr();
+        CGameWorld* mgr = GetWorld();
         SoundCue* found = mgr->SoundRegistry()->FindCue(name);
         m_soundCue = found;
     }
@@ -352,7 +352,7 @@ i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
     if (m_hitLogic != NULL) {
         m_hitLogic->Unload();
     } else {
-        m_hitLogic = new CLogicRecord(m_ownerCtx, m_id);
+        m_hitLogic = new CLogicRecord(m_world, m_id);
     }
     if (m_hitLogic == NULL) {
         return 0;
@@ -363,7 +363,7 @@ i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
 
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
-    EnsureHitLogic(MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, key));
+    EnsureHitLogic(MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, key));
 }
 
 RVA(0x00150f90, 0x98)
@@ -374,7 +374,7 @@ i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
     if (m_attackLogic != NULL) {
         m_attackLogic->Unload();
     } else {
-        m_attackLogic = new CLogicRecord(m_ownerCtx, m_id);
+        m_attackLogic = new CLogicRecord(m_world, m_id);
     }
     if (m_attackLogic == NULL) {
         return 0;
@@ -386,7 +386,7 @@ i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
 RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
     EnsureAttackLogic(
-        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, key)
+        MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, key)
     );
 }
 
@@ -398,7 +398,7 @@ i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
     if (m_collisionLogic != NULL) {
         m_collisionLogic->Unload();
     } else {
-        m_collisionLogic = new CLogicRecord(m_ownerCtx, m_id);
+        m_collisionLogic = new CLogicRecord(m_world, m_id);
     }
     if (m_collisionLogic == NULL) {
         return 0;
@@ -409,7 +409,7 @@ i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
 
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
-    EnsureBumpLogic(MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, key));
+    EnsureBumpLogic(MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, key));
 }
 
 // @early-stop
@@ -457,7 +457,7 @@ i32 CGameObject::SerializeDispatch(
             if (node != 0) {
                 CWwdGameObject* found = NULL;
                 if (MapLookup(
-                        OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
+                        GetWorld()->ChildGroup()->m_registeredGameObjectsById,
                         reinterpret_cast<void*>(node), // API-forced: id-keyed map
                         found
                     )
@@ -553,19 +553,19 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_hitLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->GetLogicRegistry()->FindLogicTypeKey(m_hitLogic));
+        strcpy(tmp, GetWorld()->GetLogicRegistry()->FindLogicTypeKey(m_hitLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_attackLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->GetLogicRegistry()->FindLogicTypeKey(m_attackLogic));
+        strcpy(tmp, GetWorld()->GetLogicRegistry()->FindLogicTypeKey(m_attackLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collisionLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->GetLogicRegistry()->FindLogicTypeKey(m_collisionLogic));
+        strcpy(tmp, GetWorld()->GetLogicRegistry()->FindLogicTypeKey(m_collisionLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -632,7 +632,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
+        GetWorld()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
         if (this->EnsureHitLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -641,7 +641,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
+        GetWorld()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
         if (this->EnsureAttackLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -650,7 +650,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
+        GetWorld()->GetLogicRegistry()->m_templatesByName.Lookup(name, found);
         if (this->EnsureBumpLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -668,7 +668,7 @@ i32 CGameObject::ResolveLinkedObject(b32 gate) {
     CWwdGameObject* found;
     if (m_carrierId != 0) {
         if (LookupLinkedObject(
-                OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
+                GetWorld()->ChildGroup()->m_registeredGameObjectsById,
                 m_carrierId,
                 found
             )
@@ -722,7 +722,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     {
         strcpy(
             snapshot.m_logicTypeName,
-            OwnerMgr()->GetLogicRegistry()->FindLogicTypeKey(m_logicRecord)
+            GetWorld()->GetLogicRegistry()->FindLogicTypeKey(m_logicRecord)
         );
     }
     ar->Write(&snapshot, sizeof(snapshot));
@@ -906,12 +906,12 @@ i32 CImageSet::BuildFramesFromArchive(CRezDir* tab) {
                 count++;
             }
             val = tab->GetNextItem(val);
-            if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
+            if ((GetWorld()->m_flags & 0x100) && count > 0) {
                 val = NULL;
             }
         }
         sym = tab->GetNextType(sym);
-        if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
+        if ((GetWorld()->m_flags & 0x100) && count > 0) {
             sym = NULL;
         }
     }

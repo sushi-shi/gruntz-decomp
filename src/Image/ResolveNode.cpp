@@ -22,7 +22,7 @@ LoadableClassId CWapObj::GetClassId() {
 }
 RVA(0x00154a10, 0x16)
 i32 CRenderState::IsLoaded() {
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;

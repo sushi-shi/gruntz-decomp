@@ -11,7 +11,7 @@
 
 #define LOAD_POSE(dst, sfx)                                                                        \
     ((dst) = MapFind<CAnimationSequence>(                                                          \
-         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                            \
+         m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,                            \
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
 
@@ -70,7 +70,7 @@
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         CAnimationSequence* pickupAnimation = MapFind<CAnimationSequence>(                         \
-            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
+            m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,                         \
             (key)                                                                                  \
         );                                                                                         \
         m_pickupAnimation = pickupAnimation;                                                       \

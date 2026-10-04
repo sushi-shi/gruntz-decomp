@@ -61,7 +61,7 @@ i32 CGameObject::IsLoaded() {
     if (m_logicRecord == NULL) {
         return 0;
     }
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -140,7 +140,7 @@ i32 CWwdDeferredObject::IsLoaded() {
     if (m_logicRecord == NULL) {
         return 0;
     }
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -203,7 +203,7 @@ i32 CWwdDotObject::IsLoaded() {
     if (m_logicRecord == NULL) {
         return 0;
     }
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -244,7 +244,7 @@ void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* sprite) {
     m_animation = NULL;
     m_durationScale = 1.0f;
     m_consumeEvents =
-        HAS(static_cast<DDrawSurfaceMgrFlags>(sprite->OwnerMgr()->m_flags),
+        HAS(static_cast<DDrawSurfaceMgrFlags>(sprite->GetWorld()->m_flags),
             SURFACEMGR_CONSUME_ANIMATION_EVENTS);
     m_useElapsedTime = true;
 }
@@ -678,7 +678,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* archive) {
     memset(animationKey, 0, sizeof(animationKey));
     if (m_animation != NULL) {
 
-        strcpy(animationKey, OwnerMgr()->GetAnimationRegistry()->FindAnimationKey(m_animation));
+        strcpy(animationKey, GetWorld()->GetAnimationRegistry()->FindAnimationKey(m_animation));
     }
     archive->Write(animationKey, SERIAL_NAME_LEN);
     return 1;
@@ -704,7 +704,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* archive) {
         m_animation = NULL;
     } else {
         m_animation = MapFind<CAnimationSequence>(
-            OwnerMgr()->GetAnimationRegistry()->m_animations,
+            GetWorld()->GetAnimationRegistry()->m_animations,
             animationKey
         );
     }

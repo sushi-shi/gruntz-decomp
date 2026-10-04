@@ -53,7 +53,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = OwnerMgr()->GetDeviceManager()->LoadFileSurface(path, surfaceCaps, colorKey);
+    CDDSurface* item = GetWorld()->GetDeviceManager()->LoadFileSurface(path, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -119,7 +119,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
 
     CDDSurface* item =
-        OwnerMgr()->GetDeviceManager()->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
+        GetWorld()->GetDeviceManager()->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -141,7 +141,7 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = OwnerMgr()
+    CDDSurface* item = GetWorld()
                            ->GetDeviceManager()
                            ->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
     m_surface = item;
@@ -168,7 +168,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
         return 0;
     }
 
-    ColorDepth fmt = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface()->m_bpp;
+    ColorDepth fmt = GetWorld()->GetDisplayBuffers()->GetFrontSurface()->m_bpp;
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }
@@ -189,7 +189,7 @@ void CImage::Unload() {
     m_width = 0;
     m_height = 0;
     if (m_surface != NULL) {
-        OwnerMgr()->GetDeviceManager()->RemoveSurface(m_surface);
+        GetWorld()->GetDeviceManager()->RemoveSurface(m_surface);
         m_surface = NULL;
     }
     CDDrawShadeBlit* owned = m_owned;
@@ -274,7 +274,7 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
     }
 
     return m_surface->Resolve(
-        OwnerMgr()->GetDeviceManager(),
+        GetWorld()->GetDeviceManager(),
         resolved,
         index,
         static_cast<u32>(src->GetSize()),
@@ -343,7 +343,7 @@ void CImage::RenderImage(CRenderState* info, CRenderBuffer* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        CRect destClip(OwnerMgr()->GetLevel()->GetViewportRect());
+        CRect destClip(GetWorld()->GetLevel()->GetViewportRect());
         if (x < destClip.left) {
             d.left += destClip.left - x;
         }
@@ -403,7 +403,7 @@ void CImage::RenderFrame(CRenderBuffer* target, i32 x, i32 y, i32 flags) {
     RVA_DYNINIT(0x00153800, 0x10, s_clip)
     DATA(0x002bf2a0)
     static CRenderState s_clip;
-    if (s_clip.Init(OwnerMgr(), 0, x, y, flags, 0)) {
+    if (s_clip.Init(GetWorld(), 0, x, y, flags, 0)) {
         this->RenderImage(&s_clip, target);
     }
 }
@@ -413,7 +413,7 @@ void CImage::RenderFrameClipped(CRenderBuffer* target, i32 x, i32 y, RECT* clipR
     RVA_DYNINIT(0x001538b0, 0x10, s_clip)
     DATA(0x002bf228)
     static CRenderState s_clip;
-    if (s_clip.Init(OwnerMgr(), 0, x, y, flags, 0)) {
+    if (s_clip.Init(GetWorld(), 0, x, y, flags, 0)) {
         if (clipRect != NULL) {
             s_clip.m_clip = *clipRect;
         }

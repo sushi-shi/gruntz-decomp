@@ -39,7 +39,7 @@ CImage* CImageSetRegistry::InsertFrameByKey(CRezItm* rec, const char* key, i32 i
     m_imageSetsByName.Lookup(key, worker);
     if (worker == NULL) {
 
-        worker = new CImageSet(m_ownerCtx, m_imageSetsByName.GetCount());
+        worker = new CImageSet(m_world, m_imageSetsByName.GetCount());
         if (static_cast<CImageSet*>(worker)->SetKey(key) == 0) {
             if (worker != NULL) {
                 delete worker;
@@ -56,7 +56,7 @@ CImage* CImageSetRegistry::LoadFrameByKey(char* path, const char* key, i32 index
     CObject* worker = NULL;
     m_imageSetsByName.Lookup(key, worker);
     if (worker == NULL) {
-        worker = new CImageSet(m_ownerCtx, m_imageSetsByName.GetCount());
+        worker = new CImageSet(m_world, m_imageSetsByName.GetCount());
         if (static_cast<CImageSet*>(worker)->SetKey(key) == 0) {
             if (worker != NULL) {
                 delete worker;
@@ -79,7 +79,7 @@ CImage* CImageSetRegistry::CreateDescriptorFrameByKey(
     CObject* worker = NULL;
     m_imageSetsByName.Lookup(key, worker);
     if (worker == NULL) {
-        worker = new CImageSet(m_ownerCtx, m_imageSetsByName.GetCount());
+        worker = new CImageSet(m_world, m_imageSetsByName.GetCount());
         if (static_cast<CImageSet*>(worker)->SetKey(key) == 0) {
             if (worker != NULL) {
                 delete worker;
@@ -102,7 +102,7 @@ CImage* CImageSetRegistry::CreateBlankFrameByKey(
     CObject* worker = NULL;
     m_imageSetsByName.Lookup(key, worker);
     if (worker == NULL) {
-        worker = new CImageSet(m_ownerCtx, m_imageSetsByName.GetCount());
+        worker = new CImageSet(m_world, m_imageSetsByName.GetCount());
         if (static_cast<CImageSet*>(worker)->SetKey(key) == 0) {
             if (worker != NULL) {
                 delete worker;
@@ -170,7 +170,7 @@ i32 CImageSetRegistry::LoadImageSetsFromTree(CRezDir* dir, const char* sub, cons
         CObject* w = NULL;
         m_imageSetsByName.Lookup(sub, w);
         if (w == NULL) {
-            w = new CImageSet(m_ownerCtx, m_imageSetsByName.GetCount());
+            w = new CImageSet(m_world, m_imageSetsByName.GetCount());
             if (static_cast<CImageSet*>(w)->SetKey(sub) == 0) {
                 if (w != NULL) {
                     delete w;
@@ -327,7 +327,7 @@ i32 CImageSetRegistry::FindFrameIdentity(CImage* frame, char* outName, i32* outI
 
 RVA(0x00155700, 0x16)
 i32 CWapObj::IsLoaded() {
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -340,7 +340,7 @@ void CWapObj::Unload() {}
 
 RVA(0x00155750, 0x16)
 i32 CImageSet::IsLoaded() {
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;

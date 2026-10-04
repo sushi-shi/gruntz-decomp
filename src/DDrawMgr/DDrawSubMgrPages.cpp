@@ -54,21 +54,21 @@
 RVA(0x001588f0, 0x1c5)
 i32 CDisplayBuffers::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
-    m_frontSurface = new CDDrawFrontSurface(m_ownerCtx, 0, 0);
-    m_backBuffer = new CRenderBuffer(m_ownerCtx, IDX(DDRAW_PAGE_BACK), 0);
-    m_overlayBuffer = new CRenderBuffer(m_ownerCtx, IDX(DDRAW_PAGE_OVERLAY), 0);
+    m_frontSurface = new CDDrawFrontSurface(m_world, 0, 0);
+    m_backBuffer = new CRenderBuffer(m_world, IDX(DDRAW_PAGE_BACK), 0);
+    m_overlayBuffer = new CRenderBuffer(m_world, IDX(DDRAW_PAGE_OVERLAY), 0);
 
     if (m_frontSurface->SetGeometry(w, h, bpp) == BPP_UNSET) {
-        OwnerMgr()->SetInitError(WORLDERR_FRONT_SURFACE);
+        GetWorld()->SetInitError(WORLDERR_FRONT_SURFACE);
         return 0;
     }
     if (m_backBuffer->Create(w, h, bpp, 0) == BPP_UNSET) {
-        OwnerMgr()->SetInitError(WORLDERR_BACK_SURFACE);
+        GetWorld()->SetInitError(WORLDERR_BACK_SURFACE);
         return 0;
     }
     if (!HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_SKIP_OVERLAY)) {
         if (m_overlayBuffer->Create(w, h, bpp, 0) == BPP_UNSET) {
-            OwnerMgr()->SetInitError(WORLDERR_OVERLAY_SURFACE);
+            GetWorld()->SetInitError(WORLDERR_OVERLAY_SURFACE);
             return 0;
         }
     }
@@ -122,7 +122,7 @@ i32 CDisplayBuffers::LoadPageImage(CRezItm* src, DDrawPageKind pageIndex) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158b70, 0x1c)
 void CDisplayBuffers::BltDirtyChildrenEx() {
-    OwnerMgr()->ChildGroup()->BltDirtyChildrenEx(m_frontSurface, m_backBuffer, m_overlayBuffer);
+    GetWorld()->ChildGroup()->BltDirtyChildrenEx(m_frontSurface, m_backBuffer, m_overlayBuffer);
 }
 
 // @dead-code
@@ -130,7 +130,7 @@ void CDisplayBuffers::BltDirtyChildrenEx() {
 RVA(0x00158b90, 0x28)
 void CDisplayBuffers::FlipAndNotify() {
     m_frontSurface->GetSurface()->Flip(NULL);
-    CGameWorld* n = OwnerMgr();
+    CGameWorld* n = GetWorld();
     CDDrawChildGroup* c = n->ChildGroup();
     CDisplayBuffers* s = n->GetDisplayBuffers();
     c->BltDirtyChildren(s->GetBackBuffer(), s->GetOverlayBuffer());
@@ -226,7 +226,7 @@ void CDisplayBuffers::ClearAllPages(u32 color) {
     m_frontSurface->GetSurface()->Flip(NULL);
     m_backBuffer->GetSurface()->Fill(color);
     m_frontSurface->GetSurface()->Flip(NULL);
-    if (HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
+    if (HAS(static_cast<DDrawSurfaceMgrFlags>(GetWorld()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         m_backBuffer->GetSurface()->Fill(color);
         m_frontSurface->GetSurface()->Flip(NULL);
     }
@@ -254,7 +254,7 @@ i32 CDisplayBuffers::CopyFrontToBackBuffers() {
         }
     }
     if (ok
-        && HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
+        && HAS(static_cast<DDrawSurfaceMgrFlags>(GetWorld()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         m_frontSurface->GetSurface()->Flip(NULL);
         CRenderBuffer* a = m_backBuffer;
         CDDrawFrontSurface* b = m_frontSurface;
@@ -353,7 +353,7 @@ i32 CRenderSurface::IsLoaded() {
     if (m_width <= 0) {
         return 0;
     }
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -375,7 +375,7 @@ void CRenderSurface::Unload() {
 
 RVA(0x00159090, 0x24)
 i32 CRenderBuffer::IsLoaded() {
-    if (m_surface != NULL && m_width > 0 && m_ownerCtx != NULL && m_id != -1) {
+    if (m_surface != NULL && m_width > 0 && m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -394,7 +394,7 @@ CRenderBuffer::~CRenderBuffer() {
 
 RVA(0x00159150, 0x24)
 i32 CDDrawFrontSurface::IsLoaded() {
-    if (m_surface != NULL && m_width > 0 && m_ownerCtx != NULL && m_id != -1) {
+    if (m_surface != NULL && m_width > 0 && m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;

@@ -243,7 +243,7 @@ i32 CGrunt::BeginPickupAnimation(
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->GetCurrentState());
             CAnimationSequence* pickupAnimation = MapFind<CAnimationSequence>(
-                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+                m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
                 "GRUNTZ_PICKUPS_MEGAPHONE"
             );
             m_pickupAnimation = pickupAnimation;

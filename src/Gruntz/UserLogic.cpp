@@ -23,18 +23,18 @@
 // inline-only form does not emit this function; see rule-exceptions.tsv.
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
-    if (!obj->OwnerMgr()->GetLogicRegistry()->FindTemplate("LogicHit")) {
-        obj->OwnerMgr()->GetLogicRegistry()->RegisterLogicType(DispatchLogicHit, "LogicHit", 2);
+    if (!obj->GetWorld()->GetLogicRegistry()->FindTemplate("LogicHit")) {
+        obj->GetWorld()->GetLogicRegistry()->RegisterLogicType(DispatchLogicHit, "LogicHit", 2);
     }
-    if (!obj->OwnerMgr()->GetLogicRegistry()->FindTemplate("LogicAttack")) {
-        obj->OwnerMgr()->GetLogicRegistry()->RegisterLogicType(
+    if (!obj->GetWorld()->GetLogicRegistry()->FindTemplate("LogicAttack")) {
+        obj->GetWorld()->GetLogicRegistry()->RegisterLogicType(
             DispatchLogicAttack,
             "LogicAttack",
             2
         );
     }
-    if (!obj->OwnerMgr()->GetLogicRegistry()->FindTemplate("LogicBump")) {
-        obj->OwnerMgr()->GetLogicRegistry()->RegisterLogicType(DispatchLogicBump, "LogicBump", 2);
+    if (!obj->GetWorld()->GetLogicRegistry()->FindTemplate("LogicBump")) {
+        obj->GetWorld()->GetLogicRegistry()->RegisterLogicType(DispatchLogicBump, "LogicBump", 2);
     }
 }
 

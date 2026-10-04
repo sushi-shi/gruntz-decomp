@@ -60,12 +60,12 @@ RVA(0x00156cb0, 0x20)
 CWapObj::CWapObj(CGameWorld* owner, i32 id, i32 flags) {
     m_id = id;
     m_flags = flags;
-    m_ownerCtx = owner;
+    m_world = owner;
 }
 
 RVA(0x00156cd0, 0x16)
 i32 CDDrawPaletteRegistry::IsLoaded() {
-    if (m_ownerCtx == NULL) {
+    if (m_world == NULL) {
         goto fail;
     }
     if (m_id != -1) {
@@ -94,7 +94,7 @@ i32 CDDrawPaletteRegistry::IsReady() {
 
 RVA(0x00156dc0, 0x16)
 i32 CImageSetRegistry::IsLoaded() {
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -132,7 +132,7 @@ void CImageSetRegistry::RemoveByKey(const char* key) {
 
 RVA(0x00156f00, 0x16)
 i32 CTransientDrawList::IsLoaded() {
-    if (m_ownerCtx == NULL) {
+    if (m_world == NULL) {
         goto fail;
     }
     if (m_id != -1) {
@@ -161,7 +161,7 @@ i32 CTransientDrawList::IsReady() {
 
 RVA(0x00156fd0, 0x8b)
 CTransientPixel* CTransientDrawList::AddPixel(i32 x, i32 y, i32 pixelValue) {
-    CTransientPixel* item = new CTransientPixel(OwnerMgr());
+    CTransientPixel* item = new CTransientPixel(GetWorld());
     if (item->PlacePixel(x, y, pixelValue) == 0) {
         if (item != NULL) {
             delete item;
@@ -174,7 +174,7 @@ CTransientPixel* CTransientDrawList::AddPixel(i32 x, i32 y, i32 pixelValue) {
 
 RVA(0x00157060, 0x16)
 i32 CTransientPixel::IsLoaded() {
-    if (m_ownerCtx != NULL && m_id != -1) {
+    if (m_world != NULL && m_id != -1) {
         return 1;
     }
     return 0;
@@ -212,7 +212,7 @@ void CTransientPixel::Unload() {
 RVA(0x00157150, 0xa5)
 CTransientImage*
 CTransientDrawList::AddImage(i32 x, i32 y, const char* imageSetName, i32 frameIndex, i32 addHead) {
-    CTransientImage* item = new CTransientImage(OwnerMgr());
+    CTransientImage* item = new CTransientImage(GetWorld());
     if (item->PlaceImage(x, y, imageSetName, frameIndex) == 0) {
         if (item != NULL) {
             delete item;
@@ -272,7 +272,7 @@ void CTransientDrawItem::Unload() {
 RVA(0x00157330, 0xa5)
 CTransientImage*
 CTransientDrawList::AddImage(i32 x, i32 y, CImageSet* imageSet, i32 frameIndex, i32 addHead) {
-    CTransientImage* item = new CTransientImage(OwnerMgr());
+    CTransientImage* item = new CTransientImage(GetWorld());
     if (item->PlaceImage(x, y, imageSet, frameIndex) == 0) {
         if (item != NULL) {
             delete item;
@@ -289,7 +289,7 @@ CTransientDrawList::AddImage(i32 x, i32 y, CImageSet* imageSet, i32 frameIndex, 
 
 RVA(0x001573e0, 0xa0)
 CTransientImage* CTransientDrawList::AddImage(i32 x, i32 y, CImage* image, i32 addHead) {
-    CTransientImage* item = new CTransientImage(OwnerMgr());
+    CTransientImage* item = new CTransientImage(GetWorld());
     if (item->PlaceImage(x, y, image) == 0) {
         if (item != NULL) {
             delete item;
@@ -337,7 +337,7 @@ SoundCueRegistry::~SoundCueRegistry() {
 
 RVA(0x001575e0, 0x16)
 i32 CDDrawChildGroup::IsLoaded() {
-    if (m_ownerCtx == NULL || m_id == -1) {
+    if (m_world == NULL || m_id == -1) {
         return 0;
     }
     return 1;
@@ -368,7 +368,7 @@ CLogicRecordRegistry::~CLogicRecordRegistry() {
 
 RVA(0x001577a0, 0x16)
 i32 AnimationRegistry::IsLoaded() {
-    if (m_ownerCtx == NULL) {
+    if (m_world == NULL) {
         goto fail;
     }
     if (m_id != -1) {
@@ -420,7 +420,7 @@ void CFileMemBase::Reset() {
 
 RVA(0x00157a80, 0x51)
 i32 SoundCueRegistry::BindSoundStream(b32 allowUnavailable) {
-    CGameWorld* mgr = OwnerMgr();
+    CGameWorld* mgr = GetWorld();
     if (mgr == NULL) {
         return 0;
     }
@@ -510,7 +510,7 @@ SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezItm* source) 
     if (m_silentMode != false) {
         return NULL;
     }
-    SoundCue* cue = new SoundCue(CueCount(), m_ownerCtx);
+    SoundCue* cue = new SoundCue(CueCount(), m_world);
     if (cue == NULL) {
         return NULL;
     }
@@ -529,7 +529,7 @@ SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
     if (m_silentMode != false) {
         return NULL;
     }
-    SoundCue* cue = new SoundCue(CueCount(), m_ownerCtx);
+    SoundCue* cue = new SoundCue(CueCount(), m_world);
     if (cue == NULL) {
         return NULL;
     }
@@ -641,7 +641,7 @@ i32 SoundCueRegistry::PlaySpatializedCue(
     i32 maxPanOffsetPx,
     i32 fullPanOffsetPx
 ) {
-    CGameLevel* level = OwnerMgr()->GetLevel();
+    CGameLevel* level = GetWorld()->GetLevel();
     if (level != NULL && level->m_mainPlane != NULL && m_silentMode == false) {
         SoundCue* cue = FindCue(key);
         if (cue != NULL) {
@@ -781,7 +781,7 @@ SoundCue::~SoundCue() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001586e0, 0x34)
 i32 SoundCue::LoadFromWave(RiffWaveHeader* riff) {
-    SoundDevice* dev = OwnerMgr()->GetSoundStream();
+    SoundDevice* dev = GetWorld()->GetSoundStream();
     if (!dev) {
         return 0;
     }
@@ -791,7 +791,7 @@ i32 SoundCue::LoadFromWave(RiffWaveHeader* riff) {
 
 RVA(0x00158720, 0x34)
 i32 SoundCue::LoadFromFile(char* path) {
-    SoundDevice* dev = OwnerMgr()->GetSoundStream();
+    SoundDevice* dev = GetWorld()->GetSoundStream();
     if (!dev) {
         return 0;
     }
@@ -805,7 +805,7 @@ i32 SoundCue::LoadFromSource(CRezItm* source) {
     if (blob == NULL) {
         return 0;
     }
-    SoundDevice* dev = OwnerMgr()->GetSoundStream();
+    SoundDevice* dev = GetWorld()->GetSoundStream();
     b32 ok;
     if (dev == NULL) {
         ok = false;
@@ -822,7 +822,7 @@ i32 SoundCue::LoadFromSource(CRezItm* source) {
 RVA(0x001587c0, 0x23)
 void SoundCue::Unload() {
     if (m_sound != NULL) {
-        SoundDevice* dev = OwnerMgr()->GetSoundStream();
+        SoundDevice* dev = GetWorld()->GetSoundStream();
         if (dev != NULL) {
             dev->DestroyBuffer(m_sound);
             m_sound = NULL;
@@ -836,13 +836,13 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
         return 0;
     }
     if (listenerX <= 0) {
-        listenerX = OwnerMgr()->GetLevel()->m_mainPlane->GetScrollPixelX();
+        listenerX = GetWorld()->GetLevel()->m_mainPlane->GetScrollPixelX();
     }
     if (maxPanOffsetPx <= 0) {
-        maxPanOffsetPx = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface()->GetWidth() << 2;
+        maxPanOffsetPx = GetWorld()->GetDisplayBuffers()->GetFrontSurface()->GetWidth() << 2;
     }
     if (fullPanOffsetPx <= 0) {
-        fullPanOffsetPx = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface()->GetWidth() / 3;
+        fullPanOffsetPx = GetWorld()->GetDisplayBuffers()->GetFrontSurface()->GetWidth() / 3;
     }
 
     i32 panOffsetPx = sourceX - listenerX;
