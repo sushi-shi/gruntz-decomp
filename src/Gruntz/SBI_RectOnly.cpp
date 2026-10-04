@@ -480,7 +480,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                             m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
                             m_destructButtonFrame = DESTRUCT_FRAME_IDLE;
                             if (destructButtonImage) {
-                                destructButtonImage->Notify(1);
+                                destructButtonImage->SetFrameIndex(1);
                             }
                             sm->SetDefeatCountdown(false, 0xbb7);
                         }
@@ -1558,7 +1558,7 @@ i32 CStatusBarMgr::BuildGameTabContent() {
                 destruct->SetEnabled(0);
                 m_destructButtonFrame = DESTRUCT_FRAME_DISABLED;
                 m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
-                m_destructButtonImage->Notify(IDX(DESTRUCT_FRAME_DISABLED));
+                m_destructButtonImage->SetFrameIndex(IDX(DESTRUCT_FRAME_DISABLED));
             }
             break;
         }
@@ -2445,7 +2445,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                 tab->m_frameIndex = frame;
                 CSBI_ImageSet* w = *slot;
                 if (w) {
-                    w->Notify(frame);
+                    w->SetFrameIndex(frame);
                 }
             }
         }
@@ -2499,7 +2499,7 @@ void CStatusBarMgr::EmptyGruntOven(i32 idx) {
     m_gruntOvenSlots[idx].m_state = GRUNT_OVEN_EMPTY;
     m_gruntOvenSlots[idx].m_frameIndex = 1;
     if (m_gruntOvenImages[idx]) {
-        m_gruntOvenImages[idx]->Notify(1);
+        m_gruntOvenImages[idx]->SetFrameIndex(1);
     }
 }
 
@@ -2679,7 +2679,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 break;
         }
         if (m_conveyorSprites[i]) {
-            m_conveyorSprites[i]->Notify(m_conveyorSlots[i].m_counter);
+            m_conveyorSprites[i]->SetFrameIndex(m_conveyorSlots[i].m_counter);
         }
     }
 }
@@ -2838,7 +2838,7 @@ void CStatusBarMgr::ResetConveyorBelts() {
         m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
         m_conveyorSlots[i].m_value = 1;
         if (m_conveyorSprites[i]) {
-            m_conveyorSprites[i]->Notify(-1);
+            m_conveyorSprites[i]->SetFrameIndex(-1);
         }
     }
 }
@@ -2888,7 +2888,7 @@ void CStatusBarMgr::FinishGruntPlacement(b32 placed) {
     } else {
         m_gruntOvenSlots[m_selectedGruntOvenSlot].m_frameIndex = s_gruntOvenReadyFrame;
         if (m_gruntOvenImages[m_selectedGruntOvenSlot]) {
-            m_gruntOvenImages[m_selectedGruntOvenSlot]->Notify(
+            m_gruntOvenImages[m_selectedGruntOvenSlot]->SetFrameIndex(
                 m_gruntOvenSlots[m_selectedGruntOvenSlot].m_frameIndex
             );
         }
@@ -2963,19 +2963,19 @@ void CStatusBarMgr::RefreshResourceImages() {
         m_resourceWindowBackground->RequestRedraw();
     }
     if (m_deliveryItemDisplay && m_deliveryPickupType) {
-        m_deliveryItemDisplay->Notify(m_deliveryPickupType);
+        m_deliveryItemDisplay->SetFrameIndex(m_deliveryPickupType);
     }
 
     CSBI_ImageSet** p = &m_resourceSlotSprites[4];
     for (i32 n = 0; n < 4; n++) {
         if (p[-4]) {
-            p[-4]->Notify(m_resourceSlots[n].m_value);
+            p[-4]->SetFrameIndex(m_resourceSlots[n].m_value);
         }
         if (p[0]) {
-            p[0]->Notify(m_resourceSlots[n + 4].m_value);
+            p[0]->SetFrameIndex(m_resourceSlots[n + 4].m_value);
         }
         if (p[4]) {
-            p[4]->Notify(m_resourceSlots[n + 8].m_value);
+            p[4]->SetFrameIndex(m_resourceSlots[n + 8].m_value);
         }
         p++;
     }
@@ -2984,7 +2984,7 @@ void CStatusBarMgr::RefreshResourceImages() {
         m_resourceMachineFramework->RequestRedraw();
     }
     if (m_grinderItemDisplay) {
-        m_grinderItemDisplay->Notify(m_grinderPickupType);
+        m_grinderItemDisplay->SetFrameIndex(m_grinderPickupType);
     }
 }
 
@@ -3346,7 +3346,7 @@ i32 CStatusBarMgr::PrepareNextResource() {
         } else {
             result = PICKUP_NONE;
             if (m_deliveryItemDisplay) {
-                m_deliveryItemDisplay->Notify(0);
+                m_deliveryItemDisplay->SetFrameIndex(0);
             }
         }
     } else {
@@ -4357,7 +4357,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
                 clock->Start(g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32));
                 CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
                 if (destructButtonImage) {
-                    destructButtonImage->Notify(IDX(m_destructButtonFrame));
+                    destructButtonImage->SetFrameIndex(IDX(m_destructButtonFrame));
                 }
             }
             break;
@@ -4374,7 +4374,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
                 clock->Start(g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32));
                 CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
                 if (destructButtonImage) {
-                    destructButtonImage->Notify(IDX(m_destructButtonFrame));
+                    destructButtonImage->SetFrameIndex(IDX(m_destructButtonFrame));
                 }
             }
             break;
@@ -4497,7 +4497,7 @@ void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
         m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
         m_destructButtonFrame = DESTRUCT_FRAME_IDLE;
         if (m_destructButtonImage) {
-            m_destructButtonImage->Notify(1);
+            m_destructButtonImage->SetFrameIndex(1);
         }
     }
 }

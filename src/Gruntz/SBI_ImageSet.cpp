@@ -28,13 +28,13 @@ i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
     SbiCommandId cmd,
-    StatusBarTab obj,
+    StatusBarTab tab,
     RECT rect,
-    const char* key,
-    i32 frame,
+    const char* frameSetName,
+    i32 frameIndex,
     i32 extra
 ) {
-    CDDrawWorker* rec;
+    CDDrawWorker* frames;
 
     if (host == NULL) {
         goto fail;
@@ -42,26 +42,26 @@ i32 CSBI_ImageSet::SetupImage(
     if (owner == NULL) {
         goto fail;
     }
-    Initialize(owner, obj, host);
+    Initialize(owner, tab, host);
 
     m_rect = rect;
     m_cmd = cmd;
-    if (key == NULL) {
+    if (frameSetName == NULL) {
         return 0;
     }
-    rec = host->FindWorker(key);
-    m_frameSet = rec;
-    if (rec == NULL) {
+    frames = host->FindWorker(frameSetName);
+    m_frameSet = frames;
+    if (frames == NULL) {
         goto fail;
     }
-    i32 f;
-    f = frame;
-    if (f == -1) {
-        f = rec->GetMinIndex();
+    i32 initialFrameIndex;
+    initialFrameIndex = frameIndex;
+    if (initialFrameIndex == -1) {
+        initialFrameIndex = frames->GetMinIndex();
     }
-    m_frameIndex = f;
+    m_frameIndex = initialFrameIndex;
 
-    SetFrame(rec->GetAt(f));
+    SetFrame(frames->GetAt(initialFrameIndex));
     return 1;
 fail:
     return 0;
@@ -82,66 +82,66 @@ RVA(0x000e7440, 0x5e)
 i32 CSBI_ImageSet::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
-        i32 idx = m_frameIndex;
-        CDDrawWorker* tbl = m_frameSet;
-        CImage* cel = tbl->GetAt(idx);
-        SetFrame(cel);
-        if (cel != NULL) {
-            i32 y = cel->GetAnchorY() + m_rect.top;
-            i32 x = cel->GetAnchorX() + m_rect.left;
-            cel->RenderFrame(g_gameReg->World()->GetDrawTarget()->m_backPair, x, y, 0);
+        i32 frameIndex = m_frameIndex;
+        CDDrawWorker* frames = m_frameSet;
+        CImage* image = frames->GetAt(frameIndex);
+        SetFrame(image);
+        if (image != NULL) {
+            i32 y = image->GetAnchorY() + m_rect.top;
+            i32 x = image->GetAnchorX() + m_rect.left;
+            image->RenderFrame(g_gameReg->World()->GetDrawTarget()->m_backPair, x, y, 0);
         }
     }
     return 1;
 }
 
 RVA(0x000e74c0, 0x16)
-void CSBI_ImageSet::Notify(i32 id) {
-    if (id != -1) {
-        m_frameIndex = id;
+void CSBI_ImageSet::SetFrameIndex(i32 frameIndex) {
+    if (frameIndex != -1) {
+        m_frameIndex = frameIndex;
     }
     m_redrawFrames = 2;
 }
 
 RVA(0x000e74f0, 0x152)
 i32 CSBI_ImageSet::SerializeFields(
-    CFileMemBase* s,
+    CFileMemBase* archive,
     SerialMode mode,
     LogicTypeId typeId,
     i32 payload
 ) {
-    if (s == NULL) {
+    if (archive == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* reg = g_gameReg->World();
-    if (reg == NULL) {
+    CDDrawSurfaceMgr* world = g_gameReg->World();
+    if (world == NULL) {
         return 0;
     }
-    char buf[SERIAL_NAME_LEN];
+    char frameSetName[SERIAL_NAME_LEN];
     switch (mode) {
         case SERIAL_LOAD:
-            s->Read(&m_frameIndex, sizeof(m_frameIndex));
+            archive->Read(&m_frameIndex, sizeof(m_frameIndex));
             g_serialCounter++;
-            s->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf)) {
-                CDDrawWorker* out;
+            archive->Read(frameSetName, SERIAL_NAME_LEN);
+            if (strlen(frameSetName)) {
+                CDDrawWorker* frames;
 
-                out = reg->FindWorker(buf);
-                m_frameSet = out;
+                frames = world->FindWorker(frameSetName);
+                m_frameSet = frames;
             } else {
                 m_frameSet = NULL;
             }
             break;
         case SERIAL_SAVE:
-            s->Write(&m_frameIndex, sizeof(m_frameIndex));
+            archive->Write(&m_frameIndex, sizeof(m_frameIndex));
             g_serialCounter++;
-            memset(buf, 0, SERIAL_NAME_LEN);
+            memset(frameSetName, 0, SERIAL_NAME_LEN);
             if (m_frameSet) {
-                strcpy(buf, m_frameSet->GetName());
+                strcpy(frameSetName, m_frameSet->GetName());
             }
-            s->Write(buf, SERIAL_NAME_LEN);
+            archive->Write(frameSetName, SERIAL_NAME_LEN);
             break;
     }
 
-    return CSBI_Image::SerializeFields(s, mode, typeId, payload) != 0;
+    return CSBI_Image::SerializeFields(archive, mode, typeId, payload) != 0;
 }

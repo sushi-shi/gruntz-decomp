@@ -50,7 +50,7 @@ inline b32 CStatusBarMgr::BeginGruntPlacement(i32 slot) {
     m_selectedGruntOvenSlot = slot;
     m_gruntOvenSlots[slot].m_frameIndex = 1;
     if (m_gruntOvenImages[slot]) {
-        m_gruntOvenImages[slot]->Notify(1);
+        m_gruntOvenImages[slot]->SetFrameIndex(1);
     }
     return true;
 }

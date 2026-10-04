@@ -33,7 +33,7 @@ public:
         i32
     ) OVERRIDE;
 
-    virtual void Notify(i32 on);
+    virtual void SetFrameIndex(i32 frameIndex);
 
     CDDrawWorker* GetFrameSet() const {
         return m_frameSet;
