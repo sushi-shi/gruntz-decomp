@@ -1226,7 +1226,7 @@ i32 CBrickStack::BreakTopBrick(CGrunt* grunt) {
     if (effect != 0 && grunt != NULL) {
         if (brickEffect == BRICKTILE_RED_1) {
             grunt->ApplyPickup(PICKUP_NONE, 1, 0, 0);
-            grunt->m_busy = false;
+            grunt->SetBusy(false);
         } else if (brickEffect == BRICKTILE_BLUE_1) {
             g_gameReg->GetTriggerMgr()->ApplyGruntAreaEffect(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,

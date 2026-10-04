@@ -479,7 +479,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     switch (tag) {
         case TILEKIND_TIME_SWITCH:
             sw = state->m_tileTriggers->FindSwitchLogic(
-                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
+                CellKey(x >> TILE_SHIFT_PX, y >> TILE_SHIFT_PX),
                 TRIGID_TIME_SWITCH_7
             );
             if (sw == NULL) {
@@ -523,7 +523,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_SECRET_SWITCH:
             sw = state->m_tileTriggers->FindSwitchLogic(
-                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
+                CellKey(x >> TILE_SHIFT_PX, y >> TILE_SHIFT_PX),
                 TRIGID_SECRET_SWITCH_6
             );
             if (sw == NULL) {
@@ -578,7 +578,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         case TILEKIND_SWITCH_B:
         case TILEKIND_SWITCH_C:
             sw = state->m_tileTriggers->FindSwitchLogic(
-                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
+                CellKey(x >> TILE_SHIFT_PX, y >> TILE_SHIFT_PX),
                 TRIGID_ANY
             );
             if (sw == NULL) {
@@ -618,7 +618,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_MULTI_SWITCH:
             sw = state->m_tileTriggers->FindSwitchLogic(
-                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
+                CellKey(x >> TILE_SHIFT_PX, y >> TILE_SHIFT_PX),
                 TRIGID_MULTI_SWITCH_3
             );
             if (sw == NULL) {
@@ -661,7 +661,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_EXCLUSIVE_SWITCH:
             sw = state->m_tileTriggers->FindSwitchLogic(
-                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
+                CellKey(x >> TILE_SHIFT_PX, y >> TILE_SHIFT_PX),
                 TRIGID_EXCLUSIVE_SWITCH_4
             );
             if (sw == NULL) {
@@ -706,7 +706,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_busy = true;
+            g->SetBusy(true);
             g->MoveTo(x, y - 32, 0, -1, 1, 0);
             return 1;
 
@@ -715,7 +715,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_busy = true;
+            g->SetBusy(true);
             g->MoveTo(x + 32, y, 0, -1, 1, 0);
             return 1;
 
@@ -724,7 +724,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_busy = true;
+            g->SetBusy(true);
             g->MoveTo(x, y + 32, 0, -1, 1, 0);
             return 1;
 
@@ -733,13 +733,13 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_busy = true;
+            g->SetBusy(true);
             g->MoveTo(x - 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
             if (g != NULL && g->IsDeathAnimationStarted() == false) {
-                g->m_busy = true;
+                g->SetBusy(true);
                 switch (static_cast<GruntDirection>(g->m_facing.m_direction)) {
                     case DIR_NORTH:
                         g->MoveTo(x, y - 32, 0, -1, 1, 0);
@@ -806,7 +806,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 0;
             }
             sw = state->m_tileTriggers->FindSwitchLogic(
-                ((x >> TILE_SHIFT_PX) * 0x100) + (y >> TILE_SHIFT_PX),
+                CellKey(x >> TILE_SHIFT_PX, y >> TILE_SHIFT_PX),
                 TRIGID_CHECKPOINT_SWITCH_8
             );
             if (sw == NULL) {
@@ -874,7 +874,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     switch (kind) {
         case TILEKIND_TIME_SWITCH_UP: {
             CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
-                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
+                CellKey(sx >> TILE_SHIFT_PX, sy >> TILE_SHIFT_PX),
                 TRIGID_TIME_SWITCH_7
             );
             if (obj == NULL) {
@@ -892,7 +892,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         }
         case TILEKIND_SWITCH_A_UP: {
             CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
-                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
+                CellKey(sx >> TILE_SHIFT_PX, sy >> TILE_SHIFT_PX),
                 TRIGID_ANY
             );
             if (obj == NULL) {
@@ -910,7 +910,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         }
         case TILEKIND_SWITCH_B_UP: {
             CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
-                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
+                CellKey(sx >> TILE_SHIFT_PX, sy >> TILE_SHIFT_PX),
                 TRIGID_ANY
             );
             if (obj == NULL) {
@@ -954,7 +954,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         }
         case TILEKIND_MULTI_SWITCH_UP: {
             CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
-                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
+                CellKey(sx >> TILE_SHIFT_PX, sy >> TILE_SHIFT_PX),
                 TRIGID_MULTI_SWITCH_3
             );
             if (obj == NULL) {
@@ -1009,7 +1009,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 return 0;
             }
             CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
-                ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
+                CellKey(sx >> TILE_SHIFT_PX, sy >> TILE_SHIFT_PX),
                 TRIGID_CHECKPOINT_SWITCH_8
             );
             if (obj == NULL) {

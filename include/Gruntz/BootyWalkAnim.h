@@ -5,8 +5,8 @@
 
 #include <Gruntz/CoordNode.h>
 
-extern const i32 g_idleSpriteIds[4];
-extern const char g_secretChars[];
+extern const i32 g_bootyWarpLetterX[4];
+extern const char g_bootyWarpLetterCharacters[];
 
 extern const Coord g_bootyCursePos[4];
 extern const Coord g_bootyTimedPowerupPos[4];

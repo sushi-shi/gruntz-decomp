@@ -2,7 +2,7 @@
 #define GRUNTZ_GRUNTPOWEREDSTATEMACROS_H
 
 #define RESET_GRUNT_COMBAT_STATE(grunt)                                                            \
-    grunt->m_busy = false;                                                                         \
+    grunt->SetBusy(false);                                                                         \
     grunt->m_attackWindupActive = false;                                                           \
     grunt->m_attackQueued = false;                                                                 \
     grunt->m_inCombat = false;                                                                     \

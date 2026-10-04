@@ -11,9 +11,9 @@ struct SecretMsgRow {
     char m_strB[0x80];
 };
 
-extern RECT g_levelMsgRectsA[8];
+extern RECT g_bootyStatLabelRects[8];
 
-extern CString g_levelMsgStrings[8];
+extern CString g_bootyStatLabels[8];
 
 class CString;
 

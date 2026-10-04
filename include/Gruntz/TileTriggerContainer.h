@@ -163,7 +163,7 @@ public:
 };
 
 static inline i32 CellKey(i32 tileX, i32 tileY) {
-    return (tileX << 8) + tileY;
+    return (tileX * 0x100) + tileY;
 }
 
 inline CBrickStack* CTileTriggerContainer::FindBrickStackAt(i32 tileX, i32 tileY) {

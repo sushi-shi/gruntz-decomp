@@ -110,7 +110,7 @@ rva	size	name	owner	class
 0x00229ec8	0xc	?s_gruntDirNorth_229ec8@@3UGruntDirectionCell@@A	bootystateactivate	copy
 0x00229ed8	0xc	?s_gruntDirSouth_229ed8@@3UGruntDirectionCell@@A	bootystateactivate	copy
 0x00229ee8	0xc	?s_gruntDirWest_229ee8@@3UGruntDirectionCell@@A	bootystateactivate	copy
-0x00229f18	0x1	_?$S@?BD@??BuildBootyWalkingGruntz@CBootyState@@QAEHXZ@4EA$S	bootystateactivate	copy
+0x00229f18	0x1	_?$S@?BD@??BuildWarpLetterRevealAnimation@CBootyState@@QAEHXZ@4EA$S	bootystateactivate	copy
 0x00229f20	0xc	?s_gruntDirNorthEast_229f20@@3UGruntDirectionCell@@A	bootystateactivate	copy
 0x0022aed0	0xc	?s_gruntDirNorthWest_22aed0@@3UGruntDirectionCell@@A	bootystateactivate	copy
 0x0022aee0	0xc	?s_gruntDirSouthEast_22aee0@@3UGruntDirectionCell@@A	bootystateactivate	copy

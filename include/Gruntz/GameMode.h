@@ -22,7 +22,7 @@ extern CRect g_versionRect;
 
 GZ_ENUM_FORWARD(GruntDirection);
 
-extern RECT g_levelMsgRectsB[8];
+extern RECT g_bootyStatValueRects[8];
 
 struct SoundCue;
 class CMoviePlayer;
@@ -138,11 +138,11 @@ public:
     CBootyState() {
         m_secretHudHandled = false;
         m_activation = BOOTYSEQ_WARP_CUE;
-        m_slot = 0;
-        m_stepIndex = 0;
-        m_walkStarted = false;
-        m_soundStarted = false;
-        m_initGate = false;
+        m_statRowIndex = 0;
+        m_warpLetterIndex = 0;
+        m_letterRevealStarted = false;
+        m_missingLetterSoundStarted = false;
+        m_skipAnimations = false;
         m_secretGate = false;
         m_levelCompleteGate = false;
         m_initOnce = false;
@@ -152,7 +152,7 @@ public:
         }
         for (i32 i = 0; i < 8; i++) {
             m_readyFlags[i] = 0;
-            m_templateFlags[i] = 0;
+            m_statLabelVisible[i] = 0;
         }
     }
 
@@ -174,15 +174,15 @@ public:
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
     virtual i32 OnRButtonDown(i32, i32, i32) OVERRIDE;
 
-    i32 BuildBootyGruntIdleAnimation();
+    i32 HandleContinueInput();
     i32 ShowSecretBonusMessage();
     void ShowLevelCompleteMessage();
-    i32 BuildBootyWalkingGruntz();
-    i32 UpdateBootyWalkingGruntz();
+    i32 BuildWarpLetterRevealAnimation();
+    i32 UpdateWarpLetterRevealAnimation();
 
-    i32 LoadGruntEffectSprites();
-    i32 LevelMsgHudDriver();
-    void FormatHudText(CString* buf, BootyStatRow sel);
+    i32 BuildStatRevealSprites();
+    i32 UpdateStatRevealAnimation();
+    void FormatStatValue(CString* buf, BootyStatRow sel);
 
     i32 BuildWarpStoneGlitterAnimation();
 
@@ -195,7 +195,7 @@ public:
 
     void PickGruntSprintStartPosition(GruntDirection direction, i32* outX, i32* outY);
 
-    b32 m_initGate;
+    b32 m_skipAnimations;
     b32 m_secretHudHandled;
     BootySeqPhase m_activation;
 
@@ -215,23 +215,23 @@ public:
 
     CWwdSpriteObject* m_sprintSprites[8];
 
-    CWwdSpriteObject* m_bomb[8];
-    CWwdSpriteObject* m_gokart[8];
-    CWwdSpriteObject* m_expl[8];
+    CWwdSpriteObject* m_bombSprites[8];
+    CWwdSpriteObject* m_goKartSprites[8];
+    CWwdSpriteObject* m_explosionSprites[8];
 
     i32 m_readyFlags[8];
-    i32 m_templateFlags[8];
-    i32 m_slot;
-    CWwdSpriteObject* m_visSprites[4];
-    CWwdSpriteObject* m_animSprites[WARPLETTER_COUNT];
-    i32 m_stepIndex;
-    b32 m_walkStarted;
-    b32 m_soundStarted;
+    i32 m_statLabelVisible[8];
+    i32 m_statRowIndex;
+    CWwdSpriteObject* m_letterPlaceholderSprites[4];
+    CWwdSpriteObject* m_letterRevealSprites[WARPLETTER_COUNT];
+    i32 m_warpLetterIndex;
+    b32 m_letterRevealStarted;
+    b32 m_missingLetterSoundStarted;
     b32 m_secretGate;
 
     CWwdSpriteObject* m_bootyPerfectSprite;
 
-    CWwdSpriteObject* m_icons[8];
+    CWwdSpriteObject* m_statIcons[8];
 };
 
 class CMultiBootyState : public CState {

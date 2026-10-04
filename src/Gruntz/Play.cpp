@@ -946,7 +946,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
         } else {
             team->m_dropped = false;
             team->m_joined = team->IsActive();
-            team->m_eliminated = false;
+            team->SetEliminated(false);
         }
     }
 

@@ -84,6 +84,10 @@ public:
         return m_eliminated;
     }
 
+    void SetEliminated(b32 eliminated) {
+        m_eliminated = eliminated;
+    }
+
     BattlezDifficulty GetDifficulty() const {
         return m_difficulty;
     }
