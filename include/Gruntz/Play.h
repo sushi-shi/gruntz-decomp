@@ -203,8 +203,8 @@ public:
 
     i32 ResetViewport();
 
-    void RegionEnter();
-    void RegionLeave();
+    void PlayCurseMusic();
+    void RestoreMusicAfterCurses();
 
     i32 ProfileDeltaFrame();
     i32 ProfileInputFrame();
@@ -358,13 +358,13 @@ public:
     POINT m_pathPreviewDestination;
     i16 m_pathPreviewColor;
 
-    ClockInterval m_region0Timing;
-    ClockInterval m_region1Timing;
-    ClockInterval m_region2Timing;
+    ClockInterval m_tinyViewportCurseTimer;
+    ClockInterval m_darknessCurseTimer;
+    ClockInterval m_monitorCurseTimer;
     ClockInterval m_randomColorsCurseTimer;
-    b32 m_region0Gate;
-    b32 m_region1Gate;
-    b32 m_region2Gate;
+    b32 m_tinyViewportCurseActive;
+    b32 m_darknessCurseActive;
+    b32 m_monitorCurseActive;
     b32 m_randomColorsCurseActive;
     ViewportResizeMode m_viewportResizeMode;
     b32 m_hudSuppressed;

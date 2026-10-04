@@ -3451,8 +3451,8 @@ play	?PostSetup@CPlay@@UAEXPAUHDC__@@@Z	100.0000	100.0000	6	5de8309b973f	0xd00a0
 play	?ProfileDeltaFrame@CPlay@@QAEHXZ	100.0000	100.0000	12	9f152b6e28be	0xca0a0	100.0000	
 play	?ProfileInputFrame@CPlay@@QAEHXZ	100.0000	100.0000	15	f5b6cb62bf33	0xc9e40	100.0000	
 play	?QuitToMenu@CPlay@@QAEHXZ	100.0000	100.0000	5	251d2c9eb122	0xcef50	100.0000	
-play	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	3	8d5c4c1ebcab	0xd88f0	100.0000	
-play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	4	a613be6d96c0	0xd8960	100.0000	
+play	?PlayCurseMusic@CPlay@@QAEXXZ	100.0000	100.0000	3	8d5c4c1ebcab	0xd88f0	100.0000	
+play	?RestoreMusicAfterCurses@CPlay@@QAEXXZ	100.0000	100.0000	4	a613be6d96c0	0xd8960	100.0000	
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	2	861aa171847b	0xd9160	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	16	b731ba787394	0xc8700	100.0000	
 play	?Render@CPlay@@UAEHXZ	98.9008	98.9008	49	309a04167a0c	0xc8cf0	98.9008	

@@ -468,7 +468,7 @@ i32 CPlay::Render() {
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(back);
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
         m_world->m_level->DeactivateDistantObjectsOnMainPlane();
         return 1;
     }
@@ -490,7 +490,7 @@ i32 CPlay::Render() {
 
         UpdateAmbientMusic();
 
-        if (m_region0Gate != false) {
+        if (m_tinyViewportCurseActive != false) {
             m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
             m_statusBar->Deactivate();
         }
@@ -618,7 +618,7 @@ i32 CPlay::Render() {
             view->DrawBox(&m_selectionRect, 0xff);
         }
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
         {
             CGameLevel* lvl = m_world->m_level;
             if (lvl->m_mainPlane != NULL) {
@@ -626,18 +626,18 @@ i32 CPlay::Render() {
             }
         }
 
-        if (m_region0Gate != false) {
-            if (m_region0Timing.Expired()) {
+        if (m_tinyViewportCurseActive != false) {
+            if (m_tinyViewportCurseTimer.Expired()) {
                 SetTinyViewportCurse(false);
             }
         }
-        if (m_region1Gate != false) {
-            if (m_region1Timing.Expired()) {
+        if (m_darknessCurseActive != false) {
+            if (m_darknessCurseTimer.Expired()) {
                 SetDarknessCurse(false);
             }
         }
-        if (m_region2Gate != false) {
-            if (m_region2Timing.Expired()) {
+        if (m_monitorCurseActive != false) {
+            if (m_monitorCurseTimer.Expired()) {
                 SetMonitorCurse(false);
             }
         }
@@ -839,7 +839,7 @@ i32 CPlay::ProfileInputFrame() {
         }
     }
     g_deactivateProfileMs = static_cast<i32>((tg() - static_cast<u32>(g_deactivateProfileMs)));
-    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
     return 1;
 }
 
@@ -1415,9 +1415,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_cueToggle = true;
         self->m_cueText = "";
         self->m_lastCueId = 0;
-        self->m_region0Gate = false;
-        self->m_region1Gate = false;
-        self->m_region2Gate = false;
+        self->m_tinyViewportCurseActive = false;
+        self->m_darknessCurseActive = false;
+        self->m_monitorCurseActive = false;
         self->m_randomColorsCurseActive = false;
         self->m_defeatCountdownActive = false;
         self->m_focusPlayerIndex = 3;
@@ -1587,7 +1587,7 @@ i32 CPlay::InputVirtual() {
         ;
 
     m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
 
     DrawWorldView();
 
@@ -5847,7 +5847,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
     if (m_initialFramePending != false) {
         m_initialFramePending = false;
         m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
         DrawWorldView();
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
@@ -6024,10 +6024,10 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
     if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
-    SerializeClockPair(ar, mode, &m_region0Timing);
-    SerializeClockPair(ar, mode, &m_region1Timing);
+    SerializeClockPair(ar, mode, &m_tinyViewportCurseTimer);
+    SerializeClockPair(ar, mode, &m_darknessCurseTimer);
     SerializeClockPair(ar, mode, &m_defeatCountdownTiming);
-    SerializeClockPair(ar, mode, &m_region2Timing);
+    SerializeClockPair(ar, mode, &m_monitorCurseTimer);
     SerializeClockPair(ar, mode, &m_randomColorsCurseTimer);
     SerializeClockPair(ar, mode, &m_bootyTiming);
     return 1;
@@ -6144,9 +6144,9 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_pathPreviewDestination.x, sizeof(m_pathPreviewDestination.x));
     s->Write(&m_pathPreviewDestination.y, sizeof(m_pathPreviewDestination.y));
     s->Write(&m_pathPreviewColor, sizeof(m_pathPreviewColor));
-    s->Write(&m_region0Gate, sizeof(m_region0Gate));
-    s->Write(&m_region1Gate, sizeof(m_region1Gate));
-    s->Write(&m_region2Gate, sizeof(m_region2Gate));
+    s->Write(&m_tinyViewportCurseActive, sizeof(m_tinyViewportCurseActive));
+    s->Write(&m_darknessCurseActive, sizeof(m_darknessCurseActive));
+    s->Write(&m_monitorCurseActive, sizeof(m_monitorCurseActive));
     s->Write(&m_randomColorsCurseActive, sizeof(m_randomColorsCurseActive));
     s->Write(&m_viewportResizeMode, sizeof(m_viewportResizeMode));
     s->Write(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
@@ -6281,9 +6281,9 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_pathPreviewDestination.x, sizeof(m_pathPreviewDestination.x));
     ar->Read(&m_pathPreviewDestination.y, sizeof(m_pathPreviewDestination.y));
     ar->Read(&m_pathPreviewColor, sizeof(m_pathPreviewColor));
-    ar->Read(&m_region0Gate, sizeof(m_region0Gate));
-    ar->Read(&m_region1Gate, sizeof(m_region1Gate));
-    ar->Read(&m_region2Gate, sizeof(m_region2Gate));
+    ar->Read(&m_tinyViewportCurseActive, sizeof(m_tinyViewportCurseActive));
+    ar->Read(&m_darknessCurseActive, sizeof(m_darknessCurseActive));
+    ar->Read(&m_monitorCurseActive, sizeof(m_monitorCurseActive));
     ar->Read(&m_randomColorsCurseActive, sizeof(m_randomColorsCurseActive));
     ar->Read(&m_viewportResizeMode, sizeof(m_viewportResizeMode));
     ar->Read(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
@@ -6313,7 +6313,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 }
 
 RVA(0x000d88f0, 0x44)
-void CPlay::RegionEnter() {
+void CPlay::PlayCurseMusic() {
     if (m_savedMusicSequence == NULL) {
         CGruntzMgr* gameManager = m_mgr;
         m_savedMusicSequence = gameManager->m_midi->m_currentSequence;
@@ -6325,9 +6325,10 @@ void CPlay::RegionEnter() {
 }
 
 RVA(0x000d8960, 0x75)
-void CPlay::RegionLeave() {
-    if (m_region0Gate == false && m_region1Gate == false && m_region2Gate == false
-        && m_randomColorsCurseActive == false && m_savedMusicSequence != NULL) {
+void CPlay::RestoreMusicAfterCurses() {
+    if (m_tinyViewportCurseActive == false && m_darknessCurseActive == false
+        && m_monitorCurseActive == false && m_randomColorsCurseActive == false
+        && m_savedMusicSequence != NULL) {
         m_mgr->m_midi->EndCurrent();
         m_mgr->m_midi->m_currentSequence = m_savedMusicSequence;
         if (g_gameReg->m_musicEnabled != false) {
@@ -6340,42 +6341,42 @@ void CPlay::RegionLeave() {
 RVA(0x000d8a00, 0x73)
 i32 CPlay::SetTinyViewportCurse(b32 active) {
     if (active != false) {
-        m_region0Gate = true;
-        RegionEnter();
+        m_tinyViewportCurseActive = true;
+        PlayCurseMusic();
         m_viewportResizeMode = VIEW_RESIZE_SHRINK;
     } else {
-        m_region0Gate = false;
-        RegionLeave();
+        m_tinyViewportCurseActive = false;
+        RestoreMusicAfterCurses();
         m_viewportResizeMode = VIEW_RESIZE_EXPAND;
     }
-    m_region0Timing.Start(REGION_INTERVAL_MS);
+    m_tinyViewportCurseTimer.Start(CURSE_DURATION_MS);
     return 1;
 }
 
 RVA(0x000d8aa0, 0x5f)
 i32 CPlay::SetDarknessCurse(b32 active) {
     if (active != false) {
-        m_region1Gate = true;
-        RegionEnter();
+        m_darknessCurseActive = true;
+        PlayCurseMusic();
     } else {
-        m_region1Gate = false;
-        RegionLeave();
+        m_darknessCurseActive = false;
+        RestoreMusicAfterCurses();
     }
-    m_region1Timing.Start(REGION_INTERVAL_MS);
+    m_darknessCurseTimer.Start(CURSE_DURATION_MS);
     return 1;
 }
 
 RVA(0x000d8b20, 0x74)
 i32 CPlay::SetMonitorCurse(b32 active) {
     if (active != false) {
-        m_region2Gate = true;
-        RegionEnter();
-        Cmd_ApplyScrollParams(REGION_INTERVAL_MS, 6, 6, 0, 0x2d);
+        m_monitorCurseActive = true;
+        PlayCurseMusic();
+        Cmd_ApplyScrollParams(CURSE_DURATION_MS, 6, 6, 0, 0x2d);
     } else {
-        m_region2Gate = false;
-        RegionLeave();
+        m_monitorCurseActive = false;
+        RestoreMusicAfterCurses();
     }
-    m_region2Timing.Start(REGION_INTERVAL_MS);
+    m_monitorCurseTimer.Start(CURSE_DURATION_MS);
     return 1;
 }
 
@@ -6383,13 +6384,13 @@ RVA(0x000d8bc0, 0x71)
 i32 CPlay::SetRandomColorsCurse(b32 active) {
     if (active != false) {
         m_randomColorsCurseActive = true;
-        RegionEnter();
+        PlayCurseMusic();
     } else {
         m_randomColorsCurseActive = false;
-        RegionLeave();
+        RestoreMusicAfterCurses();
         g_gameReg->GetTriggerMgr()->SetRandomGruntColors(-1, false);
     }
-    m_randomColorsCurseTimer.Start(REGION_INTERVAL_MS);
+    m_randomColorsCurseTimer.Start(CURSE_DURATION_MS);
     return 1;
 }
 
@@ -6408,7 +6409,7 @@ i32 CPlay::ResetViewport() {
     } else {
         SetRect(&r, 0, 0, right - 1, bottom - 1);
     }
-    if (m_region0Gate) {
+    if (m_tinyViewportCurseActive) {
         i32 halfW = (r.right - r.left) / 2;
         i32 halfH = (r.bottom - r.top) / 2;
         SET_RECT_COMPONENTS(

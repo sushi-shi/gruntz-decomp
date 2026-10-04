@@ -175,9 +175,9 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     }
     g_connectRptMgr = this;
 
-    m_region0Gate = false;
-    m_region1Gate = false;
-    m_region2Gate = false;
+    m_tinyViewportCurseActive = false;
+    m_darknessCurseActive = false;
+    m_monitorCurseActive = false;
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_hudSuppressed = true;
     m_cameraBookmarkIndex = -1;
@@ -685,7 +685,7 @@ void CMulti::RenderGameFrame() {
     }
     RestoreCursorSaveUnder();
     StepViewportResize();
-    if (m_region0Gate != false) {
+    if (m_tinyViewportCurseActive != false) {
         (static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()))
             ->GetSurface()
             ->Fill(0);
@@ -739,17 +739,17 @@ void CMulti::RenderGameFrame() {
         h->DrawBox(&m_selectionRect, 0xff);
     }
     m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
     if (m_world->m_level->m_mainPlane != NULL) {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();
     }
-    if (m_region0Gate != false) {
-        if (m_region0Timing.Expired()) {
+    if (m_tinyViewportCurseActive != false) {
+        if (m_tinyViewportCurseTimer.Expired()) {
             SetTinyViewportCurse(false);
         }
     }
-    if (m_region1Gate != false) {
-        if (m_region1Timing.Expired()) {
+    if (m_darknessCurseActive != false) {
+        if (m_darknessCurseTimer.Expired()) {
             SetDarknessCurse(false);
         }
     }
