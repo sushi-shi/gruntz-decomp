@@ -352,8 +352,8 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
         return 1;
     }
     w->OnPointerMove(mouseFlags, x, y);
-    SbiCommandId cmd = w->m_cmd;
-    switch (w->m_tab) {
+    SbiCommandId cmd = w->GetCommandId();
+    switch (w->GetTab()) {
         case TAB_CONTROLS:
             if (m_chatBoxDisabled != false) {
                 break;
@@ -636,8 +636,8 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
     r->OnDoubleClick(keyFlags, x, y);
-    SbiCommandId cmd = r->m_cmd;
-    switch (r->m_tab) {
+    SbiCommandId cmd = r->GetCommandId();
+    switch (r->GetTab()) {
         case TAB_STATZ:
             if (m_chatBoxDisabled == false && g_gameReg->GetTriggerMgr()->m_groupFlag != false
                 && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
@@ -668,7 +668,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
         ClearTabSprites(TAB_ALL);
         return 1;
     }
-    SbiCommandId cmd = r->m_cmd;
+    SbiCommandId cmd = r->GetCommandId();
     if (m_chatBoxDisabled == false) {
         if (cmd >= SBICMD_TAB_FIRST && cmd <= SBICMD_TAB_LAST) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
@@ -677,14 +677,14 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
         }
     }
     if (m_activeTab == TAB_GAME) {
-        if (r->m_tab == TAB_GAME) {
+        if (r->GetTab() == TAB_GAME) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
         } else {
             ClearTabSprites(TAB_GAME);
         }
     }
     if (m_levelOverlayActive) {
-        if (r->m_tab == TAB_DIALOG) {
+        if (r->GetTab() == TAB_DIALOG) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
             return 1;
         }
@@ -3213,7 +3213,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     if (r == NULL) {
         return 0;
     }
-    SbiCommandId cmd = r->m_cmd;
+    SbiCommandId cmd = r->GetCommandId();
     if (cmd != SBICMD_CONVEYOR_TOP && cmd != SBICMD_CONVEYOR_BOTTOM) {
         return 0;
     }
