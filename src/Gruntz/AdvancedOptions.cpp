@@ -7,7 +7,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <MsgParam.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 
 typedef enum AdvancedOptionsDlgId {
     IDC_DISABLE_VIDEO = 0x46c,
@@ -18,15 +18,17 @@ typedef enum AdvancedOptionsDlgId {
     IDC_DEFAULTS = 0x426,
 } AdvancedOptionsDlgId;
 
-static CRegMgr s_registryHelper;
+static Settings s_options;
 
 BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_INITDIALOG:
-            s_registryHelper.Term();
-            s_registryHelper
-                .Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL);
-            LoadOptions(hWnd, &s_registryHelper);
+            if (!s_options.load(settingsPath())) {
+                MessageBoxA(hWnd, "Could not load your settings.", "Gruntz", MB_OK | MB_ICONERROR);
+                EndDialog(hWnd, 0);
+                return true;
+            }
+            LoadOptions(hWnd, &s_options);
 
             {
                 HICON hIcon = LoadIconA(g_appResHandle, "GRUNTZ");
@@ -49,7 +51,11 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
                 return true;
             }
             if (wParam == IDOK) {
-                SaveOptions(hWnd, &s_registryHelper);
+                SaveOptions(hWnd, &s_options);
+                if (!s_options.save()) {
+                    MessageBoxA(hWnd, "Could not save your settings.", "Gruntz", MB_OK | MB_ICONERROR);
+                    return true;
+                }
                 EndDialog(hWnd, 1);
                 return true;
             }
@@ -63,9 +69,9 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
     return false;
 }
 
-void SaveOption(HWND hWnd, CRegMgr* reg, char* szValueName, DWORD controlId) {
+void SaveOption(HWND hWnd, Settings* reg, char* szValueName, DWORD controlId) {
     if (hWnd && szValueName && reg) {
-        reg->Set(szValueName, IsDlgButtonChecked(hWnd, controlId));
+        reg->setInt(szValueName, IsDlgButtonChecked(hWnd, controlId));
     }
 }
 
@@ -76,17 +82,17 @@ void SetDefaults(HWND hWnd) {
     CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, BST_UNCHECKED);
 }
 
-void LoadOptions(HWND hWnd, CRegMgr* reg) {
+void LoadOptions(HWND hWnd, Settings* reg) {
     if (reg) {
-        CheckDlgButton(hWnd, IDC_DISABLE_VIDEO, reg->Get("Disable Direct Video Access", 0));
-        CheckDlgButton(hWnd, IDC_DISABLE_AUDIO, reg->Get("Disable Audio", 0));
-        CheckDlgButton(hWnd, IDC_DISABLE_SOUND, reg->Get("Disable Sound", 0));
-        CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, reg->Get("Disable Music", 0));
-        CheckDlgButton(hWnd, IDC_DISABLE_MOVIE, reg->Get("Disable High Quality Movie", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_VIDEO, reg->getInt("Disable Direct Video Access", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_AUDIO, reg->getInt("Disable Audio", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_SOUND, reg->getInt("Disable Sound", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, reg->getInt("Disable Music", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_MOVIE, reg->getInt("Disable High Quality Movie", 0));
     }
 }
 
-void SaveOptions(HWND hWnd, CRegMgr* reg) {
+void SaveOptions(HWND hWnd, Settings* reg) {
     if (reg) {
         SaveOption(hWnd, reg, "Disable Direct Video Access", IDC_DISABLE_VIDEO);
         SaveOption(hWnd, reg, "Disable Audio", IDC_DISABLE_AUDIO);

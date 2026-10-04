@@ -116,7 +116,7 @@
 #include <Rez/RezTypeTag.h>
 #include <SafeDelete.h>
 #include <Utils/MapTyped.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/Object.h>
 #include <Wap32/ScreenGeometry.h>
@@ -318,29 +318,29 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     while (ShowCursor(false) >= 0) {
     }
 
-    CRegMgr* reg = new CRegMgr;
+    Settings* reg = new Settings;
     m_settings = reg;
     if (!m_settings
-             ->Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
+             ->load(settingsPath())) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x406);
         return 0;
     }
     SET_SIZE_COMPONENTS(m_savedModeSize, SCREEN_W_PX, SCREEN_H_PX);
-    m_numRuns = m_settings->Get("Num Runs", 0);
-    m_numMovies = m_settings->Get("Num Movies", 0);
-    g_enableHqMovie = m_settings->Get("Disable High Quality Movie", 0) == 0;
-    g_disableAudio = m_settings->Get("Disable Audio", 0);
-    g_disableSound = m_settings->Get("Disable Sound", 0);
-    g_disableMusic = m_settings->Get("Disable Music", 0);
-    g_disableFades = m_settings->Get("Disable Fades", 0);
-    g_disableDirectVideo = m_settings->Get("Disable Direct Video Access", 0);
-    g_disableJoystick = m_settings->Get("Disable Joystick", 0);
-    g_disableSoundFonts = m_settings->Get("Disable SoundFonts", 0);
-    g_enableTriple = m_settings->Get("Enable Triple", 0);
-    g_enableHiColor = m_settings->Get("Enable HiColor", 0);
-    g_enableTrueColor = m_settings->Get("Enable TrueColor", 0);
-    g_enableEmulation = m_settings->Get("Enable Emulation", 0);
-    m_isCheckpointPrompts = m_settings->Get("Checkpoint Prompts", 1);
+    m_numRuns = m_settings->getInt("Num Runs", 0);
+    m_numMovies = m_settings->getInt("Num Movies", 0);
+    g_enableHqMovie = m_settings->getInt("Disable High Quality Movie", 0) == 0;
+    g_disableAudio = m_settings->getInt("Disable Audio", 0);
+    g_disableSound = m_settings->getInt("Disable Sound", 0);
+    g_disableMusic = m_settings->getInt("Disable Music", 0);
+    g_disableFades = m_settings->getInt("Disable Fades", 0);
+    g_disableDirectVideo = m_settings->getInt("Disable Direct Video Access", 0);
+    g_disableJoystick = m_settings->getInt("Disable Joystick", 0);
+    g_disableSoundFonts = m_settings->getInt("Disable SoundFonts", 0);
+    g_enableTriple = m_settings->getInt("Enable Triple", 0);
+    g_enableHiColor = m_settings->getInt("Enable HiColor", 0);
+    g_enableTrueColor = m_settings->getInt("Enable TrueColor", 0);
+    g_enableEmulation = m_settings->getInt("Enable Emulation", 0);
+    m_isCheckpointPrompts = m_settings->getInt("Checkpoint Prompts", 1);
     g_enableHiColor = true;
     g_debugGruntPlayer = 0;
     g_debugGruntTool = 0;
@@ -355,16 +355,16 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_debugGruntMoveTop = 0;
     g_debugGruntMoveBottom = 0;
 
-    i32 vMusic = m_settings->Get("Music", m_musicEnabled);
-    i32 vSound = m_settings->Get("Sound", m_soundEnabled);
-    i32 vVoice = m_settings->Get("Voice", m_isVoiceEnabled);
-    i32 vAmbient = m_settings->Get("Ambient", m_isAmbientEnabled);
-    i32 vInterlaced = m_settings->Get("Interlaced", m_isInterlaced);
-    i32 vHigh1 = m_settings->Get("High Detail", m_isHighDetail);
-    i32 vHigh2 = m_settings->Get("High Detail", m_isEffectsEnabled);
-    m_isEasyMode = m_settings->Get("Easy Mode", m_isEasyMode);
+    i32 vMusic = m_settings->getInt("Music", m_musicEnabled);
+    i32 vSound = m_settings->getInt("Sound", m_soundEnabled);
+    i32 vVoice = m_settings->getInt("Voice", m_isVoiceEnabled);
+    i32 vAmbient = m_settings->getInt("Ambient", m_isAmbientEnabled);
+    i32 vInterlaced = m_settings->getInt("Interlaced", m_isInterlaced);
+    i32 vHigh1 = m_settings->getInt("High Detail", m_isHighDetail);
+    i32 vHigh2 = m_settings->getInt("High Detail", m_isEffectsEnabled);
+    m_isEasyMode = m_settings->getInt("Easy Mode", m_isEasyMode);
     Resolution resolution =
-        static_cast<Resolution>(m_settings->Get("Resolution", IDX(RES_640X480)));
+        static_cast<Resolution>(m_settings->getInt("Resolution", IDX(RES_640X480)));
     if (resolution == RES_1024X768) {
         SET_SIZE_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768);
     } else if (resolution == RES_800X600) {
@@ -372,10 +372,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     } else {
         SET_SIZE_COMPONENTS(m_savedModeSize, SCREEN_W_PX, SCREEN_H_PX);
     }
-    i32 musicVolume = m_settings->Get("Music Volume", 0x64);
-    i32 soundVolume = m_settings->Get("Sound Volume", 0x3c);
-    i32 voiceVolume = m_settings->Get("Voice Volume", 0x50);
-    i32 scrollSpeed = m_settings->Get("Scroll Speed", 0x14);
+    i32 musicVolume = m_settings->getInt("Music Volume", 0x64);
+    i32 soundVolume = m_settings->getInt("Sound Volume", 0x3c);
+    i32 voiceVolume = m_settings->getInt("Voice Volume", 0x50);
+    i32 scrollSpeed = m_settings->getInt("Scroll Speed", 0x14);
     m_soundVolume = soundVolume;
     m_voiceVolume = voiceVolume;
 
@@ -695,7 +695,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     CheckMovieFileExists();
     if (!InitializeLobbyConnectionSettings()) {
         if (m_numMovies > 0 && m_numRuns > 1) {
-            i32 skipLogo = m_settings->Get("Skip Logo Movies", 0);
+            i32 skipLogo = m_settings->getInt("Skip Logo Movies", 0);
             if (skipLogo == 0 && noLogo == 0) {
                 PlayLogoMovie();
             }
@@ -750,27 +750,27 @@ void CGruntzMgr::Close() {
     }
     FreeFontsMemory();
     if (m_settings) {
-        m_settings->Set("Num Runs", m_numRuns);
-        m_settings->Set("Num Movies", m_numMovies);
-        m_settings->Set("Sound", m_soundEnabled);
-        m_settings->Set("Voice", m_isVoiceEnabled);
-        m_settings->Set("Ambient", m_isAmbientEnabled);
-        m_settings->Set("Music", m_musicEnabled);
-        m_settings->Set("Interlaced", m_isInterlaced);
-        m_settings->Set("High Detail", m_isHighDetail);
-        m_settings->Set("Effects", m_isEffectsEnabled);
-        m_settings->Set("Disable Joystick", g_disableJoystick);
+        m_settings->setInt("Num Runs", m_numRuns);
+        m_settings->setInt("Num Movies", m_numMovies);
+        m_settings->setInt("Sound", m_soundEnabled);
+        m_settings->setInt("Voice", m_isVoiceEnabled);
+        m_settings->setInt("Ambient", m_isAmbientEnabled);
+        m_settings->setInt("Music", m_musicEnabled);
+        m_settings->setInt("Interlaced", m_isInterlaced);
+        m_settings->setInt("High Detail", m_isHighDetail);
+        m_settings->setInt("Effects", m_isEffectsEnabled);
+        m_settings->setInt("Disable Joystick", g_disableJoystick);
         if (m_midi) {
-            m_settings->Set("Music Volume", m_midi->GetMasterVolume());
+            m_settings->setInt("Music Volume", m_midi->GetMasterVolume());
         }
         if (m_voiceManager) {
-            m_settings->Set("Voice Volume", VoiceMgr()->m_voiceVolume);
+            m_settings->setInt("Voice Volume", VoiceMgr()->m_voiceVolume);
         }
         if (m_world && World()->SoundRegistry()) {
-            m_settings->Set("Sound Volume", g_soundVolumePercent);
+            m_settings->setInt("Sound Volume", g_soundVolumePercent);
         }
-        m_settings->Set("Scroll Speed", m_scrollSpeed);
-        m_settings->Set("Easy Mode", m_isEasyMode);
+        m_settings->setInt("Scroll Speed", m_scrollSpeed);
+        m_settings->setInt("Easy Mode", m_isEasyMode);
         Resolution res = RES_640X480;
         if (m_savedModeSize.cx == DISPLAY_WIDTH_1024 && m_savedModeSize.cy == DISPLAY_HEIGHT_768) {
             res = RES_1024X768;
@@ -778,14 +778,14 @@ void CGruntzMgr::Close() {
                    && m_savedModeSize.cy == DISPLAY_HEIGHT_600) {
             res = RES_800X600;
         }
-        m_settings->Set("Resolution", IDX(res));
-        m_settings->Set("Checkpoint Prompts", m_isCheckpointPrompts);
+        m_settings->setInt("Resolution", IDX(res));
+        m_settings->setInt("Checkpoint Prompts", m_isCheckpointPrompts);
         if (m_colorDepth == BPP_RGB_16) {
-            m_settings->Set("Enable HiColor", 1);
+            m_settings->setInt("Enable HiColor", 1);
         } else {
-            m_settings->Set("Enable HiColor", static_cast<DWORD>(0));
+            m_settings->setInt("Enable HiColor", static_cast<DWORD>(0));
         }
-        m_settings->Set("Enable TrueColor", static_cast<DWORD>(0));
+        m_settings->setInt("Enable TrueColor", static_cast<DWORD>(0));
     }
     ClearStateStack();
     SAFE_DELETE(m_curState)
@@ -808,6 +808,9 @@ void CGruntzMgr::Close() {
     SAFE_DELETE(m_voiceManager)
     SAFE_DELETE(m_world)
     SAFE_DELETE(m_resourceArchive)
+    if (m_settings && m_settings->loaded() && !m_settings->save()) {
+        MessageBoxA(NULL, "Could not save your settings.", "Gruntz", MB_OK | MB_ICONERROR);
+    }
     SAFE_DELETE(m_settings)
     SAFE_DELETE(m_reserved3c)
     SAFE_DELETE(m_shadeCache)
@@ -1428,10 +1431,10 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
                     sprintf(szValue, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
-                    g_gameReg->m_settings->Set(szValue, valX);
+                    g_gameReg->m_settings->setInt(szValue, valX);
                     sprintf(szValue, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
-                    g_gameReg->m_settings->Set(szValue, valY);
-                    g_gameReg->m_settings->Set(
+                    g_gameReg->m_settings->setInt(szValue, valY);
+                    g_gameReg->m_settings->setInt(
                         "Last Warp Level",
                         g_gameReg->m_curState->m_levelIndex
                     );
@@ -1566,12 +1569,12 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
 i32 CGruntzMgr::WarpCheat() {
     char key[64];
     sprintf(key, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
-    i32 wx = m_settings->Get(key, -1);
+    i32 wx = m_settings->getInt(key, -1);
     sprintf(key, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
-    i32 wy = m_settings->Get(key, -1);
+    i32 wy = m_settings->getInt(key, -1);
     if (wx != -1 && wy != -1) {
         if (m_curState->Update() != GAMESTATE_PLAY) {
-            i32 last = m_settings->Get("Last Warp Level", -1);
+            i32 last = m_settings->getInt("Last Warp Level", -1);
             if (last != -1) {
                 if (!PassClickToPlayState(last, false, 1)) {
                     ReportError(IDX(IDS_SET_GAME_STATE), 0x43b);
@@ -1581,7 +1584,7 @@ i32 CGruntzMgr::WarpCheat() {
                 return 1;
             }
         } else {
-            m_settings->Set("Last Warp Level", m_curState->m_levelIndex);
+            m_settings->setInt("Last Warp Level", m_curState->m_levelIndex);
             return 1;
         }
     }
@@ -2242,85 +2245,38 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
     return result;
 }
 
-i32 __stdcall LaunchPortalExe(char* outPath) {
-    DWORD bufSize;
-    char regBuf[0x100];
-    CRegMgr reg;
-
-    if (!reg.Init("Monolith Productions", "Portal", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
-        return 0;
-    }
-    regBuf[0] = 0;
-    bufSize = 0xde;
-    if (!reg.Get("filedir", regBuf, bufSize, NULL)) {
-        return 0;
-    }
-    i32 len = strlen(regBuf);
-    if (len < 1) {
-        return 0;
-    }
-    if (regBuf[len - 1] != '\\') {
-        strcat(regBuf, "\\");
-    }
-    strcat(regBuf, "portal.exe");
-    if (!FileExists(regBuf)) {
-        return 0;
-    }
-    if (outPath != NULL) {
-        strcpy(outPath, regBuf);
-    }
-    return 1;
+std::string FindPortalExecutable() {
+    Settings settings;
+    if (!settings.load(settingsPath())) return std::string();
+    const std::string path = settings.getString("Portal Executable");
+    return !path.empty() && FileExists(path.c_str()) ? path : std::string();
 }
 
 i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
-    char path[256];
-    path[0] = 0;
-    if (!LaunchPortalExe(path)) {
-        return 0;
-    }
-    if (path[0] == 0) {
-        return 0;
-    }
-    if (!LaunchProcessInDir(path, NULL)) {
-        return 0;
-    }
+    const std::string path = FindPortalExecutable();
+    if (path.empty() || !LaunchProcessInDir(path, "")) return 0;
     if (quitAfter) {
         DelayedQuit();
     }
     return 1;
 }
 
-i32 CGruntzMgr::LaunchProcessInDir(char* sApp, char* sPath) {
-    char sLaunch[256];
+i32 CGruntzMgr::LaunchProcessInDir(const std::string& app, const std::string& directory) {
+    if (app.empty() || app.find('\0') != std::string::npos
+        || directory.find('\0') != std::string::npos) return 0;
+    std::string executable = directory;
+    if (!executable.empty() && executable[executable.size() - 1] != '\\'
+        && executable[executable.size() - 1] != '/') executable += '\\';
+    executable += app;
     STARTUPINFOA startInfo;
     PROCESS_INFORMATION processInfo;
     memset(&startInfo, 0, sizeof(startInfo));
     startInfo.cb = sizeof(startInfo);
-    if (sPath && *sPath) {
-        i32 len = strlen(sPath);
-        if (len > 0 && sPath[len - 1] == '\\') {
-            wsprintfA(sLaunch, "%s%s", sPath, sApp);
-        } else {
-            wsprintfA(sLaunch, "%s\\%s", sPath, sApp);
-        }
-    } else {
-        wsprintfA(sLaunch, "%s", sApp);
-    }
-    if (sPath && *sPath == 0) {
-        sPath = NULL;
-    }
-    return CreateProcessA(
-        NULL,
-        sLaunch,
-        NULL,
-        NULL,
-        false,
-        0,
-        NULL,
-        sPath,
-        &startInfo,
-        &processInfo
-    );
+    if (!CreateProcessA(executable.c_str(), NULL, NULL, NULL, false, 0, NULL,
+        directory.empty() ? NULL : directory.c_str(), &startInfo, &processInfo)) return 0;
+    CloseHandle(processInfo.hThread);
+    CloseHandle(processInfo.hProcess);
+    return 1;
 }
 
 CState* CGruntzMgr::TopState() {

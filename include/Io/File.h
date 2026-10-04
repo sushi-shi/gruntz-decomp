@@ -6,9 +6,11 @@
 #include <Io/Bytes.h>
 
 namespace io {
+bool absolutePath(const std::string& path, std::string& result);
+bool replaceFile(const std::string& source, const std::string& target);
 enum Access { ReadOnly, Replace, Update };
 enum Origin { Start, Current, End };
-enum Error { NoError, NotOpen, OpenFailed, ReadFailed, WriteFailed, SeekFailed, TooLarge, CloseFailed };
+enum Error { NoError, NotOpen, NotFound, OpenFailed, ReadFailed, WriteFailed, SeekFailed, TooLarge, CloseFailed };
 
 class File : public Input, public Output {
 public:

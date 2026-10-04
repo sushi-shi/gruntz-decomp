@@ -5,12 +5,12 @@
 #include <Ints.h>
 
 class CDDSurface;
-class CRegMgr;
+class Settings;
 class CGruntzMgr;
 
 i32 SaveScreenshot(
     CDDSurface* src,
-    CRegMgr* reg,
+    Settings* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,

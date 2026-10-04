@@ -2,8 +2,48 @@
 #include <StdAfx.h>
 #endif
 #include <Io/File.h>
+#include <errno.h>
+#include <stdlib.h>
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+#include <vector>
 
 namespace io {
+bool absolutePath(const std::string& path, std::string& result) {
+    if (path.empty() || path.find('\0') != std::string::npos) return false;
+#ifdef _WIN32
+    char* resolved = _fullpath(NULL, path.c_str(), 0);
+    if (!resolved) return false;
+    result = resolved;
+    free(resolved);
+    return true;
+#else
+    if (path[0] == '/') { result = path; return true; }
+    for (size_t capacity = 256; capacity <= 1024 * 1024; capacity *= 2) {
+        std::vector<char> directory(capacity);
+        if (getcwd(&directory[0], capacity)) {
+            result = std::string(&directory[0]) + "/" + path;
+            return true;
+        }
+        if (errno != ERANGE) return false;
+    }
+    return false;
+#endif
+}
+
+bool replaceFile(const std::string& source, const std::string& target) {
+    if (source.empty() || target.empty() || source.find('\0') != std::string::npos
+        || target.find('\0') != std::string::npos) return false;
+#ifdef _WIN32
+    return MoveFileExA(source.c_str(), target.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != 0;
+#else
+    return rename(source.c_str(), target.c_str()) == 0;
+#endif
+}
+
 File::File() : m_file(NULL), m_error(NoError) {}
 File::~File() { finish(); }
 bool File::open(const char* path, Access access) {
@@ -19,7 +59,7 @@ bool File::open(const std::string& path, Access access) {
     }
     const char* mode = access == ReadOnly ? "rb" : access == Replace ? "w+b" : "r+b";
     m_file = fopen(path.c_str(), mode);
-    if (!m_file) m_error = OpenFailed;
+    if (!m_file) m_error = errno == ENOENT ? NotFound : OpenFailed;
     return good();
 }
 bool File::finish() {

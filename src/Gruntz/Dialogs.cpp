@@ -20,7 +20,8 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
+#include <Io/File.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -45,7 +46,7 @@ CBattlezDlg::CBattlezDlg(CGruntzMgr* gameManager, CWnd* pParent) : CDialog(0xc0,
 }
 
 void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
-    CRegMgr* reg = g_gameReg->m_settings;
+    Settings* reg = g_gameReg->m_settings;
     char key[0x100];
     i32 i;
 
@@ -53,11 +54,11 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         i32 defaultMax = g_buteMgr.GetDword("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
-            g_battlezLastMaxGruntz[i] = reg->Get(key, defaultMax);
+            g_battlezLastMaxGruntz[i] = reg->getInt(key, defaultMax);
             sprintf(key, "LastDiff%d", i);
-            g_battlezLastDifficulties[i] = reg->Get(key, 1);
+            g_battlezLastDifficulties[i] = reg->getInt(key, 1);
             sprintf(key, "LastColour%d", i);
-            g_battlezLastColors[i] = reg->Get(key, IDX(g_gameReg->m_players[i].m_color));
+            g_battlezLastColors[i] = reg->getInt(key, IDX(g_gameReg->m_players[i].m_color));
             g_gameReg->m_players[i].m_color = static_cast<ColorTint>(g_battlezLastColors[i]);
         }
 
@@ -193,29 +194,27 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         }
 
         CustomMapSelection customMap =
-            static_cast<CustomMapSelection>(reg->Get("CustomMap", IDX(CUSTOM_MAP_UNINITIALIZED)));
+            static_cast<CustomMapSelection>(reg->getInt("CustomMap", IDX(CUSTOM_MAP_UNINITIALIZED)));
         if (customMap != CUSTOM_MAP_UNINITIALIZED) {
-            char mapName[0x100];
-            DWORD size = sizeof(mapName);
-            reg->Get("LastMap", mapName, size, "");
+            const std::string mapName = reg->getString("LastMap", "");
             m_customNameFlag = IDX(customMap);
             if (customMap != CUSTOM_MAP_STANDARD) {
-                sprintf(key, "custom\\%s", mapName);
-                FILE* file = fopen(key, "rb");
-                if (file != NULL) {
+                const std::string path = "custom\\" + mapName;
+                io::File file;
+                if (file.open(path, io::ReadOnly)) {
                     CWnd* child = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
                     if (child == NULL) {
                         return;
                     }
-                    child->SetWindowTextA(mapName);
-                    fclose(file);
+                    child->SetWindowTextA(mapName.c_str());
+
                 }
             } else {
                 CWnd* child = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
                 if (child == NULL) {
                     return;
                 }
-                child->SetWindowTextA(mapName);
+                child->SetWindowTextA(mapName.c_str());
             }
         } else {
             CWnd* child = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
@@ -246,8 +245,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             return;
         }
         m_worldName = readWindowText(comboChild->GetSafeHwnd());
-        reg->Set("LastMap", (m_worldName).c_str());
-        reg->Set("CustomMap", m_customNameFlag);
+        reg->setString("LastMap", m_worldName);
+        reg->setInt("CustomMap", m_customNameFlag);
 
         for (i = 0; i < 4; i++) {
             CEdit* edit = GetPlayerNameControl(i);
@@ -271,19 +270,19 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         if (g_battlezResetOptions != false) {
             g_battlezResetOptions = false;
         }
-        CRegMgr* settings = g_gameReg->m_settings;
+        Settings* settings = g_gameReg->m_settings;
         g_buteMgr.GetDword("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
-            settings->Set(key, GetMaxGruntzSelection(i));
+            settings->setInt(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
             if (m_gameManager->m_players[i].m_active != false) {
-                settings->Set(key, IDX(m_gameManager->m_players[i].GetDifficulty()));
+                settings->setInt(key, IDX(m_gameManager->m_players[i].GetDifficulty()));
             } else {
-                settings->Set(key, -1);
+                settings->setInt(key, -1);
             }
             sprintf(key, "LastColour%d", i);
-            settings->Set(key, IDX(g_gameReg->m_players[i].m_color));
+            settings->setInt(key, IDX(g_gameReg->m_players[i].m_color));
         }
         NetLobby::g_curDlg = NULL;
     }

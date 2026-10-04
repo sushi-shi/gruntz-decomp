@@ -10,12 +10,12 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SaveScreenshot.h>
 #include <Ints.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 
 #include <stddef.h>
 
 i32 SaveBackBufferShot(
-    CRegMgr* reg,
+    Settings* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,
@@ -34,7 +34,7 @@ i32 SaveBackBufferShot(
 }
 
 i32 SaveOverlayBufferShot(
-    CRegMgr* reg,
+    Settings* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,

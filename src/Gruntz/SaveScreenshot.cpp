@@ -9,11 +9,11 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <RectMacros.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 
 i32 SaveScreenshot(
     CDDSurface* src,
-    CRegMgr* reg,
+    Settings* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,
@@ -37,8 +37,8 @@ i32 SaveScreenshot(
         return 0;
     }
     if (name == NULL) {
-        i32 screenshotCount = reg->Get("Screen Dump Count", 0) + 1;
-        reg->Set("Screen Dump Count", screenshotCount);
+        i32 screenshotCount = reg->getInt("Screen Dump Count", 0) + 1;
+        reg->setInt("Screen Dump Count", screenshotCount);
         wsprintfA(nameBuf, "Gruntz%04i.BMP", screenshotCount);
         name = nameBuf;
     }

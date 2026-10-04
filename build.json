@@ -969,8 +969,8 @@
       ]
     },
     {
-      "name": "registryhelper",
-      "source": "src/Utils/RegMgr.cpp",
+      "name": "settings",
+      "source": "src/Io/Settings.cpp",
       "flags": [
         "/nologo",
         "/c",

@@ -24,7 +24,7 @@
 #include <Image/RezDecodeKind.h>
 #include <Io/GameSave.h>
 #include <MsgParam.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <stdio.h>
