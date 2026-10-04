@@ -1235,7 +1235,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         goto bad;
     }
 
-    cell->m_arrivalAction = 0;
+    cell->ClearArrivalAction();
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
     hit = PickGruntAtWorldPoint(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
