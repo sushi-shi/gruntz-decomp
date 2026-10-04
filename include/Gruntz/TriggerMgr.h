@@ -308,7 +308,7 @@ public:
         if (m_selectedUnitIds.GetCount() != 1) {
             return NULL;
         }
-        Coord identity = *FirstSelectedUnitId();
+        const Coord& identity = *FirstSelectedUnitId();
         return UnitAt(identity.m_x, identity.m_y);
     }
     CActionOptionsMenuBar* m_overlay;
