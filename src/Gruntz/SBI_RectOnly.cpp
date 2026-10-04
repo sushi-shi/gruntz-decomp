@@ -3858,13 +3858,11 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     }
 
     CStatusBarMgr* base = m_owner;
-    i32 tx = base->GetBarRect()->left + targetOffset.m_x;
-    m_targetX = tx;
-    i32 ty = base->GetBarRect()->top + targetOffset.m_y;
-    m_targetY = ty;
+    m_targetX = base->GetBarRect()->left + targetOffset.m_x;
+    m_targetY = base->GetBarRect()->top + targetOffset.m_y;
 
-    i32 deltaX = tx - srcX;
-    i32 dyv = ty - srcY;
+    i32 deltaX = m_targetX - srcX;
+    i32 dyv = m_targetY - srcY;
     i32 dist2 = SquaredDistance(deltaX, dyv);
     double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDword("WarpStone", "FlyTime", 0x5dc);
