@@ -237,7 +237,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             m_chatBox = NULL;
             return 0;
         }
-        m_chatBox->m_inputActive = false;
+        m_chatBox->SetInputActive(false);
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
 
         m_statusBar = new CStatusBarMgr;
@@ -1659,7 +1659,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     }
 
     if (m_mgr->GetFrameGate() == false) {
-        if (m_chatBox->m_inputActive != false) {
+        if (m_chatBox->IsInputActive() != false) {
             m_mgr->ChatLog()->HandleInputChar(charCode, keyData);
             return 1;
         }
@@ -1779,11 +1779,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == VK_RETURN) {
         CChatBox* rec = this->m_chatBox;
-        if (rec->m_inputActive != false) {
+        if (rec->IsInputActive() != false) {
             rec->HandleTextInputKey('\r', lparam);
         } else {
             rec->m_gameText->EndInput();
-            rec->m_inputActive = true;
+            rec->SetInputActive(true);
             this->m_chatBox->HandleTextInputKey('\r', lparam);
         }
         return 1;
@@ -1793,10 +1793,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         CTriggerMgr* triggerManager = mgr->GetTriggerMgr();
         triggerManager->StopCameraTracking();
         CChatBox* rec = this->m_chatBox;
-        if (rec->m_inputActive != false) {
+        if (rec->IsInputActive() != false) {
             this->FlushPendingOps();
             this->m_chatBox->m_gameText->EndInput();
-            this->m_chatBox->m_inputActive = false;
+            this->m_chatBox->SetInputActive(false);
             return 1;
         }
         if (this->FlushPendingOps() != 0) {
@@ -1811,7 +1811,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (this->m_chatBox->m_inputActive != false) {
+    if (this->m_chatBox->IsInputActive() != false) {
         return 1;
     }
     if (g_gameReg->GetTriggerMgr()->m_groupFlag == false) {

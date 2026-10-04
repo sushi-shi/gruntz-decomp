@@ -31,6 +31,13 @@ public:
 
     i32 Attach(CDDrawSurfaceMgr* world, CGameText* gameText);
 
+    b32 IsInputActive() const {
+        return m_inputActive;
+    }
+    void SetInputActive(b32 active) {
+        m_inputActive = active;
+    }
+
     void Deactivate();
 
     void Configure(ChatBoxLayout layout);
