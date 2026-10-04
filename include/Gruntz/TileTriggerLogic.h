@@ -77,15 +77,15 @@ public:
 
     virtual i32 Tick();
 
-    void RecordMove();
+    void StartTimedSequence();
 
-    i32 Classify(i32 unusedFrameDelta);
+    i32 UpdateTimedSequence(i32 unusedFrameDelta);
 
     i32 ApplyMove(TileCollisionKind verb);
 
-    i32 FindIndexByKey(i32 key);
+    i32 HasLinkKey(i32 key);
 
-    void LoadBridgeMove(TileCollisionKind type);
+    void PlayMovementSound(TileCollisionKind type);
 
     i32 Build(
         CTileTriggerContainer* owner,

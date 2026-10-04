@@ -514,7 +514,7 @@ i32 CTileTriggerContainer::UpdateTimedLogics(i32 unusedFrameDelta) {
     while (pos != NULL) {
         POSITION cur = pos;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
-        i32 disposition = elem->Classify(unusedFrameDelta);
+        i32 disposition = elem->UpdateTimedSequence(unusedFrameDelta);
         if (disposition == 0) {
             m_timedLogics.RemoveAt(cur);
             delete elem;

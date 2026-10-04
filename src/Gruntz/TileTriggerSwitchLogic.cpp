@@ -149,7 +149,7 @@ CTileTriggerLogic::CTileTriggerLogic() {
 }
 
 RVA(0x00110820, 0x23)
-i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
+i32 CTileTriggerLogic::HasLinkKey(i32 key) {
     for (i32 i = 0; i < 24; i++) {
         if (m_linkKeys[i] == key) {
             return 1;
@@ -159,7 +159,7 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 }
 
 RVA(0x00110860, 0x2e6)
-void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
+void CTileTriggerLogic::PlayMovementSound(TileCollisionKind type) {
     i32 px, py;
     CGruntzMgr* gameMgr;
     SoundCueRegistry* registry;
@@ -377,7 +377,7 @@ i32 CTileTriggerLogic::Tick() {
                     }
                 }
             }
-            LoadBridgeMove(srcId);
+            PlayMovementSound(srcId);
             return 0;
         }
 
@@ -606,7 +606,7 @@ i32 CTileTriggerLogic::Tick() {
             trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
-    LoadBridgeMove(srcId);
+    PlayMovementSound(srcId);
     return 1;
 }
 
@@ -637,7 +637,7 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
             break;
         }
         child = m_owner->GetNextIdleLogic(pos);
-        if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
+        if (child != NULL && child->HasLinkKey(m_cellKey) != 0) {
             found = true;
         }
     }
@@ -690,7 +690,7 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             POSITION pos = m_owner->GetIdleHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* o = m_owner->GetNextIdleLogic(pos);
-                if (o != NULL && o->FindIndexByKey(node->GetCellKey())) {
+                if (o != NULL && o->HasLinkKey(node->GetCellKey())) {
                     o->Tick();
                     counter++;
                     any = true;
@@ -865,7 +865,7 @@ i32 CTileTimeTriggerSwitchLogic::SwitchUp() {
 }
 
 RVA(0x00112880, 0x12)
-void CTileTriggerLogic::RecordMove() {
+void CTileTriggerLogic::StartTimedSequence() {
     m_startClock = g_frameTime;
     m_owner->ActivateTimedLogic(this);
 }
@@ -893,7 +893,7 @@ i32 CTileSecretTriggerLogic::Tick() {
 
 // @early-stop
 RVA(0x00112970, 0xad)
-i32 CTileTriggerLogic::Classify(i32 unusedFrameDelta) {
+i32 CTileTriggerLogic::UpdateTimedSequence(i32 unusedFrameDelta) {
     u32 elapsed = g_frameTime - m_startClock;
     if (elapsed <= m_leadInSpan) {
         goto ret1;
@@ -1028,7 +1028,7 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
             break;
         }
         child = m_owner->GetNextIdleLogic(pos);
-        if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
+        if (child != NULL && child->HasLinkKey(m_cellKey) != 0) {
             found = true;
         }
     }
