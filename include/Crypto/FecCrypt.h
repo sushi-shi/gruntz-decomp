@@ -1,5 +1,6 @@
 #ifndef CRYPTO_FECCRYPT_H
 #define CRYPTO_FECCRYPT_H
+#include <Io/File.h>
 
 #include <vector>
 
@@ -52,7 +53,7 @@ public:
     ~CFecFile();
     i32 Init();
     void Close();
-    i32 Lookup(u32 idx);
+    io::File* Lookup(u32 idx);
     const DWORD& EntryOffset(i32 index) {
         return m_index[index];
     }
@@ -73,7 +74,7 @@ public:
     FecArchiveHeader m_header;
     FecEntry m_entry;
 
-    CFile m_stream;
+    io::File m_stream;
     i32 m_nextIndex;
     std::vector<u32> m_index;
     char m_copyBuf[FEC_COPY_BUFFER_SIZE];

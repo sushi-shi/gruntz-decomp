@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -37,7 +38,7 @@ void CFecFile::Close() {
 
 i32 CFecFile::OnFail() {
     if (m_openGate && (m_readOpen || m_writeOpen)) {
-        m_stream.Close();
+        m_stream.finish();
         m_readOpen = false;
         m_writeOpen = false;
         m_nextIndex = 0;
@@ -56,55 +57,43 @@ i32 CFecFile::ReadArchive(const char* name) {
     if (m_openGate == false) {
         return 0;
     }
-    if (m_stream.Open(name, CFile::modeRead, NULL) == false) {
+    if (m_stream.open(name, io::ReadOnly) == false) {
         return 0;
     }
     m_readOpen = true;
 
     char magic[FEC_MAGIC_SIZE];
-    if (m_stream.Read(magic, sizeof(magic)) != sizeof(magic)) {
+    if (m_stream.read(magic, sizeof(magic)) != sizeof(magic)) {
         goto fail;
     }
     if (magic[0] != 'F' || magic[1] != 'E' || magic[2] != 'C') {
         goto fail;
     }
-    if (m_stream.Read(&m_header, sizeof(m_header)) != sizeof(m_header)) {
+    if (m_stream.read(&m_header, sizeof(m_header)) != sizeof(m_header)) {
         goto fail;
     }
 
-    char buf[FEC_ENTRY_NAME_CAPACITY];
-    sprintf(buf, "Opened FEC File %s\n", name);
-    sprintf(
-        buf,
-        "FEC File Version: %d.%d\nNumber of Files: %d\n",
-        m_header.m_versionMajor,
-        m_header.m_versionMinor,
-        m_header.m_fileCount
-    );
 
-    if (m_stream.Read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
+    if (m_stream.read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
         goto fail;
     }
     {
-        if (m_stream.Seek(m_entry.Scramble() - FEC_SCRAMBLE_BASE, CFile::current)
-            != m_entry.Scramble() - FEC_FIRST_PAYLOAD_ADJUSTMENT) {
+        if (!m_stream.seek(m_entry.Scramble() - FEC_SCRAMBLE_BASE, io::Current) || m_stream.position() != m_entry.Scramble() - FEC_FIRST_PAYLOAD_ADJUSTMENT) {
             goto fail;
         }
         m_index.push_back(m_entry.Scramble() - FEC_FIRST_PAYLOAD_ADJUSTMENT);
 
         for (u16 i = 1; i < static_cast<u32>(m_header.m_fileCount); i++) {
             i32 stride = m_entry.PayloadLength();
-            if (m_stream.Seek(stride, CFile::current)
-                != static_cast<i32>(EntryOffset(i - 1)) + stride) {
+            if (!m_stream.seek(stride, io::Current) || m_stream.position() != static_cast<i32>(EntryOffset(i - 1)) + stride) {
                 goto fail;
             }
             memset(&m_entry, 0, sizeof(m_entry));
-            if (m_stream.Read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
+            if (m_stream.read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
                 goto fail;
             }
             u16 scr = m_entry.Scramble();
-            if (m_stream.Seek(scr - FEC_SCRAMBLE_BASE, CFile::current)
-                != static_cast<i32>(EntryOffset(i - 1)) + stride + scr
+            if (!m_stream.seek(scr - FEC_SCRAMBLE_BASE, io::Current) || m_stream.position() != static_cast<i32>(EntryOffset(i - 1)) + stride + scr
                        - FEC_NEXT_PAYLOAD_ADJUSTMENT) {
                 goto fail;
             }
@@ -118,11 +107,11 @@ fail:
     return 0;
 }
 
-i32 CFecFile::Lookup(u32 idx) {
+io::File* CFecFile::Lookup(u32 idx) {
     if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_header.m_fileCount) && idx != 0) {
         const u32* slot = &m_index[idx - 1];
-        if (m_stream.Seek(static_cast<i32>(*slot), CFile::begin) == static_cast<i32>(*slot)) {
-            return static_cast<HFILE>(m_stream);
+        if (m_stream.seek(static_cast<i32>(*slot), io::Start)) {
+            return &m_stream;
         }
     }
     return 0;
@@ -130,21 +119,21 @@ i32 CFecFile::Lookup(u32 idx) {
 
 i32 CFecFile::CreateArchive(const char* name) {
     if (name != NULL && m_writeOpen == false && m_openGate != false
-        && m_stream.Open(name, CFile::modeCreate | CFile::modeReadWrite, NULL) != false) {
+        && m_stream.open(name, io::Replace) != false) {
         m_writeOpen = true;
 
         char magic[FEC_MAGIC_SIZE];
         magic[0] = 'F';
         magic[1] = 'E';
         magic[2] = 'C';
-        m_stream.Write(magic, sizeof(magic));
+        m_stream.write(magic, sizeof(magic));
 
         memset(&m_header, 0, sizeof(m_header));
         m_header.m_fileCount = 0;
         m_header.m_versionMajor = 1;
         m_header.m_versionMinor = 1;
-        m_stream.Write(&m_header, sizeof(m_header));
-        m_stream.Flush();
+        m_stream.write(&m_header, sizeof(m_header));
+        if (!m_stream.flush()) { OnFail(); return 0; }
         return 1;
     }
     return 0;
@@ -157,19 +146,19 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
         return 0;
     }
 
-    CFile file;
-    if (file.Open(name, CFile::modeRead, NULL) == false) {
+    io::File file;
+    if (file.open(name, io::ReadOnly) == false) {
         return 0;
     }
 
-    m_nextIndex++;
-
     std::string base = name;
-    i32 slash = stringIndex((base).rfind('\\'));
+    i32 slash = stringIndex((base).find_last_of("/\\"));
     if (slash != -1) {
         base = rightText(base, static_cast<i32>((base).size()) - slash - 1);
     }
 
+    if (base.size() >= FEC_ENTRY_NAME_CAPACITY) return 0;
+    ++m_nextIndex;
     memset(&m_entry, 0, sizeof(m_entry));
     m_entry.m_index = m_nextIndex;
     m_entry.m_nameLen = static_cast<u16>(static_cast<i32>((base).size()));
@@ -192,20 +181,20 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 
     m_entry.m_scramble = static_cast<u16>((Random() % FEC_SCRAMBLE_RANGE + FEC_SCRAMBLE_BASE));
 
-    m_entry.m_payloadLen = file.Seek(0, CFile::end);
-    if (file.Seek(0, CFile::begin) != 0) {
+    m_entry.m_payloadLen = file.size();
+    if (!file.good() || !file.seek(0, io::Start)) {
         m_nextIndex--;
         return 0;
     }
 
-    m_stream.Seek(0, CFile::end);
-    m_stream.Write(&m_entry, sizeof(m_entry));
+    m_stream.seek(0, io::End);
+    m_stream.write(&m_entry, sizeof(m_entry));
 
     char* pad = new char[m_entry.Scramble() - FEC_SCRAMBLE_BASE];
     for (i = 0; i < m_entry.Scramble() - FEC_SCRAMBLE_BASE; i++) {
         pad[i] = static_cast<char>((Random() % FEC_RANDOM_BYTE_MODULUS));
     }
-    m_stream.Write(pad, m_entry.Scramble() - FEC_SCRAMBLE_BASE);
+    m_stream.write(pad, m_entry.Scramble() - FEC_SCRAMBLE_BASE);
     delete[] pad;
 
     memset(m_copyBuf, 0, sizeof(m_copyBuf));
@@ -219,7 +208,8 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
             }
         }
 
-        if (*pCancel != 0) {
+        if (pCancel && *pCancel != 0) {
+            OnFail();
             return 0;
         }
         u32 chunk;
@@ -228,17 +218,17 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
         } else {
             chunk = FEC_COPY_BUFFER_SIZE;
         }
-        file.Read(m_copyBuf, chunk);
-        m_stream.Write(m_copyBuf, chunk);
+        if (file.read(m_copyBuf, chunk) != chunk) { OnFail(); return 0; }
+        if (!m_stream.write(m_copyBuf, chunk)) { OnFail(); return 0; }
         copied += chunk;
         if (copied == static_cast<u32>(m_entry.PayloadLength())) {
             done = true;
         }
     }
 
-    m_stream.Seek(FEC_FILE_COUNT_OFFSET, CFile::begin);
-    m_stream.Write(&m_nextIndex, sizeof(m_nextIndex));
-    m_stream.Flush();
+    m_stream.seek(FEC_FILE_COUNT_OFFSET, io::Start);
+    m_stream.write(&m_nextIndex, sizeof(m_nextIndex));
+    if (!m_stream.flush()) { OnFail(); return 0; }
     return 1;
 }
 
@@ -258,22 +248,22 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
         return 0;
     }
 
-    CFile file;
-    m_stream.Seek(FEC_ENTRY_TABLE_OFFSET, CFile::begin);
+    io::File file;
+    m_stream.seek(FEC_ENTRY_TABLE_OFFSET, io::Start);
 
     for (u16 i = 0; i < static_cast<u32>(m_header.m_fileCount); i++) {
-        if (m_stream.Read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
+        if (m_stream.read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
             _chdir(cwd);
             return 0;
         }
+        if (m_entry.m_nameLen >= FEC_ENTRY_NAME_CAPACITY) { _chdir(cwd); return 0; }
         char decoded[FEC_ENTRY_NAME_CAPACITY];
         FecDecode(m_entry.m_name, decoded, m_entry.m_nameLen);
-        if (file.Open(decoded, CFile::modeCreate | CFile::modeReadWrite, NULL) == false) {
+        if (file.open(decoded, io::Replace) == false) {
             _chdir(cwd);
             return 0;
         }
-        if (m_stream.Seek(static_cast<i32>(EntryOffset(i)), CFile::begin)
-            != static_cast<i32>(EntryOffset(i))) {
+        if (!m_stream.seek(static_cast<i32>(EntryOffset(i)), io::Start) || m_stream.position() != static_cast<i32>(EntryOffset(i))) {
             _chdir(cwd);
             return 0;
         }
@@ -287,7 +277,8 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
                     DispatchMessageA(&msg);
                 }
             }
-            if (*pCancel != 0) {
+            if (pCancel && *pCancel != 0) {
+                _chdir(cwd);
                 return 0;
             }
             u32 chunk = m_entry.PayloadLength();
@@ -296,15 +287,14 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             } else {
                 chunk = FEC_COPY_BUFFER_SIZE;
             }
-            m_stream.Read(m_copyBuf, chunk);
-            file.Write(m_copyBuf, chunk);
+            if (m_stream.read(m_copyBuf, chunk) != chunk) { _chdir(cwd); return 0; }
+            file.write(m_copyBuf, chunk);
             copied += chunk;
             if (copied == static_cast<u32>(m_entry.PayloadLength())) {
                 done = true;
             }
         }
-        file.Flush();
-        file.Close();
+        if (!file.finish()) { _chdir(cwd); return 0; }
     }
 
     _chdir(cwd);

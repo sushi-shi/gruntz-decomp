@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 #include <Utils/Text.h>
 
 #include <Ints.h>
@@ -78,13 +79,15 @@ void CSaveGame::Init() {
 }
 
 i32 CSaveGame::Load() {
-    CFile file;
-    if (!file.Open((m_progressFilePath).c_str(), CFile::modeRead, NULL)) {
+    io::File file;
+    if (!file.open((m_progressFilePath).c_str(), io::ReadOnly)) {
         return 0;
     }
-    file.Read(m_header, s_saveFileHeaderBytes);
-    file.Read(m_slots, sizeof(m_slots));
-    file.Close();
+    if (file.read(m_header, s_saveFileHeaderBytes) != s_saveFileHeaderBytes
+        || file.read(m_slots, sizeof(m_slots)) != sizeof(m_slots)) {
+        Init();
+        return 0;
+    }
     if (!Verify()) {
         Init();
     }
@@ -93,19 +96,16 @@ i32 CSaveGame::Load() {
 
 i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     CWaitCursorScope wait;
-    CFile file;
-    if (!file.Open((m_progressFilePath).c_str(), CFile::modeCreate, NULL)) {
-        return 0;
-    }
-    file.Close();
-    if (!file.Open((m_progressFilePath).c_str(), CFile::modeWrite, NULL)) {
+    io::File file;
+    if (!file.open((m_progressFilePath).c_str(), io::Replace)) {
         return 0;
     }
     ComputeAll();
-    file.Write(m_header, s_saveFileHeaderBytes);
-    file.Write(m_slots, sizeof(m_slots));
-    file.Close();
+    file.write(m_header, s_saveFileHeaderBytes);
+    file.write(m_slots, sizeof(m_slots));
+    const bool written = file.finish();
     Verify();
+    if (!written) return 0;
     if (screenshotPath != NULL) {
         CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
         g_gameReg->World()->GetDrawTarget()->TransEnter();
@@ -295,10 +295,10 @@ i32 CSaveGame::CloseTempFile(SaveSlot* p) {
     if (p == NULL) {
         return 0;
     }
-    CFile file;
-    if (file.Open(p->m_savePath, CFile::modeRead, NULL)) {
-        file.Close();
-        CFile::Remove(p->m_savePath);
+    io::File file;
+    if (file.open(p->m_savePath, io::ReadOnly)) {
+        file.finish();
+        if (remove(p->m_savePath) != 0) return 0;
     }
     p->m_type = SAVESLOT_EMPTY;
     return 1;
@@ -342,9 +342,9 @@ i32 CSaveGame::TempFileExistsAt(i32 index) {
 
 int TempFileExists(SaveSlot* p) {
     if (p != NULL && (p->m_type & SAVESLOT_PRESENT)) {
-        CFile file;
-        if (file.Open(p->m_savePath, CFile::modeRead, NULL)) {
-            file.Close();
+        io::File file;
+        if (file.open(p->m_savePath, io::ReadOnly)) {
+            file.finish();
             return 1;
         }
     }

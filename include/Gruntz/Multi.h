@@ -1,5 +1,6 @@
 #ifndef GRUNTZ_GRUNTZ_CMULTI_H
 #define GRUNTZ_GRUNTZ_CMULTI_H
+#include <Io/File.h>
 
 #include <vector>
 
@@ -297,7 +298,7 @@ extern HWND g_sessionListHwnd;
 
 void MultiJoinHandler();
 
-class CFile;
+
 
 extern i32 g_serviceId;
 

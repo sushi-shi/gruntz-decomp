@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -22,19 +23,19 @@ i32 CGruntzMgr::ResolveLevelChecksum(
 ) {
     if (isCustom != false) {
         WwdHeader buf;
-        CFile file;
+        io::File file;
         std::string path;
         if (useDirectLevelReference == false && isBattlez == false) {
             path = "custom\\" + levelName;
         } else {
             path = levelName;
         }
-        if (file.Open((path).c_str(), CFile::modeRead, NULL)) {
-            if (file.GetLength() < 0x5f4) {
-                file.Close();
+        if (file.open((path).c_str(), io::ReadOnly)) {
+            if (file.size() < 0x5f4) {
+                file.finish();
             } else {
-                file.Read(&buf, sizeof(buf));
-                file.Close();
+                if (file.read(&buf, sizeof(buf)) != sizeof(buf)) return 0;
+                file.finish();
                 return buf.m_checksum;
             }
         }

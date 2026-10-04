@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -68,18 +69,18 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     BITMAPFILEHEADER hdr;
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     Bmp256Info info;
-    CFile file;
-    if (file.Open(filename, CFile::modeRead, NULL) == false) {
+    io::File file;
+    if (file.open(filename, io::ReadOnly) == false) {
         return 0;
     }
-    if (file.Read(&hdr, sizeof(hdr)) != sizeof(hdr)) {
+    if (file.read(&hdr, sizeof(hdr)) != sizeof(hdr)) {
         return 0;
     }
-    if (file.Read(&info, sizeof(info)) != sizeof(info)) {
+    if (file.read(&info, sizeof(info)) != sizeof(info)) {
         return 0;
     }
 
-    if (file.Read(info.m_bmiColors, sizeof(info.m_bmiColors)) != sizeof(info.m_bmiColors)) {
+    if (file.read(info.m_bmiColors, sizeof(info.m_bmiColors)) != sizeof(info.m_bmiColors)) {
         return 0;
     }
     COPY_BGRX_PALETTE(pe, info.m_bmiColors, i, PALETTE_ENTRY_COUNT)
@@ -89,12 +90,12 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
 i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
-    CFile file;
-    if (file.Open(filename, CFile::modeRead, NULL) == false) {
+    io::File file;
+    if (file.open(filename, io::ReadOnly) == false) {
         return 0;
     }
-    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
-    if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
+    file.seek(-PALETTE_RGB_BYTE_COUNT, io::End);
+    if (file.read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
     u8* src = rgb;
@@ -116,11 +117,11 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 f
 i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
-    CFile file;
-    if (file.Open(filename, CFile::modeRead, NULL) == false) {
+    io::File file;
+    if (file.open(filename, io::ReadOnly) == false) {
         return 0;
     }
-    if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
+    if (file.read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
     u8* src = rgb;

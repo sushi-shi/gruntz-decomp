@@ -141,7 +141,7 @@ public:
     i32
     OpenLo(const char* src, MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect);
     i32
-    OpenHi(i32 srcHandle, MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect);
+    OpenHi(io::File& source, MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect);
     MoviePlaybackResult Pump(MoviePumpFlags pumpFlags, i32 count);
 
     i32 Advance(IDirectDrawSurface* target, i32 loops);

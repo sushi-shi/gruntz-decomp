@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -222,19 +223,25 @@ fail:
 }
 
 i32 CGameLevel::LoadFromFile(const char* path) {
-    CFile file;
+    io::File file;
 
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
 
     RecordBytes<WwdHeader> fileData;
-    fileData.m_bytes = new u8[file.GetLength()];
+    const u32 fileLength = file.size();
+    if (!file.good() || fileLength == 0) return 0;
+    fileData.m_bytes = new u8[fileLength];
     if (!fileData.m_bytes) {
         return 0;
     }
 
-    file.Read(fileData.m_bytes, file.GetLength());
+    if (!file.good() || fileLength == 0
+        || file.read(fileData.m_bytes, fileLength) != fileLength) {
+        delete[] fileData.m_bytes;
+        return 0;
+    }
     if (LoadWwd(fileData.m_rec) == 0) {
         delete[] fileData.m_bytes;
         return 0;
@@ -1353,13 +1360,13 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
         return 0;
     }
 
-    CFile stream;
+    io::File stream;
 
-    if (stream.Open(name, CFile::modeRead, NULL) == false) {
+    if (stream.open(name, io::ReadOnly) == false) {
         return 0;
     }
 
-    if (stream.Read(headerBuf, sizeof(WwdHeader)) != sizeof(WwdHeader)) {
+    if (stream.read(headerBuf, sizeof(WwdHeader)) != sizeof(WwdHeader)) {
         return 0;
     }
 
@@ -1372,12 +1379,12 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
 
 bool CGameLevel::ReadWwdHeaderName(const std::string& name, std::string& nameOut) {
     WwdHeader header;
-    CFile stream;
+    io::File stream;
 
-    if (name.empty() || !stream.Open(name.c_str(), CFile::modeRead, NULL)) {
+    if (name.empty() || !stream.open(name.c_str(), io::ReadOnly)) {
         return false;
     }
-    if (stream.Read(&header, sizeof(header)) != sizeof(header)) {
+    if (stream.read(&header, sizeof(header)) != sizeof(header)) {
         return false;
     }
     if (header.m_headerSize > sizeof(header)) {

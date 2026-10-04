@@ -1,5 +1,6 @@
 #ifndef SRC_IO_FILEMEM_H
 #define SRC_IO_FILEMEM_H
+#include <Io/File.h>
 
 #include <string>
 
@@ -56,6 +57,7 @@ public:
     }
 
     virtual void Reset()   {
+        m_file.finish();
         m_length = 0;
         m_offset = 0;
         m_option = 0;
@@ -69,7 +71,7 @@ public:
     virtual i32 Read(void* buf, i32 n)  ;
     virtual i32 Write(const void* buf, i32 n)  ;
 
-    CFile m_file;
+    io::File m_file;
     i32 m_length;
     i32 m_offset;
 };

@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -154,15 +155,21 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
 }
 
 i32 CDDrawShadeBlit::LoadFromFile(const std::string& name, ColorDepth fmt) {
-    CFile file;
-    if (!file.Open((name).c_str(), CFile::modeRead | CFile::typeBinary, NULL)) {
+    io::File file;
+    if (!file.open((name).c_str(), io::ReadOnly)) {
         return 0;
     }
     RecordBytes<PidHeader> fileData;
-    fileData.m_bytes = new u8[file.GetLength()];
-    file.Read(fileData.m_bytes, file.GetLength());
-    i32 r = Build(fileData.m_rec, file.GetLength(), fmt);
-    file.Close();
+    const u32 fileLength = file.size();
+    if (!file.good() || fileLength == 0) return 0;
+    fileData.m_bytes = new u8[fileLength];
+    if (!file.good() || fileLength == 0
+        || file.read(fileData.m_bytes, fileLength) != fileLength) {
+        delete[] fileData.m_bytes;
+        return 0;
+    }
+    i32 r = Build(fileData.m_rec, fileLength, fmt);
+    file.finish();
     delete[] fileData.m_bytes;
     return r;
 }
@@ -243,24 +250,23 @@ i32 CDDrawShadeBlit::WritePidFile(const std::string& path, PidWriteHeader header
         return 0;
     }
 
-    CFile file;
-    if (file.Open((path).c_str(), CFile::modeCreate | CFile::modeWrite | CFile::typeBinary, NULL) == false) {
+    io::File file;
+    if (file.open((path).c_str(), io::Replace) == false) {
         return 0;
     }
-    file.Write(&header, sizeof(header));
-    file.Write(m_rleData, m_rleLen);
+    file.write(&header, sizeof(header));
+    file.write(m_rleData, m_rleLen);
     if (HAS(static_cast<PidFlags>(header.m_flags), PID_EMBEDDED_PALETTE)) {
         if (m_palette == NULL) {
             return 0;
         }
         for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-            file.Write(&m_palette[i].peRed, sizeof(m_palette[i].peRed));
-            file.Write(&m_palette[i].peGreen, sizeof(m_palette[i].peGreen));
-            file.Write(&m_palette[i].peBlue, sizeof(m_palette[i].peBlue));
+            file.write(&m_palette[i].peRed, sizeof(m_palette[i].peRed));
+            file.write(&m_palette[i].peGreen, sizeof(m_palette[i].peGreen));
+            file.write(&m_palette[i].peBlue, sizeof(m_palette[i].peBlue));
         }
     }
-    file.Close();
-    return 1;
+    return file.finish();
 }
 
 i32 CDDrawShadeBlit::SavePid(const std::string& path, i32 offsetX, i32 offsetY) {

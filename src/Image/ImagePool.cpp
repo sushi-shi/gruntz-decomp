@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -402,17 +403,17 @@ i32 CDib::InitBmp(u8* buf, HDC dc, u32 ctrl) {
 }
 
 i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
-    CFile file;
+    io::File file;
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
 
-    if (!file.Open(name, CFile::modeRead, NULL)) {
+    if (!file.open(name, io::ReadOnly)) {
         return 0;
     }
-    if (file.Read(&fh, sizeof(fh)) == 0) {
+    if (file.read(&fh, sizeof(fh)) != sizeof(fh)) {
         return 0;
     }
-    if (file.Read(&ih, sizeof(ih)) == 0) {
+    if (file.read(&ih, sizeof(ih)) != sizeof(ih)) {
         return 0;
     }
 
@@ -423,10 +424,10 @@ i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
         return 0;
     }
 
-    file.Seek(fh.bfOffBits, CFile::begin);
+    file.seek(fh.bfOffBits, io::Start);
     u8* bytes = GetBytes();
     u32 size = (IDX(bitcount) / 8) * m_nPitch * height;
-    if (file.Read(bytes, size) != size) {
+    if (file.read(bytes, size) != size) {
         return 0;
     }
     return 1;
@@ -501,12 +502,13 @@ i32 CDib::InitPcx(u8* buf, HDC dc, u32 ctrl) {
 }
 
 i32 CDib::InitPcx(const char* name, HDC dc, u32 ctrl) {
-    CFile file;
+    io::File file;
 
-    if (!file.Open(name, CFile::modeRead, NULL)) {
+    if (!file.open(name, io::ReadOnly)) {
         return 0;
     }
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     if (len == 0) {
         return 0;
     }
@@ -514,7 +516,7 @@ i32 CDib::InitPcx(const char* name, HDC dc, u32 ctrl) {
     if (!buf) {
         return 0;
     }
-    file.Read(buf, len);
+    if (file.read(buf, len) != len) { delete[] buf; return 0; }
     i32 result = InitPcx(buf, dc, ctrl);
     delete[] buf;
     return result;
@@ -537,12 +539,13 @@ i32 CDib::InitRid(u8* buf, HDC dc, u32 ctrl) {
 }
 
 i32 CDib::InitRid(const char* name, HDC dc, u32 ctrl) {
-    CFile file;
+    io::File file;
 
-    if (!file.Open(name, CFile::modeRead, NULL)) {
+    if (!file.open(name, io::ReadOnly)) {
         return 0;
     }
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     if (len == 0) {
         return 0;
     }
@@ -550,7 +553,7 @@ i32 CDib::InitRid(const char* name, HDC dc, u32 ctrl) {
     if (!buf) {
         return 0;
     }
-    file.Read(buf, len);
+    if (file.read(buf, len) != len) { delete[] buf; return 0; }
     i32 result = InitRid(buf, dc, ctrl);
     delete[] buf;
     return result;
@@ -646,12 +649,13 @@ i32 CDib::InitPid(u8* buf, HDC dc, u32 ctrl) {
 }
 
 i32 CDib::InitPid(const char* name, HDC dc, u32 ctrl) {
-    CFile file;
+    io::File file;
 
-    if (!file.Open(name, CFile::modeRead, NULL)) {
+    if (!file.open(name, io::ReadOnly)) {
         return 0;
     }
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     if (len == 0) {
         return 0;
     }
@@ -659,7 +663,7 @@ i32 CDib::InitPid(const char* name, HDC dc, u32 ctrl) {
     if (!buf) {
         return 0;
     }
-    file.Read(buf, len);
+    if (file.read(buf, len) != len) { delete[] buf; return 0; }
     i32 result = InitPid(buf, dc, ctrl);
     delete[] buf;
     return result;
@@ -834,17 +838,17 @@ i32 CDib::Save8(const char* filename, CDibPal* paletteObj) {
         return 0;
     }
 
-    CFile file;
-    if (!file.Open(filename, CFile::modeCreate | CFile::modeWrite)) {
+    io::File file;
+    if (!file.open(filename, io::Replace)) {
         return 0;
     }
-    file.Write(&fileHdr.m_hdr, sizeof(fileHdr.m_hdr));
-    file.Write(&info, sizeof(info));
+    file.write(&fileHdr.m_hdr, sizeof(fileHdr.m_hdr));
+    file.write(&info, sizeof(info));
     for (i32 row = GetHeight() - 1; row >= 0; row--) {
         u32 index = GetIndex(row);
-        file.Write(&pixels[index], GetWidth());
+        file.write(&pixels[index], GetWidth());
     }
-    return 1;
+    return file.finish();
 }
 
 void CDib::FillRect(RECT* r, u32 color) {
@@ -989,30 +993,30 @@ void CDibPal::ClearSystemPalette() {
 }
 
 i32 CDibPal::InitPal(const char* path, u32 flags) {
-    CFile file;
+    io::File file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
-    if (file.GetLength() != PALETTE_RGB_BYTE_COUNT) {
+    if (file.size() != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
-    file.Read(rgb, PALETTE_RGB_BYTE_COUNT);
+    if (file.read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) return 0;
     return Init(rgb, flags);
 }
 
 i32 CDibPal::InitPcx(const char* path, u32 flags) {
-    CFile file;
+    io::File file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
     PALETTEENTRY rgbq[PALETTE_ENTRY_COUNT];
 
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
-    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
-    if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) == 0) {
+    file.seek(-PALETTE_RGB_BYTE_COUNT, io::End);
+    if (file.read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
 

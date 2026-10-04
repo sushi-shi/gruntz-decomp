@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -67,24 +68,28 @@ void Font::FreeMemory() {
 i32 Font::LoadFont(const std::string& szFileName) {
     FreeMemory();
 
-    CFile file;
-    if (!file.Open((szFileName).c_str(), CFile::modeRead, NULL)) {
+    io::File file;
+    if (!file.open((szFileName).c_str(), io::ReadOnly)) {
         return 0;
     }
 
-    CArchive ar(&file, CArchive::load, 0x1000, NULL);
-
-    ar >> m_count;
-    AllocateMemory(m_count);
+    i32 count;
+    if (file.read(&count, sizeof(count)) != sizeof(count) || count < 1 || count > 256) return 0;
+    AllocateMemory(count);
 
     for (i32 i = 0; i < m_count; i++) {
-        ar.Read(&m_glyphs[i], sizeof(CSize));
+        if (file.read(&m_glyphs[i], sizeof(CSize)) != sizeof(CSize)
+            || m_glyphs[i].cx < 0 || m_glyphs[i].cy < 0
+            || (m_glyphs[i].cy && m_glyphs[i].cx > INT_MAX / m_glyphs[i].cy)
+            || static_cast<u32>(m_glyphs[i].cx * m_glyphs[i].cy) > file.size() || !file.good()) {
+            FreeMemory(); return 0;
+        }
         m_surfaces[i] = new u8[m_glyphs[i].cx * m_glyphs[i].cy];
-        ar.Read(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
+        const u32 bytes = m_glyphs[i].cx * m_glyphs[i].cy;
+        if (file.read(m_surfaces[i], bytes) != bytes) { FreeMemory(); return 0; }
     }
 
-    ar.Close();
-    file.Close();
+    file.finish();
 
     i32 maxHeight = 0;
     for (i32 j = 0; j < m_count; j++) {
@@ -96,25 +101,20 @@ i32 Font::LoadFont(const std::string& szFileName) {
 }
 
 i32 Font::SaveFont(const std::string& szFileName) {
-    CFile file;
-    if (!file.Open((szFileName).c_str(), CFile::modeCreate | CFile::modeWrite, NULL)) {
+    io::File file;
+    if (!file.open((szFileName).c_str(), io::Replace)) {
         return 0;
     }
 
-    CArchive ar(&file, CArchive::store, 0x1000, NULL);
-
-    ar << m_count;
+    file.write(&m_count, sizeof(m_count));
 
     for (i32 i = 0; i < m_count; i++) {
         CSize g = m_glyphs[i];
-        ar.Write(&g, sizeof(CSize));
-        ar.Write(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
+        file.write(&g, sizeof(CSize));
+        file.write(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
     }
 
-    ar.Close();
-    file.Close();
-
-    return 1;
+    return file.finish();
 }
 
 u8** Font::GetSurface(u8 c) {
