@@ -116,8 +116,8 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_wpIndex = 0;
 
     CLogicRecord* record = m_object->GetLogicRecord();
-    if (record->m_speed == 0) {
-        record->m_speed = g_buteMgr.GetDword("Hazardz", "PathHazardTimePerTile", 1000);
+    if (record->GetSpeed() == 0) {
+        record->SetSpeed(g_buteMgr.GetDword("Hazardz", "PathHazardTimePerTile", 1000));
     }
 
     if (BeginLeg() == 0) {
@@ -350,7 +350,7 @@ i32 CPathHazard::BeginLeg() {
     double ux = dx / len;
     double uy = dy / len;
 
-    m_speed = 1.0 / (static_cast<double>(obj->GetLogicRecord()->m_speed) * 0.03125);
+    m_speed = 1.0 / (static_cast<double>(obj->GetLogicRecord()->GetSpeed()) * 0.03125);
     m_posX = static_cast<double>(obj->m_screenX);
     m_posY = static_cast<double>(obj->m_screenY);
     m_unitX = ux;

@@ -427,8 +427,9 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
             );
             northBall->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
             CLogicRecord* northBallLogic = northBall->GetLogicRecord();
-            northBallLogic->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
+            northBallLogic->SetSpeed(
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
+            );
             northBall->m_smarts = 0;
             northBall->m_points =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
@@ -443,8 +444,9 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
             );
             eastBall->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
             CLogicRecord* eastBallLogic = eastBall->GetLogicRecord();
-            eastBallLogic->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
+            eastBallLogic->SetSpeed(
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
+            );
             eastBall->m_smarts = 0;
             eastBall->m_points =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
@@ -459,8 +461,9 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
             );
             southBall->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
             CLogicRecord* southBallLogic = southBall->GetLogicRecord();
-            southBallLogic->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
+            southBallLogic->SetSpeed(
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
+            );
             southBall->m_smarts = 0;
             southBall->m_points =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
@@ -475,8 +478,9 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
             );
             westBall->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
             CLogicRecord* westBallLogic = westBall->GetLogicRecord();
-            westBallLogic->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
+            westBallLogic->SetSpeed(
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
+            );
             westBall->m_smarts = 0;
             westBall->m_points =
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));

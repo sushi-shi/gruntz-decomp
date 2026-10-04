@@ -84,6 +84,13 @@ struct CLogicRecord : public CWapObj {
         return m_userLogic;
     }
 
+    i32 GetSpeed() const {
+        return m_speed;
+    }
+    void SetSpeed(i32 speed) {
+        m_speed = speed;
+    }
+
     i32 EventCode() const {
         return m_eventCode;
     }

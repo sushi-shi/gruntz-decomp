@@ -331,8 +331,8 @@ i32 CKitchenSlime::LoadSprites() {
     m_posY = static_cast<double>(Level()->m_screenY) + m_posY;
 
     u32 time;
-    if (Level()->GetLogicRecord()->m_speed != 0) {
-        time = Level()->GetLogicRecord()->m_speed;
+    if (Level()->GetLogicRecord()->GetSpeed() != 0) {
+        time = Level()->GetLogicRecord()->GetSpeed();
     } else {
         time = g_buteMgr.GetDword("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
