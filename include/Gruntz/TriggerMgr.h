@@ -322,7 +322,7 @@ public:
 
     ClockInterval m_finishDelayTiming;
 
-    CWarlord* m_pendingFx;
+    CWarlord* m_localWarlord;
     b32 m_countdownActive;
     i32 m_pendingFxKind;
 

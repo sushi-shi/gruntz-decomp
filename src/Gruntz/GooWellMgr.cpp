@@ -75,7 +75,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     if (count <= 1) {
         CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
         if (m_finishState == FINISH_STATE_DEFEAT && play->m_statusBar->m_levelOverlayActive == false
-            && play->m_statusBar->m_quitConfirmationActive == false && m_pendingFx == NULL) {
+            && play->m_statusBar->m_quitConfirmationActive == false && m_localWarlord == NULL) {
             if (m_finishDelayTiming.Expired()) {
                 play->OpenLevelOverlay(false);
             }
@@ -87,7 +87,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     }
 
     if (m_finishState == FINISH_STATE_DEFEAT) {
-        if (m_pendingFx != NULL) {
+        if (m_localWarlord != NULL) {
             return 0;
         }
         if (m_finishDelayTiming.Expired()) {
@@ -106,7 +106,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (!m_finishDelayTiming.Expired()) {
             goto done;
         }
-        if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_pendingFx != NULL) {
+        if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_localWarlord != NULL) {
             return 0;
         }
         (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);

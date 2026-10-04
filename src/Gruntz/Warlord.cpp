@@ -389,7 +389,7 @@ i32 CWarlord::FinishJoyAnimation() {
     if (sub->IsComplete()) {
         CTriggerMgr* h = g_gameReg->GetTriggerMgr();
         if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->GetSmarts() == g_curPlayer) {
-            h->m_pendingFx = NULL;
+            h->m_localWarlord = NULL;
             ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_finishDelayTiming;
             tm->Start(0x3e8);
         }
@@ -426,7 +426,7 @@ i32 CWarlord::BuildFortSplashParticles() {
 
         CTriggerMgr* h = g_gameReg->GetTriggerMgr();
         if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->GetSmarts() == g_curPlayer) {
-            h->m_pendingFx = NULL;
+            h->m_localWarlord = NULL;
             ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_finishDelayTiming;
             tm->Start(0x3e8);
         }
@@ -467,7 +467,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 m_cooldownTimer.m_interval = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
-                if (m_notifyTimer.Expired() && g_gameReg->GetTriggerMgr()->m_pendingFx == this) {
+                if (m_notifyTimer.Expired() && g_gameReg->GetTriggerMgr()->m_localWarlord == this) {
                     g_gameReg->VoiceMgr()->PlayVoice(m_object->GetObjectId(), 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)

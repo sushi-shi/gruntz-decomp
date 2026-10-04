@@ -950,7 +950,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
         }
     }
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-        CWarlord* fx = m_pendingFx;
+        CWarlord* fx = m_localWarlord;
         if (fx != NULL) {
             fx->ResolveDeathAnimation();
         }
@@ -1013,7 +1013,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
         m_gruntzExitedByPlayer[playerIndex] += 1;
         if (cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
             if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                CWarlord* fx = m_pendingFx;
+                CWarlord* fx = m_localWarlord;
                 if (fx != NULL) {
                     fx->ResolveJoyAnimation();
                 }
@@ -1259,7 +1259,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         objId = cameraSprite->GetObjectId();
     }
     ar->Write(&objId, sizeof(objId));
-    CWarlord* ov = m_pendingFx;
+    CWarlord* ov = m_localWarlord;
     objId = 0;
     if (ov != NULL && ov->m_object != NULL) {
         objId = ov->m_object->GetObjectId();
@@ -1404,12 +1404,12 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
                 return 0;
             }
             CWarlord* obj = static_cast<CWarlord*>(looked->GetLogicRecord()->UserLogic());
-            m_pendingFx = obj;
+            m_localWarlord = obj;
             if (obj == NULL) {
                 return 0;
             }
         } else {
-            m_pendingFx = NULL;
+            m_localWarlord = NULL;
         }
     }
 
@@ -2011,8 +2011,8 @@ void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
             if (m_finishState == FINISH_STATE_ACTIVE) {
                 m_finishState = FINISH_STATE_DEFEAT;
-                if (m_pendingFx != NULL) {
-                    m_pendingFx->ResolveDeathAnimation();
+                if (m_localWarlord != NULL) {
+                    m_localWarlord->ResolveDeathAnimation();
                 }
             }
             m_finishDelayTiming.Start(3000);
