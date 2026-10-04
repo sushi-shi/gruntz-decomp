@@ -59,7 +59,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     CBattlezMapConfig* cfgB = NULL;
     i32 cell = unit->ArrivalCell().m_x;
     if (cell >= 0 && cell < 4) {
-        recA = &m_ctx->m_players[cell];
+        recA = &m_ctx->GetPlayer(cell);
         cfgB = recA->GetBattlezConfig();
     }
     if (unit->CoordsEmpty()) {
@@ -72,7 +72,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
                 r++;
             }
             i32 band = r % 4;
-            CBattlezMapConfig* b = m_ctx->m_players[band].GetBattlezConfig();
+            CBattlezMapConfig* b = m_ctx->GetPlayer(band).GetBattlezConfig();
             if (b != NULL) {
                 i32 cnt = b->GetAttackWaypointCount();
                 Coord goal = b->GetBaseTile();
@@ -88,7 +88,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             unit->ResetDwell();
             return 1;
         }
-        CBattlezMapConfig* recB = m_ctx->m_players[cell].GetBattlezConfig();
+        CBattlezMapConfig* recB = m_ctx->GetPlayer(cell).GetBattlezConfig();
         if (recB == NULL) {
             return 1;
         }

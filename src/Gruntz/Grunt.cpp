@@ -1121,7 +1121,7 @@ i32 CGrunt::StepGruntMovement() {
         }
     }
     if (m_aiType == AI_BATTLEZ_PATH) {
-        CBattlezMapConfig* slot = g_gameReg->m_players[m_playerIndex].GetBattlezConfig();
+        CBattlezMapConfig* slot = g_gameReg->GetPlayer(m_playerIndex).GetBattlezConfig();
         if (slot != NULL && slot->ValidateUnitPath(this) == 0) {
             SetEntrancePos(1, 1);
             return 0;

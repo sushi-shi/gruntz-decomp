@@ -711,7 +711,7 @@ i32 CGrunt::UpdateIdleAnimation() {
         CGruntzMgr* g = g_gameReg;
         GameModeId mode = g->GetGameMode();
         if (mode != GAMEMODE_QUESTZ) {
-            GruntzPlayer* slot = &g->m_players[m_playerIndex];
+            GruntzPlayer* slot = &g->GetPlayer(m_playerIndex);
             if (slot != NULL && slot->IsHumanControlled() != false) {
                 if (m_guarding == false && m_guardCommandPending == false
                     && mode == GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex

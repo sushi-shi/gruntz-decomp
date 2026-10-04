@@ -1057,7 +1057,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     if (gaugePoints == 0) {
         gaugePoints = 0x19;
     }
-    if (puddle->Place(sprite->m_smarts, sprite->m_score, animatePlacement, gaugePoints) == 0) {
+    if (puddle->Place(sprite->GetSmarts(), sprite->m_score, animatePlacement, gaugePoints) == 0) {
         puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;
@@ -1805,7 +1805,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         }
 
         i32 playerIndex = g->GetPlayerIndex();
-        GruntzPlayer* player = &g_gameReg->m_players[playerIndex];
+        GruntzPlayer* player = &g_gameReg->GetPlayer(playerIndex);
         i32 aiType = 0;
         b32 ok = false;
         i32 radius = 0;

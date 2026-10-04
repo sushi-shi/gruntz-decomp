@@ -215,7 +215,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
 
     for (i32 i = 0; i < 4; i++) {
         m_playerLatencyMs[i] = 0;
-        PlayerLatency* lat = &g_gameReg->m_players[i].m_latency;
+        PlayerLatency* lat = &g_gameReg->GetPlayer(i).m_latency;
         lat->Clear();
     }
 
@@ -468,7 +468,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
-        GruntzPlayer* e = &Mgr()->m_players[i];
+        GruntzPlayer* e = &Mgr()->GetPlayer(i);
         if (e == NULL) {
             return 0;
         }
@@ -2037,7 +2037,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
     packet.m_messageId = STAT_PLAYER_TABLE;
 
     for (i32 i = 0; i < 4; i++) {
-        GruntzPlayer* player = &NetGameMgr()->m_players[i];
+        GruntzPlayer* player = &NetGameMgr()->GetPlayer(i);
         if (player != NULL) {
             i32 v = player->IsActive();
             packet.m_rows[i].m_active = static_cast<u8>(v);
@@ -2078,7 +2078,7 @@ i32 CMulti::ApplyPlayerTable(CNetPlayerTablePacket* packet) {
     }
 
     for (i32 i = 0; i < 4; i++) {
-        GruntzPlayer* player = &NetGameMgr()->m_players[i];
+        GruntzPlayer* player = &NetGameMgr()->GetPlayer(i);
         if (player != NULL) {
             player->m_active = packet->m_rows[i].m_active;
             player->m_color = static_cast<ColorTint>(packet->m_rows[i].m_color);
@@ -2125,7 +2125,7 @@ i32 CMulti::RegisterPlayer(
 
     GruntzPlayer* slot = NULL;
     if (preferredPlayerIndex >= 0 && preferredPlayerIndex <= 4) {
-        slot = &NetGameMgr()->m_players[preferredPlayerIndex];
+        slot = &NetGameMgr()->GetPlayer(preferredPlayerIndex);
         if (slot != NULL && slot->IsActive() != false) {
             slot = NULL;
         }
@@ -2176,7 +2176,7 @@ i32 CMulti::RegisterPlayerFromPacket(CNetPlayerRegistrationPacket* packet) {
 
 RVA(0x000bac90, 0x46)
 i32 CMulti::DeactivatePlayer(i32 slotIndex) {
-    GruntzPlayer* player = &NetGameMgr()->m_players[slotIndex];
+    GruntzPlayer* player = &NetGameMgr()->GetPlayer(slotIndex);
     if (player == NULL) {
         return 0;
     }
@@ -2294,7 +2294,7 @@ i32 CMulti::ApplyPlayerUpdate(CNetPlayerUpdatePacket* packet) {
     if (playerIndex < 0 || playerIndex >= 4) {
         return 0;
     }
-    GruntzPlayer* player = &NetGameMgr()->m_players[playerIndex];
+    GruntzPlayer* player = &NetGameMgr()->GetPlayer(playerIndex);
     if (player == NULL) {
         return 0;
     }
@@ -2437,7 +2437,7 @@ i32 CMulti::DropLobbyPlayer(i32 slotIndex) {
         return 0;
     }
 
-    GruntzPlayer* slot = &NetGameMgr()->m_players[slotIndex];
+    GruntzPlayer* slot = &NetGameMgr()->GetPlayer(slotIndex);
     if (slot == NULL) {
         return 0;
     }
@@ -2659,7 +2659,7 @@ i32 CMulti::Poll(i32 token) {
         i32 allAgree = 1;
 
         for (i32 i = 0; i < 4; i++) {
-            GruntzPlayer* player = &g_gameReg->m_players[i];
+            GruntzPlayer* player = &g_gameReg->GetPlayer(i);
             if (player->m_networkPlayerId != m_localPlayerId && player->IsActive() != false
                 && player->IsHumanControlled() != false) {
                 if (m_levelChecksumReceived[i] == 0) {
@@ -2716,7 +2716,7 @@ i32 CMulti::CreateSession() {
     m_processedCommandTick = b;
 
     for (i32 i = 0; i < 4; i++) {
-        GruntzPlayer* player = &NetGameMgr()->m_players[i];
+        GruntzPlayer* player = &NetGameMgr()->GetPlayer(i);
         NetSlotState state = NETSLOT_INACTIVE;
         if (player->IsActive() != false && player->IsHumanControlled() != false) {
 
@@ -3166,8 +3166,8 @@ u32 CMulti::GetMaxAckLatency() {
 
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
-            if (mgr->m_players[i].IsHumanControlled() && mgr->m_players[i].IsActive()) {
-                max = max(mgr->m_players[i].m_latency.m_avg, max);
+            if (mgr->GetPlayer(i).IsHumanControlled() && mgr->GetPlayer(i).IsActive()) {
+                max = max(mgr->GetPlayer(i).m_latency.m_avg, max);
             }
         }
     }

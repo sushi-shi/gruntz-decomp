@@ -1804,19 +1804,19 @@ void CGrunt::StepBehavior(char*) {
             flags = bd->CellFlagsAt(tx, ty);
         }
         if (flags & 0x100000) {
-            reg2->m_players[0]
+            reg2->GetPlayer(0)
                 .GetBattlezConfig()
                 ->ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x200000) {
-            reg2->m_players[1]
+            reg2->GetPlayer(1)
                 .GetBattlezConfig()
                 ->ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x400000) {
-            reg2->m_players[2]
+            reg2->GetPlayer(2)
                 .GetBattlezConfig()
                 ->ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x800000) {
-            reg2->m_players[3]
+            reg2->GetPlayer(3)
                 .GetBattlezConfig()
                 ->ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         }

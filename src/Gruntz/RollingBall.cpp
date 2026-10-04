@@ -89,7 +89,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
     }
     CGruntzMgr* reg = g_gameReg;
     if (false != reg->GetEasyMode() && reg->GetGameMode() == GAMEMODE_QUESTZ
-        && m_object->m_smarts != 1) {
+        && m_object->GetSmarts() != 1) {
         time += 1000;
     }
     m_explodeTiming.Start(m_object->m_points);

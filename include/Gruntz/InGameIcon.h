@@ -43,7 +43,7 @@ public:
     CInGameIcon(CGameObject* obj);
 
     PickupType GetPickupType() const {
-        return static_cast<PickupType>(m_object->m_smarts);
+        return static_cast<PickupType>(m_object->GetSmarts());
     }
 
     PickupType GetToyType() const {

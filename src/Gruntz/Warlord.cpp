@@ -93,8 +93,8 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     o->SetSortKey(SORTKEY_WARLORD);
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
-    WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
-    i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].GetColor());
+    WarlordOwner owner = static_cast<WarlordOwner>(m_object->GetSmarts());
+    i32 cfg = IDX(g_gameReg->GetPlayer(IDX(owner)).GetColor());
     if (cfg < 0 || cfg >= TINT_COUNT) {
         cfg = 0;
     }
@@ -282,7 +282,7 @@ i32 CWarlord::SerializeDispatch(
         case SERIAL_POSTLOAD: {
 
             CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(
-                IDX(g_gameReg->m_players[m_object->m_smarts].GetColor()),
+                IDX(g_gameReg->GetPlayer(m_object->GetSmarts()).GetColor()),
                 0
             );
             if (sel == NULL) {
@@ -337,7 +337,7 @@ i32 CWarlord::UpdateMovingState() {
     if (reg->GetGameMode() != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
         i32 dist = reg->GetTriggerMgr()
-                       ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
+                       ->NearestOtherPlayerUnitDistSq(o->GetSmarts(), o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
@@ -363,7 +363,7 @@ i32 CWarlord::UpdatePanicState() {
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
         i32 dist = g_gameReg->GetTriggerMgr()
-                       ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
+                       ->NearestOtherPlayerUnitDistSq(o->GetSmarts(), o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             ResolveJoyAnimation();
             return 0;
@@ -388,7 +388,7 @@ i32 CWarlord::FinishJoyAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (sub->IsComplete()) {
         CTriggerMgr* h = g_gameReg->GetTriggerMgr();
-        if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
+        if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->GetSmarts() == g_curPlayer) {
             h->m_pendingFx = NULL;
             ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_cueTimer;
             tm->Start(0x3e8);
@@ -425,13 +425,13 @@ i32 CWarlord::BuildFortSplashParticles() {
         }
 
         CTriggerMgr* h = g_gameReg->GetTriggerMgr();
-        if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
+        if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->GetSmarts() == g_curPlayer) {
             h->m_pendingFx = NULL;
             ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_cueTimer;
             tm->Start(0x3e8);
         }
 
-        GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
+        GruntzPlayer* slot = &g_gameReg->GetPlayer(m_object->GetSmarts());
         if (slot != NULL) {
             slot->m_warlordObjectId = 0;
         }

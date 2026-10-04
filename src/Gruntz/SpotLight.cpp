@@ -55,10 +55,10 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     double cy = static_cast<double>(centerY);
     m_center.m_y = cy;
     i32 nx;
-    if (m_object->m_smarts == 0) {
+    if (m_object->GetSmarts() == 0) {
         nx = ax - TILE_SIZE_PX;
     } else {
-        nx = ax - m_object->m_smarts * TILE_SIZE_PX;
+        nx = ax - m_object->GetSmarts() * TILE_SIZE_PX;
     }
     SET_SCREEN_POS(m_object, nx, centerY);
     double px = static_cast<double>(nx);

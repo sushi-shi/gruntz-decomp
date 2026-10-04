@@ -854,7 +854,7 @@ i32 CTimeBomb::UpdateCountdown() {
             g_gameReg->GetTriggerMgr()->LoadExplosionSprites(
                 m_object->m_screenX,
                 m_object->m_screenY,
-                m_object->m_smarts,
+                m_object->GetSmarts(),
                 1
             );
         }

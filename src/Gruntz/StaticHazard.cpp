@@ -206,7 +206,7 @@ i32 CStaticHazard::UpdateActiveState() {
             g_gameReg->GetTriggerMgr()->StartUnitDeath(
                 playerIndex,
                 unitIndex,
-                static_cast<GruntDeathType>(m_object->m_smarts),
+                static_cast<GruntDeathType>(m_object->GetSmarts()),
                 -1
             );
         }

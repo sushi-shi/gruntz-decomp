@@ -161,16 +161,14 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
 
     i32 result = 0;
 
-    char* cursor = block + source->m_planesOffset;
+    // Byte-forced view of packed WWD storage.
+    const WwdPlaneHeader* planeData =
+        reinterpret_cast<const WwdPlaneHeader*>(block + source->m_planesOffset);
 
-    for (u32 i = 0; i < source->m_numPlanes; ++i) {
-        // Byte-forced view of packed WWD storage.
-
-        if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_viewportRect)
-            == NULL) {
+    for (u32 i = 0; i < source->m_numPlanes; ++i, ++planeData) {
+        if (ReadPlane(planeData, block, &m_viewportRect) == NULL) {
             goto fail;
         }
-        cursor += 0xa0;
     }
 
     if (source->m_tileDescriptionsOffset > 0) {
@@ -976,7 +974,6 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     return destY;
 }
 
-// @early-stop
 RVA(0x0015ede0, 0x2a7)
 i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 lo = t->m_extent.left + destX;

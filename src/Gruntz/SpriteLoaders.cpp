@@ -93,11 +93,11 @@ i32 CTimer::Tick(i32 elapsedMs) {
         ls->m_winLoseBanner = true;
         ls->m_cueTiming.Start(0x1f4);
         g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(g_curPlayer);
-        GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
+        GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
             slot->m_clearedRound = true;
         }
-        i32 key = g_gameReg->m_players[0].m_warlordObjectId;
+        i32 key = g_gameReg->GetPlayer(0).m_warlordObjectId;
         if (key != 0) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
@@ -116,7 +116,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
     }
 
     if (static_cast<u32>(v) < 0xea60) {
-        i32 key = g_gameReg->m_players[0].m_warlordObjectId;
+        i32 key = g_gameReg->GetPlayer(0).m_warlordObjectId;
         if (key != 0) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
