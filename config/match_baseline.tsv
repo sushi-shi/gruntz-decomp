@@ -568,8 +568,8 @@ battlezmapconfig	?Update@CBattlezAiController@@QAEHXZ	95.3292	95.3292	31	d2bbd89
 battlezmapconfig	?UpdateUnits@CBattlezAiController@@QAEHXZ	84.9887	84.9887	57	00f7e4bea987	0x267c0	88.2172	
 battlezmapconfig	?ValidateUnitPath@CBattlezAiController@@QAEHPAVCGrunt@@@Z	91.4421	91.4421	49	35ff907e8ab0	0x29b40	92.1414	
 battlezmapconfig	?get@_zdvec@@IAEPAXH@Z	100.0000	100.0000	1	cpp:98a8502d644f	0x312a0	100.0000	
-battlezrepath	?ProbeUnoccupiedAt@CBattlezAiController@@QAEHHH@Z	100.0000	100.0000	6	e165bfccb212	0x35210	100.0000	
-battlezrepath	?RepathToFreeCell@CBattlezAiController@@QAEHPAVCGrunt@@@Z	89.5618	89.5618	11	4ab717be99a8	0x350d0	89.6742	
+battlezrepath	?HasAvailableGooPuddleAt@CBattlezAiController@@QAEHHH@Z	100.0000	100.0000	6	e165bfccb212	0x35210	100.0000	
+battlezrepath	?RouteToNearestGooPuddle@CBattlezAiController@@QAEHPAVCGrunt@@@Z	89.5618	89.5618	11	4ab717be99a8	0x350d0	89.6742	
 battlezreserveplace	?ForcePlaceFromReserve@CBattlezAiController@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	6	4aab781e5d77	0x35550	100.0000	
 battlezretarget	?RetargetIdleUnit@CBattlezAiController@@QAEHPAVCGrunt@@@Z	90.8018	90.8018	34	9ffa59e0edcb	0x358a0	91.3524	
 battlezspawncheck	?CheckQueuedSpawnTile@CBattlezAiController@@QAEHPAVCGrunt@@@Z	82.8555	82.8555	21	2639fc67e808	0x34c70	89.3555	

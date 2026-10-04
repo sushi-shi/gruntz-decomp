@@ -115,7 +115,7 @@ CBattlezAiController::CBattlezAiController() {
     m_repickLastFire = 0;
     m_repickTimer = 0;
     m_spawnTimer = 0;
-    m_repathBudget = 0xbb8;
+    m_gooPuddleSearchDelay = 0xbb8;
     m_nearbyRouteSearchDelay = 0xbb8;
     m_reserved13c = 0;
     m_roundRobinTick = 0;
@@ -958,7 +958,7 @@ i32 CBattlezAiController::UpdateUnits() {
                     break;
                 }
                 case BZTASK_CARRY_GOOBER: {
-                    RepathToFreeCell(unit);
+                    RouteToNearestGooPuddle(unit);
                     break;
                 }
                 case BZTASK_CHECK_QUEUED_SPAWN: {
@@ -1775,7 +1775,7 @@ i32 CBattlezAiController::Serialize(CFileMemBase* ar) {
     ar->Write(&m_idleRerouteDelay, sizeof(m_idleRerouteDelay));
     ar->Write(&m_moveBudget, sizeof(m_moveBudget));
     ar->Write(&m_assignedTargetMaxDistance, sizeof(m_assignedTargetMaxDistance));
-    ar->Write(&m_repathBudget, sizeof(m_repathBudget));
+    ar->Write(&m_gooPuddleSearchDelay, sizeof(m_gooPuddleSearchDelay));
     ar->Write(&m_inactiveTargetRerouteDelay, sizeof(m_inactiveTargetRerouteDelay));
     ar->Write(&m_nearbyRouteSearchDelay, sizeof(m_nearbyRouteSearchDelay));
     ar->Write(&m_baseTile, sizeof(m_baseTile));
@@ -1864,7 +1864,7 @@ i32 CBattlezAiController::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_idleRerouteDelay, sizeof(m_idleRerouteDelay));
     ar->Read(&m_moveBudget, sizeof(m_moveBudget));
     ar->Read(&m_assignedTargetMaxDistance, sizeof(m_assignedTargetMaxDistance));
-    ar->Read(&m_repathBudget, sizeof(m_repathBudget));
+    ar->Read(&m_gooPuddleSearchDelay, sizeof(m_gooPuddleSearchDelay));
     ar->Read(&m_inactiveTargetRerouteDelay, sizeof(m_inactiveTargetRerouteDelay));
     ar->Read(&m_nearbyRouteSearchDelay, sizeof(m_nearbyRouteSearchDelay));
     ar->Read(&m_baseTile, sizeof(m_baseTile));

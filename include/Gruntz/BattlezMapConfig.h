@@ -40,8 +40,8 @@ public:
     i32 Deserialize(CFileMemBase*);
     i32 ClaimCellFromRow(i32, i32, i32, i32);
     i32 TrySeedSpawnAt(i32, i32);
-    i32 RepathToFreeCell(CGrunt*);
-    i32 ProbeUnoccupiedAt(i32, i32);
+    i32 RouteToNearestGooPuddle(CGrunt* unit);
+    i32 HasAvailableGooPuddleAt(i32 tileX, i32 tileY);
     i32 ForcePlaceFromReserve(CGrunt*);
     Coord* PickAttackWaypoint(Coord* out, CGrunt* unit, i32 targetPlayerIndex);
 
@@ -149,7 +149,7 @@ public:
     i32 m_idleRerouteDelay;
     i32 m_moveBudget;
     i32 m_assignedTargetMaxDistance;
-    i32 m_repathBudget;
+    i32 m_gooPuddleSearchDelay;
     i32 m_inactiveTargetRerouteDelay;
     i32 m_nearbyRouteSearchDelay;
     Coord m_baseTile;
