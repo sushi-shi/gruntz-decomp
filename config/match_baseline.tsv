@@ -777,10 +777,10 @@ cimage	$anon_data_37e9b0b2878e09756278cc38f1850ba17f0f72c4d933c89f88822e10f16d56
 cimage	?BlitFlipH@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	99.2786	99.2786	11	2c8fb4545c83	0x153d90	100.0000	
 cimage	?BlitFlipV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	98.6087	98.6087	11	c5d3ee2dfb07	0x153b20	100.0000	
 cimage	?BlitNorm@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	99.8543	10	2c8f4ab01cd4	0x1538c0	100.0000	
-cimage	?BlitShadeFlipH@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	99.4067	99.4067	10	1a95c60ed983	0x154750	100.0000	
-cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	98.5070	98.5070	10	c1313dbf9523	0x153ff0	100.0000	
-cimage	?BlitShadeFlipV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	99.3110	99.2632	10	c3d5a1051081	0x1544d0	100.0000	
-cimage	?BlitShadeNorm@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	100.0000	99.8571	10	f10ff308e3c1	0x154270	100.0000	
+cimage	?BlitShadeFlipH@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	99.4067	99.4067	11	9c1a563959bc	0x154750	100.0000	
+cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	98.5070	98.5070	11	28cf3bb8f1c2	0x153ff0	100.0000	
+cimage	?BlitShadeFlipV@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	99.2632	99.2632	11	ac1ee1be87b4	0x1544d0	100.0000	
+cimage	?BlitShadeNorm@CImage@@QAEXPAVCRenderState@@PAVCRenderBuffer@@@Z	99.8571	99.8571	11	7f886e1ad221	0x154270	100.0000	
 cimage	?BuildShadeBlitter@CImage@@QAEHPAUPidHeader@@I@Z	100.0000	100.0000	9	e92fbd814aad	0x153180	100.0000	
 cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	1	ef4f2298fab7	0x1532b0	100.0000	
 cimage	?Create@CImage@@UAEHPADH@Z	100.0000	100.0000	8	fa9d0c444116	0x152e90	100.0000	
