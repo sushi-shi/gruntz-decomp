@@ -146,7 +146,7 @@ i32 CRollingBall::Update() {
         CWwdSpriteObject* lg = m_object;
         i32 sy = lg->m_screenY;
         i32 sx = lg->m_screenX;
-        if (::PtInRect(&g_gameReg->m_viewBounds, sx, sy)) {
+        if (::PtInRect(g_gameReg->GetViewBounds(), sx, sy)) {
             g_gameReg->GetTriggerMgr()->m_rollingballWanted = true;
         }
         CWwdSpriteObject* lg2 = m_object;
@@ -238,7 +238,7 @@ i32 CRollingBall::Update() {
                             CWwdSpriteObject* o = m_object;
                             i32 py = o->m_screenY;
                             i32 px = o->m_screenX;
-                            if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
+                            if (::PtInRect(g_gameReg->GetViewBounds(), px, py)) {
                                 CreateParticlez(
                                     g_gameReg->World()->ChildGroup(),
                                     px,
@@ -353,7 +353,7 @@ i32 CRollingBall::Update() {
                     CWwdSpriteObject* o = m_object;
                     i32 py = o->m_screenY;
                     i32 px = o->m_screenX;
-                    if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
+                    if (::PtInRect(g_gameReg->GetViewBounds(), px, py)) {
                         CreateParticlez(
                             g_gameReg->World()->ChildGroup(),
                             px,

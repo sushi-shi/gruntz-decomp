@@ -210,7 +210,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
         {
             i32 y = m_object->m_screenY;
             i32 x = m_object->m_screenX;
-            if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
+            if (::PtInRect(g_gameReg->GetViewBounds(), x, y)) {
                 onScreen = 1;
             } else {
 

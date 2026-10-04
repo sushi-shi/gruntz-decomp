@@ -1193,7 +1193,7 @@ i32 CGrunt::ApplyCombatHitEffects(
     i32 vx = this->m_object->m_screenX;
     i32 vy = this->m_object->m_screenY;
     CGruntzMgr* reg = g_gameReg;
-    if (::PtInRect(&reg->m_viewBounds, vx, vy)) {
+    if (::PtInRect(reg->GetViewBounds(), vx, vy)) {
         SelectCombatHitCue(reg, cue, attackKind, struckPose, attackerPowerupType);
 
         if (cue != NULL) {
@@ -2253,7 +2253,7 @@ void CGrunt::FinalizeStep(char* name) {
             CGruntzMgr* g = g_gameReg;
             i32 y = m_object->m_screenY;
             i32 x = m_object->m_screenX;
-            if (!::PtInRect(&g->m_viewBounds, x, y)) {
+            if (!::PtInRect(g->GetViewBounds(), x, y)) {
                 StopPowerupLoopSound();
             }
         }
