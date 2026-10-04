@@ -200,6 +200,9 @@ public:
     i32 GetUnitIndex() const {
         return m_unitIndex;
     }
+    i32 GetStamina() const {
+        return m_stamina;
+    }
     i32 GetHealth() const {
         return m_health;
     }

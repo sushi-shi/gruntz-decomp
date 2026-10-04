@@ -1687,7 +1687,7 @@ DATA(0x001e9a68)
 const double s_fpZero = 0.0;
 
 static inline void ExpireBattlezCombatState(CGrunt* grunt) {
-    if (grunt->m_inCombat != false && grunt->m_stamina >= STAMINA_FULL) {
+    if (grunt->m_inCombat != false && grunt->GetStamina() >= STAMINA_FULL) {
         bool eq;
         {
             eq = grunt->IsAnimationAct("E");

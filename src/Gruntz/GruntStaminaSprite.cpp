@@ -24,5 +24,5 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
 
 RVA(0x0007fbb0, 0xd)
 i32 CGruntStaminaSprite::GetDisplayedValue(CGrunt* grunt) {
-    return grunt->m_stamina;
+    return grunt->GetStamina();
 }
