@@ -2,6 +2,7 @@
 #define SRC_GRUNTZ_CPLAY_H
 
 #include <vector>
+#include <Runtime/LevelLoading.h>
 
 #include <string>
 #include <Gruntz/GlyphStringDraw.h>
@@ -53,7 +54,7 @@ class CDDrawWorker;
 
 class GruntzPlayer;
 
-class CPlay : public CState {
+class CPlay : public CState, private LevelLoadingHost {
 public:
     inline void SetSavedClock(u32 clock);
     inline void ClearSaveSlot();
@@ -121,7 +122,16 @@ public:
 
     virtual i32 LoadImageBanks();
 
+    // Success accepts loading; AdvanceLoading completes it before EnterState.
     virtual i32 LoadByMode(i32 level, i32 unused);
+    virtual TransitionProgress AdvanceLoading(u32 deltaMs);
+    virtual bool IsLoading() const { return m_loading.active() || m_loadRecoveryPending || m_loadFailed; }
+    virtual void CancelLoading();
+    virtual i32 RestoreLoading();
+    virtual i32 RestoreAfterSceneFade();
+    virtual i32 FinishLevelLoad() { return 1; }
+    virtual i32 FinishNamespaceLoad();
+    void CompleteNamespacesAfterLoading() { m_loadNamespaces = true; }
 
     virtual i32 HandleDragMove(i32 keyFlags, i32 x, i32 y);
     virtual void OnExit();
@@ -405,6 +415,23 @@ public:
 
     i32 ScanBuildTiles();
     i32 ScanShuffleQuads();
+
+private:
+    i32 PrepareLevelLoad(i32 level);
+    i32 PrepareLoadingTitle();
+    i32 DrawLoadingPrompt();
+    i32 RedrawLoadingProgress();
+    i32 RestoreLoadedLevelImages();
+    i32 LoadLevelBatch(LevelLoadStep step);
+    virtual TransitionProgress AdvanceLevelStep(LevelLoadStep step, u32 deltaMs);
+
+    LevelLoading m_loading;
+    TransitionDelay m_loadDelay;
+    std::string m_loadingTitle;
+    bool m_loadNamespaces, m_loadFailed, m_loadRestoreAttempted, m_loadRecoveryPending;
+    bool m_loadImagesNeedRestore;
+    i32 m_loadReload, m_loadDiff;
+
 };
 
 ColorTint FindAvailablePlayerColor();
@@ -447,6 +474,12 @@ inline CPlay::~CPlay() {
 }
 
 inline CPlay::CPlay() {
+    m_loadNamespaces = false;
+    m_loadFailed = false;
+    m_loadRestoreAttempted = false;
+    m_loadRecoveryPending = false;
+    m_loadImagesNeedRestore = false;
+    m_loadReload = m_loadDiff = 0;
     m_returnToMenuOnComplete = false;
     m_completedFinalLevel = false;
     m_reserved1c8 = 0;

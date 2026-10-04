@@ -274,21 +274,19 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
         PostLoadImageBanks();
-        if (!LoadByMode(areaArg, 1)) {
-            return 0;
-        }
-        if (!LoadCursorSprites(0, false)) {
-            return 0;
-        }
-        CWwdSpriteObject* peer = m_cursorSnapSprite;
-        if (peer) {
-            peer->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        }
-        return 1;
+        CompleteNamespacesAfterLoading();
+        return LoadByMode(areaArg, 1);
     }
 }
 
+i32 CPlay::FinishNamespaceLoad() {
+    if (!LoadCursorSprites(0, false)) return 0;
+    if (m_cursorSnapSprite) m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    return 1;
+}
+
 void CPlay::ReleaseResources() {
+    CancelLoading();
     i32 i;
 
     CMinimap* minimap = m_minimap;
@@ -862,15 +860,132 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 i32 CPlay::LoadByMode(i32 level, i32) {
+    if (m_loading.active() || m_mgr->IsQuitPending()) return 0;
+    m_loadFailed = false;
+    m_loadRestoreAttempted = false;
+    m_loadRecoveryPending = false;
+    m_loadImagesNeedRestore = false;
+    m_revealFrame = 0;
+    const bool namespaces = m_loadNamespaces;
+    m_loadNamespaces = false;
+    if (!m_loading.request(namespaces)) return 0;
+    if (!PrepareLevelLoad(level) || m_mgr->IsQuitPending()) {
+        m_loadFailed = true;
+        return 0;
+    }
+    return 1;
+}
+
+void CPlay::CancelLoading() {
+    m_loading.cancel();
+    m_loadDelay.cancel();
+    m_loadNamespaces = false;
+    m_loadFailed = false;
+    m_loadRecoveryPending = false;
+    m_loadImagesNeedRestore = false;
+    m_loadingTitle.erase();
+    CancelSceneFade();
+}
+
+TransitionProgress CPlay::AdvanceLoading(u32 deltaMs) {
+    if (m_loadFailed) return TransitionFailed;
+    if (m_loadRecoveryPending) {
+        if (IsSceneFading() && AdvanceSceneFade(deltaMs) < 0) {
+            m_loadFailed = true;
+            return TransitionFailed;
+        }
+        if (IsSceneFading()) return TransitionPending;
+        m_loadRecoveryPending = false;
+        if (!RedrawLoadingProgress() || m_mgr->IsQuitPending()) {
+            m_loadFailed = true;
+            return TransitionFailed;
+        }
+        return TransitionPending;
+    }
+    const TransitionProgress result = m_loading.advance(*this, deltaMs);
+    if (result == TransitionFailed) m_loadFailed = true;
+    // A surface callback may start recovery in the final completion step.
+    return result == TransitionComplete && m_loadRecoveryPending ? TransitionPending : result;
+}
+
+i32 CPlay::PrepareLoadingTitle() {
+    CRezDir* previous = m_stateResources;
+    m_stateResources = m_levelResources;
+    const i32 result = LoadTitlePage(m_loadingTitle, 0, 0, 0, 0, true);
+    m_stateResources = previous;
+    return result;
+}
+
+i32 CPlay::RestoreAfterSceneFade() {
+    return IsLoading() ? RestoreLoading() : InputVirtual();
+}
+
+i32 CPlay::RestoreLoading() {
+    // Restore only installed images and the loading page, without drawing a
+    // partially constructed world or repeating asset-installation side effects.
+    if (!IsLoading() || m_loadingTitle.empty() || m_loadRestoreAttempted) return 0;
+    m_loadRestoreAttempted = true;
+    CancelSceneFade();
+    const b32 playActive = g_playActive;
+    const bool restored = CState::InputVirtual() != 0;
+    g_playActive = playActive;
+    if (!restored) return 0;
+    m_loadImagesNeedRestore = true;
+    if (!PrepareLoadingTitle() || !BeginScenePresentation()) return 0;
+    m_loadRecoveryPending = true;
+    return 1;
+}
+
+i32 CPlay::RestoreLoadedLevelImages() {
+    if (!m_loadImagesNeedRestore) return 1;
+    CRezDir* tiles = m_levelResources->GetDirFromPath("TILEZ");
+    CRezDir* images = m_levelResources->GetDirFromPath("IMAGEZ");
+    CRezDir* gruntImages = m_gruntResources->GetDirFromPath("IMAGEZ");
+    if (!tiles || !images || !gruntImages) return 0;
+    if (m_world->m_imageRegistry->LoadNamespace(tiles, "", "_") == -1
+        || m_world->m_imageRegistry->LoadNamespace(images, "LEVEL", "_") == -1
+        || m_world->m_imageRegistry->LoadNamespace(gruntImages, "GRUNTZ", "_") == -1)
+        return 0;
+    m_loadImagesNeedRestore = false;
+    return 1;
+}
+
+i32 CPlay::RedrawLoadingProgress() {
+    // Namespace reload validates complete workers; defer it until their asset
+    // batches finish, so neither old-area nor half-installed frames are visited.
+    if (m_loading.step() > LoadWorld && !RestoreLoadedLevelImages()) return 0;
+    if (!m_revealFrame) return 1;
+    const i32 progress = m_revealFrame;
+    if (!DrawLevelInfoText() || !LoadLoadingBarSprite()) return 0;
+    for (i32 i = 1; i < progress; ++i) {
+        if (!BuildHelpReveal(false)) return 0;
+    }
+    if (m_loading.step() >= LoadPresentation && !BuildHelpReveal(true)) return 0;
+    if (m_loading.step() > LoadPresentation && !DrawLoadingPrompt()) return 0;
+    return 1;
+}
+
+TransitionProgress CPlay::AdvanceLevelStep(LevelLoadStep step, u32 deltaMs) {
+    if (m_mgr->IsQuitPending() || m_loadFailed) return TransitionFailed;
+    if (Update() == GAMESTATE_MULTI) static_cast<CMulti*>(this)->SendLobbyKeepAlive();
+    if (step == LoadTitle) {
+        if (IsSceneFading() && AdvanceSceneFade(deltaMs) < 0) return TransitionFailed;
+        return IsSceneFading() ? TransitionPending : TransitionComplete;
+    }
+    if (step == LoadPresentation && !m_loadDelay.advance(deltaMs)) return TransitionPending;
+    const bool loaded = step == LoadModeCompletion ? FinishLevelLoad() != 0
+        : step == LoadNamespaceCompletion ? FinishNamespaceLoad() != 0
+        : LoadLevelBatch(step) != 0;
+    if (!loaded || m_mgr->IsQuitPending()) return TransitionFailed;
+    return TransitionComplete;
+}
+
+i32 CPlay::PrepareLevelLoad(i32 level) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
     CRezDir* bank;
-    CRezDir* prevTiles;
-    i32 reload = 0;
-    i32 diff = 0;
 
     std::string titleName;
-    i32 initScratch[0x25];
 
     self->m_hudSuppressed = true;
     g_frameDelta = 0;
@@ -895,7 +1010,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_mgr->m_worldSounds->Teardown();
     self->m_mgr->VoiceMgr()->PauseAllVoices();
     self->m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
-    self->m_mgr->RestoreVideoMode(false);
+    if (!self->m_mgr->RestoreVideoMode(false)) return 0;
 
     if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
@@ -930,8 +1045,6 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    b32 modeFlag = Update() == GAMESTATE_MULTI;
-    CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : NULL;
     self->m_initialFramePending = true;
     self->m_levelIndex = level;
     {
@@ -1073,237 +1186,127 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    {
-        prevTiles = self->m_stateResources;
-        self->m_stateResources = (self->m_levelResources);
-        UpdateWindow(self->m_mgr->m_gameWnd->GetHwnd());
+    if (!mgr->m_strWorldFile.empty()) {
+        if (!mgr->m_isBuiltInBattlezLevel && !mgr->m_isBuiltInMultiplayerLevel)
+            titleName = "CUSTOMLEVEL";
+    } else if (level > 0x24) titleName = "TRAINING";
+    m_loadingTitle = titleName;
+    if (!PrepareLoadingTitle()) return 0;
+    return BeginSceneFade(0x50, 0x3e8, 0, true);
+fail0:
+    return 0;
+}
 
-        mgr = self->m_mgr;
-        if (!(mgr->m_strWorldFile).empty()) {
-            if (mgr->m_isBuiltInBattlezLevel == false
-                && mgr->m_isBuiltInMultiplayerLevel == false) {
-                titleName = "CUSTOMLEVEL";
+i32 CPlay::LoadLevelBatch(LevelLoadStep step) {
+    CMulti* savedThis = Update() == GAMESTATE_MULTI ? static_cast<CMulti*>(this) : NULL;
+    const i32 reload = m_loadReload;
+    const i32 diff = m_loadDiff;
+    if (step > LoadArea && step < LoadPresentation && !BuildHelpReveal(false)) return 0;
+    switch (step) {
+    case LoadArea:
+        if (!DrawLevelInfoText() || !LoadLoadingBarSprite() || !BuildHelpReveal(false)) return 0;
+        FreeListTeardown();
+        if (!InitializeLevelArea(m_levelIndex) || !g_pAreaMgr) return 0;
+        m_loadReload = !g_pAreaMgr->IsSameWorld(g_lastLevelNum);
+        m_loadDiff = m_levelIndex != g_lastLevelNum;
+        g_lastLevelNum = m_levelIndex;
+        return 1;
+    case LoadActionTiles:
+        if (!LoadActionTileSprites(diff)) return 0;
+        if (diff && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ)
+            BuildWarlordNameTable(savedThis);
+        return 1;
+    case LoadAreaImages: return LoadLevelImages(reload);
+    case LoadCommonImages: return LoadGameImages(reload);
+    case LoadImageKeys: return BuildSpriteImageKeyTable(savedThis);
+    case LoadAreaSounds: return LoadLevelSounds(reload);
+    case LoadCommonSounds: return LoadGameSounds(reload);
+    case LoadGruntSounds:
+        if (!LoadGruntSoundNamespaces(NULL)) return 0;
+        SetEffectSpriteDurations();
+        return 1;
+    case LoadAreaAnimations: return LoadLevelAnims(reload);
+    case LoadCommonAnimations: return LoadGameAnims(reload);
+    case LoadAnimationKeys: return BuildAnizKeyTable(NULL);
+    case LoadWorld: return BuildWorldLevelPath(reload);
+    case LoadMap: {
+        if (!RestoreLoadedLevelImages()) return 0;
+        m_mgr->RecomputeViewScale();
+        if (m_world->m_level->m_mainPlane != NULL) {
+            (static_cast<CDDrawWorkerHost*>(m_world->m_level->m_mainPlane))
+                ->ActivateKeepActiveObjects();
+        }
+        if (m_world->m_level->m_mainPlane != NULL) {
+            (static_cast<CDDrawWorkerHost*>(m_world->m_level->m_mainPlane))
+                ->ActivateVisibleObjects();
+        }
+        m_mgr->m_tileGrid->Reset();
+
+        if (!m_world->m_level->m_mainPlane) return 0;
+        {
+            CDDrawWorkerHost* mainPlane =
+                static_cast<CDDrawWorkerHost*>(m_world->m_level->m_mainPlane);
+            CGruntzMapMgr* tileGrid = m_mgr->m_tileGrid;
+            if (!tileGrid->BuildCellAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
+                return 0;
             }
-        } else if (level > 0x24) {
-            titleName = "TRAINING";
         }
-    }
-
-    if (!LoadTitlePage(titleName, 0, 0, 0, 0, true)) {
-        goto fail0;
-    }
-    RetireScene(0x50, 0x3e8, 0, true);
-    DrawLevelInfoText();
-    self->m_stateResources = prevTiles;
-    {
-        i32* z = initScratch;
-        i32 n = 0x25;
-        while (n--) {
-            *z++ = 0;
-        }
-    }
-    LoadLoadingBarSprite();
-    BuildHelpReveal(false);
-    FreeListTeardown();
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-
-    if (!InitializeLevelArea(level)) {
-        goto fail0;
-    }
-
-    {
-        reload = !g_pAreaMgr->IsSameWorld(g_lastLevelNum);
-        diff = (level != g_lastLevelNum) ? 1 : 0;
-        if (g_pAreaMgr == NULL) {
+        if (!(static_cast<CMapMgr*>(m_mgr->m_tileGrid))->UpdateDiagonals(m_mgr)) {
             return 0;
         }
-        g_lastLevelNum = level;
 
-        BuildHelpReveal(false);
-        if (modeFlag) {
-            (savedThis)->SendLobbyKeepAlive();
-        }
-        RegisterInputBindings();
-
-        BuildHelpReveal(false);
-        if (modeFlag) {
-            (savedThis)->SendLobbyKeepAlive();
-        }
-        RegisterInputBindings();
-
-        if (!LoadActionTileSprites(diff)) {
-            goto fail0;
-        }
-    }
-
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (diff != 0 && (g_gameReg)->GetGameMode() == GAMEMODE_QUESTZ) {
-        BuildWarlordNameTable(savedThis);
-    }
-    BuildHelpReveal(false);
-    RegisterInputBindings();
-    if (!LoadLevelImages(reload)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (!LoadGameImages(reload)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (!BuildSpriteImageKeyTable(savedThis)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    RegisterInputBindings();
-    if (!LoadLevelSounds(reload)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (!LoadGameSounds(reload)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (!LoadGruntSoundNamespaces(NULL)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    SetEffectSpriteDurations();
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (!LoadLevelAnims(reload)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (!LoadGameAnims(reload)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (!BuildAnizKeyTable(NULL)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    if (!BuildWorldLevelPath(reload)) {
-        goto fail0;
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-
-    self->m_mgr->RecomputeViewScale();
-    if (self->m_world->m_level->m_mainPlane != NULL) {
-        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
-            ->ActivateKeepActiveObjects();
-    }
-    if (self->m_world->m_level->m_mainPlane != NULL) {
-        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
-            ->ActivateVisibleObjects();
-    }
-    BuildHelpReveal(false);
-    if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
-    }
-    RegisterInputBindings();
-    self->m_mgr->m_tileGrid->Reset();
-
-    {
-        CDDrawWorkerHost* mainPlane =
-            static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
-        CGruntzMapMgr* tileGrid = self->m_mgr->m_tileGrid;
-        if (!tileGrid->BuildCellAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
-            goto fail0;
-        }
-    }
-    if (!(static_cast<CMapMgr*>(self->m_mgr->m_tileGrid))->UpdateDiagonals(self->m_mgr)) {
-        goto fail0;
-    }
-
-    if (self->m_minimap == NULL) {
-        CMinimap* minimap = new CMinimap;
-        self->m_minimap = minimap;
-        if (!minimap->Init(self->m_mgr, 0xfa)) {
-            goto fail0;
-        }
-    }
-    if (!self->m_minimap->SetAreaPalette(self->m_levelType)) {
-        goto fail0;
-    }
-
-    if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-        std::string warp;
-        i32 notTraining = 1;
-        if (loadResourceText(IDS_TRAINING_WORLD_NAME, warp)) {
-            if (warp == g_gameReg->GetWorldFileName()) {
-                notTraining = 0;
+        if (m_minimap == NULL) {
+            CMinimap* minimap = new CMinimap;
+            m_minimap = minimap;
+            if (!minimap->Init(m_mgr, 0xfa)) {
+                return 0;
             }
         }
-        if (notTraining) {
-            ScanShuffleQuads();
+        if (!m_minimap->SetAreaPalette(m_levelType)) {
+            return 0;
         }
-    }
 
-    if (self->m_mgr->GetGameMode() == GAMEMODE_BATTLEZ) {
-        self->m_mgr->InitializeBattlezPlayers();
+        return 1;
     }
-    self->m_mgr->m_saveGame
-        ->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, self->m_mgr);
-    {
-        std::string key;
-        g_gameReg->m_triggerMgr->m_pendingFx = NULL;
-        i32 count = self->m_levelIndex;
-        i32 i = count - ((count - 1) % 4);
-        for (; i < self->m_levelIndex; ++i) {
-
-            key = formatText("Level%i", i);
-            CTriggerMgr* bm = g_gameReg->m_triggerMgr;
-            i32 v = g_buteMgr.GetInt("WarpStone", (key));
-            bm->m_byteArr.push_back(static_cast<u8>(v));
+    case LoadPlayers: {
+        if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+            std::string warp;
+            i32 notTraining = 1;
+            if (loadResourceText(IDS_TRAINING_WORLD_NAME, warp)) {
+                if (warp == g_gameReg->GetWorldFileName()) {
+                    notTraining = 0;
+                }
+            }
+            if (notTraining) {
+                ScanShuffleQuads();
+            }
         }
-        self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
-        CWwdSpriteObject* scrollSink = self->m_world->ChildGroup()->CreateSprite(
+        if (m_mgr->GetGameMode() == GAMEMODE_BATTLEZ) {
+            m_mgr->InitializeBattlezPlayers();
+        }
+        m_mgr->m_saveGame
+            ->InitializeLevelSlot(&m_saveSlot, m_levelIndex, m_mgr);
+        {
+            std::string key;
+            g_gameReg->m_triggerMgr->m_pendingFx = NULL;
+            i32 count = m_levelIndex;
+            i32 i = count - ((count - 1) % 4);
+            for (; i < m_levelIndex; ++i) {
+
+                key = formatText("Level%i", i);
+                CTriggerMgr* bm = g_gameReg->m_triggerMgr;
+                i32 v = g_buteMgr.GetInt("WarpStone", (key));
+                bm->m_byteArr.push_back(static_cast<u8>(v));
+            }
+            m_statusBar->LoadMultiplayerBattlezConfig(m_levelIndex);
+
+        }
+        return 1;
+    }
+    case LoadActors: {
+        i32 initScratch[0x25] = {0};
+        CWwdSpriteObject* scrollSink = m_world->ChildGroup()->CreateSprite(
             0,
             0,
             0,
@@ -1311,116 +1314,99 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             "CursorSnapSprite",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPACE_SKIP_COLLISION
         );
-        self->m_cursorSnapSprite = scrollSink;
-        if (scrollSink != NULL) {
-            self->m_world->ChildGroup()->TickKillCues(0);
+        m_cursorSnapSprite = scrollSink;
+        if (!scrollSink) return 0;
+        {
+            m_world->ChildGroup()->TickKillCues(0);
             if (savedThis == NULL) {
 
-                CStatusBarMgr* statusBar = self->m_statusBar;
+                CStatusBarMgr* statusBar = m_statusBar;
                 i32 originX = TIMER_ORIGIN_X_STATUSBAR_RIGHT_PX;
                 if (statusBar->m_position != STATUSBAR_DOCK_RIGHT) {
                     originX = TIMER_ORIGIN_X_PX;
                 }
-                if (!self->m_levelTimer->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
-                    CTimer* spr = self->m_levelTimer;
-                    if (spr != NULL) {
-                        spr->Reset();
-                        delete spr;
-                        self->m_levelTimer = NULL;
-                    }
-                }
+                if (!m_levelTimer || !m_levelTimer->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX))
+                    return 0;
             }
             {
                 if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
                     && ValidateLevelTiles() && AddLevelGruntz()) {
-                    self->m_world->ChildGroup()->TickKillCues(0);
-                    self->m_statusBar->StartChipMachineCycle();
+                    m_world->ChildGroup()->TickKillCues(0);
+                    m_statusBar->StartChipMachineCycle();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                     while (ShowCursor(false) >= 0)
                         ;
-                    self->m_mgr->RefreshGameClock();
-                    if (self->m_world->m_level->m_mainPlane != NULL) {
-                        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
+                    m_mgr->RefreshGameClock();
+                    if (m_world->m_level->m_mainPlane != NULL) {
+                        (static_cast<CDDrawWorkerHost*>(m_world->m_level->m_mainPlane))
                             ->ActivateKeepActiveObjects();
                     }
-                    if (self->m_world->m_level->m_mainPlane != NULL) {
-                        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
+                    if (m_world->m_level->m_mainPlane != NULL) {
+                        (static_cast<CDDrawWorkerHost*>(m_world->m_level->m_mainPlane))
                             ->ActivateVisibleObjects();
                     }
-                    BuildHelpReveal(false);
-                    if (modeFlag) {
-                        (savedThis)->SendLobbyKeepAlive();
-                    }
-                    RegisterInputBindings();
-                    if (BuildMusicCategoryTable(reload)) {
-                        goto okContinue;
-                    }
+                    return 1;
                 }
                 return 0;
             }
         }
-
-    okContinue:
-        BuildHelpReveal(false);
-        if (modeFlag) {
-            (savedThis)->SendLobbyKeepAlive();
-        }
-        RegisterInputBindings();
-        BuildHelpReveal(true);
-        ActiveWait(0x64);
-        if (modeFlag) {
-            (savedThis)->SendLobbyKeepAlive();
-        }
-
-        gameReg = g_gameReg;
-        if (gameReg->m_loadingSaveGame == false) {
-            CDDSurface* mapHost = self->m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
-            mapHost->ShadeRect(0x32, NULL);
-            gameReg = g_gameReg;
-        }
-
-        if (gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == false) {
-            std::string scr;
-            self->m_inGame = true;
-            self->m_hudSuppressed = false;
-            RECT rect;
-            SET_RECT_COMPONENTS(rect, 0, 0, SCREEN_W_PX, SCREEN_H_PX);
-            if (loadResourceText(IDS_CONTINUE_PROMPT, scr)) {
-                DrawTextToFrontSurface(self->m_world, scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
-            }
-        } else {
-            self->m_hudSuppressed = true;
-        }
-
-        self->m_scrollEdgeLock = 0;
-        self->m_levelOverlayOpen = false;
-        self->m_paused = false;
-        self->m_playerCommandPending = false;
-        self->m_winLoseBanner = false;
-        self->m_cueTiming.Start(0x1f4);
-        self->m_cueToggle = true;
-        self->m_cueText = "";
-        self->m_lastCueId = 0;
-        self->m_region0Gate = false;
-        self->m_region1Gate = false;
-        self->m_region2Gate = false;
-        self->m_region3Gate = false;
-        self->m_defeatCountdownActive = false;
-        self->m_focusPlayerIndex = 3;
-        self->m_renderDisabled = true;
+    }
+    case LoadMusic:
+        if (!BuildMusicCategoryTable(reload) || !BuildHelpReveal(true)) return 0;
+        m_loadDelay.start(100);
+        return 1;
+    case LoadPresentation: {
+        if (!DrawLoadingPrompt()) return 0;
+        m_hudSuppressed = g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER || g_gameReg->m_loadingSaveGame;
+        if (!m_hudSuppressed) m_inGame = true;
+        m_scrollEdgeLock = 0;
+        m_levelOverlayOpen = false;
+        m_paused = false;
+        m_playerCommandPending = false;
+        m_winLoseBanner = false;
+        m_cueTiming.Start(0x1f4);
+        m_cueToggle = true;
+        m_cueText = "";
+        m_lastCueId = 0;
+        m_region0Gate = false;
+        m_region1Gate = false;
+        m_region2Gate = false;
+        m_region3Gate = false;
+        m_defeatCountdownActive = false;
+        m_focusPlayerIndex = 3;
+        m_renderDisabled = true;
         g_playActive = false;
         ResetViewport();
         if ((g_gameReg)->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             g_playActive = true;
-            self->m_renderDisabled = false;
-            self->m_mgr->CheckSavedMode();
-            self->m_mgr->ChatLog()->FreeNodes();
+            m_renderDisabled = false;
+            m_mgr->CheckSavedMode();
+            m_mgr->ChatLog()->FreeNodes();
         }
         return 1;
     }
+    default: return 0;
+    }
+}
 
-fail0:
-    return 0;
+i32 CPlay::DrawLoadingPrompt() {
+    CGruntzMgr* gameReg = g_gameReg;
+    if (gameReg->m_loadingSaveGame == false) {
+        CDDSurface* mapHost = m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
+        if (!mapHost->ShadeRect(0x32, NULL)) return 0;
+        gameReg = g_gameReg;
+    }
+
+    if (gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == false) {
+        std::string scr;
+        RECT rect;
+        SET_RECT_COMPONENTS(rect, 0, 0, SCREEN_W_PX, SCREEN_H_PX);
+        if (loadResourceText(IDS_CONTINUE_PROMPT, scr)) {
+            DrawTextToFrontSurface(m_world, scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+    }
+
+    return 1;
 }
 
 #undef PTR
@@ -5884,7 +5870,7 @@ i32 CPlay::LoadLoadingBarSprite() {
     m_revealCapMid = spr->GetAt(2);
     m_revealCapEnd = spr->GetAt(3);
     m_revealFrame = 1;
-    return 1;
+    return m_revealCapStart && m_revealCapMid && m_revealCapEnd;
 }
 
 i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {

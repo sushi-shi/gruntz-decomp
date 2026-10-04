@@ -13,7 +13,7 @@ struct TransitionProbeState {
 class TransitionProbe : public StateTransitionHost {
 public:
     TransitionProbe() : destroyed(0), current(new TransitionProbeState(destroyed)),
-        fail(0), departureWait(0), arrivalWait(0), cancelDuring(0), replaceDuring(false), sequence(0) {}
+        fail(0), departureWait(0), loadingWait(0), arrivalWait(0), cancelDuring(0), replaceDuring(false), sequence(0) {}
     ~TransitionProbe() { delete current; }
     virtual bool BeginDeparture() {
         calls += 'B';
@@ -37,6 +37,20 @@ public:
         interrupt('I');
         return fail != 'I';
     }
+    virtual TransitionProgress AdvanceInstallation(u32) {
+        calls += 'L';
+        assert(current && destroyed == 1);
+        interrupt('L');
+        if (fail == 'L') return TransitionFailed;
+        if (loadingWait) { --loadingWait; return TransitionPending; }
+        return TransitionComplete;
+    }
+    virtual bool BeginArrival() {
+        calls += 'E';
+        assert(current && destroyed == 1 && loadingWait == 0);
+        interrupt('E');
+        return fail != 'E';
+    }
     virtual TransitionProgress AdvanceArrival(u32) {
         calls += 'A';
         assert(current && destroyed == 1);
@@ -55,7 +69,7 @@ public:
     TransitionProbeState* current;
     std::string calls;
     char fail;
-    u32 departureWait, arrivalWait;
+    u32 departureWait, loadingWait, arrivalWait;
     char cancelDuring;
     bool replaceDuring;
     StateTransition* sequence;

@@ -3547,6 +3547,17 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "levelloading",
+      "source": "src/Runtime/LevelLoading.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

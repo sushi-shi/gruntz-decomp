@@ -71,6 +71,8 @@ public:
     virtual i32 GetFrame()  ;
 
     virtual i32 LoadByMode(i32 mode, i32 unused)  ;
+    virtual i32 FinishLevelLoad();
+    virtual i32 FinishNamespaceLoad();
 
     virtual void OnExit()  ;
     virtual void TickStateMgrs()  ;

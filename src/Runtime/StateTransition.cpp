@@ -26,6 +26,14 @@ TransitionProgress StateTransition::advance(StateTransitionHost& host, u32 delta
         break;
     case Install:
         if (!host.InstallDestination()) result = TransitionFailed;
+        else next = Load;
+        break;
+    case Load:
+        result = host.AdvanceInstallation(deltaMs);
+        if (result == TransitionComplete) { next = Enter; result = TransitionPending; }
+        break;
+    case Enter:
+        if (!host.BeginArrival()) result = TransitionFailed;
         else next = Arrive;
         break;
     case Arrive:

@@ -7,6 +7,7 @@ static void orderAndLifetime() {
     TransitionProbe host;
     host.departureWait = 500;
     host.arrivalWait = 1;
+    host.loadingWait = 1;
     assert(sequence.request());
     assert(!sequence.request());
     assert(host.calls.empty() && host.destroyed == 0);
@@ -15,14 +16,17 @@ static void orderAndLifetime() {
     assert(sequence.advance(host, 499) == TransitionPending && host.destroyed == 0);
     assert(sequence.advance(host, 1) == TransitionPending && host.destroyed == 0);
     assert(sequence.advance(host, 0) == TransitionPending && host.destroyed == 1);
+    assert(sequence.advance(host, 0) == TransitionPending && host.calls == "BDDDIL");
+    assert(sequence.advance(host, 0) == TransitionPending && host.calls == "BDDDILL");
+    assert(sequence.advance(host, 0) == TransitionPending && host.calls == "BDDDILLE");
     assert(sequence.advance(host, 0) == TransitionPending);
     assert(sequence.advance(host, 0) == TransitionComplete && !sequence.active());
-    assert(host.calls == "BDDDIAA");
-    assert(sequence.advance(host, 0) == TransitionComplete && host.calls == "BDDDIAA");
+    assert(host.calls == "BDDDILLEAA");
+    assert(sequence.advance(host, 0) == TransitionComplete && host.calls == "BDDDILLEAA");
 }
 
 static void failuresAndCancellation() {
-    const char phases[] = {'B', 'D', 'I', 'A'};
+    const char phases[] = {'B', 'D', 'I', 'L', 'E', 'A'};
     for (unsigned int i = 0; i < sizeof(phases); ++i) {
         StateTransition sequence;
         TransitionProbe host;
@@ -75,7 +79,10 @@ static void delayAndSuspension() {
     assert(frames.poll(500020)); assert(delay.advance(frames.timing().deltaMs()));
 }
 
+void testLevelLoading();
+
 int main() {
+    testLevelLoading();
     orderAndLifetime(); failuresAndCancellation(); delayAndSuspension();
     std::puts("Returning state transition tests passed.");
 }

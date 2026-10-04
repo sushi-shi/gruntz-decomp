@@ -404,6 +404,8 @@ private:
     virtual bool BeginDeparture();
     virtual TransitionProgress AdvanceDeparture(u32 deltaMs);
     virtual bool InstallDestination();
+    virtual TransitionProgress AdvanceInstallation(u32 deltaMs);
+    virtual bool BeginArrival();
     virtual TransitionProgress AdvanceArrival(u32 deltaMs);
 };
 

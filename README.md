@@ -435,7 +435,7 @@ The Windows sine adapter uses nonwaiting locks for returning playback. It retrie
 busy surfaces, unlocks before reporting failure, and releases playback before
 asking the state to restore its display. The adapter retains its existing bounded
 2000-row/sample storage and rejects larger dimensions. Unmigrated synchronous
-callers retain their waiting/restoring lock path. Gameplay/loading and booty fades
+callers retain their waiting/restoring lock path. Gameplay entry/restoration and booty fades
 still require caller-continuation rewrites. The returning state-departure path
 below retains states through exit fades and audio ramps. This is not completion
 of the scene-transition or rendering-host port.
@@ -481,7 +481,32 @@ ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-state
 The portable tests cover phase order, retained-state lifetime, per-phase failure,
 cancellation and replacement during callbacks, delay saturation, clock wrap and
 suspension. They do not execute the production graphics/audio adapters or game UI.
-Loading/entry gameplay fades, booty scene fades, movie playback and multiplayer
-waits remain synchronous. Menu `StopMusicChain` still has separate modal/movie
-callers to migrate. Destination loading itself remains synchronous within its
-installation callback; this is not a complete browser-host lifecycle yet.
+Gameplay entry/restoration fades, booty scene fades, movie playback and
+multiplayer waits remain synchronous. Menu `StopMusicChain` still has separate
+modal/movie callers to migrate. This is not a complete browser-host lifecycle yet.
+
+### Staged level loading
+
+Destination installation now starts loading; the manager polls it before entering
+the state. `CPlay` owns the loading title and advances one ordered asset batch per
+frame callback. The title fade and final 100 ms display delay return to the host;
+the delay excludes suspended time. Individual file/codec operations within each
+batch remain synchronous, as do multiplayer lobby dialogs and readiness waits.
+
+Level completion runs before namespace completion. Namespace completion runs only
+for a newly created state, preserving single-player cursor setup and multiplayer
+readiness/session setup without repeating them on round reloads. Save restoration
+and follow-up commands still wait until arrival completes. Quit cancels the owned
+loading continuation; failed loads never enter gameplay, and a failed reload is
+discarded before a configured fallback can depart it as if it were playable.
+
+Loading-surface recovery restores installed images and presents the loading page
+once, then redraws progress without repeating world/actor installation. It never
+uses the partially loaded world's normal gameplay restoration path. Temporary
+resource-namespace selection is restored before returning, including on failure.
+
+`check-state-transitions.py --target all` also tests asset order, one batch per
+callback, new-state versus reload completion, failure/cancellation at every load
+step, reentrant replacement, and presentation delays across wrap and suspension.
+The integration compiles with both Windows toolchains; graphics recovery and
+network readiness are not exercised by the portable component tests.
