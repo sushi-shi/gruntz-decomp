@@ -183,7 +183,7 @@ GZ_ENUM_END(ToolCursorId)
 DATA(0x002bf3bc)
 u32 g_engineFrameDelta = 0;
 DATA(0x002bf3c0)
-u32 g_soundCueTimeMs = 0;
+u32 g_engineTimeMs = 0;
 
 DATA(0x00212618)
 i32 g_lastLevelNum = -1;
@@ -429,7 +429,7 @@ i32 CPlay::Render() {
         LoadScrollSpeedOptions();
         m_world->m_level->ActivateVisibleObjectsOnMainPlane();
 
-        g_soundCueTimeMs = g_lastNow;
+        g_engineTimeMs = g_lastNow;
         g_engineFrameDelta = g_frameDelta;
 
         m_world->ChildGroup()->UpdateObjects(0);
@@ -698,7 +698,7 @@ void CPlay::UpdateWorldFrame() {
             lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
-    g_soundCueTimeMs = g_lastNow;
+    g_engineTimeMs = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
     m_world->ChildGroup()->UpdateObjects(0);
     m_mgr->GetTriggerMgr()->UpdateFrame(static_cast<i32>(g_frameDelta));
@@ -933,7 +933,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
         self->m_anchors[a].m_y = -1;
     }
 
-    g_soundCueTimeMs = g_lastNow;
+    g_engineTimeMs = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
 
     for (i32 t = 0; t < 4; ++t) {

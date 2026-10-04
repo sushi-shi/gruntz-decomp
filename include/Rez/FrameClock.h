@@ -22,7 +22,7 @@ extern i32 g_period200CountdownMs;
 extern i32 g_period400CountdownMs;
 extern i32 g_period500CountdownMs;
 extern u32 g_engineFrameDelta;
-extern u32 g_soundCueTimeMs;
+extern u32 g_engineTimeMs;
 extern i32 g_period100CountdownMs;
 
 #endif // INCLUDE_REZ_FRAMECLOCK_H

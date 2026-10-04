@@ -303,9 +303,9 @@ void CDDrawChildGroup::UpdateObjects(i32 advanceClock) {
 
     if (advanceClock != 0) {
         u32 now = timeGetTime();
-        u32 delta = now - g_soundCueTimeMs;
+        u32 delta = now - g_engineTimeMs;
         g_engineFrameDelta = delta;
-        g_soundCueTimeMs = now;
+        g_engineTimeMs = now;
     }
 
     POSITION pos = m_list.GetHeadPosition();

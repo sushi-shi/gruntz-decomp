@@ -46,7 +46,7 @@ CGameWorld::CGameWorld() {
     m_flags = 0;
     m_lastError = WORLDERR_NONE;
     SetSerializationCallback(NULL);
-    g_soundCueTimeMs = 0;
+    g_engineTimeMs = 0;
     g_engineFrameDelta = 0;
 }
 
