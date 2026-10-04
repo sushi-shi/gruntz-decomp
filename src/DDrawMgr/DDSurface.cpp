@@ -15,7 +15,6 @@
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/WallProject.h>
 #include <Enums.h>
-#include <Image/ByteRunEncoding.h>
 #include <Image/Image.h>
 #include <Image/ImageRotate.h>
 #include <Image/PcxFormat.h>
@@ -1413,77 +1412,6 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
         DDrawLogLine("DDSCAPS_ZBUFFER is set\n");
     }
 }
-
-#pragma optimize("", off)
-
-i32 CDDSurface::DecodeRun8(u8* src) {
-    u8* sp;
-    i32 hold;
-    u8* pbits;
-    i32 w;
-    u8 tok;
-    i32 y;
-    i32 runx;
-    u8* dstp;
-    i32 height;
-    i32 kj;
-    i32 nleft;
-    if (src == NULL) {
-        return 0;
-    }
-    w = this->GetWidth();
-    height = this->GetHeight();
-    hold = 0;
-    sp = src;
-    pbits = static_cast<u8*>(this->Lock(NULL));
-    if (pbits == NULL) {
-        return 0;
-    }
-    for (y = 0; y < height; y++) {
-        dstp = (pbits + this->Scale(y));
-        nleft = w;
-        DECODE_BYTE_RUN_LINE(dstp, sp, nleft, hold, tok, runx, kj, 1);
-    }
-    Unlock();
-    return 1;
-}
-
-i32 CDDSurface::DecodeRun24(u8* src) {
-    u8* inp;
-    i32 rest;
-    u8* dst;
-    i32 cnt;
-    i32 nrow;
-    u8* ln;
-    u8 pm;
-    i32 k;
-    i32 cols;
-    if (src == NULL) {
-        return 0;
-    }
-    ln = static_cast<u8*>(this->Lock(NULL));
-    if (ln == NULL) {
-        return 0;
-    }
-    rest = 0;
-    inp = src;
-    dst = NULL;
-    for (nrow = 0; nrow < this->GetHeight(); nrow++) {
-        dst = (ln + this->Scale(nrow) + 2);
-        cols = this->GetWidth();
-        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
-        dst = (ln + this->Scale(nrow) + 1);
-        cols = this->GetWidth();
-        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
-        dst = (ln + this->Scale(nrow));
-        cols = this->GetWidth();
-        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
-    }
-    Unlock();
-    return 1;
-}
-
-#pragma optimize("", on)
 
 i32 CDDSurface::RotateBlit(
     CDDSurface* src,

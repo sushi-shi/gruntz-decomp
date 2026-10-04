@@ -587,7 +587,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     }
 
     f.finish();
-    g_previewImage = g_previewMgr->AddDib(&readBuf[s_savePreviewBitmapOffset], DECODE_BMP);
+    g_previewImage = g_previewMgr->AddDib(&readBuf[s_savePreviewBitmapOffset], sizeof(readBuf) - s_savePreviewBitmapOffset, DECODE_BMP);
     SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
 }
 

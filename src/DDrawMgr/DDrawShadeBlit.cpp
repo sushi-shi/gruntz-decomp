@@ -1,5 +1,6 @@
 #include <StdAfx.h>
 #include <Io/File.h>
+#include <Image/RasterData.h>
 
 #include <Ints.h>
 
@@ -175,6 +176,11 @@ i32 CDDrawShadeBlit::LoadFromFile(const std::string& name, ColorDepth fmt) {
 }
 
 i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt) {
+    raster::Image validated;
+    if (size < 0 || raster::decodePid(src, static_cast<size_t>(size), validated) != raster::Decoded
+        || !(validated.flags & IDX(PID_GRAMMAR_SKIPRUN))) return 0;
+    if (fmt == BPP_RGB_16 && !(validated.flags & (IDX(PID_SRC_8BPP_SHADE) | IDX(PID_SRC_8BPP)))
+        && validated.palette.empty()) return 0;
     PidFlags flags = src->m_flags;
 
     if ((HAS(flags, PID_SRC_8BPP_SHADE)) || (HAS(flags, PID_SRC_8BPP))) {
@@ -199,30 +205,16 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
         m_colorKey = -1;
     }
 
-    i32 stride = size - 0x20;
-    m_rleLen = stride;
-    if (fmt != BPP_PALETTED_8 && fmt != BPP_RGB_16) {
-        return 0;
-    }
-
-    if (HAS(src->m_flags, PID_EMBEDDED_PALETTE)) {
-        stride -= PALETTE_RGB_BYTE_COUNT;
-        m_rleLen = stride;
-        if (fmt == BPP_RGB_16) {
-            if (m_palette != NULL) {
-                delete[] m_palette;
-            }
-            m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
-
-            i32 destIndex = 0;
-            i32 sourceIndex = 0;
-            do {
-                destIndex++;
-                m_palette[destIndex - 1].peRed = src->m_pixels[m_rleLen + sourceIndex];
-                sourceIndex += 3;
-                m_palette[destIndex - 1].peGreen = src->m_pixels[m_rleLen + sourceIndex - 2];
-                m_palette[destIndex - 1].peBlue = src->m_pixels[m_rleLen + sourceIndex - 1];
-            } while (sourceIndex < PALETTE_RGB_BYTE_COUNT);
+    if (fmt != BPP_PALETTED_8 && fmt != BPP_RGB_16) return 0;
+    m_rleLen = static_cast<u32>(validated.encodedBytes);
+    if (!validated.palette.empty() && fmt == BPP_RGB_16) {
+        delete[] m_palette;
+        m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+        for (size_t i = 0; i < PALETTE_ENTRY_COUNT; ++i) {
+            m_palette[i].peRed = validated.palette[i * 3];
+            m_palette[i].peGreen = validated.palette[i * 3 + 1];
+            m_palette[i].peBlue = validated.palette[i * 3 + 2];
+            m_palette[i].peFlags = 0;
         }
     }
 
@@ -237,6 +229,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
 
     if (m_srcBpp == PIXEL16_BYTES_PER_PIXEL) {
         u8* remapped = EncodeRle16(m_rleData);
+        if (!remapped) return 0;
         delete[] m_rleData;
         m_rleData = remapped;
         delete[] m_palette;
@@ -274,7 +267,7 @@ i32 CDDrawShadeBlit::SavePid(const std::string& path, i32 offsetX, i32 offsetY) 
         return 0;
     }
     PidWriteHeader header;
-    header.m_formatTag = 0;
+    header.m_formatTag = 10;
     header.m_flags = 0x3d;
     if (m_palette != NULL) {
         header.m_flags = 0xbd;
@@ -327,78 +320,18 @@ i32 CDDrawShadeBlit::Decompress(u8* dest) {
 }
 
 u8* CDDrawShadeBlit::EncodeRle16(const u8* src) {
-    u16 table[256];
-    {
-        const PALETTEENTRY* pal = m_palette;
-        u16* t = table;
-        for (i32 i = PALETTE_ENTRY_COUNT; i != 0; i--) {
-            *t = static_cast<u16>(
-                ((static_cast<u16>(static_cast<u8>(pal->peGreen) >> g_gDown) << g_gUp)
-                 | (static_cast<u16>(static_cast<u8>(pal->peRed) >> g_rDown) << g_rUp)
-                 | static_cast<u16>(static_cast<u8>(pal->peBlue) >> g_bDown))
-            );
-            pal++;
-            t++;
-        }
+    if (!m_palette || m_width <= 0 || m_height <= 0) return NULL;
+    unsigned short table[256];
+    for (size_t i = 0; i < 256; ++i) {
+        table[i] = PackPalEntry16(m_palette[i].peRed, m_palette[i].peGreen, m_palette[i].peBlue);
     }
-
-    m_rleLen = 0;
-    {
-        i32 row = 0, idx = 0, x = 0;
-        if (m_height > 0) {
-            i32 w1 = m_width - 1;
-            do {
-                if (src[idx] & SHADE_RLE_TRANSPARENT_FLAG) {
-                    m_rleLen++;
-                    x += static_cast<i32>(m_rleData[idx++]) - SHADE_RLE_TRANSPARENT_FLAG;
-                } else {
-                    m_rleLen++;
-                    m_rleLen += static_cast<i32>(src[idx]) * 2;
-                    x += static_cast<i32>(m_rleData[idx]);
-                    idx += static_cast<i32>(m_rleData[idx]) + 1;
-                }
-                if (x >= w1) {
-                    row++;
-                    x = 0;
-                }
-            } while (row < m_height);
-        }
-    }
-
-    u8* out = new u8[m_rleLen];
-    {
-        i32 srcidx = 0, outidx = 0;
-        i32 x2 = 0, row2 = 0;
-        if (m_height > 0) {
-            do {
-                u8 tk = src[srcidx];
-                out[outidx] = tk;
-                if (tk & SHADE_RLE_TRANSPARENT_FLAG) {
-                    outidx++;
-                    x2 += static_cast<i32>(m_rleData[srcidx]) - SHADE_RLE_TRANSPARENT_FLAG;
-                    srcidx++;
-                } else {
-                    outidx++;
-                    i32 k = 0;
-                    if (src[srcidx] > 0) {
-                        do {
-                            u16 px = table[src[srcidx + k + 1]];
-                            out[outidx++] = static_cast<u8>(px);
-                            out[outidx++] = static_cast<u8>((px >> PIXEL_BITS_PER_BYTE));
-                            k++;
-                        } while (k < src[srcidx]);
-                    }
-                    x2 += static_cast<i32>(m_rleData[srcidx]);
-                    srcidx += static_cast<i32>(m_rleData[srcidx]) + 1;
-                }
-                if (x2 >= m_width - 1) {
-                    row2++;
-                    x2 = 0;
-                }
-            } while (row2 < m_height);
-        }
-    }
-    return out;
+    std::vector<u8> converted;
+    if (!raster::convertSkipRunsTo16(src, m_rleLen, m_width, m_height, table, converted)) return NULL;
+    u8* output = new u8[converted.size()];
+    if (!output) return NULL;
+    memcpy(output, &converted[0], converted.size());
+    m_rleLen = static_cast<i32>(converted.size());
+    return output;
 }
 
 i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip) {

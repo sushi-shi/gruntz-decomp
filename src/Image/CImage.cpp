@@ -88,6 +88,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         return 0;
     }
 
+    if ((mode == FMT_PID || mode == FMT_RID) && (!desc || size < 32)) return 0;
     if (mode == FMT_PID && (HAS(desc->m_flags, PID_GRAMMAR_SKIPRUN))) {
         if (!BuildShadeBlitter(desc, size)) {
             return 0;
@@ -157,15 +158,18 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
 
 i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     CDDrawShadeBlit* owned = new CDDrawShadeBlit();
-    m_owned = owned;
     if (owned == NULL) {
         return 0;
     }
 
     ColorDepth fmt = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->m_bpp;
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
+        owned->Teardown();
+        delete owned;
         return 0;
     }
+    if (m_owned) { m_owned->Teardown(); delete m_owned; }
+    m_owned = owned;
     i32 w = m_owned->m_width;
     m_width = w;
     i32 h = m_owned->m_height;

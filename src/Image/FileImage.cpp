@@ -9,7 +9,7 @@
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/RasterRowOrder.h>
 #include <Enums.h>
-#include <Image/ByteRunEncoding.h>
+#include <Image/RasterData.h>
 #include <Image/FileImageRecords.h>
 #include <Image/Image.h>
 #include <Image/ImagePool.h>
@@ -21,14 +21,6 @@
 PALETTEENTRY g_paletteRampBuf[0x100];
 
 static PALETTEENTRY s_palBmp[0x100];
-
-static PALETTEENTRY s_palPcx[0x100];
-
-PALETTEENTRY g_grayRamp[0x100];
-
-static PALETTEENTRY s_palPidData[0x100];
-
-static PALETTEENTRY s_palPcxData[0x100];
 
 i32 CDDSurface::CreateFromBmpData(
     CDDrawDeviceManager* manager,
@@ -441,104 +433,43 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     return file.finish();
 }
 
-i32 CDDSurface::CreateFromPcxData(
-    CDDrawDeviceManager* manager,
-    PcxHeader* image,
-    i32 dataSize,
-    i32 surfaceCaps
-) {
-    if (image == NULL) {
-        return 0;
+i32 CDDSurface::UploadRaster(CDDrawDeviceManager* manager, raster::Image& image) {
+    if (!manager || image.width != m_apiDesc.dwWidth || image.height != m_apiDesc.dwHeight) return 0;
+    const ColorDepth sourceDepth = image.channels == 1 ? BPP_PALETTED_8 : BPP_RGB_24;
+    if (sourceDepth == m_bitDepth) {
+        u8* target = static_cast<u8*>(Lock(NULL));
+        if (!target) return 0;
+        const i32 pitch = m_apiDesc.lPitch;
+        const bool copied = pitch > 0 && image.height <= 0x7fffffffU / static_cast<u32>(pitch)
+            && raster::copyRows(image, target, static_cast<size_t>(pitch) * image.height, pitch, true, false);
+        Unlock();
+        return copied;
     }
-
-    BYTE* pStart = static_cast<BYTE*>(static_cast<void*>(image));
-    PcxHeader* pPcxHdr = static_cast<PcxHeader*>(static_cast<void*>(pStart));
-
-    i32 width = pPcxHdr->m_xMax - pPcxHdr->m_xMin + 1;
-    i32 height = pPcxHdr->m_yMax - pPcxHdr->m_yMin + 1;
-
-    ColorDepth sourceBitDepth;
-    if (pPcxHdr->m_planes == PCX_PLANES_PALETTED) {
-        sourceBitDepth = BPP_PALETTED_8;
-    } else if (pPcxHdr->m_planes == PCX_PLANES_RGB) {
-        sourceBitDepth = BPP_RGB_24;
-    } else {
-        return 0;
-    }
-
-    i32 convert = 0;
-    ColorDepth displayBitDepth = manager->m_displayColorDepth;
-    if (displayBitDepth != sourceBitDepth) {
-        convert = 1;
-    }
-    if (convert && displayBitDepth == BPP_PALETTED_8 && manager->m_hasPalette == false) {
-        return 0;
-    }
-
-    PALETTEENTRY* palette = NULL;
-    if (convert && sourceBitDepth == BPP_PALETTED_8) {
-
-        u8* p = pStart + dataSize - 0x300;
-        COPY_RGB_PALETTE(g_grayRamp, p, i, 0x100)
-        palette = g_grayRamp;
-    } else if (convert && displayBitDepth == BPP_PALETTED_8) {
-        palette = manager->GetActivePalette();
-    }
-
-    if (this->BlitSurf(manager, width, height, BPP_UNSET, surfaceCaps) == BPP_UNSET) {
-        return 0;
-    }
-
-    DWORD offset = sizeof(PcxHeader);
-    BYTE* pPacked = &pStart[offset];
-    u8* buf = NULL;
-    i32 result;
-    if (convert == 0) {
-        if (sourceBitDepth == BPP_PALETTED_8) {
-            if (DecodeRun8(pPacked) == 0) {
-                return 0;
-            }
-        } else {
-            if (DecodeRun24(pPacked) == 0) {
-                return 0;
-            }
+    PALETTEENTRY colors[256];
+    PALETTEENTRY* palette = manager->GetActivePalette();
+    if (image.channels == 1 && image.palette.size() == 768) {
+        for (size_t i = 0; i < 256; ++i) {
+            colors[i].peRed = image.palette[i * 3]; colors[i].peGreen = image.palette[i * 3 + 1];
+            colors[i].peBlue = image.palette[i * 3 + 2]; colors[i].peFlags = 0;
         }
-    } else {
-        if (sourceBitDepth == BPP_PALETTED_8) {
-            if (width % 2 != 0) {
-                return 0;
-            }
-            buf = new u8[height * width];
-            if (buf == NULL) {
-                return 0;
-            }
-            result = DecodeByteRun1Plane(buf, pPacked, width, height);
-        } else {
-            if (width % 2 != 0) {
-                return 0;
-            }
-            buf = new u8[height * width * 3];
-            if (buf == NULL) {
-                return 0;
-            }
-            result = DecodeByteRun3Planes(buf, pPacked, width, height);
-        }
-        if (result == 0) {
-            delete[] buf;
-            return 0;
-        }
+        palette = colors;
     }
+    if ((sourceDepth == BPP_PALETTED_8 || m_bitDepth == BPP_PALETTED_8) && !palette) return 0;
+    if (sourceDepth == BPP_RGB_24 && m_bitDepth == BPP_PALETTED_8) {
+        // The existing quantizer consumes BGR; portable decoded storage is RGB.
+        std::vector<u8> bgr(image.pixels.size());
+        if (!raster::copyRows(image, &bgr[0], bgr.size(), image.width * 3, true, false)) return 0;
+        return Blit(&bgr[0], sourceDepth, palette, RASTER_ROWS_TOP_DOWN);
+    }
+    return Blit(&image.pixels[0], sourceDepth, palette, RASTER_ROWS_TOP_DOWN);
+}
 
-    if (convert) {
-        if (Blit(buf, sourceBitDepth, palette, RASTER_ROWS_TOP_DOWN) == BPP_UNSET) {
-            delete[] buf;
-            return 0;
-        }
-    }
-    if (buf != NULL) {
-        delete[] buf;
-    }
-    return 1;
+i32 CDDSurface::CreateFromPcxData(CDDrawDeviceManager* manager, PcxHeader* image,
+    i32 dataSize, i32 surfaceCaps) {
+    raster::Image decoded;
+    if (!manager || dataSize < 0 || raster::decodePcx(image, static_cast<size_t>(dataSize), decoded) != raster::Decoded) return 0;
+    if (!BlitSurf(manager, decoded.width, decoded.height, BPP_UNSET, surfaceCaps)) return 0;
+    return UploadRaster(manager, decoded);
 }
 
 i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
@@ -566,80 +497,9 @@ i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path
 }
 
 i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 dataSize) {
-    if (image != NULL) {
-        i32 width = image->m_xMax - image->m_xMin + 1;
-        i32 height = image->m_yMax - image->m_yMin + 1;
-        GZ_ENUM_STORAGE(PcxPlaneCount, i8) planes = image->m_planes;
-
-        ColorDepth bitcount = BPP_UNSET;
-        if (planes == PCX_PLANES_PALETTED) {
-            bitcount = BPP_PALETTED_8;
-        } else if (planes == PCX_PLANES_RGB) {
-            bitcount = BPP_RGB_24;
-        }
-        if (bitcount != BPP_UNSET && m_apiDesc.dwWidth == width && m_apiDesc.dwHeight == height) {
-            b32 remap = false;
-            ColorDepth palBpp = manager->m_displayColorDepth;
-            if (palBpp != bitcount) {
-                remap = true;
-            }
-            if (!remap || palBpp != BPP_PALETTED_8 || manager->m_hasPalette != false) {
-                PALETTEENTRY* palette = NULL;
-                if (remap && bitcount == BPP_PALETTED_8) {
-                    u8* src = static_cast<u8*>(static_cast<void*>(image)) + dataSize - 0x300;
-                    COPY_RGB_PALETTE_DO(s_palPcx, src, i, 0x100)
-                    palette = s_palPcx;
-                } else if (remap && palBpp == BPP_PALETTED_8) {
-                    palette = manager->GetActivePalette();
-                }
-
-                u8* pixels = static_cast<u8*>(static_cast<void*>(image)) + sizeof(PcxHeader);
-                b32 ok;
-                u8* decoded = NULL;
-                if (!remap) {
-                    if (bitcount == BPP_PALETTED_8) {
-                        if (!DecodeRun8(pixels)) {
-                            return 0;
-                        }
-                    } else {
-                        if (!DecodeRun24(pixels)) {
-                            return 0;
-                        }
-                    }
-                } else {
-                    if (bitcount == BPP_PALETTED_8) {
-                        decoded = new u8[width * height];
-                        if (decoded == NULL) {
-                            return 0;
-                        }
-                        ok = DecodeByteRun1Plane(decoded, pixels, width, height);
-                    } else {
-                        decoded = new u8[width * height * 3];
-                        if (decoded == NULL) {
-                            return 0;
-                        }
-                        ok = DecodeByteRun3Planes(decoded, pixels, width, height);
-                    }
-                    if (!ok) {
-                        delete[] decoded;
-                        return 0;
-                    }
-                }
-
-                if (remap) {
-                    if (!Blit(decoded, bitcount, palette, RASTER_ROWS_TOP_DOWN)) {
-                        delete[] decoded;
-                        return 0;
-                    }
-                }
-                if (decoded) {
-                    delete[] decoded;
-                }
-                return 1;
-            }
-        }
-    }
-    return 0;
+    raster::Image decoded;
+    if (raster::decodePcx(image, dataSize, decoded) != raster::Decoded) return 0;
+    return UploadRaster(manager, decoded);
 }
 
 i32 CDDSurface::LoadPcx(CDDrawDeviceManager* manager, char* path) {
@@ -671,153 +531,15 @@ i32 CDDSurface::LoadPcx(CDDrawDeviceManager* manager, char* path) {
     return result;
 }
 
-#pragma optimize("", off)
-
-i32 CDDSurface::DecodeByteRun1Plane(u8* dstBuf, u8* src, i32 width, i32 height) {
-    u8* sp;
-    i32 y;
-    u8 tok;
-    i32 hold;
-    i32 k;
-    u8* dstp;
-    i32 len;
-    i32 cols;
-    if (dstBuf == NULL) {
-        return 0;
-    }
-    if (src == NULL) {
-        return 0;
-    }
-    hold = 0;
-    sp = src;
-    dstp = NULL;
-    for (y = 0; y < height; y++) {
-        dstp = dstBuf + width * y;
-        cols = width;
-        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 1);
-    }
-    return 1;
-}
-
-i32 CDDSurface::DecodeByteRun3Planes(u8* dstBuf, u8* src, i32 width, i32 height) {
-    u8* sp;
-    i32 y;
-    u8 tok;
-    i32 hold;
-    i32 k;
-    u8* dstp;
-    i32 len;
-    i32 cols;
-    i32 base;
-    if (dstBuf == NULL) {
-        return 0;
-    }
-    if (src == NULL) {
-        return 0;
-    }
-    hold = 0;
-    sp = src;
-    dstp = NULL;
-    for (y = 0; y < height; y++) {
-        base = y * width * 3;
-        dstp = dstBuf + base;
-        cols = width;
-        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
-        dstp = dstBuf + base + 1;
-        cols = width;
-        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
-        dstp = dstBuf + base + 2;
-        cols = width;
-        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
-    }
-    return 1;
-}
-
-#pragma optimize("", on)
-
-i32 CDDSurface::DecodePcxData(
-    CDDrawDeviceManager* manager,
-    PidHeader* image,
-    i32 dataSize,
-    i32 surfaceCaps,
-    u32 colorKey
-) {
-    RecordBytes<PidHeader> record;
-    record.m_rec = image;
-    record.m_dwords++;
-
-    PidFlags flags = static_cast<PidFlags>(*record.m_dwords++);
-    i32 width = *record.m_dwords++;
-    i32 height = *record.m_dwords++;
-    record.m_dwords += 4;
-
-    if (width & 3) {
-        return 0;
-    }
-    if (HAS(flags, PID_SYSTEM_MEMORY)) {
-        surfaceCaps = (surfaceCaps & ~DDSCAPS_VIDEOMEMORY) | DDSCAPS_SYSTEMMEMORY;
-    } else if (HAS(flags, PID_VIDEO_MEMORY)) {
-        surfaceCaps = surfaceCaps & ~DDSCAPS_SYSTEMMEMORY;
-    }
-
-    i32 remap = 0;
-    PALETTEENTRY* palette = manager->GetActivePalette();
-    ColorDepth displayBitDepth = manager->m_displayColorDepth;
-    if (displayBitDepth != BPP_PALETTED_8) {
-        remap = 1;
-    }
-
-    if (HAS(flags, PID_EMBEDDED_PALETTE)) {
-        if (static_cast<u32>(dataSize) <= 0x300) {
-            return 0;
-        }
-
-        RecordBytes<PidHeader> headerBytes;
-        headerBytes.m_rec = image;
-        u8* src = headerBytes.m_bytes + dataSize - 0x300;
-        COPY_RGB_PALETTE_DO(s_palPcxData, src, i, 0x100)
-        palette = s_palPcxData;
-    } else {
-        if (remap && palette == NULL) {
-            return 0;
-        }
-        if (remap && displayBitDepth == BPP_PALETTED_8 && manager->m_hasPalette == false) {
-            return 0;
-        }
-    }
-
-    if (!CDDSurface::BlitSurf(manager, width, height, BPP_UNSET, surfaceCaps)) {
-        return 0;
-    }
-
-    u8* decoded = NULL;
-    if (!remap) {
-        if (!DecodeRun8(record.m_bytes)) {
-            return 0;
-        }
-    } else {
-        decoded = new u8[height * width];
-        if (!decoded) {
-            return 0;
-        }
-        if (!DecodeByteRun1Plane(decoded, record.m_bytes, width, height)) {
-            delete[] decoded;
-            return 0;
-        }
-    }
-
-    if (remap) {
-        if (!Blit(decoded, BPP_PALETTED_8, palette, RASTER_ROWS_TOP_DOWN)) {
-            delete[] decoded;
-            return 0;
-        }
-    }
-    if (decoded) {
-        delete[] decoded;
-    }
-    if (HAS(flags, PID_TRANSPARENCY)) {
-        FillPalette(colorKey);
-    }
+i32 CDDSurface::DecodePcxData(CDDrawDeviceManager* manager, PidHeader* image,
+    i32 dataSize, i32 surfaceCaps, u32 colorKey) {
+    raster::Image decoded;
+    if (!manager || dataSize < 0 || raster::decodePid(image, static_cast<size_t>(dataSize), decoded) != raster::Decoded) return 0;
+    if (decoded.flags & IDX(PID_SYSTEM_MEMORY)) surfaceCaps = (surfaceCaps & ~DDSCAPS_VIDEOMEMORY) | DDSCAPS_SYSTEMMEMORY;
+    else if (decoded.flags & IDX(PID_VIDEO_MEMORY)) surfaceCaps &= ~DDSCAPS_SYSTEMMEMORY;
+    if (!BlitSurf(manager, decoded.width, decoded.height, BPP_UNSET, surfaceCaps)
+        || !UploadRaster(manager, decoded)) return 0;
+    if (decoded.flags & IDX(PID_TRANSPARENCY)) FillPalette(colorKey);
     return 1;
 }
 
@@ -851,76 +573,11 @@ i32 CDDSurface::DecodePcxEx(
     return result;
 }
 
-i32 CDDSurface::DecodePid(
-    CDDrawDeviceManager* manager,
-    PidHeader* image,
-    u32 dataSize,
-    u32 colorKey
-) {
-    DWORD* pDWord = static_cast<DWORD*>(static_cast<void*>(image));
-    DWORD id = *pDWord++;
-    PidFlags flags2 = static_cast<PidFlags>(*pDWord++);
-    DWORD width = *pDWord++;
-    DWORD height = *pDWord++;
-    DWORD dwX = *pDWord++;
-    DWORD dwY = *pDWord++;
-    DWORD user1 = *pDWord++;
-    DWORD user2 = *pDWord++;
-    u8* pPacked = static_cast<u8*>(static_cast<void*>(pDWord));
-
-    if (!(width & 3) && m_apiDesc.dwWidth == width && m_apiDesc.dwHeight == height) {
-        i32 remap = 0;
-        PALETTEENTRY* palette = manager->GetActivePalette();
-        b32 hasPalette = manager->HasPalette();
-        ColorDepth displayBitDepth = manager->GetDisplayColorDepth();
-        if (displayBitDepth != BPP_PALETTED_8) {
-            remap = 1;
-        }
-
-        if (HAS(flags2, PID_EMBEDDED_PALETTE)) {
-            if (dataSize <= 0x300) {
-                return 0;
-            }
-
-            u8* src = static_cast<u8*>(static_cast<void*>(image)) + dataSize - 0x300;
-            COPY_RGB_PALETTE_DO(s_palPidData, src, i, 0x100)
-            palette = s_palPidData;
-        } else if ((remap && palette == NULL)
-                   || (remap && displayBitDepth == BPP_PALETTED_8 && hasPalette == false)) {
-            return 0;
-        }
-
-        u8* decoded = NULL;
-        if (!remap) {
-            if (!DecodeRun8(pPacked)) {
-                return 0;
-            }
-        } else {
-            decoded = new u8[height * width];
-            if (!decoded) {
-                return 0;
-            }
-            if (!DecodeByteRun1Plane(decoded, pPacked, width, height)) {
-                delete[] decoded;
-                return 0;
-            }
-        }
-
-        if (remap) {
-            if (!Blit(decoded, BPP_PALETTED_8, palette, RASTER_ROWS_TOP_DOWN)) {
-                delete[] decoded;
-                return 0;
-            }
-        }
-        if (decoded) {
-            delete[] decoded;
-        }
-        if (HAS(flags2, PID_TRANSPARENCY)) {
-            FillPalette(colorKey);
-        }
-        return 1;
-    }
-    return 0;
+i32 CDDSurface::DecodePid(CDDrawDeviceManager* manager, PidHeader* image, u32 dataSize, u32 colorKey) {
+    raster::Image decoded;
+    if (raster::decodePid(image, dataSize, decoded) != raster::Decoded || !UploadRaster(manager, decoded)) return 0;
+    if (decoded.flags & IDX(PID_TRANSPARENCY)) FillPalette(colorKey);
+    return 1;
 }
 
 i32 CDDSurface::LoadPid(CDDrawDeviceManager* manager, char* path, u32 colorKey) {

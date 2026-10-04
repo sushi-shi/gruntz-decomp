@@ -8,6 +8,7 @@ class CDib;
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Image/RezDecodeKind.h>
+#include <DDrawMgr/RasterRowOrder.h>
 #include <Io/FileStream.h>
 
 class CDDrawDeviceManager;
@@ -33,9 +34,10 @@ public:
         i32 width,
         i32 height,
         ColorDepth depth = BPP_PALETTED_8,
-        u32 flags = 0
+        u32 flags = 0,
+        RasterRowOrder rowOrder = RASTER_ROWS_TOP_DOWN
     );
-    i32 Init(u8* bytes, RezDecodeKind type, HDC dc, u32 flags = 0);
+    i32 Init(u8* bytes, u32 dataSize, RezDecodeKind type, HDC dc, u32 flags = 0);
     i32 Init(const char* file, HDC dc, u32 flags = 0);
     i32 Init(HDC dc, CDib* dib, CDibPal* palette);
     void Term();
@@ -45,9 +47,10 @@ public:
     }
 
     i32 InitBmp(u8* bytes, HDC dc, u32 flags = 0);
-    i32 InitPcx(u8* bytes, HDC dc, u32 flags = 0);
+    i32 InitRaster(raster::Image& image, HDC dc, u32 flags);
+    i32 InitPcx(u8* bytes, u32 dataSize, HDC dc, u32 flags = 0);
     i32 InitRid(u8* bytes, HDC dc, u32 flags = 0);
-    i32 InitPid(u8* bytes, HDC dc, u32 flags = 0);
+    i32 InitPid(u8* bytes, u32 dataSize, HDC dc, u32 flags = 0);
     i32 InitBmp(const char* file, HDC dc, u32 flags = 0);
     i32 InitPcx(const char* file, HDC dc, u32 flags = 0);
     i32 InitRid(const char* file, HDC dc, u32 flags = 0);
@@ -73,6 +76,7 @@ public:
     ColorDepth GetDepth() {
         return m_nDepth;
     }
+    // Byte pitch, including DIB row padding, for every color depth.
     i32 GetPitch() {
         return m_nPitch;
     }
