@@ -625,6 +625,14 @@ public:
     i32 m_warpstoneAnchorIndex;
     b32 m_blockedVoicePending;
 
+    b32 IsBlockedVoicePending() const {
+        return m_blockedVoicePending;
+    }
+
+    void SetBlockedVoicePending(b32 pending) {
+        m_blockedVoicePending = pending;
+    }
+
     CAniElement* m_poseWalk;
     CAniElement* m_poseAttack[2];
     CAniElement* m_poseAttackIdle;

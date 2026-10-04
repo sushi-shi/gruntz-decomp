@@ -595,7 +595,7 @@ candidateFound:
     unit->SetDefenderPickupType(PICKUP_NONE);
     unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
-    unit->m_blockedVoicePending = true;
+    unit->SetBlockedVoicePending(true);
     return 1;
 }
 
@@ -2714,10 +2714,10 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                     unit->SetAiState(AISTATE_SEEK);
                     unit->SetRoutePassableMask(0);
                 }
-                if (unit->m_blockedVoicePending != false) {
+                if (unit->IsBlockedVoicePending() != false) {
                     __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeTiming.m_start;
                     if (elapsed >= m_routeTiming.m_interval) {
-                        unit->m_blockedVoicePending = false;
+                        unit->SetBlockedVoicePending(false);
                         CGameObject* lvl = unit->m_object;
 
                         RECT* hit = g_gameReg->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
@@ -2741,7 +2741,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         }
         return 1;
     }
-    unit->m_blockedVoicePending = true;
+    unit->SetBlockedVoicePending(true);
     return 0;
 }
 
@@ -3361,7 +3361,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     unit->SetDefenderPickupType(PICKUP_NONE);
     unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
-    unit->m_blockedVoicePending = true;
+    unit->SetBlockedVoicePending(true);
     unit->SetBattlezTask(BZTASK_ADVANCE);
     return 1;
 }
