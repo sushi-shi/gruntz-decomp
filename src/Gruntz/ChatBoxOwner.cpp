@@ -32,26 +32,26 @@
 #include <strstrea.h>
 
 RVA(0x000204e0, 0x19)
-i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
+i32 CChatBox::Attach(CDDrawSurfaceMgr* world, CFontConfig* fontConfig) {
     m_world = world;
-    m_fontConfig = host;
+    m_fontConfig = fontConfig;
     return m_attached = true;
 }
 
 RVA(0x00020510, 0x8)
-void CChatBoxOwner::Deactivate() {
+void CChatBox::Deactivate() {
     m_attached = false;
 }
 
 RVA(0x00020530, 0x61)
-void CChatBoxOwner::Configure(ChatBoxLayout mode) {
-    m_mode = mode;
+void CChatBox::Configure(ChatBoxLayout layout) {
+    m_layout = layout;
 
-    if (mode == CHATBOX_WITH_RIGHT_STATUSBAR || mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
+    if (layout == CHATBOX_WITH_RIGHT_STATUSBAR || layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         m_originX = 0;
         tagSIZE screenSize = g_gameReg->m_modeSize;
         m_originY = screenSize.cy - 66;
-    } else if (mode == CHATBOX_WITH_LEFT_STATUSBAR) {
+    } else if (layout == CHATBOX_WITH_LEFT_STATUSBAR) {
         m_originX = 0xa0;
         tagSIZE screenSize = g_gameReg->m_modeSize;
         m_originY = screenSize.cy - 66;
@@ -61,7 +61,7 @@ void CChatBoxOwner::Configure(ChatBoxLayout mode) {
 
 // @early-stop
 RVA(0x000205c0, 0x741)
-void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
+void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
     if (m_fontConfig->HandleInputChar(charCode, keyData) == 0) {
         return;
     }
@@ -142,8 +142,8 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
 }
 
 RVA(0x00020f40, 0x188)
-i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
-    CChatBoxOwner* self = this;
+i32 CChatBox::Draw(CDDrawSurfacePair* target) {
+    CChatBox* self = this;
     if (!self->m_inputActive) {
         return 1;
     }
@@ -158,7 +158,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         return 0;
     }
 
-    if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
+    if (self->m_layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->GetMaxIndex());
         if (!frame) {
             return 0;
@@ -181,7 +181,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetTextColor(hdc, RGB(0, 0, 0));
     SetBkColor(hdc, RGB(0, 0, 0));
 
-    if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
+    if (self->m_layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         CRect rect(
             self->m_originX + 0x4c,
             self->m_originY + 0x2b,
@@ -203,9 +203,9 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
 }
 
 RVA(0x00021140, 0xda)
-i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
+i32 CChatBox::HitTest(i32 x, i32 y) {
     if (m_inputActive) {
-        if (m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
+        if (m_layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
             if ((x < 0x40 && y >= g_gameReg->GetModeSize().cy - 0x40)
                 || (x > 0x40 && y >= g_gameReg->GetModeSize().cy - 0x20)) {
                 return 1;

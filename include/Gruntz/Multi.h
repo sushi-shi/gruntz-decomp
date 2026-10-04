@@ -17,7 +17,7 @@ class CGameApp;
 class CTileTriggerContainer;
 class MidiManager;
 class CFontConfig;
-class CChatBoxOwner;
+class CChatBox;
 class CWorldSoundSet;
 class CNetMgr;
 class CNetPlayerNode;

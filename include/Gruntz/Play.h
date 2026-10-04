@@ -27,7 +27,7 @@
 class MidiManager;
 class MidiSequence;
 class CGameStats;
-class CChatBoxOwner;
+class CChatBox;
 class CFontConfig;
 class CWorldSoundSet;
 class CVoiceManager;
@@ -312,7 +312,7 @@ public:
 
     CStatusBarMgr* m_statusBar;
 
-    CChatBoxOwner* m_chatBox;
+    CChatBox* m_chatBox;
 
     CTileTriggerContainer* m_tileTriggers;
     b32 m_dragSnapActive;

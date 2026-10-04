@@ -279,11 +279,11 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
 
-    CChatBoxOwner* iface = new CChatBoxOwner();
+    CChatBox* iface = new CChatBox();
     m_chatBox = iface;
 
     if (iface->Attach(m_world, NetGameMgr()->ChatLog()) == 0) {
-        CChatBoxOwner* io = m_chatBox;
+        CChatBox* io = m_chatBox;
         if (io == NULL) {
             return 0;
         }
@@ -730,7 +730,7 @@ void CMulti::RenderGameFrame() {
     if (h == NULL) {
         return;
     }
-    m_chatBox->LoadChatBoxSprite(h);
+    m_chatBox->Draw(h);
     DrawDebugStats();
     Mgr()->m_triggerMgr->RenderActionOptionsMenu();
     AdvanceCursorAnimation(g_frameDelta);
