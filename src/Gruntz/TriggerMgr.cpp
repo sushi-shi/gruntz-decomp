@@ -184,7 +184,7 @@ i32 CTriggerMgr::RemoveUnitFromSelection(i32 playerIndex, i32 unitIndex, i32 rem
             if (m_cameraTargetIdentity == removedIdentity) {
                 StopCameraTracking();
             }
-            CActionOptionsMenuBar* ov = m_overlay;
+            CActionOptionsMenuBar* ov = m_actionOptionsMenu;
             if (ov != NULL) {
                 i32 selectedPlayerIndex = p->m_x;
                 i32 overlayPlayerIndex = ov->GetPlayerIndex();
@@ -244,7 +244,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
         Coord* selection = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
-        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_entranceActive == false) {
+        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_busy == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
@@ -292,7 +292,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
         Coord* selection = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
-        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_entranceActive == false) {
+        if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_busy == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
@@ -408,7 +408,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
 RVA(0x00078a30, 0x10)
 void CTriggerMgr::CloseActionOptionsMenu() {
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov) {
         ov->Deactivate();
     }
@@ -423,7 +423,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
         return 1;
     }
 
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov != NULL && ov->m_active != false) {
         ov->UpdateHoverState(x, y);
         return 1;
@@ -827,20 +827,20 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     i32 pointerX,
     i32 pointerY
 ) {
-    if (m_overlay == NULL) {
-        m_overlay = new CActionOptionsMenuBar;
-        if (m_overlay->LoadAssets() == 0) {
-            CActionOptionsMenuBar* o2 = m_overlay;
+    if (m_actionOptionsMenu == NULL) {
+        m_actionOptionsMenu = new CActionOptionsMenuBar;
+        if (m_actionOptionsMenu->LoadAssets() == 0) {
+            CActionOptionsMenuBar* o2 = m_actionOptionsMenu;
             if (o2 != NULL) {
                 o2->Clear();
                 delete o2;
-                m_overlay = NULL;
+                m_actionOptionsMenu = NULL;
             }
             g_gameReg->ReportError(IDX(IDS_INITIALIZE_GAME), 0x3ff);
             return 0;
         }
     }
-    if (m_overlay->m_active != false) {
+    if (m_actionOptionsMenu->m_active != false) {
         return 0;
     }
     CGrunt* selectedGrunt = SoleSelectedGrunt();
@@ -850,7 +850,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     if (selectedGrunt->GetPlayerIndex() != g_curPlayer) {
         return 0;
     }
-    if (m_overlay->Init(
+    if (m_actionOptionsMenu->Init(
             ACTIONOPTION_HIDDEN,
             ACTIONOPTION_HIDDEN,
             selectedWorldX,
@@ -871,7 +871,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
 
 RVA(0x00079b00, 0x15)
 i32 CTriggerMgr::RenderActionOptionsMenu() {
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov) {
         return ov->Render();
     }
@@ -959,7 +959,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
 }
 
 RVA(0x00079ea0, 0xc2)
-i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
+i32 CTriggerMgr::DropBattlezWarpStone(i32 x, i32 y, i32 anchorIndex) {
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         return 0;
     }
@@ -1069,7 +1069,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     i32 stop = 0;
     i32 overCapacity = stop;
     i32 replacedExisting = stop;
-    if (m_baseList.GetCount() > 0x3b) {
+    if (m_puddles.GetCount() > 0x3b) {
         overCapacity = 1;
     }
     while (pos != NULL && stop == 0) {
@@ -1100,7 +1100,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
             }
         }
     }
-    m_baseList.AddTail(puddle);
+    m_puddles.AddTail(puddle);
     return 1;
 }
 
@@ -1266,7 +1266,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     }
     ar->Write(&objId, sizeof(objId));
     ar->Write(m_reserved274, 0x10);
-    n = static_cast<u32>(m_baseList.GetCount());
+    n = static_cast<u32>(m_puddles.GetCount());
     ar->Write(&n, sizeof(n));
     b32 hasOv;
     pos = GetPuddleHeadPosition();
@@ -1280,10 +1280,10 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
         MapLookupById(lvl->ChildGroup()->m_registeredGameObjectsById, objId, found);
         ar->Write(&objId, sizeof(objId));
     }
-    hasOv = m_overlay != NULL;
+    hasOv = m_actionOptionsMenu != NULL;
     ar->Write(&hasOv, sizeof(hasOv));
-    if (m_overlay != NULL) {
-        if (m_overlay->Serialize(ar) == 0) {
+    if (m_actionOptionsMenu != NULL) {
+        if (m_actionOptionsMenu->Serialize(ar) == 0) {
             goto fail;
         }
     }
@@ -1414,7 +1414,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     }
 
     ar->Read(m_reserved274, 0x10);
-    m_baseList.RemoveAll();
+    m_puddles.RemoveAll();
     ar->Read(&count, sizeof(count));
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 key;
@@ -1434,20 +1434,20 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (obj == NULL) {
             return 0;
         }
-        m_baseList.AddTail(obj);
+        m_puddles.AddTail(obj);
     }
 
-    CActionOptionsMenuBar* old = m_overlay;
+    CActionOptionsMenuBar* old = m_actionOptionsMenu;
     if (old != NULL) {
         old->Clear();
         delete old;
-        m_overlay = NULL;
+        m_actionOptionsMenu = NULL;
     }
     b32 hasOverlay;
     ar->Read(&hasOverlay, sizeof(hasOverlay));
     if (hasOverlay != false) {
         CActionOptionsMenuBar* ov = new CActionOptionsMenuBar;
-        m_overlay = ov;
+        m_actionOptionsMenu = ov;
         if (ov->Deserialize(ar) == 0) {
             return 0;
         }
@@ -1469,7 +1469,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
 RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     m_targetingCursorId = 0;
     if (ov == NULL || ov->m_active == false) {
         return 0;
@@ -1521,19 +1521,19 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
 
 RVA(0x0007b330, 0xc6)
 
-i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
+i32 CTriggerMgr::SpawnExplosion(i32 x, i32 y, i32 killerPlayerIndex, i32 animationVariant) {
     CDDrawChildGroup* fac = m_world->ChildGroup();
     CWwdSpriteObject* spr =
         fac->CreateSprite(0, x, y, 0, "Explosion", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     if (spr) {
-        i32 v = kind;
+        i32 v = animationVariant;
         if (v == 0) {
             v = (rand(), 1);
         }
         CString key;
         key.Format("GAME_EXPLOSION%d", v);
         spr->SetAnimationByName(key, 0);
-        spr->m_smarts = id;
+        spr->m_smarts = killerPlayerIndex;
         spr->m_score = 1;
     }
     return spr != NULL;
@@ -1541,15 +1541,21 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
 
 // @early-stop
 RVA(0x0007b440, 0x3f0)
-i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
-    ApplyGruntAreaEffect(cx, cy, r, GRUNT_AREA_EFFECT_EXPLODE, flag);
+i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 killerPlayerIndex) {
+    ApplyGruntAreaEffect(
+        centerX,
+        centerY,
+        radiusTiles,
+        GRUNT_AREA_EFFECT_EXPLODE,
+        killerPlayerIndex
+    );
 
     CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
-    i32 tileCx = cx >> TILE_SHIFT_PX;
-    i32 tileCy = cy >> TILE_SHIFT_PX;
-    for (i32 tx = tileCx - r; tx <= tileCx + r; tx++) {
+    i32 tileCx = centerX >> TILE_SHIFT_PX;
+    i32 tileCy = centerY >> TILE_SHIFT_PX;
+    for (i32 tx = tileCx - radiusTiles; tx <= tileCx + radiusTiles; tx++) {
         i32 pxX = (tx << TILE_SHIFT_PX) + TILE_HALF_PX;
-        for (i32 ty = tileCy - r; ty <= tileCy + r; ty++) {
+        for (i32 ty = tileCy - radiusTiles; ty <= tileCy + radiusTiles; ty++) {
             i32 pxY = (ty << TILE_SHIFT_PX) + TILE_HALF_PX;
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
@@ -1565,7 +1571,11 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                     CGiantRockLogic* gr = root->GetTileTriggers()->ScanNeighborhood(tx, ty);
                     if (gr == NULL) {
                         CString msg;
-                        msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
+                        msg.Format(
+                            "No giant rock logic found around: x=%d, y=%d",
+                            centerX,
+                            centerY
+                        );
                         g_gameReg->EnterModalUI(msg);
                         g_gameReg->ReportError(
                             IDX(TRIGERR_LOOKUP_MISS),
@@ -2261,7 +2271,7 @@ i32 CTriggerMgr::SaveSelectionGroup(i32 idx) {
 RVA(0x0007cd40, 0x18f)
 i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
     ClearSelection();
-    CActionOptionsMenuBar* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     if (ov != NULL && ov->m_active != false) {
         CloseActionOptionsMenu();
     }
@@ -2592,7 +2602,7 @@ i32 CTriggerMgr::EnqueueSelectedStop() {
 
             CGrunt* grunt = UnitAt(identity->m_x, identity->m_y);
             playerIndex = static_cast<char>(identity->m_x);
-            if (grunt->GetPlayerIndex() == localPlayerIndex && grunt->m_entranceActive == false) {
+            if (grunt->GetPlayerIndex() == localPlayerIndex && grunt->m_busy == false) {
                 unitIndices[count] = static_cast<u8>(identity->m_y);
                 count++;
             }

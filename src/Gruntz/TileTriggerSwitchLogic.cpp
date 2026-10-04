@@ -1225,7 +1225,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
     if (effect != 0 && grunt != NULL) {
         if (brickEffect == BRICKTILE_RED_1) {
             grunt->ApplyPickup(PICKUP_NONE, 1, 0, 0);
-            grunt->m_entranceActive = false;
+            grunt->m_busy = false;
         } else if (brickEffect == BRICKTILE_BLUE_1) {
             g_gameReg->GetTriggerMgr()->ApplyGruntAreaEffect(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -1259,7 +1259,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (brickEffect == BRICKTILE_BLACK_1) {
-            g_gameReg->GetTriggerMgr()->LoadExplosionSprites(
+            g_gameReg->GetTriggerMgr()->SpawnExplosion(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                 -1,

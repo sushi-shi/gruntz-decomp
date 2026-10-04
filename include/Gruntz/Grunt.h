@@ -389,7 +389,7 @@ public:
 
     i32 UpdateVehicleUseAnimation();
 
-    i32 SetupTubeAnim(b32 isWater);
+    i32 SetToobWaterMode(b32 isWater);
 
     i32 SetWingzEnabled(b32 enable);
 
@@ -399,7 +399,7 @@ public:
     i32 UpdateDecayFade();
     i32 UpdateToolUseAnimation();
 
-    i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex);
+    i32 StartDeath(GruntDeathType deathType, i32 killerPlayerIndex);
 
     i32 BeginPickupAnimation(
         PickupType type,
@@ -456,7 +456,7 @@ public:
     CWwdSpriteObject* m_powerupSprite;
     b32 m_selected;
     Coord m_reserved1dc;
-    b32 m_entranceActive;
+    b32 m_busy;
     b32 m_arrivalPending;
     i32 m_playerIndex;
     i32 m_unitIndex;
@@ -475,7 +475,7 @@ public:
     b32 m_toyBreakStarted;
     b32 m_bombRunStarting;
     b32 m_arrivalActive;
-    b32 m_coordToggle;
+    b32 m_toobWaterMode;
     b32 m_wingzEnabled;
     b32 m_freezeDelayDone;
     b32 m_freezeUnfrozen;

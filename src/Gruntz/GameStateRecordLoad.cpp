@@ -89,7 +89,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_lastTilePx, sizeof(m_lastTilePx));
     ar->Read(&m_commitPx, sizeof(m_commitPx));
     ar->Read(&m_reserved1dc, sizeof(m_reserved1dc));
-    ar->Read(&m_entranceActive, sizeof(m_entranceActive));
+    ar->Read(&m_busy, sizeof(m_busy));
     ar->Read(&m_arrivalPending, sizeof(m_arrivalPending));
     ar->Read(&m_playerIndex, sizeof(m_playerIndex));
     ar->Read(&m_unitIndex, sizeof(m_unitIndex));
@@ -140,7 +140,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_movePosX, sizeof(m_movePosX));
     ar->Read(&m_movePosY, sizeof(m_movePosY));
     ar->Read(&m_reserved8d0, sizeof(m_reserved8d0));
-    ar->Read(&m_coordToggle, sizeof(m_coordToggle));
+    ar->Read(&m_toobWaterMode, sizeof(m_toobWaterMode));
     ar->Read(&m_wingzEnabled, sizeof(m_wingzEnabled));
     ar->Read(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
     ar->Read(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));

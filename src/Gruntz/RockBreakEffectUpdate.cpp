@@ -19,7 +19,7 @@ i32 CExplosion::Update() {
         CWwdSpriteObject* t = m_object;
         if (t->m_score == 1) {
             g_gameReg->GetTriggerMgr()
-                ->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->GetSmarts());
+                ->ApplyExplosion(t->m_screenX, t->m_screenY, 1, t->GetSmarts());
         }
     }
     MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())

@@ -1495,7 +1495,7 @@ void CPlay::FreeListTeardown() {
 
     triggerManager->m_collectedWarpStoneFragments.RemoveAll();
     triggerManager->m_levelWarpStoneCollected = false;
-    m_mgr->GetTriggerMgr()->m_baseList.RemoveAll();
+    m_mgr->GetTriggerMgr()->m_puddles.RemoveAll();
     m_mgr->GetTriggerMgr()->m_localWarlord = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
     FreeStartMarkers();
@@ -2167,7 +2167,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx = ((this->m_cursorX - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
                  + TILE_HALF_PX;
-        g_gameReg->GetTriggerMgr()->LoadExplosionSprites(bx, by, -1, 1);
+        g_gameReg->GetTriggerMgr()->SpawnExplosion(bx, by, -1, 1);
         return 1;
     }
 
@@ -2940,7 +2940,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         m_tileClick.m_x = snapX;
         m_tileClick.m_y = snapY;
         CTriggerMgr* w = m_mgr->GetTriggerMgr();
-        if (w->m_overlay != NULL && w->m_overlay->m_active != false) {
+        if (w->m_actionOptionsMenu != NULL && w->m_actionOptionsMenu->m_active != false) {
             w->CloseActionOptionsMenu();
             return 1;
         }
@@ -4219,7 +4219,7 @@ i32 CPlay::ExecuteCommand(
             CGrunt* node =
                 m_mgr->GetTriggerMgr()
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
-            if (node != NULL && g->m_entranceActive == false) {
+            if (node != NULL && g->m_busy == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
@@ -4272,7 +4272,7 @@ i32 CPlay::ExecuteCommand(
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
-            if (g2 == NULL || g->m_entranceActive != false) {
+            if (g2 == NULL || g->m_busy != false) {
                 g->m_arrivalActive = false;
                 return 0;
             }
@@ -4317,7 +4317,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_busy != false) {
                 return 0;
             }
             if (g->IsGuarding() != false) {
@@ -4328,7 +4328,7 @@ i32 CPlay::ExecuteCommand(
             CGrunt* node =
                 m_mgr->GetTriggerMgr()
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
-            if (node != NULL && g->m_entranceActive == false) {
+            if (node != NULL && g->m_busy == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
@@ -4372,7 +4372,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_busy != false) {
                 return 0;
             }
             if (g->IsGuarding() != false) {
@@ -4381,7 +4381,7 @@ i32 CPlay::ExecuteCommand(
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
-            if (g2 == NULL || g->m_entranceActive != false) {
+            if (g2 == NULL || g->m_busy != false) {
                 g->m_arrivalActive = false;
                 return 0;
             }
@@ -4466,7 +4466,7 @@ i32 CPlay::ExecuteCommand(
                 static_cast<u8>(playerIndex),
                 static_cast<u8>(unitIndex)
             );
-            if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
+            if (g == NULL || g->IsEntranceCommitted() == false || g->m_busy != false) {
                 return 0;
             }
             g->SetEntrancePos(1, 1);

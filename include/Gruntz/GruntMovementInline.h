@@ -94,7 +94,7 @@ inline Coord CGrunt::ScanCell() {
 }
 
 inline void CGrunt::BeginGruntEntranceAndReleaseCell() {
-    m_entranceActive = true;
+    m_busy = true;
     m_triggerMgr->RemoveUnitFromSelection(GetPlayerIndex(), GetUnitIndex(), 1);
 }
 

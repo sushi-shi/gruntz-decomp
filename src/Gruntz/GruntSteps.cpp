@@ -232,7 +232,7 @@ void CGrunt::FaceTowardPixel(i32 x, i32 y) {
 
 RVA(0x000514a0, 0x26)
 i32 CGrunt::CanShowStamina() {
-    if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL && m_entranceActive == false) {
+    if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL && m_busy == false) {
         return 1;
     }
     return 0;
@@ -1019,7 +1019,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_lastTilePx, sizeof(m_lastTilePx));
     ar->Write(&m_commitPx, sizeof(m_commitPx));
     ar->Write(&m_reserved1dc, sizeof(m_reserved1dc));
-    ar->Write(&m_entranceActive, sizeof(m_entranceActive));
+    ar->Write(&m_busy, sizeof(m_busy));
     ar->Write(&m_arrivalPending, sizeof(m_arrivalPending));
     ar->Write(&m_playerIndex, sizeof(m_playerIndex));
     ar->Write(&m_unitIndex, sizeof(m_unitIndex));
@@ -1070,7 +1070,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_movePosX, sizeof(m_movePosX));
     ar->Write(&m_movePosY, sizeof(m_movePosY));
     ar->Write(&m_reserved8d0, sizeof(m_reserved8d0));
-    ar->Write(&m_coordToggle, sizeof(m_coordToggle));
+    ar->Write(&m_toobWaterMode, sizeof(m_toobWaterMode));
     ar->Write(&m_wingzEnabled, sizeof(m_wingzEnabled));
     ar->Write(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
     ar->Write(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));

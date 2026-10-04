@@ -147,7 +147,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     switch (m_activePickupType) {
         case PICKUP_BOOMERANG:
             if (m_aiType != AI_NONE) {
-                m_entranceActive = true;
+                m_busy = true;
             }
             pose = GRUNT_ATTACK2;
             break;
@@ -310,7 +310,7 @@ i32 CGrunt::StepAttackFire() {
             }
         }
 
-        m_entranceActive = true;
+        m_busy = true;
         u32 dt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "AttackDowntime");
         if (m_powerupType == GRUNT_ROIDZ) {
             dt = 0;
@@ -335,7 +335,7 @@ i32 CGrunt::StepAttackFire() {
     i32 zkey = h->m_screenY + 0x186a0;
     h->SetSortKey(zkey);
     i32 inCombatSnapshot = m_inCombat;
-    m_entranceActive = false;
+    m_busy = false;
     if (inCombatSnapshot != 0) {
         StartAttackIdleAnimation();
         return 0;
@@ -365,7 +365,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         if (m_inCombat != false && m_attackQueued == false) {
             RESET_GRUNT_COMBAT_STATE(this)
         }
-        m_entranceActive = true;
+        m_busy = true;
         SetEntrancePos(1, 1);
 
         this->RecycleCoords();
@@ -505,7 +505,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         }
         SET_ANIMATION_ACT("A");
         ApplyPickup(m_savedToolType, 1, 0, 0);
-        m_entranceActive = false;
+        m_busy = false;
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->GetTileGrid();
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -694,14 +694,14 @@ void CGrunt::ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 pla
 // @early-stop
 RVA(0x000633e0, 0x2f1)
 i32 CGrunt::UpdateIdleAnimation() {
-    if (m_entranceActive != false && IsGruntAtSavedScreenPos(this)) {
+    if (m_busy != false && IsGruntAtSavedScreenPos(this)) {
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->GetTileGrid();
         i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
         i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
         i32 flags = grid->CellFlagsAt(tx, ty);
         if (!(flags & 0x80)) {
-            m_entranceActive = false;
+            m_busy = false;
         }
     }
 
@@ -782,7 +782,7 @@ i32 CGrunt::StartWalkAnimation() {
         if (!(currentCellFlags & 0x80)) {
             return 0;
         }
-        m_entranceActive = true;
+        m_busy = true;
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
         char* walkAnimationName = FacingData()->WalkName().GetBuffer(0);
@@ -836,7 +836,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
         }
         SET_ANIMATION_ACT("A");
         ApplyPickup(m_savedToolType, 1, 0, 0);
-        m_entranceActive = false;
+        m_busy = false;
 
         CMapMgr* grid = g_gameReg->GetTileGrid();
         i32 tileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -1051,7 +1051,7 @@ tail:
             }
         }
     }
-    m_entranceActive = true;
+    m_busy = true;
     {
         CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
         if (*rec != "O") {
@@ -1103,7 +1103,7 @@ i32 CGrunt::FinishStruckAnimation() {
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
         return 0;
     }
-    m_entranceActive = false;
+    m_busy = false;
 
     CMapMgr* grid = g_gameReg->GetTileGrid();
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -1133,7 +1133,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
     if (!sub->IsComplete()) {
         return 0;
     }
-    m_entranceActive = false;
+    m_busy = false;
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
 
@@ -1180,13 +1180,13 @@ i32 CGrunt::StartToolUseAnimation(i32 tileX, i32 tileY) {
         SET_ANIMATION_ACT("M");
         m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
         m_timePerTile = g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64);
-        m_entranceActive = true;
+        m_busy = true;
         m_bombRunStarting = true;
         SetEntrancePos(1, 1);
     } else if (m_activePickupType == PICKUP_TOOB) {
-        m_entranceActive = true;
+        m_busy = true;
         SET_ANIMATION_ACT("N");
-        m_coordToggle = (m_coordToggle == false);
+        m_toobWaterMode = (m_toobWaterMode == false);
     } else if (m_activePickupType == PICKUP_WAND) {
         i32 voiceBase;
         if (rand() % 100 < 80) {
@@ -1211,7 +1211,7 @@ i32 CGrunt::StartToolUseAnimation(i32 tileX, i32 tileY) {
         PLAY_VOICE_IN_VIEW(cueId);
 
         SET_ANIMATION_ACT("I");
-        m_entranceActive = true;
+        m_busy = true;
         SetEntrancePos(1, 1);
     } else {
         SET_ANIMATION_ACT("I");
@@ -1231,7 +1231,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
     if (advanced > 0) {
         WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
         if (cue == WWDDRAW_TOOL_APPLIES) {
-            m_entranceActive = true;
+            m_busy = true;
             u32 downtime =
                 g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "ItemDowntime");
             if (m_powerupType == GRUNT_ROIDZ) {
@@ -1263,7 +1263,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
     if (sub->IsComplete()) {
-        m_entranceActive = false;
+        m_busy = false;
         ResetIdleAnimation(1, 0, 0);
     }
     return 0;
@@ -1288,14 +1288,14 @@ i32 CGrunt::FinishToobMoveAnimation() {
     if (!sub->IsComplete()) {
         return 0;
     }
-    m_entranceActive = false;
+    m_busy = false;
     if (m_selected != false) {
         CreateHealthSprite();
         CreateStaminaSprite();
         CreateToySprite();
     }
     SET_ANIMATION_ACT("D");
-    SetupTubeAnim(m_coordToggle);
+    SetToobWaterMode(m_toobWaterMode);
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->GetTileGrid();
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;

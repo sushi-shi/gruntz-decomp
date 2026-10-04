@@ -524,7 +524,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     PLAY_GRUNT_CUE_IN_VIEW(0xe);
 
     ApplyPickup(PICKUP_NONE, 1, 0, 1);
-    m_entranceActive = false;
+    m_busy = false;
     return 1;
 }
 
@@ -985,7 +985,7 @@ inline void CGrunt::SelectCombatHitCue(
         }
         return;
     }
-    if (this->m_activePickupType == PICKUP_TOOB && this->m_coordToggle != false) {
+    if (this->m_activePickupType == PICKUP_TOOB && this->m_toobWaterMode != false) {
         LK(s_toobz);
         return;
     }
@@ -1432,7 +1432,7 @@ i32 CGrunt::CommitNeighbor(
     i32 stamina = m_stamina;
     SetNeighbor(targetPlayerIndex, targetUnitIndex);
     m_attackTargetPx.Set(targetPxX, targetPxY);
-    if (stamina < STAMINA_FULL || m_entranceActive != false) {
+    if (stamina < STAMINA_FULL || m_busy != false) {
         m_attackQueued = true;
         return 1;
     }
@@ -1671,7 +1671,7 @@ void CGrunt::Activate() {
     m_stamina = STAMINA_FULL;
     m_toyTime = 0;
     m_wingzTime = 0;
-    m_entranceActive = false;
+    m_busy = false;
     m_arrivalPending = false;
     m_aiType = AI_NONE;
     m_inCombat = false;
@@ -1836,14 +1836,14 @@ void CGrunt::StepBehavior(char*) {
             }
         } else if (onMoveTile != 0) {
             if (flags & 0x100) {
-                if (m_coordToggle == false) {
+                if (m_toobWaterMode == false) {
                     StartToolUseAnimation(
                         m_lastTilePx.m_x >> TILE_SHIFT_PX,
                         m_lastTilePx.m_y >> TILE_SHIFT_PX
                     );
                     return;
                 }
-            } else if (m_coordToggle != false) {
+            } else if (m_toobWaterMode != false) {
                 StartToolUseAnimation(
                     m_lastTilePx.m_x >> TILE_SHIFT_PX,
                     m_lastTilePx.m_y >> TILE_SHIFT_PX
@@ -1964,7 +1964,7 @@ void CGrunt::StepBehavior(char*) {
     }
 
 afterTile:
-    if (m_entranceActive == false && m_entranceCommitted != false) {
+    if (m_busy == false && m_entranceCommitted != false) {
         CWwdSpriteObject* obj = m_object;
         i32 sx = obj->m_screenX;
         if (sx != m_lastTilePx.m_x) {

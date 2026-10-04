@@ -392,7 +392,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (unit->IsDeathAnimationStarted() != false) {
                     continue;
                 }
-                if (unit->m_entranceActive != false) {
+                if (unit->m_busy != false) {
                     continue;
                 }
                 if (unit->IsInCombat() != false) {
@@ -653,8 +653,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
-                            && unit->IsDeathAnimationStarted() == false
-                            && unit->m_entranceActive == false && unit->IsInCombat() == false) {
+                            && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                            && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->GetEquippedToolType();
                                 if (st2 == PICKUP_BRICK && unit->m_aiType == AI_DEFENDER
@@ -739,7 +739,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
                                     && unit->IsEntranceCommitted() != false
                                     && unit->IsDeathAnimationStarted() == false
-                                    && unit->m_entranceActive == false) {
+                                    && unit->m_busy == false) {
                                     RECT box;
                                     unit->BuildUnitSearchBox(&box, 4);
                                     Coord c5;
@@ -788,7 +788,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (unit->IsDeathAnimationStarted() != false) {
                                 special = 0;
                             }
-                            if (unit->m_entranceActive != false) {
+                            if (unit->m_busy != false) {
                                 special = 0;
                             }
                             if (!UpdateBattlezSpecialEligibility(unit, special)) {
@@ -808,8 +808,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
-                            && unit->IsDeathAnimationStarted() == false
-                            && unit->m_entranceActive == false && unit->IsInCombat() == false) {
+                            && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                            && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 for (i32 j = 0; j < 4; j++) {
                                     if (j != m_playerIndex) {
@@ -847,8 +847,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 BattlezTask battleTask = unit->m_battleState;
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
                     if (unit->IsEntranceCommitted() != false
-                        && unit->IsDeathAnimationStarted() == false
-                        && unit->m_entranceActive == false && unit->IsInCombat() == false) {
+                        && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                        && unit->IsInCombat() == false) {
                         if (BattlezActDiffersFromIGLPJCR(unit)) {
                             if (unit->m_battleState != BZTASK_UNASSIGNED) {
                                 if (RouteToNearbyEnemy(unit) != 0) {
@@ -862,7 +862,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         }
         if (unit != NULL) {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->IsEntranceCommitted() != false
-                && unit->IsDeathAnimationStarted() == false && unit->m_entranceActive == false
+                && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
                 && unit->IsInCombat() == false) {
                 if (BattlezActDiffersFromIGLPJCR(unit)) {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
@@ -920,8 +920,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
                             && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
                             && unit->IsEntranceCommitted() != false
-                            && unit->IsDeathAnimationStarted() == false
-                            && unit->m_entranceActive == false && unit->IsInCombat() == false) {
+                            && unit->IsDeathAnimationStarted() == false && unit->m_busy == false
+                            && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 goto dispatch;
                             }
@@ -2661,7 +2661,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (u->m_deathAnimStarted != false) {
                 continue;
             }
-            if (u->m_entranceActive != false) {
+            if (u->m_busy != false) {
                 continue;
             }
             if (u->m_inCombat != false) {
@@ -2838,7 +2838,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         CGrunt* cand = m_triggerMgr->UnitAt(m_playerIndex, r);
         if (cand != NULL) {
             if (IsGruntAtSavedScreenPos(cand) && cand->IsEntranceCommitted() != false
-                && cand->IsDeathAnimationStarted() == false && cand->m_entranceActive == false
+                && cand->IsDeathAnimationStarted() == false && cand->m_busy == false
                 && cand->IsInCombat() == false) {
                 if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
                     && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
@@ -2902,7 +2902,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->IsDeathAnimationStarted() != false) {
         return 0;
     }
-    if (unit->m_entranceActive != false) {
+    if (unit->m_busy != false) {
         return 0;
     }
     if (unit->IsInCombat() != false) {
