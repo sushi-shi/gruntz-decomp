@@ -1163,7 +1163,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RegisterInputBindings();
     if (diff != 0 && (g_gameReg)->GetGameMode() == GAMEMODE_QUESTZ) {
-        BuildWarlordNameTable(savedThis);
+        UnloadGruntAndWarlordAssets(savedThis);
     }
     BuildHelpReveal(false);
     RegisterInputBindings();
@@ -1183,7 +1183,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    if (!BuildSpriteImageKeyTable(savedThis)) {
+    if (!LoadGruntImageNamespaces(savedThis)) {
         goto fail0;
     }
     BuildHelpReveal(false);
@@ -1233,7 +1233,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->SendLobbyKeepAlive();
     }
     RegisterInputBindings();
-    if (!BuildAnizKeyTable(NULL)) {
+    if (!LoadGruntAnimationNamespaces(NULL)) {
         goto fail0;
     }
     BuildHelpReveal(false);
@@ -5548,18 +5548,18 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 BuildHelpReveal(false);
                 loaded[id] = 1;
             }
-            if (!BuildGruntTypeNameTable(static_cast<PickupType>(id), 1, 0, ctx)) {
+            if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(id), 1, 0, ctx)) {
                 return 0;
             }
         }
-        if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+        if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x21] == 0) {
             BuildHelpReveal(false);
             loaded[0x21] = 1;
         }
-        if (!BuildGruntTypeNameTable(GRUNT_REAPER, 1, 0, ctx)) {
+        if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x22] == 0) {
@@ -5567,7 +5567,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             loaded[0x22] = 1;
         }
         CString s("WARLORDZ_NAPOLEAN");
-        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x23] == 0) {
@@ -5575,7 +5575,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             loaded[0x23] = 1;
         }
         s = "WARLORDZ_VIKING";
-        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x24] == 0) {
@@ -5583,7 +5583,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             loaded[0x24] = 1;
         }
         s = "WARLORDZ_PATTON";
-        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!SetAssetGroupLoaded(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x25] == 0) {
@@ -5602,7 +5602,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             if (dispatch == DispatchGruntStartingPointLogic) {
                 i32 v = obj->m_powerup;
                 if (v) {
-                    if (!BuildGruntTypeNameTable(static_cast<PickupType>(v), 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(v), 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
@@ -5612,7 +5612,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 }
                 v = obj->m_damage;
                 if (v) {
-                    if (!BuildGruntTypeNameTable(static_cast<PickupType>(v), 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(v), 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
@@ -5623,7 +5623,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 EnemyAiType aiType = static_cast<EnemyAiType>(obj->GetPoints());
                 switch (aiType) {
                     case AI_BOMBER:
-                        if (!BuildGruntTypeNameTable(PICKUP_BOMB, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_BOMB, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[1] == 0) {
@@ -5632,7 +5632,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_BRICKLAYER:
-                        if (!BuildGruntTypeNameTable(PICKUP_BRICK, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_BRICK, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[3] == 0) {
@@ -5641,7 +5641,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_GAUNTLETZGRUNT:
-                        if (!BuildGruntTypeNameTable(PICKUP_GAUNTLETZ, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_GAUNTLETZ, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[5] == 0) {
@@ -5650,7 +5650,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_GOOSUCKER:
-                        if (!BuildGruntTypeNameTable(PICKUP_GOOBER, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_GOOBER, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[7] == 0) {
@@ -5659,7 +5659,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_DIGGER:
-                        if (!BuildGruntTypeNameTable(PICKUP_SHOVEL, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_SHOVEL, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0xd] == 0) {
@@ -5668,7 +5668,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_TIMEBOMBER:
-                        if (!BuildGruntTypeNameTable(PICKUP_TIMEBOMB, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_TIMEBOMB, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x11] == 0) {
@@ -5677,7 +5677,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_MAGICWANDGRUNT:
-                        if (!BuildGruntTypeNameTable(PICKUP_WAND, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_WAND, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x13] == 0) {
@@ -5686,7 +5686,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                     case AI_SCROLLGRUNT:
-                        if (!BuildGruntTypeNameTable(PICKUP_SCROLL, 1, 0, ctx)) {
+                        if (!SetGruntTypeAssetsLoaded(PICKUP_SCROLL, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x1e] == 0) {
@@ -5712,7 +5712,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 i32 d = obj->GetSmarts();
                 PickupType item = static_cast<PickupType>(d);
                 if (item <= PICKUP_TOYZ_LAST) {
-                    if (!BuildGruntTypeNameTable(item, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->GetSmarts()] == 0) {
@@ -5720,7 +5720,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->GetSmarts()] = 1;
                     }
                 } else if (d == IDX(GRUNT_HAREKRISHNA)) {
-                    if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
@@ -5728,7 +5728,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x21] = 1;
                     }
                 } else if (d == IDX(GRUNT_REAPER)) {
-                    if (!BuildGruntTypeNameTable(GRUNT_REAPER, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
@@ -5736,7 +5736,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
-                    if (!BuildGruntTypeNameTable(
+                    if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
@@ -5749,7 +5749,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
-                    if (!BuildGruntTypeNameTable(
+                    if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
@@ -5781,7 +5781,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 i32 e = obj->m_powerup;
                 PickupType item = static_cast<PickupType>(e);
                 if (item <= PICKUP_TOYZ_LAST) {
-                    if (!BuildGruntTypeNameTable(item, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(item, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->m_powerup] == 0) {
@@ -5789,7 +5789,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->m_powerup] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_HAREKRISHNA)) {
-                    if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
@@ -5797,7 +5797,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x21] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_REAPER)) {
-                    if (!BuildGruntTypeNameTable(GRUNT_REAPER, 1, 0, ctx)) {
+                    if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
@@ -5805,7 +5805,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
-                    if (!BuildGruntTypeNameTable(
+                    if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,
@@ -5818,7 +5818,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
-                    if (!BuildGruntTypeNameTable(
+                    if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(obj->GetPoints()),
                             1,
                             0,

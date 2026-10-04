@@ -128,7 +128,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
             return;
     }
 
-    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, NULL);
+    g_gameReg->m_curState->SetAssetGroupLoaded(m_warlordName, 1, 0, NULL);
 
     m_idleAnims[0] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,

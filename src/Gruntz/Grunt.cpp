@@ -2382,9 +2382,9 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
     {
         CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
         if (pickupType == PICKUP_TOOB) {
-            play->BuildGruntTypeNameTable(PICKUP_TOOB, 1, 1, NULL);
+            play->SetGruntTypeAssetsLoaded(PICKUP_TOOB, 1, 1, NULL);
         } else {
-            play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, NULL);
+            play->SetAssetGroupLoaded(m_animSetName, 1, 1, NULL);
         }
     }
     m_activePickupType = pickupType;

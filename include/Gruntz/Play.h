@@ -184,7 +184,7 @@ public:
     void DrawMessageFrame(i32 index, b32 useFront);
 
     void LoadSBITextEdges(i32 msgId);
-    i32 BuildGruntNamespaceList(CMulti* finishGate);
+    i32 LoadGruntAssetNamespaces(CMulti* multiplayerSession);
 
     i32 StepViewportResize();
     i32 GetAmbientId();
@@ -272,9 +272,9 @@ public:
     i32 LoadGameImages(i32 force);
     i32 LoadGameSounds(i32 force);
     i32 LoadGameAnims(i32 force);
-    i32 LoadGruntSoundNamespaces(CMulti* notify);
-    i32 BuildSpriteImageKeyTable(CMulti* notify);
-    i32 BuildAnizKeyTable(CMulti* notify);
+    i32 LoadGruntSoundNamespaces(CMulti* multiplayerSession);
+    i32 LoadGruntImageNamespaces(CMulti* multiplayerSession);
+    i32 LoadGruntAnimationNamespaces(CMulti* multiplayerSession);
 
     i32 EnterMode(GameStateId mode);
     i32 ResetPlayState();
@@ -285,7 +285,7 @@ public:
 
     i32 SetEffectSpriteDurations();
 
-    i32 BuildWarlordNameTable(CMulti* finishGate);
+    i32 UnloadGruntAndWarlordAssets(CMulti* multiplayerSession);
 
     i32 LoadWarlordSprites(CMulti* ctx, i32* loaded);
 
@@ -404,7 +404,12 @@ public:
     i32 SaveUnderAndDrawCursor(CDDrawSurfacePair* pair);
     i32 LoadCursorSprites(i32 cursorId, b32 targetValid);
     i32 LoadScrollSpeedOptions();
-    i32 BuildGruntTypeNameTable(PickupType typeIdx, i32 mode, i32 lightGate, CMulti* finishGate);
+    i32 SetGruntTypeAssetsLoaded(
+        PickupType gruntType,
+        i32 loadAssets,
+        i32 showLoadingText,
+        CMulti* multiplayerSession
+    );
 
     i32 ScanBuildTiles();
     i32 ScanShuffleQuads();

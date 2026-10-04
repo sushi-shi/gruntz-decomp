@@ -165,7 +165,7 @@ i32 CGrunt::SetCarriedToy(PickupType toyType) {
     }
 #undef INIT_TOY_USE_RECTS
 
-    g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, NULL);
+    g_gameReg->m_curState->SetAssetGroupLoaded(name, 1, 1, NULL);
 
     TileCollisionKind tileKind = g_gameReg->GetTileGrid()->CellTypeAt(
         m_lastTilePx.m_x >> TILE_SHIFT_PX,
