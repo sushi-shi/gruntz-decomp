@@ -1722,7 +1722,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         }
                         grunt->SetHealth(HEALTH_FULL);
                         grunt->CreateHealthSprite();
-                        ArmGruntCombatTimeout(grunt);
+                        grunt->ArmCombatTimeout();
                         CreateLightFx(
                             g_gameReg->World()->ChildGroup(),
                             gruntX,

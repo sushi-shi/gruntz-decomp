@@ -1397,7 +1397,7 @@ i32 CGrunt::CommitNeighbor(
     }
 
     CreateHealthSprite();
-    ArmGruntCombatTimeout(this);
+    ArmCombatTimeout();
     m_neighborScanEnabled = true;
 
     CGrunt* nb = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
@@ -1437,7 +1437,7 @@ i32 CGrunt::CommitNeighbor(
     }
     m_inCombat = true;
     nb->CreateHealthSprite();
-    ArmGruntCombatTimeout(nb);
+    nb->ArmCombatTimeout();
     HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
     i32 stamina = m_stamina;
     SetNeighbor(targetPlayerIndex, targetUnitIndex);
@@ -1470,7 +1470,7 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
                 m_attackWindupActive = true;
                 CreateHealthSprite();
 
-                ArmGruntCombatTimeout(this);
+                ArmCombatTimeout();
                 m_neighborScanEnabled = true;
                 m_attackTargetPx.Set(targetPxX, targetPxY);
                 StartRangedAttackAnimation();

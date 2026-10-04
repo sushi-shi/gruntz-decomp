@@ -9,8 +9,8 @@ inline void CGrunt::StartHudRetireTimer() {
     m_hudRetireTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
 }
 
-inline void ArmGruntCombatTimeout(CGrunt* grunt) {
-    grunt->m_combatTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
+inline void CGrunt::ArmCombatTimeout() {
+    m_combatTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
 }
 
 #endif // GRUNTZ_GRUNTCOMBATCLOCKINLINE_H
