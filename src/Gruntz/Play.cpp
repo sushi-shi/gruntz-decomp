@@ -5561,7 +5561,6 @@ i32 CPlay::CloseLevelOverlay(i32) {
 }
 
 // @early-stop
-
 RVA(0x000d65d0, 0x7cc)
 i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAssetGroups) {
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
@@ -5616,7 +5615,10 @@ i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAs
     }
 
     CObList* head = this->m_world->ChildGroup()->GetList();
-    POSITION pos = head == NULL ? NULL : head->GetHeadPosition();
+    if (head == NULL) {
+        return 0;
+    }
+    POSITION pos = head->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = this->m_world->ChildGroup()->NextChild(pos);
         if (obj) {
