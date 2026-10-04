@@ -891,6 +891,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     i32 diff = 0;
 
     char nameBuf[0x20];
+    // The asset loader also accesses index 0x25, overlapping saved exception-chain state.
     i32 initScratch[0x25];
 
     self->m_hudSuppressed = true;
