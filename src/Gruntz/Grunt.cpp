@@ -770,7 +770,6 @@ i32 CGrunt::StepArrivalDrop(
     i32 extraPassableMask
 ) {
     Coord* tail;
-    POSITION pos;
     Coord lastTile, targetTile;
     i32 passableMask, cnt, headFlags, lastFlags, hit;
     i32 reinit;
@@ -863,10 +862,7 @@ i32 CGrunt::StepArrivalDrop(
                 if (probe.GetCount() <= cnt + 3) {
                     g_coordPool.Push(probe.RemoveHead());
                     this->RecycleCoords();
-                    pos = probe.GetHeadPosition();
-                    while (pos != NULL) {
-                        AddTailCoord(static_cast<Coord*>(probe.GetNext(pos)));
-                    }
+                    AppendCoords(probe);
                 } else {
                     RecycleCoordList(probe);
                 }
