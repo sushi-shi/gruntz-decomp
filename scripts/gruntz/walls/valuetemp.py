@@ -77,7 +77,7 @@ FRAME_LOAD = re.compile(r"^(e[a-z][a-z]),(?:DWORD PTR )?\[esp(?:\+0x([0-9a-f]+))
 REG_MOVE = re.compile(r"^(e[a-z][a-z]),(e[a-z][a-z])$")
 # An address-taken frame object is live THROUGHOUT, and only its BASE appears in
 # the operand - so a per-dword read scan calls its interior fields dead. That is
-# the sieve's one false-positive class (CBattlezMapConfig::ScanRegion built two
+# the sieve's one false-positive class (CBattlezAiController::ScanRegion built two
 # adjacent RECTs, `lea`'d both and pushed one; the sieve read the second RECT's
 # right/bottom stores as a Coord temp). An address-take therefore covers a whole
 # object: up to the next address-taken base, capped at the widest aggregate this
@@ -148,7 +148,7 @@ def _esp_trace(ins):
     under this codebase's `__thiscall`/`__stdcall`, and by the caller's own
     `add esp,N` under `__cdecl`; either way esp is back at the frame level once
     the call returns. Counting pushes without that made the delta drift upward
-    monotonically - measured on CBattlezMapConfig::RepathAroundBlockedTiles, one
+    monotonically - measured on CBattlezAiController::RepathAroundBlockedTiles, one
     `[esp+0x54]` normalised to five different slots across the body - so the
     same physical slot before and after a call read as two, which is a false
     dead store in one direction and a missed one in the other."""
@@ -246,7 +246,7 @@ def _pairs(ins):
     slot and then takes that slot's address, so a set-based escape screen loses
     the established positive. But an escape is not a point event either. The
     pointer outlives the `lea`, so a slot whose address is taken ANYWHERE is
-    observed by any store with no killing store after it - CBattlezMapConfig::
+    observed by any store with no killing store after it - CBattlezAiController::
     RepathAroundBlockedTiles fills a RECT and schedules the last field's store
     after the `lea`+pushes that consume it.
 
@@ -294,7 +294,7 @@ def _pairs(ins):
     for k, (b, n, load_at, at) in dead.items():
         # A pair read from another FRAME SLOT is a local aggregate copy, and its
         # source offset is a frame offset - which is NOT comparable across the
-        # two sides. CBattlezMapConfig::RouteToNearbyEnemy emits the identical
+        # two sides. CBattlezAiController::RouteToNearbyEnemy emits the identical
         # eleven-instruction RECT copy on both sides at [esp+0x6c] and
         # [esp+0x80], and keying on the offset read that as an asymmetry in both
         # directions at once. They are counted, never compared.

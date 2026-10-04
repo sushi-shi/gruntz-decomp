@@ -54,7 +54,7 @@
 #include <string.h>
 
 RVA(0x000350d0, 0xfa)
-i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
+i32 CBattlezAiController::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->GetDwell()) > static_cast<u32>(m_repathBudget)) {
         POSITION pos = m_triggerMgr->GetPuddleHeadPosition();
         CGruntPuddle* best = NULL;
@@ -93,7 +93,7 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00035210, 0x4f)
-i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
+i32 CBattlezAiController::ProbeUnoccupiedAt(i32 x, i32 y) {
     CTriggerMgr* manager = m_ctx->GetTriggerMgr();
     POSITION pos = manager->GetPuddleHeadPosition();
     while (pos != NULL) {

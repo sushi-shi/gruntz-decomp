@@ -46,7 +46,7 @@ confident one-directional census before they were fixed:
   * the source load must be found by REACHING DEFINITION, not by a fixed
     look-back window. Searching a fixed number of instructions before the FIRST
     store makes the answer depend on where the scheduler put the two loads:
-    CBattlezMapConfig::TrackAssignedEnemy emits the identical eight-instruction
+    CBattlezAiController::TrackAssignedEnemy emits the identical eight-instruction
     RECT copy on both sides, and a ONE-INSTRUCTION rotation put one load inside
     the window on one side and outside it on the other. That alone accounted
     for 44 of the 55 rows the first sweep reported.

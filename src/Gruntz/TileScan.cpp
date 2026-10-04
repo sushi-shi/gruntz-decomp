@@ -14,7 +14,7 @@
 #include <Wap32/TileGeometry.h>
 
 RVA(0x00035f10, 0x155)
-i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
+i32 CBattlezAiController::RerouteSwitchSeeker(CGrunt* grunt) {
     if (static_cast<u32>(grunt->GetDwell()) <= static_cast<u32>(m_inactiveTargetRerouteDelay)) {
         return 1;
     }

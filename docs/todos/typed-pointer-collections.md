@@ -27,7 +27,7 @@ source layer the original developers wrote around each collection.
   keeps `InsertAt`/`Add`, deserialization stores with `SetAt`.
 - `CGrunt::m_coordList`: `GetHeadCoord()`/`GetTailCoord()` beside the
   existing `CoordHead()`/`CoordTail()` positions, at every head/tail read
-  (CGrunt and CBattlezMapConfig). `ValidateUnitPath` keeps its local head
+  (CGrunt and CBattlezAiController). `ValidateUnitPath` keeps its local head
   `POSITION` (converting it costs 0.7). `OnObjectRemoved` and
   `LoadStateRecord` now use `RECYCLE_GRUNT_COORDS_VIA_NEXTDATA`. The other
   recycle shapes (`RecycleCoords`, `RecycleGruntCoords`, `ARR_RECYCLE`) are
@@ -116,7 +116,7 @@ cast in a plain walk is the era idiom, not missing API. Remaining leads:
   `RecordLinkedMoves(key)` drops it 90.29 -> 88.85 (function-scope
   `pos`/`anyHit` suggest copy-pasted cases).
 - Coordinate recycle-and-empty blocks also open-coded for
-  `CBattlezMapConfig::m_candArray` (FreeArrays, SerializeState; the
+  `CBattlezAiController::m_candArray` (FreeArrays, SerializeState; the
   waypoint loop differs in its NULL check), `CGruntzMapMgr::m_arr`,
   `CTriggerMgr::m_selectedUnitIds`, `CProjectile::m_hitList` and the
   `CGrunt::m_coordList` variants; no single helper explains them yet.

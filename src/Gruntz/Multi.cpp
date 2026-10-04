@@ -472,12 +472,12 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
         if (e == NULL) {
             return 0;
         }
-        e->GetBattlezConfig()->FreeArrays();
-        if (e->GetBattlezConfig()->LoadConfig(Mgr(), i, e->GetDifficulty()) == 0) {
+        e->GetBattlezAiController()->FreeArrays();
+        if (e->GetBattlezAiController()->LoadConfig(Mgr(), i, e->GetDifficulty()) == 0) {
             return 0;
         }
         if (e->IsHumanControlled() && e->IsActive()) {
-            e->GetBattlezConfig()->Clear();
+            e->GetBattlezAiController()->Clear();
         }
     }
     StartLevelPlay();

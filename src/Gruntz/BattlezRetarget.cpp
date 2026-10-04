@@ -55,13 +55,13 @@
 #include <string.h>
 
 RVA(0x000358a0, 0x2d6)
-i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
+i32 CBattlezAiController::RetargetIdleUnit(CGrunt* unit) {
     GruntzPlayer* recA = NULL;
-    CBattlezMapConfig* cfgB = NULL;
+    CBattlezAiController* cfgB = NULL;
     i32 cell = unit->ArrivalCell().m_x;
     if (cell >= 0 && cell < 4) {
         recA = &m_ctx->GetPlayer(cell);
-        cfgB = recA->GetBattlezConfig();
+        cfgB = recA->GetBattlezAiController();
     }
     if (unit->CoordsEmpty()) {
         if (cell == -1) {
@@ -73,7 +73,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
                 r++;
             }
             i32 band = r % 4;
-            CBattlezMapConfig* b = m_ctx->GetPlayer(band).GetBattlezConfig();
+            CBattlezAiController* b = m_ctx->GetPlayer(band).GetBattlezAiController();
             if (b != NULL) {
                 i32 cnt = b->GetAttackWaypointCount();
                 Coord goal = b->GetBaseTile();
@@ -89,7 +89,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             unit->ResetDwell();
             return 1;
         }
-        CBattlezMapConfig* recB = m_ctx->GetPlayer(cell).GetBattlezConfig();
+        CBattlezAiController* recB = m_ctx->GetPlayer(cell).GetBattlezAiController();
         if (recB == NULL) {
             return 1;
         }

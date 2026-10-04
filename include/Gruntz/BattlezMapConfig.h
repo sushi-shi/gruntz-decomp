@@ -18,7 +18,7 @@ class CGrunt;
 class CGruntzMgr;
 class CPlay;
 
-class CBattlezMapConfig {
+class CBattlezAiController {
 public:
     const Coord& GetBaseTile() const {
         return m_marker;
@@ -26,8 +26,8 @@ public:
 
     i32 LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty);
 
-    CBattlezMapConfig();
-    ~CBattlezMapConfig();
+    CBattlezAiController();
+    ~CBattlezAiController();
     void FreeArrays();
     i32 StepAllRowSpawns();
     void Clear();

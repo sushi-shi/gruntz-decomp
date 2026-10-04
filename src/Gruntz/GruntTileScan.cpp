@@ -22,7 +22,7 @@
 
 // @early-stop
 RVA(0x00032ce0, 0x448)
-i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
+i32 CBattlezAiController::ScanRegion(CGrunt* g) {
     if (g->GetStamina() >= STAMINA_FULL) {
         if (!g->CoordsEmpty()) {
             Coord* c = g->GetTailCoord();

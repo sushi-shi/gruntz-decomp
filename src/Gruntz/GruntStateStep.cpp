@@ -25,7 +25,7 @@
 #include <string.h>
 
 RVA(0x00033520, 0xbc3)
-i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
+i32 CBattlezAiController::StepDefenderUnit(CGrunt* defender) {
     GruntAiState state = defender->GetAiState();
     if (state == AISTATE_RETURN) {
         return 1;

@@ -91,7 +91,7 @@ static GruntDirectionCell s_gruntDirSpare[3];
 
 // @early-stop
 RVA(0x00024dc0, 0x158)
-CBattlezMapConfig::CBattlezMapConfig() {
+CBattlezAiController::CBattlezAiController() {
     m_playerIndex = 0;
     m_reserved01c = 1;
     m_reserved020 = 0x40;
@@ -129,13 +129,17 @@ CBattlezMapConfig::CBattlezMapConfig() {
 }
 
 RVA(0x00024f80, 0x7d)
-CBattlezMapConfig::~CBattlezMapConfig() {
+CBattlezAiController::~CBattlezAiController() {
     FreeArrays();
 }
 
 // @early-stop
 RVA(0x00025020, 0x984)
-i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty) {
+i32 CBattlezAiController::LoadConfig(
+    CGruntzMgr* mgr,
+    i32 playerIndex,
+    BattlezDifficulty difficulty
+) {
 
     m_gruntCreationTime = 0;
     m_spawnTimer = 0;
@@ -294,7 +298,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 }
 
 RVA(0x00025c20, 0x55)
-i32 CBattlezMapConfig::StepAllRowSpawns() {
+i32 CBattlezAiController::StepAllRowSpawns() {
     if (g_gameReg->GetPlayer(m_playerIndex).IsHumanControlled() == false
         && g_gameReg->GetPlayer(m_playerIndex).IsActive() != false) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
@@ -305,7 +309,7 @@ i32 CBattlezMapConfig::StepAllRowSpawns() {
 }
 
 RVA(0x00025ca0, 0xbf)
-void CBattlezMapConfig::FreeArrays() {
+void CBattlezAiController::FreeArrays() {
     i32 i;
     for (i = 0; i < m_candArray.GetSize(); i++) {
         Coord* p = static_cast<Coord*>(m_candArray[i]);
@@ -327,7 +331,7 @@ void CBattlezMapConfig::FreeArrays() {
 
 // @early-stop
 RVA(0x00025d90, 0x580)
-i32 CBattlezMapConfig::StepBoard() {
+i32 CBattlezAiController::StepBoard() {
     if (m_active == false) {
         return 1;
     }
@@ -480,7 +484,7 @@ i32 CBattlezMapConfig::StepBoard() {
 }
 
 RVA(0x00026470, 0x29d)
-i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
+i32 CBattlezAiController::StepRowSpawn(b32 allowReserved) {
     i32 occupied = 0;
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (i32 unitsRemaining = TM_UNITS_PER_PLAYER; unitsRemaining != 0; unitsRemaining--) {
@@ -600,7 +604,7 @@ candidateFound:
 }
 
 RVA(0x000267c0, 0x2850)
-i32 CBattlezMapConfig::StepRowUnits() {
+i32 CBattlezAiController::StepRowUnits() {
     m_roundRobinTick++;
     CGrunt* unit;
     i32 hit;
@@ -1225,7 +1229,7 @@ i32 CGrunt::IsAtSavedScreenPos() {
 }
 
 RVA(0x00029af0, 0x3b)
-void CBattlezMapConfig::RerouteIdleUnit(
+void CBattlezAiController::RerouteIdleUnit(
     CGrunt* unit,
     i32 col,
     i32 row,
@@ -1243,7 +1247,7 @@ void CBattlezMapConfig::RerouteIdleUnit(
 }
 
 RVA(0x00029b40, 0x813)
-i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
+i32 CBattlezAiController::ValidateUnitPath(CGrunt* unit) {
     CPtrList* coordList = unit->GetCoordList();
     if (unit->CoordsEmpty()) {
         goto returnZero;
@@ -1486,7 +1490,7 @@ returnZero:
 }
 
 RVA(0x0002a570, 0x4c6)
-i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
+i32 CBattlezAiController::RepathAroundBlockedTiles(CGrunt* unit) {
     CPtrList* coordList = unit->GetCoordList();
     if (coordList->IsEmpty()) {
         return 1;
@@ -1569,7 +1573,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 }
 
 RVA(0x0002ab80, 0x15e)
-CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
+CGrunt* CBattlezAiController::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
     SET_RECT_COMPONENTS(rect, cx - halfW, cy - halfH, cx + halfW, cy + halfH);
     CGrunt* best = NULL;
@@ -1621,7 +1625,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0002ad40, 0x71)
-CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
+CGrunt* CBattlezAiController::PickRandomIdleUnit(i32) {
     i32 band = GetRandom(3);
     if (band == m_playerIndex) {
         band++;
@@ -1639,12 +1643,12 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
 }
 
 RVA(0x0002ade0, 0x7)
-void CBattlezMapConfig::Clear() {
+void CBattlezAiController::Clear() {
     m_active = false;
 }
 
 RVA(0x0002ae00, 0x42e)
-i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
+i32 CBattlezAiController::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->IsEntranceCommitted() == false) {
         return 0;
     }
@@ -1725,7 +1729,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
 }
 
 RVA(0x0002b420, 0x419)
-i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
+i32 CBattlezAiController::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
@@ -1814,7 +1818,7 @@ i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
 }
 
 RVA(0x0002b950, 0x513)
-i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
+i32 CBattlezAiController::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
@@ -1927,7 +1931,12 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
 }
 
 RVA(0x0002bfc0, 0x8a)
-i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, LogicTypeId, i32) {
+i32 CBattlezAiController::SerializeState(
+    CFileMemBase* arArg,
+    SerialMode modeArg,
+    LogicTypeId,
+    i32
+) {
     CFileMemBase* ar = arArg;
     SerialMode mode = modeArg;
     switch (mode) {
@@ -1948,12 +1957,12 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, L
 }
 
 RVA(0x0002c080, 0x8)
-i32 CBattlezMapConfig::AcceptAlways(CGrunt*) {
+i32 CBattlezAiController::AcceptAlways(CGrunt*) {
     return 1;
 }
 
 RVA(0x0002c0a0, 0x78)
-i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
+i32 CBattlezAiController::EnterDefenderMode(CGrunt* unit, i32 value) {
     if (unit->GetAiState() == AISTATE_RETURN) {
         return 1;
     }
@@ -1973,7 +1982,7 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
 }
 
 RVA(0x0002c140, 0x420)
-i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
+i32 CBattlezAiController::RouteToNearbyPickup(CGrunt* unit) {
     if (unit->GetPowerupType() != GRUNT_NORMAL) {
         return 0;
     }
@@ -2083,7 +2092,7 @@ i32 __stdcall BattlezMapConfigAcceptAlwaysArg(i32) {
 }
 
 RVA(0x0002c690, 0xdb4)
-i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
+i32 CBattlezAiController::ResolveArrival(CGrunt* g) {
     CPtrList* coordList = g->GetCoordList();
     if (RepathAroundBlockedTiles(g)) {
         return 1;
@@ -2400,14 +2409,14 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     return 1;
 }
 
-inline void CBattlezMapConfig::SetClaimTarget(i32 col, i32 row) {
+inline void CBattlezAiController::SetClaimTarget(i32 col, i32 row) {
     g_stepRun = false;
     g_stepCol = col;
     g_stepRow = row;
 }
 
 RVA(0x0002d800, 0x605)
-void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
+void CBattlezAiController::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     if (g_stepRun == false) {
         return;
     }
@@ -2547,7 +2556,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
 }
 
 RVA(0x0002dfa0, 0x325)
-i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
+i32 CBattlezAiController::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     g_stepRun = true;
 
     i32 bottom;
@@ -2611,7 +2620,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
 }
 
 RVA(0x0002e3a0, 0x7e1)
-i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
+i32 CBattlezAiController::RouteToNearbyEnemy(CGrunt* unit) {
     CRect box(
         unit->ScanCell().m_x - 7,
         unit->ScanCell().m_y - 7,
@@ -2741,12 +2750,12 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 }
 
 RVA(0x0002ed90, 0x5)
-i32 CBattlezMapConfig::PathToNearbyUnit(CGrunt*) {
+i32 CBattlezAiController::PathToNearbyUnit(CGrunt*) {
     return 0;
 }
 
 RVA(0x0002edb0, 0x6b4)
-i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, i32 ay) {
+i32 CBattlezAiController::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, i32 ay) {
     if (unit->CoordsEmpty()) {
         return 0;
     }
@@ -2865,7 +2874,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
 }
 
 RVA(0x0002f620, 0x871)
-i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
+i32 CBattlezAiController::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->IsEntranceCommitted() == false) {
         return 0;
     }
@@ -3045,7 +3054,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 }
 
 RVA(0x000300c0, 0x190)
-i32 CBattlezMapConfig::RouteUnitTo(
+i32 CBattlezAiController::RouteUnitTo(
     CGrunt* unit,
     i32 goalCol,
     i32 goalRow,
@@ -3099,7 +3108,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000302c0, 0x1ec)
-i32 CBattlezMapConfig::RouteUnitToGoal(
+i32 CBattlezAiController::RouteUnitToGoal(
     CGrunt* unit,
     Coord goal,
     i32 blockedMask,
@@ -3176,7 +3185,7 @@ fail:
 }
 
 RVA(0x00030530, 0x56)
-i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
+i32 CBattlezAiController::PathCrossesMarkedTile(CGrunt* unit) {
     if (unit->CoordsEmpty()) {
         return 0;
     }
@@ -3198,7 +3207,7 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
 
 // @early-stop
 RVA(0x000305b0, 0x121)
-i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
+i32 CBattlezAiController::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     i32 i = 0;
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (;;) {
@@ -3244,7 +3253,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
 
 // @early-stop
 RVA(0x00030730, 0x1da)
-i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i32) {
+i32 CBattlezAiController::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i32) {
     if (m_active == false) {
         return 0;
     }
@@ -3288,7 +3297,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
         Coord current = ScreenTile(u);
         if (u->GetBattlezTask() == BZTASK_ADVANCE && u->GetBattlezTargetPlayerIndex() != -1) {
             Coord marker = m_ctx->GetPlayer(u->GetBattlezTargetPlayerIndex())
-                               .GetBattlezConfig()
+                               .GetBattlezAiController()
                                ->GetBaseTile();
             i32 dx = marker.m_x - current.m_x;
             i32 dy = marker.m_y - current.m_y;
@@ -3313,7 +3322,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
 }
 
 RVA(0x00030990, 0x11b)
-i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
+i32 CBattlezAiController::TrySeedSpawnAt(i32 ax, i32 ay) {
     i32 occupied = 0;
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (i32 unitsRemaining = TM_UNITS_PER_PLAYER; unitsRemaining != 0; unitsRemaining--) {
@@ -3372,7 +3381,7 @@ i32 __stdcall BattlezMapConfigAcceptAlwaysSixArgs(i32, i32, i32, i32, i32, i32) 
 }
 
 RVA(0x00030b20, 0x328)
-i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
+i32 CBattlezAiController::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     i32 bestDist = INT_MAX;
     i32 bestX = col;
     i32 bestY = row;
@@ -3477,7 +3486,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
 // @early-stop
 RVA(0x00030f20, 0x16d)
-Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
+Coord* CBattlezAiController::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     if (kind < 0 || kind >= 4) {
         CGameObject* lvl = unit->m_object;
         i32 sx = lvl->m_screenX >> TILE_SHIFT_PX;
@@ -3488,7 +3497,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     CGameObject* lvl = unit->m_object;
     i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
     i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
-    CPtrArray* coords = &m_ctx->GetPlayer(kind).GetBattlezConfig()->m_attackWaypoints;
+    CPtrArray* coords = &m_ctx->GetPlayer(kind).GetBattlezAiController()->m_attackWaypoints;
     i32 count = coords->GetSize();
     if (count != 0) {
         i32 r = rand() % count;

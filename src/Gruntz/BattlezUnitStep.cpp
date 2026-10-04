@@ -60,7 +60,7 @@
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
 
-inline CGrunt* CBattlezMapConfig::FindNearbyIdleGrunt(CGrunt* unit) {
+inline CGrunt* CBattlezAiController::FindNearbyIdleGrunt(CGrunt* unit) {
     i32 width = m_board->GetWidth();
     i32 height = m_board->GetHeight();
     Coord searchTile;
@@ -74,7 +74,7 @@ inline CGrunt* CBattlezMapConfig::FindNearbyIdleGrunt(CGrunt* unit) {
 }
 
 RVA(0x00031610, 0x501)
-i32 CBattlezMapConfig::Step(CGrunt* g) {
+i32 CBattlezAiController::Step(CGrunt* g) {
     if (g->CoordsEmpty()) {
         if (g->GetAiState() == AISTATE_ATTACK) {
             goto inflight;
@@ -190,7 +190,7 @@ Coord CGrunt::GetTilePos() {
 }
 
 RVA(0x00031ca0, 0x2f2)
-i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
+i32 CBattlezAiController::TrackAssignedEnemy(CGrunt* unit) {
     if (unit->ArrivalCell().m_x != -1 && unit->ArrivalCell().m_y != -1) {
         CGrunt* target = m_triggerMgr->UnitAt(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y);
         if (target != NULL) {
@@ -230,7 +230,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
 }
 
 RVA(0x00032060, 0x7bd)
-i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
+i32 CBattlezAiController::AdvanceToEnemyBase(CGrunt* unit) {
     i32 aiState = unit->GetAiState();
     if (aiState == AISTATE_RETURN) {
         return 1;
@@ -266,7 +266,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         }
     }
     targetPlayerIndex = unit->GetBattlezTargetPlayerIndex();
-    CBattlezMapConfig* bundle = m_ctx->GetPlayer(targetPlayerIndex).GetBattlezConfig();
+    CBattlezAiController* bundle = m_ctx->GetPlayer(targetPlayerIndex).GetBattlezAiController();
     Coord marker = bundle->GetBaseTile();
     if (unit->CoordsEmpty()) {
         switch (unit->GetAiState()) {

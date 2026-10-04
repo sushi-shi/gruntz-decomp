@@ -92,8 +92,8 @@ public:
         return m_maxGruntz;
     }
 
-    CBattlezMapConfig* GetBattlezConfig() {
-        return &m_battlezConfig;
+    CBattlezAiController* GetBattlezAiController() {
+        return &m_battlezAiController;
     }
 
     i32 m_playerIndex;
@@ -113,7 +113,7 @@ public:
 
     b32 m_optionsPresenceCounted;
 
-    CBattlezMapConfig m_battlezConfig;
+    CBattlezAiController m_battlezAiController;
     i32 m_focusX;
     i32 m_focusY;
     i32 m_maxGruntz;

@@ -1511,8 +1511,8 @@ void CPlay::ClearLevelState() {
     }
     m_cameraBookmarks.RemoveAll();
     for (i = 0; i < 4; i++) {
-        m_mgr->GetPlayer(i).GetBattlezConfig()->FreeArrays();
-        m_mgr->GetPlayer(i).GetBattlezConfig()->Clear();
+        m_mgr->GetPlayer(i).GetBattlezAiController()->FreeArrays();
+        m_mgr->GetPlayer(i).GetBattlezAiController()->Clear();
     }
     m_cameraBookmarkIndex = -1;
 }
@@ -5495,7 +5495,7 @@ i32 CPlay::StartLevelPlay() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->GetPlayer(i).GetBattlezConfig()->StepAllRowSpawns();
+        g_gameReg->GetPlayer(i).GetBattlezAiController()->StepAllRowSpawns();
     }
     m_levelTimeExpired = false;
     CLevelTimer* fm = m_levelTimer;

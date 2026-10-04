@@ -54,7 +54,7 @@
 #include <string.h>
 
 RVA(0x00034c70, 0x133)
-i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
+i32 CBattlezAiController::CheckQueuedSpawnTile(CGrunt* unit) {
     if (!unit->CoordsEmpty()) {
         return 1;
     }

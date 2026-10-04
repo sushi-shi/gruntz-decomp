@@ -151,7 +151,7 @@ i32 CExitTrigger::AdvanceAnim() {
             } else {
                 GruntzPlayer* board = &g_gameReg->GetPlayer(owningPlayer);
                 if (board != NULL && board->IsHumanControlled() == false) {
-                    board->GetBattlezConfig()->Clear();
+                    board->GetBattlezAiController()->Clear();
                 }
             }
         } else {
