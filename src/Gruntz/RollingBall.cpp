@@ -129,12 +129,12 @@ i32 CRollingBall::Update() {
     CWwdSpriteObject* logic = m_object;
     if (logic->m_points > 0) {
         if (m_explodeTiming.Expired()) {
-            SetImageSetByName("LEVEL_ROLLINGBALL_EXPLOSION");
+            anim->SetImageSetByName("LEVEL_ROLLINGBALL_EXPLOSION");
             SwitchAnimationByName("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->GetTileGrid();
             CWwdSpriteObject* lg = m_object;
-            i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
             i32 cy = lg->m_screenY >> TILE_SHIFT_PX;
+            i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
                 map->CellFlagsAtUnchecked(cx, cy) &= 0xefffffff;
             }
@@ -144,8 +144,8 @@ i32 CRollingBall::Update() {
 
     if (m_fallLatch == 0) {
         CWwdSpriteObject* lg = m_object;
-        i32 sx = lg->m_screenX;
         i32 sy = lg->m_screenY;
+        i32 sx = lg->m_screenX;
         if (::PtInRect(&g_gameReg->m_viewBounds, sx, sy)) {
             g_gameReg->GetTriggerMgr()->m_rollingballWanted = true;
         }
@@ -236,8 +236,8 @@ i32 CRollingBall::Update() {
                             fall = "LEVEL_ROLLINGBALL_SINK";
                             explosion = "LEVEL_ROLLINGBALLSINKDEATH";
                             CWwdSpriteObject* o = m_object;
-                            i32 px = o->m_screenX;
                             i32 py = o->m_screenY;
+                            i32 px = o->m_screenX;
                             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
                                 CreateParticlez(
                                     g_gameReg->World()->ChildGroup(),
@@ -261,8 +261,8 @@ i32 CRollingBall::Update() {
 
                     CMapMgr* board = g_gameReg->GetTileGrid();
                     CWwdSpriteObject* o2 = m_object;
-                    i32 bx = o2->m_screenX >> TILE_SHIFT_PX;
                     i32 by = o2->m_screenY >> TILE_SHIFT_PX;
+                    i32 bx = o2->m_screenX >> TILE_SHIFT_PX;
                     i32 sink;
                     if (static_cast<u32>(bx) < board->m_width
                         && static_cast<u32>(by) < board->m_height) {
@@ -351,8 +351,8 @@ i32 CRollingBall::Update() {
                     SetImageSetByName("LEVEL_ROLLINGBALL_SINK");
                     SwitchAnimationByName("LEVEL_ROLLINGBALLSINKWATER", 0);
                     CWwdSpriteObject* o = m_object;
-                    i32 px = o->m_screenX;
                     i32 py = o->m_screenY;
+                    i32 px = o->m_screenX;
                     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
                         CreateParticlez(
                             g_gameReg->World()->ChildGroup(),
