@@ -30,16 +30,16 @@ inline PickupType CGrunt::ArrivalPickupOf(PickupType entranceReason) const {
 #define ARRIVAL_PICKUP_OF_TERNARY_LE(grunt, entranceReason)                                        \
     ((entranceReason <= PICKUP_EQUIPPABLE_LAST) ? entranceReason : grunt->m_toolId)
 
-inline i32 CGrunt::AddBattlezTraversalFlags(i32 flags) const {
-    PickupType prim = m_entranceReason;
-    if (ArrivalPickupOf(prim) == PICKUP_TOOB) {
-        flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
-    } else if (ArrivalPickupOf(prim) == PICKUP_SPRING) {
-        flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
-    } else if (ArrivalPickupOf(prim) == PICKUP_WINGZ) {
-        flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
+#define ADD_BATTLEZ_TRAVERSAL_FLAGS(grunt, flags)                                                  \
+    {                                                                                              \
+        PickupType prim = (grunt)->m_entranceReason;                                               \
+        if ((grunt)->ArrivalPickupOf(prim) == PICKUP_TOOB) {                                       \
+            (flags) |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;                                               \
+        } else if ((grunt)->ArrivalPickupOf(prim) == PICKUP_SPRING) {                              \
+            (flags) |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;                                             \
+        } else if ((grunt)->ArrivalPickupOf(prim) == PICKUP_WINGZ) {                               \
+            (flags) |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;                                              \
+        }                                                                                          \
     }
-    return flags;
-}
 
 #endif // GRUNTZ_GRUNTPICKUPINLINE_H

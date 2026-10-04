@@ -235,8 +235,8 @@ CTileTrigger::CTileTrigger(CGameObject* obj)
 
     i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
-    m_object->m_speedX = tileX;
-    m_object->m_speedY = tileY;
+    m_object->SetSpeedX(tileX);
+    m_object->SetSpeedY(tileY);
     m_object->m_id = CellKey(tileX, tileY);
 }
 
@@ -262,8 +262,8 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), C
 
     i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
-    m_object->m_speedX = tileX;
-    m_object->m_speedY = tileY;
+    m_object->SetSpeedX(tileX);
+    m_object->SetSpeedY(tileY);
     m_object->m_id = CellKey(tileX, tileY);
 }
 
