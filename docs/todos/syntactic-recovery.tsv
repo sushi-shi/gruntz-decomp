@@ -8,6 +8,7 @@ rva	unit	function	lost_max	cur
 0x02c690	battlezmapconfig	?ResolveArrival@CBattlezAiController@@QAEHPAVCGrunt@@@Z	83.4378	79.3302
 0x02e3a0	battlezmapconfig	?RouteToNearbyEnemy@CBattlezAiController@@QAEHPAVCGrunt@@@Z	85.0284	76.6404
 0x02c140	battlezmapconfig	?RouteToNearbyPickup@CBattlezAiController@@QAEHPAVCGrunt@@@Z	94.8459	70.8052
+0x0267c0	battlezmapconfig	?UpdateUnits@CBattlezAiController@@QAEHXZ	84.9887	84.6613
 0x0350d0	battlezrepath	?RouteToNearestGooPuddle@CBattlezAiController@@QAEHPAVCGrunt@@@Z	89.6742	89.5618
 0x0358a0	battlezretarget	?RetargetIdleUnit@CBattlezAiController@@QAEHPAVCGrunt@@@Z	91.3524	90.8018
 0x032060	battlezunitstep	?AdvanceToEnemyBase@CBattlezAiController@@QAEHPAVCGrunt@@@Z	83.5371	80.4525
@@ -45,10 +46,10 @@ rva	unit	function	lost_max	cur
 0x065630	gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	96.2980	95.3490
 0x061940	gruntentrancearrival	?StartTargetedAttackAnimation@CGrunt@@QAEHHH@Z	91.5951	91.5705
 0x0646b0	gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	97.7331	96.5821
-0x062110	gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	94.1261	92.4707
+0x062110	gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	95.4099	93.7545
 0x06a6d0	gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	94.6523	93.9330
 0x067b00	gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9592	90.7347
-0x067bd0	gruntentrancemove	?StartEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	99.5161
+0x067bd0	gruntentrancemove	?StartEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	99.1475
 0x0f0e20	gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	91.6483	85.3241
 0x07f180	grunthealthsprite	?HealthUpdate@CGruntHealthSprite@@QAEHXZ	100.0000	95.0725
 0x0f42f0	gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.8975	95.7170
