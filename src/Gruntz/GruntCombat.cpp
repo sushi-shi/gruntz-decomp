@@ -1414,7 +1414,7 @@ i32 CGrunt::CommitNeighbor(
 
     eq = IsAnimationAct("I");
     if (eq) {
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
     } else {
         eq = IsAnimationAct("N");
         if (eq) {
@@ -1845,7 +1845,10 @@ void CGrunt::StepBehavior(char*) {
                     return;
                 }
             } else if (m_coordToggle != false) {
-                StartToolUseAnimation(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
+                StartToolUseAnimation(
+                    m_lastTilePx.m_x >> TILE_SHIFT_PX,
+                    m_lastTilePx.m_y >> TILE_SHIFT_PX
+                );
                 return;
             }
         }

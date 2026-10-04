@@ -13,7 +13,7 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
            && grunt->m_object->m_screenY == grunt->m_lastTilePx.m_y;
 }
 
-inline void CGrunt::ClearMoveTileFx() {
+inline void CGrunt::CancelToolAnimationEffects() {
     m_triggerMgr->HandleToolAnimationCue(
         GetPlayerIndex(),
         GetUnitIndex(),

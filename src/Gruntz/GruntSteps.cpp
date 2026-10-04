@@ -767,7 +767,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
         if (m_activePickupType != PICKUP_BOMB) {
             goto applyTail;
         }

@@ -1186,7 +1186,7 @@ outOfRange:
     return -1;
 }
 
-#define CANCEL_UNIT_ARRIVAL_FX(unit, player, index)                                                \
+#define CANCEL_UNIT_TOOL_EFFECTS(unit, player, index)                                              \
     {                                                                                              \
         if ((unit)->IsAnimationAct("I")) {                                                         \
             HandleToolAnimationCue(                                                                \
@@ -1253,7 +1253,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             return 0;
         }
 
-        CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
+        CANCEL_UNIT_TOOL_EFFECTS(cell, playerIndex, unitIndex);
         cell->FaceTowardPixel(destination.m_x, destination.m_y);
         if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
             RESET_GRUNT_COMBAT_STATE(cell)
@@ -1284,7 +1284,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         RESET_GRUNT_COMBAT_STATE(cell)
     }
 
-    CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
+    CANCEL_UNIT_TOOL_EFFECTS(cell, playerIndex, unitIndex);
     if (hit->ApplyPickup(cell->GetCarriedToyType(), 1, scrollSpell, 0) != 0) {
         cell->SetCarriedToy(PICKUP_NONE);
 
@@ -1328,7 +1328,7 @@ i32 CTriggerMgr::ClearCell(
     if (cell->m_entranceActive != false) {
         return 0;
     }
-    CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
+    CANCEL_UNIT_TOOL_EFFECTS(cell, playerIndex, unitIndex);
     i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     cell->m_coordRetryCount = 0;

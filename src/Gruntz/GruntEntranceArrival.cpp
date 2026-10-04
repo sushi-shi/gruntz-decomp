@@ -756,7 +756,7 @@ i32 CGrunt::StartWalkAnimation() {
     m_neighborScanEnabled = false;
 
     if (IsAnimationAct("I")) {
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
     }
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
@@ -1001,7 +1001,7 @@ i32 CGrunt::StepCombatReaction(
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
         goto tail;
     }
     if (GRUNT_IS_USING_TOY()) {
@@ -1163,7 +1163,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
 RVA(0x00065630, 0x34b)
 i32 CGrunt::StartToolUseAnimation(i32 tileX, i32 tileY) {
     if (IsAnimationAct("I")) {
-        ClearMoveTileFx();
+        CancelToolAnimationEffects();
     } else {
         PLAY_GRUNT_CUE_IF_VISIBLE(8);
     }

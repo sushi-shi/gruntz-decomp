@@ -176,7 +176,7 @@ class CGrunt : public CMovingLogic, public CWapX {
 public:
     inline PickupType ResolveEquippedToolType(PickupType activePickupType) const;
     inline PickupType GetEquippedToolType() const;
-    inline void ClearMoveTileFx();
+    inline void CancelToolAnimationEffects();
     inline void UnregisterFromBoard(i32 exitedLevel);
     inline void BeginGruntEntranceAndReleaseCell();
 
