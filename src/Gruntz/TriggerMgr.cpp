@@ -959,7 +959,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
 }
 
 RVA(0x00079ea0, 0xc2)
-i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
+i32 CTriggerMgr::DropBattlezWarpStone(i32 x, i32 y, i32 anchorIndex) {
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         return 0;
     }
@@ -1521,19 +1521,19 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
 
 RVA(0x0007b330, 0xc6)
 
-i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
+i32 CTriggerMgr::SpawnExplosion(i32 x, i32 y, i32 killerPlayerIndex, i32 animationVariant) {
     CDDrawChildGroup* fac = m_world->ChildGroup();
     CWwdSpriteObject* spr =
         fac->CreateSprite(0, x, y, 0, "Explosion", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     if (spr) {
-        i32 v = kind;
+        i32 v = animationVariant;
         if (v == 0) {
             v = (rand(), 1);
         }
         CString key;
         key.Format("GAME_EXPLOSION%d", v);
         spr->SetAnimationByName(key, 0);
-        spr->m_smarts = id;
+        spr->m_smarts = killerPlayerIndex;
         spr->m_score = 1;
     }
     return spr != NULL;
@@ -1541,15 +1541,21 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
 
 // @early-stop
 RVA(0x0007b440, 0x3f0)
-i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
-    ApplyGruntAreaEffect(cx, cy, r, GRUNT_AREA_EFFECT_EXPLODE, flag);
+i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 killerPlayerIndex) {
+    ApplyGruntAreaEffect(
+        centerX,
+        centerY,
+        radiusTiles,
+        GRUNT_AREA_EFFECT_EXPLODE,
+        killerPlayerIndex
+    );
 
     CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
-    i32 tileCx = cx >> TILE_SHIFT_PX;
-    i32 tileCy = cy >> TILE_SHIFT_PX;
-    for (i32 tx = tileCx - r; tx <= tileCx + r; tx++) {
+    i32 tileCx = centerX >> TILE_SHIFT_PX;
+    i32 tileCy = centerY >> TILE_SHIFT_PX;
+    for (i32 tx = tileCx - radiusTiles; tx <= tileCx + radiusTiles; tx++) {
         i32 pxX = (tx << TILE_SHIFT_PX) + TILE_HALF_PX;
-        for (i32 ty = tileCy - r; ty <= tileCy + r; ty++) {
+        for (i32 ty = tileCy - radiusTiles; ty <= tileCy + radiusTiles; ty++) {
             i32 pxY = (ty << TILE_SHIFT_PX) + TILE_HALF_PX;
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
@@ -1565,7 +1571,11 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                     CGiantRockLogic* gr = root->GetTileTriggers()->ScanNeighborhood(tx, ty);
                     if (gr == NULL) {
                         CString msg;
-                        msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
+                        msg.Format(
+                            "No giant rock logic found around: x=%d, y=%d",
+                            centerX,
+                            centerY
+                        );
                         g_gameReg->EnterModalUI(msg);
                         g_gameReg->ReportError(
                             IDX(TRIGERR_LOOKUP_MISS),

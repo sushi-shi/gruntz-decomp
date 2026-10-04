@@ -1259,7 +1259,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (brickEffect == BRICKTILE_BLACK_1) {
-            g_gameReg->GetTriggerMgr()->LoadExplosionSprites(
+            g_gameReg->GetTriggerMgr()->SpawnExplosion(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                 -1,

@@ -236,7 +236,7 @@ public:
     i32
     ApplyGruntAreaEffect(i32 x, i32 y, i32 radiusTiles, GruntAreaEffectKind effect, i32 deathParam);
 
-    i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag);
+    i32 ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 killerPlayerIndex);
 
     CGrunt* FindAtPixel(i32 x, i32 y);
 
@@ -276,9 +276,9 @@ public:
         i32 damage
     );
 
-    i32 SpawnTileFx(i32 x, i32 y, i32 anchorIndex);
+    i32 DropBattlezWarpStone(i32 x, i32 y, i32 anchorIndex);
 
-    i32 LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind);
+    i32 SpawnExplosion(i32 x, i32 y, i32 killerPlayerIndex, i32 animationVariant);
 
     i32 SpawnToyBox(i32 x, i32 y, i32 playerIndex, PickupType toyType, i32 scrollSpell);
 

@@ -2167,7 +2167,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx = ((this->m_cursorX - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
                  + TILE_HALF_PX;
-        g_gameReg->GetTriggerMgr()->LoadExplosionSprites(bx, by, -1, 1);
+        g_gameReg->GetTriggerMgr()->SpawnExplosion(bx, by, -1, 1);
         return 1;
     }
 

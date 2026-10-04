@@ -851,7 +851,7 @@ i32 CTimeBomb::UpdateCountdown() {
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             TBombGridClear(m_object);
-            g_gameReg->GetTriggerMgr()->LoadExplosionSprites(
+            g_gameReg->GetTriggerMgr()->SpawnExplosion(
                 m_object->m_screenX,
                 m_object->m_screenY,
                 m_object->GetSmarts(),

@@ -18,12 +18,8 @@ i32 CGrunt::UpdateDeathAnimation() {
     }
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
         if (m_activePickupType == PICKUP_BOMB && m_deathType != DEATH_MELT) {
-            m_triggerMgr->BuildRockBreakParticles(
-                m_object->m_screenX,
-                m_object->m_screenY,
-                1,
-                m_playerIndex
-            );
+            m_triggerMgr
+                ->ApplyExplosion(m_object->m_screenX, m_object->m_screenY, 1, m_playerIndex);
         } else {
             m_triggerMgr->SpawnPuddle(
                 m_object->m_screenX,

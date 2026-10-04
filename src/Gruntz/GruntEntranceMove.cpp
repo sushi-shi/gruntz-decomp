@@ -405,7 +405,7 @@ i32 CGrunt::StartBombGruntRun() {
     SetEntrancePos(1, 1);
     if (ApplyPickup(PICKUP_BOMB, 1, 0, 1) == 0) {
         CWwdSpriteObject* h = m_object;
-        m_triggerMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
+        m_triggerMgr->SpawnExplosion(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
     }
     i32 dx = GetRandom(-1, 1);
