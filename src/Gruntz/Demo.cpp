@@ -80,18 +80,18 @@ class CRezItm;
 
 RVA(0x0003c0e0, 0xfb)
 i32 CDemo::BuildWorldLevelPath(i32 unused) {
-    m_world->m_level->ReleaseChildren();
+    m_world->GetLevel()->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
     CRezItm* node = m_levelResources->GetRezFromPath(key, REZ_TAG_WWD);
     if (node == NULL) {
         return 0;
     }
-    if (m_world->m_level->LoadFromSource(node) == 0) {
+    if (m_world->GetLevel()->LoadFromSource(node) == 0) {
         return 0;
     }
-    m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->AddFlags(4);
+    m_world->GetLevel()->NotifyAllPlanes();
+    m_world->GetLevel()->AddFlags(4);
     return 1;
 }
 
@@ -120,7 +120,7 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
     switch (static_cast<DemoMoverState>(st->EventCode())) {
         case DEMO_MOVER_SCROLL_TO_TARGET: {
 
-            CGameLevel* gh = st->OwnerMgr()->m_level;
+            CGameLevel* gh = st->OwnerMgr()->GetLevel();
             i32 curX = gh->m_mainPlane->GetScrollPixelX();
             i32 curY = gh->m_mainPlane->GetScrollPixelY();
             if (curX < st->m_scrollTargetX) {
@@ -154,9 +154,9 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
         case DEMO_MOVER_CHOOSE_TARGET: {
 
             st->m_scrollTargetX =
-                GetRandom(st->OwnerMgr()->m_level->m_mainPlane->GetPlanePixelWidth());
+                GetRandom(st->OwnerMgr()->GetLevel()->m_mainPlane->GetPlanePixelWidth());
             st->m_scrollTargetY =
-                GetRandom(st->OwnerMgr()->m_level->m_mainPlane->GetPlanePixelHeight());
+                GetRandom(st->OwnerMgr()->GetLevel()->m_mainPlane->GetPlanePixelHeight());
             st->SetEventCode(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }

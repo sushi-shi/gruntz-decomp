@@ -183,7 +183,7 @@ i32 CRollingBall::Update() {
             CString fall;
             CString explosion;
 
-            CGameLevel* lvl = g_gameReg->World()->m_level;
+            CGameLevel* lvl = g_gameReg->World()->GetLevel();
             i32 tileY = m_target.m_y >> TILE_SHIFT_PX;
             i32 tileX = m_target.m_x >> TILE_SHIFT_PX;
             if (tileX < 0) {
@@ -378,7 +378,7 @@ i32 CRollingBall::Update() {
         CWwdSpriteObject* dirObj = m_object;
         i32 oldDir = dirObj->m_direction;
         if ((terrain & 0x80) != 0) {
-            CGameLevel* lvl2 = g_gameReg->World()->m_level;
+            CGameLevel* lvl2 = g_gameReg->World()->GetLevel();
             i32 tileY2 = ty;
             i32 tileX2 = tx;
             if (tileX2 < 0) {

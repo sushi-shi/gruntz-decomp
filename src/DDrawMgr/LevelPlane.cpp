@@ -495,7 +495,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     if (activeGroup == NULL) {
         return 0;
     }
-    CGameLevel* level = reg->m_level;
+    CGameLevel* level = reg->GetLevel();
     if (level == NULL) {
         return 0;
     }
@@ -800,7 +800,7 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
     if (m_spatialMgr == NULL) {
         return;
     }
-    CGameLevel* level = OwnerMgr()->m_level;
+    CGameLevel* level = OwnerMgr()->GetLevel();
     if (level == NULL) {
         return;
     }

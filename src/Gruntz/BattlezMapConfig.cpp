@@ -519,8 +519,11 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
 
 candidateFound:
     Coord screen;
-    m_ctx->m_world->m_level->m_mainPlane
-        ->SnapToTileCenter(&screen, cand->m_x << TILE_SHIFT_PX, cand->m_y << TILE_SHIFT_PX);
+    m_ctx->m_world->GetLevel()->m_mainPlane->SnapToTileCenter(
+        &screen,
+        cand->m_x << TILE_SHIFT_PX,
+        cand->m_y << TILE_SHIFT_PX
+    );
     i32 cell;
     if (allowReserved != false) {
         cell = m_ctx->GetTriggerMgr()->PlaceObject(
@@ -2747,7 +2750,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                         unit->m_blockedVoicePending = false;
                         CGameObject* lvl = unit->m_object;
 
-                        RECT* hit = g_gameReg->m_world->m_level->m_mainPlane->GetPlaneViewRect();
+                        RECT* hit = g_gameReg->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
                         if (::PtInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
                             g_gameReg->VoiceMgr()->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }

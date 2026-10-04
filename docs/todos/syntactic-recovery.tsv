@@ -57,6 +57,7 @@ rva	unit	function	lost_max	cur
 0x032ce0	grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	80.2577
 0x07f960	grunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	99.3000
 0x0ed9f0	gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	90.7694	90.7069
+0x023d90	gruntzcmdmgr	?EnqueuePlaceGruntAtScreenPoint@CGruntzCmdMgr@@QAEXHHHHH@Z	100.0000	83.7895
 0x083450	gruntzmgr	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	100.0000	99.7523
 0x175e40	imagepool	?InitBmp@CDib@@QAEHPBDPAUHDC__@@I@Z	100.0000	97.9776
 0x161590	imageset3g	?GetStride@CPixelTileImageSet@@UAEHXZ	100.0000	99.5000
@@ -71,8 +72,9 @@ rva	unit	function	lost_max	cur
 0x0ce660	play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.9791	96.4843
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	91.0339	90.1178
 0x0d0b30	play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	99.9755
+0x0d1ac0	play	?StepScroll@CPlay@@QAEXXZ	100.0000	78.2069
 0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
-0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660
+0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	96.9690	96.9566
 0x0e7440	sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	100.0000	87.8421
 0x0ea6c0	sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.3681	91.2857
 0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	95.7703	95.4459
@@ -88,7 +90,7 @@ rva	unit	function	lost_max	cur
 0x078430	triggermgr	?ClearSelection@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x07b1b0	triggermgr	?HandleActionOptionsPointer@CTriggerMgr@@QAEHHH@Z	100.0000	95.5098
 0x079520	triggermgr	?HandleTargetSelection@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	99.8538	90.7510
-0x0798d0	triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	96.9403
+0x0798d0	triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	96.6045
 0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.1017
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379
 0x07d450	triggermgr	?ToggleToolTargeting@CTriggerMgr@@QAEHXZ	100.0000	92.0121

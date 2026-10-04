@@ -1849,7 +1849,7 @@ void CGrunt::StepBehavior(char*) {
 
             i32 ptx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 pty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-            CGameLevel* level = g_gameReg->World()->m_level;
+            CGameLevel* level = g_gameReg->World()->GetLevel();
             TileCollisionKind kind = PbResolveCell(level, ptx, pty);
 
             b32 gate = true;

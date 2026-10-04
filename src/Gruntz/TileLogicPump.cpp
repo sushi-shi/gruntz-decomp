@@ -440,7 +440,7 @@ i32 CCheckpointTrigger::Act() {
 
     i32 sy = g->m_object->m_screenY;
     i32 sx = g->m_object->m_screenX;
-    const RECT* view = &g_gameReg->World()->m_level->m_mainPlane->m_planeViewRect;
+    const RECT* view = &g_gameReg->World()->GetLevel()->m_mainPlane->m_planeViewRect;
     if (!PtInRect(view, sx, sy)) {
         return 0;
     }

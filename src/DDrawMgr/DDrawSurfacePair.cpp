@@ -517,7 +517,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenY = y;
     m_flashInterval = 0x32;
     ResetDrawFill();
-    m_level = OwnerMgr()->m_level;
+    m_level = OwnerMgr()->GetLevel();
     return 1;
 }
 

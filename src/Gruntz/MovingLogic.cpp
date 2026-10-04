@@ -35,7 +35,7 @@ void CMovingLogic::AdvanceMotion() {
     }
 
     if (m_object->m_moveMode == MOVE_GROUNDED) {
-        m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
+        m_collisionFlags = m_object->OwnerMgr()->GetLevel()->MoveToward(
             m_object,
             static_cast<i32>(Motion()->m_position.m_x),
             m_object->m_screenY,
@@ -44,7 +44,7 @@ void CMovingLogic::AdvanceMotion() {
         Motion()->m_velocity.m_y = 0.0;
     } else {
         m_object->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER);
-        m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
+        m_collisionFlags = m_object->OwnerMgr()->GetLevel()->MoveToward(
             m_object,
             static_cast<i32>(Motion()->m_position.m_x),
             static_cast<i32>(Motion()->m_position.m_y),

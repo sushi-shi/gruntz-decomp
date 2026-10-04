@@ -80,6 +80,10 @@ public:
         return m_drawTarget;
     }
 
+    class CGameLevel* GetLevel() const {
+        return m_level;
+    }
+
     CDDrawChildGroup* ChildGroup() {
         return m_childGroup;
     }

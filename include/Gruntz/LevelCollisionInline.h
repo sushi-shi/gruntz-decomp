@@ -6,10 +6,6 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/ImageSets.h>
 
-static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
-    return holder->m_level;
-}
-
 static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* g = level->m_mainPlane;
     CLAMP_PIXEL_TO_PLANE(x, y, g);

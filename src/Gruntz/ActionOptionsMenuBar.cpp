@@ -82,7 +82,7 @@ i32 CActionOptionsMenuBar::Init(
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = (g_gameReg->World()->m_level->m_mainPlane)->GetPlanePixelWidth();
+        i32 limit = (g_gameReg->World()->GetLevel()->m_mainPlane)->GetPlanePixelWidth();
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -176,21 +176,21 @@ i32 CActionOptionsMenuBar::Render() {
     if (!m_active) {
         return 1;
     }
-    CGameLevel* level = g_gameReg->World()->m_level;
+    CGameLevel* level = g_gameReg->World()->GetLevel();
     LONG sx = m_screenX;
     LONG sy = m_screenY;
     level->m_mainPlane->WorldToViewport(&sx, &sy);
 
     CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
-    LevelCoordRect r = g_gameReg->World()->m_level->GetViewportRect();
+    LevelCoordRect r = g_gameReg->World()->GetLevel()->GetViewportRect();
     m_frame->RenderFrameClipped(ctx, sx, sy, &r, 0);
 
     if (m_buttonFrame[0]) {
-        r = g_gameReg->World()->m_level->GetViewportRect();
+        r = g_gameReg->World()->GetLevel()->GetViewportRect();
         m_buttonFrame[0]->RenderFrameClipped(ctx, sx - 0xc, sy + 2, &r, 0);
     }
     if (m_buttonFrame[1]) {
-        r = g_gameReg->World()->m_level->GetViewportRect();
+        r = g_gameReg->World()->GetLevel()->GetViewportRect();
         m_buttonFrame[1]->RenderFrameClipped(ctx, sx + 0x10, sy + 2, &r, 0);
     }
     return 1;

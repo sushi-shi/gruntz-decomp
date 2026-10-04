@@ -484,11 +484,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     {
         LevelCoordRect rect;
         SET_RECT_COMPONENTS(rect, 0, 0, 0x1df, 0x1df);
-        LevelOf(m_world)->UpdatePlaneViewports(&rect);
+        m_world->GetLevel()->UpdatePlaneViewports(&rect);
     }
     SET_SIZE_COMPONENTS(m_modeSize, SCREEN_W_PX, SCREEN_H_PX);
     m_world->SetRestoreHandler(&PumpIdleFrame);
-    CGameLevel* view = LevelOf(m_world);
+    CGameLevel* view = m_world->GetLevel();
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
     m_world->m_drawTarget->CreateOverlay(0, 0x30000);
@@ -1355,8 +1355,8 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
         return 0;
     }
     if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
-        if (m_world->m_level != NULL) {
-            CDDrawWorkerHost* f = m_world->m_level->m_mainPlane;
+        if (m_world->GetLevel() != NULL) {
+            CDDrawWorkerHost* f = m_world->GetLevel()->m_mainPlane;
             if (f != NULL) {
                 if (w > f->GetPlanePixelWidth() || h > f->GetPlanePixelHeight()) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
@@ -1480,7 +1480,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
         *out = local;
         return out;
     }
-    local = LevelOf(World())->GetViewportRect();
+    local = World()->GetLevel()->GetViewportRect();
     *out = local;
     return out;
 }
@@ -1507,7 +1507,7 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
     switch (msg) {
         case WM_INITDIALOG: {
 
-            CDDrawWorkerHost* warp = LevelOf(g_gameReg->World())->m_mainPlane;
+            CDDrawWorkerHost* warp = g_gameReg->World()->GetLevel()->m_mainPlane;
             i32 seedX = warp->GetScrollPixelX();
             i32 seedY = warp->GetScrollPixelY();
             SetDlgItemInt(hDlg, 0x40e, seedX, false);
@@ -1826,7 +1826,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
-        CGameLevel* view = LevelOf(World());
+        CGameLevel* view = World()->GetLevel();
         if (view) {
             u32 idx = view->m_planes.GetSize();
             if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
@@ -1847,7 +1847,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (IsActive() && m_world) {
-        CGameLevel* view = LevelOf(World());
+        CGameLevel* view = World()->GetLevel();
         if (view) {
             CDDrawWorkerHost* layer = view->m_mainPlane;
             if (layer) {
@@ -1864,7 +1864,7 @@ i32 CGruntzMgr::ToggleHeightLayer() {
 RVA(0x0008f0b0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
-        CGameLevel* view = LevelOf(World());
+        CGameLevel* view = World()->GetLevel();
         if (view) {
             CDDrawWorkerHost* layer = view->GetPlane(0);
             if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
@@ -2086,7 +2086,7 @@ void CGruntzMgr::RecomputeViewScale() {
     if (m_world == NULL) {
         return;
     }
-    CGameLevel* view = LevelOf(World());
+    CGameLevel* view = World()->GetLevel();
     LevelCoordRect ext = view->GetViewportRect();
     i32 iw = ext.right - ext.left + 1;
     i32 ih = ext.bottom - ext.top + 1;
@@ -2095,26 +2095,26 @@ void CGruntzMgr::RecomputeViewScale() {
     view->m_defaultActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 1.4f));
     view->MainPlaneNotify();
 
-    view = LevelOf(World());
+    view = World()->GetLevel();
     view->m_largeActiveRegionSize.m_w = static_cast<i32>((static_cast<float>(iw) * 5.3f));
     view->m_largeActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 5.3f));
     view->MainPlaneNotify();
 
-    view = LevelOf(World());
+    view = World()->GetLevel();
     view->m_smallActiveRegionSize.m_w = static_cast<i32>((static_cast<float>(iw) * 1.12f));
     view->m_smallActiveRegionSize.m_h = static_cast<i32>((static_cast<float>(ih) * 1.12f));
     view->MainPlaneNotify();
 
-    CGameLevel* v = LevelOf(World());
+    CGameLevel* v = World()->GetLevel();
     if (v->m_mainPlane == NULL) {
         return;
     }
     SET_RECT_COMPONENTS(
         m_viewBounds,
-        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->left - 0x60,
-        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->top - 0x60,
-        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->right + 0x60,
-        (LevelOf(World())->m_mainPlane)->GetPlaneViewRect()->bottom + 0x60
+        (World()->GetLevel()->m_mainPlane)->GetPlaneViewRect()->left - 0x60,
+        (World()->GetLevel()->m_mainPlane)->GetPlaneViewRect()->top - 0x60,
+        (World()->GetLevel()->m_mainPlane)->GetPlaneViewRect()->right + 0x60,
+        (World()->GetLevel()->m_mainPlane)->GetPlaneViewRect()->bottom + 0x60
     );
 }
 
@@ -2625,9 +2625,9 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     i32 monolithWidth = e->m_width;
     i32 monolithHeight = e->m_height;
     CDDrawWorkerHost* found =
-        static_cast<CDDrawWorkerHost*>(m_world->m_level->FindPlaneByName("MONOLITH"));
+        static_cast<CDDrawWorkerHost*>(m_world->GetLevel()->FindPlaneByName("MONOLITH"));
     if (found == NULL) {
-        CDDrawWorkerHost* spr = m_world->m_level->ReadObjectPlane(
+        CDDrawWorkerHost* spr = m_world->GetLevel()->ReadObjectPlane(
             0x20,
             0x20,
             monolithWidth,
@@ -2997,7 +2997,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     }
 
     m_world->SetRestoreHandler(&PumpIdleFrame);
-    CGameLevel* view = m_world->m_level;
+    CGameLevel* view = m_world->GetLevel();
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
     RegisterGameObjectLogicTypes(m_world);
