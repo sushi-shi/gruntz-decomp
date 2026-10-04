@@ -1122,7 +1122,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
     LoadLoadingBarSprite();
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     FreeListTeardown();
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
@@ -1141,13 +1141,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
         g_lastLevelNum = level;
 
-        BuildHelpReveal(false);
+        AdvanceLoadingBar(false);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
         RegisterInputBindings();
 
-        BuildHelpReveal(false);
+        AdvanceLoadingBar(false);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
@@ -1158,7 +1158,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
 
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1166,12 +1166,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (diff != 0 && (g_gameReg)->GetGameMode() == GAMEMODE_QUESTZ) {
         UnloadGruntAndWarlordAssets(savedThis);
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     RegisterInputBindings();
     if (!LoadLevelImages(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1179,7 +1179,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGameImages(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1187,12 +1187,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGruntImageNamespaces(savedThis)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     RegisterInputBindings();
     if (!LoadLevelSounds(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1200,7 +1200,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGameSounds(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1208,7 +1208,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGruntSoundNamespaces(NULL)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1221,7 +1221,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadLevelAnims(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1229,7 +1229,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGameAnims(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1237,7 +1237,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadGruntAnimationNamespaces(NULL)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1245,7 +1245,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (!LoadLevelWorld(reload)) {
         goto fail0;
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1260,7 +1260,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane))
             ->ActivateVisibleObjects();
     }
-    BuildHelpReveal(false);
+    AdvanceLoadingBar(false);
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1361,7 +1361,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                         (static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane))
                             ->ActivateVisibleObjects();
                     }
-                    BuildHelpReveal(false);
+                    AdvanceLoadingBar(false);
                     if (modeFlag) {
                         (savedThis)->SendLobbyKeepAlive();
                     }
@@ -1375,12 +1375,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
 
     okContinue:
-        BuildHelpReveal(false);
+        AdvanceLoadingBar(false);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
         RegisterInputBindings();
-        BuildHelpReveal(true);
+        AdvanceLoadingBar(true);
         ActiveWait(0x64);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
@@ -5546,7 +5546,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
             if (loaded[id] == 0) {
-                BuildHelpReveal(false);
+                AdvanceLoadingBar(false);
                 loaded[id] = 1;
             }
             if (!SetGruntTypeAssetsLoaded(static_cast<PickupType>(id), 1, 0, ctx)) {
@@ -5557,14 +5557,14 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             return 0;
         }
         if (loaded[0x21] == 0) {
-            BuildHelpReveal(false);
+            AdvanceLoadingBar(false);
             loaded[0x21] = 1;
         }
         if (!SetGruntTypeAssetsLoaded(GRUNT_REAPER, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x22] == 0) {
-            BuildHelpReveal(false);
+            AdvanceLoadingBar(false);
             loaded[0x22] = 1;
         }
         CString s("WARLORDZ_NAPOLEAN");
@@ -5572,7 +5572,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             return 0;
         }
         if (loaded[0x23] == 0) {
-            BuildHelpReveal(false);
+            AdvanceLoadingBar(false);
             loaded[0x23] = 1;
         }
         s = "WARLORDZ_VIKING";
@@ -5580,7 +5580,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             return 0;
         }
         if (loaded[0x24] == 0) {
-            BuildHelpReveal(false);
+            AdvanceLoadingBar(false);
             loaded[0x24] = 1;
         }
         s = "WARLORDZ_PATTON";
@@ -5588,7 +5588,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
             return 0;
         }
         if (loaded[0x25] == 0) {
-            BuildHelpReveal(false);
+            AdvanceLoadingBar(false);
             loaded[0x25] = 1;
         }
         return 1;
@@ -5607,7 +5607,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[v] = 1;
                     }
                 }
@@ -5617,7 +5617,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[v] = 1;
                     }
                 }
@@ -5628,7 +5628,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[1] == 0) {
-                            BuildHelpReveal(false);
+                            AdvanceLoadingBar(false);
                             loaded[1] = 1;
                         }
                         break;
@@ -5637,7 +5637,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[3] == 0) {
-                            BuildHelpReveal(false);
+                            AdvanceLoadingBar(false);
                             loaded[3] = 1;
                         }
                         break;
@@ -5646,7 +5646,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[5] == 0) {
-                            BuildHelpReveal(false);
+                            AdvanceLoadingBar(false);
                             loaded[5] = 1;
                         }
                         break;
@@ -5655,7 +5655,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[7] == 0) {
-                            BuildHelpReveal(false);
+                            AdvanceLoadingBar(false);
                             loaded[7] = 1;
                         }
                         break;
@@ -5664,7 +5664,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[0xd] == 0) {
-                            BuildHelpReveal(false);
+                            AdvanceLoadingBar(false);
                             loaded[0xd] = 1;
                         }
                         break;
@@ -5673,7 +5673,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[0x11] == 0) {
-                            BuildHelpReveal(false);
+                            AdvanceLoadingBar(false);
                             loaded[0x11] = 1;
                         }
                         break;
@@ -5682,7 +5682,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[0x13] == 0) {
-                            BuildHelpReveal(false);
+                            AdvanceLoadingBar(false);
                             loaded[0x13] = 1;
                         }
                         break;
@@ -5691,7 +5691,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[0x1e] == 0) {
-                            BuildHelpReveal(false);
+                            AdvanceLoadingBar(false);
                             loaded[0x1e] = 1;
                         }
                         break;
@@ -5717,7 +5717,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->GetSmarts()] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[obj->GetSmarts()] = 1;
                     }
                 } else if (d == IDX(GRUNT_HAREKRISHNA)) {
@@ -5725,7 +5725,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[0x21] = 1;
                     }
                 } else if (d == IDX(GRUNT_REAPER)) {
@@ -5733,7 +5733,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
@@ -5746,7 +5746,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->GetPoints()] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
@@ -5759,7 +5759,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->GetPoints()] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[obj->GetPoints()] = 1;
                     }
                 }
@@ -5786,7 +5786,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->m_powerup] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[obj->m_powerup] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_HAREKRISHNA)) {
@@ -5794,7 +5794,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[0x21] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_REAPER)) {
@@ -5802,7 +5802,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[0x22] = 1;
                     }
                 } else if (item == PICKUP_TOYBOX) {
@@ -5815,7 +5815,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->GetPoints()] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[obj->GetPoints()] = 1;
                     }
                 } else if (item == PICKUP_MEGAPHONE) {
@@ -5828,7 +5828,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->GetPoints()] == 0) {
-                        BuildHelpReveal(false);
+                        AdvanceLoadingBar(false);
                         loaded[obj->GetPoints()] = 1;
                     }
                 }
@@ -5909,29 +5909,29 @@ i32 CPlay::ShowHelpMessage(i32 messageId) {
 }
 
 RVA(0x000d72c0, 0x128)
-i32 CPlay::BuildHelpReveal(b32 final) {
+i32 CPlay::AdvanceLoadingBar(b32 final) {
     CDDrawSurfacePair* view = m_world->GetDrawTarget()->GetBackPair();
     if (view == NULL) {
         return 0;
     }
-    if (m_revealFrame == 1) {
+    if (m_loadingBarStep == 1) {
         LayerBlitFrame(
             m_world,
-            static_cast<CImage*>(m_revealCapStart),
+            static_cast<CImage*>(m_loadingBarStart),
             SCREEN_HALF_W_PX,
             0x1a6,
             true,
             false
         );
-        LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), 0xe0, 0x1a6, true, false);
+        LayerBlitFrame(m_world, static_cast<CImage*>(m_loadingBarFill), 0xe0, 0x1a6, true, false);
     }
 
-    i32 counter = m_revealFrame;
+    i32 counter = m_loadingBarStep;
     i32 col = static_cast<i32>((static_cast<float>(counter) * 3.7857143878936768f));
     if (counter < 0x37 && final != true) {
         LayerBlitFrame(
             m_world,
-            static_cast<CImage*>(m_revealCapMid),
+            static_cast<CImage*>(m_loadingBarFill),
             col + 0xe0,
             0x1a6,
             true,
@@ -5943,7 +5943,7 @@ i32 CPlay::BuildHelpReveal(b32 final) {
                 i32 x = 0xe0 - static_cast<i32>((static_cast<float>(i) * -3.7857143878936768f));
                 LayerBlitFrame(
                     m_world,
-                    static_cast<CImage*>(m_revealCapMid),
+                    static_cast<CImage*>(m_loadingBarFill),
                     x,
                     0x1a6,
                     true,
@@ -5951,9 +5951,9 @@ i32 CPlay::BuildHelpReveal(b32 final) {
                 );
             }
         }
-        LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapEnd), 0x1b4, 0x1a6, true, false);
+        LayerBlitFrame(m_world, static_cast<CImage*>(m_loadingBarEnd), 0x1b4, 0x1a6, true, false);
     }
-    m_revealFrame = m_revealFrame + 1;
+    m_loadingBarStep = m_loadingBarStep + 1;
     return 1;
 }
 
@@ -5964,10 +5964,10 @@ i32 CPlay::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_revealCapStart = spr->GetAt(1);
-    m_revealCapMid = spr->GetAt(2);
-    m_revealCapEnd = spr->GetAt(3);
-    m_revealFrame = 1;
+    m_loadingBarStart = spr->GetAt(1);
+    m_loadingBarFill = spr->GetAt(2);
+    m_loadingBarEnd = spr->GetAt(3);
+    m_loadingBarStep = 1;
     return 1;
 }
 

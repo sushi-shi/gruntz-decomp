@@ -226,7 +226,7 @@ public:
     b32 PlaceStartGruntz();
     i32 ValidateLevelTiles();
 
-    i32 BuildHelpReveal(b32 final);
+    i32 AdvanceLoadingBar(b32 final);
     i32 RegisterInputBindings();
 
     i32 LoadLevelAnims(i32 force);
@@ -375,9 +375,9 @@ public:
     b32 m_defeatCountdownActive;
     i32 m_scrollEdgeActive;
     i32 m_scrollEdgeLock;
-    i32 m_revealFrame;
+    i32 m_loadingBarStep;
 
-    CImage *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
+    CImage *m_loadingBarFill, *m_loadingBarEnd, *m_loadingBarStart;
 
     CDDrawWorker* m_cursorSprite;
     CImage* m_cursorImage;

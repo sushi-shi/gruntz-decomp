@@ -3385,7 +3385,7 @@ play	??_GCImage@@UAEPAXI@Z	100.0000	100.0000	1	cpp:02f89280bcb9	0xd5e50	100.0000
 play	?ActivateVisibleObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	1	29b29c315f9c	0xcedf0	100.0000	
 play	?AddLevelGruntz@CPlay@@QAEHXZ	100.0000	100.0000	18	e1eb1d300941	0xd5960	100.0000	
 play	?AdvanceCursorAnimation@CPlay@@QAEHH@Z	100.0000	100.0000	7	bda36279b339	0xd0a60	100.0000	
-play	?BuildHelpReveal@CPlay@@QAEHH@Z	100.0000	100.0000	5	d5724809c3da	0xd72c0	100.0000	
+play	?AdvanceLoadingBar@CPlay@@QAEHH@Z	100.0000	100.0000	5	d5724809c3da	0xd72c0	100.0000	
 play	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	12	ddb98fcfaa10	0xda3b0	100.0000	
 play	?ClearPlacedObjects@CPlay@@QAEHXZ	97.3333	97.3333	18	7e7eccbfb576	0xda030	97.3333	
 play	?CloseLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	5	13204beaefe3	0xd6560	100.0000	
