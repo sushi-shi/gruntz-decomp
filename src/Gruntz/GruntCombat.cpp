@@ -2085,7 +2085,7 @@ afterArrival:
     if (m_arrivalState == AI_BATTLEZ_PATH) {
         ExpireBattlezPoweredState(this);
     } else {
-        if (m_combatTiming.Expired()) {
+        if (IsCombatTimeoutExpired()) {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
