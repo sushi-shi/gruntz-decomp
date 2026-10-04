@@ -47,9 +47,10 @@ struct GruntOvenSlot {
     ClockInterval m_cookingClock;
 };
 
-struct CSbiHlRow {
+// @identity-TODO: original record spelling is unavailable.
+struct StatusBarResourceSlot {
     RVA(0x000c86d0, 0x11)
-    CSbiHlRow() {}
+    StatusBarResourceSlot() {}
 
     i32 m_state;
 
@@ -60,7 +61,8 @@ struct CSbiHlRow {
     ClockInterval m_clock;
 };
 
-struct CSbiMachineRow {
+// @identity-TODO: original record spelling is unavailable.
+struct ResourceMachineAnimation {
     i32 m_state;
 
     union {
@@ -271,11 +273,11 @@ public:
     ClockInterval m_reserved2a0;
     ClockInterval m_reserved2b0;
 
-    CSbiHlRow m_conveyorSlots[3];
+    StatusBarResourceSlot m_conveyorSlots[3];
     CSBI_ImageSet* m_conveyorSprites[3];
 
-    CSbiMachineRow m_rightMachine;
-    CSbiMachineRow m_leftMachine;
+    ResourceMachineAnimation m_rightMachine;
+    ResourceMachineAnimation m_leftMachine;
     CSBI_GruntMachine* m_machineDisplay;
     // @identity-TODO: both words are save-streamed without a status-bar consumer.
     i32 m_reserved34c;
@@ -288,7 +290,7 @@ public:
     CStatusBarItem* m_resourceMachineFramework;
     CStatusBarItem* m_resourceUpperBackground;
     CStatusBarItem* m_resourceWindowBackground;
-    CSbiHlRow m_resourceSlots[12];
+    StatusBarResourceSlot m_resourceSlots[12];
     CSBI_ImageSet* m_resourceSlotSprites[12];
     SbiBeltPhase m_resourceDeliveryPhase;
     i32 m_deliveryPickupType;

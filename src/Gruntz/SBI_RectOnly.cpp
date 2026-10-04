@@ -2692,8 +2692,8 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 
 RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::UpdateResourceMachineAnimation() {
-    CSbiMachineRow* rightMachine = &m_rightMachine;
-    CSbiMachineRow* leftMachine = &m_leftMachine;
+    ResourceMachineAnimation* rightMachine = &m_rightMachine;
+    ResourceMachineAnimation* leftMachine = &m_leftMachine;
     switch (static_cast<SbiMachineState>(rightMachine->m_state)) {
         case MACHINE_RIGHT_RUNNING:
             if (rightMachine->m_clock.Expired()) {
@@ -2917,7 +2917,7 @@ void CStatusBarMgr::FinishResourcePlacement(i32 consumed, i32 pickupValue) {
     if (consumed != 0) {
         ClearResourceSlot(category, m_selectedResourceRow);
         for (i32 row = IDX(m_selectedResourceRow) - 1; row >= 0; row--) {
-            CSbiHlRow* cell = &m_resourceSlots[row + category * 4];
+            StatusBarResourceSlot* cell = &m_resourceSlots[row + category * 4];
             if (cell->m_state == IDX(HLROW_IDLE_CYCLE)) {
                 m_resourceSlots[row + category * 4 + 1].m_state = IDX(HLROW_IDLE_CYCLE);
                 cell[1].m_value = cell->m_value;
@@ -3133,7 +3133,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                 col = (item2 >= PICKUP_TOYZ_FIRST) ? 1 : 0;
             }
             i32 row;
-            CSbiHlRow* cell = &m_resourceSlots[col * 4 + 3];
+            StatusBarResourceSlot* cell = &m_resourceSlots[col * 4 + 3];
             for (row = 3; row >= 0; row--, cell--) {
                 if (cell->m_state != IDX(HLROW_IDLE_CYCLE)) {
                     break;
@@ -3548,7 +3548,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     } while (n != 0);
 
     n = 3;
-    CSbiHlRow* r = m_conveyorSlots;
+    StatusBarResourceSlot* r = m_conveyorSlots;
     do {
         SerializeClockPair(s, mode, &r->m_clock);
         r++;
@@ -3556,7 +3556,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     } while (n != 0);
 
     i32 outer = 3;
-    CSbiHlRow* g = m_resourceSlots;
+    StatusBarResourceSlot* g = m_resourceSlots;
     do {
         n = 4;
         do {
@@ -3730,7 +3730,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         s->Write(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
     }
     {
-        CSbiHlRow* nb = m_resourceSlots;
+        StatusBarResourceSlot* nb = m_resourceSlots;
         i32 cnt = 3;
         do {
             for (i32 m = 0; m < 4; m++) {
@@ -3817,7 +3817,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
         ar->Read(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
         ar->Read(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
     }
-    CSbiHlRow* nb = m_resourceSlots;
+    StatusBarResourceSlot* nb = m_resourceSlots;
     i32 seq = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
