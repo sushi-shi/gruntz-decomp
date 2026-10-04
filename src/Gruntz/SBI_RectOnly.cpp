@@ -1617,7 +1617,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
             {
                 CSBI_ImageSet** aptr = m_slotNotify;
-                i32* bptr = &m_slots[0].m_value;
+                CSbiSlot* slot = m_slots;
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
                     CSBI_ImageSet* set;
@@ -1629,7 +1629,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         TAB_GRUNTZ,
                         CRect(bx + 0xe, y - 0x32, bx + 0x39, y),
                         "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
-                        *bptr,
+                        slot->m_value,
                         0
                     );
                     AddTabItem(2, set);
@@ -1644,7 +1644,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     set->GetFrameSet()->SetAllTypes(SHADE_PAL_16);
                     set->GetFrameSet()->SetAllFormats(sel);
                     aptr++;
-                    bptr += 6;
+                    slot++;
                     y += 0x36;
                 }
             }
