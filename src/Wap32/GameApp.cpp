@@ -14,16 +14,6 @@
 
 i32 g_gameAppInstanceCount = 0;
 
-i32 g_gameAppNowMs = 0;
-
-i32 g_gameAppFrameDeltaMs = 0;
-
-i32 g_framePacingEpochMs = 0;
-
-i32 g_gameAppTimerRemainingMs = 0;
-
-i32 g_gameAppTimerPeriodMs = 0;
-
 CGameApp::CGameApp() {
     m_gameWnd = NULL;
     m_gameMgr = NULL;
@@ -312,9 +302,7 @@ CGameMgr::CGameMgr() {
     m_musicEnabled = true;
     CLEAR_GAME_MANAGER_WINDOW;
     m_frameGate = false;
-    m_targetFps = 0;
-    ResetFpsSampleWindow(1);
-    ResetFrameTiming();
+    m_timing.reset(timeGetTime());
 }
 
 i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
@@ -327,11 +315,7 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_gameWnd = pGameWnd;
     m_owner = pGameWnd->m_owner;
-    m_targetFps = 0;
-    ResetFpsSampleWindow(1);
-    ResetFrameTiming();
-    g_gameAppTimerPeriodMs = GAMEAPP_PERIODIC_TIMER_MS;
-    g_gameAppTimerRemainingMs = GAMEAPP_PERIODIC_TIMER_MS;
+    m_timing.reset(timeGetTime());
     return 1;
 }
 
@@ -340,75 +324,32 @@ void CGameMgr::Close() {
 }
 
 i32 CGameMgr::PerFrameTick() {
-
-    DWORD(WINAPI * pTGT)(void) = timeGetTime;
-    u32 now = pTGT();
-    u32 delta = now - static_cast<u32>(g_gameAppNowMs);
-    g_gameAppNowMs = now;
-    g_gameAppFrameDeltaMs = delta;
-    u32 timerRemainingMs = static_cast<u32>(g_gameAppTimerRemainingMs);
-    if (timerRemainingMs == 0) {
-        g_gameAppTimerRemainingMs = g_gameAppTimerPeriodMs;
-    } else if (delta >= timerRemainingMs) {
-        g_gameAppTimerRemainingMs = 0;
-    } else {
-        g_gameAppTimerRemainingMs = timerRemainingMs - delta;
+    m_timing.beginFrame(timeGetTime());
+    const u32 delay = m_timing.pacingDelay(timeGetTime());
+    if (delay) {
+        SpinWaitForMs(static_cast<i32>(delay));
     }
-
-    if (m_targetFps > 0) {
-        if (static_cast<u32>(g_framePacingEpochMs) > 0) {
-            u32 elapsed = pTGT() - static_cast<u32>(g_framePacingEpochMs);
-            if (elapsed < static_cast<u32>(m_frameBudgetMs)) {
-                SpinWaitForMs(m_frameBudgetMs - elapsed);
-            }
-        }
-        g_framePacingEpochMs = pTGT();
-    }
-
-    u32 count = m_fpsSampleFrameCount + 1;
-    m_fpsSampleFrameCount = count;
-    if (static_cast<u32>(g_gameAppNowMs) - static_cast<u32>(m_fpsSampleStartMs)
-        >= GAMEAPP_FPS_SAMPLE_INTERVAL_MS) {
-        m_fps = count / GAMEAPP_FPS_SAMPLE_SECONDS;
-        ResetFpsSampleWindow(0);
-    }
+    m_timing.finishPacing(timeGetTime());
     return 1;
 }
 
-void CGameMgr::ResetFpsSampleWindow(i32 reset) {
-    m_fpsSampleFrameCount = 0;
-    m_fpsSampleStartMs = timeGetTime();
-    if (reset) {
-        m_fps = GAMEAPP_FPS_UNAVAILABLE;
-    }
-}
-
 void CGameMgr::ResetFrameTiming() {
-    g_gameAppNowMs = timeGetTime();
-    g_gameAppFrameDeltaMs = 0;
-    g_framePacingEpochMs = 0;
+    m_timing.resetFrameTime(timeGetTime());
 }
 
 void CGameMgr::SpinWaitForMs(i32 ms) {
-    DWORD(WINAPI * fn)(void) = timeGetTime;
-    u32 now = fn();
-    u32 end = now + static_cast<u32>(ms);
-    if (now <= end) {
-        do {
-            now = fn();
-        } while (now <= end);
+    if (ms <= 0) return;
+    const u32 start = timeGetTime();
+    while (static_cast<u32>(timeGetTime()) - start <= static_cast<u32>(ms)) {
     }
 }
 
 void CGameMgr::SetFrameRate(i32 fps) {
-    m_targetFps = fps;
-    if (fps > 0) {
-        m_frameBudgetMs = MILLIS_PER_SECOND / fps;
-    }
+    m_timing.setFrameRate(fps);
 }
 
 i32 CGameMgr::TrySetFrameRate(i32 fps) {
-    if (m_targetFps > 0) {
+    if (m_timing.targetFps() > 0) {
         SetFrameRate(0);
         return 0;
     }

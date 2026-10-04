@@ -89,10 +89,10 @@ i32 CPreviewState::Tick() {
         }
     }
     m_world->SoundRegistry()->TickVolumeRamps();
-    if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_previewCountdownMs) {
+    if (m_mgr->Timing().deltaMs() >= m_previewCountdownMs) {
         m_previewCountdownMs = 0;
     } else {
-        m_previewCountdownMs = m_previewCountdownMs - g_gameAppFrameDeltaMs;
+        m_previewCountdownMs = m_previewCountdownMs - m_mgr->Timing().deltaMs();
     }
     return 1;
 }

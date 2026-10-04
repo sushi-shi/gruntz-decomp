@@ -211,3 +211,36 @@ This verifies the portable components. It does not establish browser persistence
 asset downloads, rendering, audio, gameplay, or whole-game Linux/WASM support.
 Browser storage integration must synchronize persistence explicitly; see the
 [Emscripten filesystem documentation](https://emscripten.org/docs/porting/files/file_systems_overview.html).
+
+### Portable frame timing
+
+`FrameTiming` owns frame timestamps, the application periodic timer, frame pacing
+state, and the displayed FPS sample. The host supplies unsigned 32-bit monotonic
+milliseconds; subtraction supports clock wrap when samples are less than one full
+clock cycle (about 49.7 days) apart. No system clock, window, or wait is used by this
+component. Each game manager owns its timing; consumers read its `Timing()` view.
+
+For each frame, the host calls `beginFrame(start)`, queries `pacingDelay(now)`,
+performs any scheduling, then calls `finishPacing(completion)` once before the game
+update. `deltaMs()` stays based on frame start, so waiting contributes to the next
+frame's delta. The existing Windows host still spins for pacing; a returning host
+callback and removal of blocking waits are subsequent lifecycle work.
+
+The periodic timer exposes zero for one frame on expiry and rearms on the next
+frame without consuming that frame's delta. Changing its period takes effect at
+rearm. Frame deltas remain unclamped here; the gameplay clock retains its existing
+100 ms clamp. FPS keeps the existing frame-count/2 calculation at two-second
+sample boundaries, including after long pauses. `resetFrameTime(now)` clears the
+frame delta and pacing epoch on resume while retaining the timer, FPS sample and
+rate limit; `reset(now)` starts a fresh session. Zero is a valid pacing timestamp.
+
+Run the same deterministic timing cases on Linux and wasm32:
+
+```sh
+ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-timing.py --target all
+```
+
+The suite checks expiry/rearm, period changes, frame pacing, FPS windows, clock
+wrap, long pauses, resume and independent manager state. The native run uses fatal
+ASan/UBSan checks; wasm32 executes in Node. The runner accepts the same tool/cache
+overrides as `check-io.py`. No game is launched.
