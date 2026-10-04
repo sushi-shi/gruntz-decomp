@@ -2457,23 +2457,7 @@ void CBattlezAiController::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 
                 }
             }
         } else if (cell != NULL) {
-            BrickTileId id = cell->GetBrickTile();
-            i32 occ = cell->IsRevealedToPlayer(m_playerIndex);
-            i32 special = 0;
-            if (occ == 0) {
-                special = 1;
-            }
-            if (occ != 0) {
-                if (id == BRICKTILE_RED_1 || id == BRICKTILE_RED_2_TOP || id == BRICKTILE_RED_3_TOP
-                    || id == BRICKTILE_BLACK_1 || id == BRICKTILE_BLACK_2_TOP
-                    || id == BRICKTILE_BLACK_3_TOP || id == BRICKTILE_BLUE_1
-                    || id == BRICKTILE_BLUE_2_TOP || id == BRICKTILE_BLUE_3_TOP
-                    || id == BRICKTILE_BROWN_1 || id == BRICKTILE_BROWN_2
-                    || id == BRICKTILE_BROWN_3) {
-                    special = 1;
-                }
-            }
-            if (special != 0) {
+            if (cell->IsClaimCandidate(m_playerIndex) != 0) {
                 CPtrList list3(10);
                 Coord start = ScreenTile(unit);
                 if ((m_tileGrid)
