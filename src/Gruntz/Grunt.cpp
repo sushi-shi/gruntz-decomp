@@ -1793,7 +1793,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "NORMALGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1803,7 +1803,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "BOMBGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1813,7 +1813,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "BOOMERANGGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -1826,7 +1826,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "BRICKGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1836,7 +1836,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "CLUBGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1846,7 +1846,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "GAUNTLETZGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1856,7 +1856,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "GLOVEZGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1866,7 +1866,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "GOOBERGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1894,7 +1894,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "GRAVITYBOOTZGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0x400;
             m_toolConfigured = true;
@@ -1904,7 +1904,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "GUNHATGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
@@ -1917,7 +1917,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "NERFGUNGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
@@ -1930,7 +1930,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "ROCKGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
@@ -1943,7 +1943,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "SHIELDGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1953,7 +1953,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "SHOVELGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1963,7 +1963,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "SPRINGGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0x1000;
             m_toolConfigured = true;
@@ -1973,7 +1973,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "SPYGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1983,7 +1983,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "SWORDGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -1993,7 +1993,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "TIMEBOMBGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -2004,7 +2004,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             LOAD_GRUNT_TOOL_REACH()
             m_toobWaterMode = false;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0x100;
             m_toolConfigured = true;
@@ -2014,7 +2014,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "WANDGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
@@ -2024,7 +2024,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "WARPSTONEGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             m_passableMask = 0;
             m_toolConfigured = false;
             break;
@@ -2033,7 +2033,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "WELDERGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
@@ -2046,7 +2046,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_animSetName = "WINGZGRUNT";
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
@@ -2058,7 +2058,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_BABYWALKER: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
@@ -2070,7 +2070,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_BEACHBALL: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
@@ -2081,7 +2081,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_BIGWHEEL: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
@@ -2093,7 +2093,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_GOKART: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
@@ -2105,7 +2105,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_JACKINTHEBOX: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
@@ -2116,7 +2116,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_JUMPROPE: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
@@ -2127,7 +2127,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_POGOSTICK: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
@@ -2139,7 +2139,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_SCROLL: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_activeSpell = scrollSpell;
             m_passableMask = 0;
@@ -2151,7 +2151,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_SQUEAKTOY: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
@@ -2162,7 +2162,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             break;
         }
         case PICKUP_YOYO: {
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
@@ -2193,7 +2193,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
             m_animSetName = "HAREKRISHNAGRUNT";
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_powerupType = GRUNT_CONVERSION;
@@ -2209,7 +2209,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
             m_animSetName = "REAPERGRUNT";
-            ResetArrivalFlags(this);
+            ResetArrivalFlags();
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_powerupType = GRUNT_DEATHTOUCH;
