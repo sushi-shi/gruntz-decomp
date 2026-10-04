@@ -448,12 +448,12 @@ i32 CPlay::Render() {
         m_statusBar->LoadMainStatusBarSprite();
 
         {
-            if (m_cueTiming.Expired()) {
-                m_cueToggle = (m_cueToggle == false);
-                m_cueTiming.Start(CUE_INTERVAL_MS);
+            if (m_messageBlinkTimer.Expired()) {
+                m_messageBlinkVisible = (m_messageBlinkVisible == false);
+                m_messageBlinkTimer.Start(MESSAGE_BLINK_INTERVAL_MS);
             }
-            if (m_cueToggle != false) {
-                PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
+            if (m_messageBlinkVisible != false) {
+                DrawMessageText(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
         }
 
@@ -603,12 +603,12 @@ i32 CPlay::Render() {
         if (m_winLoseBanner != false && m_statusBar->m_levelOverlayActive == false
             && m_statusBar->m_quitConfirmationActive == false) {
 
-            if (m_cueTiming.Expired()) {
-                m_cueToggle = (m_cueToggle == false);
-                m_cueTiming.Start(CUE_INTERVAL_MS);
+            if (m_messageBlinkTimer.Expired()) {
+                m_messageBlinkVisible = (m_messageBlinkVisible == false);
+                m_messageBlinkTimer.Start(MESSAGE_BLINK_INTERVAL_MS);
             }
-            if (m_cueToggle != false) {
-                PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
+            if (m_messageBlinkVisible != false) {
+                DrawMessageText(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
         }
 
@@ -668,7 +668,7 @@ i32 CPlay::Render() {
                 DrawVisibleWorld();
                 m_statusBar->LoadMainStatusBarSprite();
                 back->GetSurface()->ShadeRect(0x32, NULL);
-                PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
+                DrawMessageText(m_lastMessageId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
             }
             UpdateAmbientMusic();
@@ -678,7 +678,7 @@ i32 CPlay::Render() {
             m_statusBar->LoadMainStatusBarSprite();
             if (m_statusBar->m_levelOverlayActive == false
                 && m_statusBar->m_quitConfirmationActive == false) {
-                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
+                DrawMessageText(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
             m_levelTimer->Draw(back, true);
         }
@@ -1412,10 +1412,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_paused = false;
         self->m_playerCommandPending = false;
         self->m_winLoseBanner = false;
-        self->m_cueTiming.Start(0x1f4);
-        self->m_cueToggle = true;
-        self->m_cueText = "";
-        self->m_lastCueId = 0;
+        self->m_messageBlinkTimer.Start(0x1f4);
+        self->m_messageBlinkVisible = true;
+        self->m_messageText = "";
+        self->m_lastMessageId = 0;
         self->m_tinyViewportCurseActive = false;
         self->m_darknessCurseActive = false;
         self->m_monitorCurseActive = false;
@@ -4026,9 +4026,9 @@ void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
 }
 
 RVA(0x000d1710, 0x122)
-void CPlay::LoadSBITextEdges(i32 msgId) {
+void CPlay::DrawSaveMessage(i32 messageId) {
     CString s;
-    s.LoadString(msgId);
+    s.LoadString(messageId);
 
     RECT rect;
 
@@ -4040,8 +4040,8 @@ void CPlay::LoadSBITextEdges(i32 msgId) {
 }
 
 RVA(0x000d1890, 0x1ba)
-void CPlay::PlayCueAt(
-    i32 cueId,
+void CPlay::DrawMessageText(
+    i32 messageId,
     i32 fontSel,
     i32 toFrontPage,
     i32 r,
@@ -4052,12 +4052,12 @@ void CPlay::PlayCueAt(
 ) {
     RECT rect;
 
-    if (cueId != m_lastCueId) {
+    if (messageId != m_lastMessageId) {
 
-        if (m_cueText.LoadString(cueId) == false) {
+        if (m_messageText.LoadString(messageId) == false) {
             return;
         }
-        m_lastCueId = cueId;
+        m_lastMessageId = messageId;
     }
 
     if (rectSrc != NULL) {
@@ -4069,9 +4069,9 @@ void CPlay::PlayCueAt(
     }
 
     if (toFrontPage != 0) {
-        DrawTextToFrontSurface(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+        DrawTextToFrontSurface(m_world, &m_messageText, &rect, fontSel, 1, r, g, b, flag);
     } else {
-        DrawTextToBackSurface(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+        DrawTextToBackSurface(m_world, &m_messageText, &rect, fontSel, 1, r, g, b, flag);
     }
 }
 
@@ -5890,14 +5890,14 @@ i32 CPlay::EnterMode(GameStateId mode) {
 }
 
 RVA(0x000d7220, 0x7b)
-i32 CPlay::PostActionCue(i32 cueId) {
+i32 CPlay::ShowHelpMessage(i32 messageId) {
     if (m_paused) {
         return 0;
     }
-    if (!m_cueText.LoadStringA(cueId)) {
+    if (!m_messageText.LoadStringA(messageId)) {
         return 0;
     }
-    m_lastCueId = cueId;
+    m_lastMessageId = messageId;
     m_stepCountdown = 2;
     m_paused = true;
 
@@ -6021,7 +6021,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
     if (!m_levelTimer->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
-    SerializeClockPair(ar, mode, &m_cueTiming);
+    SerializeClockPair(ar, mode, &m_messageBlinkTimer);
     if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
@@ -6079,17 +6079,17 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         }
     }
 
-    s->Write(&m_cueToggle, sizeof(m_cueToggle));
+    s->Write(&m_messageBlinkVisible, sizeof(m_messageBlinkVisible));
 
     g_serialCounter++;
     {
         char buf[0x200];
         memset(buf, 0, sizeof(buf));
-        strcpy(buf, static_cast<const char*>(m_cueText));
+        strcpy(buf, static_cast<const char*>(m_messageText));
         s->Write(buf, 0x200);
     }
 
-    s->Write(&m_lastCueId, sizeof(m_lastCueId));
+    s->Write(&m_lastMessageId, sizeof(m_lastMessageId));
     s->Write(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
     g_serialCounter++;
@@ -6225,14 +6225,14 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         }
     }
 
-    ar->Read(&m_cueToggle, sizeof(m_cueToggle));
+    ar->Read(&m_messageBlinkVisible, sizeof(m_messageBlinkVisible));
     g_serialCounter++;
     {
-        char cueTextBuffer[0x200];
-        ar->Read(cueTextBuffer, 0x200);
-        m_cueText = cueTextBuffer;
+        char messageTextBuffer[0x200];
+        ar->Read(messageTextBuffer, 0x200);
+        m_messageText = messageTextBuffer;
     }
-    ar->Read(&m_lastCueId, sizeof(m_lastCueId));
+    ar->Read(&m_lastMessageId, sizeof(m_lastMessageId));
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
     char nameBuf[SERIAL_NAME_LEN];

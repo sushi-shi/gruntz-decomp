@@ -107,7 +107,7 @@ i32 CGrunt::ApplyPickupAndClearPending(PickupType pickupType) {
 
     i32 applied = ApplyPickup(pickupType, 0, 0, 0);
     m_pendingPickupType = PICKUP_INVALID;
-    m_helpCueId = 0;
+    m_helpMessageId = 0;
     return applied;
 }
 
@@ -1009,7 +1009,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_carriedToyType, sizeof(m_carriedToyType));
     ar->Write(&m_savedToolType, sizeof(m_savedToolType));
     ar->Write(&m_pendingPickupType, sizeof(m_pendingPickupType));
-    ar->Write(&m_helpCueId, sizeof(m_helpCueId));
+    ar->Write(&m_helpMessageId, sizeof(m_helpMessageId));
     ar->Write(&m_reserved1a8, sizeof(m_reserved1a8));
     ar->Write(&m_reserved1ac, sizeof(m_reserved1ac));
     ar->Write(&m_reserved1b0, sizeof(m_reserved1b0));

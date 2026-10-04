@@ -91,7 +91,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
         Stop();
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
         ls->m_winLoseBanner = true;
-        ls->m_cueTiming.Start(0x1f4);
+        ls->m_messageBlinkTimer.Start(0x1f4);
         g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {

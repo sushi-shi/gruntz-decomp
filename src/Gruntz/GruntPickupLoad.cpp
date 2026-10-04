@@ -29,7 +29,7 @@ RVA(0x00065e80, 0x14a0)
 i32 CGrunt::BeginPickupAnimation(
     PickupType type,
     i32 forced,
-    i32 helpCueId,
+    i32 helpMessageId,
     i32 pickupParam,
     i32 countStats
 ) {
@@ -440,7 +440,7 @@ i32 CGrunt::BeginPickupAnimation(
     }
     m_busy = true;
     m_pendingPickupType = type;
-    m_helpCueId = helpCueId;
+    m_helpMessageId = helpMessageId;
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)

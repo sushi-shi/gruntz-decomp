@@ -168,8 +168,8 @@ public:
 
     i32 RestoreCursorSaveUnder();
 
-    void PlayCueAt(
-        i32 cueId,
+    void DrawMessageText(
+        i32 messageId,
         i32 fontSel,
         i32 toFrontPage,
         i32 r,
@@ -179,11 +179,11 @@ public:
         RECT* rectSrc
     );
 
-    i32 PostActionCue(i32 cueId);
+    i32 ShowHelpMessage(i32 messageId);
 
     void DrawMessageFrame(i32 index, b32 useFront);
 
-    void LoadSBITextEdges(i32 msgId);
+    void DrawSaveMessage(i32 messageId);
     i32 LoadGruntAssetNamespaces(CMulti* multiplayerSession);
 
     i32 StepViewportResize();
@@ -348,10 +348,10 @@ public:
 
     CPtrArray m_placedObjectCells[4];
     CTimer* m_levelTimer;
-    ClockInterval m_cueTiming;
-    b32 m_cueToggle;
-    i32 m_lastCueId;
-    CString m_cueText;
+    ClockInterval m_messageBlinkTimer;
+    b32 m_messageBlinkVisible;
+    i32 m_lastMessageId;
+    CString m_messageText;
     b32 m_drewThisFrame;
 
     POINT m_pathPreviewSource;
