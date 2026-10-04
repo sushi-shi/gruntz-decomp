@@ -109,9 +109,9 @@ i32 CSplashState::Render() {
     }
 
     {
-        CInputDeviceGroup* L = g_actorList;
-        for (i32 i = 0; i < L->m_count; i++) {
-            L->m_items[i]->Poll();
+        CInputDeviceGroup* devices = g_joystickDevices;
+        for (i32 i = 0; i < devices->m_count; i++) {
+            devices->m_items[i]->Poll();
         }
     }
 

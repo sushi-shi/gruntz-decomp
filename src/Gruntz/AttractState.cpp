@@ -117,9 +117,9 @@ i32 CAttract::EnterState(GameStateId previousState) {
         m_titleCountdownMs = 0x1f40;
     }
 
-    CInputDeviceGroup* list = g_actorList;
-    for (i32 i = 0; i < list->m_count; i++) {
-        list->m_items[i]->ResetState();
+    CInputDeviceGroup* devices = g_joystickDevices;
+    for (i32 i = 0; i < devices->m_count; i++) {
+        devices->m_items[i]->ResetState();
     }
     return 1;
 }
@@ -157,15 +157,15 @@ i32 CAttract::Render() {
 
     CountDown(m_titleCountdownMs, g_frameDelta);
 
-    CInputDeviceGroup* list = g_actorList;
+    CInputDeviceGroup* devices = g_joystickDevices;
     i32 i;
-    for (i = 0; i < list->m_count; i++) {
-        list->m_items[i]->Poll();
+    for (i = 0; i < devices->m_count; i++) {
+        devices->m_items[i]->Poll();
     }
 
-    i32 n = g_actorList->GetCount();
+    i32 n = g_joystickDevices->GetCount();
     for (i = 0; i < n; i++) {
-        if (g_actorList->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
+        if (g_joystickDevices->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
             PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         }

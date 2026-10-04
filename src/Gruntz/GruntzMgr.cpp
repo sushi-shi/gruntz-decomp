@@ -571,7 +571,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    g_actorList = g_inputMgr->CreateDeviceGroup(
+    g_joystickDevices = g_inputMgr->CreateDeviceGroup(
         g_inputMgr->GetJoystick(0),
         g_inputMgr->GetJoystick(1),
         g_inputMgr->GetJoystick(2),
@@ -580,7 +580,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         NULL,
         0
     );
-    if (!g_actorList) {
+    if (!g_joystickDevices) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40f);
         return 0;
     }

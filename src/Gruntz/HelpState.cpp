@@ -109,15 +109,15 @@ i32 CHelpState::Render() {
 
     m_world->SoundRegistry()->TickVolumeRamps();
 
-    CInputDeviceGroup* list = g_actorList;
+    CInputDeviceGroup* devices = g_joystickDevices;
     i32 i;
-    for (i = 0; i < list->m_count; i++) {
-        list->m_items[i]->Poll();
+    for (i = 0; i < devices->m_count; i++) {
+        devices->m_items[i]->Poll();
     }
 
-    i32 n = g_actorList->GetCount();
+    i32 n = g_joystickDevices->GetCount();
     for (i = 0; i < n; i++) {
-        if (g_actorList->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
+        if (g_joystickDevices->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
             PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
             m_mgr->m_owner->SetRunning(false);
             return 1;

@@ -179,17 +179,17 @@ i32 CCreditsState::Render() {
     m_world->SoundRegistry()->TickVolumeRamps();
 
     {
-        CInputDeviceGroup* L = g_actorList;
-        for (i32 i = 0; i < L->m_count; i++) {
-            L->m_items[i]->Poll();
+        CInputDeviceGroup* devices = g_joystickDevices;
+        for (i32 i = 0; i < devices->m_count; i++) {
+            devices->m_items[i]->Poll();
         }
     }
 
     {
-        CInputDeviceGroup* L = g_actorList;
-        i32 n = L->m_count;
+        CInputDeviceGroup* devices = g_joystickDevices;
+        i32 n = devices->m_count;
         for (i32 j = 0; j < n; j++) {
-            if (L->m_items[j]->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
+            if (devices->m_items[j]->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
 
                 if (m_previousStateId == GAMESTATE_MENU) {
                     PostMessageA(
