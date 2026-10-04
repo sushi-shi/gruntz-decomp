@@ -197,7 +197,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->GetLogicRecord()->SetSpeed(m_object->GetLogicRecord()->GetSpeed());
             spr->SetSpeedX(m_object->m_speedX);
             spr->SetSpeedY(m_object->m_speedY);
-            spr->m_powerup = m_object->GetPowerup();
+            spr->SetPowerup(m_object->GetPowerup());
             spr->SetDamage(m_object->GetDamage());
             spr->SetScore(m_object->GetScore());
             spr->SetPoints(m_object->GetPoints());
