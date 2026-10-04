@@ -3339,120 +3339,122 @@ void CStatusBarMgr::ResetForLevel(i32) {
 }
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::PrepareNextResource() {
-    PickupType result;
+    PickupType pickupType;
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
-            Coord* p = GetReward(0);
-            result = static_cast<PickupType>(p->m_x);
-            g_coordPool.Push(p);
+            Coord* queuedReward = GetReward(0);
+            pickupType = static_cast<PickupType>(queuedReward->m_x);
+            g_coordPool.Push(queuedReward);
             m_rewardQueue.RemoveAt(0, 1);
         } else {
-            result = PICKUP_NONE;
+            pickupType = PICKUP_NONE;
             if (m_deliveryItemDisplay) {
                 m_deliveryItemDisplay->SetFrameIndex(0);
             }
         }
     } else {
-        i32 r1 = WapRand(m_randomRewardThresholds[2]);
-        if (r1 <= m_randomRewardThresholds[0]) {
-            i32 r = WapRand(m_randomRewardThresholds[37]);
-            if (r <= m_randomRewardThresholds[17]) {
-                result = PICKUP_BOMB;
-            } else if (r <= m_randomRewardThresholds[18]) {
-                result = PICKUP_BOOMERANG;
-            } else if (r <= m_randomRewardThresholds[19]) {
-                result = PICKUP_BRICK;
-            } else if (r <= m_randomRewardThresholds[20]) {
-                result = PICKUP_CLUB;
-            } else if (r <= m_randomRewardThresholds[21]) {
-                result = PICKUP_GAUNTLETZ;
-            } else if (r <= m_randomRewardThresholds[22]) {
-                result = PICKUP_GLOVEZ;
-            } else if (r <= m_randomRewardThresholds[23]) {
-                result = PICKUP_GOOBER;
-            } else if (r <= m_randomRewardThresholds[24]) {
-                result = PICKUP_GRAVITYBOOTZ;
-            } else if (r <= m_randomRewardThresholds[25]) {
-                result = PICKUP_GUNHAT;
-            } else if (r <= m_randomRewardThresholds[26]) {
-                result = PICKUP_NERFGUN;
-            } else if (r <= m_randomRewardThresholds[27]) {
-                result = PICKUP_ROCK;
-            } else if (r <= m_randomRewardThresholds[28]) {
-                result = PICKUP_SHIELD;
-            } else if (r <= m_randomRewardThresholds[29]) {
-                result = PICKUP_SHOVEL;
-            } else if (r <= m_randomRewardThresholds[30]) {
-                result = PICKUP_SPRING;
-            } else if (r <= m_randomRewardThresholds[31]) {
-                result = PICKUP_SPY;
-            } else if (r <= m_randomRewardThresholds[32]) {
-                result = PICKUP_SWORD;
-            } else if (r <= m_randomRewardThresholds[33]) {
-                result = PICKUP_TIMEBOMB;
-            } else if (r <= m_randomRewardThresholds[34]) {
-                result = PICKUP_TOOB;
-            } else if (r <= m_randomRewardThresholds[35]) {
-                result = PICKUP_WAND;
+        i32 categoryRoll = WapRand(m_randomRewardThresholds[2]);
+        if (categoryRoll <= m_randomRewardThresholds[0]) {
+            i32 toolRoll = WapRand(m_randomRewardThresholds[37]);
+            if (toolRoll <= m_randomRewardThresholds[17]) {
+                pickupType = PICKUP_BOMB;
+            } else if (toolRoll <= m_randomRewardThresholds[18]) {
+                pickupType = PICKUP_BOOMERANG;
+            } else if (toolRoll <= m_randomRewardThresholds[19]) {
+                pickupType = PICKUP_BRICK;
+            } else if (toolRoll <= m_randomRewardThresholds[20]) {
+                pickupType = PICKUP_CLUB;
+            } else if (toolRoll <= m_randomRewardThresholds[21]) {
+                pickupType = PICKUP_GAUNTLETZ;
+            } else if (toolRoll <= m_randomRewardThresholds[22]) {
+                pickupType = PICKUP_GLOVEZ;
+            } else if (toolRoll <= m_randomRewardThresholds[23]) {
+                pickupType = PICKUP_GOOBER;
+            } else if (toolRoll <= m_randomRewardThresholds[24]) {
+                pickupType = PICKUP_GRAVITYBOOTZ;
+            } else if (toolRoll <= m_randomRewardThresholds[25]) {
+                pickupType = PICKUP_GUNHAT;
+            } else if (toolRoll <= m_randomRewardThresholds[26]) {
+                pickupType = PICKUP_NERFGUN;
+            } else if (toolRoll <= m_randomRewardThresholds[27]) {
+                pickupType = PICKUP_ROCK;
+            } else if (toolRoll <= m_randomRewardThresholds[28]) {
+                pickupType = PICKUP_SHIELD;
+            } else if (toolRoll <= m_randomRewardThresholds[29]) {
+                pickupType = PICKUP_SHOVEL;
+            } else if (toolRoll <= m_randomRewardThresholds[30]) {
+                pickupType = PICKUP_SPRING;
+            } else if (toolRoll <= m_randomRewardThresholds[31]) {
+                pickupType = PICKUP_SPY;
+            } else if (toolRoll <= m_randomRewardThresholds[32]) {
+                pickupType = PICKUP_SWORD;
+            } else if (toolRoll <= m_randomRewardThresholds[33]) {
+                pickupType = PICKUP_TIMEBOMB;
+            } else if (toolRoll <= m_randomRewardThresholds[34]) {
+                pickupType = PICKUP_TOOB;
+            } else if (toolRoll <= m_randomRewardThresholds[35]) {
+                pickupType = PICKUP_WAND;
             } else {
-                result = r > m_randomRewardThresholds[36] ? PICKUP_WINGZ : PICKUP_WELDER;
+                pickupType = toolRoll > m_randomRewardThresholds[36] ? PICKUP_WINGZ : PICKUP_WELDER;
             }
-        } else if (r1 <= m_randomRewardThresholds[1]) {
-            i32 r = WapRand(m_randomRewardThresholds[16]);
-            if (r <= m_randomRewardThresholds[7]) {
-                result = PICKUP_BABYWALKER;
-            } else if (r <= m_randomRewardThresholds[8]) {
-                result = PICKUP_BEACHBALL;
-            } else if (r <= m_randomRewardThresholds[9]) {
-                result = PICKUP_BIGWHEEL;
-            } else if (r <= m_randomRewardThresholds[10]) {
-                result = PICKUP_GOKART;
-            } else if (r <= m_randomRewardThresholds[11]) {
-                result = PICKUP_JACKINTHEBOX;
-            } else if (r <= m_randomRewardThresholds[12]) {
-                result = PICKUP_JUMPROPE;
-            } else if (r <= m_randomRewardThresholds[13]) {
-                result = PICKUP_POGOSTICK;
-            } else if (r <= m_randomRewardThresholds[14]) {
-                result = PICKUP_SCROLL;
+        } else if (categoryRoll <= m_randomRewardThresholds[1]) {
+            i32 toyRoll = WapRand(m_randomRewardThresholds[16]);
+            if (toyRoll <= m_randomRewardThresholds[7]) {
+                pickupType = PICKUP_BABYWALKER;
+            } else if (toyRoll <= m_randomRewardThresholds[8]) {
+                pickupType = PICKUP_BEACHBALL;
+            } else if (toyRoll <= m_randomRewardThresholds[9]) {
+                pickupType = PICKUP_BIGWHEEL;
+            } else if (toyRoll <= m_randomRewardThresholds[10]) {
+                pickupType = PICKUP_GOKART;
+            } else if (toyRoll <= m_randomRewardThresholds[11]) {
+                pickupType = PICKUP_JACKINTHEBOX;
+            } else if (toyRoll <= m_randomRewardThresholds[12]) {
+                pickupType = PICKUP_JUMPROPE;
+            } else if (toyRoll <= m_randomRewardThresholds[13]) {
+                pickupType = PICKUP_POGOSTICK;
+            } else if (toyRoll <= m_randomRewardThresholds[14]) {
+                pickupType = PICKUP_SCROLL;
             } else {
-                result = r > m_randomRewardThresholds[15] ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
+                pickupType =
+                    toyRoll > m_randomRewardThresholds[15] ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
             }
         } else {
-            i32 r = WapRand(m_randomRewardThresholds[6]);
-            if (r <= m_randomRewardThresholds[3]) {
-                result = PICKUP_REDBRICK;
-            } else if (r <= m_randomRewardThresholds[4]) {
-                result = PICKUP_BLUEBRICK;
+            i32 brickRoll = WapRand(m_randomRewardThresholds[6]);
+            if (brickRoll <= m_randomRewardThresholds[3]) {
+                pickupType = PICKUP_REDBRICK;
+            } else if (brickRoll <= m_randomRewardThresholds[4]) {
+                pickupType = PICKUP_BLUEBRICK;
             } else {
-                result = r > m_randomRewardThresholds[5] ? PICKUP_BLACKBRICK : PICKUP_GOLDBRICK;
+                pickupType =
+                    brickRoll > m_randomRewardThresholds[5] ? PICKUP_BLACKBRICK : PICKUP_GOLDBRICK;
             }
         }
-        if (result == PICKUP_WARPSTONE) {
-            result = PICKUP_GAUNTLETZ;
+        if (pickupType == PICKUP_WARPSTONE) {
+            pickupType = PICKUP_GAUNTLETZ;
         }
     }
-    m_deliveryPickupType = IDX(result);
+    m_deliveryPickupType = IDX(pickupType);
     m_resourceDeliveryPhase = BELT_IDLE;
     SetRect(&m_deliveryItemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_deliveryItemDisplay) {
-        RECT rc;
-        i32 x = m_barRect.left;
-        i32 y = m_barRect.top;
+        RECT imageRect;
+        i32 barLeft = m_barRect.left;
+        i32 barTop = m_barRect.top;
         SET_RECT_COMPONENTS(
-            rc,
-            m_deliveryItemRect.left + x,
-            m_deliveryItemRect.top + y,
-            m_deliveryItemRect.right + x,
-            m_deliveryItemRect.bottom + y
+            imageRect,
+            m_deliveryItemRect.left + barLeft,
+            m_deliveryItemRect.top + barTop,
+            m_deliveryItemRect.right + barLeft,
+            m_deliveryItemRect.bottom + barTop
         );
-        m_deliveryItemDisplay->SetBounds(rc);
+        m_deliveryItemDisplay->SetBounds(imageRect);
     }
     RefreshResourceImages();
-    i32 c = m_pendingResourceDeliveries;
+    i32 pendingDeliveries = m_pendingResourceDeliveries;
     m_resourceDeliveryActive = false;
-    if (c > 0) {
-        m_pendingResourceDeliveries = c - 1;
+    if (pendingDeliveries > 0) {
+        m_pendingResourceDeliveries = pendingDeliveries - 1;
         RequestResourceDelivery();
     }
     return 1;
@@ -3461,16 +3463,16 @@ i32 CStatusBarMgr::PrepareNextResource() {
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
     Coord reward = {pickupValue, score};
-    Coord* node = g_coordPool.PopCopy(reward);
-    i32 n = m_rewardQueue.GetSize();
-    for (i32 i = 0; i < n; i++) {
-        Coord* e = GetReward(i);
-        if (e != NULL && score < e->m_y) {
-            m_rewardQueue.InsertAt(i, node, 1);
+    Coord* queuedReward = g_coordPool.PopCopy(reward);
+    i32 rewardCount = m_rewardQueue.GetSize();
+    for (i32 rewardIndex = 0; rewardIndex < rewardCount; rewardIndex++) {
+        Coord* existingReward = GetReward(rewardIndex);
+        if (existingReward != NULL && score < existingReward->m_y) {
+            m_rewardQueue.InsertAt(rewardIndex, queuedReward, 1);
             return 1;
         }
     }
-    m_rewardQueue.Add(node);
+    m_rewardQueue.Add(queuedReward);
     return 1;
 }
 
