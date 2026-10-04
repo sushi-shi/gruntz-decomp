@@ -1519,7 +1519,7 @@ void CGrunt::FireActivation(i32 id) {
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
     CActReg& registry = CActRegPool<CGrunt>::s_table;
-    REGISTER_ACT(registry, "A", &CGrunt::ResolveEntranceArrival);
+    REGISTER_ACT(registry, "A", &CGrunt::UpdateIdleAnimation);
     REGISTER_ACT(registry, "B", &CGrunt::StepWarpExit);
     REGISTER_ACT(registry, "C", &CGrunt::UpdateDeathAnimation);
     REGISTER_ACT(registry, "D", &CGrunt::UpdateWalkAnimation);
@@ -1659,7 +1659,7 @@ void CGrunt::Activate() {
     m_arrivalPending = false;
     m_aiType = AI_NONE;
     m_inCombat = false;
-    m_resetApplied = false;
+    m_idleVariantActive = false;
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
     m_passableMask = 0;
     m_deathAnimStarted = false;
@@ -2329,7 +2329,7 @@ void CGrunt::AdvanceMotion() {
                     (destinationTile->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
                 m_coordRetryCount = 0;
-                StepEntranceReinit();
+                StartWalkAnimation();
             } else if (static_cast<u32>(m_coordRetryCount) <= 5) {
                 if (PathScan() != 0) {
                     Coord* reroutedDestinationTile = GetTailCoord();
@@ -2346,7 +2346,7 @@ void CGrunt::AdvanceMotion() {
                         );
                         if (!(reroutedCellFlags & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;
-                            StepEntranceReinit();
+                            StartWalkAnimation();
                         }
                     }
                 } else {
@@ -2492,7 +2492,7 @@ void CGrunt::AdvanceMotion() {
         Coord entrance = EntrancePx();
         if (m_lastTilePx.m_x == entrance.m_x && m_lastTilePx.m_y == entrance.m_y) {
             m_arrivalPhase = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            ResetIdleAnimation(1, 0, 0);
             return;
         }
         if (StepGruntMovement() == 0) {

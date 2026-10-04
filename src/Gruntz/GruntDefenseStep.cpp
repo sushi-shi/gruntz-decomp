@@ -154,7 +154,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_dwell = 0;
                 return 1;
             }
-            if (m_resetApplied != false) {
+            if (m_idleVariantActive != false) {
                 return 1;
             }
             if (m_hasExtent == false) {

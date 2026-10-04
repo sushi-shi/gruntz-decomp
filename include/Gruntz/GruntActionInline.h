@@ -37,7 +37,7 @@ inline void CGrunt::RestorePreviousAppearance() {
         char* name = EntranceCell()->WalkName().GetBuffer(0);
         SetImageSetByName(name);
     } else {
-        ResetEntranceAnimation(1, 0, 0);
+        ResetIdleAnimation(1, 0, 0);
     }
 }
 

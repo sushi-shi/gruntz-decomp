@@ -48,6 +48,6 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
         SwitchAnimation(m_poseWalk);
         return 1;
     }
-    ResetEntranceAnimation(1, 0, 0);
+    ResetIdleAnimation(1, 0, 0);
     return 1;
 }

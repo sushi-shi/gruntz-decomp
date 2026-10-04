@@ -452,7 +452,7 @@ public:
     b32 m_wingzEnabled;
     b32 m_freezeDelayDone;
     b32 m_freezeUnfrozen;
-    b32 m_resetApplied;
+    b32 m_idleVariantActive;
     i32 m_arrivalFlags;
     i32 m_passableMask;
     i32 m_routeBlockedMask;
@@ -632,7 +632,7 @@ public:
     CGrunt(CGameObject* owner);
 
     void LoadCellAnimNames(i32 kind, i32 directionOnly);
-    void ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
+    void ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
 
     i32 IsArrivalRerollPending() {
         return !m_arrivalRerollTiming.Expired();
@@ -651,11 +651,11 @@ public:
     }
 
     void ResetArrivalReroll() {
-        ResetEntranceAnimation(1, 1, 0);
+        ResetIdleAnimation(1, 1, 0);
         m_arrivalRerollTiming.Clear();
         m_arrivalRerollTiming.Start(rand() % 30000 + 30000);
     }
-    i32 ResolveEntranceArrival();
+    i32 UpdateIdleAnimation();
     void Deselect();
     i32 BuildEntranceAnimation(GruntEntranceMode mode);
     i32 LoadEntranceConfig();
@@ -736,7 +736,7 @@ public:
     void RestorePreviousAppearance();
     void ApplyPendingPickup();
 
-    i32 StepEntranceReinit();
+    i32 StartWalkAnimation();
 
     i32 UpdatePickupAnimation();
 

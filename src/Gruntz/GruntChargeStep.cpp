@@ -120,7 +120,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_dwell = 0;
                 return 1;
             }
-            if (m_resetApplied == false && m_hasExtent != false
+            if (m_idleVariantActive == false && m_hasExtent != false
                 && static_cast<u32>(m_dwell) > 3000) {
                 CWwdSpriteObject* mp = m_object;
                 SELECT_RANDOM_EXTENT_POINT(mp, baseX, spanX, baseY, spanY)

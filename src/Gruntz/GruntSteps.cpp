@@ -1074,7 +1074,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_wingzEnabled, sizeof(m_wingzEnabled));
     ar->Write(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
     ar->Write(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));
-    ar->Write(&m_resetApplied, sizeof(m_resetApplied));
+    ar->Write(&m_idleVariantActive, sizeof(m_idleVariantActive));
     ar->Write(&m_arrivalFlags, sizeof(m_arrivalFlags));
     ar->Write(&m_passableMask, sizeof(m_passableMask));
     ar->Write(&m_powerupType, sizeof(m_powerupType));

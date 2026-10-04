@@ -78,7 +78,8 @@ i32 CGrunt::StepBomberBehavior() {
 
     {
         u32 dwell = static_cast<u32>(m_dwell);
-        if (dwell > 0x3e8 && m_resetApplied == false && m_hasExtent != false && dwell > 0xbb8) {
+        if (dwell > 0x3e8 && m_idleVariantActive == false && m_hasExtent != false
+            && dwell > 0xbb8) {
 
             if (IsArrivalRerollPending() != 0) {
 

@@ -266,7 +266,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     }
 
     if (!found) {
-        ResetEntranceAnimation(1, 0, 0);
+        ResetIdleAnimation(1, 0, 0);
     } else {
         SwitchAnimation(found);
         APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
@@ -354,7 +354,7 @@ i32 CGrunt::LoadEntranceConfig() {
     if (!cur->IsComplete()) {
         return 0;
     }
-    ResetEntranceAnimation(1, 0, 0);
+    ResetIdleAnimation(1, 0, 0);
     return 0;
 }
 
@@ -663,7 +663,7 @@ i32 CGrunt::UpdateFreezeAnimation() {
             ReadConfigFromButeMgr();
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
-            ResetEntranceAnimation(1, 0, 0);
+            ResetIdleAnimation(1, 0, 0);
             Coord tile = ScreenTile(LastTilePx());
             if (g_gameReg->GetTileGrid()->CellFlagsAt(tile.m_x, tile.m_y) & 0x80) {
                 m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);

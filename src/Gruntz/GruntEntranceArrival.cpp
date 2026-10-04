@@ -101,7 +101,7 @@ i32 CGrunt::StartAttackIdleAnimation() {
 RVA(0x000617c0, 0x127)
 i32 CGrunt::UpdateAttackIdleAnimation() {
     if (m_inCombat == false) {
-        ResetEntranceAnimation(1, 0, 0);
+        ResetIdleAnimation(1, 0, 0);
         return 0;
     }
 
@@ -340,7 +340,7 @@ i32 CGrunt::StepAttackFire() {
         StartAttackIdleAnimation();
         return 0;
     }
-    ResetEntranceAnimation(1, 0, 0);
+    ResetIdleAnimation(1, 0, 0);
     return 0;
 }
 
@@ -601,8 +601,8 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 
 // @early-stop
 RVA(0x00062e10, 0x4a0)
-void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue) {
-    m_resetApplied = false;
+void CGrunt::ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue) {
+    m_idleVariantActive = false;
 
     i32 applied = 0;
 
@@ -640,7 +640,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
                 }
             }
             SwitchAnimation(m_poseIdle[idx]);
-            m_resetApplied = true;
+            m_idleVariantActive = true;
             applied = 1;
         } else {
 
@@ -693,7 +693,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
 
 // @early-stop
 RVA(0x000633e0, 0x2f1)
-i32 CGrunt::ResolveEntranceArrival() {
+i32 CGrunt::UpdateIdleAnimation() {
     if (m_entranceActive != false && IsGruntAtSavedScreenPos(this)) {
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->GetTileGrid();
@@ -732,19 +732,19 @@ tail:
     if (m_wwdObject->m_animationCursor.GetAnimation() != AT(m_poseIdle, GRUNT_IDLE1)) {
 
         if (m_wwdObject->m_animationCursor.IsComplete()) {
-            ResetEntranceAnimation(0, 0, 0);
+            ResetIdleAnimation(0, 0, 0);
         }
         return 0;
     }
     if (m_idleDelayTiming.Expired() && ready == true) {
-        ResetEntranceAnimation(0, 1, 1);
+        ResetIdleAnimation(0, 1, 1);
     }
     return 0;
 }
 
 // @early-stop
 RVA(0x000637a0, 0x2f8)
-i32 CGrunt::StepEntranceReinit() {
+i32 CGrunt::StartWalkAnimation() {
     if (IsAnimationAct("D")) {
         return 0;
     }
@@ -1119,7 +1119,7 @@ i32 CGrunt::FinishStruckAnimation() {
         return 0;
     }
     if (m_activePickupType == PICKUP_WARPSTONE) {
-        ResetEntranceAnimation(1, 0, 0);
+        ResetIdleAnimation(1, 0, 0);
         return 0;
     }
     StartAttackIdleAnimation();
@@ -1264,7 +1264,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
     if (sub->IsComplete()) {
         m_entranceActive = false;
-        ResetEntranceAnimation(1, 0, 0);
+        ResetIdleAnimation(1, 0, 0);
     }
     return 0;
 }

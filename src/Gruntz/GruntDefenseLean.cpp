@@ -121,7 +121,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 );
                 return 1;
             }
-            if (m_resetApplied != false) {
+            if (m_idleVariantActive != false) {
                 return 1;
             }
             if (m_hasExtent == false) {
@@ -158,7 +158,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 m_dwell = 0;
                 return 1;
             }
-            ResetEntranceAnimation(1, 1, 0);
+            ResetIdleAnimation(1, 1, 0);
             m_arrivalRerollTiming.Start(rand() % 0x7530 + 0x7530);
             m_dwell = 0;
             return 1;

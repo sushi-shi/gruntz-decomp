@@ -625,7 +625,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
 
                 m_entranceCell = facing;
                 SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE2));
-                ResetEntranceAnimation(1, 0, 0);
+                ResetIdleAnimation(1, 0, 0);
                 return;
             }
         }
@@ -850,7 +850,7 @@ i32 CGrunt::StepArrivalDrop(
     commitEntrance:
         m_entrancePx.Set(pxX, pxY);
         if (reinit != 0) {
-            StepEntranceReinit();
+            StartWalkAnimation();
         }
     commitPhase:
         m_arrivalPhase = arrivalPhase;
@@ -1677,7 +1677,7 @@ i32 CGrunt::Place(
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
-    ResetEntranceAnimation(1, 0, 0);
+    ResetIdleAnimation(1, 0, 0);
     switch (aiType) {
         case AI_POSTGUARD:
             m_defenderPx = m_lastTilePx;
@@ -2379,7 +2379,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 SetImageSetByName(EntranceCell()->WalkName().GetBuffer(0));
                 SwitchAnimation(m_poseWalk);
             } else {
-                ResetEntranceAnimation(1, 0, 0);
+                ResetIdleAnimation(1, 0, 0);
                 if (m_arrivalPending == false) {
                     m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                 }

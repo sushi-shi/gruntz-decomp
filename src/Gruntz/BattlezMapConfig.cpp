@@ -1170,7 +1170,7 @@ flagsArm: {
     {
         Coord* tc = unit->GetTailCoord();
         SET_TILE_CENTER_PIXEL_PAIR(unit->m_entrancePx.m_x, unit->m_entrancePx.m_y, tc->m_x, tc->m_y)
-        unit->StepEntranceReinit();
+        unit->StartWalkAnimation();
         return 1;
     }
 }
@@ -1178,7 +1178,7 @@ flagsArm: {
 tailArm2: {
     Coord* tc = unit->GetTailCoord();
     SET_TILE_CENTER_PIXEL_PAIR(unit->m_entrancePx.m_x, unit->m_entrancePx.m_y, tc->m_x, tc->m_y)
-    unit->StepEntranceReinit();
+    unit->StartWalkAnimation();
     return 1;
 }
 

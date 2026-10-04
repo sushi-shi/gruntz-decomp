@@ -144,7 +144,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_wingzEnabled, sizeof(m_wingzEnabled));
     ar->Read(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
     ar->Read(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));
-    ar->Read(&m_resetApplied, sizeof(m_resetApplied));
+    ar->Read(&m_idleVariantActive, sizeof(m_idleVariantActive));
     ar->Read(&m_arrivalFlags, sizeof(m_arrivalFlags));
     ar->Read(&m_passableMask, sizeof(m_passableMask));
     ar->Read(&m_powerupType, sizeof(m_powerupType));
