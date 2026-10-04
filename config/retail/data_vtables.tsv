@@ -204,7 +204,7 @@ rva	size	name	kind	note
 0x1f02a8	0x14	??_7CWwdGridIter@@6B@	primary	
 0x1f02c0	0x14	??_7CAniFrameRecord@@6B@	primary	
 0x1f02d8	0x38	??_7CDDrawPaletteResource@@6B@	primary	palette resource
-0x1f0310	0x18	??_7CWwdGridShell@@6B@	primary	
+0x1f0310	0x18	??_7CObjectActivationGrid@@6B@	primary	
 0x1f0328	0x18	??_7CWwdGrid@@6B@	primary	
 0x1f04c8	0x4	??_7zBitVec@@6B@	primary	
 0x1f04cc	0x4	??_7zErrHandling@@6B@	primary	

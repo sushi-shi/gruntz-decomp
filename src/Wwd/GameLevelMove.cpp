@@ -362,14 +362,14 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 }
 
 RVA(0x00168060, 0x18)
-void CWwdGridShell::OnFound(WwdRegion* r) {
+void CObjectActivationGrid::OnFound(WwdRegion* r) {
     CGameObject* obj = r->m_object;
     obj->GetWorld()->ChildGroup()->InsertSorted(obj, 1);
 }
 
 RVA(0x00168080, 0x1f6)
-RVA_COMPGEN(0x00168280, 0x1e, ??_GCWwdGridShell@@UAEPAXI@Z)
-RVA_COMPGEN(0x001682a0, 0x46, ??1CWwdGridShell@@UAE@XZ)
+RVA_COMPGEN(0x00168280, 0x1e, ??_GCObjectActivationGrid@@UAEPAXI@Z)
+RVA_COMPGEN(0x001682a0, 0x46, ??1CObjectActivationGrid@@UAE@XZ)
 RVA_COMPGEN(0x00168bf0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
 RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 
@@ -384,9 +384,9 @@ i32 CWwdSpatialMgr::Init(
     i32* smallRegionSize
 ) {
     if (owner) {
-        m_defaultRegionGrid = new CWwdGridShell;
-        m_largeRegionGrid = new CWwdGridShell;
-        m_smallRegionGrid = new CWwdGridShell;
+        m_defaultRegionGrid = new CObjectActivationGrid;
+        m_largeRegionGrid = new CObjectActivationGrid;
+        m_smallRegionGrid = new CObjectActivationGrid;
         if (m_defaultRegionGrid && m_largeRegionGrid && m_smallRegionGrid
             && m_defaultRegionGrid
                    ->Setup(*levelBounds, defaultGridCellSize[0], defaultGridCellSize[1])
