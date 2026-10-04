@@ -4192,7 +4192,7 @@ i32 CPlay::ExecuteCommand(
                 static_cast<u8>(unitIndex)
             );
             if (g != NULL) {
-                if (g->m_tileClaimed != true) {
+                if (g->IsGuarding() != true) {
                     g->m_arrivalRerollTiming.Clear();
                     g->m_tileClaimed = true;
                     g->m_defenderPx = g->LastTilePx();
@@ -4233,7 +4233,7 @@ i32 CPlay::ExecuteCommand(
                 static_cast<u8>(playerIndex),
                 static_cast<u8>(unitIndex)
             );
-            if (g == NULL || g->m_tileClaimed == false) {
+            if (g == NULL || g->IsGuarding() == false) {
                 return 1;
             }
             END_GUARD(g);
@@ -4247,7 +4247,7 @@ i32 CPlay::ExecuteCommand(
             if (g == NULL || g->IsEntranceCommitted() == false) {
                 return 0;
             }
-            if (g->m_tileClaimed != false) {
+            if (g->IsGuarding() != false) {
                 END_GUARD(g);
             }
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
@@ -4303,7 +4303,7 @@ i32 CPlay::ExecuteCommand(
             if (g == NULL || g->IsEntranceCommitted() == false) {
                 return 0;
             }
-            if (g->m_tileClaimed != false) {
+            if (g->IsGuarding() != false) {
                 END_GUARD(g);
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
@@ -4357,7 +4357,7 @@ i32 CPlay::ExecuteCommand(
             if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
                 return 0;
             }
-            if (g->m_tileClaimed != false) {
+            if (g->IsGuarding() != false) {
                 END_GUARD(g);
             }
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
@@ -4412,7 +4412,7 @@ i32 CPlay::ExecuteCommand(
             if (g == NULL || g->IsEntranceCommitted() == false || g->m_entranceActive != false) {
                 return 0;
             }
-            if (g->m_tileClaimed != false) {
+            if (g->IsGuarding() != false) {
                 END_GUARD(g);
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
@@ -4466,7 +4466,7 @@ i32 CPlay::ExecuteCommand(
             }
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
-            if (g != NULL && g->IsEntranceCommitted() != false && g->m_tileClaimed != false) {
+            if (g != NULL && g->IsEntranceCommitted() != false && g->IsGuarding() != false) {
                 END_GUARD(g);
             }
             i32 sel = 0;
@@ -4507,7 +4507,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             g->SetEntrancePos(1, 1);
-            if (g->m_tileClaimed != false) {
+            if (g->IsGuarding() != false) {
                 END_GUARD(g);
             }
             return 1;

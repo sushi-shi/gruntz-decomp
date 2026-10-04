@@ -1322,7 +1322,7 @@ i32 CTriggerMgr::ClearCell(
     if (cell == NULL || cell->IsEntranceCommitted() == false) {
         return 0;
     }
-    if (cell->m_tileClaimed != false) {
+    if (cell->IsGuarding() != false) {
         END_GUARD(cell);
     }
     if (cell->m_entranceActive != false) {
