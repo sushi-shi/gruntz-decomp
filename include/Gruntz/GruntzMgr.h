@@ -80,6 +80,7 @@ public:
     void FinalizeLevelAndShowResults();
     void OnCheckpointReached();
     void DelayedQuit();
+    bool IsQuitPending() const;
 
     i32 LaunchPortal(i32 quitAfter);
 
@@ -341,7 +342,6 @@ public:
     tagSIZE m_savedModeSize;
     i32 m_lobbyResult;
     b32 m_lobbyProbed;
-    b32 m_delayedQuitPending;
 
     i32 m_reserveda8;
     b32 m_modalBusy;

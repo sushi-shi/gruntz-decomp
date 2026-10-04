@@ -155,7 +155,7 @@ i32 CGruntzWnd::OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
 
 i32 CGruntzWnd::OnActivateApp(WPARAM wParam, LPARAM lParam) {
     CGruntzMgr* mgr = GameMgr();
-    if (mgr) {
+    if (mgr && !mgr->IsQuitPending()) {
         mgr->HandleAppActivation(wParam, lParam);
     }
     if (!wParam) {
@@ -175,7 +175,7 @@ i32 CGruntzWnd::OnClose() {
 
 i32 CGruntzWnd::OnPaint() {
     CGruntzMgr* mgr = GameMgr();
-    if (mgr && mgr->IsLobbyHostReady()) {
+    if (mgr && (mgr->IsQuitPending() || mgr->IsLobbyHostReady())) {
         if (m_hwnd) {
             ValidateRect(m_hwnd, NULL);
         }

@@ -233,10 +233,23 @@ time never enters the gameplay delta even without a separate activation handler.
 The Windows host calls `CGameApp::Step(now)` once after each bounded input batch.
 This callback runs at most one game update and returns a requested delay; the host
 waits for that deadline or incoming input using `MsgWaitForMultipleObjects`.
-Inactive applications wait for input. Frame pacing no longer spins or waits inside
-the game manager. Blocking transitions and movie/input waits remain separate
+Inactive applications wait for input unless a shutdown deadline is pending. Frame
+pacing no longer spins or waits inside the game manager. Blocking transitions and movie/input waits remain separate
 lifecycle work; their conversion is required before all callbacks can return
 promptly.
+
+`ShutdownRequest` is owned by the application and advances before gameplay gates.
+A quit request starts its delay on the next host callback; repeated requests do
+not restart it. Unsigned elapsed-time subtraction handles clock wrap and late
+callbacks. Delays are capped at `0x7fffffff` ms so they cannot become the host's
+indefinite-wait sentinel. The menu cue duration plus 500 ms remains the requested
+shutdown delay, with zero delay if no cue is available.
+
+While quitting, frame updates, gameplay commands, state input and repaint-driven
+rendering stop. Window events remain responsive. The Windows host consumes one
+close request after the timer expires and dispatches `WM_CLOSE`, retaining normal
+audio/window cleanup. Other hosts should call `Step` through the deadline even
+while inactive and consume `TakeCloseRequest` at their own close boundary.
 
 The periodic timer exposes zero for one frame on expiry and rearms on the next
 frame without consuming that frame's delta. Changing its period takes effect at
@@ -255,7 +268,16 @@ ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-timin
 The suite checks expiry/rearm, period changes, frame pacing, FPS windows, clock
 wrap, long pauses, resume and independent manager state. The native run uses fatal
 ASan/UBSan checks; wasm32 executes in Node. The runner accepts the same tool/cache
-overrides as `check-io.py`. No game is launched.
+overrides as `check-io.py`. Shutdown cases cover zero delay, repeated requests,
+signed/full clock wrap, long gaps, suspended frame scheduling and exactly-once
+close delivery. No game is launched.
+
+`nix develop --command python3 check-shutdown-windows.py` additionally runs a
+standalone console test of the production `CGameApp::Step` callback, with and
+without a game manager. It checks that shutdown advances while inactive or
+stopped and that gameplay timestamps stop advancing. It creates no window and
+never calls the game's initialization or main loop. Do not run it concurrently
+with other Wine/MSVC builds.
 
 ### Transactional saved games
 

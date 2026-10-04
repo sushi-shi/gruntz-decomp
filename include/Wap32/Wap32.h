@@ -9,6 +9,7 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/GameApp.h>
 #include <Runtime/FrameScheduler.h>
+#include <Runtime/ShutdownRequest.h>
 
 GZ_ENUM_FORWARD(GruntzCommandId);
 
@@ -198,6 +199,9 @@ public:
     // Returns milliseconds until another callback is useful, or all bits set
     // when suspended until an event. Event pumping and waiting belong to the host.
     u32 Step(u32 nowMs);
+    void RequestQuit(u32 delayMs) { m_shutdown.request(delayMs); }
+    bool IsQuitPending() const { return m_shutdown.pending(); }
+    bool TakeCloseRequest() { return m_shutdown.takeCloseRequest(); }
     virtual void FreeGameManager();
 
     virtual i32 HandleCommand(i32, GruntzCommandId, i32) {
@@ -225,5 +229,8 @@ public:
     b32 m_errorReported;
     i32 m_errorCode;
     i32 m_errorDetail;
+
+private:
+    ShutdownRequest m_shutdown;
 };
 #endif
