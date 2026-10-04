@@ -608,7 +608,7 @@ i32 CBattlezAiController::UpdateUnits() {
     m_roundRobinTick++;
     CGrunt* unit;
     i32 hit;
-    char eq;
+    bool eq;
     i32 cell;
     Coord scratch;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
@@ -915,7 +915,7 @@ i32 CBattlezAiController::UpdateUnits() {
                             unit->m_aiState = AISTATE_SEEK;
                         }
                         {
-                            char nd;
+                            bool nd;
                             nd = unit->IsNotAnimationAct("D");
                             if (nd) {
                                 ResolveArrival(unit);
