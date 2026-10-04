@@ -103,6 +103,13 @@ public:
         return m_faceDirection;
     }
 
+    i32 GetPowerup() const {
+        return m_powerup;
+    }
+    void SetPowerup(i32 powerup) {
+        m_powerup = powerup;
+    }
+
     i32 GetDamage() const {
         return m_damage;
     }

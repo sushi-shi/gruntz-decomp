@@ -403,12 +403,12 @@ i32 CState::OnPaint() {
     if (!m_mgr) {
         return 0;
     }
-    if (!m_mgr->m_gameWnd) {
+    if (!m_mgr->GetGameWindow()) {
         return 0;
     }
     PAINTSTRUCT ps;
-    BeginPaint(m_mgr->m_gameWnd->GetHwnd(), &ps);
-    EndPaint(m_mgr->m_gameWnd->GetHwnd(), &ps);
+    BeginPaint(m_mgr->GetGameWindow()->GetHwnd(), &ps);
+    EndPaint(m_mgr->GetGameWindow()->GetHwnd(), &ps);
     return 1;
 }
 

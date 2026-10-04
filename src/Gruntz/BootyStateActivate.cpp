@@ -289,7 +289,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     while (ShowCursor(false) >= 0) {
     }
 
-    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_KEYDOWN, 0x40);
 
     m_secretHudHandled = false;
 
@@ -1555,7 +1555,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     }
     CGameStats* gameStats = g_gameReg->GetGameStats();
     if (gameStats->IsCustomLevel() != false) {
-        PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
         if (m_initOnce == false) {
             if (gameStats->IsCurrentAreaComplete() != false) {
@@ -1644,7 +1644,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 sub->StopAllStreams();
             }
             g_gameReg->PlayMovieEntry(IDX(MOVIE_ENTRY_ENDING));
-            PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
+            PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
         } else {
 
             g_gameReg->LoadLevel((nextLevelStats->GetLevelNumber() % 0x28) + 1, false, 1);
@@ -1708,7 +1708,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     while (ShowCursor(false) >= 0) {
     }
-    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_KEYDOWN, 0x40);
 
     m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {
@@ -2511,7 +2511,7 @@ i32 CMultiBootyState::OnPaint() {
 RVA(0x0001f8a0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
     if (m_sequenceState == BOOTYSEQ_PERFECT_BONUS) {
-        PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;
 }

@@ -189,9 +189,19 @@ i32 CCreditsState::Render() {
             if (L->m_items[j]->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
 
                 if (m_previousStateId == GAMESTATE_MENU) {
-                    PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(
+                        owner()->GetGameWindow()->GetHwnd(),
+                        WM_COMMAND,
+                        IDX(CMD_MAIN_MENU),
+                        0
+                    );
                 } else {
-                    PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+                    PostMessageA(
+                        owner()->GetGameWindow()->GetHwnd(),
+                        WM_COMMAND,
+                        IDX(CMD_ATTRACT),
+                        0
+                    );
                 }
                 owner()->m_owner->SetRunning(false);
                 break;
@@ -250,9 +260,9 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == GAMESTATE_MENU) {
-            PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         } else {
-            PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
         }
     }
     return 1;
@@ -267,9 +277,9 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
         return 1;
     }
     if (m_previousStateId == GAMESTATE_MENU) {
-        PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
-        PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
     }
     return 1;
 }

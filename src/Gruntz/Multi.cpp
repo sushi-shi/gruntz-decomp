@@ -1648,7 +1648,12 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
                 break;
             }
             ShowNetworkMessage("You have been dropped from the game.", 0);
-            PostMessageA(NetGameMgr()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(
+                NetGameMgr()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_MAIN_MENU),
+                0
+            );
             m_pollAbort = true;
             break;
 
@@ -2213,7 +2218,7 @@ void CMulti::ShowMultiplayerPauseDialog() {
     g_netMessageEditHwnd = NULL;
 
     if (result == IDC_NET_RESTART) {
-        HWND hwnd = NetGameMgr()->m_gameWnd->GetHwnd();
+        HWND hwnd = NetGameMgr()->GetGameWindow()->GetHwnd();
         PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MULTI_LOAD_LEVEL), SelectedLevelIndex());
     }
 }
@@ -2246,14 +2251,14 @@ void CMulti::OnOutOfSync() {
 
     switch (result) {
         case IDC_NET_RESTART: {
-            HWND hwnd = NetGameMgr()->m_gameWnd->GetHwnd();
+            HWND hwnd = NetGameMgr()->GetGameWindow()->GetHwnd();
             PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MULTI_LOAD_LEVEL), SelectedLevelIndex());
             break;
         }
         case IDC_NET_CONTINUE:
             break;
         default: {
-            HWND hwnd = NetGameMgr()->m_gameWnd->GetHwnd();
+            HWND hwnd = NetGameMgr()->GetGameWindow()->GetHwnd();
             PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             break;
         }
@@ -2819,7 +2824,7 @@ void CMulti::ShowDropPlayerDialog() {
             break;
         case IDC_NET_ABORT: {
             Session()->ResetLatencies();
-            HWND hwnd = NetGameMgr()->m_gameWnd->GetHwnd();
+            HWND hwnd = NetGameMgr()->GetGameWindow()->GetHwnd();
             PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             break;
         }
@@ -2847,7 +2852,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
     }
     Mgr()->VoiceMgr()->PauseAllVoices();
     i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
-    SetActiveAndFocus(Mgr()->m_gameWnd->GetHwnd());
+    SetActiveAndFocus(Mgr()->GetGameWindow()->GetHwnd());
     SendKeepAlive();
     return r;
 }
@@ -3197,7 +3202,7 @@ void CMulti::HandleVersionCheck(CNetVersionPacket* packet) {
                 "This version is not the same as the host computer's version of the game.",
                 0
             );
-            HWND hwnd = NetGameMgr()->m_gameWnd->GetHwnd();
+            HWND hwnd = NetGameMgr()->GetGameWindow()->GetHwnd();
             PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         }
     }

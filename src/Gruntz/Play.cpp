@@ -1095,7 +1095,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     {
         prevTiles = self->m_stateResources;
         self->m_stateResources = (self->m_levelResources);
-        UpdateWindow(self->m_mgr->m_gameWnd->GetHwnd());
+        UpdateWindow(self->m_mgr->GetGameWindow()->GetHwnd());
 
         mgr = self->m_mgr;
         if (!mgr->m_strWorldFile.IsEmpty()) {
@@ -1645,7 +1645,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     }
     if (m_helpMessageActive != false) {
         m_helpMessageActive = false;
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
@@ -1710,7 +1710,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
-                    PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(
+                        mgr->GetGameWindow()->GetHwnd(),
+                        WM_COMMAND,
+                        IDX(CMD_MAIN_MENU),
+                        0
+                    );
                 } else {
                     mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
@@ -1731,7 +1736,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
-                    PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(
+                        mgr->GetGameWindow()->GetHwnd(),
+                        WM_COMMAND,
+                        IDX(CMD_MAIN_MENU),
+                        0
+                    );
                 }
                 return 1;
             }
@@ -1744,7 +1754,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (mgr->GetGameMode() == GAMEMODE_QUESTZ
                     && g_gameReg->GetTriggerMgr()->GetFinishState() != FINISH_STATE_VICTORY) {
                     g_gameReg->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-                    CGameWnd* r = g_gameReg->m_gameWnd;
+                    CGameWnd* r = g_gameReg->GetGameWindow();
                     PostMessageA(r->GetHwnd(), WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
                 }
                 return 1;
@@ -2508,7 +2518,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     }
     if (m_helpMessageActive != false) {
         m_helpMessageActive = false;
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
@@ -2903,7 +2913,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     }
     if (m_helpMessageActive != false) {
         m_helpMessageActive = false;
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
     if (m_levelOverlayOpen != false) {
@@ -3264,11 +3274,11 @@ i32 CPlay::CompleteLevel() {
         m_mgr->m_midi->ClearSequences();
         m_mgr->m_worldSounds->Teardown();
         m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     if (m_returnToMenuOnComplete) {
-        PostMessageA(m_mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
     m_mgr->Post(m_levelIndex + 1);
@@ -4526,7 +4536,7 @@ b32 CPlay::PlaceStartGruntz() {
                     100000,
                     entranceMode,
                     obj->GetScore(),
-                    obj->m_powerup,
+                    obj->GetPowerup(),
                     obj->GetDamage(),
                     obj->GetPoints(),
                     obj->m_direction,
@@ -5193,7 +5203,7 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
                     object->m_speedY,
                     object->m_id,
                     buf,
-                    object->m_powerup,
+                    object->GetPowerup(),
                     object->GetPoints(),
                     object->GetFaceDirection()
                 )
@@ -5201,7 +5211,7 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
                 MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", object->m_screenX, object->m_screenY);
                 return 0;
             }
-            if (object->m_powerup == IDX(PICKUP_MEGAPHONE)) {
+            if (object->GetPowerup() == IDX(PICKUP_MEGAPHONE)) {
                 m_statusBar->QueuePickupReward(object->GetPoints(), object->GetScore());
             }
             object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -5247,7 +5257,7 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
                     object->GetLogicRecord()->GetUserRect1(),
                     object->GetLogicRecord()->GetUserRect2(),
                     object->GetSmarts(),
-                    object->m_powerup,
+                    object->GetPowerup(),
                     object->GetPoints(),
                     object->GetFaceDirection()
                 )
@@ -5259,7 +5269,7 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
                 );
                 return 0;
             }
-            if (object->m_powerup == IDX(PICKUP_MEGAPHONE)) {
+            if (object->GetPowerup() == IDX(PICKUP_MEGAPHONE)) {
                 m_statusBar->QueuePickupReward(object->GetPoints(), object->GetScore());
             }
             object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -5296,7 +5306,7 @@ i32 CPlay::AddLevelGruntz() {
                 0x186a0,
                 GRUNT_ENTRANCE_NONE,
                 g->GetScore(),
-                g->m_powerup,
+                g->GetPowerup(),
                 g->GetDamage(),
                 g->GetPoints(),
                 g->m_direction,
@@ -5612,7 +5622,7 @@ i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAs
         if (obj) {
             LogicRecordDispatchFn dispatch = obj->GetLogicRecord()->GetDispatch();
             if (dispatch == DispatchGruntStartingPointLogic) {
-                i32 v = obj->m_powerup;
+                i32 v = obj->GetPowerup();
                 if (v) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(v),
@@ -5786,7 +5796,7 @@ i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAs
                 }
             } else if (dispatch == DispatchCoveredPowerupLogic
                        || dispatch == DispatchGiantRockLogic) {
-                PickupType powerup = static_cast<PickupType>(obj->m_powerup);
+                PickupType powerup = static_cast<PickupType>(obj->GetPowerup());
                 PickupType cv = powerup == PICKUP_MEGAPHONE
                                     ? static_cast<PickupType>(obj->GetPoints())
                                     : powerup;
@@ -5800,15 +5810,15 @@ i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAs
                 } else if (cv == PICKUP_COIN) {
                     m_mgr->GetGameStats()->m_coinsAvailable++;
                 }
-                i32 e = obj->m_powerup;
+                i32 e = obj->GetPowerup();
                 PickupType item = static_cast<PickupType>(e);
                 if (item <= PICKUP_TOYZ_LAST) {
                     if (!SetGruntTypeAssetsLoaded(item, 1, 0, multiplayerSession)) {
                         return 0;
                     }
-                    if (loadedAssetGroups[obj->m_powerup] == 0) {
+                    if (loadedAssetGroups[obj->GetPowerup()] == 0) {
                         AdvanceLoadingBar(false);
-                        loadedAssetGroups[obj->m_powerup] = 1;
+                        loadedAssetGroups[obj->GetPowerup()] = 1;
                     }
                 } else if (obj->GetSmarts() == IDX(GRUNT_HAREKRISHNA)) {
                     if (!SetGruntTypeAssetsLoaded(GRUNT_HAREKRISHNA, 1, 0, multiplayerSession)) {
@@ -5922,7 +5932,7 @@ i32 CPlay::ShowHelpMessage(i32 messageId) {
     m_stepCountdown = 2;
     m_helpMessageActive = true;
 
-    PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
+    PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_cursorSnapSprite) {
         m_cursorSnapSprite->Hide();
     }
@@ -6572,15 +6582,15 @@ i32 CPlay::DrawDarknessView() {
 
 RVA(0x000d9160, 0xac)
 i32 CPlay::DiscardQueuedInput() {
-    m_mgr->m_gameWnd->DiscardMessages(WM_CHAR, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_MOUSEMOVE, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONDOWN, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONUP, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONDBLCLK, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONDOWN, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONUP, 0x40);
-    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONDBLCLK, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_CHAR, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_KEYDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_MOUSEMOVE, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_LBUTTONDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_LBUTTONUP, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_LBUTTONDBLCLK, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_RBUTTONDOWN, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_RBUTTONUP, 0x40);
+    m_mgr->GetGameWindow()->DiscardMessages(WM_RBUTTONDBLCLK, 0x40);
     return 1;
 }
 

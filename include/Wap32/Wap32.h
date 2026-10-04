@@ -110,6 +110,10 @@ public:
     virtual i32 PerFrameTick();
     virtual i32 HandleCommand(i32, GruntzCommandId, i32);
 
+    CGameWnd* const& GetGameWindow() const {
+        return m_gameWnd;
+    }
+
     void ResetFpsSampleWindow(i32 reset);
     void ResetFrameTiming();
 

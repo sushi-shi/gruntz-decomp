@@ -166,7 +166,7 @@ i32 CAttract::Render() {
     i32 n = g_actorList->GetCount();
     for (i = 0; i < n; i++) {
         if (g_actorList->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
-            PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         }
     }
@@ -209,14 +209,14 @@ i32 CAttract::RestoreDisplay() {
 RVA(0x00014720, 0x37)
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_SPACE || code == VK_RETURN || code == VK_ESCAPE) {
-        PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     }
     return 1;
 }
 
 RVA(0x00014770, 0x24)
 i32 CAttract::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(owner()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;
 }
 
