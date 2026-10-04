@@ -1705,19 +1705,19 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                    mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                    mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 } else {
-                    mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                    mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
                 }
                 return 1;
             }
             if (vk == 'N' || vk == VK_ESCAPE) {
-                mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                 this->CloseLevelOverlay(0);
                 return 1;
             }
@@ -1726,7 +1726,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Q') {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                    mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                    mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
@@ -1736,7 +1736,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
 
             if (vk == 'S' && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                 mgr->FinalizeLevelAndShowResults();
             }
             if (vk == 'R') {
@@ -1871,7 +1871,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (h->GetFrameGate() != false) {
             this->m_mgr->FinishLevel(h->ToggleFrameGate(), true);
         }
-        this->m_mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        this->m_mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         this->OpenLevelOverlay(true);
         return 1;
     }
@@ -1978,7 +1978,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2003,7 +2003,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2024,7 +2024,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2048,7 +2048,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             return 1;
         }
-        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         this->m_statusBar->AdvanceTab(g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0));
         return 1;
     }
@@ -2057,7 +2057,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2118,7 +2118,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         i32 my = this->m_cursorY;
-        LevelCoordRect* r = &h->World()->GetLevel()->m_viewportRect;
+        LevelCoordRect* r = &h->m_world->GetLevel()->m_viewportRect;
         i32 x0 = r->left;
         i32 y0 = r->top;
         i32 x1 = r->right;
@@ -2140,7 +2140,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         i32 mx = this->m_cursorX;
-        CGameLevel* q = h->World()->GetLevel();
+        CGameLevel* q = h->m_world->GetLevel();
         LevelCoordRect* r = &q->m_viewportRect;
         i32 x0 = r->left;
         i32 y0 = r->top;
@@ -2162,7 +2162,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         i32 my = this->m_cursorY;
-        CGameLevel* q = h->World()->GetLevel();
+        CGameLevel* q = h->m_world->GetLevel();
         CDDrawWorkerHost* g = q->m_mainPlane;
         RECT* view = g->GetPlaneViewRect();
         i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
