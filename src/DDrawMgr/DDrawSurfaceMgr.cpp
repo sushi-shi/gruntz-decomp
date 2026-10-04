@@ -187,7 +187,7 @@ RVA(0x00155fc0, 0x2e)
 void CDDrawSurfaceMgr::FreeContext() {
     if (m_soundRegistry != NULL) {
 
-        SoundStream* inner = m_soundRegistry->m_soundStream;
+        SoundStream* inner = m_soundRegistry->GetSoundStream();
         if (inner != NULL) {
             inner->StopAllStreams();
         }

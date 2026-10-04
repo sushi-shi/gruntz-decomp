@@ -911,7 +911,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
         worker->Stop();
     }
 
-    SoundStream* grid = self->m_world->SoundRegistry()->m_soundStream;
+    SoundStream* grid = self->m_world->SoundRegistry()->GetSoundStream();
     if (grid != NULL) {
         grid->StopAllStreams();
     }
@@ -1474,8 +1474,8 @@ void CPlay::ClearLevelState() {
     {
 
         SoundCueRegistry* reg = m_world->SoundRegistry();
-        if (reg->m_soundStream != NULL) {
-            reg->m_soundStream->StopAllStreams();
+        if (reg->GetSoundStream() != NULL) {
+            reg->GetSoundStream()->StopAllStreams();
         }
     }
     m_mgr->GetMidiManager()->ClearSequences();
@@ -1526,8 +1526,8 @@ void CPlay::ModeCleanup() {
         {
 
             SoundCueRegistry* reg = m_world->SoundRegistry();
-            if (reg->m_soundStream) {
-                reg->m_soundStream->StopAllStreams();
+            if (reg->GetSoundStream()) {
+                reg->GetSoundStream()->StopAllStreams();
             }
         }
         m_world->SoundRegistry()->ClearCues();
@@ -3235,8 +3235,8 @@ i32 CPlay::CompleteLevel() {
         m_returningToMenu = true;
 
         SoundCueRegistry* reg = m_world->SoundRegistry();
-        if (reg->m_soundStream) {
-            reg->m_soundStream->StopAllStreams();
+        if (reg->GetSoundStream()) {
+            reg->GetSoundStream()->StopAllStreams();
         }
         m_mgr->GetMidiManager()->ClearSequences();
         m_mgr->m_worldSounds->Teardown();

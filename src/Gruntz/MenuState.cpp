@@ -162,8 +162,8 @@ void CMenuState::ReleaseResources() {
     if (m_world) {
 
         SoundCueRegistry* soundRegistry = m_world->SoundRegistry();
-        if (soundRegistry->m_soundStream) {
-            soundRegistry->m_soundStream->StopAllStreams();
+        if (soundRegistry->GetSoundStream()) {
+            soundRegistry->GetSoundStream()->StopAllStreams();
         }
         m_world->m_transientDrawList->Clear();
     }

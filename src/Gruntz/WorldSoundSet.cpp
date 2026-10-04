@@ -45,8 +45,8 @@ i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 masterVolume) {
 
 RVA(0x0000b620, 0x26)
 void CWorldSoundSet::Deactivate() {
-    if (m_cueRegistry != NULL && m_cueRegistry->m_soundStream != NULL) {
-        m_cueRegistry->m_soundStream->ClearVolumeRamps();
+    if (m_cueRegistry != NULL && m_cueRegistry->GetSoundStream() != NULL) {
+        m_cueRegistry->GetSoundStream()->ClearVolumeRamps();
     }
     Teardown();
     m_cueRegistry = NULL;
@@ -223,8 +223,8 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomFromSound(
 RVA(0x0000bc30, 0x3a)
 void CWorldSoundSet::SetMasterVolume(i32 masterVolume) {
     m_masterVolume = masterVolume;
-    if (m_cueRegistry->m_soundStream != NULL) {
-        m_cueRegistry->m_soundStream->ClearVolumeRamps();
+    if (m_cueRegistry->GetSoundStream() != NULL) {
+        m_cueRegistry->GetSoundStream()->ClearVolumeRamps();
     }
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -237,8 +237,8 @@ void CWorldSoundSet::SetMasterVolume(i32 masterVolume) {
 
 RVA(0x0000bc80, 0x44)
 void CWorldSoundSet::Stop() {
-    if (m_cueRegistry != NULL && m_cueRegistry->m_soundStream != NULL) {
-        m_cueRegistry->m_soundStream->ClearVolumeRamps();
+    if (m_cueRegistry != NULL && m_cueRegistry->GetSoundStream() != NULL) {
+        m_cueRegistry->GetSoundStream()->ClearVolumeRamps();
     }
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {

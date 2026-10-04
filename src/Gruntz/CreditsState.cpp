@@ -130,8 +130,8 @@ RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_world) {
         SoundCueRegistry* reg = m_world->SoundRegistry();
-        if (reg->m_soundStream) {
-            reg->m_soundStream->StopAllStreams();
+        if (reg->GetSoundStream()) {
+            reg->GetSoundStream()->StopAllStreams();
         }
         m_world->SoundRegistry()->RemoveWithPrefix("CREDITZ", "_");
         m_world->GetImageRegistry()->RemoveWithPrefix("CREDITZ", "_");

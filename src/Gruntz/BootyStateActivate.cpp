@@ -316,7 +316,7 @@ i32 CBootyState::LoadGameAssetNamespaces(
 // @early-stop
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
-    SoundStream* r = m_world->SoundRegistry()->m_soundStream;
+    SoundStream* r = m_world->SoundRegistry()->GetSoundStream();
     if (r) {
         r->StopAllStreams();
     }
@@ -1667,7 +1667,7 @@ i32 CBootyState::HandleContinueInput() {
 
         CGameStats* nextLevelStats = g_gameReg->GetGameStats();
         if (nextLevelStats->GetLevelNumber() == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
-            SoundStream* sub = m_world->SoundRegistry()->m_soundStream;
+            SoundStream* sub = m_world->SoundRegistry()->GetSoundStream();
             if (sub != NULL) {
                 sub->StopAllStreams();
             }
@@ -1977,8 +1977,8 @@ RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
 
     SoundCueRegistry* reg = m_world->SoundRegistry();
-    if (reg->m_soundStream) {
-        reg->m_soundStream->StopAllStreams();
+    if (reg->GetSoundStream()) {
+        reg->GetSoundStream()->StopAllStreams();
     }
     m_world->SoundRegistry()->RemoveWithPrefix("BOOTY", "_");
 
