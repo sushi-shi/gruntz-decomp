@@ -600,7 +600,7 @@ blowfish	?Decrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	3	
 blowfish	?Encrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	3	4cb4c7fb2b23	0x16f6e0	100.0000	
 blowfish	?InitializeBlowfish@@YAFPBDF@Z	100.0000	100.0000	5	22b7d2929e48	0x170100	100.0000	
 blowfish	?SetKey@CCryptMgr@@QAEXPBD@Z	100.0000	100.0000	3	a0f77ad5b174	0x16f6c0	100.0000	
-bootystateactivate	$anon_data_17e1d6cac207da629f25cfea8f6d87964b4a85e33d4e5c30725fbda325fb8cd2_0	100.0000	100.0000	1	cpp:deb721666c88		100.0000	
+bootystateactivate	$anon_data_720c38882ff0c2ca4c042cea6333e55aeed4d442cf5e562e1c466ce4039b45be_0	100.0000	100.0000	1	cpp:deb721666c88		100.0000	
 bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d440	100.0000	
 bootystateactivate	??1CButeMgr@@QAE@XZ	100.0000	100.0000	1	cpp:e2ca049ea8bf	0x213c0	100.0000	
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510	100.0000	
