@@ -35,6 +35,10 @@ public:
 
     virtual void Notify(i32 on);
 
+    CDDrawWorker* GetFrameSet() const {
+        return m_frameSet;
+    }
+
     CDDrawWorker* m_frameSet;
     i32 m_frameIndex;
 };
