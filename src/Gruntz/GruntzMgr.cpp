@@ -2,7 +2,6 @@
 
 #include <rva.h>
 
-#include <Gruntz/GameRand.h>
 #include <Gruntz/GruntzMgr.h>
 
 #include <Bute/ButeMgr.h>
@@ -46,6 +45,7 @@
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
