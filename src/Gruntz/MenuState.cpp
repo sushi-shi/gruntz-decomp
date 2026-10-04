@@ -71,12 +71,16 @@ CMenuState::~CMenuState() {
 }
 
 RVA(0x0009fe50, 0x343)
-i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    if (prevStateId == 0) {
+i32 CMenuState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
+    if (previousStateId == 0) {
         return 0;
     }
 
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
     m_mgr->EnsureStandardVideoMode(false);
@@ -86,21 +90,21 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     if (!m_world->GetImageRegistry()->HasWithPrefix("MENU")) {
-        CRezDir* imageSymbols = StateResources()->GetDirFromPath("IMAGEZ");
-        if (imageSymbols == NULL) {
+        CRezDir* imageResources = StateResources()->GetDirFromPath("IMAGEZ");
+        if (imageResources == NULL) {
             return 0;
         }
         g_resourceInstallActive = true;
-        m_world->GetImageRegistry()->LoadImageSetsFromTree(imageSymbols, "MENU", "_");
+        m_world->GetImageRegistry()->LoadImageSetsFromTree(imageResources, "MENU", "_");
         g_resourceInstallActive = false;
     }
 
     if (!m_world->SoundRegistry()->HasWithPrefix("MENU")) {
-        CRezDir* soundSymbols = StateResources()->GetDirFromPath("SOUNDZ");
-        if (soundSymbols == NULL) {
+        CRezDir* soundResources = StateResources()->GetDirFromPath("SOUNDZ");
+        if (soundResources == NULL) {
             return 0;
         }
-        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundSymbols), "MENU", "_");
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundResources), "MENU", "_");
     }
 
     if (!m_world->GetDisplayBuffers()->HasOverlay()) {
@@ -135,7 +139,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         }
     }
 
-    if (!BuildMainMenuTree(m_menuTree, prevStateId)) {
+    if (!BuildMainMenuTree(m_menuTree, previousStateId)) {
         return 0;
     }
 

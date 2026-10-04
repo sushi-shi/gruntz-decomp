@@ -38,7 +38,8 @@ public:
     }
     virtual i32 RestoreDisplay() OVERRIDE;
 
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
+    virtual i32
+    LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) OVERRIDE;
     virtual i32 OnPaint() OVERRIDE;
     virtual i32 RestoreGraphics() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;
@@ -86,7 +87,8 @@ public:
         m_musicStarted = false;
     }
 
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
+    virtual i32
+    LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) OVERRIDE;
 
     virtual ~CCreditsState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
@@ -156,7 +158,8 @@ public:
         }
     }
 
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
+    virtual i32
+    LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) OVERRIDE;
 
     virtual ~CBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
@@ -241,7 +244,8 @@ public:
         m_sequenceState = BOOTYSEQ_WARP_CUE;
     }
 
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
+    virtual i32
+    LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) OVERRIDE;
 
     virtual ~CMultiBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;

@@ -56,9 +56,13 @@ GameStateId CDemo::GetStateId() {
 }
 
 RVA(0x00095090, 0x6e)
-i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CHelpState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
 
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
     while (ShowCursor(false) >= 0)

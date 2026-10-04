@@ -211,9 +211,13 @@ DATA(0x0022af10)
 b32 g_bootyCheatMessagesLoaded = false;
 
 RVA(0x00018830, 0x380)
-i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CBootyState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
 
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
 
@@ -1696,8 +1700,12 @@ i32 CBootyState::OnKeyDown(i32, i32) {
 }
 
 RVA(0x0001d440, 0xd7d)
-i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+i32 CMultiBootyState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
     m_mgr->EnsureStandardVideoMode(false);

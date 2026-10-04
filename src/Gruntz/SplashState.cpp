@@ -40,12 +40,16 @@ template<> DATA(0x0024e25c)
 CString CStringStaticPool<CAssetRootTag>::s_value;
 
 RVA(0x000f9780, 0x8c)
-i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CSplashState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
     if (CAssetRootStorage::s_value.IsEmpty()) {
         return 0;
     }
 
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
     SetCursor(NULL);
@@ -56,9 +60,9 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prev
         return 0;
     }
 
-    CRezDir* soundz = StateResources()->GetDir("SOUNDZ");
-    if (soundz) {
-        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundz), "", "_");
+    CRezDir* soundResources = StateResources()->GetDir("SOUNDZ");
+    if (soundResources) {
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundResources), "", "_");
     }
     return 1;
 }

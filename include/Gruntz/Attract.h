@@ -15,7 +15,8 @@ class CGruntzMgr;
 
 class CAttract : public CState {
 public:
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
+    virtual i32
+    LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) OVERRIDE;
 
     virtual ~CAttract() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;

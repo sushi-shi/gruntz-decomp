@@ -63,9 +63,13 @@ DATA(0x001e9708)
 static const double s_stepScale = 1000.0;
 
 RVA(0x00038d20, 0x176)
-i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CCreditsState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
 
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
     while (ShowCursor(false) >= 0)
@@ -80,15 +84,15 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         return 0;
     }
 
-    CRezDir* sounds = StateResources()->GetDir("SOUNDZ");
-    if (!sounds) {
+    CRezDir* soundResources = StateResources()->GetDir("SOUNDZ");
+    if (!soundResources) {
         return 0;
     }
-    m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sounds), "CREDITZ", "_");
+    m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundResources), "CREDITZ", "_");
 
-    CRezDir* midiTable = StateResources()->GetDirFromPath("MIDIZ");
-    if (midiTable) {
-        CRezItm* creditsEntry = midiTable->GetRez("PLAY", REZ_TAG_XMI);
+    CRezDir* midiResources = StateResources()->GetDirFromPath("MIDIZ");
+    if (midiResources) {
+        CRezItm* creditsEntry = midiResources->GetRez("PLAY", REZ_TAG_XMI);
         if (creditsEntry) {
             u8* creditsData = creditsEntry->Load();
             if (creditsData) {
@@ -98,8 +102,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         }
     }
 
-    if (midiTable) {
-        CRezItm* monolithEntry = midiTable->GetRez("MONOLITH", REZ_TAG_XMI);
+    if (midiResources) {
+        CRezItm* monolithEntry = midiResources->GetRez("MONOLITH", REZ_TAG_XMI);
         if (monolithEntry) {
             u8* monolithData = monolithEntry->Load();
             if (monolithData) {
@@ -117,9 +121,9 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
 
     SetupTitle();
     m_reserved20c = 2;
-    i32 r = FinishState();
+    i32 result = FinishState();
     m_musicStarted = false;
-    return r;
+    return result;
 }
 
 RVA(0x00038f00, 0x87)

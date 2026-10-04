@@ -210,18 +210,18 @@ char g_customLevelText[0x200];
 
 // @early-stop
 RVA(0x000c7ec0, 0x5f5)
-i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) {
     {
-        if (mgr == NULL) {
+        if (gameManager == NULL) {
             return 0;
         }
-        GruntzPlayer* sub = mgr->m_players;
+        GruntzPlayer* sub = gameManager->m_players;
         if (sub == NULL) {
             return 0;
         }
         ResetAssetLoadState(sub);
 
-        if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+        if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
             return 0;
         }
 
@@ -273,7 +273,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         SetReturningToMenu(false);
         SetCompletedFinalLevel(false);
         ClearSaveSlot();
-        mgr->ResetClockGlobals();
+        gameManager->ResetClockGlobals();
         SetSavedGameTimeMs(0);
         m_rngSeed = timeGetTime();
         m_minimap = NULL;
@@ -284,7 +284,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
         OnSharedAssetDirectoriesResolved();
-        if (!LoadLevel(areaArg, 1)) {
+        if (!LoadLevel(levelIndex, 1)) {
             return 0;
         }
         if (!LoadCursorSprites(0, false)) {

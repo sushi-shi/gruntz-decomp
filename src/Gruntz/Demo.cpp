@@ -45,9 +45,9 @@
 #include <string.h>
 
 RVA(0x0003bfa0, 0x42)
-i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 areaArg, i32 prevStateId) {
-    ctx->m_strWorldFile.Empty();
-    if (CPlay::LoadGameAssetNamespaces(ctx, areaArg, prevStateId) == 0) {
+i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) {
+    gameManager->m_strWorldFile.Empty();
+    if (CPlay::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId) == 0) {
         return 0;
     }
     m_demoCountdown = 0x124f80;

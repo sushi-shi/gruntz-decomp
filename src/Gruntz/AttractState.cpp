@@ -34,9 +34,13 @@
 #include <stddef.h>
 
 RVA(0x00013fb0, 0xd5)
-i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CAttract::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
 
-    if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
+    if (CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId) == 0) {
         return 0;
     }
 
@@ -47,25 +51,25 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
     GetGameManager()->EnsureStandardVideoMode(false);
 
-    CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
-    m_stateResources = (state);
-    if (state == NULL) {
+    CRezDir* stateResources = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
+    m_stateResources = (stateResources);
+    if (stateResources == NULL) {
         return 0;
     }
 
-    CRezDir* sound = state->GetDir("SOUNDZ");
-    if (sound == NULL) {
+    CRezDir* soundResources = stateResources->GetDir("SOUNDZ");
+    if (soundResources == NULL) {
         return 0;
     }
 
-    World()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
+    World()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundResources), "ATTRACT", "_");
 
     if (ShowCursor(false) >= 0) {
         do {
         } while (ShowCursor(false) >= 0);
     }
 
-    if (static_cast<GameStateId>(prevStateId) == GAMESTATE_PLAY) {
+    if (static_cast<GameStateId>(previousStateId) == GAMESTATE_PLAY) {
         m_titleCueEnabled = false;
         m_titleCue = NULL;
     } else {
