@@ -729,7 +729,7 @@ i32 CGrunt::StartDeathMovement() {
     i32 tileX = h->m_screenX >> TILE_SHIFT_PX;
     i32 tileId = b->TileIdAt(tileX, tileY);
 
-    LevelArea area = state->m_levelType;
+    LevelArea area = state->GetLevelArea();
 
     if (area < AREA_TILESET_B_FIRST) {
         switch (static_cast<MovingDeathTileSetAId>(tileId)) {

@@ -358,7 +358,7 @@ i32 CDroppedObject::AdvanceFall() {
                 if (cell == IDX(CELL_FLAG_REVEALED_POWERUP)) {
                     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 } else {
-                    switch (g_gameReg->GetCurrentState()->m_levelType) {
+                    switch (g_gameReg->GetCurrentState()->GetLevelArea()) {
                         case AREA_HIGH_ON_SWEETZ:
                         case AREA_HIGH_ROLLERZ:
                         case AREA_GRUNTZ_IN_SPACE:

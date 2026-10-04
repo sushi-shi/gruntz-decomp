@@ -398,7 +398,7 @@ void CProjectile::AdvanceMotion() {
                 if (flags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
                     tier = 1;
                 } else {
-                    switch (reg->GetCurrentState()->m_levelType) {
+                    switch (reg->GetCurrentState()->GetLevelArea()) {
                         case AREA_HIGH_ON_SWEETZ:
                         case AREA_HIGH_ROLLERZ:
                         case AREA_GRUNTZ_IN_SPACE:

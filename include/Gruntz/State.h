@@ -169,6 +169,9 @@ public:
     CGruntzMgr* GetGameManager() {
         return m_mgr;
     }
+    LevelArea GetLevelArea() const {
+        return m_levelType;
+    }
     i32 SetAssetGroupLoaded(
         const CString& resourceGroup,
         i32 loadAssets,

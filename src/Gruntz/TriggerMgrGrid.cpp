@@ -780,7 +780,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_CRUMBLEDEATHBRIDGE: {
             i32 token = 0x75;
-            if (state->m_levelType > AREA_TILESET_A_LAST) {
+            if (state->GetLevelArea() > AREA_TILESET_A_LAST) {
                 token = 0x72;
             }
             CTileTriggerLogic* logic = state->m_tileTriggers->AddLogicDefaults(
