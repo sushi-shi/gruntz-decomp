@@ -3718,9 +3718,9 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     }
 
     screenRect->left = x - m_cursorImage->GetAnchorX();
-    screenRect->right = m_cursorImage->m_width + screenRect->left;
+    screenRect->right = m_cursorImage->GetWidth() + screenRect->left;
     screenRect->top = y - m_cursorImage->GetAnchorY();
-    screenRect->bottom = m_cursorImage->m_height + screenRect->top;
+    screenRect->bottom = m_cursorImage->GetHeight() + screenRect->top;
     tagSIZE mode = m_mgr->GetModeSize();
     if (screenRect->left < 0) {
         screenRect->left = 0;

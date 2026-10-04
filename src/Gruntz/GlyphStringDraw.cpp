@@ -92,7 +92,7 @@ i32 LayerBlitFrame(
     i32 dx = x - src->GetAnchorX();
     i32 dy = y - src->GetAnchorY();
     RECT rc;
-    SetRect(&rc, 0, 0, src->m_width - 1, src->m_height - 1);
+    SetRect(&rc, 0, 0, src->GetWidth() - 1, src->GetHeight() - 1);
     RECT rc2 = rc;
     u32 flags = DDBLTFAST_WAIT;
     if (useColorKey) {

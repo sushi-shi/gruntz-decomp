@@ -110,7 +110,7 @@ i32 CSBI_WellGoo::Setup(
             f->GetShadeBlitter()->m_palDescr = node;
         }
 
-        SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
+        SetRect(&rc, 0, 0, m_frame->GetWidth() - 1, m_frame->GetHeight() - 1);
         m_srcRect = rc;
 
         m_drawX = m_rect.left + ((m_rect.right - m_rect.left) >> 1) + 1;

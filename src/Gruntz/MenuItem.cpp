@@ -70,7 +70,7 @@ i32 CMenuItem::GetFrameWidth() {
     if (!frame) {
         return 0;
     }
-    return frame->m_width;
+    return frame->GetWidth();
 }
 RVA(0x00185550, 0x2c)
 i32 CMenuItem::GetFrameHeight() {
@@ -82,7 +82,7 @@ i32 CMenuItem::GetFrameHeight() {
     if (!frame) {
         return 0;
     }
-    return frame->m_height;
+    return frame->GetHeight();
 }
 RVA(0x00185580, 0x4a)
 i32 CMenuItem::PostCommands() {
@@ -209,7 +209,7 @@ i32 CAnimatedMenuItem::GetFrameWidth() {
     if (!frame) {
         return 0;
     }
-    return frame->m_width;
+    return frame->GetWidth();
 }
 
 RVA(0x00185890, 0xe)
@@ -218,7 +218,7 @@ i32 CAnimatedMenuItem::GetFrameHeight() {
     if (!frame) {
         return 0;
     }
-    return frame->m_height;
+    return frame->GetHeight();
 }
 
 RVA(0x001858a0, 0x2b)
