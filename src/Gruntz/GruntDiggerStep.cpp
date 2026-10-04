@@ -110,7 +110,8 @@ i32 CGrunt::StepDiggerBehavior() {
     if (m_inCombat != false) {
         goto L_tailc;
     }
-    if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
+    if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
+        && g->m_object->m_screenY == g->m_lastTilePx.m_y
         && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         ATTACK_GRUNT(g);
         m_dwell = 0;
