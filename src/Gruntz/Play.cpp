@@ -3354,7 +3354,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
 RVA(0x000d00a0, 0x5a)
 void CPlay::DrawChatMessages(HDC dc) {
     CRect dst(m_world->GetLevel()->GetViewportRect());
-    m_mgr->ChatLog()->DrawTextLines(8, dc, &dst, 0x10);
+    m_mgr->ChatLog()->DrawMessages(8, dc, &dst, 0x10);
 }
 
 // @early-stop

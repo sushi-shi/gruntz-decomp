@@ -24,11 +24,11 @@ public:
         m_trainingFont = NULL;
     }
 
-    CPtrList m_lines;
+    CPtrList m_messages;
     i32 Initialize(i32 messageHoldMs, i32 crowdedMessageHoldMs);
     void ClearMessages();
     void Reset();
-    i32 AddMessage(const char* str, GZ_ENUM_PARAM(GameTextFlags, i32) flags, i32 colorTint);
+    i32 AddMessage(const char* messageText, GZ_ENUM_PARAM(GameTextFlags, i32) flags, i32 colorTint);
     void AdvanceMessageTimer(i32 deltaMs);
 
     i32 HandleInputChar(i32 charCode, i32 keyData);
@@ -40,7 +40,7 @@ public:
     void EndInput();
     ~CGameText();
 
-    i32 DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format);
+    i32 DrawMessages(i32 maxMessages, HDC hdc, RECT* bounds, UINT format);
 
     i32 DrawInputCaret(HDC hdc, RECT* rect);
 
@@ -76,7 +76,7 @@ extern i32 g_caretBlinkRemainingMs;
 extern b32 g_caretBlinkOn;
 extern i32 g_inputTextDrawFormat;
 
-struct GameTextLine {
+struct GameTextMessage {
     GameTextFlags m_flags;
     i32 m_colorTint;
     CString m_text;
