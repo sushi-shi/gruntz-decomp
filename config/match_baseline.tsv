@@ -3446,7 +3446,7 @@ play	?PlaceStartGruntz@CPlay@@QAEHXZ	100.0000	100.0000	20	c45a52b8bf7f	0xd2b20	1
 play	?PlayCueAt@CPlay@@QAEXHHHHHHHPAUtagRECT@@@Z	100.0000	100.0000	8	cdf704c03e27	0xd1890	100.0000	
 play	?PositionBridgeToggle@CPlay@@QAEHW4StatusBarDock@@0@Z	99.6429	99.6429	8	d5f1213b623b	0xd5b20	99.6429	
 play	?PostActionCue@CPlay@@QAEHH@Z	100.0000	100.0000	5	ae18ebc9e17d	0xd7220	100.0000	
-play	?PostHudRect@CPlay@@QAEHXZ	100.0000	100.0000	6	9d667b0fcfa2	0xda440	100.0000	
+play	?FinishSelectionDrag@CPlay@@QAEHXZ	100.0000	100.0000	6	9d667b0fcfa2	0xda440	100.0000	
 play	?PostSetup@CPlay@@UAEXPAUHDC__@@@Z	100.0000	100.0000	6	5de8309b973f	0xd00a0	100.0000	
 play	?ProfileDeltaFrame@CPlay@@QAEHXZ	100.0000	100.0000	12	9f152b6e28be	0xca0a0	100.0000	
 play	?ProfileInputFrame@CPlay@@QAEHXZ	100.0000	100.0000	15	f5b6cb62bf33	0xc9e40	100.0000	

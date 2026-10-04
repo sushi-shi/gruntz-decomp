@@ -376,12 +376,12 @@ i32 CPlay::EnterState(GameStateId previousState) {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    m_dragSnapActive = false;
+    m_statusBarDragActive = false;
     m_dragInProgress = false;
     m_dragInhibit1 = false;
     m_dragInhibit2 = false;
     m_cursorTargetValid = false;
-    m_worldReady = false;
+    m_selectionDragActive = false;
     if (m_renderDisabled == false) {
         if (previousState != GAMESTATE_HELP) {
             m_mgr->m_worldSounds->Resume();
@@ -500,7 +500,7 @@ i32 CPlay::Render() {
             m_statusBar->Deactivate();
         }
 
-        if (m_worldReady == false) {
+        if (m_selectionDragActive == false) {
             if (m_mgr->m_triggerMgr->m_cameraTrackingActive != false) {
                 m_mgr->m_triggerMgr->UpdateCameraTracking();
             }
@@ -619,8 +619,8 @@ i32 CPlay::Render() {
 
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(view);
-        if (m_worldReady != false) {
-            view->DrawBox(&m_hudRect, 0xff);
+        if (m_selectionDragActive != false) {
+            view->DrawBox(&m_selectionRect, 0xff);
         }
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
@@ -2650,20 +2650,20 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         }
         if (m_statusBar->GetState() == STATUSBAR_HIDDEN) {
             if (m_statusBar->HitTestLayer(xr, y)) {
-                m_dragSnapActive = true;
+                m_statusBarDragActive = true;
 
                 CGameObject* xAnchorSprite = m_statusBar->m_barSprite;
                 i32 dx = 0;
                 if (xAnchorSprite != NULL) {
                     dx = xAnchorSprite->m_screenX - xr;
                 }
-                m_snapOriginX = dx;
+                m_statusBarDragOffsetX = dx;
                 CGameObject* yAnchorSprite = m_statusBar->m_barSprite;
                 if (yAnchorSprite == NULL) {
-                    m_snapOriginY = 0;
+                    m_statusBarDragOffsetY = 0;
                     return 1;
                 }
-                m_snapOriginY = yAnchorSprite->m_screenY - y;
+                m_statusBarDragOffsetY = yAnchorSprite->m_screenY - y;
                 return 1;
             }
             goto drag_box;
@@ -2705,13 +2705,13 @@ drag_box: {
         }
         g_gameReg->GetTriggerMgr()->m_pendingFxKind = 0;
         LoadCursorSprites(0, false);
-        m_dragClampMaxX = xr;
-        m_dragClampMaxY = y;
-        m_hudRect.left = xr;
-        m_hudRect.top = y;
-        m_hudRect.right = xr;
-        m_hudRect.bottom = y;
-        m_worldReady = true;
+        m_selectionAnchorX = xr;
+        m_selectionAnchorY = y;
+        m_selectionRect.left = xr;
+        m_selectionRect.top = y;
+        m_selectionRect.right = xr;
+        m_selectionRect.bottom = y;
+        m_selectionDragActive = true;
         return 1;
     }
     if (g_gameReg->GetTriggerMgr()->HandleActionOptionsPointer(sx, sy)) {
@@ -2748,13 +2748,13 @@ drag_box: {
         picked->OnStruck(false);
         return 1;
     }
-    m_dragClampMaxX = xr;
-    m_dragClampMaxY = y;
-    m_hudRect.left = xr;
-    m_hudRect.right = xr;
-    m_hudRect.top = y;
-    m_hudRect.bottom = y;
-    m_worldReady = true;
+    m_selectionAnchorX = xr;
+    m_selectionAnchorY = y;
+    m_selectionRect.left = xr;
+    m_selectionRect.right = xr;
+    m_selectionRect.top = y;
+    m_selectionRect.bottom = y;
+    m_selectionDragActive = true;
     goto ret1;
 }
 
@@ -2769,14 +2769,14 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
             && m_statusBar->GetActiveTab() != TAB_GAME) {
             m_minimap->EndMinimapPan(keyFlags, x, y);
         }
-        if (m_worldReady != false) {
+        if (m_selectionDragActive != false) {
             m_mgr->GetTriggerMgr()->SelectUnitsInRect(
-                m_hudRect,
+                m_selectionRect,
                 g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
             );
         }
-        m_worldReady = false;
-        m_dragSnapActive = false;
+        m_selectionDragActive = false;
+        m_statusBarDragActive = false;
         if (m_statusBar->GetState() != STATUSBAR_HIDDEN) {
             LevelCoordRect vp = m_world->GetLevel()->GetViewportRect();
             if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
@@ -3000,8 +3000,8 @@ i32 CPlay::PauseGame() {
     } else {
         m_statusBar->BuildGameTabResumeButton(true);
     }
-    m_worldReady = false;
-    m_dragSnapActive = false;
+    m_selectionDragActive = false;
+    m_statusBarDragActive = false;
     m_savedClock = g_frameTime;
     return 1;
 }
@@ -3792,11 +3792,11 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_minimap->ContinueMinimapPan(keyFlags, x, y);
     }
 
-    if (m_dragSnapActive != false) {
+    if (m_statusBarDragActive != false) {
         if (m_statusBar == NULL) {
             return 1;
         }
-        m_statusBar->SetSpritePos(m_snapOriginX + x, m_snapOriginY + y);
+        m_statusBar->SetSpritePos(m_statusBarDragOffsetX + x, m_statusBarDragOffsetY + y);
         goto rearm;
     }
 
@@ -3811,17 +3811,17 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             m_statusBar->ClearTabSprites(TAB_ALL);
         }
         m_dragInProgress = false;
-        if (m_worldReady != false) {
+        if (m_selectionDragActive != false) {
 
             {
-                i32 anchorX = m_dragClampMaxX;
+                i32 anchorX = m_selectionAnchorX;
                 i32 curX = m_cursorX;
-                m_hudRect.left = min(curX, anchorX);
-                m_hudRect.right = max(curX, anchorX);
-                i32 anchorY = m_dragClampMaxY;
+                m_selectionRect.left = min(curX, anchorX);
+                m_selectionRect.right = max(curX, anchorX);
+                i32 anchorY = m_selectionAnchorY;
                 i32 curY = m_cursorY;
-                m_hudRect.top = min(curY, anchorY);
-                m_hudRect.bottom = max(curY, anchorY);
+                m_selectionRect.top = min(curY, anchorY);
+                m_selectionRect.bottom = max(curY, anchorY);
             }
         rearm:
             CWwdSpriteObject* s = m_cursorSnapSprite;
@@ -3862,16 +3862,16 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     }
     m_dragInProgress = true;
     m_statusBar->HandlePointerDrag(keyFlags, x, y);
-    if (m_worldReady != false) {
+    if (m_selectionDragActive != false) {
 
-        m_hudRect.left = max(m_cursorX, box.left);
-        m_hudRect.left = min(m_hudRect.left, m_dragClampMaxX);
-        m_hudRect.right = min(m_cursorX, box.right);
-        m_hudRect.right = max(m_hudRect.right, m_dragClampMaxX);
-        m_hudRect.top = max(m_cursorY, box.top);
-        m_hudRect.top = min(m_hudRect.top, m_dragClampMaxY);
-        m_hudRect.bottom = min(m_cursorY, box.bottom);
-        m_hudRect.bottom = max(m_hudRect.bottom, m_dragClampMaxY);
+        m_selectionRect.left = max(m_cursorX, box.left);
+        m_selectionRect.left = min(m_selectionRect.left, m_selectionAnchorX);
+        m_selectionRect.right = min(m_cursorX, box.right);
+        m_selectionRect.right = max(m_selectionRect.right, m_selectionAnchorX);
+        m_selectionRect.top = max(m_cursorY, box.top);
+        m_selectionRect.top = min(m_selectionRect.top, m_selectionAnchorY);
+        m_selectionRect.bottom = min(m_cursorY, box.bottom);
+        m_selectionRect.bottom = max(m_selectionRect.bottom, m_selectionAnchorY);
     }
     if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->HasPendingFx() == false) {
         FlushPendingOps();
@@ -5501,8 +5501,8 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
         return 1;
     }
     m_levelOverlayOpen = true;
-    m_worldReady = false;
-    m_dragSnapActive = false;
+    m_selectionDragActive = false;
+    m_statusBarDragActive = false;
     FlushPendingOps();
     if (showQuitConfirmation == false) {
         CStatusBarMgr* g = m_statusBar;
@@ -6957,14 +6957,14 @@ i32 CPlay::CanQuickSave() {
 }
 
 RVA(0x000da440, 0x60)
-i32 CPlay::PostHudRect() {
-    if (m_worldReady != false) {
+i32 CPlay::FinishSelectionDrag() {
+    if (m_selectionDragActive != false) {
         m_mgr->GetTriggerMgr()->SelectUnitsInRect(
-            m_hudRect,
+            m_selectionRect,
             g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
         );
     }
-    m_worldReady = false;
-    m_dragSnapActive = false;
+    m_selectionDragActive = false;
+    m_statusBarDragActive = false;
     return 1;
 }
