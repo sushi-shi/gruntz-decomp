@@ -2300,7 +2300,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             CStatusBarMgr* sb = play->m_statusBar;
-            if (sb->m_hlBusy == false) {
+            if (sb->m_layoutLocked == false) {
                 if (sb->GetState() == STATUSBAR_HIDDEN) {
                     sb->RestoreStatusBar();
                 }

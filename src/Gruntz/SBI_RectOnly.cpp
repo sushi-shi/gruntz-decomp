@@ -171,7 +171,7 @@ void CStatusBarMgr::Teardown() {
 
 RVA(0x000fe3e0, 0x55)
 i32 CStatusBarMgr::SetState(StatusBarDock state) {
-    if (m_hlBusy != false) {
+    if (m_layoutLocked != false) {
         return 1;
     }
     StatusBarDock old = m_position;
@@ -194,7 +194,7 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
 
 RVA(0x000fe460, 0x83)
 i32 CStatusBarMgr::DockStatusBarLeft() {
-    if (m_hlBusy == false && m_position != STATUSBAR_DOCK_LEFT) {
+    if (m_layoutLocked == false && m_position != STATUSBAR_DOCK_LEFT) {
         ResetWidgets(true);
         SetRect(&m_barRect, 0, 0, 0xa0, SCREEN_H_PX);
         SetState(STATUSBAR_DOCK_LEFT);
@@ -210,7 +210,7 @@ i32 CStatusBarMgr::DockStatusBarLeft() {
 
 RVA(0x000fe520, 0xa9)
 i32 CStatusBarMgr::DockStatusBarRight() {
-    if (m_hlBusy != false) {
+    if (m_layoutLocked != false) {
         return 1;
     }
     if (m_position == STATUSBAR_DOCK_RIGHT) {
@@ -232,7 +232,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
 
 RVA(0x000fe600, 0x49)
 i32 CStatusBarMgr::HideRect() {
-    if (m_hlBusy == false && m_position != STATUSBAR_HIDDEN) {
+    if (m_layoutLocked == false && m_position != STATUSBAR_HIDDEN) {
         ResetWidgets(true);
         SetRect(&m_barRect, -1, -1, -1, -1);
         SetState(STATUSBAR_HIDDEN);
@@ -243,7 +243,7 @@ i32 CStatusBarMgr::HideRect() {
 
 RVA(0x000fe670, 0x2b)
 i32 CStatusBarMgr::RestoreStatusBar() {
-    if (m_hlBusy != false) {
+    if (m_layoutLocked != false) {
         return 1;
     }
     if (m_position != STATUSBAR_HIDDEN) {
@@ -261,7 +261,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != STATUSBAR_HIDDEN) {
         if (m_redrawFrames > 0) {
             m_redrawFrames--;
-            i32 v = m_barFrameGate;
+            i32 v = m_displayHeight;
             if (v > SCREEN_H_PX) {
                 CDDSurface* tgt = (g_gameReg->World()->m_drawTarget)->m_backPair->GetSurface();
 
@@ -1150,7 +1150,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
     }
     switch (cmd) {
         case SBICMD_TAB_STATZ:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->SetState(state, 1);
@@ -1160,7 +1160,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_GRUNTZ:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->ProbeState(state);
@@ -1170,7 +1170,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_RESOURCE:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->ProbeState(state);
@@ -1180,7 +1180,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_MULTIPLAYER:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->ProbeState(state);
@@ -1190,7 +1190,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_GAME:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->ProbeState(state);
@@ -1200,7 +1200,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->SetState(state, 1);
             break;
         case SBICMD_PAUSE:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->SetState(state, 1);
@@ -1211,7 +1211,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_LOAD_GAME:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1222,7 +1222,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_SAVE_GAME:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1233,7 +1233,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_SETTINGS:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1244,7 +1244,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_BOOTY_STATE:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1255,7 +1255,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_QUIT:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1266,7 +1266,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->SetState(state, 1);
             break;
         case SBICMD_GAME_TAB:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameQuitButton->SetState(state, 1);
@@ -2475,7 +2475,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != SLOT_ARMED) {
         return 0;
     }
-    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_hlBusy == false) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_layoutLocked == false) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -3289,7 +3289,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     ClearRewardQueue();
     ClockInterval* clock = &m_reserved2b0;
     clock->Clear();
-    m_hlBusy = false;
+    m_layoutLocked = false;
     SAFE_DELETE(m_retabNotify);
     ExitMode();
     m_observerTabAvailable = false;
@@ -3661,7 +3661,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_reserved544, sizeof(m_reserved544));
     s->Write(&m_fallingItemRect, sizeof(m_fallingItemRect));
     s->Write(&m_machineItemRect, sizeof(m_machineItemRect));
-    s->Write(&m_hlBusy, sizeof(m_hlBusy));
+    s->Write(&m_layoutLocked, sizeof(m_layoutLocked));
     s->Write(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
     s->Write(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
     s->Write(&m_machinePhase, sizeof(m_machinePhase));
@@ -3749,7 +3749,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_reserved544, sizeof(m_reserved544));
     ar->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
     ar->Read(&m_machineItemRect, sizeof(m_machineItemRect));
-    ar->Read(&m_hlBusy, sizeof(m_hlBusy));
+    ar->Read(&m_layoutLocked, sizeof(m_layoutLocked));
     ar->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
     ar->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
     ar->Read(&m_machinePhase, sizeof(m_machinePhase));
@@ -3942,7 +3942,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     if (currentX == m_targetX && currentY == m_targetY) {
         WarpStoneFragment fragment = m_fragment;
         g_gameReg->GetTriggerMgr()->AddWarpStoneFragment(fragment);
-        m_owner->m_hlBusy = false;
+        m_owner->m_layoutLocked = false;
         if (m_owner->GetState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
             m_owner->ResetWidgets(false);
             m_owner->TryActivate();
@@ -4285,7 +4285,7 @@ void CStatusBarMgr::ExitMode() {
     m_endSecondaryButton = NULL;
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
-    m_hlBusy = false;
+    m_layoutLocked = false;
     if (wasQuitConfirmation == false && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
@@ -4346,7 +4346,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
 
 RVA(0x0010b4f0, 0xaa)
 void CStatusBarMgr::AdvanceTab(i32 reverse) {
-    if (m_hlBusy != false) {
+    if (m_layoutLocked != false) {
         return;
     }
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {

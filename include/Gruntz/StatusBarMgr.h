@@ -334,7 +334,7 @@ public:
         m_rewardQueue.RemoveAll();
     }
 
-    b32 m_hlBusy;
+    b32 m_layoutLocked;
     CWarpStoneFly* m_retabNotify;
     b32 m_levelOverlayActive;
     b32 m_quitConfirmationActive;
@@ -345,7 +345,7 @@ public:
     b32 m_destructButtonLocked;
     b32 m_observerTabAvailable;
     i32 m_battlezPct[38];
-    i32 m_barFrameGate;
+    i32 m_displayHeight;
     SoundBuffer* m_destructWarningSound;
 
     CSBI_WarlordHead* m_warlordHead[4];
@@ -377,7 +377,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabsBuilt = false;
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
-    m_barFrameGate = 0x1e0;
+    m_displayHeight = 0x1e0;
     m_tabCycle = 0;
     memset(m_statFlags, 0, sizeof(m_statFlags));
     memset(m_hitRects, 0, sizeof(m_hitRects));
@@ -399,7 +399,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_gruntWellTargetLevel = GRUNT_WELL_EMPTY;
     m_gruntWellLevel = GRUNT_WELL_EMPTY;
     m_reserved544 = 1;
-    m_hlBusy = false;
+    m_layoutLocked = false;
     m_retabNotify = NULL;
     m_destructButtonLocked = false;
 }

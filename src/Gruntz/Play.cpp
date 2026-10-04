@@ -1981,7 +1981,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
-        if (lv->m_hlBusy != false) {
+        if (lv->m_layoutLocked != false) {
             return 1;
         }
         if (lv->GetState() == STATUSBAR_HIDDEN) {
@@ -2006,7 +2006,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
-        if (lv->m_hlBusy != false) {
+        if (lv->m_layoutLocked != false) {
             return 1;
         }
         if (lv->GetState() == STATUSBAR_HIDDEN) {
@@ -2027,7 +2027,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
-        if (lv->m_hlBusy != false) {
+        if (lv->m_layoutLocked != false) {
             return 1;
         }
         if (lv->GetState() == STATUSBAR_HIDDEN) {
@@ -2060,7 +2060,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
-        if (lv->m_hlBusy != false) {
+        if (lv->m_layoutLocked != false) {
             return 1;
         }
         if (lv->GetState() == STATUSBAR_HIDDEN) {
@@ -5526,7 +5526,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     g->m_quitConfirmationActive = showQuitConfirmation;
     g->ResetWidgets(false);
     g->TryActivate();
-    g->m_hlBusy = true;
+    g->m_layoutLocked = true;
     g->Deactivate();
     m_savedGameTimeMs = g_frameTime;
     return 1;
@@ -6970,7 +6970,7 @@ i32 CPlay::CancelCursorAction() {
 RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
     if (m_loadingScreenVisible == false && m_waitingForStart == false && m_levelOverlayOpen == false
-        && m_defeatCountdownActive == false && m_statusBar->m_hlBusy == false
+        && m_defeatCountdownActive == false && m_statusBar->m_layoutLocked == false
         && m_statusBar->m_levelOverlayActive == false
         && m_statusBar->m_quitConfirmationActive == false && g_gameReg->GetFrameGate() == false
         && g_gameReg->GetTriggerMgr()->m_playerControlEnabled != false) {
