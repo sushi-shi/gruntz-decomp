@@ -10,7 +10,7 @@
 #include <Ints.h>
 
 class CDDrawSurfaceMgr;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 class CImageSet;
 class CMenuTree;
 class CAnimatedMenuItem;
@@ -73,7 +73,7 @@ public:
     i32 FocusInitialItem();
     i32 SetFocusedItem(CMenuItem* item, i32 playFocusSound);
     i32 UpdateItems(u32 deltaMs);
-    i32 Draw(CDDrawSurfacePair* target);
+    i32 Draw(CRenderBuffer* target);
     i32 MoveFocusUpSequential();
     i32 MoveFocusDownSequential();
     i32 ActivateFocusedItem();
@@ -83,7 +83,7 @@ public:
     CMenuItem* FindItemByName(const char* name);
     i32 MoveFocusUp();
     i32 MoveFocusDown();
-    i32 DrawMultiColumn(CDDrawSurfacePair* target);
+    i32 DrawMultiColumn(CRenderBuffer* target);
 
     CAnimatedMenuItem* AddAnimatedItem(
         const char* name,

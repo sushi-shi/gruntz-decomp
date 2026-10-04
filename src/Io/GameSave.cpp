@@ -34,7 +34,6 @@ i32 SaveGame(CGruntzMgr* gameMgr, char* name) {
     if (world == NULL) {
         return 0;
     }
-    return world
-               ->SnapshotChildren(&GameSerializationCallback, name, "Gruntz Save Game", LOGIC_UNSET)
+    return world->SaveSnapshot(&GameSerializationCallback, name, "Gruntz Save Game", LOGIC_UNSET)
            != LOGIC_UNSET;
 }

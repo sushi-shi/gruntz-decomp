@@ -109,8 +109,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         }
     }
 
-    if (!m_world->GetDrawTarget()->HasOverlay()) {
-        if (!m_world->GetDrawTarget()->CreateOverlay(0, 0x30000)) {
+    if (!m_world->GetDisplayBuffers()->HasOverlay()) {
+        if (!m_world->GetDisplayBuffers()->CreateOverlay(0, 0x30000)) {
             return 0;
         }
     }
@@ -168,7 +168,7 @@ i32 CCreditsState::LeaveState(GameStateId nextState) {
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
     IDirectDrawSurface* in =
-        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!RestoreGraphics()) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
@@ -215,9 +215,9 @@ i32 CCreditsState::Render() {
     StepVideo();
     DrawScrollingCredits();
 
-    CDDrawSubMgrPages* drawPages = m_world->GetDrawTarget();
+    CDisplayBuffers* drawPages = m_world->GetDisplayBuffers();
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
-    drawPages->GetBackPair()->BltSelf(drawPages->m_overlayPair);
+    drawPages->GetBackBuffer()->CopyFrom(drawPages->m_overlayBuffer);
 
     if (!m_musicStarted && owner()->IsMusicEnabled()) {
         owner()->GetMidiManager()->PlaySequence("CREDITZ", true);
@@ -236,7 +236,7 @@ i32 CCreditsState::Render() {
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::RestoreGraphics() {
 
-    if (m_world->GetDrawTarget()->RestoreLostSurfaces() == 0) {
+    if (m_world->GetDisplayBuffers()->RestoreLostSurfaces() == 0) {
         return 0;
     }
     if (ShowCursor(false) >= 0) {
@@ -290,10 +290,10 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     if (m_videoPlaying != false) {
-        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyFrontToBackBuffers();
-        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyBackToOverlay();
-        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->ClearAllPages(0);
-        m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
+        (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->CopyFrontToBackBuffers();
+        (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->CopyBackToOverlay();
+        (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->ClearAllPages(0);
+        m_world->GetDisplayBuffers()->m_overlayBuffer->GetSurface()->Fill(0);
         return 1;
     }
     char stateName[0x20];
@@ -313,9 +313,9 @@ i32 CCreditsState::InitAttractTitle() {
         return 0;
     }
     m_stateResources = saved;
-    CDDSurface* tgt = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
+    CDDSurface* tgt = m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
-    (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyBackToOverlay();
+    (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->CopyBackToOverlay();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
@@ -327,7 +327,7 @@ i32 CCreditsState::DrawScrollingCredits() {
         return 0;
     }
 
-    CDDSurface* prov = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
+    CDDSurface* prov = m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
 
     CountDown(m_scrollReseedTimer, g_frameDelta);
     if (m_fxEnabled != false) {
@@ -401,7 +401,7 @@ i32 CCreditsState::SetupTitle() {
         delete[] buf;
     }
     m_clipRegion.CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX);
-    CDDSurface* prov = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
+    CDDSurface* prov = m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
     HDC hdc = NULL;
     prov->GetDirectDrawSurface()->GetDC(&hdc);
     if (hdc) {
@@ -430,15 +430,15 @@ i32 CCreditsState::StepVideo() {
     }
     i32 ret = 0;
     if (m_videoHandle) {
-        CDDrawSubMgrPages* v = m_world->GetDrawTarget();
-        CDDrawSurfacePair* dst = v->m_overlayPair;
-        CDDrawSurfacePair* src = v->GetBackPair();
+        CDisplayBuffers* v = m_world->GetDisplayBuffers();
+        CRenderBuffer* dst = v->m_overlayBuffer;
+        CRenderBuffer* src = v->GetBackBuffer();
         if (!m_videoHandle->Advance(dst->GetSurface()->GetDirectDrawSurface(), -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();
         }
         if (dst && src) {
-            BLT_SURFACE_PAIR_SELF(src, dst);
+            COPY_RENDER_BUFFER(src, dst);
         }
     }
     return ret;
@@ -501,8 +501,8 @@ RVA_COMPGEN(0x00039fa0, 0x188, ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@
 RVA_COMPGEN(0x0003a1a0, 0x1e, ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z)
 
 RVA(0x0003a1d0, 0x1d)
-void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
-    BLT_SURFACE_PAIR_SELF(this, src);
+void CRenderBuffer::CopyFrom(CRenderBuffer* src) {
+    COPY_RENDER_BUFFER(this, src);
 }
 
 RVA_COMPGEN(0x0008c400, 0x46, ??1CRgn@@UAE@XZ)

@@ -297,7 +297,8 @@ i32 CStatusBarMgr::Render() {
             m_redrawFrames--;
             i32 v = m_displayHeight;
             if (v > SCREEN_H_PX) {
-                CDDSurface* tgt = (g_gameReg->World()->m_drawTarget)->m_backPair->GetSurface();
+                CDDSurface* tgt =
+                    (g_gameReg->World()->m_displayBuffers)->m_backBuffer->GetSurface();
 
                 RECT below;
                 below.left = m_barRect.left;
@@ -310,9 +311,9 @@ i32 CStatusBarMgr::Render() {
             if (cfg) {
                 CImage* entry = IMAGE_SET_FRAME_AT_UNCHECKED(cfg, cfg->GetMinIndex());
                 if (entry) {
-                    CDDrawSubMgrPages* l1 = g_gameReg->World()->m_drawTarget;
+                    CDisplayBuffers* l1 = g_gameReg->World()->m_displayBuffers;
                     entry->RenderFrame(
-                        l1->m_backPair,
+                        l1->m_backBuffer,
                         entry->GetAnchorX() + m_barRect.left,
                         entry->GetAnchorY() + m_barRect.top,
                         0
@@ -4024,7 +4025,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_frameImage->RenderFrame(
-        g_gameReg->World()->GetDrawTarget()->GetBackPair(),
+        g_gameReg->World()->GetDisplayBuffers()->GetBackBuffer(),
         static_cast<i32>(m_currentX),
         static_cast<i32>(m_currentY),
         0

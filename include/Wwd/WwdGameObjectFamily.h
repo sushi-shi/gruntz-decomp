@@ -20,8 +20,8 @@
 
 GZ_ENUM_FORWARD(MoveMode);
 
-class CDDrawSurfacePair;
-class CDrawSubWorker;
+class CRenderBuffer;
+class CRenderSurface;
 class CWwdGameObject;
 class CImageSet;
 
@@ -72,15 +72,11 @@ public:
 
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate);
 
-    virtual void Render(CDDrawSurfacePair* ctx) = 0;
-    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) = 0;
+    virtual void Render(CRenderBuffer* ctx) = 0;
+    virtual void BltDirty(CRenderBuffer* dst, CRenderBuffer* src) = 0;
+    virtual void BltDirtyEx(CRenderSurface* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc) = 0;
     virtual void
-    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) = 0;
-    virtual void BltDirtyRegions(
-        CDDrawSurfacePair* dst,
-        CDDrawSurfacePair* src,
-        CDDrawSurfacePair* restoreSrc
-    ) = 0;
+    BltDirtyRegions(CRenderBuffer* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc) = 0;
 
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
@@ -361,12 +357,11 @@ public:
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) OVERRIDE;
-    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
-    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
-    virtual void
-    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) OVERRIDE;
-    virtual void
-    BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
+    virtual void Render(CRenderBuffer* ctx) OVERRIDE;
+    virtual void BltDirty(CRenderBuffer* dst, CRenderBuffer* src) OVERRIDE;
+    virtual void BltDirtyEx(CRenderSurface* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc)
+        OVERRIDE;
+    virtual void BltDirtyRegions(CRenderBuffer* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc)
         OVERRIDE;
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
@@ -430,12 +425,11 @@ public:
     virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) OVERRIDE;
-    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
-    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
-    virtual void
-    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) OVERRIDE;
-    virtual void
-    BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
+    virtual void Render(CRenderBuffer* ctx) OVERRIDE;
+    virtual void BltDirty(CRenderBuffer* dst, CRenderBuffer* src) OVERRIDE;
+    virtual void BltDirtyEx(CRenderSurface* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc)
+        OVERRIDE;
+    virtual void BltDirtyRegions(CRenderBuffer* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc)
         OVERRIDE;
 
     void Clear();
@@ -465,12 +459,11 @@ public:
         CGameObject::Unload();
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
-    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
-    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
-    virtual void
-    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) OVERRIDE;
-    virtual void
-    BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
+    virtual void Render(CRenderBuffer* ctx) OVERRIDE;
+    virtual void BltDirty(CRenderBuffer* dst, CRenderBuffer* src) OVERRIDE;
+    virtual void BltDirtyEx(CRenderSurface* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc)
+        OVERRIDE;
+    virtual void BltDirtyRegions(CRenderBuffer* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc)
         OVERRIDE;
 
     virtual i32 SetupDeferred(i32 sortKey, CLogicRecord* logicTemplate);
@@ -491,12 +484,11 @@ public:
         CGameObject::Unload();
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
-    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
-    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
-    virtual void
-    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) OVERRIDE;
-    virtual void
-    BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
+    virtual void Render(CRenderBuffer* ctx) OVERRIDE;
+    virtual void BltDirty(CRenderBuffer* dst, CRenderBuffer* src) OVERRIDE;
+    virtual void BltDirtyEx(CRenderSurface* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc)
+        OVERRIDE;
+    virtual void BltDirtyRegions(CRenderBuffer* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc)
         OVERRIDE;
 
     virtual i32 SetupDot(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate, i32 dotColor);

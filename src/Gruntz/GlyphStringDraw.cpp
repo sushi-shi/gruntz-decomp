@@ -69,14 +69,14 @@ i32 LayerBlitFrame(
         return 0;
     }
 
-    CDrawSubWorker* node;
+    CRenderSurface* node;
     if (useFront) {
-        node = surfaceMgr->GetDrawTarget()->GetFrontSurface();
+        node = surfaceMgr->GetDisplayBuffers()->GetFrontSurface();
         if (!node) {
             return 0;
         }
     } else {
-        node = surfaceMgr->GetDrawTarget()->GetBackPair();
+        node = surfaceMgr->GetDisplayBuffers()->GetBackBuffer();
         if (!node) {
             return 0;
         }
@@ -114,7 +114,7 @@ i32 DrawTextToFrontSurface(
     i32 b,
     i32 flag
 ) {
-    CDDrawFrontSurface* frontSurface = surfaceMgr->GetDrawTarget()->GetFrontSurface();
+    CDDrawFrontSurface* frontSurface = surfaceMgr->GetDisplayBuffers()->GetFrontSurface();
 
     if (frontSurface == NULL) {
         return 0;
@@ -145,7 +145,7 @@ i32 DrawTextToOverlaySurface(
     i32 b,
     i32 flag
 ) {
-    CDDrawSurfacePair* overlaySurface = surfaceMgr->GetDrawTarget()->m_overlayPair;
+    CRenderBuffer* overlaySurface = surfaceMgr->GetDisplayBuffers()->m_overlayBuffer;
 
     if (overlaySurface == NULL) {
         return 0;
@@ -175,7 +175,7 @@ i32 DrawTextToBackSurface(
     i32 b,
     i32 flag
 ) {
-    CDDrawSurfacePair* backSurface = surfaceMgr->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* backSurface = surfaceMgr->GetDisplayBuffers()->GetBackBuffer();
     if (backSurface == NULL) {
         return 0;
     }

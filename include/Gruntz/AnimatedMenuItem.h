@@ -46,7 +46,7 @@ public:
         m_frameTimerMs = framePeriodMs;
     }
     virtual i32 Update(u32 deltaMs) OVERRIDE;
-    virtual i32 DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) OVERRIDE;
+    virtual i32 DrawAt(CRenderBuffer* target, i32 centerX, i32 centerY) OVERRIDE;
     RVA(0x001847b0, 0x6)
     virtual i32 UsesStateAnimations() OVERRIDE {
         return 1;

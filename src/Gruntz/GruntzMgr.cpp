@@ -492,7 +492,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     CGameLevel* view = m_world->GetLevel();
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
-    m_world->m_drawTarget->CreateOverlay(0, 0x30000);
+    m_world->m_displayBuffers->CreateOverlay(0, 0x30000);
     RecomputeViewScale();
     RegisterGameObjectLogicTypes(m_world);
     if (!MakeRezPath()) {
@@ -1776,7 +1776,9 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
-        m_world->GetDrawTarget()->CopyFrontToSurface(m_world->GetDrawTarget()->GetBackPair());
+        m_world->GetDisplayBuffers()->CopyFrontToSurface(
+            m_world->GetDisplayBuffers()->GetBackBuffer()
+        );
 
         CDDrawDeviceManager* deviceManager = m_world->GetDeviceManager();
         deviceManager->FlipToGDISurface();
@@ -1802,7 +1804,9 @@ void CGruntzMgr::ShowModalMessage(const char* msg) {
         m_voiceManager->PauseAllVoices();
     }
     if (m_world) {
-        m_world->GetDrawTarget()->CopyFrontToSurface(m_world->GetDrawTarget()->GetBackPair());
+        m_world->GetDisplayBuffers()->CopyFrontToSurface(
+            m_world->GetDisplayBuffers()->GetBackBuffer()
+        );
 
         CDDrawDeviceManager* deviceManager = m_world->GetDeviceManager();
         deviceManager->FlipToGDISurface();
@@ -2179,7 +2183,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     CMoviePlayer player;
     IDirectSound* dsound = NULL;
 
-    CDDSurface* front = World()->GetDrawTarget()->GetFrontSurface()->GetSurface();
+    CDDSurface* front = World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface();
     IDirectDraw2* dd2 = World()->GetDeviceManager()->GetDirectDraw();
 
     if (World()->SoundRegistry()->HasWithPrefix("GAME") == 0) {

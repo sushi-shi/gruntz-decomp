@@ -9,7 +9,7 @@ class CMenuPage;
 class CMenuItem;
 
 class CDDrawSurfaceMgr;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 
 class CImageSet;
 
@@ -42,7 +42,7 @@ public:
     i32 ConfigureRightCursorAnimation(const char* imageSetKey, i32 framePeriodMs, i32 offsetX);
     i32 UpdateCursorAnimations(i32 deltaMs);
     i32 DrawFocusCursors(
-        CDDrawSurfacePair* target,
+        CRenderBuffer* target,
         CMenuItem* item,
         i32 defaultCenterX,
         i32 defaultCenterY

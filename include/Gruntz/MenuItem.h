@@ -20,7 +20,7 @@ GZ_ENUM_FLAGS_OPS(MenuItemFlags)
 class CMenuPage;
 class CMenuItem;
 class CMenuTree;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 class CImageSet;
 
 class CDDrawSurfaceMgr;
@@ -52,7 +52,7 @@ public:
     virtual i32 OnPageActivated();
 
     virtual i32 Update(u32 deltaMs);
-    virtual i32 DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY);
+    virtual i32 DrawAt(CRenderBuffer* target, i32 centerX, i32 centerY);
 
     virtual i32 Select(i32 playFocusSound);
     virtual i32 Deselect();

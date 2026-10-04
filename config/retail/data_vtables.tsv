@@ -181,15 +181,15 @@ rva	size	name	kind	note
 0x1efd28	0x5c	??_7CImageSetRegistry@@6B@	primary	
 0x1efd88	0x38	??_7CTransientDrawList@@6B@	primary	
 0x1efdc0	0x44	??_7CDDrawChildGroup@@6B@	primary	
-0x1efe08	0x28	??_7CDDrawSubMgrPages@@6B@	primary	
+0x1efe08	0x28	??_7CDisplayBuffers@@6B@	primary	
 0x1efe30	0x34	??_7CFileMem@@6B@	primary	
 0x1efe68	0x34	??_7CFileMemBase@@6B@	primary	
 0x1efea0	0x30	??_7CTransientPixel@@6B@	primary	transient pixel
 0x1efed0	0x38	??_7CTransientImage@@6B@	primary	transient image
 0x1eff08	0x24	??_7SoundCue@@6B@	primary	sound cue
-0x1eff30	0x3c	??_7CDDrawSurfacePair@@6B@	primary	
+0x1eff30	0x3c	??_7CRenderBuffer@@6B@	primary	
 0x1eff70	0x2c	??_7CDDrawFrontSurface@@6B@	primary	front surface
-0x1effa0	0x2c	??_7CDrawSubWorker@@6B@	primary	
+0x1effa0	0x2c	??_7CRenderSurface@@6B@	primary	
 0x1effd0	0x4c	??_7CWwdDotObject@@6B@	primary	dot object
 0x1f0020	0x40	??_7CGameObject@@6B@	primary	
 0x1f0060	0x44	??_7CWwdDeferredObject@@6B@	primary	deferred object

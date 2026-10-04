@@ -357,7 +357,7 @@ void CLevelPlane::SetTileSizeFromImageSet(CImageSet* set) {
 
 // @early-stop
 RVA(0x00162010, 0x8bd)
-void CLevelPlane::Draw(CDDrawSurfacePair* ctx) {
+void CLevelPlane::Draw(CRenderBuffer* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
     }
@@ -886,7 +886,7 @@ i32 CLevelPlane::ValidateTiles(char* errOut) {
 
 RVA(0x00163670, 0x95)
 void CLevelPlane::ResolveColorKey() {
-    ColorDepth format = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->m_bpp;
+    ColorDepth format = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface()->m_bpp;
     if (format == BPP_PALETTED_8) {
         return;
     }

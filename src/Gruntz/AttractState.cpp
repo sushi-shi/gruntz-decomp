@@ -97,8 +97,8 @@ i32 CAttract::EnterState(GameStateId previousState) {
     CString s;
     s.Format("TITLE%d", idx);
     LoadAndPresentTitlePage(s, 0, 0, 1, 0);
-    CDDrawSubMgrPages* page = menuRoot()->GetDrawTarget();
-    page->CopyFrontToSurface(page->GetBackPair());
+    CDisplayBuffers* page = menuRoot()->GetDisplayBuffers();
+    page->CopyFrontToSurface(page->GetBackBuffer());
 
     i32 r = GetRandomNumber();
     const char* pick = (r % 2) ? DATA_COMPGEN(0x0020b5bc, "2") : "";
@@ -145,7 +145,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy =
-        menuRoot()->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
         if (RestoreGraphics() == 0) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
@@ -176,7 +176,7 @@ i32 CAttract::Render() {
 RVA(0x00014520, 0xc3)
 i32 CAttract::RestoreGraphics() {
 
-    if (menuRoot()->GetDrawTarget()->RestoreLostSurfaces() == 0) {
+    if (menuRoot()->GetDisplayBuffers()->RestoreLostSurfaces() == 0) {
         return 0;
     }
 
@@ -237,8 +237,10 @@ i32 CAttract::OnPaint() {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    menuRoot()->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-    menuRoot()->GetDrawTarget()->CopyFrontToSurface(menuRoot()->GetDrawTarget()->GetBackPair());
+    menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    menuRoot()->GetDisplayBuffers()->CopyFrontToSurface(
+        menuRoot()->GetDisplayBuffers()->GetBackBuffer()
+    );
     return 1;
 }
 

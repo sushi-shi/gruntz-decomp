@@ -402,7 +402,7 @@ public:
     i32 m_focusPlayerIndex;
     MidiSequence* m_savedMusicSequence;
 
-    i32 SaveUnderAndDrawCursor(CDDrawSurfacePair* pair);
+    i32 SaveUnderAndDrawCursor(CRenderBuffer* pair);
     i32 LoadCursorSprites(i32 cursorId, b32 targetValid);
     i32 LoadScrollSpeedOptions();
     i32 SetGruntTypeAssetsLoaded(

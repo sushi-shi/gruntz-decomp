@@ -18,7 +18,7 @@ typedef struct tagRECT LevelCoordRect;
 struct CWwdSpatialMgr;
 
 class CDDrawSurfaceMgr;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 
 class CImageSet;
 
@@ -98,7 +98,7 @@ public:
 
     void SetTileSizeFromImage(CImage* image);
     void SetTileSizeFromImageSet(CImageSet* set);
-    void Draw(CDDrawSurfacePair* ctx);
+    void Draw(CRenderBuffer* ctx);
     i32 Prune();
     i32 ActivateVisibleObjects();
     i32 DeactivateDistantObjects();

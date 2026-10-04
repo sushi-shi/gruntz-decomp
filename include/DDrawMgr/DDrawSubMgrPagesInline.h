@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
-inline void FlipFrontAndRestoreOverlay(CDDrawSubMgrPages* pages) {
+inline void FlipFrontAndRestoreOverlay(CDisplayBuffers* pages) {
     pages->GetFrontSurface()->GetSurface()->Flip(NULL);
-    pages->GetBackPair()->GetSurface()->BltFast(
+    pages->GetBackBuffer()->GetSurface()->BltFast(
         0,
         0,
-        pages->m_overlayPair->GetSurface(),
-        &pages->m_overlayPair->m_srcRect,
+        pages->m_overlayBuffer->GetSurface(),
+        &pages->m_overlayBuffer->m_srcRect,
         DDBLTFAST_WAIT
     );
 }

@@ -32,7 +32,7 @@ public:
     AddImage(i32 x, i32 y, CImageSet* imageSet, i32 frameIndex, i32 addHead);
     virtual CTransientImage* AddImage(i32 x, i32 y, CImage* image, i32 addHead);
 
-    virtual void RenderAndPrune(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
+    virtual void RenderAndPrune(CRenderBuffer* backBuffer, CRenderBuffer* overlay);
 
     void Clear();
 

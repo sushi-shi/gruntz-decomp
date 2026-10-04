@@ -28,7 +28,7 @@ struct WwdSnapshot {
 class CImageSet;
 
 class CImage;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 struct SoundCue;
 
 // @identity-TODO

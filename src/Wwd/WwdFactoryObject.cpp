@@ -129,7 +129,7 @@ i32 CWwdSpriteObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTempla
 }
 
 RVA(0x0015ba20, 0x1c)
-void CWwdSpriteObject::Render(CDDrawSurfacePair* pair) {
+void CWwdSpriteObject::Render(CRenderBuffer* pair) {
     if (m_frameImage) {
         m_frameImage->RenderImage(this, pair);
     }
@@ -152,20 +152,16 @@ LoadableClassId CWwdDeferredObject::GetClassId() {
 }
 
 RVA(0x0015ba70, 0x3)
-void CWwdDeferredObject::Render(CDDrawSurfacePair*) {}
+void CWwdDeferredObject::Render(CRenderBuffer*) {}
 
 RVA(0x0015ba80, 0x3)
-void CWwdDeferredObject::BltDirty(CDDrawSurfacePair*, CDDrawSurfacePair*) {}
+void CWwdDeferredObject::BltDirty(CRenderBuffer*, CRenderBuffer*) {}
 
 RVA(0x0015ba90, 0x3)
-void CWwdDeferredObject::BltDirtyEx(CDrawSubWorker*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
+void CWwdDeferredObject::BltDirtyEx(CRenderSurface*, CRenderBuffer*, CRenderBuffer*) {}
 
 RVA(0x0015baa0, 0x3)
-void CWwdDeferredObject::BltDirtyRegions(
-    CDDrawSurfacePair*,
-    CDDrawSurfacePair*,
-    CDDrawSurfacePair*
-) {}
+void CWwdDeferredObject::BltDirtyRegions(CRenderBuffer*, CRenderBuffer*, CRenderBuffer*) {}
 
 RVA_COMPGEN(0x0015bab0, 0x1e, ??_GCWwdDeferredObject@@UAEPAXI@Z)
 RVA(0x0015bad0, 0x153)

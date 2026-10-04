@@ -174,7 +174,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
 }
 
 RVA(0x000a3820, 0x18e)
-i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
+i32 CMinimap::Draw(CRenderBuffer* target, RECT* bounds) {
     if (m_surface == NULL) {
         return 0;
     }
@@ -269,7 +269,7 @@ void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
 }
 
 RVA(0x000a3b50, 0xfa)
-void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
+void CMinimap::DrawBorder(RECT* rect, CRenderBuffer* target, i32 color) {
     CDDSurface* surface = target->GetSurface();
     char* pixels = static_cast<char*>(surface->Lock(NULL));
     if (pixels == NULL) {

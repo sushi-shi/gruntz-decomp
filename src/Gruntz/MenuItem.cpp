@@ -111,7 +111,7 @@ i32 CMenuItem::Update(u32) {
 }
 
 RVA(0x001855f0, 0x94)
-i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
+i32 CMenuItem::DrawAt(CRenderBuffer* target, i32 centerX, i32 centerY) {
     CImageSet* imageSet = m_stateFrames;
     if (!imageSet) {
         return 0;
@@ -233,7 +233,7 @@ i32 CAnimatedMenuItem::Update(u32 deltaMs) {
 }
 
 RVA(0x001858d0, 0x72)
-i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
+i32 CAnimatedMenuItem::DrawAt(CRenderBuffer* target, i32 centerX, i32 centerY) {
 
     if (m_fixedCenter.m_x != UNINIT_FILL) {
         centerX = m_fixedCenter.m_x;

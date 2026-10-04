@@ -25,14 +25,14 @@ struct CSnapshotHeader {
     char m_name[0x110 - 0x10];
     u32 m_childCount;
     u32 m_objIdCounter;
-    // @identity-TODO: SnapshotChildren zeroes and writes the complete header;
-    // RestoreChildren reads this tail but assigns no meaning to its bytes.
+    // @identity-TODO: SaveSnapshot zeroes and writes the complete header;
+    // LoadSnapshot reads this tail but assigns no meaning to its bytes.
     char m_reserved118[0x120 - 0x118];
 };
 #pragma pack(pop)
 
 class CWapObj;
-class CDDrawSubMgrPages;
+class CDisplayBuffers;
 class CTransientDrawList;
 class CImageSet;
 class CDDrawChildGroup;
@@ -47,7 +47,13 @@ class SoundStream;
 class CDDrawSurfaceMgr;
 class CFileMemBase;
 
-typedef i32(__cdecl* HP_Callback)(CDDrawSurfaceMgr*, CFileMemBase*, SerialMode, LogicTypeId, void*);
+typedef i32(__cdecl* WorldSerializationCallback)(
+    CDDrawSurfaceMgr*,
+    CFileMemBase*,
+    SerialMode,
+    LogicTypeId,
+    void*
+);
 
 typedef i32(__cdecl* SurfaceRestoreFn)();
 
@@ -76,8 +82,8 @@ public:
     virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual void Cleanup();
 
-    CDDrawSubMgrPages* const& GetDrawTarget() const {
-        return m_drawTarget;
+    CDisplayBuffers* const& GetDisplayBuffers() const {
+        return m_displayBuffers;
     }
 
     class CGameLevel* GetLevel() const {
@@ -124,15 +130,20 @@ public:
         }
     }
 
-    HP_Callback SerializationCallback() {
-        return m_callback;
+    WorldSerializationCallback SerializationCallback() {
+        return m_serializationCallback;
     }
 
-    void SetSerializationCallback(HP_Callback callback) {
-        m_callback = callback;
+    void SetSerializationCallback(WorldSerializationCallback callback) {
+        m_serializationCallback = callback;
     }
 
-    i32 InvokeCallbackInline(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
+    i32 InvokeSerializationCallback(
+        CFileMemBase* ar,
+        SerialMode mode,
+        LogicTypeId typeId,
+        void* payload
+    ) {
         return ar != NULL && SerializationCallback() != NULL
                && SerializationCallback()(this, ar, mode, typeId, payload) != 0;
     }
@@ -144,10 +155,15 @@ public:
         void* payload
     );
 
-    i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);
-    i32 RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId);
+    i32 SaveSnapshot(
+        WorldSerializationCallback callback,
+        char* path,
+        char* snapshotName,
+        LogicTypeId typeId
+    );
+    i32 LoadSnapshot(WorldSerializationCallback callback, char* path, LogicTypeId typeId);
 
-    CDDrawSubMgrPages* m_drawTarget;
+    CDisplayBuffers* m_displayBuffers;
 
     CDDrawChildGroup* m_childGroup;
     CTransientDrawList* m_transientDrawList;
@@ -166,7 +182,7 @@ public:
     HWND m_hWnd;
     i32 m_flags;
     GZ_ENUM_STORAGE(WorldInitError, u32) m_lastError;
-    HP_Callback m_callback;
+    WorldSerializationCallback m_serializationCallback;
 };
 
 extern void __cdecl SetSurfaceRestoreHandler(SurfaceRestoreFn handler);

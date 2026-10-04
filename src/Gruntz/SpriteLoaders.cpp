@@ -151,7 +151,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
 }
 
 RVA(0x0009bfa0, 0xb4)
-i32 CLevelTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
+i32 CLevelTimer::Draw(CRenderBuffer* target, b32 forceVisible) {
     if (!m_running) {
         return 1;
     }

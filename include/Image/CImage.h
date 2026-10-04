@@ -15,7 +15,7 @@ class CDDrawDeviceManager;
 
 class CString;
 class CRenderState;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 
 class CDDrawSurfaceMgr;
 
@@ -53,7 +53,7 @@ public:
     virtual i32 Resolve(CRezItm* src, i32 keyed);
     virtual i32 Create(char* path, i32 keyed);
     virtual i32 Reload(CRezItm* src, i32 keyed);
-    virtual void RenderImage(CRenderState* info, CDDrawSurfacePair* dst);
+    virtual void RenderImage(CRenderState* info, CRenderBuffer* dst);
     virtual void FlipVertical(void* unused);
     virtual void FlipHorizontal(void* unused);
     virtual void FlipBoth(void* unused);
@@ -62,16 +62,16 @@ public:
     i32 CopyFrom(CImage* other);
     i32 SetOrigin(PidHeader* desc, FileImageFormat mode);
     void SetBltFastFlags(CDDSurface* surface);
-    void RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags);
-    void RenderFrameClipped(CDDrawSurfacePair* target, i32 x, i32 y, RECT* clipRect, i32 flags);
+    void RenderFrame(CRenderBuffer* target, i32 x, i32 y, i32 flags);
+    void RenderFrameClipped(CRenderBuffer* target, i32 x, i32 y, RECT* clipRect, i32 flags);
 
-    void BlitNorm(CRenderState* info, CDDrawSurfacePair* dst);
-    void BlitFlipV(CRenderState* info, CDDrawSurfacePair* dst);
-    void BlitFlipH(CRenderState* info, CDDrawSurfacePair* dst);
-    void BlitShadeFlipHV(CRenderState* info, CDDrawSurfacePair* dst);
-    void BlitShadeNorm(CRenderState* info, CDDrawSurfacePair* dst);
-    void BlitShadeFlipV(CRenderState* info, CDDrawSurfacePair* dst);
-    void BlitShadeFlipH(CRenderState* info, CDDrawSurfacePair* dst);
+    void BlitNorm(CRenderState* info, CRenderBuffer* dst);
+    void BlitFlipV(CRenderState* info, CRenderBuffer* dst);
+    void BlitFlipH(CRenderState* info, CRenderBuffer* dst);
+    void BlitShadeFlipHV(CRenderState* info, CRenderBuffer* dst);
+    void BlitShadeNorm(CRenderState* info, CRenderBuffer* dst);
+    void BlitShadeFlipV(CRenderState* info, CRenderBuffer* dst);
+    void BlitShadeFlipH(CRenderState* info, CRenderBuffer* dst);
 
     const i32& GetWidth() const {
         return m_width;

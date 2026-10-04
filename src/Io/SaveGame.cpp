@@ -116,7 +116,7 @@ i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     Verify();
     if (screenshotPath != NULL) {
         CPlay* state = static_cast<CPlay*>(g_gameReg->GetCurrentState());
-        g_gameReg->World()->GetDrawTarget()->CopyFrontToOverlay();
+        g_gameReg->World()->GetDisplayBuffers()->CopyFrontToOverlay();
         state->DrawSaveMessage(messageId);
         if (!SaveGame(g_gameReg, screenshotPath)) {
             return 0;

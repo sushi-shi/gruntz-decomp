@@ -62,14 +62,14 @@ i32 DrawPageDebugText(
     if (mgr == NULL) {
         return 0;
     }
-    CDrawSubWorker* page;
+    CRenderSurface* page;
     if (useFrontPage != false) {
-        page = mgr->GetDrawTarget()->GetFrontSurface();
+        page = mgr->GetDisplayBuffers()->GetFrontSurface();
         if (page == NULL) {
             return 0;
         }
     } else {
-        page = mgr->GetDrawTarget()->GetBackPair();
+        page = mgr->GetDisplayBuffers()->GetBackBuffer();
         if (page == NULL) {
             return 0;
         }
