@@ -641,6 +641,7 @@ fail:
     return 0;
 }
 
+// @early-stop
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
