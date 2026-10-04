@@ -171,7 +171,7 @@ DATA(0x00245568)
 i32 g_debugGruntAiType;
 
 DATA(0x002455e8)
-b32 g_monologoShown;
+b32 g_monolithOverlayVisible;
 
 DATA(0x0024556c)
 CGruntzMgr* g_gameReg = NULL;
@@ -2599,7 +2599,7 @@ void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
 }
 
 RVA(0x00090d10, 0x18e)
-i32 CGruntzMgr::LoadMonologoSprite() {
+i32 CGruntzMgr::ToggleMonolithOverlay() {
     if (m_curState == NULL) {
         return 0;
     }
@@ -2651,15 +2651,15 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             }
             parity ^= 1;
         }
-        g_monologoShown = true;
+        g_monolithOverlayVisible = true;
         return 1;
     }
     if (found->m_flags & 2) {
         found->ClearFlags(2);
-        g_monologoShown = true;
+        g_monolithOverlayVisible = true;
     } else {
         found->AddFlags(2);
-        g_monologoShown = false;
+        g_monolithOverlayVisible = false;
     }
     return 1;
 }
@@ -3722,7 +3722,7 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     ar->Write(&g_gooPuddlez, sizeof(g_gooPuddlez));
     ar->Write(&g_explosionz, sizeof(g_explosionz));
     ar->Write(&m_isEasyMode, sizeof(m_isEasyMode));
-    ar->Write(&g_monologoShown, sizeof(g_monologoShown));
+    ar->Write(&g_monolithOverlayVisible, sizeof(g_monolithOverlayVisible));
     ar->Write(&g_screenShakeAmplitudeX, sizeof(g_screenShakeAmplitudeX));
     ar->Write(&g_screenShakeAmplitudeY, sizeof(g_screenShakeAmplitudeY));
     ar->Write(&g_screenShakeMinDelayMs, sizeof(g_screenShakeMinDelayMs));
@@ -3769,7 +3769,7 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     ar->Read(&g_gooPuddlez, sizeof(g_gooPuddlez));
     ar->Read(&g_explosionz, sizeof(g_explosionz));
     ar->Read(&m_isEasyMode, sizeof(m_isEasyMode));
-    ar->Read(&g_monologoShown, sizeof(g_monologoShown));
+    ar->Read(&g_monolithOverlayVisible, sizeof(g_monolithOverlayVisible));
     ar->Read(&g_screenShakeAmplitudeX, sizeof(g_screenShakeAmplitudeX));
     ar->Read(&g_screenShakeAmplitudeY, sizeof(g_screenShakeAmplitudeY));
     ar->Read(&g_screenShakeMinDelayMs, sizeof(g_screenShakeMinDelayMs));

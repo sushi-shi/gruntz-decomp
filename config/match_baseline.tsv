@@ -2423,7 +2423,7 @@ gruntzmgr	?LaunchProcessInDir@CGruntzMgr@@QAEHPAD0@Z	100.0000	100.0000	5	4d54524
 gruntzmgr	?LaunchWebBrowser@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	5	aefa6fd00165	0x8f120	100.0000	
 gruntzmgr	?LeaveState@CState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	2	3988118fc689	0x8c530	100.0000	
 gruntzmgr	?LoadLevel@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	5	23bf3b472823	0x8d780	100.0000	
-gruntzmgr	?LoadMonologoSprite@CGruntzMgr@@QAEHXZ	100.0000	100.0000	17	0e15cc35b34d	0x90d10	100.0000	
+gruntzmgr	?ToggleMonolithOverlay@CGruntzMgr@@QAEHXZ	100.0000	100.0000	17	0e15cc35b34d	0x90d10	100.0000	
 gruntzmgr	?RunSaveGameDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	b252dfcf4a4d	0x92420	100.0000	
 gruntzmgr	?LoadState@CGruntzMgr@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	7	1d1f6c5f1625	0x93920	100.0000	
 gruntzmgr	?LoadWorldMode@CGruntzMgr@@QAEHW4ColorDepth@@@Z	98.3246	98.3246	14	1476db9408f4	0x91a40	98.3246	

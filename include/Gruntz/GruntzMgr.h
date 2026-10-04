@@ -157,7 +157,7 @@ public:
 
     i32 IsMoviePathValid();
     void ReportWorldStatus(WorldInitReportTag tag);
-    i32 LoadMonologoSprite();
+    i32 ToggleMonolithOverlay();
     i32 CheatRevealTreasures();
 
     i32 SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx);
@@ -456,7 +456,7 @@ extern i32 g_roundStartTimeMs;
 
 i32 RestoreGameGraphics();
 
-extern b32 g_monologoShown;
+extern b32 g_monolithOverlayVisible;
 
 extern char g_msgScratch[256];
 

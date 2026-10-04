@@ -154,7 +154,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!playState) {
                             return 1;
                         }
-                        if (!LoadMonologoSprite()) {
+                        if (!ToggleMonolithOverlay()) {
                             return 1;
                         }
                         PLAYCUE("GAME_MONOLITH");
@@ -162,7 +162,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!m_musicEnabled) {
                             return 1;
                         }
-                        if (g_monologoShown) {
+                        if (g_monolithOverlayVisible) {
                             m_midi->PlaySequence("MONOLITH", true);
                             return 1;
                         }
