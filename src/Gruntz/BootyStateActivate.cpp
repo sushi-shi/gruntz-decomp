@@ -293,7 +293,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
     m_mgr->GetGameWindow()->DiscardMessages(WM_KEYDOWN, 0x40);
 
-    m_secretHudHandled = false;
+    m_completionHintHandled = false;
 
     if (!BuildWarpStoneGlitterAnimation()) {
         return 0;
@@ -366,7 +366,7 @@ i32 CBootyState::LeaveState(GameStateId nextState) {
 
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
-    if (m_secretBannerOnce != false && (g_gameReg->GetGameStats())->IsCampaignPerfect()) {
+    if (m_showCampaignSecret != false && (g_gameReg->GetGameStats())->IsCampaignPerfect()) {
         CString s;
         if (!LoadTitlePage("multi", 0, 0, 0, 0, true)) {
             return 0;
@@ -1370,9 +1370,9 @@ i32 CBootyState::Render() {
     }
     m_frameTiming.Start(0x21);
 
-    switch (m_activation) {
+    switch (m_sequencePhase) {
         case BOOTYSEQ_WARP_CUE: {
-            m_activation = BOOTYSEQ_GLITTER;
+            m_sequencePhase = BOOTYSEQ_GLITTER;
             SoundCueRegistry* set = g_gameReg->World()->SoundRegistry();
             set->PlayCue("BOOTY_WARP");
         }
@@ -1382,44 +1382,45 @@ i32 CBootyState::Render() {
             if (UpdateWarpStoneGlitterAnimation() == 0) {
                 break;
             }
-            m_activation = BOOTYSEQ_LETTERS;
+            m_sequencePhase = BOOTYSEQ_STAT_REVEAL;
             SoundCueRegistry* set = g_gameReg->World()->SoundRegistry();
             set->PlayCue("BOOTY_BOOM");
-            if (m_initOnce != false && g_gameReg->GetGameStats()->IsCurrentAreaComplete() != false
+            if (m_showAreaSummary != false
+                && g_gameReg->GetGameStats()->IsCurrentAreaComplete() != false
                 && g_levelBias100 == false) {
                 RECT rc;
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
                 CString s("World Completed!");
-                m_levelCompleteGate = true;
+                m_completionTitleVisible = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             } else {
                 RECT rc;
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
                 CString s("Level Completed!");
-                m_levelCompleteGate = true;
+                m_completionTitleVisible = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
         // FALL THROUGH
-        case BOOTYSEQ_LETTERS:
+        case BOOTYSEQ_STAT_REVEAL:
             UpdateGruntSprintAnimation();
             if (UpdateStatRevealAnimation() == 0) {
                 break;
             }
-            m_activation = BOOTYSEQ_WALK;
+            m_sequencePhase = BOOTYSEQ_WARP_LETTER_REVEAL;
         // FALL THROUGH
-        case BOOTYSEQ_WALK:
+        case BOOTYSEQ_WARP_LETTER_REVEAL:
             UpdateStatRevealAnimation();
             if (UpdateWarpLetterRevealAnimation() == 0) {
                 break;
             }
-            m_activation = BOOTYSEQ_PERFECT_BONUS;
+            m_sequencePhase = BOOTYSEQ_PERFECT_BONUS;
             break;
         case BOOTYSEQ_PERFECT_BONUS: {
             UpdateStatRevealAnimation();
             UpdateWarpLetterRevealAnimation();
             CheckPerfectBonus();
-            if (m_secretHudHandled == false
+            if (m_completionHintHandled == false
                 && g_gameReg->GetGameStats()->IsCustomLevel() == false) {
                 CString s;
                 RECT rc;
@@ -1448,11 +1449,11 @@ i32 CBootyState::Render() {
                     }
                     SetRect(&rc, 0x194, 0xe6, 0x263, SCREEN_H_PX);
                 }
-                m_secretGate = true;
+                m_completionHintVisible = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
-                m_secretHudHandled = true;
+                m_completionHintHandled = true;
             } else if (g_gameReg->GetGameStats()->IsCustomLevel() != false) {
-                m_secretHudHandled = true;
+                m_completionHintHandled = true;
             }
             break;
         }
@@ -1489,11 +1490,11 @@ i32 CBootyState::RestoreGraphics() {
     if (m_world->GetImageRegistry()->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
-    if (m_activation != BOOTYSEQ_DONE) {
+    if (m_sequencePhase != BOOTYSEQ_DONE) {
         if (LoadTitlePage("bg", 0, 0, 0, 0, true) == 0) {
             return 0;
         }
-        ShowLevelCompleteMessage();
+        DrawCompletionOverlay();
     } else {
         ShowSecretBonusMessage();
     }
@@ -1503,7 +1504,7 @@ i32 CBootyState::RestoreGraphics() {
 }
 
 RVA(0x0001c9d0, 0x351)
-void CBootyState::ShowLevelCompleteMessage() {
+void CBootyState::DrawCompletionOverlay() {
     for (i32 i = 0; i < 8; i++) {
         if (m_statLabelVisible[i]) {
             CRect r1(g_bootyStatLabelRects[i]);
@@ -1518,7 +1519,7 @@ void CBootyState::ShowLevelCompleteMessage() {
         }
     }
 
-    if (m_levelCompleteGate) {
+    if (m_completionTitleVisible) {
         if (g_gameReg->GetGameStats()->IsCurrentAreaComplete() != false) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("World Completed!");
@@ -1530,7 +1531,7 @@ void CBootyState::ShowLevelCompleteMessage() {
         }
     }
 
-    if (g_gameReg->GetGameStats()->IsCustomLevel() == false && m_secretGate != false) {
+    if (g_gameReg->GetGameStats()->IsCustomLevel() == false && m_completionHintVisible != false) {
         CString s;
         RECT r;
         CGameStats* gameStats = g_gameReg->GetGameStats();
@@ -1577,7 +1578,7 @@ i32 CBootyState::OnPaint() {
 // @early-stop
 RVA(0x0001ce60, 0x460)
 i32 CBootyState::HandleContinueInput() {
-    BootySeqPhase state = m_activation;
+    BootySeqPhase state = m_sequencePhase;
     if (state != BOOTYSEQ_PERFECT_BONUS && state != BOOTYSEQ_DONE) {
         m_skipAnimations = true;
         return 1;
@@ -1586,9 +1587,9 @@ i32 CBootyState::HandleContinueInput() {
     if (gameStats->IsCustomLevel() != false) {
         PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
-        if (m_initOnce == false) {
+        if (m_showAreaSummary == false) {
             if (gameStats->IsCurrentAreaComplete() != false) {
-                m_initOnce = true;
+                m_showAreaSummary = true;
                 SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
                 ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A");
                 if (g_gameReg->GetGameStats()->GetLevelNumber() < 0x24) {
@@ -1637,7 +1638,7 @@ i32 CBootyState::HandleContinueInput() {
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
                 }
-                ShowLevelCompleteMessage();
+                DrawCompletionOverlay();
                 m_world->GetDrawTarget()->TransExit();
                 m_world->ChildGroup()->RenderChildren(m_world->GetDrawTarget()->GetBackPair());
                 m_world->GetDrawTarget()->TransTitle();
@@ -1645,11 +1646,11 @@ i32 CBootyState::HandleContinueInput() {
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
                 }
-                ShowLevelCompleteMessage();
+                DrawCompletionOverlay();
                 return 1;
             }
         }
-        if (m_initOnce != false && gameStats->IsCurrentAreaComplete() != false
+        if (m_showAreaSummary != false && gameStats->IsCurrentAreaComplete() != false
             && gameStats->GetLevelNumber() < IDX(QUESTLEVEL_LAST)
             && state == BOOTYSEQ_PERFECT_BONUS) {
             if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
@@ -1658,14 +1659,14 @@ i32 CBootyState::HandleContinueInput() {
                 }
                 m_world->GetDrawTarget()->TransExit();
                 RetireScene(0x50, 0x3e8, 0, true);
-                m_activation = BOOTYSEQ_SECRET_PENDING;
+                m_sequencePhase = BOOTYSEQ_SECRET_PENDING;
                 return 1;
             }
         }
 
-        if (m_activation == BOOTYSEQ_SECRET_PENDING
-            && (g_gameReg->GetGameStats())->IsCampaignPerfect() && m_secretBannerOnce == false) {
-            m_secretBannerOnce = true;
+        if (m_sequencePhase == BOOTYSEQ_SECRET_PENDING
+            && (g_gameReg->GetGameStats())->IsCampaignPerfect() && m_showCampaignSecret == false) {
+            m_showCampaignSecret = true;
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }

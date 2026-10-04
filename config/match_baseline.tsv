@@ -647,7 +647,7 @@ bootystateactivate	?RestoreDisplay@CBootyState@@UAEHXZ	100.0000	100.0000	1	86638
 bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	95768a0e98a4	0x1f850	100.0000	
 bootystateactivate	?RestoreGraphics@CBootyState@@UAEHXZ	100.0000	100.0000	10	54693b40c6ce	0x1c8a0	100.0000	
 bootystateactivate	?RestoreGraphics@CMultiBootyState@@UAEHXZ	100.0000	100.0000	10	84de0160f8e3	0x1f6f0	100.0000	
-bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	100.0000	100.0000	9	75915b404685	0x1c9d0	100.0000	
+bootystateactivate	?DrawCompletionOverlay@CBootyState@@QAEXXZ	100.0000	100.0000	9	75915b404685	0x1c9d0	100.0000	
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000	12	67c4ec97f559	0x18f00	100.0000	
 bootystateactivate	?UpdateGruntSprintAnimation@CBootyState@@QAEXXZ	94.0341	94.0341	6	ab13d92b2d0b	0x19b90	94.0341	
 bootystateactivate	?UpdateStatRevealAnimation@CBootyState@@QAEHXZ	92.3644	92.3644	23	1d22022aa869	0x1a700	92.3685	

@@ -136,17 +136,17 @@ public:
 class CBootyState : public CState {
 public:
     CBootyState() {
-        m_secretHudHandled = false;
-        m_activation = BOOTYSEQ_WARP_CUE;
+        m_completionHintHandled = false;
+        m_sequencePhase = BOOTYSEQ_WARP_CUE;
         m_statRowIndex = 0;
         m_warpLetterIndex = 0;
         m_letterRevealStarted = false;
         m_missingLetterSoundStarted = false;
         m_skipAnimations = false;
-        m_secretGate = false;
-        m_levelCompleteGate = false;
-        m_initOnce = false;
-        m_secretBannerOnce = false;
+        m_completionHintVisible = false;
+        m_completionTitleVisible = false;
+        m_showAreaSummary = false;
+        m_showCampaignSecret = false;
         for (i32 t = 0; t < 4; t++) {
             m_warpStonePieceSprites[t] = NULL;
         }
@@ -176,7 +176,7 @@ public:
 
     i32 HandleContinueInput();
     i32 ShowSecretBonusMessage();
-    void ShowLevelCompleteMessage();
+    void DrawCompletionOverlay();
     i32 BuildWarpLetterRevealAnimation();
     i32 UpdateWarpLetterRevealAnimation();
 
@@ -196,12 +196,12 @@ public:
     void PickGruntSprintStartPosition(GruntDirection direction, i32* outX, i32* outY);
 
     b32 m_skipAnimations;
-    b32 m_secretHudHandled;
-    BootySeqPhase m_activation;
+    b32 m_completionHintHandled;
+    BootySeqPhase m_sequencePhase;
 
     ClockInterval m_frameTiming;
-    b32 m_initOnce;
-    b32 m_secretBannerOnce;
+    b32 m_showAreaSummary;
+    b32 m_showCampaignSecret;
 
     i32 m_warpStonePieceIndex;
     i32 m_pieceOrbitRadius;
@@ -211,7 +211,7 @@ public:
     CWwdSpriteObject* m_warpStonePieceSprites[4];
 
     CWwdSpriteObject* m_warpStoneGlitterSprite;
-    b32 m_levelCompleteGate;
+    b32 m_completionTitleVisible;
 
     CWwdSpriteObject* m_sprintSprites[8];
 
@@ -227,7 +227,7 @@ public:
     i32 m_warpLetterIndex;
     b32 m_letterRevealStarted;
     b32 m_missingLetterSoundStarted;
-    b32 m_secretGate;
+    b32 m_completionHintVisible;
 
     CWwdSpriteObject* m_bootyPerfectSprite;
 
