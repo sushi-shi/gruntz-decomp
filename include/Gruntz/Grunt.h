@@ -687,6 +687,10 @@ public:
         return !m_arrivalRerollTiming.Expired();
     }
 
+    b32 IsAttackWindupActive() const {
+        return m_attackWindupActive;
+    }
+
     b32 IsAttackQueued() const {
         return m_attackQueued;
     }
