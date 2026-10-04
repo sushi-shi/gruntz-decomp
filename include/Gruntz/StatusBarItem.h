@@ -50,6 +50,10 @@ public:
         return m_tab;
     }
 
+    b32 IsEnabled() const {
+        return m_enabled;
+    }
+
     void SetEnabled(i32 on) {
         m_enabled = on;
     }

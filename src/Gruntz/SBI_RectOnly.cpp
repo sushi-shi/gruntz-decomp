@@ -759,7 +759,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
         if (r) {
-            b32 hit = r->m_enabled;
+            b32 hit = r->IsEnabled();
             if (hit) {
                 hit = ::PtInRect(&r->m_rect, x, y);
             }
@@ -773,7 +773,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
         if (r) {
-            b32 hit = r->m_enabled;
+            b32 hit = r->IsEnabled();
             if (hit) {
                 hit = ::PtInRect(&r->m_rect, x, y);
             }
@@ -786,7 +786,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
         if (r) {
-            b32 hit = r->m_enabled;
+            b32 hit = r->IsEnabled();
             if (hit) {
                 hit = ::PtInRect(&r->m_rect, x, y);
             }
@@ -2371,9 +2371,9 @@ RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_chatBoxDisabled == false) {
         for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-            if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
+            if (m_hitRects[i] && m_hitRects[i]->IsEnabled()) {
                 CSBI_SideTab* p = m_hitRects[i];
-                b32 hit = p->m_enabled ? ::PtInRect(&p->m_rect, x, y) : false;
+                b32 hit = p->IsEnabled() ? ::PtInRect(&p->m_rect, x, y) : false;
                 if (hit) {
                     return i;
                 }
