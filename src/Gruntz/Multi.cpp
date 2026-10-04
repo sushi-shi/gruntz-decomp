@@ -161,7 +161,6 @@ CFile g_gruntzLogFile;
 DATA(0x002467d8)
 char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 
-// @early-stop
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) {
 
@@ -249,8 +248,8 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32
     }
     NetGameMgr()->m_modalBusy = false;
     memset(&m_saveSlot, 0, sizeof(m_saveSlot));
-    m_savedEffectsEnabled = NetGameMgr()->m_isEffectsEnabled;
-    NetGameMgr()->m_isEffectsEnabled = true;
+    m_savedEffectsEnabled = NetGameMgr()->IsEffectsEnabled();
+    NetGameMgr()->SetEffectsEnabled(true);
     if (ResolveSharedAssetDirectories() == 0) {
         return 0;
     }
@@ -279,17 +278,15 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32
         return 0;
     }
 
-    CChatBox* iface = new CChatBox();
-    m_chatBox = iface;
+    m_chatBox = new CChatBox();
 
-    if (iface->Attach(m_world, NetGameMgr()->ChatLog()) == 0) {
+    if (m_chatBox->Attach(m_world, NetGameMgr()->ChatLog()) == 0) {
         CChatBox* io = m_chatBox;
-        if (io == NULL) {
-            return 0;
+        if (io != NULL) {
+            io->Deactivate();
+            delete io;
+            m_chatBox = NULL;
         }
-        io->Deactivate();
-        delete io;
-        m_chatBox = NULL;
         return 0;
     }
     m_chatBox->SetInputActive(false);
@@ -298,22 +295,20 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32
     CStatusBarMgr* sess = new CStatusBarMgr;
     m_statusBar = sess;
     if (sess->Initialize(m_world) == 0) {
-        if (m_statusBar == NULL) {
-            return 0;
+        if (m_statusBar != NULL) {
+            delete m_statusBar;
+            m_statusBar = NULL;
         }
-        delete m_statusBar;
-        m_statusBar = NULL;
         return 0;
     }
 
     CTileTriggerContainer* cmd = new CTileTriggerContainer();
     m_tileTriggers = cmd;
     if (cmd->Initialize() == 0) {
-        if (m_tileTriggers == NULL) {
-            return 0;
+        if (m_tileTriggers != NULL) {
+            delete m_tileTriggers;
+            m_tileTriggers = NULL;
         }
-        delete m_tileTriggers;
-        m_tileTriggers = NULL;
         return 0;
     }
 
@@ -322,11 +317,11 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32
     }
     m_waitingForPlayers = true;
     m_allPlayersReady = false;
-    i32 wr = WaitForOtherPlayers();
-    m_waitingForPlayers = false;
-    if (wr == 0) {
+    if (WaitForOtherPlayers() == 0) {
+        m_waitingForPlayers = false;
         return 0;
     }
+    m_waitingForPlayers = false;
     if ((static_cast<CPlay*>(this))->LoadCursorSprites(0, false) == 0) {
         return 0;
     }
@@ -367,7 +362,7 @@ void CMulti::ReleaseResources() {
         delete minimap;
         m_minimap = NULL;
     }
-    Mgr()->m_isEffectsEnabled = m_savedEffectsEnabled;
+    Mgr()->SetEffectsEnabled(m_savedEffectsEnabled);
 
     CPlay::ReleaseResources();
 }

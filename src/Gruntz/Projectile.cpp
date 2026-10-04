@@ -97,7 +97,8 @@ RVA_COMPGEN(0x00058ba0, 0x1, ??1CMotionState@@QAE@XZ)
 // @early-stop
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner) {
-    SET_OBJECT_FLAGS_AND_HIDE_INLINE(0x2000002)
+    SetObjectFlags(0x2000002);
+    HIDE_OBJECT_INLINE();
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_ACTOR);
     memset(&m_frames[0], 0, 0x1c);
