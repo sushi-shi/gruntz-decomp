@@ -75,6 +75,9 @@ public:
 
     inline void SetDrawFillReversed(ShadeMode mode, CShadeTable* table);
     inline void SetDrawFill(ShadeMode mode, CShadeTable* table);
+    ShadeMode GetShadeMode() const {
+        return m_shadeMode;
+    }
     inline void ResetDrawFill();
     virtual i32 IsLoaded() OVERRIDE;
     RVA(0x00154a80, 0x13)
@@ -140,6 +143,10 @@ public:
     activeNode->m_hasShadeOverride = true;                                                         \
     node->m_shadeMode = mode;                                                                      \
     node->m_shadeTable = table
+
+#define SET_DRAW_FILL_MODE(node, mode)                                                             \
+    (node)->m_hasShadeOverride = true;                                                             \
+    (node)->m_shadeMode = (mode)
 
 #define SET_DRAW_FILL_FRACTION(node, mode, fraction)                                               \
     node->m_hasShadeOverride = true;                                                               \

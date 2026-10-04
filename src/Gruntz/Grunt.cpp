@@ -443,7 +443,7 @@ void CGrunt::BuildImageSetNames(i32 toyMode, i32 mobileToy) {
     }
     CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(IDX(m_colorIndex), toyMode);
     CWwdSpriteObject* h = m_object;
-    ShadeMode fillCmd = h->m_shadeMode;
+    ShadeMode fillCmd = h->GetShadeMode();
 
     SET_DRAW_FILL_SPLIT(m_object, h, fillCmd, sel);
 }
