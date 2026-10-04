@@ -1098,7 +1098,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         if (cell->RectContains(bx, by) == 0) {
             goto outOfRange;
         }
-        cell->m_arrivalPhase = 0;
+        cell->m_arrivalAction = 0;
         CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
         if (hit != NULL) {
             if (hit->GetPlayerIndex() == cell->GetPlayerIndex() && g_traitorMode == false) {
@@ -1233,7 +1233,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         goto bad;
     }
 
-    cell->m_arrivalPhase = 0;
+    cell->m_arrivalAction = 0;
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
     hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
@@ -1311,12 +1311,12 @@ CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
 
 // @early-stop
 RVA(0x0006e800, 0x189)
-i32 CTriggerMgr::ClearCell(
+i32 CTriggerMgr::MoveUnitTo(
     i32 playerIndex,
     i32 unitIndex,
     i32 worldX,
     i32 worldY,
-    i32 arrivalPhase
+    i32 arrivalAction
 ) {
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->IsEntranceCommitted() == false) {
@@ -1332,7 +1332,7 @@ i32 CTriggerMgr::ClearCell(
     i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     cell->m_coordRetryCount = 0;
-    return cell->StepArrivalDrop(bx, by, arrivalPhase, -1, 1, 0) != 0;
+    return cell->StepArrivalDrop(bx, by, arrivalAction, -1, 1, 0) != 0;
 }
 
 RVA(0x0006ea00, 0x125)

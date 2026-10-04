@@ -70,11 +70,11 @@ GZ_ENUM_CONST_BEGIN(GruntDirectionGrid)
     GRUNT_DIRECTION_GRID_WIDTH = 3
 GZ_ENUM_CONST_END(GruntDirectionGrid)
 
-GZ_ENUM_CONST_BEGIN(GruntArrivalTag)
-    ARRIVAL_TAG_NONE = 0,
-    ARRIVAL_TAG_TRIGGER_A = 2,
-    ARRIVAL_TAG_TRIGGER_B = 3
-GZ_ENUM_CONST_END(GruntArrivalTag)
+GZ_ENUM_CONST_BEGIN(GruntArrivalAction)
+    ARRIVAL_ACTION_NONE = 0,
+    ARRIVAL_ACTION_USE_TOOL = 2,
+    ARRIVAL_ACTION_USE_TOY = 3
+GZ_ENUM_CONST_END(GruntArrivalAction)
 
 extern GruntDirectionCell g_gruntDirNorth;
 extern GruntDirectionCell g_gruntDirNorthEast;
@@ -639,7 +639,7 @@ public:
     GruntDirectionCell m_facing;
     CString m_frameSetName;
     CString m_deathFrameSetName;
-    i32 m_arrivalPhase;
+    i32 m_arrivalAction;
     b32 m_pendingTrigger;
     Coord m_pendingTriggerPx;
     b32 m_lowStaminaCued;
@@ -754,7 +754,7 @@ public:
     i32 StepArrivalDrop(
         i32 pxX,
         i32 pxY,
-        i32 arrivalPhase,
+        i32 arrivalAction,
         i32 blockedMask,
         i32 clearEndpointFlags,
         i32 extraPassableMask
@@ -836,7 +836,7 @@ public:
     i32 TileSwitch(
         i32 col,
         i32 row,
-        i32 arrivalPhase,
+        i32 arrivalAction,
         i32 blockedMask,
         i32 clearEndpointFlags,
         i32 extraPassableMask

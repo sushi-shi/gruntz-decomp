@@ -4348,7 +4348,7 @@ triggermgr	?UpdateTargetingCursor@CTriggerMgr@@QAEHHH@Z	91.3390	91.3390	45	78d07
 triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	98.7466	98.7466	20	19c33da3b2d3	0x6d300	98.7466	
 triggermgrgrid	?CellHitTest@CTriggerMgr@@QAEPAVCGrunt@@HHPAH0H@Z	91.5581	91.5581	9	be59a8660b83	0x6bea0	91.5581	
 triggermgrgrid	?Cleanup@CTriggerMgr@@QAEXXZ	100.0000	100.0000	5	4b9bb7b4ce3f	0x6b680	100.0000	
-triggermgrgrid	?ClearCell@CTriggerMgr@@QAEHHHHHH@Z	98.1439	98.1439	14	e4e2c8682c0a	0x6e800	98.1439	
+triggermgrgrid	?MoveUnitTo@CTriggerMgr@@QAEHHHHHH@Z	98.1439	98.1439	14	e4e2c8682c0a	0x6e800	98.1439	
 triggermgrgrid	?EnqueueGuardBegin@CTriggerMgr@@QAEXHH@Z	100.0000	100.0000	6	d6022cf19504	0x6da60	100.0000	
 triggermgrgrid	?EnqueueGuardEnd@CTriggerMgr@@QAEXHH@Z	100.0000	100.0000	6	2bc3376163f1	0x6daa0	100.0000	
 triggermgrgrid	?FindAtPixel@CTriggerMgr@@QAEPAVCGrunt@@HH@Z	100.0000	100.0000	2	cae2156c361d	0x6e7e0	100.0000	

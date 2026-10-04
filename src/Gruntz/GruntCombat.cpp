@@ -902,8 +902,8 @@ i32 CGrunt::HandleCombatContact(
                 break;
         }
 
-        i32 phase = m_arrivalPhase;
-        if ((phase == ARRIVAL_TAG_TRIGGER_B || phase == ARRIVAL_TAG_TRIGGER_A)
+        i32 arrivalAction = m_arrivalAction;
+        if ((arrivalAction == ARRIVAL_ACTION_USE_TOY || arrivalAction == ARRIVAL_ACTION_USE_TOOL)
             && m_arrivalActive != false) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
@@ -913,7 +913,7 @@ i32 CGrunt::HandleCombatContact(
                 i32 xMasked = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 yMasked = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 applied;
-                if (phase == ARRIVAL_TAG_TRIGGER_B) {
+                if (arrivalAction == ARRIVAL_ACTION_USE_TOY) {
                     if (IsInToyUseRange(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
@@ -2396,9 +2396,9 @@ void CGrunt::AdvanceMotion() {
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_arrivalPending = false;
 
-            if (m_arrivalPhase != ARRIVAL_TAG_NONE) {
+            if (m_arrivalAction != ARRIVAL_ACTION_NONE) {
                 i32 result = -1;
-                if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_A) {
+                if (m_arrivalAction == ARRIVAL_ACTION_USE_TOOL) {
                     if (m_arrivalActive != false) {
                         CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
@@ -2408,9 +2408,9 @@ void CGrunt::AdvanceMotion() {
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.Set(x, y);
-                                if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_A, -1, 1, 0)
-                                    == ARRIVAL_TAG_NONE) {
-                                    m_arrivalPhase = ARRIVAL_TAG_NONE;
+                                if (StepArrivalDrop(x, y, ARRIVAL_ACTION_USE_TOOL, -1, 1, 0)
+                                    == ARRIVAL_ACTION_NONE) {
+                                    m_arrivalAction = ARRIVAL_ACTION_NONE;
                                 }
                             }
 
@@ -2441,7 +2441,7 @@ void CGrunt::AdvanceMotion() {
                             m_arrivalTargetPx.m_y
                         );
                     }
-                } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
+                } else if (m_arrivalAction == ARRIVAL_ACTION_USE_TOY) {
                     if (m_arrivalActive != false) {
                         CGrunt* other = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                         if (other != NULL) {
@@ -2451,9 +2451,9 @@ void CGrunt::AdvanceMotion() {
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.Set(x, y);
-                                if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_B, -1, 1, 0)
-                                    == ARRIVAL_TAG_NONE) {
-                                    m_arrivalPhase = ARRIVAL_TAG_NONE;
+                                if (StepArrivalDrop(x, y, ARRIVAL_ACTION_USE_TOY, -1, 1, 0)
+                                    == ARRIVAL_ACTION_NONE) {
+                                    m_arrivalAction = ARRIVAL_ACTION_NONE;
                                 }
                             }
 
@@ -2488,7 +2488,7 @@ void CGrunt::AdvanceMotion() {
                         SetEntrancePos(1, 1);
                         return;
                     }
-                    m_arrivalPhase = 0;
+                    m_arrivalAction = 0;
                 }
             }
         }
@@ -2512,7 +2512,7 @@ void CGrunt::AdvanceMotion() {
         }
         Coord entrance = EntrancePx();
         if (m_lastTilePx.m_x == entrance.m_x && m_lastTilePx.m_y == entrance.m_y) {
-            m_arrivalPhase = 0;
+            m_arrivalAction = 0;
             ResetIdleAnimation(1, 0, 0);
             return;
         }

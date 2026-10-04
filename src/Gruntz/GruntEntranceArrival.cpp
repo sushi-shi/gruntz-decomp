@@ -348,7 +348,7 @@ RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
         StopVehicleLoopSound();
-        if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B && m_arrivalActive != false) {
+        if (m_arrivalAction == ARRIVAL_ACTION_USE_TOY && m_arrivalActive != false) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
