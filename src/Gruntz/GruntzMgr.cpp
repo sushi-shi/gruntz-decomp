@@ -586,11 +586,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     CKeyboardDevice* keyboard = g_inputMgr->m_keyboard;
     if (keyboard != NULL) {
-        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = VK_CONTROL;
-        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON1)] = 'X';
-        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON2)] = VK_SPACE;
-        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON3)] = VK_RETURN;
-        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON8)] = 0;
+        keyboard->SetKeyBinding(INPUT_BINDING_BUTTON0, VK_CONTROL);
+        keyboard->SetKeyBinding(INPUT_BINDING_BUTTON1, 'X');
+        keyboard->SetKeyBinding(INPUT_BINDING_BUTTON2, VK_SPACE);
+        keyboard->SetKeyBinding(INPUT_BINDING_BUTTON3, VK_RETURN);
+        keyboard->SetKeyBinding(INPUT_BINDING_BUTTON8, 0);
     }
 
     m_shadeCache = new CShadeTableCache;

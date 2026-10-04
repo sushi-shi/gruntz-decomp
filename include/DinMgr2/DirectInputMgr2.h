@@ -219,6 +219,9 @@ public:
 
     i32 CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
     void ConfigureDefaultBindings();
+    void SetKeyBinding(InputBindingSlot binding, u32 key) {
+        m_keyBindings[IDX(binding)] = key;
+    }
     virtual i32 Poll() OVERRIDE;
 
     CKeyboardBindings m_keyBindings;

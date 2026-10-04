@@ -30,11 +30,11 @@ i32 CInputState::Init(DirectInputMgr2* manager, InputDeviceSel selection) {
 RVA(0x00038340, 0x46)
 void CInputState::ConfigureGameplayKeys() {
     if (m_keyboard) {
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = VK_SHIFT;
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON1)] = VK_RETURN;
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON2)] = VK_SPACE;
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON4)] = VK_MENU;
-        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON5)] = VK_CONTROL;
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON0, VK_SHIFT);
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON1, VK_RETURN);
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON2, VK_SPACE);
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON4, VK_MENU);
+        m_keyboard->SetKeyBinding(INPUT_BINDING_BUTTON5, VK_CONTROL);
     }
 }
 
