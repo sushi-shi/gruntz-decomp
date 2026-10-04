@@ -206,7 +206,7 @@ i32 CRollingBall::Update() {
             i32 raw = pl->m_tileHandles[pl->m_tileRowOffsets[tileY] + tileX];
             i32 act;
             if (raw != UNINIT_FILL && raw != -1) {
-                act = VtblResolve(
+                act = GetTileOriginCollisionCode(
                     static_cast<CTileImageSet*>(
                         lvl->m_imageSets[raw & WWD_TILE_IMAGE_SET_INDEX_MASK]
                     )
@@ -401,7 +401,7 @@ i32 CRollingBall::Update() {
             i32 raw2 = pl2->m_tileHandles[pl2->m_tileRowOffsets[tileY2] + tileX2];
             i32 act2;
             if (raw2 != UNINIT_FILL && raw2 != -1) {
-                act2 = VtblResolve(
+                act2 = GetTileOriginCollisionCode(
                     static_cast<CTileImageSet*>(
                         lvl2->m_imageSets[raw2 & WWD_TILE_IMAGE_SET_INDEX_MASK]
                     )

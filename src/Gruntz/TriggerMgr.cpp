@@ -444,7 +444,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
 
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
-    TileCollisionKind collision = PbResolveCell(m_world->GetLevel(), tx, ty);
+    TileCollisionKind collision = LookupTileOriginCollisionDirect(m_world->GetLevel(), tx, ty);
 
     i32 targetingCursorId = m_targetingCursorId;
     if (targetingCursorId >= 0xdf) {
@@ -1566,7 +1566,7 @@ i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 k
                 || ty >= m_world->GetLevel()->m_mainPlane->GetPlanePixelHeight()) {
                 continue;
             }
-            TileCollisionKind type = PbResolveCell(m_world->GetLevel(), tx, ty);
+            TileCollisionKind type = LookupTileOriginCollisionDirect(m_world->GetLevel(), tx, ty);
 
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {

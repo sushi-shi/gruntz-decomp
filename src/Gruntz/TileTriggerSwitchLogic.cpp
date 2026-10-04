@@ -259,7 +259,7 @@ i32 CTileTriggerLogic::Tick() {
     CGameWorld* world = g_gameReg->World();
     CTileTriggerTransition* trans = NULL;
 
-    TileCollisionKind srcId = PbResolveCell(world->GetLevel(), m_tileX, m_tileY);
+    TileCollisionKind srcId = LookupTileOriginCollisionDirect(world->GetLevel(), m_tileX, m_tileY);
 
     {
         CPoint pt(
@@ -340,12 +340,13 @@ i32 CTileTriggerLogic::Tick() {
                 for (i32 gy = 0; gy < world->GetLevel()->m_mainPlane->GetTileRows(); gy++) {
                     i32 pxY = (gy << TILE_SHIFT_PX) + TILE_HALF_PX;
                     i32 hit = 0;
-                    if (PbResolveCell(world->GetLevel(), gx, gy) == TILEKIND_REDPYRAMID_UP) {
+                    if (LookupTileOriginCollisionDirect(world->GetLevel(), gx, gy)
+                        == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
                         SET_MAIN_PLANE_TILE(reg, gx, gy, 0xfd);
                         anim = "GAME_PYRAMIDUP";
                         hit = 1;
-                    } else if (PbResolveCell(world->GetLevel(), gx, gy)
+                    } else if (LookupTileOriginCollisionDirect(world->GetLevel(), gx, gy)
                                == TILEKIND_REDPYRAMID_DOWN) {
                         CGruntzMgr* reg = g_gameReg;
                         SET_MAIN_PLANE_TILE(reg, gx, gy, 0xfe);
@@ -392,7 +393,8 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "GAME_PYRAMIDDOWN";
             }
-            TileCollisionKind now = PbResolveCell(world->GetLevel(), m_tileX, m_tileY);
+            TileCollisionKind now =
+                LookupTileOriginCollisionDirect(world->GetLevel(), m_tileX, m_tileY);
             i32 tx = m_tileX;
             i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
@@ -414,7 +416,8 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "GAME_PYRAMIDDOWN";
             }
-            TileCollisionKind now = PbResolveCell(world->GetLevel(), m_tileX, m_tileY);
+            TileCollisionKind now =
+                LookupTileOriginCollisionDirect(world->GetLevel(), m_tileX, m_tileY);
             i32 tx = m_tileX;
             i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
@@ -436,7 +439,8 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "GAME_PYRAMIDDOWN";
             }
-            TileCollisionKind now = PbResolveCell(world->GetLevel(), m_tileX, m_tileY);
+            TileCollisionKind now =
+                LookupTileOriginCollisionDirect(world->GetLevel(), m_tileX, m_tileY);
             i32 tx = m_tileX;
             i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
@@ -458,7 +462,8 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "GAME_PYRAMIDDOWN";
             }
-            TileCollisionKind now = PbResolveCell(world->GetLevel(), m_tileX, m_tileY);
+            TileCollisionKind now =
+                LookupTileOriginCollisionDirect(world->GetLevel(), m_tileX, m_tileY);
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
@@ -479,7 +484,7 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "GAME_PYRAMIDDOWN";
             }
-            TileCollisionKind now = PbResolveCellHandle(world->GetLevel(), m_tileX, m_tileY);
+            TileCollisionKind now = LookupTileOriginCollision(world->GetLevel(), m_tileX, m_tileY);
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
@@ -500,7 +505,7 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "GAME_PYRAMIDDOWN";
             }
-            TileCollisionKind now = PbResolveCellHandle(world->GetLevel(), m_tileX, m_tileY);
+            TileCollisionKind now = LookupTileOriginCollision(world->GetLevel(), m_tileX, m_tileY);
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
@@ -521,7 +526,7 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "LEVEL_BRIDGEDOWN";
             }
-            TileCollisionKind now = PbResolveCellHandle(world->GetLevel(), m_tileX, m_tileY);
+            TileCollisionKind now = LookupTileOriginCollision(world->GetLevel(), m_tileX, m_tileY);
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
@@ -542,7 +547,7 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "LEVEL_BRIDGEDOWN";
             }
-            TileCollisionKind now = PbResolveCellHandle(world->GetLevel(), m_tileX, m_tileY);
+            TileCollisionKind now = LookupTileOriginCollision(world->GetLevel(), m_tileX, m_tileY);
             i32 ty = m_tileY;
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;

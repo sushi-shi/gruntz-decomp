@@ -4571,7 +4571,7 @@ i32 CPlay::ValidateLevelTiles() {
 
         if (dispatch == DispatchTileTriggerSwitchLogic) {
             TileCollisionKind type =
-                LookupTileType(m_world->GetLevel(), obj->m_screenX, obj->m_screenY);
+                LookupTileCollisionAtPixel(m_world->GetLevel(), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
 
                 CTileTriggerLogic* hit;
@@ -4865,8 +4865,11 @@ i32 CPlay::ValidateLevelTiles() {
                 }
             }
         } else if (dispatch == DispatchTileTriggerLogic) {
-            TileCollisionKind type =
-                LookupTileTypeDirect(m_world->GetLevel(), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type = LookupTileCollisionAtPixelDirect(
+                m_world->GetLevel(),
+                obj->m_screenX,
+                obj->m_screenY
+            );
             if (type == TILEKIND_GIANT_ROCK) {
 
                 CTileTriggerLogic* hit;
@@ -4976,8 +4979,11 @@ i32 CPlay::ValidateLevelTiles() {
                 obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             }
         } else if (dispatch == DispatchTileSecretTriggerLogic) {
-            TileCollisionKind type =
-                LookupTileTypeDirect(m_world->GetLevel(), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type = LookupTileCollisionAtPixelDirect(
+                m_world->GetLevel(),
+                obj->m_screenX,
+                obj->m_screenY
+            );
             if (!m_tileTriggers->AddLogic(
                     type,
                     TRIGID_SECRET_TRIGGER_25,

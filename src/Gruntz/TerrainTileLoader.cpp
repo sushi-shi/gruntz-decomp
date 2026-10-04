@@ -49,7 +49,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = m_world->m_level;
 
-    TileCollisionKind cellType = PbResolveCell(grid, tileX, tileY);
+    TileCollisionKind cellType = LookupTileOriginCollisionDirect(grid, tileX, tileY);
 
     i32 px = tileX * TILE_SIZE_PX + TILE_HALF_PX;
     i32 py = tileY * TILE_SIZE_PX + TILE_HALF_PX;
