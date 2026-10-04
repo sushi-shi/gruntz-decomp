@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_SOUNDCUEINLINE_H
 #define GRUNTZ_SOUNDCUEINLINE_H
 
+#include <string>
+
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -25,7 +27,7 @@ inline i32 PlaySoundCueIfElapsed(
     return cue->m_sound->AcquireAndPlay(volumePercent, panPercent, frequencyOffsetPercent, looping);
 }
 
-static __inline i32 PlayRegistryCueIfElapsed(SoundCueRegistry* soundRegistry, const char* cueKey) {
+static __inline i32 PlayRegistryCueIfElapsed(SoundCueRegistry* soundRegistry, const std::string& cueKey) {
     if (!soundRegistry->m_silentMode) {
         SoundCue* cue = soundRegistry->FindCue(cueKey);
         if (cue != NULL) {

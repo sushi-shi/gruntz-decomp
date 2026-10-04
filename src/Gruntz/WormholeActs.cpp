@@ -81,7 +81,7 @@ i32 CExitTrigger::AdvanceAnim() {
             if (loser != NULL) {
                 g_gameReg->ChatLog()->AddItem(
                     (loser->GetName() + " was conquered by " + winner->GetName()
-                            + "!").c_str(),
+                            + "!"),
                         FONT_ITEM_FLAGS_NONE,
                         0x11
                 );

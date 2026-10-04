@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 
-#include <string>
 
 #include <Ints.h>
 
@@ -23,25 +22,25 @@ public:
     virtual i32 IsReady()  ;
     virtual void Unload()  ;
 
-    CAniElement* FindAnimation(const char* key);
+    CAniElement* FindAnimation(const std::string& key);
     void RemoveAnimation(CAniElement* target);
     void ClearAnimations();
-    i32 RemoveWithPrefix(const char* prefix, const char* separator);
-    i32 HasWithPrefix(const char* prefix);
+    i32 RemoveWithPrefix(const std::string& prefix, const std::string& separator);
+    i32 HasWithPrefix(const std::string& prefix);
     std::string FindAnimationKey(CAniElement* target);
     virtual ~AnimationRegistry()  ;
 
-    CAniElement* LoadAnimationFromSource(const char* key, CRezItm* source);
-    CAniElement* LoadAnimationFromFile(const char* key, const char* path);
+    CAniElement* LoadAnimationFromSource(const std::string& key, CRezItm* source);
+    CAniElement* LoadAnimationFromFile(const std::string& key, const char* path);
     CAniElement* LoadNamedAnimation(CRezItm* source);
-    void AddAnimation(CAniElement* animation, const char* key);
-    i32 LoadFromTree(CRezDir* tree, const char* prefix, const char* separator);
+    i32 LoadFromTree(CRezDir* tree, const std::string& prefix, const std::string& separator);
 
-    std::map<std::string, CAniElement*> m_animations;
+    const std::map<std::string, CAniElement*>& Entries() const { return m_animations; }
 
 private:
-    void RegisterAnimation(CAniElement* animation, const char* key) {
-        m_animations[key] = animation;
+    std::map<std::string, CAniElement*> m_animations;
+    void RegisterAnimation(CAniElement* animation, const std::string& key) {
+        m_animations.insert(std::map<std::string, CAniElement*>::value_type(key, animation));
     }
 };
 

@@ -2,6 +2,7 @@
 #define GRUNTZ_BOOTYSTATEACTIVATE_H
 
 #include <string>
+#include <Gruntz/GlyphStringDraw.h>
 
 #include <Ints.h>
 
@@ -25,17 +26,6 @@ GZ_ENUM_CONST_BEGIN(BootyEffectCount)
     BOOTY_EXPLOSION_COUNT = 8
 GZ_ENUM_CONST_END(BootyEffectCount)
 
-i32 DrawTextToBackSurface(
-    CDDrawSurfaceMgr* surfaceMgr,
-    std::string* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
 
 inline CWwdSpriteObject* CreateSimpleAnimationSprite(i32 sortKey) {
     return g_gameReg->World()->ChildGroup()->CreateSprite(

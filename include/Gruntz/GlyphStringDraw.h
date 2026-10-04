@@ -13,7 +13,7 @@ typedef tagRECT RECT;
 
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    std::string* text,
+    const std::string& text,
     RECT* box,
     i32 fontSel,
     i32 shadow,
@@ -24,7 +24,7 @@ i32 DrawTextToOverlaySurface(
 );
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    std::string* text,
+    const std::string& text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

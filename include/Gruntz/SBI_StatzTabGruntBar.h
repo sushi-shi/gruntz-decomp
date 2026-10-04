@@ -1,6 +1,8 @@
 #ifndef SBI_STATZTABGRUNTBAR_H
 #define SBI_STATZTABGRUNTBAR_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/ClockInterval.h>
@@ -53,7 +55,7 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT g,
-        const char* key,
+        const std::string& key,
         i32 playerIndex,
         i32 unitIndex,
         i32 selMode

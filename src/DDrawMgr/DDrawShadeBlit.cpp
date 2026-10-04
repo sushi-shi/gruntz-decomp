@@ -153,7 +153,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
     return r;
 }
 
-i32 CDDrawShadeBlit::LoadFromFile(std::string name, ColorDepth fmt) {
+i32 CDDrawShadeBlit::LoadFromFile(const std::string& name, ColorDepth fmt) {
     CFile file;
     if (!file.Open((name).c_str(), CFile::modeRead | CFile::typeBinary, NULL)) {
         return 0;
@@ -238,7 +238,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
     return 1;
 }
 
-i32 CDDrawShadeBlit::WritePidFile(std::string path, PidWriteHeader header) {
+i32 CDDrawShadeBlit::WritePidFile(const std::string& path, PidWriteHeader header) {
     if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
     }
@@ -263,7 +263,7 @@ i32 CDDrawShadeBlit::WritePidFile(std::string path, PidWriteHeader header) {
     return 1;
 }
 
-i32 CDDrawShadeBlit::SavePid(std::string path, i32 offsetX, i32 offsetY) {
+i32 CDDrawShadeBlit::SavePid(const std::string& path, i32 offsetX, i32 offsetY) {
     if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
     }

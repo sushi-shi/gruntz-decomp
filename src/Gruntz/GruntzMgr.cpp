@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -138,7 +139,6 @@ static char s_fecLoName[] = "GruntzLo.FEC";
 
 static char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 
-char g_msgScratch[256];
 
 i32 g_debugGruntRow;
 
@@ -1203,16 +1203,16 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     }
 
     SoundCueRegistry* snd = w->SoundRegistry();
-    w->m_imageRegistry->SumSizesEqual(NULL, 1);
-    snd->SumAudioBytes(NULL);
+    w->m_imageRegistry->SumSizesEqual("", 1);
+    snd->SumAudioBytes("");
     w->GetDeviceManager()->GetCapsChecked();
     w->GetDeviceManager()->GetCapsChecked();
-    w->m_imageRegistry->SumSizesEqual(NULL, 1);
+    w->m_imageRegistry->SumSizesEqual("", 1);
     w->m_imageRegistry->SumSizesEqual("GRUNTZ", 1);
     w->m_imageRegistry->SumSizesEqual("GAME", 1);
     w->m_imageRegistry->SumSizesEqual("LEVEL", 1);
     w->m_imageRegistry->SumSizesEqual("ACTION", 1);
-    w->SoundRegistry()->SumAudioBytes(NULL);
+    w->SoundRegistry()->SumAudioBytes("");
     w->SoundRegistry()->SumAudioBytes("GRUNTZ");
     w->SoundRegistry()->SumAudioBytes("GAME");
     w->SoundRegistry()->SumAudioBytes("LEVEL");
@@ -1809,7 +1809,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
         && st != GAMESTATE_DEMO) {
         return 0;
     }
-    std::string name = RunCustomWorldDialog(m_gameWnd->GetHwnd(), NULL);
+    std::string name = RunCustomWorldDialog(m_gameWnd->GetHwnd());
     if ((name).empty()) {
         return 0;
     }
@@ -1977,7 +1977,7 @@ i32 CGruntzMgr::IsStandardMode() {
     return 0;
 }
 
-i32 CGruntzMgr::AppendChatMessage(const char* msg) {
+i32 CGruntzMgr::AppendChatMessage(const std::string& msg) {
     CFontConfig* log = m_chatLog;
     if (log == NULL) {
         return 0;
@@ -1985,13 +1985,8 @@ i32 CGruntzMgr::AppendChatMessage(const char* msg) {
     return log->AddItem(msg, FONT_ITEM_FLAGS_NONE, 0x11);
 }
 
-i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
-    if (on) {
-        sprintf(g_msgScratch, "%s is ON", itemName);
-    } else {
-        sprintf(g_msgScratch, "%s is OFF", itemName);
-    }
-    return AppendChatMessage(g_msgScratch);
+i32 CGruntzMgr::ShowToggleMessage(const std::string& itemName, i32 on) {
+    return AppendChatMessage(itemName + (on ? " is ON" : " is OFF"));
 }
 
 i32 CGruntzMgr::IsInPlayState() {
@@ -2520,8 +2515,8 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     return 1;
 }
 
-i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
-    if (sink && key) {
+i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const std::string& key, i32 idx) {
+    if (sink) {
         CDDrawWorker* row = World()->FindWorker(key);
         if (row) {
             CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->GetMinIndex());
@@ -2579,11 +2574,11 @@ void CGruntzMgr::CheatSkeletonToggle() {
                     switch (fmt->m_drawType) {
                         case SHADE_DST_BY_SRC:
                             set->SetAllTypes(SHADE_COPY);
-                            AppendChatMessage(const_cast<char*>("Back from the dead?"));
+                            AppendChatMessage("Back from the dead?");
                             break;
                         default:
                             set->SetAllTypes(SHADE_DST_BY_SRC);
-                            AppendChatMessage(const_cast<char*>("You're scaring me..."));
+                            AppendChatMessage("You're scaring me...");
                             break;
                     }
                     PlayRegistryCueIfElapsed(World()->SoundRegistry(), "GAME_MINORCHEAT");
@@ -2609,10 +2604,10 @@ void CGruntzMgr::CheatEclipseToggle() {
                     if (st != SHADE_DST_BY_LEVEL) {
                         set->SetAllTypes(SHADE_DST_BY_LEVEL);
                         set->SetAllLightLevels(rand() % 256);
-                        AppendChatMessage(const_cast<char*>("Me and my..."));
+                        AppendChatMessage("Me and my...");
                     } else {
                         set->SetAllTypes(SHADE_COPY);
-                        AppendChatMessage(const_cast<char*>("Where did the sun go?"));
+                        AppendChatMessage("Where did the sun go?");
                     }
                     PlayRegistryCueIfElapsed(World()->SoundRegistry(), "GAME_MINORCHEAT");
                 }
@@ -2885,10 +2880,7 @@ void CGruntzMgr::ResumeMusicIfEnabled() {
     }
 }
 
-i32 CGruntzMgr::SetAssetRoot(char* path) {
-    if (path == NULL) {
-        return 0;
-    }
+i32 CGruntzMgr::SetAssetRoot(const std::string& path) {
     CAssetRootStorage::s_value = path;
     PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_SHOW_STATE0), 0);
     return 1;
@@ -3060,7 +3052,10 @@ i32 CGruntzMgr::Quicksave() {
     if (m_voiceManager) {
         VoiceMgr()->PauseAllVoices();
     }
-    FillSaveInfo(m_saveInfoRec, NULL);
+    if (!FillSaveInfo(m_saveInfoRec, NULL)) {
+        EnterModalUI("ERROR - Cannot Save Game.");
+        return 0;
+    }
 
     if (g_gameReg->m_saveGame->Save(m_saveInfoRec->m_serial, 0x81a7) == 0) {
         EnterModalUI("ERROR - Cannot Save Game.");
@@ -3098,7 +3093,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, const char* snapshot) {
         return 0;
     }
 
-    strcpy(dst->m_levelName, (GetWorldFileName()).c_str());
+    if (!copyTextToBuffer((GetWorldFileName()), dst->m_levelName, sizeof(dst->m_levelName))) return 0;
     dst->m_isBattlez = (m_gameMode == GAMEMODE_BATTLEZ);
     dst->m_isCustom = m_isCustomLevel;
 
@@ -3426,7 +3421,7 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
 
     char buf[SERIAL_NAME_LEN];
     memset(buf, 0, SERIAL_NAME_LEN);
-    strcpy(buf, (m_strWorldFile).c_str());
+    if (!copyTextToBuffer((m_strWorldFile), buf, sizeof(buf))) return 0;
     ar->Write(buf, SERIAL_NAME_LEN);
 
     ar->Write(&m_loadingSaveGame, sizeof(m_loadingSaveGame));
@@ -3508,7 +3503,7 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     return 1;
 }
 
-i32 CGruntzMgr::IsBattlezMapFile(std::string path) {
+i32 CGruntzMgr::IsBattlezMapFile(const std::string& path) {
     CFile file;
     char hdr[0x5f4];
     if (file.Open((path).c_str(), CFile::modeRead, NULL)) {

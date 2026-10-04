@@ -11,6 +11,9 @@ int main() {
     assert(formatText("[%s] %d %s", longText.c_str(), 42, "tail") == "[" + longText + "] 42 tail");
     assert(formatText("%c%c%c", 'a', 0, 'b') == std::string("a\0b", 3));
     assert(formatText("").empty());
+    assert(joinResourceKey("", "_", "ROOT") == "ROOT");
+    assert(joinResourceKey("ROOT", "_", "CHILD") == "ROOT_CHILD");
+    assert(joinResourceKey(longText, "::", longText) == longText + "::" + longText);
     assert(compareAsciiCaseInsensitive("SoundZ", "soundz") == 0);
     assert(compareAsciiCaseInsensitive("abc", "ABCD") < 0);
     assert(compareAsciiCaseInsensitive("ABD", "abc") > 0);
@@ -23,6 +26,16 @@ int main() {
     assert(sliceText("abc", 1, -1).empty());
     assert(rightText("abc", 8) == "abc");
     assert(rightText("abc", -1).empty());
+
+    char record[5] = {'?', '?', '?', '?', '!'};
+    assert(copyTextToBuffer("abc", record, 4));
+    assert(std::strcmp(record, "abc") == 0 && record[4] == '!');
+    assert(!copyTextToBuffer("abcd", record, 4));
+    assert(std::strcmp(record, "abc") == 0 && record[4] == '!');
+    assert(!copyTextToBuffer(longText, record, sizeof(record)));
+    assert(!copyTextToBuffer(std::string("a\0b", 3), record, sizeof(record)));
+    assert(!copyTextToBuffer("", record, 0));
+    assert(copyTextToBuffer("", record, 1) && record[0] == '\0');
 
     std::vector<std::string> values;
     values.push_back(longText);

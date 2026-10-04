@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_ANIMATED_MENU_ITEM_H
 #define GRUNTZ_ANIMATED_MENU_ITEM_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -21,10 +23,10 @@ public:
     }
     virtual i32 Init(
         CMenuPage* page,
-        const char* name,
-        const char* animationKey,
+        const std::string& name,
+        const std::string& animationKey,
         i32 commandId,
-        const char* targetPageKey,
+        const std::string& targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags
     )  ;
 

@@ -49,10 +49,10 @@ struct CShadeTable {
     void Reset();
     void Free();
 
-    i32 LoadFromFile(std::string path, i32 id);
+    i32 LoadFromFile(const std::string& path, i32 id);
     i32 LoadFromMem(u8* buf, u32 len, i32 id);
     i32 ReadFrom(CFile* file, i32 id);
-    i32 SaveToFile(std::string path);
+    i32 SaveToFile(const std::string& path);
 };
 
 typedef std::vector<CShadeTable*> CShadeTableArray;
@@ -71,7 +71,7 @@ public:
     CShadeTable* GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol);
     CShadeTable* LumaSortTable(PALETTEENTRY* pal);
     CShadeTable* HueSortTable(PALETTEENTRY* pal);
-    CShadeTable* AddFromArray(std::string name);
+    CShadeTable* AddFromArray(const std::string& name);
     CShadeTable* AddFromBuffer(u8* data, i32 size);
     CShadeTable* GreyTable();
     CShadeTable* AddTable(float scale);

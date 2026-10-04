@@ -29,7 +29,7 @@
 
 i32 DrawPageDebugText(
     CDDrawSurfaceMgr* mgr,
-    const std::string* text,
+    const std::string& text,
     RECT* dst,
     i32 fontFlag,
     b32 useFrontPage,

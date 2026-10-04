@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_SBI_SIDETAB_H
 #define GRUNTZ_SBI_SIDETAB_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -39,7 +41,7 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
-        const char* unused,
+        const std::string& unused,
 
         i32 rowIndex,
         i32 colIndex,

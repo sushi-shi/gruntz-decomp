@@ -194,7 +194,7 @@ public:
         return LOGIC_GRUNT;
     }
 
-    virtual void StepBehavior(const char* animationActName)  ;
+    virtual void StepBehavior(const std::string& animationActName)  ;
 
     virtual void FireActivation(i32 id)  ;
 
@@ -518,7 +518,7 @@ public:
 
     void SetEntrancePos(i32 clearArrivalState, i32 recycleRoute);
 
-    void EnsureVehicleLoopSound(const char* key);
+    void EnsureVehicleLoopSound(const std::string& key);
     i32 UpdateEntranceAnim();
     i32 Save(CFileMemBase* ar);
 
@@ -531,7 +531,7 @@ public:
 
     Coord GetTilePos();
 
-    void EnsurePowerupLoopSound(const char* key);
+    void EnsurePowerupLoopSound(const std::string& key);
 
     i32 CanShowStamina();
     Coord* EntranceTileOffset(Coord* out);
@@ -638,7 +638,7 @@ public:
 
     i32 StartBombGruntRun();
 
-    virtual void FinalizeStep(const char* name)  ;
+    virtual void FinalizeStep(const std::string& name)  ;
 
     i32 UpdateToyUseAnimation();
     i32 StepArrivalReroll();

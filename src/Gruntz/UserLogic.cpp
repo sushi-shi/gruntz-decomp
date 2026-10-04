@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -6,7 +7,6 @@
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
-#include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -31,11 +31,11 @@ void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     }
 }
 
-void CUserLogic::StepBehavior(const char* animationActName) {}
+void CUserLogic::StepBehavior(const std::string& animationActName) {}
 
 void CUserLogic::FireActivation(i32) {}
 
-void CUserLogic::FinalizeStep(const char*) {
+void CUserLogic::FinalizeStep(const std::string&) {
     if (m_deferredCallback == NULL) {
         return;
     }
@@ -70,9 +70,7 @@ i32 CWapX::SerializeAnimationState(
             if (strlen(name) == 0) {
                 m_value = NULL;
             } else {
-                std::map<std::string, CAniElement*>* map =
-                    &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
-                CAniElement* value = MapFind<CAniElement>(*map, name);
+                CAniElement* value = m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimation(name);
                 m_value = value;
             }
             break;
@@ -81,10 +79,7 @@ i32 CWapX::SerializeAnimationState(
 
             memset(name, 0, sizeof(name));
             if (m_value != NULL) {
-                strcpy(
-                    name,
-                    (m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)).c_str()
-                );
+                if (!copyTextToBuffer(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value), name, SERIAL_NAME_LEN)) return 0;
             }
             archive->Write(name, SERIAL_NAME_LEN);
             archive->Write(m_blob, 0x10);

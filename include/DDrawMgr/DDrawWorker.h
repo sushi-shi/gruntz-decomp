@@ -2,6 +2,7 @@
 #define GRUNTZ_CDDRAWWORKER_H
 
 #include <vector>
+#include <string>
 
 #include <Ints.h>
 
@@ -33,7 +34,7 @@ public:
     virtual void Unload()  ;
     virtual LoadableClassId GetClassId()  ;
 
-    virtual i32 SetKey(const char* key);
+    virtual i32 SetKey(const std::string& key);
     virtual i32 BuildFramesFromArchive(CRezDir* tab);
 
     virtual CImage* CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed);
@@ -52,7 +53,7 @@ public:
     ShadeMode GetFirstFrameState();
     i32 GetFirstFrameLightLevel();
     i32 GetMemoryUsage(i32 raw);
-    i32 FindFrame(CImage* frame, char* outName, i32* outIndex);
+    i32 FindFrame(CImage* frame) const;
 
     i32 GetMinIndex() const {
         return m_minIndex;
@@ -79,7 +80,7 @@ public:
     void AddFrameAt(CImage* elem, i32 index);
 
     std::vector<CImage*> m_items;
-    char m_name[0x40];
+    std::string m_name;
 
     i32 m_minIndex;
     i32 m_maxIndex;

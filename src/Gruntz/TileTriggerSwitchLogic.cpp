@@ -33,7 +33,6 @@
 #include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/TileTriggerSwitchInline.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
@@ -362,7 +361,7 @@ i32 CTileTriggerLogic::Tick() {
                             o->m_logicRecord->m_dispatch(o);
                             CTileTriggerTransition* lg =
                                 static_cast<CTileTriggerTransition*>(o->m_logicRecord->m_userLogic);
-                            if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", PbStr(anim)) == 0) {
+                            if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", anim) == 0) {
                                 lg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             }
                         }
@@ -594,7 +593,7 @@ i32 CTileTriggerLogic::Tick() {
     }
 
     if (trans != NULL) {
-        if (trans->ApplyAnimation(PbStr(key), PbStr(anim)) == 0) {
+        if (trans->ApplyAnimation(key, anim) == 0) {
             trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
@@ -1703,7 +1702,7 @@ i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
     return 1;
 }
 
-i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
+i32 SoundCueRegistry::PlayCueIfElapsed(const std::string& key) {
     if (m_silentMode != false) {
         return 0;
     }

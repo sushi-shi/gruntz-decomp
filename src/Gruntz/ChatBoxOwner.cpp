@@ -64,7 +64,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
         CMulti* multi = static_cast<CMulti*>(g_gameReg->m_curState);
         const std::string input = m_fontConfig->GetInputText();
-        multi->BroadcastChatLine(input.c_str(), 1, 1, NULL);
+        multi->BroadcastChatLine(input, 1, 1, NULL);
     } else {
         if (compareAsciiCaseInsensitive(sliceText(m_fontConfig->GetInputText(), 0, 17), "Enable Cheatzfile") == 0) {
             std::string args = m_fontConfig->GetInputText();
@@ -92,25 +92,25 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                     i32 count = bute.GetInt("Cheatz", "NumCheatz", 0);
                     for (i32 i = 1; i <= count; i++) {
                         text = formatText("Cheat%i", i);
-                        if (!bute.Exist((text).c_str(), NULL)) {
+                        if (!bute.HasTag((text))) {
                             continue;
                         }
-                        code = *bute.GetString((text).c_str(), "Text", &noText);
+                        code = bute.GetString(text, "Text", noText);
                         if ((code).empty()) {
                             continue;
                         }
-                        if (bute.GetInt((text).c_str(), "NonCheat", 0) == 1) {
+                        if (bute.GetInt((text), "NonCheat", 0) == 1) {
                             if (g_gameReg->CheatMgr()->AddCheat(
-                                    (code).c_str(),
-                                    bute.GetInt((text).c_str(), "Value", 0x807b),
+                                    (code),
+                                    bute.GetInt((text), "Value", 0x807b),
                                     1
                                 )) {
                                 enabled++;
                             }
                         } else {
                             if (g_gameReg->CheatMgr()->AddCheat(
-                                    (code).c_str(),
-                                    bute.GetInt((text).c_str(), "Value", 0x807b),
+                                    (code),
+                                    bute.GetInt((text), "Value", 0x807b),
                                     0
                                 )) {
                                 enabled++;
@@ -120,7 +120,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                     if (enabled > 0) {
                         text = formatText("Congratulations!  You have just enabled %d new cheats!\n", enabled);
                         g_gameReg->AppendChatMessage(
-                            (text).c_str()
+                            (text)
                         );
                     }
                 }

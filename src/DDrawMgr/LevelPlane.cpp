@@ -14,7 +14,6 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
-#include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
@@ -219,7 +218,7 @@ void CDDrawWorkerHost::Unload() {
     }
 }
 
-void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
+void CDDrawWorkerHost::SetImageSetByName(char index, const std::string& key) {
     growAndAssign(m_imageSets, index, OwnerMgr()->FindWorker(key));
 }
 
@@ -588,7 +587,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     }
 
     CLogicRecord* logicTemplate =
-        OwnerMgr()->m_logicRegistry->FindTemplate((logic).c_str());
+        OwnerMgr()->m_logicRegistry->FindTemplate((logic));
     if (logicTemplate == NULL) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
@@ -610,15 +609,15 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     if (!(imageSet).empty()) {
         if (gridIndex != -1) {
-            obj->SetImageFrameByName((imageSet).c_str(), gridIndex);
+            obj->SetImageFrameByName((imageSet), gridIndex);
         } else {
-            obj->SetImageSetByName((imageSet).c_str());
+            obj->SetImageSetByName((imageSet));
         }
     }
 
     if (!(sound).empty()) {
-        obj->SetAnimationByName((sound).c_str(), 0);
-        obj->SetSoundCueByName((sound).c_str());
+        obj->SetAnimationByName((sound), 0);
+        obj->SetSoundCueByName((sound));
     }
 
     if (!(name).empty()) {

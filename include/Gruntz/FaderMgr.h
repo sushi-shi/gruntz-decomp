@@ -31,7 +31,7 @@ public:
     void DeleteAll();
 
     void SetTraceEnabled(b32 enabled);
-    void Trace(std::string s);
+    void Trace(const std::string& s);
 
     class CDDSurface* m_primarySurface;
     class CDDSurface* m_secondarySurface;

@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CPARTICLEZ_H
 #define GRUNTZ_CPARTICLEZ_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -35,8 +37,8 @@ inline void CreateParticlez(
     CDDrawChildGroup* group,
     i32 x,
     i32 y,
-    const char* imageSetName,
-    const char* animationName
+    const std::string& imageSetName,
+    const std::string& animationName
 ) {
     CWwdSpriteObject* sprite = group->CreateSprite(
         0,

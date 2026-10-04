@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CWORLDSOUNDSET_H
 #define GRUNTZ_CWORLDSOUNDSET_H
 
+#include <string>
+
 #include <list>
 class CAmbientSound;
 
@@ -34,7 +36,7 @@ public:
     ~CWorldSoundSet();
 
     CAmbientSound* CreateAmbientFromKey(
-        const char* key,
+        const std::string& key,
         i32 volumeLevel,
         RECT* region,
         i32 volumeScale,
@@ -48,7 +50,7 @@ public:
         i32 unused
     );
     CAmbientPosSound* CreatePositionedFromKey(
-        const char* key,
+        const std::string& key,
         i32 volumeLevel,
         AmbientPoint* position,
         i32 volumeScale,
@@ -75,7 +77,7 @@ public:
     );
 
     CRandomAmbientSound* CreateRandomFromKey(
-        const char* key,
+        const std::string& key,
         i32 volumeLevel,
         RECT* region,
         i32 volumeScale,

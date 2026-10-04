@@ -32,7 +32,7 @@ void AnimationRegistry::RemoveAnimation(CAniElement* target) {
     while (pos != m_animations.end()) {
         (key = pos->first, animation = pos->second, ++pos);
         if (target == animation) {
-            m_animations.erase((key).c_str());
+            m_animations.erase(key);
             delete target;
             return;
         }
@@ -54,7 +54,7 @@ void AnimationRegistry::ClearAnimations() {
     m_animations.clear();
 }
 
-i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separator) {
+i32 AnimationRegistry::RemoveWithPrefix(const std::string& prefix, const std::string& separator) {
     std::string match(prefix);
     match += separator;
     i32 prefixLength = static_cast<i32>((match).size());
@@ -64,8 +64,8 @@ i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separato
     i32 removedCount = 0;
     while (pos != m_animations.end()) {
         (key = pos->first, animation = pos->second, ++pos);
-        if (strncmp((key).c_str(), (match).c_str(), prefixLength) == 0) {
-            m_animations.erase((key).c_str());
+        if (key.compare(0, prefixLength, match) == 0) {
+            m_animations.erase(key);
             if (animation != NULL) {
                 delete animation;
             }
@@ -75,7 +75,9 @@ i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separato
     return removedCount;
 }
 
-CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm* source) {
+CAniElement* AnimationRegistry::LoadAnimationFromSource(const std::string& key, CRezItm* source) {
+    CAniElement* existing = FindAnimation(key);
+    if (existing != NULL) return existing;
     CAniElement* animation = new CAniElement;
     if (animation == NULL) {
         return NULL;
@@ -89,7 +91,9 @@ CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm
     return animation;
 }
 
-CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const char* path) {
+CAniElement* AnimationRegistry::LoadAnimationFromFile(const std::string& key, const char* path) {
+    CAniElement* existing = FindAnimation(key);
+    if (existing != NULL) return existing;
     CAniElement* animation = new CAniElement;
     if (animation == NULL) {
         return NULL;
@@ -110,24 +114,11 @@ CAniElement* AnimationRegistry::LoadNamedAnimation(CRezItm* source) {
     return LoadAnimationFromSource(source->GetName(), source);
 }
 
-void AnimationRegistry::AddAnimation(CAniElement* animation, const char* key) {
-    RegisterAnimation(animation, key);
-}
-
-i32 AnimationRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const char* separator) {
+i32 AnimationRegistry::LoadFromTree(CRezDir* tree, const std::string& prefix, const std::string& separator) {
     i32 loadedCount = 0;
-    char* keyBuffer = new char[0x100];
-    if (keyBuffer == NULL) {
-        return 0;
-    }
-    keyBuffer[0] = 0;
     CRezDir* node = static_cast<CRezDir*>(tree->GetFirstSubDir());
     while (node != NULL) {
-        if (prefix != NULL && *prefix != 0) {
-            sprintf(keyBuffer, "%s%s%s", prefix, separator, node->GetDirName());
-        } else {
-            strcpy(keyBuffer, node->GetDirName());
-        }
+        const std::string keyBuffer = joinResourceKey(prefix, separator, node->GetDirName());
         loadedCount += LoadFromTree(node, keyBuffer, separator);
         node = static_cast<CRezDir*>(tree->GetNextSubDir(node));
     }
@@ -138,11 +129,7 @@ i32 AnimationRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const cha
             CRezItm* source = tree->GetFirstItem(group);
             while (source != NULL) {
                 if (source->GetType() == REZ_TAG_ANI) {
-                    if (prefix != NULL && *prefix != 0) {
-                        sprintf(keyBuffer, "%s%s%s", prefix, separator, source->GetName());
-                    } else {
-                        strcpy(keyBuffer, source->GetName());
-                    }
+                    const std::string keyBuffer = joinResourceKey(prefix, separator, source->GetName());
                     if (LoadAnimationFromSource(keyBuffer, source) != NULL) {
                         ++loadedCount;
                     }
@@ -152,18 +139,17 @@ i32 AnimationRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const cha
             group = tree->GetNextType(group);
         } while (group != NULL);
     }
-    delete[] keyBuffer;
     return loadedCount;
 }
 
-i32 AnimationRegistry::HasWithPrefix(const char* prefix) {
-    i32 prefixLength = strlen(prefix);
+i32 AnimationRegistry::HasWithPrefix(const std::string& prefix) {
+    i32 prefixLength = prefix.size();
     std::string key;
     CAniElement* animation = NULL;
     std::map<std::string, CAniElement*>::iterator pos = m_animations.begin();
     while (pos != m_animations.end()) {
         (key = pos->first, animation = pos->second, ++pos);
-        if (strncmp((key).c_str(), prefix, prefixLength) == 0) {
+        if (key.compare(0, prefixLength, prefix) == 0) {
             return 1;
         }
     }

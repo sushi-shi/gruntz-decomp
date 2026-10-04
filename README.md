@@ -81,9 +81,10 @@ set `ASAN_OPTIONS=detect_leaks=0`; LeakSanitizer cannot run under ptrace.
 ### Text and collection contracts
 
 - Strings own their bytes. A `c_str()` pointer is borrowed only while the owner
-  remains alive and unchanged. Read-only interfaces accept `const char*`;
-  writable Windows text output uses separate character buffers. Optional null
-  names become empty strings at the boundary.
+  remains alive and unchanged. Config lookups and text formatters return owned
+  strings; migrated read-only text inputs use `const std::string&`. C APIs receive
+  `const char*`, and writable Windows text output uses separate character buffers.
+  Optional null names become empty strings at the boundary.
 - Text remains in the existing byte encoding. Resource-key case conversion is
   explicitly ASCII; bytes above ASCII are preserved. Unicode conversion and
   platform path rules belong to the later filesystem/UI port.
@@ -96,6 +97,12 @@ set `ASAN_OPTIONS=detect_leaks=0`; LeakSanitizer cannot run under ptrace.
   sound-cue enumeration and object serialization passes. Rendering/update list
   order and equal-sort-key insertion order remain unchanged. Runtime and retail
   multiplayer/save interoperability are not established by compilation checks.
+- Runtime resource keys retain their complete names. Legacy save fields keep their
+  fixed width; resource-reference writers reject names that do not fit or contain
+  embedded nulls.
+- Animation, sound, palette, and logic registries reuse existing keys without
+  replacing borrowed objects. MIDI registration rejects duplicate keys. Resource
+  registry insertion is private.
 - Animation act names use a node-based standard map. The previous raw-reallocated
   array cannot safely store `std::string`; the map keeps referenced names stable
   when new IDs are registered.

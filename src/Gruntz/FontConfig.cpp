@@ -67,7 +67,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
 
     std::string arial("ARIAL");
 
-    const char* faceTF = (*g_buteMgr.GetString("Font", "TrainingFont", static_cast<std::string*>(&arial))).c_str();
+    const std::string faceTF = g_buteMgr.GetString("Font", "TrainingFont", arial);
     m_trainingFont = CreateFontA(
         g_buteMgr.GetInt("Font", "TrainingFontHeight", 0x1c),
         g_buteMgr.GetInt("Font", "TrainingFontWidth", 0xe),
@@ -82,7 +82,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         DEFAULT_PITCH | FF_DONTCARE,
-        faceTF
+        faceTF.c_str()
     );
     if (!m_trainingFont) {
         m_trainingFont = CreateFontA(
@@ -103,7 +103,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         );
     }
 
-    const char* faceMF = (*g_buteMgr.GetString("Font", "MessageFont", static_cast<std::string*>(&arial))).c_str();
+    const std::string faceMF = g_buteMgr.GetString("Font", "MessageFont", arial);
     m_messageFont = CreateFontA(
         g_buteMgr.GetInt("Font", "MessageFontHeight", 0x2a),
         g_buteMgr.GetInt("Font", "MessageFontWidth", 0x18),
@@ -118,7 +118,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         DEFAULT_PITCH | FF_DONTCARE,
-        faceMF
+        faceMF.c_str()
     );
     if (!m_messageFont) {
         m_messageFont = CreateFontA(
@@ -172,11 +172,8 @@ void CFontConfig::FreeNodes() {
     m_inputActive = false;
 }
 
-i32 CFontConfig::AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload) {
-    if (!str) {
-        return 0;
-    }
-    if (!*str) {
+i32 CFontConfig::AddItem(const std::string& str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload) {
+    if (str.empty()) {
         return 0;
     }
     if (HAS(flags, FONT_ITEM_CLEAR_EXISTING)) {
@@ -459,7 +456,7 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
 }
 
 i32 CFontConfig::Draw3DText(
-    const std::string* strSrc,
+    const std::string& text,
     HDC hdc,
     RECT* dst,
     i32 fontFlag,
@@ -476,9 +473,6 @@ i32 CFontConfig::Draw3DText(
     if (dst == NULL) {
         return 0;
     }
-    if (strSrc == NULL) {
-        return 0;
-    }
     HGDIOBJ selPrev = NULL;
     RECT rc = *dst;
     if (fontFlag == 0) {
@@ -492,7 +486,6 @@ i32 CFontConfig::Draw3DText(
     }
     SetBkMode(hdc, TRANSPARENT);
     SetBkColor(hdc, RGB(0, 0, 0));
-    std::string text(*strSrc);
     DrawTextA(hdc, (text).c_str(), strlen((text).c_str()), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;

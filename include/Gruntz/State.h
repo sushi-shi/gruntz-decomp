@@ -123,7 +123,7 @@ public:
     i32 ShadeScreen(i32 pct);
 
     i32 LoadTitlePage(
-        const char* titleName,
+        const std::string& titleName,
         i32 unused1,
         i32 unused2,
         i32 unused3,
@@ -131,16 +131,10 @@ public:
         b32 useOverlay
     );
 
-    i32 DrawScreenTextImage(const char* name);
-    i32 PresentTitlePage(
-        const char* unusedTitleName,
-        i32 unused1,
-        i32 unused2,
-        i32 unused3,
-        i32 unused4
-    );
+    i32 DrawScreenTextImage(const std::string& name);
+    i32 PresentTitlePage();
     i32 LoadAndPresentTitlePage(
-        const char* titleName,
+        const std::string& titleName,
         i32 unused1,
         i32 unused2,
         i32 unused3,

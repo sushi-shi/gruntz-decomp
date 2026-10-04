@@ -163,8 +163,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             m_midi->PlaySequence("MONOLITH", true);
                             return 1;
                         }
-                        char sequenceName[128];
-                        wsprintfA(sequenceName, "AMBIENT%d", playState->GetAmbientId());
+                        const std::string sequenceName = formatText("AMBIENT%d", playState->GetAmbientId());
                         m_midi->PlaySequence(sequenceName, true);
                         return 1;
                     }
@@ -468,7 +467,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         SoundCueRegistry* _reg = m_world->SoundRegistry();
                         if (_reg->m_silentMode == false) {
                             _c = NULL;
-                            MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
+                            _c = _reg->FindCue("GAME_MAJORCHEAT");
                             if (_c) {
                                 PlaySoundCueIfElapsed(_c, g_soundVolumePercent, 0, 0, false);
                             }

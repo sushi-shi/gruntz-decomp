@@ -239,8 +239,8 @@ i32 CRollingBall::Update() {
                             break;
                         }
                     }
-                    SetImageSetByName((fall).c_str());
-                    SwitchAnimationByName((explosion).c_str(), 0);
+                    SetImageSetByName((fall));
+                    SwitchAnimationByName((explosion), 0);
                     if (act != IDX(TILEKIND_DEATH)) {
                         m_explodeLatch = true;
                         return 0;

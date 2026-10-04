@@ -69,7 +69,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT g,
-    const char* key,
+    const std::string& key,
     i32 playerIndex,
     i32 unitIndex,
     i32 selMode

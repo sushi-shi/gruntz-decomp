@@ -16,7 +16,7 @@ public:
 
     void Cancel();
     void LoadLevelPreviewScreen();
-    i32 LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4);
+    i32 LoadScreen(const std::string& name, i32 doFlip, i32 unused3, i32 unused4);
     void ResetPreview();
     i32 NextScreenCmd(i32 unused);
     i32 AcceptPreviewCommand(i32 unused);

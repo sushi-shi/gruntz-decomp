@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <string>
+#include <Gruntz/GlyphStringDraw.h>
 
 #include <Ints.h>
 
@@ -207,7 +208,7 @@ public:
     void DrawDebugStats();
 
     i32 LoadCursorAnimation(
-        const char* spriteKey,
+        const std::string& spriteKey,
         i32 initialFrame,
         b32 animate,
         i32 frameDelayMs,
@@ -434,28 +435,6 @@ i32 LayerBlitFrame(
     b32 useColorKey
 );
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, b32 snapFlag);
-i32 DrawTextToOverlaySurface(
-    CDDrawSurfaceMgr* surfaceMgr,
-    std::string* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
-i32 DrawTextToBackSurface(
-    CDDrawSurfaceMgr* surfaceMgr,
-    std::string* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
 void Cmd_ResetScroll();
 i32 InitializeLevelArea(i32 levelIndex);
 void ActiveWait(u32 ms);

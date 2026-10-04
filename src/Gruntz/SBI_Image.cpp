@@ -32,7 +32,7 @@ i32 CSBI_Image::SetupImage(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* key,
+    const std::string& key,
     i32 frame,
     i32 extra
 ) {
@@ -40,7 +40,7 @@ i32 CSBI_Image::SetupImage(
         Initialize(owner, tab, host, false);
         m_rect = rc;
         m_cmd = cmd;
-        if (key != NULL) {
+        if (!key.empty()) {
             CImage* val = host->FindFrame(key, 1);
             SetFrame(val);
             return val != NULL;
@@ -103,7 +103,9 @@ i32 CSBI_Image::SerializeFields(
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_frame) {
-                mgr->m_imageRegistry->AnyValueMatches(m_frame, name, &v);
+                const FrameReference reference = mgr->m_imageRegistry->FindFrameReference(m_frame);
+                if (!copyTextToBuffer(reference.workerName, name, sizeof(name))) return 0;
+                v = reference.frameIndex;
             }
             ar->Write(name, SERIAL_NAME_LEN);
             ar->Write(&v, sizeof(v));

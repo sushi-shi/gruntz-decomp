@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -239,7 +240,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
         ar->Write(&m_clearedRound, sizeof(m_clearedRound));
         g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
-        strcpy(tmp, (m_name).c_str());
+        if (!copyTextToBuffer((m_name), tmp, sizeof(tmp))) return 0;
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&m_focusX, sizeof(m_focusX));
         ar->Write(&m_focusY, sizeof(m_focusY));

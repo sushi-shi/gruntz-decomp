@@ -7,7 +7,6 @@
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Globals.h>
@@ -50,7 +49,6 @@
 #include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicRecordHandler.h>
-#include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
 #include <Gruntz/MapTraversalInline.h>
@@ -194,7 +192,7 @@ GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST)
 template<>
 CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-#define LK(key)                                                                                        do {                                                                                                   SoundCue* out = NULL;                                                                              MapLookup(reg->m_world->SoundRegistry()->m_cues, (key), out);                                      cue = out;                                                                                     } while (0)
+#define LK(key)                                                                                        do {                                                                                                   SoundCue* out = NULL;                                                                              out = reg->m_world->SoundRegistry()->FindCue((key));                                      cue = out;                                                                                     } while (0)
 
 Coord* CGrunt::EntranceTileOffset(Coord* out) {
     Coord pos = LastTilePx();
@@ -462,8 +460,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         "SingleAnimation",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    spr->SetImageSetByName(("GRUNTZ_" + m_animSetName + s_loseItemSuffix).c_str());
-    spr->SetAnimationByName(("GRUNTZ_" + m_animSetName + s_loseItemSuffix).c_str(), 0);
+    spr->SetImageSetByName(("GRUNTZ_" + m_animSetName + s_loseItemSuffix));
+    spr->SetAnimationByName(("GRUNTZ_" + m_animSetName + s_loseItemSuffix), 0);
 
     PLAY_GRUNT_CUE_IN_VIEW(0xe);
 
@@ -492,7 +490,7 @@ i32 CGrunt::TryPowerupAtTile() {
     return 1;
 }
 
-void CGrunt::EnsureVehicleLoopSound(const char* key) {
+void CGrunt::EnsureVehicleLoopSound(const std::string& key) {
     SoundBuffer*& sound = m_vehicleLoopSound;
     if (sound != NULL) {
         return;
@@ -523,7 +521,7 @@ void CGrunt::StopVehicleLoopSound() {
     }
 }
 
-void CGrunt::EnsurePowerupLoopSound(const char* key) {
+void CGrunt::EnsurePowerupLoopSound(const std::string& key) {
     SoundBuffer*& sound = m_powerupLoopSound;
     if (sound != NULL) {
         return;
@@ -1444,10 +1442,8 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     return NULL;
 }
 
-CObject* SoundCueRegistry::Lookup(const char* key) {
-    CObject* value = NULL;
-    MapLookup(m_cues, key, value);
-    return value;
+SoundCue* SoundCueRegistry::Lookup(const std::string& key) {
+    return FindCue(key);
 }
 
 i32 DispatchGruntLogic(CGameObject* owner) {
@@ -1625,7 +1621,7 @@ static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
     }
 }
 
-void CGrunt::StepBehavior(const char*) {
+void CGrunt::StepBehavior(const std::string&) {
     if (m_struckTiming.Expired()) {
         m_struckCount = 0;
     }
@@ -2149,7 +2145,7 @@ kindDispatch:
     }
 }
 
-void CGrunt::FinalizeStep(const char* name) {
+void CGrunt::FinalizeStep(const std::string& name) {
     CUserLogic::FinalizeStep(name);
     AdvanceMotion();
     if (m_vehicleLoopSound != NULL) {

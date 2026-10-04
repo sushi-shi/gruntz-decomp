@@ -24,7 +24,7 @@ i32 CSBI_WarlordHead::SetupImage(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* key,
+    const std::string& key,
     i32 frame,
     i32 extra
 ) {

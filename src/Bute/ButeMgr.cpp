@@ -956,7 +956,7 @@ bool CButeMgr::Statement() {
                     m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(INT_TYPE, intValue));
                 }
             } else {
-                intValue = GetInt((m_sTagName).c_str(), (m_sAttribute).c_str());
+                intValue = GetInt((m_sTagName), (m_sAttribute));
                 (*m_pSaveData) << static_cast<int>(intValue);
             }
             break;
@@ -970,7 +970,7 @@ bool CButeMgr::Statement() {
                     m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(DWORD_TYPE, dwordValue));
                 }
             } else {
-                dwordValue = GetDword((m_sTagName).c_str(), (m_sAttribute).c_str());
+                dwordValue = GetDword((m_sTagName), (m_sAttribute));
                 (*m_pSaveData) << s_strDword << static_cast<unsigned long>(dwordValue);
             }
             break;
@@ -984,7 +984,7 @@ bool CButeMgr::Statement() {
                     m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(FLOAT_TYPE, floatValue));
                 }
             } else {
-                floatValue = GetFloat((m_sTagName).c_str(), (m_sAttribute).c_str());
+                floatValue = GetFloat((m_sTagName), (m_sAttribute));
                 ((*m_pSaveData) << s_strFloat) << floatValue;
             }
             break;
@@ -995,7 +995,7 @@ bool CButeMgr::Statement() {
                     m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(FLOAT_TYPE, floatValue));
                 }
             } else {
-                floatValue = GetFloat((m_sTagName).c_str(), (m_sAttribute).c_str());
+                floatValue = GetFloat((m_sTagName), (m_sAttribute));
                 (*m_pSaveData) << floatValue << s_strFloatSuffix;
             }
             break;
@@ -1006,7 +1006,7 @@ bool CButeMgr::Statement() {
                     m_pCurrTabOfItems->add((m_sAttribute).c_str(), new CSymTabItem(DOUBLE_TYPE, doubleValue));
                 }
             } else {
-                doubleValue = GetDouble((m_sTagName).c_str(), (m_sAttribute).c_str());
+                doubleValue = GetDouble((m_sTagName), (m_sAttribute));
                 (*m_pSaveData) << doubleValue;
             }
             break;
@@ -1020,7 +1020,7 @@ bool CButeMgr::Statement() {
                     );
                 }
             } else {
-                ButeIntRect r = *GetRect((m_sTagName).c_str(), (m_sAttribute).c_str());
+                ButeIntRect r = *GetRect((m_sTagName), (m_sAttribute));
                 (*m_pSaveData) << s_strOpen << static_cast<long>(r.m_a) << s_strComma
                                << static_cast<long>(r.m_b) << s_strComma << static_cast<long>(r.m_c)
                                << s_strComma << static_cast<long>(r.m_d) << s_strClose;
@@ -1036,7 +1036,7 @@ bool CButeMgr::Statement() {
                     );
                 }
             } else {
-                ButeIntPoint pt = *GetPoint((m_sTagName).c_str(), (m_sAttribute).c_str());
+                ButeIntPoint pt = *GetPoint((m_sTagName), (m_sAttribute));
                 (*m_pSaveData) << s_strOpen << static_cast<long>(pt.m_a) << s_strComma
                                << static_cast<long>(pt.m_b) << s_strClose;
             }
@@ -1051,7 +1051,7 @@ bool CButeMgr::Statement() {
                     );
                 }
             } else {
-                CAVector v = GetVector((m_sTagName).c_str(), (m_sAttribute).c_str());
+                CAVector v = GetVector((m_sTagName), (m_sAttribute));
                 (*m_pSaveData) << s_strLt << v.Geti() << s_strComma << v.Getj() << s_strComma
                                << v.Getk() << s_strGt;
             }
@@ -1066,7 +1066,7 @@ bool CButeMgr::Statement() {
                     );
                 }
             } else {
-                CARange range = GetRange((m_sTagName).c_str(), (m_sAttribute).c_str());
+                CARange range = GetRange((m_sTagName), (m_sAttribute));
                 (*m_pSaveData) << "[" << range.GetMin() << s_strComma << range.GetMax() << "]";
             }
             break;
@@ -1079,7 +1079,7 @@ bool CButeMgr::Statement() {
                     );
                 }
             } else {
-                std::string tmp(*GetString((m_sTagName).c_str(), (m_sAttribute).c_str()));
+                std::string tmp = GetString(m_sTagName, m_sAttribute);
                 ostream& output = (*m_pSaveData) << static_cast<unsigned char>('"');
                 ostream& stringOutput = output << (tmp).c_str();
                 stringOutput << static_cast<unsigned char>('"');
@@ -1300,165 +1300,166 @@ bool CButeMgr::Save() {
     return true;
 }
 
-bool CButeMgr::Exist(const char* tag, const char* key) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+bool CButeMgr::HasTag(const std::string& tag) {
+    return Tags()->lookup(tag.c_str()) != NULL;
+}
+
+bool CButeMgr::Exist(const std::string& tag, const std::string& key) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        if (key == NULL) {
-            return true;
-        }
-        if ((grp)->lookup(key)) {
+        if ((grp)->lookup(key.c_str())) {
             return true;
         }
     }
     return false;
 }
 
-i32 CButeMgr::GetInt(const char* tag, const char* key, i32 def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+i32 CButeMgr::GetInt(const std::string& tag, const std::string& key, i32 def) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == INT_TYPE) {
                 return *rec->m_data.m_i;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
     return def;
 }
 
-i32 CButeMgr::GetInt(const char* tag, const char* key) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+i32 CButeMgr::GetInt(const std::string& tag, const std::string& key) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == INT_TYPE) {
                 return *rec->m_data.m_i;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
             return COORD_UNSET;
         }
-        DisplayMessage(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         return COORD_UNSET;
     }
-    DisplayMessage(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag.c_str());
     return COORD_UNSET;
 }
 
-void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetInt(const std::string& tag, const std::string& key, i32 val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(INT_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(INT_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(INT_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(INT_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(INT_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(INT_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(INT_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(INT_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(INT_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(INT_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(INT_TYPE, val));
 }
 
-DWORD CButeMgr::GetDword(const char* tag, const char* key, DWORD def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+DWORD CButeMgr::GetDword(const std::string& tag, const std::string& key, DWORD def) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             switch (rec->m_symType) {
                 case DWORD_TYPE:
                     return *rec->m_data.m_dw;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
     return def;
 }
 
-DWORD CButeMgr::GetDword(const char* tag, const char* key) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+DWORD CButeMgr::GetDword(const std::string& tag, const std::string& key) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             switch (rec->m_symType) {
                 case DWORD_TYPE:
                     return *rec->m_data.m_dw;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
             return 0;
         }
-        DisplayMessage(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         return 0;
     }
-    DisplayMessage(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag.c_str());
     return 0;
 }
 
-void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetDword(const std::string& tag, const std::string& key, DWORD val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(DWORD_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(DWORD_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(DWORD_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(DWORD_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(DWORD_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(DWORD_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(DWORD_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(DWORD_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(DWORD_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(DWORD_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(DWORD_TYPE, val));
 }
 
-float CButeMgr::GetFloat(const char* tag, const char* key, float def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+float CButeMgr::GetFloat(const std::string& tag, const std::string& key, float def) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             switch (rec->m_symType) {
                 case INT_TYPE:
@@ -1466,16 +1467,16 @@ float CButeMgr::GetFloat(const char* tag, const char* key, float def) {
                 case FLOAT_TYPE:
                     return *rec->m_data.m_f;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
     return def;
 }
 
-float CButeMgr::GetFloat(const char* tag, const char* key) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+float CButeMgr::GetFloat(const std::string& tag, const std::string& key) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             switch (rec->m_symType) {
                 case INT_TYPE:
@@ -1483,58 +1484,58 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
                 case FLOAT_TYPE:
                     return *rec->m_data.m_f;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
             return s_floatErr;
         }
-        DisplayMessage(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         return s_floatErr;
     }
-    DisplayMessage(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag.c_str());
     return s_floatErr;
 }
 
-void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetFloat(const std::string& tag, const std::string& key, float val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(FLOAT_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(FLOAT_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(FLOAT_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(FLOAT_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(FLOAT_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(FLOAT_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(FLOAT_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(FLOAT_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(FLOAT_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(FLOAT_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(FLOAT_TYPE, val));
 }
 
-double CButeMgr::GetDouble(const char* tag, const char* key, double def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+double CButeMgr::GetDouble(const std::string& tag, const std::string& key, double def) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             switch (rec->m_symType) {
                 case INT_TYPE:
@@ -1542,16 +1543,16 @@ double CButeMgr::GetDouble(const char* tag, const char* key, double def) {
                 case DOUBLE_TYPE:
                     return *rec->m_data.m_d;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
     return def;
 }
 
-double CButeMgr::GetDouble(const char* tag, const char* key) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+double CButeMgr::GetDouble(const std::string& tag, const std::string& key) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             switch (rec->m_symType) {
                 case INT_TYPE:
@@ -1559,416 +1560,414 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
                 case DOUBLE_TYPE:
                     return *rec->m_data.m_d;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
             return s_doubleErr;
         }
-        DisplayMessage(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         return s_doubleErr;
     }
-    DisplayMessage(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag.c_str());
     return s_doubleErr;
 }
 
-void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetDouble(const std::string& tag, const std::string& key, double val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(DOUBLE_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(DOUBLE_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(DOUBLE_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(DOUBLE_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(DOUBLE_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(DOUBLE_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(DOUBLE_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(DOUBLE_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(DOUBLE_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(DOUBLE_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(DOUBLE_TYPE, val));
 }
 
-std::string* CButeMgr::GetString(const char* tag, const char* key, std::string* def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+std::string CButeMgr::GetString(const std::string& tag, const std::string& key, const std::string& fallback) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == STRING_TYPE) {
-                return rec->m_data.m_s;
+                return *rec->m_data.m_s;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
-    return def;
+    return fallback;
 }
 
-std::string* CButeMgr::GetString(const char* tag, const char* key) {
+std::string CButeMgr::GetString(const std::string& tag, const std::string& key) {
 
-    static std::string s_empty("");
-
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == STRING_TYPE) {
-                return rec->m_data.m_s;
+                return *rec->m_data.m_s;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         } else {
-            DisplayMessage(s_fmtNotFound, tag, key);
+            DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         }
     } else {
-        DisplayMessage(s_fmtInvalidTag, tag);
+        DisplayMessage(s_fmtInvalidTag, tag.c_str());
     }
 
-    return &s_empty;
+    return std::string();
 }
 
-void CButeMgr::SetString(const char* tag, const char* key, const std::string& val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetString(const std::string& tag, const std::string& key, const std::string& val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(STRING_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(STRING_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(STRING_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(STRING_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(STRING_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(STRING_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(STRING_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(STRING_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(STRING_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(STRING_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(STRING_TYPE, val));
 }
 
-ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+ButeIntRect* CButeMgr::GetRect(const std::string& tag, const std::string& key, ButeIntRect* def) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == RECT_TYPE) {
                 return rec->m_data.m_r;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
     return def;
 }
 
-ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
+ButeIntRect* CButeMgr::GetRect(const std::string& tag, const std::string& key) {
 
     static ButeIntRect s_default;
 
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == RECT_TYPE) {
                 return rec->m_data.m_r;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
             return &s_default;
         }
-        DisplayMessage(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         return &s_default;
     }
-    DisplayMessage(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag.c_str());
     return &s_default;
 }
 
-void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetRect(const std::string& tag, const std::string& key, ButeIntRect* val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(RECT_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(RECT_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(RECT_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(RECT_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(RECT_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(RECT_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(RECT_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(RECT_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(RECT_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(RECT_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(RECT_TYPE, val));
 }
 
-ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+ButeIntPoint* CButeMgr::GetPoint(const std::string& tag, const std::string& key, ButeIntPoint* def) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == POINT_TYPE) {
                 return rec->m_data.m_point;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
     return def;
 }
 
-ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
+ButeIntPoint* CButeMgr::GetPoint(const std::string& tag, const std::string& key) {
 
     static ButeIntPoint s_default;
 
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == POINT_TYPE) {
                 return rec->m_data.m_point;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
             return &s_default;
         }
-        DisplayMessage(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         return &s_default;
     }
-    DisplayMessage(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag.c_str());
     return &s_default;
 }
 
-void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetPoint(const std::string& tag, const std::string& key, ButeIntPoint* val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(POINT_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(POINT_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(POINT_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(POINT_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(POINT_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(POINT_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(POINT_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(POINT_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(POINT_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(POINT_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(POINT_TYPE, val));
 }
 
-CAVector& CButeMgr::GetVector(const char* tag, const char* key, CAVector& def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+CAVector& CButeMgr::GetVector(const std::string& tag, const std::string& key, CAVector& def) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == VECTOR_TYPE) {
                 return *rec->m_data.m_v;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
     return def;
 }
 
-CAVector& CButeMgr::GetVector(const char* tag, const char* key) {
+CAVector& CButeMgr::GetVector(const std::string& tag, const std::string& key) {
 
     static CAVector s_default(0, 0, 0);
 
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == VECTOR_TYPE) {
                 return *rec->m_data.m_v;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
             return s_default;
         }
-        DisplayMessage(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         return s_default;
     }
-    DisplayMessage(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag.c_str());
     return s_default;
 }
 
-void CButeMgr::SetVector(const char* tag, const char* key, const CAVector& val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetVector(const std::string& tag, const std::string& key, const CAVector& val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(VECTOR_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(VECTOR_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(VECTOR_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(VECTOR_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(VECTOR_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(VECTOR_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(VECTOR_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(VECTOR_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(VECTOR_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(VECTOR_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(VECTOR_TYPE, val));
 }
 
-CARange& CButeMgr::GetRange(const char* tag, const char* key, CARange& def) {
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+CARange& CButeMgr::GetRange(const std::string& tag, const std::string& key, CARange& def) {
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == RANGE_TYPE) {
                 return *rec->m_data.m_range;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
         }
     }
     return def;
 }
 
-CARange& CButeMgr::GetRange(const char* tag, const char* key) {
+CARange& CButeMgr::GetRange(const std::string& tag, const std::string& key) {
 
     static CARange s_default(0, 0);
 
-    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key.c_str()));
         if (rec) {
             if (rec->m_symType == RANGE_TYPE) {
                 return *rec->m_data.m_range;
             }
-            DisplayMessage(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag.c_str(), key.c_str());
             return s_default;
         }
-        DisplayMessage(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag.c_str(), key.c_str());
         return s_default;
     }
-    DisplayMessage(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag.c_str());
     return s_default;
 }
 
-void CButeMgr::SetRange(const char* tag, const char* key, const CARange& val) {
-    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
+void CButeMgr::SetRange(const std::string& tag, const std::string& key, const CARange& val) {
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag.c_str()));
     if (grp) {
-        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key.c_str()));
         if (hit) {
             *hit = CSymTabItem(RANGE_TYPE, val);
             return;
         }
-        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag.c_str()));
         if (modifiedTag) {
-            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key.c_str()));
             if (modifiedValue) {
                 *modifiedValue = CSymTabItem(RANGE_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CSymTabItem(RANGE_TYPE, val));
+            modifiedTag->add(key.c_str(), new CSymTabItem(RANGE_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
-            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CSymTabItem(RANGE_TYPE, val));
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag.c_str(), new TableOfItems));
+        newModifiedTag->insert(key.c_str(), new CSymTabItem(RANGE_TYPE, val));
         return;
     }
 
-    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag.c_str()));
     if (addedTag) {
-        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key.c_str()));
         if (addedValue) {
             *addedValue = CSymTabItem(RANGE_TYPE, val);
             return;
         }
-        addedTag->add(key, new CSymTabItem(RANGE_TYPE, val));
+        addedTag->add(key.c_str(), new CSymTabItem(RANGE_TYPE, val));
         return;
     }
-    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CSymTabItem(RANGE_TYPE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag.c_str(), new TableOfItems));
+    newAddedTag->insert(key.c_str(), new CSymTabItem(RANGE_TYPE, val));
 }

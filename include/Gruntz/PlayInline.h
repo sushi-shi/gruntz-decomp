@@ -55,8 +55,7 @@ inline void CPlay::FreePlacedObjectCells(i32 group) {
 inline void CPlay::UpdateAmbientMusic() {
     if (m_ambientInitDone == false) {
         if (m_ambientTiming.Expired()) {
-            char sequenceName[0x40];
-            wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
+            const std::string sequenceName = formatText("AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled != false) {
                 m_mgr->m_midi->PlaySequence(sequenceName, true);
             } else {

@@ -33,7 +33,7 @@ public:
     i32 LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold);
     void FreeNodes();
     void Reset();
-    i32 AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload);
+    i32 AddItem(const std::string& str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload);
     void Scroll(i32 delta);
 
     i32 HandleInputChar(i32 charCode, i32 keyData);
@@ -51,7 +51,7 @@ public:
     i32 RenderInputText(HDC hdc, i32 maxWidth, RECT* rect);
     i32 DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format);
     i32 Draw3DText(
-        const std::string* strSrc,
+        const std::string& text,
         HDC hdc,
         RECT* dst,
         i32 fontFlag,

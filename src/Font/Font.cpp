@@ -64,7 +64,7 @@ void Font::FreeMemory() {
     }
 }
 
-i32 Font::LoadFont(std::string szFileName) {
+i32 Font::LoadFont(const std::string& szFileName) {
     FreeMemory();
 
     CFile file;
@@ -95,7 +95,7 @@ i32 Font::LoadFont(std::string szFileName) {
     return 1;
 }
 
-i32 Font::SaveFont(std::string szFileName) {
+i32 Font::SaveFont(const std::string& szFileName) {
     CFile file;
     if (!file.Open((szFileName).c_str(), CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
@@ -151,7 +151,7 @@ void FontRenderer::SetColor(i32 color) {
     m_color = color;
 }
 
-void FontRenderer::DrawLine(std::string text, CDDSurface* surf, i32 x, i32 y, i32 z) {
+void FontRenderer::DrawLine(const std::string& text, CDDSurface* surf, i32 x, i32 y, i32 z) {
     CSize ext = MeasureText(text);
     if (m_font == NULL) {
         return;
@@ -163,7 +163,7 @@ void FontRenderer::DrawLine(std::string text, CDDSurface* surf, i32 x, i32 y, i3
     DrawLineClipped(text, surf, CRect(0, 0, ext.cx, ext.cy), x, y, z);
 }
 
-void FontRenderer::DrawLineClipped(std::string text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
+void FontRenderer::DrawLineClipped(const std::string& text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
     i32 savedColor = m_color;
     if (m_clip) {
         SetColor(RGB(255, 255, 255));
@@ -181,7 +181,7 @@ void FontRenderer::DrawLineClipped(std::string text, CDDSurface* surf, CRect rc,
     DrawGlyphRun(text, surf, rc, x, y, z);
 }
 
-void FontRenderer::DrawGlyphRun(std::string text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
+void FontRenderer::DrawGlyphRun(const std::string& text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
     if (m_font == NULL) {
         return;
     }
@@ -449,7 +449,7 @@ void FontRenderer::DrawWrapped(
     }
 }
 
-CSize FontRenderer::MeasureText(std::string text) {
+CSize FontRenderer::MeasureText(const std::string& text) {
     CSize ext;
 
     CSize g;

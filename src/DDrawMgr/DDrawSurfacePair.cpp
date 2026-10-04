@@ -25,7 +25,6 @@
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/MapStringToOb.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
@@ -759,10 +758,12 @@ void CLogicRecordRegistry::Unload() {
 
 CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
     LogicRecordDispatchFn dispatch,
-    const char* key,
+    const std::string& key,
     i32 flags
 ) {
 
+    CLogicRecord* existing = FindTemplate(key);
+    if (existing != NULL) return existing;
     CLogicRecord* record = new CLogicRecord(OwnerMgr(), static_cast<i32>(m_templatesByName.size()));
 
     if (record->Init(dispatch, flags) == 0) {
@@ -771,7 +772,7 @@ CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
         }
         return NULL;
     }
-    m_templatesByName[key] = (record);
+    m_templatesByName.insert(std::map<std::string, CLogicRecord*>::value_type(key, record));
     return record;
 }
 
@@ -863,6 +864,10 @@ void CAniElement::DeleteAll() {
     DELETE_ANI_ELEMENT_CONTENTS(i);
 }
 
+CDDrawPaletteResource* CDDrawPaletteRegistry::FindPalette(const std::string& key) const {
+    return MapFind<CDDrawPaletteResource>(m_palettesByName, key);
+}
+
 void CDDrawPaletteRegistry::Unload() {
     CObject* val = NULL;
     std::map<std::string, CDDrawPaletteResource*>::iterator pos = m_palettesByName.begin();
@@ -880,7 +885,9 @@ void CDDrawPaletteRegistry::Unload() {
 }
 
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 flags) {
+CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const std::string& key, i32 flags) {
+    CDDrawPaletteResource* existing = FindPalette(key);
+    if (existing != NULL) return existing;
     RecordBytes<char> source;
     source.m_bytes = src->Load();
     u8* data = source.m_bytes;
@@ -896,18 +903,14 @@ CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 
         return NULL;
     }
     src->UnLoad();
-    char buf[0x50];
-    if (key != NULL) {
-        strcpy(buf, key);
-    } else {
-        strcpy(buf, src->GetName());
-    }
-    m_palettesByName[buf] = (w);
+    m_palettesByName.insert(std::map<std::string, CDDrawPaletteResource*>::value_type(key, w));
     return w;
 }
 
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags) {
+CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const std::string& key, i32 flags) {
+    CDDrawPaletteResource* existing = FindPalette(key);
+    if (existing != NULL) return existing;
     CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         if (w != NULL) {
@@ -915,12 +918,14 @@ CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags
         }
         return NULL;
     }
-    m_palettesByName[key] = (w);
+    m_palettesByName.insert(std::map<std::string, CDDrawPaletteResource*>::value_type(key, w));
     return w;
 }
 
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flags) {
+CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const std::string& key, i32 flags) {
+    CDDrawPaletteResource* existing = FindPalette(key);
+    if (existing != NULL) return existing;
     CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->LoadPaletteFromFile(path, flags) == 0) {
         if (w != NULL) {
@@ -928,12 +933,14 @@ CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flag
         }
         return NULL;
     }
-    m_palettesByName[key] = (w);
+    m_palettesByName.insert(std::map<std::string, CDDrawPaletteResource*>::value_type(key, w));
     return w;
 }
 
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 flags) {
+CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, const std::string& key, i32 flags) {
+    CDDrawPaletteResource* existing = FindPalette(key);
+    if (existing != NULL) return existing;
     if (src->GetType() != IMGTAG_XCP) {
         return NULL;
     }
@@ -945,20 +952,15 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 fl
     i32 length = static_cast<i32>(src->GetSize());
     CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->CreatePaletteFromTrailingData(data, length, flags) == 0) {
+        src->UnLoad();
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
 
-    const char* keyArg = reinterpret_cast<const char*>(key);
-    char buf[0x50];
-    if (keyArg != NULL) {
-        strcpy(buf, keyArg);
-    } else {
-        strcpy(buf, src->GetName());
-    }
-    m_palettesByName[buf] = (w);
+    src->UnLoad();
+    m_palettesByName.insert(std::map<std::string, CDDrawPaletteResource*>::value_type(key, w));
     return w;
 }
 
@@ -989,7 +991,7 @@ i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
     while (pos != m_palettesByName.end()) {
         (key = pos->first, val = pos->second, ++pos);
         if (val == obj) {
-            m_palettesByName.erase((key).c_str());
+            m_palettesByName.erase(key);
             if (w != NULL) {
                 delete w;
             }
@@ -999,7 +1001,7 @@ i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
     return 0;
 }
 
-i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
+i32 CDDrawPaletteRegistry::RemovePaletteByName(const std::string& key) {
     CDDrawPaletteResource* w = MapFind<CDDrawPaletteResource>(m_palettesByName, key);
     if (w == NULL) {
         return 0;
@@ -1012,8 +1014,8 @@ i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
     return 1;
 }
 
-i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {
-    m_name = name ? name : "";
+i32 CFileMemBase::SetName(const std::string& name, i32 mode, i32 option) {
+    m_name = name;
     m_mode = mode;
     m_option = option;
     return 1;
@@ -1083,7 +1085,7 @@ void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurface
     backBuffer->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
 }
 
-i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
+i32 CDDrawFrameWorker::ResolveFrame(const std::string& workerName, i32 frameIndex) {
     CDDrawWorker* p = OwnerMgr()->FindWorker(workerName);
     CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
     m_frame = v;

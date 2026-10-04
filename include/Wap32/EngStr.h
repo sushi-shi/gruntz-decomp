@@ -16,7 +16,7 @@ class CDDrawSurfaceMgr;
 
 i32 EngStr_RenderText(
     void* self,
-    std::string* text,
+    const std::string& text,
     struct tagRECT* dst,
     class CDDSurface* drawSurface,
     i32 fontSel,
@@ -29,7 +29,7 @@ i32 EngStr_RenderText(
 
 i32 DrawTextToFrontSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    std::string* text,
+    const std::string& text,
     struct tagRECT* box,
     i32 fontSel,
     i32 shadow,

@@ -224,44 +224,29 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
         i32 r = rand() % 0x1e1;
         if (r > 0x140) {
-            found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_gruntzEntrancezOne
-            );
+            found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzEntrancezOne);
             if (onScreen) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x37a, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
-            found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_gruntzEntrancezTwo
-            );
+            found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzEntrancezTwo);
             if (onScreen) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x37b, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else {
-            found = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_gruntzEntrancezThree
-            );
+            found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzEntrancezThree);
             if (onScreen) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x37c, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
-        found = MapFind<CAniElement>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-            s_gruntzEntrancezDrop
-        );
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzEntrancezDrop);
         key = s_gruntzEntrancezDrop;
     } else {
-        found = MapFind<CAniElement>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-            s_gruntzEntrancezRessurect
-        );
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzEntrancezRessurect);
         key = "GRUNTZ_DEATHZ_MELT";
     }
 
@@ -289,7 +274,7 @@ inline void CGrunt::ResolveEntranceOccupant() {
     }
 }
 
-#define COMPLETE_ENTRANCE_COMMIT()                                                                     do {                                                                                                   m_entranceCommitted = true;                                                                        i32 sortKey = m_object->m_screenY + 0x186a0;                                                       SET_SORT_KEY_IF_CHANGED(m_object, sortKey)                                                         CAniElement* found = NULL;                                                                         CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;                                  MapLookup(                                                                                             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                             s_gruntzEntrancezDrop,                                                                             found                                                                                          );                                                                                                 if (found == cached) {                                                                                 if (m_playerIndex == g_curPlayer) {                                                                    g_gameReg->VoiceMgr()->PlayVoice(this, 0x33f, -1, 0, -1, -1);                                      m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                                     }                                                                                                  m_entranceDropActive = true;                                                                       m_entranceTiming.m_intervalLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);             m_entranceTiming.m_intervalHi = 0;                                                                 m_entranceTiming.m_startLo = g_frameTime;                                                          m_entranceTiming.m_startHi = 0;                                                                    m_flashTiming.m_intervalLo = 0;                                                                    m_flashTiming.m_intervalHi = 0;                                                                } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {                                  CommitArrival();                                                                               }                                                                                                  m_entranceActive = false;                                                                          ReadConfigFromButeMgr();                                                                           LoadCellAnimNames(0, 0);                                                                           LoadAnimNameTable(0, 0);                                                                       } while (0)
+#define COMPLETE_ENTRANCE_COMMIT()                                                                     do {                                                                                                   m_entranceCommitted = true;                                                                        i32 sortKey = m_object->m_screenY + 0x186a0;                                                       SET_SORT_KEY_IF_CHANGED(m_object, sortKey)                                                         CAniElement* found = NULL;                                                                         CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;                                  found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzEntrancezDrop);                                                                                                 if (found == cached) {                                                                                 if (m_playerIndex == g_curPlayer) {                                                                    g_gameReg->VoiceMgr()->PlayVoice(this, 0x33f, -1, 0, -1, -1);                                      m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                                     }                                                                                                  m_entranceDropActive = true;                                                                       m_entranceTiming.m_intervalLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);             m_entranceTiming.m_intervalHi = 0;                                                                 m_entranceTiming.m_startLo = g_frameTime;                                                          m_entranceTiming.m_startHi = 0;                                                                    m_flashTiming.m_intervalLo = 0;                                                                    m_flashTiming.m_intervalHi = 0;                                                                } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {                                  CommitArrival();                                                                               }                                                                                                  m_entranceActive = false;                                                                          ReadConfigFromButeMgr();                                                                           LoadCellAnimNames(0, 0);                                                                           LoadAnimNameTable(0, 0);                                                                       } while (0)
 
 i32 CGrunt::LoadEntranceConfig() {
     if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
@@ -335,7 +320,7 @@ i32 CGrunt::RearmEntranceDrop() {
 
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-        const char* name = (EntranceCell()->ItemName()).c_str();
+        const std::string& name = (EntranceCell()->ItemName());
         SetImageFrameByName(name, frame);
     }
 
@@ -394,7 +379,7 @@ i32 CGrunt::StartBombGruntRun() {
     m_bombRunActive = true;
     PLAY_GRUNT_CUE_IN_VIEW(8);
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
-    const char* cn = (EntranceCell()->ItemName()).c_str();
+    const std::string& cn = (EntranceCell()->ItemName());
     SetImageSetByName(cn);
     return 0;
 }
@@ -425,9 +410,9 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         m_cells[8].WalkName() = s_seItem;
 
         m_poseWalk =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_wgItem);
         CAniElement* pose =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_wgItem);
         AT(m_poseIdle, GRUNT_IDLE3) = NULL;
         AT(m_poseIdle, GRUNT_IDLE1) = pose;
         AT(m_poseIdle, GRUNT_IDLE2) = pose;
@@ -461,23 +446,23 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         m_cells[8].IdleName() = s_seIdle;
 
         m_poseWalk =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgWalk);
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_wgWalk);
         AT(m_poseIdle, GRUNT_IDLE1) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle1);
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_wgIdle1);
         AT(m_poseIdle, GRUNT_IDLE2) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle2);
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_wgIdle2);
         AT(m_poseIdle, GRUNT_IDLE3) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle3);
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_wgIdle3);
         AT(m_poseIdle, GRUNT_IDLE4) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle4);
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_wgIdle4);
         AT(m_poseIdle, GRUNT_IDLE5) =
-            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_wgIdle5);
     }
 
     if (IsAnimationAct("D")) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        const char* buf = (EntranceCell()->WalkName()).c_str();
+        const std::string& buf = (EntranceCell()->WalkName());
         SetImageFrameByName(buf, frame);
         return 1;
     }
@@ -485,7 +470,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (IsAnimationAct("A")) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        const char* buf = (EntranceCell()->IdleName()).c_str();
+        const std::string& buf = (EntranceCell()->IdleName());
         SetImageFrameByName(buf, frame);
     }
     return 1;
@@ -502,7 +487,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-        const char* buf = ((&m_frameSetName))->c_str();
+        const std::string& buf = m_frameSetName;
         SetImageFrameByName(buf, frame);
 
         m_entranceStamped = true;
@@ -855,7 +840,7 @@ CObject* CAniElement::AtChecked(i32 i) const {
     return GetAt(i);
 }
 
-CAniElement* AnimationRegistry::FindAnimation(const char* key) {
+CAniElement* AnimationRegistry::FindAnimation(const std::string& key) {
     CAniElement* animation = MapFind<CAniElement>(m_animations, key);
     return animation;
 }

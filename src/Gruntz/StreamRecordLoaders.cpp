@@ -50,9 +50,6 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     return 1;
 }
 
-CLogicRecord* CLogicRecordRegistry::FindTemplate(const char* key) {
-    CObject* found = NULL;
-    ASSERT(key != NULL);
-    MapLookup(m_templatesByName, key, found);
-    return static_cast<CLogicRecord*>(found);
+CLogicRecord* CLogicRecordRegistry::FindTemplate(const std::string& key) {
+    return MapFind<CLogicRecord>(m_templatesByName, key);
 }

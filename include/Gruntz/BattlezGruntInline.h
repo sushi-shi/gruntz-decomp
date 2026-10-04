@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_BATTLEZGRUNTINLINE_H
 #define GRUNTZ_GRUNTZ_BATTLEZGRUNTINLINE_H
 
+#include <string>
+
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h>
 
@@ -54,7 +56,7 @@ static inline bool BattlezActDiffersFromCRCGLPJ(CGrunt* unit) {
     return true;
 }
 
-static inline void ExcludeBattlezSpecialAct(CGrunt* unit, const char* name, i32& eligible) {
+static inline void ExcludeBattlezSpecialAct(CGrunt* unit, const std::string& name, i32& eligible) {
     if (unit->IsAnimationAct(name)) {
         eligible = 0;
     }

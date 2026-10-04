@@ -20,7 +20,7 @@ public:
     virtual ~CFileMemBase() {
         Close();
     }
-    virtual i32 SetName(const char* name, i32 mode, i32 option);
+    virtual i32 SetName(const std::string& name, i32 mode, i32 option);
 
     virtual void Close() {
         Reset();

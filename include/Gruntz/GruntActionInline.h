@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTACTIONINLINE_H
 #define GRUNTZ_GRUNTACTIONINLINE_H
 
+#include <string>
+
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -32,8 +34,7 @@ inline void CGrunt::RestorePreviousAppearance() {
         m_tileMoveCommitted = false;
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        const char* name = (EntranceCell()->WalkName()).c_str();
-        SetImageSetByName(name);
+        SetImageSetByName(EntranceCell()->WalkName());
     } else {
         ResetEntranceAnimation(1, 0, 0);
     }

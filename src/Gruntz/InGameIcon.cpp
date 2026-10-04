@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -75,7 +76,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SwitchAnimationByName("GAME_CYCLE100", 0);
 
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
-    SetupSprite(NULL);
+    SetupSprite("");
 
     m_glitterSprite = NULL;
     m_peekTiming.Clear();
@@ -317,9 +318,9 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         std::string levelStr;
         levelStr = formatText("Level%i", lvl->m_levelIndex);
         std::string warpName;
-        i32 target = g_buteMgr.GetInt("WarpStone", (levelStr).c_str());
+        i32 target = g_buteMgr.GetInt("WarpStone", (levelStr));
         warpName = formatText("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
-        m_object->SetImageSetByName((warpName).c_str());
+        m_object->SetImageSetByName((warpName));
         m_object->m_health = target;
     }
 
@@ -668,20 +669,14 @@ i32 CInGameIcon::SerializeDispatch(
             if (strlen(aniName) == 0) {
                 m_value = NULL;
             } else {
-                m_value = MapFind<CAniElement>(
-                    m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
-                    aniName
-                );
+                m_value = m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimation(aniName);
             }
             break;
         }
         case SERIAL_SAVE: {
             memset(name, 0, sizeof(name));
             if (m_value != NULL) {
-                strcpy(
-                    name,
-                    (m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)).c_str()
-                );
+                if (!copyTextToBuffer(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value), name, SERIAL_NAME_LEN)) return 0;
             }
             ar->Write(name, SERIAL_NAME_LEN);
             ar->Write(m_blob, 0x10);
@@ -720,10 +715,7 @@ i32 CInGameIcon::SerializeDispatch(
         case SERIAL_SAVE: {
             memset(name, 0, sizeof(name));
             if (m_cue != NULL) {
-                strcpy(
-                    name,
-                    (m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->FindCueKey(m_cue)).c_str()
-                );
+                if (!copyTextToBuffer(m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->FindCueKey(m_cue), name, SERIAL_NAME_LEN)) return 0;
             }
             ar->Write(name, SERIAL_NAME_LEN);
             g_serialCounter++;
@@ -738,10 +730,7 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = MapFind<SoundCue>(
-                    m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues,
-                    name
-                );
+                m_cue = m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->FindCue(name);
             } else {
                 m_cue = NULL;
             }
@@ -879,11 +868,11 @@ i32 CInGameText::SerializeDispatch(
     return 1;
 }
 
-void CInGameIcon::SetupSprite(const char* category) {
+void CInGameIcon::SetupSprite(const std::string& category) {
     SoundCue* found = NULL;
-    if (category != NULL) {
+    if (!category.empty()) {
         found = NULL;
-        MapLookup(g_gameReg->World()->SoundRegistry()->m_cues, category, found);
+        found = g_gameReg->World()->SoundRegistry()->FindCue(category);
     }
     m_cue = found;
 }

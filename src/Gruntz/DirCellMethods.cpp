@@ -163,7 +163,7 @@ BOOL CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
     return false;
 }
 
-bool CButeMgr::Parse(std::string filename, int streamBase) {
+bool CButeMgr::Parse(const std::string& filename, int streamBase) {
 
     ifstream* s = new ifstream((filename).c_str(), ios::in | ios::nocreate);
     m_pData = s;

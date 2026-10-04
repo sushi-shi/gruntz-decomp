@@ -1,6 +1,8 @@
 #ifndef SRC_GRUNTZ_GAMELEVEL_H
 #define SRC_GRUNTZ_GAMELEVEL_H
 
+#include <string>
+
 #include <vector>
 
 #include <Ints.h>
@@ -56,7 +58,7 @@ public:
 
     i32 IsValidWwd(const char* name, WwdHeader* headerBuf);
 
-    i32 ReadWwdHeaderName(const char* name, char* nameOut);
+    bool ReadWwdHeaderName(const std::string& name, std::string& nameOut);
 
     Bytef* InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen);
 
@@ -124,7 +126,7 @@ public:
     i32 MoveFalling(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
     i32 MoveClimbing(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
-    CDDrawWorkerHost* FindPlaneByName(const char* name);
+    CDDrawWorkerHost* FindPlaneByName(const std::string& name);
 
     i32 MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 

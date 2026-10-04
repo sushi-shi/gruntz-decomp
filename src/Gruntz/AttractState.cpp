@@ -93,17 +93,14 @@ i32 CAttract::EnterState(GameStateId previousState) {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     std::string s;
     s = formatText("TITLE%d", idx);
-    LoadAndPresentTitlePage((s).c_str(), 0, 0, 1, 0);
+    LoadAndPresentTitlePage((s), 0, 0, 1, 0);
     CDDrawSubMgrPages* page = menuRoot()->GetDrawTarget();
     page->BlitPage(page->GetBackPair());
 
     i32 r = GetRandomNumber();
-    const char* pick = (r % 2) ? "2" : "";
+    const std::string cueName = (r % 2) ? "ATTRACT_TITLE2" : "ATTRACT_TITLE";
 
-    char buf[0x40];
-    wsprintfA(buf, "ATTRACT_TITLE%s", pick);
-
-    SoundCue* found = menuRoot()->SoundRegistry()->FindCue(buf);
+    SoundCue* found = menuRoot()->SoundRegistry()->FindCue(cueName);
     m_titleCue = found;
     if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {
@@ -181,7 +178,7 @@ i32 CAttract::InputVirtual() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     std::string s;
     s = formatText("TITLE%d", idx);
-    return LoadAndPresentTitlePage((s).c_str(), 0, 0, 1, 0);
+    return LoadAndPresentTitlePage((s), 0, 0, 1, 0);
 }
 
 i32 CAttract::RestoreDisplay() {
@@ -196,7 +193,7 @@ i32 CAttract::RestoreDisplay() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     std::string s;
     s = formatText("TITLE%d", idx);
-    return LoadAndPresentTitlePage((s).c_str(), 0, 0, 1, 0);
+    return LoadAndPresentTitlePage((s), 0, 0, 1, 0);
 }
 
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {

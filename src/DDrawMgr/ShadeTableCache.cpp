@@ -497,7 +497,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     return t;
 }
 
-CShadeTable* CShadeTableCache::AddFromArray(std::string name) {
+CShadeTable* CShadeTableCache::AddFromArray(const std::string& name) {
     CShadeTable* t = new CShadeTable;
     m_arr.push_back(t);
     if (!t->LoadFromFile(name, 0)) {

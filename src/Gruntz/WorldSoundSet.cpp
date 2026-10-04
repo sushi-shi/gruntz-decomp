@@ -61,7 +61,7 @@ void CWorldSoundSet::Teardown() {
 }
 
 CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
-    const char* key,
+    const std::string& key,
     i32 volumeLevel,
     RECT* region,
     i32 volumeScale,
@@ -102,7 +102,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
 }
 
 CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
-    const char* key,
+    const std::string& key,
     i32 volumeLevel,
     AmbientPoint* position,
     i32 volumeScale,
@@ -143,7 +143,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
 }
 
 CRandomAmbientSound* CWorldSoundSet::CreateRandomFromKey(
-    const char* key,
+    const std::string& key,
     i32 volumeLevel,
     RECT* region,
     i32 volumeScale,
@@ -256,7 +256,7 @@ void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
 
 i32 CAmbientSound::InitFromKey(
     SoundCueRegistry* cueRegistry,
-    const char* key,
+    const std::string& key,
     i32 volumeLevel,
     i32 masterVolume,
     RECT* region,
@@ -458,7 +458,7 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
 
 i32 CAmbientPosSound::InitFromKey(
     SoundCueRegistry* cueRegistry,
-    const char* key,
+    const std::string& key,
     i32 volumeLevel,
     i32 masterVolume,
     AmbientPoint* position,

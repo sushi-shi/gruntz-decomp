@@ -21,7 +21,6 @@
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
@@ -54,8 +53,8 @@ void CLightFx::RegisterActs() {
 }
 
 void CLightFx::Activate(
-    const char* imageSetName,
-    const char* animationName,
+    const std::string& imageSetName,
+    const std::string& animationName,
     i32 shadeTableIndex,
     b32 deleteWhenComplete
 ) {
@@ -74,13 +73,10 @@ void CLightFx::Activate(
     m_deleteWhenComplete = deleteWhenComplete;
 
     CAniElement* node =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName);
+        m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(animationName);
     if (node != NULL) {
         SwitchAnimation(
-            MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                animationName
-            )
+            m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(animationName)
         );
         RebindNode();
     }

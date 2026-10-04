@@ -132,9 +132,9 @@ public:
     i32 EnsureHitLogic(CLogicRecord* logicTemplate);
     i32 EnsureAttackLogic(CLogicRecord* logicTemplate);
     i32 EnsureBumpLogic(CLogicRecord* logicTemplate);
-    void AddLogicHit(char* key);
-    void AddLogicAttack(char* key);
-    void AddLogicBump(char* key);
+    void AddLogicHit(const std::string& key);
+    void AddLogicAttack(const std::string& key);
+    void AddLogicBump(const std::string& key);
     i32 NotifyForEventCode(i32 eventCode);
 
     void AttachToOwner(CDDrawSurfaceMgr* owner, i32 id);
@@ -292,10 +292,10 @@ public:
             m_frameIndex = frame;
         }
     }
-    void SetImageFrameByName(const char* key, i32 frame);
-    void SetImageSetByName(const char* name);
-    i32 SetAnimationByName(const char* key, i32 advanceImmediately);
-    i32 SetSoundCueByName(const char* name);
+    void SetImageFrameByName(const std::string& key, i32 frame);
+    void SetImageSetByName(const std::string& name);
+    i32 SetAnimationByName(const std::string& key, i32 advanceImmediately);
+    i32 SetSoundCueByName(const std::string& name);
     void SetAnimation(CAniElement* animation, i32 advanceImmediately);
     i32 IntersectsViewport();
 
@@ -349,7 +349,7 @@ public:
     CWwdGameObject*
     CreateObject(int id, int x, int y, int sortKey, CLogicRecord* logicTemplate, int objectFlags);
     CWwdGameObject*
-    CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags);
+    CreateNamed(int id, int x, int y, int sortKey, const std::string& name, int objectFlags);
 
     std::list<CGameObject*> m_children;
 

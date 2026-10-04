@@ -149,9 +149,9 @@ extern "C" i32 uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLo
 
 class WwdFile {
 public:
-    static i32 ValidateMainBlock(std::string name);
+    static i32 ValidateMainBlock(const std::string& name);
 
-    static std::string GetMapBaseName(std::string path);
+    static std::string GetMapBaseName(const std::string& path);
 };
 
 #endif

@@ -626,7 +626,7 @@ i32 CState::BuildAssetNamespacePrefixes(
 ) {
     i32 result;
     if (mode != 0) {
-        if (m_world->m_imageRegistry->HasWithPrefix(("GRUNTZ_" + name).c_str()) == 0) {
+        if (m_world->m_imageRegistry->HasWithPrefix(("GRUNTZ_" + name)) == 0) {
             g_gameReg->VoiceMgr()->PauseAllVoices();
             (static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))->DestroyAllAnims();
             if (lightGate != 0) {
@@ -635,7 +635,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                 RECT r = *(&g_gameReg->World()->m_level->m_viewportRect);
                 RECT r2;
                 CopyRect(&r2, &r);
-                DrawTextToFrontSurface(g_gameReg->World(), &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToFrontSurface(g_gameReg->World(), cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = true;
             CRezDir* tree = m_gruntResources->GetDirFromPath(("IMAGEZ_" + name).c_str());
@@ -643,44 +643,44 @@ i32 CState::BuildAssetNamespacePrefixes(
                 result = 0;
                 goto done;
             }
-            m_world->m_imageRegistry->InstallTree(tree, ("GRUNTZ_" + name).c_str(), "_");
+            m_world->m_imageRegistry->InstallTree(tree, ("GRUNTZ_" + name), "_");
             g_resourceInstallActive = false;
             if (finishGate != NULL) {
                 finishGate->SendLobbyKeepAlive();
             }
         }
-        if (m_world->SoundRegistry()->HasWithPrefix(("GRUNTZ_" + name).c_str()) == 0) {
+        if (m_world->SoundRegistry()->HasWithPrefix(("GRUNTZ_" + name)) == 0) {
             CRezDir* tree = m_gruntResources->GetDirFromPath(("SOUNDZ_" + name).c_str());
             if (tree != NULL) {
 
                 m_world->SoundRegistry()
-                    ->LoadFromTree(static_cast<CRezDir*>(tree), ("GRUNTZ_" + name).c_str(), "_");
+                    ->LoadFromTree(static_cast<CRezDir*>(tree), ("GRUNTZ_" + name), "_");
             }
         }
-        if (m_world->m_animRegistry->HasWithPrefix(("GRUNTZ_" + name).c_str()) == 0) {
+        if (m_world->m_animRegistry->HasWithPrefix(("GRUNTZ_" + name)) == 0) {
             CRezDir* tree = m_gruntResources->GetDirFromPath(("ANIZ_" + name).c_str());
             if (tree == NULL) {
                 result = 0;
                 goto done;
             }
             m_world->m_animRegistry
-                ->LoadFromTree(static_cast<CRezDir*>(tree), ("GRUNTZ_" + name).c_str(), "_");
+                ->LoadFromTree(static_cast<CRezDir*>(tree), ("GRUNTZ_" + name), "_");
         }
         result = 1;
         goto done;
     }
 
-    if (m_world->m_imageRegistry->HasWithPrefix(("GRUNTZ_" + name).c_str())) {
-        m_world->m_imageRegistry->RemoveWithPrefix(("GRUNTZ_" + name).c_str(), "_");
+    if (m_world->m_imageRegistry->HasWithPrefix(("GRUNTZ_" + name))) {
+        m_world->m_imageRegistry->RemoveWithPrefix(("GRUNTZ_" + name), "_");
         if (finishGate != NULL) {
             finishGate->SendLobbyKeepAlive();
         }
     }
-    if (m_world->SoundRegistry()->HasWithPrefix(("GRUNTZ_" + name).c_str())) {
-        m_world->SoundRegistry()->RemoveWithPrefix(("GRUNTZ_" + name).c_str(), "_");
+    if (m_world->SoundRegistry()->HasWithPrefix(("GRUNTZ_" + name))) {
+        m_world->SoundRegistry()->RemoveWithPrefix(("GRUNTZ_" + name), "_");
     }
-    if (m_world->m_animRegistry->HasWithPrefix(("GRUNTZ_" + name).c_str())) {
-        m_world->m_animRegistry->RemoveWithPrefix(("GRUNTZ_" + name).c_str(), "_");
+    if (m_world->m_animRegistry->HasWithPrefix(("GRUNTZ_" + name))) {
+        m_world->m_animRegistry->RemoveWithPrefix(("GRUNTZ_" + name), "_");
     }
     result = 1;
 done:

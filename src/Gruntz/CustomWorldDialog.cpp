@@ -26,7 +26,6 @@
 #include <string.h>
 #include <windowsx.h>
 
-char g_mapNameBuf[0x200] = {0};
 
 std::string g_pathStr;
 
@@ -46,7 +45,7 @@ char g_dotDot[] = "..";
 
 char g_customGlob[] = "*.WWD";
 
-std::string RunCustomWorldDialog(HWND parent, std::string* outSource) {
+std::string RunCustomWorldDialog(HWND parent) {
     (g_pathStr).erase();
     HWND v = parent;
     if (parent == NULL) {
@@ -64,9 +63,6 @@ std::string RunCustomWorldDialog(HWND parent, std::string* outSource) {
     g_customWorldSurfaceMgr = NULL;
     g_customWorldParent = NULL;
     g_customWorldInst = NULL;
-    if (outSource != NULL) {
-        *outSource = g_selectedCustomWorldName;
-    }
     return g_pathStr;
 }
 
@@ -205,10 +201,8 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     return 1;
 }
 
-i32 WwdFile::ValidateMainBlock(std::string name) {
-    char header[0x100];
-
-    if ((name).empty()) {
+i32 WwdFile::ValidateMainBlock(const std::string& name) {
+    if (name.empty()) {
         return -1;
     }
 
@@ -217,16 +211,13 @@ i32 WwdFile::ValidateMainBlock(std::string name) {
         return -1;
     }
 
-    if (!lvl->ReadWwdHeaderName((name).c_str(), header)) {
+    std::string headerName;
+    if (!lvl->ReadWwdHeaderName(name, headerName)) {
         return -1;
     }
 
-    char* p = header;
-    char c = *p;
-    while (c != 0 && (c < '0' || c > '9')) {
-        c = *++p;
-    }
-    return atoi(p);
+    const std::string::size_type digit = headerName.find_first_of("0123456789");
+    return digit == std::string::npos ? 0 : atoi(headerName.c_str() + digit);
 }
 
 BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -322,32 +313,9 @@ std::string BuildCustomWwdPath(std::string name) {
     return name;
 }
 
-std::string WwdFile::GetMapBaseName(std::string path) {
-    std::string result = path;
-    i32 len = static_cast<i32>((path).size());
-    if (len == 0) {
-        return result;
-    }
-    if (len <= 4) {
-        return result;
-    }
-    strcpy(g_mapNameBuf, (path).c_str());
-    i32 blen = strlen(g_mapNameBuf);
-    if (blen < 5) {
-        return result;
-    }
-    g_mapNameBuf[blen - 4] = 0;
-    i32 blen2 = strlen(g_mapNameBuf);
-    if (blen2 < 1) {
-        return result;
-    }
-    i32 i = blen2 - 1;
-    while (i >= 0) {
-        if (g_mapNameBuf[i] == '\\') {
-            break;
-        }
-        i--;
-    }
-    result = &g_mapNameBuf[i + 1];
-    return result;
+std::string WwdFile::GetMapBaseName(const std::string& path) {
+    if (path.size() <= 4) return path;
+    const std::string stem = path.substr(0, path.size() - 4);
+    const std::string::size_type separator = stem.find_last_of('\\');
+    return separator == std::string::npos ? stem : stem.substr(separator + 1);
 }

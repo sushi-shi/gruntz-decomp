@@ -184,7 +184,7 @@ public:
 
     i32 LoadGruntEffectSprites();
     i32 LevelMsgHudDriver();
-    void FormatHudText(std::string* buf, BootyStatRow sel);
+    std::string FormatHudText(BootyStatRow sel);
 
     i32 BuildWarpStoneGlitterAnimation();
 
@@ -265,7 +265,7 @@ public:
 
     i32 QueryGruntSlots();
 
-    void BuildPowerupIconKeys(std::string* reg, i32 key);
+    std::string BuildPowerupIconKey(i32 key);
 
     std::string GetWarlordName(i32 id);
 

@@ -282,7 +282,6 @@ class CNetSessionListNode : public CObject {
 public:
     DPSESSIONDESC2 m_sessionDesc;
 
-    std::list<CNetSessionListNode*>::iterator m_listPosition;
 
     CNetSessionListNode() {
         memset(&m_sessionDesc, 0, sizeof(m_sessionDesc));
@@ -307,7 +306,6 @@ public:
     char* m_ownedBufferA;
 
     i32 m_reserved1c;
-    std::list<CNetPlayerNode*>::iterator m_listPosition;
 
     CNetPlayerNode() {
         m_playerId = 0;

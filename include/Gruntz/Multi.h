@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <string>
+#include <Gruntz/GlyphStringDraw.h>
 
 #include <Ints.h>
 
@@ -81,7 +82,7 @@ public:
         return m_netMgr;
     }
 
-    void AppendEditLine(HWND edit, const char* str);
+    void AppendEditLine(HWND edit, const std::string& str);
 
     CNetPlayerNode* LocalPlayer() {
         return m_localPlayer;
@@ -128,7 +129,7 @@ public:
 
     i32 CreateHostPlayer(
         void* hostToken,
-        const char* name,
+        const std::string& name,
         ColorTint color,
         i32 cmdDelay,
         i32 resend,
@@ -155,13 +156,13 @@ public:
     i32 BroadcastPlayerUpdate(GruntzPlayer* player);
 
     i32 RegisterLocalPlayer(
-        const char* name,
+        const std::string& name,
         ColorTint color,
         i32 preferredPlayerIndex,
         i32 networkPlayerId
     );
 
-    i32 BroadcastChatLine(const char* text, i32 prefixPlayerName, i32 echoLocally, HWND edit);
+    i32 BroadcastChatLine(std::string text, i32 prefixPlayerName, i32 echoLocally, HWND edit);
     i32 ReadGroupSel();
     i32 AdvanceGameFrame();
     void RenderGameFrame();
@@ -197,7 +198,7 @@ public:
     i32 HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message);
     i32 ApplyPlayerTable(CNetPlayerTablePacket* packet);
     i32 RegisterPlayer(
-        const char* name,
+        const std::string& name,
         ColorTint color,
         b32 humanControlled,
         BattlezDifficulty difficulty,
@@ -224,8 +225,8 @@ public:
     void HandleVersionCheck(CNetVersionPacket* packet);
     void SendVersionCheck(CNetPlayerNode* recipient);
 
-    void SetGameName(std::string s);
-    void SetPlayerName(std::string s);
+    void SetGameName(const std::string& s);
+    void SetPlayerName(const std::string& s);
 
     CNetSession* m_session;
     CNetMgr* m_netMgr;
@@ -308,16 +309,5 @@ extern HWND g_netMessageEditHwnd;
 extern char g_gameKey[];
 extern u32 g_ackThrottleDeadline;
 
-i32 DrawTextToOverlaySurface(
-    CDDrawSurfaceMgr* surfaceMgr,
-    std::string* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
 
 #endif

@@ -681,8 +681,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
             if (m_destructWarningSound == NULL) {
 
                 SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
-                std::map<std::string, SoundCue*>* map = &registry->m_cues;
-                SoundCue* found = MapFind<SoundCue>(*map, "GAME_DESTRUCT");
+                SoundCue* found = registry->FindCue("GAME_DESTRUCT");
                 if (found) {
                     SoundSample* sample = found->m_sound;
                     if (sample) {
@@ -794,7 +793,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             SBICMD_DOCK_LEFT,
             TAB_CONTROLS,
             CRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
-            NULL,
+            "",
             -1
         )) {
         delete dockLeft;
@@ -809,7 +808,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             SBICMD_DOCK_RIGHT,
             TAB_CONTROLS,
             CRect(bx + 0x8a, by + 0xad, bx + 0x96, by + 0xb9),
-            NULL,
+            "",
             -1
         )) {
         delete dockRight;
@@ -824,7 +823,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             SBICMD_HIDE,
             TAB_CONTROLS,
             CRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
-            NULL,
+            "",
             -1
         )) {
         delete hide;
@@ -963,7 +962,7 @@ i32 CStatusBarItem::Setup(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* key,
+    const std::string& key,
     i32 unusedFrame
 ) {
     if (host == NULL || owner == NULL) {
@@ -3809,7 +3808,9 @@ i32 CWarpStoneFly::SerializeDispatch(
             i32 index = 0;
             memset(name, 0, SERIAL_NAME_LEN);
             if (obj != NULL) {
-                lvl->m_imageRegistry->AnyValueMatches(obj, name, &index);
+                const FrameReference reference = lvl->m_imageRegistry->FindFrameReference(obj);
+                if (!copyTextToBuffer(reference.workerName, name, sizeof(name))) return 0;
+                index = reference.frameIndex;
             }
             arc->Write(name, SERIAL_NAME_LEN);
             arc->Write(&index, sizeof(index));

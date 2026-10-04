@@ -46,31 +46,31 @@ public:
 
     i32 Configure(
         CMenuTree* menuTree,
-        const char* pageKey,
-        const char* headerAnimationKey,
-        const char* parentPageKey,
+        const std::string& pageKey,
+        const std::string& headerAnimationKey,
+        const std::string& parentPageKey,
         GZ_ENUM_PARAM(MenuPageFlags, i32) flags
     );
     void Reset();
     void ClearItems();
-    i32 ResolveHeaderAnimation(const char* animationKey);
+    i32 ResolveHeaderAnimation(const std::string& animationKey);
     i32 AppendItem(CMenuItem* item);
 
     CMenuItem* AddItem(
-        const char* name,
-        const char* animationKey,
+        const std::string& name,
+        const std::string& animationKey,
         i32 commandId,
-        const char* targetPageKey,
+        const std::string& targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags
     );
 
     CMenuItem* AddItem(
-        const char* name,
-        const char* animationKey,
+        const std::string& name,
+        const std::string& animationKey,
         i32 commandId,
         i32 commandParam,
         i32 secondaryCommandId,
-        const char* targetPageKey,
+        const std::string& targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags
     );
     i32 PrepareForActivation();
@@ -84,27 +84,27 @@ public:
     i32 FocusItemAt(i32 screenX, i32 screenY);
     i32 ClickAt(i32 screenX, i32 screenY);
     CMenuItem* HitTest(i32 screenX, i32 screenY);
-    CMenuItem* FindItemByName(const char* name);
+    CMenuItem* FindItemByName(const std::string& name);
     i32 MoveFocusUp();
     i32 MoveFocusDown();
     i32 DrawMultiColumn(CDDrawSurfacePair* target);
 
     CAnimatedMenuItem* AddAnimatedItem(
-        const char* name,
-        const char* animationKey,
+        const std::string& name,
+        const std::string& animationKey,
         i32 commandId,
-        const char* targetPageKey,
+        const std::string& targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
         i32 framePeriodMs
     );
 
     CAnimatedMenuItem* AddAnimatedItem(
-        const char* name,
-        const char* animationKey,
+        const std::string& name,
+        const std::string& animationKey,
         i32 commandId,
         i32 commandParam,
         i32 secondaryCommandId,
-        const char* targetPageKey,
+        const std::string& targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
         i32 framePeriodMs
     );

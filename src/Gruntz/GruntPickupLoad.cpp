@@ -241,10 +241,7 @@ i32 CGrunt::LoadPickupSprites(
             break;
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            CAniElement* geo = MapFind<CAniElement>(
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                "GRUNTZ_PICKUPS_MEGAPHONE"
-            );
+            CAniElement* geo = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation("GRUNTZ_PICKUPS_MEGAPHONE");
             m_pickupGeoSrc = geo;
             PickupType n = static_cast<PickupType>(play->m_statusBar->GetActiveValue());
             if (countStats != 0) {

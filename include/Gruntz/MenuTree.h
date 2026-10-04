@@ -36,16 +36,16 @@ public:
     void Reset();
     void ClearPages();
 
-    CMenuPage* FindPage(const char* pageKey);
+    CMenuPage* FindPage(const std::string& pageKey);
     CMenuTree() {
         InitializeMembers();
     }
     ~CMenuTree();
     i32 AddPage(CMenuPage* page);
     i32 SetActivePage(CMenuPage* page);
-    i32 SetActivePageByKey(const char* pageKey);
-    i32 ConfigureLeftCursorAnimation(const char* animationKey, i32 framePeriodMs, i32 offsetX);
-    i32 ConfigureRightCursorAnimation(const char* animationKey, i32 framePeriodMs, i32 offsetX);
+    i32 SetActivePageByKey(const std::string& pageKey);
+    i32 ConfigureLeftCursorAnimation(const std::string& animationKey, i32 framePeriodMs, i32 offsetX);
+    i32 ConfigureRightCursorAnimation(const std::string& animationKey, i32 framePeriodMs, i32 offsetX);
     i32 UpdateCursorAnimations(i32 deltaMs);
     i32 DrawFocusCursors(
         CDDrawSurfacePair* target,

@@ -38,11 +38,11 @@ i32 CSBI_MenuItem::SetupImage(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* key,
+    const std::string& key,
     i32 frame,
     i32 unused
 ) {
-    if (key == NULL) {
+    if (key.empty()) {
         return 0;
     }
     if (host != NULL && owner != NULL) {
@@ -71,8 +71,8 @@ i32 CSBI_MenuItem::Refresh(i32) {
     return 1;
 }
 
-i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
-    if (key == NULL) {
+i32 CSBI_MenuItem::ResolveFrame(const std::string& key, i32 frameIndex) {
+    if (key.empty()) {
         return 0;
     }
 

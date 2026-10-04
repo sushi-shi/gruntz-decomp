@@ -14,7 +14,6 @@ struct CNetProviderNode;
 struct CNetProviderNode : public CObject {
     GUID* m_providerGuid;
     std::string m_providerName;
-    std::list<CNetProviderNode*>::iterator m_listPosition;
 
     CNetProviderNode() {
         m_providerGuid = NULL;

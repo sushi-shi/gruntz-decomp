@@ -41,6 +41,19 @@ std::string rightText(const std::string& text, int count) {
     return text.substr(text.size() - length);
 }
 
+std::string joinResourceKey(const std::string& prefix, const std::string& separator, const std::string& name) {
+    return prefix.empty() ? name : prefix + separator + name;
+}
+
+bool copyTextToBuffer(const std::string& text, char* buffer, std::string::size_type capacity) {
+    if (buffer == NULL || text.size() >= capacity || text.find('\0') != std::string::npos) {
+        return false;
+    }
+    std::copy(text.begin(), text.end(), buffer);
+    buffer[text.size()] = '\0';
+    return true;
+}
+
 std::string formatTextV(const char* format, va_list arguments) {
     std::vector<char> buffer(256);
     for (;;) {

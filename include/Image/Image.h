@@ -1,7 +1,6 @@
 #ifndef SRC_IMAGE_IMAGE_H
 #define SRC_IMAGE_IMAGE_H
 
-#include <list>
 class CDib;
 
 #include <Ints.h>
@@ -101,17 +100,11 @@ public:
     u8* GetAddress(i32 x, i32 y) {
         return &m_pBytes[m_pLines[y]] + x;
     }
-    std::list<CDib*>::iterator GetPos() {
-        return m_pos;
-    }
     CDibPal* GetPalette() {
         return m_pPal;
     }
     void SetPixel(i32 x, i32 y, u8 pixel) {
         m_pBytes[m_pLines[y] + x] = pixel;
-    }
-    void SetPos(std::list<CDib*>::iterator pos) {
-        m_pos = pos;
     }
     void SetTransparent(b32 transparent) {
         m_bTransparent = transparent;
@@ -185,7 +178,6 @@ private:
     ColorDepth m_nDepth;
     i32 m_nPitch;
     i32 m_nStride;
-    std::list<CDib*>::iterator m_pos;
     b32 m_bTransparent;
     b32 m_bPalOwner;
     CDibPal* m_pPal;

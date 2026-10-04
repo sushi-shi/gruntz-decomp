@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_SBI_IMAGESET_H
 #define GRUNTZ_SBI_IMAGESET_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/LogicTypeId.h>
@@ -28,7 +30,7 @@ public:
         SbiCommandId,
         StatusBarTab,
         RECT,
-        const char*,
+        const std::string&,
         i32,
         i32
     )  ;

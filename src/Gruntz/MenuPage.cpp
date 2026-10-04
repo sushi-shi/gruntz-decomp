@@ -25,9 +25,9 @@ std::string CMenuPage::GetPageKey() {
 
 i32 CMenuPage::Configure(
     CMenuTree* menuTree,
-    const char* pageKey,
-    const char* headerAnimationKey,
-    const char* parentPageKey,
+    const std::string& pageKey,
+    const std::string& headerAnimationKey,
+    const std::string& parentPageKey,
     GZ_ENUM_PARAM(MenuPageFlags, i32) flags
 ) {
     if (!menuTree) {
@@ -35,8 +35,8 @@ i32 CMenuPage::Configure(
     }
     m_world = menuTree->m_world;
     m_menuTree = menuTree;
-    m_pageKey = pageKey ? pageKey : "";
-    m_parentPageKey = parentPageKey ? parentPageKey : "";
+    m_pageKey = pageKey;
+    m_parentPageKey = parentPageKey;
     m_rowSpacing = menuTree->m_rowSpacing;
     m_headerGap = menuTree->m_headerGap;
     m_flags = flags;
@@ -66,7 +66,7 @@ void CMenuPage::ClearItems() {
     m_items.clear();
 }
 
-i32 CMenuPage::ResolveHeaderAnimation(const char* animationKey) {
+i32 CMenuPage::ResolveHeaderAnimation(const std::string& animationKey) {
     RESOLVE_MENU_HEADER_ANIMATION(animationKey, headerAnimation);
 }
 
@@ -79,10 +79,10 @@ i32 CMenuPage::AppendItem(CMenuItem* item) {
 }
 
 CMenuItem* CMenuPage::AddItem(
-    const char* name,
-    const char* animationKey,
+    const std::string& name,
+    const std::string& animationKey,
     i32 commandId,
-    const char* targetPageKey,
+    const std::string& targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     CMenuItem* item = new CMenuItem();
@@ -97,12 +97,12 @@ CMenuItem* CMenuPage::AddItem(
 }
 
 CMenuItem* CMenuPage::AddItem(
-    const char* name,
-    const char* animationKey,
+    const std::string& name,
+    const std::string& animationKey,
     i32 commandId,
     i32 commandParam,
     i32 secondaryCommandId,
-    const char* targetPageKey,
+    const std::string& targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     CMenuItem* item = new CMenuItem();
@@ -118,10 +118,10 @@ CMenuItem* CMenuPage::AddItem(
 }
 
 CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
-    const char* name,
-    const char* animationKey,
+    const std::string& name,
+    const std::string& animationKey,
     i32 commandId,
-    const char* targetPageKey,
+    const std::string& targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
     i32 framePeriodMs
 ) {
@@ -137,12 +137,12 @@ CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
 }
 
 CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
-    const char* name,
-    const char* animationKey,
+    const std::string& name,
+    const std::string& animationKey,
     i32 commandId,
     i32 commandParam,
     i32 secondaryCommandId,
-    const char* targetPageKey,
+    const std::string& targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
     i32 framePeriodMs
 ) {
@@ -390,7 +390,7 @@ i32 CMenuPage::ReturnToParentPage(i32 playActivationSound) {
     if ((m_parentPageKey).empty()) {
         return 0;
     }
-    if (!m_menuTree->SetActivePageByKey((m_parentPageKey).c_str())) {
+    if (!m_menuTree->SetActivePageByKey((m_parentPageKey))) {
         return 0;
     }
     if (playActivationSound) {
@@ -566,11 +566,8 @@ CMenuItem* CMenuPage::HitTest(i32 screenX, i32 screenY) {
     return NULL;
 }
 
-CMenuItem* CMenuPage::FindItemByName(const char* name) {
-    if (!name) {
-        return NULL;
-    }
-    std::string requestedName(name);
+CMenuItem* CMenuPage::FindItemByName(const std::string& name) {
+    const std::string& requestedName = name;
     std::list<CMenuItem*>::iterator position = m_items.begin();
     while (position != m_items.end()) {
         CMenuItem* item = NextItem(position);
@@ -588,7 +585,7 @@ i32 CMenuPage::MoveFocusLeft() {
     if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindItemByName((m_focusedItem->GetLeftItemName()).c_str());
+    CMenuItem* item = FindItemByName((m_focusedItem->GetLeftItemName()));
     if (item) {
         if (!item->IsSelectable()) {
             return 0;
@@ -605,7 +602,7 @@ i32 CMenuPage::MoveFocusRight() {
     if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindItemByName((m_focusedItem->GetRightItemName()).c_str());
+    CMenuItem* item = FindItemByName((m_focusedItem->GetRightItemName()));
     if (item) {
         if (!item->IsSelectable()) {
             return 0;
@@ -622,7 +619,7 @@ i32 CMenuPage::MoveFocusUp() {
     if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindItemByName((m_focusedItem->GetUpItemName()).c_str());
+    CMenuItem* item = FindItemByName((m_focusedItem->GetUpItemName()));
     if (item) {
         if (!item->IsSelectable()) {
             return 0;
@@ -639,7 +636,7 @@ i32 CMenuPage::MoveFocusDown() {
     if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindItemByName((m_focusedItem->GetDownItemName()).c_str());
+    CMenuItem* item = FindItemByName((m_focusedItem->GetDownItemName()));
     if (item) {
         if (!item->IsSelectable()) {
             return 0;

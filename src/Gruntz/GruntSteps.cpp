@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -480,7 +481,7 @@ i32 CGrunt::StepCompassMove() {
                 break;
         }
         u32 toyCount =
-            g_buteMgr.GetDword((str).c_str(), s_toyTiles, 1);
+            g_buteMgr.GetDword((str), s_toyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.m_direction) {
                 case DIR_NORTH:
@@ -946,15 +947,15 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     }
     g_serialCounter++;
     memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    strcpy(nameBuffer, (m_animSetName).c_str());
+    if (!copyTextToBuffer((m_animSetName), nameBuffer, sizeof(nameBuffer))) return 0;
     ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
     memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    strcpy(nameBuffer, (m_frameSetName).c_str());
+    if (!copyTextToBuffer((m_frameSetName), nameBuffer, sizeof(nameBuffer))) return 0;
     ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
     memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    strcpy(nameBuffer, (m_deathFrameSetName).c_str());
+    if (!copyTextToBuffer((m_deathFrameSetName), nameBuffer, sizeof(nameBuffer))) return 0;
     ar->Write(nameBuffer, SERIAL_NAME_LEN);
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_poseWalk);
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseAttack, GRUNT_ATTACK1));

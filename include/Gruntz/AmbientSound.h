@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CAMBIENTSOUND_H
 #define GRUNTZ_CAMBIENTSOUND_H
 
+#include <string>
+
 #include <list>
 class CAmbientSound;
 
@@ -65,7 +67,7 @@ public:
 
     i32 InitFromKey(
         SoundCueRegistry* cueRegistry,
-        const char* key,
+        const std::string& key,
         i32 volumeLevel,
         i32 masterVolume,
         RECT* region,
@@ -97,7 +99,7 @@ public:
 
     i32 InitFromKey(
         SoundCueRegistry* cueRegistry,
-        const char* key,
+        const std::string& key,
         i32 volumeLevel,
         i32 masterVolume,
         AmbientPoint* position,

@@ -1,6 +1,8 @@
 #ifndef SBI_WARLORDHEAD_H
 #define SBI_WARLORDHEAD_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/LogicTypeId.h>
@@ -33,7 +35,7 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
-        const char* key,
+        const std::string& key,
         i32 frame,
         i32 extra
     )  ;

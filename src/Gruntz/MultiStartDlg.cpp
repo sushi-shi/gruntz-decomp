@@ -155,7 +155,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
 }
 
 i32 CMultiStartDlg::BuildLatencyOptions() {
-    m_latencyOptions = new CLatencyList(0xa);
+    m_latencyOptions = new CLatencyList;
     CMulti* multi = g_multiState;
     i32 presetCount = 5;
     CNetProviderNode* provider = multi->m_netMgr->m_selectedProvider;
@@ -557,11 +557,11 @@ i32 CMultiStartDlg::OnInitDialog() {
     return 1;
 }
 
-void CMultiStartDlg::AppendChatLine(const char* line) {
+void CMultiStartDlg::AppendChatLine(const std::string& line) {
     CWnd* item = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
 
     HWND edit = item->GetSafeHwnd();
-    if (!edit || !line || !line[0]) {
+    if (!edit || line.empty()) {
         return;
     }
     i32 len = ::Edit_GetTextLength(edit);
@@ -570,14 +570,9 @@ void CMultiStartDlg::AppendChatLine(const char* line) {
     } else {
         ::SendMessageA(edit, EM_SETSEL, len, len);
     }
-    char buffer[0x80];
-    buffer[0] = 0;
-    if (len > 0) {
-        strcat(buffer, "\r\n");
-    }
-    strcat(buffer, line);
+    const std::string buffer = (len > 0 ? "\r\n" : "") + line;
     MsgParam text;
-    text.m_str = buffer;
+    text.m_str = buffer.c_str();
     ::SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
     ::SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
 }
@@ -779,10 +774,10 @@ void CMultiStartDlg::OnChatSend() {
     inputText = readWindowText(input->GetSafeHwnd());
     if (!(inputText).empty()) {
         message += inputText;
-        AppendChatLine((message).c_str());
+        AppendChatLine((message));
         input->SetWindowTextA("");
         g_multiState
-            ->BroadcastChatLine((message).c_str(), 0, 0, NULL);
+            ->BroadcastChatLine((message), 0, 0, NULL);
     }
 }
 

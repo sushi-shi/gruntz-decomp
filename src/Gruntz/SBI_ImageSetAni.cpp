@@ -26,7 +26,7 @@ i32 CSBI_ImageSetAni::Init(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* key,
+    const std::string& key,
     i32 frameStart,
     i32 frameEnd,
     i32 intervalMs,
@@ -45,7 +45,7 @@ i32 CSBI_ImageSetAni::Init(
 
     m_rect = rc;
     m_cmd = cmd;
-    if (key == NULL) {
+    if (key.empty()) {
         return 0;
     }
     tbl = host->FindWorker(key);

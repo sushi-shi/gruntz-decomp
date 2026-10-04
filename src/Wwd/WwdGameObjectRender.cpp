@@ -141,9 +141,9 @@ CWwdGameObject* CWwdGameObject::CreateObject(
 }
 
 CWwdGameObject*
-CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags) {
+CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const std::string& name, int objectFlags) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+        OwnerMgr()->m_logicRegistry->FindTemplate(name);
     if (logicTemplate == NULL) {
         return NULL;
     }

@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_STATUSBARMGRINLINE_H
 #define GRUNTZ_GRUNTZ_STATUSBARMGRINLINE_H
 
+#include <string>
+
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -32,7 +34,7 @@ static __inline void HiCueTimed() {
     PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_TABHIGHLIGHT1");
 }
 
-static __inline void PlayTabCue(CStatusBarMgr* statusBar, StatusBarTab tab, const char* cueKey) {
+static __inline void PlayTabCue(CStatusBarMgr* statusBar, StatusBarTab tab, const std::string& cueKey) {
     if (statusBar->m_activeTab == tab && statusBar->m_position != STATUSBAR_HIDDEN) {
         PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), cueKey);
     }

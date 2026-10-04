@@ -196,7 +196,7 @@ public:
 
     void SetMaxGruntzSelection(i32 slot, i32 count);
     void SetPlayerName(i32 slot, const char* name);
-    void AppendChatLine(const char* line);
+    void AppendChatLine(const std::string& line);
     i32 RefreshPlayerControls(i32 force);
     void OnMaxGruntzSelection0();
     void OnMaxGruntzSelection1();

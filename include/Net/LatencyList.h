@@ -7,7 +7,6 @@
 
 class CLatencyList : public CKeyedList {
 public:
-    CLatencyList(i32 nBlockSize) : CKeyedList(nBlockSize) {}
 
     i32 Dispatch(i32 mode);
 

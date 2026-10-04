@@ -38,7 +38,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT g,
-    const char* key,
+    const std::string& key,
     i32 leftFrameIndex,
     i32 rightFrameIndex
 ) {

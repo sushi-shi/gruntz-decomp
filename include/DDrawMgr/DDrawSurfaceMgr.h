@@ -65,8 +65,8 @@ GZ_ENUM_FLAGS_OPS(DDrawSurfaceMgrFlags)
 
 class CDDrawSurfaceMgr : public CObject {
 public:
-    inline CDDrawWorker* FindWorker(LPCTSTR name);
-    inline class CImage* FindFrame(LPCTSTR name, i32 index);
+    inline CDDrawWorker* FindWorker(const std::string& name);
+    inline class CImage* FindFrame(const std::string& name, i32 index);
     CDDrawSurfaceMgr();
 
     virtual ~CDDrawSurfaceMgr()  ;

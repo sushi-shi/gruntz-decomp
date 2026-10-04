@@ -23,10 +23,10 @@
 
 i32 CMenuItem::Init(
     CMenuPage* page,
-    const char* name,
-    const char* animationKey,
+    const std::string& name,
+    const std::string& animationKey,
     i32 commandId,
-    const char* targetPageKey,
+    const std::string& targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     if (!page) {
@@ -36,8 +36,8 @@ i32 CMenuItem::Init(
     m_world = page->m_world;
     m_menuTree = page->m_menuTree;
     m_page = page;
-    m_itemName = name ? name : "";
-    m_targetPageKey = targetPageKey ? targetPageKey : "";
+    m_itemName = name;
+    m_targetPageKey = targetPageKey;
     m_commandId = commandId;
     m_secondaryCommandId = 0;
     m_commandParam = 0;
@@ -145,7 +145,7 @@ i32 CMenuItem::Deselect() {
 i32 CMenuItem::Activate() {
     m_menuTree->PlayActivationSound();
     PostCommands();
-    m_menuTree->SetActivePageByKey((m_targetPageKey).c_str());
+    m_menuTree->SetActivePageByKey((m_targetPageKey));
     return 1;
 }
 
@@ -167,10 +167,10 @@ i32 CMenuItem::HitTest(i32 screenX, i32 screenY) {
 
 i32 CAnimatedMenuItem::Init(
     CMenuPage* page,
-    const char* name,
-    const char* animationKey,
+    const std::string& name,
+    const std::string& animationKey,
     i32 commandId,
-    const char* targetPageKey,
+    const std::string& targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     if (!page) {
@@ -183,16 +183,12 @@ i32 CAnimatedMenuItem::Init(
     m_frameTimerMs = 0;
     m_framePeriodMs = 0x64;
 
-    char animationName[0x80];
 
-    sprintf(animationName, "%s_NORMAL", animationKey);
-    m_normalAnimation = m_world->FindWorker(animationName);
+    m_normalAnimation = m_world->FindWorker(animationKey + "_NORMAL");
 
-    sprintf(animationName, "%s_SELECTED", animationKey);
-    m_selectedAnimation = m_world->FindWorker(animationName);
+    m_selectedAnimation = m_world->FindWorker(animationKey + "_SELECTED");
 
-    sprintf(animationName, "%s_DISABLED", animationKey);
-    m_disabledAnimation = m_world->FindWorker(animationName);
+    m_disabledAnimation = m_world->FindWorker(animationKey + "_DISABLED");
 
     return 1;
 }

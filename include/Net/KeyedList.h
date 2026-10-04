@@ -30,7 +30,7 @@ struct CKeyedNode {
 
 class CKeyedList {
 public:
-    CKeyedList(i32 nBlockSize) : m_list(nBlockSize) {
+    CKeyedList() {
         m_mode = 0;
     }
 
@@ -38,7 +38,7 @@ public:
         Clear();
     }
 
-    CKeyedNode* AddNode(const char* key, i32 commandDelay, i32 resendInterval);
+    CKeyedNode* AddNode(const std::string& key, i32 commandDelay, i32 resendInterval);
 
     void Clear();
 

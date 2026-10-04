@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -44,11 +45,8 @@ static const i32 s_savePreviewBytes = 0x3843a;
 static const i32 s_savePreviewBitmapOffset = 0xe;
 static const u32 s_saveProgressMagic = 0x42a;
 
-i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
-    if (saveDirectory == NULL) {
-        return 0;
-    }
-    m_saveDirectory = saveDirectory ? saveDirectory : "";
+i32 CSaveGame::InitializeSaveDirectory(const std::string& saveDirectory) {
+    m_saveDirectory = saveDirectory;
     m_progressFilePath = m_saveDirectory + "Gruntz.sav";
     memset(m_header, 0, s_saveFileHeaderBytes);
     Init();
@@ -58,7 +56,7 @@ i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
         if (slot != NULL) {
             char numbuf[16];
             _itoa(i + 1, numbuf, 10);
-            wsprintfA(slot->m_savePath, (m_saveDirectory + "Slot" + numbuf + ".sav").c_str());
+            if (!copyTextToBuffer((m_saveDirectory + "Slot" + numbuf + ".sav"), slot->m_savePath, sizeof(slot->m_savePath))) return 0;
         }
     }
     return 1;

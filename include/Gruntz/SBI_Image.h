@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_SBI_IMAGE_H
 #define GRUNTZ_SBI_IMAGE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/LogicTypeId.h>
@@ -26,7 +28,7 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
-        const char* key,
+        const std::string& key,
         i32 unusedFrame
     )  ;
     virtual void Reset()  ;
@@ -54,7 +56,7 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
-        const char* key,
+        const std::string& key,
         i32 frame,
         i32 extra
     );

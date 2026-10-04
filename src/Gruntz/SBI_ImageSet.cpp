@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -28,7 +29,7 @@ i32 CSBI_ImageSet::SetupImage(
     SbiCommandId cmd,
     StatusBarTab obj,
     RECT rect,
-    const char* key,
+    const std::string& key,
     i32 frame,
     i32 extra
 ) {
@@ -44,7 +45,7 @@ i32 CSBI_ImageSet::SetupImage(
 
     m_rect = rect;
     m_cmd = cmd;
-    if (key == NULL) {
+    if (key.empty()) {
         return 0;
     }
     rec = host->FindWorker(key);
@@ -130,7 +131,7 @@ i32 CSBI_ImageSet::SerializeFields(
             g_serialCounter++;
             memset(buf, 0, SERIAL_NAME_LEN);
             if (m_frameSet) {
-                strcpy(buf, m_frameSet->m_name);
+                if (!copyTextToBuffer(m_frameSet->m_name, buf, SERIAL_NAME_LEN)) return 0;
             }
             s->Write(buf, SERIAL_NAME_LEN);
             break;

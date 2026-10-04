@@ -267,13 +267,11 @@ i32 CCreditsState::InitAttractTitle() {
         m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
         return 1;
     }
-    char stateName[0x20];
-    char titleName[0x20];
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    sprintf(stateName, "STATEZ_ATTRACT");
-    sprintf(titleName, "TITLE%d", idx);
+
+    const std::string titleName = formatText("TITLE%d", idx);
     CRezDir* saved = m_stateResources;
-    CRezDir* state = m_resourceArchive->GetDirFromPath(stateName);
+    CRezDir* state = m_resourceArchive->GetDirFromPath("STATEZ_ATTRACT");
     m_stateResources = state;
     if (state == NULL) {
         return 0;

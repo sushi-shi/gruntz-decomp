@@ -54,7 +54,7 @@ class CSaveGame {
 public:
     ~CSaveGame();
 
-    i32 InitializeSaveDirectory(const char* saveDirectory);
+    i32 InitializeSaveDirectory(const std::string& saveDirectory);
     void Reset();
     void Init();
     i32 Load();

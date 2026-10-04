@@ -11,7 +11,7 @@ i32 CSBI_RectOnly::Setup(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* key,
+    const std::string& key,
     i32 unusedFrame
 ) {
     if (host == NULL || owner == NULL) {

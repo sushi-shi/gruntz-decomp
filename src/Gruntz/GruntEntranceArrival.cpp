@@ -89,7 +89,7 @@ i32 CGrunt::ResetGeometry() {
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-    const char* name = (EntranceCell()->AttackName()).c_str();
+    const std::string& name = (EntranceCell()->AttackName());
     SetImageFrameByName(name, frame);
 
     SET_ANIMATION_ACT("E");
@@ -176,7 +176,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
-    const char* buf = (EntranceCell()->AttackName()).c_str();
+    const std::string& buf = (EntranceCell()->AttackName());
     SetImageFrameByName(buf, frame);
     m_struckPose = 1;
     return 0;
@@ -189,7 +189,7 @@ i32 CGrunt::StartRangedAttackAnimation() {
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
-    const char* buf = (EntranceCell()->AttackName()).c_str();
+    const std::string& buf = (EntranceCell()->AttackName());
     SetImageFrameByName(buf, frame);
     m_struckPose = 1;
     return 0;
@@ -303,7 +303,7 @@ i32 CGrunt::StepAttackFire() {
         }
 
         m_entranceActive = true;
-        u32 dt = g_buteMgr.GetDword((m_animSetName).c_str(), "AttackDowntime");
+        u32 dt = g_buteMgr.GetDword((m_animSetName), "AttackDowntime");
         if (m_gruntKind == GRUNT_ROIDZ) {
             dt = 0;
         }
@@ -371,7 +371,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             SwitchAnimationAndMaybeAdvance(m_poseToy[toyIdx], 0);
 
             DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
-            const char* buf = ((&m_frameSetName))->c_str();
+            const std::string& buf = m_frameSetName;
             SetImageFrameByName(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
@@ -402,7 +402,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             }
             return 0;
         } else {
-            DWORD tt = g_buteMgr.GetDword((m_animSetName).c_str(), s_toyTime);
+            DWORD tt = g_buteMgr.GetDword((m_animSetName), s_toyTime);
             m_toyTiming.Start(tt);
             m_toyTime = 0x64;
             CreateToyTimeSprite();
@@ -420,10 +420,10 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         GruntDirectionCell cell = m_entranceCell;
         i32 colv = cell.m_column + cell.m_row * 2;
         i32 basev = cell.m_row + colv;
-        const char* nm = (m_cells[basev].WalkName()).c_str();
+        const std::string& nm = (m_cells[basev].WalkName());
         SetImageSetByName(nm);
 
-        DWORD tt = g_buteMgr.GetDword((m_animSetName).c_str(), s_toyTime);
+        DWORD tt = g_buteMgr.GetDword((m_animSetName), s_toyTime);
         m_idleDelayTiming.Start(tt >> 1);
         return 0;
     }
@@ -461,7 +461,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (m_wwdObject->m_animationCursor.m_animation != want) {
         SwitchAnimation(want);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
-        const char* buf = ((&m_frameSetName))->c_str();
+        const std::string& buf = m_frameSetName;
         SetImageFrameByName(buf, frame);
     }
 
@@ -515,7 +515,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        const char* nm = ((&m_frameSetName))->c_str();
+        const std::string& nm = m_frameSetName;
         SetImageFrameByName(nm, frame);
         m_entranceStamped = true;
         PLAY_GRUNT_CUE_IN_VIEW(0xc);
@@ -798,7 +798,7 @@ i32 CGrunt::StepEntranceReinit() {
     i32 col = cell.m_column + cell.m_row * 2;
     i32 base = cell.m_row + col;
 
-    const char* walkAnimationName = (m_cells[base].WalkName()).c_str();
+    const std::string& walkAnimationName = (m_cells[base].WalkName());
     SetImageSetByName(walkAnimationName);
     return 0;
 }
@@ -867,7 +867,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             SwitchAnimationAndMaybeAdvance(AT(m_poseToy, GRUNT_TOY_BREAK), 0);
 
             DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-            const char* buf = ((&m_frameSetName))->c_str();
+            const std::string& buf = m_frameSetName;
             SetImageFrameByName(buf, frame);
 
             CWwdSpriteObject* h = m_object;
@@ -1055,8 +1055,7 @@ tail:
     }
 
     {
-        std::string* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        eq = (*rec == "F");
+        eq = IsAnimationAct("F");
         if (eq) {
             if (m_entranceCommitted != false) {
                 return 0;
@@ -1065,8 +1064,7 @@ tail:
     }
     m_entranceActive = true;
     {
-        std::string* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        ne = (*rec != "O");
+        ne = !IsAnimationAct("O");
         if (ne) {
             SET_ANIMATION_ACT("H");
             CGrunt* cellObj = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
@@ -1098,7 +1096,7 @@ tail:
         frame = elem->m_param;
     }
     {
-        const char* cn = (EntranceCell()->StruckName()).c_str();
+        const std::string& cn = (EntranceCell()->StruckName());
         SetImageFrameByName(cn, frame);
     }
     PLAY_GRUNT_CUE_IN_VIEW(7);
@@ -1230,7 +1228,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
 
     SwitchAnimation(m_poseItem[poseIdx]);
 
-    const char* name = (EntranceCell()->ItemName()).c_str();
+    const std::string& name = (EntranceCell()->ItemName());
     SetImageSetByName(name);
     return 0;
 }
@@ -1242,7 +1240,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
         if (cue == WWDDRAW_TOOL_APPLIES) {
             m_entranceActive = true;
             u32 downtime =
-                g_buteMgr.GetDword((m_animSetName).c_str(), "ItemDowntime");
+                g_buteMgr.GetDword((m_animSetName), "ItemDowntime");
             if (m_gruntKind == GRUNT_ROIDZ) {
                 downtime = 0;
             }

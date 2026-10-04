@@ -3504,8 +3504,6 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     return o;
 }
 
-template std::string& zDArray<std::string>::operator[](i32 i);
-
 template void FreeNodePool<Coord>::Push(void* p);
 
 void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {

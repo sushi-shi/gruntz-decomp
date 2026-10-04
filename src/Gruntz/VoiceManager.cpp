@@ -112,18 +112,18 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
     voiceSection = formatText("SG%i", voiceGroup);
     cueKey = formatText("G%i", cueId);
     if (percent == -1) {
-        percent = g_buteMgr.GetInt((voiceSection).c_str(), "Per", -1);
+        percent = g_buteMgr.GetInt((voiceSection), "Per", -1);
         if (percent == -1) {
-            percent = g_buteMgr.GetInt("GruntPercent", (cueKey).c_str(), 0);
+            percent = g_buteMgr.GetInt("GruntPercent", (cueKey), 0);
         }
     }
     if (percent < 100 && g_gameReg->Rand() % 0x65 > percent) {
         return false;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetInt((voiceSection).c_str(), "Pri", -1);
+        priority = g_buteMgr.GetInt((voiceSection), "Pri", -1);
         if (priority == -1) {
-            priority = g_buteMgr.GetInt("GruntPriority", (cueKey).c_str(), 1);
+            priority = g_buteMgr.GetInt("GruntPriority", (cueKey), 1);
         }
     }
     for (i32 i = 0; i < 2; i++) {
@@ -212,13 +212,13 @@ i32 CVoiceManager::PlayVoice(
     std::string voiceSection;
     voiceSection = formatText("SG%i", voiceGroup);
     if (percent == -1) {
-        percent = g_buteMgr.GetInt((voiceSection).c_str(), "Per", 100);
+        percent = g_buteMgr.GetInt((voiceSection), "Per", 100);
     }
     if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetInt((voiceSection).c_str(), "Pri", 1);
+        priority = g_buteMgr.GetInt((voiceSection), "Pri", 1);
     }
     for (i32 i = 0; i < 2; i++) {
         if (indicators[i]->m_priority >= priority) {
@@ -312,13 +312,13 @@ i32 CVoiceManager::PlayVoice(
     std::string voiceSection;
     voiceSection = formatText("SG%i", voiceGroup);
     if (percent == -1) {
-        percent = g_buteMgr.GetInt((voiceSection).c_str(), "Per", 100);
+        percent = g_buteMgr.GetInt((voiceSection), "Per", 100);
     }
     if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetInt((voiceSection).c_str(), "Pri", 1);
+        priority = g_buteMgr.GetInt((voiceSection), "Pri", 1);
     }
     for (i32 i = 0; i < 2; i++) {
         if (indicators[i]->m_priority >= priority) {
@@ -544,11 +544,11 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
     CSpawnList* group = NULL;
     std::string fallback, section, key, resourceName;
     section = formatText("SG%i", voiceGroup);
-    std::string directory = *g_buteMgr.GetString((section).c_str(), "DIR", &fallback);
+    std::string directory = g_buteMgr.GetString(section, "DIR", fallback);
 
     key = formatText("S%i", 1);
     std::string soundName =
-        *g_buteMgr.GetString((section).c_str(), (key).c_str(), &fallback);
+        g_buteMgr.GetString(section, key, fallback);
 
     i32 missingResource = 0;
     if (!(soundName).empty()) {
@@ -572,10 +572,10 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
 
                 group->AddVoiceSound(resourceName, 0);
                 key = formatText("S%i", i);
-                soundName = *g_buteMgr.GetString(
-                    (section).c_str(),
-                    (key).c_str(),
-                    &fallback
+                soundName = g_buteMgr.GetString(
+                    section,
+                    key,
+                    fallback
                 );
             } else {
                 missingResource = 1;
@@ -585,14 +585,14 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
     return group;
 }
 
-void CSpawnList::AddVoiceSound(std::string resourceName, i32 data) {
+void CSpawnList::AddVoiceSound(const std::string& resourceName, i32 data) {
     CSpawnEntry* node = new CSpawnEntry(resourceName, data);
     if (node != NULL) {
         m_list.insert(m_list.end(), node);
     }
 }
 
-CSpawnEntry::CSpawnEntry(std::string name, i32 data) {
+CSpawnEntry::CSpawnEntry(const std::string& name, i32 data) {
     m_name = name;
     m_flag = false;
     m_data = data;

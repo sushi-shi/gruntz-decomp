@@ -880,7 +880,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     std::string name;
     name = formatText("Level%i", lvl->m_levelIndex);
     WarpStoneFragment fragment = static_cast<WarpStoneFragment>(
-        g_buteMgr.GetInt("WarpStone", (name).c_str())
+        g_buteMgr.GetInt("WarpStone", (name))
     );
     if (col >= g_gameReg->m_viewBounds.right || col < g_gameReg->m_viewBounds.left
         || row >= g_gameReg->m_viewBounds.bottom || row < g_gameReg->m_viewBounds.top) {
@@ -1503,7 +1503,7 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
         }
         std::string key;
         key = formatText("GAME_EXPLOSION%d", v);
-        spr->SetAnimationByName((key).c_str(), 0);
+        spr->SetAnimationByName((key), 0);
         spr->m_smarts = id;
         spr->m_score = 1;
     }
@@ -2068,7 +2068,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
                 CState* st = g_gameReg->m_curState;
                 std::string lvl;
                 lvl = formatText("Level%i", st->m_levelIndex);
-                name = formatText("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", g_buteMgr.GetInt("WarpStone", (lvl).c_str()));
+                name = formatText("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", g_buteMgr.GetInt("WarpStone", (lvl)));
             } else {
                 name = formatText("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpstoneVariant);
             }
@@ -2181,7 +2181,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     if (!spr) {
         return 0;
     }
-    spr->SetImageSetByName((name).c_str());
+    spr->SetImageSetByName((name));
     spr->m_damage = damage;
     spr->m_score = 0;
     spr->m_points = 0;

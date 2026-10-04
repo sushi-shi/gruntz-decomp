@@ -70,7 +70,7 @@ i32 CSplashState::EnterState(GameStateId previousState) {
     int(WINAPI * sc)(BOOL) = ShowCursor;
     while (sc(0) >= 0) {
     }
-    LoadAndPresentTitlePage((CAssetRootStorage::s_value).c_str(), 1, 1, 1, 0);
+    LoadAndPresentTitlePage((CAssetRootStorage::s_value), 1, 1, 1, 0);
     m_splashCountdownMs = 0xea60;
     return 1;
 }
@@ -120,7 +120,7 @@ i32 CSplashState::InputVirtual() {
     while (ShowCursor(false) >= 0) {
     }
     return LoadAndPresentTitlePage(
-        (CAssetRootStorage::s_value).c_str(),
+        (CAssetRootStorage::s_value),
         0,
         0,
         1,
@@ -135,7 +135,7 @@ i32 CSplashState::RestoreDisplay() {
     while (ShowCursor(false) >= 0) {
     }
     return LoadAndPresentTitlePage(
-        (CAssetRootStorage::s_value).c_str(),
+        (CAssetRootStorage::s_value),
         0,
         0,
         1,

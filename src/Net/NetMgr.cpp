@@ -158,7 +158,7 @@ CNetProviderNode* CNetMgr::AddProvider(GUID* providerGuid, const char* providerN
 
     node->m_providerGuid = providerGuid;
     node->m_providerName = providerName ? providerName : "";
-    node->m_listPosition = m_providers.insert(m_providers.end(), (node));
+    m_providers.push_back(node);
     return node;
 }
 
@@ -265,8 +265,7 @@ CNetSessionListNode* CNetMgr::AddSessionListing(LPCDPSESSIONDESC2 sessionDesc) {
         return NULL;
     }
 
-    std::list<CNetSessionListNode*>::iterator pos = m_sessionListings.insert(m_sessionListings.end(), (node));
-    node->m_listPosition = pos;
+    m_sessionListings.push_back(node);
     return node;
 }
 
@@ -457,13 +456,7 @@ CNetMgr::AddPlayer(DPID playerId, const char* shortName, const char* longName, D
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, NULL);
     } else {
-        std::list<CNetPlayerNode*>::iterator pos =
-            m_players.insert(m_players.end(), node);
-        if (pos == m_players.end()) {
-            delete node;
-            return NULL;
-        }
-        node->m_listPosition = pos;
+        m_players.push_back(node);
         return node;
     }
     delete node;

@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -198,7 +199,6 @@ b32 g_playerColorAvailable[TINT_COUNT];
 
 b32 g_levelBias100 = false;
 
-char g_customLevelText[0x200];
 
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
@@ -396,7 +396,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         r.bottom = mode.cy;
         r.left = 0;
         r.top = 0;
-        DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->m_triggerMgr) {
             m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
@@ -584,7 +584,7 @@ i32 CPlay::Render() {
                 RECT lvl = g_gameReg->World()->m_level->m_viewportRect;
                 RECT box;
                 CopyRect(&box, &lvl);
-                DrawTextToBackSurface(g_gameReg->World(), &tmp, &box, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToBackSurface(g_gameReg->World(), tmp, &box, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
 
@@ -856,7 +856,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     i32 reload = 0;
     i32 diff = 0;
 
-    char nameBuf[0x20];
+    std::string titleName;
     i32 initScratch[0x25];
 
     self->m_hudSuppressed = true;
@@ -1015,8 +1015,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_levelType = static_cast<LevelArea>(r / 4 + 1);
     }
 
-    sprintf(nameBuf, "AREA%i", IDX(self->m_levelType));
-    bank = self->m_resourceArchive->GetDirFromPath(nameBuf);
+    titleName = formatText("AREA%i", IDX(self->m_levelType));
+    bank = self->m_resourceArchive->GetDirFromPath(titleName.c_str());
     self->m_levelResources = bank;
     if (bank == NULL) {
         goto fail0;
@@ -1069,14 +1069,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         if (!(mgr->m_strWorldFile).empty()) {
             if (mgr->m_isBuiltInBattlezLevel == false
                 && mgr->m_isBuiltInMultiplayerLevel == false) {
-                sprintf(nameBuf, "CUSTOMLEVEL");
+                titleName = "CUSTOMLEVEL";
             }
         } else if (level > 0x24) {
-            sprintf(nameBuf, "TRAINING");
+            titleName = "TRAINING";
         }
     }
 
-    if (!LoadTitlePage(nameBuf, 0, 0, 0, 0, true)) {
+    if (!LoadTitlePage(titleName, 0, 0, 0, 0, true)) {
         goto fail0;
     }
     RetireScene(0x50, 0x3e8, 0, true);
@@ -1285,7 +1285,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
             key = formatText("Level%i", i);
             CTriggerMgr* bm = g_gameReg->m_triggerMgr;
-            i32 v = g_buteMgr.GetInt("WarpStone", (key).c_str());
+            i32 v = g_buteMgr.GetInt("WarpStone", (key));
             bm->m_byteArr.push_back(static_cast<u8>(v));
         }
         self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
@@ -1373,7 +1373,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             RECT rect;
             SET_RECT_COMPONENTS(rect, 0, 0, SCREEN_W_PX, SCREEN_H_PX);
             if (loadResourceText(IDS_CONTINUE_PROMPT, scr)) {
-                DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+                DrawTextToFrontSurface(self->m_world, scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
         } else {
             self->m_hudSuppressed = true;
@@ -3014,60 +3014,52 @@ void CPlay::DrawDebugStatsFull() {
         return;
     }
 
-    char buf[0x200];
-    char fpsScratch[0x40];
-    char scratch[0x40];
-    buf[0] = 0;
+    std::string buf;
+    std::string fpsScratch;
+    std::string scratch;
 
-    sprintf(fpsScratch, "Fps = %i ", m_mgr->m_fps);
-    strcat(buf, fpsScratch);
+    fpsScratch = formatText("Fps = %i ", m_mgr->m_fps);
+    buf += fpsScratch;
 
     CDDrawChildGroup* group = m_world->ChildGroup();
     if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_HIT_RECT)) {
-        strcat(buf, " rcHit ");
+        buf += " rcHit ";
     }
     if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ATTACK_RECT)) {
-        strcat(buf, " rcAttack ");
+        buf += " rcAttack ";
     }
     if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_MOVE_RECT)) {
-        strcat(buf, " rcMove ");
+        buf += " rcMove ";
     }
     if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ORIGIN)) {
-        strcat(buf, " ptOrg ");
+        buf += " ptOrg ";
     }
     if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SORT_KEY)) {
-        strcat(buf, " Z = On");
+        buf += " Z = On";
     }
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
-        sprintf(scratch, " Sprites = %i ", static_cast<i32>(m_world->ChildGroup()->m_list.size()));
-        strcat(buf, scratch);
+        scratch = formatText(" Sprites = %i ", static_cast<i32>(m_world->ChildGroup()->m_list.size()));
+        buf += scratch;
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
-        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
-        strcat(buf, scratch);
+        scratch = formatText(" Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
+        buf += scratch;
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
         std::string t = TimeToString(g_frameTime);
         t += " ";
-        strcat(buf, (t).c_str());
+        buf += (t);
         t += " ";
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_NETWORK_COUNTERS)) {
-        sprintf(
-            scratch,
-            " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
-            m_packetsSent,
-            m_packetsRcvd,
-            GetFrame(),
-            g_frameTime
-        );
-        strcat(buf, scratch);
+        scratch = formatText(" Sent = %i, Rcvd = %i, Frame = %i Counter = %lu", m_packetsSent, m_packetsRcvd, GetFrame(), g_frameTime);
+        buf += scratch;
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_FRAME_RATE_LIMIT)) {
-        sprintf(scratch, " FpsLimit = %i ", m_mgr->m_targetFps);
-        strcat(buf, scratch);
+        scratch = formatText(" FpsLimit = %i ", m_mgr->m_targetFps);
+        buf += scratch;
     }
 
     CDDSurface* surface = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
@@ -3086,7 +3078,7 @@ void CPlay::DrawDebugStatsFull() {
         RECT lr = *src;
         RECT dr;
         SET_RECT_COMPONENTS(dr, lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
-        DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
+        DrawTextA(hdc, buf.c_str(), -1, &dr, DT_SINGLELINE);
     }
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_PROFILE_TEXT)) {
@@ -3124,43 +3116,35 @@ void CPlay::DrawDebugStats() {
         return;
     }
 
-    char buf[0x200];
-    char scratch[0x40];
-    buf[0] = 0;
+    std::string buf;
+    std::string scratch;
 
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_FRAME_RATE)) {
-        sprintf(scratch, "Fps = %i ", m_mgr->m_fps);
-        strcat(buf, scratch);
+        scratch = formatText("Fps = %i ", m_mgr->m_fps);
+        buf += scratch;
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
-        sprintf(scratch, " Objs = %i ", static_cast<i32>(m_world->ChildGroup()->m_list.size()));
-        strcat(buf, scratch);
+        scratch = formatText(" Objs = %i ", static_cast<i32>(m_world->ChildGroup()->m_list.size()));
+        buf += scratch;
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
 
-        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
-        strcat(buf, scratch);
+        scratch = formatText(" Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
+        buf += scratch;
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_TIMING)) {
-        strcat(buf, " Timing = On ");
+        buf += " Timing = On ";
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
         std::string t = TimeToString(g_frameTime);
         t += " ";
-        strcat(buf, (t).c_str());
+        buf += (t);
         t += " ";
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_NETWORK_COUNTERS)) {
-        sprintf(
-            scratch,
-            " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
-            m_packetsSent,
-            m_packetsRcvd,
-            GetFrame(),
-            g_frameTime
-        );
-        strcat(buf, scratch);
+        scratch = formatText(" Sent = %i, Rcvd = %i, Frame = %i Counter = %lu", m_packetsSent, m_packetsRcvd, GetFrame(), g_frameTime);
+        buf += scratch;
     }
 
     CDDSurface* surface = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
@@ -3174,18 +3158,17 @@ void CPlay::DrawDebugStats() {
     SetBkColor(hdc, RGB(0, 0, 0));
     PostSetup(hdc);
 
-    if (buf[0] != 0) {
+    if (!buf.empty()) {
         RECT lr;
 
-        RecordBytes<RECT> reuse;
-        reuse.m_chars = scratch;
-        CopyRect(&lr, g_gameReg->GetRect(static_cast<RECT*>(reuse.m_rec)));
+        RECT scratchRect;
+        CopyRect(&lr, g_gameReg->GetRect(&scratchRect));
         RECT dr;
         SET_RECT_COMPONENTS(dr, lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         if (lr.left > 0) {
-            DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
+            DrawTextA(hdc, buf.c_str(), -1, &dr, DT_SINGLELINE);
         } else {
-            TextOutA(hdc, 0, dr.top, buf, strlen(buf));
+            TextOutA(hdc, 0, dr.top, buf.c_str(), static_cast<i32>(buf.size()));
         }
     }
     surface->GetDirectDrawSurface()->ReleaseDC(hdc);
@@ -3220,6 +3203,7 @@ i32 CPlay::CompleteLevel() {
 }
 
 void CPlay::DrawCustomLevelBanner() {
+    std::string customLevelText;
     if ((m_mgr->m_strWorldFile).empty()) {
         return;
     }
@@ -3238,7 +3222,7 @@ void CPlay::DrawCustomLevelBanner() {
         if ((base).empty()) {
             return;
         }
-        sprintf(g_customLevelText, "Custom Level: %s", (base).c_str());
+        customLevelText = "Custom Level: " + base;
     }
     CDDSurface* surface = m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
     if (surface == NULL) {
@@ -3253,7 +3237,7 @@ void CPlay::DrawCustomLevelBanner() {
     SetTextColor(hdc, RGB(0, 0, 0));
     RECT rc;
     SET_RECT_COMPONENTS(rc, 0, 0x1b8, 0x27f, 0x1d6);
-    DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
+    DrawTextA(hdc, customLevelText.c_str(), -1, &rc, DT_CENTER | DT_SINGLELINE);
     surface->GetDirectDrawSurface()->ReleaseDC(hdc);
 }
 
@@ -3578,7 +3562,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
 }
 
 i32 CPlay::LoadCursorAnimation(
-    const char* spriteKey,
+    const std::string& spriteKey,
     i32 initialFrame,
     b32 animate,
     i32 frameDelayMs,
@@ -3967,7 +3951,7 @@ void CPlay::LoadSBITextEdges(i32 msgId) {
     RECT vp = m_world->m_level->m_viewportRect;
     GET_TEXT_BOUNDS(rect, vp);
 
-    DrawTextToFrontSurface(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+    DrawTextToFrontSurface(m_world, s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     m_stepCountdown = 2;
 }
 
@@ -4000,9 +3984,9 @@ void CPlay::PlayCueAt(
     }
 
     if (toFrontPage != 0) {
-        DrawTextToFrontSurface(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+        DrawTextToFrontSurface(m_world, m_cueText, &rect, fontSel, 1, r, g, b, flag);
     } else {
-        DrawTextToBackSurface(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+        DrawTextToBackSurface(m_world, m_cueText, &rect, fontSel, 1, r, g, b, flag);
     }
 }
 
@@ -5282,10 +5266,9 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     return 1;
 }
 
-i32 CState::DrawScreenTextImage(const char* name) {
-    char buf[0x40];
-    sprintf(buf, "\\SCREENZ\\%sTEXT", name);
-    CRezItm* src = StateResources()->GetRezFromPath(buf, IMGTAG_DIP);
+i32 CState::DrawScreenTextImage(const std::string& name) {
+    const std::string path = "\\SCREENZ\\" + name + "TEXT";
+    CRezItm* src = StateResources()->GetRezFromPath(path.c_str(), IMGTAG_DIP);
     if (src == NULL) {
         return 0;
     }
@@ -5342,16 +5325,15 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 }
 
 i32 CPlay::ResetPlayState() {
-    char sequenceName[0x40];
     if (m_mgr->m_musicEnabled != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         m_ambientTiming.Start(AMBIENT_INTRO_INTERVAL_MS);
-        wsprintfA(sequenceName, "INTRO%d", GetAmbientId());
+        const std::string sequenceName = formatText("INTRO%d", GetAmbientId());
         if (g_gameReg->m_musicEnabled != false) {
             m_mgr->m_midi->PlaySequence(sequenceName, false);
         }
         m_ambientInitDone = false;
     } else {
-        wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
+        const std::string sequenceName = formatText("AMBIENT%d", GetAmbientId());
         m_mgr->m_midi->SelectSequence(sequenceName);
         m_mgr->m_midi->SetCurrentLooping(true);
         CGruntzMgr* gameManager = g_gameReg;
@@ -5924,8 +5906,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
                 m_cursorSprite->SetAllTypes(SHADE_PAL_16);
                 m_cursorSprite->SetAllFormats(shadeTable);
             }
-            char sequenceName[0x40];
-            wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
+            const std::string sequenceName = formatText("AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled) {
                 m_mgr->m_midi->PlaySequence(sequenceName, true);
             }
@@ -6004,7 +5985,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     {
         char buf[0x200];
         memset(buf, 0, sizeof(buf));
-        strcpy(buf, (m_cueText).c_str());
+        if (!copyTextToBuffer((m_cueText), buf, sizeof(buf))) return 0;
         s->Write(buf, 0x200);
     }
 
@@ -6019,7 +6000,9 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         CImage* frame = m_cursorImage;
         i32 v = 0;
         if (frame != NULL) {
-            mc->m_imageRegistry->AnyValueMatches(frame, buf, &v);
+            const FrameReference reference = mc->m_imageRegistry->FindFrameReference(frame);
+            if (!copyTextToBuffer(reference.workerName, buf, sizeof(buf))) return 0;
+            v = reference.frameIndex;
         }
         s->Write(buf, SERIAL_NAME_LEN);
         s->Write(&v, sizeof(v));
@@ -6030,7 +6013,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         char buf[SERIAL_NAME_LEN];
         memset(buf, 0, sizeof(buf));
         if (m_cursorSprite != NULL) {
-            strcpy(buf, m_cursorSprite->m_name);
+            if (!copyTextToBuffer(m_cursorSprite->m_name, buf, sizeof(buf))) return 0;
         }
         s->Write(buf, SERIAL_NAME_LEN);
     }
@@ -6164,7 +6147,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     {
         CObject* found = NULL;
         if (strlen(nameBuf) != 0) {
-            MapLookup(res->m_imageRegistry->m_workersByName, nameBuf, found);
+            found = res->m_imageRegistry->FindWorker(nameBuf);
             m_cursorSprite = static_cast<CDDrawWorker*>(found);
         } else {
             m_cursorSprite = NULL;
@@ -6739,16 +6722,11 @@ i32 CPlay::DrawLevelInfoText() {
     }
 
     if (!((g_gameReg)->GetWorldFileName()).empty()) {
-        char buf[128];
-        wsprintfA(buf, ((g_gameReg)->GetWorldFileName()).c_str());
-        if (strchr(buf, '.')) {
-            *strchr(buf, '.') = 0;
-        }
-        if (strrchr(buf, '\\') != NULL) {
-            s2 = strrchr(buf, '\\') + 1;
-        } else {
-            s2 = buf;
-        }
+        s2 = g_gameReg->GetWorldFileName();
+        const std::string::size_type extension = s2.find('.');
+        if (extension != std::string::npos) s2.erase(extension);
+        const std::string::size_type separator = s2.find_last_of('\\');
+        if (separator != std::string::npos) s2.erase(0, separator + 1);
     }
 
     loadResourceText(IDS_LOADING, s3);
@@ -6761,10 +6739,10 @@ i32 CPlay::DrawLevelInfoText() {
     SetRect(&r2, 0, 0x2b, SCREEN_W_PX, 0x59);
     SetRect(&r3, 0, 0x176, SCREEN_W_PX, 0x1a2);
     SetRect(&r4, 0, 0x1b8, SCREEN_W_PX, SCREEN_H_PX);
-    DrawTextToFrontSurface(m_world, &s0, &r1, 0x78, 0, 0, 0, 0, 1);
-    DrawTextToFrontSurface(m_world, &s1, &r2, 0x6e, 0, 0, 0, 0, 1);
-    DrawTextToFrontSurface(m_world, &s2, &r3, 0x6e, 0, 0, 0, 0, 1);
-    DrawTextToFrontSurface(m_world, &s3, &r4, 0x6e, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, s0, &r1, 0x78, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, s1, &r2, 0x6e, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, s2, &r3, 0x6e, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, s3, &r4, 0x6e, 0, 0, 0, 0, 1);
     return 1;
 }
 

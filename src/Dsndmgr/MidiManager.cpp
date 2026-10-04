@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 #include <Utils/MapTyped.h>
@@ -71,7 +72,7 @@ void MidiManager::ClearSequences() {
     m_currentSequence = NULL;
 }
 
-MidiSequence* MidiManager::LoadFile(const char* path, const char* name) {
+MidiSequence* MidiManager::LoadFile(const char* path, const std::string& name) {
     if (m_midiAvailable == false) {
         return NULL;
     }
@@ -82,11 +83,14 @@ MidiSequence* MidiManager::LoadFile(const char* path, const char* name) {
         }
         return NULL;
     }
-    RegisterSequence(sequence);
+    if (!RegisterSequence(sequence)) {
+        delete sequence;
+        return NULL;
+    }
     return sequence;
 }
 
-MidiSequence* MidiManager::LoadBuffer(const void* data, u32 dataBytes, const char* name) {
+MidiSequence* MidiManager::LoadBuffer(const void* data, u32 dataBytes, const std::string& name) {
     if (m_midiAvailable == false) {
         return NULL;
     }
@@ -97,39 +101,35 @@ MidiSequence* MidiManager::LoadBuffer(const void* data, u32 dataBytes, const cha
         }
         return NULL;
     }
-    RegisterSequence(sequence);
+    if (!RegisterSequence(sequence)) {
+        delete sequence;
+        return NULL;
+    }
     return sequence;
 }
 
-void MidiManager::RegisterSequence(MidiSequence* sequence) {
-    if (sequence == NULL) {
-        return;
+bool MidiManager::RegisterSequence(MidiSequence* sequence) {
+    if (sequence == NULL || m_midiAvailable == false) return false;
+    if (!m_sequences.insert(std::map<std::string, MidiSequence*>::value_type(sequence->m_name, sequence)).second) {
+        return false;
     }
-    if (m_midiAvailable == false) {
-        return;
-    }
-    m_sequences[sequence->m_name] = (sequence);
     if (m_currentSequence == NULL) {
         m_currentSequence = sequence;
     }
+    return true;
 }
 
-MidiSequence* MidiManager::FindSequence(const char* name) {
+MidiSequence* MidiManager::FindSequence(const std::string& name) {
     if (m_ownerWindow == NULL) {
         return NULL;
     }
-    if (name == NULL) {
+    if (name.empty()) {
         return NULL;
     }
-    if (*name == 0) {
-        return NULL;
-    }
-    CObject* sequenceObject = NULL;
-    return MapLookup(m_sequences, name, sequenceObject) ? static_cast<MidiSequence*>(sequenceObject)
-                                                    : NULL;
+    return MapFind<MidiSequence>(m_sequences, name);
 }
 
-i32 MidiManager::LoadAndPlayFile(const char* path, b32 looping, const char* name) {
+i32 MidiManager::LoadAndPlayFile(const char* path, b32 looping, const std::string& name) {
     if (m_midiAvailable == false) {
         return 0;
     }
@@ -145,7 +145,7 @@ i32 MidiManager::LoadAndPlayFile(const char* path, b32 looping, const char* name
     return 1;
 }
 
-i32 MidiManager::LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping, const char* name) {
+i32 MidiManager::LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping, const std::string& name) {
     if (m_midiAvailable == false) {
         return 0;
     }
@@ -161,7 +161,7 @@ i32 MidiManager::LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping,
     return 1;
 }
 
-i32 MidiManager::PlaySequence(const char* name, b32 looping) {
+i32 MidiManager::PlaySequence(const std::string& name, b32 looping) {
     if (m_midiAvailable == false) {
         return 0;
     }
@@ -249,7 +249,7 @@ MidiSequence::~MidiSequence() {
     Unload();
 }
 
-i32 MidiSequence::LoadFile(const char* path, const char* name) {
+i32 MidiSequence::LoadFile(const char* path, const std::string& name) {
     if (strstr(path, g_singleDot) == NULL) {
         return LoadResource(path, name);
     }
@@ -271,7 +271,7 @@ i32 MidiSequence::LoadFile(const char* path, const char* name) {
     return LoadBuffer(m_ownedData, length, name);
 }
 
-i32 MidiSequence::LoadBuffer(const void* data, u32 dataBytes, const char* name) {
+i32 MidiSequence::LoadBuffer(const void* data, u32 dataBytes, const std::string& name) {
     if (data == NULL) {
         return 0;
     }
@@ -285,11 +285,7 @@ i32 MidiSequence::LoadBuffer(const void* data, u32 dataBytes, const char* name) 
     m_looping = false;
     m_tempoPct = 100;
     m_volumePct = VOLUME_PCT_MAX;
-    if (name != NULL) {
-        strcpy(m_name, name);
-    } else {
-        sprintf(m_name, "MIDI%i", g_midiSequenceCounter);
-    }
+    m_name = name.empty() ? formatText("MIDI%i", g_midiSequenceCounter) : name;
     if (m_ownedData == NULL) {
         m_ownedData = new char[dataBytes];
         if (m_ownedData == NULL) {
@@ -309,7 +305,7 @@ i32 MidiSequence::LoadBuffer(const void* data, u32 dataBytes, const char* name) 
     return 1;
 }
 
-i32 MidiSequence::LoadResource(const char* resourceName, const char* name) {
+i32 MidiSequence::LoadResource(const char* resourceName, const std::string& name) {
     HRSRC resourceInfo = FindResourceA(g_midiResourceModule, resourceName, "MIDI");
     if (resourceInfo == NULL) {
         return 0;

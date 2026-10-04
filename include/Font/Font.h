@@ -11,8 +11,8 @@ public:
     ~Font();
     i32 AllocateMemory(i32 count);
     void FreeMemory();
-    i32 LoadFont(std::string szFileName);
-    i32 SaveFont(std::string szFileName);
+    i32 LoadFont(const std::string& szFileName);
+    i32 SaveFont(const std::string& szFileName);
 
     u8** GetSurface(u8 c);
     CSize& GetGlyph(CSize& out, u8 c);
@@ -40,12 +40,12 @@ public:
     void SetFont(Font* f);
     void SetColor(i32 color);
 
-    CSize MeasureText(std::string text);
+    CSize MeasureText(const std::string& text);
 
-    void DrawGlyphRun(std::string text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend);
+    void DrawGlyphRun(const std::string& text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend);
 
-    void DrawLine(std::string text, CDDSurface* surf, i32 x, i32 y, i32 z);
-    void DrawLineClipped(std::string text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z);
+    void DrawLine(const std::string& text, CDDSurface* surf, i32 x, i32 y, i32 z);
+    void DrawLineClipped(const std::string& text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z);
 
     CSize MeasureWrapped(std::string text, CRect rc);
 

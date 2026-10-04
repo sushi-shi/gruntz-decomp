@@ -250,6 +250,6 @@ void CFaderMgr::SetTraceEnabled(b32 enabled) {
     m_traceEnabled = enabled;
 }
 
-void CFaderMgr::Trace(std::string s) {
+void CFaderMgr::Trace(const std::string& s) {
     static_cast<void>(s);
 }

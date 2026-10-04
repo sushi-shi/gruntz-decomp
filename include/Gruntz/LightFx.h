@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_CLIGHTFX_H
 #define GRUNTZ_GRUNTZ_CLIGHTFX_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -31,8 +33,8 @@ public:
     i32 AdvanceAnim();
 
     void Activate(
-        const char* imageSetName,
-        const char* animationName,
+        const std::string& imageSetName,
+        const std::string& animationName,
         i32 shadeTableIndex,
         b32 deleteWhenComplete
     );
@@ -48,8 +50,8 @@ inline void CreateLightFx(
     i32 x,
     i32 y,
     i32 sortKey,
-    const char* imageSetName,
-    const char* animationName,
+    const std::string& imageSetName,
+    const std::string& animationName,
     i32 shadeTableIndex,
     b32 deleteWhenComplete
 ) {

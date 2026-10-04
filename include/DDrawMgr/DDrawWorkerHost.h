@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CDDRAWWORKERHOST_H
 #define GRUNTZ_CDDRAWWORKERHOST_H
 
+#include <string>
+
 #include <vector>
 
 #include <Ints.h>
@@ -55,7 +57,7 @@ public:
 
     virtual void UnusedPlaneHook(i32);
 
-    void SetImageSetByName(char index, const char* key);
+    void SetImageSetByName(char index, const std::string& key);
 
     void SetCell(i32 tileX, i32 tileY, i32 tileHandle);
     void UpdatePlaneViewRect();

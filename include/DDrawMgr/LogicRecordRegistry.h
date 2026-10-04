@@ -4,12 +4,10 @@
 #include <map>
 #include <string>
 
-#include <string>
 
 #include <Ints.h>
 
 #include <DDrawMgr/LogicRecord.h>
-#include <Gruntz/MapStringToOb.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
@@ -43,12 +41,13 @@ public:
     }
 
     virtual CLogicRecord*
-    RegisterLogicType(LogicRecordDispatchFn dispatch, const char* key, i32 flags);
+    RegisterLogicType(LogicRecordDispatchFn dispatch, const std::string& key, i32 flags);
 
-    CLogicRecord* FindTemplate(const char* key);
+    CLogicRecord* FindTemplate(const std::string& key);
 
     std::string FindLogicTypeKey(CLogicRecord* record);
 
+private:
     std::map<std::string, CLogicRecord*> m_templatesByName;
 };
 

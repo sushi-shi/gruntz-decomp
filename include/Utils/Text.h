@@ -12,6 +12,8 @@ int compareAsciiCaseInsensitive(const std::string& left, const std::string& righ
 int stringIndex(std::string::size_type position);
 std::string sliceText(const std::string& text, int start, int count = INT_MAX);
 std::string rightText(const std::string& text, int count);
+std::string joinResourceKey(const std::string& prefix, const std::string& separator, const std::string& name);
+bool copyTextToBuffer(const std::string& text, char* buffer, std::string::size_type capacity);
 std::string formatTextV(const char* format, va_list arguments);
 std::string formatText(const char* format, ...);
 

@@ -215,23 +215,13 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         std::string bootyCheatz("BootyCheatz");
         std::string empty("");
         std::string grp;
-        std::string text;
-        std::string desc;
-        i32 i = 0;
-
-        i32 last = reinterpret_cast<i32>(g_secretMsgRows[24].m_strB + sizeof(SecretMsgRow));
-        char* p = g_secretMsgRows[0].m_strB;
-        do {
+        for (i32 i = 0; i < 25; ++i) {
             grp = formatText("A%dC%d", i / 3 + 1, i % 3 + 1);
-            i32 id = g_buteMgr.GetInt((bootyCheatz).c_str(), (grp).c_str(), 1);
+            i32 id = g_buteMgr.GetInt(bootyCheatz, grp, 1);
             grp = formatText("Cheat%i", id);
-            text = *g_buteMgr.GetString((grp).c_str(), "Text", &empty);
-            desc = *g_buteMgr.GetString((grp).c_str(), "Desc", &empty);
-            strcpy(p - 0x20, (text).c_str());
-            strcpy(p, (desc).c_str());
-            i++;
-            p += 0xa0;
-        } while (reinterpret_cast<i32>(p) < last);
+            g_secretMsgRows[i].m_strA = g_buteMgr.GetString(grp, "Text", empty);
+            g_secretMsgRows[i].m_strB = g_buteMgr.GetString(grp, "Desc", empty);
+        }
         g_bootyCheatBuilt = true;
     }
 
@@ -355,15 +345,15 @@ i32 CBootyState::ShowSecretBonusMessage() {
         SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
         SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
         s = formatText("The Secret of Secretz:");
-        DrawTextToOverlaySurface(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
         std::string s2(g_secretMsgRows[24].m_strA);
         std::string s3(g_secretMsgRows[24].m_strB);
         for (i32 k = 0; k < static_cast<i32>((s2).size()); k++) {
-            (s2)[k] = static_cast<char>((((s2).c_str())[k] - 0x3d));
+            s2[k] = static_cast<char>(s2[k] - 0x3d);
         }
-        DrawTextToOverlaySurface(m_world, &s2, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
-        DrawTextToOverlaySurface(m_world, &s3, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, s2, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, s3, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
         return 1;
     } else {
         i32 count = static_cast<i32>(
@@ -385,7 +375,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
         } else {
             title = formatText("Secret Bonus Acquired:");
         }
-        DrawTextToOverlaySurface(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
         for (i32 j = 0; j < IDX(category); j++) {
             RECT rA, rB;
@@ -416,10 +406,10 @@ i32 CBootyState::ShowSecretBonusMessage() {
             std::string s5(g_secretMsgRows[idx].m_strA);
             std::string s6(g_secretMsgRows[idx].m_strB);
             for (i32 k = 0; k < static_cast<i32>((s5).size()); k++) {
-                (s5)[k] = static_cast<char>((((s5).c_str())[k] - 0x3d));
+                s5[k] = static_cast<char>(s5[k] - 0x3d);
             }
-            DrawTextToOverlaySurface(m_world, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
-            DrawTextToOverlaySurface(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
         }
         return 1;
     }
@@ -553,7 +543,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
                 break;
         }
 
-        m_sprintSprites[i]->SetImageSetByName(("GRUNTZ_NORMALGRUNT_" + dir + "_WALK").c_str());
+        m_sprintSprites[i]->SetImageSetByName(("GRUNTZ_NORMALGRUNT_" + dir + "_WALK"));
         m_sprintSprites[i]->SetAnimationByName("GAME_GRUNTSPRINT", 0);
         {
             CWwdSpriteObject* o = m_sprintSprites[i];
@@ -906,11 +896,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsA[i]);
             std::string text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
-            DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             CopyRect(&box, &g_levelMsgRectsB[i]);
-            this->FormatHudText(&text, static_cast<BootyStatRow>(i));
+            text = FormatHudText(static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
-            DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_slot && (i != m_slot || m_expl[i]->m_animationCursor.m_animation == NULL)) {
                 m_expl[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                 m_expl[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
@@ -948,7 +938,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsA[m_slot]);
             std::string text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
-            DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         s = m_slot;
         if (m_readyFlags[s] == 0 && gx >= g_levelMsgIconPos[s].m_x) {
@@ -974,9 +964,9 @@ i32 CBootyState::LevelMsgHudDriver() {
             RECT box;
             std::string text;
             CopyRect(&box, &g_levelMsgRectsB[i]);
-            this->FormatHudText(&text, static_cast<BootyStatRow>(i));
+            text = FormatHudText(static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
-            DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             m_expl[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             m_expl[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
             m_expl[i]->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
@@ -996,64 +986,55 @@ i32 CBootyState::LevelMsgHudDriver() {
     return 0;
 }
 
-void CBootyState::FormatHudText(std::string* buf, BootyStatRow sel) {
+std::string CBootyState::FormatHudText(BootyStatRow sel) {
     switch (sel) {
         case BOOTYSTAT_TIME: {
             u32 secs = static_cast<u32>(
                 STAT(SumElapsedTimeForCurrentArea, m_elapsedTimeMs) / MILLIS_PER_SECOND
             );
-            *(buf) = formatText("%d:%2.2d", secs / 60, secs % 60);
-            return;
+            return formatText("%d:%2.2d", secs / 60, secs % 60);
         }
         case BOOTYSTAT_GRUNTZ_EXITED:
-            *(buf) = formatText("%d", STAT(SumGruntzExitedForCurrentArea, m_gruntzExited));
-            return;
+            return formatText("%d", STAT(SumGruntzExitedForCurrentArea, m_gruntzExited));
         case BOOTYSTAT_GRUNTZ_LOST:
-            *(buf) = formatText("%d", STAT(SumGruntzLostForCurrentArea, m_gruntzLost));
-            return;
+            return formatText("%d", STAT(SumGruntzLostForCurrentArea, m_gruntzLost));
         case BOOTYSTAT_TOOLZ: {
             i32 total = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
             i32 cap = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
             i32 cur = STAT(SumToolzCollectedForCurrentArea, m_toolzCollected);
             cur = min(cur, cap);
-            *(buf) = formatText("%d of %d", cur, total);
-            return;
+            return formatText("%d of %d", cur, total);
         }
         case BOOTYSTAT_TOYZ: {
             i32 total = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
             i32 cap = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
             i32 cur = STAT(SumToyzCollectedForCurrentArea, m_toyzCollected);
             cur = min(cur, cap);
-            *(buf) = formatText("%d of %d", cur, total);
-            return;
+            return formatText("%d of %d", cur, total);
         }
         case BOOTYSTAT_POWERUPZ: {
             i32 total = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
             i32 cap = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
             i32 cur = STAT(SumPowerupzCollectedForCurrentArea, m_powerupzCollected);
             cur = min(cur, cap);
-            *(buf) = formatText("%d of %d", cur, total);
-            return;
+            return formatText("%d of %d", cur, total);
         }
         case BOOTYSTAT_COINZ: {
             i32 total = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
             i32 cap = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
             i32 cur = STAT(SumCoinsCollectedForCurrentArea, m_coinsCollected);
             cur = min(cur, cap);
-            *(buf) = formatText("%d of %d", cur, total);
-            return;
+            return formatText("%d of %d", cur, total);
         }
         case BOOTYSTAT_SECRETZ: {
             i32 total = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
             i32 cap = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
             i32 cur = STAT(SumSecretsFoundForCurrentArea, m_secretsFound);
             cur = min(cur, cap);
-            *(buf) = formatText("%d of %d", cur, total);
-            return;
+            return formatText("%d of %d", cur, total);
         }
         default:
-            *buf = "???";
-            return;
+            return "???";
     }
 }
 
@@ -1090,7 +1071,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
         s_buf = formatText("%sSECRET%c", prefix, g_secretChars[i]);
-        m_visSprites[i]->SetImageSetByName((s_buf).c_str());
+        m_visSprites[i]->SetImageSetByName((s_buf));
         m_visSprites[i]->SetAnimationByName("GAME_CYCLE100", 0);
         SET_SCREEN_POS(m_visSprites[i], g_idleSpriteIds[i] + 0xfa, 0xdc);
     }
@@ -1138,7 +1119,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                                 break;
                         }
                         m_animSprites[i]->SetImageSetByName("GRUNTZ_PICKUPS");
-                        m_animSprites[i]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter).c_str(), 0);
+                        m_animSprites[i]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter), 0);
                     }
                 } else {
                     SET_SCREEN_POS(m_visSprites[i], g_idleSpriteIds[i], 0xdc);
@@ -1204,7 +1185,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
                     PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_FLAGRISE");
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
-                    m_animSprites[m_stepIndex]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter).c_str(), 0);
+                    m_animSprites[m_stepIndex]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter), 0);
                     CWwdSpriteObject* g = m_animSprites[m_stepIndex];
                     g->m_drawActive = true;
                     g->m_drawFillCmd = SHADE_PAL_16;
@@ -1347,13 +1328,13 @@ i32 CBootyState::Render() {
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
                 std::string s("World Completed!");
                 m_levelCompleteGate = true;
-                DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToOverlaySurface(m_world, s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             } else {
                 RECT rc;
                 SET_RECT_COMPONENTS(rc, 0, 0x24, 0x1ea, 0x64);
                 std::string s("Level Completed!");
                 m_levelCompleteGate = true;
-                DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToOverlaySurface(m_world, s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
 
@@ -1402,7 +1383,7 @@ i32 CBootyState::Render() {
                     SetRect(&rc, 0x194, 0xe6, 0x263, SCREEN_H_PX);
                 }
                 m_secretGate = true;
-                DrawTextToOverlaySurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
+                DrawTextToOverlaySurface(m_world, s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
                 m_secretHudHandled = true;
             } else if (g_gameReg->m_gameStats->m_isCustomLevel != false) {
                 m_secretHudHandled = true;
@@ -1460,14 +1441,14 @@ void CBootyState::ShowLevelCompleteMessage() {
             RECT r1;
             CopyRect(&r1, &g_levelMsgRectsA[i]);
             std::string t(g_levelMsgStrings[i]);
-            DrawTextToOverlaySurface(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         if (m_readyFlags[i]) {
             RECT r2;
             CopyRect(&r2, &g_levelMsgRectsB[i]);
             std::string t2;
-            FormatHudText(&t2, static_cast<BootyStatRow>(i));
-            DrawTextToOverlaySurface(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
+            t2 = FormatHudText(static_cast<BootyStatRow>(i));
+            DrawTextToOverlaySurface(m_world, t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -1475,11 +1456,11 @@ void CBootyState::ShowLevelCompleteMessage() {
         if (g_gameReg->m_gameStats->m_currentAreaComplete != false) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             std::string s("World Completed!");
-            DrawTextToOverlaySurface(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         } else {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             std::string s("Level Completed!");
-            DrawTextToOverlaySurface(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -1510,7 +1491,7 @@ void CBootyState::ShowLevelCompleteMessage() {
             }
             SetRect(&r, 0x194, 0xe6, 0x263, SCREEN_H_PX);
         }
-        DrawTextToOverlaySurface(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
 }
 
@@ -1565,7 +1546,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                                     break;
                             }
                             m_animSprites[p]->SetImageSetByName("GRUNTZ_PICKUPS");
-                            m_animSprites[p]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter).c_str(), 0);
+                            m_animSprites[p]->SetAnimationByName(("GRUNTZ_PICKUPS_" + letter), 0);
                         }
                     }
                 }
@@ -1716,20 +1697,19 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 return 0;
             }
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
-            m_gruntSprites[i]->SetAnimationByName((key).c_str(), 0);
+            m_gruntSprites[i]->SetAnimationByName((key), 0);
             (m_gruntSprites[i])->SetDrawFill(SHADE_PAL_16, tint);
             m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
 
-        BuildPowerupIconKeys(
-            &key,
+        key = BuildPowerupIconKey(
             maxRunIndex(g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i], 22) + 1
         );
         m_weaponIcons[i] = CreateSimpleAnimationSprite(0);
         if (m_weaponIcons[i] == NULL) {
             return 0;
         }
-        m_weaponIcons[i]->SetImageSetByName((key).c_str());
+        m_weaponIcons[i]->SetImageSetByName((key));
         m_weaponIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
         (m_weaponIcons[i])->SetDrawFill(SHADE_PAL_16, tint);
         m_weaponIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1739,41 +1719,38 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             if (iconTint == NULL) {
                 return 0;
             }
-            BuildPowerupIconKeys(
-                &key,
+            key = BuildPowerupIconKey(
                 maxRunIndex(g_gameReg->m_gameStats->m_toyPickupsByPlayer[i], 10) + 0x17
             );
             m_toyIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_toyIcons[i] == NULL) {
                 return 0;
             }
-            m_toyIcons[i]->SetImageSetByName((key).c_str());
+            m_toyIcons[i]->SetImageSetByName((key));
             m_toyIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             (m_toyIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_toyIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-            BuildPowerupIconKeys(
-                &key,
+            key = BuildPowerupIconKey(
                 maxRunIndex(g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i], 7) + 0x36
             );
             m_powerupIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_powerupIcons[i] == NULL) {
                 return 0;
             }
-            m_powerupIcons[i]->SetImageSetByName((key).c_str());
+            m_powerupIcons[i]->SetImageSetByName((key));
             m_powerupIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             (m_powerupIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_powerupIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-            BuildPowerupIconKeys(
-                &key,
+            key = BuildPowerupIconKey(
                 maxRunIndex(g_gameReg->m_gameStats->m_miscPickupsByPlayer[i], 4) + 0x3d
             );
             m_miscIcons[i] = CreateSimpleAnimationSprite(0);
             if (m_miscIcons[i] == NULL) {
                 return 0;
             }
-            m_miscIcons[i]->SetImageSetByName((key).c_str());
+            m_miscIcons[i]->SetImageSetByName((key));
             m_miscIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             (m_miscIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_miscIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1815,7 +1792,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (m_tabSprites[t] == NULL) {
             return 0;
         }
-        m_tabSprites[t]->SetImageSetByName((tabKey).c_str());
+        m_tabSprites[t]->SetImageSetByName((tabKey));
         m_tabSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
         (m_tabSprites[t])->SetDrawFill(SHADE_PAL_16, tint);
         m_tabSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1831,7 +1808,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (m_flagSprites[t] == NULL) {
             return 0;
         }
-        m_flagSprites[t]->SetImageSetByName((flagKey).c_str());
+        m_flagSprites[t]->SetImageSetByName((flagKey));
         m_flagSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
         (m_flagSprites[t])->SetDrawFill(SHADE_PAL_16, tint);
         m_flagSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1865,8 +1842,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     if (m_warlordBooty == NULL) {
         return 0;
     }
-    m_warlordBooty->SetImageSetByName((joyKey).c_str());
-    m_warlordBooty->SetAnimationByName((bootyKey).c_str(), 0);
+    m_warlordBooty->SetImageSetByName((joyKey));
+    m_warlordBooty->SetAnimationByName((bootyKey), 0);
     m_warlordBooty->SetDrawFill(SHADE_PAL_16, tint);
     m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
     SET_SCREEN_POS(m_warlordBooty, 0x64, 0x64);
@@ -1950,144 +1927,99 @@ i32 CMultiBootyState::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-void CMultiBootyState::BuildPowerupIconKeys(std::string* reg, i32 key) {
-    *reg = "GAME_INGAMEICONZ_";
+std::string CMultiBootyState::BuildPowerupIconKey(i32 key) {
+    const std::string prefix = "GAME_INGAMEICONZ_";
     switch (static_cast<PickupType>(key)) {
         case PICKUP_BOMB:
-            *reg += "TOOLZ_BOMBZ";
-            return;
+            return prefix + "TOOLZ_BOMBZ";
         case PICKUP_BOOMERANG:
-            *reg += "TOOLZ_BOOMERANGZ";
-            return;
+            return prefix + "TOOLZ_BOOMERANGZ";
         case PICKUP_BRICK:
-            *reg += "TOOLZ_BRICKZ";
-            return;
+            return prefix + "TOOLZ_BRICKZ";
         case PICKUP_CLUB:
-            *reg += "TOOLZ_CLUBZ";
-            return;
+            return prefix + "TOOLZ_CLUBZ";
         case PICKUP_GAUNTLETZ:
-            *reg += "TOOLZ_GAUNTLETZ";
-            return;
+            return prefix + "TOOLZ_GAUNTLETZ";
         case PICKUP_GLOVEZ:
-            *reg += "TOOLZ_GLOVEZ";
-            return;
+            return prefix + "TOOLZ_GLOVEZ";
         case PICKUP_GOOBER:
-            *reg += "TOOLZ_GOOBERZ";
-            return;
+            return prefix + "TOOLZ_GOOBERZ";
         case PICKUP_GRAVITYBOOTZ:
-            *reg += "TOOLZ_GRAVITYBOOTZ";
-            return;
+            return prefix + "TOOLZ_GRAVITYBOOTZ";
         case PICKUP_GUNHAT:
-            *reg += "TOOLZ_GUNHATZ";
-            return;
+            return prefix + "TOOLZ_GUNHATZ";
         case PICKUP_NERFGUN:
-            *reg += "TOOLZ_NERFGUNZ";
-            return;
+            return prefix + "TOOLZ_NERFGUNZ";
         case PICKUP_ROCK:
-            *reg += "TOOLZ_ROCKZ";
-            return;
+            return prefix + "TOOLZ_ROCKZ";
         case PICKUP_SHIELD:
-            *reg += "TOOLZ_SHIELDZ";
-            return;
+            return prefix + "TOOLZ_SHIELDZ";
         case PICKUP_SHOVEL:
-            *reg += "TOOLZ_SHOVELZ";
-            return;
+            return prefix + "TOOLZ_SHOVELZ";
         case PICKUP_SPRING:
-            *reg += "TOOLZ_SPRINGZ";
-            return;
+            return prefix + "TOOLZ_SPRINGZ";
         case PICKUP_SPY:
-            *reg += "TOOLZ_SPYZ";
-            return;
+            return prefix + "TOOLZ_SPYZ";
         case PICKUP_SWORD:
-            *reg += "TOOLZ_SWORDZ";
-            return;
+            return prefix + "TOOLZ_SWORDZ";
         case PICKUP_TIMEBOMB:
-            *reg += "TOOLZ_TIMEBOMBZ";
-            return;
+            return prefix + "TOOLZ_TIMEBOMBZ";
         case PICKUP_TOOB:
-            *reg += "TOOLZ_TOOBZ";
-            return;
+            return prefix + "TOOLZ_TOOBZ";
         case PICKUP_WAND:
-            *reg += "TOOLZ_WANDZ";
-            return;
+            return prefix + "TOOLZ_WANDZ";
         case PICKUP_WARPSTONE:
-            *reg += "TOOLZ_WARPSTONEZ1";
-            return;
+            return prefix + "TOOLZ_WARPSTONEZ1";
         case PICKUP_WELDER:
-            *reg += "TOOLZ_WELDERZ";
-            return;
+            return prefix + "TOOLZ_WELDERZ";
         case PICKUP_WINGZ:
-            *reg += "TOOLZ_WINGZ";
-            return;
+            return prefix + "TOOLZ_WINGZ";
         case PICKUP_BABYWALKER:
-            *reg += "TOYZ_BABYWALKERZ";
-            return;
+            return prefix + "TOYZ_BABYWALKERZ";
         case PICKUP_BEACHBALL:
-            *reg += "TOYZ_BEACHBALLZ";
-            return;
+            return prefix + "TOYZ_BEACHBALLZ";
         case PICKUP_BIGWHEEL:
-            *reg += "TOYZ_BIGWHEELZ";
-            return;
+            return prefix + "TOYZ_BIGWHEELZ";
         case PICKUP_GOKART:
-            *reg += "TOYZ_GOKARTZ";
-            return;
+            return prefix + "TOYZ_GOKARTZ";
         case PICKUP_JACKINTHEBOX:
-            *reg += "TOYZ_JACKINTHEBOXZ";
-            return;
+            return prefix + "TOYZ_JACKINTHEBOXZ";
         case PICKUP_JUMPROPE:
-            *reg += "TOYZ_JUMPROPEZ";
-            return;
+            return prefix + "TOYZ_JUMPROPEZ";
         case PICKUP_POGOSTICK:
-            *reg += "TOYZ_POGOSTICKZ";
-            return;
+            return prefix + "TOYZ_POGOSTICKZ";
         case PICKUP_SCROLL:
-            *reg += "TOYZ_SCROLLZ";
-            return;
+            return prefix + "TOYZ_SCROLLZ";
         case PICKUP_SQUEAKTOY:
-            *reg += "TOYZ_SQUEAKTOYZ";
-            return;
+            return prefix + "TOYZ_SQUEAKTOYZ";
         case PICKUP_YOYO:
-            *reg += "TOYZ_YOYOZ";
-            return;
+            return prefix + "TOYZ_YOYOZ";
         case PICKUP_MEGAPHONE:
-            *reg += "POWERUPZ_MEGAPHONEZ";
-            return;
+            return prefix + "POWERUPZ_MEGAPHONEZ";
         case PICKUP_GHOST:
-            *reg += "POWERUPZ_GHOST";
-            return;
+            return prefix + "POWERUPZ_GHOST";
         case PICKUP_SUPERSPEED:
-            *reg += "POWERUPZ_SUPERSPEED";
-            return;
+            return prefix + "POWERUPZ_SUPERSPEED";
         case PICKUP_INVULNERABILITY:
-            *reg += "POWERUPZ_INVULNERABILITY";
-            return;
+            return prefix + "POWERUPZ_INVULNERABILITY";
         case PICKUP_CONVERSION:
-            *reg += "POWERUPZ_CONVERSION";
-            return;
+            return prefix + "POWERUPZ_CONVERSION";
         case PICKUP_DEATHTOUCH:
-            *reg += "POWERUPZ_DEATHTOUCH";
-            return;
+            return prefix + "POWERUPZ_DEATHTOUCH";
         case PICKUP_ROIDZ:
-            *reg += "POWERUPZ_ROIDZ";
-            return;
+            return prefix + "POWERUPZ_ROIDZ";
         case PICKUP_REACTIVEARMOR:
-            *reg += "POWERUPZ_REACTIVEARMOR";
-            return;
+            return prefix + "POWERUPZ_REACTIVEARMOR";
         case PICKUP_RANDOMCOLORZ:
-            *reg += "POWERUPZ_RANDOMCOLORZ";
-            return;
+            return prefix + "POWERUPZ_RANDOMCOLORZ";
         case PICKUP_SCREENSHAKE:
-            *reg += "POWERUPZ_SCREENSHAKE";
-            return;
+            return prefix + "POWERUPZ_SCREENSHAKE";
         case PICKUP_BLACKSCREEN:
-            *reg += "POWERUPZ_BLACKSCREEN";
-            return;
+            return prefix + "POWERUPZ_BLACKSCREEN";
         case PICKUP_MINICAM:
-            *reg += "POWERUPZ_MINICAM";
-            return;
+            return prefix + "POWERUPZ_MINICAM";
         default:
-            *reg += "POWERUPZ_COIN";
-            return;
+            return prefix + "POWERUPZ_COIN";
     }
 }
 
@@ -2172,27 +2104,27 @@ void CMultiBootyState::DrawBattleStats() {
         if (g_gameReg->m_players[i].m_joined != false) {
             s = formatText("%d", sumRun(g_gameReg->m_gameStats->m_miscPickupsByPlayer[i], 4));
             copyRect(&rc, &s_col1Rects[i]);
-            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s = formatText("%d", sumRun(g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i], 7));
             copyRect(&rc, &s_col2Rects[i]);
-            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s = formatText("%d", sumRun(g_gameReg->m_gameStats->m_toyPickupsByPlayer[i], 10));
             copyRect(&rc, &s_col3Rects[i]);
-            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s = formatText("%d", sumRun(g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i], 22));
             copyRect(&rc, &s_col4Rects[i]);
-            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s = formatText("%d", g_gameReg->m_gameStats->m_gruntzByPlayer[i]);
             copyRect(&rc, &s_col5Rects[i]);
-            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s = formatText("%d", (g_gameReg->m_gameStats)->CountKillsForPlayer(i));
             copyRect(&rc, &s_col6Rects[i]);
-            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -2222,7 +2154,7 @@ void CMultiBootyState::DrawBattleStats() {
                 break;
         }
         copyRect(&rc, &s_labelRects[c]);
-        DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
     for (i = 0; i < 4; i++) {
@@ -2285,7 +2217,7 @@ void CMultiBootyState::DrawBattleStats() {
             copyRect(&rc, &s_colorRects[i]);
             DrawTextToOverlaySurface(
                 m_world,
-                &s,
+                s,
                 &rc,
                 0x64,
                 0,
@@ -2299,7 +2231,7 @@ void CMultiBootyState::DrawBattleStats() {
 
     s = formatText("BATTLE STATZ");
     SET_RECT_COMPONENTS(rc, 0x96, 0xf, SCREEN_W_PX, 0x73);
-    DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+    DrawTextToOverlaySurface(m_world, s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
 
 i32 CMultiBootyState::Render() {
@@ -2327,7 +2259,7 @@ i32 CMultiBootyState::Render() {
     } else {
         s = formatText("%d:%2.2d", secs / 60, secs % 60);
     }
-    DrawTextToBackSurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
+    DrawTextToBackSurface(m_world, s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 
     CDDrawSubMgrPages* dt = m_world->GetDrawTarget();
     FlipFrontAndRestoreOverlay(dt);

@@ -86,10 +86,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
     m_pulseEpoch = g_frameTime;
-    CAniElement* entry = MapFind<CAniElement>(
-        g_gameReg->World()->m_animRegistry->m_animations,
-        "LEVEL_STATICHAZARDGO"
-    );
+    CAniElement* entry = g_gameReg->World()->m_animRegistry->FindAnimation("LEVEL_STATICHAZARDGO");
     if (entry != NULL) {
         i32 durationMs = entry->m_durationMs;
         m_activeWindow = g_buteMgr.GetInt("Hazardz", "AniPad", 0x64) + durationMs;

@@ -1,6 +1,8 @@
 #ifndef SBI_MENUITEM_H
 #define SBI_MENUITEM_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -39,12 +41,12 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
-        const char* key,
+        const std::string& key,
         i32 frame,
         i32 unused
     )  ;
 
-    i32 ResolveFrame(const char* key, i32 frameIndex);
+    i32 ResolveFrame(const std::string& key, i32 frameIndex);
     i32 SetState(SbiMenuItemState state, i32 playHighlightSound);
     i32 ProbeState(SbiMenuItemState state);
     i32 Blit();

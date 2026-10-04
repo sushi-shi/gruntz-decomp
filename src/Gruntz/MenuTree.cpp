@@ -83,7 +83,7 @@ i32 CMenuTree::AddPage(CMenuPage* page) {
     return 1;
 }
 
-CMenuPage* CMenuTree::FindPage(const char* pageKey) {
+CMenuPage* CMenuTree::FindPage(const std::string& pageKey) {
     std::list<CMenuPage*>::iterator position = m_pages.begin();
     while (position != m_pages.end()) {
         CMenuPage* page = static_cast<CMenuPage*>(*(position++));
@@ -161,12 +161,12 @@ i32 CMenuTree::SetActivePage(CMenuPage* page) {
     return 1;
 }
 
-i32 CMenuTree::SetActivePageByKey(const char* pageKey) {
+i32 CMenuTree::SetActivePageByKey(const std::string& pageKey) {
     return SetActivePage(FindPage(pageKey));
 }
 
 i32 CMenuTree::ConfigureLeftCursorAnimation(
-    const char* animationKey,
+    const std::string& animationKey,
     i32 framePeriodMs,
     i32 offsetX
 ) {
@@ -187,7 +187,7 @@ i32 CMenuTree::ConfigureLeftCursorAnimation(
 }
 
 i32 CMenuTree::ConfigureRightCursorAnimation(
-    const char* animationKey,
+    const std::string& animationKey,
     i32 framePeriodMs,
     i32 offsetX
 ) {
@@ -271,14 +271,14 @@ i32 CMenuTree::PlayFocusSound() {
     if ((m_focusSoundKey).empty()) {
         return 0;
     }
-    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), (m_focusSoundKey).c_str());
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), (m_focusSoundKey));
 }
 
 i32 CMenuTree::PlayActivationSound() {
     if ((m_activationSoundKey).empty()) {
         return 0;
     }
-    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), (m_activationSoundKey).c_str());
+    return PlayRegistryCueIfElapsed(m_world->SoundRegistry(), (m_activationSoundKey));
 }
 
 i32 CMenuTree::MoveFocusLeft() {

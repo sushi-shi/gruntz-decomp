@@ -175,7 +175,7 @@ void CAreaMgr::Reset() {
     m_currentLevelIndex = 0;
 }
 
-CSpawnEntry* CSpawnList::FindEntry(std::string name, b32 useHash) {
+CSpawnEntry* CSpawnList::FindEntry(const std::string& name, b32 useHash) {
     for (std::list<CSpawnEntry*>::iterator n = m_list.begin(); n != m_list.end();) {
         CSpawnEntry* e = NextEntry(n);
         if (e == NULL) {
@@ -255,14 +255,11 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     }
     m_spawnEntryList.ClearFlags();
 
-    std::map<std::string, CDDrawWorker*>* registryMap = &surfaceMgr->m_imageRegistry->m_workersByName;
-    if (registryMap == NULL) {
-        return 0;
-    }
+    const std::map<std::string, CDDrawWorker*>& registryMap = surfaceMgr->m_imageRegistry->Entries();
 
     std::list<CDDrawWorker*> toRemove;
-    std::map<std::string, CDDrawWorker*>::iterator pos = registryMap->begin();
-    while (pos != registryMap->end()) {
+    std::map<std::string, CDDrawWorker*>::const_iterator pos = registryMap.begin();
+    while (pos != registryMap.end()) {
         std::string key;
         CDDrawWorker* workerObject = NULL;
         (key = pos->first, workerObject = pos->second, ++pos);
@@ -287,16 +284,15 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     CSpawnEntry* spawnEntry = spawnList->FirstEntry();
     while (spawnEntry != NULL) {
         if (spawnEntry->m_flag == false) {
-            char resourcePath[0x80];
             g_resourceInstallActive = true;
-            sprintf(resourcePath, "IMAGEZ_%s", (spawnEntry->GetTail()).c_str());
-            CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
+            const std::string resourcePath = "IMAGEZ_" + spawnEntry->GetTail();
+            CRezDir* resourceTree = src->GetDirFromPath(resourcePath.c_str());
             if (resourceTree == NULL) {
                 return 0;
             }
             surfaceMgr->m_imageRegistry->InstallTree(
                 resourceTree,
-                (spawnEntry->GetName()).c_str(),
+                (spawnEntry->GetName()),
                 "_"
             );
             TRACE("%s\n", (spawnEntry->GetName()).c_str());
@@ -327,14 +323,11 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     }
     m_spawnEntryList.ClearFlags();
 
-    std::map<std::string, SoundCue*>* registryMap = &surfaceMgr->SoundRegistry()->m_cues;
-    if (registryMap == NULL) {
-        return 0;
-    }
+    const std::map<std::string, SoundCue*>& registryMap = surfaceMgr->SoundRegistry()->Entries();
 
     std::list<SoundCue*> toRemove;
-    std::map<std::string, SoundCue*>::iterator pos = registryMap->begin();
-    while (pos != registryMap->end()) {
+    std::map<std::string, SoundCue*>::const_iterator pos = registryMap.begin();
+    while (pos != registryMap.end()) {
         std::string key;
         SoundCue* cue = NULL;
         (key = pos->first, cue = pos->second, ++pos);
@@ -359,9 +352,8 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     CSpawnEntry* spawnEntry = spawnList->FirstEntry();
     while (spawnEntry != NULL) {
         if (spawnEntry->m_flag == false) {
-            char resourcePath[0x80];
-            sprintf(resourcePath, "SOUNDZ_%s", (spawnEntry->GetTail()).c_str());
-            CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
+            const std::string resourcePath = "SOUNDZ_" + spawnEntry->GetTail();
+            CRezDir* resourceTree = src->GetDirFromPath(resourcePath.c_str());
             if (resourceTree == NULL) {
                 return 0;
             }
@@ -384,14 +376,11 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
     }
     m_spawnEntryList.ClearFlags();
 
-    std::map<std::string, CAniElement*>* registryMap = &surfaceMgr->m_animRegistry->m_animations;
-    if (registryMap == NULL) {
-        return 0;
-    }
+    const std::map<std::string, CAniElement*>& registryMap = surfaceMgr->m_animRegistry->Entries();
 
     std::list<CAniElement*> toRemove;
-    std::map<std::string, CAniElement*>::iterator pos = registryMap->begin();
-    while (pos != registryMap->end()) {
+    std::map<std::string, CAniElement*>::const_iterator pos = registryMap.begin();
+    while (pos != registryMap.end()) {
         std::string key;
         CAniElement* animation = NULL;
         (key = pos->first, animation = pos->second, ++pos);
@@ -416,9 +405,8 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
     CSpawnEntry* spawnEntry = spawnList->FirstEntry();
     while (spawnEntry != NULL) {
         if (spawnEntry->m_flag == false) {
-            char resourcePath[0x80];
-            sprintf(resourcePath, "ANIZ_%s", (spawnEntry->GetTail()).c_str());
-            CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
+            const std::string resourcePath = "ANIZ_" + spawnEntry->GetTail();
+            CRezDir* resourceTree = src->GetDirFromPath(resourcePath.c_str());
             if (resourceTree == NULL) {
                 return 0;
             }

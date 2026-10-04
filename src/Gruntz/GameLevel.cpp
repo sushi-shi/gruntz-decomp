@@ -487,10 +487,10 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
     DRAW_PLANES_AFTER_MAIN(visitor, j)
 }
 
-CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
+CDDrawWorkerHost* CGameLevel::FindPlaneByName(const std::string& name) {
     for (i32 i = 0; i < static_cast<i32>(m_planes.size()); i++) {
         CDDrawWorkerHost* p = GetPlane(i);
-        if (stricmp(name, p->m_planeName) == 0) {
+        if (compareAsciiCaseInsensitive(name, p->m_planeName) == 0) {
             return static_cast<CDDrawWorkerHost*>(p);
         }
     }
@@ -1370,32 +1370,26 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
     return 1;
 }
 
-i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
+bool CGameLevel::ReadWwdHeaderName(const std::string& name, std::string& nameOut) {
     WwdHeader header;
-
-    if (name == NULL) {
-        return 0;
-    }
-    if (nameOut == NULL) {
-        return 0;
-    }
-
     CFile stream;
 
-    if (stream.Open(name, CFile::modeRead, NULL) == false) {
-        return 0;
+    if (name.empty() || !stream.Open(name.c_str(), CFile::modeRead, NULL)) {
+        return false;
     }
-
     if (stream.Read(&header, sizeof(header)) != sizeof(header)) {
-        return 0;
+        return false;
     }
-
     if (header.m_headerSize > sizeof(header)) {
-        return 0;
+        return false;
     }
 
-    strcpy(nameOut, header.m_levelName);
-    return 1;
+    std::string::size_type length = 0;
+    while (length < sizeof(header.m_levelName) && header.m_levelName[length] != '\0') {
+        ++length;
+    }
+    nameOut.assign(header.m_levelName, length);
+    return true;
 }
 
 Bytef* CGameLevel::InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {

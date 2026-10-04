@@ -4,6 +4,6 @@
 
 #include <Gruntz/GruntPuddle.h>
 
-void CGruntPuddle::SetBute(char* key) {
+void CGruntPuddle::SetBute(const std::string& key) {
     SET_ANIMATION_ACT(key);
 }

@@ -23,9 +23,9 @@ CKeyedNode::~CKeyedNode() {
     m_resendInterval = 0;
 }
 
-CKeyedNode* CKeyedList::AddNode(const char* key, i32 commandDelay, i32 resendInterval) {
+CKeyedNode* CKeyedList::AddNode(const std::string& key, i32 commandDelay, i32 resendInterval) {
     CKeyedNode* node = new CKeyedNode;
-    node->m_key = key ? key : "";
+    node->m_key = key;
     node->m_commandDelay = commandDelay;
     node->m_resendInterval = resendInterval;
     m_list.insert(m_list.end(), node);

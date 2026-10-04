@@ -143,15 +143,15 @@ public:
     i32 ToggleBaseLayer();
     i32 PollUnlessIdle();
     i32 RejectWorldFileCommand();
-    i32 AppendChatMessage(const char* msg);
-    i32 ShowToggleMessage(char* itemName, i32 on);
+    i32 AppendChatMessage(const std::string& msg);
+    i32 ShowToggleMessage(const std::string& itemName, i32 on);
 
     i32 IsMoviePathValid();
     void ReportWorldStatus(WorldInitReportTag tag);
     i32 LoadMonologoSprite();
     i32 CheatRevealTreasures();
 
-    i32 SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx);
+    i32 SetGruntColor(CDDrawWorker* sink, const std::string& key, i32 idx);
     void CheatSkeletonToggle();
     void CheatEclipseToggle();
     i32 WarpCheat();
@@ -167,7 +167,7 @@ public:
     void PauseMusicIfEnabled();
     void ResumeMusicIfEnabled();
 
-    i32 SetAssetRoot(char* path);
+    i32 SetAssetRoot(const std::string& path);
 
     void MuteMusicIfActive(i32 durationMs);
     void RestoreMusicVolumeIfActive(i32 durationMs);
@@ -267,7 +267,7 @@ public:
 
     i32 LoadSaveMessageSprite();
 
-    i32 IsBattlezMapFile(std::string path);
+    i32 IsBattlezMapFile(const std::string& path);
 
     i32 PlayMovieEntry(i32 entryId);
 
@@ -395,7 +395,6 @@ i32 PumpIdleFrame();
 
 extern b32 g_monologoShown;
 
-extern char g_msgScratch[256];
 
 extern u32 g_gruntDestruction;
 extern u32 g_gruntCreation;
@@ -408,7 +407,7 @@ extern DebugDisplayFlags g_debugDisplayFlags;
 extern i32 g_warpX;
 extern i32 g_warpY;
 
-std::string RunCustomWorldDialog(HWND parent, std::string* out);
+std::string RunCustomWorldDialog(HWND parent);
 i32 __stdcall LaunchPortalExe(char* outPath);
 
 char GetGruntzDriveLetter();

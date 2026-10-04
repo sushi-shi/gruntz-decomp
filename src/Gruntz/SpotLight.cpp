@@ -130,7 +130,7 @@ i32 CSpotLight::Tick() {
                 i32 laser = GetRandomNumber() % 2 + 1;
                 std::string name;
                 name = formatText("LEVEL_UFOHAZARDLASER%d", laser);
-                PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), (name).c_str());
+                PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), (name));
                 return 0;
             } else {
                 tgt->SnapToLastTile(1);

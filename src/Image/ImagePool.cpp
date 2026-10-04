@@ -97,8 +97,7 @@ CDib* CDibMgr::AddDib(i32 width, i32 height, ColorDepth depth, u32 flags) {
         delete dib;
         return NULL;
     }
-    std::list<CDib*>::iterator pos = m_collDibs.insert(m_collDibs.end(), dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -111,8 +110,7 @@ CDib* CDibMgr::AddDib(u8* bytes, i32 width, i32 height, ColorDepth depth, u32 fl
         delete dib;
         return NULL;
     }
-    std::list<CDib*>::iterator pos = m_collDibs.insert(m_collDibs.end(), dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -125,8 +123,7 @@ CDib* CDibMgr::AddDib(u8* bytes, RezDecodeKind type, u32 flags) {
         delete dib;
         return NULL;
     }
-    std::list<CDib*>::iterator pos = m_collDibs.insert(m_collDibs.end(), dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -140,8 +137,7 @@ CDib* CDibMgr::AddDib(const char* file, u32 flags) {
         delete dib;
         return NULL;
     }
-    std::list<CDib*>::iterator pos = m_collDibs.insert(m_collDibs.end(), dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -154,8 +150,7 @@ CDib* CDibMgr::AddDib(CDib* original, CDibPal* palette) {
         delete dib;
         return NULL;
     }
-    std::list<CDib*>::iterator pos = m_collDibs.insert(m_collDibs.end(), dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -166,8 +161,7 @@ CDibPal* CDibMgr::AddPal(PALETTEENTRY* entries, u32 flags) {
         delete palette;
         return NULL;
     }
-    std::list<CDibPal*>::iterator pos = m_collPals.insert(m_collPals.end(), palette);
-    palette->SetPos(pos);
+    m_collPals.push_back(palette);
     return palette;
 }
 
@@ -177,8 +171,7 @@ CDibPal* CDibMgr::AddPal(u8* rgb, u32 flags) {
         delete palette;
         return NULL;
     }
-    std::list<CDibPal*>::iterator pos = m_collPals.insert(m_collPals.end(), palette);
-    palette->SetPos(pos);
+    m_collPals.push_back(palette);
     return palette;
 }
 
@@ -189,8 +182,7 @@ CDibPal* CDibMgr::AddPal(const char* file, u32 flags) {
         delete palette;
         return NULL;
     }
-    std::list<CDibPal*>::iterator pos = m_collPals.insert(m_collPals.end(), palette);
-    palette->SetPos(pos);
+    m_collPals.push_back(palette);
     return palette;
 }
 
@@ -200,8 +192,7 @@ CDibPal* CDibMgr::AddPal(u8* data, u32 dataSize, RezDecodeKind type, u32 flags) 
         delete palette;
         return NULL;
     }
-    std::list<CDibPal*>::iterator pos = m_collPals.insert(m_collPals.end(), palette);
-    palette->SetPos(pos);
+    m_collPals.push_back(palette);
     return palette;
 }
 

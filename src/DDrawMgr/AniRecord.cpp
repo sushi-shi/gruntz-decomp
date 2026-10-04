@@ -79,7 +79,7 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     if (m_cueCount > 0) {
         m_cues = new SoundCue*[m_cueCount];
         for (i32 i = 0; i < m_cueCount; i++) {
-            m_cues[i] = owner->FindCue((tokens[i]).c_str());
+            m_cues[i] = owner->FindCue((tokens[i]));
         }
     }
 }

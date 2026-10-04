@@ -331,7 +331,7 @@ void CGrunt::ReadConfigFromButeMgr() {
     m_reserved418 = 0;
 
     m_timePerTile = g_buteMgr.GetDword(
-        (m_animSetName).c_str(),
+        (m_animSetName),
         "TimePerTile",
         1000
     );
@@ -588,7 +588,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     SwitchAnimation(m_poseAttackIdle);
                     {
                         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-                        const char* nm = (EntranceCell()->AttackName()).c_str();
+                        const std::string& nm = (EntranceCell()->AttackName());
                         SetImageFrameByName(nm, frame);
                     }
                     goto store;
@@ -615,7 +615,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
             i32 column = facing.m_column;
             i32 index = 3 * row + column;
 
-            const char* nm = (m_cells[index].IdleName()).c_str();
+            const std::string& nm = (m_cells[index].IdleName());
             SetImageFrameByName(nm, frame);
         }
         goto store;
@@ -629,7 +629,7 @@ walk:
         i32 column = facing.m_column;
         i32 index = 3 * row + column;
 
-        const char* nm = (m_cells[index].WalkName()).c_str();
+        const std::string& nm = (m_cells[index].WalkName());
         SetImageSetByName(nm);
     }
 
@@ -2321,13 +2321,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (fresh == 0) {
         if (IsAnimationAct("H")) {
             DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
-            SetImageFrameByName((EntranceCell()->StruckName()).c_str(), handle);
+            SetImageFrameByName((EntranceCell()->StruckName()), handle);
         } else {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
             if (IsAnimationAct("D")) {
-                SetImageSetByName((EntranceCell()->WalkName()).c_str());
+                SetImageSetByName((EntranceCell()->WalkName()));
                 SwitchAnimation(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);

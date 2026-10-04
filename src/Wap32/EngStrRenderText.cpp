@@ -9,7 +9,7 @@
 
 i32 EngStr_RenderText(
     void* self,
-    std::string* text,
+    const std::string& text,
     RECT* dst,
     CDDSurface* drawSurface,
     i32 fontSel,
@@ -20,9 +20,6 @@ i32 EngStr_RenderText(
     i32 flag
 ) {
     if (self == NULL) {
-        return 0;
-    }
-    if (text == NULL) {
         return 0;
     }
     if (dst == NULL) {
@@ -46,7 +43,6 @@ i32 EngStr_RenderText(
             g_textObj.SetFont(&g_tinyFont);
             break;
     }
-    std::string* str = text;
     RECT* rc = dst;
     CRect rect;
     if (shadow) {
@@ -54,9 +50,9 @@ i32 EngStr_RenderText(
         rect.OffsetRect(ENGSTR_SHADOW_OFFSET_X_PX, ENGSTR_SHADOW_OFFSET_Y_PX);
         g_textObj.SetColor(ENGSTR_SHADOW_COLOR);
 
-        g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);
+        g_textObj.DrawWrapped(text, drawSurface, rect, 1, flag, 0);
     }
     g_textObj.SetColor(RGB(r, g, b));
-    g_textObj.DrawWrapped(*str, drawSurface, *rc, 1, flag, 0);
+    g_textObj.DrawWrapped(text, drawSurface, *rc, 1, flag, 0);
     return 1;
 }

@@ -182,7 +182,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
     QuestLevel questProgress;
 
     page = new CMenuPage;
-    if (page->Configure(menuTree, s_main, s_menuMainmenuTitle, NULL, MENU_PAGE_FLAGS_NONE) == 0) {
+    if (page->Configure(menuTree, s_main, s_menuMainmenuTitle, "", MENU_PAGE_FLAGS_NONE) == 0) {
         delete page;
         return 0;
     }
@@ -197,13 +197,13 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem(s_multiplayer, s_menuMainmenuMultiplayer, 0, s_multiplayer, MENU_ITEM_FLAGS_NONE);
-    page->AddItem("OPTIONZ", s_menuMainmenuOptionz, 0x80e2, NULL, MENU_ITEM_FLAGS_NONE);
+    page->AddItem("OPTIONZ", s_menuMainmenuOptionz, 0x80e2, "", MENU_ITEM_FLAGS_NONE);
     item = page->AddItem(s_moviez, s_menuMainmenuMoviez, 0, s_moviez, MENU_ITEM_FLAGS_NONE);
     if (g_cdPromptResult != false) {
         item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddItem(g_titleBuf, s_menuMainmenuHelp, 0x8035, NULL, MENU_ITEM_FLAGS_NONE);
-    page->AddItem(s_quit, s_menuMainmenuQuit, 0x8008, NULL, MENU_ITEM_FLAGS_NONE);
+    page->AddItem(g_titleBuf, s_menuMainmenuHelp, 0x8035, "", MENU_ITEM_FLAGS_NONE);
+    page->AddItem(s_quit, s_menuMainmenuQuit, 0x8008, "", MENU_ITEM_FLAGS_NONE);
     if (menuTree->AddPage(page) == 0) {
         return 0;
     }
@@ -220,15 +220,15 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         delete page;
         return 0;
     }
-    page->AddItem(s_quickstart, s_menuSingleplayerQuickstart, 0x8174, NULL, MENU_ITEM_FLAGS_NONE);
+    page->AddItem(s_quickstart, s_menuSingleplayerQuickstart, 0x8174, "", MENU_ITEM_FLAGS_NONE);
     page->AddItem(s_questz, s_menuSingleplayerQuestz, 0, s_questz, MENU_ITEM_FLAGS_NONE);
-    page->AddItem(s_battlez, s_menuSingleplayerBattlez, 0x80e1, NULL, MENU_ITEM_FLAGS_NONE);
-    page->AddItem(s_loadgame, s_menuSingleplayerLoadgame, 0x80ce, NULL, MENU_ITEM_FLAGS_NONE);
+    page->AddItem(s_battlez, s_menuSingleplayerBattlez, 0x80e1, "", MENU_ITEM_FLAGS_NONE);
+    page->AddItem(s_loadgame, s_menuSingleplayerLoadgame, 0x80ce, "", MENU_ITEM_FLAGS_NONE);
     page->AddItem(
         s_customlevelz,
         s_menuSingleplayerCustomlevelz,
         0x8042,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     page->AddItem("BACK", s_menuSingleplayerBack, 0, s_main, MENU_ITEM_FLAGS_NONE);
@@ -248,11 +248,11 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         delete page;
         return 0;
     }
-    item = page->AddItem(s_host, s_menuMultiplayerHost, 0x80d3, NULL, MENU_ITEM_FLAGS_NONE);
+    item = page->AddItem(s_host, s_menuMultiplayerHost, 0x80d3, "", MENU_ITEM_FLAGS_NONE);
     if (g_cdPromptResult != false) {
         item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddItem(s_join, s_menuMultiplayerJoin, 0x80d2, NULL, MENU_ITEM_FLAGS_NONE);
+    page->AddItem(s_join, s_menuMultiplayerJoin, 0x80d2, "", MENU_ITEM_FLAGS_NONE);
     page->AddItem("BACK", s_menuMultiplayerBack, 0, s_main, MENU_ITEM_FLAGS_NONE);
     if (menuTree->AddPage(page) == 0) {
         return 0;
@@ -263,13 +263,13 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         delete page;
         return 0;
     }
-    page->AddItem(s_logo, s_menuMoviezLogo, 0x8170, NULL, MENU_ITEM_FLAGS_NONE);
-    page->AddItem(s_intro, s_menuMoviezIntro, 0x8171, NULL, MENU_ITEM_FLAGS_NONE);
-    item = page->AddItem(s_final, s_menuMoviezFinal, 0x8173, NULL, MENU_ITEM_FLAGS_NONE);
+    page->AddItem(s_logo, s_menuMoviezLogo, 0x8170, "", MENU_ITEM_FLAGS_NONE);
+    page->AddItem(s_intro, s_menuMoviezIntro, 0x8171, "", MENU_ITEM_FLAGS_NONE);
+    item = page->AddItem(s_final, s_menuMoviezFinal, 0x8173, "", MENU_ITEM_FLAGS_NONE);
     if (g_gameReg->m_saveGame->CheckMagic() == 0) {
         item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddItem("CREDITZ", s_menuMoviezCreditz, 0x8021, NULL, MENU_ITEM_FLAGS_NONE);
+    page->AddItem("CREDITZ", s_menuMoviezCreditz, 0x8021, "", MENU_ITEM_FLAGS_NONE);
     page->AddItem("BACK", s_menuMoviezBack, 0, s_main, MENU_ITEM_FLAGS_NONE);
     if (menuTree->AddPage(page) == 0) {
         return 0;
@@ -399,7 +399,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_TRAINING_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     page->AddItem(
@@ -408,7 +408,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_TRAINING_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     page->AddItem(
@@ -417,7 +417,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_TRAINING_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     page->AddItem(
@@ -426,7 +426,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_TRAINING_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     page->AddItem("BACK", s_menuAreasBack, 0, s_questz, MENU_ITEM_FLAGS_NONE);
@@ -446,7 +446,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA1_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     item = page->AddItem(
@@ -455,7 +455,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA1_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE1_END) {
@@ -467,7 +467,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA1_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE2_END) {
@@ -479,7 +479,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA1_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE3_END) {
@@ -510,7 +510,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA2_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE4_END) {
@@ -522,7 +522,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA2_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE1_END) {
@@ -534,7 +534,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA2_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE2_END) {
@@ -546,7 +546,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA2_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE3_END) {
@@ -577,7 +577,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA3_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE4_END) {
@@ -589,7 +589,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA3_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE1_END) {
@@ -601,7 +601,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA3_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE2_END) {
@@ -613,7 +613,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA3_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE3_END) {
@@ -644,7 +644,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA4_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE4_END) {
@@ -656,7 +656,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA4_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE1_END) {
@@ -668,7 +668,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA4_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE2_END) {
@@ -680,7 +680,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA4_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE3_END) {
@@ -711,7 +711,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA5_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE4_END) {
@@ -723,7 +723,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA5_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE1_END) {
@@ -735,7 +735,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA5_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE2_END) {
@@ -747,7 +747,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA5_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE3_END) {
@@ -778,7 +778,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA6_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE4_END) {
@@ -790,7 +790,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA6_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE1_END) {
@@ -802,7 +802,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA6_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE2_END) {
@@ -814,7 +814,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA6_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE3_END) {
@@ -845,7 +845,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA7_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE4_END) {
@@ -857,7 +857,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA7_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE1_END) {
@@ -869,7 +869,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA7_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE2_END) {
@@ -881,7 +881,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA7_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE3_END) {
@@ -912,7 +912,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA8_STAGE1),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE4_END) {
@@ -924,7 +924,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA8_STAGE2),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA8_STAGE1_END) {
@@ -936,7 +936,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA8_STAGE3),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA8_STAGE2_END) {
@@ -948,7 +948,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA8_STAGE4),
         0,
-        NULL,
+        "",
         MENU_ITEM_FLAGS_NONE
     );
     if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA8_STAGE3_END) {

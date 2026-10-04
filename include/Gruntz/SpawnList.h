@@ -13,7 +13,7 @@ class CSpawnEntry;
 
 class CSpawnEntry {
 public:
-    CSpawnEntry(std::string name, i32 data);
+    CSpawnEntry(const std::string& name, i32 data);
 
     std::string GetName() {
         return m_name;
@@ -34,9 +34,9 @@ public:
     ~CSpawnList();
     void ClearFlags();
     void DeleteAllEntries();
-    CSpawnEntry* FindEntry(std::string name, b32 useHash);
+    CSpawnEntry* FindEntry(const std::string& name, b32 useHash);
     CSpawnEntry* FindByName(const std::string& name);
-    void AddVoiceSound(std::string resourceName, i32 data);
+    void AddVoiceSound(const std::string& resourceName, i32 data);
 
     i32 GetCount() const {
         return static_cast<i32>(m_list.size());

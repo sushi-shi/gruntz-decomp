@@ -12,7 +12,6 @@ GZ_ENUM_CONST_END(CustomWorldCtrlId)
 
 class CDDrawSurfaceMgr;
 extern class CDDrawSurfaceMgr* g_customWorldSurfaceMgr;
-extern char g_mapNameBuf[0x200];
 
 i32 LoadCustomWorldInfo(HWND hDlg);
 i32 FillLevelInfoDialog(HWND hDlg);

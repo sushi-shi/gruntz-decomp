@@ -423,7 +423,7 @@ void CTileTriggerTransition::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 
-i32 CTileTriggerTransition::ApplyAnimation(const char* sprite, const char* geom) {
+i32 CTileTriggerTransition::ApplyAnimation(const std::string& sprite, const std::string& geom) {
     if (SwitchAnimationByName(geom, 0) == 0) {
         return 0;
     }

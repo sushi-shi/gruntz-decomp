@@ -92,27 +92,27 @@ public:
         int x,
         int y,
         int sortKey,
-        const char* name,
+        const std::string& name,
         int dotColor,
         int objectFlags
     );
     CWwdDeferredObject*
-    CreateNamedDeferredObject(int id, int sortKey, const char* name, int objectFlags);
+    CreateNamedDeferredObject(int id, int sortKey, const std::string& name, int objectFlags);
     CWwdGameObject* CreateNamedContainerObject(
         int id,
         int x,
         int y,
         int sortKey,
-        const char* name,
+        const std::string& name,
         int objectFlags
     );
 
     CWwdSpriteObject*
-    CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const char* name, i32 objectFlags);
+    CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const std::string& name, i32 objectFlags);
 
     i32 AddObject(CGameObject* obj);
     i32
-    AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const char* name, i32 objectFlags);
+    AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const std::string& name, i32 objectFlags);
 
     i32 LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused);
 
@@ -136,7 +136,7 @@ public:
     CWwdGameObject* FindByLogicRecord(i32 id, CLogicRecord* logicRecord);
     CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 
-    CGameObject* Find(i32 id, const char* key);
+    CGameObject* Find(i32 id, const std::string& key);
     CWwdGameObject* FindByObjectId(i32 objectId);
     CWwdGameObject* FindSerialRefByObjectId(i32 objectId);
     i32 IsKindUnique(i32 kind);
