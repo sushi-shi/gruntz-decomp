@@ -451,27 +451,21 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     si.cbSize = sizeof(si);
     si.fMask = SIF_POS;
     GetScrollInfo(hCtrl, SB_CTL, &si);
-    i32 newpos;
-    if (code == SB_THUMBTRACK) {
-        newpos = pos;
-    } else {
-        newpos = si.nPos;
-        if (code == SB_THUMBPOSITION) {
-            newpos = pos;
-        }
+    if (code != SB_THUMBTRACK && code != SB_THUMBPOSITION) {
+        pos = si.nPos;
     }
     switch (code) {
         case SB_LINEUP:
-            newpos--;
+            pos--;
             break;
         case SB_LINEDOWN:
-            newpos++;
+            pos++;
             break;
         case SB_PAGEUP:
-            newpos -= 10;
+            pos -= 10;
             break;
         case SB_PAGEDOWN:
-            newpos += 10;
+            pos += 10;
             break;
         case SB_THUMBPOSITION:
             break;
@@ -481,18 +475,18 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
     }
     si.fMask = SIF_POS;
-    si.nPos = newpos;
+    si.nPos = pos;
     SetScrollInfo(hCtrl, SB_CTL, &si, true);
     if (hCtrl == GetDlgItem(hDlg, 0x472)) {
-        g_gameReg->GetMidiManager()->SetMasterVolume(newpos);
+        g_gameReg->GetMidiManager()->SetMasterVolume(pos);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x478)) {
-        g_gameReg->m_scrollSpeed = newpos;
+        g_gameReg->m_scrollSpeed = pos;
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x476)) {
-        g_gameReg->SetVoiceVolume(newpos);
+        g_gameReg->SetVoiceVolume(pos);
         if (code == SB_THUMBTRACK) {
             return;
         }
@@ -500,13 +494,13 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (registry->IsSilent() == false) {
             SoundCue* cue = registry->FindCue("GAME_VOICE");
             if (cue != NULL) {
-                PlaySoundCueIfElapsed(cue, newpos, 0, 0, false);
+                PlaySoundCueIfElapsed(cue, pos, 0, 0, false);
             }
         }
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
-        g_gameReg->SetSoundVolume(newpos);
+        g_gameReg->SetSoundVolume(pos);
         if (code == SB_THUMBTRACK) {
             return;
         }
