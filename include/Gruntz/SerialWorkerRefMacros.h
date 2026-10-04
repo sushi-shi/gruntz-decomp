@@ -57,7 +57,7 @@
     memset(name, 0, sizeof(name));                                                                 \
     index = 0;                                                                                     \
     if ((field) != NULL) {                                                                         \
-        (mgr)->GetImageRegistry()->AnyValueMatches(field, name, &(index));                         \
+        (mgr)->GetImageRegistry()->FindFrameIdentity(field, name, &(index));                       \
     }                                                                                              \
     (ar)->Write(name, SERIAL_NAME_LEN);                                                            \
     (ar)->Write(&(index), sizeof(index))
@@ -81,7 +81,7 @@
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
-        reg->GetImageRegistry()->m_workersByName.Lookup(buf, out);                                 \
+        reg->GetImageRegistry()->m_imageSetsByName.Lookup(buf, out);                               \
         CImageSet* gm = static_cast<CImageSet*>(out);                                              \
         CImage* r = gm != 0 ? gm->GetAt(i) : 0;                                                    \
         field = r;                                                                                 \
@@ -94,7 +94,7 @@
     s->Read(buf, SERIAL_NAME_LEN);                                                                 \
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
-        reg->GetImageRegistry()->m_workersByName.Lookup(buf, out);                                 \
+        reg->GetImageRegistry()->m_imageSetsByName.Lookup(buf, out);                               \
         field = static_cast<CImageSet*>(out);                                                      \
     } else {                                                                                       \
         field = 0;                                                                                 \

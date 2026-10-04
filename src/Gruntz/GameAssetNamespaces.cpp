@@ -49,7 +49,7 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
             return 0;
         }
         g_resourceInstallActive = true;
-        m_world->GetImageRegistry()->InstallTree(img, "GAME", "_");
+        m_world->GetImageRegistry()->LoadImageSetsFromTree(img, "GAME", "_");
         g_resourceInstallActive = false;
     }
     if (m_world->SoundRegistry()->HasWithPrefix("GAME") == 0) {

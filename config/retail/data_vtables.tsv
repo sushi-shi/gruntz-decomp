@@ -178,7 +178,7 @@ rva	size	name	kind	note
 0x1efca0	0x24	??_7SoundCueRegistry@@6B@	primary	sound-cue registry
 0x1efcc8	0x34	??_7CDDrawPaletteRegistry@@6B@	primary	palette registry
 0x1efd00	0x28	??_7CLogicRecordRegistry@@6B@	primary	
-0x1efd28	0x5c	??_7CDDrawWorkerRegistry@@6B@	primary	
+0x1efd28	0x5c	??_7CImageSetRegistry@@6B@	primary	
 0x1efd88	0x38	??_7CDDrawWorkerList@@6B@	primary	
 0x1efdc0	0x44	??_7CDDrawChildGroup@@6B@	primary	
 0x1efe08	0x28	??_7CDDrawSubMgrPages@@6B@	primary	

@@ -36,7 +36,7 @@ class CDDrawSubMgrPages;
 class CDDrawWorkerList;
 class CImageSet;
 class CDDrawChildGroup;
-class CDDrawWorkerRegistry;
+class CImageSetRegistry;
 class CLogicRecordRegistry;
 class CDDrawPaletteRegistry;
 class SoundCueRegistry;
@@ -100,7 +100,7 @@ public:
         return m_soundRegistry;
     }
 
-    CDDrawWorkerRegistry* GetImageRegistry() {
+    CImageSetRegistry* GetImageRegistry() {
         return m_imageRegistry;
     }
 
@@ -151,7 +151,7 @@ public:
 
     CDDrawChildGroup* m_childGroup;
     CDDrawWorkerList* m_workerList;
-    CDDrawWorkerRegistry* m_imageRegistry;
+    CImageSetRegistry* m_imageRegistry;
 
     CLogicRecordRegistry* m_logicRegistry;
     CDDrawPaletteRegistry* m_paletteRegistry;

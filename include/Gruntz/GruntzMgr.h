@@ -40,7 +40,7 @@ class CFileMemBase;
 
 class SoundCueRegistry;
 
-class CDDrawWorkerRegistry;
+class CImageSetRegistry;
 
 class CImageSet;
 

@@ -1293,15 +1293,15 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     }
 
     SoundCueRegistry* snd = w->SoundRegistry();
-    w->GetImageRegistry()->SumSizesEqual(NULL, 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix(NULL, 1);
     snd->SumAudioBytes(NULL);
     w->GetDeviceManager()->GetCapsChecked();
     w->GetDeviceManager()->GetCapsChecked();
-    w->GetImageRegistry()->SumSizesEqual(NULL, 1);
-    w->GetImageRegistry()->SumSizesEqual("GRUNTZ", 1);
-    w->GetImageRegistry()->SumSizesEqual("GAME", 1);
-    w->GetImageRegistry()->SumSizesEqual("LEVEL", 1);
-    w->GetImageRegistry()->SumSizesEqual("ACTION", 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix(NULL, 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix("GRUNTZ", 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix("GAME", 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix("LEVEL", 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix("ACTION", 1);
     w->SoundRegistry()->SumAudioBytes(NULL);
     w->SoundRegistry()->SumAudioBytes("GRUNTZ");
     w->SoundRegistry()->SumAudioBytes("GAME");

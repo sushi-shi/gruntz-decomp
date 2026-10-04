@@ -91,7 +91,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
             return 0;
         }
         g_resourceInstallActive = true;
-        m_world->GetImageRegistry()->InstallTree(imageSymbols, "MENU", "_");
+        m_world->GetImageRegistry()->LoadImageSetsFromTree(imageSymbols, "MENU", "_");
         g_resourceInstallActive = false;
     }
 
@@ -303,7 +303,7 @@ i32 CMenuState::RestoreGraphics() {
     if (tree == NULL) {
         return 0;
     }
-    if (m_world->GetImageRegistry()->LoadNamespace(tree, "MENU", "_") == -1) {
+    if (m_world->GetImageRegistry()->ReloadImageSetsFromTree(tree, "MENU", "_") == -1) {
         return 0;
     }
     if (RestoreDisplay() == 0) {

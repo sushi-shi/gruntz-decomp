@@ -41,7 +41,7 @@ public:
     virtual CImage* LoadFrame(char* path, i32 index, i32 keyed);
 
     virtual CImage* InsertFrame(struct CRezItm* rec, i32 n, i32 flag);
-    virtual i32 ValidateFramesFromArchive(CRezDir* tab);
+    virtual i32 ReloadFramesFromArchive(CRezDir* tab);
 
     virtual i32 ReloadFrame(CRezItm* rec, i32 n, i32 flag);
 

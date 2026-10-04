@@ -287,7 +287,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         if (!imagez) {
             return 0;
         }
-        m_world->GetImageRegistry()->InstallTree(imagez, "BOOTY", "_");
+        m_world->GetImageRegistry()->LoadImageSetsFromTree(imagez, "BOOTY", "_");
     }
 
     while (ShowCursor(false) >= 0) {
@@ -758,7 +758,7 @@ i32 CBootyState::BuildStatRevealSprites() {
     if (img == NULL) {
         return 0;
     }
-    m_world->GetImageRegistry()->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
+    m_world->GetImageRegistry()->LoadImageSetsFromTree(img, "GRUNTZ_GOKARTGRUNT", "_");
 
     CDDrawChildGroup* f = g_gameReg->World()->ChildGroup();
 
@@ -1482,14 +1482,14 @@ i32 CBootyState::RestoreGraphics() {
     if (booty == NULL) {
         return 0;
     }
-    if (m_world->GetImageRegistry()->LoadNamespace(booty, "BOOTY", "_") == -1) {
+    if (m_world->GetImageRegistry()->ReloadImageSetsFromTree(booty, "BOOTY", "_") == -1) {
         return 0;
     }
     CRezDir* gruntz = m_gruntResources->GetDirFromPath("IMAGEZ");
     if (gruntz == NULL) {
         return 0;
     }
-    if (m_world->GetImageRegistry()->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+    if (m_world->GetImageRegistry()->ReloadImageSetsFromTree(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
     if (m_sequencePhase != BOOTYSEQ_DONE) {
@@ -2497,8 +2497,8 @@ i32 CMultiBootyState::RestoreGraphics() {
     if (!tree) {
         return 0;
     }
-    CDDrawWorkerRegistry* reg = m_world->GetImageRegistry();
-    if (reg->LoadNamespace(tree, "BOOTY", "_") == -1) {
+    CImageSetRegistry* reg = m_world->GetImageRegistry();
+    if (reg->ReloadImageSetsFromTree(tree, "BOOTY", "_") == -1) {
         return 0;
     }
 
@@ -2507,7 +2507,7 @@ i32 CMultiBootyState::RestoreGraphics() {
         return 0;
     }
     reg = m_world->GetImageRegistry();
-    if (reg->LoadNamespace(tree, "GRUNTZ", "_") == -1) {
+    if (reg->ReloadImageSetsFromTree(tree, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -2516,7 +2516,7 @@ i32 CMultiBootyState::RestoreGraphics() {
         return 0;
     }
     reg = m_world->GetImageRegistry();
-    if (reg->LoadNamespace(tree, "LEVEL", "_") == -1) {
+    if (reg->ReloadImageSetsFromTree(tree, "LEVEL", "_") == -1) {
         return 0;
     }
 

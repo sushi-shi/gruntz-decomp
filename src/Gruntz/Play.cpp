@@ -1535,7 +1535,7 @@ void CPlay::ModeCleanup() {
         m_mgr->m_worldSounds->Teardown();
     }
     if (m_world) {
-        m_world->GetImageRegistry()->MapTeardown();
+        m_world->GetImageRegistry()->ClearImageSets();
     }
     if (m_world) {
         m_world->GetAnimationRegistry()->ClearAnimations();
@@ -1563,7 +1563,7 @@ i32 CPlay::RestoreGraphics() {
     if (!h) {
         return 0;
     }
-    if (m_world->GetImageRegistry()->LoadNamespace(h, "", "_") == -1) {
+    if (m_world->GetImageRegistry()->ReloadImageSetsFromTree(h, "", "_") == -1) {
         return 0;
     }
 
@@ -1571,7 +1571,7 @@ i32 CPlay::RestoreGraphics() {
     if (!h) {
         return 0;
     }
-    if (m_world->GetImageRegistry()->LoadNamespace(h, "LEVEL", "_") == -1) {
+    if (m_world->GetImageRegistry()->ReloadImageSetsFromTree(h, "LEVEL", "_") == -1) {
         return 0;
     }
 
@@ -1579,7 +1579,7 @@ i32 CPlay::RestoreGraphics() {
     if (!h) {
         return 0;
     }
-    if (m_world->GetImageRegistry()->LoadNamespace(h, "GRUNTZ", "_") == -1) {
+    if (m_world->GetImageRegistry()->ReloadImageSetsFromTree(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -6097,7 +6097,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         CImage* frame = m_cursorImage;
         i32 v = 0;
         if (frame != NULL) {
-            mc->GetImageRegistry()->AnyValueMatches(frame, buf, &v);
+            mc->GetImageRegistry()->FindFrameIdentity(frame, buf, &v);
         }
         s->Write(buf, SERIAL_NAME_LEN);
         s->Write(&v, sizeof(v));
@@ -6243,7 +6243,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     {
         CObject* found = NULL;
         if (strlen(nameBuf) != 0) {
-            res->GetImageRegistry()->m_workersByName.Lookup(nameBuf, found);
+            res->GetImageRegistry()->m_imageSetsByName.Lookup(nameBuf, found);
             m_cursorSprite = static_cast<CImageSet*>(found);
         } else {
             m_cursorSprite = NULL;

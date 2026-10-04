@@ -920,7 +920,7 @@ i32 CImageSet::BuildFramesFromArchive(CRezDir* tab) {
 }
 
 RVA(0x001522b0, 0xf7)
-i32 CImageSet::ValidateFramesFromArchive(CRezDir* tab) {
+i32 CImageSet::ReloadFramesFromArchive(CRezDir* tab) {
 
     i32 matched = 0;
     i32 liveFrames = 0;

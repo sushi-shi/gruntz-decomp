@@ -7,7 +7,7 @@
 #include <Utils/MapTyped.h>
 
 inline CImageSet* CDDrawSurfaceMgr::FindWorker(LPCTSTR name) {
-    return MapFind<CImageSet>(m_imageRegistry->m_workersByName, name);
+    return MapFind<CImageSet>(m_imageRegistry->m_imageSetsByName, name);
 }
 
 inline CImage* CDDrawSurfaceMgr::FindFrame(LPCTSTR name, i32 index) {
