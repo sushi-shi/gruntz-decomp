@@ -93,10 +93,10 @@ i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path) {
     }
     g_serialCounter = 0;
     memset(g_saveBuf, 0, 0x90);
-    if (mgr->m_world == NULL) {
+    if (mgr->World() == NULL) {
         return 0;
     }
-    return mgr->m_world->RestoreChildren(&GameSerializationCallback, path, LOGIC_UNSET)
+    return mgr->World()->RestoreChildren(&GameSerializationCallback, path, LOGIC_UNSET)
            != LOGIC_UNSET;
 }
 

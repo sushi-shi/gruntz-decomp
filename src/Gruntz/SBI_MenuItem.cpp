@@ -103,7 +103,7 @@ i32 CSBI_MenuItem::Render() {
         if (f) {
             i32 y = m_rect.top + f->GetAnchorY();
             i32 x = m_rect.left + f->GetAnchorX();
-            f->RenderFrame(g_gameReg->m_world->GetDrawTarget()->m_backPair, x, y, 0);
+            f->RenderFrame(g_gameReg->World()->GetDrawTarget()->m_backPair, x, y, 0);
         }
     }
     return 1;

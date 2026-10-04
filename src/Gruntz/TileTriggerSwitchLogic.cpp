@@ -109,7 +109,7 @@ RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
@@ -126,7 +126,7 @@ RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
@@ -187,7 +187,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                registry = gameMgr->m_world->SoundRegistry();
+                registry = gameMgr->World()->SoundRegistry();
                 if (registry->IsSilent() == false) {
                     SoundCue* cue = static_cast<SoundCue*>(registry->Lookup("GAME_PYRAMIDMOVE"));
                     if (cue) {
@@ -202,7 +202,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                registry = gameMgr->m_world->SoundRegistry();
+                registry = gameMgr->World()->SoundRegistry();
                 if (registry->IsSilent() == false) {
                     SoundCue* cue =
                         static_cast<SoundCue*>(registry->Lookup("LEVEL_WATERBRIDGEMOVE"));
@@ -218,7 +218,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                gameMgr->m_world->SoundRegistry()->PlayCueIfElapsed("LEVEL_WATERBRIDGEMOVE");
+                gameMgr->World()->SoundRegistry()->PlayCueIfElapsed("LEVEL_WATERBRIDGEMOVE");
             }
             return;
         case TILEKIND_DEATHBRIDGE_DOWN:
@@ -227,7 +227,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                gameMgr->m_world->SoundRegistry()->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
+                gameMgr->World()->SoundRegistry()->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case TILEKIND_TOGGLEDEATHBRIDGE_DOWN:
@@ -236,7 +236,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                gameMgr->m_world->SoundRegistry()->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
+                gameMgr->World()->SoundRegistry()->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case TILEKIND_CRUMBLEWATERBRIDGE:
@@ -245,7 +245,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
             if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
-                gameMgr->m_world->SoundRegistry()->PlayCueIfElapsed("LEVEL_CRUMBLE");
+                gameMgr->World()->SoundRegistry()->PlayCueIfElapsed("LEVEL_CRUMBLE");
             }
             return;
     }
@@ -795,7 +795,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
             case TILEKIND_COVERED_POWERUP: {
                 i32 ty = m_tileY;
                 CGruntzMgr* reg = g_gameReg;
-                CDDrawWorkerHost* L = reg->m_world->GetLevel()->m_mainPlane;
+                CDDrawWorkerHost* L = reg->World()->GetLevel()->m_mainPlane;
                 i32 tx = m_tileX;
                 i32 v = L->m_tileHandles[tx + L->m_tileRowOffsets[ty]] + 1;
                 CDDrawWorkerHost* L2 = g_gameReg->World()->GetLevel()->m_mainPlane;
@@ -882,9 +882,10 @@ i32 CTileSecretTriggerLogic::Tick() {
     i32 grp = m_tileX;
     i32 idx = m_tileY;
     i32 newTok =
-        mgr->m_world->m_level->m_mainPlane
-            ->m_tileHandles[mgr->m_world->m_level->m_mainPlane->m_tileRowOffsets[idx] + grp];
-    SET_WORKER_HOST_CELL(g_gameReg->m_world->m_level->m_mainPlane, grp, idx, oldTok);
+        mgr->World()
+            ->m_level->m_mainPlane
+            ->m_tileHandles[mgr->World()->m_level->m_mainPlane->m_tileRowOffsets[idx] + grp];
+    SET_WORKER_HOST_CELL(g_gameReg->World()->m_level->m_mainPlane, grp, idx, oldTok);
     mgr->GetTileGrid()->ComputeCellFlags(grp, idx, oldTok);
     m_tileToken = newTok;
     return 1;
@@ -991,7 +992,7 @@ RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
@@ -1004,7 +1005,7 @@ RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
@@ -1103,7 +1104,7 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
 
     i32 ty = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tx = m_tileX;
     if (layer->m_tileHandles[tx + layer->m_tileRowOffsets[ty]] == IDX(code)) {
         return 0;

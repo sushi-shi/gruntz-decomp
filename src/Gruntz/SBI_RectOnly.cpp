@@ -263,7 +263,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             m_redrawFrames--;
             i32 v = m_barFrameGate;
             if (v > SCREEN_H_PX) {
-                CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->GetSurface();
+                CDDSurface* tgt = (g_gameReg->World()->m_drawTarget)->m_backPair->GetSurface();
 
                 RECT below;
                 below.left = m_barRect.left;
@@ -276,7 +276,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             if (cfg) {
                 CImage* entry = DDRAW_WORKER_FRAME_AT_UNCHECKED(cfg, cfg->GetMinIndex());
                 if (entry) {
-                    CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
+                    CDDrawSubMgrPages* l1 = g_gameReg->World()->m_drawTarget;
                     entry->RenderFrame(
                         l1->m_backPair,
                         entry->GetAnchorX() + m_barRect.left,

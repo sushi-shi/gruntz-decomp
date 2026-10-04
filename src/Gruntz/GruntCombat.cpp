@@ -1783,7 +1783,7 @@ void CGrunt::StepBehavior(char*) {
             CGameObject* found = NULL;
             CGameObject* result = NULL;
             if (MapLookupById(
-                    reg->m_world->ChildGroup()->m_registeredGameObjectsById,
+                    reg->World()->ChildGroup()->m_registeredGameObjectsById,
                     cellObj,
                     found
                 )) {

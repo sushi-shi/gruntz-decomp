@@ -1704,19 +1704,19 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                    mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                    mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 } else {
-                    mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                    mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     mgr->FinalizeLevelAndShowResults();
                 }
                 return 1;
             }
             if (vk == 'N' || vk == VK_ESCAPE) {
-                mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                 this->CloseLevelOverlay(0);
                 return 1;
             }
@@ -1725,7 +1725,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Q') {
                 if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                    mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                    mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                     if (g_gameReg->GetTriggerMgr()->GetFinishState() == FINISH_STATE_VICTORY) {
                         g_gameReg->CommitSinglePlayerProgress();
                     }
@@ -1735,7 +1735,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
 
             if (vk == 'S' && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+                mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
                 mgr->FinalizeLevelAndShowResults();
             }
             if (vk == 'R') {
@@ -1870,7 +1870,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (h->GetFrameGate() != false) {
             this->m_mgr->FinishLevel(h->ToggleFrameGate(), true);
         }
-        this->m_mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        this->m_mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         this->OpenLevelOverlay(true);
         return 1;
     }
@@ -1977,7 +1977,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2002,7 +2002,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2023,7 +2023,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2047,7 +2047,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             return 1;
         }
-        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         this->m_statusBar->AdvanceTab(g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0));
         return 1;
     }
@@ -2056,7 +2056,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (statusBar->m_chatBoxDisabled != false) {
             return 1;
         }
-        mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
+        mgr->World()->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != false) {
             return 1;
@@ -2117,7 +2117,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         i32 my = this->m_cursorY;
-        LevelCoordRect* r = &h->m_world->GetLevel()->m_viewportRect;
+        LevelCoordRect* r = &h->World()->GetLevel()->m_viewportRect;
         i32 x0 = r->left;
         i32 y0 = r->top;
         i32 x1 = r->right;
@@ -2139,7 +2139,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         i32 mx = this->m_cursorX;
-        CGameLevel* q = h->m_world->GetLevel();
+        CGameLevel* q = h->World()->GetLevel();
         LevelCoordRect* r = &q->m_viewportRect;
         i32 x0 = r->left;
         i32 y0 = r->top;
@@ -2161,7 +2161,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         i32 my = this->m_cursorY;
-        CGameLevel* q = h->m_world->GetLevel();
+        CGameLevel* q = h->World()->GetLevel();
         CDDrawWorkerHost* g = q->m_mainPlane;
         RECT* view = g->GetPlaneViewRect();
         i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -2521,7 +2521,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 return 1;
             }
         }
-        CGameLevel* geom = m_mgr->m_world->GetLevel();
+        CGameLevel* geom = m_mgr->World()->GetLevel();
         CDDrawWorkerHost* cam = geom->m_mainPlane;
         RECT* view = cam->GetPlaneViewRect();
         sx = view->left - geom->m_viewportRect.left + xr;
@@ -2672,7 +2672,7 @@ drag_box: {
     if (m_mgr->GetFrameGate() != false) {
         goto ret1;
     }
-    LevelCoordRect wr = m_mgr->m_world->GetLevel()->GetViewportRect();
+    LevelCoordRect wr = m_mgr->World()->GetLevel()->GetViewportRect();
     if (!(x < wr.right && x >= wr.left && y < wr.bottom)) {
         goto ret1;
     }
@@ -2791,7 +2791,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
 
     if (m_statusBar->GetState() == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
-        SoundCueRegistry* registry = m_mgr->m_world->SoundRegistry();
+        SoundCueRegistry* registry = m_mgr->World()->SoundRegistry();
         registry->PlayCue("GAME_TABHIGHLIGHT1");
         m_statusBar->RestoreStatusBar();
         if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
@@ -2839,7 +2839,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
 
-    h = m_mgr->m_world->GetLevel();
+    h = m_mgr->World()->GetLevel();
     vr = h->m_mainPlane->GetPlaneViewRect();
     px = vr->left - h->m_viewportRect.left + x;
     py = vr->top - h->m_viewportRect.top + y;
@@ -2930,7 +2930,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_mgr->GetTriggerMgr()->m_selectedUnitIds.IsEmpty()) {
         return 1;
     }
-    CGameLevel* ph = m_mgr->m_world->GetLevel();
+    CGameLevel* ph = m_mgr->World()->GetLevel();
     LevelCoordRect pr = ph->GetViewportRect();
     if (::PtInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->GetLevel();
@@ -3922,7 +3922,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     CPlay* self = this;
     CGruntzMgr* w = m_mgr;
     b32 changed = false;
-    CDDrawWorkerHost* g = w->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* g = w->World()->GetLevel()->m_mainPlane;
 
     i32 sx = g->GetScrollPixelX();
     i32 sy = g->GetScrollPixelY();
@@ -5382,7 +5382,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
     CTriggerMgr* g = w->GetTriggerMgr();
     g->StopCameraTracking();
-    CDDrawWorkerHost* pg = m_mgr->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* pg = m_mgr->World()->GetLevel()->m_mainPlane;
     pg->SetScrollPosition(x, y);
     return 1;
 }
@@ -5454,14 +5454,14 @@ i32 CPlay::ResetPlayState() {
             }
             (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
         }
-        CGameLevel* g = m_mgr->m_world->GetLevel();
+        CGameLevel* g = m_mgr->World()->GetLevel();
         ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
     } else {
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
             ResetGoals(slot->m_focusX, slot->m_focusY);
         } else {
-            CGameLevel* g = m_mgr->m_world->GetLevel();
+            CGameLevel* g = m_mgr->World()->GetLevel();
             ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
         }
     }

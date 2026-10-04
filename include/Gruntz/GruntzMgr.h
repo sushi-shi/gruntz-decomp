@@ -335,7 +335,7 @@ public:
         m_isBuiltInBattlezLevel = builtIn;
     }
 
-    CDDrawSurfaceMgr* World() {
+    CDDrawSurfaceMgr* const& World() {
         return m_world;
     }
 

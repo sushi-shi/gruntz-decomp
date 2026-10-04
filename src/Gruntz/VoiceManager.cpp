@@ -37,7 +37,7 @@ BOOL CVoiceManager::Init(CGruntzMgr* game) {
     CLEAR_VOICE_INDICATORS;
     memset(m_streamVoices, 0, sizeof(m_streamVoices));
     m_game = game;
-    m_world = game->m_world;
+    m_world = game->World();
     m_voiceVolume = 0x64;
     return BuildVoiceGroups() != false;
 }

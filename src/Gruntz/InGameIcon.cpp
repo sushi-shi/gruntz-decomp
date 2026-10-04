@@ -660,7 +660,7 @@ i32 CInGameIcon::Reposition() {
 
             CGameObject* found = NULL;
             if (MapLookupById(
-                    reg->m_world->ChildGroup()->m_registeredGameObjectsById,
+                    reg->World()->ChildGroup()->m_registeredGameObjectsById,
                     cellVal,
                     found
                 )
@@ -839,7 +839,7 @@ i32 CInGameText::Update() {
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;
         if (::PtInRect(&reg->m_viewBounds, x, y)) {
-            PlayRegistryCueIfElapsed(reg->m_world->SoundRegistry(), "GAME_HELPBOOK");
+            PlayRegistryCueIfElapsed(reg->World()->SoundRegistry(), "GAME_HELPBOOK");
         }
 
         m_cachedPlayerIndex = playerIndex;

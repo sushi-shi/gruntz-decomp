@@ -161,8 +161,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_gruntRatio = g_buteMgr.GetDword("Battlez", "GruntRatio", 25);
     m_defenderChance = g_buteMgr.GetDword("Battlez", "DefenderChance", 50);
 
-    for (CGameObject* cur = mgr->m_world->ChildGroup()->FirstChild(); cur != NULL;
-         cur = mgr->m_world->ChildGroup()->NextChild()) {
+    for (CGameObject* cur = mgr->World()->ChildGroup()->FirstChild(); cur != NULL;
+         cur = mgr->World()->ChildGroup()->NextChild()) {
         if (cur->GetLogicRecord()->GetDispatch() == &DispatchGruntCreationPointLogic
             && cur->GetSmarts() == playerIndex) {
             Coord* slot = g_coordPool.Pop();
@@ -172,8 +172,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         }
     }
 
-    for (CGameObject* cur2 = mgr->m_world->ChildGroup()->FirstChild(); cur2 != NULL;
-         cur2 = mgr->m_world->ChildGroup()->NextChild()) {
+    for (CGameObject* cur2 = mgr->World()->ChildGroup()->FirstChild(); cur2 != NULL;
+         cur2 = mgr->World()->ChildGroup()->NextChild()) {
         if (cur2->GetLogicRecord()->GetDispatch() == &DispatchExitTriggerLogic
             && cur2->GetSmarts() == playerIndex) {
             m_marker.m_x = cur2->m_screenX / TILE_SIZE_PX;
@@ -182,8 +182,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         }
     }
 
-    for (CGameObject* cur3 = mgr->m_world->ChildGroup()->FirstChild(); cur3 != NULL;
-         cur3 = mgr->m_world->ChildGroup()->NextChild()) {
+    for (CGameObject* cur3 = mgr->World()->ChildGroup()->FirstChild(); cur3 != NULL;
+         cur3 = mgr->World()->ChildGroup()->NextChild()) {
         if (cur3->GetLogicRecord()->GetDispatch() == &DispatchWayPointLogic
             && cur3->GetSmarts() == playerIndex) {
             Coord* slot = g_coordPool.Pop();
@@ -519,7 +519,7 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
 
 candidateFound:
     Coord screen;
-    m_ctx->m_world->GetLevel()->m_mainPlane->SnapToTileCenter(
+    m_ctx->World()->GetLevel()->m_mainPlane->SnapToTileCenter(
         &screen,
         cand->m_x << TILE_SHIFT_PX,
         cand->m_y << TILE_SHIFT_PX
@@ -1993,7 +1993,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         board->Clip(&box);
     }
 
-    CDDrawChildGroup* coll = m_ctx->m_world->ChildGroup();
+    CDDrawChildGroup* coll = m_ctx->World()->ChildGroup();
     CGameObject* g = coll->FirstSerialChild();
     while (g != NULL) {
         if (g->GetLogicRecord()->GetDispatch() == &DispatchInGameIconLogic && !g->IsHidden()) {
@@ -2066,7 +2066,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
 
-        g = m_ctx->m_world->ChildGroup()->Drain();
+        g = m_ctx->World()->ChildGroup()->Drain();
     }
     m_board->Clip(static_cast<const RECT*>(0));
     return 0;
@@ -2745,7 +2745,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                         unit->m_blockedVoicePending = false;
                         CGameObject* lvl = unit->m_object;
 
-                        RECT* hit = g_gameReg->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
+                        RECT* hit = g_gameReg->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
                         if (::PtInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
                             g_gameReg->VoiceMgr()->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }

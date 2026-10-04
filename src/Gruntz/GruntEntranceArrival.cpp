@@ -389,7 +389,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 i32 tier = cueTier + activeSpell - 1;
                 CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds =
-                    g->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
+                    g->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
                     g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
@@ -405,7 +405,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 i32 tier = cueTier + m_scrollSpell - 1;
                 CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds =
-                    g->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
+                    g->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
                     g->VoiceMgr()->PlayVoice(this, tier, 0, -1, -1, -1);
@@ -482,11 +482,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     i32 xx = object->m_screenX;
 
     if (sel == 0) {
-        if (::PtInRect(g->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect(), xx, yy)) {
+        if (::PtInRect(g->World()->GetLevel()->m_mainPlane->GetPlaneViewRect(), xx, yy)) {
             g->VoiceMgr()->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
         }
     } else {
-        if (::PtInRect(g->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect(), xx, yy)) {
+        if (::PtInRect(g->World()->GetLevel()->m_mainPlane->GetPlaneViewRect(), xx, yy)) {
             g->VoiceMgr()->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
         }
     }
@@ -865,7 +865,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
             CGruntzMgr* game = g_gameReg;
             i32 screenY = gruntSprite->m_screenY;
             i32 screenX = gruntSprite->m_screenX;
-            const RECT& rect = *game->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
+            const RECT& rect = *game->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
             if (::PtInRect(&rect, screenX, screenY)) {
                 game->VoiceMgr()->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
                 StopVehicleLoopSound();
@@ -1319,7 +1319,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         return 0;
     }
     CGameObject* found = LookupActiveObject(
-        g->m_world->ChildGroup()->m_registeredGameObjectsById,
+        g->World()->ChildGroup()->m_registeredGameObjectsById,
         static_cast<void*>(cellObj)
     );
     if (found == NULL) {

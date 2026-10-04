@@ -339,7 +339,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
     RetireScene(0x50, 0x3e8, 0, true);
 
     CGruntzMgr* reg = g_gameReg;
-    SoundCueRegistry* set = reg->m_world->SoundRegistry();
+    SoundCueRegistry* set = reg->World()->SoundRegistry();
     i32 token = reg->GetSoundVolume();
     if (set->IsSilent() == false) {
         SoundCue* found = set->FindCue("BOOTY_LOOP");

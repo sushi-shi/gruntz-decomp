@@ -35,7 +35,7 @@
     do {                                                                                           \
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (CGameLevel::PointInBounds(                                                             \
-                _g->m_world->m_level->m_mainPlane->GetPlaneViewRect(),                             \
+                _g->World()->m_level->m_mainPlane->GetPlaneViewRect(),                             \
                 m_object->m_screenX,                                                               \
                 m_object->m_screenY                                                                \
             )) {                                                                                   \
@@ -47,7 +47,7 @@
     do {                                                                                           \
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (::PtInRect(                                                                            \
-                _g->m_world->m_level->m_mainPlane->GetPlaneViewRect(),                             \
+                _g->World()->m_level->m_mainPlane->GetPlaneViewRect(),                             \
                 m_object->m_screenX,                                                               \
                 m_object->m_screenY                                                                \
             )) {                                                                                   \

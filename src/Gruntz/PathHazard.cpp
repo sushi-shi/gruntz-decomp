@@ -320,7 +320,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     CWwdSpriteObject* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
-        PlayRegistryCueIfElapsed(reg->m_world->SoundRegistry(), "LEVEL_CLOUDHAZARDKILL");
+        PlayRegistryCueIfElapsed(reg->World()->SoundRegistry(), "LEVEL_CLOUDHAZARDKILL");
     }
     return 1;
 }

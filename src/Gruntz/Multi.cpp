@@ -2545,7 +2545,7 @@ i32 CMulti::WaitForOtherPlayers() {
             rc.bottom = mode.cy;
             rc.left = 0;
             rc.top = 0;
-            DrawTextToFrontSurface(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+            DrawTextToFrontSurface(g->World(), &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
             i32 resend = 0x1388;
             i32 abort = 0x1d4c0;
