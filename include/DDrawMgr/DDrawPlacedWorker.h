@@ -30,7 +30,7 @@ public:
 
     virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
 
-    i32 m_refCount;
+    i32 m_renderPassesRemaining;
 
     union {
         i32 m_contentValue;

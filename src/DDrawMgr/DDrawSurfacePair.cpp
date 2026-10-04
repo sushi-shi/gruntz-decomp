@@ -66,13 +66,13 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
         POSITION cur = pos;
         CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
         child->RenderFrame(backBuffer, overlay);
-        child->m_refCount--;
+        child->m_renderPassesRemaining--;
         if ((overlay->GetSurface() != NULL
              && !HAS(
                  static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
                  SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
              ))
-            || child->m_refCount <= 0) {
+            || child->m_renderPassesRemaining <= 0) {
             m_workers.RemoveAt(cur);
             if (child) {
                 delete child;
