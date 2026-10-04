@@ -56,6 +56,10 @@ public:
         m_humanControlled = controlled;
     }
 
+    i32 GetPlayerIndex() const {
+        return m_playerIndex;
+    }
+
     i32 GetNetworkPlayerId() const {
         return m_networkPlayerId;
     }

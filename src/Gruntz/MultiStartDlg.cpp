@@ -552,7 +552,7 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
     GruntzPlayer* player = &m_gameManager->GetPlayer(slot);
     if (typeControl->GetCurSel() == 0) {
         if (player->IsHumanControlled() && player->IsActive()) {
-            g_multiState->DropLobbyPlayer(player->m_playerIndex);
+            g_multiState->DropLobbyPlayer(player->GetPlayerIndex());
         } else if (!player->IsHumanControlled() && player->IsActive()) {
             SetPlayerColorAvailable(player->GetColor(), true);
         }
@@ -564,7 +564,7 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
         if (static_cast<MultiplayerPlayerKind>(typeControl->GetCurSel()) != MULTI_PLAYER_HUMAN) {
             if (player->IsHumanControlled() != false) {
                 if (player->IsActive() != false) {
-                    g_multiState->DropLobbyPlayer(player->m_playerIndex);
+                    g_multiState->DropLobbyPlayer(player->GetPlayerIndex());
                 }
                 ColorTint freeColor = FindAvailablePlayerColor();
                 player->m_color = freeColor;
@@ -1090,7 +1090,7 @@ i32 CMultiStartDlg::GetLocalPlayerSlotIndex() {
     if (slot == NULL) {
         return -1;
     }
-    return slot->m_playerIndex;
+    return slot->GetPlayerIndex();
 }
 
 RVA(0x000c4b60, 0x77)

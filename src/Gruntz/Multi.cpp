@@ -446,7 +446,7 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
     if (!host) {
         return 0;
     }
-    g_curPlayer = host->m_playerIndex;
+    g_curPlayer = host->GetPlayerIndex();
     srand(m_rngSeed);
     g_playersInOptionsCount = 0;
     g_frameDelta = 0;
@@ -1785,7 +1785,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (player == NULL) {
                 return 1;
             }
-            m_playerLatencyMs[player->m_playerIndex] = msg->m_value;
+            m_playerLatencyMs[player->GetPlayerIndex()] = msg->m_value;
             break;
         }
 
@@ -1805,8 +1805,8 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (player == NULL) {
                 return 1;
             }
-            m_levelChecksumReceived[player->m_playerIndex] = 1;
-            m_levelChecksums[player->m_playerIndex] = msg->m_value;
+            m_levelChecksumReceived[player->GetPlayerIndex()] = 1;
+            m_levelChecksums[player->GetPlayerIndex()] = msg->m_value;
             break;
         }
 
@@ -2271,7 +2271,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     memset(&packet, 0, sizeof(packet));
     packet.m_flags |= NET_PACKET_APPLICATION;
     packet.m_messageId = STAT_PLAYER_UPDATE;
-    packet.m_playerIndex = player->m_playerIndex;
+    packet.m_playerIndex = player->GetPlayerIndex();
 
     i32 v = player->GetColor();
     packet.m_color = static_cast<u8>(v);
@@ -3144,7 +3144,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     for (; seq < end; seq++) {
 
         NetGameMgr()->GetCommandMgr()->RemoveScheduledCommand(
-            slot->GetPlayer()->m_playerIndex,
+            slot->GetPlayer()->GetPlayerIndex(),
             seq
         );
         slot->RemoveRecord(seq / static_cast<i32>(m_commandDelay));
