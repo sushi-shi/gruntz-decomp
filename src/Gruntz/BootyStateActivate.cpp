@@ -327,7 +327,6 @@ void CBootyState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-// @early-stop
 RVA(0x00018d30, 0xcd)
 i32 CBootyState::EnterState(GameStateId previousState) {
     while (ShowCursor(false) >= 0)
@@ -339,8 +338,9 @@ i32 CBootyState::EnterState(GameStateId previousState) {
     RetireScene(0x50, 0x3e8, 0, true);
 
     CGruntzMgr* reg = g_gameReg;
-    SoundCueRegistry* set = reg->World()->SoundRegistry();
+    CDDrawSurfaceMgr* world = reg->World();
     i32 token = reg->GetSoundVolume();
+    SoundCueRegistry* set = world->SoundRegistry();
     if (set->IsSilent() == false) {
         SoundCue* found = set->FindCue("BOOTY_LOOP");
         if (found != NULL) {
