@@ -99,6 +99,10 @@ public:
         m_moveMode = mode;
     }
 
+    i32 GetDamage() const {
+        return m_damage;
+    }
+
     i32 GetScore() const {
         return m_score;
     }
@@ -176,6 +180,10 @@ public:
     i32 NotifyForEventCode(i32 eventCode);
 
     void AttachToOwner(CDDrawSurfaceMgr* owner, i32 id);
+
+    const i32& GetSortKey() const {
+        return m_sortKey;
+    }
 
     void SetSortKey(i32 key) {
         if (m_sortKey != key) {

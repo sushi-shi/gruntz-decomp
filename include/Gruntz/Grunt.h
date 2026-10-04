@@ -315,6 +315,8 @@ public:
     }
 
     void ResetToSeek();
+    void ResetArrivalFlags();
+    void RepathToward(CGrunt* target);
 
     GruntAiState GetAiState() const {
         return m_aiState;

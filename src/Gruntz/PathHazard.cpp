@@ -184,7 +184,7 @@ i32 CPathHazard::Tick() {
             m_posX = static_cast<double>(m_wpX);
             m_posY = static_cast<double>(wy);
             this->Arrive();
-            i32 segs = m_object->m_damage;
+            i32 segs = m_object->GetDamage();
             if (segs > 0) {
                 m_leg.Start(segs);
                 SET_ANIMATION_ACT("B");

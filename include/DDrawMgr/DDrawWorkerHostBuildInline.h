@@ -16,6 +16,6 @@
         UpdatePlaneViewRect();                                                                     \
     }
 
-#define SET_TILE_SIZE_FROM_IMAGE(image) SetTileSize((image)->m_width, (image)->m_height)
+#define SET_TILE_SIZE_FROM_IMAGE(image) SetTileSize((image)->GetWidth(), (image)->GetHeight())
 
 #endif // GRUNTZ_CDDRAWWORKERHOSTBUILDINLINE_H

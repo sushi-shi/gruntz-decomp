@@ -454,7 +454,7 @@ i32 CTeleporter::Update() {
         CWwdSpriteObject* spawned = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             s->m_powerup * TILE_SIZE_PX + TILE_HALF_PX,
-            s->m_damage * TILE_SIZE_PX + TILE_HALF_PX,
+            s->GetDamage() * TILE_SIZE_PX + TILE_HALF_PX,
             0,
             "Teleporter",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE

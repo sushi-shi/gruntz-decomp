@@ -17,13 +17,13 @@ GZ_ENUM_CONST_BEGIN(ArrivalFlagsPreset)
     ARRIVAL_FLAGS_ENEMY = 0x1c000d83
 GZ_ENUM_CONST_END(ArrivalFlagsPreset)
 
-inline void ResetArrivalFlags(CGrunt* grunt) {
-    if (grunt->m_aiType == AI_NONE) {
-        grunt->m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-    } else if (grunt->m_aiType == AI_BATTLEZ_PATH) {
-        grunt->m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
+inline void CGrunt::ResetArrivalFlags() {
+    if (m_aiType == AI_NONE) {
+        m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
+    } else if (m_aiType == AI_BATTLEZ_PATH) {
+        m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
     } else {
-        grunt->m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
+        m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
     }
 }
 

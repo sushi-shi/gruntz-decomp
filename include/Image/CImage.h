@@ -73,6 +73,14 @@ public:
     void BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst);
     void BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst);
 
+    const i32& GetWidth() const {
+        return m_width;
+    }
+
+    const i32& GetHeight() const {
+        return m_height;
+    }
+
     CDDrawShadeBlit* GetShadeBlitter() const {
         return m_owned;
     }

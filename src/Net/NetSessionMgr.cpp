@@ -694,7 +694,7 @@ i32 CNetSession::ComputeChecksum() {
             if (grunt != NULL) {
                 sum += IDX(grunt->m_facing.m_direction) + grunt->GetStamina()
                        + grunt->GetToyTimePercent() + grunt->GetHealth()
-                       + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
+                       + grunt->m_object->m_screenY + grunt->m_object->GetSortKey()
                        + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
                        + grunt->LastTilePx().m_y;
 

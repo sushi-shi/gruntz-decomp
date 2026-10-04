@@ -82,7 +82,7 @@ RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 RVA(0x0015b650, 0x4d)
 void CGameObject::Notify(CGameObject* p) {
     if (m_flags & IDX(WWD_GAME_OBJECT_FLAG_DAMAGE_HEALTH_DIRECTLY)) {
-        m_health -= p->m_damage;
+        m_health -= p->GetDamage();
         if (m_health <= 0) {
             m_logicRecord->SetLogicEvent(ACT_HEALTH_DEPLETED);
         }

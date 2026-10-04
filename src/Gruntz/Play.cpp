@@ -3718,9 +3718,9 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     }
 
     screenRect->left = x - m_cursorImage->GetAnchorX();
-    screenRect->right = m_cursorImage->m_width + screenRect->left;
+    screenRect->right = m_cursorImage->GetWidth() + screenRect->left;
     screenRect->top = y - m_cursorImage->GetAnchorY();
-    screenRect->bottom = m_cursorImage->m_height + screenRect->top;
+    screenRect->bottom = m_cursorImage->GetHeight() + screenRect->top;
     tagSIZE mode = m_mgr->GetModeSize();
     if (screenRect->left < 0) {
         screenRect->left = 0;
@@ -4522,7 +4522,7 @@ b32 CPlay::PlaceStartGruntz() {
                     entranceMode,
                     obj->GetScore(),
                     obj->m_powerup,
-                    obj->m_damage,
+                    obj->GetDamage(),
                     obj->GetPoints(),
                     obj->m_direction,
                     record->m_minX,
@@ -5292,7 +5292,7 @@ i32 CPlay::AddLevelGruntz() {
                 GRUNT_ENTRANCE_NONE,
                 g->GetScore(),
                 g->m_powerup,
-                g->m_damage,
+                g->GetDamage(),
                 g->GetPoints(),
                 g->m_direction,
                 g->GetLogicRecord()->m_minX,
@@ -5622,7 +5622,7 @@ i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAs
                         loadedAssetGroups[v] = 1;
                     }
                 }
-                v = obj->m_damage;
+                v = obj->GetDamage();
                 if (v) {
                     if (!SetGruntTypeAssetsLoaded(
                             static_cast<PickupType>(v),

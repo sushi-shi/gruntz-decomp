@@ -152,7 +152,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_aiState = AISTATE_SEEK;
                 return 1;
             }
-            RepathToward(this, t);
+            RepathToward(t);
             if (m_inCombat == false && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && IsGruntAtSavedScreenPos(t)) {

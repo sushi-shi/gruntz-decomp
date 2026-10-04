@@ -2622,8 +2622,8 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     if (e == NULL) {
         return 0;
     }
-    i32 monolithWidth = e->m_width;
-    i32 monolithHeight = e->m_height;
+    i32 monolithWidth = e->GetWidth();
+    i32 monolithHeight = e->GetHeight();
     CDDrawWorkerHost* found =
         static_cast<CDDrawWorkerHost*>(m_world->GetLevel()->FindPlaneByName("MONOLITH"));
     if (found == NULL) {

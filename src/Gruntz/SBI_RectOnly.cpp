@@ -336,8 +336,8 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CImage* L = r->GetFrameImage();
     i32 xlo = r->m_screenX - L->GetAnchorX();
     i32 ylo = r->m_screenY - L->GetAnchorY();
-    i32 xhi = L->m_width + xlo;
-    i32 yhi = L->m_height + ylo;
+    i32 xhi = L->GetWidth() + xlo;
+    i32 yhi = L->GetHeight() + ylo;
     if (x >= xhi || x < xlo || y >= yhi || y < ylo) {
         return 0;
     }

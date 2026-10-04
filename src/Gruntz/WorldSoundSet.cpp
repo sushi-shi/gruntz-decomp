@@ -622,7 +622,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
                         layer->GetSound(),
                         0x64,
                         &rc,
-                        obj->m_damage,
+                        obj->GetDamage(),
                         obj->m_extent.left,
                         obj->m_extent.top,
                         obj->m_extent.right,
@@ -634,7 +634,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
                         layer->GetSound(),
                         0x64,
                         &rc,
-                        obj->m_damage,
+                        obj->GetDamage(),
                         0
                     );
                 }
@@ -700,7 +700,7 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
             pt.m_y = obj->m_screenY;
 
             CAmbientPosSound* v =
-                set->CreatePositionedFromSound(layer->GetSound(), 0x64, &pt, obj->m_damage, 0);
+                set->CreatePositionedFromSound(layer->GetSound(), 0x64, &pt, obj->GetDamage(), 0);
             if (v != NULL) {
                 record->m_positionedSound = v;
             }

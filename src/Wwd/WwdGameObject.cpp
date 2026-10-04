@@ -972,7 +972,7 @@ i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame) {
-            i32 size = frame->m_height * frame->m_width;
+            i32 size = frame->GetHeight() * frame->GetWidth();
             if (frame->m_surface && frame->m_surface->GetBitDepth() == BPP_RGB_16) {
                 size += size;
             }

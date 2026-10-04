@@ -94,7 +94,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_object->m_animationCursor.SetConsumeDraw(false);
     m_object->SetSmarts(IDX(g_areaHazardDeath));
     m_activeWindow = 0;
-    m_idleWindow = m_object->m_damage;
+    m_idleWindow = m_object->GetDamage();
     m_pulseEpoch = g_frameTime;
     CAniElement* entry = MapFind<CAniElement>(
         g_gameReg->World()->GetAnimationRegistry()->m_animations,
@@ -106,7 +106,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     } else {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x461);
     }
-    if (m_object->m_damage == 0) {
+    if (m_object->GetDamage() == 0) {
         m_idleWindow = m_activeWindow;
     }
 }
@@ -157,7 +157,7 @@ i32 CStaticHazard::UpdateActiveState() {
 
         if (m_fired != false) {
 
-            if (m_object->m_damage == 0) {
+            if (m_object->GetDamage() == 0) {
 
                 SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
                 {
@@ -183,7 +183,7 @@ i32 CStaticHazard::UpdateActiveState() {
             }
             return 0;
         }
-    } else if (m_fired == false && m_object->m_damage == 0) {
+    } else if (m_fired == false && m_object->GetDamage() == 0) {
 
         SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
         {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
