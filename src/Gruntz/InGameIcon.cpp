@@ -728,10 +728,7 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = MapFind<SoundCue>(
-                    m_ownerLogicRecord->OwnerMgr()->m_soundRegistry->m_cues,
-                    name
-                );
+                m_cue = m_ownerLogicRecord->OwnerMgr()->m_soundRegistry->FindCue(name);
             } else {
                 m_cue = NULL;
             }

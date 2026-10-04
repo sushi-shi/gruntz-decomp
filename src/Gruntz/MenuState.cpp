@@ -138,10 +138,8 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    SoundCue* menuMusicCue = MapFind<SoundCue>(
-        (static_cast<SoundCueRegistry*>(g_gameReg->World()->SoundRegistry()))->m_cues,
-        "MENU_MENU"
-    );
+    SoundCue* menuMusicCue =
+        (static_cast<SoundCueRegistry*>(g_gameReg->World()->SoundRegistry()))->FindCue("MENU_MENU");
     m_menuMusicCue = menuMusicCue;
     return 1;
 }
