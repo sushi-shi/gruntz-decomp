@@ -5,14 +5,17 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerList.h>
+#include <DinMgr2/DirectInputMgr2.h>
 #include <Dsndmgr/MidiManager.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/InputState.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Timer.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Rez/FrameClock.h>
 
 #include <string.h>
@@ -31,6 +34,14 @@ inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
     m_scrollEdgeActive = 0;
     m_scrollEdgeLock = 0;
     m_levelTimer = NULL;
+}
+
+inline void CPlay::HandleSelectionGroupKey(i32 slot) {
+    if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
+        g_gameReg->GetTriggerMgr()->SaveSelectionGroup(slot);
+    } else {
+        g_gameReg->GetTriggerMgr()->RecallSelectionGroup(slot);
+    }
 }
 
 inline void CPlay::FreeLevelTimer() {

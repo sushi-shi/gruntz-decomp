@@ -163,6 +163,7 @@ public:
         return m_cameraBookmarks.GetSize();
     }
     inline void FreeLevelTimer();
+    inline void HandleSelectionGroupKey(i32 slot);
     inline void FreeStartMarkers();
     inline void FreePlacedObjectCells(i32 group);
 
