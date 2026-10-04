@@ -60,6 +60,19 @@
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
 
+inline CGrunt* CBattlezMapConfig::FindNearbyIdleGrunt(CGrunt* unit) {
+    i32 width = m_board->GetWidth();
+    i32 height = m_board->GetHeight();
+    Coord searchTile;
+    unit->GetScreenTile(&searchTile);
+    return FindIdleGruntInBox(
+        searchTile.m_x,
+        searchTile.m_y,
+        static_cast<i32>(static_cast<u32>(width) / 3),
+        static_cast<i32>(static_cast<u32>(height) / 3)
+    );
+}
+
 RVA(0x00031610, 0x501)
 i32 CBattlezMapConfig::Step(CGrunt* g) {
     if (g->CoordsEmpty()) {
@@ -67,16 +80,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             goto inflight;
         }
 
-        i32 W = m_board->GetWidth();
-        i32 H = m_board->GetHeight();
-        Coord c0;
-        g->GetScreenTile((&c0));
-        CGrunt* nb = FindIdleGruntInBox(
-            c0.m_x,
-            c0.m_y,
-            static_cast<i32>((static_cast<u32>(W) / 3)),
-            static_cast<i32>((static_cast<u32>(H) / 3))
-        );
+        CGrunt* nb = FindNearbyIdleGrunt(g);
         if (nb != NULL) {
             Coord c1;
             nb->GetScreenTile((&c1));
@@ -106,16 +110,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
 inflight: {
 
     CGrunt* cur = m_triggerMgr->UnitAt(g->ArrivalCell().m_x, g->ArrivalCell().m_y);
-    i32 W = m_board->GetWidth();
-    i32 H = m_board->GetHeight();
-    Coord c0;
-    g->GetScreenTile((&c0));
-    CGrunt* nb = FindIdleGruntInBox(
-        c0.m_x,
-        c0.m_y,
-        static_cast<i32>((static_cast<u32>(W) / 3)),
-        static_cast<i32>((static_cast<u32>(H) / 3))
-    );
+    CGrunt* nb = FindNearbyIdleGrunt(g);
 
     if (cur == NULL) {
         goto L_clear;
