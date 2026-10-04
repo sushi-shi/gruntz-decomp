@@ -2239,7 +2239,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     spr->SetPoints(0);
     spr->SetSmarts(0);
     spr->m_powerup = 0;
-    spr->m_health = 0;
+    spr->SetHealth(0);
     spr->m_direction = 0;
     spr->m_faceDirection = faceDirection;
     return 1;

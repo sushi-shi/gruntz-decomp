@@ -168,7 +168,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             SetupSprite("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
-            m_object->m_health = IDX(WARPSTONE_FRAGMENT_FIRST);
+            m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_FIRST));
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
             i32 anchorX = m_object->m_screenX;
             i32 anchorY = m_object->m_screenY;
@@ -177,7 +177,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             SetupSprite("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
-            m_object->m_health = IDX(WARPSTONE_FRAGMENT_SECOND);
+            m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_SECOND));
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
             i32 anchorX = m_object->m_screenX;
             i32 anchorY = m_object->m_screenY;
@@ -186,7 +186,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             SetupSprite("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
-            m_object->m_health = IDX(WARPSTONE_FRAGMENT_THIRD);
+            m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_THIRD));
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
             i32 anchorX = m_object->m_screenX;
             i32 anchorY = m_object->m_screenY;
@@ -195,7 +195,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             SetupSprite("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
-            m_object->m_health = IDX(WARPSTONE_FRAGMENT_FOURTH);
+            m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_FOURTH));
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
             i32 anchorX = m_object->m_screenX;
             i32 anchorY = m_object->m_screenY;
@@ -343,7 +343,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         i32 target = g_buteMgr.GetInt("WarpStone", levelStr);
         warpName.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
         m_object->SetImageSetByName(warpName);
-        m_object->m_health = target;
+        m_object->SetHealth(target);
     }
 
     if (glitter != ICON_GLITTER_NONE) {

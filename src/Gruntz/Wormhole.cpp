@@ -317,17 +317,17 @@ void CTeleporter::LoadColors() {
     if (kind == TELEPORTER_SECRET) {
 
         if (m_object->GetHealth() == 0) {
-            m_object->m_health = g_buteMgr.GetInt("Wormhole", "SecretColor", 1);
+            m_object->SetHealth(g_buteMgr.GetInt("Wormhole", "SecretColor", 1));
         }
     } else if (kind == TELEPORTER_SINGLE_USE) {
 
         if (m_object->GetHealth() == 0) {
-            m_object->m_health = g_buteMgr.GetInt("Wormhole", "SingleUseColor", 2);
+            m_object->SetHealth(g_buteMgr.GetInt("Wormhole", "SingleUseColor", 2));
         }
     } else {
 
         if (m_object->GetHealth() == 0) {
-            m_object->m_health = g_buteMgr.GetInt("Wormhole", "NormalColor", 4);
+            m_object->SetHealth(g_buteMgr.GetInt("Wormhole", "NormalColor", 4));
         }
     }
 
@@ -461,7 +461,7 @@ i32 CTeleporter::Update() {
         );
         if (spawned != NULL) {
             spawned->SetSmarts(IDX(TELEPORTER_SINGLE_USE));
-            spawned->m_health = m_object->GetHealth();
+            spawned->SetHealth(m_object->GetHealth());
             spawned->SetSpeedX(m_object->GetScore());
             spawned->SetSpeedY(m_object->GetPoints());
             spawned->GetLogicRecord()->SetSpeed(0);

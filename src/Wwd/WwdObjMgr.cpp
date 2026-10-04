@@ -528,7 +528,8 @@ void CDDrawChildGroup::CollideBroadcast() {
                             if (mask1) {
                                 if (oi->m_flags
                                     & IDX(WWD_GAME_OBJECT_FLAG_DAMAGE_HEALTH_DIRECTLY)) {
-                                    if ((oi->m_health = oi->GetHealth() - oj->GetDamage()) <= 0) {
+                                    oi->SetHealth(oi->GetHealth() - oj->GetDamage());
+                                    if (oi->GetHealth() <= 0) {
 
                                         oi->GetLogicRecord()->SetLogicEvent(ACT_HEALTH_DEPLETED);
                                     }
