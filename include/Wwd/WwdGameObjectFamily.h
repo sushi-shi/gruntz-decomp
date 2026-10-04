@@ -340,6 +340,10 @@ public:
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
 
+    CDDrawWorker* GetImageSet() const {
+        return m_imageSet;
+    }
+
     void SetImageFrame(i32 frame) {
         CDDrawWorker* imageSet = m_imageSet;
         if (imageSet != NULL) {

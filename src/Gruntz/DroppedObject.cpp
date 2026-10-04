@@ -107,7 +107,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_ACTOR_FRONT);
 
-    CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
+    CDDrawWorker* frameSet = m_wwdObject->GetImageSet();
     if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;

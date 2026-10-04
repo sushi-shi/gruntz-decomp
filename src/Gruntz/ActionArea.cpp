@@ -74,12 +74,12 @@ i32 CActionArea::Tick() {
     }
     if (*phase != 0) {
         double t = static_cast<double>(timing->Elapsed());
-        m_wwdObject->m_imageSet->SetAllLightLevels(
+        m_wwdObject->GetImageSet()->SetAllLightLevels(
             static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
         );
     } else {
         double t = static_cast<double>(timing->Elapsed());
-        m_wwdObject->m_imageSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
+        m_wwdObject->GetImageSet()->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
     }
     return 0;
 }
@@ -92,14 +92,14 @@ i32 CActionArea::ApplyColor(i32 owner) {
         case ACTION_AREA_BLUE_OWNER: {
             SetImageSetByName("GAME_ACTIONAREA_BLUE");
 
-            CDDrawWorker* rec = m_wwdObject->m_imageSet;
+            CDDrawWorker* rec = m_wwdObject->GetImageSet();
             rec->SetAllTypes(SHADE_ALPHA_16);
             break;
         }
         case ACTION_AREA_RED_OWNER: {
             SetImageSetByName("GAME_ACTIONAREA_RED");
 
-            CDDrawWorker* rec = m_wwdObject->m_imageSet;
+            CDDrawWorker* rec = m_wwdObject->GetImageSet();
             rec->SetAllTypes(SHADE_ALPHA_16);
             break;
         }
