@@ -73,8 +73,6 @@ public:
     i32 HasWithPrefix(const char* prefix);
 
     i32 FindFrameIdentity(CImage* frame, char* outName, i32* outIndex);
-
-    void ReadField(i32 handle, char* tmp, i32* outZero);
 };
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
