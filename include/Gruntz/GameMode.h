@@ -187,13 +187,13 @@ public:
     i32 BuildWarpStoneGlitterAnimation();
 
     i32 StepGlitterAnim();
-    void MoveLettersByDir();
+    void UpdateGruntSprintAnimation();
     i32 BuildGruntSprintAnimation();
     i32 BuildBootyPerfectAnimation();
 
     i32 CheckPerfectBonus();
 
-    void GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY);
+    void PickGruntSprintStartPosition(GruntDirection direction, i32* outX, i32* outY);
 
     b32 m_initGate;
     b32 m_secretHudHandled;

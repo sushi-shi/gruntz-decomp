@@ -525,7 +525,7 @@ i32 CBootyState::StepGlitterAnim() {
     SET_SCREEN_POS(m_cursorLetter, m_scratchX, m_scratchY);
     SET_SCREEN_POS(m_trailSprites[i], m_scratchX, m_scratchY);
 
-    MoveLettersByDir();
+    UpdateGruntSprintAnimation();
 
     if (m_radius == 0) {
         CWwdSpriteObject* e = m_trailSprites[i];
@@ -585,7 +585,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
         }
 
         i32 outX, outY;
-        GenMenuRandPos(static_cast<GruntDirection>(i + 1), &outX, &outY);
+        PickGruntSprintStartPosition(static_cast<GruntDirection>(i + 1), &outX, &outY);
         SET_SCREEN_POS(m_sprintSprites[i], outX, outY);
     }
     return 1;
@@ -593,7 +593,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 
 // @early-stop
 RVA(0x00019b90, 0xf8)
-void CBootyState::MoveLettersByDir() {
+void CBootyState::UpdateGruntSprintAnimation() {
     if (m_initGate) {
         CWwdSpriteObject** q = m_sprintSprites;
         i32 n = 8;
@@ -662,12 +662,12 @@ Coord g_levelMsgIconPos[8] = {
 
 // @early-stop
 RVA(0x00019cd0, 0x200)
-void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
+void CBootyState::PickGruntSprintStartPosition(GruntDirection direction, i32* outX, i32* outY) {
     if (!outX || !outY) {
         return;
     }
     i32 flip;
-    switch (sel) {
+    switch (direction) {
         case DIR_NORTH:
             *outX = g_gameReg->Rand() % 0x281;
             *outY = SCREEN_H_PX;
@@ -1373,7 +1373,7 @@ i32 CBootyState::Render() {
         }
         // FALL THROUGH
         case BOOTYSEQ_LETTERS:
-            MoveLettersByDir();
+            UpdateGruntSprintAnimation();
             if (LevelMsgHudDriver() == 0) {
                 break;
             }
