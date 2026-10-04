@@ -35,16 +35,16 @@ class CWarpStoneFly;
 class CSBI_MenuItem;
 class CSBI_GruntMachine;
 class SoundBuffer;
-GZ_ENUM_BEGIN(SbiSlotState)
-    SLOT_ARMED = 0,
-    SLOT_FILLING = 1,
-    SLOT_READY = 2
-GZ_ENUM_END(SbiSlotState)
+GZ_ENUM_BEGIN(GruntOvenSlotState)
+    GRUNT_OVEN_EMPTY = 0,
+    GRUNT_OVEN_COOKING = 1,
+    GRUNT_OVEN_READY = 2
+GZ_ENUM_END(GruntOvenSlotState)
 
-struct CSbiSlot {
-    SbiSlotState m_state;
-    i32 m_value;
-    ClockInterval m_clock;
+struct GruntOvenSlot {
+    GruntOvenSlotState m_state;
+    i32 m_frameIndex;
+    ClockInterval m_cookingClock;
 };
 
 struct CSbiHlRow {
@@ -75,7 +75,7 @@ class CSBI_StatzTabArrow;
 class CSBI_WarlordHead;
 class CWarpStoneFly;
 
-const i32 s_slotCommitLevel = 0x1a;
+const i32 s_gruntOvenReadyFrame = 0x1a;
 
 const i32 s_activateErrId = 0x80e4;
 const i32 s_activateErrTag = 0x44b;
@@ -268,11 +268,11 @@ public:
     CSBI_MenuItem* m_confirmYesButton;
     CSBI_MenuItem* m_confirmNoButton;
 
-    CSBI_ImageSet* m_slotNotify[5];
+    CSBI_ImageSet* m_gruntOvenImages[5];
     CStatusBarItem* m_gruntWellBackground;
     CSBI_WellGoo* m_gruntWellGoo;
 
-    CSbiSlot m_slots[5];
+    GruntOvenSlot m_gruntOvenSlots[5];
 
     i32 m_gruntWellLevel;
     i32 m_gruntWellTargetLevel;
@@ -293,7 +293,7 @@ public:
     i32 m_reserved350;
     b32 m_gameplayControlsDisabled;
     b32 m_tabsBuilt;
-    i32 m_activeSlot;
+    i32 m_selectedGruntOvenSlot;
     StatusBarHighlightRow m_pendingHlRow;
     CStatusBarItem* m_resourceMainBackground;
     CStatusBarItem* m_resourceMachineFramework;
@@ -382,7 +382,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     memset(m_unitSampleModes, 0, sizeof(m_unitSampleModes));
     memset(m_unitSideTabs, 0, sizeof(m_unitSideTabs));
     memset(m_unitSampleArrows, 0, sizeof(m_unitSampleArrows));
-    memset(m_slotNotify, 0, sizeof(m_slotNotify));
+    memset(m_gruntOvenImages, 0, sizeof(m_gruntOvenImages));
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
     memset(m_multiplayerHeadButtons, 0, sizeof(m_multiplayerHeadButtons));

@@ -111,7 +111,7 @@ i32 CStatusBarMgr::Initialize(CDDrawSurfaceMgr* world) {
     if (BuildStatusBarTabs() == 0) {
         return 0;
     }
-    m_activeSlot = -1;
+    m_selectedGruntOvenSlot = -1;
     m_pendingHlRow = STATUS_HL_ROW_NONE;
     m_rezActive = false;
     m_rezTick = 0;
@@ -1079,7 +1079,7 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     i32 i;
     memset(m_unitSideTabs, 0, sizeof(m_unitSideTabs));
     memset(m_unitSampleArrows, 0, sizeof(m_unitSampleArrows));
-    memset(m_slotNotify, 0, sizeof(m_slotNotify));
+    memset(m_gruntOvenImages, 0, sizeof(m_gruntOvenImages));
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
     memset(m_multiplayerHeadButtons, 0, sizeof(m_multiplayerHeadButtons));
@@ -1121,7 +1121,7 @@ void CStatusBarMgr::ClearActiveTabContent() {
             break;
         case TAB_GRUNTZ: {
 
-            memset(m_slotNotify, 0, sizeof(m_slotNotify));
+            memset(m_gruntOvenImages, 0, sizeof(m_gruntOvenImages));
             m_gruntWellBackground = NULL;
             m_gruntWellGoo = NULL;
             break;
@@ -1650,8 +1650,8 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
             AddTabItem(2, it);
 
             {
-                CSBI_ImageSet** aptr = m_slotNotify;
-                CSbiSlot* slot = m_slots;
+                CSBI_ImageSet** aptr = m_gruntOvenImages;
+                GruntOvenSlot* slot = m_gruntOvenSlots;
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
                     CSBI_ImageSet* set;
@@ -1663,7 +1663,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                         TAB_GRUNTZ,
                         CRect(bx + 0xe, y - 0x32, bx + 0x39, y),
                         "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
-                        slot->m_value,
+                        slot->m_frameIndex,
                         0
                     );
                     AddTabItem(2, set);
@@ -2423,26 +2423,26 @@ i32 CStatusBarMgr::HitTestSideTabs(i32 x, i32 y) {
 RVA(0x00105310, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 
-    CSBI_ImageSet** slot = m_slotNotify;
-    CSbiSlot* tab = m_slots;
+    CSBI_ImageSet** slot = m_gruntOvenImages;
+    GruntOvenSlot* tab = m_gruntOvenSlots;
     i32 n = 5;
     do {
-        if (tab->m_state == SLOT_FILLING) {
-            i64 d = static_cast<i64>(g_frameTime) - tab->m_clock.m_start;
+        if (tab->m_state == GRUNT_OVEN_COOKING) {
+            i64 d = static_cast<i64>(g_frameTime) - tab->m_cookingClock.m_start;
 
             i32 elapsed = static_cast<i32>(max(0, d));
             u32 delay = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
             if (frame >= 0x1a) {
-                tab->m_state = SLOT_READY;
+                tab->m_state = GRUNT_OVEN_READY;
                 frame = 0x1a;
                 PlayRegistryCueIfElapsed(
                     g_gameReg->World()->SoundRegistry(),
                     "GAME_COOKINGCOMPLETE"
                 );
             }
-            if (frame != tab->m_value) {
-                tab->m_value = frame;
+            if (frame != tab->m_frameIndex) {
+                tab->m_frameIndex = frame;
                 CSBI_ImageSet* w = *slot;
                 if (w) {
                     w->Notify(frame);
@@ -2491,22 +2491,22 @@ void CStatusBarMgr::ResetSlots() {
     for (i32 i = 0; i < 5; i++) {
         ArmSlot(i);
     }
-    m_activeSlot = -1;
+    m_selectedGruntOvenSlot = -1;
 }
 
 RVA(0x00105560, 0x33)
 void CStatusBarMgr::ArmSlot(i32 idx) {
-    m_slots[idx].m_state = SLOT_ARMED;
-    m_slots[idx].m_value = 1;
-    if (m_slotNotify[idx]) {
-        m_slotNotify[idx]->Notify(1);
+    m_gruntOvenSlots[idx].m_state = GRUNT_OVEN_EMPTY;
+    m_gruntOvenSlots[idx].m_frameIndex = 1;
+    if (m_gruntOvenImages[idx]) {
+        m_gruntOvenImages[idx]->Notify(1);
     }
 }
 
 RVA(0x001055b0, 0x109)
 i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
-    CSbiSlot* sp = &m_slots[idx];
-    if (sp->m_state != SLOT_ARMED) {
+    GruntOvenSlot* sp = &m_gruntOvenSlots[idx];
+    if (sp->m_state != GRUNT_OVEN_EMPTY) {
         return 0;
     }
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_layoutLocked == false) {
@@ -2518,9 +2518,9 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
         }
         RequestRedraw();
     }
-    sp->m_state = SLOT_FILLING;
+    sp->m_state = GRUNT_OVEN_COOKING;
 
-    m_slots[idx].m_clock.Start(INT_MAX);
+    m_gruntOvenSlots[idx].m_cookingClock.Start(INT_MAX);
     PlayTabCue(this, TAB_GRUNTZ, "GAME_GOOCOOKING1");
     return 1;
 }
@@ -2881,14 +2881,16 @@ void CStatusBarMgr::SetRightRezMachineAnimation(
 RVA(0x00106790, 0x62)
 void CStatusBarMgr::CommitSlot(b32 active) {
     if (active) {
-        ArmSlot(m_activeSlot);
-        m_activeSlot = -1;
+        ArmSlot(m_selectedGruntOvenSlot);
+        m_selectedGruntOvenSlot = -1;
     } else {
-        m_slots[m_activeSlot].m_value = s_slotCommitLevel;
-        if (m_slotNotify[m_activeSlot]) {
-            m_slotNotify[m_activeSlot]->Notify(m_slots[m_activeSlot].m_value);
+        m_gruntOvenSlots[m_selectedGruntOvenSlot].m_frameIndex = s_gruntOvenReadyFrame;
+        if (m_gruntOvenImages[m_selectedGruntOvenSlot]) {
+            m_gruntOvenImages[m_selectedGruntOvenSlot]->Notify(
+                m_gruntOvenSlots[m_selectedGruntOvenSlot].m_frameIndex
+            );
         }
-        m_activeSlot = -1;
+        m_selectedGruntOvenSlot = -1;
     }
 }
 
@@ -3310,13 +3312,13 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     GameModeId mode = g_gameReg->GetGameMode();
     if (mode == GAMEMODE_MULTIPLAYER) {
         for (i32 i = 0; i < g_buteMgr.GetInt("Multiplayer", "StartingGruntz", 0); i++) {
-            m_slots[i].m_value = s_slotCommitLevel;
-            m_slots[i].m_state = SLOT_READY;
+            m_gruntOvenSlots[i].m_frameIndex = s_gruntOvenReadyFrame;
+            m_gruntOvenSlots[i].m_state = GRUNT_OVEN_READY;
         }
     } else if (mode == GAMEMODE_BATTLEZ) {
         for (i32 i = 0; i < g_buteMgr.GetInt("Battlez", "StartingGruntz", 0); i++) {
-            m_slots[i].m_value = s_slotCommitLevel;
-            m_slots[i].m_state = SLOT_READY;
+            m_gruntOvenSlots[i].m_frameIndex = s_gruntOvenReadyFrame;
+            m_gruntOvenSlots[i].m_state = GRUNT_OVEN_READY;
         }
     }
 
@@ -3529,10 +3531,10 @@ i32 CStatusBarMgr::SerializeDispatch(
     SerializeClockPair(s, mode, &m_leftMachine.m_clock);
     SerializeClockPair(s, mode, &m_destructWarningClock);
 
-    CSbiSlot* p = m_slots;
+    GruntOvenSlot* p = m_gruntOvenSlots;
     i32 n = 5;
     do {
-        SerializeClockPair(s, mode, &p->m_clock);
+        SerializeClockPair(s, mode, &p->m_cookingClock);
         p++;
         n--;
     } while (n != 0);
@@ -3573,7 +3575,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     }
     {
         i32 i = 0;
-        CSBI_ImageSet** q = m_slotNotify;
+        CSBI_ImageSet** q = m_gruntOvenImages;
         do {
             SER(*q)
             i++;
@@ -3684,7 +3686,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_reserved34c, sizeof(m_reserved34c));
     s->Write(&m_reserved350, sizeof(m_reserved350));
     s->Write(&m_gameplayControlsDisabled, sizeof(m_gameplayControlsDisabled));
-    s->Write(&m_activeSlot, sizeof(m_activeSlot));
+    s->Write(&m_selectedGruntOvenSlot, sizeof(m_selectedGruntOvenSlot));
     s->Write(&m_pendingHlRow, sizeof(m_pendingHlRow));
     s->Write(&m_activeTab, sizeof(m_activeTab));
     s->Write(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
@@ -3712,8 +3714,8 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
 
     for (i32 j = 0; j < 5; j++) {
-        s->Write(&m_slots[j].m_state, sizeof(m_slots[j].m_state));
-        s->Write(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
+        s->Write(&m_gruntOvenSlots[j].m_state, sizeof(m_gruntOvenSlots[j].m_state));
+        s->Write(&m_gruntOvenSlots[j].m_frameIndex, sizeof(m_gruntOvenSlots[j].m_frameIndex));
     }
     for (i32 k = 0; k < 3; k++) {
         s->Write(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
@@ -3772,7 +3774,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_reserved34c, sizeof(m_reserved34c));
     ar->Read(&m_reserved350, sizeof(m_reserved350));
     ar->Read(&m_gameplayControlsDisabled, sizeof(m_gameplayControlsDisabled));
-    ar->Read(&m_activeSlot, sizeof(m_activeSlot));
+    ar->Read(&m_selectedGruntOvenSlot, sizeof(m_selectedGruntOvenSlot));
     ar->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
     ar->Read(&m_activeTab, sizeof(m_activeTab));
     ar->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
@@ -3800,8 +3802,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
 
     for (i32 j = 0; j < 5; j++) {
-        ar->Read(&m_slots[j].m_state, sizeof(m_slots[j].m_state));
-        ar->Read(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
+        ar->Read(&m_gruntOvenSlots[j].m_state, sizeof(m_gruntOvenSlots[j].m_state));
+        ar->Read(&m_gruntOvenSlots[j].m_frameIndex, sizeof(m_gruntOvenSlots[j].m_frameIndex));
     }
     for (i32 k = 0; k < 3; k++) {
         ar->Read(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
@@ -3833,7 +3835,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
 RVA(0x00109a90, 0x25)
 i32 CStatusBarMgr::FindReadySlot() {
     for (i32 i = 0; i < 5; i++) {
-        if (m_slots[i].m_state == SLOT_READY) {
+        if (m_gruntOvenSlots[i].m_state == GRUNT_OVEN_READY) {
             ArmSlot(i);
             return 1;
         }
@@ -4467,13 +4469,13 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false) {
         if (idx == -1) {
             for (i32 slot = 0; slot < 5; slot++) {
-                if (m_slots[slot].m_state == SLOT_READY) {
+                if (m_gruntOvenSlots[slot].m_state == GRUNT_OVEN_READY) {
                     return ActivateReadySlot(slot);
                 }
             }
             return 0;
         }
-        if (m_slots[idx].m_state == SLOT_READY) {
+        if (m_gruntOvenSlots[idx].m_state == GRUNT_OVEN_READY) {
             return ActivateReadySlot(idx);
         }
     }

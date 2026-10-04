@@ -47,10 +47,10 @@ inline b32 CStatusBarMgr::ActivateReadySlot(i32 slot) {
         return false;
     }
     HiCueTimed();
-    m_activeSlot = slot;
-    m_slots[slot].m_value = 1;
-    if (m_slotNotify[slot]) {
-        m_slotNotify[slot]->Notify(1);
+    m_selectedGruntOvenSlot = slot;
+    m_gruntOvenSlots[slot].m_frameIndex = 1;
+    if (m_gruntOvenImages[slot]) {
+        m_gruntOvenImages[slot]->Notify(1);
     }
     return true;
 }
