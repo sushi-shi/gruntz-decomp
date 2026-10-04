@@ -138,7 +138,7 @@ public:
     i32 BuildTabzDialog();
     i32 StartChipMachineCycle();
     i32 LoadBattlezItemConfig(CDDrawSurfaceMgr* world);
-    i32 LoadMainStatusBarSprite();
+    i32 Render();
     i32 UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y);
     i32 UpdateStatusBar(i32 deltaMs);
     void BuildGameTabResumeButton(b32 show);
@@ -169,12 +169,12 @@ public:
 
     void Teardown();
     i32 TryActivate();
-    i32 Deactivate();
+    i32 RequestRedraw();
     i32 SelectToolResource(StatusBarHighlightRow row);
     i32 SelectToyResource(StatusBarHighlightRow row);
     i32 SelectBrickResource(StatusBarHighlightRow row);
     i32 SetTab(GameTabContent tab, b32 forceReload);
-    i32 ClearTabSprites(StatusBarTab idx);
+    i32 ClearButtonHighlights(StatusBarTab idx);
     i32 HitTest(i32 x, i32 y);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);

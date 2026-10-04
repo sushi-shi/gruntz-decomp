@@ -445,7 +445,7 @@ i32 CPlay::Render() {
             stream->TickStreams(t);
         }
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
-        m_statusBar->LoadMainStatusBarSprite();
+        m_statusBar->Render();
 
         {
             if (m_messageBlinkTimer.Expired()) {
@@ -492,7 +492,7 @@ i32 CPlay::Render() {
 
         if (m_tinyViewportCurseActive != false) {
             m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-            m_statusBar->Deactivate();
+            m_statusBar->RequestRedraw();
         }
 
         if (m_selectionDragActive == false) {
@@ -527,7 +527,7 @@ i32 CPlay::Render() {
         }
         DrawWorldView();
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
-        m_statusBar->LoadMainStatusBarSprite();
+        m_statusBar->Render();
         m_mgr->GetTileGrid()->UpdateDiagonals(m_mgr);
 
         if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
@@ -666,7 +666,7 @@ i32 CPlay::Render() {
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
                 DrawVisibleWorld();
-                m_statusBar->LoadMainStatusBarSprite();
+                m_statusBar->Render();
                 back->GetSurface()->ShadeRect(0x32, NULL);
                 DrawMessageText(m_lastMessageId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
@@ -675,7 +675,7 @@ i32 CPlay::Render() {
         } else {
 
             DrawVisibleWorld();
-            m_statusBar->LoadMainStatusBarSprite();
+            m_statusBar->Render();
             if (m_statusBar->m_levelOverlayActive == false
                 && m_statusBar->m_quitConfirmationActive == false) {
                 DrawMessageText(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -810,7 +810,7 @@ i32 CPlay::ProfileInputFrame() {
     fixedMs = static_cast<i32>(tg() - static_cast<u32>(fixedMs));
 
     i32 statusBarMs = static_cast<i32>(tg());
-    m_statusBar->LoadMainStatusBarSprite();
+    m_statusBar->Render();
     statusBarMs = static_cast<i32>(tg() - static_cast<u32>(statusBarMs));
 
     g_brickText1.Format(
@@ -1593,8 +1593,8 @@ i32 CPlay::RestoreGraphics() {
 
     DrawWorldView();
 
-    m_statusBar->Deactivate();
-    m_statusBar->LoadMainStatusBarSprite();
+    m_statusBar->RequestRedraw();
+    m_statusBar->Render();
     m_stepCountdown = 2;
     m_world->GetDrawTarget()->TransTitle();
     RetireScene(0x50, 0x3e8, 0, true);
@@ -1617,7 +1617,7 @@ i32 CPlay::RestoreDisplay() {
         }
     }
     if (m_statusBar != NULL) {
-        m_statusBar->Deactivate();
+        m_statusBar->RequestRedraw();
         DrawWorldView();
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
     }
@@ -1989,9 +1989,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         if (lv->GetActiveTab() != TAB_GRUNTZ) {
             lv->SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
-            lv->Deactivate();
+            lv->RequestRedraw();
         } else {
-            lv->Deactivate();
+            lv->RequestRedraw();
         }
         return 1;
     }
@@ -2014,9 +2014,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         if (lv->GetActiveTab() != TAB_RESOURCE) {
             lv->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
-            lv->Deactivate();
+            lv->RequestRedraw();
         } else {
-            lv->Deactivate();
+            lv->RequestRedraw();
         }
         return 1;
     }
@@ -2035,9 +2035,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         if (lv->GetActiveTab() != TAB_STATZ) {
             lv->SetTabState(SBICMD_TAB_STATZ, MENUITEM_SELECTED);
-            lv->Deactivate();
+            lv->RequestRedraw();
         } else {
-            lv->Deactivate();
+            lv->RequestRedraw();
         }
         return 1;
     }
@@ -2070,7 +2070,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         lv->SetTab(GAME_TAB_MENU, true);
-        lv->Deactivate();
+        lv->RequestRedraw();
         return 1;
     }
 
@@ -3005,7 +3005,7 @@ i32 CPlay::ResumeGame() {
     g_frameTime = m_savedGameTimeMs;
     m_helpMessageActive = false;
     if (m_statusBar != NULL) {
-        m_statusBar->Deactivate();
+        m_statusBar->RequestRedraw();
     }
     return 1;
 }
@@ -3800,7 +3800,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
 
         if (m_dragInProgress != false) {
-            m_statusBar->ClearTabSprites(TAB_ALL);
+            m_statusBar->ClearButtonHighlights(TAB_ALL);
         }
         m_dragInProgress = false;
         if (m_selectionDragActive != false) {
@@ -5518,7 +5518,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
             g->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         g->SetTab(GAME_TAB_MISSION_STATUS, true);
-        g->Deactivate();
+        g->RequestRedraw();
     }
     m_statusBar->BuildGameTabResumeButton(true);
     CStatusBarMgr* g = m_statusBar;
@@ -5527,7 +5527,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     g->ResetWidgets(false);
     g->TryActivate();
     g->m_layoutLocked = true;
-    g->Deactivate();
+    g->RequestRedraw();
     m_savedGameTimeMs = g_frameTime;
     return 1;
 }
@@ -5857,7 +5857,7 @@ i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAs
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(GameStateId mode) {
     (g_gameReg)->ApplySavedVideoMode();
-    m_statusBar->Deactivate();
+    m_statusBar->RequestRedraw();
     m_statusBar->UpdateStatusBar(0);
     m_mgr->RefreshGameClock();
 
@@ -5866,12 +5866,12 @@ i32 CPlay::EnterMode(GameStateId mode) {
         m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_tinyViewportCurseActive);
         DrawWorldView();
-        m_statusBar->Deactivate();
-        m_statusBar->LoadMainStatusBarSprite();
+        m_statusBar->RequestRedraw();
+        m_statusBar->Render();
     } else {
         DrawWorldView();
-        m_statusBar->Deactivate();
-        m_statusBar->LoadMainStatusBarSprite();
+        m_statusBar->RequestRedraw();
+        m_statusBar->Render();
         if (mode == GAMESTATE_HELP) {
             if (m_world->GetDrawTarget()->HasOverlay() == 0
                 && m_world->GetDrawTarget()->CreateOverlay(0, 0x30000) == 0) {
@@ -5899,7 +5899,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
     if (mode == GAMESTATE_HELP) {
         g_frameTime = m_savedGameTimeMs;
     }
-    m_statusBar->Deactivate();
+    m_statusBar->RequestRedraw();
     DiscardQueuedInput();
     m_inputBlocked = false;
     return 1;
@@ -6478,7 +6478,7 @@ i32 CPlay::ShrinkViewport(i32 step) {
 
     m_world->GetLevel()->UpdatePlaneViewports((&resized));
     m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-    m_statusBar->Deactivate();
+    m_statusBar->RequestRedraw();
     m_mgr->RecomputeViewScale();
     return 1;
 }
@@ -6529,7 +6529,7 @@ i32 CPlay::ExpandViewport(i32 step) {
 
     m_world->GetLevel()->UpdatePlaneViewports((&resized));
     m_world->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
-    m_statusBar->Deactivate();
+    m_statusBar->RequestRedraw();
     m_mgr->RecomputeViewScale();
     return 1;
 }

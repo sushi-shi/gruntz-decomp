@@ -2307,7 +2307,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
                 if (sb->GetActiveTab() != TAB_RESOURCE) {
                     sb->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
                 }
-                sb->Deactivate();
+                sb->RequestRedraw();
             }
             play->m_statusBar->UpdateRezMachineWakeStatusBar();
             return 1;

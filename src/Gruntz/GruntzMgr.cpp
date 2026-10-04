@@ -2356,7 +2356,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
     CPlay* o = static_cast<CPlay*>(PickPausedThenPlayState());
     if (o) {
         if (o->m_statusBar) {
-            (static_cast<CStatusBarMgr*>(o->m_statusBar))->Deactivate();
+            (static_cast<CStatusBarMgr*>(o->m_statusBar))->RequestRedraw();
         }
         o->FinishSelectionDrag();
     }
@@ -2405,7 +2405,7 @@ i32 CGruntzMgr::RunMfcDialog(CDialog* dlg, b32 notify) {
     CPlay* o = static_cast<CPlay*>(PickPausedThenPlayState());
     if (o) {
         if (o->m_statusBar) {
-            (static_cast<CStatusBarMgr*>(o->m_statusBar))->Deactivate();
+            (static_cast<CStatusBarMgr*>(o->m_statusBar))->RequestRedraw();
         }
         o->FinishSelectionDrag();
     }

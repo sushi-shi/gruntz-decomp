@@ -184,7 +184,7 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
         }
         m_restorePosition = m_position;
     } else {
-        Deactivate();
+        RequestRedraw();
     }
     old = m_position;
     m_position = state;
@@ -257,7 +257,7 @@ i32 CStatusBarMgr::RestoreStatusBar() {
 
 // @early-stop
 RVA(0x000fe6b0, 0x145)
-i32 CStatusBarMgr::LoadMainStatusBarSprite() {
+i32 CStatusBarMgr::Render() {
     if (m_position != STATUSBAR_HIDDEN) {
         if (m_redrawFrames > 0) {
             m_redrawFrames--;
@@ -519,7 +519,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             m_tabCycle = IDX(cmd) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
             ResetWidgets(false);
             TryActivate();
-            Deactivate();
+            RequestRedraw();
             return 1;
 
         case TAB_GRUNTZ:
@@ -661,12 +661,12 @@ RVA(0x000ff9f0, 0xe4)
 i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
     if (r == NULL) {
-        ClearTabSprites(TAB_ALL);
+        ClearButtonHighlights(TAB_ALL);
         return 1;
     }
     r->OnPointerDrag(keyFlags, x, y);
     if (r->GetKind() != SBI_KIND_MENU_ITEM) {
-        ClearTabSprites(TAB_ALL);
+        ClearButtonHighlights(TAB_ALL);
         return 1;
     }
     SbiCommandId cmd = r->GetCommandId();
@@ -674,14 +674,14 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
         if (cmd >= SBICMD_TAB_FIRST && cmd <= SBICMD_TAB_LAST) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
         } else {
-            ClearTabSprites(TAB_CONTROLS);
+            ClearButtonHighlights(TAB_CONTROLS);
         }
     }
     if (m_activeTab == TAB_GAME) {
         if (r->GetTab() == TAB_GAME) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
         } else {
-            ClearTabSprites(TAB_GAME);
+            ClearButtonHighlights(TAB_GAME);
         }
     }
     if (m_levelOverlayActive) {
@@ -689,7 +689,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
             return 1;
         }
-        ClearTabSprites(TAB_GAME);
+        ClearButtonHighlights(TAB_GAME);
     }
     return 1;
 }
@@ -748,7 +748,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
     }
     if (m_retabNotify) {
         m_retabNotify->Tick(deltaMs);
-        Deactivate();
+        RequestRedraw();
     }
     return 1;
 }
@@ -1110,7 +1110,7 @@ void CStatusBarMgr::ClearTabGroup() {
 }
 
 RVA(0x00100cb0, 0x8b)
-i32 CStatusBarMgr::Deactivate() {
+i32 CStatusBarMgr::RequestRedraw() {
     if (m_position == STATUSBAR_HIDDEN) {
 
         i32 w = g_gameReg->m_modeSize.cx;
@@ -1137,7 +1137,7 @@ i32 CStatusBarMgr::Deactivate() {
         }
     }
 
-    ClearTabSprites(TAB_ALL);
+    ClearButtonHighlights(TAB_ALL);
     m_redrawFrames = 2;
     return 1;
 }
@@ -1296,56 +1296,56 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
 }
 
 RVA(0x00101420, 0x110)
-i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
+i32 CStatusBarMgr::ClearButtonHighlights(StatusBarTab idx) {
     if (idx == TAB_ALL || idx == TAB_CONTROLS) {
         if (m_statzTabButton) {
-            m_statzTabButton->Blit();
+            m_statzTabButton->ClearHighlight();
         }
         if (m_gruntzTabButton) {
-            m_gruntzTabButton->Blit();
+            m_gruntzTabButton->ClearHighlight();
         }
         if (m_resourceTabButton) {
-            m_resourceTabButton->Blit();
+            m_resourceTabButton->ClearHighlight();
         }
         if (m_multiTabButton) {
-            m_multiTabButton->Blit();
+            m_multiTabButton->ClearHighlight();
         }
         if (m_gameTabButton) {
-            m_gameTabButton->Blit();
+            m_gameTabButton->ClearHighlight();
         }
     }
     if (idx == TAB_GAME || idx == TAB_ALL) {
         if (m_gameResumePauseButton) {
-            m_gameResumePauseButton->Blit();
+            m_gameResumePauseButton->ClearHighlight();
         }
         if (m_gameLoadButton) {
-            m_gameLoadButton->Blit();
+            m_gameLoadButton->ClearHighlight();
         }
         if (m_gameSaveButton) {
-            m_gameSaveButton->Blit();
+            m_gameSaveButton->ClearHighlight();
         }
         if (m_gameSettingsButton) {
-            m_gameSettingsButton->Blit();
+            m_gameSettingsButton->ClearHighlight();
         }
         if (m_gameHelpButton) {
-            m_gameHelpButton->Blit();
+            m_gameHelpButton->ClearHighlight();
         }
         if (m_gameQuitButton) {
-            m_gameQuitButton->Blit();
+            m_gameQuitButton->ClearHighlight();
         }
     }
     if (idx == TAB_DIALOG || idx == TAB_ALL) {
         if (m_endPrimaryButton) {
-            m_endPrimaryButton->Blit();
+            m_endPrimaryButton->ClearHighlight();
         }
         if (m_endSecondaryButton) {
-            m_endSecondaryButton->Blit();
+            m_endSecondaryButton->ClearHighlight();
         }
         if (m_confirmYesButton) {
-            m_confirmYesButton->Blit();
+            m_confirmYesButton->ClearHighlight();
         }
         if (m_confirmNoButton) {
-            m_confirmNoButton->Blit();
+            m_confirmNoButton->ClearHighlight();
         }
     }
     return 1;
@@ -1554,7 +1554,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
         g_gameReg->ReportError(s_activateErrId, s_setTabErrTag);
         return 0;
     }
-    Deactivate();
+    RequestRedraw();
     return 1;
 }
 
@@ -1568,7 +1568,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(b32 show) {
     }
     if (m_gameResumePauseButton) {
         m_gameResumePauseButton->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
-        Deactivate();
+        RequestRedraw();
         m_gameResumePauseButton->RequestRedraw();
     }
     m_chatBoxDisabled = true;
@@ -1578,7 +1578,7 @@ RVA(0x00102200, 0x37)
 void CStatusBarMgr::BuildGameTabPauseButton() {
     if (m_gameResumePauseButton) {
         m_gameResumePauseButton->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
-        Deactivate();
+        RequestRedraw();
         m_gameResumePauseButton->RequestRedraw();
     }
     m_chatBoxDisabled = false;
@@ -2482,7 +2482,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
         if (m_activeTab != TAB_GRUNTZ) {
             SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
         }
-        Deactivate();
+        RequestRedraw();
     }
     sp->m_state = SLOT_FILLING;
 
@@ -3608,7 +3608,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     SER(m_destructButtonImage)
 #undef SER
 
-    Deactivate();
+    RequestRedraw();
     return 1;
 }
 
@@ -4294,13 +4294,13 @@ void CStatusBarMgr::ExitMode() {
             SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         SetTab(GAME_TAB_MENU, true);
-        Deactivate();
+        RequestRedraw();
     } else {
         m_chatBoxDisabled = false;
     }
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
-    Deactivate();
+    RequestRedraw();
 }
 
 RVA(0x0010b320, 0x167)
@@ -4357,7 +4357,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     }
     if (m_activeTab != TAB_MULTIPLAYER) {
         SetTabState(SBICMD_TAB_MULTIPLAYER, MENUITEM_SELECTED);
-        Deactivate();
+        RequestRedraw();
         return;
     }
     if (reverse != 0) {
@@ -4371,7 +4371,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     }
     ResetWidgets(false);
     TryActivate();
-    Deactivate();
+    RequestRedraw();
 }
 
 RVA(0x0010b5d0, 0xdd)

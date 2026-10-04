@@ -673,7 +673,7 @@ void CMulti::RenderGameFrame() {
     if (m_roundComplete == false && Mgr()->GetFrameGate() != false) {
         RestoreCursorSaveUnder();
         DrawVisibleWorld();
-        m_statusBar->LoadMainStatusBarSprite();
+        m_statusBar->Render();
         CDDrawSurfacePair* h =
             static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
         if (h == NULL) {
@@ -690,7 +690,7 @@ void CMulti::RenderGameFrame() {
         (static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()))
             ->GetSurface()
             ->Fill(0);
-        m_statusBar->Deactivate();
+        m_statusBar->RequestRedraw();
     }
     if (m_selectionDragActive == false) {
         if (Mgr()->m_triggerMgr->m_cameraTrackingActive != false) {
@@ -705,7 +705,7 @@ void CMulti::RenderGameFrame() {
         (m_world->m_level->m_mainPlane)->GetScrollPixelY()
     );
     DrawWorldView();
-    m_statusBar->LoadMainStatusBarSprite();
+    m_statusBar->Render();
     if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
         && m_statusBar->m_activeTab != TAB_GAME) {
         RECT rc;

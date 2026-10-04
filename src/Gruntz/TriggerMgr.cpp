@@ -919,7 +919,7 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
             sbi->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         sbi->SetTab(GAME_TAB_MENU, true);
-        sbi->Deactivate();
+        sbi->RequestRedraw();
     }
     if (play->m_statusBar->StartWarpStoneFly(viewportX, viewportY, fragment) != 0) {
         play->m_statusBar->m_layoutLocked = true;
