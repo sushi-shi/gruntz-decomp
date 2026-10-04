@@ -21,7 +21,7 @@ i32 CLightFxMgr::Init(CGruntzMgr* gameMgr, CGruntzMgr* owner) {
     }
     m_gameMgr = gameMgr;
     m_owner = owner;
-    m_world = gameMgr->m_world;
+    m_world = gameMgr->World();
     m_cache = gameMgr->m_shadeCache;
 
     if (!m_cache) {

@@ -121,7 +121,11 @@ i32 CLightFx::SerializeDispatch(
             g_gameReg
                 ->GetLightFxMgr()
 
-                ->ApplyShadeTable(m_wwdObject->m_imageSet, m_shadeTableIndex, SHADE_DST_BY_SRC_16);
+                ->ApplyShadeTable(
+                    m_wwdObject->GetImageSet(),
+                    m_shadeTableIndex,
+                    SHADE_DST_BY_SRC_16
+                );
             break;
     }
     return 1;

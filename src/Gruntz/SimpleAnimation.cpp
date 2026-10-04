@@ -44,7 +44,7 @@ RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->GetFrameImage())
 }
 
 RVA(0x000abc10, 0x102)

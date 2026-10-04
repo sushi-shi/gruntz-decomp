@@ -240,7 +240,7 @@ void CMenuState::StartMusic() {
     if (!saved) {
         g_soundEnabled = true;
     }
-    i32 item = g_gameReg->m_soundVolume;
+    i32 item = g_gameReg->GetSoundVolume();
     PlaySoundCueIfElapsed(m_menuMusicCue, item, 0, 0, true);
     if (!saved) {
         g_soundEnabled = saved;

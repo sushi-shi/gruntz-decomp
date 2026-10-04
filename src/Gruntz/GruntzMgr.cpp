@@ -2655,7 +2655,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         return 1;
     }
     if (found->m_flags & 2) {
-        found->m_flags &= ~2;
+        found->ClearFlags(2);
         g_monologoShown = true;
     } else {
         found->AddFlags(2);

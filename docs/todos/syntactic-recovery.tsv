@@ -79,6 +79,7 @@ rva	unit	function	lost_max	cur
 0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	96.9690	96.9566
 0x0e7440	sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	100.0000	87.8421
+0x0e82a0	sbi_menuitem	?Render@CSBI_MenuItem@@UAEHXZ	100.0000	74.0357
 0x0ea6c0	sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.3681	91.2857
 0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	95.7703	95.4459
 0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985

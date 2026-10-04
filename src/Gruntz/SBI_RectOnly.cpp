@@ -263,7 +263,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             m_redrawFrames--;
             i32 v = m_barFrameGate;
             if (v > SCREEN_H_PX) {
-                CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->GetSurface();
+                CDDSurface* tgt = (g_gameReg->World()->m_drawTarget)->m_backPair->GetSurface();
 
                 RECT below;
                 below.left = m_barRect.left;
@@ -276,7 +276,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             if (cfg) {
                 CImage* entry = DDRAW_WORKER_FRAME_AT_UNCHECKED(cfg, cfg->GetMinIndex());
                 if (entry) {
-                    CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
+                    CDDrawSubMgrPages* l1 = g_gameReg->World()->m_drawTarget;
                     entry->RenderFrame(
                         l1->m_backPair,
                         entry->GetAnchorX() + m_barRect.left,
@@ -333,7 +333,7 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
 RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CWwdSpriteObject* r = m_barSprite;
-    CImage* L = r->m_frameImage;
+    CImage* L = r->GetFrameImage();
     i32 xlo = r->m_screenX - L->GetAnchorX();
     i32 ylo = r->m_screenY - L->GetAnchorY();
     i32 xhi = L->m_width + xlo;
@@ -710,7 +710,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
                         SoundBuffer* voice = sample->AcquireInstance();
                         m_destructWarningSound = voice;
                         if (voice) {
-                            voice->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+                            voice->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
                         }
                     }
                 }

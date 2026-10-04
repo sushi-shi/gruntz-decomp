@@ -26,7 +26,7 @@ RVA(0x000f9ea0, 0x21d)
 i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     m_mgr = mgr;
     m_resourceArchive = mgr->m_resourceArchive;
-    m_world = mgr->m_world;
+    m_world = mgr->World();
 
     m_faderMgr = mgr->m_faderMgr;
     m_levelIndex = areaArg;

@@ -5,7 +5,7 @@
 #include <Wwd/WwdGameObjectFlags.h>
 
 #define NORMALIZE_BIG_ANIMATION_WITH_AUX(heightLayer)                                              \
-    CImage* aux = m_object->m_frameImage;                                                          \
+    CImage* aux = m_object->GetFrameImage();                                                       \
     if (aux != NULL) {                                                                             \
         i32 bigW = aux->m_width;                                                                   \
         i32 bigH;                                                                                  \

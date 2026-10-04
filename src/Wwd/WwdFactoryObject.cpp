@@ -333,22 +333,22 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         switch (d->m_stepMode) {
             case WWDSTEP_NEXT: {
                 CWwdSpriteObject* c = m_boundObject;
-                CDDrawWorker* seq = c->m_imageSet;
+                CDDrawWorker* seq = c->GetImageSet();
                 if (seq == NULL) {
                     break;
                 }
                 c->m_frameIndex = c->m_frameIndex + 1;
                 c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->m_frameImage == NULL) {
-                    i32 first = c->m_imageSet->GetMinIndex();
+                if (c->GetFrameImage() == NULL) {
+                    i32 first = c->GetImageSet()->GetMinIndex();
                     c->m_frameIndex = first;
-                    c->m_frameImage = c->m_imageSet->GetFrame(first);
+                    c->m_frameImage = c->GetImageSet()->GetFrame(first);
                 }
                 break;
             }
             case WWDSTEP_PREV: {
                 CWwdSpriteObject* c = m_boundObject;
-                CDDrawWorker* seq = c->m_imageSet;
+                CDDrawWorker* seq = c->GetImageSet();
                 if (seq == NULL) {
                     break;
                 }
@@ -364,7 +364,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDSTEP_SET: {
                 CWwdSpriteObject* c = m_boundObject;
                 i32 frame = d->GetFrameParameter();
-                CDDrawWorker* seq = c->m_imageSet;
+                CDDrawWorker* seq = c->GetImageSet();
                 if (seq == NULL) {
                     break;
                 }
@@ -374,7 +374,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDSTEP_FIRST: {
                 CWwdSpriteObject* c = m_boundObject;
-                CDDrawWorker* seq = c->m_imageSet;
+                CDDrawWorker* seq = c->GetImageSet();
                 if (seq == NULL) {
                     break;
                 }
@@ -385,7 +385,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDSTEP_LAST: {
                 CWwdSpriteObject* c = m_boundObject;
-                CDDrawWorker* seq = c->m_imageSet;
+                CDDrawWorker* seq = c->GetImageSet();
                 if (seq == NULL) {
                     break;
                 }
@@ -397,13 +397,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDSTEP_FORWARD_BY: {
                 CWwdSpriteObject* c = m_boundObject;
                 i32 step = d->GetFrameParameter();
-                CDDrawWorker* seq = c->m_imageSet;
+                CDDrawWorker* seq = c->GetImageSet();
                 if (seq == NULL) {
                     break;
                 }
                 c->m_frameIndex = c->m_frameIndex + step;
                 c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->m_frameImage == NULL) {
+                if (c->GetFrameImage() == NULL) {
                     c->ClampToLastFrame();
                 }
                 break;
@@ -411,13 +411,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDSTEP_BACK_BY: {
                 CWwdSpriteObject* c = m_boundObject;
                 i32 step = d->GetFrameParameter();
-                CDDrawWorker* seq = c->m_imageSet;
+                CDDrawWorker* seq = c->GetImageSet();
                 if (seq == NULL) {
                     break;
                 }
                 c->m_frameIndex = c->m_frameIndex - step;
                 c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->m_frameImage == NULL) {
+                if (c->GetFrameImage() == NULL) {
                     c->ClampToFirstFrame();
                 }
                 break;
@@ -546,7 +546,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDLOOP_AT_FIRST: {
                 CWwdSpriteObject* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->m_imageSet;
+                CDDrawWorker* seq = c2->GetImageSet();
                 if (c2->m_frameIndex == seq->GetMinIndex()) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
@@ -556,7 +556,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDLOOP_AT_LAST: {
                 CWwdSpriteObject* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->m_imageSet;
+                CDDrawWorker* seq = c2->GetImageSet();
                 if (c2->m_frameIndex == seq->GetMaxIndex()) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
@@ -566,7 +566,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDLOOP_AFTER_FIRST: {
                 CWwdSpriteObject* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->m_imageSet;
+                CDDrawWorker* seq = c2->GetImageSet();
                 if (c2->m_frameIndex == seq->GetMinIndex() + 1) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
@@ -581,7 +581,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             case WWDLOOP_BEFORE_LAST: {
                 CWwdSpriteObject* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->m_imageSet;
+                CDDrawWorker* seq = c2->GetImageSet();
                 if (c2->m_frameIndex == seq->GetMaxIndex() - 1) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;

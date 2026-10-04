@@ -213,7 +213,7 @@ i32 CSpotLight::SerializeDispatch(
         object
     )
     CGruntzMgr* reg = g_gameReg;
-    CDDrawSurfaceMgr* world = reg->m_world;
+    CDDrawSurfaceMgr* world = reg->World();
     CFileMemBase* s = static_cast<CFileMemBase*>(ar);
     switch (mode) {
         case SERIAL_SAVE:

@@ -297,8 +297,8 @@ public:
     m_mainIndex = -1;                                                                              \
     m_mainPlane = NULL;                                                                            \
     for (i32 index = 0; index < m_planes.GetSize(); index++) {                                     \
-        static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index))->m_flags &=                          \
-            ~IDX(WWD_PLANE_FLAG_MAIN);                                                             \
+        static_cast<CDDrawWorkerHost*>(m_planes.GetAt(index))                                      \
+            ->ClearFlags(IDX(WWD_PLANE_FLAG_MAIN));                                                \
     }
 
 #define RELEASE_LEVEL_CHILDREN                                                                     \

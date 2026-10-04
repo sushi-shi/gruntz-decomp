@@ -30,5 +30,5 @@ RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_OVERLAY);
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->GetFrameImage())
 }

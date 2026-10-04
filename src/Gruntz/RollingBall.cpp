@@ -60,10 +60,10 @@ CRollingBall::CRollingBall(CGameObject* obj)
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_subX, m_subY)
     CWwdSpriteObject* snapped = m_object;
     snapped->SetSortKey(SORTKEY_ROLLING_BALL_BASE + snapY);
-    CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
+    CDDrawWorker* frameSet = m_wwdObject->GetImageSet();
     if (frameSet != NULL) {
         CString name;
-        name = frameSet->m_name;
+        name = frameSet->GetName();
         if (name.Compare("LEVEL_ROLLINGBALL_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
             m_stepDirX = 0;

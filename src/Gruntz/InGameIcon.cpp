@@ -104,10 +104,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_peekTiming.Clear();
 
     InGameIconGlitter glitter = ICON_GLITTER_NONE;
-    CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
+    CDDrawWorker* frameSet = m_wwdObject->GetImageSet();
     if (frameSet != NULL) {
         CString name;
-        name = frameSet->m_name;
+        name = frameSet->GetName();
 
         if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_BOMB);
@@ -660,7 +660,7 @@ i32 CInGameIcon::Reposition() {
 
             CGameObject* found = NULL;
             if (MapLookupById(
-                    reg->m_world->ChildGroup()->m_registeredGameObjectsById,
+                    reg->World()->ChildGroup()->m_registeredGameObjectsById,
                     cellVal,
                     found
                 )
@@ -839,7 +839,7 @@ i32 CInGameText::Update() {
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;
         if (::PtInRect(&reg->m_viewBounds, x, y)) {
-            PlayRegistryCueIfElapsed(reg->m_world->SoundRegistry(), "GAME_HELPBOOK");
+            PlayRegistryCueIfElapsed(reg->World()->SoundRegistry(), "GAME_HELPBOOK");
         }
 
         m_cachedPlayerIndex = playerIndex;

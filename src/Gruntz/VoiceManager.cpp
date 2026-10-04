@@ -37,7 +37,7 @@ BOOL CVoiceManager::Init(CGruntzMgr* game) {
     CLEAR_VOICE_INDICATORS;
     memset(m_streamVoices, 0, sizeof(m_streamVoices));
     m_game = game;
-    m_world = game->m_world;
+    m_world = game->World();
     m_voiceVolume = 0x64;
     return BuildVoiceGroups() != false;
 }
@@ -153,20 +153,20 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
         if (secondSourceObjectId == grunt->m_object->GetObjectId()) {
             slotIndex = 1;
             if (firstPriority != 0 && m_streamVoices[0] != NULL) {
-                m_streamVoices[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+                m_streamVoices[0]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
             }
         } else if (secondPriority != 0 && m_streamVoices[1] != NULL) {
-            m_streamVoices[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+            m_streamVoices[1]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
         }
     } else {
         slotIndex = 1;
         if (firstSourceObjectId == grunt->m_object->GetObjectId()) {
             slotIndex = 0;
             if (secondPriority != 0 && m_streamVoices[1] != NULL) {
-                m_streamVoices[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+                m_streamVoices[1]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
             }
         } else if (firstPriority != 0 && m_streamVoices[0] != NULL) {
-            m_streamVoices[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+            m_streamVoices[0]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {
@@ -255,20 +255,20 @@ i32 CVoiceManager::PlayVoice(
         if (secondSourceObjectId == sourceObjectId) {
             slotIndex = 1;
             if (firstPriority != 0 && m_streamVoices[0] != NULL) {
-                m_streamVoices[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+                m_streamVoices[0]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
             }
         } else if (secondPriority != 0 && sourceObjectId != 0) {
-            m_streamVoices[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+            m_streamVoices[1]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
         }
     } else {
         slotIndex = 1;
         if (firstSourceObjectId == sourceObjectId) {
             slotIndex = 0;
             if (secondPriority != 0 && m_streamVoices[1] != NULL) {
-                m_streamVoices[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+                m_streamVoices[1]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
             }
         } else if (firstPriority != 0 && m_streamVoices[0] != NULL) {
-            m_streamVoices[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+            m_streamVoices[0]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {
@@ -352,20 +352,20 @@ i32 CVoiceManager::PlayVoice(
         if (secondSourceObjectId == sourceObjectId) {
             slotIndex = 1;
             if (firstPriority != 0 && m_streamVoices[0] != NULL) {
-                m_streamVoices[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+                m_streamVoices[0]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
             }
         } else if (secondPriority != 0 && m_streamVoices[1] != NULL) {
-            m_streamVoices[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+            m_streamVoices[1]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
         }
     } else {
         slotIndex = 1;
         if (firstSourceObjectId == sourceObjectId) {
             slotIndex = 0;
             if (secondPriority != 0 && m_streamVoices[1] != NULL) {
-                m_streamVoices[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+                m_streamVoices[1]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
             }
         } else if (firstPriority != 0 && m_streamVoices[0] != NULL) {
-            m_streamVoices[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
+            m_streamVoices[0]->SetVolumePercent(g_gameReg->GetVoiceVolume() / 2);
         }
     }
     if (m_streamVoices[slotIndex] == NULL) {

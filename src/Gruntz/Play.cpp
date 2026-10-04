@@ -891,6 +891,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     i32 diff = 0;
 
     char nameBuf[0x20];
+    // The asset loader also accesses index 0x25, overlapping saved exception-chain state.
     i32 initScratch[0x25];
 
     self->m_hudSuppressed = true;
@@ -2521,7 +2522,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 return 1;
             }
         }
-        CGameLevel* geom = m_mgr->m_world->GetLevel();
+        CGameLevel* geom = m_mgr->World()->GetLevel();
         CDDrawWorkerHost* cam = geom->m_mainPlane;
         RECT* view = cam->GetPlaneViewRect();
         sx = view->left - geom->m_viewportRect.left + xr;
@@ -2672,7 +2673,7 @@ drag_box: {
     if (m_mgr->GetFrameGate() != false) {
         goto ret1;
     }
-    LevelCoordRect wr = m_mgr->m_world->GetLevel()->GetViewportRect();
+    LevelCoordRect wr = m_mgr->World()->GetLevel()->GetViewportRect();
     if (!(x < wr.right && x >= wr.left && y < wr.bottom)) {
         goto ret1;
     }
@@ -2791,7 +2792,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
 
     if (m_statusBar->GetState() == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
-        SoundCueRegistry* registry = m_mgr->m_world->SoundRegistry();
+        SoundCueRegistry* registry = m_mgr->World()->SoundRegistry();
         registry->PlayCue("GAME_TABHIGHLIGHT1");
         m_statusBar->RestoreStatusBar();
         if (m_statusBar->GetState() == STATUSBAR_DOCK_LEFT) {
@@ -2839,7 +2840,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
 
-    h = m_mgr->m_world->GetLevel();
+    h = m_mgr->World()->GetLevel();
     vr = h->m_mainPlane->GetPlaneViewRect();
     px = vr->left - h->m_viewportRect.left + x;
     py = vr->top - h->m_viewportRect.top + y;
@@ -2930,7 +2931,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_mgr->GetTriggerMgr()->m_selectedUnitIds.IsEmpty()) {
         return 1;
     }
-    CGameLevel* ph = m_mgr->m_world->GetLevel();
+    CGameLevel* ph = m_mgr->World()->GetLevel();
     LevelCoordRect pr = ph->GetViewportRect();
     if (::PtInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->GetLevel();
@@ -3922,7 +3923,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     CPlay* self = this;
     CGruntzMgr* w = m_mgr;
     b32 changed = false;
-    CDDrawWorkerHost* g = w->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* g = w->World()->GetLevel()->m_mainPlane;
 
     i32 sx = g->GetScrollPixelX();
     i32 sy = g->GetScrollPixelY();
@@ -5382,7 +5383,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
     CTriggerMgr* g = w->GetTriggerMgr();
     g->StopCameraTracking();
-    CDDrawWorkerHost* pg = m_mgr->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* pg = m_mgr->World()->GetLevel()->m_mainPlane;
     pg->SetScrollPosition(x, y);
     return 1;
 }
@@ -5454,14 +5455,14 @@ i32 CPlay::ResetPlayState() {
             }
             (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
         }
-        CGameLevel* g = m_mgr->m_world->GetLevel();
+        CGameLevel* g = m_mgr->World()->GetLevel();
         ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
     } else {
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
             ResetGoals(slot->m_focusX, slot->m_focusY);
         } else {
-            CGameLevel* g = m_mgr->m_world->GetLevel();
+            CGameLevel* g = m_mgr->World()->GetLevel();
             ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
         }
     }
@@ -6110,7 +6111,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         char buf[SERIAL_NAME_LEN];
         memset(buf, 0, sizeof(buf));
         if (m_cursorSprite != NULL) {
-            strcpy(buf, m_cursorSprite->m_name);
+            strcpy(buf, m_cursorSprite->GetName());
         }
         s->Write(buf, SERIAL_NAME_LEN);
     }

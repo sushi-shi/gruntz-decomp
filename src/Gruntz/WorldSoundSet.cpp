@@ -606,7 +606,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
         if (record->GetDispatch() == DispatchGlobalAmbientSoundLogic) {
             obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         } else {
-            obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE);
+            obj->ClearFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         }
         SoundCue* layer = sprite->m_soundCue;
         if (layer && g_gameReg) {

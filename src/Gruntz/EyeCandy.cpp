@@ -23,9 +23,9 @@ i32 CEyeCandy::SerializeDispatch(
 RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
-    if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
-        i32 v = o->m_frameImage->GetAnchorY() + o->m_screenY + 0x186a0;
+    if (o->m_sortKey == 0 && o->GetFrameImage() != NULL) {
+        i32 v = o->GetFrameImage()->GetAnchorY() + o->m_screenY + 0x186a0;
         o->SetSortKey(v);
     }
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->GetFrameImage())
 }

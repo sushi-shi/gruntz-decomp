@@ -89,7 +89,7 @@ i32 CSBI_ImageSet::Render() {
         if (cel != NULL) {
             i32 y = cel->GetAnchorY() + m_rect.top;
             i32 x = cel->GetAnchorX() + m_rect.left;
-            cel->RenderFrame(g_gameReg->m_world->GetDrawTarget()->m_backPair, x, y, 0);
+            cel->RenderFrame(g_gameReg->World()->GetDrawTarget()->m_backPair, x, y, 0);
         }
     }
     return 1;
@@ -137,7 +137,7 @@ i32 CSBI_ImageSet::SerializeFields(
             g_serialCounter++;
             memset(buf, 0, SERIAL_NAME_LEN);
             if (m_frameSet) {
-                strcpy(buf, m_frameSet->m_name);
+                strcpy(buf, m_frameSet->GetName());
             }
             s->Write(buf, SERIAL_NAME_LEN);
             break;

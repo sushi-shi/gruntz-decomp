@@ -39,7 +39,7 @@ inline b32 CGruntVoice::PositionIndicatorAtSourceObject() {
     if (resolved != NULL) {
         m_object->Show();
         i32 dx = 0, dy = 0;
-        CImage* layer = static_cast<CWwdSpriteObject*>(resolved)->m_frameImage;
+        CImage* layer = static_cast<CWwdSpriteObject*>(resolved)->GetFrameImage();
         if (layer != NULL) {
             dx = layer->m_originX;
             dy = layer->m_originY;

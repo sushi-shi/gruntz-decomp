@@ -398,7 +398,7 @@ CGrunt* CTriggerMgr::PickGruntAtWorldPoint(
                 CGrunt* grunt = PlayerUnits(playerSelector)[unitIndex];
                 if (grunt != NULL && grunt->IsEntranceCommitted() != false) {
                     CWwdSpriteObject* object = grunt->m_object;
-                    if (object->m_frameImage != NULL) {
+                    if (object->GetFrameImage() != NULL) {
                         RECT hitBox;
                         hitBox.left = object->m_screenX - 15;
                         hitBox.top = object->m_screenY - 15;
@@ -798,7 +798,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     || sw->m_checkpointType == IDX(g->GetCarriedToyType())) {
                     sw->SwitchDown();
                 } else {
-                    RECT* view = g_gameReg->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
+                    RECT* view = g_gameReg->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
                     i32 gx = g->m_object->m_screenX;
                     i32 gy = g->m_object->m_screenY;
                     if (::PtInRect(view, gx, gy)) {

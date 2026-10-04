@@ -410,7 +410,7 @@ void CProjectile::AdvanceMotion() {
 
                             if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
                                 CreateParticlez(
-                                    reg->m_world->ChildGroup(),
+                                    reg->World()->ChildGroup(),
                                     m_targetPxX,
                                     m_targetPxY,
                                     "LEVEL_DEATHSPLASH",
@@ -425,7 +425,7 @@ void CProjectile::AdvanceMotion() {
         } else {
             if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
                 CreateParticlez(
-                    reg->m_world->ChildGroup(),
+                    reg->World()->ChildGroup(),
                     m_targetPxX,
                     m_targetPxY,
                     "GAME_WATER",
@@ -897,7 +897,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (gameMgr->m_soundEnabled == false) {
         goto fail;
     }
-    world = gameMgr->m_world;
+    world = gameMgr->World();
     cue = world->SoundRegistry()->FindCue(key);
     if (cue == NULL) {
         goto fail;
@@ -908,7 +908,7 @@ i32 CProjectile::LaunchSound(const char* key) {
 
     m_sound = static_cast<SoundBuffer*>(cue->GetSound()->AcquireInstance());
     if (m_sound != NULL) {
-        m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+        m_sound->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
         return 1;
     }
 fail:

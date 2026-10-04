@@ -30,7 +30,7 @@ i32 SaveGame(CGruntzMgr* gameMgr, char* name) {
     g_serialCounter = 0;
     memset(g_saveBuf, 0, 0x90);
     g_saveBuf[0] = 1;
-    CDDrawSurfaceMgr* world = gameMgr->m_world;
+    CDDrawSurfaceMgr* world = gameMgr->World();
     if (world == NULL) {
         return 0;
     }

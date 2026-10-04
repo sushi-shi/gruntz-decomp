@@ -577,7 +577,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
                 i32 occupantId = g_gameReg->GetTileGrid()->ObjectIdAt(tx, ty);
                 if (occupantId != 0) {
                     CMapPtrToPtr* map =
-                        &g_gameReg->m_world->ChildGroup()->m_registeredGameObjectsById;
+                        &g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById;
                     CGameObject* occupant = NULL;
                     MapLookupById(*map, occupantId, occupant);
                     if (occupant != NULL) {
@@ -1353,9 +1353,9 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     CByteArray* arr = &m_collectedWarpStoneFragments;
     arr->RemoveAll();
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
-        i32 b;
-        ar->Read(&b, 1);
-        arr->SetAtGrow(ci, b);
+        u8 fragment;
+        ar->Read(&fragment, sizeof(fragment));
+        arr->SetAtGrow(ci, fragment);
     }
     ClearSelectedUnitIds();
 

@@ -32,7 +32,7 @@ void Cmd_ResetScroll() {
 }
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
-    CDDrawWorkerHost* v = pm->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* v = pm->World()->GetLevel()->m_mainPlane;
     i32 scrollX = v->GetScrollPixelX();
     i32 scrollY = v->GetScrollPixelY();
 
@@ -62,7 +62,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    CDDrawWorkerHost* boundsPlane = pm->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* boundsPlane = pm->World()->GetLevel()->m_mainPlane;
     CLAMP_UPPER_INPLACE(scrollX, boundsPlane->GetPlanePixelWidth() - cx);
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
@@ -74,7 +74,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    CDDrawWorkerHost* scrollPlane = pm->m_world->GetLevel()->m_mainPlane;
+    CDDrawWorkerHost* scrollPlane = pm->World()->GetLevel()->m_mainPlane;
     scrollPlane->SetScrollPosition(scrollX, scrollY);
 
     CDDrawWorkerHost* gm = g_backView;
@@ -95,7 +95,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         }
     }
 
-    CDDrawSurfaceMgr* o = pm->m_world;
+    CDDrawSurfaceMgr* o = pm->World();
     SET_RECT_COMPONENTS(
         pm->m_viewBounds,
         o->GetLevel()->m_mainPlane->GetPlaneViewRect()->left - 0x60,

@@ -81,10 +81,10 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     exBottom = max(m_object->m_screenY, exBottom);
     m_object->m_extent.bottom = exBottom;
 
-    CDDrawWorker* frameSet = Anim()->m_imageSet;
+    CDDrawWorker* frameSet = Anim()->GetImageSet();
     if (frameSet != NULL) {
         CString name;
-        name = frameSet->m_name;
+        name = frameSet->GetName();
         if (name.Compare("LEVEL_KITCHENSLIME_NORTH") == 0) {
             m_object->m_smarts = IDX(CARDINAL_NORTH);
         } else if (name.Compare("LEVEL_KITCHENSLIME_EAST") == 0) {
@@ -151,15 +151,13 @@ i32 CKitchenSlime::Tick() {
 
     i32 newX;
     if (m_dirX > 0.0) {
-        double t = (m_posX = m_posX + step);
-        newX = static_cast<i32>(floor(t));
+        newX = static_cast<i32>(floor(m_posX += step));
         i32 tx = m_tilePosition.m_x;
         m_stepMag = fabs(m_posX - static_cast<double>(tx));
 
         CLAMP_UPPER_INPLACE(newX, tx);
     } else if (m_dirX < 0.0) {
-        double t = (m_posX = m_posX - step);
-        newX = static_cast<i32>(ceil(t));
+        newX = static_cast<i32>(ceil(m_posX -= step));
         i32 tx = m_tilePosition.m_x;
         m_stepMag = fabs(m_posX - static_cast<double>(tx));
         if (newX < tx) {
@@ -171,14 +169,12 @@ i32 CKitchenSlime::Tick() {
 
     i32 newY;
     if (m_dirY > 0.0) {
-        double t = (m_posY = m_posY + step);
-        newY = static_cast<i32>(floor(t));
+        newY = static_cast<i32>(floor(m_posY += step));
         i32 ty = m_tilePosition.m_y;
         m_stepMag = fabs(m_posY - static_cast<double>(ty));
         CLAMP_UPPER_INPLACE(newY, ty);
     } else if (m_dirY < 0.0) {
-        double t = (m_posY = m_posY - step);
-        newY = static_cast<i32>(ceil(t));
+        newY = static_cast<i32>(ceil(m_posY -= step));
         i32 ty = m_tilePosition.m_y;
         m_stepMag = fabs(m_posY - static_cast<double>(ty));
         if (newY < ty) {

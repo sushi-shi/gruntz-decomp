@@ -25,5 +25,5 @@ CBehindCandy::CBehindCandy(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(0);
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->GetFrameImage())
 }
