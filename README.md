@@ -418,10 +418,16 @@ A busy renderer requests another callback without completing or losing the final
 frame. FrameScheduler's zero delta on resume prevents inactive time from advancing
 an in-progress fade. Cancellation does not invoke the state's completion hook.
 
-Help-screen entry now uses this returning path. Preview fade methods also use it,
-with the preview timer reset by completion; the existing preview class has no
-runtime factory binding in the current source. The manager advances active fades
-before normal state updates and suppresses competing state input, commands (except
+Help entry and menu/credits entry and restoration use this returning path. Menu entry
+reveals the cursor and starts music only on completion; restoring an existing menu
+does not restart its music. Menu/credits draw failure restores the title without
+restarting the failed effect. Recovery presentation retries busy surfaces on later
+callbacks for up to two seconds of admitted time, then reports failure; successful
+presentation invokes the same completion hook. Credits returns immediately when
+restoration begins a fade so scrolling and drawing cannot overwrite it. Preview fade methods also use
+this path, with the preview timer reset by completion; the existing preview class
+has no runtime factory binding in the current source. The manager advances active
+fades before normal state updates and suppresses competing state input, commands (except
 quit), and repaint rendering. Resource reload, mode changes, state changes and
 shutdown cancel playback before changing its borrowed surfaces.
 
@@ -429,9 +435,10 @@ The Windows sine adapter uses nonwaiting locks for returning playback. It retrie
 busy surfaces, unlocks before reporting failure, and releases playback before
 asking the state to restore its display. The adapter retains its existing bounded
 2000-row/sample storage and rejects larger dimensions. Unmigrated synchronous
-callers retain their waiting/restoring lock path. Menu, gameplay/loading, booty and
-credits fades still require caller-continuation rewrites; this is not completion
-of the scene-transition or rendering-host port.
+callers retain their waiting/restoring lock path. Gameplay/loading and booty fades
+still require caller-continuation rewrites. Departing states must remain alive
+through their fades and audio ramps; menu, attract and booty exit audio waits are
+still synchronous. This is not completion of the scene-transition or rendering-host port.
 
 ```sh
 ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-fades.py --target all
@@ -439,6 +446,7 @@ ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-fades
 
 The portable suite executes the same playback code under Linux ASan/UBSan and
 wasm32 Node. Probe effects verify frame order, timing boundaries, cancellation and
-ownership, failed initialization/rendering, busy final frames, arithmetic limits,
+ownership, failed initialization/rendering, busy final frames, bounded recovery
+retries and timeout reset/saturation, arithmetic limits,
 and scheduler wrap/suspension. These tests do not execute DirectDraw rendering,
 state UI interactions or the game.

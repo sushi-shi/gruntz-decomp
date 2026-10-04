@@ -76,10 +76,8 @@ i32 CState::LoadTitlePage(
     }
 
     if (menuRoot()->GetDrawTarget()->LoadPageImage(page, mode) == 0) {
-        if (useOverlay != false) {
-            if (menuRoot()->GetDrawTarget()->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
-                return 0;
-            }
+        if (!useOverlay || !menuRoot()->GetDrawTarget()->LoadPageImage(page, DDRAW_PAGE_BACK)) {
+            return 0;
         }
     }
     return 1;

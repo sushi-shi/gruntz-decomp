@@ -145,6 +145,7 @@ public:
     i32 RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay);
     i32 BeginSceneFade(i32 intensityPercent, u32 durationMs, u32 leadMs, bool useOverlay);
     i32 AdvanceSceneFade(u32 deltaMs);
+    i32 BeginScenePresentation();
     void CancelSceneFade();
     bool IsSceneFading() const { return m_sceneFade.active(); }
     virtual void OnSceneFadeComplete() {}
@@ -223,11 +224,13 @@ public:
 
 private:
     FadePlayback m_sceneFade;
+    bool m_scenePresentation;
 };
 
 inline CState::CState() {
     m_mgr = NULL;
     m_faderMgr = NULL;
+    m_scenePresentation = false;
     m_resourceArchive = NULL;
     m_world = NULL;
     m_levelResources = NULL;

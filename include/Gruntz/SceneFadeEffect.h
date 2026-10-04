@@ -15,4 +15,15 @@ private:
     CFaderSine m_fader;
     bool m_valid;
 };
+class ScenePresentationEffect : public FadeEffect {
+public:
+    ScenePresentationEffect(CDDSurface* target, CDDSurface* source);
+    virtual u32 frameCount() { return 1; }
+    virtual bool begin();
+    virtual FadeRenderResult render(u32 frame);
+    virtual void end() {}
+private:
+    CDDSurface* m_target;
+    CDDSurface* m_source;
+};
 #endif

@@ -116,6 +116,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
 }
 
 void CCreditsState::ReleaseResources() {
+    CancelSceneFade();
     if (m_world) {
         SoundCueRegistry* reg = m_world->SoundRegistry();
         if (reg->m_soundStream) {
@@ -153,6 +154,7 @@ i32 CCreditsState::LeaveState(GameStateId nextState) {
 }
 
 i32 CCreditsState::Render() {
+    if (IsSceneFading()) return 1;
     IDirectDrawSurface* in =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
@@ -162,6 +164,7 @@ i32 CCreditsState::Render() {
         }
     }
 
+    if (IsSceneFading()) return 1;
     m_world->SoundRegistry()->TickVolumeRamps();
 
     {
@@ -189,11 +192,16 @@ i32 CCreditsState::Render() {
     }
 
     StepVideo();
+    if (IsSceneFading()) return 1;
     DrawScrollingCredits();
+    if (IsSceneFading()) return 1;
 
     CDDrawSubMgrPages* drawPages = m_world->GetDrawTarget();
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
+    // Surface restoration inside Flip/Blt may have begun a returning fade.
+    if (IsSceneFading()) return 1;
     drawPages->GetBackPair()->BltSelf(drawPages->m_overlayPair);
+    if (IsSceneFading()) return 1;
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
         owner()->m_midi->PlaySequence("CREDITZ", true);
@@ -210,6 +218,7 @@ i32 CCreditsState::Render() {
 }
 
 i32 CCreditsState::InputVirtual() {
+    CancelSceneFade();
 
     if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;
@@ -218,8 +227,7 @@ i32 CCreditsState::InputVirtual() {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    InitAttractTitle();
-    return 1;
+    return InitAttractTitle();
 }
 
 i32 CCreditsState::RestoreDisplay() {
@@ -260,6 +268,21 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
 }
 
 i32 CCreditsState::InitAttractTitle() {
+    CancelSceneFade();
+    if (!PrepareAttractTitle()) return 0;
+    return m_videoPlaying || BeginSceneFade(0x50, 0x3e8, 0, true);
+}
+
+i32 CCreditsState::RestoreAfterSceneFade() {
+    CancelSceneFade();
+    if (!m_world->GetDrawTarget()->PagesReady()) return 0;
+    while (ShowCursor(false) >= 0) {}
+    if (!PrepareAttractTitle()) return 0;
+    if (m_videoPlaying) return 1;
+    return BeginScenePresentation();
+}
+
+i32 CCreditsState::PrepareAttractTitle() {
     if (m_videoPlaying != false) {
         (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->PresentBackPage();
         (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->TransTitle();
@@ -272,10 +295,8 @@ i32 CCreditsState::InitAttractTitle() {
     const std::string titleName = formatText("TITLE%d", idx);
     CRezDir* saved = m_stateResources;
     CRezDir* state = m_resourceArchive->GetDirFromPath("STATEZ_ATTRACT");
+    if (state == NULL) return 0;
     m_stateResources = state;
-    if (state == NULL) {
-        return 0;
-    }
     i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, false);
     if (faded == 0) {
         m_stateResources = saved;
@@ -284,9 +305,7 @@ i32 CCreditsState::InitAttractTitle() {
     m_stateResources = saved;
     CDDSurface* tgt = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
-    (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->TransTitle();
-    RetireScene(0x50, 0x3e8, 0, true);
-    return 1;
+    return m_world->GetDrawTarget()->TransTitle();
 }
 
 i32 CCreditsState::DrawScrollingCredits() {

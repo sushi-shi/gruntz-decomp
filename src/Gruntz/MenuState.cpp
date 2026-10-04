@@ -145,10 +145,12 @@ void CMenuTree::InitializeMembers() {
 }
 
 void CMenuState::ReleaseResources() {
+    CancelSceneFade();
+    m_startMusicAfterFade = false;
 
-    m_world->m_imageRegistry->RemoveWithPrefix("MENU", "_");
-    m_world->SoundRegistry()->RemoveWithPrefix("MENU", "_");
     if (m_world) {
+        m_world->m_imageRegistry->RemoveWithPrefix("MENU", "_");
+        m_world->SoundRegistry()->RemoveWithPrefix("MENU", "_");
 
         SoundCueRegistry* soundRegistry = m_world->SoundRegistry();
         if (soundRegistry->m_soundStream) {
@@ -170,52 +172,36 @@ CMenuTree::~CMenuTree() {
 }
 
 i32 CMenuState::EnterState(GameStateId previousState) {
+    CancelSceneFade();
+    m_startMusicAfterFade = false;
 
     if (previousState != GAMESTATE_ATTRACT) {
-        i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-
-        const std::string titleName = formatText("TITLE%d", idx);
-
-        CRezDir* saved = StateResources();
-        CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
-        m_stateResources = (state);
-        if (state == NULL) {
-            return 0;
-        }
-
-        i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, false);
-        if (faded == 0) {
-            m_stateResources = (saved);
-            return 0;
-        }
-        m_stateResources = (saved);
-
-        CDDSurface* tgt = menuRoot()->GetDrawTarget()->GetBackPair()->GetSurface();
-        (static_cast<CDDSurface*>(tgt))
-            ->ShadeRect(
-                g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
-                static_cast<tagRECT*>(0)
-            );
-        menuRoot()->GetDrawTarget()->TransTitle();
+        if (!PrepareMenuTitle()) return 0;
     } else {
-        menuRoot()->GetDrawTarget()->TransEnter();
+        if (!menuRoot()->GetDrawTarget()->TransEnter()) return 0;
         CDDSurface* tgt = menuRoot()->GetDrawTarget()->m_overlayPair->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
-        menuRoot()->GetDrawTarget()->TransExit();
+        if (!menuRoot()->GetDrawTarget()->TransExit()) return 0;
     }
 
-    RetireScene(0x50, 0x3e8, 0, true);
-
-    if (ShowCursor(true) < 0) {
-        do {
-        } while (ShowCursor(true) < 0);
+    m_startMusicAfterFade = true;
+    if (!BeginSceneFade(0x50, 0x3e8, 0, true)) {
+        m_startMusicAfterFade = false;
+        return 0;
     }
-    StartMusic();
     return 1;
+}
+
+void CMenuState::OnSceneFadeComplete() {
+    while (ShowCursor(true) < 0) {}
+    if (m_startMusicAfterFade) {
+        m_startMusicAfterFade = false;
+        StartMusic();
+    }
 }
 
 void CMenuState::StartMusic() {
@@ -264,6 +250,7 @@ i32 CMenuState::LeaveState(GameStateId) {
 }
 
 i32 CMenuState::Render() {
+    if (IsSceneFading()) return 1;
     CInputDeviceGroup* L = g_actorList;
 
     for (i32 i = 0; i < L->m_count; i++) {
@@ -273,13 +260,17 @@ i32 CMenuState::Render() {
     HandleControllerInput();
 
     m_menuTree->Update(g_frameDelta);
+    if (IsSceneFading()) return 1;
     m_menuTree->DrawActivePage();
+    // Legacy draw calls can restore lost surfaces and start a fade reentrantly.
+    if (IsSceneFading()) return 1;
     BuildVersionString(g_versionRect);
+    if (IsSceneFading()) return 1;
     m_menuTree->PresentFrame();
     return 1;
 }
 
-i32 CMenuState::InputVirtual() {
+i32 CMenuState::RestoreMenuImages() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }
@@ -290,24 +281,27 @@ i32 CMenuState::InputVirtual() {
     if (m_world->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
         return 0;
     }
-    if (RestoreDisplay() == 0) {
-        return 0;
-    }
-    int(WINAPI * sc)(BOOL) = ShowCursor;
-    i32 r = sc(1);
-    while (r < 0) {
-        r = sc(1);
-    }
     return 1;
 }
 
+i32 CMenuState::InputVirtual() {
+    CancelSceneFade();
+    return RestoreMenuImages() && RestoreDisplay();
+}
+
 i32 CMenuState::RestoreDisplay() {
+    if (!IsActive()) return 0;
+    CancelSceneFade();
+    return PrepareMenuTitle() && BeginSceneFade(0x50, 0x3e8, 0, true);
+}
 
-    b32 gate = IsActive();
-    if (gate == false) {
-        return gate;
-    }
+i32 CMenuState::RestoreAfterSceneFade() {
+    CancelSceneFade();
+    if (!RestoreMenuImages() || !PrepareMenuTitle()) return 0;
+    return BeginScenePresentation();
+}
 
+i32 CMenuState::PrepareMenuTitle() {
     menuRoot()->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
@@ -316,10 +310,8 @@ i32 CMenuState::RestoreDisplay() {
 
     CRezDir* saved = StateResources();
     CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
-    m_stateResources = (state);
-    if (state == NULL) {
-        return 0;
-    }
+    if (state == NULL) return 0;
+    m_stateResources = state;
 
     i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, false);
     if (faded == 0) {
@@ -330,15 +322,7 @@ i32 CMenuState::RestoreDisplay() {
 
     CDDSurface* tgt = menuRoot()->GetDrawTarget()->GetBackPair()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
-    menuRoot()->GetDrawTarget()->TransTitle();
-
-    RetireScene(0x50, 0x3e8, 0, true);
-
-    if (ShowCursor(true) < 0) {
-        do {
-        } while (ShowCursor(true) < 0);
-    }
-    return 1;
+    return menuRoot()->GetDrawTarget()->TransTitle();
 }
 
 i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
