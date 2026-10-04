@@ -40,7 +40,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* unused,
+    const std::string& unused,
     i32 rowIndex,
     i32 colIndex,
     StatusSampleMode enabled,

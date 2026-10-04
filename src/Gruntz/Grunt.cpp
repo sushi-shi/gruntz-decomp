@@ -331,7 +331,7 @@ void CGrunt::ReadConfigFromButeMgr() {
     m_reserved418 = 0;
 
     m_timePerTile = g_buteMgr.GetDword(
-        const_cast<char*>(static_cast<const char*>(m_animSetName)),
+        (m_animSetName),
         "TimePerTile",
         1000
     );
@@ -434,9 +434,9 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     } else {
         LOAD_POSE(AT(m_poseToy, GRUNT_TOY1), s_pose_TOY1);
 
-        i32 x = AT(m_poseToy, GRUNT_TOY1)->m_records.GetSize();
+        i32 x = static_cast<i32>((AT(m_poseToy, GRUNT_TOY1)->m_records).size());
         LOAD_POSE(AT(m_poseToy, GRUNT_TOY2), s_pose_TOY2);
-        i32 y = AT(m_poseToy, GRUNT_TOY2)->m_records.GetSize();
+        i32 y = static_cast<i32>((AT(m_poseToy, GRUNT_TOY2)->m_records).size());
 
         if (x < y) {
             double blend =
@@ -588,7 +588,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     SwitchAnimation(m_poseAttackIdle);
                     {
                         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-                        const char* nm = EntranceCell()->AttackName().GetBuffer(0);
+                        const std::string& nm = (EntranceCell()->AttackName());
                         SetImageFrameByName(nm, frame);
                     }
                     goto store;
@@ -615,7 +615,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
             i32 column = facing.m_column;
             i32 index = 3 * row + column;
 
-            const char* nm = m_cells[index].IdleName().GetBuffer(0);
+            const std::string& nm = (m_cells[index].IdleName());
             SetImageFrameByName(nm, frame);
         }
         goto store;
@@ -629,7 +629,7 @@ walk:
         i32 column = facing.m_column;
         i32 index = 3 * row + column;
 
-        const char* nm = m_cells[index].WalkName().GetBuffer(0);
+        const std::string& nm = (m_cells[index].WalkName());
         SetImageSetByName(nm);
     }
 
@@ -717,7 +717,7 @@ i32 CGrunt::StepArrivalDrop(
     i32 extraPassableMask
 ) {
     Coord* tail;
-    POSITION pos;
+    std::list<Coord*>::iterator pos;
     Coord lastTile, targetTile;
     i32 passableMask, cnt, headFlags, lastFlags, hit;
     i32 reinit;
@@ -756,7 +756,7 @@ i32 CGrunt::StepArrivalDrop(
         )
         != 0) {
         if (CoordCount() != 0) {
-            g_coordPool.Push(m_coordList.RemoveHead());
+            g_coordPool.Push(takeFront(m_coordList));
         }
     pathGate:
         reinit = 1;
@@ -796,7 +796,7 @@ i32 CGrunt::StepArrivalDrop(
         }
         {
 
-            CPtrList probe(10);
+            std::list<Coord*> probe;
             if (g_gameReg->GetTileGrid()->FindPathWithEndpointOverrides(
                     lastTile.m_x,
                     lastTile.m_y,
@@ -807,21 +807,21 @@ i32 CGrunt::StepArrivalDrop(
                     blockedMask | BRICKZ_CELL_OCCUPIED,
                     passableMask
                 ) != 0
-                && !probe.IsEmpty()) {
-                if (probe.GetCount() <= cnt + 3) {
-                    g_coordPool.Push(probe.RemoveHead());
+                && !probe.empty()) {
+                if (static_cast<i32>(probe.size()) <= cnt + 3) {
+                    g_coordPool.Push(takeFront(probe));
                     this->RecycleCoords();
-                    pos = probe.GetHeadPosition();
-                    while (pos != NULL) {
-                        m_coordList.AddTail(probe.GetNext(pos));
+                    pos = probe.begin();
+                    while (pos != probe.end()) {
+                        m_coordList.insert(m_coordList.end(), *(pos++));
                     }
                 } else {
-                    pos = probe.GetHeadPosition();
-                    while (pos != NULL) {
-                        g_coordPool.Push(probe.GetNext(pos));
+                    pos = probe.begin();
+                    while (pos != probe.end()) {
+                        g_coordPool.Push(*(pos++));
                     }
                 }
-                probe.RemoveAll();
+                probe.clear();
             }
         }
     commitEntrance:
@@ -904,9 +904,9 @@ i32 CGrunt::StepArrivalDrop(
             passableMask
         ) != 0
         && CoordCount() != 0) {
-        g_coordPool.Push(m_coordList.RemoveHead());
+        g_coordPool.Push(takeFront(m_coordList));
         if (CoordCount() != 0) {
-            g_coordPool.Push(m_coordList.RemoveTail());
+            g_coordPool.Push(takeBack(m_coordList));
             if (CoordCount() != 0) {
                 nudged = 1;
                 tail = GetTailCoord();
@@ -1037,7 +1037,7 @@ reProbe:
         )
         != 0) {
         if (CoordCount() != 0) {
-            g_coordPool.Push(m_coordList.RemoveHead());
+            g_coordPool.Push(takeFront(m_coordList));
         }
         goto pathGate;
     }
@@ -1081,7 +1081,7 @@ i32 CGrunt::StepGruntMovement() {
         goto label_dropRet0;
     }
     if (m_arrivalState != AI_BATTLEZ_PATH) {
-        Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
+        Coord* co = static_cast<Coord*>(takeFront(m_coordList));
         destination = *co;
         g_coordPool.Push(co);
     } else {
@@ -1148,7 +1148,7 @@ i32 CGrunt::StepGruntMovement() {
             {
                 Coord* node = g_coordPool.Pop();
                 node->Set(tgtTileX, tgtTileY);
-                m_coordList.AddHead(node);
+                m_coordList.insert(m_coordList.begin(), node);
             }
             if (PathScan() == 0) {
                 SetFacing(0x3e8, rec);
@@ -1175,7 +1175,7 @@ i32 CGrunt::StepGruntMovement() {
                     SetEntrancePos(1, 0);
                     return 0;
                 }
-                Coord* co2 = static_cast<Coord*>(m_coordList.RemoveHead());
+                Coord* co2 = static_cast<Coord*>(takeFront(m_coordList));
                 g_coordPool.Push(co2);
                 goto label_4c6e4;
             }
@@ -1194,7 +1194,7 @@ i32 CGrunt::StepGruntMovement() {
 
 label_4c6e4:
     if (m_arrivalState == AI_BATTLEZ_PATH && CoordCount() != 0) {
-        Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
+        Coord* co = static_cast<Coord*>(takeFront(m_coordList));
         g_coordPool.Push(co);
     }
     if (flagHead & 0x80) {
@@ -1244,11 +1244,11 @@ label_4c6e4:
             goto label_4cb2a;
         }
         if (CoordCount() != 0 && m_arrivalState != AI_BATTLEZ_PATH) {
-            Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
+            Coord* co = static_cast<Coord*>(takeFront(m_coordList));
             if (co->m_x == btx && co->m_y == bty) {
                 g_coordPool.Push(co);
             } else {
-                m_coordList.AddHead(co);
+                m_coordList.insert(m_coordList.begin(), co);
             }
         }
         PLAY_GRUNT_CUE_IN_VIEW(8);
@@ -1812,7 +1812,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                         payload = NULL;
                     }
                     payload[0] = 9;
-                    m_payloads.AddHead(payload);
+                    m_payloads.insert(m_payloads.begin(), payload);
                 }
             }
             break;
@@ -2321,13 +2321,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (fresh == 0) {
         if (IsAnimationAct("H")) {
             DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
-            SetImageFrameByName(EntranceCell()->StruckName().GetBuffer(0), handle);
+            SetImageFrameByName((EntranceCell()->StruckName()), handle);
         } else {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
             if (IsAnimationAct("D")) {
-                SetImageSetByName(EntranceCell()->WalkName().GetBuffer(0));
+                SetImageSetByName((EntranceCell()->WalkName()));
                 SwitchAnimation(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);

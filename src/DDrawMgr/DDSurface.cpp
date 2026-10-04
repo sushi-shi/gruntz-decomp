@@ -32,7 +32,7 @@
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-CPtrArray g_imageCache;
+std::vector<CDDSurface*> g_imageCache;
 
 u16 g_clut[CLUT_ENTRY_COUNT];
 
@@ -214,11 +214,11 @@ i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
 
 void CDDSurface::FreeSurfaces() {
 
-    for (u32 i = 0; i < static_cast<u32>(m_elements.GetSize()); i++) {
+    for (u32 i = 0; i < static_cast<u32>(static_cast<i32>(m_elements.size())); i++) {
         CDDSurface* e = static_cast<CDDSurface*>(m_elements[i]);
         delete e;
     }
-    m_elements.RemoveAll();
+    m_elements.clear();
     if (this->m_ddSurface != NULL) {
         if ((this->m_dontOwn & 1) == 0) {
             this->m_ddSurface->Release();
@@ -370,30 +370,30 @@ i32 CDDSurface::Flip(CDDSurface* target) {
 
 void CDDSurface::ReloadImageCache() {
     u32 i = 0;
-    if (static_cast<u32>(m_elements.GetSize()) > 0) {
+    if (static_cast<u32>(static_cast<i32>(m_elements.size())) > 0) {
         do {
             CDDSurface* item = static_cast<CDDSurface*>(g_imageCache[i]);
             if (item != NULL) {
                 delete item;
             }
             i++;
-        } while (i < static_cast<u32>(m_elements.GetSize()));
+        } while (i < static_cast<u32>(static_cast<i32>(m_elements.size())));
     }
-    m_elements.RemoveAll();
-    g_imageCache.RemoveAll();
+    m_elements.clear();
+    g_imageCache.clear();
     i32 hr = m_ddSurface->EnumAttachedSurfaces(NULL, &EnumSurfacesCallback);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x2dd, hr);
     }
     u32 j = 0;
-    if (static_cast<u32>(g_imageCache.GetSize()) > 0) {
+    if (static_cast<u32>(static_cast<i32>(g_imageCache.size())) > 0) {
         do {
 
-            m_elements.Add(g_imageCache[j]);
+            m_elements.push_back(g_imageCache[j]);
             j++;
-        } while (j < static_cast<u32>(g_imageCache.GetSize()));
+        } while (j < static_cast<u32>(static_cast<i32>(g_imageCache.size())));
     }
-    g_imageCache.RemoveAll();
+    g_imageCache.clear();
 }
 
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
@@ -405,15 +405,15 @@ HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* 
         if (item->Refresh(payload) == 0) {
             delete item;
         } else {
-            g_imageCache.Add(item);
+            g_imageCache.push_back(item);
         }
     }
     return DDENUMRET_OK;
 }
 
 CDDSurface* CDDSurface::GetElementAt(i32 i) {
-    if (i >= 0 && i < m_elements.GetSize()) {
-        return static_cast<CDDSurface*>(m_elements.GetAt(i));
+    if (i >= 0 && i < static_cast<i32>(m_elements.size())) {
+        return static_cast<CDDSurface*>(m_elements[i]);
     }
     return NULL;
 }

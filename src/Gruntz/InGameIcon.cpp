@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -75,7 +76,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SwitchAnimationByName("GAME_CYCLE100", 0);
 
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
-    SetupSprite(NULL);
+    SetupSprite("");
 
     m_glitterSprite = NULL;
     m_peekTiming.Clear();
@@ -83,67 +84,67 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     InGameIconGlitter glitter = ICON_GLITTER_NONE;
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
-        CString name;
+        std::string name;
         name = frameSet->m_name;
 
-        if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
+        if ((name).compare("GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_BOMB);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_BOOMERANG);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BRICKZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_BRICKZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_BRICK);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_CLUBZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_CLUBZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_CLUB);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_GAUNTLETZ);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GLOVEZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_GLOVEZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_GLOVEZ);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GOOBERZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_GOOBERZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_GOOBER);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_GRAVITYBOOTZ);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GUNHATZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_GUNHATZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_GUNHAT);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_NERFGUNZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_NERFGUNZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_NERFGUN);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_ROCKZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_ROCKZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_ROCK);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SHIELDZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_SHIELDZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_SHIELD);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SHOVELZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_SHOVELZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_SHOVEL);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SPRINGZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_SPRINGZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_SPRING);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SPYZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_SPYZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_SPY);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SWORDZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_SWORDZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_SWORD);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_TIMEBOMB);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_TOOBZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_TOOBZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_TOOB);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WANDZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_WANDZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_WAND);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_FIRST);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -152,7 +153,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             lvl->m_anchors[0].m_x = anchorX;
             lvl->m_anchors[0].m_y = anchorY;
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_SECOND);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -161,7 +162,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             lvl->m_anchors[1].m_x = anchorX;
             lvl->m_anchors[1].m_y = anchorY;
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_THIRD);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -170,7 +171,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             lvl->m_anchors[2].m_x = anchorX;
             lvl->m_anchors[2].m_y = anchorY;
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_FOURTH);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -179,132 +180,132 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             lvl->m_anchors[3].m_x = anchorX;
             lvl->m_anchors[3].m_y = anchorY;
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_WELDER);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WINGZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOOLZ_WINGZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_WINGZ);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BABYWALKERZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_BABYWALKERZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_BABYWALKER);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_BEACHBALL);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BIGWHEELZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_BIGWHEELZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_BIGWHEEL);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_GOKARTZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_GOKARTZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_GOKART);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_JACKINTHEBOX);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_JUMPROPEZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_JUMPROPEZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_JUMPROPE);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_POGOSTICKZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_POGOSTICKZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_POGOSTICK);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_SCROLLZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_SCROLLZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_SCROLL);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_SQUEAKTOY);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_YOYOZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_TOYZ_YOYOZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_YOYO);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_MEGAPHONE);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH1") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH1") == 0) {
             m_object->m_smarts = IDX(PICKUP_HEALTH1);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH2") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH2") == 0) {
             m_object->m_smarts = IDX(PICKUP_HEALTH2);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH3") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH3") == 0) {
             m_object->m_smarts = IDX(PICKUP_HEALTH3);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_CONVERSION") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_CONVERSION") == 0) {
             m_object->m_smarts = IDX(PICKUP_CONVERSION);
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH") == 0) {
             m_object->m_smarts = IDX(PICKUP_DEATHTOUCH);
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_GHOST") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_GHOST") == 0) {
             m_object->m_smarts = IDX(PICKUP_GHOST);
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY") == 0) {
             m_object->m_smarts = IDX(PICKUP_INVULNERABILITY);
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR") == 0) {
             m_object->m_smarts = IDX(PICKUP_REACTIVEARMOR);
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_ROIDZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_ROIDZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_ROIDZ);
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED") == 0) {
             m_object->m_smarts = IDX(PICKUP_SUPERSPEED);
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
-        } else if (name.Compare("GAME_INGAMEICONZ_SECRETW") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_SECRETW") == 0) {
             if (g_gameReg->m_isEasyMode != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_W);
             SetupSprite("GAME_POWERUP");
-        } else if (name.Compare("GAME_INGAMEICONZ_SECRETA") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_SECRETA") == 0) {
             if (g_gameReg->m_isEasyMode != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_A);
             SetupSprite("GAME_POWERUP");
-        } else if (name.Compare("GAME_INGAMEICONZ_SECRETR") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_SECRETR") == 0) {
             if (g_gameReg->m_isEasyMode != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_R);
             SetupSprite("GAME_POWERUP");
-        } else if (name.Compare("GAME_INGAMEICONZ_SECRETP") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_SECRETP") == 0) {
             if (g_gameReg->m_isEasyMode != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_P);
             SetupSprite("GAME_POWERUP");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH") == 0) {
             m_object->m_smarts = IDX(PICKUP_STOPWATCH);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_COIN") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_COIN") == 0) {
             m_object->m_smarts = IDX(PICKUP_COIN);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_TOYBOX") == 0) {
+        } else if ((name).compare("GAME_TOYBOX") == 0) {
             m_object->m_smarts = IDX(PICKUP_TOYBOX);
             SetupSprite("GAME_TREASURE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_MINICAM") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_MINICAM") == 0) {
             m_object->m_smarts = IDX(PICKUP_MINICAM);
             glitter = ICON_GLITTER_CURSE_GREEN;
             SetupSprite("GAME_CURSE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_SCREENSHAKE") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_SCREENSHAKE") == 0) {
             m_object->m_smarts = IDX(PICKUP_SCREENSHAKE);
             glitter = ICON_GLITTER_CURSE_GREEN;
             SetupSprite("GAME_CURSE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_RANDOMCOLORZ") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_RANDOMCOLORZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_RANDOMCOLORZ);
             glitter = ICON_GLITTER_CURSE_GREEN;
             SetupSprite("GAME_CURSE");
-        } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_BLACKSCREEN") == 0) {
+        } else if ((name).compare("GAME_INGAMEICONZ_POWERUPZ_BLACKSCREEN") == 0) {
             m_object->m_smarts = IDX(PICKUP_BLACKSCREEN);
             glitter = ICON_GLITTER_CURSE_GREEN;
             SetupSprite("GAME_CURSE");
@@ -314,12 +315,12 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     PickupType pickup = GetPickupType();
     if (pickup == PICKUP_WARPSTONE && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-        CString levelStr;
-        levelStr.Format("Level%i", lvl->m_levelIndex);
-        CString warpName;
-        i32 target = g_buteMgr.GetInt("WarpStone", levelStr);
-        warpName.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
-        m_object->SetImageSetByName(warpName);
+        std::string levelStr;
+        levelStr = formatText("Level%i", lvl->m_levelIndex);
+        std::string warpName;
+        i32 target = g_buteMgr.GetInt("WarpStone", (levelStr));
+        warpName = formatText("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
+        m_object->SetImageSetByName((warpName));
         m_object->m_health = target;
     }
 
@@ -668,22 +669,14 @@ i32 CInGameIcon::SerializeDispatch(
             if (strlen(aniName) == 0) {
                 m_value = NULL;
             } else {
-                m_value = MapFind<CAniElement>(
-                    m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
-                    aniName
-                );
+                m_value = m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimation(aniName);
             }
             break;
         }
         case SERIAL_SAVE: {
             memset(name, 0, sizeof(name));
             if (m_value != NULL) {
-                strcpy(
-                    name,
-                    static_cast<const char*>(
-                        m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
-                    )
-                );
+                if (!copyTextToBuffer(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value), name, SERIAL_NAME_LEN)) return 0;
             }
             ar->Write(name, SERIAL_NAME_LEN);
             ar->Write(m_blob, 0x10);
@@ -722,12 +715,7 @@ i32 CInGameIcon::SerializeDispatch(
         case SERIAL_SAVE: {
             memset(name, 0, sizeof(name));
             if (m_cue != NULL) {
-                strcpy(
-                    name,
-                    static_cast<const char*>(
-                        m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->FindCueKey(m_cue)
-                    )
-                );
+                if (!copyTextToBuffer(m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->FindCueKey(m_cue), name, SERIAL_NAME_LEN)) return 0;
             }
             ar->Write(name, SERIAL_NAME_LEN);
             g_serialCounter++;
@@ -742,10 +730,7 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = MapFind<SoundCue>(
-                    m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues,
-                    name
-                );
+                m_cue = m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->FindCue(name);
             } else {
                 m_cue = NULL;
             }
@@ -883,11 +868,11 @@ i32 CInGameText::SerializeDispatch(
     return 1;
 }
 
-void CInGameIcon::SetupSprite(const char* category) {
+void CInGameIcon::SetupSprite(const std::string& category) {
     SoundCue* found = NULL;
-    if (category != NULL) {
+    if (!category.empty()) {
         found = NULL;
-        MapLookup(g_gameReg->World()->SoundRegistry()->m_cues, category, found);
+        found = g_gameReg->World()->SoundRegistry()->FindCue(category);
     }
     m_cue = found;
 }

@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -17,7 +18,7 @@ i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
     i32 i;
     for (i = 0; i < 5; i++) {
         memset(buf, 0, sizeof(buf));
-        strcpy(buf, m_names[i]);
+        if (!copyTextToBuffer((m_names[i]), buf, sizeof(buf))) return 0;
         ar->Write(buf, sizeof(buf));
     }
 

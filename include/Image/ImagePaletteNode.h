@@ -1,6 +1,8 @@
 #ifndef SRC_IMAGE_IMAGEPALETTENODE_H
 #define SRC_IMAGE_IMAGEPALETTENODE_H
 
+class CDibPal;
+
 #include <Ints.h>
 
 #include <Image/RezDecodeKind.h>
@@ -46,12 +48,6 @@ public:
     u32 GetFlags() {
         return m_dwFlags;
     }
-    POSITION GetPos() {
-        return m_pos;
-    }
-    void SetPos(POSITION pos) {
-        m_pos = pos;
-    }
     b32 IsIdentity() {
         return m_bIdentity;
     }
@@ -66,13 +62,12 @@ private:
     DIB_LOGPAL256 m_logPal;
     u32 m_dwFlags;
     b32 m_bIdentity;
-    POSITION m_pos;
 };
 
 inline CDibPal::CDibPal() {
     m_hPal = NULL;
     m_bIdentity = false;
-    m_pos = NULL;
+
 }
 
 #endif

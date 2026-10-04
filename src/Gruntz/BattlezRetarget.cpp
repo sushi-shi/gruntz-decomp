@@ -73,10 +73,10 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             i32 band = r % 4;
             CBattlezMapConfig* b = &m_ctx->m_players[band].m_battlezConfig;
             if (b != NULL) {
-                i32 cnt = b->m_attackWaypoints.GetSize();
+                i32 cnt = static_cast<i32>(b->m_attackWaypoints.size());
                 Coord goal = b->m_marker;
                 if (cnt != 0) {
-                    Coord* pair = static_cast<Coord*>(b->m_attackWaypoints.GetAt(rand() % cnt));
+                    Coord* pair = static_cast<Coord*>(b->m_attackWaypoints[rand() % cnt]);
                     goal = *pair;
                 }
                 if (unit->TileSwitch(goal.m_x, goal.m_y, 0, 0x9cf, 0, 0x4020) != 0) {
@@ -118,10 +118,10 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     i32 py = lvl->m_screenY >> TILE_SHIFT_PX;
     i32 nearBand = 0;
 
-    i32 cnt2 = cfgB->m_attackWaypoints.GetSize();
+    i32 cnt2 = static_cast<i32>(cfgB->m_attackWaypoints.size());
     if (cnt2 > 0) {
         for (i32 j = 0; j < cnt2; j++) {
-            Coord* pair = static_cast<Coord*>(cfgB->m_attackWaypoints.GetAt(j));
+            Coord* pair = static_cast<Coord*>(cfgB->m_attackWaypoints[j]);
             i32 dy = abs(pair->m_y - py);
             i32 dx = abs(pair->m_x - px);
             if (dx + dy <= 6) {

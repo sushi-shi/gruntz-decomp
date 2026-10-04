@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_PROJECTILE_H
 #define GRUNTZ_PROJECTILE_H
 
+#include <string>
+
+#include <list>
+struct Coord;
+
 #include <Ints.h>
 
 #include <Gruntz/ActReg.h>
@@ -42,7 +47,7 @@ public:
 
     i32 AdvanceAnimationAndDeleteWhenComplete();
     void ScanTargets(i32 impact);
-    i32 LaunchSound(const char* key);
+    i32 LaunchSound(const std::string& key);
     virtual void AdvanceMotion()  ;
 
     PickupType m_kind;
@@ -68,7 +73,7 @@ public:
     CAniElement* m_frames[7];
     CWwdSpriteObject* m_shadow;
     SoundBuffer* m_sound;
-    CPtrList m_hitList;
+    std::list<Coord*> m_hitList;
     i32 m_sourcePxX, m_sourcePxY;
 };
 

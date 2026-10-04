@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CDDRAWSHADEBLIT_H
 #define GRUNTZ_CDDRAWSHADEBLIT_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/ColorDepth.h>
@@ -8,7 +10,6 @@
 #include <Enums.h>
 #include <Ints.h>
 
-class CString;
 class CDDSurface;
 
 typedef struct tagRECT ShadeRect;
@@ -40,16 +41,16 @@ class CDDrawShadeBlit {
 public:
     CDDrawShadeBlit();
     i32 BuildRle(u8* pixels, i32 width, i32 height, i32 stride, i32 keyVal, PALETTEENTRY* palette);
-    i32 LoadFromFile(CString name, ColorDepth fmt);
+    i32 LoadFromFile(const std::string& name, ColorDepth fmt);
 
     i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY* palette);
     i32 Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt);
 
     u8* EncodeRle16(const u8* src);
     void Teardown();
-    i32 WritePidFile(CString path, PidWriteHeader header);
+    i32 WritePidFile(const std::string& path, PidWriteHeader header);
 
-    i32 SavePid(CString path, i32 offsetX, i32 offsetY);
+    i32 SavePid(const std::string& path, i32 offsetX, i32 offsetY);
     i32 Decompress(u8* dest);
 
     i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip);

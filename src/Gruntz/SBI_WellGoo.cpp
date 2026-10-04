@@ -31,7 +31,7 @@ i32 CSBI_WellGoo::Setup(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* key,
+    const std::string& key,
     i32 fillScale
 ) {
 
@@ -53,7 +53,7 @@ i32 CSBI_WellGoo::Setup(
     m_dstRect.left = m_rect.left;
     m_dstRect.right = m_rect.right + 1;
     m_dstRect.bottom = m_rect.bottom + 1;
-    if (key == NULL) {
+    if (key.empty()) {
         goto fail;
     }
     m_gooSrc =

@@ -5,7 +5,7 @@
 
 #define HIDE_AND_CLEAR_GRUNT_SPRITE(sprite)                                                            if (sprite) {                                                                                          sprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);                                       sprite = NULL;                                                                                 }
 
-#define LOAD_POSE(dst, sfx)                                                                            ((dst) = MapFind<CAniElement>(                                                                          m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                             "GRUNTZ_" + m_animSetName + (sfx)                                                              ))
+#define LOAD_POSE(dst, sfx)                                                                            ((dst) = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation("GRUNTZ_" + m_animSetName + (sfx)))
 
 #define DEATH_FRAME() (m_wwdObject->m_animationCursor.m_animation->RecordAt(0)->m_param)
 
@@ -17,6 +17,6 @@
 
 #define PLAY_GRUNT_CUE_IN_VIEW(cue)                                                                    do {                                                                                                   CGruntzMgr* _g = g_gameReg;                                                                        if (::PtInRect(                                                                                            &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                                               m_object->m_screenX,                                                                               m_object->m_screenY                                                                            )) {                                                                                               _g->VoiceMgr()->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                                    }                                                                                              } while (0)
 
-#define PICKUP(key, idv)                                                                               do {                                                                                                   CAniElement* geo =                                                                                     MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key));            m_pickupGeoSrc = geo;                                                                              id = (idv);                                                                                    } while (0)
+#define PICKUP(key, idv)                                                                               do {                                                                                                   CAniElement* geo =                                                                                     m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation((key));            m_pickupGeoSrc = geo;                                                                              id = (idv);                                                                                    } while (0)
 
 #endif

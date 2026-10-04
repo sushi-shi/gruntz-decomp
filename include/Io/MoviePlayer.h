@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CMOVIEPLAYER_H
 #define GRUNTZ_CMOVIEPLAYER_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <Crypto/FecCrypt.h>
@@ -62,7 +64,7 @@ struct PLAYLISTINFOSTRUCT {
     i32 m_count;
 };
 
-typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
+typedef std::vector<PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 
 class CMoviePlayer {
     inline void DecodeFrame();

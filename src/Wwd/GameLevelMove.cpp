@@ -308,8 +308,8 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
         return 0;
     }
     CDDrawChildGroup* children = OwnerMgr()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = children->m_list.begin();
+    while (pos != children->m_list.end()) {
         CGameObject* obj = children->NextChild(pos);
         if (obj != t && (obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))
             && (t->CollisionBits(obj)) && t->m_extent.left != COORD_UNSET

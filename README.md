@@ -6,10 +6,10 @@ The clean C++ base for building and extending Gruntz.
        main
          |
          v
-      source (you are here)
+      source
          |
          v
-     your port
+     port-mfc-stdlib (this branch)
 ```
 
 [`main`](https://github.com/sushi-shi/gruntz-decomp/tree/main) owns reconstruction
@@ -48,6 +48,65 @@ nix develop path:. -c python3 build.py
 The executable is `build/GRUNTZ.EXE`. `--jobs N` controls compiler concurrency.
 Objects are cached against source, header, build-script and toolchain inputs.
 
+## Port development
+
+This branch replaces game-owned MFC strings and collections with `std::string`,
+`std::vector`, `std::list`, and typed `std::map` instances. It still uses the
+Windows application, graphics, audio, and networking backends. A complete Linux
+or WebAssembly game build requires the later platform work.
+
+The Clang Windows target compiles all units to COFF objects without launching:
+
+```sh
+nix develop path:. -c python3 build-clang.py
+```
+
+Use `--syntax-only` for a faster check, `--jobs N` to set concurrency, and optional
+unit names to select sources. Diagnostics and the compilation database live in
+`build/clang/`. This target checks compilation; the complete executable is still
+linked by `build.py` with the historical Windows toolchain. Clang uses a generated
+SDK header copy with declaration-syntax corrections for the old headers.
+
+The portable helpers have native Linux tests:
+
+```sh
+nix develop path:. -c python3 check-stdlib.py
+```
+
+These exercise formatting, byte-oriented case handling, substring bounds,
+sparse vector growth (including aliased input), and list extraction under
+AddressSanitizer and UndefinedBehaviorSanitizer. If the runner uses ptrace,
+set `ASAN_OPTIONS=detect_leaks=0`; LeakSanitizer cannot run under ptrace.
+
+### Text and collection contracts
+
+- Strings own their bytes. A `c_str()` pointer is borrowed only while the owner
+  remains alive and unchanged. Config lookups and text formatters return owned
+  strings; migrated read-only text inputs use `const std::string&`. C APIs receive
+  `const char*`, and writable Windows text output uses separate character buffers.
+  Optional null names become empty strings at the boundary.
+- Text remains in the existing byte encoding. Resource-key case conversion is
+  explicitly ASCII; bytes above ASCII are preserved. Unicode conversion and
+  platform path rules belong to the later filesystem/UI port.
+- Vectors own their storage; pointer elements retain their existing explicit
+  deletion or pool-return rules. Growing a vector does not relocate the pointed
+  objects. Lists retain traversal order and stable element iterators. A cursor
+  terminates at its own container's `end()`.
+- Maps own their keys and use deterministic key order: numeric object IDs and
+  lexical resource names. This replaces MFC hash-bucket enumeration, including
+  sound-cue enumeration and object serialization passes. Rendering/update list
+  order and equal-sort-key insertion order remain unchanged. Runtime and retail
+  multiplayer/save interoperability are not established by compilation checks.
+- Runtime resource keys retain their complete names. Legacy save fields keep their
+  fixed width; resource-reference writers reject names that do not fit or contain
+  embedded nulls.
+- Animation, sound, palette, and logic registries reuse existing keys without
+  replacing borrowed objects. MIDI registration rejects duplicate keys. Resource
+  registry insertion is private.
+- Animation act names use a node-based standard map. The previous raw-reallocated
+  array cannot safely store `std::string`; the map keeps referenced names stable
+  when new IDs are registered.
+
 ## What's included
 
 The build needs no original game executable. `imports/` contains temporary DLL
@@ -56,9 +115,8 @@ are deleted immediately; only the import libraries enter the game link.
 Game data stays outside the source tree; Nix fetches the real runtime DLLs
 from pinned sources when you launch.
 
-Generation preserves the existing compiler, platform APIs and source behavior.
-This is a base for further development, not a modern compiler or platform port.
-Export verification compiles and links; it does not launch or validate gameplay.
+The source export supplies the original platform backends. This branch starts
+the portability work above. Build verification does not launch or validate gameplay.
 
 Project code is covered by `LICENSE`. Vendored SDK headers and zlib retain their
 own notices. Icons, cursors and other game resources retain their original ownership.

@@ -1,6 +1,8 @@
 #ifndef SRC_FONT_FONT_H
 #define SRC_FONT_FONT_H
 
+#include <string>
+
 #include <Ints.h>
 
 class Font {
@@ -9,8 +11,8 @@ public:
     ~Font();
     i32 AllocateMemory(i32 count);
     void FreeMemory();
-    i32 LoadFont(CString szFileName);
-    i32 SaveFont(CString szFileName);
+    i32 LoadFont(const std::string& szFileName);
+    i32 SaveFont(const std::string& szFileName);
 
     u8** GetSurface(u8 c);
     CSize& GetGlyph(CSize& out, u8 c);
@@ -38,18 +40,18 @@ public:
     void SetFont(Font* f);
     void SetColor(i32 color);
 
-    CSize MeasureText(CString text);
+    CSize MeasureText(const std::string& text);
 
-    void DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend);
+    void DrawGlyphRun(const std::string& text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend);
 
-    void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z);
-    void DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z);
+    void DrawLine(const std::string& text, CDDSurface* surf, i32 x, i32 y, i32 z);
+    void DrawLineClipped(const std::string& text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z);
 
-    CSize MeasureWrapped(CString text, CRect rc);
+    CSize MeasureWrapped(std::string text, CRect rc);
 
-    void DrawWrapped(CString text, CDDSurface* surf, CRect rc, i32 z, i32 hcenter, i32 spacing);
+    void DrawWrapped(std::string text, CDDSurface* surf, CRect rc, i32 z, i32 hcenter, i32 spacing);
 
-    CSize LayoutWrapped(CString text, CRect rc, i32* outLen);
+    CSize LayoutWrapped(std::string text, CRect rc, i32* outLen);
 
     Font* m_font;
     COLORREF m_color;

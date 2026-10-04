@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CANIELEMENT_H
 #define GRUNTZ_CANIELEMENT_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <Gruntz/AniRecordView.h>
@@ -38,12 +40,12 @@ public:
     void DeleteAll();
 
     i32 m_flags;
-    CObArray m_records;
+    std::vector<CAniRecordView*> m_records;
     char* m_name;
     float m_scale;
     i32 m_durationMs;
 };
 
-#define DELETE_ANI_ELEMENT_CONTENTS(index)                                                             for (index = 0; index < m_records.GetSize(); index++) {                                                CObject* item = m_records.GetAt(index);                                                            if (item != NULL) {                                                                                    delete (static_cast<CAniRecordView*>(item));                                                   }                                                                                              }                                                                                                  if (m_name != NULL) {                                                                                  delete[] m_name;                                                                                   m_name = NULL;                                                                                 }                                                                                                  m_records.RemoveAll()
+#define DELETE_ANI_ELEMENT_CONTENTS(index)                                                             for (index = 0; index < static_cast<i32>(m_records.size()); index++) {                                                CObject* item = m_records[index];                                                            if (item != NULL) {                                                                                    delete (static_cast<CAniRecordView*>(item));                                                   }                                                                                              }                                                                                                  if (m_name != NULL) {                                                                                  delete[] m_name;                                                                                   m_name = NULL;                                                                                 }                                                                                                  m_records.clear()
 
 #endif

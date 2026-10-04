@@ -1,6 +1,10 @@
 #ifndef GRUNTZ_GRUNTZ_GRUNTZMGR_H
 #define GRUNTZ_GRUNTZ_GRUNTZMGR_H
 
+#include <vector>
+
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/ColorDepth.h>
@@ -101,7 +105,7 @@ public:
 
     i32 ClearWorldFile();
     i32 InitializeLobbyConnectionSettings();
-    CString BuildMoviePath(MovieId movie);
+    std::string BuildMoviePath(MovieId movie);
 
     virtual i32 PerFrameTick()  ;
 
@@ -139,15 +143,15 @@ public:
     i32 ToggleBaseLayer();
     i32 PollUnlessIdle();
     i32 RejectWorldFileCommand();
-    i32 AppendChatMessage(char* msg);
-    i32 ShowToggleMessage(char* itemName, i32 on);
+    i32 AppendChatMessage(const std::string& msg);
+    i32 ShowToggleMessage(const std::string& itemName, i32 on);
 
     i32 IsMoviePathValid();
     void ReportWorldStatus(WorldInitReportTag tag);
     i32 LoadMonologoSprite();
     i32 CheatRevealTreasures();
 
-    i32 SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx);
+    i32 SetGruntColor(CDDrawWorker* sink, const std::string& key, i32 idx);
     void CheatSkeletonToggle();
     void CheatEclipseToggle();
     i32 WarpCheat();
@@ -163,7 +167,7 @@ public:
     void PauseMusicIfEnabled();
     void ResumeMusicIfEnabled();
 
-    i32 SetAssetRoot(char* path);
+    i32 SetAssetRoot(const std::string& path);
 
     void MuteMusicIfActive(i32 durationMs);
     void RestoreMusicVolumeIfActive(i32 durationMs);
@@ -178,7 +182,7 @@ public:
     void StopAudioPlayback();
     void DeactivateAllPlayers();
 
-    CString GetWorldFileName() {
+    std::string GetWorldFileName() {
         return m_strWorldFile;
     }
     i32 AdvanceComputerPlayerTurns();
@@ -204,7 +208,7 @@ public:
         b32 isBattlez,
         b32 isCustom,
         i32 levelId,
-        CString levelName
+        std::string levelName
     );
     void CommitSinglePlayerProgress();
 
@@ -215,7 +219,7 @@ public:
 
     i32 HandleDebugPosition();
 
-    CString GetRezPath();
+    std::string GetRezPath();
 
     void SetGameClock(i32 now, i32 delta, i32 abs);
     void ResetClockGlobals();
@@ -248,7 +252,7 @@ public:
         i32 unusedC,
         i32 unusedD,
         i32 unusedE,
-        const CString& val,
+        const std::string& val,
         i32 unusedG
     );
     i32 CountActivePlayers(b32 includeComputerPlayers);
@@ -263,7 +267,7 @@ public:
 
     i32 LoadSaveMessageSprite();
 
-    i32 IsBattlezMapFile(CString path);
+    i32 IsBattlezMapFile(const std::string& path);
 
     i32 PlayMovieEntry(i32 entryId);
 
@@ -349,16 +353,16 @@ public:
     struct IDirectPlayLobby* m_lobby;
 
     LPDPLCONNECTION m_connSettings;
-    CString m_strWorldFile;
+    std::string m_strWorldFile;
 
     i32 m_reservedcc;
     char m_driveLetter;
     b32 m_driveLetterProbed;
-    CPtrArray m_stateStack;
+    std::vector<CState*> m_stateStack;
 
-    CString m_strRezPath;
+    std::string m_strRezPath;
 
-    CString m_strMoviePath;
+    std::string m_strMoviePath;
     b32 m_inGameDir;
     b32 m_haveRez;
     b32 m_haveMoviez;
@@ -391,7 +395,6 @@ i32 PumpIdleFrame();
 
 extern b32 g_monologoShown;
 
-extern char g_msgScratch[256];
 
 extern u32 g_gruntDestruction;
 extern u32 g_gruntCreation;
@@ -404,7 +407,7 @@ extern DebugDisplayFlags g_debugDisplayFlags;
 extern i32 g_warpX;
 extern i32 g_warpY;
 
-CString RunCustomWorldDialog(HWND parent, CString* out);
+std::string RunCustomWorldDialog(HWND parent);
 i32 __stdcall LaunchPortalExe(char* outPath);
 
 char GetGruntzDriveLetter();

@@ -13,7 +13,6 @@ struct CRezItm;
 
 class CDDrawDeviceManager;
 
-class CString;
 class CResolveNode;
 class CDDrawSurfacePair;
 

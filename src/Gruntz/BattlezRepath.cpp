@@ -55,12 +55,12 @@
 
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
-        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
+        std::list<CGruntPuddle*>::iterator pos = m_triggerMgr->m_baseList.begin();
         CGruntPuddle* best = NULL;
         i32 bestDist = INT_MAX;
-        while (pos != NULL) {
-            CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetAt(pos));
-            m_triggerMgr->m_baseList.GetNext(pos);
+        while (pos != m_triggerMgr->m_baseList.end()) {
+            CGruntPuddle* cand = static_cast<CGruntPuddle*>(*(pos));
+            *(pos++);
             if (cand->m_pending == false) {
                 i32 candX = cand->m_tileX;
                 i32 candY = cand->m_tileY;
@@ -90,10 +90,10 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
 }
 
 i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
-    CPtrList& lst = m_ctx->m_triggerMgr->m_baseList;
-    POSITION pos = lst.GetHeadPosition();
-    while (pos != NULL) {
-        CGruntPuddle* cand = static_cast<CGruntPuddle*>(lst.GetNext(pos));
+    std::list<CGruntPuddle*>& lst = m_ctx->m_triggerMgr->m_baseList;
+    std::list<CGruntPuddle*>::iterator pos = lst.begin();
+    while (pos != lst.end()) {
+        CGruntPuddle* cand = static_cast<CGruntPuddle*>(*(pos++));
         if (cand != NULL && cand->m_tileX == x && cand->m_tileY == y && cand->m_pending == false) {
             return 1;
         }

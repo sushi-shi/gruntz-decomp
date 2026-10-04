@@ -136,7 +136,7 @@ i32 CLatencyList::PopulateGenericOptions() {
 
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
 
-    if (m_list.GetCount() <= 0) {
+    if (static_cast<i32>(m_list.size()) <= 0) {
         return 0;
     }
     HWND combo = GetDlgItem(hDlg, ctrlId);
@@ -144,19 +144,19 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
         return 0;
     }
     ComboBox_ResetContent(combo);
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != NULL) {
-        CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
+    std::list<CKeyedNode*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        CKeyedNode* rec = static_cast<CKeyedNode*>(*(pos++));
         i32 data = MAKELONG(rec->GetCommandDelay(), rec->GetResendInterval());
-        i32 idx = ComboBox_AddString(combo, static_cast<LPCTSTR>(rec->GetName()));
+        i32 idx = ComboBox_AddString(combo, rec->GetName().c_str());
         if (idx != CB_ERR) {
             ComboBox_SetItemData(combo, idx, data);
         }
     }
-    return m_list.GetCount();
+    return static_cast<i32>(m_list.size());
 }
 
-CString CKeyedNode::GetName() {
+std::string CKeyedNode::GetName() {
     return m_key;
 }
 

@@ -57,25 +57,25 @@ BOOL CCheatMgr::Init(HWND owner) {
 }
 
 void CCheatMgr::Empty() {
-    POSITION pos = m_map.GetStartPosition();
-    CString key;
-    if (pos != static_cast<POSITION>(0)) {
+    std::map<std::string, CheatEntry*>::iterator pos = m_map.begin();
+    std::string key;
+    if (pos != m_map.end()) {
         do {
             CheatEntry* value = NULL;
-            MapGetNext(m_map, pos, key, value);
+            (key = pos->first, value = pos->second, ++pos);
             if (value != NULL) {
                 delete value;
             }
-        } while (pos != static_cast<POSITION>(0));
+        } while (pos != m_map.end());
     }
-    m_map.RemoveAll();
+    m_map.clear();
     m_owner = NULL;
     m_flag = false;
     m_pendingCodeLength = 0;
     m_cheatsUsed = false;
 }
 
-BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
+BOOL CCheatMgr::AddCheat(const std::string& code, i32 cmdId, i32 flag) {
     CheatEntry* hit = FindCheat(code);
     if (hit != NULL) {
         return false;
@@ -114,29 +114,27 @@ void CCheatMgr::RegisterCheats() {
 }
 
 void CCheatMgr::LoadCheatConfig() {
-    CString defStr(static_cast<const char*>(""));
-    CString group;
+    std::string defStr(static_cast<const char*>(""));
+    std::string group;
     SYSTEMTIME now;
     GetLocalTime(&now);
 
     for (i32 i = 1; i <= g_buteMgr.GetInt("Cheatz", "NumCheatz", 0); i++) {
-        group.Format("Cheat%i", i);
-        const char* grp = static_cast<const char*>(group);
+        group = formatText("Cheat%i", i);
+        const std::string& grp = (group);
         i32 expMonth = g_buteMgr.GetInt(grp, "ExpMonth", 0);
-        i32 expYear = g_buteMgr.GetInt(static_cast<const char*>(group), "ExpYear", 0);
+        i32 expYear = g_buteMgr.GetInt((group), "ExpYear", 0);
         if (expMonth == 0 || expYear == 0 || expYear > now.wYear || expMonth > now.wMonth) {
-            if (g_buteMgr.Exist(static_cast<const char*>(group), "Text")) {
-                if (g_buteMgr.GetInt(static_cast<const char*>(group), "NonCheat", 0) == 1) {
-                    const char* code = static_cast<const char*>(*g_buteMgr.GetString(
-                        static_cast<const char*>(group), "Text", &defStr));
+            if (g_buteMgr.Exist((group), "Text")) {
+                if (g_buteMgr.GetInt((group), "NonCheat", 0) == 1) {
+                    const std::string code = g_buteMgr.GetString(group, "Text", defStr);
                     i32 value =
-                        g_buteMgr.GetInt(static_cast<const char*>(group), "Value", 0x807b);
+                        g_buteMgr.GetInt((group), "Value", 0x807b);
                     AddCheat(code, value, 1);
                 } else {
-                    const char* code = static_cast<const char*>(*g_buteMgr.GetString(
-                        static_cast<const char*>(group), "Text", &defStr));
+                    const std::string code = g_buteMgr.GetString(group, "Text", defStr);
                     AddCheat(code,
-                             g_buteMgr.GetInt(static_cast<const char*>(group), "Value", 0x807b),
+                             g_buteMgr.GetInt((group), "Value", 0x807b),
                              0);
                 }
             }
@@ -144,13 +142,13 @@ void CCheatMgr::LoadCheatConfig() {
     }
 }
 
-BOOL CCheatMgr::CheckCode(CString code) {
-    code.MakeUpper();
-    for (i32 i = 0; i < code.GetLength(); i++) {
-        code.SetAt(i, static_cast<char>(((static_cast<const char*>(code))[i] + 0x3d)));
+BOOL CCheatMgr::CheckCode(std::string code) {
+    std::transform((code).begin(), (code).end(), (code).begin(), asciiUpper);
+    for (i32 i = 0; i < static_cast<i32>((code).size()); i++) {
+        code[i] = static_cast<char>(code[i] + 0x3d);
     }
 
-    CheatEntry* found = FindCheat(static_cast<const char*>(code));
+    CheatEntry* found = FindCheat((code));
     if (found == NULL) {
         return false;
     }

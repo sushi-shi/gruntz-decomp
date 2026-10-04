@@ -33,7 +33,6 @@
 #include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
-#include <Gruntz/TileTriggerSwitchInline.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
@@ -277,8 +276,8 @@ i32 CTileTriggerLogic::Tick() {
         }
     }
 
-    CString key;
-    CString anim;
+    std::string key;
+    std::string anim;
 
     switch (srcId) {
         case TILEKIND_ARROW_UP_B: {
@@ -362,7 +361,7 @@ i32 CTileTriggerLogic::Tick() {
                             o->m_logicRecord->m_dispatch(o);
                             CTileTriggerTransition* lg =
                                 static_cast<CTileTriggerTransition*>(o->m_logicRecord->m_userLogic);
-                            if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", PbStr(anim)) == 0) {
+                            if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", anim) == 0) {
                                 lg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             }
                         }
@@ -594,7 +593,7 @@ i32 CTileTriggerLogic::Tick() {
     }
 
     if (trans != NULL) {
-        if (trans->ApplyAnimation(PbStr(key), PbStr(anim)) == 0) {
+        if (trans->ApplyAnimation(key, anim) == 0) {
             trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
@@ -617,15 +616,15 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
         return 0;
     }
 
-    POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
+    std::list<CTileTriggerLogic*>::iterator pos = m_owner->m_idleLogics.begin();
     b32 found = false;
 
     CTileTriggerLogic* child;
-    while (pos != NULL) {
+    while (pos != m_owner->m_idleLogics.end()) {
         if (found != false) {
             break;
         }
-        child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+        child = static_cast<CTileTriggerLogic*>(*(pos++));
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = true;
         }
@@ -673,10 +672,10 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
         if (node->m_cellKey != m_cellKey && node->m_linkGate != false) {
             node->SwitchUp();
             b32 any = false;
-            POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
-            while (pos != NULL) {
+            std::list<CTileTriggerLogic*>::iterator pos = m_owner->m_idleLogics.begin();
+            while (pos != m_owner->m_idleLogics.end()) {
                 CTileTriggerLogic* o =
-                    static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+                    static_cast<CTileTriggerLogic*>(*(pos++));
                 if (o != NULL && o->FindIndexByKey(node->m_cellKey)) {
                     o->Tick();
                     counter++;
@@ -986,15 +985,15 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
         return 0;
     }
 
-    POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
+    std::list<CTileTriggerLogic*>::iterator pos = m_owner->m_idleLogics.begin();
     b32 found = false;
 
     CTileTriggerLogic* child;
-    while (pos != NULL) {
+    while (pos != m_owner->m_idleLogics.end()) {
         if (found != false) {
             break;
         }
-        child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
+        child = static_cast<CTileTriggerLogic*>(*(pos++));
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = true;
         }
@@ -1703,7 +1702,7 @@ i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
     return 1;
 }
 
-i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
+i32 SoundCueRegistry::PlayCueIfElapsed(const std::string& key) {
     if (m_silentMode != false) {
         return 0;
     }

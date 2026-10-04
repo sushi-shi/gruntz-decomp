@@ -29,28 +29,28 @@ i32 CGruntzMapMgr::SerializeDispatch(
             ar->Read(&m_reserved90, sizeof(m_reserved90));
             i32 count;
             ar->Read(&count, sizeof(count));
-            for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
-                Coord* elem = static_cast<Coord*>(m_arr.GetAt(fi));
+            for (i32 fi = 0; fi < static_cast<i32>(m_arr.size()); fi++) {
+                Coord* elem = static_cast<Coord*>(m_arr[fi]);
                 if (elem != NULL) {
                     g_coordPool.Push(elem);
                 }
             }
-            m_arr.RemoveAll();
-            m_arr.SetSize(count, -1);
+            m_arr.clear();
+            m_arr.resize(count);
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
                 Coord* elem = g_coordPool.Pop();
                 ar->Read(elem, 8);
-                m_arr.SetAt(ri, elem);
+                m_arr[ri] = elem;
             }
             break;
         }
         case SERIAL_SAVE: {
 
             ar->Write(&m_reserved90, sizeof(m_reserved90));
-            i32 wn = m_arr.GetSize();
+            i32 wn = static_cast<i32>(m_arr.size());
             ar->Write(&wn, sizeof(wn));
             for (u32 wi = 0; wi < static_cast<u32>(wn); wi++) {
-                Coord* elem = static_cast<Coord*>(m_arr.GetAt(wi));
+                Coord* elem = static_cast<Coord*>(m_arr[wi]);
                 if (elem == NULL) {
                     return 0;
                 }
@@ -71,12 +71,12 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
 }
 
 CGruntzMapMgr::~CGruntzMapMgr() {
-    for (i32 i = 0; i < m_arr.GetSize(); i++) {
-        Coord* elem = static_cast<Coord*>(m_arr.GetAt(i));
+    for (i32 i = 0; i < static_cast<i32>(m_arr.size()); i++) {
+        Coord* elem = static_cast<Coord*>(m_arr[i]);
         if (elem != NULL) {
             g_coordPool.Push(elem);
         }
     }
-    m_arr.RemoveAll();
+    m_arr.clear();
     CMapMgr::Reset();
 }

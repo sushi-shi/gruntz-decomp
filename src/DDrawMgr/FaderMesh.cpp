@@ -27,7 +27,7 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     m_cols = cfg->m_cols;
     m_rows = cfg->m_rows;
 
-    m_meshBuf.RemoveAll();
+    m_meshBuf.clear();
 
     i32 halfW = m_dstSurface->GetWidth() / 2;
     i32 halfH = m_dstSurface->GetHeight() / 2;
@@ -68,7 +68,7 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
 
-            m_meshBuf.Add(elem);
+            m_meshBuf.push_back(elem);
         }
     }
     return 1;
@@ -80,7 +80,7 @@ void CFaderMesh::RenderFrame(i32 frame) {
     } else {
         m_dstSurface->Clear(0);
     }
-    for (i32 i = 0; i < m_meshBuf.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_meshBuf.size()); i++) {
         RezElem40 elem = m_meshBuf[i];
         u32 cur = frame;
         u32 total = GetFrameCount();
@@ -135,5 +135,3 @@ void CFaderMesh::RenderFrame(i32 frame) {
 i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
-
-template void CArray<RezElem40, const RezElem40&>::SetSize(int, int);

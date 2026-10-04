@@ -1,6 +1,8 @@
 #ifndef SRC_BUTE_BUTEMGR_H
 #define SRC_BUTE_BUTEMGR_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Bute/ButeStore.h>
@@ -62,9 +64,9 @@ public:
             m_symType = t;
             m_data.m_d = new double(val);
         }
-        CSymTabItem(SymTypes t, const CString& val) {
+        CSymTabItem(SymTypes t, const std::string& val) {
             m_symType = t;
-            m_data.m_s = new CString(val);
+            m_data.m_s = new std::string(val);
         }
         CSymTabItem(SymTypes t, ButeIntRect* src) {
             m_symType = t;
@@ -87,7 +89,7 @@ public:
             DWORD* m_dw;
             double* m_d;
             float* m_f;
-            CString* m_s;
+            std::string* m_s;
             ButeIntRect* m_r;
             ButeIntPoint* m_point;
             CAVector* m_v;
@@ -95,26 +97,26 @@ public:
         } m_data;
     };
 
-    i32 GetInt(const char* tag, const char* key, i32 def);
-    i32 GetInt(const char* tag, const char* key);
-    DWORD GetDword(const char* tag, const char* key, DWORD def);
-    DWORD GetDword(const char* tag, const char* key);
-    float GetFloat(const char* tag, const char* key, float def);
-    float GetFloat(const char* tag, const char* key);
-    double GetDouble(const char* tag, const char* key, double def);
-    double GetDouble(const char* tag, const char* key);
-    CString* GetString(const char* tag, const char* key, CString* def);
-    CString* GetString(const char* tag, const char* key);
+    i32 GetInt(const std::string& tag, const std::string& key, i32 def);
+    i32 GetInt(const std::string& tag, const std::string& key);
+    DWORD GetDword(const std::string& tag, const std::string& key, DWORD def);
+    DWORD GetDword(const std::string& tag, const std::string& key);
+    float GetFloat(const std::string& tag, const std::string& key, float def);
+    float GetFloat(const std::string& tag, const std::string& key);
+    double GetDouble(const std::string& tag, const std::string& key, double def);
+    double GetDouble(const std::string& tag, const std::string& key);
+    std::string GetString(const std::string& tag, const std::string& key, const std::string& fallback);
+    std::string GetString(const std::string& tag, const std::string& key);
 
-    struct ButeIntRect* GetRect(const char* tag, const char* key, struct ButeIntRect* def);
-    struct ButeIntPoint* GetPoint(const char* tag, const char* key, struct ButeIntPoint* def);
-    CAVector& GetVector(const char* tag, const char* key, CAVector& def);
-    CARange& GetRange(const char* tag, const char* key, CARange& def);
+    struct ButeIntRect* GetRect(const std::string& tag, const std::string& key, struct ButeIntRect* def);
+    struct ButeIntPoint* GetPoint(const std::string& tag, const std::string& key, struct ButeIntPoint* def);
+    CAVector& GetVector(const std::string& tag, const std::string& key, CAVector& def);
+    CARange& GetRange(const std::string& tag, const std::string& key, CARange& def);
 
     bool Match(ButeToken expectType);
     bool ScanTok();
 
-    bool Parse(CString filename, int streamBase);
+    bool Parse(const std::string& filename, int streamBase);
     bool Parse(CRezItm* stream, const char* key);
 
     bool Save();
@@ -142,18 +144,19 @@ public:
     bool Tag();
     bool TagList();
 
-    void SetPoint(const char* tag, const char* key, struct ButeIntPoint* val);
+    void SetPoint(const std::string& tag, const std::string& key, struct ButeIntPoint* val);
 
-    void SetInt(const char* tag, const char* key, i32 val);
-    void SetDword(const char* tag, const char* key, DWORD val);
-    void SetFloat(const char* tag, const char* key, float val);
-    void SetDouble(const char* tag, const char* key, double val);
-    void SetString(const char* tag, const char* key, const CString& val);
-    void SetRect(const char* tag, const char* key, struct ButeIntRect* val);
-    void SetVector(const char* tag, const char* key, const CAVector& val);
-    void SetRange(const char* tag, const char* key, const CARange& val);
+    void SetInt(const std::string& tag, const std::string& key, i32 val);
+    void SetDword(const std::string& tag, const std::string& key, DWORD val);
+    void SetFloat(const std::string& tag, const std::string& key, float val);
+    void SetDouble(const std::string& tag, const std::string& key, double val);
+    void SetString(const std::string& tag, const std::string& key, const std::string& val);
+    void SetRect(const std::string& tag, const std::string& key, struct ButeIntRect* val);
+    void SetVector(const std::string& tag, const std::string& key, const CAVector& val);
+    void SetRange(const std::string& tag, const std::string& key, const CARange& val);
 
-    bool Exist(const char* tag, const char* key);
+    bool HasTag(const std::string& tag);
+    bool Exist(const std::string& tag, const std::string& key);
 
     DWORD GetChecksum() {
         return m_checksum;
@@ -179,7 +182,7 @@ private:
     bool m_bLineCounterFlag;
 
     bool m_bErrorFlag;
-    CString m_sErrorString;
+    std::string m_sErrorString;
     ErrCallback m_pDisplayFunc;
     TableOfTags m_tagTab;
 
@@ -197,9 +200,9 @@ private:
     GZ_ENUM_STORAGE(ButeToken, i16) m_token;
     i16 m_tokenMinor;
     char m_szTokenString[0x100 - 0xae];
-    CString m_sTagName;
-    CString m_sAttribute;
-    CString m_sAttributeFilename;
+    std::string m_sTagName;
+    std::string m_sAttribute;
+    std::string m_sAttributeFilename;
     bool m_bPutChar;
     bool m_writeMode;
 
@@ -207,10 +210,10 @@ private:
     CCryptMgr m_cryptMgr;
 
 public:
-    ButeIntRect* GetRect(const char* tag, const char* key);
-    ButeIntPoint* GetPoint(const char* tag, const char* key);
-    CAVector& GetVector(const char* tag, const char* key);
-    CARange& GetRange(const char* tag, const char* key);
+    ButeIntRect* GetRect(const std::string& tag, const std::string& key);
+    ButeIntPoint* GetPoint(const std::string& tag, const std::string& key);
+    CAVector& GetVector(const std::string& tag, const std::string& key);
+    CARange& GetRange(const std::string& tag, const std::string& key);
 };
 
 inline const CButeMgr::CSymTabItem&

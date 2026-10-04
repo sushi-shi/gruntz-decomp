@@ -5,6 +5,6 @@
 
 #define PLACE_OBJECT_RECT(dst, object, rect)                                                           (dst).left = (object)->rect.left + (object)->m_screenX;                                            (dst).top = (object)->rect.top + (object)->m_screenY;                                              (dst).right = (object)->rect.right + (object)->m_screenX;                                          (dst).bottom = (object)->rect.bottom + (object)->m_screenY
 
-#define REMOVE_ACTIVE_OBJECT_AT(pos, obj)                                                              m_list.RemoveAt(pos);                                                                              m_activeGameObjectsById.RemoveKey(WwdKey(obj))
+#define REMOVE_ACTIVE_OBJECT_AT(pos, obj)                                                              m_list.erase(pos);                                                                              m_activeGameObjectsById.erase(WwdKey(obj))
 
 #endif

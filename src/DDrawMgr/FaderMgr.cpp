@@ -214,17 +214,17 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFaderConfig* pInit) {
     }
 
     if (fader != NULL) {
-        m_arr.Add(fader);
+        m_arr.push_back(fader);
     }
     return fader;
 }
 
 void CFaderMgr::Remove(CFader* pFader) {
     i32 i = 0;
-    i32 count = m_arr.GetSize();
+    i32 count = static_cast<i32>(m_arr.size());
     while (i <= count - 1) {
         if (m_arr[i] == pFader) {
-            m_arr.RemoveAt(i);
+            m_arr.erase(m_arr.begin() + i);
             delete pFader;
             return;
         }
@@ -234,24 +234,22 @@ void CFaderMgr::Remove(CFader* pFader) {
 
 void CFaderMgr::DeleteAll() {
     i32 i = 0;
-    i32 last = m_arr.GetUpperBound();
+    i32 last = (static_cast<i32>(m_arr.size()) - 1);
     if (last >= 0) {
         do {
             CFader* p = m_arr[i];
             delete p;
             i++;
-            last = m_arr.GetUpperBound();
+            last = (static_cast<i32>(m_arr.size()) - 1);
         } while (i <= last);
     }
-    m_arr.RemoveAll();
+    m_arr.clear();
 }
 
 void CFaderMgr::SetTraceEnabled(b32 enabled) {
     m_traceEnabled = enabled;
 }
 
-void CFaderMgr::Trace(CString s) {
+void CFaderMgr::Trace(const std::string& s) {
     static_cast<void>(s);
 }
-
-template class CArray<CFader*, CFader*>;

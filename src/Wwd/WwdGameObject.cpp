@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -52,13 +53,13 @@
 
 b32 g_logicTypesRegistered;
 
-void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
+void CWwdSpriteObject::SetImageFrameByName(const std::string& name, i32 frame) {
     CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
     m_imageSet = spr;
     SetImageFrame(frame);
 }
 
-void CWwdSpriteObject::SetImageSetByName(const char* name) {
+void CWwdSpriteObject::SetImageSetByName(const std::string& name) {
     CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
     m_imageSet = spr;
     if (spr) {
@@ -68,8 +69,8 @@ void CWwdSpriteObject::SetImageSetByName(const char* name) {
     }
 }
 
-i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
-    CAniElement* animation = MapFind<CAniElement>(OwnerMgr()->m_animRegistry->m_animations, name);
+i32 CWwdSpriteObject::SetAnimationByName(const std::string& name, i32 advanceImmediately) {
+    CAniElement* animation = OwnerMgr()->m_animRegistry->FindAnimation(name);
     if (!animation) {
         return 0;
     }
@@ -77,7 +78,7 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
     return 1;
 }
 
-i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
+i32 CWwdSpriteObject::SetSoundCueByName(const std::string& name) {
     SoundCue* cue = OwnerMgr()->SoundRegistry()->FindCue(name);
     if (cue == NULL) {
         return 0;
@@ -227,13 +228,13 @@ i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
     char tmp[0x100];
     memset(tmp, 0, SERIAL_NAME_LEN);
     if (m_imageSet != NULL) {
-        strcpy(tmp, m_imageSet->m_name);
+        if (!copyTextToBuffer(m_imageSet->m_name, tmp, SERIAL_NAME_LEN)) return 0;
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, SERIAL_NAME_LEN);
     {
-        strcpy(tmp, OwnerMgr()->SoundRegistry()->FindCueKey(m_soundCue));
+        if (!copyTextToBuffer(OwnerMgr()->SoundRegistry()->FindCueKey(m_soundCue), tmp, SERIAL_NAME_LEN)) return 0;
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -269,7 +270,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
 
         SoundCue* found = NULL;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        MapLookup(mgr->SoundRegistry()->m_cues, name, found);
+        found = mgr->SoundRegistry()->FindCue(name);
         m_soundCue = found;
     }
     return 1;
@@ -345,8 +346,8 @@ i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
     return m_hitLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
-void CGameObject::AddLogicHit(char* key) {
-    EnsureHitLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+void CGameObject::AddLogicHit(const std::string& key) {
+    EnsureHitLogic(OwnerMgr()->m_logicRegistry->FindTemplate(key));
 }
 
 i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
@@ -365,8 +366,8 @@ i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
     return m_attackLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
-void CGameObject::AddLogicAttack(char* key) {
-    EnsureAttackLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+void CGameObject::AddLogicAttack(const std::string& key) {
+    EnsureAttackLogic(OwnerMgr()->m_logicRegistry->FindTemplate(key));
 }
 
 i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
@@ -385,8 +386,8 @@ i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
     return m_collisionLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
-void CGameObject::AddLogicBump(char* key) {
-    EnsureBumpLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+void CGameObject::AddLogicBump(const std::string& key) {
+    EnsureBumpLogic(OwnerMgr()->m_logicRegistry->FindTemplate(key));
 }
 
 i32 CGameObject::SerializeDispatch(
@@ -433,7 +434,7 @@ i32 CGameObject::SerializeDispatch(
                 CWwdGameObject* found = NULL;
                 if (MapLookup(
                         OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
-                        reinterpret_cast<void*>(node),
+                        node,
                         found
                     )
                     == false) {
@@ -474,7 +475,7 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 
     char tmp[SERIAL_NAME_LEN];
     memset(tmp, 0, sizeof(tmp));
-    strcpy(tmp, m_name);
+    if (!copyTextToBuffer(m_name, tmp, SERIAL_NAME_LEN)) return 0;
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     ar->Write(&m_moveMode, sizeof(m_moveMode));
@@ -524,19 +525,19 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_hitLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_hitLogic));
+        if (!copyTextToBuffer(OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_hitLogic), tmp, SERIAL_NAME_LEN)) return 0;
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_attackLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_attackLogic));
+        if (!copyTextToBuffer(OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_attackLogic), tmp, SERIAL_NAME_LEN)) return 0;
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collisionLogic != NULL) {
-        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_collisionLogic));
+        if (!copyTextToBuffer(OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_collisionLogic), tmp, SERIAL_NAME_LEN)) return 0;
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -602,7 +603,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        found = OwnerMgr()->m_logicRegistry->FindTemplate(name);
         if (this->EnsureHitLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -611,7 +612,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        found = OwnerMgr()->m_logicRegistry->FindTemplate(name);
         if (this->EnsureAttackLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -620,7 +621,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        found = OwnerMgr()->m_logicRegistry->FindTemplate(name);
         if (this->EnsureBumpLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
@@ -688,7 +689,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     {
         strcpy(
             snapshot.m_logicTypeName,
-            OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_logicRecord)
+            (OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_logicRecord)).c_str()
         );
     }
     ar->Write(&snapshot, sizeof(snapshot));
@@ -750,20 +751,20 @@ void CLogicRecord::Unload() {
 }
 
 void CDDrawWorker::Unload() {
-    for (i32 i = 0; i < m_items.GetSize(); i++) {
-        CImage* el = static_cast<CImage*>(m_items.GetAt(i));
+    for (i32 i = 0; i < static_cast<i32>(m_items.size()); i++) {
+        CImage* el = static_cast<CImage*>(m_items[i]);
         if (el != NULL) {
             delete el;
         }
     }
-    m_items.RemoveAll();
+    m_items.clear();
 
     m_minIndex = 99999;
     m_maxIndex = 0;
 }
 
 CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
-    if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
+    if (n < static_cast<i32>(m_items.size()) && static_cast<CImage*>(m_items[n]) != NULL) {
         return NULL;
     }
 
@@ -774,12 +775,12 @@ CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
         }
         return NULL;
     }
-    ADD_FRAME_AT(static_cast<CObject*>(worker), n)
+    ADD_FRAME_AT((worker), n)
     return worker;
 }
 
 CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < static_cast<i32>(m_items.size()) && static_cast<CImage*>(m_items[index]) != NULL) {
         return NULL;
     }
 
@@ -792,13 +793,13 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    ADD_FRAME_AT((nf), index)
     return nf;
 }
 
 CImage*
 CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < static_cast<i32>(m_items.size()) && static_cast<CImage*>(m_items[index]) != NULL) {
         return NULL;
     }
 
@@ -811,12 +812,12 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    ADD_FRAME_AT((nf), index)
     return nf;
 }
 
 CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
-    if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
+    if (index < static_cast<i32>(m_items.size()) && static_cast<CImage*>(m_items[index]) != NULL) {
         return NULL;
     }
 
@@ -829,11 +830,11 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    ADD_FRAME_AT((nf), index)
     return nf;
 }
 
-void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
+void CDDrawWorker::AddFrameAt(CImage* elem, i32 index){ADD_FRAME_AT(elem, index)}
 
 i32 CDDrawWorker::BuildFramesFromArchive(CRezDir* tab) {
     i32 count = 0;
@@ -869,7 +870,7 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
 
     i32 matched = 0;
     i32 liveFrames = 0;
-    i32 n = m_items.GetSize();
+    i32 n = static_cast<i32>(m_items.size());
     for (i32 i = 0; i < n; i++) {
         if (GetAt(i) != NULL) {
             liveFrames++;
@@ -974,7 +975,7 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
 }
 
 ShadeMode CDDrawWorker::GetFirstFrameState() {
-    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+    CImage* frame = static_cast<CImage*>(m_items[m_minIndex]);
     if (frame == NULL) {
         return SHADE_COPY;
     }
@@ -986,7 +987,7 @@ ShadeMode CDDrawWorker::GetFirstFrameState() {
 }
 
 i32 CDDrawWorker::GetFirstFrameLightLevel() {
-    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+    CImage* frame = static_cast<CImage*>(m_items[m_minIndex]);
     if (frame == NULL) {
         return 1;
     }
@@ -997,20 +998,11 @@ i32 CDDrawWorker::GetFirstFrameLightLevel() {
     return fmt->m_light;
 }
 
-i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
-    if (frame) {
-        for (i32 i = 0; i < m_items.GetSize(); i++) {
-            CImage* cur = static_cast<CImage*>(m_items.GetAt(i));
-            if (cur && cur == frame) {
-                if (outName) {
-                    strcpy(outName, m_name);
-                }
-                if (outIndex) {
-                    *outIndex = i;
-                }
-                return 1;
-            }
+i32 CDDrawWorker::FindFrame(CImage* frame) const {
+    if (frame != NULL) {
+        for (i32 i = 0; i < static_cast<i32>(m_items.size()); ++i) {
+            if (m_items[i] == frame) return i;
         }
     }
-    return 0;
+    return -1;
 }

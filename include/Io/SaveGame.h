@@ -1,6 +1,8 @@
 #ifndef SRC_IO_SAVEGAME_H
 #define SRC_IO_SAVEGAME_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -52,7 +54,7 @@ class CSaveGame {
 public:
     ~CSaveGame();
 
-    i32 InitializeSaveDirectory(const char* saveDirectory);
+    i32 InitializeSaveDirectory(const std::string& saveDirectory);
     void Reset();
     void Init();
     i32 Load();
@@ -80,8 +82,8 @@ public:
     i32 CheckMagic();
     void SetMagic();
 
-    CString m_saveDirectory;
-    CString m_progressFilePath;
+    std::string m_saveDirectory;
+    std::string m_progressFilePath;
 
     i32 m_header[4];
     GZ_ENUM_STORAGE(QuestLevel, u32) m_maxLevel;

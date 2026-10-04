@@ -41,12 +41,12 @@
 #include <string.h>
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
-    CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
-    POSITION pos = list.GetHeadPosition();
+    std::list<CGruntPuddle*>& list = g_gameReg->m_triggerMgr->m_baseList;
+    std::list<CGruntPuddle*>::iterator pos = list.begin();
 
-    if (pos != NULL) {
+    if (pos != list.end()) {
         do {
-            CGruntPuddle* p = static_cast<CGruntPuddle*>(list.GetNext(pos));
+            CGruntPuddle* p = static_cast<CGruntPuddle*>(*(pos++));
             if (p->m_pending == false) {
                 i32 puddleX = p->m_tileX;
                 i32 puddleY = p->m_tileY;
@@ -54,7 +54,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
                     return 1;
                 }
             }
-        } while (pos != NULL);
+        } while (pos != list.end());
     }
     return 0;
 }
@@ -182,9 +182,9 @@ L_scanb:
         i32 bestX = 0;
         i32 bestY = 0;
 
-        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
-        while (pos != NULL) {
-            CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
+        std::list<CGruntPuddle*>::iterator pos = m_triggerMgr->m_baseList.begin();
+        while (pos != m_triggerMgr->m_baseList.end()) {
+            CGruntPuddle* gg = static_cast<CGruntPuddle*>(*(pos++));
             if (gg->m_pending == false) {
                 i32 gx = gg->m_tileX;
                 i32 gy = gg->m_tileY;

@@ -1,6 +1,9 @@
 #ifndef SRC_GRUNTZ_MAPMGR_H
 #define SRC_GRUNTZ_MAPMGR_H
 
+#include <list>
+struct Coord;
+
 #include <Ints.h>
 
 #include <Gruntz/CoordNode.h>
@@ -62,7 +65,7 @@ public:
         i32 startY,
         i32 goalX,
         i32 goalY,
-        CPtrList* outPath,
+        std::list<Coord*>* outPath,
         i32 blockedMask,
         i32 diagonalMask,
         i32 passableMask
@@ -85,7 +88,7 @@ public:
         i32 startY,
         i32 goalX,
         i32 goalY,
-        CPtrList* outPath,
+        std::list<Coord*>* outPath,
         i32 clearEndpointFlags,
         i32 blockedMask,
         i32 passableMask

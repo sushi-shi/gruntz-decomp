@@ -18,18 +18,18 @@ i32 CGruntzMgr::ResolveLevelChecksum(
     b32 isBattlez,
     b32 isCustom,
     i32 levelId,
-    CString levelName
+    std::string levelName
 ) {
     if (isCustom != false) {
         WwdHeader buf;
         CFile file;
-        CString path;
+        std::string path;
         if (useDirectLevelReference == false && isBattlez == false) {
             path = "custom\\" + levelName;
         } else {
             path = levelName;
         }
-        if (file.Open(path, CFile::modeRead, NULL)) {
+        if (file.Open((path).c_str(), CFile::modeRead, NULL)) {
             if (file.GetLength() < 0x5f4) {
                 file.Close();
             } else {
@@ -48,7 +48,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             if (node == NULL) {
                 return 0;
             }
-            CRezItm* sub = node->GetRez(levelName, REZ_TAG_WWD);
+            CRezItm* sub = node->GetRez((levelName).c_str(), REZ_TAG_WWD);
             if (sub == NULL) {
                 return 0;
             }
@@ -65,7 +65,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             if (node == NULL) {
                 return 0;
             }
-            CRezItm* sub = node->GetRez(levelName, REZ_TAG_WWD);
+            CRezItm* sub = node->GetRez((levelName).c_str(), REZ_TAG_WWD);
             if (sub == NULL) {
                 return 0;
             }

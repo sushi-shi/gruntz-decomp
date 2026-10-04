@@ -141,9 +141,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             } else if (cellType == TILEKIND_GIANT_ROCK) {
                 CGiantRockLogic* rock = state->m_tileTriggers->ScanNeighborhood(tileX, tileY);
                 if (rock == NULL) {
-                    CString diag;
-                    diag.Format("No giant rock logic found at: x=%d, y=%d", px, py);
-                    g_gameReg->EnterModalUI(static_cast<const char*>(diag));
+                    std::string diag;
+                    diag = formatText("No giant rock logic found at: x=%d, y=%d", px, py);
+                    g_gameReg->EnterModalUI((diag).c_str());
                     g_gameReg->ReportError(
                         IDX(TRIGERR_LOOKUP_MISS),
                         IDX(TRIGSITE_ARRIVAL_GIANT_ROCK)
@@ -191,10 +191,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cue == WWDDRAW_TOOL_APPLIES || cue == WWDDRAW_NO_ANIMATION) {
                 i32 gaugePoints = 25;
                 i32 removed = 0;
-                POSITION pos = m_baseList.GetHeadPosition();
-                while (pos != NULL && removed == 0) {
-                    POSITION current = pos;
-                    CGruntPuddle* puddle = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                std::list<CGruntPuddle*>::iterator pos = m_baseList.begin();
+                while (pos != m_baseList.end() && removed == 0) {
+                    std::list<CGruntPuddle*>::iterator current = pos;
+                    CGruntPuddle* puddle = static_cast<CGruntPuddle*>(*(pos++));
                     if (puddle->m_tileX == tileX && puddle->m_tileY == tileY) {
                         if (cue == WWDDRAW_NO_ANIMATION) {
                             puddle->m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
@@ -206,7 +206,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         }
                         gaugePoints = puddle->m_gaugePoints;
                         puddle->m_wwdObject->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-                        m_baseList.RemoveAt(current);
+                        m_baseList.erase(current);
                         removed = 1;
                     }
                 }

@@ -5,7 +5,7 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 inline CGameObject* CDDrawChildGroup::Drain() {
-    if (m_scanCursor == NULL) {
+    if (m_scanCursor == m_list.end()) {
         return NULL;
     }
     CGameObject* data = NextChild(m_scanCursor);
@@ -16,7 +16,7 @@ inline CGameObject* CDDrawChildGroup::Drain() {
 }
 
 inline CGameObject* CDDrawChildGroup::FirstSerialChild() {
-    m_scanCursor = m_list.GetHeadPosition();
+    m_scanCursor = m_list.begin();
     return Drain();
 }
 

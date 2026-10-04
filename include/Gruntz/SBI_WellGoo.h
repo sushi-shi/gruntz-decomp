@@ -1,6 +1,8 @@
 #ifndef SBI_WELLGOO_H
 #define SBI_WELLGOO_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
@@ -40,7 +42,7 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
-        const char* key,
+        const std::string& key,
         i32 fillScale
     )  ;
 

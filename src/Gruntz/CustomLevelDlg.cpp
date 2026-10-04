@@ -20,19 +20,19 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
         CWaitCursorScope wait;
         char buf[0x400];
         _getcwd(buf, 0x400);
-        CString glob(buf);
+        std::string glob(buf);
         glob += "\\custom\\*.wwd";
         _finddata_t fd;
-        i32 h = _findfirst(glob, &fd);
+        i32 h = _findfirst((glob).c_str(), &fd);
 
-        static CString s_custom("custom\\");
+        static std::string s_custom("custom\\");
         if (h != -1) {
             if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
-                item->AddString(CString(fd.name));
+                item->AddString((std::string(fd.name)).c_str());
             }
             while (_findnext(h, &fd) != -1) {
                 if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
-                    item->AddString(CString(fd.name));
+                    item->AddString((std::string(fd.name)).c_str());
                 }
             }
         }
@@ -43,8 +43,8 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
     if (sel == LB_ERR) {
         return;
     }
-    item->GetText(sel, m_customName);
-    m_customName.MakeUpper();
+    m_customName = readListBoxText(item->GetSafeHwnd(), sel, false);
+    std::transform((m_customName).begin(), (m_customName).end(), (m_customName).begin(), asciiUpper);
 }
 
 BEGIN_MESSAGE_MAP(CBattlezDlgCustom, CDialog)

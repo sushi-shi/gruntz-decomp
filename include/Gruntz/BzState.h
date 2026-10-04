@@ -11,6 +11,5 @@
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 
-class CString;
 
 #endif

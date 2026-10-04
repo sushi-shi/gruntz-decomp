@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -90,14 +91,14 @@ CProjectile::~CProjectile() {
         m_sound->StopAndRewind();
         m_sound = NULL;
     }
-    for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
-        Coord* hitPoint = static_cast<Coord*>(m_hitList.GetNext(pos));
+    for (std::list<Coord*>::iterator pos = m_hitList.begin(); pos != m_hitList.end();) {
+        Coord* hitPoint = static_cast<Coord*>(*(pos++));
         if (hitPoint != NULL) {
 
             g_coordPool.Push(hitPoint);
         }
     }
-    m_hitList.RemoveAll();
+    m_hitList.clear();
 }
 
 i32 CProjectile::LoadProjectileSprites(
@@ -109,7 +110,7 @@ i32 CProjectile::LoadProjectileSprites(
     i32 sourcePxX,
     i32 sourcePxY
 ) {
-    CString key;
+    std::string key;
     m_sourcePlayerIndex = sourcePlayerIndex;
     m_sourceUnitIndex = sourceUnitIndex;
     m_targetPxX = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -163,28 +164,25 @@ i32 CProjectile::LoadProjectileSprites(
             return 0;
     }
 
-    m_frames[0] = MapFind<CAniElement>(
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        key + "1"
-        );
+    m_frames[0] = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation((key + "1"));
     if (m_frames[0] == NULL) {
         return 0;
     }
     m_frames[1] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2");
+        m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation((key + "2"));
     m_frames[2] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3");
+        m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation((key + "3"));
     m_frames[3] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4");
+        m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation((key + "4"));
     m_frames[4] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5");
+        m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation((key + "5"));
     m_frames[PF_IMPACT] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT");
+        m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation((key + "IMPACT"));
     m_frames[PF_FALL] =
-        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
+        m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation((key + "FALL"));
 
     SwitchAnimation(m_frames[0]);
-    SetImageSetByName(key + "_OBJECT");
+    SetImageSetByName((key + "_OBJECT"));
 
     u32 totalTime = count * m_timePerTile;
     double len = sqrt(Sqr(dx) + Sqr(dy));
@@ -218,8 +216,8 @@ i32 CProjectile::LoadProjectileSprites(
         m_shadow->m_logicRecord->m_dispatch(m_shadow);
         (static_cast<CLightFx*>(m_shadow->m_logicRecord->m_userLogic))
             ->Activate(
-                static_cast<const char*>(key + "_SHADOW"),
-                static_cast<const char*>(key + "1"),
+                (key + "_SHADOW").c_str(),
+                (key + "1").c_str(),
                 5,
                 true
             );
@@ -568,9 +566,9 @@ void CProjectile::ScanTargets(i32 impact) {
 
             i32 hitPlayerIndex = g->m_playerIndex;
             i32 hitUnitIndex = g->m_unitIndex;
-            for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
+            for (std::list<Coord*>::iterator pos = m_hitList.begin(); pos != m_hitList.end();) {
 
-                Coord* k = static_cast<Coord*>(m_hitList.GetNext(pos));
+                Coord* k = static_cast<Coord*>(*(pos++));
                 if (k->m_x == hitPlayerIndex && k->m_y == hitUnitIndex) {
                     return;
                 }
@@ -578,7 +576,7 @@ void CProjectile::ScanTargets(i32 impact) {
 
             Coord identity;
             Coord* slot = g_coordPool.PopCopy(*identity.Set(hitPlayerIndex, hitUnitIndex));
-            m_hitList.AddTail(slot);
+            m_hitList.insert(m_hitList.end(), slot);
             g->StepCombatReaction(
                 m_kind,
                 1,
@@ -648,7 +646,7 @@ i32 CProjectile::SerializeDispatch(
             for (i32 ci = 0; ci < count; ci++) {
                 Coord* payload = g_coordPool.Pop();
                 s->Read(payload, 8);
-                m_hitList.AddTail(payload);
+                m_hitList.insert(m_hitList.end(), payload);
             }
             break;
         }
@@ -688,12 +686,12 @@ i32 CProjectile::SerializeDispatch(
             }
             s->Write(&count, sizeof(count));
 
-            count = m_hitList.GetCount();
+            count = static_cast<i32>(m_hitList.size());
             s->Write(&count, sizeof(count));
 
-            POSITION pos = m_hitList.GetHeadPosition();
-            while (pos != NULL) {
-                s->Write(m_hitList.GetNext(pos), 8);
+            std::list<Coord*>::iterator pos = m_hitList.begin();
+            while (pos != m_hitList.end()) {
+                s->Write(*(pos++), 8);
             }
             break;
         }
@@ -719,20 +717,14 @@ i32 CProjectile::SerializeDispatch(
                 m_value = NULL;
                 return 1;
             }
-            m_value = MapFind<CAniElement>(
-                m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
-                buf
-            );
+            m_value = m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimation(buf);
             return 1;
         }
         case SERIAL_SAVE: {
             char blob[SERIAL_NAME_LEN];
             memset(blob, 0, sizeof(blob));
             if (m_value != NULL) {
-                strcpy(
-                    blob,
-                    m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
-                );
+                if (!copyTextToBuffer(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value), blob, SERIAL_NAME_LEN)) return 0;
             }
             s->Write(blob, SERIAL_NAME_LEN);
             s->Write(m_blob, 0x10);
@@ -863,7 +855,7 @@ i32 CTimeBomb::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(arc, sa, mode, typeId, object)
 }
 
-i32 CProjectile::LaunchSound(const char* key) {
+i32 CProjectile::LaunchSound(const std::string& key) {
     CGruntzMgr* gameMgr;
     CDDrawSurfaceMgr* world;
     SoundCue* cue;
@@ -876,7 +868,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     }
     world = gameMgr->m_world;
     cue = NULL;
-    MapLookup(world->SoundRegistry()->m_cues, key, cue);
+    cue = world->SoundRegistry()->FindCue(key);
     if (cue == NULL) {
         goto fail;
     }

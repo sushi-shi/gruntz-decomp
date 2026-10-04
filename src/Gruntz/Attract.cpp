@@ -42,7 +42,7 @@ b32 g_skipNextScreenEffect = false;
 b32 g_playActive;
 
 i32 CState::LoadTitlePage(
-    const char* titleName,
+    const std::string& titleName,
     i32 unused1,
     i32 unused2,
     i32 unused3,
@@ -63,9 +63,8 @@ i32 CState::LoadTitlePage(
         return 0;
     }
 
-    char buf[0x40];
-    sprintf(buf, "\\SCREENZ\\%s", titleName);
-    CRezItm* page = StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
+    const std::string path = "\\SCREENZ\\" + titleName;
+    CRezItm* page = StateResources()->GetRezFromPath(path.c_str(), IMGTAG_XCP);
     if (page == NULL) {
         return 0;
     }
@@ -85,18 +84,7 @@ i32 CState::LoadTitlePage(
     return 1;
 }
 
-i32 CState::PresentTitlePage(
-    const char* unusedTitleName,
-    i32 unused1,
-    i32 unused2,
-    i32 unused3,
-    i32 unused4
-) {
-    static_cast<void>(unusedTitleName);
-    static_cast<void>(unused1);
-    static_cast<void>(unused2);
-    static_cast<void>(unused3);
-    static_cast<void>(unused4);
+i32 CState::PresentTitlePage() {
     if (!m_world) {
         return 0;
     }
@@ -111,7 +99,7 @@ i32 CState::PresentTitlePage(
 }
 
 i32 CState::LoadAndPresentTitlePage(
-    const char* titleName,
+    const std::string& titleName,
     i32 unused1,
     i32 unused2,
     i32 unused3,
@@ -129,7 +117,7 @@ i32 CState::LoadAndPresentTitlePage(
     if (LoadTitlePage(titleName, unused1, unused2, unused3, unused4, false) == 0) {
         return 0;
     }
-    return PresentTitlePage(titleName, unused1, unused2, unused3, unused4) != 0;
+    return PresentTitlePage() != 0;
 }
 
 i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs) {
@@ -345,7 +333,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     return 1;
 }
 
-i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
+i32 CPreviewState::LoadScreen(const std::string& name, i32 doFlip, i32 unused3, i32 unused4) {
     if (m_world == NULL) {
         return 0;
     }
@@ -355,9 +343,8 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     if (m_stateResources == NULL) {
         return 0;
     }
-    char buf[64];
-    sprintf(buf, "\\SCREENZ\\%s", name);
-    CRezItm* sym = StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
+    const std::string path = "\\SCREENZ\\" + name;
+    CRezItm* sym = StateResources()->GetRezFromPath(path.c_str(), IMGTAG_XCP);
     if (sym == NULL) {
         return 0;
     }
@@ -394,15 +381,15 @@ i32 CState::InputVirtual() {
         return 0;
     }
     if (g_playActive == false) {
-        CString text;
+        std::string text;
         RECT rect;
-        text.LoadString(0x81a9);
+        loadResourceText(0x81a9, text);
         tagSIZE mode = m_mgr->GetModeSize();
         rect.right = mode.cx;
         rect.bottom = mode.cy;
         rect.left = 0;
         rect.top = 0;
-        DrawTextToFrontSurface(m_world, &text, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToFrontSurface(m_world, text, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     }
     while (ShowCursor(false) >= 0)
         ;

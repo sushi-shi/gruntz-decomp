@@ -431,7 +431,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
     }
     Coord identity;
     Coord* slot = g_coordPool.PopCopy(*identity.Set(playerIndex, unitIndex));
-    m_recList.AddTail(slot);
+    m_recList.insert(m_recList.end(), slot);
 
     return cell->CommitArrival();
 }
@@ -453,7 +453,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     }
 
     CTileTriggerSwitchLogic* sw;
-    POSITION pos;
+    std::list<CTileTriggerLogic*>::iterator pos;
     i32 anyHit;
     i32 stop;
 
@@ -464,27 +464,27 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 TRIGID_TIME_SWITCH_7
             );
             if (sw == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_TIME_SWITCH));
                 return 0;
             }
             sw->SwitchDown();
-            pos = state->m_tileTriggers->m_timedLogics.GetHeadPosition();
-            while (pos != NULL) {
+            pos = state->m_tileTriggers->m_timedLogics.begin();
+            while (pos != state->m_tileTriggers->m_timedLogics.end()) {
                 CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_timedLogics.GetNext(pos)
+                    *(pos++)
                 );
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     return 1;
                 }
             }
             anyHit = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
-            while (pos != NULL) {
+            pos = state->m_tileTriggers->m_idleLogics.begin();
+            while (pos != state->m_tileTriggers->m_idleLogics.end()) {
                 CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
+                    *(pos++)
                 );
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     el->RecordMove();
@@ -492,9 +492,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 }
             }
             if (anyHit == 0) {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_TIME_TRIGGER));
                 return 0;
             }
@@ -506,18 +506,18 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 TRIGID_SECRET_SWITCH_6
             );
             if (sw == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_SECRET_SWITCH));
                 return 0;
             }
             sw->SwitchDown();
             anyHit = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
-            while (pos != NULL) {
+            pos = state->m_tileTriggers->m_idleLogics.begin();
+            while (pos != state->m_tileTriggers->m_idleLogics.end()) {
                 CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
+                    *(pos++)
                 );
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     el->RecordMove();
@@ -525,9 +525,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 }
             }
             if (anyHit == 0) {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_SECRET_TRIGGER));
                 return 0;
             }
@@ -557,19 +557,19 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 TRIGID_ANY
             );
             if (sw == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_SWITCH));
                 return 0;
             }
             sw->SwitchDown();
             anyHit = 0;
             stop = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
-            while (pos != NULL && stop == 0) {
+            pos = state->m_tileTriggers->m_idleLogics.begin();
+            while (pos != state->m_tileTriggers->m_idleLogics.end() && stop == 0) {
                 CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
+                    *(pos++)
                 );
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
@@ -579,9 +579,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 }
             }
             if (anyHit == 0) {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_TRIGGER));
                 return 0;
             }
@@ -593,9 +593,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 TRIGID_MULTI_SWITCH_3
             );
             if (sw == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_MULTI_SWITCH));
                 return 0;
             }
@@ -605,10 +605,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             anyHit = 0;
             stop = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
-            while (pos != NULL && stop == 0) {
+            pos = state->m_tileTriggers->m_idleLogics.begin();
+            while (pos != state->m_tileTriggers->m_idleLogics.end() && stop == 0) {
                 CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
+                    *(pos++)
                 );
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
@@ -618,9 +618,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 }
             }
             if (anyHit == 0) {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_MULTI_TRIGGER));
                 return 0;
             }
@@ -632,9 +632,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 TRIGID_EXCLUSIVE_SWITCH_4
             );
             if (sw == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(
                     IDX(TRIGERR_LOOKUP_MISS),
                     IDX(TRIGSITE_WIRE_EXCLUSIVE_SWITCH)
@@ -646,10 +646,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             anyHit = 0;
             stop = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
-            while (pos != NULL && stop == 0) {
+            pos = state->m_tileTriggers->m_idleLogics.begin();
+            while (pos != state->m_tileTriggers->m_idleLogics.end() && stop == 0) {
                 CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
+                    *(pos++)
                 );
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
@@ -659,9 +659,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 }
             }
             if (anyHit == 0) {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No trigger logic found for switch at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(
                     IDX(TRIGERR_LINK_BROKEN),
                     IDX(TRIGSITE_WIRE_EXCLUSIVE_TRIGGER)
@@ -779,9 +779,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 TRIGID_CHECKPOINT_SWITCH_8
             );
             if (sw == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for plate at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No switch logic found for plate at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_CHECKPOINT));
                 return 0;
             }
@@ -806,10 +806,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             }
             anyHit = 0;
             stop = 0;
-            pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
-            while (pos != NULL && stop == 0) {
+            pos = state->m_tileTriggers->m_idleLogics.begin();
+            while (pos != state->m_tileTriggers->m_idleLogics.end() && stop == 0) {
                 CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
+                    *(pos++)
                 );
                 if (el->FindIndexByKey(sw->m_cellKey) != 0) {
                     if (el->Tick() == 0) {
@@ -819,9 +819,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 }
             }
             if (anyHit == 0) {
-                CString msg;
-                msg.Format("No trigger logic found for plate at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                std::string msg;
+                msg = formatText("No trigger logic found for plate at: x=%d, y=%d", x, y);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(
                     IDX(TRIGERR_LINK_BROKEN),
                     IDX(TRIGSITE_WIRE_CHECKPOINT_TRIGGER)
@@ -869,9 +869,9 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 TRIGID_TIME_SWITCH_7
             );
             if (obj == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_40));
                 return 0;
             }
@@ -884,9 +884,9 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 TRIGID_ANY
             );
             if (obj == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_34));
                 return 0;
             }
@@ -899,23 +899,23 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 TRIGID_ANY
             );
             if (obj == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_36));
                 return 0;
             }
             obj->SwitchUp();
 
-            POSITION pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+            std::list<CTileTriggerLogic*>::iterator pos = state->m_tileTriggers->m_idleLogics.begin();
             b32 found = false;
             b32 stop = false;
-            while (pos != NULL) {
+            while (pos != state->m_tileTriggers->m_idleLogics.end()) {
                 if (stop != false) {
                     break;
                 }
                 CTileTriggerLogic* child = static_cast<CTileTriggerLogic*>(
-                    state->m_tileTriggers->m_idleLogics.GetNext(pos)
+                    *(pos++)
                 );
                 if (child->FindIndexByKey(obj->m_cellKey) != 0) {
                     if (child->Tick() == 0) {
@@ -925,9 +925,9 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 }
             }
             if (found == false) {
-                CString msg;
-                msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                std::string msg;
+                msg = formatText("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_APPLY_TRIGGER_36));
                 return 0;
             }
@@ -939,22 +939,22 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 TRIGID_MULTI_SWITCH_3
             );
             if (obj == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_38));
                 return 0;
             }
             b32 found = false;
             if (obj->AreMultiSwitchLinksActive() != 0) {
-                POSITION pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
+                std::list<CTileTriggerLogic*>::iterator pos = state->m_tileTriggers->m_idleLogics.begin();
                 b32 stop = false;
-                while (pos != NULL) {
+                while (pos != state->m_tileTriggers->m_idleLogics.end()) {
                     if (stop != false) {
                         break;
                     }
                     CTileTriggerLogic* child = static_cast<CTileTriggerLogic*>(
-                        state->m_tileTriggers->m_idleLogics.GetNext(pos)
+                        *(pos++)
                     );
                     if (child->FindIndexByKey(obj->m_cellKey) != 0) {
                         if (child->Tick() == 0) {
@@ -964,9 +964,9 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                     }
                 }
                 if (found == false) {
-                    CString msg;
-                    msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
-                    g_gameReg->EnterModalUI(msg);
+                    std::string msg;
+                    msg = formatText("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
+                    g_gameReg->EnterModalUI((msg).c_str());
                     g_gameReg->ReportError(
                         IDX(TRIGERR_LINK_BROKEN),
                         IDX(TRIGSITE_APPLY_TRIGGER_38)
@@ -993,9 +993,9 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 TRIGID_CHECKPOINT_SWITCH_8
             );
             if (obj == NULL) {
-                CString msg;
-                msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                std::string msg;
+                msg = formatText("No switch logic found for switch at: x=%d, y=%d", sx, sy);
+                g_gameReg->EnterModalUI((msg).c_str());
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_42));
                 return 0;
             }
@@ -1120,9 +1120,9 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 }
                 return 0;
             case PICKUP_GOOBER: {
-                POSITION pos = m_baseList.GetHeadPosition();
-                while (pos != NULL) {
-                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                std::list<CGruntPuddle*>::iterator pos = m_baseList.begin();
+                while (pos != m_baseList.end()) {
+                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(*(pos++));
                     if (cand->m_pending == false && cand->m_tileX == argTileX
                         && cand->m_tileY == argTileY) {
                         cell->RunMoveConfig(argTileX, argTileY);

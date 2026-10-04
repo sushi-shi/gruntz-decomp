@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_CAMBIENTSOUND_H
 #define GRUNTZ_CAMBIENTSOUND_H
 
+#include <string>
+
+#include <list>
+class CAmbientSound;
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -30,12 +35,12 @@ public:
         m_sound = NULL;
         m_volumeLevel = 0x64;
         m_isPlaying = false;
-        m_listNode = NULL;
+        m_inSoundSet = false;
     }
 
     virtual ~CAmbientSound()   {
         m_sound = NULL;
-        m_listNode = NULL;
+        m_inSoundSet = false;
     }
 
     i32 ScaleVolume(i32 volumeLevel) {
@@ -62,7 +67,7 @@ public:
 
     i32 InitFromKey(
         SoundCueRegistry* cueRegistry,
-        const char* key,
+        const std::string& key,
         i32 volumeLevel,
         i32 masterVolume,
         RECT* region,
@@ -84,7 +89,8 @@ public:
     RECT m_primaryRegion;
     RECT m_secondaryRegion;
     i32 m_panPercent;
-    POSITION m_listNode;
+    std::list<CAmbientSound*>::iterator m_listNode;
+    bool m_inSoundSet;
 };
 
 class CAmbientPosSound : public CAmbientSound {
@@ -93,7 +99,7 @@ public:
 
     i32 InitFromKey(
         SoundCueRegistry* cueRegistry,
-        const char* key,
+        const std::string& key,
         i32 volumeLevel,
         i32 masterVolume,
         AmbientPoint* position,

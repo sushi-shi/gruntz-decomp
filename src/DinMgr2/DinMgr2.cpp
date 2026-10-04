@@ -66,14 +66,14 @@ void DirectInputMgr2::Shutdown() {
     }
     SAFE_DELETE(m_mouse);
     SAFE_DELETE(m_keyboard);
-    i32 n = m_joysticks.GetSize();
+    i32 n = static_cast<i32>(m_joysticks.size());
     for (i32 i = 0; i < n; i++) {
         CJoystickDevice* d = GetJoystick(i);
         if (d != NULL) {
             delete d;
         }
     }
-    m_joysticks.RemoveAll();
+    m_joysticks.clear();
     FreeDeviceGroups();
     m_directInput->Release();
     m_directInput = NULL;
@@ -146,7 +146,7 @@ i32 __stdcall DinEnumJoystickCallback(LPCDIDEVICEINSTANCEA instance, void* ref) 
         return DIENUM_CONTINUE;
     }
     if (joystick != NULL) {
-        mgr->m_joysticks.Add(joystick);
+        mgr->m_joysticks.push_back(joystick);
     }
     return DIENUM_CONTINUE;
 }
@@ -167,9 +167,9 @@ i32 DirectInputMgr2::PollAll() {
 
 i32 DirectInputMgr2::PollJoysticks() {
     b32 failed = false;
-    i32 n = m_joysticks.GetSize();
+    i32 n = static_cast<i32>(m_joysticks.size());
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = static_cast<CInputDevBase*>(m_joysticks.GetAt(i));
+        CInputDevBase* d = static_cast<CInputDevBase*>(m_joysticks[i]);
         if (d != NULL && d->Poll() == 0) {
             failed = true;
         }
@@ -193,9 +193,9 @@ i32 DirectInputMgr2::ReadAll() {
 
 i32 DirectInputMgr2::ResetJoystickStates() {
     b32 failed = false;
-    i32 n = m_joysticks.GetSize();
+    i32 n = static_cast<i32>(m_joysticks.size());
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = static_cast<CInputDevBase*>(m_joysticks.GetAt(i));
+        CInputDevBase* d = static_cast<CInputDevBase*>(m_joysticks[i]);
         if (d != NULL && d->ResetState() == 0) {
             failed = true;
         }
@@ -204,15 +204,15 @@ i32 DirectInputMgr2::ResetJoystickStates() {
 }
 
 void DirectInputMgr2::FreeDeviceGroups() {
-    POSITION pos = m_deviceGroups.GetHeadPosition();
-    while (pos != NULL) {
-        CInputDeviceGroup* group = static_cast<CInputDeviceGroup*>(m_deviceGroups.GetNext(pos));
+    std::list<CInputDeviceGroup*>::iterator pos = m_deviceGroups.begin();
+    while (pos != m_deviceGroups.end()) {
+        CInputDeviceGroup* group = static_cast<CInputDeviceGroup*>(*(pos++));
         if (group != NULL) {
             group->Clear();
             delete group;
         }
     }
-    m_deviceGroups.RemoveAll();
+    m_deviceGroups.clear();
 }
 
 CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(CInputDevBase** devices, i32 n, i32 unused) {
@@ -227,7 +227,7 @@ CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(CInputDevBase** devices, i
         }
         return NULL;
     }
-    m_deviceGroups.AddTail(group);
+    m_deviceGroups.insert(m_deviceGroups.end(), group);
     return group;
 }
 

@@ -1,6 +1,8 @@
 #ifndef CRYPTO_FECCRYPT_H
 #define CRYPTO_FECCRYPT_H
 
+#include <vector>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -73,7 +75,7 @@ public:
 
     CFile m_stream;
     i32 m_nextIndex;
-    CDWordArray m_index;
+    std::vector<u32> m_index;
     char m_copyBuf[FEC_COPY_BUFFER_SIZE];
 };
 

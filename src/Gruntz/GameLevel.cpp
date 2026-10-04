@@ -180,7 +180,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
                 }
                 ++n;
                 elem += set->GetStride();
-                m_imageSets.SetAtGrow(j, static_cast<CObject*>(set));
+                growAndAssign(m_imageSets, j, (set));
                 ++j;
             }
             result = n;
@@ -200,7 +200,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         i32 ox = m_mainPlane->m_scrollPixelX;
         i32 oy = m_mainPlane->m_scrollPixelY;
         i32 i2 = 0;
-        while (i2 < m_planes.GetSize()) {
+        while (i2 < static_cast<i32>(m_planes.size())) {
             if (i2 != m_mainIndex) {
                 CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(m_planes[i2]);
                 SET_SCROLL_POSITION_RAW_FIRST(p, ox, oy);
@@ -276,11 +276,11 @@ i32 CGameLevel::SetViewportSizeAndUpdatePlanes(i32 w, i32 h) {
     SET_RECT_COMPONENTS(rect, 0, 0, maxX, maxY);
     m_viewportRect = rect;
     i32 i = 0;
-    if (m_planes.GetSize() > 0) {
+    if (static_cast<i32>(m_planes.size()) > 0) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(i)))->SetViewportRect(&rect);
+            (static_cast<CDDrawWorkerHost*>(m_planes[i]))->SetViewportRect(&rect);
             ++i;
-        } while (i < m_planes.GetSize());
+        } while (i < static_cast<i32>(m_planes.size()));
     }
     return 1;
 }
@@ -302,7 +302,7 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
         }
         n++;
         cursor += set->GetStride();
-        m_imageSets.SetAtGrow(i, static_cast<CObject*>(set));
+        growAndAssign(m_imageSets, i, (set));
     }
     return n;
 }
@@ -337,7 +337,7 @@ CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
 
 CDDrawWorkerHost*
 CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT*) {
-    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
+    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), static_cast<i32>(m_planes.size()), 0);
 
     if (plane->Read(planeData, blockBase, &m_viewportRect) == 0) {
         if (plane) {
@@ -346,11 +346,11 @@ CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RE
         return NULL;
     }
 
-    m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
+    growAndAssign(m_planes, static_cast<i32>(m_planes.size()), (plane));
 
     if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
         m_mainPlane = plane;
-        m_mainIndex = m_planes.GetUpperBound();
+        m_mainIndex = (static_cast<i32>(m_planes.size()) - 1);
     }
 
     return plane;
@@ -365,7 +365,7 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
     i32 depthY,
     const char* name
 ) {
-    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
+    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), static_cast<i32>(m_planes.size()), 0);
 
     if (plane->InitGeometry(
             w,
@@ -384,11 +384,11 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
         return NULL;
     }
 
-    m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
+    growAndAssign(m_planes, static_cast<i32>(m_planes.size()), (plane));
 
     if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
         m_mainPlane = plane;
-        m_mainIndex = m_planes.GetUpperBound();
+        m_mainIndex = (static_cast<i32>(m_planes.size()) - 1);
     }
 
     return plane;
@@ -396,7 +396,7 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
 
 void CGameLevel::UpdatePlaneViewports(LevelCoordRect* coords) {
     m_viewportRect = *coords;
-    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_planes.size()); i++) {
         (static_cast<CDDrawWorkerHost*>(m_planes[i]))->SetViewportRect(coords);
     }
 }
@@ -412,9 +412,9 @@ i32 CGameLevel::RemovePlane(i32 index) {
     }
     b32 wasMain = HAS(static_cast<WwdPlaneFlags>(p->m_flags), WWD_PLANE_FLAG_MAIN);
     delete p;
-    m_planes.RemoveAt(index, 1);
+    m_planes.erase(m_planes.begin() + index, m_planes.begin() + (index) + 1);
     if (wasMain) {
-        i32 last = m_planes.GetUpperBound();
+        i32 last = (static_cast<i32>(m_planes.size()) - 1);
         CDDrawWorkerHost* lp = GetPlane(last);
         if (lp != NULL) {
             RESET_MAIN_PLANE_SELECTION(i)
@@ -427,14 +427,14 @@ i32 CGameLevel::RemovePlane(i32 index) {
 }
 
 i32 CGameLevel::MovePlane(i32 from, i32 to) {
-    if (from >= 0 && to < m_planes.GetSize()) {
+    if (from >= 0 && to < static_cast<i32>(m_planes.size())) {
         if (from == to) {
             return 1;
         }
         CDDrawWorkerHost* el = GetPlane(from);
         if (el != NULL) {
-            m_planes.RemoveAt(from, 1);
-            m_planes.InsertAt(to, static_cast<CObject*>(el), 1);
+            m_planes.erase(m_planes.begin() + from, m_planes.begin() + (from) + 1);
+            m_planes.insert(m_planes.begin() + (to), 1, (el));
             if (el == m_mainPlane) {
                 m_mainIndex = to;
             }
@@ -448,20 +448,20 @@ void CGameLevel::ResetMainPlane(){RESET_MAIN_PLANE_SELECTION(i)}
 
 void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx) {
 
-    CObList* chain = &ctx->m_list;
+    std::list<CGameObject*>* chain = &ctx->m_list;
 
     if ((m_flags & 1) && chain != NULL && GetPlane(0) != NULL) {
         GetPlane(0)->Draw(visitor);
-        POSITION pos = chain->GetHeadPosition();
+        std::list<CGameObject*>::iterator pos = chain->begin();
 
         i32 i = 1;
-        if (m_planes.GetSize() > i) {
+        if (static_cast<i32>(m_planes.size()) > i) {
             do {
                 CDDrawWorkerHost* p = GetPlane(i);
                 i32 zBound = p->m_zCoord;
                 i32 blocked = 0;
-                while (pos != NULL && blocked == 0) {
-                    POSITION cur = pos;
+                while (pos != chain->end() && blocked == 0) {
+                    std::list<CGameObject*>::iterator cur = pos;
                     CGameObject* pl = ctx->NextChild(pos);
                     if (pl->m_sortKey < zBound) {
                         pl->Render(visitor);
@@ -473,10 +473,10 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
 
                 GetPlane(i)->Draw(visitor);
                 ++i;
-            } while (i < m_planes.GetSize());
+            } while (i < static_cast<i32>(m_planes.size()));
         }
 
-        while (pos != NULL) {
+        while (pos != chain->end()) {
             ctx->NextChild(pos)->Render(visitor);
         }
         return;
@@ -487,10 +487,10 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
     DRAW_PLANES_AFTER_MAIN(visitor, j)
 }
 
-CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
-    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+CDDrawWorkerHost* CGameLevel::FindPlaneByName(const std::string& name) {
+    for (i32 i = 0; i < static_cast<i32>(m_planes.size()); i++) {
         CDDrawWorkerHost* p = GetPlane(i);
-        if (stricmp(name, p->m_planeName) == 0) {
+        if (compareAsciiCaseInsensitive(name, p->m_planeName) == 0) {
             return static_cast<CDDrawWorkerHost*>(p);
         }
     }
@@ -1175,8 +1175,8 @@ i32 CGameLevel::TryLandOnPlatform(
     }
 
     CDDrawChildGroup* children = OwnerMgr()->ChildGroup();
-    POSITION pos = children->m_list.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CGameObject*>::iterator pos = children->m_list.begin();
+    while (pos != children->m_list.end()) {
         CGameObject* platform = children->NextChild(pos);
         if (platform->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {
             if (CanLandOnPlatform(object, platform, destX, destY, outLandingY, moveFlags) != 0) {
@@ -1370,32 +1370,26 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
     return 1;
 }
 
-i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
+bool CGameLevel::ReadWwdHeaderName(const std::string& name, std::string& nameOut) {
     WwdHeader header;
-
-    if (name == NULL) {
-        return 0;
-    }
-    if (nameOut == NULL) {
-        return 0;
-    }
-
     CFile stream;
 
-    if (stream.Open(name, CFile::modeRead, NULL) == false) {
-        return 0;
+    if (name.empty() || !stream.Open(name.c_str(), CFile::modeRead, NULL)) {
+        return false;
     }
-
     if (stream.Read(&header, sizeof(header)) != sizeof(header)) {
-        return 0;
+        return false;
     }
-
     if (header.m_headerSize > sizeof(header)) {
-        return 0;
+        return false;
     }
 
-    strcpy(nameOut, header.m_levelName);
-    return 1;
+    std::string::size_type length = 0;
+    while (length < sizeof(header.m_levelName) && header.m_levelName[length] != '\0') {
+        ++length;
+    }
+    nameOut.assign(header.m_levelName, length);
+    return true;
 }
 
 Bytef* CGameLevel::InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {
@@ -1535,7 +1529,7 @@ i32 CGameLevel::ValidateAllPlanes(char* errOut) {
     if (errOut != NULL) {
         *errOut = 0;
     }
-    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_planes.size()); i++) {
         if ((static_cast<CDDrawWorkerHost*>(m_planes[i]))->ValidateTiles(errOut) == 0) {
             ok = false;
         }
@@ -1544,7 +1538,7 @@ i32 CGameLevel::ValidateAllPlanes(char* errOut) {
 }
 
 void CGameLevel::NotifyAllPlanes() {
-    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_planes.size()); i++) {
         (static_cast<CDDrawWorkerHost*>(m_planes[i]))->ResolveColorKey();
     }
 }

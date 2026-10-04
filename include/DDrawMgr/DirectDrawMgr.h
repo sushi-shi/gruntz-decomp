@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_CDIRECTDRAWMGR_H
 #define GRUNTZ_CDIRECTDRAWMGR_H
 
+#include <list>
+struct CDDPalette;
+
 #include <Ints.h>
 
 #include <DDrawMgr/ColorDepth.h>
@@ -22,7 +25,7 @@ struct CDDPalette {
 public:
     CDDPalette() {
         m_palette = NULL;
-        m_pos = NULL;
+
         m_reserved = 0;
         m_entries = NULL;
         m_readbackEntries = NULL;
@@ -64,7 +67,7 @@ public:
     i32 CaptureSystemPalette();
     void DumpEntries();
 
-    POSITION m_pos;
+    std::list<CDDPalette*>::iterator m_pos;
 
     IDirectDrawPalette* m_palette;
 

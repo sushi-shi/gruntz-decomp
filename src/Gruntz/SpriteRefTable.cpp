@@ -269,11 +269,8 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CRezMgr* src) {
     return 1;
 }
 
-CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
-    CDDrawPaletteResource* rec = MapFind<CDDrawPaletteResource>(
-        m_spriteMgrHolder->m_paletteRegistry->m_palettesByName,
-        szName
-    );
+CSpriteRef* CSpriteRefTable::Add(const std::string& szName, ColorTint kind) {
+    CDDrawPaletteResource* rec = m_spriteMgrHolder->m_paletteRegistry->FindPalette(szName);
     if (!rec) {
         return NULL;
     }
@@ -321,23 +318,19 @@ i32 CSpriteRefTable::LoadToolToyPalettes(CRezMgr* src) {
     return 0;
 }
 
-i32 CSpriteRefTable::LoadGruntzPalette(CRezMgr* src, const char* name) {
+i32 CSpriteRefTable::LoadGruntzPalette(CRezMgr* src, const std::string& name) {
     if (!src) {
         return 0;
     }
 
-    if (MapFind<CDDrawPaletteResource>(
-            m_spriteMgrHolder->m_paletteRegistry->m_palettesByName,
-            name
-        )) {
+    if (m_spriteMgrHolder->m_paletteRegistry->FindPalette(name)) {
         return 1;
     }
 
-    char buf[0x40];
-    sprintf(buf, "GRUNTZ_PALETTEZ_%s", name);
-    CRezItm* pal = (src)->GetRezFromPath(buf, REZ_TAG_PAL);
+    const std::string path = "GRUNTZ_PALETTEZ_" + name;
+    CRezItm* pal = src->GetRezFromPath(path.c_str(), REZ_TAG_PAL);
     if (!pal) {
         return 0;
     }
-    return m_spriteMgrHolder->m_paletteRegistry->LoadPaletteFromSource(pal, NULL, 0) != NULL;
+    return m_spriteMgrHolder->m_paletteRegistry->LoadPaletteFromSource(pal, pal->GetName(), 0) != NULL;
 }

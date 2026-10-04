@@ -1,8 +1,10 @@
 #ifndef UTILS_PTRLISTPOOL_H
 #define UTILS_PTRLISTPOOL_H
 
-template<class T> struct CPtrListPool {
-    static CPtrList s_freeList;
+#include <list>
+
+template<class T> struct ObjectPoolStorage {
+    static std::list<T*> s_freeList;
 };
 
 #endif

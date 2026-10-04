@@ -129,7 +129,7 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         if (pInit->m_shadeTable) {
             m_ownsTable = false;
             m_table = pInit->m_shadeTable;
-        } else if (_access(pInit->m_shadeTablePath, 0) == 0) {
+        } else if (_access((pInit->m_shadeTablePath).c_str(), 0) == 0) {
             m_table = m_cache.AddFromArray(pInit->m_shadeTablePath);
             if (m_table == NULL) {
                 m_useLut = false;

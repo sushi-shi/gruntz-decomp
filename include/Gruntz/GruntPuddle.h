@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H
 #define GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/ActReg.h>
@@ -29,7 +31,7 @@ public:
     i32 Idle();
     i32 Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
     i32 Remove();
-    void SetBute(char* key);
+    void SetBute(const std::string& key);
 
     virtual void FireActivation(i32 id)  ;
 

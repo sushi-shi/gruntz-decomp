@@ -64,11 +64,11 @@ void Font::FreeMemory() {
     }
 }
 
-i32 Font::LoadFont(CString szFileName) {
+i32 Font::LoadFont(const std::string& szFileName) {
     FreeMemory();
 
     CFile file;
-    if (!file.Open(szFileName, CFile::modeRead, NULL)) {
+    if (!file.Open((szFileName).c_str(), CFile::modeRead, NULL)) {
         return 0;
     }
 
@@ -95,9 +95,9 @@ i32 Font::LoadFont(CString szFileName) {
     return 1;
 }
 
-i32 Font::SaveFont(CString szFileName) {
+i32 Font::SaveFont(const std::string& szFileName) {
     CFile file;
-    if (!file.Open(szFileName, CFile::modeCreate | CFile::modeWrite, NULL)) {
+    if (!file.Open((szFileName).c_str(), CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
     }
 
@@ -151,7 +151,7 @@ void FontRenderer::SetColor(i32 color) {
     m_color = color;
 }
 
-void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z) {
+void FontRenderer::DrawLine(const std::string& text, CDDSurface* surf, i32 x, i32 y, i32 z) {
     CSize ext = MeasureText(text);
     if (m_font == NULL) {
         return;
@@ -163,7 +163,7 @@ void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z)
     DrawLineClipped(text, surf, CRect(0, 0, ext.cx, ext.cy), x, y, z);
 }
 
-void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
+void FontRenderer::DrawLineClipped(const std::string& text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
     i32 savedColor = m_color;
     if (m_clip) {
         SetColor(RGB(255, 255, 255));
@@ -181,7 +181,7 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
     DrawGlyphRun(text, surf, rc, x, y, z);
 }
 
-void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
+void FontRenderer::DrawGlyphRun(const std::string& text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
     if (m_font == NULL) {
         return;
     }
@@ -265,7 +265,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         }
         rightPartial = acc - rc.right;
     } else {
-        endChar = text.GetLength();
+        endChar = static_cast<i32>((text).size());
     }
 
     for (i32 ci = startChar; ci < endChar; ci++) {
@@ -314,7 +314,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 }
 
 void FontRenderer::DrawWrapped(
-    CString text,
+    std::string text,
     CDDSurface* surf,
     CRect rc,
     i32 z,
@@ -330,9 +330,9 @@ void FontRenderer::DrawWrapped(
     i32 y = rc.top;
     i32 x = rc.left;
 
-    CString line;
+    std::string line;
     while (y < rc.bottom) {
-        i32 len = text.GetLength();
+        i32 len = static_cast<i32>((text).size());
         if (len <= 0) {
             break;
         }
@@ -364,25 +364,25 @@ void FontRenderer::DrawWrapped(
             i32 i = 0;
             i32 breakNL = 0;
 
-            while (i < text.GetLength()) {
+            while (i < static_cast<i32>((text).size())) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
                     break;
                 }
                 i++;
             }
-            if (i < text.GetLength() && text[i] == '\n') {
+            if (i < static_cast<i32>((text).size()) && text[i] == '\n') {
                 breakNL = 1;
             }
-            CString head;
+            std::string head;
             if (breakNL) {
-                head = text.Left(i);
+                head = sliceText(text, 0, i);
             } else {
-                head = text.Left(i + 1);
+                head = sliceText(text, 0, i + 1);
             }
             size = MeasureText(head);
             i32 headW = size.cx;
-            text = text.Right(text.GetLength() - i - 1);
+            text = rightText(text, static_cast<i32>((text).size()) - i - 1);
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
@@ -402,11 +402,11 @@ void FontRenderer::DrawWrapped(
                 }
             } else {
 
-                while (head.GetLength() > 0) {
+                while (static_cast<i32>((head).size()) > 0) {
                     if (y >= rc.bottom) {
                         break;
                     }
-                    size = MeasureText(CString(head.GetAt(0), 1));
+                    size = MeasureText(std::string(1, head[0]));
                     i32 chW = size.cx;
                     if (chW + x > rc.right) {
                         y = y + lineAdvance;
@@ -439,7 +439,7 @@ void FontRenderer::DrawWrapped(
             }
         }
     }
-    if (y + lineAdvance <= rc.bottom && line.GetLength() > 0) {
+    if (y + lineAdvance <= rc.bottom && static_cast<i32>((line).size()) > 0) {
         if (hcenter) {
             CSize le = MeasureText(line);
             DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
@@ -449,7 +449,7 @@ void FontRenderer::DrawWrapped(
     }
 }
 
-CSize FontRenderer::MeasureText(CString text) {
+CSize FontRenderer::MeasureText(const std::string& text) {
     CSize ext;
 
     CSize g;
@@ -459,7 +459,7 @@ CSize FontRenderer::MeasureText(CString text) {
     if (m_font == NULL) {
         return CSize(0, 0);
     }
-    for (; i < text.GetLength(); i++) {
+    for (; i < static_cast<i32>((text).size()); i++) {
         u8 c = text[i];
 
         width += m_font->GetGlyph(g, c).cx;
@@ -468,15 +468,15 @@ CSize FontRenderer::MeasureText(CString text) {
     return ext;
 }
 
-CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
+CSize FontRenderer::MeasureWrapped(std::string text, CRect rc) {
     i32 y = rc.top;
     CSize maxExtent;
     maxExtent.cx = 0;
     i32 x = rc.left;
 
-    CString line;
+    std::string line;
     while (y < rc.bottom) {
-        i32 len = text.GetLength();
+        i32 len = static_cast<i32>((text).size());
         if (len <= 0) {
             break;
         }
@@ -503,22 +503,22 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
             i32 i = 0;
             i32 breakNL = 0;
 
-            while (i < text.GetLength()) {
+            while (i < static_cast<i32>((text).size())) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
                     break;
                 }
                 i++;
             }
-            if (i < text.GetLength() && text[i] == '\n') {
+            if (i < static_cast<i32>((text).size()) && text[i] == '\n') {
                 breakNL = 1;
             }
-            CString head = text.Left(i + 1);
+            std::string head = sliceText(text, 0, i + 1);
 
             CSize he;
             he = MeasureText(head);
             i32 headW = he.cx;
-            text = text.Right(text.GetLength() - i - 1);
+            text = rightText(text, static_cast<i32>((text).size()) - i - 1);
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
@@ -535,12 +535,12 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
                 }
             } else {
 
-                for (i32 j = 0; j < head.GetLength(); j++) {
+                for (i32 j = 0; j < static_cast<i32>((head).size()); j++) {
                     if (y >= rc.bottom) {
                         break;
                     }
                     CSize ce;
-                    ce = MeasureText(CString(head.GetAt(j), 1));
+                    ce = MeasureText(std::string(1, head[j]));
                     i32 chW = ce.cx;
                     if (chW + x > rc.right) {
                         y = y + m_font->GetMaxHeight();
@@ -566,14 +566,14 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
     return CSize(maxExtent.cx - rc.left + 1, m_font->GetMaxHeight() + (y - rc.top) + 1);
 }
 
-CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
+CSize FontRenderer::LayoutWrapped(std::string text, CRect rc, i32* outLen) {
     i32 y = rc.top;
     i32 totalChars = 0;
     i32 x = rc.left;
 
-    CString line;
+    std::string line;
     while (y < rc.bottom) {
-        i32 len = text.GetLength();
+        i32 len = static_cast<i32>((text).size());
         if (len <= 0) {
             break;
         }
@@ -592,34 +592,34 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
             line += text;
             text = "";
             if (m_font->GetMaxHeight() + y <= rc.bottom) {
-                totalChars += line.GetLength();
+                totalChars += static_cast<i32>((line).size());
             }
             line = "";
         } else {
             i32 i = 0;
             i32 breakNL = 0;
 
-            while (i < text.GetLength()) {
+            while (i < static_cast<i32>((text).size())) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
                     break;
                 }
                 i++;
             }
-            if (i < text.GetLength() && text[i] == '\n') {
+            if (i < static_cast<i32>((text).size()) && text[i] == '\n') {
                 breakNL = 1;
             }
-            CString head = text.Left(i + 1);
+            std::string head = sliceText(text, 0, i + 1);
 
             CSize he;
             he = MeasureText(head);
             i32 headW = he.cx;
-            text = text.Right(text.GetLength() - i - 1);
+            text = rightText(text, static_cast<i32>((text).size()) - i - 1);
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
             } else if (headW < rc.Width()) {
-                totalChars += line.GetLength();
+                totalChars += static_cast<i32>((line).size());
                 y = y + m_font->GetMaxHeight();
                 x = rc.left;
                 line = "";
@@ -629,17 +629,17 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
                 }
             } else {
 
-                while (head.GetLength() > 0) {
+                while (static_cast<i32>((head).size()) > 0) {
                     if (y >= rc.bottom) {
                         break;
                     }
                     CSize ce;
-                    ce = MeasureText(CString(head.GetAt(0), 1));
+                    ce = MeasureText(std::string(1, head[0]));
                     i32 chW = ce.cx;
                     if (chW + x > rc.right) {
                         y = y + m_font->GetMaxHeight();
                         x = rc.left;
-                        totalChars += line.GetLength();
+                        totalChars += static_cast<i32>((line).size());
                         line = "";
                     }
                     if (m_font->GetMaxHeight() + y >= rc.bottom) {
@@ -650,15 +650,15 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
                 }
             }
             if (breakNL) {
-                totalChars += line.GetLength();
+                totalChars += static_cast<i32>((line).size());
                 y = y + m_font->GetMaxHeight();
                 x = rc.left;
                 line = "";
             }
         }
     }
-    if (m_font->GetMaxHeight() + y <= rc.bottom && line.GetLength() > 0) {
-        totalChars += line.GetLength();
+    if (m_font->GetMaxHeight() + y <= rc.bottom && static_cast<i32>((line).size()) > 0) {
+        totalChars += static_cast<i32>((line).size());
     }
     if (outLen) {
         *outLen = totalChars;

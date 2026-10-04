@@ -25,7 +25,7 @@ i32 CAniPlayer::Start(
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
-    const char* key,
+    const std::string& key,
     i32 frameStart,
     i32 frameEnd,
     i32 intervalMs,

@@ -41,7 +41,7 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
         GruntDirectionCell cell = m_entranceCell;
         i32 col = cell.m_column + cell.m_row * 2;
         i32 base = cell.m_row + col;
-        char* buf = m_cells[base].WalkName().GetBuffer(0);
+        const std::string& buf = (m_cells[base].WalkName());
         SetImageSetByName(buf);
         SwitchAnimation(m_poseWalk);
         return 1;

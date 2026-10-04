@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_WWD_WWDOBJMGRINLINE_H
 #define GRUNTZ_WWD_WWDOBJMGRINLINE_H
 
+#include <map>
+#include <string>
+
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Ints.h>
@@ -8,9 +11,9 @@
 #include <Wwd/WwdGameObjectFamily.h>
 #include <Wwd/WwdObjMgr.h>
 
-inline void* WwdKey(CGameObject* o) {
+inline i32 WwdKey(CGameObject* o) {
 
-    return reinterpret_cast<void*>(o->m_objectId);
+    return o->m_objectId;
 }
 
 static inline i32 WorldSpaceDifference(i32 leftFlags, i32 rightFlags) {
@@ -39,7 +42,7 @@ static inline void DrawObjectDebugRect(
     drawHost->DrawBox(&rc, 0xff);
 }
 
-static inline CWwdGameObject* LookupObjectById(CMapPtrToPtr& byId, i32 id) {
+static inline CWwdGameObject* LookupObjectById(std::map<i32, CGameObject*>& byId, i32 id) {
     CWwdGameObject* found = NULL;
     if (MapLookupById(byId, id, found) == false) {
         found = NULL;
@@ -47,7 +50,7 @@ static inline CWwdGameObject* LookupObjectById(CMapPtrToPtr& byId, i32 id) {
     return found;
 }
 
-inline CWwdGameObject* LookupActiveObject(CMapPtrToPtr& map, void* key) {
+inline CWwdGameObject* LookupActiveObject(std::map<i32, CGameObject*>& map, i32 key) {
     CWwdGameObject* found = NULL;
     if (MapLookup(map, key, found) == false) {
         found = NULL;

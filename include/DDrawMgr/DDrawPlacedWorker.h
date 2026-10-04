@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWPLACEDWORKER_H
 #define GRUNTZ_DDRAWMGR_DDRAWPLACEDWORKER_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/ResolveNode.h>
@@ -76,11 +78,11 @@ struct CDDrawFrameWorker : public CDDrawPlacedWorker {
     CDDrawFrameWorker(CDDrawSurfaceMgr* ctx) : CDDrawPlacedWorker(ctx) {
         m_contentValue = 0;
     }
-    virtual i32 PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex);
+    virtual i32 PlaceFrame(i32 x, i32 y, const std::string& workerName, i32 frameIndex);
     virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex);
     virtual i32 PlaceFrame(i32 x, i32 y, CImage* frame);
 
-    i32 ResolveFrame(const char* workerName, i32 frameIndex);
+    i32 ResolveFrame(const std::string& workerName, i32 frameIndex);
 };
 
 #endif

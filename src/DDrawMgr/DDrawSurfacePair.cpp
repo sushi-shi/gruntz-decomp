@@ -25,7 +25,6 @@
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/MapStringToOb.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
@@ -45,24 +44,24 @@
 #include <string.h>
 
 void CDDrawWorkerList::Unload() {
-    POSITION pos = m_workers.GetHeadPosition();
-    while (pos) {
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+    std::list<CDDrawPlacedWorker*>::iterator pos = m_workers.begin();
+    while (pos != m_workers.end()) {
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(*(pos++));
         if (child) {
             delete child;
         }
     }
-    m_workers.RemoveAll();
+    m_workers.clear();
 }
 
 void CDDrawWorkerList::RenderAndPruneWorkers(
     CDDrawSurfacePair* backBuffer,
     CDDrawSurfacePair* overlay
 ) {
-    POSITION pos = m_workers.GetHeadPosition();
-    while (pos) {
-        POSITION cur = pos;
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+    std::list<CDDrawPlacedWorker*>::iterator pos = m_workers.begin();
+    while (pos != m_workers.end()) {
+        std::list<CDDrawPlacedWorker*>::iterator cur = pos;
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(*(pos++));
         child->RenderFrame(backBuffer, overlay);
         child->m_refCount--;
         if ((overlay->GetSurface() != NULL
@@ -71,7 +70,7 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
                  SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
              ))
             || child->m_refCount <= 0) {
-            m_workers.RemoveAt(cur);
+            m_workers.erase(cur);
             if (child) {
                 delete child;
             }
@@ -80,14 +79,14 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
 }
 
 void CDDrawWorkerList::ClearWorkers() {
-    POSITION pos = m_workers.GetHeadPosition();
-    while (pos) {
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+    std::list<CDDrawPlacedWorker*>::iterator pos = m_workers.begin();
+    while (pos != m_workers.end()) {
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(*(pos++));
         if (child) {
             delete child;
         }
     }
-    m_workers.RemoveAll();
+    m_workers.clear();
 }
 
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
@@ -744,26 +743,28 @@ i32 CLogicRecord::ResolveTarget(void* context) {
 
 void CLogicRecordRegistry::Unload() {
     CObject* value = NULL;
-    POSITION pos = m_templatesByName.GetStartPosition();
-    CString key;
-    if (pos != NULL) {
+    std::map<std::string, CLogicRecord*>::iterator pos = m_templatesByName.begin();
+    std::string key;
+    if (pos != m_templatesByName.end()) {
         do {
-            m_templatesByName.GetNextAssoc(pos, key, value);
+            (key = pos->first, value = pos->second, ++pos);
             if (value != NULL) {
                 delete static_cast<CLogicRecord*>(value);
             }
-        } while (pos != NULL);
+        } while (pos != m_templatesByName.end());
     }
-    m_templatesByName.RemoveAll();
+    m_templatesByName.clear();
 }
 
 CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
     LogicRecordDispatchFn dispatch,
-    const char* key,
+    const std::string& key,
     i32 flags
 ) {
 
-    CLogicRecord* record = new CLogicRecord(OwnerMgr(), m_templatesByName.GetCount());
+    CLogicRecord* existing = FindTemplate(key);
+    if (existing != NULL) return existing;
+    CLogicRecord* record = new CLogicRecord(OwnerMgr(), static_cast<i32>(m_templatesByName.size()));
 
     if (record->Init(dispatch, flags) == 0) {
         if (record != NULL) {
@@ -771,22 +772,22 @@ CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
         }
         return NULL;
     }
-    m_templatesByName[key] = static_cast<CObject*>(record);
+    m_templatesByName.insert(std::map<std::string, CLogicRecord*>::value_type(key, record));
     return record;
 }
 
-CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
+std::string CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
     CObject* value = NULL;
-    POSITION pos = m_templatesByName.GetStartPosition();
-    CString key;
-    while (pos != NULL) {
-        m_templatesByName.GetNextAssoc(pos, key, value);
+    std::map<std::string, CLogicRecord*>::iterator pos = m_templatesByName.begin();
+    std::string key;
+    while (pos != m_templatesByName.end()) {
+        (key = pos->first, value = pos->second, ++pos);
 
         if (value != NULL && static_cast<CLogicRecord*>(value)->m_dispatch == record->m_dispatch) {
             return key;
         }
     }
-    CString empty;
+    std::string empty;
     return empty;
 }
 
@@ -819,7 +820,7 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
             DELETE_ANI_ELEMENT_CONTENTS(i);
             return 0;
         }
-        m_records.Add(rec);
+        m_records.push_back(rec);
         cursor += g_aniParsedNameLen + 0x14;
         m_durationMs += rec->GetDurationMs();
     }
@@ -863,31 +864,37 @@ void CAniElement::DeleteAll() {
     DELETE_ANI_ELEMENT_CONTENTS(i);
 }
 
+CDDrawPaletteResource* CDDrawPaletteRegistry::FindPalette(const std::string& key) const {
+    return MapFind<CDDrawPaletteResource>(m_palettesByName, key);
+}
+
 void CDDrawPaletteRegistry::Unload() {
     CObject* val = NULL;
-    POSITION pos = m_palettesByName.GetStartPosition();
-    CString key;
-    if (pos != NULL) {
+    std::map<std::string, CDDrawPaletteResource*>::iterator pos = m_palettesByName.begin();
+    std::string key;
+    if (pos != m_palettesByName.end()) {
         do {
-            m_palettesByName.GetNextAssoc(pos, key, val);
+            (key = pos->first, val = pos->second, ++pos);
             if (val != NULL) {
                 delete (static_cast<CDDrawPaletteResource*>(val));
             }
-        } while (pos != NULL);
+        } while (pos != m_palettesByName.end());
     }
-    m_palettesByName.RemoveAll();
+    m_palettesByName.clear();
     m_activePalette = NULL;
 }
 
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 flags) {
+CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const std::string& key, i32 flags) {
+    CDDrawPaletteResource* existing = FindPalette(key);
+    if (existing != NULL) return existing;
     RecordBytes<char> source;
     source.m_bytes = src->Load();
     u8* data = source.m_bytes;
     if (data == NULL) {
         return NULL;
     }
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         src->UnLoad();
         if (w != NULL) {
@@ -896,44 +903,44 @@ CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 
         return NULL;
     }
     src->UnLoad();
-    char buf[0x50];
-    if (key != NULL) {
-        strcpy(buf, key);
-    } else {
-        strcpy(buf, src->GetName());
-    }
-    m_palettesByName[buf] = static_cast<CObject*>(w);
+    m_palettesByName.insert(std::map<std::string, CDDrawPaletteResource*>::value_type(key, w));
     return w;
 }
 
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags) {
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const std::string& key, i32 flags) {
+    CDDrawPaletteResource* existing = FindPalette(key);
+    if (existing != NULL) return existing;
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
-    m_palettesByName[key] = static_cast<CObject*>(w);
+    m_palettesByName.insert(std::map<std::string, CDDrawPaletteResource*>::value_type(key, w));
     return w;
 }
 
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flags) {
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const std::string& key, i32 flags) {
+    CDDrawPaletteResource* existing = FindPalette(key);
+    if (existing != NULL) return existing;
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->LoadPaletteFromFile(path, flags) == 0) {
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
-    m_palettesByName[key] = static_cast<CObject*>(w);
+    m_palettesByName.insert(std::map<std::string, CDDrawPaletteResource*>::value_type(key, w));
     return w;
 }
 
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 flags) {
+CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, const std::string& key, i32 flags) {
+    CDDrawPaletteResource* existing = FindPalette(key);
+    if (existing != NULL) return existing;
     if (src->GetType() != IMGTAG_XCP) {
         return NULL;
     }
@@ -943,38 +950,33 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 fl
     }
 
     i32 length = static_cast<i32>(src->GetSize());
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(static_cast<i32>(m_palettesByName.size()), m_ownerCtx);
     if (w->CreatePaletteFromTrailingData(data, length, flags) == 0) {
+        src->UnLoad();
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
 
-    const char* keyArg = reinterpret_cast<const char*>(key);
-    char buf[0x50];
-    if (keyArg != NULL) {
-        strcpy(buf, keyArg);
-    } else {
-        strcpy(buf, src->GetName());
-    }
-    m_palettesByName[buf] = static_cast<CObject*>(w);
+    src->UnLoad();
+    m_palettesByName.insert(std::map<std::string, CDDrawPaletteResource*>::value_type(key, w));
     return w;
 }
 
 void CDDrawPaletteRegistry::ClearPalettes() {
     CObject* val = NULL;
-    POSITION pos = m_palettesByName.GetStartPosition();
-    CString key;
-    if (pos != NULL) {
+    std::map<std::string, CDDrawPaletteResource*>::iterator pos = m_palettesByName.begin();
+    std::string key;
+    if (pos != m_palettesByName.end()) {
         do {
-            m_palettesByName.GetNextAssoc(pos, key, val);
+            (key = pos->first, val = pos->second, ++pos);
             if (val != NULL) {
                 delete (static_cast<CDDrawPaletteResource*>(val));
             }
-        } while (pos != NULL);
+        } while (pos != m_palettesByName.end());
     }
-    m_palettesByName.RemoveAll();
+    m_palettesByName.clear();
     m_activePalette = NULL;
 }
 
@@ -984,12 +986,12 @@ i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
         m_activePalette = NULL;
     }
     CObject* val = NULL;
-    POSITION pos = m_palettesByName.GetStartPosition();
-    CString key;
-    while (pos != NULL) {
-        m_palettesByName.GetNextAssoc(pos, key, val);
+    std::map<std::string, CDDrawPaletteResource*>::iterator pos = m_palettesByName.begin();
+    std::string key;
+    while (pos != m_palettesByName.end()) {
+        (key = pos->first, val = pos->second, ++pos);
         if (val == obj) {
-            m_palettesByName.RemoveKey(key);
+            m_palettesByName.erase(key);
             if (w != NULL) {
                 delete w;
             }
@@ -999,7 +1001,7 @@ i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
     return 0;
 }
 
-i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
+i32 CDDrawPaletteRegistry::RemovePaletteByName(const std::string& key) {
     CDDrawPaletteResource* w = MapFind<CDDrawPaletteResource>(m_palettesByName, key);
     if (w == NULL) {
         return 0;
@@ -1007,12 +1009,12 @@ i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
     if (m_activePalette == w) {
         m_activePalette = NULL;
     }
-    m_palettesByName.RemoveKey(key);
+    m_palettesByName.erase(key);
     delete w;
     return 1;
 }
 
-i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {
+i32 CFileMemBase::SetName(const std::string& name, i32 mode, i32 option) {
     m_name = name;
     m_mode = mode;
     m_option = option;
@@ -1020,13 +1022,13 @@ i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {
 }
 
 i32 CFileMem::Open() {
-    if (m_name.IsEmpty()) {
+    if ((m_name).empty()) {
         return 0;
     }
 
     if (WantRead()) {
         CFile* io = &m_file;
-        if (!io->Open(m_name, CFile::modeRead, NULL)) {
+        if (!io->Open((m_name).c_str(), CFile::modeRead, NULL)) {
             return 0;
         }
         m_length = io->GetLength();
@@ -1035,7 +1037,7 @@ i32 CFileMem::Open() {
     }
 
     CFile* out = &m_file;
-    if (!out->Open(m_name, CFile::modeCreate | CFile::modeWrite, NULL)) {
+    if (!out->Open((m_name).c_str(), CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
     }
     m_length = 0;
@@ -1083,7 +1085,7 @@ void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurface
     backBuffer->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
 }
 
-i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
+i32 CDDrawFrameWorker::ResolveFrame(const std::string& workerName, i32 frameIndex) {
     CDDrawWorker* p = OwnerMgr()->FindWorker(workerName);
     CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
     m_frame = v;

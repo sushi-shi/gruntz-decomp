@@ -65,11 +65,9 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         );
     }
 
-    CString arial("ARIAL");
+    std::string arial("ARIAL");
 
-    const char* faceTF = static_cast<const char*>(
-        *g_buteMgr.GetString("Font", "TrainingFont", static_cast<CString*>(&arial))
-    );
+    const std::string faceTF = g_buteMgr.GetString("Font", "TrainingFont", arial);
     m_trainingFont = CreateFontA(
         g_buteMgr.GetInt("Font", "TrainingFontHeight", 0x1c),
         g_buteMgr.GetInt("Font", "TrainingFontWidth", 0xe),
@@ -84,7 +82,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         DEFAULT_PITCH | FF_DONTCARE,
-        faceTF
+        faceTF.c_str()
     );
     if (!m_trainingFont) {
         m_trainingFont = CreateFontA(
@@ -105,9 +103,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         );
     }
 
-    const char* faceMF = static_cast<const char*>(
-        *g_buteMgr.GetString("Font", "MessageFont", static_cast<CString*>(&arial))
-    );
+    const std::string faceMF = g_buteMgr.GetString("Font", "MessageFont", arial);
     m_messageFont = CreateFontA(
         g_buteMgr.GetInt("Font", "MessageFontHeight", 0x2a),
         g_buteMgr.GetInt("Font", "MessageFontWidth", 0x18),
@@ -122,7 +118,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         DEFAULT_PITCH | FF_DONTCARE,
-        faceMF
+        faceMF.c_str()
     );
     if (!m_messageFont) {
         m_messageFont = CreateFontA(
@@ -148,7 +144,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
 
 void CFontConfig::Reset() {
     FreeNodes();
-    m_inputText.Empty();
+    (m_inputText).erase();
     if (m_arialFont) {
         DeleteObject(m_arialFont);
         m_arialFont = NULL;
@@ -164,43 +160,40 @@ void CFontConfig::Reset() {
 }
 
 void CFontConfig::FreeNodes() {
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos) {
-        FontItem* item = static_cast<FontItem*>(m_list.GetNext(pos));
+    std::list<FontItem*>::iterator pos = m_list.begin();
+    while (pos != m_list.end()) {
+        FontItem* item = static_cast<FontItem*>(*(pos++));
         if (item) {
             delete item;
         }
     }
-    m_list.RemoveAll();
-    m_inputText.Empty();
+    m_list.clear();
+    (m_inputText).erase();
     m_inputActive = false;
 }
 
-i32 CFontConfig::AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload) {
-    if (!str) {
-        return 0;
-    }
-    if (!*str) {
+i32 CFontConfig::AddItem(const std::string& str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload) {
+    if (str.empty()) {
         return 0;
     }
     if (HAS(flags, FONT_ITEM_CLEAR_EXISTING)) {
-        POSITION pos = m_list.GetHeadPosition();
-        while (pos) {
-            FontItem* item = static_cast<FontItem*>(m_list.GetNext(pos));
+        std::list<FontItem*>::iterator pos = m_list.begin();
+        while (pos != m_list.end()) {
+            FontItem* item = static_cast<FontItem*>(*(pos++));
             if (item) {
                 delete item;
             }
         }
-        m_list.RemoveAll();
+        m_list.clear();
     }
     FontItem* item = new FontItem;
     item->m_name = str;
     item->m_flags = flags;
     item->m_payload = payload;
     if (HAS(flags, FONT_ITEM_PREPEND)) {
-        m_list.AddHead(item);
+        m_list.insert(m_list.begin(), item);
     } else {
-        m_list.AddTail(item);
+        m_list.insert(m_list.end(), item);
     }
     return 1;
 }
@@ -209,7 +202,7 @@ void CFontConfig::Scroll(i32 delta) {
     if (m_inputActive) {
         m_inputScrollTotal += delta;
     }
-    i32 count = m_list.GetCount();
+    i32 count = static_cast<i32>(m_list.size());
     if (!count) {
         m_scrollOffset = 0;
     }
@@ -220,7 +213,7 @@ void CFontConfig::Scroll(i32 delta) {
         if (m_scrollOffset < m_highScrollThreshold) {
             return;
         }
-        item = static_cast<FontItem*>(m_list.RemoveHead());
+        item = static_cast<FontItem*>(takeFront(m_list));
         if (!item) {
             return;
         }
@@ -231,12 +224,12 @@ void CFontConfig::Scroll(i32 delta) {
         if (!count) {
             return;
         }
-        item = static_cast<FontItem*>(m_list.RemoveHead());
+        item = static_cast<FontItem*>(takeFront(m_list));
         if (!item) {
             return;
         }
     }
-    item->m_name.Empty();
+    (item->m_name).erase();
 
     item->~FontItem();
     ::operator delete(item);
@@ -253,7 +246,7 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
             m_inputScrollTotal = 0;
             m_inputText = static_cast<const char*>("");
         } else {
-            if (m_inputText.IsEmpty()) {
+            if ((m_inputText).empty()) {
                 return 0;
             }
             m_inputActive = false;
@@ -264,17 +257,17 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
         return 0;
     }
     if (charCode == '\b') {
-        i32 len = m_inputText.GetLength();
+        i32 len = static_cast<i32>((m_inputText).size());
         if (len <= 0) {
             return 0;
         }
-        m_inputText.GetBufferSetLength(len - 1);
+        m_inputText.resize(len - 1);
         return 0;
     }
     if (charCode < ' ' || charCode > 0xff) {
         return 0;
     }
-    if (m_inputText.GetLength() < 0x50) {
+    if (static_cast<i32>((m_inputText).size()) < 0x50) {
         m_inputText += static_cast<char>(charCode);
     }
     return 0;
@@ -283,7 +276,7 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
 void CFontConfig::EndInput() {
     if (m_inputActive != false) {
         m_inputActive = false;
-        m_inputText.Empty();
+        (m_inputText).erase();
     }
 }
 
@@ -291,12 +284,12 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == NULL) {
         return 0;
     }
-    CString text(m_inputText);
-    if (text.IsEmpty()) {
+    std::string text(m_inputText);
+    if ((text).empty()) {
         g_chatTextWidth = 0;
     } else {
         RECT rc = *rect;
-        DrawTextA(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
+        DrawTextA(hdc, (text).c_str(), static_cast<i32>((text).size()), &rc, DT_CALCRECT | DT_SINGLELINE);
         i32 textW = rc.right - rc.left;
         i32 provW = rect->right - rect->left;
         g_chatTextWidth = Min(provW, textW);
@@ -317,10 +310,10 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     if (hdc == NULL) {
         return 0;
     }
-    CString text(m_inputText);
+    std::string text(m_inputText);
     if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-        for (i32 i = 0; i < text.GetLength(); i++) {
-            text.SetAt(i, '*');
+        for (i32 i = 0; i < static_cast<i32>((text).size()); i++) {
+            (text)[i] = '*';
         }
     }
     i32 t;
@@ -334,7 +327,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         g_caretBlinkMs = 0xc8;
         g_caretBlinkOn ^= 1;
     }
-    if (g_caretBlinkOn != false && text.IsEmpty()) {
+    if (g_caretBlinkOn != false && (text).empty()) {
         MeasureLabel(hdc, rect);
         return 1;
     }
@@ -347,10 +340,10 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     }
     int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
     RECT rc = *rect;
-    pDraw(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
+    pDraw(hdc, (text).c_str(), static_cast<i32>((text).size()), &rc, DT_CALCRECT | DT_SINGLELINE);
     i32 fmt = ((rc.right - rc.left) > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
     g_lastDrawTextFormat = fmt;
-    pDraw(hdc, text, text.GetLength(), rect, fmt);
+    pDraw(hdc, (text).c_str(), static_cast<i32>((text).size()), rect, fmt);
     if (prev) {
         SelectObject(hdc, prev);
     }
@@ -385,17 +378,17 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         return 0;
     }
 
-    if (m_list.GetCount() <= 0) {
+    if (static_cast<i32>(m_list.size()) <= 0) {
         return 0;
     }
-    while (m_list.GetCount() > count) {
-        FontItem* dead = static_cast<FontItem*>(m_list.RemoveHead());
+    while (static_cast<i32>(m_list.size()) > count) {
+        FontItem* dead = static_cast<FontItem*>(takeFront(m_list));
         if (dead != NULL) {
-            dead->m_name.Empty();
+            (dead->m_name).erase();
             delete dead;
         }
     }
-    i32 n = min(count, m_list.GetCount());
+    i32 n = min(count, static_cast<i32>(m_list.size()));
     if (n <= 0) {
         return 0;
     }
@@ -407,12 +400,12 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (m_arialFont) {
             savedFont = SelectObject(hdc, m_arialFont);
         }
-        FontItem* item = static_cast<FontItem*>(m_list.GetAt(m_list.FindIndex(i)));
+        FontItem* item = static_cast<FontItem*>(*(iteratorAt(m_list.begin(), m_list.end(), i)));
         if (item != NULL) {
             if (HAS(item->m_flags, FONT_ITEM_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
                 SET_RECT_XY_EXTENTS(work, cur.left + 1, cur.right + 1, cur.top + 1, cur.bottom + 1);
-                DrawTextA(hdc, item->m_name, strlen(item->m_name), &work, format);
+                DrawTextA(hdc, (item->m_name).c_str(), strlen((item->m_name).c_str()), &work, format);
             }
             if (HAS(item->m_flags, FONT_ITEM_COLORED)) {
                 COLORREF color;
@@ -422,8 +415,8 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
                 SetTextColor(hdc, TCLR_WHITE);
             }
             calc = cur;
-            DrawTextA(hdc, item->m_name, strlen(item->m_name), &calc, format | DT_CALCRECT);
-            DrawTextA(hdc, item->m_name, strlen(item->m_name), &cur, format);
+            DrawTextA(hdc, (item->m_name).c_str(), strlen((item->m_name).c_str()), &calc, format | DT_CALCRECT);
+            DrawTextA(hdc, (item->m_name).c_str(), strlen((item->m_name).c_str()), &cur, format);
             i32 measuredBottom = calc.bottom;
             i32 measuredLeft = calc.left;
             i32 rr = rect->right;
@@ -463,7 +456,7 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
 }
 
 i32 CFontConfig::Draw3DText(
-    const CString* strSrc,
+    const std::string& text,
     HDC hdc,
     RECT* dst,
     i32 fontFlag,
@@ -480,9 +473,6 @@ i32 CFontConfig::Draw3DText(
     if (dst == NULL) {
         return 0;
     }
-    if (strSrc == NULL) {
-        return 0;
-    }
     HGDIOBJ selPrev = NULL;
     RECT rc = *dst;
     if (fontFlag == 0) {
@@ -496,8 +486,7 @@ i32 CFontConfig::Draw3DText(
     }
     SetBkMode(hdc, TRANSPARENT);
     SetBkColor(hdc, RGB(0, 0, 0));
-    CString text(*strSrc);
-    DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
+    DrawTextA(hdc, (text).c_str(), strlen((text).c_str()), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
     rc.left += hoff;
@@ -510,14 +499,14 @@ i32 CFontConfig::Draw3DText(
         rc.top += dy;
         rc.right += dx;
         rc.bottom += dy;
-        DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
+        DrawTextA(hdc, (text).c_str(), strlen((text).c_str()), &rc, DT_WORDBREAK | DT_CENTER);
         rc.right -= dx;
         rc.left -= dx;
         rc.bottom -= dy;
         rc.top -= dy;
     }
     SetTextColor(hdc, RGB(r, g, b));
-    DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
+    DrawTextA(hdc, (text).c_str(), strlen((text).c_str()), &rc, DT_WORDBREAK | DT_CENTER);
     if (selPrev) {
         SelectObject(hdc, selPrev);
     }

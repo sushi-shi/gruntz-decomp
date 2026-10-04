@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_SPRITEREFTABLE_H
 #define GRUNTZ_SPRITEREFTABLE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/ShadeTableCache.h>
@@ -71,9 +73,9 @@ public:
 
     CShadeTable* GetSel(i32 i, i32 bAlt);
 
-    CSpriteRef* Add(char* szName, ColorTint kind);
+    CSpriteRef* Add(const std::string& szName, ColorTint kind);
 
-    i32 LoadGruntzPalette(CRezMgr* src, const char* name);
+    i32 LoadGruntzPalette(CRezMgr* src, const std::string& name);
 
     i32 LoadToolToyPalettes(CRezMgr* src);
 

@@ -1,6 +1,8 @@
 #ifndef SRC_GRUNTZ_GAMEMODE_H
 #define SRC_GRUNTZ_GAMEMODE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -119,7 +121,7 @@ public:
     CRect m_scrollRect;
     CRect m_drawRect;
     CRgn m_clipRegion;
-    CString m_caption;
+    std::string m_caption;
     i32 m_scrollReseedTimer;
 
     double m_scrollAccum;
@@ -182,7 +184,7 @@ public:
 
     i32 LoadGruntEffectSprites();
     i32 LevelMsgHudDriver();
-    void FormatHudText(CString* buf, BootyStatRow sel);
+    std::string FormatHudText(BootyStatRow sel);
 
     i32 BuildWarpStoneGlitterAnimation();
 
@@ -263,9 +265,9 @@ public:
 
     i32 QueryGruntSlots();
 
-    void BuildPowerupIconKeys(CString* reg, i32 key);
+    std::string BuildPowerupIconKey(i32 key);
 
-    CString GetWarlordName(i32 id);
+    std::string GetWarlordName(i32 id);
 
     void OnActivated();
 

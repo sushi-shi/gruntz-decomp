@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -623,7 +624,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     memset(buf, 0, sizeof(buf));
     if (m_animation != NULL) {
 
-        strcpy(buf, OwnerMgr()->m_animRegistry->FindAnimationKey(m_animation));
+        if (!copyTextToBuffer(OwnerMgr()->m_animRegistry->FindAnimationKey(m_animation), buf, SERIAL_NAME_LEN)) return 0;
     }
     ar->Write(buf, SERIAL_NAME_LEN);
     return 1;
@@ -646,7 +647,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (strlen(buf) == 0) {
         m_animation = NULL;
     } else {
-        m_animation = MapFind<CAniElement>(OwnerMgr()->m_animRegistry->m_animations, buf);
+        m_animation = OwnerMgr()->m_animRegistry->FindAnimation(buf);
     }
     CAniElement* w = m_animation;
     if (w != NULL) {

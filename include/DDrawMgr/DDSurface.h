@@ -1,6 +1,11 @@
 #ifndef DDRAWMGR_CDDSURFACE_H
 #define DDRAWMGR_CDDSURFACE_H
 
+#include <list>
+class CDDSurface;
+
+#include <vector>
+
 #include <Ints.h>
 
 #include <DDrawMgr/ColorDepth.h>
@@ -229,7 +234,7 @@ public:
     i32 Blit824(u8* src, PALETTEENTRY* palette, RasterRowOrder rowOrder);
     i32 Blit816(u8* src, PALETTEENTRY* palette, RasterRowOrder rowOrder);
 
-    POSITION m_pos;
+    std::list<CDDSurface*>::iterator m_pos;
     IDirectDrawSurface* m_ddSurface;
     IDirectDrawSurface* m_ddSurfaceBack;
 
@@ -238,7 +243,7 @@ public:
 
     RECT m_fullRect;
     i32 m_imageBytes;
-    CPtrArray m_elements;
+    std::vector<CDDSurface*> m_elements;
 
     ColorDepth m_bitDepth;
     i32 m_bytesPerRow;
@@ -290,7 +295,7 @@ inline void CDDSurface::PutPixel(i32 x, i32 y, u8 color) {
 inline CDDSurface::CDDSurface() {
     m_ddSurface = NULL;
     m_ddSurfaceBack = NULL;
-    m_pos = NULL;
+
     m_dontOwn = 0;
     m_bitDepth = BPP_UNSET;
     m_restoreCallback = NULL;
@@ -302,7 +307,7 @@ inline CDDSurface::~CDDSurface() {
 
 extern u16 g_lut16[256];
 
-extern CPtrArray g_imageCache;
+extern std::vector<CDDSurface*> g_imageCache;
 
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx);
 

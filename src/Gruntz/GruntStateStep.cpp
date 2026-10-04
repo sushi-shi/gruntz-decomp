@@ -112,8 +112,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 dist = static_cast<i32>(sqrt(static_cast<double>((SQR(abs(dx)) + SQR(abs(dy))))));
             }
             if (dist > m_defenderTargetMaxDistance) {
-                if (m_attackWaypoints.GetSize() != 0) {
-                    Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
+                if (static_cast<i32>(m_attackWaypoints.size()) != 0) {
+                    Coord* e = CoordAt(rand() % static_cast<i32>(m_attackWaypoints.size()));
                     g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
                 }
                 UNSET_COORD(g->m_arrivalCell);
@@ -170,8 +170,8 @@ tail:
     if (CanPlaySpecialAnim(g)) {
         if (g->CoordCount() == 0
             && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
-            && m_attackWaypoints.GetSize() != 0) {
-            Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
+            && static_cast<i32>(m_attackWaypoints.size()) != 0) {
+            Coord* e = CoordAt(rand() % static_cast<i32>(m_attackWaypoints.size()));
             g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             g->m_dwell = 0;
         }

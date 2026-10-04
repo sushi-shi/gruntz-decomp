@@ -501,7 +501,10 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             }
         }
         obj->InitializeNamedSlotAt(slot, name, g_gameReg);
-        g_gameReg->FillSaveInfo(obj->GetSlot(slot), name);
+        if (!g_gameReg->FillSaveInfo(obj->GetSlot(slot), name)) {
+            g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
+            return 1;
+        }
         EndDialog(hDlg, 1);
         if (!obj->Save(obj->GetSlot(slot)->m_savePath, SAVE_STRING_SAVING_GAME)) {
             g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
@@ -535,8 +538,8 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
                 ? n - IDX(QUESTLEVEL_LAST)
                 : (n - 1) % 4 + 1,
             (n > IDX(QUESTLEVEL_LAST) && n < IDX(QUESTLEVEL_TRAINING_END))
-                ? static_cast<const char*>(CString("Training"))
-                : static_cast<const char*>(g_areaNames[(n - 1) / 4])
+                ? (std::string("Training")).c_str()
+                : (g_areaNames[(n - 1) / 4]).c_str()
         );
     } else if (lev->m_isBattlez != false && lev->m_isCustom == false) {
 

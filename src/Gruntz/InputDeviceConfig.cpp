@@ -12,8 +12,8 @@
 
 #include <windowsx.h>
 
-CString CInputConfig::LoadInputDeviceConfig(i32 uppercase) {
-    CString name("None");
+std::string CInputConfig::LoadInputDeviceConfig(i32 uppercase) {
+    std::string name("None");
     switch (m_deviceId) {
         case INPUTDEV_KEYBOARD:
             name = "Keyboard";
@@ -32,7 +32,7 @@ CString CInputConfig::LoadInputDeviceConfig(i32 uppercase) {
             break;
     }
     if (uppercase != 0) {
-        name.MakeUpper();
+        std::transform((name).begin(), (name).end(), (name).begin(), asciiUpper);
     }
     return name;
 }
@@ -52,11 +52,11 @@ i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
     item.m_str = "Keyboard";
     ComboBox_AddString(ctrl, item.m_lparam);
     i32 i = 0;
-    while (i < g_inputMgr->m_joysticks.GetSize()) {
-        CString s;
+    while (i < static_cast<i32>(g_inputMgr->m_joysticks.size())) {
+        std::string s;
         i++;
-        s.Format("Joystick %i", i);
-        ComboBox_AddString(ctrl, (item.m_str = static_cast<LPCTSTR>(s), item.m_lparam));
+        s = formatText("Joystick %i", i);
+        ComboBox_AddString(ctrl, (item.m_str = s.c_str(), item.m_lparam));
     }
     if (selIndex >= 0) {
         ComboBox_SetCurSel(ctrl, selIndex);

@@ -76,9 +76,9 @@ void CNetSession::Shutdown() {
         m_commandRecords[k].m_payloadLength = 0;
         m_commandRecords[k].m_checksum = 0;
     }
-    CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
-    while (!freeList.IsEmpty()) {
-        GruntRec* p = static_cast<GruntRec*>(freeList.RemoveTail());
+    std::list<GruntRec*>& freeList = ObjectPoolStorage<GruntRec>::s_freeList;
+    while (!freeList.empty()) {
+        GruntRec* p = static_cast<GruntRec*>(takeBack(freeList));
         if (p) {
             delete p;
         }
@@ -114,7 +114,7 @@ void CNetSession::ResetRound() {
 void CNetSession::BuildGruntzCrcInfo() {
     char szLine[0x100] = "";
 
-    CString info("crc info for all gruntz:\n------------------------\n");
+    std::string info("crc info for all gruntz:\n------------------------\n");
 
     for (i32 player = 0; player < 4; player++) {
         for (i32 g = 0; g < 0xf; g++) {
@@ -157,13 +157,13 @@ void CNetSession::BuildGruntzCrcInfo() {
             info += szLine;
         }
     }
-    m_owner->ReportVersionMsg(const_cast<char*>(static_cast<const char*>(info)), 0);
+    m_owner->ReportVersionMsg((info).c_str(), 0);
 }
 
 GruntRec* AllocateGruntRecord(i32 clearRecord) {
-    CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
-    if (freeList.GetCount()) {
-        GruntRec* record = static_cast<GruntRec*>(freeList.RemoveTail());
+    std::list<GruntRec*>& freeList = ObjectPoolStorage<GruntRec>::s_freeList;
+    if (static_cast<i32>(freeList.size())) {
+        GruntRec* record = static_cast<GruntRec*>(takeBack(freeList));
         if (clearRecord) {
             memset(record, 0, sizeof(GruntRec));
         }
@@ -173,7 +173,7 @@ GruntRec* AllocateGruntRecord(i32 clearRecord) {
 }
 
 void RecycleGruntRecord(GruntRec* record) {
-    CPtrListPool<GruntRec>::s_freeList.AddTail(record);
+    ObjectPoolStorage<GruntRec>::s_freeList.insert(ObjectPoolStorage<GruntRec>::s_freeList.end(), record);
 }
 
 i32 CNetSession::Poll(i32 elapsedMs) {

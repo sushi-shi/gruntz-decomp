@@ -3349,6 +3349,28 @@
         "/GX",
         "/GR"
       ]
+    },
+    {
+      "name": "text",
+      "source": "src/Utils/Text.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "platformtext",
+      "source": "src/Wap32/PlatformText.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

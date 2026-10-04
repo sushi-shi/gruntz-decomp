@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_CMOVINGLOGIC_H
 #define GRUNTZ_CMOVINGLOGIC_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/CoordNode.h>
@@ -28,7 +30,7 @@ public:
         return LOGIC_NONE;
     }
 
-    virtual void FinalizeStep(char*)   {
+    virtual void FinalizeStep(const std::string&)   {
         if (m_deferredCallback != NULL) {
             if (m_gatedCallback != NULL && m_logicRecord->EventCode() == m_gatedCallbackCode) {
                 (this->*m_gatedCallback)();

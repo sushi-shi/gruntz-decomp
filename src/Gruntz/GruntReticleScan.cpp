@@ -139,12 +139,12 @@ i32 CGrunt::StepDefenderBehavior() {
             target.y = occTY;
             if (PtInRect(&scanBounds, target) != false && m_defenderRadius > 1) {
                 RECT oldBounds = g_gameReg->m_tileGrid->m_bounds;
-                CDWordArray saved;
+                std::vector<u32> saved;
                 for (i32 y = oldBounds.top; y < oldBounds.bottom + 1; y++) {
                     for (i32 x = oldBounds.left; x < oldBounds.right + 1; x++) {
                         if (static_cast<u32>(x) < g_gameReg->m_tileGrid->GetWidth()
                             && static_cast<u32>(y) < g_gameReg->m_tileGrid->GetHeight()) {
-                            saved.Add(static_cast<DWORD>(g_gameReg->m_tileGrid->CellFlagsAt(x, y)));
+                            saved.push_back(static_cast<DWORD>(g_gameReg->m_tileGrid->CellFlagsAt(x, y)));
                         }
                     }
                 }
@@ -191,19 +191,19 @@ i32 CGrunt::StepDefenderBehavior() {
                         if (static_cast<u32>(restoreX) < g_gameReg->m_tileGrid->GetWidth()
                             && static_cast<u32>(restoreY) < g_gameReg->m_tileGrid->GetHeight()) {
                             g_gameReg->m_tileGrid->CellFlagsAtUnchecked(restoreX, restoreY) =
-                                saved.GetAt(savedIndex++);
+                                saved[savedIndex++];
                         }
                     }
                 }
 
-                saved.RemoveAll();
+                saved.clear();
 
                 if (CoordCount() != 0) {
                     Coord* previous = NULL;
-                    POSITION pos = m_coordList.GetHeadPosition();
-                    while (pos != NULL) {
-                        POSITION trimPos = pos;
-                        Coord* trimCoord = static_cast<Coord*>(m_coordList.GetNext(pos));
+                    std::list<Coord*>::iterator pos = m_coordList.begin();
+                    while (pos != m_coordList.end()) {
+                        std::list<Coord*>::iterator trimPos = pos;
+                        Coord* trimCoord = static_cast<Coord*>(*(pos++));
                         i32 pathDx = abs(trimCoord->m_x - defenderTile.m_x);
                         i32 pathDy = abs(trimCoord->m_y - defenderTile.m_y);
                         i32 pathDist = Max(pathDx, pathDy);
@@ -214,15 +214,15 @@ i32 CGrunt::StepDefenderBehavior() {
                                 i32 backDist = Max(backDx, backDy);
                                 if (backDist <= m_reachRect.right) {
                                     g_coordPool.Push(trimCoord);
-                                    m_coordList.RemoveAt(trimPos);
-                                    while (pos != NULL) {
-                                        POSITION nextPos = pos;
+                                    m_coordList.erase(trimPos);
+                                    while (pos != m_coordList.end()) {
+                                        std::list<Coord*>::iterator nextPos = pos;
                                         Coord* coord =
-                                            static_cast<Coord*>(m_coordList.GetNext(pos));
+                                            static_cast<Coord*>(*(pos++));
                                         if (coord != NULL) {
                                             g_coordPool.Push(coord);
                                         }
-                                        m_coordList.RemoveAt(nextPos);
+                                        m_coordList.erase(nextPos);
                                     }
                                 } else {
                                     SetEntrancePos(1, 1);

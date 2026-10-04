@@ -29,7 +29,7 @@
 
 i32 DrawPageDebugText(
     CDDrawSurfaceMgr* mgr,
-    const CString* text,
+    const std::string& text,
     RECT* dst,
     i32 fontFlag,
     b32 useFrontPage,
@@ -146,20 +146,20 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
         delete obj;
         return NULL;
     }
-    m_switchLogics.AddTail(obj);
+    m_switchLogics.insert(m_switchLogics.end(), obj);
     return obj;
 }
 
 i32 CTileTriggerContainer::RemoveSwitchLogic(i32 cellKey, TrigLogicId logicType) {
-    POSITION pos = m_switchLogics.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur = pos;
+    std::list<CTileTriggerSwitchLogic*>::iterator pos = m_switchLogics.begin();
+    while (pos != m_switchLogics.end()) {
+        std::list<CTileTriggerSwitchLogic*>::iterator cur = pos;
         CTileTriggerSwitchLogic* logic =
-            static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
+            static_cast<CTileTriggerSwitchLogic*>(*(pos++));
         if (logic->m_typeId == logicType && logic->m_cellKey == cellKey) {
 
             delete logic;
-            m_switchLogics.RemoveAt(cur);
+            m_switchLogics.erase(cur);
             return 1;
         }
     }
@@ -284,9 +284,9 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     }
 
     if (logicType == TRIGID_TIME_TRIGGER_23) {
-        m_timedLogics.AddTail(obj);
+        m_timedLogics.insert(m_timedLogics.end(), obj);
     } else {
-        m_idleLogics.AddTail(obj);
+        m_idleLogics.insert(m_idleLogics.end(), obj);
     }
     if (logicType == TRIGID_TILE_TRIGGER_21
         && (tileType == TILEKIND_PYRAMID_LATCH_A || tileType == TILEKIND_PYRAMID_LATCH_B)) {
@@ -310,7 +310,7 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
         delete event;
         return NULL;
     }
-    m_actionEvents.AddTail(event);
+    m_actionEvents.insert(m_actionEvents.end(), event);
     return event;
 }
 
@@ -346,7 +346,7 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
         delete event;
         return NULL;
     }
-    m_actionEvents.AddTail(event);
+    m_actionEvents.insert(m_actionEvents.end(), event);
     return event;
 }
 
@@ -376,19 +376,19 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
         delete e;
         return NULL;
     }
-    m_idleLogics.AddTail(e);
+    m_idleLogics.insert(m_idleLogics.end(), e);
     return e;
 }
 
 i32 CTileTriggerContainer::RemoveIdleLogic(CTileTriggerLogic* logic) {
-    POSITION pos = m_idleLogics.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur = pos;
-        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+    std::list<CTileTriggerLogic*>::iterator pos = m_idleLogics.begin();
+    while (pos != m_idleLogics.end()) {
+        std::list<CTileTriggerLogic*>::iterator cur = pos;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(*(pos++));
         if (elem == logic) {
 
             delete elem;
-            m_idleLogics.RemoveAt(cur);
+            m_idleLogics.erase(cur);
             return 1;
         }
     }
@@ -397,10 +397,10 @@ i32 CTileTriggerContainer::RemoveIdleLogic(CTileTriggerLogic* logic) {
 
 CTileTriggerSwitchLogic*
 CTileTriggerContainer::FindSwitchLogic(i32 cellKey, TrigLogicId logicType) {
-    POSITION pos = m_switchLogics.GetHeadPosition();
-    while (pos != NULL) {
+    std::list<CTileTriggerSwitchLogic*>::iterator pos = m_switchLogics.begin();
+    while (pos != m_switchLogics.end()) {
         CTileTriggerSwitchLogic* logic =
-            static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
+            static_cast<CTileTriggerSwitchLogic*>(*(pos++));
         if (logic->m_cellKey == cellKey) {
             if (logicType == TRIGID_ANY || logic->m_typeId == logicType) {
                 return logic;
@@ -411,9 +411,9 @@ CTileTriggerContainer::FindSwitchLogic(i32 cellKey, TrigLogicId logicType) {
 }
 
 CTileTriggerLogic* CTileTriggerContainer::FindLogic(i32 cellKey, TrigLogicId logicType) {
-    POSITION pos = m_idleLogics.GetHeadPosition();
-    while (pos != NULL) {
-        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+    std::list<CTileTriggerLogic*>::iterator pos = m_idleLogics.begin();
+    while (pos != m_idleLogics.end()) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(*(pos++));
         if (elem->m_cellKey == cellKey) {
             if (logicType == TRIGID_ANY) {
                 return elem;
@@ -423,9 +423,9 @@ CTileTriggerLogic* CTileTriggerContainer::FindLogic(i32 cellKey, TrigLogicId log
             }
         }
     }
-    pos = m_timedLogics.GetHeadPosition();
-    while (pos != NULL) {
-        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
+    pos = m_timedLogics.begin();
+    while (pos != m_timedLogics.end()) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(*(pos++));
         if (elem->m_cellKey == cellKey) {
             if (logicType == TRIGID_ANY) {
                 return elem;
@@ -439,59 +439,59 @@ CTileTriggerLogic* CTileTriggerContainer::FindLogic(i32 cellKey, TrigLogicId log
 }
 
 void CTileTriggerContainer::RemoveAll() {
-    POSITION pos = m_idleLogics.GetHeadPosition();
-    while (pos != NULL) {
-        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+    std::list<CTileTriggerLogic*>::iterator pos = m_idleLogics.begin();
+    while (pos != m_idleLogics.end()) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(*(pos++));
         delete elem;
     }
-    m_idleLogics.RemoveAll();
-    pos = m_switchLogics.GetHeadPosition();
-    while (pos != NULL) {
+    m_idleLogics.clear();
+    std::list<CTileTriggerSwitchLogic*>::iterator switchPos = m_switchLogics.begin();
+    while (switchPos != m_switchLogics.end()) {
         CTileTriggerSwitchLogic* elem =
-            static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
+            static_cast<CTileTriggerSwitchLogic*>(*(switchPos++));
         delete elem;
     }
-    m_switchLogics.RemoveAll();
-    pos = m_timedLogics.GetHeadPosition();
-    while (pos != NULL) {
-        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
+    m_switchLogics.clear();
+    pos = m_timedLogics.begin();
+    while (pos != m_timedLogics.end()) {
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(*(pos++));
         delete elem;
     }
-    m_timedLogics.RemoveAll();
-    pos = m_actionEvents.GetHeadPosition();
-    while (pos != NULL) {
-        CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+    m_timedLogics.clear();
+    std::list<CTileActionEvent*>::iterator eventPos = m_actionEvents.begin();
+    while (eventPos != m_actionEvents.end()) {
+        CTileActionEvent* elem = static_cast<CTileActionEvent*>(*(eventPos++));
         delete elem;
     }
-    m_actionEvents.RemoveAll();
+    m_actionEvents.clear();
     m_latchedLeaf = NULL;
 }
 
 i32 CTileTriggerContainer::UpdateTimedLogics(i32 unusedFrameDelta) {
-    POSITION pos = m_timedLogics.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur = pos;
-        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
+    std::list<CTileTriggerLogic*>::iterator pos = m_timedLogics.begin();
+    while (pos != m_timedLogics.end()) {
+        std::list<CTileTriggerLogic*>::iterator cur = pos;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(*(pos++));
         i32 disposition = elem->Classify(unusedFrameDelta);
         if (disposition == 0) {
-            m_timedLogics.RemoveAt(cur);
+            m_timedLogics.erase(cur);
             delete elem;
         } else if (disposition == -1) {
-            m_timedLogics.RemoveAt(cur);
-            m_idleLogics.AddTail(elem);
+            m_timedLogics.erase(cur);
+            m_idleLogics.insert(m_idleLogics.end(), elem);
         }
     }
     return 1;
 }
 
 i32 CTileTriggerContainer::ActivateTimedLogic(CTileTriggerLogic* logic) {
-    POSITION pos = m_idleLogics.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur = pos;
-        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+    std::list<CTileTriggerLogic*>::iterator pos = m_idleLogics.begin();
+    while (pos != m_idleLogics.end()) {
+        std::list<CTileTriggerLogic*>::iterator cur = pos;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(*(pos++));
         if (elem == logic) {
-            m_idleLogics.RemoveAt(cur);
-            m_timedLogics.AddTail(elem);
+            m_idleLogics.erase(cur);
+            m_timedLogics.insert(m_timedLogics.end(), elem);
             elem->m_dutyOn = false;
             return 1;
         }
@@ -500,9 +500,9 @@ i32 CTileTriggerContainer::ActivateTimedLogic(CTileTriggerLogic* logic) {
 }
 
 CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
-    POSITION pos = m_actionEvents.GetHeadPosition();
-    while (pos != NULL) {
-        CTileActionEvent* data = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+    std::list<CTileActionEvent*>::iterator pos = m_actionEvents.begin();
+    while (pos != m_actionEvents.end()) {
+        CTileActionEvent* data = static_cast<CTileActionEvent*>(*(pos++));
         if (data->m_cellKey == cellKey) {
             return data;
         }
@@ -511,13 +511,13 @@ CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
 }
 
 i32 CTileTriggerContainer::RemoveActionEvent(CTileActionEvent* event) {
-    POSITION pos = m_actionEvents.GetHeadPosition();
-    while (pos != NULL) {
-        POSITION cur_node = pos;
-        CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+    std::list<CTileActionEvent*>::iterator pos = m_actionEvents.begin();
+    while (pos != m_actionEvents.end()) {
+        std::list<CTileActionEvent*>::iterator cur_node = pos;
+        CTileActionEvent* elem = static_cast<CTileActionEvent*>(*(pos++));
         if (elem == event) {
             delete elem;
-            m_actionEvents.RemoveAt(cur_node);
+            m_actionEvents.erase(cur_node);
             return 1;
         }
     }
@@ -535,43 +535,43 @@ i32 CTileTriggerContainer::Serialize(
     }
     switch (mode) {
         case SERIAL_SAVE: {
-            POSITION pos;
-            i32 count = m_switchLogics.GetCount();
+            std::list<CTileTriggerLogic*>::iterator pos;
+            i32 count = static_cast<i32>(m_switchLogics.size());
             archive->Write(&count, sizeof(count));
-            pos = m_switchLogics.GetHeadPosition();
-            while (pos != NULL) {
+            std::list<CTileTriggerSwitchLogic*>::iterator switchPos = m_switchLogics.begin();
+            while (switchPos != m_switchLogics.end()) {
                 CTileTriggerSwitchLogic* logic =
-                    static_cast<CTileTriggerSwitchLogic*>(m_switchLogics.GetNext(pos));
+                    static_cast<CTileTriggerSwitchLogic*>(*(switchPos++));
                 if (SerializeSwitchLogic(archive, SERIAL_SAVE, typeId, payload, logic) == 0) {
                     return 0;
                 }
             }
-            count = m_idleLogics.GetCount();
+            count = static_cast<i32>(m_idleLogics.size());
             archive->Write(&count, sizeof(count));
-            pos = m_idleLogics.GetHeadPosition();
-            while (pos != NULL) {
+            pos = m_idleLogics.begin();
+            while (pos != m_idleLogics.end()) {
                 CTileTriggerLogic* logic =
-                    static_cast<CTileTriggerLogic*>(m_idleLogics.GetNext(pos));
+                    static_cast<CTileTriggerLogic*>(*(pos++));
                 if (SerializeTriggerLogic(archive, SERIAL_SAVE, typeId, payload, logic) == 0) {
                     return 0;
                 }
             }
-            count = m_timedLogics.GetCount();
+            count = static_cast<i32>(m_timedLogics.size());
             archive->Write(&count, sizeof(count));
-            pos = m_timedLogics.GetHeadPosition();
-            while (pos != NULL) {
+            pos = m_timedLogics.begin();
+            while (pos != m_timedLogics.end()) {
                 CTileTriggerLogic* logic =
-                    static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
+                    static_cast<CTileTriggerLogic*>(*(pos++));
                 if (SerializeTriggerLogic(archive, SERIAL_SAVE, typeId, payload, logic) == 0) {
                     return 0;
                 }
             }
-            count = m_actionEvents.GetCount();
+            count = static_cast<i32>(m_actionEvents.size());
             archive->Write(&count, sizeof(count));
-            pos = m_actionEvents.GetHeadPosition();
-            while (pos != NULL) {
+            std::list<CTileActionEvent*>::iterator eventPos = m_actionEvents.begin();
+            while (eventPos != m_actionEvents.end()) {
                 CTileActionEvent* event =
-                    static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+                    static_cast<CTileActionEvent*>(*(eventPos++));
                 if (event->Serialize(archive, SERIAL_SAVE, typeId, payload) == 0) {
                     return 0;
                 }
@@ -593,7 +593,7 @@ i32 CTileTriggerContainer::Serialize(
                 if (logic == NULL) {
                     return 0;
                 }
-                m_switchLogics.AddTail(static_cast<void*>(logic));
+                m_switchLogics.insert(m_switchLogics.end(), logic);
             }
             archive->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
@@ -603,7 +603,7 @@ i32 CTileTriggerContainer::Serialize(
                 if (logic == NULL) {
                     return 0;
                 }
-                m_idleLogics.AddTail(static_cast<void*>(logic));
+                m_idleLogics.insert(m_idleLogics.end(), logic);
             }
             archive->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
@@ -613,7 +613,7 @@ i32 CTileTriggerContainer::Serialize(
                 if (logic == NULL) {
                     return 0;
                 }
-                m_timedLogics.AddTail(static_cast<void*>(logic));
+                m_timedLogics.insert(m_timedLogics.end(), logic);
             }
             archive->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
@@ -622,7 +622,7 @@ i32 CTileTriggerContainer::Serialize(
                     return 0;
                 }
                 event->m_owner = this;
-                m_actionEvents.AddTail(event);
+                m_actionEvents.insert(m_actionEvents.end(), event);
             }
             if (LoadInitialized(archive) == 0) {
                 return 0;

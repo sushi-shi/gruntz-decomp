@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H
 
+#include <string>
+
+#include <list>
+class CDDrawPlacedWorker;
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawPlacedWorker.h>
@@ -26,7 +31,7 @@ public:
 
     virtual CDDrawPixelWorker* CreatePixelWorker(i32 x, i32 y, i32 pixelValue);
     virtual CDDrawFrameWorker*
-    CreateFrameWorker(i32 x, i32 y, const char* workerName, i32 frameIndex, i32 addHead);
+    CreateFrameWorker(i32 x, i32 y, const std::string& workerName, i32 frameIndex, i32 addHead);
     virtual CDDrawFrameWorker*
     CreateFrameWorker(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex, i32 addHead);
     virtual CDDrawFrameWorker* CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead);
@@ -35,7 +40,7 @@ public:
 
     void ClearWorkers();
 
-    CObList m_workers;
+    std::list<CDDrawPlacedWorker*> m_workers;
 };
 
 #endif

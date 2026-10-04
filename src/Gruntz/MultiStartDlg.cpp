@@ -35,7 +35,7 @@
 #include <string.h>
 #include <windowsx.h>
 
-CString g_defaultPlayerNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
+std::string g_defaultPlayerNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
 
 WNDPROC g_savedMultiWndProc = NULL;
 
@@ -68,9 +68,9 @@ i32 CMultiStartDlg::InitializeWorldCombo() {
     }
     CRezItm* entry = worlds->GetFirstItem(worlds->GetFirstType());
     while (entry != NULL) {
-        CString name(entry->GetName());
-        name.MakeUpper();
-        combo->AddString(name);
+        std::string name(entry->GetName());
+        std::transform((name).begin(), (name).end(), (name).begin(), asciiUpper);
+        combo->AddString((name).c_str());
         entry = worlds->GetNextItem(entry);
     }
     CWnd* reloadedCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
@@ -140,12 +140,12 @@ i32 CMultiStartDlg::RefreshWorldControls() {
     worldCombo->SetCurSel(-1);
     m_usesCustomMap = g_multiState->m_usesCustomLevel;
     if (m_usesCustomMap != false) {
-        worldEdit->SetWindowTextA(g_multiState->CustomLevelName());
+        worldEdit->SetWindowTextA((g_multiState->CustomLevelName()).c_str());
     } else {
-        CString currentName;
-        worldEdit->GetWindowTextA(currentName);
-        if (currentName.Compare(g_multiState->BuiltInLevelName())) {
-            worldEdit->SetWindowTextA(g_multiState->BuiltInLevelName());
+        std::string currentName;
+        currentName = readWindowText(worldEdit->GetSafeHwnd());
+        if ((currentName).compare((g_multiState->BuiltInLevelName()).c_str())) {
+            worldEdit->SetWindowTextA((g_multiState->BuiltInLevelName()).c_str());
         }
     }
     worldCombo->EnableWindow(false);
@@ -155,7 +155,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
 }
 
 i32 CMultiStartDlg::BuildLatencyOptions() {
-    m_latencyOptions = new CLatencyList(0xa);
+    m_latencyOptions = new CLatencyList;
     CMulti* multi = g_multiState;
     i32 presetCount = 5;
     CNetProviderNode* provider = multi->m_netMgr->m_selectedProvider;
@@ -212,7 +212,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     CRegMgr* reg = static_cast<CRegMgr*>(g_gameReg->m_settings);
     if (pDX->m_bSaveAndValidate == false) {
-        GetDlgItem(IDX(IDC_MULTI_GAME_NAME))->SetWindowTextA(g_multiState->GameName());
+        GetDlgItem(IDX(IDC_MULTI_GAME_NAME))->SetWindowTextA((g_multiState->GameName()).c_str());
         NetLobby::g_curDlg = GetSafeHwnd();
         if (!InitializeWorldCombo()) {
             return;
@@ -297,16 +297,16 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         if (child == NULL) {
             return;
         }
-        child->GetWindowTextA(m_worldName);
+        m_worldName = readWindowText(child->GetSafeHwnd());
         if (g_multiState->m_isHost != false) {
-            reg->Set("LastMultiMap", m_worldName);
+            reg->Set("LastMultiMap", (m_worldName).c_str());
             reg->Set("CustomMultiMap", m_usesCustomMap);
         }
         for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
             CEdit* nameControl = GetPlayerNameControl(i);
             if (nameControl != NULL) {
-                CString name;
-                nameControl->GetWindowTextA(name);
+                std::string name;
+                name = readWindowText(nameControl->GetSafeHwnd());
                 m_gameManager->m_players[i].m_name = name;
             }
         }
@@ -557,11 +557,11 @@ i32 CMultiStartDlg::OnInitDialog() {
     return 1;
 }
 
-void CMultiStartDlg::AppendChatLine(char* line) {
+void CMultiStartDlg::AppendChatLine(const std::string& line) {
     CWnd* item = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
 
     HWND edit = item->GetSafeHwnd();
-    if (!edit || !line || !line[0]) {
+    if (!edit || line.empty()) {
         return;
     }
     i32 len = ::Edit_GetTextLength(edit);
@@ -570,14 +570,9 @@ void CMultiStartDlg::AppendChatLine(char* line) {
     } else {
         ::SendMessageA(edit, EM_SETSEL, len, len);
     }
-    char buffer[0x80];
-    buffer[0] = 0;
-    if (len > 0) {
-        strcat(buffer, "\r\n");
-    }
-    strcat(buffer, line);
+    const std::string buffer = (len > 0 ? "\r\n" : "") + line;
     MsgParam text;
-    text.m_str = buffer;
+    text.m_str = buffer.c_str();
     ::SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
     ::SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
 }
@@ -730,7 +725,7 @@ void CMultiStartDlg::OnCustomWorld() {
         return;
     }
     CBattlezDlgCustom dlg(NULL);
-    if (dlg.DoModal() == IDOK && !dlg.m_customName.IsEmpty()) {
+    if (dlg.DoModal() == IDOK && !(dlg.m_customName).empty()) {
 
         CComboBox* worldCombo = static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
         CWnd* worldEdit = worldCombo->GetWindow(GW_CHILD);
@@ -738,11 +733,11 @@ void CMultiStartDlg::OnCustomWorld() {
         if (worldEdit == NULL) {
             return;
         }
-        dlg.m_customName.MakeUpper();
-        worldEdit->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
+        std::transform((dlg.m_customName).begin(), (dlg.m_customName).end(), (dlg.m_customName).begin(), asciiUpper);
+        worldEdit->SetWindowTextA((dlg.m_customName).c_str());
         m_usesCustomMap = true;
         g_multiState->m_usesCustomLevel = true;
-        g_multiState->m_customLevelName = static_cast<LPCTSTR>(dlg.m_customName);
+        g_multiState->m_customLevelName = (dlg.m_customName).c_str();
         g_multiState->m_builtInLevelName = "";
         g_multiState->SendGameConfig(NULL);
     }
@@ -754,14 +749,14 @@ void CMultiStartDlg::CommitWorldSelection() {
         if (worldCombo != NULL) {
             i32 selection = worldCombo->GetCurSel();
             if (selection != CB_ERR) {
-                CString worldName;
-                (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
-                if (!worldName.IsEmpty()) {
+                std::string worldName;
+                worldName = readListBoxText(worldCombo->GetSafeHwnd(), selection, true);
+                if (!(worldName).empty()) {
                     m_usesCustomMap = false;
                 }
                 g_multiState->m_usesCustomLevel = false;
                 g_multiState->m_customLevelName = "";
-                g_multiState->m_builtInLevelName = static_cast<LPCTSTR>(worldName);
+                g_multiState->m_builtInLevelName = (worldName).c_str();
                 g_multiState->SendGameConfig(NULL);
             }
         }
@@ -773,16 +768,16 @@ void CMultiStartDlg::OnChatSend() {
     if (input == NULL) {
         return;
     }
-    CString message, inputText;
-    GetPlayerNameControl(GetLocalPlayerSlotIndex())->GetWindowTextA(message);
+    std::string message, inputText;
+    message = readWindowText(GetPlayerNameControl(GetLocalPlayerSlotIndex())->GetSafeHwnd());
     message += " says: ";
-    input->GetWindowTextA(inputText);
-    if (!inputText.IsEmpty()) {
+    inputText = readWindowText(input->GetSafeHwnd());
+    if (!(inputText).empty()) {
         message += inputText;
-        AppendChatLine(const_cast<char*>(static_cast<const char*>(message)));
+        AppendChatLine((message));
         input->SetWindowTextA("");
         g_multiState
-            ->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(message)), 0, 0, NULL);
+            ->BroadcastChatLine((message), 0, 0, NULL);
     }
 }
 
@@ -807,9 +802,9 @@ i32 CMultiStartDlg::EnableChatControls() {
     control->EnableWindow(true);
     control = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
     control->EnableWindow(true);
-    CString s1;
+    std::string s1;
     if (g_multiState->m_usesCustomLevel == false) {
-        CString s2;
+        std::string s2;
     }
     return 1;
 }
@@ -870,7 +865,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                 }
             }
             if (player->m_active) {
-                GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
+                GetPlayerNameControl(slotIndex)->SetWindowTextA((player->GetName()).c_str());
                 if (player->m_humanControlled) {
                     CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
                     typeCombo->SetCurSel(4);

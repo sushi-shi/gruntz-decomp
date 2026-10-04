@@ -135,10 +135,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    SoundCue* menuMusicCue = MapFind<SoundCue>(
-        (static_cast<SoundCueRegistry*>(g_gameReg->World()->SoundRegistry()))->m_cues,
-        "MENU_MENU"
-    );
+    SoundCue* menuMusicCue = (static_cast<SoundCueRegistry*>(g_gameReg->World()->SoundRegistry()))->FindCue("MENU_MENU");
     m_menuMusicCue = menuMusicCue;
     return 1;
 }
@@ -173,16 +170,14 @@ CMenuTree::~CMenuTree() {
 }
 
 i32 CMenuState::EnterState(GameStateId previousState) {
-    char stateName[0x20];
-    char titleName[0x20];
 
     if (previousState != GAMESTATE_ATTRACT) {
         i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-        sprintf(stateName, "STATEZ_ATTRACT");
-        sprintf(titleName, "TITLE%d", idx);
+
+        const std::string titleName = formatText("TITLE%d", idx);
 
         CRezDir* saved = StateResources();
-        CRezDir* state = ResourceArchive()->GetDirFromPath(stateName);
+        CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
         m_stateResources = (state);
         if (state == NULL) {
             return 0;
@@ -307,8 +302,6 @@ i32 CMenuState::InputVirtual() {
 }
 
 i32 CMenuState::RestoreDisplay() {
-    char stateName[0x20];
-    char titleName[0x20];
 
     b32 gate = IsActive();
     if (gate == false) {
@@ -318,11 +311,11 @@ i32 CMenuState::RestoreDisplay() {
     menuRoot()->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    sprintf(stateName, "STATEZ_ATTRACT");
-    sprintf(titleName, "TITLE%d", idx);
+
+    const std::string titleName = formatText("TITLE%d", idx);
 
     CRezDir* saved = StateResources();
-    CRezDir* state = ResourceArchive()->GetDirFromPath(stateName);
+    CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     m_stateResources = (state);
     if (state == NULL) {
         return 0;
@@ -400,14 +393,14 @@ i32 CMenuState::OnPaint() {
 }
 
 void CMenuState::BuildVersionString(CRect r) {
-    CString str;
+    std::string str;
     if (g_versionMid == 0) {
-        str.Format("Gruntz v%d.%d", g_versionMajor, g_versionMinor);
+        str = formatText("Gruntz v%d.%d", g_versionMajor, g_versionMinor);
     } else {
-        str.Format("Gruntz v%d.%d%d", g_versionMajor, g_versionMid, g_versionMinor);
+        str = formatText("Gruntz v%d.%d%d", g_versionMajor, g_versionMid, g_versionMinor);
     }
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";
     }
-    DrawTextToOverlaySurface(m_world, &str, &r, 0x64, 1, 0xff, 0xff, 0, 0);
+    DrawTextToOverlaySurface(m_world, str, &r, 0x64, 1, 0xff, 0xff, 0, 0);
 }

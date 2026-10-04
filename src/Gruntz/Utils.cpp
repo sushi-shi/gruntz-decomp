@@ -297,7 +297,7 @@ BOOL GetProcessModule(DWORD dwPID, DWORD dwModuleID, LPMODULEENTRY32 lpMe32, DWO
     return (bRet);
 }
 
-CString TimeToString(DWORD dwTime) {
+std::string TimeToString(DWORD dwTime) {
     int nHours = dwTime / 3600000;
     dwTime -= nHours * 3600000;
 
@@ -309,7 +309,7 @@ CString TimeToString(DWORD dwTime) {
     char buf[64];
     sprintf(buf, "%i:%02i:%02i", nHours, nMinutes, nSeconds);
 
-    CString str(buf);
+    std::string str(buf);
     return (str);
 }
 

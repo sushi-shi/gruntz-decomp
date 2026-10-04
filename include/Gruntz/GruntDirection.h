@@ -20,7 +20,7 @@ GZ_ENUM_BEGIN(GruntDirection)
 GZ_ENUM_END(GruntDirection)
 
 class CFileMemBase;
-class CGameObject;
+struct CGameObject;
 GZ_ENUM_FORWARD(SerialMode);
 GZ_ENUM_FORWARD(LogicTypeId);
 

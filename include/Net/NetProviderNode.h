@@ -1,6 +1,11 @@
 #ifndef NET_NETPROVIDERNODE_H
 #define NET_NETPROVIDERNODE_H
 
+#include <list>
+struct CNetProviderNode;
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Ints.h>
@@ -8,15 +13,14 @@
 
 struct CNetProviderNode : public CObject {
     GUID* m_providerGuid;
-    CString m_providerName;
-    __POSITION* m_listPosition;
+    std::string m_providerName;
 
     CNetProviderNode() {
         m_providerGuid = NULL;
-        m_listPosition = NULL;
+
     }
     virtual ~CNetProviderNode()  ;
-    CString ProviderName();
+    std::string ProviderName();
 
     i32 IsIpxProvider();
     i32 IsTcpIpProvider();

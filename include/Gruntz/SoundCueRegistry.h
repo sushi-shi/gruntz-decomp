@@ -1,6 +1,10 @@
 #ifndef GRUNTZ_SOUNDCUEREGISTRY_H
 #define GRUNTZ_SOUNDCUEREGISTRY_H
 
+#include <map>
+#include <string>
+
+
 #include <Ints.h>
 
 #include <Gruntz/SoundCue.h>
@@ -9,7 +13,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/WapObj.h>
 
-struct SoundStream;
+class SoundStream;
 class CRezDir;
 struct CRezItm;
 
@@ -31,15 +35,15 @@ public:
 
     virtual void Unload()  ;
 
-    i32 PlayCueIfElapsed(const char* key);
+    i32 PlayCueIfElapsed(const std::string& key);
 
-    SoundCue* FindCue(const char* key) {
+    SoundCue* FindCue(const std::string& key) {
         SoundCue* found = NULL;
         MapLookup(m_cues, key, found);
         return found;
     }
 
-    void PlayCue(const char* key) {
+    void PlayCue(const std::string& key) {
         if (m_silentMode == false) {
             SoundCue* found = NULL;
             MapLookup(m_cues, key, found);
@@ -49,25 +53,24 @@ public:
         }
     }
 
-    SoundCue* LoadCueFromSource(const char* key, CRezItm* source);
-    SoundCue* LoadCueFromFile(const char* key, char* path);
+    SoundCue* LoadCueFromSource(const std::string& key, CRezItm* source);
+    SoundCue* LoadCueFromFile(const std::string& key, char* path);
     SoundCue* LoadNamedCue(CRezItm* source);
-    void AddCue(SoundCue* cue, const char* key);
 
-    i32 LoadFromTree(CRezDir* tree, const char* prefix, const char* separator);
+    i32 LoadFromTree(CRezDir* tree, const std::string& prefix, const std::string& separator);
 
-    CObject* Lookup(const char* key);
-    i32 RemoveWithPrefix(const char* prefix, const char* separator);
-    i32 SumAudioBytes(const char* prefix);
+    SoundCue* Lookup(const std::string& key);
+    i32 RemoveWithPrefix(const std::string& prefix, const std::string& separator);
+    i32 SumAudioBytes(const std::string& prefix);
     SoundCue* GetFirstCue();
     SoundCue* GetNextCueAfter(SoundCue* target);
     i32 ConfigurePrimaryFromFirstCue(i32 startPrimary);
-    i32 HasWithPrefix(const char* prefix);
-    CString FindCueKey(SoundCue* target);
+    i32 HasWithPrefix(const std::string& prefix);
+    std::string FindCueKey(SoundCue* target);
     i32 ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary);
 
     i32 CueCount() const {
-        return m_cues.GetCount();
+        return static_cast<i32>(m_cues.size());
     }
 
     void ClearCues();
@@ -76,17 +79,19 @@ public:
 
     virtual ~SoundCueRegistry()  ;
 
-    i32 PlaySpatializedCue(const char* key, i32 sourceX, i32 maxPanOffsetPx, i32 fullPanOffsetPx);
+    i32 PlaySpatializedCue(const std::string& key, i32 sourceX, i32 maxPanOffsetPx, i32 fullPanOffsetPx);
 
     i32 BindSoundStream(b32 allowUnavailable);
 
-    CMapStringToPtr m_cues;
+    const std::map<std::string, SoundCue*>& Entries() const { return m_cues; }
     SoundStream* m_soundStream;
 
     b32 m_silentMode;
     i32 m_defaultReplayDelayMs;
-};
 
-#define ADD_SOUND_CUE_ENTRY(cue, key)                                                                  m_cues[key] = cue;                                                                                 cue->m_replayDelayMs = m_defaultReplayDelayMs
+private:
+    std::map<std::string, SoundCue*> m_cues;
+    void RegisterCue(SoundCue* cue, const std::string& key);
+};
 
 #endif

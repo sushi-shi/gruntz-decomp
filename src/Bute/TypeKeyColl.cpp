@@ -745,11 +745,11 @@ i32 DispatchLogicBump(CGameObject* obj) {
 }
 
 i32 DispatchLogicEvent(CUserLogic* ar) {
-    CString* entry = &g_typeColl[ar->m_logicRecord->EventCode()];
-    ar->StepBehavior(entry->GetBuffer(0));
+    const std::string initialAct = ar->GetAnimationActName();
+    ar->StepBehavior(initialAct);
     ar->FireActivation(ar->m_logicRecord->EventCode());
 
-    entry = &g_typeColl[ar->m_logicRecord->EventCode()];
-    ar->FinalizeStep(entry->GetBuffer(0));
+    const std::string finalAct = ar->GetAnimationActName();
+    ar->FinalizeStep(finalAct);
     return 1;
 }

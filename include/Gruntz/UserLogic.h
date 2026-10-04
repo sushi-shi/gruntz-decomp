@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_USERLOGIC_H
 #define GRUNTZ_USERLOGIC_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Bute/ButeMgr.h>
@@ -60,11 +62,11 @@ public:
         return LOGIC_NONE;
     }
 
-    virtual void StepBehavior(char* animationActName);
+    virtual void StepBehavior(const std::string& animationActName);
 
     virtual void FireActivation(i32 id);
 
-    virtual void FinalizeStep(char* name);
+    virtual void FinalizeStep(const std::string& name);
 
     virtual void Activate() {}
 
@@ -101,15 +103,15 @@ public:
 
     void LoadGruntTuningConstants(i32);
 
-    const CString& GetAnimationActName() const {
+    const std::string& GetAnimationActName() const {
         return ::GetAnimationActName(m_logicRecord->EventCode());
     }
 
-    bool IsAnimationAct(const char* name) const {
+    bool IsAnimationAct(const std::string& name) const {
         return GetAnimationActName() == name;
     }
 
-    bool IsNotAnimationAct(const char* name) const {
+    bool IsNotAnimationAct(const std::string& name) const {
         return GetAnimationActName() != name;
     }
 
@@ -228,11 +230,11 @@ public:
         m_wwdObject->m_flags |= bits;
     }
 
-    void SetImageFrameByName(const char* name, i32 flag) {
+    void SetImageFrameByName(const std::string& name, i32 flag) {
         m_wwdObject->SetImageFrameByName(name, flag);
     }
 
-    void SetImageSetByName(const char* name) {
+    void SetImageSetByName(const std::string& name) {
         m_wwdObject->SetImageSetByName(name);
     }
 
@@ -246,7 +248,7 @@ public:
         m_wwdObject->SetAnimation(anim, advanceImmediately);
     }
 
-    i32 SwitchAnimationByName(const char* key, i32 advanceImmediately) {
+    i32 SwitchAnimationByName(const std::string& key, i32 advanceImmediately) {
         m_value = m_wwdObject->m_animationCursor.m_animation;
         return m_wwdObject->SetAnimationByName(key, advanceImmediately);
     }

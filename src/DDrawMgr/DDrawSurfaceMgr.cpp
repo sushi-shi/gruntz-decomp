@@ -1,6 +1,7 @@
 #include <StdAfx.h>
 
 #include <Ints.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 

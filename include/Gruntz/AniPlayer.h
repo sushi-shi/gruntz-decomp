@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_CANIPLAYER_H
 #define GRUNTZ_GRUNTZ_CANIPLAYER_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/ClockInterval.h>
@@ -16,7 +18,7 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,
-        const char* key,
+        const std::string& key,
         i32 frameStart,
         i32 frameEnd,
         i32 intervalMs,

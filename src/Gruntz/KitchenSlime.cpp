@@ -74,15 +74,15 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
 
     CDDrawWorker* frameSet = Anim()->m_imageSet;
     if (frameSet != NULL) {
-        CString name;
+        std::string name;
         name = frameSet->m_name;
-        if (name.Compare("LEVEL_KITCHENSLIME_NORTH") == 0) {
+        if ((name).compare("LEVEL_KITCHENSLIME_NORTH") == 0) {
             m_object->m_smarts = IDX(CARDINAL_NORTH);
-        } else if (name.Compare("LEVEL_KITCHENSLIME_EAST") == 0) {
+        } else if ((name).compare("LEVEL_KITCHENSLIME_EAST") == 0) {
             m_object->m_smarts = IDX(CARDINAL_EAST);
-        } else if (name.Compare("LEVEL_KITCHENSLIME_SOUTH") == 0) {
+        } else if ((name).compare("LEVEL_KITCHENSLIME_SOUTH") == 0) {
             m_object->m_smarts = IDX(CARDINAL_SOUTH);
-        } else if (name.Compare("LEVEL_KITCHENSLIME_WEST") == 0) {
+        } else if ((name).compare("LEVEL_KITCHENSLIME_WEST") == 0) {
             m_object->m_smarts = IDX(CARDINAL_WEST);
         }
     }

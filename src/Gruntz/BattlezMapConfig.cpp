@@ -157,7 +157,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
             Coord* slot = g_coordPool.Pop();
             slot->m_x = cur->m_screenX / TILE_SIZE_PX;
             slot->m_y = cur->m_screenY / TILE_SIZE_PX;
-            m_candArray.Add(slot);
+            m_candArray.push_back(slot);
         }
     }
 
@@ -178,7 +178,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
             Coord* slot = g_coordPool.Pop();
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
             slot->m_y = cur3->m_screenY >> TILE_SHIFT_PX;
-            m_attackWaypoints.Add(slot);
+            m_attackWaypoints.push_back(slot);
             cur3->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         }
     }
@@ -284,7 +284,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 i32 CBattlezMapConfig::StepAllRowSpawns() {
     if (g_gameReg->m_players[m_playerIndex].m_humanControlled == false
         && g_gameReg->m_players[m_playerIndex].m_active != false) {
-        for (i32 i = 0; i < m_candArray.GetSize(); i++) {
+        for (i32 i = 0; i < static_cast<i32>(m_candArray.size()); i++) {
             this->StepRowSpawn(false);
         }
     }
@@ -293,21 +293,21 @@ i32 CBattlezMapConfig::StepAllRowSpawns() {
 
 void CBattlezMapConfig::FreeArrays() {
     i32 i;
-    for (i = 0; i < m_candArray.GetSize(); i++) {
+    for (i = 0; i < static_cast<i32>(m_candArray.size()); i++) {
         Coord* p = static_cast<Coord*>(m_candArray[i]);
         if (p != NULL) {
             g_coordPool.Push(p);
         }
     }
-    m_candArray.RemoveAll();
+    m_candArray.clear();
 
-    for (i = 0; i < m_attackWaypoints.GetSize(); i++) {
+    for (i = 0; i < static_cast<i32>(m_attackWaypoints.size()); i++) {
         g_coordPool.Push(m_attackWaypoints[i]);
     }
-    m_attackWaypoints.RemoveAll();
+    m_attackWaypoints.clear();
 
-    m_reserved104.RemoveAll();
-    m_reserved118.RemoveAll();
+    m_reserved104.clear();
+    m_reserved118.clear();
     m_reserved13c = 0;
 }
 
@@ -478,8 +478,8 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     i32 i = 0;
     Coord* cand = NULL;
     BrickzCell tileRec;
-    for (; i < m_candArray.GetSize(); i++) {
-        cand = static_cast<Coord*>(m_candArray.GetAt(i));
+    for (; i < static_cast<i32>(m_candArray.size()); i++) {
+        cand = static_cast<Coord*>(m_candArray[i]);
         if (cand != NULL) {
 
             tileRec = m_board->m_rows[cand->m_y][cand->m_x];
@@ -1216,7 +1216,7 @@ void CBattlezMapConfig::RerouteIdleUnit(
 }
 
 i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
-    CPtrList* coordList = &unit->m_coordList;
+    std::list<Coord*>* coordList = &unit->m_coordList;
     if (unit->CoordCount() == 0) {
         goto returnZero;
     }
@@ -1241,22 +1241,22 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (unit->CoordCount() == 0) {
                 goto returnZero;
             }
-            POSITION n = unit->CoordHead();
-            while (n != NULL) {
-                POSITION cur = n;
+            std::list<Coord*>::iterator n = unit->CoordHead();
+            while (n != coordList->end()) {
+                std::list<Coord*>::iterator cur = n;
                 unit->GetNextCoord(n);
                 if (unit->GetCoordAt(cur) != NULL) {
                     g_coordPool.Push(unit->GetCoordAt(cur));
                 }
             }
-            coordList->RemoveAll();
+            coordList->clear();
             return 0;
         }
 
-        POSITION head = coordList->GetHeadPosition();
+        std::list<Coord*>::iterator head = coordList->begin();
         Coord* firstCoord = unit->GetCoordAt(head);
         BrickzCell pathHeadCell = m_board->CellAt(firstCoord->m_x, firstCoord->m_y);
-        if (coordList->IsEmpty()) {
+        if (coordList->empty()) {
             goto returnZero;
         }
         Coord* pathHead = unit->GetHeadCoord();
@@ -1290,9 +1290,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 
         PickupType entranceMode = unit->ArrivalPickup();
         if (entranceMode == PICKUP_TIMEBOMB && unit->CoordCount() >= 2) {
-            POSITION node = unit->CoordHead();
+            std::list<Coord*>::iterator node = unit->CoordHead();
             Coord* ca = unit->GetCoordAt(node);
-            POSITION nn = node;
+            std::list<Coord*>::iterator nn = node;
             unit->GetNextCoord(nn);
             i32 ax = ca->m_x;
             Coord* cb = unit->GetCoordAt(nn);
@@ -1333,17 +1333,17 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         if ((pathHeadFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && PathCrossesMarkedTile(unit) == 0
             && unit->m_defenderState == AISTATE_BATTLEZ_FINAL_ROUTE) {
-            POSITION head = unit->CoordHead();
-            if (head != NULL) {
-                POSITION n = head;
+            std::list<Coord*>::iterator head = unit->CoordHead();
+            if (head != coordList->end()) {
+                std::list<Coord*>::iterator n = head;
                 unit->GetNextCoord(n);
-                if (n != NULL) {
-                    while (n != NULL) {
-                        POSITION cur = n;
+                if (n != coordList->end()) {
+                    while (n != coordList->end()) {
+                        std::list<Coord*>::iterator cur = n;
                         unit->GetNextCoord(n);
                         if (unit->GetCoordAt(cur) != NULL) {
                             g_coordPool.Push(unit->GetCoordAt(cur));
-                            coordList->RemoveAt(cur);
+                            coordList->erase(cur);
                         }
                     }
                     return 1;
@@ -1433,10 +1433,10 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         PickupType pk = unit->ArrivalPickup();
         if (pk == PICKUP_GOOBER) {
-            POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
-            while (opos != NULL) {
+            std::list<CGruntPuddle*>::iterator opos = m_triggerMgr->m_baseList.begin();
+            while (opos != m_triggerMgr->m_baseList.end()) {
                 CGruntPuddle* cand =
-                    static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(opos));
+                    static_cast<CGruntPuddle*>(*(opos++));
                 if (cand->m_pending == false) {
                     i32 ox = cand->m_tileX;
                     i32 oy = cand->m_tileY;
@@ -1469,11 +1469,11 @@ returnZero:
 }
 
 i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
-    CPtrList* coordList = &unit->m_coordList;
-    if (coordList->IsEmpty()) {
+    std::list<Coord*>* coordList = &unit->m_coordList;
+    if (coordList->empty()) {
         return 1;
     }
-    POSITION node = coordList->GetHeadPosition();
+    std::list<Coord*>::iterator node = coordList->begin();
     Coord center = unit->ScanCell();
     CMapMgr* board = m_board;
     {
@@ -1482,9 +1482,9 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     }
     Coord tail = *unit->GetTailCoord();
     u32 iter = 0;
-    coordList->GetNext(node);
-    while (node != NULL && iter < 3) {
-        Coord* coord = static_cast<Coord*>(coordList->GetNext(node));
+    *(node++);
+    while (node != coordList->end() && iter < 3) {
+        Coord* coord = static_cast<Coord*>(*(node++));
         if (coord == NULL) {
             continue;
         }
@@ -1493,7 +1493,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         if ((m_board->CellFlagsAtUnchecked(x, y) & 1) != 0 && (x != tail.m_x || y != tail.m_y)) {
             continue;
         }
-        CPtrList list(10);
+        std::list<Coord*> list;
         i32 flags = 0;
         PickupType er = unit->m_entranceReason;
         if (unit->ArrivalPickupOf(er) == PICKUP_TOOB) {
@@ -1515,21 +1515,21 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 0x2000098f,
                 flags
             ) != 0
-            && !list.IsEmpty()) {
+            && !list.empty()) {
             RECYCLE_HEAD_COORD(list)
-            if (!list.IsEmpty()) {
-                while (node != NULL) {
-                    Coord* remaining = static_cast<Coord*>(coordList->GetNext(node));
-                    list.AddTail(g_coordPool.PopCopy(*remaining));
+            if (!list.empty()) {
+                while (node != coordList->end()) {
+                    Coord* remaining = static_cast<Coord*>(*(node++));
+                    list.insert(list.end(), g_coordPool.PopCopy(*remaining));
                 }
 
                 unit->RecycleCoords();
 
-                POSITION qp = list.GetHeadPosition();
-                while (qp != NULL) {
-                    Coord* c3 = static_cast<Coord*>(list.GetNext(qp));
+                std::list<Coord*>::iterator qp = list.begin();
+                while (qp != list.end()) {
+                    Coord* c3 = static_cast<Coord*>(*(qp++));
                     if (c3 != NULL && (c3->m_x != center.m_x || c3->m_y != center.m_y)) {
-                        coordList->AddTail(c3);
+                        coordList->insert(coordList->end(), c3);
                     }
                 }
 
@@ -1752,14 +1752,14 @@ i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
     ar->Write(&m_reserved14c, sizeof(m_reserved14c));
 
     u32 i;
-    u32 n = m_reserved104.GetSize();
+    u32 n = static_cast<i32>(m_reserved104.size());
     ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         DWORD v = m_reserved104[i];
         ar->Write(&v, sizeof(v));
     }
 
-    n = m_reserved118.GetSize();
+    n = static_cast<i32>(m_reserved118.size());
     ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         DWORD v = m_reserved118[i];
@@ -1770,13 +1770,13 @@ i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
         ar->Write(&m_reserved12c[k], sizeof(m_reserved12c[k]));
     }
 
-    n = m_attackWaypoints.GetSize();
+    n = static_cast<i32>(m_attackWaypoints.size());
     ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         ar->Write(m_attackWaypoints[i], 8);
     }
 
-    n = m_candArray.GetSize();
+    n = static_cast<i32>(m_candArray.size());
     ar->Write(&n, sizeof(n));
     for (i = 0; i < n; i++) {
         ar->Write(m_candArray[i], 8);
@@ -1845,16 +1845,16 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     DWORD tmp;
 
     ar->Read(&count, sizeof(count));
-    m_reserved104.RemoveAll();
-    m_reserved104.SetSize(count, -1);
+    m_reserved104.clear();
+    m_reserved104.resize(count);
     for (i = 0; i < static_cast<u32>(count); i++) {
         ar->Read(&tmp, sizeof(tmp));
         m_reserved104[i] = tmp;
     }
 
     ar->Read(&count, sizeof(count));
-    m_reserved118.RemoveAll();
-    m_reserved118.SetSize(count, -1);
+    m_reserved118.clear();
+    m_reserved118.resize(count);
     for (i = 0; i < static_cast<u32>(count); i++) {
         ar->Read(&tmp, sizeof(tmp));
         m_reserved118[i] = tmp;
@@ -1864,30 +1864,30 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
         ar->Read(&m_reserved12c[k], sizeof(m_reserved12c[k]));
     }
 
-    for (j = 0; j < m_attackWaypoints.GetSize(); j++) {
+    for (j = 0; j < static_cast<i32>(m_attackWaypoints.size()); j++) {
         Coord* q = static_cast<Coord*>(m_attackWaypoints[j]);
         if (q != NULL) {
             g_coordPool.Push(q);
         }
     }
-    m_attackWaypoints.RemoveAll();
+    m_attackWaypoints.clear();
     ar->Read(&count, sizeof(count));
-    m_attackWaypoints.SetSize(count, -1);
+    m_attackWaypoints.resize(count);
     for (i = 0; i < static_cast<u32>(count); i++) {
         Coord* payload = g_coordPool.Pop();
         ar->Read(payload, 8);
         m_attackWaypoints[i] = payload;
     }
 
-    for (j = 0; j < m_candArray.GetSize(); j++) {
+    for (j = 0; j < static_cast<i32>(m_candArray.size()); j++) {
         Coord* q = static_cast<Coord*>(m_candArray[j]);
         if (q != NULL) {
             g_coordPool.Push(q);
         }
     }
-    m_candArray.RemoveAll();
+    m_candArray.clear();
     ar->Read(&count, sizeof(count));
-    m_candArray.SetSize(count, -1);
+    m_candArray.resize(count);
     for (i = 0; i < static_cast<u32>(count); i++) {
         Coord* payload = g_coordPool.Pop();
         ar->Read(payload, 8);
@@ -2054,15 +2054,15 @@ i32 __stdcall BattlezMapConfigAcceptAlwaysArg(i32) {
 }
 
 i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
-    CPtrList* coordList = &g->m_coordList;
+    std::list<Coord*>* coordList = &g->m_coordList;
     if (RepathAroundBlockedTiles(g)) {
         return 1;
     }
-    if (coordList->IsEmpty()) {
+    if (coordList->empty()) {
         return 0;
     }
 
-    Coord first = *static_cast<Coord*>(coordList->GetHead());
+    Coord first = *static_cast<Coord*>(coordList->front());
 
     Coord a;
     Coord b;
@@ -2108,7 +2108,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 for (i32 scanRow = scan.top; scanRow < scan.bottom; scanRow++) {
                     BrickzCell* rowCell = &m_board->m_rows[scanRow][scan.left];
                     for (i32 scanCol = scan.left; scanCol < scan.right; scanCol++) {
-                        CPtrList path(0xa);
+                        std::list<Coord*> path;
                         if (!(rowCell->m_flags & BRICKZ_CELL_OCCUPIED)) {
                             if (m_board->FindPathWithEndpointOverrides(
                                     g->GetScreenTileX(),
@@ -2120,14 +2120,14 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                     0x20004d03,
                                     0
                                 ) != 0
-                                && !path.IsEmpty()) {
+                                && !path.empty()) {
                                 RECYCLE_HEAD_COORD(path)
-                                if (!path.IsEmpty()) {
+                                if (!path.empty()) {
                                     g->RecycleCoords();
-                                    POSITION qp = path.GetHeadPosition();
-                                    while (qp != NULL) {
-                                        Coord* step = static_cast<Coord*>(path.GetNext(qp));
-                                        g->m_coordList.AddTail(step);
+                                    std::list<Coord*>::iterator qp = path.begin();
+                                    while (qp != path.end()) {
+                                        Coord* step = static_cast<Coord*>(*(qp++));
+                                        g->m_coordList.insert(g->m_coordList.end(), step);
                                     }
                                     Coord* nt = g->GetTailCoord();
                                     SET_TILE_CENTER_PIXEL_PAIR(
@@ -2379,7 +2379,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     }
     i32 word = m_board->CellFlagsAtUnchecked(col, row);
     if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
-        CPtrList list(10);
+        std::list<Coord*> list;
         Coord start = ScreenTile(unit);
         if ((m_board)
                 ->FindPathWithEndpointOverrides(start.m_x, start.m_y, col, row, &list, 1, 0x4903, 0)
@@ -2395,7 +2395,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
         if (requireUnoccupied != 0) {
             if (cell != NULL && cell->GetPlayerFlags(m_playerIndex) == 0) {
-                CPtrList list2(10);
+                std::list<Coord*> list2;
                 Coord start = ScreenTile(unit);
                 if ((m_board)->FindPathWithEndpointOverrides(
                         start.m_x,
@@ -2432,7 +2432,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 }
             }
             if (special != 0) {
-                CPtrList list3(10);
+                std::list<Coord*> list3;
                 Coord start = ScreenTile(unit);
                 if ((m_board)->FindPathWithEndpointOverrides(
                         start.m_x,
@@ -2445,7 +2445,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         0
                     )
                     != 0) {
-                    if (!list3.IsEmpty()) {
+                    if (!list3.empty()) {
                         g_stepRun = false;
                         g_stepCol = col;
                         g_stepRow = row;
@@ -2749,11 +2749,11 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         return 0;
     }
     Coord target;
-    POSITION n = unit->CoordHead();
+    std::list<Coord*>::iterator n = unit->CoordHead();
     b32 found = false;
     if (useArg == false) {
 
-        while (n != NULL) {
+        while (n != unit->m_coordList.end()) {
             Coord* c = unit->GetNextCoord(n);
             if (c != NULL) {
                 BrickzCell* row = m_board->m_rows[c->m_y];
@@ -2781,7 +2781,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         if (found != false && PathCrossesMarkedTile(unit) != 0) {
 
             if (unit->CoordCount() != 0) {
-                POSITION p = unit->CoordHead();
+                std::list<Coord*>::iterator p = unit->CoordHead();
                 Coord* c = unit->GetCoordAt(p);
                 CMapMgr* b = m_board;
                 i32 word = b->CellFlagsAt(c->m_x, c->m_y);
@@ -2826,7 +2826,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                         if (unit->ArrivalPickupOf(entranceReason) == PICKUP_TOOB) {
                             flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
                         }
-                        CPtrList list(10);
+                        std::list<Coord*> list;
                         Coord oc;
                         GET_SCREEN_TILE_Y_FIRST(static_cast<CUserLogic*>(cand), oc)
                         if ((m_board)->FindPathWithEndpointOverrides(
@@ -2840,15 +2840,15 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                                 flags
                             )
                             != 0) {
-                            if (list.GetHeadPosition() != NULL) {
+                            if (!list.empty()) {
                                 RECYCLE_HEAD_COORD(list)
                             }
-                            if (list.GetHeadPosition() != NULL) {
+                            if (!list.empty()) {
                                 unit->RecycleCoords();
                                 cand->RecycleCoords();
-                                POSITION pp = list.GetHeadPosition();
-                                while (pp != NULL) {
-                                    cand->m_coordList.AddTail(list.GetNext(pp));
+                                std::list<Coord*>::iterator pp = list.begin();
+                                while (pp != list.end()) {
+                                    cand->m_coordList.insert(cand->m_coordList.end(), *(pp++));
                                 }
                                 unit->m_defenderState = AISTATE_SEEK;
                                 cand->m_defenderState = AISTATE_RETREAT;
@@ -3052,7 +3052,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
     i32 passableMask,
     i32 clearEndpointFlags
 ) {
-    CPtrList list(10);
+    std::list<Coord*> list;
     CGameObject* lvl = unit->m_object;
     i32 screenX = lvl->m_screenX;
     if (unit->GetScreenTileX() != goalCol || unit->GetScreenTileY() != goalRow) {
@@ -3067,19 +3067,19 @@ i32 CBattlezMapConfig::RouteUnitTo(
                 passableMask
             )
             != 0) {
-            if (!list.IsEmpty()) {
+            if (!list.empty()) {
                 RECYCLE_HEAD_COORD(list)
-                if (!list.IsEmpty()) {
+                if (!list.empty()) {
                     unit->RecycleCoords();
 
-                    POSITION pp = list.GetHeadPosition();
-                    while (pp != NULL) {
-                        Coord* cur = static_cast<Coord*>(list.GetNext(pp));
+                    std::list<Coord*>::iterator pp = list.begin();
+                    while (pp != list.end()) {
+                        Coord* cur = static_cast<Coord*>(*(pp++));
                         if (cur != NULL) {
-                            unit->m_coordList.AddTail(cur);
+                            unit->m_coordList.insert(unit->m_coordList.end(), cur);
                         }
                     }
-                    list.RemoveAll();
+                    list.clear();
                     Coord* tail = unit->GetTailCoord();
                     i32 tailX = tail->m_x;
                     i32 tailY = tail->m_y;
@@ -3101,11 +3101,11 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
     i32 blockedMask,
     i32 passableMask
 ) {
-    CPtrList list(10);
+    std::list<Coord*> list;
     Coord cur;
-    POSITION n;
+    std::list<Coord*>::iterator n;
     Coord* head;
-    POSITION qp;
+    std::list<Coord*>::iterator qp;
 
     if (unit->ScanCell().m_x == goal.m_x) {
         if (unit->ScanCell().m_y == goal.m_y) {
@@ -3135,19 +3135,19 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
         == 0) {
         goto fail;
     }
-    if (list.IsEmpty()) {
+    if (list.empty()) {
         goto fail;
     }
-    head = static_cast<Coord*>(list.RemoveHead());
+    head = static_cast<Coord*>(takeFront(list));
     if (head != NULL) {
         g_coordPool.Push(head);
     }
-    if (!list.IsEmpty()) {
+    if (!list.empty()) {
         if (n != NULL) {
-            POSITION h = unit->CoordHead();
-            if (h != NULL) {
+            std::list<Coord*>::iterator h = unit->CoordHead();
+            if (h != unit->m_coordList.end()) {
                 do {
-                    CPtrList* listPayload = &unit->m_coordList;
+                    std::list<Coord*>* listPayload = &unit->m_coordList;
                     if (listPayload != NULL) {
                         g_coordPool.Push(listPayload);
                     }
@@ -3157,14 +3157,14 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
 
         unit->RecycleCoords();
 
-        qp = list.GetHeadPosition();
-        while (qp != NULL) {
-            Coord* cur5 = static_cast<Coord*>(list.GetNext(qp));
+        qp = list.begin();
+        while (qp != list.end()) {
+            Coord* cur5 = static_cast<Coord*>(*(qp++));
             if (cur5 != NULL) {
-                unit->m_coordList.AddTail(cur5);
+                unit->m_coordList.insert(unit->m_coordList.end(), cur5);
             }
         }
-        list.RemoveAll();
+        list.clear();
         return 1;
     }
 fail:
@@ -3175,12 +3175,12 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 0;
     }
-    POSITION node = unit->CoordHead();
-    if (node == NULL) {
+    std::list<Coord*>::iterator node = unit->CoordHead();
+    if (node == unit->m_coordList.end()) {
         return 0;
     }
     BrickzCell** rows = ((m_board)->m_rows);
-    while (node != NULL) {
+    while (node != unit->m_coordList.end()) {
         Coord* c = unit->GetNextCoord(node);
         i32 y = c->m_y;
         i32 x = c->m_x;
@@ -3199,8 +3199,8 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
         if (unit != NULL && unit != selfUnit && unit->m_battleState != BZTASK_SEEK_SWITCH) {
 
             if (unit->CoordCount() != 0) {
-                POSITION node = unit->CoordHead();
-                if (node != NULL) {
+                std::list<Coord*>::iterator node = unit->CoordHead();
+                if (node != unit->m_coordList.end()) {
                     CMapMgr* board = m_board;
                     for (;;) {
                         Coord* c = unit->GetNextCoord(node);
@@ -3210,7 +3210,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                         if ((tile & 4) && x == qx && y == qy) {
                             return 1;
                         }
-                        if (node == NULL) {
+                        if (node == unit->m_coordList.end()) {
                             break;
                         }
                     }
@@ -3413,7 +3413,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     if (IsCoordOccupied(unit, bestX, bestY) != 0) {
         return 0;
     }
-    CPtrList list(10);
+    std::list<Coord*> list;
 
     i32 flags = BATTLEZ_ROUTE_ALL_TOOLS;
     PickupType er = unit->m_entranceReason;
@@ -3435,15 +3435,15 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             flags
         )
         != 0) {
-        if (!list.IsEmpty()) {
+        if (!list.empty()) {
             RECYCLE_HEAD_COORD(list)
-            if (!list.IsEmpty()) {
+            if (!list.empty()) {
 
                 unit->RecycleCoords();
 
-                POSITION pp = list.GetHeadPosition();
-                while (pp != NULL) {
-                    unit->m_coordList.AddTail(list.GetNext(pp));
+                std::list<Coord*>::iterator pp = list.begin();
+                while (pp != list.end()) {
+                    unit->m_coordList.insert(unit->m_coordList.end(), *(pp++));
                 }
                 Coord* tail = unit->GetTailCoord();
                 unit->m_entrancePx.Set(
@@ -3471,14 +3471,14 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     CGameObject* lvl = unit->m_object;
     i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
     i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
-    CPtrArray* coords = &m_ctx->m_players[kind].m_battlezConfig.m_attackWaypoints;
-    i32 count = coords->GetSize();
+    std::vector<Coord*>* coords = &m_ctx->m_players[kind].m_battlezConfig.m_attackWaypoints;
+    i32 count = static_cast<i32>(coords->size());
     if (count != 0) {
         i32 r = rand() % count;
         for (i32 k = 0; k < count; k++) {
             CTriggerMgr* grid = m_triggerMgr;
             i32 cell = m_playerIndex;
-            Coord cand = *static_cast<Coord*>(coords->GetAt(r));
+            Coord cand = *static_cast<Coord*>(coords->operator[](r));
             b32 ok = true;
             for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
                 CGrunt* u = grid->UnitAt(cell, j);
@@ -3496,15 +3496,13 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
             r = (r + 1) % count;
         }
         r = rand() % count;
-        Coord* cand = static_cast<Coord*>(coords->GetAt(r));
+        Coord* cand = static_cast<Coord*>(coords->operator[](r));
         rx = cand->m_x;
         ry = cand->m_y;
     }
     o->Set(rx, ry);
     return o;
 }
-
-template CString& zDArray<CString>::operator[](i32 i);
 
 template void FreeNodePool<Coord>::Push(void* p);
 

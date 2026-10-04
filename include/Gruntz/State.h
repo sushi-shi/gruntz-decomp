@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_CSTATE_H
 #define GRUNTZ_GRUNTZ_CSTATE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -18,7 +20,7 @@ class CRezDir;
 class CFileMemBase;
 class CGruntzMgr;
 class CFaderMgr;
-class CString;
+
 class CMulti;
 
 class CState {
@@ -121,7 +123,7 @@ public:
     i32 ShadeScreen(i32 pct);
 
     i32 LoadTitlePage(
-        const char* titleName,
+        const std::string& titleName,
         i32 unused1,
         i32 unused2,
         i32 unused3,
@@ -129,16 +131,10 @@ public:
         b32 useOverlay
     );
 
-    i32 DrawScreenTextImage(const char* name);
-    i32 PresentTitlePage(
-        const char* unusedTitleName,
-        i32 unused1,
-        i32 unused2,
-        i32 unused3,
-        i32 unused4
-    );
+    i32 DrawScreenTextImage(const std::string& name);
+    i32 PresentTitlePage();
     i32 LoadAndPresentTitlePage(
-        const char* titleName,
+        const std::string& titleName,
         i32 unused1,
         i32 unused2,
         i32 unused3,
@@ -164,7 +160,7 @@ public:
         return m_mgr;
     }
     i32 BuildAssetNamespacePrefixes(
-        const CString& name,
+        const std::string& name,
         i32 mode,
         i32 lightGate,
         class CMulti* finishGate

@@ -1,6 +1,7 @@
 #include <StdAfx.h>
 
 #include <Ints.h>
+#include <Image/Image.h>
 
 #include <DDrawMgr/DirPal.h>
 #include <Image/ImagePaletteNode.h>

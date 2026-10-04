@@ -18,7 +18,7 @@ i32 CFecFile::Init() {
     }
     m_readOpen = false;
     m_writeOpen = false;
-    m_index.RemoveAll();
+    m_index.clear();
     memset(&m_header, 0, sizeof(m_header));
     memset(&m_entry, 0, sizeof(m_entry));
     m_nextIndex = 0;
@@ -31,7 +31,7 @@ void CFecFile::Close() {
         return;
     }
     OnFail();
-    m_index.RemoveAll();
+    m_index.clear();
     m_openGate = false;
 }
 
@@ -90,7 +90,7 @@ i32 CFecFile::ReadArchive(const char* name) {
             != m_entry.Scramble() - FEC_FIRST_PAYLOAD_ADJUSTMENT) {
             goto fail;
         }
-        m_index.Add(m_entry.Scramble() - FEC_FIRST_PAYLOAD_ADJUSTMENT);
+        m_index.push_back(m_entry.Scramble() - FEC_FIRST_PAYLOAD_ADJUSTMENT);
 
         for (u16 i = 1; i < static_cast<u32>(m_header.m_fileCount); i++) {
             i32 stride = m_entry.PayloadLength();
@@ -108,9 +108,7 @@ i32 CFecFile::ReadArchive(const char* name) {
                        - FEC_NEXT_PAYLOAD_ADJUSTMENT) {
                 goto fail;
             }
-            m_index.Add(
-                static_cast<i32>(EntryOffset(i - 1)) + stride + scr - FEC_NEXT_PAYLOAD_ADJUSTMENT
-            );
+            m_index.push_back(static_cast<i32>(EntryOffset(i - 1)) + stride + scr - FEC_NEXT_PAYLOAD_ADJUSTMENT);
         }
     }
     return 1;
@@ -122,7 +120,7 @@ fail:
 
 i32 CFecFile::Lookup(u32 idx) {
     if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_header.m_fileCount) && idx != 0) {
-        const DWORD* slot = &m_index.ElementAt(idx - 1);
+        const u32* slot = &m_index[idx - 1];
         if (m_stream.Seek(static_cast<i32>(*slot), CFile::begin) == static_cast<i32>(*slot)) {
             return static_cast<HFILE>(m_stream);
         }
@@ -166,22 +164,22 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 
     m_nextIndex++;
 
-    CString base = name;
-    i32 slash = base.ReverseFind('\\');
+    std::string base = name;
+    i32 slash = stringIndex((base).rfind('\\'));
     if (slash != -1) {
-        base = base.Right(base.GetLength() - slash - 1);
+        base = rightText(base, static_cast<i32>((base).size()) - slash - 1);
     }
 
     memset(&m_entry, 0, sizeof(m_entry));
     m_entry.m_index = m_nextIndex;
-    m_entry.m_nameLen = static_cast<u16>(base.GetLength());
+    m_entry.m_nameLen = static_cast<u16>(static_cast<i32>((base).size()));
 
-    char* enc = new char[base.GetLength() + 1];
-    FecEncode(base, enc);
-    memcpy(m_entry.m_name, enc, base.GetLength());
+    char* enc = new char[static_cast<i32>((base).size()) + 1];
+    FecEncode((base).c_str(), enc);
+    memcpy(m_entry.m_name, enc, static_cast<i32>((base).size()));
     delete[] enc;
 
-    i32 length = base.GetLength();
+    i32 length = static_cast<i32>((base).size());
     if (length < FEC_ENTRY_NAME_CAPACITY) {
 
         char* p = m_entry.m_name + length;

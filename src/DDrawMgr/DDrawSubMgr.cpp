@@ -1,6 +1,7 @@
 #include <StdAfx.h>
 
 #include <Ints.h>
+#include <Wwd/WwdGameObjectFamily.h>
 
 #include <DDrawMgr/DDrawSubMgr.h>
 
@@ -100,8 +101,8 @@ CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
     Unload();
 }
 
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
-    CRezDir* result = parser->GetRootDir()->GetDir(key);
+i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const std::string& key) {
+    CRezDir* result = parser->GetRootDir()->GetDir(key.c_str());
 
     if (result != NULL) {
         return InstallTree(result, "", "_");
@@ -109,10 +110,10 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
     return 0;
 }
 
-void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
+void CDDrawWorkerRegistry::RemoveByKey(const std::string& key) {
     CDDrawWorker* worker = MapFind<CDDrawWorker>(m_workersByName, key);
     if (worker != NULL) {
-        m_workersByName.RemoveKey(key);
+        m_workersByName.erase(key);
         delete worker;
     }
 }
@@ -149,7 +150,7 @@ CDDrawPixelWorker* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelVa
         }
         return NULL;
     }
-    m_workers.AddTail(static_cast<CObject*>(w));
+    m_workers.insert(m_workers.end(), (w));
     return w;
 }
 
@@ -186,7 +187,7 @@ void CDDrawPixelWorker::Unload() {
 CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
     i32 x,
     i32 y,
-    const char* workerName,
+    const std::string& workerName,
     i32 frameIndex,
     i32 addHead
 ) {
@@ -198,9 +199,9 @@ CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
         return NULL;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<CObject*>(w));
+        m_workers.insert(m_workers.begin(), (w));
     } else {
-        m_workers.AddTail(static_cast<CObject*>(w));
+        m_workers.insert(m_workers.end(), (w));
     }
     return w;
 }
@@ -218,7 +219,7 @@ CDDrawFrameWorker::~CDDrawFrameWorker() {
     m_dirty.Reset();
 }
 
-i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
+i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, const std::string& workerName, i32 frameIndex) {
     ResolveFrame(workerName, frameIndex);
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
@@ -254,9 +255,9 @@ CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
         return NULL;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<CObject*>(w));
+        m_workers.insert(m_workers.begin(), (w));
     } else {
-        m_workers.AddTail(static_cast<CObject*>(w));
+        m_workers.insert(m_workers.end(), (w));
     }
     return w;
 }
@@ -270,9 +271,9 @@ CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImage* fra
         return NULL;
     }
     if (addHead & 1) {
-        m_workers.AddHead(static_cast<CObject*>(w));
+        m_workers.insert(m_workers.begin(), (w));
     } else {
-        m_workers.AddTail(static_cast<CObject*>(w));
+        m_workers.insert(m_workers.end(), (w));
     }
     return w;
 }
@@ -340,7 +341,7 @@ AnimationRegistry::~AnimationRegistry() {
     Unload();
 }
 
-CString CFileMemBase::GetName() {
+std::string CFileMemBase::GetName() {
     return m_name;
 }
 
@@ -363,7 +364,7 @@ i32 CFileMem::GetOffset() {
 void CFileMemBase::Reset() {
     m_option = 0;
     m_mode = 0;
-    m_name.Empty();
+    (m_name).erase();
 }
 
 i32 SoundCueRegistry::BindSoundStream(b32 allowUnavailable) {
@@ -399,13 +400,13 @@ void SoundCueRegistry::RemoveCue(SoundCue* cue) {
     if (cue == NULL) {
         return;
     }
-    POSITION pos = m_cues.GetStartPosition();
-    CString key;
+    std::map<std::string, SoundCue*>::iterator pos = m_cues.begin();
+    std::string key;
     SoundCue* mappedCue = NULL;
-    while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, mappedCue);
+    while (pos != m_cues.end()) {
+        (key = pos->first, mappedCue = pos->second, ++pos);
         if (cue == mappedCue) {
-            m_cues.RemoveKey(key);
+            m_cues.erase(key);
             delete cue;
             return;
         }
@@ -413,32 +414,32 @@ void SoundCueRegistry::RemoveCue(SoundCue* cue) {
 }
 
 void SoundCueRegistry::ClearCues() {
-    POSITION pos = m_cues.GetStartPosition();
-    CString key;
+    std::map<std::string, SoundCue*>::iterator pos = m_cues.begin();
+    std::string key;
     SoundCue* cue = NULL;
-    if (pos != NULL) {
+    if (pos != m_cues.end()) {
         do {
-            MapGetNext(m_cues, pos, key, cue);
+            (key = pos->first, cue = pos->second, ++pos);
             if (cue != NULL) {
                 delete cue;
             }
-        } while (pos != NULL);
+        } while (pos != m_cues.end());
     }
-    m_cues.RemoveAll();
+    m_cues.clear();
 }
 
-i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator) {
-    CString match(prefix);
+i32 SoundCueRegistry::RemoveWithPrefix(const std::string& prefix, const std::string& separator) {
+    std::string match(prefix);
     match += separator;
-    i32 prefixLength = match.GetLength();
-    CString key;
+    i32 prefixLength = static_cast<i32>((match).size());
+    std::string key;
     SoundCue* cue = NULL;
-    POSITION pos = m_cues.GetStartPosition();
+    std::map<std::string, SoundCue*>::iterator pos = m_cues.begin();
     i32 removedCount = 0;
-    while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, cue);
-        if (strncmp(key, match, prefixLength) == 0) {
-            m_cues.RemoveKey(key);
+    while (pos != m_cues.end()) {
+        (key = pos->first, cue = pos->second, ++pos);
+        if (key.compare(0, prefixLength, match) == 0) {
+            m_cues.erase(key);
             if (cue != NULL) {
                 delete cue;
             }
@@ -448,7 +449,9 @@ i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator
     return removedCount;
 }
 
-SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezItm* source) {
+SoundCue* SoundCueRegistry::LoadCueFromSource(const std::string& key, CRezItm* source) {
+    SoundCue* existing = FindCue(key);
+    if (existing != NULL) return existing;
     if (m_silentMode != false) {
         return NULL;
     }
@@ -460,11 +463,13 @@ SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezItm* source) 
         delete cue;
         return NULL;
     }
-    ADD_SOUND_CUE_ENTRY(cue, key);
+    RegisterCue(cue, key);
     return cue;
 }
 
-SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
+SoundCue* SoundCueRegistry::LoadCueFromFile(const std::string& key, char* path) {
+    SoundCue* existing = FindCue(key);
+    if (existing != NULL) return existing;
     if (m_silentMode != false) {
         return NULL;
     }
@@ -476,7 +481,7 @@ SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
         delete cue;
         return NULL;
     }
-    ADD_SOUND_CUE_ENTRY(cue, key);
+    RegisterCue(cue, key);
     return cue;
 }
 
@@ -490,27 +495,19 @@ SoundCue* SoundCueRegistry::LoadNamedCue(CRezItm* source) {
     return LoadCueFromSource(source->GetName(), source);
 }
 
-void SoundCueRegistry::AddCue(SoundCue* cue, const char* key) {
-    ADD_SOUND_CUE_ENTRY(cue, key);
+void SoundCueRegistry::RegisterCue(SoundCue* cue, const std::string& key) {
+    m_cues.insert(std::map<std::string, SoundCue*>::value_type(key, cue));
+    cue->m_replayDelayMs = m_defaultReplayDelayMs;
 }
 
-i32 SoundCueRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const char* separator) {
+i32 SoundCueRegistry::LoadFromTree(CRezDir* tree, const std::string& prefix, const std::string& separator) {
     if (m_silentMode != false) {
         return 0;
     }
     i32 count = 0;
-    char* cueKey = new char[0x100];
-    if (cueKey == NULL) {
-        return 0;
-    }
-    cueKey[0] = 0;
     CRezDir* node = static_cast<CRezDir*>(tree->GetFirstSubDir());
     while (node != NULL) {
-        if (prefix != NULL && *prefix != 0) {
-            sprintf(cueKey, "%s%s%s", prefix, separator, node->GetDirName());
-        } else {
-            strcpy(cueKey, node->GetDirName());
-        }
+        const std::string cueKey = joinResourceKey(prefix, separator, node->GetDirName());
         count += LoadFromTree(node, cueKey, separator);
         node = static_cast<CRezDir*>(tree->GetNextSubDir(node));
     }
@@ -521,11 +518,7 @@ i32 SoundCueRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const char
             CRezItm* source = tree->GetFirstItem(file);
             while (source != NULL) {
                 if (source->GetType() == REZ_TAG_WAV) {
-                    if (prefix != NULL && *prefix != 0) {
-                        sprintf(cueKey, "%s%s%s", prefix, separator, source->GetName());
-                    } else {
-                        strcpy(cueKey, source->GetName());
-                    }
+                    const std::string cueKey = joinResourceKey(prefix, separator, source->GetName());
                     SoundCue* cue = FindCue(cueKey);
                     if (cue == NULL) {
                         if (LoadCueFromSource(cueKey, source) != NULL) {
@@ -538,25 +531,24 @@ i32 SoundCueRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const char
             file = tree->GetNextType(file);
         } while (file != NULL);
     }
-    delete[] cueKey;
     return count;
 }
 
-i32 SoundCueRegistry::SumAudioBytes(const char* prefix) {
+i32 SoundCueRegistry::SumAudioBytes(const std::string& prefix) {
     if (m_silentMode != false) {
         return 0;
     }
-    POSITION pos = m_cues.GetStartPosition();
+    std::map<std::string, SoundCue*>::iterator pos = m_cues.begin();
     i32 sum = 0;
     SoundCue* cue = NULL;
-    CString key;
-    while (pos != NULL) {
+    std::string key;
+    while (pos != m_cues.end()) {
         cue = NULL;
-        MapGetNext(m_cues, pos, key, cue);
+        (key = pos->first, cue = pos->second, ++pos);
         if (cue != NULL) {
-            if (prefix == NULL || *prefix == 0) {
+            if (prefix.empty()) {
                 sum += cue->m_sound->m_sampleCount;
-            } else if (strncmp(key, prefix, strlen(prefix)) == 0) {
+            } else if (key.compare(0, prefix.size(), prefix) == 0) {
                 sum += cue->m_sound->m_sampleCount;
             }
         }
@@ -565,7 +557,7 @@ i32 SoundCueRegistry::SumAudioBytes(const char* prefix) {
 }
 
 i32 SoundCueRegistry::PlaySpatializedCue(
-    const char* key,
+    const std::string& key,
     i32 sourceX,
     i32 maxPanOffsetPx,
     i32 fullPanOffsetPx
@@ -584,13 +576,13 @@ SoundCue* SoundCueRegistry::GetFirstCue() {
     if (m_silentMode != false) {
         return NULL;
     }
-    POSITION pos = m_cues.GetStartPosition();
-    if (pos == NULL) {
+    std::map<std::string, SoundCue*>::iterator pos = m_cues.begin();
+    if (pos == m_cues.end()) {
         return NULL;
     }
     SoundCue* cue = NULL;
-    CString key;
-    MapGetNext(m_cues, pos, key, cue);
+    std::string key;
+    (key = pos->first, cue = pos->second, ++pos);
     return cue;
 }
 
@@ -601,34 +593,34 @@ SoundCue* SoundCueRegistry::GetNextCueAfter(SoundCue* target) {
     if (m_silentMode != false) {
         return NULL;
     }
-    POSITION pos = m_cues.GetStartPosition();
-    if (pos == NULL) {
+    std::map<std::string, SoundCue*>::iterator pos = m_cues.begin();
+    if (pos == m_cues.end()) {
         return NULL;
     }
     SoundCue* cue = NULL;
-    CString key;
-    while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, cue);
+    std::string key;
+    while (pos != m_cues.end()) {
+        (key = pos->first, cue = pos->second, ++pos);
         if (cue == target) {
-            if (pos == NULL) {
+            if (pos == m_cues.end()) {
                 return NULL;
             }
             cue = NULL;
-            MapGetNext(m_cues, pos, key, cue);
+            (key = pos->first, cue = pos->second, ++pos);
             return cue;
         }
     }
     return NULL;
 }
 
-i32 SoundCueRegistry::HasWithPrefix(const char* prefix) {
-    i32 prefixLength = strlen(prefix);
-    CString key;
+i32 SoundCueRegistry::HasWithPrefix(const std::string& prefix) {
+    i32 prefixLength = prefix.size();
+    std::string key;
     SoundCue* cue = NULL;
-    POSITION pos = m_cues.GetStartPosition();
-    while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, cue);
-        if (strncmp(key, prefix, prefixLength) == 0) {
+    std::map<std::string, SoundCue*>::iterator pos = m_cues.begin();
+    while (pos != m_cues.end()) {
+        (key = pos->first, cue = pos->second, ++pos);
+        if (key.compare(0, prefixLength, prefix) == 0) {
             return 1;
         }
     }
@@ -673,20 +665,20 @@ i32 SoundCueRegistry::ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary) {
     return 1;
 }
 
-CString SoundCueRegistry::FindCueKey(SoundCue* target) {
-    CString key;
+std::string SoundCueRegistry::FindCueKey(SoundCue* target) {
+    std::string key;
     if (target == NULL) {
         return key;
     }
     SoundCue* cue = NULL;
-    POSITION pos = m_cues.GetStartPosition();
-    while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, cue);
+    std::map<std::string, SoundCue*>::iterator pos = m_cues.begin();
+    while (pos != m_cues.end()) {
+        (key = pos->first, cue = pos->second, ++pos);
         if (cue == target) {
             return key;
         }
     }
-    key.Empty();
+    (key).erase();
     return key;
 }
 

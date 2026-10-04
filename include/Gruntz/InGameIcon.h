@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_CINGAMEICON_H
 #define GRUNTZ_GRUNTZ_CINGAMEICON_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -16,7 +18,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/UserLogic.h>
 
-class SoundCue;
+struct SoundCue;
 
 GZ_ENUM_BEGIN(InGameIconGlitter)
     ICON_GLITTER_NONE = 0,
@@ -58,7 +60,7 @@ public:
         m_object->m_score = playerIndex;
     }
 
-    void SetupSprite(const char* cat);
+    void SetupSprite(const std::string& cat);
 
     i32 HandleInput();
     virtual void FireActivation(i32 id)  ;

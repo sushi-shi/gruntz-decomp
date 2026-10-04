@@ -5,7 +5,6 @@
 #include <Gruntz/GuardPoint.h>
 
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
 

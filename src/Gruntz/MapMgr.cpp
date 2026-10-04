@@ -180,7 +180,7 @@ i32 CMapMgr::FindPath(
     i32 startY,
     i32 goalX,
     i32 goalY,
-    CPtrList* outPath,
+    std::list<Coord*>* outPath,
     i32 blockedMask,
     i32 diagonalMask,
     i32 passableMask
@@ -259,7 +259,7 @@ reached:
         Coord position;
         Coord* slot = g_coordPool.PopCopy(*position.Set(p->m_col, p->m_row));
 
-        outPath->AddHead(slot);
+        outPath->insert(outPath->begin(), slot);
         p = p->m_parent;
     }
     if (m_stepCb != NULL) {

@@ -318,10 +318,10 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
 i32 CPlay::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
-    if (!m_mgr->m_strWorldFile.IsEmpty()) {
+    if (!(m_mgr->m_strWorldFile).empty()) {
         if (m_mgr->m_isBuiltInBattlezLevel != false) {
-            CString key = "BATTLEZ_" + m_mgr->GetWorldFileName();
-            CRezItm* node = m_gameResources->GetRezFromPath(key, REZ_TAG_WWD);
+            std::string key = "BATTLEZ_" + m_mgr->GetWorldFileName();
+            CRezItm* node = m_gameResources->GetRezFromPath((key).c_str(), REZ_TAG_WWD);
             if (node == NULL) {
                 return 0;
             }
@@ -329,8 +329,8 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
                 return 0;
             }
         } else if (m_mgr->m_isBuiltInMultiplayerLevel != false) {
-            CString key = "MULTI_" + m_mgr->GetWorldFileName();
-            CRezItm* node = m_gameResources->GetRezFromPath(key, REZ_TAG_WWD);
+            std::string key = "MULTI_" + m_mgr->GetWorldFileName();
+            CRezItm* node = m_gameResources->GetRezFromPath((key).c_str(), REZ_TAG_WWD);
             if (node == NULL) {
                 return 0;
             }
@@ -338,22 +338,22 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
                 return 0;
             }
         } else {
-            if (m_world->m_level->LoadFromFile(m_mgr->GetWorldFileName()) == 0) {
+            if (m_world->m_level->LoadFromFile((m_mgr->GetWorldFileName()).c_str()) == 0) {
                 return 0;
             }
         }
     } else {
-        CString key;
+        std::string key;
         i32 sel = m_levelIndex;
         if (g_levelBias100 != false) {
             sel += 0x64;
         }
         if (sel > 0x24 && sel <= 0x28) {
-            key.Format("WORLDZ\\TRAINING%i", sel % 0x24);
+            key = formatText("WORLDZ\\TRAINING%i", sel % 0x24);
         } else {
-            key.Format("WORLDZ\\LEVEL%i", sel);
+            key = formatText("WORLDZ\\LEVEL%i", sel);
         }
-        CRezItm* node = m_levelResources->GetRezFromPath(key, REZ_TAG_WWD);
+        CRezItm* node = m_levelResources->GetRezFromPath((key).c_str(), REZ_TAG_WWD);
         if (node == NULL) {
             return 0;
         }
@@ -506,7 +506,7 @@ i32 CPlay::BuildGruntTypeNameTable(
     i32 lightGate,
     CMulti* finishGate
 ) {
-    CString name("NORMALGRUNT");
+    std::string name("NORMALGRUNT");
     switch (typeIdx) {
         case GRUNT_BOMB:
             name = "BOMBGRUNT";
@@ -619,68 +619,68 @@ i32 CPlay::BuildGruntTypeNameTable(
 }
 
 i32 CState::BuildAssetNamespacePrefixes(
-    const CString& name,
+    const std::string& name,
     i32 mode,
     i32 lightGate,
     CMulti* finishGate
 ) {
     i32 result;
     if (mode != 0) {
-        if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
+        if (m_world->m_imageRegistry->HasWithPrefix(("GRUNTZ_" + name)) == 0) {
             g_gameReg->VoiceMgr()->PauseAllVoices();
             (static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))->DestroyAllAnims();
             if (lightGate != 0) {
-                CString cs;
-                cs.LoadString(IDS_LOADING);
+                std::string cs;
+                loadResourceText(IDS_LOADING, cs);
                 RECT r = *(&g_gameReg->World()->m_level->m_viewportRect);
                 RECT r2;
                 CopyRect(&r2, &r);
-                DrawTextToFrontSurface(g_gameReg->World(), &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToFrontSurface(g_gameReg->World(), cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = true;
-            CRezDir* tree = m_gruntResources->GetDirFromPath("IMAGEZ_" + name);
+            CRezDir* tree = m_gruntResources->GetDirFromPath(("IMAGEZ_" + name).c_str());
             if (tree == NULL) {
                 result = 0;
                 goto done;
             }
-            m_world->m_imageRegistry->InstallTree(tree, "GRUNTZ_" + name, "_");
+            m_world->m_imageRegistry->InstallTree(tree, ("GRUNTZ_" + name), "_");
             g_resourceInstallActive = false;
             if (finishGate != NULL) {
                 finishGate->SendLobbyKeepAlive();
             }
         }
-        if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + name) == 0) {
-            CRezDir* tree = m_gruntResources->GetDirFromPath("SOUNDZ_" + name);
+        if (m_world->SoundRegistry()->HasWithPrefix(("GRUNTZ_" + name)) == 0) {
+            CRezDir* tree = m_gruntResources->GetDirFromPath(("SOUNDZ_" + name).c_str());
             if (tree != NULL) {
 
                 m_world->SoundRegistry()
-                    ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + name, "_");
+                    ->LoadFromTree(static_cast<CRezDir*>(tree), ("GRUNTZ_" + name), "_");
             }
         }
-        if (m_world->m_animRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
-            CRezDir* tree = m_gruntResources->GetDirFromPath("ANIZ_" + name);
+        if (m_world->m_animRegistry->HasWithPrefix(("GRUNTZ_" + name)) == 0) {
+            CRezDir* tree = m_gruntResources->GetDirFromPath(("ANIZ_" + name).c_str());
             if (tree == NULL) {
                 result = 0;
                 goto done;
             }
             m_world->m_animRegistry
-                ->LoadFromTree(static_cast<CRezDir*>(tree), "GRUNTZ_" + name, "_");
+                ->LoadFromTree(static_cast<CRezDir*>(tree), ("GRUNTZ_" + name), "_");
         }
         result = 1;
         goto done;
     }
 
-    if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->m_imageRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
+    if (m_world->m_imageRegistry->HasWithPrefix(("GRUNTZ_" + name))) {
+        m_world->m_imageRegistry->RemoveWithPrefix(("GRUNTZ_" + name), "_");
         if (finishGate != NULL) {
             finishGate->SendLobbyKeepAlive();
         }
     }
-    if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->SoundRegistry()->RemoveWithPrefix("GRUNTZ_" + name, "_");
+    if (m_world->SoundRegistry()->HasWithPrefix(("GRUNTZ_" + name))) {
+        m_world->SoundRegistry()->RemoveWithPrefix(("GRUNTZ_" + name), "_");
     }
-    if (m_world->m_animRegistry->HasWithPrefix("GRUNTZ_" + name)) {
-        m_world->m_animRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
+    if (m_world->m_animRegistry->HasWithPrefix(("GRUNTZ_" + name))) {
+        m_world->m_animRegistry->RemoveWithPrefix(("GRUNTZ_" + name), "_");
     }
     result = 1;
 done:
@@ -688,7 +688,7 @@ done:
 }
 
 i32 CPlay::BuildGruntNamespaceList(CMulti* finishGate) {
-    CString s;
+    std::string s;
     s = "NORMALGRUNT";
     if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
         return 0;
@@ -732,7 +732,7 @@ i32 CPlay::BuildWarlordNameTable(CMulti* finishGate) {
     if (!BuildGruntTypeNameTable(GRUNT_REAPER, 0, 0, finishGate)) {
         return 0;
     }
-    CString s("WARLORDZ_NAPOLEAN");
+    std::string s("WARLORDZ_NAPOLEAN");
     if (!BuildAssetNamespacePrefixes(s, 0, 0, finishGate)) {
         return 0;
     }

@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_SPAWNLIST_H
 #define GRUNTZ_GRUNTZ_SPAWNLIST_H
 
+#include <list>
+class CSpawnEntry;
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -8,14 +13,14 @@
 
 class CSpawnEntry {
 public:
-    CSpawnEntry(CString name, i32 data);
+    CSpawnEntry(const std::string& name, i32 data);
 
-    CString GetName() {
+    std::string GetName() {
         return m_name;
     }
-    CString GetTail();
+    std::string GetTail();
 
-    CString m_name;
+    std::string m_name;
     b32 m_flag;
     i32 m_data;
 };
@@ -23,29 +28,29 @@ public:
 class CSpawnList {
 public:
     CSpawnList() {
-        m_cursor = NULL;
+        m_cursor = m_list.end();
         m_lastPicked = -1;
     }
     ~CSpawnList();
     void ClearFlags();
     void DeleteAllEntries();
-    CSpawnEntry* FindEntry(CString name, b32 useHash);
-    CSpawnEntry* FindByName(const CString& name);
-    void AddVoiceSound(CString resourceName, i32 data);
+    CSpawnEntry* FindEntry(const std::string& name, b32 useHash);
+    CSpawnEntry* FindByName(const std::string& name);
+    void AddVoiceSound(const std::string& resourceName, i32 data);
 
     i32 GetCount() const {
-        return m_list.GetCount();
+        return static_cast<i32>(m_list.size());
     }
 
-    CPtrList m_list;
+    std::list<CSpawnEntry*> m_list;
 
-    CSpawnEntry* NextEntry(POSITION& pos) {
-        return static_cast<CSpawnEntry*>(m_list.GetNext(pos));
+    CSpawnEntry* NextEntry(std::list<CSpawnEntry*>::iterator& pos) {
+        return static_cast<CSpawnEntry*>(*(pos++));
     }
     CSpawnEntry* FirstEntry();
     CSpawnEntry* NextEntry();
     CSpawnEntry* GetEntry(i32 index);
-    POSITION m_cursor;
+    std::list<CSpawnEntry*>::iterator m_cursor;
     i32 m_lastPicked;
 };
 

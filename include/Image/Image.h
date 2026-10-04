@@ -1,6 +1,8 @@
 #ifndef SRC_IMAGE_IMAGE_H
 #define SRC_IMAGE_IMAGE_H
 
+class CDib;
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDSurface.h>
@@ -98,17 +100,11 @@ public:
     u8* GetAddress(i32 x, i32 y) {
         return &m_pBytes[m_pLines[y]] + x;
     }
-    POSITION GetPos() {
-        return m_pos;
-    }
     CDibPal* GetPalette() {
         return m_pPal;
     }
     void SetPixel(i32 x, i32 y, u8 pixel) {
         m_pBytes[m_pLines[y] + x] = pixel;
-    }
-    void SetPos(POSITION pos) {
-        m_pos = pos;
     }
     void SetTransparent(b32 transparent) {
         m_bTransparent = transparent;
@@ -182,7 +178,6 @@ private:
     ColorDepth m_nDepth;
     i32 m_nPitch;
     i32 m_nStride;
-    POSITION m_pos;
     b32 m_bTransparent;
     b32 m_bPalOwner;
     CDibPal* m_pPal;
@@ -197,7 +192,7 @@ inline CDib::CDib() {
     m_nHeight = 0;
     m_nPitch = 0;
     m_nStride = 0;
-    m_pos = NULL;
+
     m_bPalOwner = false;
     m_pPal = NULL;
 }

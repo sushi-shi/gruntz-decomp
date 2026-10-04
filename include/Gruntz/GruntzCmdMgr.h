@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_GRUNTZCMDMGR_H
 #define GRUNTZ_GRUNTZCMDMGR_H
 
+#include <list>
+class CGruntzCommand;
+
 #include <Ints.h>
 
 #include <Gruntz/GruntzCommand.h>
@@ -70,14 +73,14 @@ public:
         Shutdown();
     }
 
-    CPtrList m_queuedCommands;
-    CPtrList m_pendingLocalCommands;
+    std::list<CGruntzCommand*> m_queuedCommands;
+    std::list<CGruntzCommand*> m_pendingLocalCommands;
     CGruntzMgr* m_manager;
 };
 
 inline CGruntzCmdMgr::CGruntzCmdMgr() {
     m_manager = NULL;
-    m_pendingLocalCommands.RemoveAll();
+    m_pendingLocalCommands.clear();
 }
 
 #endif

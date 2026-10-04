@@ -8,7 +8,6 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LevelTime.h>
 #include <Gruntz/LogicRecordHandler.h>
-#include <Gruntz/LogicTypeTableInline.h>
 
 i32 DispatchLevelTimeLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CLevelTime)

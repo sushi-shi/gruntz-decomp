@@ -33,7 +33,7 @@ NetCmdSendMsg g_netCmdSendMsg;
 NetGruntRecMsg g_netGruntRecMsg;
 
 template<>
-CPtrList CPtrListPool<GruntRec>::s_freeList(0xa);
+std::list<GruntRec*> ObjectPoolStorage<GruntRec >::s_freeList;
 
 char g_sequenceScratch[0x10];
 
@@ -252,22 +252,15 @@ char* __stdcall SequenceSetToString(i32* sequences) {
 
 void CNetCmdSlot::AddRecord(GruntRec* record) {
     if (record != NULL && FindRecord(record->m_sequence) == NULL) {
-        m_records.AddTail(record);
+        m_records.insert(m_records.end(), record);
     }
 }
 
 void CNetCmdSlot::RemoveRecord(i32 sequence) {
-    POSITION pos = m_records.GetHeadPosition();
-    while (pos != NULL) {
-        GruntRec* record = static_cast<GruntRec*>(m_records.GetNext(pos));
-        if (sequence == record->m_sequence) {
-            if (pos != NULL) {
-
-                m_records.GetPrev(pos);
-                m_records.RemoveAt(pos);
-            } else {
-                m_records.RemoveTail();
-            }
+    for (std::list<GruntRec*>::iterator it = m_records.begin(); it != m_records.end(); ++it) {
+        GruntRec* record = *it;
+        if (record->m_sequence == sequence) {
+            m_records.erase(it);
             RecycleGruntRecord(record);
             return;
         }
@@ -283,27 +276,27 @@ void CNetCmdSlot::GetRecordRange(i32* minimum, i32* maximum) {
     }
     *maximum = 0x80000001;
     *minimum = INT_MAX;
-    POSITION pos = m_records.GetHeadPosition();
-    if (pos == NULL) {
+    std::list<GruntRec*>::iterator pos = m_records.begin();
+    if (pos == m_records.end()) {
         *maximum = 0;
         *minimum = 0;
         return;
     }
     do {
-        GruntRec* record = static_cast<GruntRec*>(m_records.GetNext(pos));
+        GruntRec* record = static_cast<GruntRec*>(*(pos++));
         if (record->m_sequence > *maximum) {
             *maximum = record->m_sequence;
         }
         if (record->m_sequence < *minimum) {
             *minimum = record->m_sequence;
         }
-    } while (pos != NULL);
+    } while (pos != m_records.end());
 }
 
 GruntRec* CNetCmdSlot::FindRecord(i32 sequence) {
-    POSITION pos = m_records.GetHeadPosition();
-    while (pos != NULL) {
-        GruntRec* record = static_cast<GruntRec*>(m_records.GetNext(pos));
+    std::list<GruntRec*>::iterator pos = m_records.begin();
+    while (pos != m_records.end()) {
+        GruntRec* record = static_cast<GruntRec*>(*(pos++));
         if (sequence == record->m_sequence) {
             return record;
         }
@@ -312,8 +305,8 @@ GruntRec* CNetCmdSlot::FindRecord(i32 sequence) {
 }
 
 void CNetCmdSlot::ClearRecords() {
-    while (!m_records.IsEmpty()) {
-        GruntRec* record = static_cast<GruntRec*>(m_records.RemoveHead());
+    while (!m_records.empty()) {
+        GruntRec* record = static_cast<GruntRec*>(takeFront(m_records));
         if (record != NULL) {
             RecycleGruntRecord(record);
         }

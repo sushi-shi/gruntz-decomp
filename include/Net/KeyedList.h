@@ -1,19 +1,24 @@
 #ifndef GRUNTZ_NET_KEYEDLIST_H
 #define GRUNTZ_NET_KEYEDLIST_H
 
+#include <list>
+struct CKeyedNode;
+
+#include <string>
+
 #include <Ints.h>
 
 struct CKeyedNode {
     CKeyedNode() {
-        m_key.Empty();
+        (m_key).erase();
         m_commandDelay = 0;
         m_resendInterval = 0;
     }
 
-    CString m_key;
+    std::string m_key;
     i32 m_commandDelay;
     i32 m_resendInterval;
-    CString GetName();
+    std::string GetName();
     i32 GetCommandDelay() const {
         return m_commandDelay;
     }
@@ -25,7 +30,7 @@ struct CKeyedNode {
 
 class CKeyedList {
 public:
-    CKeyedList(i32 nBlockSize) : m_list(nBlockSize) {
+    CKeyedList() {
         m_mode = 0;
     }
 
@@ -33,11 +38,11 @@ public:
         Clear();
     }
 
-    CKeyedNode* AddNode(const char* key, i32 commandDelay, i32 resendInterval);
+    CKeyedNode* AddNode(const std::string& key, i32 commandDelay, i32 resendInterval);
 
     void Clear();
 
-    CPtrList m_list;
+    std::list<CKeyedNode*> m_list;
     i32 m_mode;
 };
 

@@ -1,6 +1,9 @@
 #ifndef GRUNTZ_DSNDMGR_MIDIMANAGER_H
 #define GRUNTZ_DSNDMGR_MIDIMANAGER_H
 
+#include <map>
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -18,9 +21,9 @@ class MidiSequence : public CObject {
 public:
     virtual ~MidiSequence()  ;
 
-    virtual i32 LoadBuffer(const void* data, u32 dataBytes, const char* name);
+    virtual i32 LoadBuffer(const void* data, u32 dataBytes, const std::string& name);
 
-    virtual i32 LoadFile(const char* path, const char* name);
+    virtual i32 LoadFile(const char* path, const std::string& name);
     virtual void Unload();
     virtual i32 IsLoaded();
     virtual i32 Play(HWND ownerWindow, b32 looping);
@@ -30,10 +33,9 @@ public:
     virtual i32 RestartIfIdle();
 
     virtual i32 IsMidiSequence();
-    virtual i32 LoadResource(const char* resourceName, const char* name);
+    virtual i32 LoadResource(const char* resourceName, const std::string& name);
 
     MidiSequence() {
-        m_name[0] = 0;
         m_pauseDepth = 0;
         m_looping = false;
         m_ownerWindow = NULL;
@@ -49,7 +51,7 @@ public:
     i32 SetVolumePercent(i32 volumePct, i32 durationMs);
     i32 SetLooping(b32 looping);
 
-    char m_name[0x40];
+    std::string m_name;
     i32 m_pauseDepth;
     b32 m_looping;
     HWND m_ownerWindow;
@@ -80,13 +82,12 @@ public:
         m_midiAvailable = enabled;
     }
     i32 GetMasterVolume();
-    MidiSequence* LoadFile(const char* path, const char* name);
-    MidiSequence* LoadBuffer(const void* data, u32 dataBytes, const char* name);
-    void RegisterSequence(MidiSequence* sequence);
-    MidiSequence* FindSequence(const char* name);
-    i32 LoadAndPlayFile(const char* path, b32 looping, const char* name);
-    i32 LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping, const char* name);
-    i32 PlaySequence(const char* name, b32 looping);
+    MidiSequence* LoadFile(const char* path, const std::string& name);
+    MidiSequence* LoadBuffer(const void* data, u32 dataBytes, const std::string& name);
+    MidiSequence* FindSequence(const std::string& name);
+    i32 LoadAndPlayFile(const char* path, b32 looping, const std::string& name);
+    i32 LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping, const std::string& name);
+    i32 PlaySequence(const std::string& name, b32 looping);
     void EndAndClearCurrent();
     i32 RestartCurrent(b32 looping);
     i32 PauseCurrent();
@@ -97,7 +98,7 @@ public:
     i32 IsCurrentPlaying() {
         return m_currentSequence ? m_currentSequence->IsPlaying() : 0;
     }
-    void SelectSequence(const char* name) {
+    void SelectSequence(const std::string& name) {
         MidiSequence* sequence = FindSequence(name);
         if (sequence != NULL) {
             m_currentSequence = sequence;
@@ -114,11 +115,14 @@ public:
         }
     }
 
-    CMapStringToOb m_sequences;
     MidiSequence* m_currentSequence;
     HWND m_ownerWindow;
     HINSTANCE m_instanceHandle;
     b32 m_midiAvailable;
+
+private:
+    std::map<std::string, MidiSequence*> m_sequences;
+    bool RegisterSequence(MidiSequence* sequence);
 };
 
 #endif

@@ -1,38 +1,28 @@
 #ifndef GRUNTZ_UTILS_MAPTYPED_H
 #define GRUNTZ_UTILS_MAPTYPED_H
 
+#include <map>
+#include <string>
 #include <Ints.h>
 
-template<class T> inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, T*& out) {
-    return map.Lookup(key, reinterpret_cast<void*&>(out));
-}
-template<class T> inline BOOL MapLookup(CMapPtrToPtr& map, void* key, T*& out) {
-    return map.Lookup(key, reinterpret_cast<void*&>(out));
-}
-template<class T> inline T* MapFind(CMapStringToOb& map, LPCTSTR key) {
-    CObject* found = NULL;
-    map.Lookup(key, found);
-    return static_cast<T*>(found);
+template<class Map, class Key, class T>
+inline bool MapLookup(const Map& values, const Key& key, T*& out) {
+    typename Map::const_iterator found = values.find(key);
+    if (found == values.end()) return false;
+    out = static_cast<T*>(found->second);
+    return true;
 }
 
-template<class T> inline T* MapFind(CMapStringToPtr& map, LPCTSTR key) {
-    T* found = NULL;
-    MapLookup(map, key, found);
-    return found;
+template<class T, class Map, class Key>
+inline T* MapFind(const Map& values, const Key& key) {
+    T* result = NULL;
+    MapLookup(values, key, result);
+    return result;
 }
 
-template<class K, class T>
-inline void MapGetNext(CMapStringToPtr& map, POSITION& pos, K& key, T*& out) {
-    map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out));
-}
-template<class K, class T>
-inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, T*& out) {
-    map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out));
-}
-
-template<class T> inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, T*& out) {
-
-    return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
+template<class Map, class T>
+inline bool MapLookupById(const Map& values, i32 id, T*& out) {
+    return MapLookup(values, id, out);
 }
 
 #endif

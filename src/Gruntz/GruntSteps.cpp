@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Utils/Text.h>
 
 #include <Ints.h>
 
@@ -96,7 +97,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
     m_entrancePickup = PICKUP_INVALID;
 
-    CString name;
+    std::string name;
 
     switch (kind) {
         case PICKUP_BABYWALKER:
@@ -240,10 +241,10 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         }
     }
 
-    if (!m_coordList.IsEmpty()) {
+    if (!m_coordList.empty()) {
         Coord tile;
         tile.Set(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
-        m_coordList.AddHead(g_coordPool.PopCopy(tile));
+        m_coordList.insert(m_coordList.begin(), g_coordPool.PopCopy(tile));
     }
 
     SET_SCREEN_POS(m_object, m_commitPx.m_x, m_commitPx.m_y);
@@ -462,7 +463,7 @@ i32 CGrunt::StepCompassMove() {
     }
 
     if (m_toyTileIndex > 0) {
-        CString str;
+        std::string str;
         switch (m_entranceReason) {
             case PICKUP_BABYWALKER:
                 str = "BABYWALKERGRUNT";
@@ -480,7 +481,7 @@ i32 CGrunt::StepCompassMove() {
                 break;
         }
         u32 toyCount =
-            g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_toyTiles, 1);
+            g_buteMgr.GetDword((str), s_toyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.m_direction) {
                 case DIR_NORTH:
@@ -546,18 +547,18 @@ i32 CGrunt::StepCompassMove() {
     }
 
     {
-        CByteArray bag;
-        bag.Add(1);
-        bag.Add(2);
-        bag.Add(3);
-        bag.Add(4);
-        bag.Add(5);
-        bag.Add(6);
-        bag.Add(7);
-        bag.Add(8);
-        while (result == 0 && bag.GetSize() > 0) {
-            i32 idx = GetRandom(0, bag.GetUpperBound());
-            i32 dir = bag.GetAt(idx);
+        std::vector<u8> bag;
+        bag.push_back(1);
+        bag.push_back(2);
+        bag.push_back(3);
+        bag.push_back(4);
+        bag.push_back(5);
+        bag.push_back(6);
+        bag.push_back(7);
+        bag.push_back(8);
+        while (result == 0 && static_cast<i32>(bag.size()) > 0) {
+            i32 idx = GetRandom(0, (static_cast<i32>(bag.size()) - 1));
+            i32 dir = bag[idx];
             switch (static_cast<GruntDirection>(dir)) {
                 case DIR_NORTH:
                     next.Set(tile.m_x, tile.m_y - 0x20);
@@ -605,7 +606,7 @@ i32 CGrunt::StepCompassMove() {
                 != 0) {
                 result = 1;
             } else {
-                bag.RemoveAt(idx, 1);
+                bag.erase(bag.begin() + idx, bag.begin() + (idx) + 1);
             }
         }
         if (result == 0) {
@@ -946,15 +947,15 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     }
     g_serialCounter++;
     memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    strcpy(nameBuffer, static_cast<const char*>(m_animSetName));
+    if (!copyTextToBuffer((m_animSetName), nameBuffer, sizeof(nameBuffer))) return 0;
     ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
     memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    strcpy(nameBuffer, m_frameSetName);
+    if (!copyTextToBuffer((m_frameSetName), nameBuffer, sizeof(nameBuffer))) return 0;
     ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
     memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    strcpy(nameBuffer, m_deathFrameSetName);
+    if (!copyTextToBuffer((m_deathFrameSetName), nameBuffer, sizeof(nameBuffer))) return 0;
     ar->Write(nameBuffer, SERIAL_NAME_LEN);
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_poseWalk);
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseAttack, GRUNT_ATTACK1));
@@ -1087,19 +1088,19 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     }
 
     {
-        count = m_coordList.GetCount();
+        count = static_cast<i32>(m_coordList.size());
         ar->Write(&count, sizeof(count));
-        POSITION cpos = m_coordList.GetHeadPosition();
-        while (cpos != NULL) {
-            ar->Write(m_coordList.GetNext(cpos), 8);
+        std::list<Coord*>::iterator cpos = m_coordList.begin();
+        while (cpos != m_coordList.end()) {
+            ar->Write(*(cpos++), 8);
         }
     }
     {
-        count = m_payloads.GetCount();
+        count = static_cast<i32>(m_payloads.size());
         ar->Write(&count, sizeof(count));
-        POSITION pos = m_payloads.GetHeadPosition();
-        while (pos != NULL) {
-            ar->Write(m_payloads.GetNext(pos), 0x2c);
+        std::list<i32*>::iterator pos = m_payloads.begin();
+        while (pos != m_payloads.end()) {
+            ar->Write(*(pos++), 0x2c);
         }
     }
     return 1;

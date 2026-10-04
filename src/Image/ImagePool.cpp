@@ -52,9 +52,9 @@ void CDibMgr::RemoveDib(CDib* dib) {
         RemovePal(palette);
         SetPalette(NULL, FALSE);
     }
-    POSITION pos = dib->GetPos();
-    if (pos != NULL) {
-        m_collDibs.RemoveAt(pos);
+    std::list<CDib*>::iterator pos = std::find(m_collDibs.begin(), m_collDibs.end(), dib);
+    if (pos != m_collDibs.end()) {
+        m_collDibs.erase(pos);
     }
     delete dib;
 }
@@ -63,29 +63,29 @@ void CDibMgr::RemovePal(CDibPal* palette) {
     if (palette == NULL) {
         return;
     }
-    POSITION pos = palette->GetPos();
-    if (pos != NULL) {
-        m_collPals.RemoveAt(pos);
+    std::list<CDibPal*>::iterator pos = std::find(m_collPals.begin(), m_collPals.end(), palette);
+    if (pos != m_collPals.end()) {
+        m_collPals.erase(pos);
     }
     delete palette;
 }
 
 void CDibMgr::RemoveAllDibs() {
-    POSITION pos = m_collDibs.GetHeadPosition();
-    while (pos) {
-        CDib* item = static_cast<CDib*>(m_collDibs.GetNext(pos));
+    std::list<CDib*>::iterator pos = m_collDibs.begin();
+    while (pos != m_collDibs.end()) {
+        CDib* item = static_cast<CDib*>(*(pos++));
         delete item;
     }
-    m_collDibs.RemoveAll();
+    m_collDibs.clear();
 }
 
 void CDibMgr::RemoveAllPals() {
-    POSITION pos = m_collPals.GetHeadPosition();
-    while (pos) {
-        CDibPal* item = static_cast<CDibPal*>(m_collPals.GetNext(pos));
+    std::list<CDibPal*>::iterator pos = m_collPals.begin();
+    while (pos != m_collPals.end()) {
+        CDibPal* item = static_cast<CDibPal*>(*(pos++));
         delete item;
     }
-    m_collPals.RemoveAll();
+    m_collPals.clear();
     m_pCurPal = NULL;
 }
 
@@ -97,8 +97,7 @@ CDib* CDibMgr::AddDib(i32 width, i32 height, ColorDepth depth, u32 flags) {
         delete dib;
         return NULL;
     }
-    POSITION pos = m_collDibs.AddTail(dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -111,8 +110,7 @@ CDib* CDibMgr::AddDib(u8* bytes, i32 width, i32 height, ColorDepth depth, u32 fl
         delete dib;
         return NULL;
     }
-    POSITION pos = m_collDibs.AddTail(dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -125,8 +123,7 @@ CDib* CDibMgr::AddDib(u8* bytes, RezDecodeKind type, u32 flags) {
         delete dib;
         return NULL;
     }
-    POSITION pos = m_collDibs.AddTail(dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -140,8 +137,7 @@ CDib* CDibMgr::AddDib(const char* file, u32 flags) {
         delete dib;
         return NULL;
     }
-    POSITION pos = m_collDibs.AddTail(dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -154,8 +150,7 @@ CDib* CDibMgr::AddDib(CDib* original, CDibPal* palette) {
         delete dib;
         return NULL;
     }
-    POSITION pos = m_collDibs.AddTail(dib);
-    dib->SetPos(pos);
+    m_collDibs.push_back(dib);
     ReleaseDC(dc);
     return dib;
 }
@@ -166,8 +161,7 @@ CDibPal* CDibMgr::AddPal(PALETTEENTRY* entries, u32 flags) {
         delete palette;
         return NULL;
     }
-    POSITION pos = m_collPals.AddTail(palette);
-    palette->SetPos(pos);
+    m_collPals.push_back(palette);
     return palette;
 }
 
@@ -177,8 +171,7 @@ CDibPal* CDibMgr::AddPal(u8* rgb, u32 flags) {
         delete palette;
         return NULL;
     }
-    POSITION pos = m_collPals.AddTail(palette);
-    palette->SetPos(pos);
+    m_collPals.push_back(palette);
     return palette;
 }
 
@@ -189,8 +182,7 @@ CDibPal* CDibMgr::AddPal(const char* file, u32 flags) {
         delete palette;
         return NULL;
     }
-    POSITION pos = m_collPals.AddTail(palette);
-    palette->SetPos(pos);
+    m_collPals.push_back(palette);
     return palette;
 }
 
@@ -200,8 +192,7 @@ CDibPal* CDibMgr::AddPal(u8* data, u32 dataSize, RezDecodeKind type, u32 flags) 
         delete palette;
         return NULL;
     }
-    POSITION pos = m_collPals.AddTail(palette);
-    palette->SetPos(pos);
+    m_collPals.push_back(palette);
     return palette;
 }
 

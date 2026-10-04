@@ -53,7 +53,7 @@ i32 CShadeTableCache::Init() {
 }
 
 void CShadeTableCache::FreeNodes() {
-    for (i32 i = 0; i < m_arr.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_arr.size()); i++) {
         m_arr[i]->Free();
         CShadeTable* t = m_arr[i];
         if (t) {
@@ -61,7 +61,7 @@ void CShadeTableCache::FreeNodes() {
             delete t;
         }
     }
-    m_arr.RemoveAll();
+    m_arr.clear();
 }
 
 CShadeTable* CShadeTableCache::FlashTable(
@@ -80,7 +80,7 @@ CShadeTable* CShadeTableCache::FlashTable(
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
 
     u8* data = t->GetData();
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -168,7 +168,7 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     u8* data = t->GetData();
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         for (i32 j = 0; j < steps; j++) {
@@ -211,7 +211,7 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     u8* data = t->GetData();
     u32 rgb = static_cast<u32>(packedColor);
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -247,7 +247,7 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     u8* data = t->GetData();
     i32 div = (wRow + wCol) / 100;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -270,7 +270,7 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     u8* data = t->GetData();
     g_pal = pal;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -319,7 +319,7 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     u8* data = t->GetData();
     g_pal = pal;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -348,7 +348,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     if (PIXEL_FORMAT_IS_RGB555) {
         u16* out = t->Lut16();
         for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
@@ -388,7 +388,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     u16* out = t->Lut16();
 
     for (i32 v = 0; v < PALETTE_ENTRY_COUNT; v += PIXEL_NIBBLE_VALUE_COUNT) {
@@ -435,7 +435,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     u16* out = t->Lut16();
     i32 subb = 0;
     i32 subg = 0;
@@ -482,7 +482,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
         return NULL;
     }
 
-    m_arr.Add(t);
+    m_arr.push_back(t);
     u16* out = t->Lut16();
     PALETTEENTRY* p = pal;
     for (i32 i = PALETTE_ENTRY_COUNT; i != 0; i--) {
@@ -497,9 +497,9 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     return t;
 }
 
-CShadeTable* CShadeTableCache::AddFromArray(CString name) {
+CShadeTable* CShadeTableCache::AddFromArray(const std::string& name) {
     CShadeTable* t = new CShadeTable;
-    m_arr.Add(t);
+    m_arr.push_back(t);
     if (!t->LoadFromFile(name, 0)) {
         FindRemove(t);
         return NULL;
@@ -509,7 +509,7 @@ CShadeTable* CShadeTableCache::AddFromArray(CString name) {
 
 CShadeTable* CShadeTableCache::AddFromBuffer(u8* data, i32 size) {
     CShadeTable* t = new CShadeTable;
-    m_arr.Add(t);
+    m_arr.push_back(t);
     if (!t->LoadFromMem(data, size, 0)) {
         FindRemove(t);
         return NULL;
@@ -533,7 +533,7 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
 }
 
 CShadeTable* CShadeTableCache::FindByKey(i32 key) {
-    for (i32 i = 0; i < m_arr.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_arr.size()); i++) {
         if (m_arr[i]->m_key == key) {
             return m_arr[i];
         }
@@ -542,7 +542,7 @@ CShadeTable* CShadeTableCache::FindByKey(i32 key) {
 }
 
 void CShadeTableCache::FindRemove(CShadeTable* key) {
-    i32 n = m_arr.GetSize();
+    i32 n = static_cast<i32>(m_arr.size());
     for (i32 i = 0; i < n; i++) {
         if (m_arr[i] == key) {
             m_arr[i]->Free();
@@ -551,7 +551,7 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
                 t->Reset();
                 delete t;
             }
-            m_arr.RemoveAt(i);
+            m_arr.erase(m_arr.begin() + i);
             return;
         }
     }
@@ -600,5 +600,3 @@ ColorHSV RgbToHsv(u32 color) {
     }
     return hsv;
 }
-
-template class CArray<CShadeTable*, CShadeTable*>;

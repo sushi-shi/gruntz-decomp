@@ -335,10 +335,10 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                 for (i32 yo = -1; yo < 2; yo++) {
 
                     Coord cell;
-                    m_arr.Add(g_coordPool.PopCopy(*cell.Set(cx, tileY + yo)));
+                    m_arr.push_back(g_coordPool.PopCopy(*cell.Set(cx, tileY + yo)));
                 }
             }
-            for (i32 k = 0; k < m_arr.GetSize(); k++) {
+            for (i32 k = 0; k < static_cast<i32>(m_arr.size()); k++) {
                 Coord* elem = static_cast<Coord*>(m_arr[k]);
                 if (elem != NULL && static_cast<u32>(elem->m_x) < static_cast<u32>(m_width)
                     && static_cast<u32>(elem->m_y) < static_cast<u32>(m_height)) {
@@ -349,7 +349,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                 }
             }
 
-            m_arr.SetSize(0, -1);
+            m_arr.resize(0);
         }
     }
 

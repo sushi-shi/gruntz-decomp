@@ -4,12 +4,12 @@
 #include <Gruntz/SpawnList.h>
 
 inline CSpawnEntry* CSpawnList::FirstEntry() {
-    m_cursor = m_list.GetHeadPosition();
+    m_cursor = m_list.begin();
     return NextEntry();
 }
 
 inline CSpawnEntry* CSpawnList::NextEntry() {
-    if (m_cursor == NULL) {
+    if (m_cursor == m_list.end()) {
         return NULL;
     }
     return NextEntry(m_cursor);

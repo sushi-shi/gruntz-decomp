@@ -13,7 +13,7 @@
 
 #include <strstrea.h>
 
-zDArray<CString> g_typeColl(0x7d0, 0x7da);
+std::map<i32, std::string> g_typeColl;
 
 zSymTab<i32> g_buteTree(zPtrColl::PASSIVE);
 

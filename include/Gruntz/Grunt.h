@@ -1,6 +1,11 @@
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 
+#include <list>
+struct Coord;
+
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -54,8 +59,6 @@ typedef struct tagRECT CCueRect;
 
 class CVoiceManager;
 
-CString __stdcall operator+(const char* lhs, const CString& rhs);
-CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 extern i32 g_movingSeed;
 extern const double g_slopeNegHalf;
@@ -100,21 +103,21 @@ struct CGruntCellRec {
         NAME_COUNT = 5
     GZ_ENUM_END(NameSlot)
 
-    CString AT(m_names, NAME_COUNT);
+    std::string AT(m_names, NAME_COUNT);
 
-    CString& AttackName() {
+    std::string& AttackName() {
         return AT(m_names, NAME_ATTACK);
     }
-    CString& StruckName() {
+    std::string& StruckName() {
         return AT(m_names, NAME_STRUCK);
     }
-    CString& WalkName() {
+    std::string& WalkName() {
         return AT(m_names, NAME_WALK);
     }
-    CString& IdleName() {
+    std::string& IdleName() {
         return AT(m_names, NAME_IDLE);
     }
-    CString& ItemName() {
+    std::string& ItemName() {
         return AT(m_names, NAME_ITEM);
     }
 
@@ -191,7 +194,7 @@ public:
         return LOGIC_GRUNT;
     }
 
-    virtual void StepBehavior(char* animationActName)  ;
+    virtual void StepBehavior(const std::string& animationActName)  ;
 
     virtual void FireActivation(i32 id)  ;
 
@@ -307,7 +310,7 @@ public:
     i32 m_reserved1b4;
     CWwdSpriteObject* m_selectedSprite;
     CWwdSpriteObject* m_toySprite;
-    CString m_animSetName;
+    std::string m_animSetName;
     CWwdSpriteObject* m_healthSprite;
     CWwdSpriteObject* m_staminaSprite;
     CWwdSpriteObject* m_toyTimeSprite;
@@ -373,43 +376,43 @@ public:
     ClockInterval m_arrivalRerollTiming;
     b32 m_hasExtent;
 
-    CPtrList m_coordList;
-    CPtrList m_payloads;
+    std::list<Coord*> m_coordList;
+    std::list<i32*> m_payloads;
 
-    POSITION CoordHead() const {
-        return m_coordList.GetHeadPosition();
+    std::list<Coord*>::iterator CoordHead() {
+        return m_coordList.begin();
     }
-    POSITION CoordTail() const {
-        return m_coordList.GetTailPosition();
+    std::list<Coord*>::iterator CoordTail() {
+        return (m_coordList.empty() ? m_coordList.end() : --m_coordList.end());
     }
     i32 CoordCount() const {
-        return m_coordList.GetCount();
+        return static_cast<i32>(m_coordList.size());
     }
-    Coord* GetCoordAt(POSITION position) {
-        return static_cast<Coord*>(m_coordList.GetAt(position));
+    Coord* GetCoordAt(std::list<Coord*>::iterator position) {
+        return static_cast<Coord*>(*(position));
     }
-    Coord* GetNextCoord(POSITION& position) {
-        return static_cast<Coord*>(m_coordList.GetNext(position));
+    Coord* GetNextCoord(std::list<Coord*>::iterator& position) {
+        return static_cast<Coord*>(*(position++));
     }
     Coord* GetHeadCoord() {
-        return static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+        return static_cast<Coord*>(*(CoordHead()));
     }
     Coord* GetTailCoord() {
-        return static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
+        return static_cast<Coord*>(*(CoordTail()));
     }
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
         return &m_cells[3 * c.m_row + c.m_column];
     }
     i32 PayloadCount() const {
-        return m_payloads.GetCount();
+        return static_cast<i32>(m_payloads.size());
     }
     i32* HeadPayload() {
-        return PayloadCount() == 0 ? NULL : static_cast<i32*>(m_payloads.GetHead());
+        return PayloadCount() == 0 ? NULL : static_cast<i32*>(m_payloads.front());
     }
     void DeleteHeadPayload() {
         if (PayloadCount() != 0) {
-            delete[] static_cast<i32*>(m_payloads.RemoveHead());
+            delete[] static_cast<i32*>(takeFront(m_payloads));
         }
     }
     void DeleteAllPayloads() {
@@ -465,8 +468,8 @@ public:
     i32 m_startingItemId;
     i32 m_recordedFrameTick;
     GruntDirectionCell m_entranceCell;
-    CString m_frameSetName;
-    CString m_deathFrameSetName;
+    std::string m_frameSetName;
+    std::string m_deathFrameSetName;
     i32 m_arrivalPhase;
     b32 m_pendingTrigger;
     Coord m_pendingTriggerPx;
@@ -515,7 +518,7 @@ public:
 
     void SetEntrancePos(i32 clearArrivalState, i32 recycleRoute);
 
-    void EnsureVehicleLoopSound(const char* key);
+    void EnsureVehicleLoopSound(const std::string& key);
     i32 UpdateEntranceAnim();
     i32 Save(CFileMemBase* ar);
 
@@ -528,7 +531,7 @@ public:
 
     Coord GetTilePos();
 
-    void EnsurePowerupLoopSound(const char* key);
+    void EnsurePowerupLoopSound(const std::string& key);
 
     i32 CanShowStamina();
     Coord* EntranceTileOffset(Coord* out);
@@ -635,7 +638,7 @@ public:
 
     i32 StartBombGruntRun();
 
-    virtual void FinalizeStep(char* name)  ;
+    virtual void FinalizeStep(const std::string& name)  ;
 
     i32 UpdateToyUseAnimation();
     i32 StepArrivalReroll();

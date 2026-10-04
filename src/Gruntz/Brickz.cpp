@@ -14,7 +14,7 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
     i32 startY,
     i32 goalX,
     i32 goalY,
-    CPtrList* outPath,
+    std::list<Coord*>* outPath,
     i32 clearEndpointFlags,
     i32 blockedMask,
     i32 passableMask

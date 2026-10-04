@@ -80,10 +80,8 @@ i32 CExitTrigger::AdvanceAnim() {
             GruntzPlayer* winner = &g_gameReg->m_players[hitPlayerIndex];
             if (loser != NULL) {
                 g_gameReg->ChatLog()->AddItem(
-                    static_cast<const char*>(
-                        loser->GetName() + " was conquered by " + winner->GetName()
-                            + "!"
-                        ),
+                    (loser->GetName() + " was conquered by " + winner->GetName()
+                            + "!"),
                         FONT_ITEM_FLAGS_NONE,
                         0x11
                 );
@@ -108,8 +106,8 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
             }
             CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
-            POSITION pos = grp->m_list.GetHeadPosition();
-            while (pos != NULL) {
+            std::list<CGameObject*>::iterator pos = grp->m_list.begin();
+            while (pos != grp->m_list.end()) {
                 CGameObject* cur = grp->NextChild(pos);
                 if (cur->m_logicRecord->m_dispatch == DispatchGruntCreationPointLogic
                     && cur->m_smarts == owningPlayer) {
@@ -123,9 +121,9 @@ i32 CExitTrigger::AdvanceAnim() {
                         Coord* mark = g_coordPool.Pop();
                         mark->m_x = (cur->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                         mark->m_y = (cur->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                        CPtrArray& marks =
+                        std::vector<Coord*>& marks =
                             static_cast<CPlay*>(g_gameReg->m_curState)->m_startMarkers;
-                        marks.Add(mark);
+                        marks.push_back(mark);
                     }
                 }
                 if (cur->m_logicRecord->m_dispatch == DispatchFortressFlagLogic
@@ -169,8 +167,8 @@ i32 CExitTrigger::AdvanceAnim() {
                 m_warlordLogic = NULL;
             }
             CDDrawChildGroup* grp = g_gameReg->World()->ChildGroup();
-            POSITION pos = grp->m_list.GetHeadPosition();
-            while (pos != NULL) {
+            std::list<CGameObject*>::iterator pos = grp->m_list.begin();
+            while (pos != grp->m_list.end()) {
                 CGameObject* cur = grp->NextChild(pos);
                 LogicRecordDispatchFn dispatch = cur->m_logicRecord->m_dispatch;
                 if (dispatch == DispatchGruntCreationPointLogic

@@ -1,6 +1,8 @@
 #ifndef SBI_GRUNTMACHINE_H
 #define SBI_GRUNTMACHINE_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/LogicTypeId.h>
@@ -40,7 +42,7 @@ public:
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT g,
-        const char* key,
+        const std::string& key,
         i32 leftFrameIndex,
         i32 rightFrameIndex
     );

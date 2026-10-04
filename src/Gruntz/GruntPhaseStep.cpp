@@ -88,26 +88,26 @@ state2: {
         grid->Clip(&box);
     }
 
-    CDWordArray acc;
-    acc.Add(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 2));
-    acc.Add(((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y - 2));
-    acc.Add((m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y - 2));
-    acc.Add(((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y - 2));
-    acc.Add(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 2));
-    acc.Add(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 2));
-    acc.Add(((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y + 2));
-    acc.Add((m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y + 2));
-    acc.Add(((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y + 2));
-    acc.Add(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 2));
-    acc.Add(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 1));
-    acc.Add(((m_arrivalCell.m_x - 2) << 16) | m_arrivalCell.m_y);
-    acc.Add(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 1));
-    acc.Add(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 1));
-    acc.Add(((m_arrivalCell.m_x + 2) << 16) | m_arrivalCell.m_y);
-    acc.Add(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 1));
-    while (acc.GetSize() != 0) {
-        i32 sel = rand() % acc.GetSize();
-        DWORD pt = acc.GetAt(sel);
+    std::vector<u32> acc;
+    acc.push_back(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 2));
+    acc.push_back(((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y - 2));
+    acc.push_back((m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y - 2));
+    acc.push_back(((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y - 2));
+    acc.push_back(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 2));
+    acc.push_back(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 2));
+    acc.push_back(((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y + 2));
+    acc.push_back((m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y + 2));
+    acc.push_back(((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y + 2));
+    acc.push_back(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 2));
+    acc.push_back(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 1));
+    acc.push_back(((m_arrivalCell.m_x - 2) << 16) | m_arrivalCell.m_y);
+    acc.push_back(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 1));
+    acc.push_back(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 1));
+    acc.push_back(((m_arrivalCell.m_x + 2) << 16) | m_arrivalCell.m_y);
+    acc.push_back(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 1));
+    while (static_cast<i32>(acc.size()) != 0) {
+        i32 sel = rand() % static_cast<i32>(acc.size());
+        DWORD pt = acc[sel];
         i32 px = HIWORD(pt);
         i32 py = LOWORD(pt);
         CMapMgr* pl = g_gameReg->m_tileGrid;
@@ -124,7 +124,7 @@ state2: {
                 }
             }
         }
-        acc.RemoveAt(sel, 1);
+        acc.erase(acc.begin() + sel, acc.begin() + (sel) + 1);
     }
     CMapMgr* spent = g_gameReg->m_tileGrid;
     spent->Clip(NULL);
@@ -187,12 +187,12 @@ s0_reset:
 common: {
     GruntAiState st = m_defenderState;
     if (st != AISTATE_COOLDOWN && st != AISTATE_PHASE_MIRROR_THEN_COOLDOWN && CoordCount() >= 2) {
-        POSITION head = CoordHead();
-        i32 bx = static_cast<Coord*>(m_coordList.GetAt(head))->m_x;
-        i32 by = static_cast<Coord*>(m_coordList.GetAt(head))->m_y;
-        POSITION next = head;
-        m_coordList.GetNext(next);
-        Coord* nc = static_cast<Coord*>(m_coordList.GetAt(next));
+        std::list<Coord*>::iterator head = CoordHead();
+        i32 bx = static_cast<Coord*>(*(head))->m_x;
+        i32 by = static_cast<Coord*>(*(head))->m_y;
+        std::list<Coord*>::iterator next = head;
+        *(next++);
+        Coord* nc = static_cast<Coord*>(*(next));
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
         if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {

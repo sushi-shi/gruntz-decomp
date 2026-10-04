@@ -54,7 +54,7 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     if (owner == NULL || str == NULL) {
         return;
     }
-    CStringArray tokens;
+    std::vector<std::string> tokens;
     char tok[0x80];
     i32 n = 0;
     const char* s = str;
@@ -65,7 +65,7 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
         } else {
             tok[n] = 0;
             if (n > 0) {
-                tokens.Add(tok);
+                tokens.push_back(tok);
             }
             n = 0;
         }
@@ -73,13 +73,13 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     }
     tok[n] = 0;
     if (n > 0) {
-        tokens.Add(tok);
+        tokens.push_back(tok);
     }
-    m_cueCount = tokens.GetSize();
+    m_cueCount = static_cast<i32>(tokens.size());
     if (m_cueCount > 0) {
         m_cues = new SoundCue*[m_cueCount];
         for (i32 i = 0; i < m_cueCount; i++) {
-            m_cues[i] = owner->FindCue(tokens.GetAt(i));
+            m_cues[i] = owner->FindCue((tokens[i]));
         }
     }
 }

@@ -1,14 +1,16 @@
 #ifndef GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
 #define GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H
 
+#include <map>
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/FrameReference.h>
 #include <Gruntz/StateId.h>
-#include <Ints.h>
 #include <Wap32/WapObj.h>
 
-class CDDrawWorker;
 class CDDrawWorker;
 
 class CImage;
@@ -26,7 +28,7 @@ public:
     virtual LoadableClassId GetClassId()  ;
 
     virtual CImage*
-    CreateBlankFrameByKey(i32 width, i32 height, const char* key, i32 index, i32 keyed);
+    CreateBlankFrameByKey(i32 width, i32 height, const std::string& key, i32 index, i32 keyed);
     virtual CImage*
     CreateBlankFrameForWorker(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed);
 
@@ -41,7 +43,7 @@ public:
     virtual CImage* CreateDescriptorFrameByKey(
         PidHeader* desc,
         FileImageFormat mode,
-        const char* key,
+        const std::string& key,
         i32 index,
         u32 size
     );
@@ -49,31 +51,35 @@ public:
     virtual CImage*
     InsertFrameForWorker(struct CRezItm* rec, CDDrawWorker* worker, i32 index, i32 mode);
 
-    virtual CImage* InsertFrameByKey(struct CRezItm* rec, const char* key, i32 index, i32 mode);
+    virtual CImage* InsertFrameByKey(struct CRezItm* rec, const std::string& key, i32 index, i32 mode);
 
     virtual CImage* LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 index, i32 keyed);
-    virtual CImage* LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed);
+    virtual CImage* LoadFrameByKey(char* path, const std::string& key, i32 index, i32 keyed);
 
-    virtual i32 ProbeWorkerKey(class CRezMgr* parser, const char* key);
+    virtual i32 ProbeWorkerKey(class CRezMgr* parser, const std::string& key);
 
-    virtual i32 InstallTree(CRezDir* tree, const char* szName, const char* szKey);
+    virtual i32 InstallTree(CRezDir* tree, const std::string& szName, const std::string& szKey);
 
-    virtual i32 LoadNamespace(CRezDir* tree, const char* szName, const char* szKey);
+    virtual i32 LoadNamespace(CRezDir* tree, const std::string& szName, const std::string& szKey);
 
     virtual void RemoveWorker(CDDrawWorker* worker);
-    virtual void RemoveByKey(const char* key);
+    virtual void RemoveByKey(const std::string& key);
     virtual void MapTeardown();
 
-    CMapStringToOb m_workersByName;
+    CDDrawWorker* FindWorker(const std::string& key) const;
+    const std::map<std::string, CDDrawWorker*>& Entries() const { return m_workersByName; }
 
-    i32 RemoveWithPrefix(const char* prefix, const char* separator);
+    i32 RemoveWithPrefix(const std::string& prefix, const std::string& separator);
 
-    i32 SumSizesEqual(const char* str, i32 raw);
-    i32 HasWithPrefix(const char* prefix);
+    i32 SumSizesEqual(const std::string& str, i32 raw);
+    i32 HasWithPrefix(const std::string& prefix);
 
-    i32 AnyValueMatches(CImage* frame, char* outName, i32* outIndex);
+    FrameReference FindFrameReference(CImage* frame) const;
 
     void ReadField(i32 handle, char* tmp, i32* outZero);
+
+private:
+    std::map<std::string, CDDrawWorker*> m_workersByName;
 };
 
 #endif

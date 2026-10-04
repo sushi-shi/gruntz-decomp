@@ -39,7 +39,7 @@ HINSTANCE g_resModule;
 
 IDirectDraw2* g_directDraw = NULL;
 
-CPtrArray g_modeArray;
+std::vector<DDSURFACEDESC*> g_modeArray;
 
 GUID* g_ddCreateCtx = NULL;
 
@@ -293,7 +293,7 @@ void CDDrawDeviceManager::ReportError(char* file, i32 line, i32 hr) {
 
 void __cdecl DDrawLogLine(char*, ...) {}
 
-CDDrawDeviceManager::CDDrawDeviceManager() : m_surfaces(0xa), m_palettes(0xa), m_displayModes() {
+CDDrawDeviceManager::CDDrawDeviceManager() : m_surfaces(), m_palettes(), m_displayModes() {
     m_device = NULL;
     m_directDraw1 = NULL;
     m_bankSwitchedCaps = 0;
@@ -425,20 +425,20 @@ void CDDrawDeviceManager::Clear(i32 restoreDisplayMode) {
 }
 
 void CDDrawDeviceManager::RegisterSurface(CDDSurface* item) {
-    item->m_pos = m_surfaces.AddTail(item);
+    item->m_pos = m_surfaces.insert(m_surfaces.end(), item);
 }
 
 void CDDrawDeviceManager::ClearSurfaces() {
-    POSITION pos = m_surfaces.GetHeadPosition();
-    while (pos) {
-        CDDSurface* item = static_cast<CDDSurface*>(m_surfaces.GetNext(pos));
+    std::list<CDDSurface*>::iterator pos = m_surfaces.begin();
+    while (pos != m_surfaces.end()) {
+        CDDSurface* item = static_cast<CDDSurface*>(*(pos++));
         delete item;
     }
-    m_surfaces.RemoveAll();
+    m_surfaces.clear();
 }
 
 void CDDrawDeviceManager::RemoveSurface(CDDSurface* item) {
-    m_surfaces.RemoveAt(item->m_pos);
+    m_surfaces.erase(item->m_pos);
     delete item;
 }
 
@@ -643,23 +643,23 @@ CDDSurface* CDDrawDeviceManager::LoadSystemMemorySurface(char* path, i32 caps, i
 }
 
 void CDDrawDeviceManager::RegisterPalette(CDDPalette* item) {
-    item->m_pos = m_palettes.AddTail(item);
+    item->m_pos = m_palettes.insert(m_palettes.end(), item);
 }
 
 void CDDrawDeviceManager::ClearPalettes() {
-    POSITION pos = m_palettes.GetHeadPosition();
-    while (pos) {
-        CDDPalette* item = static_cast<CDDPalette*>(m_palettes.GetNext(pos));
+    std::list<CDDPalette*>::iterator pos = m_palettes.begin();
+    while (pos != m_palettes.end()) {
+        CDDPalette* item = static_cast<CDDPalette*>(*(pos++));
         if (item) {
             item->Destroy();
             delete item;
         }
     }
-    m_palettes.RemoveAll();
+    m_palettes.clear();
 }
 
 void CDDrawDeviceManager::RemovePalette(CDDPalette* item) {
-    m_palettes.RemoveAt(item->m_pos);
+    m_palettes.erase(item->m_pos);
     if (item) {
         item->Destroy();
         delete item;
@@ -734,7 +734,7 @@ CDDPalette* CDDrawDeviceManager::LoadTrailingRgbPalette(const char* path, i32 z)
 
 void CDDrawDeviceManager::EnumerateDisplayModes() {
     FreeDisplayModes();
-    g_modeArray.RemoveAll();
+    g_modeArray.clear();
     DdModeEnumFn modeCb;
     modeCb.m_body = DdEnumModesCallback;
     i32 hr = m_device->EnumDisplayModes(0, NULL, NULL, modeCb.m_sdk);
@@ -742,11 +742,11 @@ void CDDrawDeviceManager::EnumerateDisplayModes() {
         CDDrawDeviceManager::ReportError(DDRAWMGR_FILE, 0x507, hr);
     }
 
-    for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
-        m_displayModes.Add(g_modeArray.GetAt(j));
+    for (i32 j = 0; j < static_cast<i32>(g_modeArray.size()); j++) {
+        m_displayModes.push_back(g_modeArray[j]);
     }
-    g_modeArray.RemoveAll();
-    i32 modeCount = m_displayModes.GetSize();
+    g_modeArray.clear();
+    i32 modeCount = static_cast<i32>(m_displayModes.size());
     if (modeCount > 1) {
         for (i32 firstIndex = 0; firstIndex < modeCount - 1; firstIndex++) {
             for (i32 secondIndex = firstIndex + 1; secondIndex < modeCount; secondIndex++) {
@@ -754,8 +754,8 @@ void CDDrawDeviceManager::EnumerateDisplayModes() {
                 DDSURFACEDESC* first = GetModeDesc(firstIndex);
                 DDSURFACEDESC* second = GetModeDesc(secondIndex);
                 if (ShouldSwapDisplayModes(first, second)) {
-                    m_displayModes.SetAt(firstIndex, second);
-                    m_displayModes.SetAt(secondIndex, first);
+                    m_displayModes[firstIndex] = second;
+                    m_displayModes[secondIndex] = first;
                 }
             }
         }
@@ -765,7 +765,7 @@ void CDDrawDeviceManager::EnumerateDisplayModes() {
 i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused) {
     DDSURFACEDESC* copy = new DDSURFACEDESC;
     memcpy(copy, mode, sizeof(DDSURFACEDESC));
-    g_modeArray.Add(copy);
+    g_modeArray.push_back(copy);
     return DDENUMRET_OK;
 }
 
@@ -807,7 +807,7 @@ i32 CDDrawDeviceManager::FindFirstFittingResolutionIndex(
     i32 colorDepth
 ) {
     i32 result = -1;
-    for (i32 i = m_displayModes.GetUpperBound(); i >= 0; i--) {
+    for (i32 i = (static_cast<i32>(m_displayModes.size()) - 1); i >= 0; i--) {
         DDSURFACEDESC* mode = GetModeDesc(i);
         if (mode->dwWidth >= minWidth && mode->dwHeight >= minHeight
             && mode->ddpfPixelFormat.dwRGBBitCount == colorDepth) {
@@ -818,7 +818,7 @@ i32 CDDrawDeviceManager::FindFirstFittingResolutionIndex(
 }
 
 i32 CDDrawDeviceManager::FindResolutionIndex(i32 width, i32 height, ColorDepth colorDepth) {
-    for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
+    for (i32 i = 0; i < static_cast<i32>(m_displayModes.size()); i++) {
         DDSURFACEDESC* mode = GetModeDesc(i);
         if (mode->dwWidth == static_cast<u32>(width) && mode->dwHeight == static_cast<u32>(height)
             && mode->ddpfPixelFormat.dwRGBBitCount == IDX(colorDepth)) {
@@ -832,10 +832,10 @@ DisplayResolution
 CDDrawDeviceManager::FindNextResolution(i32 width, i32 height, ColorDepth colorDepth) {
     DisplayResolution resolution;
     i32 idx = FindResolutionIndex(width, height, colorDepth);
-    if (idx != -1 && idx < m_displayModes.GetSize()) {
+    if (idx != -1 && idx < static_cast<i32>(m_displayModes.size())) {
         idx++;
-        if (idx < m_displayModes.GetSize()) {
-            for (; idx < m_displayModes.GetSize(); idx++) {
+        if (idx < static_cast<i32>(m_displayModes.size())) {
+            for (; idx < static_cast<i32>(m_displayModes.size()); idx++) {
                 DDSURFACEDESC* mode = GetModeDesc(idx);
                 if (mode->ddpfPixelFormat.dwRGBBitCount == IDX(colorDepth)) {
                     resolution.m_width = mode->dwWidth;
@@ -854,7 +854,7 @@ DisplayResolution
 CDDrawDeviceManager::FindPreviousResolution(i32 width, i32 height, ColorDepth colorDepth) {
     DisplayResolution resolution;
     i32 idx = FindResolutionIndex(width, height, colorDepth);
-    if (idx != -1 && idx < m_displayModes.GetSize()) {
+    if (idx != -1 && idx < static_cast<i32>(m_displayModes.size())) {
         idx--;
         if (idx >= 0) {
             for (; idx >= 0; idx--) {

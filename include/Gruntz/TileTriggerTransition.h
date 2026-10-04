@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_TILETRIGGERTRANSITION_H
 #define GRUNTZ_TILETRIGGERTRANSITION_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Gruntz/LogicEventDispatch.h>
@@ -27,7 +29,7 @@ public:
     }
     virtual void FireActivation(i32 id)  ;
     static void RegisterActs();
-    i32 ApplyAnimation(char* sprite, char* geom);
+    i32 ApplyAnimation(const std::string& sprite, const std::string& geom);
     i32 TransitionAct();
 };
 

@@ -51,14 +51,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             return 1;
         case CMD_LOAD_WORLD:
             m_gameMode = GAMEMODE_QUESTZ;
-            m_strWorldFile.Empty();
+            (m_strWorldFile).erase();
             if (!PassClickToPlayState(lParam, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_CONTINUE_AT_MAX_LEVEL:
             m_gameMode = GAMEMODE_QUESTZ;
-            m_strWorldFile.Empty();
+            (m_strWorldFile).erase();
             if (!PassClickToPlayState(IDX(m_saveGame->m_maxLevel), false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
@@ -128,14 +128,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     case CHEAT_BRICK_TEXT_DISPLAY:
                         g_debugDisplayFlags = (g_debugDisplayFlags ^ DEBUG_DISPLAY_TIMING)
                                               & ~DEBUG_DISPLAY_TIMING_ALTERNATE;
-                        g_brickText1.Empty();
-                        g_brickText2.Empty();
+                        (g_brickText1).erase();
+                        (g_brickText2).erase();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_BRICK_TEXT_ALT_DISPLAY:
                         g_debugDisplayFlags = (g_debugDisplayFlags ^ DEBUG_DISPLAY_TIMING_ALTERNATE)
                                               & ~DEBUG_DISPLAY_TIMING;
-                        g_brickText1.Empty();
+                        (g_brickText1).erase();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_ELAPSED_TIME_DISPLAY:
@@ -163,8 +163,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             m_midi->PlaySequence("MONOLITH", true);
                             return 1;
                         }
-                        char sequenceName[128];
-                        wsprintfA(sequenceName, "AMBIENT%d", playState->GetAmbientId());
+                        const std::string sequenceName = formatText("AMBIENT%d", playState->GetAmbientId());
                         m_midi->PlaySequence(sequenceName, true);
                         return 1;
                     }
@@ -468,7 +467,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         SoundCueRegistry* _reg = m_world->SoundRegistry();
                         if (_reg->m_silentMode == false) {
                             _c = NULL;
-                            MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
+                            _c = _reg->FindCue("GAME_MAJORCHEAT");
                             if (_c) {
                                 PlaySoundCueIfElapsed(_c, g_soundVolumePercent, 0, 0, false);
                             }
@@ -489,10 +488,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 return 1;
             }
             m_loadingSaveGame = true;
-            CString tmp(si->m_levelName);
+            std::string tmp(si->m_levelName);
             m_strWorldFile = tmp;
             static_cast<void>(notifyCode);
-            if (tmp.GetLength()) {
+            if (static_cast<i32>((tmp).size())) {
                 if (si->m_isBattlez) {
                     if (si->m_isCustom) {
                         m_isBuiltInBattlezLevel = false;

@@ -1,6 +1,8 @@
 #ifndef SRC_IO_FILEMEM_H
 #define SRC_IO_FILEMEM_H
 
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -13,19 +15,19 @@ public:
     CFileMemBase() {
         m_option = 0;
         m_mode = 0;
-        m_name.Empty();
+        (m_name).erase();
     }
     virtual ~CFileMemBase() {
         Close();
     }
-    virtual i32 SetName(const char* name, i32 mode, i32 option);
+    virtual i32 SetName(const std::string& name, i32 mode, i32 option);
 
     virtual void Close() {
         Reset();
     }
 
     virtual void Reset();
-    virtual CString GetName();
+    virtual std::string GetName();
     virtual i32 GetLength() = 0;
     virtual i32 GetOffset() = 0;
     virtual i32 WantRead();
@@ -37,7 +39,7 @@ public:
 
     i32 m_option;
     i32 m_mode;
-    CString m_name;
+    std::string m_name;
 };
 
 class CFileMem : public CFileMemBase {
@@ -58,7 +60,7 @@ public:
         m_offset = 0;
         m_option = 0;
         m_mode = 0;
-        m_name.Empty();
+        (m_name).erase();
     }
     virtual i32 GetLength()  ;
     virtual i32 GetOffset()  ;

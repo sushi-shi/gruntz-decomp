@@ -22,20 +22,17 @@ i32 DrawGlyphString(
     CDDrawSurfaceMgr* ctx,
     i32 x,
     i32 y,
-    const char* str,
+    const std::string& str,
     CDDrawWorker* font,
     i32 advance
 ) {
     if (!ctx) {
         return 0;
     }
-    if (!str) {
-        return 0;
-    }
     if (!font) {
         return 0;
     }
-    i32 len = static_cast<i32>(strlen(str));
+    i32 len = static_cast<i32>(str.size());
     if (len <= 0) {
         return 0;
     }
@@ -100,7 +97,7 @@ i32 LayerBlitFrame(
 
 i32 DrawTextToFrontSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    const std::string& text,
     RECT* box,
     i32 fontSel,
     i32 shadow,
@@ -130,7 +127,7 @@ i32 DrawTextToFrontSurface(
 
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    const std::string& text,
     RECT* box,
     i32 fontSel,
     i32 shadow,
@@ -160,7 +157,7 @@ i32 DrawTextToOverlaySurface(
 
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
+    const std::string& text,
     RECT* box,
     i32 fontSel,
     i32 shadow,

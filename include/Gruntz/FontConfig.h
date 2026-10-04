@@ -1,6 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_FONTCONFIG_H
 #define GRUNTZ_GRUNTZ_FONTCONFIG_H
 
+#include <list>
+struct FontItem;
+
+#include <string>
+
 #include <Ints.h>
 
 #include <Enums.h>
@@ -24,16 +29,16 @@ public:
         m_trainingFont = NULL;
     }
 
-    CPtrList m_list;
+    std::list<FontItem*> m_list;
     i32 LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold);
     void FreeNodes();
     void Reset();
-    i32 AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload);
+    i32 AddItem(const std::string& str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload);
     void Scroll(i32 delta);
 
     i32 HandleInputChar(i32 charCode, i32 keyData);
 
-    CString GetInputText() {
+    std::string GetInputText() {
         return m_inputText;
     }
     void EndInput();
@@ -46,7 +51,7 @@ public:
     i32 RenderInputText(HDC hdc, i32 maxWidth, RECT* rect);
     i32 DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format);
     i32 Draw3DText(
-        const CString* strSrc,
+        const std::string& text,
         HDC hdc,
         RECT* dst,
         i32 fontFlag,
@@ -58,7 +63,7 @@ public:
         i32 dy
     );
 
-    CString m_inputText;
+    std::string m_inputText;
     u32 m_scrollOffset;
     u32 m_lowScrollThreshold;
     u32 m_highScrollThreshold;
@@ -78,7 +83,7 @@ extern i32 g_lastDrawTextFormat;
 struct FontItem {
     FontItemFlags m_flags;
     i32 m_payload;
-    CString m_name;
+    std::string m_name;
 };
 
 #endif

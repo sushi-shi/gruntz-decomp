@@ -1,7 +1,13 @@
 #ifndef SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
+#include <list>
+class CTileActionEvent;
+class CTileTriggerLogic;
+class CTileTriggerSwitchLogic;
+
 #include <Ints.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
 
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -136,10 +142,10 @@ public:
 
     void Shutdown();
 
-    CPtrList m_switchLogics;
-    CPtrList m_idleLogics;
-    CPtrList m_timedLogics;
-    CPtrList m_actionEvents;
+    std::list<CTileTriggerSwitchLogic*> m_switchLogics;
+    std::list<CTileTriggerLogic*> m_idleLogics;
+    std::list<CTileTriggerLogic*> m_timedLogics;
+    std::list<CTileActionEvent*> m_actionEvents;
     CTileTriggerLogic* m_latchedLeaf;
     b32 m_initialized;
 };

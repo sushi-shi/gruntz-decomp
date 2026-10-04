@@ -1,6 +1,12 @@
 #ifndef GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H
 #define GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H
 
+#include <list>
+struct CGameObject;
+
+#include <map>
+#include <string>
+
 #include <Ints.h>
 
 #include <DDrawMgr/DDrawChildGroupFlags.h>
@@ -27,8 +33,8 @@ public:
     inline CGameObject* NextChild();
     inline CGameObject* FirstChild();
     CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
-        m_walkCursor = NULL;
-        m_scanCursor = NULL;
+        m_walkCursor = m_list.end();
+        m_scanCursor = m_list.end();
     }
 
     virtual ~CDDrawChildGroup()  ;
@@ -86,32 +92,32 @@ public:
         int x,
         int y,
         int sortKey,
-        const char* name,
+        const std::string& name,
         int dotColor,
         int objectFlags
     );
     CWwdDeferredObject*
-    CreateNamedDeferredObject(int id, int sortKey, const char* name, int objectFlags);
+    CreateNamedDeferredObject(int id, int sortKey, const std::string& name, int objectFlags);
     CWwdGameObject* CreateNamedContainerObject(
         int id,
         int x,
         int y,
         int sortKey,
-        const char* name,
+        const std::string& name,
         int objectFlags
     );
 
     CWwdSpriteObject*
-    CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const char* name, i32 objectFlags);
+    CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const std::string& name, i32 objectFlags);
 
     i32 AddObject(CGameObject* obj);
     i32
-    AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const char* name, i32 objectFlags);
+    AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const std::string& name, i32 objectFlags);
 
     i32 LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused);
 
-    void RemoveAll(POSITION pos, CGameObject* obj);
-    void RemoveByPosition(POSITION pos, CGameObject* obj);
+    void RemoveAll(std::list<CGameObject*>::iterator pos, CGameObject* obj);
+    void RemoveByPosition(std::list<CGameObject*>::iterator pos, CGameObject* obj);
     void RegisterObjectId(CWwdGameObject* obj);
     void PruneList();
     i32 CountActive();
@@ -130,23 +136,23 @@ public:
     CWwdGameObject* FindByLogicRecord(i32 id, CLogicRecord* logicRecord);
     CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 
-    CGameObject* Find(i32 id, const char* key);
+    CGameObject* Find(i32 id, const std::string& key);
     CWwdGameObject* FindByObjectId(i32 objectId);
     CWwdGameObject* FindSerialRefByObjectId(i32 objectId);
     i32 IsKindUnique(i32 kind);
     i32 CountByKind(i32 kind);
     i32 SumWeighted();
 
-    CObList m_list;
+    std::list<CGameObject*> m_list;
 
-    CGameObject* NextChild(POSITION& pos);
+    CGameObject* NextChild(std::list<CGameObject*>::iterator& pos);
     CGameObject* HeadChild() const;
-    CMapPtrToPtr m_activeGameObjectsById;
-    CMapPtrToPtr m_registeredGameObjectsById;
+    std::map<i32, CGameObject*> m_activeGameObjectsById;
+    std::map<i32, CGameObject*> m_registeredGameObjectsById;
 
-    POSITION m_walkCursor;
+    std::list<CGameObject*>::iterator m_walkCursor;
 
-    POSITION m_scanCursor;
+    std::list<CGameObject*>::iterator m_scanCursor;
 
     void DrawObjectDebugGeometry();
     void DrawObjectCounts();
@@ -161,15 +167,15 @@ public:
 };
 
 inline CGameObject* CDDrawChildGroup::FirstChild() {
-    m_walkCursor = m_list.GetHeadPosition();
-    if (m_walkCursor == NULL) {
+    m_walkCursor = m_list.begin();
+    if (m_walkCursor == m_list.end()) {
         return NULL;
     }
     return NextChild(m_walkCursor);
 }
 
 inline CGameObject* CDDrawChildGroup::NextChild() {
-    if (m_walkCursor == NULL) {
+    if (m_walkCursor == m_list.end()) {
         return NULL;
     }
     return NextChild(m_walkCursor);
