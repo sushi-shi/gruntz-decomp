@@ -288,6 +288,13 @@ inline i32 CMapMgr::TileIdAt(u32 x, u32 y) const {
     return 0;
 }
 
+inline b32 CMapMgr::IsClaimCandidate(i32 x, i32 y) const {
+    i32 flags = m_rows[y][x].m_flags;
+    return !(flags & IDX(CELL_FLAG_CLAIM_VISITED))
+           && ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+               || m_rows[y][x].m_typeCode == TILEKIND_AI_PATH_BLOCKER);
+}
+
 inline BrickzCell& CMapMgr::CellAtUnchecked(i32 x, i32 y) {
     return m_rows[y][x];
 }

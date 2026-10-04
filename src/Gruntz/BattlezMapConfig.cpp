@@ -2490,71 +2490,49 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     i32 rm = row - 1;
     i32 rp = row + 1;
     CMapMgr* b;
-    i32 nw;
 
     b = m_board;
     if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
-        nw = b->CellFlagsAtUnchecked(cm, row);
-        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                || b->CellTypeAt(cm, row) == TILEKIND_AI_PATH_BLOCKER)) {
+        if (b->IsClaimCandidate(cm, row)) {
             ClaimTilesAround(unit, cm, row, requireUnoccupied);
         }
     }
     b = m_board;
     if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
-        nw = b->CellFlagsAtUnchecked(cp, row);
-        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                || b->CellTypeAt(cp, row) == TILEKIND_AI_PATH_BLOCKER)) {
+        if (b->IsClaimCandidate(cp, row)) {
             ClaimTilesAround(unit, cp, row, requireUnoccupied);
         }
     }
     b = m_board;
     if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
-        nw = b->CellFlagsAtUnchecked(col, rm);
-        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                || b->CellTypeAt(col, rm) == TILEKIND_AI_PATH_BLOCKER)) {
+        if (b->IsClaimCandidate(col, rm)) {
             ClaimTilesAround(unit, col, rm, requireUnoccupied);
         }
     }
     b = m_board;
     if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
-        nw = b->CellFlagsAtUnchecked(col, rp);
-        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                || b->CellTypeAt(col, rp) == TILEKIND_AI_PATH_BLOCKER)) {
+        if (b->IsClaimCandidate(col, rp)) {
             ClaimTilesAround(unit, col, rp, requireUnoccupied);
         }
     }
     b = m_board;
     if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
         && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
-        nw = b->CellFlagsAtUnchecked(cp, rm);
-        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                || b->CellTypeAt(cp, rm) == TILEKIND_AI_PATH_BLOCKER)) {
+        if (b->IsClaimCandidate(cp, rm)) {
             ClaimTilesAround(unit, cp, rm, requireUnoccupied);
         }
     }
     b = m_board;
     if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
         && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-        nw = b->CellFlagsAtUnchecked(cp, rp);
-        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                || b->CellTypeAt(cp, rp) == TILEKIND_AI_PATH_BLOCKER)) {
+        if (b->IsClaimCandidate(cp, rp)) {
             ClaimTilesAround(unit, cp, rp, requireUnoccupied);
         }
     }
     b = m_board;
     if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
         && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-        nw = b->CellFlagsAtUnchecked(cm, rp);
-        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                || b->CellTypeAt(cm, rp) == TILEKIND_AI_PATH_BLOCKER)) {
+        if (b->IsClaimCandidate(cm, rp)) {
             ClaimTilesAround(unit, cm, rp, requireUnoccupied);
         }
     }
@@ -2562,10 +2540,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     b = m_board;
     if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
         && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
-        nw = b->CellFlagsAtUnchecked(cm, rm);
-        if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
-            && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
-                || b->CellTypeAt(cm, rm) == TILEKIND_AI_PATH_BLOCKER)) {
+        if (b->IsClaimCandidate(cm, rm)) {
             ClaimTilesAround(unit, cm, rm, requireUnoccupied);
         }
     }
