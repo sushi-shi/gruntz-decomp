@@ -79,10 +79,10 @@ inline void CPlay::UpdateAmbientMusic() {
             char sequenceName[0x40];
             wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());
             if (g_gameReg->m_musicEnabled != false) {
-                m_mgr->GetMidiManager()->PlaySequence(sequenceName, true);
+                m_mgr->m_midi->PlaySequence(sequenceName, true);
             } else {
-                m_mgr->GetMidiManager()->SelectSequence(sequenceName);
-                m_mgr->GetMidiManager()->SetCurrentLooping(true);
+                m_mgr->m_midi->SelectSequence(sequenceName);
+                m_mgr->m_midi->SetCurrentLooping(true);
             }
             m_introMusicComplete = true;
         }
