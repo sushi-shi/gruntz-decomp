@@ -353,7 +353,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
 
     for (i = 0; i < s_sortQueue.GetSize(); i++) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_sortQueue.GetAt(i));
-        obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
+        obj->ClearFlags(IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING));
         m_list.RemoveAt(obj->m_posCache);
         InsertSorted(obj, 0);
     }
@@ -442,7 +442,7 @@ void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00159e10, 0x2e)
 void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
-    obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
+    obj->ClearFlags(IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING));
     m_list.RemoveAt(obj->m_posCache);
     InsertSorted(obj, 0);
 }
