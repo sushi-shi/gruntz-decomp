@@ -4635,7 +4635,7 @@ i32 CPlay::ValidateLevelTiles() {
                 }
                 i32 rel = (obj->m_speedY - row) * 3 - col + obj->m_speedX;
 
-                i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
+                i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_replacementTiles[rel + 4];
                 if (tcidx == 0) {
                     MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
@@ -4930,7 +4930,7 @@ i32 CPlay::ValidateLevelTiles() {
                 }
                 i32 rel = (obj->m_speedX - col) * 3 - row + obj->m_speedY;
 
-                i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
+                i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_replacementTiles[rel + 4];
                 if (tcidx == 0) {
                     MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;

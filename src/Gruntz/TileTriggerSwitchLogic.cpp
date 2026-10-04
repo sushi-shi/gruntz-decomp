@@ -51,9 +51,9 @@ RVA(0x00110430, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
 
     for (i32 i = 0; i < 24; i++) {
-        m_block[i] = 0;
+        m_linkedSwitchKeys[i] = 0;
     }
-    m_initGate = false;
+    m_initialized = false;
 }
 
 RVA(0x00110460, 0x64)
@@ -64,18 +64,18 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
     i32 tileY,
     i32 cellKey,
     const RECT* rect,
-    b32 linkGate,
+    b32 active,
     i32 damageParam,
-    i32 checkpointType
+    i32 requiredPickupType
 ) {
-    if (m_initGate != false) {
+    if (m_initialized != false) {
         return 0;
     }
     if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
         return 0;
     }
-    memcpy(m_block, rect, sizeof(m_block));
-    return Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType);
+    memcpy(m_linkedSwitchKeys, rect, sizeof(m_linkedSwitchKeys));
+    return Setup(owner, typeId, tileX, tileY, cellKey, active, damageParam, requiredPickupType);
 }
 
 RVA(0x001104f0, 0x56)
@@ -85,11 +85,11 @@ i32 CTileTriggerSwitchLogic::Setup(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    b32 linkGate,
+    b32 active,
     i32 damageParam,
-    i32 checkpointType
+    i32 requiredPickupType
 ) {
-    if (m_initGate) {
+    if (m_initialized) {
         return 0;
     }
     m_typeId = typeId;
@@ -98,10 +98,10 @@ i32 CTileTriggerSwitchLogic::Setup(
     m_cellKey = cellKey;
     m_owner = owner;
     m_damageParam = damageParam;
-    m_checkpointType = checkpointType;
+    m_requiredPickupType = requiredPickupType;
     m_reserved1c = 0;
-    m_linkGate = linkGate;
-    m_initGate = true;
+    m_active = active;
+    m_initialized = true;
     return 1;
 }
 
@@ -118,7 +118,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_SWITCHDOWN");
     }
-    m_linkGate = true;
+    m_active = true;
     return 1;
 }
 
@@ -135,7 +135,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_SWITCHUP");
     }
-    m_linkGate = false;
+    m_active = false;
     return 1;
 }
 
@@ -145,11 +145,11 @@ CTileTriggerLogic::CTileTriggerLogic() {
     for (i32 i = 0; i < 24; i++) {
         m_linkKeys[i] = 0;
     }
-    m_initGate = false;
+    m_initialized = false;
 }
 
 RVA(0x00110820, 0x23)
-i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
+i32 CTileTriggerLogic::HasLinkKey(i32 key) {
     for (i32 i = 0; i < 24; i++) {
         if (m_linkKeys[i] == key) {
             return 1;
@@ -159,7 +159,7 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 }
 
 RVA(0x00110860, 0x2e6)
-void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
+void CTileTriggerLogic::PlayMovementSound(TileCollisionKind type) {
     i32 px, py;
     CGruntzMgr* gameMgr;
     SoundCueRegistry* registry;
@@ -377,7 +377,7 @@ i32 CTileTriggerLogic::Tick() {
                     }
                 }
             }
-            LoadBridgeMove(srcId);
+            PlayMovementSound(srcId);
             return 0;
         }
 
@@ -606,7 +606,7 @@ i32 CTileTriggerLogic::Tick() {
             trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
-    LoadBridgeMove(srcId);
+    PlayMovementSound(srcId);
     return 1;
 }
 
@@ -624,7 +624,7 @@ CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
 RVA(0x00111f40, 0xc4)
 i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
-    if (m_linkGate == false) {
+    if (m_active == false) {
         return 0;
     }
 
@@ -637,7 +637,7 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
             break;
         }
         child = m_owner->GetNextIdleLogic(pos);
-        if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
+        if (child != NULL && child->HasLinkKey(m_cellKey) != 0) {
             found = true;
         }
     }
@@ -656,7 +656,7 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_LINKSB_KEY_MISS));
             return 0;
         }
-        if (c->m_linkGate == false) {
+        if (c->m_active == false) {
             return 0;
         }
     }
@@ -678,19 +678,19 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
         if (i >= 0x18) {
             return 1;
         }
-        i32 key = m_block[i];
+        i32 key = m_linkedSwitchKeys[i];
         CTileTriggerSwitchLogic* node = m_owner->FindSwitchLogic(key, TRIGID_EXCLUSIVE_SWITCH_4);
         if (node == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_BCAST_KEY_MISS));
             return 0;
         }
-        if (node->GetCellKey() != m_cellKey && node->m_linkGate != false) {
+        if (node->GetCellKey() != m_cellKey && node->m_active != false) {
             node->SwitchUp();
             b32 any = false;
             POSITION pos = m_owner->GetIdleHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* o = m_owner->GetNextIdleLogic(pos);
-                if (o != NULL && o->FindIndexByKey(node->GetCellKey())) {
+                if (o != NULL && o->HasLinkKey(node->GetCellKey())) {
                     o->Tick();
                     counter++;
                     any = true;
@@ -702,7 +702,7 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             }
         }
         i++;
-        if (m_block[i] == 0) {
+        if (m_linkedSwitchKeys[i] == 0) {
             done = true;
         }
     }
@@ -719,7 +719,7 @@ RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
 RVA(0x001122a0, 0x241)
-i32 CGiantRockLogic::BuildRockBreakInGameText() {
+i32 CGiantRockLogic::BreakRock() {
 
     CDDrawSurfaceMgr* gameMgr = g_gameReg->World();
 
@@ -736,7 +736,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     for (i32 j = 0; j <= 2; j++) {
         for (i32 i = 0; i <= 2; i++) {
-            i32 value = m_matrix[j * 3 + i];
+            i32 value = m_replacementTiles[j * 3 + i];
             i32 py = j + m_tileY - 1;
             i32 px = i + m_tileX - 1;
             CGruntzMgr* reg = g_gameReg;
@@ -757,7 +757,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(cx, cy, m_tileX, m_tileY)
     g_gameReg->GetTriggerMgr()
-        ->SpawnPickup(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
+        ->SpawnPickup(m_pickupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
         CGameObject* txt = g_gameReg->World()->ChildGroup()->CreateSprite(
@@ -784,14 +784,14 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
 // @early-stop
 RVA(0x00112590, 0x166)
-i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
+i32 CTileTriggerLogic::UncoverPickup(TileCollisionKind tileKind) {
     i32 tok = m_tileToken;
     if (tok != 0) {
         i32 ty = m_tileY;
         i32 tx = m_tileX;
         SET_MAIN_PLANE_TILE(g_gameReg, tx, ty, tok);
     } else {
-        switch (verb) {
+        switch (tileKind) {
             case TILEKIND_COVERED_POWERUP: {
                 i32 ty = m_tileY;
                 CGruntzMgr* reg = g_gameReg;
@@ -865,7 +865,7 @@ i32 CTileTimeTriggerSwitchLogic::SwitchUp() {
 }
 
 RVA(0x00112880, 0x12)
-void CTileTriggerLogic::RecordMove() {
+void CTileTriggerLogic::StartTimedSequence() {
     m_startClock = g_frameTime;
     m_owner->ActivateTimedLogic(this);
 }
@@ -893,7 +893,7 @@ i32 CTileSecretTriggerLogic::Tick() {
 
 // @early-stop
 RVA(0x00112970, 0xad)
-i32 CTileTriggerLogic::Classify(i32 unusedFrameDelta) {
+i32 CTileTriggerLogic::UpdateTimedSequence(i32 unusedFrameDelta) {
     u32 elapsed = g_frameTime - m_startClock;
     if (elapsed <= m_leadInSpan) {
         goto ret1;
@@ -949,24 +949,24 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 tileY,
     i32 cellKey,
     const RECT* rect,
-    b32 linkGate,
+    b32 active,
     i32 damageParam,
-    i32 checkpointType
+    i32 requiredPickupType
 ) {
     b32 ok;
-    if (m_initGate != false) {
+    if (m_initialized != false) {
         ok = false;
     } else if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
         ok = false;
     } else {
-        memcpy(m_block, rect, sizeof(m_block));
-        ok = Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType);
+        memcpy(m_linkedSwitchKeys, rect, sizeof(m_linkedSwitchKeys));
+        ok = Setup(owner, typeId, tileX, tileY, cellKey, active, damageParam, requiredPickupType);
     }
     if (ok == false) {
         return 0;
     }
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, tileX, tileY)
-    if (checkpointType != 0) {
+    if (requiredPickupType != 0) {
         CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
             px,
@@ -979,7 +979,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
             return 0;
         }
         spr->GetLogicRecord()->Dispatch(spr);
-        spr->SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
+        spr->SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", requiredPickupType);
         if (spr->GetFrameImage() == NULL) {
             return 0;
         }
@@ -996,7 +996,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
-    m_linkGate = true;
+    m_active = true;
     return 1;
 }
 
@@ -1009,13 +1009,13 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
-    m_linkGate = false;
+    m_active = false;
     return 1;
 }
 
 RVA(0x00112c70, 0xc4)
 i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
-    if (m_linkGate == false) {
+    if (m_active == false) {
         return 0;
     }
 
@@ -1028,7 +1028,7 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
             break;
         }
         child = m_owner->GetNextIdleLogic(pos);
-        if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
+        if (child != NULL && child->HasLinkKey(m_cellKey) != 0) {
             found = true;
         }
     }
@@ -1047,7 +1047,7 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_LINKS_KEY_MISS));
             return 0;
         }
-        if (c->m_linkGate == false) {
+        if (c->m_active == false) {
             return 0;
         }
     }
@@ -1505,12 +1505,12 @@ i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
     ar->Write(&m_tileX, sizeof(m_tileX));
     ar->Write(&m_tileY, sizeof(m_tileY));
     ar->Write(&m_cellKey, sizeof(m_cellKey));
-    ar->Write(&m_linkGate, sizeof(m_linkGate));
+    ar->Write(&m_active, sizeof(m_active));
     ar->Write(&m_damageParam, sizeof(m_damageParam));
     ar->Write(&m_reserved1c, sizeof(m_reserved1c));
-    ar->Write(&m_initGate, sizeof(m_initGate));
-    ar->Write(&m_checkpointType, sizeof(m_checkpointType));
-    i32* p = m_block;
+    ar->Write(&m_initialized, sizeof(m_initialized));
+    ar->Write(&m_requiredPickupType, sizeof(m_requiredPickupType));
+    i32* p = m_linkedSwitchKeys;
     i32 n = 24;
     do {
         ar->Write(p, sizeof(*p));
@@ -1530,12 +1530,12 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
     s->Read(&m_tileX, sizeof(m_tileX));
     s->Read(&m_tileY, sizeof(m_tileY));
     s->Read(&m_cellKey, sizeof(m_cellKey));
-    s->Read(&m_linkGate, sizeof(m_linkGate));
+    s->Read(&m_active, sizeof(m_active));
     s->Read(&m_damageParam, sizeof(m_damageParam));
     s->Read(&m_reserved1c, sizeof(m_reserved1c));
-    s->Read(&m_initGate, sizeof(m_initGate));
-    s->Read(&m_checkpointType, sizeof(m_checkpointType));
-    i32* p = m_block;
+    s->Read(&m_initialized, sizeof(m_initialized));
+    s->Read(&m_requiredPickupType, sizeof(m_requiredPickupType));
+    i32* p = m_linkedSwitchKeys;
     for (i32 i = 0; i < 24; i++) {
         s->Read(p, sizeof(*p));
         p++;
@@ -1581,7 +1581,7 @@ i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     s->Write(&m_cellKey, sizeof(m_cellKey));
     s->Write(&m_reserved14, sizeof(m_reserved14));
     s->Write(&m_reserved18, sizeof(m_reserved18));
-    s->Write(&m_initGate, sizeof(m_initGate));
+    s->Write(&m_initialized, sizeof(m_initialized));
     s->Write(&m_dutyOnSpan, sizeof(m_dutyOnSpan));
     s->Write(&m_leadInSpan, sizeof(m_leadInSpan));
     s->Write(&m_dutyOffSpan, sizeof(m_dutyOffSpan));
@@ -1609,7 +1609,7 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     s->Read(&m_cellKey, sizeof(m_cellKey));
     s->Read(&m_reserved14, sizeof(m_reserved14));
     s->Read(&m_reserved18, sizeof(m_reserved18));
-    s->Read(&m_initGate, sizeof(m_initGate));
+    s->Read(&m_initialized, sizeof(m_initialized));
     s->Read(&m_dutyOnSpan, sizeof(m_dutyOnSpan));
     s->Read(&m_leadInSpan, sizeof(m_leadInSpan));
     s->Read(&m_dutyOffSpan, sizeof(m_dutyOffSpan));
@@ -1639,12 +1639,12 @@ i32 CGiantRockLogic::SerializeDispatch(
     }
     switch (mode) {
         case SERIAL_SAVE:
-            if (SerializeMatrix(ar) == 0) {
+            if (SaveRockFields(ar) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (DeserializeMatrix(ar) == 0) {
+            if (LoadRockFields(ar) == 0) {
                 return 0;
             }
             break;
@@ -1653,38 +1653,38 @@ i32 CGiantRockLogic::SerializeDispatch(
 }
 
 RVA(0x00113dd0, 0x7b)
-i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
+i32 CGiantRockLogic::SaveRockFields(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
     if (g_gameReg->World() == NULL) {
         return 0;
     }
-    s->Write(&m_powerupType, sizeof(m_powerupType));
+    s->Write(&m_pickupType, sizeof(m_pickupType));
     s->Write(&m_textId, sizeof(m_textId));
 
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Write(&m_matrix[r * 3 + c], sizeof(m_matrix[r * 3 + c]));
+            s->Write(&m_replacementTiles[r * 3 + c], sizeof(m_replacementTiles[r * 3 + c]));
         }
     }
     return 1;
 }
 
 RVA(0x00113e70, 0x7b)
-i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
+i32 CGiantRockLogic::LoadRockFields(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
     if (g_gameReg->World() == NULL) {
         return 0;
     }
-    s->Read(&m_powerupType, sizeof(m_powerupType));
+    s->Read(&m_pickupType, sizeof(m_pickupType));
     s->Read(&m_textId, sizeof(m_textId));
 
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Read(&m_matrix[r * 3 + c], sizeof(m_matrix[r * 3 + c]));
+            s->Read(&m_replacementTiles[r * 3 + c], sizeof(m_replacementTiles[r * 3 + c]));
         }
     }
     return 1;

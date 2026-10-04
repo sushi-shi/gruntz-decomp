@@ -19,9 +19,9 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        b32 linkGate,
+        b32 active,
         i32 damageParam,
-        i32 checkpointType
+        i32 requiredPickupType
     );
 
     virtual i32 BuildSmall(
@@ -31,9 +31,9 @@ public:
         i32 tileY,
         i32 cellKey,
         const RECT* rect,
-        b32 linkGate,
+        b32 active,
         i32 damageParam,
-        i32 checkpointType
+        i32 requiredPickupType
     );
     virtual i32 SwitchDown();
     virtual i32 SwitchUp();
@@ -41,7 +41,7 @@ public:
     CTileTriggerSwitchLogic();
 
     ~CTileTriggerSwitchLogic() {
-        m_initGate = false;
+        m_initialized = false;
     }
 
     i32 AreMultiSwitchLinksActive();
@@ -81,16 +81,16 @@ public:
     i32 m_tileX;
     i32 m_tileY;
     i32 m_cellKey;
-    b32 m_linkGate;
+    b32 m_active;
     i32 m_damageParam;
     // @identity-TODO: initialization zeroes this word and SaveState/LoadState stream
     // it; link and checkpoint decisions do not read it.
     i32 m_reserved1c;
-    b32 m_initGate;
+    b32 m_initialized;
 
     CTileTriggerContainer* m_owner;
-    i32 m_checkpointType;
-    i32 m_block[24];
+    i32 m_requiredPickupType;
+    i32 m_linkedSwitchKeys[24];
 };
 
 class CTileMultiTriggerSwitchLogic : public CTileTriggerSwitchLogic {
@@ -135,9 +135,9 @@ public:
         i32 tileY,
         i32 cellKey,
         const RECT* rect,
-        b32 linkGate,
+        b32 active,
         i32 damageParam,
-        i32 checkpointType
+        i32 requiredPickupType
     ) OVERRIDE;
 };
 

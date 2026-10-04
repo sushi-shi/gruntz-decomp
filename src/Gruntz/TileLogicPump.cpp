@@ -299,7 +299,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     CWwdSpriteObject* o = m_object;
     i32 zk = o->GetFrameImage()->GetAnchorY() + o->m_screenY + 0x186a0;
     o->SetSortKey(zk);
-    memset(m_state, 0, sizeof(m_state));
+    memset(m_switchKeys, 0, sizeof(m_switchKeys));
     if (!m_object->HasMovementBounds()) {
         m_object->m_extent.left = 0;
     }
@@ -312,28 +312,28 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     if (m_object->m_clip.left == COORD_UNSET) {
         m_object->m_clip.left = 0;
     }
-    m_state[0] = m_object->m_extent.left;
-    m_state[1] = m_object->m_extent.top;
-    m_state[2] = m_object->m_extent.right;
-    m_state[3] = m_object->m_extent.bottom;
-    m_state[4] = m_object->m_area.left;
-    m_state[5] = m_object->m_area.top;
-    m_state[6] = m_object->m_area.right;
-    m_state[7] = m_object->m_area.bottom;
-    m_state[8] = m_object->m_switchRect.left;
-    m_state[9] = m_object->m_switchRect.top;
-    m_state[10] = m_object->m_switchRect.right;
-    m_state[11] = m_object->m_switchRect.bottom;
-    m_state[12] = m_object->m_clip.left;
-    m_state[13] = m_object->m_clip.top;
-    m_state[14] = m_object->m_clip.right;
+    m_switchKeys[0] = m_object->m_extent.left;
+    m_switchKeys[1] = m_object->m_extent.top;
+    m_switchKeys[2] = m_object->m_extent.right;
+    m_switchKeys[3] = m_object->m_extent.bottom;
+    m_switchKeys[4] = m_object->m_area.left;
+    m_switchKeys[5] = m_object->m_area.top;
+    m_switchKeys[6] = m_object->m_area.right;
+    m_switchKeys[7] = m_object->m_area.bottom;
+    m_switchKeys[8] = m_object->m_switchRect.left;
+    m_switchKeys[9] = m_object->m_switchRect.top;
+    m_switchKeys[10] = m_object->m_switchRect.right;
+    m_switchKeys[11] = m_object->m_switchRect.bottom;
+    m_switchKeys[12] = m_object->m_clip.left;
+    m_switchKeys[13] = m_object->m_clip.top;
+    m_switchKeys[14] = m_object->m_clip.right;
 
     b32 found = false;
-    m_firstEmpty = 0;
-    while (found == false && m_firstEmpty < 15) {
+    m_switchCount = 0;
+    while (found == false && m_switchCount < 15) {
 
-        if (m_state[m_firstEmpty] != 0) {
-            m_firstEmpty++;
+        if (m_switchKeys[m_switchCount] != 0) {
+            m_switchCount++;
         } else {
             found = true;
         }
@@ -349,7 +349,7 @@ RVA(0x0010f340, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (CActRegPool<CCheckpointTrigger>::s_table[id]) =
-        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
+        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::TryActivateCheckpoint);
 
     ACT_NAME_ID(id2, "B")
     (CActRegPool<CCheckpointTrigger>::s_table[id2]) =
@@ -357,11 +357,11 @@ void CCheckpointTrigger::RegisterActs() {
 }
 
 RVA(0x0010f6a0, 0x235)
-i32 CCheckpointTrigger::Act() {
+i32 CCheckpointTrigger::TryActivateCheckpoint() {
     CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
 
-    for (i32 i = 0; i < m_firstEmpty; i++) {
-        i32 key = m_state[i];
+    for (i32 i = 0; i < m_switchCount; i++) {
+        i32 key = m_switchKeys[i];
         if (key == 0) {
             return 0;
         }
@@ -371,7 +371,7 @@ i32 CCheckpointTrigger::Act() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
             return 0;
         }
-        if (child->m_linkGate == false) {
+        if (child->m_active == false) {
             return 0;
         }
     }
@@ -399,7 +399,7 @@ i32 CCheckpointTrigger::Act() {
     }
     g_gameReg->OnCheckpointReached();
 
-    i32 hi = m_firstEmpty - 1;
+    i32 hi = m_switchCount - 1;
 
     CGruntzMgr* reg = g_gameReg;
     i32 span = hi + 1;
@@ -415,7 +415,7 @@ i32 CCheckpointTrigger::Act() {
     }
 
     CTileTriggerSwitchLogic* pad =
-        play->GetTileTriggers()->FindSwitchLogic(m_state[pick], TRIGID_CHECKPOINT_SWITCH_8);
+        play->GetTileTriggers()->FindSwitchLogic(m_switchKeys[pick], TRIGID_CHECKPOINT_SWITCH_8);
     if (pad == NULL) {
         g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
         return 0;
@@ -464,12 +464,12 @@ i32 CCheckpointTrigger::SerializeDispatch(
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     switch (mode) {
         case SERIAL_LOAD:
-            sa->Read(m_state, 0x3c);
-            sa->Read(&m_firstEmpty, sizeof(m_firstEmpty));
+            sa->Read(m_switchKeys, 0x3c);
+            sa->Read(&m_switchCount, sizeof(m_switchCount));
             break;
         case SERIAL_SAVE:
-            sa->Write(m_state, 0x3c);
-            sa->Write(&m_firstEmpty, sizeof(m_firstEmpty));
+            sa->Write(m_switchKeys, 0x3c);
+            sa->Write(&m_switchCount, sizeof(m_switchCount));
             break;
     }
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(arc, sa, mode, typeId, object)

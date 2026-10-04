@@ -105,10 +105,10 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        i32* block9,
-        i32 powerupType,
+        i32* replacementTiles,
+        i32 pickupType,
         i32 textId,
-        i32 dutyOffSpan
+        i32 pickupFaceDirection
     );
 
     CBrickStack*
@@ -136,9 +136,9 @@ public:
         RECT clip,
         RECT switchRectA,
         RECT switchRectB,
-        b32 isMatch,
+        b32 active,
         i32 damageParam,
-        i32 checkpointType
+        i32 requiredPickupType
     );
 
     i32 Serialize(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 payload);

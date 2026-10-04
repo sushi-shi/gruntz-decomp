@@ -77,7 +77,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                     TRIGID_COVERED_POWERUP_26
                 );
                 if (found != NULL) {
-                    found->ApplyMove(TILEKIND_COVERED_POWERUP);
+                    found->UncoverPickup(TILEKIND_COVERED_POWERUP);
                     state->m_tileTriggers->RemoveIdleLogic(found);
                     return 1;
                 }
@@ -132,7 +132,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                     TRIGID_COVERED_POWERUP_26
                 );
                 if (found != NULL) {
-                    found->ApplyMove(cellType);
+                    found->UncoverPickup(cellType);
                     state->m_tileTriggers->RemoveIdleLogic(found);
                 } else if (cellType == TILEKIND_GAUNTLET_ROCK_A) {
                     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, 0x5a);
@@ -151,7 +151,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                     );
                     return 0;
                 }
-                rock->BuildRockBreakInGameText();
+                rock->BreakRock();
                 state->m_tileTriggers->RemoveIdleLogic(rock);
                 return 1;
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A

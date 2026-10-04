@@ -19,7 +19,7 @@ __inline i32 CTileTriggerLogic::Build(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    if (m_initGate != false) {
+    if (m_initialized != false) {
         return 0;
     }
     memcpy(m_linkKeys, rects, sizeof(m_linkKeys));
@@ -47,7 +47,7 @@ __inline i32 CTileTriggerLogic::Setup(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    if (m_initGate != false) {
+    if (m_initialized != false) {
         return 0;
     }
     m_tileY = tileY;
@@ -55,7 +55,7 @@ __inline i32 CTileTriggerLogic::Setup(
     m_owner = owner;
     m_typeTag = typeTag;
     m_cellKey = cellKey;
-    m_initGate = true;
+    m_initialized = true;
     m_tileToken = tileToken;
     m_startClock = g_frameTime;
     m_leadInSpan = leadInSpan;
@@ -74,23 +74,23 @@ __inline i32 CGiantRockLogic::Build(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    const i32* matrix,
-    PickupType powerupType,
+    const i32* replacementTiles,
+    PickupType pickupType,
     i32 textId,
-    i32 dutyOffSpan
+    i32 pickupFaceDirection
 ) {
-    if (m_initGate != false) {
+    if (m_initialized != false) {
         return 0;
     }
-    memcpy(m_matrix, matrix, sizeof(m_matrix));
-    m_powerupType = powerupType;
+    memcpy(m_replacementTiles, replacementTiles, sizeof(m_replacementTiles));
+    m_pickupType = pickupType;
     m_textId = textId;
     m_typeTag = TRIGID_GIANT_ROCK_22;
     m_tileX = tileX;
     m_tileY = tileY;
     m_cellKey = cellKey;
     m_owner = owner;
-    m_initGate = true;
+    m_initialized = true;
     m_startClock = g_frameTime;
     m_dutyOn = false;
     m_dutyOnSpan = 0;
@@ -98,7 +98,7 @@ __inline i32 CGiantRockLogic::Build(
     m_leadInSpan = 0;
     m_dutyOffSpan = 0;
     m_startClock = g_frameTime;
-    m_dutyOffSpan = dutyOffSpan;
+    m_dutyOffSpan = pickupFaceDirection;
     return 1;
 }
 

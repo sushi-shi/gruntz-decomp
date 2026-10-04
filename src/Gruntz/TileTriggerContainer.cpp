@@ -116,9 +116,9 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     RECT clip,
     RECT switchRectA,
     RECT switchRectB,
-    b32 isMatch,
+    b32 active,
     i32 damageParam,
-    i32 checkpointType
+    i32 requiredPickupType
 ) {
     CTileTriggerSwitchLogic* obj = NULL;
     switch (logicType) {
@@ -162,9 +162,9 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
             tileY,
             cellKey,
             local,
-            isMatch,
+            active,
             damageParam,
-            checkpointType
+            requiredPickupType
         )
         == TRIGID_ANY) {
 
@@ -391,10 +391,10 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    i32* block9,
-    i32 powerupType,
+    i32* replacementTiles,
+    i32 pickupType,
     i32 textId,
-    i32 dutyOffSpan
+    i32 pickupFaceDirection
 ) {
     CGiantRockLogic* e = new CGiantRockLogic;
     if (e == NULL) {
@@ -405,10 +405,10 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
             tileX,
             tileY,
             cellKey,
-            block9,
-            static_cast<PickupType>(powerupType),
+            replacementTiles,
+            static_cast<PickupType>(pickupType),
             textId,
-            dutyOffSpan
+            pickupFaceDirection
         )) {
         delete e;
         return NULL;
@@ -514,7 +514,7 @@ i32 CTileTriggerContainer::UpdateTimedLogics(i32 unusedFrameDelta) {
     while (pos != NULL) {
         POSITION cur = pos;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_timedLogics.GetNext(pos));
-        i32 disposition = elem->Classify(unusedFrameDelta);
+        i32 disposition = elem->UpdateTimedSequence(unusedFrameDelta);
         if (disposition == 0) {
             m_timedLogics.RemoveAt(cur);
             delete elem;

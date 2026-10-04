@@ -72,20 +72,20 @@ class CTileTriggerLogic {
 public:
     CTileTriggerLogic();
     ~CTileTriggerLogic() {
-        m_initGate = false;
+        m_initialized = false;
     }
 
     virtual i32 Tick();
 
-    void RecordMove();
+    void StartTimedSequence();
 
-    i32 Classify(i32 unusedFrameDelta);
+    i32 UpdateTimedSequence(i32 unusedFrameDelta);
 
-    i32 ApplyMove(TileCollisionKind verb);
+    i32 UncoverPickup(TileCollisionKind tileKind);
 
-    i32 FindIndexByKey(i32 key);
+    i32 HasLinkKey(i32 key);
 
-    void LoadBridgeMove(TileCollisionKind type);
+    void PlayMovementSound(TileCollisionKind type);
 
     i32 Build(
         CTileTriggerContainer* owner,
@@ -148,7 +148,7 @@ public:
     // trigger initialization and updates do not reveal their original roles.
     i32 m_reserved14;
     i32 m_reserved18;
-    b32 m_initGate;
+    b32 m_initialized;
 
     CTileTriggerContainer* m_owner;
     u32 m_startClock;
@@ -169,20 +169,20 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        const i32* matrix,
-        PickupType powerupType,
+        const i32* replacementTiles,
+        PickupType pickupType,
         i32 textId,
-        i32 dutyOffSpan
+        i32 pickupFaceDirection
     );
 
-    i32 BuildRockBreakInGameText();
+    i32 BreakRock();
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
-    i32 SerializeMatrix(CFileMemBase* s);
-    i32 DeserializeMatrix(CFileMemBase* s);
+    i32 SaveRockFields(CFileMemBase* s);
+    i32 LoadRockFields(CFileMemBase* s);
 
-    i32 m_matrix[9];
-    PickupType m_powerupType;
+    i32 m_replacementTiles[9];
+    PickupType m_pickupType;
     i32 m_textId;
 };
 
