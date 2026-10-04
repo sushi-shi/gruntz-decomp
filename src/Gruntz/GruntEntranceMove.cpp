@@ -315,8 +315,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         }                                                                                          \
         m_entranceActive = false;                                                                  \
         ReadConfigFromButeMgr();                                                                   \
-        LoadCellAnimNames(0, 0);                                                                   \
-        LoadAnimNameTable(0, 0);                                                                   \
+        BuildImageSetNames(0, 0);                                                                  \
+        LoadAnimationSet(0, 0);                                                                    \
     } while (0)
 
 RVA(0x00067f80, 0x313)
@@ -660,8 +660,8 @@ i32 CGrunt::UpdateFreezeAnimation() {
         if (m_freezeUnfrozen != false) {
             m_entranceActive = false;
             ReadConfigFromButeMgr();
-            LoadCellAnimNames(0, 0);
-            LoadAnimNameTable(0, 0);
+            BuildImageSetNames(0, 0);
+            LoadAnimationSet(0, 0);
             ResetIdleAnimation(1, 0, 0);
             Coord tile = ScreenTile(LastTilePx());
             if (g_gameReg->GetTileGrid()->CellFlagsAt(tile.m_x, tile.m_y) & 0x80) {

@@ -2018,8 +2018,8 @@ grunt	?FinalizeStep@CMovingLogic@@UAEXPAD@Z	100.0000	100.0000	1	cpp:281810d27b94
 grunt	?GetTypeTag@CGrunt@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xf2a0	100.0000	
 grunt	?GetTypeTag@CMovingLogic@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x13bb0	100.0000	
 grunt	?IntersectsTileObjectAxes@CGrunt@@QAEHXZ	100.0000	100.0000	3	16e7423c29ee	0x4a9f0	100.0000	
-grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	a4660e013afa	0x49c60	100.0000	
-grunt	?LoadCellAnimNames@CGrunt@@QAEXHH@Z	100.0000	100.0000	6	0175c51658da	0x48470	100.0000	
+grunt	?LoadAnimationSet@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	a4660e013afa	0x49c60	100.0000	
+grunt	?BuildImageSetNames@CGrunt@@QAEXHH@Z	100.0000	100.0000	6	0175c51658da	0x48470	100.0000	
 grunt	?OnObjectRemoved@CGrunt@@UAEXXZ	100.0000	100.0000	8	e3934a21f63c	0x48360	100.0000	
 grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAUtagRECT@@W4GruntEntranceMode@@@Z	96.4877	96.4877	23	1d8395d5d3f6	0x4d800	96.4877	
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	3	377cfb0ff26b	0x48400	100.0000	

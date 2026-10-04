@@ -32,8 +32,8 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
     }
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, NULL);
     ReadConfigFromButeMgr();
-    LoadCellAnimNames(0, 0);
-    LoadAnimNameTable(0, 0);
+    BuildImageSetNames(0, 0);
+    LoadAnimationSet(0, 0);
 
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)

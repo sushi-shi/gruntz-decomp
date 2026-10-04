@@ -459,7 +459,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     i32 sel;
     if (toy1ExcessMs == 0 && toy2ExcessMs == 0) {
         i32 r = GetRandom(1, 100);
-        sel = (r >= m_toyBlendPct) ? 1 : 0;
+        sel = (r >= m_toyVariantThreshold) ? 1 : 0;
     } else if (toy1ExcessMs != 0 && toy2ExcessMs == 0) {
         sel = 0;
     } else if (toy2ExcessMs != 0 && toy1ExcessMs == 0) {

@@ -2222,8 +2222,8 @@ updatePowerup:
                             break;
                     }
                 }
-                LoadCellAnimNames(vehicle, variant);
-                LoadAnimNameTable(vehicle, variant);
+                BuildImageSetNames(vehicle, variant);
+                LoadAnimationSet(vehicle, variant);
             }
         }
     }

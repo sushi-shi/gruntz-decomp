@@ -1003,7 +1003,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseItem, GRUNT_ITEM2));
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_pickupAnimation);
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
-    ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
+    ar->Write(&m_toyVariantThreshold, sizeof(m_toyVariantThreshold));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));
     ar->Write(&m_activePickupType, sizeof(m_activePickupType));
     ar->Write(&m_carriedToyType, sizeof(m_carriedToyType));

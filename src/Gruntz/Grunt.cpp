@@ -353,8 +353,8 @@ void CGrunt::ReadConfigFromButeMgr() {
 }
 
 RVA(0x00048470, 0x131b)
-void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
-    if (kind == 0) {
+void CGrunt::BuildImageSetNames(i32 toyMode, i32 mobileToy) {
+    if (toyMode == 0) {
         m_directionData[0].WalkName() =
             "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_WALK;
         m_directionData[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
@@ -427,7 +427,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_directionData[8].ItemName() =
             "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ITEM;
         m_deathFrameSetName = "GRUNTZ_" + m_animSetName + "_DEATH";
-    } else if (dirOnly != 0) {
+    } else if (mobileToy != 0) {
         m_directionData[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST;
         m_directionData[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
         m_directionData[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST;
@@ -441,7 +441,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     } else {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
     }
-    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), kind);
+    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), toyMode);
     CWwdSpriteObject* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 
@@ -449,8 +449,8 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
 }
 
 RVA(0x00049c60, 0x8d1)
-void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
-    if (kind == 0) {
+void CGrunt::LoadAnimationSet(i32 toyMode, i32 mobileToy) {
+    if (toyMode == 0) {
         LOAD_POSE(m_poseWalk, "_WALK");
         LOAD_POSE(AT(m_poseAttack, GRUNT_ATTACK1), s_pose_ATTACK1);
         LOAD_POSE(AT(m_poseAttack, GRUNT_ATTACK2), s_pose_ATTACK2);
@@ -468,23 +468,25 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         return;
     }
 
-    if (toyOnly != 0) {
+    if (mobileToy != 0) {
         LOAD_POSE(m_poseWalk, "_WALK");
     } else {
         LOAD_POSE(AT(m_poseToy, GRUNT_TOY1), s_pose_TOY1);
 
-        i32 x = AT(m_poseToy, GRUNT_TOY1)->m_records.GetSize();
+        i32 toy1FrameCount = AT(m_poseToy, GRUNT_TOY1)->m_records.GetSize();
         LOAD_POSE(AT(m_poseToy, GRUNT_TOY2), s_pose_TOY2);
-        i32 y = AT(m_poseToy, GRUNT_TOY2)->m_records.GetSize();
+        i32 toy2FrameCount = AT(m_poseToy, GRUNT_TOY2)->m_records.GetSize();
 
-        if (x < y) {
-            double blend =
-                DATA_COMPGEN(0x001e9748, 100.0) / (static_cast<double>(y) / x - DATA_COMPGEN(0x001e9740, -1.0)) - g_slopeNegHalf;
-            i32 pct = static_cast<i32>(blend);
-            m_toyBlendPct = 100 - pct;
+        if (toy1FrameCount < toy2FrameCount) {
+            double frameShare =
+                DATA_COMPGEN(0x001e9748, 100.0) / (static_cast<double>(toy2FrameCount) / toy1FrameCount - DATA_COMPGEN(0x001e9740, -1.0)) - g_slopeNegHalf;
+            i32 frameSharePct = static_cast<i32>(frameShare);
+            m_toyVariantThreshold = 100 - frameSharePct;
         } else {
-            m_toyBlendPct =
-                static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - g_slopeNegHalf));
+            m_toyVariantThreshold = static_cast<i32>(
+                (100.0 / (static_cast<double>(toy1FrameCount) / toy2FrameCount - -1.0)
+                 - g_slopeNegHalf)
+            );
         }
     }
 
@@ -1697,8 +1699,8 @@ i32 CGrunt::Place(
     );
     m_entranceActive = false;
     ReadConfigFromButeMgr();
-    LoadCellAnimNames(0, 0);
-    LoadAnimNameTable(0, 0);
+    BuildImageSetNames(0, 0);
+    LoadAnimationSet(0, 0);
     ResetIdleAnimation(1, 0, 0);
     switch (aiType) {
         case AI_POSTGUARD:
@@ -2289,8 +2291,8 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             ReadConfigFromButeMgr();
-            LoadCellAnimNames(0, 0);
-            LoadAnimNameTable(0, 0);
+            BuildImageSetNames(0, 0);
+            LoadAnimationSet(0, 0);
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_SUPERSPEEDLOOP");
             return 1;
@@ -2387,8 +2389,8 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
     }
     m_activePickupType = pickupType;
     ReadConfigFromButeMgr();
-    LoadCellAnimNames(fresh, defer);
-    LoadAnimNameTable(fresh, defer);
+    BuildImageSetNames(fresh, defer);
+    LoadAnimationSet(fresh, defer);
     if (fresh == 0) {
         if (IsAnimationAct("H")) {
             DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)

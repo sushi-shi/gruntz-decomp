@@ -364,7 +364,7 @@ public:
 
     void ReadConfigFromButeMgr();
     i32 StartDeathMovement();
-    void LoadAnimNameTable(i32 kind, i32 toyOnly);
+    void LoadAnimationSet(i32 toyMode, i32 mobileToy);
 
     i32 RectContains(i32 x, i32 y);
 
@@ -436,7 +436,7 @@ public:
     // @identity-TODO: reserved members in this layout are save-streamed, with
     // some also reset during initialization; no gameplay read identifies their roles.
     i32 m_reserved18c;
-    i32 m_toyBlendPct;
+    i32 m_toyVariantThreshold;
     PickupType m_brickPickupType;
     PickupType m_carriedToyType;
     PickupType m_savedToolType;
@@ -664,7 +664,7 @@ public:
     CGrunt() : CMovingLogic(CUserLogic::INLINE_BASE) {}
     CGrunt(CGameObject* owner);
 
-    void LoadCellAnimNames(i32 kind, i32 directionOnly);
+    void BuildImageSetNames(i32 toyMode, i32 mobileToy);
     void ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
 
     i32 IsArrivalRerollPending() {
