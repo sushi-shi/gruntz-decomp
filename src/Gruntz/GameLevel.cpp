@@ -212,8 +212,8 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         CDDrawWorkerHost* mp = m_mainPlane;
         SET_SCROLL_POSITION_RAW_FIRST(mp, startX, startY);
 
-        i32 ox = m_mainPlane->m_scrollPixelX;
-        i32 oy = m_mainPlane->m_scrollPixelY;
+        i32 ox = m_mainPlane->GetScrollPixelX();
+        i32 oy = m_mainPlane->GetScrollPixelY();
         i32 i2 = 0;
         while (i2 < m_planes.GetSize()) {
             if (i2 != m_mainIndex) {

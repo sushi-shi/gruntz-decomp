@@ -1508,8 +1508,8 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
         case WM_INITDIALOG: {
 
             CDDrawWorkerHost* warp = LevelOf(g_gameReg->World())->m_mainPlane;
-            i32 seedX = warp->m_scrollPixelX;
-            i32 seedY = warp->m_scrollPixelY;
+            i32 seedX = warp->GetScrollPixelX();
+            i32 seedY = warp->GetScrollPixelY();
             SetDlgItemInt(hDlg, 0x40e, seedX, false);
             SetDlgItemInt(hDlg, 0x40f, seedY, false);
             return true;

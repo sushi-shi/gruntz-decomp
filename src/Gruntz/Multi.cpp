@@ -700,8 +700,8 @@ void CMulti::RenderGameFrame() {
     }
     StepScroll();
     Mgr()->m_worldSounds->SetListenerPosition(
-        (m_world->m_level->m_mainPlane)->m_scrollPixelX,
-        (m_world->m_level->m_mainPlane)->m_scrollPixelY
+        (m_world->m_level->m_mainPlane)->GetScrollPixelX(),
+        (m_world->m_level->m_mainPlane)->GetScrollPixelY()
     );
     DrawWorldView();
     m_statusBar->LoadMainStatusBarSprite();

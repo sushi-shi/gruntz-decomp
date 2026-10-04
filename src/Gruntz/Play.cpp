@@ -440,8 +440,8 @@ i32 CPlay::Render() {
         m_world->ChildGroup()->TickKillCues(0);
         DrawVisibleWorld();
         m_mgr->m_worldSounds->SetListenerPosition(
-            m_world->m_level->m_mainPlane->m_scrollPixelX,
-            m_world->m_level->m_mainPlane->m_scrollPixelY
+            m_world->m_level->m_mainPlane->GetScrollPixelX(),
+            m_world->m_level->m_mainPlane->GetScrollPixelY()
         );
         SoundStream* stream = m_world->GetSoundStream();
         if (stream != NULL) {
@@ -519,8 +519,8 @@ i32 CPlay::Render() {
         }
 
         m_mgr->m_worldSounds->SetListenerPosition(
-            m_world->m_level->m_mainPlane->m_scrollPixelX,
-            m_world->m_level->m_mainPlane->m_scrollPixelY
+            m_world->m_level->m_mainPlane->GetScrollPixelX(),
+            m_world->m_level->m_mainPlane->GetScrollPixelY()
         );
         {
             SoundStream* stream = m_world->GetSoundStream();
@@ -775,8 +775,8 @@ i32 CPlay::UpdateWorldFixedSteps() {
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_mgr->m_worldSounds->SetListenerPosition(
-        m_world->m_level->m_mainPlane->m_scrollPixelX,
-        m_world->m_level->m_mainPlane->m_scrollPixelY
+        m_world->m_level->m_mainPlane->GetScrollPixelX(),
+        m_world->m_level->m_mainPlane->GetScrollPixelY()
     );
     DWORD(WINAPI * tg)(void) = timeGetTime;
 
@@ -863,8 +863,8 @@ i32 CPlay::ProfileDeltaFrame() {
     }
     i32 renderMs = static_cast<i32>((tg() - t0));
     m_mgr->m_worldSounds->SetListenerPosition(
-        m_world->m_level->m_mainPlane->m_scrollPixelX,
-        m_world->m_level->m_mainPlane->m_scrollPixelY
+        m_world->m_level->m_mainPlane->GetScrollPixelX(),
+        m_world->m_level->m_mainPlane->GetScrollPixelY()
     );
     u32 t2 = tg();
     DrawVisibleWorld();
@@ -1914,8 +1914,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (vk == VK_SPACE) {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
             CDDrawWorkerHost* obj = this->m_world->m_level->m_mainPlane;
-            i32 bookmarkScrollX = obj->m_scrollPixelX;
-            i32 bookmarkScrollY = obj->m_scrollPixelY;
+            i32 bookmarkScrollX = obj->GetScrollPixelX();
+            i32 bookmarkScrollY = obj->GetScrollPixelY();
             Coord* slot;
             if (this->CameraBookmarkCount() < 4) {
                 slot = g_coordPool.Pop();
@@ -3103,7 +3103,7 @@ void CPlay::DrawDebugStatsFull() {
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
-        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
+        sprintf(scratch, " Pos = %i,%i", p->GetScrollPixelX(), p->GetScrollPixelY());
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
@@ -3197,7 +3197,7 @@ void CPlay::DrawDebugStats() {
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
 
-        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
+        sprintf(scratch, " Pos = %i,%i", p->GetScrollPixelX(), p->GetScrollPixelY());
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_TIMING)) {
@@ -3933,8 +3933,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
     b32 changed = false;
     CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
 
-    i32 sx = g->m_scrollPixelX;
-    i32 sy = g->m_scrollPixelY;
+    i32 sx = g->GetScrollPixelX();
+    i32 sy = g->GetScrollPixelY();
     double frac = static_cast<double>(w->m_scrollSpeed) * 0.01;
     i32 speed = static_cast<i32>(frac * s_scrollSpeedRange + s_minScrollSpeed);
 

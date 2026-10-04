@@ -40,6 +40,13 @@ public:
         return m_planePixelHeight;
     }
 
+    i32 GetScrollPixelX() const {
+        return m_scrollPixelX;
+    }
+    i32 GetScrollPixelY() const {
+        return m_scrollPixelY;
+    }
+
     i32 GetTileColumns() const {
         return m_tileColumns;
     }
