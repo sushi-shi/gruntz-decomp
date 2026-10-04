@@ -19,9 +19,10 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 
 #define SET_MAIN_PLANE_TILE(reg, tileX, tileY, tile)                                               \
     {                                                                                              \
-        CDDrawWorkerHost* plane = (reg)->m_world->m_level->m_mainPlane;                            \
+        CGruntzMgr* tileRegistry = (reg);                                                          \
+        CDDrawWorkerHost* plane = tileRegistry->m_world->m_level->m_mainPlane;                     \
         SET_WORKER_HOST_CELL(plane, tileX, tileY, tile);                                           \
-        (reg)->GetTileGrid()->ComputeCellFlags(tileX, tileY, tile);                                \
+        tileRegistry->GetTileGrid()->ComputeCellFlags(tileX, tileY, tile);                         \
     }
 
 inline SIZE
