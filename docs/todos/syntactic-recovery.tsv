@@ -28,8 +28,8 @@ rva	unit	function	lost_max	cur
 0x17a460	font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	99.4530
 0x022810	fontconfig	?Draw3DText@CGameText@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	94.0260	93.9167
 0x045d30	fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	97.0000	94.2786
-0x04d800	grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAUtagRECT@@W4GruntEntranceMode@@@Z	96.4877	96.4386
 0x04b370	grunt	?MoveTo@CGrunt@@QAEHHHHHHH@Z	32.5807	0.0000
+0x04d800	grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAUtagRECT@@W4GruntEntranceMode@@@Z	96.4877	96.4386
 0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	73.7003
 0x0f0130	gruntarrivalupdate	?StepGauntletGruntBehavior@CGrunt@@QAEHXZ	97.2870	96.4049
 0x0ecc90	gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	90.2045	90.1894
@@ -84,6 +84,7 @@ rva	unit	function	lost_max	cur
 0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
 0x09c0e0	spriteloaders	?AddTime@CTimer@@QAEXHH@Z	100.0000	99.8214
+0x0e2df0	spriteref	?Build@CGruntPalette@@QAEHPAVCShadeTableCache@@PAUCShadeTable@@W4ColorTint@@@Z	100.0000	83.1877
 0x0e8cb0	statusbartabbuilders	?Render@CSBI_GruntMachine@@UAEHXZ	100.0000	95.7692
 0x075e90	terraintileloader	?HandleToolAnimationCue@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	86.1938	85.7626
 0x10ee20	tilelogicpump	??0CCheckpointTrigger@@QAE@PAUCGameObject@@@Z	99.9398	99.8675
