@@ -7,6 +7,7 @@ Start with the root [README](../README.md) for setup and the build loop.
 - [Compiler profiles](compiler-flags.md), [linking](linker-flags.md), [toolchain setup](toolchain-vc50-sp3.md), and [compiler identification](compiler-detection.md).
 - [Match tracking](match-status.md), [permuter](permuter.md), and the small [compiler-pattern reference](patterns/INDEX.md).
 - [Data attribution](data-attribution.md), [linked-image comparison](image-diff.md), [cleanliness](cleanliness-metrics.md), and [source markers](comment-markers.md).
+- [Const-cast contracts](const-casts/README.md): every remaining cast, the declarations that require it, provenance, and GitHub comparisons.
 - [clangd](clangd.md) and [runtime DLLs](runtime-dlls.md).
 
 ## Source of truth and storage
