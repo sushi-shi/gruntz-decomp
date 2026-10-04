@@ -113,6 +113,7 @@ i32 CDemo::Render() {
     return 1;
 }
 
+// @early-stop
 RVA(0x0003c300, 0x183)
 i32 DispatchDemoMoverLogic(CGameObject* owner) {
     CLogicRecord* st = owner->GetLogicRecord();
