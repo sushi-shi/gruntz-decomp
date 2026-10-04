@@ -2928,19 +2928,17 @@ void CStatusBarMgr::NotifyAllSlots() {
     }
 
     CSBI_ImageSet** p = &m_resourceSlotSprites[4];
-    i32* h = &m_resourceSlots[4].m_value;
     for (i32 n = 0; n < 4; n++) {
         if (p[-4]) {
-            p[-4]->Notify(h[-24]);
+            p[-4]->Notify(m_resourceSlots[n].m_value);
         }
         if (p[0]) {
-            p[0]->Notify(h[0]);
+            p[0]->Notify(m_resourceSlots[n + 4].m_value);
         }
         if (p[4]) {
-            p[4]->Notify(h[24]);
+            p[4]->Notify(m_resourceSlots[n + 8].m_value);
         }
         p++;
-        h += 6;
     }
 
     if (m_resourceMachineFramework) {
