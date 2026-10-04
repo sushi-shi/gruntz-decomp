@@ -32,6 +32,10 @@ public:
 
     virtual void Unload() OVERRIDE;
 
+    b32 IsSilent() const {
+        return m_silentMode;
+    }
+
     i32 PlayCueIfElapsed(const char* key);
 
     SoundCue* FindCue(const char* key) {

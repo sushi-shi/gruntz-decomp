@@ -16,7 +16,7 @@
 
 static __inline void HiCueFind() {
     SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
-    if (registry->m_silentMode == false) {
+    if (registry->IsSilent() == false) {
         CObject* obj = registry->Lookup("GAME_TABHIGHLIGHT1");
         if (obj) {
             static_cast<SoundCue*>(obj)->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);

@@ -4132,7 +4132,7 @@ i32 CPlay::ExecuteCommand(
                 NULL
             );
             if (r == -1) {
-                if (m_world->SoundRegistry()->m_silentMode == false) {
+                if (m_world->SoundRegistry()->IsSilent() == false) {
                     SoundCue* cue =
                         static_cast<SoundCue*>(m_world->SoundRegistry()->Lookup("GAME_BADSELECT"));
                     if (cue != NULL) {

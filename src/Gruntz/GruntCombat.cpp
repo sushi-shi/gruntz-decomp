@@ -1133,7 +1133,7 @@ i32 CGrunt::ApplyCombatHitEffects(
 
             SoundCueRegistry* registry =
                 (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
-            if (registry->m_silentMode == false) {
+            if (registry->IsSilent() == false) {
                 SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {
                     cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);

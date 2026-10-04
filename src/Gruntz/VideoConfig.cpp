@@ -495,7 +495,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
-        if (registry->m_silentMode == false) {
+        if (registry->IsSilent() == false) {
             SoundCue* cue = registry->FindCue("GAME_VOICE");
             if (cue != NULL) {
                 PlaySoundCueIfElapsed(cue, newpos, 0, 0, false);
