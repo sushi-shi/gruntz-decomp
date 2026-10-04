@@ -1076,7 +1076,7 @@ ddrawsurfacemgr	?Close@CFileMem@@UAEXXZ	100.0000	100.0000	1	cpp:198e40bd8d32	0x1
 ddrawsurfacemgr	?Close@CFileMemBase@@UAEXXZ	100.0000	100.0000	1	cpp:198e40bd8d32	0x157910	100.0000	
 ddrawsurfacemgr	?DispatchSerializationCallback@CDDrawSurfaceMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	100.0000	100.0000	4	b45b5392b344	0x156a90	100.0000	
 ddrawsurfacemgr	?EnsureSoundInitialized@CDDrawSurfaceMgr@@QAEHXZ	100.0000	100.0000	4	baa1c182eac5	0x155ff0	100.0000	
-ddrawsurfacemgr	?FreeContext@CDDrawSurfaceMgr@@QAEXXZ	100.0000	100.0000	4	328a897b4bd2	0x155fc0	100.0000	
+ddrawsurfacemgr	?ShutdownSound@CDDrawSurfaceMgr@@QAEXXZ	100.0000	100.0000	4	328a897b4bd2	0x155fc0	100.0000	
 ddrawsurfacemgr	?Init@CDDrawSurfaceMgr@@UAEHPAUHWND__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	15	d145f7a54e0a	0x155900	100.0000	
 ddrawsurfacemgr	?IsReady@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	6	dd12956ad1ee	0x155f00	100.0000	
 ddrawsurfacemgr	?LoadRecordFile@@YGHPBDPAUCSnapshotHeader@@PAXIH@Z	100.0000	100.0000	3	14c9a6078188	0x156ad0	100.0000	

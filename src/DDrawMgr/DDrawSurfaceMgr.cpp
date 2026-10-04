@@ -184,7 +184,7 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00155fc0, 0x2e)
-void CDDrawSurfaceMgr::FreeContext() {
+void CDDrawSurfaceMgr::ShutdownSound() {
     if (m_soundRegistry != NULL) {
 
         SoundStream* inner = m_soundRegistry->GetSoundStream();
