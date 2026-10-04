@@ -691,6 +691,8 @@ public:
         return m_combatTiming.Expired();
     }
 
+    void StartHudRetireTimer();
+
     void StartHold(u32 durationMs) {
         m_holdTiming.Start(durationMs);
     }

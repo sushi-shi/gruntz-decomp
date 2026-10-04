@@ -138,9 +138,7 @@ void CTriggerMgr::SelectUnitsInRect(RECT selectionRect, b32 preserveSelection) {
                         SelectUnit(g_curPlayer, unitIndex, 1, 1);
                     } else {
                         grunt->CreateHealthSprite();
-                        grunt->m_hudRetireTiming.Start(
-                            g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388)
-                        );
+                        grunt->StartHudRetireTimer();
                     }
                 }
             }

@@ -5,6 +5,10 @@
 #include <Gruntz/Grunt.h>
 #include <Rez/FrameClock.h>
 
+inline void CGrunt::StartHudRetireTimer() {
+    m_hudRetireTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
+}
+
 inline void ArmGruntCombatTimeout(CGrunt* grunt) {
     grunt->m_combatTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
 }
