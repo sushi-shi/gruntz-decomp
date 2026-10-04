@@ -911,7 +911,7 @@ i32 CGrunt::HandleCombatContact(
                 i32 yMasked = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 applied;
                 if (phase == ARRIVAL_TAG_TRIGGER_B) {
-                    if (VehicleContactContains(xMasked, yMasked) != 0) {
+                    if (IsInToyUseRange(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
                     applied = m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, sx, sy);
@@ -2438,10 +2438,10 @@ void CGrunt::AdvanceMotion() {
 
                             Coord last = other->LastTilePx();
                             Coord target = last;
-                            if (VehicleContactContains(x, y) != 0) {
+                            if (IsInToyUseRange(x, y) != 0) {
                                 target.m_x = otherPxX;
                                 target.m_y = otherPxY;
-                            } else if (VehicleContactContains(last.m_x, last.m_y) != 0) {
+                            } else if (IsInToyUseRange(last.m_x, last.m_y) != 0) {
                                 other->SnapToLastTile(0);
                             } else {
                                 target = m_arrivalTargetPx;

@@ -445,7 +445,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     i32 pfk = m_pendingFxKind;
     if (pfk >= 0xdf) {
-        PickupType alt = cell->GetVehiclePickupType();
+        PickupType alt = cell->GetCarriedToyType();
         if (hitFlag != 0) {
             world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, true);
         } else {
@@ -763,7 +763,7 @@ i32 CTriggerMgr::HandleTargetSelection(
         case TARGET_SELECTION_TOY:
             if (hit != NULL) {
                 if (hit->GetPlayerIndex() == g_curPlayer && g_traitorMode == false
-                    && (selectedGrunt != hit || hit->GetVehiclePickupType() != PICKUP_SCROLL)) {
+                    && (selectedGrunt != hit || hit->GetCarriedToyType() != PICKUP_SCROLL)) {
                     goto reportError;
                 }
                 i32 hitPlayerIndex = hit->GetPlayerIndex();
@@ -1493,7 +1493,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
         }
     } else if (kind == ACTIONOPTION_HIT_SECONDARY) {
 
-        PickupType alt = cell->GetVehiclePickupType();
+        PickupType alt = cell->GetCarriedToyType();
         if (alt == PICKUP_SCROLL) {
             CGameObject* o = cell->m_object;
             g_gameReg->GetTriggerMgr()->HandleTargetSelection(
@@ -1905,7 +1905,7 @@ i32 CTriggerMgr::SpawnGrunt(
     CGameObject* o = src->m_object;
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(o, sx, sy)
     PickupType k = EQUIPPED_TOOL_TERNARY_GT(src);
-    PickupType vis = src->GetVehiclePickupType();
+    PickupType vis = src->GetCarriedToyType();
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);
     CDDrawChildGroup* fac = m_world->ChildGroup();
     CWwdSpriteObject* sprite =
@@ -2543,7 +2543,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
         if (cell->m_activePickupType >= PICKUP_TOYZ_FIRST) {
             CloseActionOptionsMenu();
         } else {
-            PickupType kind = cell->GetVehiclePickupType();
+            PickupType kind = cell->GetCarriedToyType();
             if (kind == PICKUP_SCROLL) {
                 CGameObject* o = cell->m_object;
                 g_gameReg->GetTriggerMgr()->HandleTargetSelection(

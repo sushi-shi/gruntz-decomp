@@ -164,7 +164,7 @@ i32 CGrunt::UpdatePickupAnimation() {
     }
     if (mode < PICKUP_BRICKZ_FIRST) {
         if (mode >= PICKUP_TOYZ_FIRST) {
-            return LoadVehicleGruntSprites(mode);
+            return SetCarriedToy(mode);
         }
         return LoadTypeTableClearMove(mode);
     }

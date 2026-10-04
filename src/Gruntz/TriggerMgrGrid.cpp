@@ -795,7 +795,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             } else {
                 PickupType gruntKind = g->GetEquippedToolType();
                 if (IDX(gruntKind) == sw->m_checkpointType
-                    || sw->m_checkpointType == IDX(g->GetVehiclePickupType())) {
+                    || sw->m_checkpointType == IDX(g->GetCarriedToyType())) {
                     sw->SwitchDown();
                 } else {
                     RECT* view = g_gameReg->m_world->GetLevel()->m_mainPlane->GetPlaneViewRect();
@@ -1221,15 +1221,15 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         return -1;
     }
 
-    if (cellTileX == argTileX && cellTileY == argTileY
-        && cell->GetVehiclePickupType() != PICKUP_SCROLL && g_traitorMode == false) {
+    if (cellTileX == argTileX && cellTileY == argTileY && cell->GetCarriedToyType() != PICKUP_SCROLL
+        && g_traitorMode == false) {
         return 0;
     }
     destination.Set(
         (worldX & ~TILE_MASK_PX) + TILE_HALF_PX,
         (worldY & ~TILE_MASK_PX) + TILE_HALF_PX
     );
-    if (cell->VehicleContactContains(destination.m_x, destination.m_y) == 0) {
+    if (cell->IsInToyUseRange(destination.m_x, destination.m_y) == 0) {
         goto bad;
     }
 
@@ -1244,7 +1244,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             return 0;
         }
 
-        PickupType kind = cell->GetVehiclePickupType();
+        PickupType kind = cell->GetCarriedToyType();
         i32 moveKind = 0;
         if (kind == PICKUP_SCROLL) {
             moveKind = cell->m_moveKind;
@@ -1258,7 +1258,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
             RESET_GRUNT_COMBAT_STATE(cell)
         }
-        cell->LoadVehicleGruntSprites(PICKUP_NONE);
+        cell->SetCarriedToy(PICKUP_NONE);
         return 1;
     }
 
@@ -1275,7 +1275,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
 
     moveKind = 0;
-    if (cell->GetVehiclePickupType() == PICKUP_SCROLL) {
+    if (cell->GetCarriedToyType() == PICKUP_SCROLL) {
         moveKind = cell->m_moveKind;
     }
     cell->FaceTowardPixel(destination.m_x, destination.m_y);
@@ -1285,8 +1285,8 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
 
     CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
-    if (hit->LoadGruntTypeTable(cell->GetVehiclePickupType(), 1, moveKind, 0) != 0) {
-        cell->LoadVehicleGruntSprites(PICKUP_NONE);
+    if (hit->LoadGruntTypeTable(cell->GetCarriedToyType(), 1, moveKind, 0) != 0) {
+        cell->SetCarriedToy(PICKUP_NONE);
 
         if (hit->GetPlayerIndex() != playerIndex) {
             CGameObject* obj = cell->m_object;

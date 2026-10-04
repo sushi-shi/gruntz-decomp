@@ -76,7 +76,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Read(&m_brickPickupType, sizeof(m_brickPickupType));
     ar->Read(&m_activePickupType, sizeof(m_activePickupType));
-    ar->Read(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
+    ar->Read(&m_carriedToyType, sizeof(m_carriedToyType));
     ar->Read(&m_savedToolType, sizeof(m_savedToolType));
     ar->Read(&m_pendingPickupType, sizeof(m_pendingPickupType));
     ar->Read(&m_helpCueId, sizeof(m_helpCueId));
@@ -109,8 +109,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_arrivalActive, sizeof(m_arrivalActive));
     ar->Read(&m_reachRect, sizeof(m_reachRect));
     ar->Read(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
-    ar->Read(&m_vehicleContactRect, sizeof(m_vehicleContactRect));
-    ar->Read(&m_vehicleContactExclusionRect, sizeof(m_vehicleContactExclusionRect));
+    ar->Read(&m_toyUseRect, sizeof(m_toyUseRect));
+    ar->Read(&m_toyUseExclusionRect, sizeof(m_toyUseExclusionRect));
     ar->Read(&m_health, sizeof(m_health));
     ar->Read(&m_stamina, sizeof(m_stamina));
     ar->Read(&m_toyTime, sizeof(m_toyTime));

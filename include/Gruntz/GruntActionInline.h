@@ -55,7 +55,7 @@ inline void CGrunt::ApplyPendingPickup() {
         return;
     }
     if (mode >= PICKUP_TOYZ_FIRST) {
-        LoadVehicleGruntSprites(mode);
+        SetCarriedToy(mode);
         return;
     }
     LoadGruntTypeTable(mode, 1, 0, 1);

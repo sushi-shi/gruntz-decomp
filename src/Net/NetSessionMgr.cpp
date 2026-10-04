@@ -134,7 +134,7 @@ void CNetSession::BuildGruntzCrcInfo() {
             i32 wp;
             PRIO(wp, type);
             b32 da = grunt->m_daFlag;
-            PickupType toy = grunt->GetVehiclePickupType();
+            PickupType toy = grunt->GetCarriedToyType();
             PickupType tool = grunt->ResolveEquippedToolType(type);
             wsprintfA(
                 szLine,
@@ -699,7 +699,7 @@ i32 CNetSession::ComputeChecksum() {
 
                 PickupType carried = grunt->m_activePickupType;
                 PickupType effective = grunt->ResolveEquippedToolType(carried);
-                sum += IDX(grunt->GetVehiclePickupType()) + grunt->IsEntranceCommitted()
+                sum += IDX(grunt->GetCarriedToyType()) + grunt->IsEntranceCommitted()
                        + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);
 
                 i32 priority;

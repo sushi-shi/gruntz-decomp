@@ -180,8 +180,8 @@ public:
     PickupType GetGruntKind() const {
         return m_gruntKind;
     }
-    PickupType GetVehiclePickupType() const {
-        return m_vehiclePickupType;
+    PickupType GetCarriedToyType() const {
+        return m_carriedToyType;
     }
     PickupType GetBrickPickupType() const {
         return m_brickPickupType;
@@ -342,7 +342,7 @@ public:
     i32 RectContains(i32 x, i32 y);
 
     void RecycleCoords();
-    i32 VehicleContactContains(i32 x, i32 y);
+    i32 IsInToyUseRange(i32 x, i32 y);
     void SetNeighbor(i32 playerIndex, i32 unitIndex);
     i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     CGrunt* FindGridNeighbor(i32 validate);
@@ -411,7 +411,7 @@ public:
     i32 m_reserved18c;
     i32 m_toyBlendPct;
     PickupType m_brickPickupType;
-    PickupType m_vehiclePickupType;
+    PickupType m_carriedToyType;
     PickupType m_savedToolType;
     PickupType m_pendingPickupType;
     i32 m_helpCueId;
@@ -470,8 +470,8 @@ public:
     RECT m_reachRect;
     RECT m_reachExclusionRect;
 
-    RECT m_vehicleContactRect;
-    RECT m_vehicleContactExclusionRect;
+    RECT m_toyUseRect;
+    RECT m_toyUseExclusionRect;
     EnemyAiType m_aiType;
     GruntAiState m_aiState;
     BattlezTask m_battleState;
@@ -809,7 +809,7 @@ public:
         i32 extraPassableMask
     );
 
-    i32 LoadVehicleGruntSprites(PickupType kind);
+    i32 SetCarriedToy(PickupType toyType);
 
     i32 Place(
         class CTriggerMgr* board,
@@ -817,7 +817,7 @@ public:
         i32 unitIndex,
         PickupType moveIcon,
         PickupType typeKind,
-        i32 vehicleKind,
+        i32 carriedToyType,
         EnemyAiType aiType,
         i32 defenderRadiusMinusOne,
         i32 defenderQueuePosition,

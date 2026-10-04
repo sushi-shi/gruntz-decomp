@@ -274,7 +274,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_neighborUnitIndex = -1;
     m_warpstoneAnchorIndex = 0;
     m_activePickupType = PICKUP_NONE;
-    m_vehiclePickupType = PICKUP_NONE;
+    m_carriedToyType = PICKUP_NONE;
     m_brickPickupType = PICKUP_NONE;
     m_gruntKind = GRUNT_NORMAL;
     m_savedToolType = PICKUP_NONE;
@@ -301,8 +301,8 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     RECT zero;
     SET_RECT_COMPONENTS(zero, 0, 0, 0, 0);
     m_reachExclusionRect = zero;
-    m_vehicleContactRect = zero;
-    m_vehicleContactExclusionRect = zero;
+    m_toyUseRect = zero;
+    m_toyUseExclusionRect = zero;
 
     m_toyTiming.Clear();
     m_idleDelayTiming.Clear();
@@ -1576,7 +1576,7 @@ i32 CGrunt::Place(
     i32 unitIndex,
     PickupType moveIcon,
     PickupType typeKind,
-    i32 vehicleKind,
+    i32 carriedToyType,
     EnemyAiType aiType,
     i32 defenderRadiusMinusOne,
     i32 defenderQueuePosition,
@@ -1636,7 +1636,7 @@ i32 CGrunt::Place(
     m_savedMoveIcon = -1;
     m_lowStaminaCued = false;
     m_targetTeam = -1;
-    LoadVehicleGruntSprites(static_cast<PickupType>(vehicleKind));
+    SetCarriedToy(static_cast<PickupType>(carriedToyType));
     LoadGruntTypeTable(typeKind, 1, 0, 0);
     if (span != NULL) {
         SET_RECT_XY_EXTENTS(
