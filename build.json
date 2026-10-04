@@ -3426,6 +3426,17 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "framescheduler",
+      "source": "src/Runtime/FrameScheduler.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

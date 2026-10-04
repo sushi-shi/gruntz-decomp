@@ -1,4 +1,5 @@
 #include <Runtime/FrameTiming.h>
+#include <Runtime/FrameScheduler.h>
 #include <cassert>
 #include <cstdio>
 #include <climits>
@@ -152,11 +153,93 @@ static void resetAndIsolation() {
     assert(first.timerRemainingMs() == 100);
 }
 
+static void returningScheduler() {
+    FrameScheduler frames;
+    frames.reset(1000);
+    frames.timing().setFrameRate(50);
+    assert(frames.poll(1000));
+    assert(frames.delayMs(1000) == 0);
+    assert(!frames.poll(1005));
+    assert(frames.delayMs(1005) == 15);
+    assert(frames.timing().nowMs() == 1000 && frames.timing().deltaMs() == 0);
+    assert(!frames.poll(1010));
+    assert(frames.timing().nowMs() == 1000 && frames.timing().timerRemainingMs() == 100);
+    assert(frames.poll(1020));
+    assert(frames.timing().nowMs() == 1005 && frames.timing().deltaMs() == 5);
+    assert(!frames.poll(1025));
+    assert(frames.timing().deltaMs() == 5);
+    assert(frames.poll(1100));
+    assert(frames.timing().deltaMs() == 20);
+    // Processing a late frame does not run catch-up updates in the callback.
+    assert(frames.delayMs(1100) == 0);
+    assert(!frames.poll(1101));
+    assert(frames.timing().deltaMs() == 20);
+    frames.resetFrameTime(2000);
+    assert(frames.poll(2000));
+    assert(frames.timing().nowMs() == 2000 && frames.timing().deltaMs() == 0);
+    assert(!frames.poll(2001));
+    frames.timing().setFrameRate(0);
+    assert(frames.poll(2002));
+    assert(frames.timing().nowMs() == 2001 && frames.timing().deltaMs() == 1);
+    assert(frames.poll(2003));
+    assert(frames.timing().deltaMs() == 2);
+
+    frames.timing().setFrameRate(50);
+    assert(!frames.poll(2004));
+    frames.suspend();
+    frames.suspend();
+    assert(frames.poll(80000));
+    assert(frames.timing().nowMs() == 80000 && frames.timing().deltaMs() == 0);
+    assert(!frames.poll(80001));
+    assert(frames.timing().deltaMs() == 0);
+    assert(frames.poll(80020));
+    assert(frames.timing().deltaMs() == 1);
+
+    // Canceling an unadmitted frame must not consume periodic timer state.
+    frames.reset(0);
+    frames.timing().setFrameRate(1);
+    assert(frames.poll(0));
+    assert(!frames.poll(100));
+    assert(frames.timing().timerRemainingMs() == 100);
+    frames.suspend();
+    assert(frames.poll(10000));
+    assert(frames.timing().deltaMs() == 0 && frames.timing().timerRemainingMs() == 100);
+    assert(!frames.poll(10100));
+    assert(frames.poll(11000));
+    assert(frames.timing().timerRemainingMs() == 0);
+    assert(!frames.poll(11001));
+    assert(frames.timing().timerRemainingMs() == 0);
+    frames.resetFrameTime(20000);
+    assert(frames.poll(20000));
+    assert(frames.timing().timerRemainingMs() == 100);
+
+    frames.reset(0xfffffff0U);
+    frames.timing().setFrameRate(50);
+    assert(frames.poll(0xfffffff0U));
+    assert(!frames.poll(0xfffffff5U));
+    assert(frames.delayMs(0) == 4);
+    assert(frames.poll(4));
+    assert(frames.timing().deltaMs() == 5);
+    assert(!frames.poll(5));
+    frames.reset(123);
+    assert(frames.poll(123) && frames.timing().deltaMs() == 0);
+    assert(frames.timing().targetFps() == 0);
+
+    frames.reset(0);
+    frames.timing().setFrameRate(50);
+    unsigned int updates = 0;
+    for (u32 now = 0; now <= 2020; ++now) {
+        if (frames.poll(now)) ++updates;
+    }
+    assert(updates == 102 && frames.timing().fps() == 51);
+}
+
 int main() {
     static_assert(sizeof(u32) == 4, "Timing uses 32-bit milliseconds");
 #ifdef __EMSCRIPTEN__
     static_assert(sizeof(void*) == 4, "This suite must exercise wasm32");
 #endif
+    returningScheduler();
     countdowns();
     pacing();
     wrapAndPauses();

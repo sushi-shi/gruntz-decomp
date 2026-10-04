@@ -33,12 +33,10 @@ i32 g_period500CountdownMs = 0;
 
 i32 g_period100CountdownMs = 0;
 
-i32 CGruntzMgr::PerFrameTick() {
+i32 CGruntzMgr::UpdateFrame() {
     if (m_curState == NULL) {
         return 0;
     }
-
-    CGameMgrBase::PerFrameTick();
 
     GameStateId r = m_curState->Update();
     if (r != GAMESTATE_MULTI) {

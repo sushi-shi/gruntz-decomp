@@ -107,7 +107,7 @@ public:
     i32 InitializeLobbyConnectionSettings();
     std::string BuildMoviePath(MovieId movie);
 
-    virtual i32 PerFrameTick()  ;
+    virtual i32 UpdateFrame()  ;
 
     void RefreshGameClock();
     void HandleAppActivation(b32 active, i32 unused);

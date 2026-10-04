@@ -220,11 +220,23 @@ milliseconds; subtraction supports clock wrap when samples are less than one ful
 clock cycle (about 49.7 days) apart. No system clock, window, or wait is used by this
 component. Each game manager owns its timing; consumers read its `Timing()` view.
 
-For each frame, the host calls `beginFrame(start)`, queries `pacingDelay(now)`,
-performs any scheduling, then calls `finishPacing(completion)` once before the game
-update. `deltaMs()` stays based on frame start, so waiting contributes to the next
-frame's delta. The existing Windows host still spins for pacing; a returning host
-callback and removal of blocking waits are subsequent lifecycle work.
+`FrameScheduler::poll(now)` captures frame start and returns false until pacing
+allows an update. `delayMs(now)` tells the host when to call again. Pending polls
+retain their start timestamp internally; timing, timer and FPS state are published
+only when a frame is admitted, so cancellation cannot consume unseen timer state. A true
+result admits one game update; late callbacks do not run catch-up updates.
+`deltaMs()` stays based on frame start, so waiting contributes to the next frame's
+delta. Resetting the frame clock cancels a pending frame. Suspending also cancels it;
+the first resumed poll resets frame time using the resume timestamp, so paused
+time never enters the gameplay delta even without a separate activation handler.
+
+The Windows host calls `CGameApp::Step(now)` once after each bounded input batch.
+This callback runs at most one game update and returns a requested delay; the host
+waits for that deadline or incoming input using `MsgWaitForMultipleObjects`.
+Inactive applications wait for input. Frame pacing no longer spins or waits inside
+the game manager. Blocking transitions and movie/input waits remain separate
+lifecycle work; their conversion is required before all callbacks can return
+promptly.
 
 The periodic timer exposes zero for one frame on expiry and rearms on the next
 frame without consuming that frame's delta. Changing its period takes effect at

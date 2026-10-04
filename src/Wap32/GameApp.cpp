@@ -156,27 +156,28 @@ void CGameApp::CloseResources() {
 }
 
 i32 CGameApp::RunMessageLoop() {
-    MSG msg;
-
     HWND hwnd = m_gameWnd->GetHwnd();
-    if (!hwnd) {
-        return 0;
-    }
+    if (!hwnd) return 0;
 
     for (;;) {
-        if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
-            do {
-                if (msg.message == WM_QUIT) {
-                    return 1;
-                }
-                if (m_hAccel && msg.hwnd == hwnd) {
-                    TranslateAcceleratorA(hwnd, m_hAccel, &msg);
-                }
-                TranslateMessage(&msg);
-                DispatchMessageA(&msg);
-            } while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE));
+        MSG msg;
+        unsigned int dispatched = 0;
+        while (dispatched < 64 && PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
+            if (msg.message == WM_QUIT) return 1;
+            ++dispatched;
+            if (m_hAccel && msg.hwnd == hwnd
+                && TranslateAcceleratorA(hwnd, m_hAccel, &msg)) {
+                continue;
+            }
+            TranslateMessage(&msg);
+            DispatchMessageA(&msg);
         }
-        OnIdle();
+        const u32 delay = Step(timeGetTime());
+        // A capped batch may leave previously observed input in the queue.
+        // Drain it on the next iteration instead of waiting for new input.
+        if (delay && dispatched < 64) {
+            MsgWaitForMultipleObjects(0, NULL, FALSE, delay, QS_ALLINPUT);
+        }
     }
 }
 
@@ -275,10 +276,12 @@ BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     return false;
 }
 
-void CGameApp::OnIdle() {
-    if (m_appActive && m_running) {
-        m_gameMgr->PerFrameTick();
+u32 CGameApp::Step(u32 nowMs) {
+    if (m_appActive && m_running && m_gameMgr) {
+        return m_gameMgr->AdvanceFrame(nowMs);
     }
+    if (m_gameMgr) m_gameMgr->SuspendFrames();
+    return 0xffffffffU;
 }
 
 void CGameApp::FreeGameManager(){FREE_GAME_MANAGER}
@@ -302,7 +305,7 @@ CGameMgr::CGameMgr() {
     m_musicEnabled = true;
     CLEAR_GAME_MANAGER_WINDOW;
     m_frameGate = false;
-    m_timing.reset(timeGetTime());
+    m_frames.reset(timeGetTime());
 }
 
 i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
@@ -315,7 +318,7 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_gameWnd = pGameWnd;
     m_owner = pGameWnd->m_owner;
-    m_timing.reset(timeGetTime());
+    m_frames.reset(timeGetTime());
     return 1;
 }
 
@@ -323,33 +326,30 @@ void CGameMgr::Close() {
     CLEAR_GAME_MANAGER_WINDOW;
 }
 
-i32 CGameMgr::PerFrameTick() {
-    m_timing.beginFrame(timeGetTime());
-    const u32 delay = m_timing.pacingDelay(timeGetTime());
-    if (delay) {
-        SpinWaitForMs(static_cast<i32>(delay));
-    }
-    m_timing.finishPacing(timeGetTime());
+u32 CGameMgr::AdvanceFrame(u32 nowMs) {
+    if (!m_frames.poll(nowMs)) return m_frames.delayMs(nowMs);
+    UpdateFrame();
+    return 0;
+}
+
+i32 CGameMgr::UpdateFrame() {
     return 1;
 }
 
 void CGameMgr::ResetFrameTiming() {
-    m_timing.resetFrameTime(timeGetTime());
+    ResetFrameTiming(timeGetTime());
 }
 
-void CGameMgr::SpinWaitForMs(i32 ms) {
-    if (ms <= 0) return;
-    const u32 start = timeGetTime();
-    while (static_cast<u32>(timeGetTime()) - start <= static_cast<u32>(ms)) {
-    }
+void CGameMgr::ResetFrameTiming(u32 nowMs) {
+    m_frames.resetFrameTime(nowMs);
 }
 
 void CGameMgr::SetFrameRate(i32 fps) {
-    m_timing.setFrameRate(fps);
+    m_frames.timing().setFrameRate(fps);
 }
 
 i32 CGameMgr::TrySetFrameRate(i32 fps) {
-    if (m_timing.targetFps() > 0) {
+    if (Timing().targetFps() > 0) {
         SetFrameRate(0);
         return 0;
     }
