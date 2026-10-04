@@ -2079,7 +2079,7 @@ i32 CBattlezAiController::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
 
-        g = m_game->World()->ChildGroup()->Drain();
+        g = m_game->World()->ChildGroup()->NextSerialChild();
     }
     m_tileGrid->Clip(static_cast<const RECT*>(0));
     return 0;

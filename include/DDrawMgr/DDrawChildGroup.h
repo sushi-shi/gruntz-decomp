@@ -29,7 +29,7 @@ public:
     inline CGameObject* FirstChild();
     CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_walkCursor = NULL;
-        m_scanCursor = NULL;
+        m_serialScanCursor = NULL;
     }
 
     virtual ~CDDrawChildGroup() OVERRIDE;
@@ -160,7 +160,7 @@ public:
 
     POSITION m_walkCursor;
 
-    POSITION m_scanCursor;
+    POSITION m_serialScanCursor;
 
     void DrawObjectDebugGeometry();
     void DrawObjectCounts();
@@ -170,7 +170,7 @@ public:
     i32 RectsOverlap(RECT* a, RECT* b);
     i32 BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj);
 
-    inline CGameObject* Drain();
+    inline CGameObject* NextSerialChild();
     inline CGameObject* FirstSerialChild();
 };
 
