@@ -163,14 +163,6 @@ DATA(0x001e93a8)
 const char g_bootyWarpLetterCharacters[] = "WARP";
 DATA(0x001e93b0)
 const float g_secretRatioScale = 100.0f;
-DATA(0x001e93b4)
-static const float s_glitterPhaseBias = -225.0f;
-DATA(0x001e93b8)
-static const double s_degToRad = 0.017453292;
-DATA(0x001e93c0)
-static const double s_glitterShrinkRate = 0.002;
-DATA(0x001e93c8)
-static const double s_glitterStartRadius = 350.0;
 
 DATA(0x0020b838)
 RECT g_bootyStatLabelRects[8] = {
@@ -508,15 +500,17 @@ i32 CBootyState::UpdateWarpStoneGlitterAnimation() {
     i32 angleDegrees = m_pieceOrbitAngle;
     i32 pieceIndex = m_warpStonePieceIndex;
     double radius = static_cast<float>(m_pieceOrbitRadius);
-    double angleRadians = (static_cast<float>(angleDegrees) - s_glitterPhaseBias) * s_degToRad;
+    double angleRadians =
+        (static_cast<float>(angleDegrees) - (DATA_COMPGEN(0x001e93b4, -225.0f)))
+         * DATA_COMPGEN(0x001e93b8, 0.017453292);
     m_pieceOrbitX =
         static_cast<i32>((sin(angleRadians) * radius + g_bootyLetterCoords[pieceIndex].m_x));
     m_pieceOrbitY =
         static_cast<i32>((cos(angleRadians) * radius + g_bootyLetterCoords[pieceIndex].m_y));
     m_pieceOrbitAngle = angleDegrees + 5;
-    double shrinkFraction = static_cast<float>(angleDegrees + 5) * s_glitterShrinkRate;
-    m_pieceOrbitRadius =
-        static_cast<i32>((s_glitterStartRadius - shrinkFraction * s_glitterStartRadius));
+    double shrinkFraction = static_cast<float>(angleDegrees + 5) * DATA_COMPGEN(0x001e93c0, 0.002);
+    m_pieceOrbitRadius = static_cast<i32>((
+        DATA_COMPGEN(0x001e93c8, 350.0) - shrinkFraction * DATA_COMPGEN(0x001e93c8, 350.0)));
 
     i32 i = 0;
     if (pieceIndex > 0) {
