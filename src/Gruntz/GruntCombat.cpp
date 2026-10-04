@@ -494,7 +494,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
         m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* sel =
-        g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
+        g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), m_activePickupType >= PICKUP_TOYZ_FIRST);
     CWwdSpriteObject* h = m_object;
     h->SetDrawFill(SHADE_PAL_16, sel);
 }
@@ -502,7 +502,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
 RVA(0x00057890, 0x19c)
 i32 CGrunt::BuildGruntLoseItemAnimation() {
     FinishActiveAction();
-    PickupType reason = m_entranceReason;
+    PickupType reason = m_activePickupType;
     if (reason != PICKUP_TOOB && reason != PICKUP_WINGZ && reason != PICKUP_SPRING) {
         return 0;
     }
@@ -527,7 +527,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
-    PickupType reason = m_entranceReason;
+    PickupType reason = m_activePickupType;
     if (reason <= PICKUP_NONE || reason >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
@@ -854,8 +854,8 @@ i32 CMotionState::SetParams(
 }
 
 RVA(0x00058ca0, 0x19)
-void CMotionState::SetZ(double z) {
-    m_maxStep.Init(z, z, z);
+void CMotionState::SetMaxStep(double maxStep) {
+    m_maxStep.Init(maxStep, maxStep, maxStep);
 }
 
 RVA(0x00058cd0, 0x195)
@@ -934,7 +934,7 @@ i32 CGrunt::HandleCombatContact(
         if (IsNotAnimationAct("H")) {
             if (IsNotAnimationAct(DATA_COMPGEN(0x0020d2e8, "F"))) {
                 if (IsNotAnimationAct("O")) {
-                    ResetGeometry();
+                    StartAttackIdleAnimation();
                 }
             }
         }
@@ -954,14 +954,14 @@ inline void CGrunt::SelectCombatHitCue(
         return;
     }
     if (attackKind == PICKUP_NERFGUN || attackKind == PICKUP_GLOVEZ || attackKind == PICKUP_WINGZ) {
-        if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
+        if (this->m_activePickupType == PICKUP_GRAVITYBOOTZ) {
             LK(s_blockbody2);
         } else {
             LK(s_impactmm2);
         }
         return;
     }
-    if (this->m_entranceReason == PICKUP_GUNHAT) {
+    if (this->m_activePickupType == PICKUP_GUNHAT) {
         if (attackKind == PICKUP_GAUNTLETZ || attackKind == PICKUP_SHOVEL
             || attackKind == PICKUP_SPRING || attackKind == PICKUP_CLUB) {
             LK(s_impactmm4);
@@ -970,11 +970,11 @@ inline void CGrunt::SelectCombatHitCue(
         }
         return;
     }
-    if (this->m_entranceReason == PICKUP_SHIELD) {
+    if (this->m_activePickupType == PICKUP_SHIELD) {
         LK(s_blockmetal1);
         return;
     }
-    if (this->m_entranceReason == PICKUP_SPRING) {
+    if (this->m_activePickupType == PICKUP_SPRING) {
         if (struckPose == 1) {
             LK(s_spring2);
         } else {
@@ -982,7 +982,7 @@ inline void CGrunt::SelectCombatHitCue(
         }
         return;
     }
-    if (this->m_entranceReason == PICKUP_TOOB && this->m_coordToggle != false) {
+    if (this->m_activePickupType == PICKUP_TOOB && this->m_coordToggle != false) {
         LK(s_toobz);
         return;
     }
@@ -1111,7 +1111,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 fromProjectile,
     PickupType attackerGruntKind
 ) {
-    if (this->m_gruntKind == GRUNT_INVULNERABLE && this->m_entranceReason != PICKUP_BOMB) {
+    if (this->m_gruntKind == GRUNT_INVULNERABLE && this->m_activePickupType != PICKUP_BOMB) {
         return 1;
     }
 
@@ -1139,7 +1139,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     }
 
-    i32 hit = AT(AT(g_hitTable, this->m_entranceReason), attackKind);
+    i32 hit = AT(AT(g_hitTable, this->m_activePickupType), attackKind);
     if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ
         && this->m_playerIndex == g_curPlayer) {
         i32 t = hit / 2;
@@ -1166,7 +1166,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 nh = this->m_health - hit;
     nh = max(0, nh);
     this->m_health = nh;
-    if (this->m_entranceReason == PICKUP_BOMB) {
+    if (this->m_activePickupType == PICKUP_BOMB) {
         m_triggerMgr
             ->StartUnitDeath(this->m_playerIndex, this->m_unitIndex, DEATH_NORMAL, srcPlayerIndex);
         return 0;
@@ -1201,7 +1201,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 0;
     }
 
-    if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
+    if (this->m_activePickupType == PICKUP_GRAVITYBOOTZ) {
         return 1;
     }
 
@@ -1368,7 +1368,7 @@ i32 CGrunt::CommitNeighbor(
     if (targetPlayerIndex == m_playerIndex && g_traitorMode == false) {
         return 0;
     }
-    PickupType reason = m_entranceReason;
+    PickupType reason = m_activePickupType;
     if (reason == PICKUP_WARPSTONE || reason == PICKUP_WAND) {
         return 0;
     }
@@ -1398,7 +1398,7 @@ i32 CGrunt::CommitNeighbor(
     }
 
     i32 flag = 0;
-    PickupType v = ArrivalPickup();
+    PickupType v = GetEquippedToolType();
     if (v == PICKUP_BOMB) {
         flag = IDX(v);
     }
@@ -1421,17 +1421,17 @@ i32 CGrunt::CommitNeighbor(
         m_triggerMgr->WireTileSwitchLogic(this, m_object->m_screenX, m_object->m_screenY);
         m_arrivalPending = false;
     }
-    m_poweredUp = true;
+    m_inCombat = true;
     nb->CreateHealthSprite();
     ArmGruntCombatTimeout(nb);
     HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
     SetNeighbor(targetPlayerIndex, targetUnitIndex);
     m_attackTargetPx.Set(targetPxX, targetPxY);
     if (m_stamina < STAMINA_FULL || m_entranceActive != false) {
-        m_neighborValid = true;
+        m_attackQueued = true;
         return 1;
     }
-    m_neighborValid = false;
+    m_attackQueued = false;
     nb->HandleCombatContact(
         m_object->m_screenX,
         m_object->m_screenY,
@@ -1451,8 +1451,8 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
             if (m_stamina >= STAMINA_FULL) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
-                m_poweredUp = true;
-                m_combatActive = true;
+                m_inCombat = true;
+                m_attackWindupActive = true;
                 CreateHealthSprite();
 
                 ArmGruntCombatTimeout(this);
@@ -1493,7 +1493,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         }
     }
 
-    m_neighborValid = false;
+    m_attackQueued = false;
     return NULL;
 }
 
@@ -1520,20 +1520,20 @@ void RegisterGruntActions() {
     REGISTER_ACT(registry, "A", &CGrunt::ResolveEntranceArrival);
     REGISTER_ACT(registry, "B", &CGrunt::StepWarpExit);
     REGISTER_ACT(registry, "C", &CGrunt::UpdateDeathAnimation);
-    REGISTER_ACT(registry, "D", &CGrunt::StepArrivalReroll);
-    REGISTER_ACT(registry, "E", &CGrunt::UpdateGruntStatus);
+    REGISTER_ACT(registry, "D", &CGrunt::UpdateWalkAnimation);
+    REGISTER_ACT(registry, "E", &CGrunt::UpdateAttackIdleAnimation);
     REGISTER_ACT(registry, "F", &CGrunt::StepAttackAction);
     REGISTER_ACT(registry, "G", &CGrunt::UpdateToyUseAnimation);
     REGISTER_ACT(registry, "H", &CGrunt::FinishStruckAnimation);
-    REGISTER_ACT(registry, "I", &CGrunt::LoadWandGruntItemConfig);
-    REGISTER_ACT(registry, "J", &CGrunt::RunEntranceMove);
+    REGISTER_ACT(registry, "I", &CGrunt::UpdateToolUseAnimation);
+    REGISTER_ACT(registry, "J", &CGrunt::UpdatePickupAnimation);
     REGISTER_ACT(registry, "K", &CGrunt::LoadEntranceConfig);
-    REGISTER_ACT(registry, "L", &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_ACT(registry, "L", &CGrunt::UpdateVehicleUseAnimation);
     REGISTER_ACT(registry, "M", &CGrunt::RearmEntranceDrop);
     REGISTER_ACT(registry, "N", &CGrunt::FinishToobMoveAnimation);
     REGISTER_ACT(registry, "O", &CGrunt::FinishKnockbackAnimation);
     REGISTER_ACT(registry, "P", &CGrunt::UpdateEntranceAnim);
-    REGISTER_ACT(registry, "Q", &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_ACT(registry, "Q", &CGrunt::UpdateFreezeAnimation);
     REGISTER_ACT(registry, "R", &CGrunt::UpdateDecayFade);
     REGISTER_ACT(registry, "S", &CGrunt::FinishEntranceMove);
 }
@@ -1656,7 +1656,7 @@ void CGrunt::Activate() {
     m_entranceActive = false;
     m_arrivalPending = false;
     m_arrivalState = AI_NONE;
-    m_poweredUp = false;
+    m_inCombat = false;
     m_resetApplied = false;
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
     m_passableMask = 0;
@@ -1667,8 +1667,8 @@ void CGrunt::Activate() {
 DATA(0x001e9a68)
 const double s_fpZero = 0.0;
 
-static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
-    if (grunt->m_poweredUp != false && grunt->m_stamina >= STAMINA_FULL) {
+static inline void ExpireBattlezCombatState(CGrunt* grunt) {
+    if (grunt->m_inCombat != false && grunt->m_stamina >= STAMINA_FULL) {
         bool eq;
         {
             eq = grunt->IsAnimationAct("E");
@@ -1677,8 +1677,8 @@ static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
             eq = grunt->IsAnimationAct("A");
         }
         if (eq) {
-            if (grunt->m_poweredUp != false && grunt->m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(grunt)
+            if (grunt->m_inCombat != false && grunt->m_attackQueued == false) {
+                RESET_GRUNT_COMBAT_STATE(grunt)
             }
         }
     }
@@ -1774,7 +1774,7 @@ void CGrunt::StepBehavior(char*) {
         i32 onMoveTile = 0;
         i32 onWingzTile = 0;
         {
-            PickupType reason = m_entranceReason;
+            PickupType reason = m_activePickupType;
             if (reason == PICKUP_TOOB) {
                 onMoveTile = 1;
             } else if (reason == PICKUP_WINGZ) {
@@ -1890,8 +1890,8 @@ void CGrunt::StepBehavior(char*) {
 
     tileKindDone:
         if (flags & 0x400) {
-            PickupType reason = m_entranceReason;
-            if (ArrivalPickupOf(reason) == PICKUP_GRAVITYBOOTZ) {
+            PickupType reason = m_activePickupType;
+            if (ResolveEquippedToolType(reason) == PICKUP_GRAVITYBOOTZ) {
                 goto afterTile;
             }
             if (reason == PICKUP_SPRING || reason == PICKUP_TOOB) {
@@ -1903,7 +1903,7 @@ void CGrunt::StepBehavior(char*) {
             if (m_gruntKind == GRUNT_INVULNERABLE) {
                 goto afterTile;
             }
-            if (m_entranceReason == PICKUP_BOMB) {
+            if (m_activePickupType == PICKUP_BOMB) {
                 bool nameDiffers = IsNotAnimationAct("M");
                 if (!nameDiffers) {
                     goto afterTile;
@@ -1933,7 +1933,7 @@ void CGrunt::StepBehavior(char*) {
             PLAY_VOICE_IN_VIEW(0x348);
             m_entranceTiming.Start(0x3e8);
         } else if (flags & 0x2000000) {
-            if (m_entranceReason == PICKUP_TOOB) {
+            if (m_activePickupType == PICKUP_TOOB) {
                 bool nameDiffers = IsNotAnimationAct("N");
                 if (nameDiffers) {
                     BuildGruntLoseItemAnimation();
@@ -2033,7 +2033,7 @@ afterTile:
                         break;
                 }
             }
-        } else if (m_poweredUp != false && m_neighborValid == false && m_combatActive == false
+        } else if (m_inCombat != false && m_attackQueued == false && m_attackWindupActive == false
                    && m_stamina >= STAMINA_FULL && m_neighborScanEnabled != false) {
             FindGridNeighbor(0);
         }
@@ -2083,11 +2083,11 @@ afterArrival:
     }
 
     if (m_arrivalState == AI_BATTLEZ_PATH) {
-        ExpireBattlezPoweredState(this);
+        ExpireBattlezCombatState(this);
     } else {
         if (IsCombatTimeoutExpired()) {
-            if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
+            if (m_inCombat != false && m_attackQueued == false) {
+                RESET_GRUNT_COMBAT_STATE(this)
             }
             if (m_arrived == false && m_hudRetireTiming.Expired()) {
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
@@ -2123,7 +2123,7 @@ kindDispatch:
                     pick = 0x10;
                 }
                 CShadeTable* sel =
-                    g_gameReg->SpriteTable()->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
+                    g_gameReg->SpriteTable()->GetSel(pick, m_activePickupType >= PICKUP_TOYZ_FIRST);
                 CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
                 obj->SetDrawFill(cmd, sel);
@@ -2180,15 +2180,15 @@ kindDispatch:
                             ps->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             m_powerupSprite = NULL;
                         }
-                        PickupType typeId = m_toolId;
-                        m_entranceReason = PICKUP_INVALID;
+                        PickupType typeId = m_savedToolType;
+                        m_activePickupType = PICKUP_INVALID;
                         LoadGruntTypeTable(typeId, 1, 0, 0);
                         break;
                     }
                 }
                 m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
                 ReadConfigFromButeMgr();
-                PickupType reason = m_entranceReason;
+                PickupType reason = m_activePickupType;
                 i32 vehicle = (reason >= PICKUP_TOYZ_FIRST) ? 1 : 0;
                 i32 variant = 0;
                 if (vehicle != 0) {
@@ -2314,11 +2314,14 @@ void CGrunt::AdvanceMotion() {
         if (isIdle && !CoordsEmpty()) {
             Coord* nextPathTile = GetHeadCoord();
             i32 nextCellFlags = MAP_CELL_FLAGS_AT_UNCHECKED(
-                g_gameReg->GetTileGrid(), nextPathTile->m_x, nextPathTile->m_y
+                g_gameReg->GetTileGrid(),
+                nextPathTile->m_x,
+                nextPathTile->m_y
             );
             if (!(nextCellFlags & BRICKZ_CELL_OCCUPIED)
                 && !((m_arrivalFlags & nextCellFlags) & BRICKZ_CELL_OCCUPIED)
-                && ((m_arrivalFlags & nextCellFlags) == 0 || (m_passableMask & nextCellFlags) != 0)) {
+                && ((m_arrivalFlags & nextCellFlags) == 0
+                    || (m_passableMask & nextCellFlags) != 0)) {
                 Coord* destinationTile = GetTailCoord();
                 m_entrancePx.Set(
                     (destinationTile->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -2336,7 +2339,9 @@ void CGrunt::AdvanceMotion() {
                     if (!CoordsEmpty()) {
                         Coord* reroutedNextTile = GetHeadCoord();
                         i32 reroutedCellFlags = MAP_CELL_FLAGS_AT_UNCHECKED(
-                            g_gameReg->GetTileGrid(), reroutedNextTile->m_x, reroutedNextTile->m_y
+                            g_gameReg->GetTileGrid(),
+                            reroutedNextTile->m_x,
+                            reroutedNextTile->m_y
                         );
                         if (!(reroutedCellFlags & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;

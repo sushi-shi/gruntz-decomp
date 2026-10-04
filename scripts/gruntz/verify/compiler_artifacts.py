@@ -51,8 +51,8 @@ ZTOOLS_PLACEMENT_DEFINITION_RE = re.compile(
 DTOR_CALL_ALLOW = Counter({
     ("include/ZTools/ZDArray.h", "T"): 1,
     ("include/ZTools/PTree.h", "T"): 1,
-    # Rule exception (docs/todos/rule-exceptions.tsv): CFontConfig::Scroll.
-    ("src/Gruntz/FontConfig.cpp", "FontItem"): 1,
+    # Rule exception (docs/todos/rule-exceptions.tsv): CGameText::AdvanceMessageTimer.
+    ("src/Gruntz/FontConfig.cpp", "GameTextLine"): 1,
 })
 
 # Rule exceptions only; each entry has a row in docs/todos/rule-exceptions.tsv.

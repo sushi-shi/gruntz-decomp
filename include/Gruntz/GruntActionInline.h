@@ -15,8 +15,8 @@
 
 #define GRUNT_IS_USING_TOY() (IsAnimationAct("G") || IsAnimationAct("L") || IsAnimationAct("P"))
 
-#define APPLY_ACTIVE_ENTRANCE_PICKUP()                                                             \
-    (IsAnimationAct("J") && (RestorePreviousAppearance(), ApplyEntrancePickup(), true))
+#define COMPLETE_ACTIVE_PICKUP()                                                                   \
+    (IsAnimationAct("J") && (RestorePreviousAppearance(), ApplyPendingPickup(), true))
 
 #define SETTLE_ACTIVE_TUBE_MOVE() (IsAnimationAct("N") && (SettleTubeMove(), true))
 
@@ -28,8 +28,8 @@ inline void CGrunt::RestorePreviousAppearance() {
     m_entranceActive = false;
     bool previousWasWalk = (::GetAnimationActName(m_previousAnimationActId) == "D");
     if (previousWasWalk) {
-        if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+        if (m_inCombat != false && m_attackQueued == false) {
+            RESET_GRUNT_COMBAT_STATE(this)
         }
         m_tileMoveCommitted = false;
         SET_ANIMATION_ACT("D");
@@ -41,17 +41,17 @@ inline void CGrunt::RestorePreviousAppearance() {
     }
 }
 
-inline void CGrunt::ApplyEntrancePickup() {
-    PickupType mode = m_entrancePickup;
+inline void CGrunt::ApplyPendingPickup() {
+    PickupType mode = m_pendingPickupType;
     if (mode >= PICKUP_POWERUPZ_FIRST) {
         LoadGruntTypeTable(mode, 1, 0, 1);
-        m_entrancePickup = PICKUP_INVALID;
+        m_pendingPickupType = PICKUP_INVALID;
         m_helpCueId = 0;
         return;
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
-        m_entrancePickup = PICKUP_INVALID;
+        m_pendingPickupType = PICKUP_INVALID;
         return;
     }
     if (mode >= PICKUP_TOYZ_FIRST) {
@@ -59,7 +59,7 @@ inline void CGrunt::ApplyEntrancePickup() {
         return;
     }
     LoadGruntTypeTable(mode, 1, 0, 1);
-    m_entrancePickup = PICKUP_INVALID;
+    m_pendingPickupType = PICKUP_INVALID;
 }
 
 inline void CGrunt::SettleTubeMove() {
@@ -94,10 +94,10 @@ inline bool CGrunt::SettleActiveKnockback() {
 }
 
 inline void CGrunt::RestoreToolAfterToyUse(i32 defer) {
-    if (m_entranceReason == PICKUP_SCROLL) {
+    if (m_activePickupType == PICKUP_SCROLL) {
         g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
     }
-    LoadGruntTypeTable(m_toolId, 1, 0, defer);
+    LoadGruntTypeTable(m_savedToolType, 1, 0, defer);
     {
         i32 sortKey = m_object->m_screenY + 0x186a0;
         CWwdSpriteObject* object = m_object;

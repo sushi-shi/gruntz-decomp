@@ -460,7 +460,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         return 1;
     }
 
-    PickupType gruntKind = ARRIVAL_PICKUP_TERNARY_GT(cell);
+    PickupType gruntKind = EQUIPPED_TOOL_TERNARY_GT(cell);
 
     if (hitFlag != 0) {
         if (pfk == 0) {
@@ -734,9 +734,9 @@ i32 CTriggerMgr::HandleTargetSelection(
                     if (selectedGrunt != hit) {
                         goto reportError;
                     }
-                    PickupType v = ARRIVAL_PICKUP_TERNARY_LE(hit);
+                    PickupType v = EQUIPPED_TOOL_TERNARY_LE(hit);
                     if (v != PICKUP_SPY) {
-                        PickupType pickupType = ARRIVAL_PICKUP_TERNARY_LE(hit);
+                        PickupType pickupType = EQUIPPED_TOOL_TERNARY_LE(hit);
                         if (pickupType != PICKUP_WAND) {
                             goto reportError;
                         }
@@ -1008,7 +1008,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     if (exitedLevel != 0) {
         m_unitExited[idx] = 1;
         m_gruntzExitedByPlayer[playerIndex] += 1;
-        if (cell->ArrivalPickup() == PICKUP_WARPSTONE) {
+        if (cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
             if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 CWarlord* fx = m_pendingFx;
                 if (fx != NULL) {
@@ -1018,7 +1018,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
             this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_EXIT);
         }
     } else {
-        if (cell->ArrivalPickup() == PICKUP_WARPSTONE) {
+        if (cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
             this->ResetSpawnState();
         }
         m_gruntzLostByPlayer[playerIndex] += 1;
@@ -1475,7 +1475,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     ActionOptionHit kind = ov->HitHover(x, y);
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
-        PickupType alt = cell->ArrivalPickup();
+        PickupType alt = cell->GetEquippedToolType();
         if (alt == PICKUP_WAND) {
             g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                 cell->LastTilePx().m_x,
@@ -1752,7 +1752,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         if (gruntX == x && gruntY == y) {
                             break;
                         }
-                        grunt->StepArrivalCommit();
+                        grunt->BeginFreezeAnimation();
                         CGameObject* object = grunt->m_object;
                         CreateLightFx(
                             g_gameReg->World()->ChildGroup(),
@@ -1904,7 +1904,7 @@ i32 CTriggerMgr::SpawnGrunt(
     }
     CGameObject* o = src->m_object;
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(o, sx, sy)
-    PickupType k = ARRIVAL_PICKUP_TERNARY_GT(src);
+    PickupType k = EQUIPPED_TOOL_TERNARY_GT(src);
     PickupType vis = src->GetVehiclePickupType();
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);
     CDDrawChildGroup* fac = m_world->ChildGroup();
@@ -2508,7 +2508,7 @@ i32 CTriggerMgr::ToggleToolTargeting() {
         if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
             CloseActionOptionsMenu();
         } else {
-            PickupType v = cell->ArrivalPickup();
+            PickupType v = cell->GetEquippedToolType();
             if (v == PICKUP_WAND) {
                 g_gameReg->GetTriggerMgr()->HandleTargetSelection(
                     cell->LastTilePx().m_x,
@@ -2540,7 +2540,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
     m_pendingFxKind = 0;
     CGrunt* cell = SoleSelectedGrunt();
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
-        if (cell->m_entranceReason >= PICKUP_TOYZ_FIRST) {
+        if (cell->m_activePickupType >= PICKUP_TOYZ_FIRST) {
             CloseActionOptionsMenu();
         } else {
             PickupType kind = cell->GetVehiclePickupType();

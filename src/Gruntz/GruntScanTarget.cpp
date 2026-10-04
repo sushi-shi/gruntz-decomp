@@ -62,9 +62,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
             if (cand != NULL && cand->IsEntranceCommitted() != false
                 && cand->GetGruntKind() != GRUNT_GHOST) {
                 i32 pa;
-                PRIO(pa, m_entranceReason);
+                PRIO(pa, m_activePickupType);
                 i32 pb;
-                PRIO(pb, cand->m_entranceReason);
+                PRIO(pb, cand->m_activePickupType);
                 if (pa <= pb) {
                     i32 dx = cand->GetScreenTileX() - cx;
                     i32 dy = cand->GetScreenTileY() - cy;
@@ -115,11 +115,11 @@ i32 CGrunt::StepSmartChaserBehavior() {
         }
     }
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
-        b32 neighborValid = m_neighborValid;
-        if (neighborValid == false) {
-            if (m_combatActive != false) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
+        b32 attackQueued = m_attackQueued;
+        if (attackQueued == false) {
+            if (m_attackWindupActive != false) {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -129,28 +129,28 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 if (atTarget && best == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     return 1;
                 }
-                if (m_neighborValid != false) {
+                if (m_attackQueued != false) {
                     return 1;
                 }
-                RESET_GRUNT_POWERED_STATE(this)
+                RESET_GRUNT_COMBAT_STATE(this)
                 return 1;
             }
             if (atTarget) {
                 return 1;
             }
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 return 1;
             }
-            if (m_neighborValid != false) {
+            if (m_attackQueued != false) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_COMBAT_STATE(this)
             return 1;
         }
-        m_neighborValid = false;
+        m_attackQueued = false;
         return 1;
     }
 
@@ -158,12 +158,12 @@ i32 CGrunt::StepSmartChaserBehavior() {
         case AISTATE_SEEK: {
 
             if (best != NULL) {
-                if (m_poweredUp == false && m_stamina >= STAMINA_FULL
+                if (m_inCombat == false && m_stamina >= STAMINA_FULL
                     && IsGruntAtSavedScreenPos(best)) {
                     i32 pa;
-                    PRIO(pa, m_entranceReason);
+                    PRIO(pa, m_activePickupType);
                     i32 pb;
-                    PRIO(pb, best->m_entranceReason);
+                    PRIO(pb, best->m_activePickupType);
                     if (pa <= pb
                         && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
                                != 0) {
@@ -175,15 +175,15 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
             if (best != NULL) {
                 i32 seekPa;
-                PRIO(seekPa, m_entranceReason);
+                PRIO(seekPa, m_activePickupType);
                 i32 seekPb;
-                PRIO(seekPb, best->m_entranceReason);
+                PRIO(seekPb, best->m_activePickupType);
                 if (seekPa <= seekPb && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
                     COPY_LAST_TILE_TO_DEFENDER
                     i32 pathPa;
-                    PRIO(pathPa, m_entranceReason);
+                    PRIO(pathPa, m_activePickupType);
                     i32 pathPb;
-                    PRIO(pathPb, best->m_entranceReason);
+                    PRIO(pathPb, best->m_activePickupType);
                     if (pathPa <= pathPb
                         && this->GruntInRadius(best->m_playerIndex, best->m_unitIndex) != 0) {
                         Coord cc;
@@ -244,13 +244,13 @@ i32 CGrunt::StepSmartChaserBehavior() {
             }
             if (sg != NULL) {
                 i32 pa;
-                PRIO(pa, m_entranceReason);
+                PRIO(pa, m_activePickupType);
                 i32 pb;
-                PRIO(pb, sg->m_entranceReason);
+                PRIO(pb, sg->m_activePickupType);
                 if (pa <= pb && sg->IsEntranceCommitted() != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
                     RepathToward(this, sg);
-                    if (m_poweredUp != false || m_stamina < STAMINA_FULL) {
+                    if (m_inCombat != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }
                     if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
@@ -268,7 +268,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             return 1;
         }
         case AISTATE_ATTACK: {
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 m_defenderState = AISTATE_CHASE;
                 m_dwell = DWELL_REPATH_MS;
                 return 1;
@@ -277,12 +277,12 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 CGrunt* sg = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (sg != NULL) {
                     i32 pa;
-                    PRIO(pa, m_entranceReason);
+                    PRIO(pa, m_activePickupType);
                     i32 pb;
-                    PRIO(pb, sg->m_entranceReason);
+                    PRIO(pb, sg->m_activePickupType);
                     if (pa <= pb && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0
                         && sg->IsEntranceCommitted() != false) {
-                        if (m_neighborValid != false || m_combatActive != false
+                        if (m_attackQueued != false || m_attackWindupActive != false
                             || m_stamina < STAMINA_FULL) {
                             return 1;
                         }

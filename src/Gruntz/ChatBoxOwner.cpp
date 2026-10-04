@@ -32,47 +32,47 @@
 #include <strstrea.h>
 
 RVA(0x000204e0, 0x19)
-i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
+i32 CChatBox::Attach(CDDrawSurfaceMgr* world, CGameText* gameText) {
     m_world = world;
-    m_fontConfig = host;
+    m_gameText = gameText;
     return m_attached = true;
 }
 
 RVA(0x00020510, 0x8)
-void CChatBoxOwner::Deactivate() {
+void CChatBox::Deactivate() {
     m_attached = false;
 }
 
 RVA(0x00020530, 0x61)
-void CChatBoxOwner::Configure(ChatBoxLayout mode) {
-    m_mode = mode;
+void CChatBox::Configure(ChatBoxLayout layout) {
+    m_layout = layout;
 
-    if (mode == CHATBOX_WITH_RIGHT_STATUSBAR || mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
+    if (layout == CHATBOX_WITH_RIGHT_STATUSBAR || layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         m_originX = 0;
         tagSIZE screenSize = g_gameReg->m_modeSize;
         m_originY = screenSize.cy - 66;
-    } else if (mode == CHATBOX_WITH_LEFT_STATUSBAR) {
+    } else if (layout == CHATBOX_WITH_LEFT_STATUSBAR) {
         m_originX = 0xa0;
         tagSIZE screenSize = g_gameReg->m_modeSize;
         m_originY = screenSize.cy - 66;
     }
-    m_fontConfig->m_reserved34 = 1;
+    m_gameText->m_reserved34 = 1;
 }
 
 // @early-stop
 RVA(0x000205c0, 0x741)
-void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
-    if (m_fontConfig->HandleInputChar(charCode, keyData) == 0) {
+void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
+    if (m_gameText->HandleInputChar(charCode, keyData) == 0) {
         return;
     }
 
     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
         CMulti* multi = static_cast<CMulti*>(g_gameReg->m_curState);
-        char* input = const_cast<char*>(static_cast<const char*>(m_fontConfig->GetInputText()));
+        char* input = const_cast<char*>(static_cast<const char*>(m_gameText->GetInputText()));
         multi->BroadcastChatLine(input, 1, 1, NULL);
     } else {
-        if (m_fontConfig->GetInputText().Left(17).CompareNoCase("Enable Cheatzfile") == 0) {
-            CString args = m_fontConfig->GetInputText();
+        if (m_gameText->GetInputText().Left(17).CompareNoCase("Enable Cheatzfile") == 0) {
+            CString args = m_gameText->GetInputText();
             args = args.Right(args.GetLength() - 18);
             i32 length = args.GetLength();
             i32 split = args.Find(' ');
@@ -134,16 +134,16 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                 }
             }
         } else {
-            g_gameReg->CheatMgr()->CheckCode(m_fontConfig->GetInputText());
+            g_gameReg->CheatMgr()->CheckCode(m_gameText->GetInputText());
         }
     }
-    m_fontConfig->EndInput();
+    m_gameText->EndInput();
     m_inputActive = false;
 }
 
 RVA(0x00020f40, 0x188)
-i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
-    CChatBoxOwner* self = this;
+i32 CChatBox::Draw(CDDrawSurfacePair* target) {
+    CChatBox* self = this;
     if (!self->m_inputActive) {
         return 1;
     }
@@ -158,7 +158,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         return 0;
     }
 
-    if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
+    if (self->m_layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->GetMaxIndex());
         if (!frame) {
             return 0;
@@ -181,14 +181,14 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetTextColor(hdc, RGB(0, 0, 0));
     SetBkColor(hdc, RGB(0, 0, 0));
 
-    if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
+    if (self->m_layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         CRect rect(
             self->m_originX + 0x4c,
             self->m_originY + 0x2b,
             self->m_originX + 0x267,
             self->m_originY + 0x37
         );
-        self->m_fontConfig->RenderInputText(hdc, 0x21b, &rect);
+        self->m_gameText->RenderInputText(hdc, 0x21b, &rect);
     } else {
         CRect rect(
             self->m_originX + 0x4c,
@@ -196,16 +196,16 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
             self->m_originX + 0x1c7,
             self->m_originY + 0x37
         );
-        self->m_fontConfig->RenderInputText(hdc, 0x17b, &rect);
+        self->m_gameText->RenderInputText(hdc, 0x17b, &rect);
     }
     surface->GetDirectDrawSurface()->ReleaseDC(hdc);
     return 1;
 }
 
 RVA(0x00021140, 0xda)
-i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
+i32 CChatBox::HitTest(i32 x, i32 y) {
     if (m_inputActive) {
-        if (m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
+        if (m_layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
             if ((x < 0x40 && y >= g_gameReg->GetModeSize().cy - 0x40)
                 || (x > 0x40 && y >= g_gameReg->GetModeSize().cy - 0x20)) {
                 return 1;

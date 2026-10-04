@@ -397,7 +397,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (unit->m_entranceActive != false) {
                     continue;
                 }
-                if (unit->IsPoweredUp() != false) {
+                if (unit->IsInCombat() != false) {
                     continue;
                 }
                 bool eq;
@@ -442,7 +442,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 } else {
                     unit->SetDefenderState(AISTATE_SEEK);
                 }
-                unit->LoadPickupSprites(unit->GetDefenderPickupType(), 1, 0, 0, 1);
+                unit->BeginPickupAnimation(unit->GetDefenderPickupType(), 1, 0, 0, 1);
 
                 switch (mode) {
                     case PICKUP_WINGZ: {
@@ -626,7 +626,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 if (unit != NULL) {
                     if (!unit->IsArrivalRerollPending()) {
                         RouteToNearbyPickup(unit);
-                        if (unit->IsPoweredUp() != false) {
+                        if (unit->IsInCombat() != false) {
                             eq = unit->IsAnimationAct("A");
                             if (eq) {
                                 goto resetEntrance;
@@ -643,7 +643,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = unit->ArrivalPickup();
+                            PickupType st = unit->GetEquippedToolType();
                             if (st == PICKUP_BRICK && unit->m_battleState == BZTASK_UNASSIGNED) {
                                 unit->m_battleState = BZTASK_CARRY_BRICK;
                                 if (!unit->CoordsEmpty()) {
@@ -653,12 +653,12 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false
-                            && unit->m_entranceActive == false && unit->IsPoweredUp() == false) {
+                            && unit->m_entranceActive == false && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
-                                PickupType st2 = unit->ArrivalPickup();
+                                PickupType st2 = unit->GetEquippedToolType();
                                 if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
                                     && unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
-                                    unit->LoadPickupSprites(PICKUP_NONE, 1, 0, 0, 1);
+                                    unit->BeginPickupAnimation(PICKUP_NONE, 1, 0, 0, 1);
                                 }
                             }
                         }
@@ -685,7 +685,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = unit->ArrivalPickup();
+                            PickupType st = unit->GetEquippedToolType();
                             if (st != PICKUP_SPY && unit->m_battleState == BZTASK_CARRY_SPY) {
                                 UNSET_COORD(unit->m_arrivalCell);
                                 unit->m_battleState = BZTASK_ADVANCE;
@@ -697,7 +697,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = unit->ArrivalPickup();
+                            PickupType st = unit->GetEquippedToolType();
                             if (st == PICKUP_GOOBER) {
                                 BattlezTask battleTask = unit->m_battleState;
                                 if (battleTask != BZTASK_CARRY_GOOBER
@@ -711,7 +711,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = unit->ArrivalPickup();
+                            PickupType st = unit->GetEquippedToolType();
                             if (st != PICKUP_GOOBER && unit->m_battleState == BZTASK_CARRY_GOOBER) {
                                 UNSET_COORD(unit->m_arrivalCell);
                                 unit->m_battleState = BZTASK_ADVANCE;
@@ -797,8 +797,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 special = 0;
                             }
                             if (special != 0) {
-                                if (unit->IsPoweredUp() != false && unit->m_neighborValid == false
-                                    && unit->m_combatActive == false
+                                if (unit->IsInCombat() != false && unit->m_attackQueued == false
+                                    && unit->m_attackWindupActive == false
                                     && unit->m_stamina >= STAMINA_FULL) {
                                     if (unit->FindGridNeighbor(0) != NULL) {
                                         return 1;
@@ -808,7 +808,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         if (unit->IsAtSavedScreenPos() != 0 && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false
-                            && unit->m_entranceActive == false && unit->IsPoweredUp() == false) {
+                            && unit->m_entranceActive == false && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 for (i32 j = 0; j < 4; j++) {
                                     if (j != m_playerIndex) {
@@ -821,7 +821,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     )
                                                     != 0) {
                                                     if (unit->GetGruntKind() != PICKUP_GHOST) {
-                                                        if (other->IsPoweredUp() == false) {
+                                                        if (other->IsInCombat() == false) {
                                                             if (HandleUnitContact(unit, other)
                                                                 != 0) {
                                                                 return 1;
@@ -847,7 +847,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
                     if (unit->IsEntranceCommitted() != false
                         && unit->IsDeathAnimationStarted() == false
-                        && unit->m_entranceActive == false && unit->IsPoweredUp() == false) {
+                        && unit->m_entranceActive == false && unit->IsInCombat() == false) {
                         if (BattlezActDiffersFromIGLPJCR(unit)) {
                             if (unit->m_battleState != BZTASK_UNASSIGNED) {
                                 if (RouteToNearbyEnemy(unit) != 0) {
@@ -862,12 +862,12 @@ i32 CBattlezMapConfig::StepRowUnits() {
         if (unit != NULL) {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->IsEntranceCommitted() != false
                 && unit->IsDeathAnimationStarted() == false && unit->m_entranceActive == false
-                && unit->IsPoweredUp() == false) {
+                && unit->IsInCombat() == false) {
                 if (BattlezActDiffersFromIGLPJCR(unit)) {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
                         == static_cast<u32>(i)) {
                         {
-                            PickupType st3 = unit->ArrivalPickup();
+                            PickupType st3 = unit->GetEquippedToolType();
                             if (st3 == PICKUP_WAND && unit->m_health > 0x1a) {
                                 if (rand() % g_diffTier == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
@@ -920,7 +920,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
                             && unit->IsEntranceCommitted() != false
                             && unit->IsDeathAnimationStarted() == false
-                            && unit->m_entranceActive == false && unit->IsPoweredUp() == false) {
+                            && unit->m_entranceActive == false && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 goto dispatch;
                             }
@@ -933,7 +933,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
     dispatch: {
         CMapMgr* bd2 = m_board;
         bd2->Clip(NULL);
-        PickupType stX = unit->m_entranceReason;
+        PickupType stX = unit->m_activePickupType;
         if (hit == 0) {
             switch (unit->m_battleState) {
                 case BZTASK_UNASSIGNED: {
@@ -1004,7 +1004,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         goto flagsArm;
                     }
                 wingzGate: {
-                    PickupType wp = unit->ArrivalPickup();
+                    PickupType wp = unit->GetEquippedToolType();
                     if (wp != PICKUP_WINGZ) {
                         continue;
                     }
@@ -1028,12 +1028,12 @@ i32 CBattlezMapConfig::StepRowUnits() {
     return 1;
 
 resetEntrance: {
-    b32 pw = unit->m_poweredUp;
-    unit->m_neighborValid = false;
+    b32 pw = unit->m_inCombat;
+    unit->m_attackQueued = false;
     if (pw == false) {
         return 1;
     }
-    RESET_GRUNT_POWERED_STATE(unit)
+    RESET_GRUNT_COMBAT_STATE(unit)
     return 1;
 }
 
@@ -1144,20 +1144,20 @@ spellHit: {
 flagsArm: {
     b32 ok = true;
     if (cell & 8) {
-        PickupType er = unit->m_entranceReason;
-        PickupType held = unit->ArrivalPickupOf(er);
+        PickupType er = unit->m_activePickupType;
+        PickupType held = unit->ResolveEquippedToolType(er);
         if (held != PICKUP_TOOB) {
-            PickupType held2 = unit->ArrivalPickupOf(er);
+            PickupType held2 = unit->ResolveEquippedToolType(er);
             if (held2 != PICKUP_WINGZ) {
                 ok = false;
             }
         }
     }
     if (cell & 0x200) {
-        PickupType er = unit->m_entranceReason;
-        PickupType held = unit->ArrivalPickupOf(er);
+        PickupType er = unit->m_activePickupType;
+        PickupType held = unit->ResolveEquippedToolType(er);
         if (held != PICKUP_TOOB) {
-            PickupType held2 = unit->ArrivalPickupOf(er);
+            PickupType held2 = unit->ResolveEquippedToolType(er);
             if (held2 != PICKUP_WINGZ) {
                 ok = false;
             }
@@ -1280,7 +1280,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         i32 cy = pathHead->m_y;
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
         pathHeadCell = m_board->CellAt(cx, cy);
-        PickupType prim = ARRIVAL_PICKUP_TERNARY_LE(unit);
+        PickupType prim = EQUIPPED_TOOL_TERNARY_LE(unit);
 
         Coord pt2;
         (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
@@ -1305,7 +1305,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
 
-        PickupType entranceMode = unit->ArrivalPickup();
+        PickupType entranceMode = unit->GetEquippedToolType();
         if (entranceMode == PICKUP_TIMEBOMB && unit->CoordCount() >= 2) {
             POSITION node = unit->CoordHead();
             Coord* ca = unit->GetCoordAt(node);
@@ -1369,7 +1369,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
 
         if (pathHeadFlags & 0x200) {
-            PickupType p = unit->ArrivalPickup();
+            PickupType p = unit->GetEquippedToolType();
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
             }
@@ -1377,19 +1377,19 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if (pathHeadFlags & 0x8) {
             i32 wingzOrToobGate = pathHeadFlags & 0x100;
             if (wingzOrToobGate) {
-                PickupType er = unit->m_entranceReason;
-                PickupType p = unit->ArrivalPickupOf(er);
+                PickupType er = unit->m_activePickupType;
+                PickupType p = unit->ResolveEquippedToolType(er);
                 if (p == PICKUP_WINGZ) {
                     goto returnOne;
                 }
-                PickupType entranceMode2 = unit->ArrivalPickupOf(er);
+                PickupType entranceMode2 = unit->ResolveEquippedToolType(er);
                 if (entranceMode2 == PICKUP_TOOB) {
                     return 1;
                 }
             }
             i32 wingzGate = pathHeadFlags & IDX(CELL_FLAG_SPECIAL);
             if (wingzGate) {
-                PickupType p = unit->ArrivalPickup();
+                PickupType p = unit->GetEquippedToolType();
                 if (p == PICKUP_WINGZ) {
                     return 1;
                 }
@@ -1427,7 +1427,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             return 0;
         }
         if (pathHeadFlags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
-            PickupType p = unit->ArrivalPickup();
+            PickupType p = unit->GetEquippedToolType();
             if (p != PICKUP_WINGZ) {
                 if (prim == PICKUP_SHOVEL) {
                     goto returnZero;
@@ -1440,7 +1440,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
         if (pathHeadFlags & IDX(CELL_FLAG_SPECIAL)) {
-            PickupType p = unit->ArrivalPickup();
+            PickupType p = unit->GetEquippedToolType();
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
             }
@@ -1448,7 +1448,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if (pathHeadFlags & BRICKZ_CELL_OCCUPIED) {
             return RepathAroundBlockedTiles(unit);
         }
-        PickupType pk = unit->ArrivalPickup();
+        PickupType pk = unit->GetEquippedToolType();
         if (pk == PICKUP_GOOBER) {
             POSITION opos = m_triggerMgr->GetPuddleHeadPosition();
             while (opos != NULL) {
@@ -1512,14 +1512,14 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         }
         CPtrList list(10);
         i32 flags = 0;
-        PickupType er = unit->m_entranceReason;
-        if (unit->ArrivalPickupOf(er) == PICKUP_TOOB) {
+        PickupType er = unit->m_activePickupType;
+        if (unit->ResolveEquippedToolType(er) == PICKUP_TOOB) {
             flags = BATTLEZ_ROUTE_TOOB_TRAVERSAL;
         }
-        if (unit->ArrivalPickupOf(er) == PICKUP_WINGZ) {
+        if (unit->ResolveEquippedToolType(er) == PICKUP_WINGZ) {
             flags = BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
         }
-        if (unit->ArrivalPickupOf(er) == PICKUP_SPRING) {
+        if (unit->ResolveEquippedToolType(er) == PICKUP_SPRING) {
             flags = BATTLEZ_ROUTE_SPRING_TRAVERSAL;
         }
         if (m_board->FindPathWithEndpointOverrides(
@@ -1607,7 +1607,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (dist >= bestDist) {
                 continue;
             }
-            if (u->IsPoweredUp() != false) {
+            if (u->IsInCombat() != false) {
                 rand();
             }
             best = u;
@@ -1701,7 +1701,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
             ul3->m_screenX,
             ul3->m_screenY
         );
-    PickupType prim = actor->ArrivalPickup();
+    PickupType prim = actor->GetEquippedToolType();
     if (prim != PICKUP_TIMEBOMB) {
         return 1;
     }
@@ -1977,7 +1977,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     if (unit->GetGruntKind() != GRUNT_NORMAL) {
         return 0;
     }
-    PickupType prim = unit->ArrivalPickup();
+    PickupType prim = unit->GetEquippedToolType();
     if (prim != PICKUP_NONE) {
         return 0;
     }
@@ -2054,7 +2054,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                         return 1;
                     }
                 } else {
-                    PickupType entranceMode = unit->ArrivalPickup();
+                    PickupType entranceMode = unit->GetEquippedToolType();
                     if (entranceMode == PICKUP_NONE) {
                         if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                             CMapMgr* bd = m_board;
@@ -2100,10 +2100,10 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     i32 ownFlags = m_board->CellAt(first.m_x, first.m_y).m_flags;
 
     i32 maskFlags = ownFlags & BRICKZ_CELL_UNOCCUPIED_MASK;
-    PickupType type = ARRIVAL_PICKUP_TERNARY_LE(g);
+    PickupType type = EQUIPPED_TOOL_TERNARY_LE(g);
 
     if ((dest.m_flags & 0x400) && g->GetDefenderState() == AISTATE_RETURN
-        && g->ArrivalPickup() != PICKUP_GRAVITYBOOTZ) {
+        && g->GetEquippedToolType() != PICKUP_GRAVITYBOOTZ) {
         if (ownFlags & 0x4000) {
             {
                 RECT box;
@@ -2238,9 +2238,10 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & 0x20) {
-        PickupType er = g->m_entranceReason;
-        if (g->ArrivalPickupOf(er) == PICKUP_BOMB || g->ArrivalPickupOf(er) == PICKUP_TIMEBOMB) {
-            if (g->ArrivalPickupOf(er) == PICKUP_BOMB) {
+        PickupType er = g->m_activePickupType;
+        if (g->ResolveEquippedToolType(er) == PICKUP_BOMB
+            || g->ResolveEquippedToolType(er) == PICKUP_TIMEBOMB) {
+            if (g->ResolveEquippedToolType(er) == PICKUP_BOMB) {
                 m_triggerMgr->UseEquippedToolAt(
                     g->GetPlayerIndex(),
                     g->GetUnitIndex(),
@@ -2249,7 +2250,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 );
                 return 1;
             }
-            if (g->ArrivalPickupOf(er) == PICKUP_TIMEBOMB) {
+            if (g->ResolveEquippedToolType(er) == PICKUP_TIMEBOMB) {
                 for (i32 row = first.m_y - 1; row < first.m_y + 2; row++) {
                     for (i32 col = first.m_x - 1; col < first.m_x + 2; col++) {
                         if (static_cast<u32>(col) < static_cast<u32>(m_board->GetWidth())
@@ -2276,7 +2277,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
-        PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
+        PickupType t = EQUIPPED_TOOL_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
             CTileActionEvent* r = m_cellQuery->FindActionByCellKey(CellKey(first.m_x, first.m_y));
             if (r != NULL) {
@@ -2297,7 +2298,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
-        PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
+        PickupType t = EQUIPPED_TOOL_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
             g->RecycleCoords();
             ResolveTileClaim(g, first.m_x, first.m_y, 1);
@@ -2306,7 +2307,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & 0x20) {
-        PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
+        PickupType t = EQUIPPED_TOOL_TERNARY_GT(g);
         if (t == PICKUP_GAUNTLETZ) {
             if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
                 CTileActionEvent* r =
@@ -2352,9 +2353,9 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
-        PickupType er2 = g->m_entranceReason;
-        if (g->ArrivalPickupOf(er2) != PICKUP_WINGZ) {
-            if (g->ArrivalPickupOf(er2) == PICKUP_SHOVEL) {
+        PickupType er2 = g->m_activePickupType;
+        if (g->ResolveEquippedToolType(er2) != PICKUP_WINGZ) {
+            if (g->ResolveEquippedToolType(er2) == PICKUP_SHOVEL) {
                 m_triggerMgr->UseEquippedToolAt(
                     g->GetPlayerIndex(),
                     g->GetUnitIndex(),
@@ -2373,7 +2374,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         return 1;
     }
     {
-        PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
+        PickupType t = EQUIPPED_TOOL_TERNARY_GT(g);
         if (t == PICKUP_WINGZ) {
             return 1;
         }
@@ -2667,7 +2668,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (u->m_entranceActive != false) {
                 continue;
             }
-            if (u->m_poweredUp != false) {
+            if (u->m_inCombat != false) {
                 continue;
             }
             if (!u->IsNotAnimationAct("C")) {
@@ -2717,20 +2718,20 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             m_board->Clip(&box);
 
             i32 flags = 0;
-            PickupType prim = unit->m_entranceReason;
-            PickupType t = unit->ArrivalPickupOf(prim);
+            PickupType prim = unit->m_activePickupType;
+            PickupType t = unit->ResolveEquippedToolType(prim);
             if (t == PICKUP_TOOB) {
                 flags = 0x100;
             }
             t = prim;
             if (prim > PICKUP_EQUIPPABLE_LAST) {
-                t = unit->m_toolId;
+                t = unit->m_savedToolType;
             }
             if (t == PICKUP_WINGZ) {
                 flags = 0x942;
             }
             if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = unit->m_toolId;
+                prim = unit->m_savedToolType;
             }
             if (prim == PICKUP_SPRING) {
                 flags = 0x1000;
@@ -2842,7 +2843,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         if (cand != NULL) {
             if (IsGruntAtSavedScreenPos(cand) && cand->IsEntranceCommitted() != false
                 && cand->IsDeathAnimationStarted() == false && cand->m_entranceActive == false
-                && cand->IsPoweredUp() == false) {
+                && cand->IsInCombat() == false) {
                 if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
                     && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
                     && !cand->IsAnimationAct("J") && !cand->IsAnimationAct("C")
@@ -2854,11 +2855,11 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                     if (SquaredDistance(dx, dy) <= 0x190) {
 
                         i32 flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER;
-                        PickupType entranceReason = unit->m_entranceReason;
-                        if (unit->ArrivalPickupOf(entranceReason) == PICKUP_WINGZ) {
+                        PickupType entranceReason = unit->m_activePickupType;
+                        if (unit->ResolveEquippedToolType(entranceReason) == PICKUP_WINGZ) {
                             flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER_WINGZ;
                         }
-                        if (unit->ArrivalPickupOf(entranceReason) == PICKUP_TOOB) {
+                        if (unit->ResolveEquippedToolType(entranceReason) == PICKUP_TOOB) {
                             flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
                         }
                         CPtrList list(10);
@@ -2911,7 +2912,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->m_entranceActive != false) {
         return 0;
     }
-    if (unit->IsPoweredUp() != false) {
+    if (unit->IsInCombat() != false) {
         return 0;
     }
 
@@ -2940,7 +2941,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     i32 band = GetRandom(1, m_brickzPct);
     if (band <= m_toolzPct) {
 
-        PickupType cur = unit->ArrivalPickup();
+        PickupType cur = unit->GetEquippedToolType();
         if (cur != PICKUP_NONE) {
             return 1;
         }
@@ -3012,19 +3013,19 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 if (u->GetBattlezTask() != BZTASK_UNASSIGNED) {
                     continue;
                 }
-                if (u->IsPoweredUp() != false) {
+                if (u->IsInCombat() != false) {
                     continue;
                 }
-                u->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
+                u->BeginPickupAnimation(PICKUP_BRICK, 1, 0, 0, 1);
                 u->SetBattlezTask(BZTASK_CARRY_BRICK);
                 u->RecycleCoords();
             }
             return 1;
         }
 
-        PickupType cur2 = unit->ArrivalPickup();
+        PickupType cur2 = unit->GetEquippedToolType();
         if (cur2 == PICKUP_NONE) {
-            unit->LoadPickupSprites(mode, 1, 0, 0, 1);
+            unit->BeginPickupAnimation(mode, 1, 0, 0, 1);
             return 1;
         }
         if (mode != PICKUP_TOOB) {
@@ -3059,7 +3060,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         } else {
             mode = roll > m_squeakToyzPct ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
         }
-        unit->LoadPickupSprites(mode, 1, 0, 0, 1);
+        unit->BeginPickupAnimation(mode, 1, 0, 0, 1);
         return 1;
     } else {
 
@@ -3074,7 +3075,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         }
         if (mode >= PICKUP_BRICKZ_FIRST) {
             unit->m_brickPickupType = mode;
-            unit->m_entrancePickup = PICKUP_INVALID;
+            unit->m_pendingPickupType = PICKUP_INVALID;
         }
         return 1;
     }
@@ -3467,11 +3468,11 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     CPtrList list(10);
 
     i32 flags = BATTLEZ_ROUTE_ALL_TOOLS;
-    PickupType er = unit->m_entranceReason;
-    if (unit->ArrivalPickupOf(er) == PICKUP_WINGZ) {
+    PickupType er = unit->m_activePickupType;
+    if (unit->ResolveEquippedToolType(er) == PICKUP_WINGZ) {
         flags = BATTLEZ_ROUTE_ALL_TOOLS_WINGZ;
     }
-    if (unit->ArrivalPickupOf(er) == PICKUP_TOOB) {
+    if (unit->ResolveEquippedToolType(er) == PICKUP_TOOB) {
         flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
     }
     Coord start = ScreenTile(unit);

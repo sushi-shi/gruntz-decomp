@@ -71,11 +71,11 @@ i32 CGrunt::StepDefenderBehavior() {
 
     FIND_NEAREST_ENEMY_AT_TARGET(occ, occOnTile)
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
-        b32 neighborValid = m_neighborValid;
-        if (neighborValid == false) {
-            if (m_combatActive) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
+        b32 attackQueued = m_attackQueued;
+        if (attackQueued == false) {
+            if (m_attackWindupActive) {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -85,7 +85,7 @@ i32 CGrunt::StepDefenderBehavior() {
                 if (occOnTile && occ == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     return 1;
                 }
             } else {
@@ -93,21 +93,21 @@ i32 CGrunt::StepDefenderBehavior() {
                     return 1;
                 }
             }
-            if (m_neighborValid) {
+            if (m_attackQueued) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_COMBAT_STATE(this)
         } else {
-            m_neighborValid = false;
+            m_attackQueued = false;
         }
         return 1;
     }
 
     if (occ != NULL) {
-        if (m_neighborValid) {
+        if (m_attackQueued) {
             return 1;
         }
-        if (m_combatActive == false && m_stamina >= STAMINA_FULL && occOnTile) {
+        if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL && occOnTile) {
             COMMIT_GRUNT_NEIGHBOR(occ);
             this->RecycleCoords();
             return 1;

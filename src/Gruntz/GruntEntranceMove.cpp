@@ -136,9 +136,9 @@ static char s_movingDeathTime[] = "MovingDeathTime";
 
 // @early-stop
 RVA(0x00067850, 0x214)
-i32 CGrunt::RunEntranceMove() {
+i32 CGrunt::UpdatePickupAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
-    if (!(cur->IsComplete() || m_entrancePickup == PICKUP_NONE)) {
+    if (!(cur->IsComplete() || m_pendingPickupType == PICKUP_NONE)) {
         return 0;
     }
 
@@ -150,7 +150,7 @@ i32 CGrunt::RunEntranceMove() {
         CreateToySprite();
     }
 
-    PickupType mode = m_entrancePickup;
+    PickupType mode = m_pendingPickupType;
     if (mode == PICKUP_INVALID) {
         return 0;
     }
@@ -159,7 +159,7 @@ i32 CGrunt::RunEntranceMove() {
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
-        m_entrancePickup = PICKUP_INVALID;
+        m_pendingPickupType = PICKUP_INVALID;
         return 1;
     }
     if (mode < PICKUP_BRICKZ_FIRST) {
@@ -398,8 +398,8 @@ i32 CGrunt::StartBombGruntRun() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
     m_gruntKind = GRUNT_NORMAL;
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_attackQueued == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     BeginGruntEntranceAndReleaseCell(this);
     SnapToLastTile(1);
@@ -558,7 +558,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     }
 
     SET_ANIMATION_ACT("A");
-    LoadGruntTypeTable(m_toolId, 1, 0, 0);
+    LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
     m_entranceActive = false;
 
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -579,7 +579,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 }
 
 RVA(0x000692f0, 0x850)
-i32 CGrunt::StepArrivalCommit() {
+i32 CGrunt::BeginFreezeAnimation() {
     if (m_entranceCommitted == false) {
         return 0;
     }
@@ -596,11 +596,11 @@ i32 CGrunt::StepArrivalCommit() {
     }
     eq = IsAnimationAct("I");
     if (eq) {
-        if (m_entranceReason == PICKUP_WAND) {
+        if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
-        if (m_entranceReason != PICKUP_BOMB) {
+        if (m_activePickupType != PICKUP_BOMB) {
             goto finalize;
         }
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
@@ -612,7 +612,7 @@ i32 CGrunt::StepArrivalCommit() {
     if (SettleActiveKnockback()) {
         goto finalize;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
+    if (COMPLETE_ACTIVE_PICKUP()) {
         goto finalize;
     }
 
@@ -634,8 +634,8 @@ finalize:
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_attackQueued == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     BeginGruntEntranceAndReleaseCell(this);
     SET_ANIMATION_ACT("Q");
@@ -655,7 +655,7 @@ finalize:
 }
 
 RVA(0x00069d60, 0x1e1)
-i32 CGrunt::LoadFreezeSpellAssets() {
+i32 CGrunt::UpdateFreezeAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (cur->IsComplete()) {
         if (m_freezeUnfrozen != false) {
@@ -855,7 +855,7 @@ i32 CGrunt::FinishActiveAction() {
         goto retZero;
     }
     if (IsAnimationAct("I")) {
-        if (m_entranceReason == PICKUP_WAND) {
+        if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
@@ -867,7 +867,7 @@ i32 CGrunt::FinishActiveAction() {
     if (SettleActiveKnockback()) {
         return 1;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
+    if (COMPLETE_ACTIVE_PICKUP()) {
         return 1;
     }
 

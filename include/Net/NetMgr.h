@@ -345,7 +345,7 @@ struct CNetPacketPrefix {
     u8 m_routeSlot;
 };
 
-class CFontConfig;
+class CGameText;
 
 extern char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 

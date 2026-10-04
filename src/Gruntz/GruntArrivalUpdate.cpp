@@ -48,11 +48,11 @@ i32 CGrunt::StepGauntletGruntBehavior() {
     this->m_defenderPx = this->m_lastTilePx;
     FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
-    b32 poweredUp = this->m_poweredUp;
-    if (poweredUp != false) {
-        b32 neighborValid = this->m_neighborValid;
-        if (neighborValid == false) {
-            if (this->m_combatActive != false) {
+    b32 inCombat = this->m_inCombat;
+    if (inCombat != false) {
+        b32 attackQueued = this->m_attackQueued;
+        if (attackQueued == false) {
+            if (this->m_attackWindupActive != false) {
                 return 1;
             }
             if (this->m_stamina >= STAMINA_FULL) {
@@ -62,43 +62,43 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 if (atTarget && g == NULL) {
                     return 1;
                 }
-                if (this->m_poweredUp == false) {
+                if (this->m_inCombat == false) {
                     return 1;
                 }
-                if (this->m_neighborValid != false) {
+                if (this->m_attackQueued != false) {
                     return 1;
                 }
                 this->m_entranceActive = false;
-                this->m_combatActive = false;
-                this->m_neighborValid = false;
-                this->m_poweredUp = false;
+                this->m_attackWindupActive = false;
+                this->m_attackQueued = false;
+                this->m_inCombat = false;
                 ResetEntranceAnimation(1, 0, 0);
                 return 1;
             }
             if (atTarget) {
                 return 1;
             }
-            if (this->m_poweredUp == false) {
+            if (this->m_inCombat == false) {
                 return 1;
             }
-            if (this->m_neighborValid != false) {
+            if (this->m_attackQueued != false) {
                 return 1;
             }
             this->m_entranceActive = false;
-            this->m_combatActive = false;
-            this->m_neighborValid = false;
-            this->m_poweredUp = false;
+            this->m_attackWindupActive = false;
+            this->m_attackQueued = false;
+            this->m_inCombat = false;
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        this->m_neighborValid = false;
+        this->m_attackQueued = false;
         return 1;
     }
 
     switch (this->m_defenderState) {
         case AISTATE_SEEK: {
             Coord c;
-            if (g != NULL && this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
+            if (g != NULL && this->m_inCombat == false && this->m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
                 && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
@@ -169,7 +169,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         0,
                         0x20
                     );
-                    if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
+                    if (this->m_inCombat == false && this->m_stamina >= STAMINA_FULL
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && IsGruntAtSavedScreenPos(slot)) {
                         COMMIT_GRUNT_NEIGHBOR(slot);
@@ -182,14 +182,14 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             break;
         }
         case AISTATE_ATTACK: {
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 m_defenderState = AISTATE_CHASE;
                 break;
             }
             CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
                 && slot->IsEntranceCommitted() != false) {
-                if (m_neighborValid != false || m_combatActive != false
+                if (m_attackQueued != false || m_attackWindupActive != false
                     || m_stamina < STAMINA_FULL) {
                     break;
                 }

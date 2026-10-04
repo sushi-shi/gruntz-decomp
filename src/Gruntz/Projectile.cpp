@@ -69,7 +69,7 @@ const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)
 const double g_movingLogicMax = 2147483646.0;
 DATA(0x001f04e8)
-const u32 g_defaultZ = 24;
+const u32 g_defaultMaxStep = 24;
 
 RVA_DYNINIT(0x000df900, 0xa, CActRegPool<CProjectile>::s_table)
 RVA_DYNINIT(0x000df920, 0x15, CActRegPool<CProjectile>::s_table)
@@ -602,7 +602,7 @@ void CProjectile::ScanTargets(i32 impact) {
             if (m_sourcePlayerIndex == playerIndex && m_sourceUnitIndex == unitIndex) {
 
                 if (impact != 0 && g->IsEntranceCommitted() != false
-                    && g->m_entranceReason == PICKUP_NONE) {
+                    && g->m_activePickupType == PICKUP_NONE) {
                     g->LoadGruntTypeTable(PICKUP_BOOMERANG, 1, 0, 0);
                 }
                 return;

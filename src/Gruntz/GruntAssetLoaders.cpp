@@ -84,8 +84,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_attackQueued == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
@@ -104,7 +104,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
     switch (deathType) {
         case DEATH_SQUASH:
-            if (m_entranceReason == PICKUP_BOMB) {
+            if (m_activePickupType == PICKUP_BOMB) {
                 SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
                 goto pathA;
             }
@@ -260,7 +260,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         }
 
         case DEATH_EXPLODE: {
-            if (m_entranceReason == PICKUP_BOMB) {
+            if (m_activePickupType == PICKUP_BOMB) {
                 SwitchAnimation(m_poseDeath);
                 goto pathA;
             }
@@ -290,7 +290,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
             PLAY_GRUNT_CUE_IN_VIEW(3);
 
-            if (m_entranceReason == PICKUP_WARPSTONE
+            if (m_activePickupType == PICKUP_WARPSTONE
                 && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
                 SwitchAnimationByName("GRUNTZ_NORMALGRUNT_DEATH", 0);
                 APPLY_NAME_INLINE("GRUNTZ_NORMALGRUNT_DEATH");
@@ -309,7 +309,7 @@ finalize:
 
 tail:
 
-    if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
+    if (m_activePickupType == PICKUP_WARPSTONE && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         m_triggerMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
     }
     if (m_arrivalState == AI_TOOLTHIEF) {

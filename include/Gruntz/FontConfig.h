@@ -6,30 +6,30 @@
 #include <Enums.h>
 #include <Ints.h>
 
-GZ_ENUM_FLAGS_BEGIN(FontItemFlags, i32)
-    FONT_ITEM_FLAGS_NONE = 0,
-    FONT_ITEM_PREPEND = 0x02,
-    FONT_ITEM_CLEAR_EXISTING = 0x04,
-    FONT_ITEM_COLORED = 0x10,
-    FONT_ITEM_SHADOW = 0x20
-GZ_ENUM_FLAGS_END(FontItemFlags, i32)
-GZ_ENUM_FLAGS_OPS(FontItemFlags)
+GZ_ENUM_FLAGS_BEGIN(GameTextFlags, i32)
+    GAME_TEXT_FLAGS_NONE = 0,
+    GAME_TEXT_PREPEND = 0x02,
+    GAME_TEXT_CLEAR_EXISTING = 0x04,
+    GAME_TEXT_COLORED = 0x10,
+    GAME_TEXT_SHADOW = 0x20
+GZ_ENUM_FLAGS_END(GameTextFlags, i32)
+GZ_ENUM_FLAGS_OPS(GameTextFlags)
 
-class CFontConfig {
+class CGameText {
 public:
-    CFontConfig() {
+    CGameText() {
         m_reserved34 = 0;
         m_inputActive = false;
         m_arialFont = NULL;
         m_trainingFont = NULL;
     }
 
-    CPtrList m_list;
-    i32 LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold);
-    void FreeNodes();
+    CPtrList m_lines;
+    i32 Initialize(i32 messageHoldMs, i32 crowdedMessageHoldMs);
+    void ClearMessages();
     void Reset();
-    i32 AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload);
-    void Scroll(i32 delta);
+    i32 AddMessage(const char* str, GZ_ENUM_PARAM(GameTextFlags, i32) flags, i32 colorTint);
+    void AdvanceMessageTimer(i32 deltaMs);
 
     i32 HandleInputChar(i32 charCode, i32 keyData);
 
@@ -38,11 +38,11 @@ public:
         return m_inputText;
     }
     void EndInput();
-    ~CFontConfig();
+    ~CGameText();
 
     i32 DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format);
 
-    i32 MeasureLabel(HDC hdc, RECT* rect);
+    i32 DrawInputCaret(HDC hdc, RECT* rect);
 
     i32 RenderInputText(HDC hdc, i32 maxWidth, RECT* rect);
     i32 DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format);
@@ -60,10 +60,10 @@ public:
     );
 
     CString m_inputText;
-    u32 m_scrollOffset;
-    u32 m_lowScrollThreshold;
-    u32 m_highScrollThreshold;
-    i32 m_inputScrollTotal;
+    u32 m_messageElapsedMs;
+    u32 m_messageHoldMs;
+    u32 m_crowdedMessageHoldMs;
+    i32 m_inputElapsedMs;
     b32 m_inputActive;
     i32 m_reserved34; // set 1 with chat origin; never read
     HFONT m_arialFont;
@@ -71,15 +71,15 @@ public:
     HFONT m_messageFont;
 };
 
-extern i32 g_chatTextWidth;
-extern i32 g_caretBlinkMs;
+extern i32 g_inputCaretOffsetX;
+extern i32 g_caretBlinkRemainingMs;
 extern b32 g_caretBlinkOn;
-extern i32 g_lastDrawTextFormat;
+extern i32 g_inputTextDrawFormat;
 
-struct FontItem {
-    FontItemFlags m_flags;
-    i32 m_payload;
-    CString m_name;
+struct GameTextLine {
+    GameTextFlags m_flags;
+    i32 m_colorTint;
+    CString m_text;
 };
 
 #endif // GRUNTZ_GRUNTZ_FONTCONFIG_H

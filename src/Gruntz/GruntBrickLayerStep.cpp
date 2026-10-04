@@ -57,46 +57,46 @@ i32 CGrunt::StepBrickLayerBehavior() {
 
     FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
-        if (m_neighborValid == false) {
-            if (m_combatActive != false) {
-                goto L_powered_yes;
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
+        if (m_attackQueued == false) {
+            if (m_attackWindupActive != false) {
+                goto L_combat_active;
             }
             if (m_stamina >= STAMINA_FULL) {
                 if (FindGridNeighbor(1) != NULL) {
-                    goto L_powered_yes;
+                    goto L_combat_active;
                 }
                 if (atTarget && g == NULL) {
-                    goto L_powered_yes;
+                    goto L_combat_active;
                 }
-                if (m_poweredUp == false) {
-                    goto L_powered_yes;
+                if (m_inCombat == false) {
+                    goto L_combat_active;
                 }
             } else {
                 if (atTarget) {
-                    goto L_powered_yes;
+                    goto L_combat_active;
                 }
-                if (m_poweredUp == false) {
-                    goto L_powered_yes;
+                if (m_inCombat == false) {
+                    goto L_combat_active;
                 }
             }
-            if (m_neighborValid != false) {
-                goto L_powered_yes;
+            if (m_attackQueued != false) {
+                goto L_combat_active;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_COMBAT_STATE(this)
         } else {
-            m_neighborValid = false;
+            m_attackQueued = false;
         }
-    L_powered_yes:
+    L_combat_active:
         return 1;
     }
 
     if (g != NULL) {
-        if (m_neighborValid != false) {
+        if (m_attackQueued != false) {
             return 1;
         }
-        if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
+        if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 this->RecycleCoords();
@@ -117,7 +117,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         m_blockedVoicePending = false;
         goto L_ed153;
     }
-    if (m_poweredUp != false) {
+    if (m_inCombat != false) {
         goto L_ed153;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
@@ -126,7 +126,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         m_dwell = 0;
         return 1;
     }
-    if (m_poweredUp != false) {
+    if (m_inCombat != false) {
         goto L_ed153;
     }
     if (TileSwitch(

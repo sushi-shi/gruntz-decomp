@@ -49,7 +49,8 @@
         if (_cell->GetPlayerIndex() != g_curPlayer)                                                \
             return 0;                                                                              \
         CGrunt* _c2 = m_triggerMgr->UnitAt(_cell->GetPlayerIndex(), _cell->GetUnitIndex());        \
-        i32 _r = (_c2 && _c2->IsEntranceCommitted()) ? _c2->LoadPickupSprites(ID, 0, 0, 0, 1) : 0; \
+        i32 _r =                                                                                   \
+            (_c2 && _c2->IsEntranceCommitted()) ? _c2->BeginPickupAnimation(ID, 0, 0, 0, 1) : 0;   \
         if (!_r)                                                                                   \
             return 0;                                                                              \
         PLAYCUE("GAME_MAJORCHEAT");                                                                \

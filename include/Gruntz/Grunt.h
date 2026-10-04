@@ -174,8 +174,8 @@ GZ_ENUM_END(GruntItemPose)
 
 class CGrunt : public CMovingLogic, public CWapX {
 public:
-    inline PickupType ArrivalPickupOf(PickupType entranceReason) const;
-    inline PickupType ArrivalPickup() const;
+    inline PickupType ResolveEquippedToolType(PickupType activePickupType) const;
+    inline PickupType GetEquippedToolType() const;
 
     PickupType GetGruntKind() const {
         return m_gruntKind;
@@ -197,8 +197,8 @@ public:
     b32 HasArrived() const {
         return m_arrived;
     }
-    b32 IsPoweredUp() const {
-        return m_poweredUp;
+    b32 IsInCombat() const {
+        return m_inCombat;
     }
     b32 IsGuarding() const {
         return m_tileClaimed;
@@ -346,17 +346,17 @@ public:
     i32 StepDumbChaserBehavior();
 
     i32 StepSmartChaserBehavior();
-    i32 UpdateGruntStatus();
+    i32 UpdateAttackIdleAnimation();
 
     i32 StepCompassMove();
 
-    i32 StepArrivalCommit();
+    i32 BeginFreezeAnimation();
 
     i32 RunMoveConfig(i32 tileX, i32 tileY);
 
     i32 BuildGruntExitAnimation();
 
-    i32 LoadVehicleGruntAnimations();
+    i32 UpdateVehicleUseAnimation();
 
     i32 SetupTubeAnim(b32 isWater);
 
@@ -366,12 +366,17 @@ public:
 
     i32 UpdateDeathAnimation();
     i32 UpdateDecayFade();
-    i32 LoadWandGruntItemConfig();
+    i32 UpdateToolUseAnimation();
 
     i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex);
 
-    i32
-    LoadPickupSprites(PickupType type, i32 forced, i32 helpCueId, i32 pickupParam, i32 countStats);
+    i32 BeginPickupAnimation(
+        PickupType type,
+        i32 forced,
+        i32 helpCueId,
+        i32 pickupParam,
+        i32 countStats
+    );
 
     i32 BuildGruntLoseItemAnimation();
 
@@ -393,7 +398,7 @@ public:
 
     i32 RectSegProbe(RECT* r, POINT* e1, POINT* e2);
 
-    PickupType m_entranceReason;
+    PickupType m_activePickupType;
     Coord m_entrancePx;
     Coord m_lastTilePx;
     Coord m_commitPx;
@@ -403,8 +408,8 @@ public:
     i32 m_toyBlendPct;
     PickupType m_brickPickupType;
     PickupType m_vehiclePickupType;
-    PickupType m_toolId;
-    PickupType m_entrancePickup;
+    PickupType m_savedToolType;
+    PickupType m_pendingPickupType;
     i32 m_helpCueId;
     i32 m_reserved1a8;
     i32 m_reserved1ac;
@@ -432,9 +437,9 @@ public:
     Coord m_attackTargetPx;
     i32 m_reserved210;
     i32 m_struckPose;
-    b32 m_combatActive;
-    b32 m_neighborValid;
-    b32 m_poweredUp;
+    b32 m_attackWindupActive;
+    b32 m_attackQueued;
+    b32 m_inCombat;
     i32 m_daFlag;
     b32 m_entranceStamped;
     b32 m_bombRunActive;
@@ -574,7 +579,7 @@ public:
     CAniElement* m_poseToy[3];
     CAniElement* m_poseItem[2];
 
-    CAniElement* m_pickupGeoSrc;
+    CAniElement* m_pickupAnimation;
     Coord m_reserved3dc;
     Coord m_moveTile;
     i32 m_health;
@@ -616,7 +621,7 @@ public:
     ClockInterval m_wingzTiming;
     ClockInterval m_conversionTiming;
     ClockInterval m_shimmerTiming;
-    ClockInterval m_arrivalVoiceTiming;
+    ClockInterval m_walkVoiceTiming;
     i32 m_reserved8d0;
 
     CGrunt() : CMovingLogic(CUserLogic::INLINE_BASE) {}
@@ -671,7 +676,7 @@ public:
     i32 CanShowStamina();
     Coord* EntranceTileOffset(Coord* out);
     void ComputeFacing(double dt);
-    i32 ResetGeometry();
+    i32 StartAttackIdleAnimation();
     i32 StepAttackAction();
 
     void FaceTowardPixel(i32 x, i32 y);
@@ -725,11 +730,11 @@ public:
     void RestoreToolAfterToyUse(i32 defer);
 
     void RestorePreviousAppearance();
-    void ApplyEntrancePickup();
+    void ApplyPendingPickup();
 
     i32 StepEntranceReinit();
 
-    i32 RunEntranceMove();
+    i32 UpdatePickupAnimation();
 
     i32 StepWarpExit();
 
@@ -751,7 +756,7 @@ public:
 
     i32 FinishEntranceMove();
 
-    i32 LoadFreezeSpellAssets();
+    i32 UpdateFreezeAnimation();
 
     i32 StepBomberBehavior();
 
@@ -775,7 +780,7 @@ public:
     virtual void FinalizeStep(char* name) OVERRIDE;
 
     i32 UpdateToyUseAnimation();
-    i32 StepArrivalReroll();
+    i32 UpdateWalkAnimation();
     i32 FinishStruckAnimation();
     i32 FinishKnockbackAnimation();
     i32 FinishToobMoveAnimation();

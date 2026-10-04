@@ -407,7 +407,7 @@ i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
     if (grunt->GetGruntKind() == GRUNT_CONVERSION) {
         return VOICE_CUES_PER_BAND * 13 + cueId;
     }
-    switch (static_cast<u32>(IDX(grunt->m_entranceReason))) {
+    switch (static_cast<u32>(IDX(grunt->m_activePickupType))) {
         case IDX(PICKUP_NONE):
             return VOICE_CUES_PER_BAND * 17 + cueId;
         case IDX(PICKUP_BOMB):

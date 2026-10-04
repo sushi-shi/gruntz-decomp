@@ -50,7 +50,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         this->m_arrivalCell.m_x = 0;
     }
 
-    i32 reason = IDX(this->ArrivalPickup());
+    i32 reason = IDX(this->GetEquippedToolType());
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->GetTriggerMgr()->UnitAt(0, reason);
         if (slot == NULL || slot->IsEntranceCommitted() == false) {
@@ -76,7 +76,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         i32 dx = slotX - selfX;
         i32 dy = selfTileX.m_y - selfTileY.m_y;
         if (abs(dx) <= 1 && abs(dy) <= 1) {
-            PickupType r2 = slot->ArrivalPickup();
+            PickupType r2 = slot->GetEquippedToolType();
             if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
                 this->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
@@ -90,14 +90,14 @@ i32 CGrunt::StepToolThiefBehavior() {
         }
     }
 
-    reason = IDX(this->ArrivalPickup());
+    reason = IDX(this->GetEquippedToolType());
     if (reason != 0) {
         FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
-        b32 powered = this->m_poweredUp;
-        if (powered != false) {
-            b32 neighborValid = this->m_neighborValid;
-            if (neighborValid == false) {
-                if (this->m_combatActive != false) {
+        b32 inCombat = this->m_inCombat;
+        if (inCombat != false) {
+            b32 attackQueued = this->m_attackQueued;
+            if (attackQueued == false) {
+                if (this->m_attackWindupActive != false) {
                     return 1;
                 }
                 if (this->m_stamina >= STAMINA_FULL) {
@@ -107,29 +107,29 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (atTarget && g == NULL) {
                         return 1;
                     }
-                    if (this->m_poweredUp == false) {
+                    if (this->m_inCombat == false) {
                         return 1;
                     }
-                    if (this->m_neighborValid != false) {
+                    if (this->m_attackQueued != false) {
                         return 1;
                     }
-                    RESET_CURRENT_GRUNT_POWERED_STATE
+                    RESET_CURRENT_GRUNT_COMBAT_STATE
                     return 1;
                 } else {
                     if (atTarget) {
                         return 1;
                     }
-                    if (this->m_poweredUp == false) {
+                    if (this->m_inCombat == false) {
                         return 1;
                     }
-                    if (this->m_neighborValid != false) {
+                    if (this->m_attackQueued != false) {
                         return 1;
                     }
-                    RESET_CURRENT_GRUNT_POWERED_STATE
+                    RESET_CURRENT_GRUNT_COMBAT_STATE
                     return 1;
                 }
             } else {
-                this->m_neighborValid = false;
+                this->m_attackQueued = false;
             }
             return 1;
         }
@@ -138,7 +138,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             this->m_blockedVoicePending = false;
             return 1;
         }
-        if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL) {
+        if (this->m_inCombat == false && this->m_stamina >= STAMINA_FULL) {
             i32 x = g->m_object->m_screenX;
             if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 
@@ -178,15 +178,15 @@ i32 CGrunt::StepToolThiefBehavior() {
             do {
                 CGrunt* sv = slots[i];
                 if (sv != NULL && sv->IsEntranceCommitted() != false) {
-                    PickupType k = sv->m_entranceReason;
-                    if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_NONE
-                        && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE
-                        && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_BOMB) {
+                    PickupType k = sv->m_activePickupType;
+                    if (EQUIPPED_TOOL_OF_TERNARY_LE(sv, k) != PICKUP_NONE
+                        && EQUIPPED_TOOL_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE
+                        && EQUIPPED_TOOL_OF_TERNARY_LE(sv, k) != PICKUP_BOMB) {
                         i32 seekable = 1;
                         if (sv->GetGruntKind() == GRUNT_GHOST) {
                             seekable = 0;
                         }
-                        if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) == PICKUP_WARPSTONE) {
+                        if (EQUIPPED_TOOL_OF_TERNARY_LE(sv, k) == PICKUP_WARPSTONE) {
                             seekable = 0;
                         }
                         if (seekable) {

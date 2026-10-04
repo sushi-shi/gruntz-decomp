@@ -70,15 +70,15 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseToy, GRUNT_TOY_BREAK));
     SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseItem, GRUNT_ITEM1));
     SERIAL_READ_ANIMATION(ar, dir, buf, AT(m_poseItem, GRUNT_ITEM2));
-    SERIAL_READ_ANIMATION(ar, dir, buf, m_pickupGeoSrc);
+    SERIAL_READ_ANIMATION(ar, dir, buf, m_pickupAnimation);
 
     ar->Read(&m_reserved18c, sizeof(m_reserved18c));
     ar->Read(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Read(&m_brickPickupType, sizeof(m_brickPickupType));
-    ar->Read(&m_entranceReason, sizeof(m_entranceReason));
+    ar->Read(&m_activePickupType, sizeof(m_activePickupType));
     ar->Read(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
-    ar->Read(&m_toolId, sizeof(m_toolId));
-    ar->Read(&m_entrancePickup, sizeof(m_entrancePickup));
+    ar->Read(&m_savedToolType, sizeof(m_savedToolType));
+    ar->Read(&m_pendingPickupType, sizeof(m_pendingPickupType));
     ar->Read(&m_helpCueId, sizeof(m_helpCueId));
     ar->Read(&m_reserved1a8, sizeof(m_reserved1a8));
     ar->Read(&m_reserved1ac, sizeof(m_reserved1ac));
@@ -100,9 +100,9 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Read(&m_reserved210, sizeof(m_reserved210));
     ar->Read(&m_struckPose, sizeof(m_struckPose));
-    ar->Read(&m_combatActive, sizeof(m_combatActive));
-    ar->Read(&m_neighborValid, sizeof(m_neighborValid));
-    ar->Read(&m_poweredUp, sizeof(m_poweredUp));
+    ar->Read(&m_attackWindupActive, sizeof(m_attackWindupActive));
+    ar->Read(&m_attackQueued, sizeof(m_attackQueued));
+    ar->Read(&m_inCombat, sizeof(m_inCombat));
     ar->Read(&m_daFlag, sizeof(m_daFlag));
     ar->Read(&m_entranceStamped, sizeof(m_entranceStamped));
     ar->Read(&m_bombRunActive, sizeof(m_bombRunActive));
@@ -209,7 +209,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         m_payloads.AddTail(item);
     }
 
-    b32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);
+    b32 flag = (m_activePickupType >= PICKUP_TOYZ_FIRST);
     CShadeTable* r = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), flag);
     CWwdSpriteObject* cb = m_object;
     cb->SetDrawFill(SHADE_PAL_16, r);

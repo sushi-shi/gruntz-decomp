@@ -49,14 +49,14 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
     CGrunt* occ;
     switch (m_defenderState) {
         case AISTATE_ATTACK:
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
             occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
                 && occ->IsEntranceCommitted() != false) {
-                if (m_combatActive != false) {
+                if (m_attackWindupActive != false) {
                     return 1;
                 }
                 if (m_stamina < STAMINA_FULL) {
@@ -92,7 +92,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 goto seek;
             }
             RepathToward(this, occ);
-            if (m_poweredUp != false) {
+            if (m_inCombat != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {

@@ -26,7 +26,7 @@
 #include <string.h>
 
 RVA(0x00065e80, 0x14a0)
-i32 CGrunt::LoadPickupSprites(
+i32 CGrunt::BeginPickupAnimation(
     PickupType type,
     i32 forced,
     i32 helpCueId,
@@ -57,7 +57,7 @@ i32 CGrunt::LoadPickupSprites(
         return 0;
     }
     if (type >= PICKUP_COLORBRICK_FIRST && type <= PICKUP_BRICKZ_LAST) {
-        if (ArrivalPickup() != PICKUP_BRICK) {
+        if (GetEquippedToolType() != PICKUP_BRICK) {
             return 0;
         }
     }
@@ -67,10 +67,10 @@ i32 CGrunt::LoadPickupSprites(
     if (m_wingzEnabled != false) {
         return 0;
     }
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_attackQueued == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
-    if (m_entranceReason == PICKUP_WARPSTONE) {
+    if (m_activePickupType == PICKUP_WARPSTONE) {
         if (type >= PICKUP_EQUIPPABLE_FIRST && type <= PICKUP_EQUIPPABLE_LAST) {
             return 0;
         }
@@ -242,11 +242,11 @@ i32 CGrunt::LoadPickupSprites(
             break;
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            CAniElement* geo = MapFind<CAniElement>(
+            CAniElement* pickupAnimation = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 "GRUNTZ_PICKUPS_MEGAPHONE"
             );
-            m_pickupGeoSrc = geo;
+            m_pickupAnimation = pickupAnimation;
             PickupType n = static_cast<PickupType>(play->m_statusBar->GetActiveValue());
             if (countStats != 0) {
                 if (n >= PICKUP_EQUIPPABLE_FIRST && n <= PICKUP_EQUIPPABLE_LAST
@@ -428,7 +428,7 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
     }
 
-    if (m_pickupGeoSrc == NULL) {
+    if (m_pickupAnimation == NULL) {
         return 0;
     }
     if (id != 0) {
@@ -439,14 +439,14 @@ i32 CGrunt::LoadPickupSprites(
         }
     }
     m_entranceActive = true;
-    m_entrancePickup = type;
+    m_pendingPickupType = type;
     m_helpCueId = helpCueId;
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
-    SwitchAnimation(m_pickupGeoSrc);
+    SwitchAnimation(m_pickupAnimation);
     SetImageSetByName("GRUNTZ_PICKUPS");
     return 1;
 }

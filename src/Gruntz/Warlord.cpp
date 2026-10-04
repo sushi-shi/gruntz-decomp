@@ -472,11 +472,11 @@ i32 CWarlord::NotifyFortUnderAttack() {
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)
                     static CString s_alert("ALERT - Your Fort is under attack!");
-                    g_gameReg->ChatLog()->AddItem(
+                    g_gameReg->ChatLog()->AddMessage(
                         static_cast<LPCTSTR>(
                             *g_buteMgr.GetString("Warlordz", "NotifyString", &s_alert)
                         ),
-                        FONT_ITEM_FLAGS_NONE,
+                        GAME_TEXT_FLAGS_NONE,
                         0x11
                     );
                     m_notifyTimer.m_interval =

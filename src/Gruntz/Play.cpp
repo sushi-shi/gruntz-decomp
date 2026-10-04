@@ -225,10 +225,10 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CChatBoxOwner* ctl = new CChatBoxOwner;
+        CChatBox* ctl = new CChatBox;
         m_chatBox = ctl;
         if (m_chatBox->Attach(m_world, m_mgr->ChatLog()) == 0) {
-            CChatBoxOwner* dead = m_chatBox;
+            CChatBox* dead = m_chatBox;
             if (dead == NULL) {
                 return 0;
             }
@@ -320,10 +320,10 @@ void CPlay::ReleaseResources() {
         t++;
     } while (t < 4);
     if (m_mgr && m_mgr->ChatLog()) {
-        m_mgr->ChatLog()->FreeNodes();
+        m_mgr->ChatLog()->ClearMessages();
     }
     SAFE_DELETE(m_statusBar)
-    CChatBoxOwner* hit = m_chatBox;
+    CChatBox* hit = m_chatBox;
     if (hit) {
         hit->Deactivate();
         delete hit;
@@ -553,7 +553,7 @@ i32 CPlay::Render() {
             m_minimap->Draw(m_world->GetDrawTarget()->GetBackPair(), &rc);
         }
 
-        m_mgr->ChatLog()->Scroll(static_cast<i32>(g_frameDelta));
+        m_mgr->ChatLog()->AdvanceMessageTimer(static_cast<i32>(g_frameDelta));
         CDDrawSurfacePair* view =
             static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
         if (view == NULL) {
@@ -601,7 +601,7 @@ i32 CPlay::Render() {
         }
 
         m_levelTimer->Draw(view, false);
-        m_chatBox->LoadChatBoxSprite(view);
+        m_chatBox->Draw(view);
         DrawDebugStats();
         m_mgr->m_triggerMgr->RenderActionOptionsMenu();
 
@@ -1439,7 +1439,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             g_playActive = true;
             self->m_renderDisabled = false;
             self->m_mgr->CheckSavedMode();
-            self->m_mgr->ChatLog()->FreeNodes();
+            self->m_mgr->ChatLog()->ClearMessages();
         }
         return 1;
     }
@@ -1778,11 +1778,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == VK_RETURN) {
-        CChatBoxOwner* rec = this->m_chatBox;
+        CChatBox* rec = this->m_chatBox;
         if (rec->m_inputActive != false) {
             rec->HandleTextInputKey('\r', lparam);
         } else {
-            rec->m_fontConfig->EndInput();
+            rec->m_gameText->EndInput();
             rec->m_inputActive = true;
             this->m_chatBox->HandleTextInputKey('\r', lparam);
         }
@@ -1792,10 +1792,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (vk == VK_ESCAPE) {
         CTriggerMgr* triggerManager = mgr->GetTriggerMgr();
         triggerManager->StopCameraTracking();
-        CChatBoxOwner* rec = this->m_chatBox;
+        CChatBox* rec = this->m_chatBox;
         if (rec->m_inputActive != false) {
             this->FlushPendingOps();
-            this->m_chatBox->m_fontConfig->EndInput();
+            this->m_chatBox->m_gameText->EndInput();
             this->m_chatBox->m_inputActive = false;
             return 1;
         }
@@ -4450,7 +4450,7 @@ i32 CPlay::ExecuteCommand(
             if (g2 == NULL || g2->IsEntranceCommitted() == false) {
                 r = 0;
             } else {
-                r = g2->LoadPickupSprites(
+                r = g2->BeginPickupAnimation(
                     static_cast<PickupType>(pickupType & 0xff),
                     0,
                     0,

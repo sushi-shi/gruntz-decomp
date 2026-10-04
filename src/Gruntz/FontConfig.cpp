@@ -16,20 +16,20 @@
 #include <string.h>
 
 DATA(0x0020c7a8)
-i32 g_lastDrawTextFormat = DT_SINGLELINE;
+i32 g_inputTextDrawFormat = DT_SINGLELINE;
 DATA(0x0022b434)
-i32 g_chatTextWidth = 0;
+i32 g_inputCaretOffsetX = 0;
 DATA(0x0022b438)
-i32 g_caretBlinkMs = 0;
+i32 g_caretBlinkRemainingMs = 0;
 DATA(0x0022b43c)
 b32 g_caretBlinkOn = false;
 
 RVA(0x000218e0, 0x1ff)
-i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {
-    m_lowScrollThreshold = lowScrollThreshold;
-    m_highScrollThreshold = highScrollThreshold;
-    m_scrollOffset = 0;
-    m_inputScrollTotal = 0;
+i32 CGameText::Initialize(i32 messageHoldMs, i32 crowdedMessageHoldMs) {
+    m_messageHoldMs = messageHoldMs;
+    m_crowdedMessageHoldMs = crowdedMessageHoldMs;
+    m_messageElapsedMs = 0;
+    m_inputElapsedMs = 0;
     m_inputActive = false;
 
     m_arialFont = CreateFontA(
@@ -69,7 +69,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
 
     CString arial("ARIAL");
 
-    const char* faceTF = static_cast<const char*>(
+    const char* trainingFontFace = static_cast<const char*>(
         *g_buteMgr.GetString("Font", "TrainingFont", static_cast<CString*>(&arial))
     );
     m_trainingFont = CreateFontA(
@@ -86,7 +86,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         DEFAULT_PITCH | FF_DONTCARE,
-        faceTF
+        trainingFontFace
     );
     if (!m_trainingFont) {
         m_trainingFont = CreateFontA(
@@ -107,7 +107,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         );
     }
 
-    const char* faceMF = static_cast<const char*>(
+    const char* messageFontFace = static_cast<const char*>(
         *g_buteMgr.GetString("Font", "MessageFont", static_cast<CString*>(&arial))
     );
     m_messageFont = CreateFontA(
@@ -124,7 +124,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         DEFAULT_PITCH | FF_DONTCARE,
-        faceMF
+        messageFontFace
     );
     if (!m_messageFont) {
         m_messageFont = CreateFontA(
@@ -149,8 +149,8 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
 }
 
 RVA(0x00021b60, 0x4d)
-void CFontConfig::Reset() {
-    FreeNodes();
+void CGameText::Reset() {
+    ClearMessages();
     m_inputText.Empty();
     if (m_arialFont) {
         DeleteObject(m_arialFont);
@@ -167,101 +167,101 @@ void CFontConfig::Reset() {
 }
 
 RVA(0x00021bd0, 0x45)
-void CFontConfig::FreeNodes() {
-    POSITION pos = m_list.GetHeadPosition();
+void CGameText::ClearMessages() {
+    POSITION pos = m_lines.GetHeadPosition();
     while (pos) {
-        FontItem* item = static_cast<FontItem*>(m_list.GetNext(pos));
+        GameTextLine* item = static_cast<GameTextLine*>(m_lines.GetNext(pos));
         if (item) {
             delete item;
         }
     }
-    m_list.RemoveAll();
+    m_lines.RemoveAll();
     m_inputText.Empty();
     m_inputActive = false;
 }
 
-RVA_COMPGEN(0x00021c40, 0x8, ??1FontItem@@QAE@XZ)
+RVA_COMPGEN(0x00021c40, 0x8, ??1GameTextLine@@QAE@XZ)
 
 RVA(0x00021c60, 0xde)
-i32 CFontConfig::AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload) {
+i32 CGameText::AddMessage(const char* str, GZ_ENUM_PARAM(GameTextFlags, i32) flags, i32 colorTint) {
     if (!str) {
         return 0;
     }
     if (!*str) {
         return 0;
     }
-    if (HAS(flags, FONT_ITEM_CLEAR_EXISTING)) {
-        POSITION pos = m_list.GetHeadPosition();
+    if (HAS(flags, GAME_TEXT_CLEAR_EXISTING)) {
+        POSITION pos = m_lines.GetHeadPosition();
         while (pos) {
-            FontItem* item = static_cast<FontItem*>(m_list.GetNext(pos));
+            GameTextLine* item = static_cast<GameTextLine*>(m_lines.GetNext(pos));
             if (item) {
                 delete item;
             }
         }
-        m_list.RemoveAll();
+        m_lines.RemoveAll();
     }
-    FontItem* item = new FontItem;
-    item->m_name = str;
+    GameTextLine* item = new GameTextLine;
+    item->m_text = str;
     item->m_flags = flags;
-    item->m_payload = payload;
-    if (HAS(flags, FONT_ITEM_PREPEND)) {
-        m_list.AddHead(item);
+    item->m_colorTint = colorTint;
+    if (HAS(flags, GAME_TEXT_PREPEND)) {
+        m_lines.AddHead(item);
     } else {
-        m_list.AddTail(item);
+        m_lines.AddTail(item);
     }
     return 1;
 }
 
 RVA(0x00021d80, 0x79)
-void CFontConfig::Scroll(i32 delta) {
+void CGameText::AdvanceMessageTimer(i32 deltaMs) {
     if (m_inputActive) {
-        m_inputScrollTotal += delta;
+        m_inputElapsedMs += deltaMs;
     }
-    i32 count = m_list.GetCount();
+    i32 count = m_lines.GetCount();
     if (!count) {
-        m_scrollOffset = 0;
+        m_messageElapsedMs = 0;
     }
-    m_scrollOffset += delta;
+    m_messageElapsedMs += deltaMs;
 
-    FontItem* item;
+    GameTextLine* item;
     if (count > 3) {
-        if (m_scrollOffset < m_highScrollThreshold) {
+        if (m_messageElapsedMs < m_crowdedMessageHoldMs) {
             return;
         }
-        item = static_cast<FontItem*>(m_list.RemoveHead());
+        item = static_cast<GameTextLine*>(m_lines.RemoveHead());
         if (!item) {
             return;
         }
     } else {
-        if (m_scrollOffset < m_lowScrollThreshold) {
+        if (m_messageElapsedMs < m_messageHoldMs) {
             return;
         }
         if (!count) {
             return;
         }
-        item = static_cast<FontItem*>(m_list.RemoveHead());
+        item = static_cast<GameTextLine*>(m_lines.RemoveHead());
         if (!item) {
             return;
         }
     }
-    item->m_name.Empty();
+    item->m_text.Empty();
     // Retail destroys and frees without a delete-expression null check.
-    item->~FontItem();
+    item->~GameTextLine();
     ::operator delete(item);
-    m_scrollOffset = 0;
+    m_messageElapsedMs = 0;
 }
 
 // @early-stop
 RVA(0x00021e20, 0x95)
 
-i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
+i32 CGameText::HandleInputChar(i32 charCode, i32 keyData) {
     static_cast<void>(keyData);
-    m_inputScrollTotal = 0;
+    m_inputElapsedMs = 0;
     if (charCode == '\r') {
         if (m_inputActive == false) {
             m_inputActive = true;
-            m_scrollOffset = 0;
-            m_inputScrollTotal = 0;
+            m_messageElapsedMs = 0;
+            m_inputElapsedMs = 0;
             m_inputText = static_cast<const char*>("");
         } else {
             if (m_inputText.IsEmpty()) {
@@ -292,7 +292,7 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
 }
 
 RVA(0x00021ef0, 0x17)
-void CFontConfig::EndInput() {
+void CGameText::EndInput() {
     if (m_inputActive != false) {
         m_inputActive = false;
         m_inputText.Empty();
@@ -300,27 +300,27 @@ void CFontConfig::EndInput() {
 }
 
 RVA(0x00021f20, 0x162)
-i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
+i32 CGameText::DrawInputCaret(HDC hdc, RECT* rect) {
     if (hdc == NULL) {
         return 0;
     }
     CString text(m_inputText);
     if (text.IsEmpty()) {
-        g_chatTextWidth = 0;
+        g_inputCaretOffsetX = 0;
     } else {
         RECT rc = *rect;
         DrawTextA(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
-        i32 textW = rc.right - rc.left;
-        i32 provW = rect->right - rect->left;
-        g_chatTextWidth = Min(provW, textW);
+        i32 textWidth = rc.right - rc.left;
+        i32 availableWidth = rect->right - rect->left;
+        g_inputCaretOffsetX = Min(availableWidth, textWidth);
     }
 
     CDC* dc = CDC::FromHandle(hdc);
     if (dc != NULL) {
         CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
         CPen* saved = dc->SelectObject(&pen);
-        dc->MoveTo(rect->left + g_chatTextWidth, rect->top);
-        dc->LineTo(rect->left + g_chatTextWidth, rect->top + 0xc);
+        dc->MoveTo(rect->left + g_inputCaretOffsetX, rect->top);
+        dc->LineTo(rect->left + g_inputCaretOffsetX, rect->top + 0xc);
         dc->SelectObject(saved);
     }
     return 1;
@@ -330,7 +330,7 @@ RVA_COMPGEN(0x000220f0, 0x46, ??1CPen@@UAE@XZ)
 
 // @early-stop
 RVA(0x00022160, 0x18e)
-i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
+i32 CGameText::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     if (hdc == NULL) {
         return 0;
     }
@@ -341,18 +341,18 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         }
     }
     i32 t;
-    if (g_frameDelta >= static_cast<u32>(g_caretBlinkMs)) {
+    if (g_frameDelta >= static_cast<u32>(g_caretBlinkRemainingMs)) {
         t = 0;
     } else {
-        t = g_caretBlinkMs - g_frameDelta;
+        t = g_caretBlinkRemainingMs - g_frameDelta;
     }
-    g_caretBlinkMs = t;
+    g_caretBlinkRemainingMs = t;
     if (t == 0) {
-        g_caretBlinkMs = 0xc8;
+        g_caretBlinkRemainingMs = 0xc8;
         g_caretBlinkOn ^= 1;
     }
     if (g_caretBlinkOn != false && text.IsEmpty()) {
-        MeasureLabel(hdc, rect);
+        DrawInputCaret(hdc, rect);
         return 1;
     }
     HGDIOBJ prev = NULL;
@@ -360,13 +360,13 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         prev = SelectObject(hdc, m_arialFont);
     }
     if (g_caretBlinkOn) {
-        MeasureLabel(hdc, rect);
+        DrawInputCaret(hdc, rect);
     }
     int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
     RECT rc = *rect;
     pDraw(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
     i32 fmt = ((rc.right - rc.left) > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
-    g_lastDrawTextFormat = fmt;
+    g_inputTextDrawFormat = fmt;
     pDraw(hdc, text, text.GetLength(), rect, fmt);
     if (prev) {
         SelectObject(hdc, prev);
@@ -395,7 +395,7 @@ typedef enum TextColorRef {
 } TextColorRef;
 
 RVA(0x00022360, 0x338)
-i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
+i32 CGameText::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (hdc == NULL) {
         return 0;
     }
@@ -403,17 +403,17 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         return 0;
     }
     // The signed count guard is required; IsEmpty emits a zero-only test.
-    if (m_list.GetCount() <= 0) {
+    if (m_lines.GetCount() <= 0) {
         return 0;
     }
-    while (m_list.GetCount() > count) {
-        FontItem* dead = static_cast<FontItem*>(m_list.RemoveHead());
+    while (m_lines.GetCount() > count) {
+        GameTextLine* dead = static_cast<GameTextLine*>(m_lines.RemoveHead());
         if (dead != NULL) {
-            dead->m_name.Empty();
+            dead->m_text.Empty();
             delete dead;
         }
     }
-    i32 n = min(count, m_list.GetCount());
+    i32 n = min(count, m_lines.GetCount());
     if (n <= 0) {
         return 0;
     }
@@ -425,25 +425,25 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (m_arialFont) {
             savedFont = SelectObject(hdc, m_arialFont);
         }
-        FontItem* item = static_cast<FontItem*>(m_list.GetAt(m_list.FindIndex(i)));
+        GameTextLine* item = static_cast<GameTextLine*>(m_lines.GetAt(m_lines.FindIndex(i)));
         if (item != NULL) {
-            if (HAS(item->m_flags, FONT_ITEM_SHADOW)) {
+            if (HAS(item->m_flags, GAME_TEXT_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
                 work = cur;
                 OFFSET_RECT_X_EDGES(work, 1, 1);
                 OFFSET_RECT_Y_EDGES(work, 1, 1);
-                DrawTextA(hdc, item->m_name, strlen(item->m_name), &work, format);
+                DrawTextA(hdc, item->m_text, strlen(item->m_text), &work, format);
             }
-            if (HAS(item->m_flags, FONT_ITEM_COLORED)) {
+            if (HAS(item->m_flags, GAME_TEXT_COLORED)) {
                 COLORREF color;
-                color = TintColorRef(static_cast<ColorTint>(item->m_payload));
+                color = TintColorRef(static_cast<ColorTint>(item->m_colorTint));
                 SetTextColor(hdc, color);
             } else {
                 SetTextColor(hdc, TCLR_WHITE);
             }
             calc = cur;
-            DrawTextA(hdc, item->m_name, strlen(item->m_name), &calc, format | DT_CALCRECT);
-            DrawTextA(hdc, item->m_name, strlen(item->m_name), &cur, format);
+            DrawTextA(hdc, item->m_text, strlen(item->m_text), &calc, format | DT_CALCRECT);
+            DrawTextA(hdc, item->m_text, strlen(item->m_text), &cur, format);
             calc.top = calc.bottom;
             calc.bottom = rect->bottom;
             calc.right = rect->right;
@@ -460,7 +460,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00022770, 0x7d)
-i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) {
+i32 CGameText::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) {
     if (hdc == NULL) {
         return 0;
     }
@@ -483,7 +483,7 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
 
 // @early-stop
 RVA(0x00022810, 0x22a)
-i32 CFontConfig::Draw3DText(
+i32 CGameText::Draw3DText(
     const CString* strSrc,
     HDC hdc,
     RECT* dst,
@@ -546,6 +546,6 @@ i32 CFontConfig::Draw3DText(
 }
 
 RVA(0x00085f40, 0x56)
-CFontConfig::~CFontConfig() {
+CGameText::~CGameText() {
     Reset();
 }

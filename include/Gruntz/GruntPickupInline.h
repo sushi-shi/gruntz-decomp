@@ -4,40 +4,41 @@
 #include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/Grunt.h>
 
-inline PickupType CGrunt::ArrivalPickup() const {
-    PickupType pickup = m_entranceReason;
+inline PickupType CGrunt::GetEquippedToolType() const {
+    PickupType pickup = m_activePickupType;
     if (pickup > PICKUP_EQUIPPABLE_LAST) {
-        pickup = m_toolId;
+        pickup = m_savedToolType;
     }
     return pickup;
 }
 
-inline PickupType CGrunt::ArrivalPickupOf(PickupType entranceReason) const {
-    PickupType pickup = entranceReason;
-    if (entranceReason > PICKUP_EQUIPPABLE_LAST) {
-        pickup = m_toolId;
+inline PickupType CGrunt::ResolveEquippedToolType(PickupType activePickupType) const {
+    PickupType pickup = activePickupType;
+    if (activePickupType > PICKUP_EQUIPPABLE_LAST) {
+        pickup = m_savedToolType;
     }
     return pickup;
 }
 
-#define ARRIVAL_PICKUP_TERNARY_LE(grunt)                                                           \
-    ((grunt->m_entranceReason <= PICKUP_EQUIPPABLE_LAST) ? grunt->m_entranceReason                 \
-                                                         : grunt->m_toolId)
+#define EQUIPPED_TOOL_TERNARY_LE(grunt)                                                            \
+    ((grunt->m_activePickupType <= PICKUP_EQUIPPABLE_LAST) ? grunt->m_activePickupType             \
+                                                           : grunt->m_savedToolType)
 
-#define ARRIVAL_PICKUP_TERNARY_GT(grunt)                                                           \
-    ((grunt->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? grunt->m_toolId : grunt->m_entranceReason)
+#define EQUIPPED_TOOL_TERNARY_GT(grunt)                                                            \
+    ((grunt->m_activePickupType > PICKUP_EQUIPPABLE_LAST) ? grunt->m_savedToolType                 \
+                                                          : grunt->m_activePickupType)
 
-#define ARRIVAL_PICKUP_OF_TERNARY_LE(grunt, entranceReason)                                        \
-    ((entranceReason <= PICKUP_EQUIPPABLE_LAST) ? entranceReason : grunt->m_toolId)
+#define EQUIPPED_TOOL_OF_TERNARY_LE(grunt, activePickupType)                                       \
+    ((activePickupType <= PICKUP_EQUIPPABLE_LAST) ? activePickupType : grunt->m_savedToolType)
 
 #define ADD_BATTLEZ_TRAVERSAL_FLAGS(grunt, flags)                                                  \
     {                                                                                              \
-        PickupType prim = (grunt)->m_entranceReason;                                               \
-        if ((grunt)->ArrivalPickupOf(prim) == PICKUP_TOOB) {                                       \
+        PickupType prim = (grunt)->m_activePickupType;                                             \
+        if ((grunt)->ResolveEquippedToolType(prim) == PICKUP_TOOB) {                               \
             (flags) |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;                                               \
-        } else if ((grunt)->ArrivalPickupOf(prim) == PICKUP_SPRING) {                              \
+        } else if ((grunt)->ResolveEquippedToolType(prim) == PICKUP_SPRING) {                      \
             (flags) |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;                                             \
-        } else if ((grunt)->ArrivalPickupOf(prim) == PICKUP_WINGZ) {                               \
+        } else if ((grunt)->ResolveEquippedToolType(prim) == PICKUP_WINGZ) {                       \
             (flags) |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;                                              \
         }                                                                                          \
     }

@@ -106,7 +106,7 @@ RVA(0x00050ca0, 0x2b)
 i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
 
     i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
-    m_entrancePickup = PICKUP_INVALID;
+    m_pendingPickupType = PICKUP_INVALID;
     m_helpCueId = 0;
     return r;
 }
@@ -115,7 +115,7 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
-    m_entrancePickup = PICKUP_INVALID;
+    m_pendingPickupType = PICKUP_INVALID;
 
     CString name;
 
@@ -232,7 +232,7 @@ void CGrunt::FaceTowardPixel(i32 x, i32 y) {
 
 RVA(0x000514a0, 0x26)
 i32 CGrunt::CanShowStamina() {
-    if (m_combatActive == false && m_stamina >= STAMINA_FULL && m_entranceActive == false) {
+    if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL && m_entranceActive == false) {
         return 1;
     }
     return 0;
@@ -486,7 +486,7 @@ i32 CGrunt::StepCompassMove() {
 
     if (m_toyTileIndex > 0) {
         CString str;
-        switch (m_entranceReason) {
+        switch (m_activePickupType) {
             case PICKUP_BABYWALKER:
                 str = "BABYWALKERGRUNT";
                 break;
@@ -764,11 +764,11 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     }
     eq = IsAnimationAct("I");
     if (eq) {
-        if (m_entranceReason == PICKUP_WAND) {
+        if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
-        if (m_entranceReason != PICKUP_BOMB) {
+        if (m_activePickupType != PICKUP_BOMB) {
             goto applyTail;
         }
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
@@ -784,7 +784,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     if (eq) {
         return 1;
     }
-    if (APPLY_ACTIVE_ENTRANCE_PICKUP()) {
+    if (COMPLETE_ACTIVE_PICKUP()) {
         goto applyTail;
     }
     // Direct comparison keeps the animation-name array access inline at this site.
@@ -806,8 +806,8 @@ applyTail:
     if (m_wingzEnabled != false) {
         LoadWingzGruntSprites(false);
     }
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_attackQueued == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     m_triggerMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
     {
@@ -891,7 +891,7 @@ i32 CGrunt::SerializeDispatch(
     m_wingzTiming.Serialize(ar, mode, typeId, object);
     m_conversionTiming.Serialize(ar, mode, typeId, object);
     m_shimmerTiming.Serialize(ar, mode, typeId, object);
-    m_arrivalVoiceTiming.Serialize(ar, mode, typeId, object);
+    m_walkVoiceTiming.Serialize(ar, mode, typeId, object);
     m_arrivalRerollTiming.Serialize(ar, mode, typeId, object);
     m_holdTiming.Serialize(ar, mode, typeId, object);
     return 1;
@@ -1001,14 +1001,14 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseToy, GRUNT_TOY_BREAK));
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseItem, GRUNT_ITEM1));
     SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseItem, GRUNT_ITEM2));
-    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_pickupGeoSrc);
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_pickupAnimation);
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
     ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));
-    ar->Write(&m_entranceReason, sizeof(m_entranceReason));
+    ar->Write(&m_activePickupType, sizeof(m_activePickupType));
     ar->Write(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
-    ar->Write(&m_toolId, sizeof(m_toolId));
-    ar->Write(&m_entrancePickup, sizeof(m_entrancePickup));
+    ar->Write(&m_savedToolType, sizeof(m_savedToolType));
+    ar->Write(&m_pendingPickupType, sizeof(m_pendingPickupType));
     ar->Write(&m_helpCueId, sizeof(m_helpCueId));
     ar->Write(&m_reserved1a8, sizeof(m_reserved1a8));
     ar->Write(&m_reserved1ac, sizeof(m_reserved1ac));
@@ -1030,9 +1030,9 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Write(&m_reserved210, sizeof(m_reserved210));
     ar->Write(&m_struckPose, sizeof(m_struckPose));
-    ar->Write(&m_combatActive, sizeof(m_combatActive));
-    ar->Write(&m_neighborValid, sizeof(m_neighborValid));
-    ar->Write(&m_poweredUp, sizeof(m_poweredUp));
+    ar->Write(&m_attackWindupActive, sizeof(m_attackWindupActive));
+    ar->Write(&m_attackQueued, sizeof(m_attackQueued));
+    ar->Write(&m_inCombat, sizeof(m_inCombat));
     ar->Write(&m_daFlag, sizeof(m_daFlag));
     ar->Write(&m_entranceStamped, sizeof(m_entranceStamped));
     ar->Write(&m_bombRunActive, sizeof(m_bombRunActive));

@@ -121,7 +121,7 @@ cast in a plain walk is the era idiom, not missing API. Remaining leads:
   `CTriggerMgr::m_recList`, `CProjectile::m_hitList` and the
   `CGrunt::m_coordList` variants; no single helper explains them yet.
 - Untouched owners (Wwd `CWwdGameObject::m_children`, Image `CDibMgr`,
-  `CFontConfig`, `CWorldSoundSet`, `CVoiceManager`, `CDDSurface`, `CNetMgr`,
+  `CGameText`, `CWorldSoundSet`, `CVoiceManager`, `CDDSurface`, `CNetMgr`,
   `CGruntzCmdMgr`) walk or own their lists in out-of-line methods.
 
 Scale now: about 237 casts around element access in 54 files (from 314 by

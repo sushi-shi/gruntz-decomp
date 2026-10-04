@@ -130,12 +130,12 @@ void CNetSession::BuildGruntzCrcInfo() {
                 continue;
             }
             i32 rnd = rand();
-            PickupType type = grunt->m_entranceReason;
+            PickupType type = grunt->m_activePickupType;
             i32 wp;
             PRIO(wp, type);
             b32 da = grunt->m_daFlag;
             PickupType toy = grunt->GetVehiclePickupType();
-            PickupType tool = grunt->ArrivalPickupOf(type);
+            PickupType tool = grunt->ResolveEquippedToolType(type);
             wsprintfA(
                 szLine,
                 "[p=%d][g=%d][health=%d][x=%d][y=%d][dir=%d][stm=%d][ttl=%d][tool=%d]"
@@ -152,10 +152,10 @@ void CNetSession::BuildGruntzCrcInfo() {
                 toy,
                 da,
                 wp,
-                grunt->m_poweredUp,
-                grunt->m_neighborValid,
+                grunt->m_inCombat,
+                grunt->m_attackQueued,
                 grunt->m_arrivalPhase,
-                grunt->m_combatActive,
+                grunt->m_attackWindupActive,
                 grunt->m_neighborScanEnabled,
                 rnd
             );
@@ -697,17 +697,17 @@ i32 CNetSession::ComputeChecksum() {
                        + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
                        + grunt->LastTilePx().m_y;
 
-                PickupType carried = grunt->m_entranceReason;
-                PickupType effective = grunt->ArrivalPickupOf(carried);
+                PickupType carried = grunt->m_activePickupType;
+                PickupType effective = grunt->ResolveEquippedToolType(carried);
                 sum += IDX(grunt->GetVehiclePickupType()) + grunt->IsEntranceCommitted()
                        + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);
 
                 i32 priority;
                 PRIO(priority, carried);
 
-                sum += grunt->m_arrivalPhase + grunt->m_neighborScanEnabled + grunt->m_combatActive
-                       + grunt->m_neighborValid + grunt->m_poweredUp + static_cast<i32>(g_frameTime)
-                       + priority;
+                sum += grunt->m_arrivalPhase + grunt->m_neighborScanEnabled
+                       + grunt->m_attackWindupActive + grunt->m_attackQueued + grunt->m_inCombat
+                       + static_cast<i32>(g_frameTime) + priority;
                 sum += rand();
             }
         }
