@@ -230,13 +230,13 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
 
     NetGameMgr()->m_modalBusy = true;
     if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
-        if (StartTitle() == 0) {
+        if (SetupLobbyConnection() == 0) {
             NetGameMgr()->m_modalBusy = false;
             ReleaseResources();
             return 0;
         }
     } else {
-        if (Open() == 0) {
+        if (SetupNetworkConnection() == 0) {
             NetGameMgr()->m_modalBusy = false;
             while (ShowCursor(false) >= 0) {
             }
@@ -395,9 +395,9 @@ i32 CMulti::EnterState(GameStateId previousState) {
     m_mgr->RefreshGameClock();
     g_frameTime = m_savedClock;
     DWORD(WINAPI * tg)(void) = timeGetTime;
-    m_drainTimer = 0;
-    m_lastTime = tg();
-    m_frameDelta = 0;
+    m_sendCountdownMs = 0;
+    m_lastFrameTimeMs = tg();
+    m_frameDeltaMs = 0;
     m_reserved5ec = 0;
     m_reserved5e8 = 0;
     m_accumTime = 0;
@@ -454,9 +454,9 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
     g_frameTime = 0;
     m_savedClock = 0;
     m_reserved5d0 = 0;
-    m_drainTimer = 0;
-    m_lastTime = timeGetTime();
-    m_frameDelta = 0;
+    m_sendCountdownMs = 0;
+    m_lastFrameTimeMs = timeGetTime();
+    m_frameDeltaMs = 0;
     m_reserved5ec = 0;
     m_reserved5e8 = 0;
     m_accumTime = 0;
@@ -487,9 +487,9 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
     g_frameTime = 0;
     m_savedClock = 0;
     m_reserved5d0 = 0;
-    m_drainTimer = 0;
-    m_lastTime = timeGetTime();
-    m_frameDelta = 0;
+    m_sendCountdownMs = 0;
+    m_lastFrameTimeMs = timeGetTime();
+    m_frameDeltaMs = 0;
     m_reserved5ec = 0;
     m_reserved5e8 = 0;
     m_accumTime = 0;
@@ -525,47 +525,48 @@ RVA(0x000b6890, 0x21b)
 i32 CMulti::Render() {
     m_drewThisFrame = false;
     HandleDragMove(0, m_cursorX, m_cursorY);
-    i32 oldT = m_lastTime;
-    i32 t = timeGetTime();
-    m_lastTime = t;
+    i32 previousFrameTimeMs = m_lastFrameTimeMs;
+    i32 frameTimeMs = timeGetTime();
+    m_lastFrameTimeMs = frameTimeMs;
 
-    m_frameDelta = t - oldT;
-    m_accumTime += m_frameDelta;
+    m_frameDeltaMs = frameTimeMs - previousFrameTimeMs;
+    m_accumTime += m_frameDeltaMs;
     i32 newId = m_session->GetCommandTick();
     if (m_processedCommandTick != newId) {
         m_processedCommandTick = newId;
-        CGruntzCmdMgr* mgr = Mgr()->GetCommandMgr();
-        CGruntzCommand* node;
-        if (mgr->m_pendingLocalCommands.IsEmpty()) {
-            node = NULL;
+        CGruntzCmdMgr* commandManager = Mgr()->GetCommandMgr();
+        CGruntzCommand* command;
+        if (commandManager->m_pendingLocalCommands.IsEmpty()) {
+            command = NULL;
         } else {
-            node = static_cast<CGruntzCommand*>(mgr->m_pendingLocalCommands.RemoveHead());
+            command =
+                static_cast<CGruntzCommand*>(commandManager->m_pendingLocalCommands.RemoveHead());
         }
-        if (node) {
-            node->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
+        if (command) {
+            command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
 
-            i32 v = m_processedCommandTick + static_cast<i32>(m_commandDelay) * 2;
-            node->m_scheduleSlot = static_cast<u8>(v % 128);
+            i32 scheduleTick = m_processedCommandTick + static_cast<i32>(m_commandDelay) * 2;
+            command->m_scheduleSlot = static_cast<u8>(scheduleTick % 128);
         }
-        m_session->ScheduleCommand(node, static_cast<u8>(static_cast<u8>(m_commandDelay) << 1));
+        m_session->ScheduleCommand(command, static_cast<u8>(static_cast<u8>(m_commandDelay) << 1));
     }
-    i32 dt = m_frameDelta;
-    dt = static_cast<i32>(min(static_cast<u32>(dt), g_frameDelta));
-    m_packetsRcvd = m_session->Poll(dt);
+    i32 pollElapsedMs = m_frameDeltaMs;
+    pollElapsedMs = static_cast<i32>(min(static_cast<u32>(pollElapsedMs), g_frameDelta));
+    m_packetsRcvd = m_session->Poll(pollElapsedMs);
     m_packetsSent = 0;
 
-    if (static_cast<u32>(m_frameDelta) >= static_cast<u32>(m_drainTimer)) {
-        m_drainTimer = 0;
+    if (static_cast<u32>(m_frameDeltaMs) >= static_cast<u32>(m_sendCountdownMs)) {
+        m_sendCountdownMs = 0;
     } else {
-        m_drainTimer = m_drainTimer - m_frameDelta;
+        m_sendCountdownMs = m_sendCountdownMs - m_frameDeltaMs;
     }
-    if (m_drainTimer == 0) {
+    if (m_sendCountdownMs == 0) {
         m_packetsSent = m_session->SendTick();
-        m_drainTimer = m_resendInterval;
+        m_sendCountdownMs = m_resendInterval;
     }
-    i32 fin = 0;
+    i32 tickAdvanced = 0;
     if (m_session->AdvanceTick() && m_pollAbort == false) {
-        fin = 1;
+        tickAdvanced = 1;
     }
     TickStateMgrs();
     CDDrawWorkerHost* mainPlane = m_world->GetLevel()->m_mainPlane;
@@ -573,28 +574,28 @@ i32 CMulti::Render() {
         mainPlane->ActivateVisibleObjects();
     }
 
-    if (fin != 0) {
+    if (tickAdvanced != 0) {
         if (m_session->VerifyChecksums() == 0 && m_outOfSync == false) {
             if (m_isHost != false) {
                 BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC, DPSEND_GUARANTEED);
                 OnOutOfSync();
                 AdvanceGameFrame();
-                m_drainTimer = 0;
+                m_sendCountdownMs = 0;
                 return 1;
             }
             BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC_REPORT, DPSEND_GUARANTEED);
         }
         AdvanceGameFrame();
-        m_drainTimer = 0;
+        m_sendCountdownMs = 0;
         return 1;
     }
     RenderGameFrame();
     CheckDropTimeout();
-    SoundStream* win = m_world->GetSoundStream();
-    if (win) {
-        i32 now = timeGetTime();
-        win->TickVolumeRamps(now);
-        win->TickStreams(now);
+    SoundStream* soundStream = m_world->GetSoundStream();
+    if (soundStream) {
+        i32 soundTimeMs = timeGetTime();
+        soundStream->TickVolumeRamps(soundTimeMs);
+        soundStream->TickStreams(soundTimeMs);
     }
     ActiveWait(2);
     return 1;
@@ -756,7 +757,7 @@ void CMulti::RenderGameFrame() {
 }
 
 RVA(0x000b72c0, 0x30b)
-i32 CMulti::StartTitle() {
+i32 CMulti::SetupLobbyConnection() {
     Mgr()->m_lobbyResult = 0;
     m_lobbyLaunch = true;
     if (!m_netMgr) {
@@ -834,7 +835,7 @@ void CMulti::SetPlayerName(CString s) {
 }
 
 RVA(0x000b77a0, 0xb5)
-i32 CMulti::Open() {
+i32 CMulti::SetupNetworkConnection() {
     if (!Network()) {
         return 0;
     }
@@ -861,7 +862,7 @@ i32 CMulti::Open() {
     return 1;
 }
 
-// @identity-TODO: adjacency to Open is the only evidence for the method's name.
+// @identity-TODO: adjacency to SetupNetworkConnection is the only evidence for the method's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000b7890, 0x1)
@@ -992,35 +993,35 @@ ret_false:
 }
 
 RVA(0x000b7e30, 0x63)
-void CMulti::ReportVersionMsg(char* msg, i32 code) {
-    char buf[512];
-    if (msg && *msg && Mgr()) {
+void CMulti::ShowNetworkMessage(char* message, i32 code) {
+    char formattedMessage[512];
+    if (message && *message && Mgr()) {
         if (code > 0) {
-            sprintf(buf, "%s (%i)", msg, code);
-            Mgr()->EnterModalUI(buf);
+            sprintf(formattedMessage, "%s (%i)", message, code);
+            Mgr()->EnterModalUI(formattedMessage);
         } else {
-            Mgr()->EnterModalUI(msg);
+            Mgr()->EnterModalUI(message);
         }
     }
 }
 
 RVA(0x000b7ec0, 0x7d)
-void CMulti::ReportStatusId(u32 strId, i32 level) {
-    char buf[0x12a];
+void CMulti::ShowNetworkMessageById(u32 stringId, i32 code) {
+    char message[0x12a];
     if (Mgr() && Mgr()->m_owner->m_hInstance) {
-        if (!LoadStringA(Mgr()->m_owner->m_hInstance, strId, buf, 0xfa)) {
-            strcpy(buf, "Error.");
+        if (!LoadStringA(Mgr()->m_owner->m_hInstance, stringId, message, 0xfa)) {
+            strcpy(message, "Error.");
         }
-        ReportVersionMsg(buf, level);
+        ShowNetworkMessage(message, code);
     }
 }
 
 RVA(0x000b7f60, 0x52)
-void CMulti::ReportNetError(i32 level) {
+void CMulti::ReportNetError(i32 code) {
     char buf[512];
     if (Mgr() && g_code != HRESULT_CODE(DPERR_USERCANCEL)) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
-        ReportVersionMsg(buf, level);
+        ShowNetworkMessage(buf, code);
     }
 }
 
@@ -1646,7 +1647,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (m_pollAbort != false) {
                 break;
             }
-            ReportVersionMsg("You have been dropped from the game.", 0);
+            ShowNetworkMessage("You have been dropped from the game.", 0);
             PostMessageA(NetGameMgr()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             m_pollAbort = true;
             break;
@@ -2579,7 +2580,7 @@ i32 CMulti::WaitForOtherPlayers() {
                 }
                 if (resend == 0) {
                     resend = 0x1388;
-                    SendLobbyKeepAlive();
+                    SendKeepAlive();
                     BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, DPSEND_GUARANTEED);
                 }
             }
@@ -2628,7 +2629,7 @@ i32 CMulti::Poll(i32 token) {
             }
             if (resend == 0) {
                 resend = 0x1388;
-                SendLobbyKeepAlive();
+                SendKeepAlive();
                 BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, DPSEND_GUARANTEED);
             }
         }
@@ -2847,7 +2848,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
     Mgr()->VoiceMgr()->PauseAllVoices();
     i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
     SetActiveAndFocus(Mgr()->m_gameWnd->GetHwnd());
-    SendLobbyKeepAlive();
+    SendKeepAlive();
     return r;
 }
 
@@ -2857,7 +2858,7 @@ void CMulti::CheckDropTimeout() {
         return;
     }
     if (g_ackThrottleDeadline < static_cast<u32>(timeGetTime())) {
-        SendLobbyKeepAlive();
+        SendKeepAlive();
         g_ackThrottleDeadline = timeGetTime() + 0x3e8;
     }
     CNetCmdSlot* slot = m_session->FindLaggingSlot(0x2710);
@@ -2876,7 +2877,7 @@ CString CNetCmdSlot::GetPlayerName() {
 }
 
 RVA(0x000bc420, 0x2b)
-void CMulti::SendLobbyKeepAlive() {
+void CMulti::SendKeepAlive() {
     if (m_netMgr && m_localPlayer && m_gameStarted) {
         BroadcastPlayerIdMessage(NETMSG_KEEP_ALIVE, DPSEND_GUARANTEED);
     }
@@ -3017,28 +3018,28 @@ i32 CMulti::WaitForGameConfig() {
 
         if (timeGetTime() > deadline
             || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {
-            ReportStatusId(0x8022, 0);
+            ShowNetworkMessageById(0x8022, 0);
             return 0;
         }
         PollSession();
         if (m_sessionTerminated) {
-            ReportVersionMsg("The game session has been terminated.", 0);
+            ShowNetworkMessage("The game session has been terminated.", 0);
             return 0;
         }
         if (m_removedByHost) {
-            ReportVersionMsg("You have been removed from the game by the host.", 0);
+            ShowNetworkMessage("You have been removed from the game by the host.", 0);
             return 0;
         }
         if (m_gameClosed) {
-            ReportVersionMsg("This game is closed.", 0);
+            ShowNetworkMessage("This game is closed.", 0);
             return 0;
         }
         if (m_gameFull) {
-            ReportVersionMsg("This game is already full.", 0);
+            ShowNetworkMessage("This game is already full.", 0);
             return 0;
         }
         if (m_versionMismatch) {
-            ReportVersionMsg(
+            ShowNetworkMessage(
                 "This version is not the same as the host computer's version of the game.",
                 0
             );
@@ -3192,7 +3193,7 @@ void CMulti::HandleVersionCheck(CNetVersionPacket* packet) {
         b32 gameWasStarted = m_gameStarted;
         m_versionMismatch = true;
         if (gameWasStarted) {
-            ReportVersionMsg(
+            ShowNetworkMessage(
                 "This version is not the same as the host computer's version of the game.",
                 0
             );

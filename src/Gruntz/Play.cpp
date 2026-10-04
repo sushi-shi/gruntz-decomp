@@ -1125,7 +1125,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     AdvanceLoadingBar(false);
     ClearLevelState();
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
 
@@ -1143,13 +1143,13 @@ i32 CPlay::LoadLevel(i32 level, i32) {
 
         AdvanceLoadingBar(false);
         if (modeFlag) {
-            (savedThis)->SendLobbyKeepAlive();
+            (savedThis)->SendKeepAlive();
         }
         DiscardQueuedInput();
 
         AdvanceLoadingBar(false);
         if (modeFlag) {
-            (savedThis)->SendLobbyKeepAlive();
+            (savedThis)->SendKeepAlive();
         }
         DiscardQueuedInput();
 
@@ -1160,7 +1160,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
 
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (diff != 0 && (g_gameReg)->GetGameMode() == GAMEMODE_QUESTZ) {
@@ -1173,7 +1173,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (!LoadGameImages(reload)) {
@@ -1181,7 +1181,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (!LoadGruntImageNamespaces(savedThis)) {
@@ -1194,7 +1194,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (!LoadGameSounds(reload)) {
@@ -1202,7 +1202,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (!LoadGruntSoundNamespaces(NULL)) {
@@ -1210,12 +1210,12 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     ConfigureSoundReplayDelays();
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (!LoadLevelAnims(reload)) {
@@ -1223,7 +1223,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (!LoadGameAnims(reload)) {
@@ -1231,7 +1231,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (!LoadGruntAnimationNamespaces(NULL)) {
@@ -1239,7 +1239,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     if (!LoadLevelWorld(reload)) {
@@ -1247,7 +1247,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
 
@@ -1262,7 +1262,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     }
     AdvanceLoadingBar(false);
     if (modeFlag) {
-        (savedThis)->SendLobbyKeepAlive();
+        (savedThis)->SendKeepAlive();
     }
     DiscardQueuedInput();
     self->m_mgr->GetTileGrid()->Reset();
@@ -1364,7 +1364,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
                     }
                     AdvanceLoadingBar(false);
                     if (modeFlag) {
-                        (savedThis)->SendLobbyKeepAlive();
+                        (savedThis)->SendKeepAlive();
                     }
                     DiscardQueuedInput();
                     if (LoadMusicSequences(reload)) {
@@ -1378,13 +1378,13 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     okContinue:
         AdvanceLoadingBar(false);
         if (modeFlag) {
-            (savedThis)->SendLobbyKeepAlive();
+            (savedThis)->SendKeepAlive();
         }
         DiscardQueuedInput();
         AdvanceLoadingBar(true);
         ActiveWait(0x64);
         if (modeFlag) {
-            (savedThis)->SendLobbyKeepAlive();
+            (savedThis)->SendKeepAlive();
         }
 
         gameReg = g_gameReg;
