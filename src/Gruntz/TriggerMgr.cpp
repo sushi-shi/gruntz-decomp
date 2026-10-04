@@ -41,6 +41,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayDefeatCountdown.h>
 #include <Gruntz/PlayerCommandKind.h>
+#include <Gruntz/Projectile.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -2461,7 +2462,7 @@ void CTriggerMgr::DestroyAllAnims() {
         do {
             CGrunt* g = *cell;
             if (g != NULL) {
-                (static_cast<CGrunt*>(g))->DestroyAnims();
+                g->DestroyAnims();
             }
             cell++;
             i--;
@@ -2476,12 +2477,8 @@ void CTriggerMgr::DestroyAllAnims() {
         if (obj != NULL) {
             CLogicRecord* record = obj->GetLogicRecord();
 
-            LogicDispatchWord actualDispatch;
-            LogicDispatchWord projectileDispatch;
-            actualDispatch.m_dispatch = record->GetDispatch();
-            projectileDispatch.m_dispatch = DispatchProjectileLogic;
-            if (actualDispatch.m_bits == projectileDispatch.m_bits) {
-                (static_cast<CGrunt*>(record->UserLogic()))->m_attackTargetPlayerIndex = 0;
+            if (record->GetDispatch() == DispatchProjectileLogic) {
+                (static_cast<CProjectile*>(record->UserLogic()))->m_sound = NULL;
             }
         }
     }

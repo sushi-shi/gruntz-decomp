@@ -890,12 +890,6 @@ public:
     i32 StepDefenderBehavior();
 };
 
-union LogicDispatchWord {
-    LogicRecordDispatchFn m_dispatch;
-    void (CGrunt::*m_gruntMethod)();
-    u32 m_bits;
-};
-
 typedef i32 (CGrunt::*GruntActHandler)();
 
 bool SameGruntDirection(const GruntDirectionCell* a, const GruntDirectionCell* b);
