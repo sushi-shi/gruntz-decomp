@@ -38,5 +38,5 @@ public:
     b32 m_titleCueEnabled;
 };
 
-extern b32 g_skipNextScreenEffect;
+extern b32 g_skipNextScreenShade;
 #endif // GRUNTZ_GRUNTZ_CATTRACT_H

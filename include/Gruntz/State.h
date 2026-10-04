@@ -123,7 +123,7 @@ public:
     i32 HeaderWrite(CFileMemBase* ar);
     i32 HeaderRead(CFileMemBase* ar);
 
-    i32 ShadeScreen(i32 pct);
+    i32 ShadeBackBuffer(i32 brightnessPercent);
 
     i32 LoadTitlePage(
         const char* titleName,
@@ -157,7 +157,7 @@ public:
     i32 FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs);
     i32 FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs);
 
-    void Present(i32 pct);
+    void ShadeAndPresentScreen(i32 brightnessPercent);
 
     CDDrawSurfaceMgr* World() {
         return m_world;

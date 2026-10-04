@@ -2330,7 +2330,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
     }
     if (m_world) {
         if (notify && m_curState && m_curState->GetStateId() != GAMESTATE_MENU) {
-            m_curState->Present(0x32);
+            m_curState->ShadeAndPresentScreen(0x32);
         } else {
             notify = false;
         }
@@ -2378,7 +2378,7 @@ i32 CGruntzMgr::RunMfcDialog(CDialog* dlg, b32 notify) {
     }
     if (m_world) {
         if (notify && m_curState && m_curState->GetStateId() != GAMESTATE_MENU) {
-            m_curState->Present(0x32);
+            m_curState->ShadeAndPresentScreen(0x32);
         } else {
             notify = false;
         }

@@ -3295,7 +3295,7 @@ void CPlay::DrawCustomLevelBanner() {
 
 RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
-    Present(0x3c);
+    ShadeAndPresentScreen(0x3c);
 
     CImageSet* set = m_world->FindImageSet("GAME_MESSAGEZ");
     if (set == NULL) {

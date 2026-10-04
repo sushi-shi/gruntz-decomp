@@ -38,7 +38,7 @@
 #include <string.h>
 
 DATA(0x0024e360)
-b32 g_skipNextScreenEffect = false;
+b32 g_skipNextScreenShade = false;
 
 DATA(0x0024e35c)
 b32 g_skipNextRestoreMessage;
@@ -452,14 +452,14 @@ i32 CState::RestoreGraphics() {
 }
 
 RVA(0x000faec0, 0x67)
-void CState::Present(i32 pct) {
-    if (g_skipNextScreenEffect != false) {
-        g_skipNextScreenEffect = false;
+void CState::ShadeAndPresentScreen(i32 brightnessPercent) {
+    if (g_skipNextScreenShade != false) {
+        g_skipNextScreenShade = false;
         return;
     }
     m_world->GetDisplayBuffers()->CopyFrontToSurface(m_world->GetDisplayBuffers()->GetBackBuffer());
     m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->ShadeRect(
-        pct,
+        brightnessPercent,
         static_cast<RECT*>(0)
     );
     m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(
@@ -471,13 +471,16 @@ void CState::Present(i32 pct) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000faf50, 0x31)
-i32 CState::ShadeScreen(i32 pct) {
-    b32 v = g_skipNextScreenEffect;
-    if (v != false) {
-        g_skipNextScreenEffect = false;
-        return v;
+i32 CState::ShadeBackBuffer(i32 brightnessPercent) {
+    b32 skipShade = g_skipNextScreenShade;
+    if (skipShade != false) {
+        g_skipNextScreenShade = false;
+        return skipShade;
     }
-    return m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->ShadeRect(pct, NULL);
+    return m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->ShadeRect(
+        brightnessPercent,
+        NULL
+    );
 }
 
 RVA(0x000fafa0, 0x3b)
