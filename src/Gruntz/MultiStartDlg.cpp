@@ -920,7 +920,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             maxGruntzControl->EnableWindow(
                 g_multiState->m_isHost && player->m_active && localReadyFlag == false
             );
-            SetMaxGruntzSelection(slotIndex, player->m_active ? player->m_maxGruntz : 0);
+            SetMaxGruntzSelection(slotIndex, player->m_active ? player->GetMaxGruntz() : 0);
             if (force == 0) {
                 if (this->GetLocalPlayerSlotIndex() == slotIndex) {
                     continue;

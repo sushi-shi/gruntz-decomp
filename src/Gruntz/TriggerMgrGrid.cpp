@@ -219,7 +219,7 @@ i32 CTriggerMgr::PlaceObject(
             kindId = kindDefault;
         }
 
-        if (m_unitCountByPlayer[playerIndex] < game->m_players[playerIndex].m_maxGruntz) {
+        if (m_unitCountByPlayer[playerIndex] < game->m_players[playerIndex].GetMaxGruntz()) {
             if (game->m_players[playerIndex].m_active != false
                 || (playerIndex != g_curPlayer
                     && kindId == IDX(game->m_players[g_curPlayer].m_color))) {
@@ -1322,7 +1322,7 @@ i32 CTriggerMgr::ClearCell(
     if (cell == NULL || cell->IsEntranceCommitted() == false) {
         return 0;
     }
-    if (cell->m_tileClaimed != false) {
+    if (cell->IsGuarding() != false) {
         END_GUARD(cell);
     }
     if (cell->m_entranceActive != false) {

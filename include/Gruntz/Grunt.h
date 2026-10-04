@@ -201,6 +201,9 @@ public:
     b32 IsPoweredUp() const {
         return m_poweredUp;
     }
+    b32 IsGuarding() const {
+        return m_tileClaimed;
+    }
     b32 IsEntranceDropActive() const {
         return m_entranceDropActive;
     }
