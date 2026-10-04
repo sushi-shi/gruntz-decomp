@@ -589,7 +589,7 @@ candidateFound:
     UNSET_COORD(unit->m_arrivalCell);
     UNSET_COORD(unit->m_unusedBattleCell);
     UNSET_COORD(unit->m_defenderPx);
-    unit->m_targetTeam = -1;
+    unit->SetTargetTeam(-1);
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
     unit->m_dwell = 0;
@@ -3374,7 +3374,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         GRUNT_ENTRANCE_RESURRECT,
-        IDX(m_ctx->m_players[m_playerIndex].m_color),
+        IDX(m_ctx->m_players[m_playerIndex].GetColor()),
         0,
         0,
         0x11,
@@ -3392,7 +3392,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     }
     unit->m_arrivalState = AI_BATTLEZ_PATH;
     UNSET_COORD(unit->m_arrivalCell);
-    unit->m_targetTeam = -1;
+    unit->SetTargetTeam(-1);
     UNSET_COORD(unit->m_unusedBattleCell);
     unit->SetDefenderState(AISTATE_SEEK);
     UNSET_COORD(unit->m_defenderPx);

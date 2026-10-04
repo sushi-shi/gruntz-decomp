@@ -389,7 +389,7 @@ i32 CInGameIcon::HandleInput() {
         if (sub < PICKUP_TOYZ_FIRST || sub > PICKUP_TOYZ_LAST) {
             return 0;
         }
-        i32 icon = IDX(g_gameReg->m_players[key].m_color);
+        i32 icon = IDX(g_gameReg->m_players[key].GetColor());
         if (icon < 0 || icon >= TINT_COUNT) {
             icon = IDX(TINT_ORANGE);
         }

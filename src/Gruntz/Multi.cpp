@@ -1195,7 +1195,7 @@ i32 CMulti::ShowMultiStartDlg() {
                 return 0;
             }
             rec->m_active = false;
-            SetPlayerColorAvailable(static_cast<ColorTint>(rec->m_color), true);
+            SetPlayerColorAvailable(static_cast<ColorTint>(rec->GetColor()), true);
             BroadcastPlayerTable(NULL);
         }
         if (m_isHost == false && m_removedByHost == false) {
@@ -1273,7 +1273,7 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
 
     m_localPlayerId = node->GetPlayerId();
     GruntzPlayer* hostPlayer = NetGameMgr()->m_players;
-    ColorTint hostColor = static_cast<ColorTint>(hostPlayer->m_color);
+    ColorTint hostColor = static_cast<ColorTint>(hostPlayer->GetColor());
 
     bool failed = RegisterLocalPlayer(hostPlayer->GetName(), hostColor, -1, m_localPlayerId) == 0;
     return failed ? NULL : enumResult;
@@ -1629,7 +1629,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
                 return 1;
             }
             (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
-                ->AddItem(text, FONT_ITEM_COLORED | FONT_ITEM_SHADOW, IDX(player->m_color));
+                ->AddItem(text, FONT_ITEM_COLORED | FONT_ITEM_SHADOW, IDX(player->GetColor()));
             SoundCueRegistry* registry = m_world->SoundRegistry();
             if (registry->m_silentMode != false) {
                 break;
@@ -1712,7 +1712,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
                 return 0;
             }
             if (player->TrySetColor(static_cast<ColorTint>(update->m_color)) == 0) {
-                ColorTint color = static_cast<ColorTint>(player->m_color);
+                ColorTint color = static_cast<ColorTint>(player->GetColor());
                 update->m_color = color;
                 SendPlayerIdMessageTo(senderPlayer, NETMSG_COLOR_REJECTED, DPSEND_GUARANTEED);
             }
@@ -1948,7 +1948,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
         g_playersInOptionsCount--;
     }
     slot->m_active = false;
-    SetPlayerColorAvailable(slot->m_color, true);
+    SetPlayerColorAvailable(slot->GetColor(), true);
 
     CString line = slot->GetName() + " has left the game.";
     (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
@@ -2041,7 +2041,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
         if (player != NULL) {
             i32 v = player->m_active;
             packet.m_rows[i].m_active = static_cast<u8>(v);
-            v = player->m_color;
+            v = player->GetColor();
             packet.m_rows[i].m_color = static_cast<u8>(v);
             v = player->m_humanControlled;
             packet.m_rows[i].m_humanControlled = static_cast<u8>(v);
@@ -2093,7 +2093,7 @@ i32 CMulti::ApplyPlayerTable(CNetPlayerTablePacket* packet) {
             player->m_name = packet->m_rows[i].m_name;
             player->m_networkPlayerId = packet->m_rows[i].m_networkPlayerId;
             if (m_isHost == false && player->m_active != false) {
-                SetPlayerColorAvailable(player->m_color, false);
+                SetPlayerColorAvailable(player->GetColor(), false);
             }
         }
     }
@@ -2184,7 +2184,7 @@ i32 CMulti::DeactivatePlayer(i32 slotIndex) {
         return 0;
     }
     player->m_active = false;
-    SetPlayerColorAvailable(player->m_color, true);
+    SetPlayerColorAvailable(player->GetColor(), true);
     return 1;
 }
 
@@ -2267,7 +2267,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     packet.m_messageId = STAT_PLAYER_UPDATE;
     packet.m_playerIndex = player->m_playerIndex;
 
-    i32 v = player->m_color;
+    i32 v = player->GetColor();
     packet.m_color = static_cast<u8>(v);
     v = player->m_humanControlled;
     packet.m_humanControlled = static_cast<u8>(v);
@@ -2391,7 +2391,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
             return 0;
         }
         (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
-            ->AddItem(line, FONT_ITEM_COLORED | FONT_ITEM_SHADOW, IDX(player->m_color));
+            ->AddItem(line, FONT_ITEM_COLORED | FONT_ITEM_SHADOW, IDX(player->GetColor()));
     }
 
     g_netChatPacket.m_messageId = STAT_CHAT;
@@ -2917,7 +2917,7 @@ i32 CMulti::SetupTcpIpConfig() {
     }
 
     m_localPlayerId = LocalPlayer()->GetPlayerId();
-    ColorTint hostColor = static_cast<ColorTint>(hostPlayer->m_color);
+    ColorTint hostColor = static_cast<ColorTint>(hostPlayer->GetColor());
 
     if (RegisterLocalPlayer(hostPlayer->GetName(), hostColor, -1, m_localPlayerId) == 0) {
         return 0;

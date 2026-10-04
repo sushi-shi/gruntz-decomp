@@ -240,6 +240,10 @@ public:
         return m_entrancePx;
     }
 
+    PickupType GetMoveIcon() const {
+        return m_moveIcon;
+    }
+
     Coord LastTilePx() {
         return m_lastTilePx;
     }
@@ -270,6 +274,10 @@ public:
 
     i32 GetTargetTeam() const {
         return m_targetTeam;
+    }
+
+    void SetTargetTeam(i32 team) {
+        m_targetTeam = team;
     }
 
     GruntAiState GetDefenderState() const {

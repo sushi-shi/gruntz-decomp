@@ -123,7 +123,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->SpriteTable()->GetSel(
-                        IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
+                        IDX(g_gameReg->m_players[hitPlayerIndex].GetColor()),
                         0
                     );
                     cur->SetDrawFill(SHADE_PAL_16, tbl);
@@ -140,7 +140,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->SpriteTable()->GetSel(
-                        IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
+                        IDX(g_gameReg->m_players[hitPlayerIndex].GetColor()),
                         0
                     );
                     cur->SetDrawFill(SHADE_PAL_16, tbl);

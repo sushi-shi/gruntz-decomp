@@ -52,6 +52,10 @@ public:
         m_humanControlled = controlled;
     }
 
+    ColorTint GetColor() const {
+        return m_color;
+    }
+
     BattlezDifficulty GetDifficulty() const {
         return m_difficulty;
     }

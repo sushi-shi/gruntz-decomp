@@ -94,7 +94,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
-    i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].m_color);
+    i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].GetColor());
     if (cfg < 0 || cfg >= TINT_COUNT) {
         cfg = 0;
     }
@@ -283,7 +283,7 @@ i32 CWarlord::SerializeDispatch(
         case SERIAL_POSTLOAD: {
 
             CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(
-                IDX(g_gameReg->m_players[m_object->m_smarts].m_color),
+                IDX(g_gameReg->m_players[m_object->m_smarts].GetColor()),
                 0
             );
             if (sel == NULL) {

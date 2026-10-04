@@ -265,7 +265,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         if (slot->m_active == false) {
             return 1;
         }
-        unit->m_targetTeam = band;
+        unit->SetTargetTeam(band);
         UNSET_COORD(unit->m_defenderPx);
     } else {
         GruntzPlayer* slot = &m_ctx->m_players[band];
@@ -274,7 +274,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             unit->RecycleCoords();
             UNSET_COORD(unit->m_arrivalCell);
             UNSET_COORD(unit->m_defenderPx);
-            unit->m_targetTeam = -1;
+            unit->SetTargetTeam(-1);
             unit->SetDefenderState(AISTATE_SEEK);
             unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
             unit->SetRoutePassableMask(g_battlezRoutePassableMask);

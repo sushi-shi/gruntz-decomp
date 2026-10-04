@@ -554,7 +554,7 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
         if (player->m_humanControlled && player->m_active) {
             g_multiState->DropLobbyPlayer(player->m_playerIndex);
         } else if (!player->m_humanControlled && player->m_active) {
-            SetPlayerColorAvailable(player->m_color, true);
+            SetPlayerColorAvailable(player->GetColor(), true);
         }
         player->m_active = false;
         player->m_ready = false;
@@ -670,7 +670,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[0].m_color);
+                color = TintColorRef(m_gameManager->m_players[0].GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -678,7 +678,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[1].m_color);
+                color = TintColorRef(m_gameManager->m_players[1].GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -686,7 +686,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[2].m_color);
+                color = TintColorRef(m_gameManager->m_players[2].GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -694,7 +694,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[3].m_color);
+                color = TintColorRef(m_gameManager->m_players[3].GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -1102,7 +1102,7 @@ i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
             g_multiState->ReportVersionMsg("Someone has already selected that color.", available);
             return 0;
         }
-        SetPlayerColorAvailable(player->m_color, true);
+        SetPlayerColorAvailable(player->GetColor(), true);
         SetPlayerColorAvailable(color, false);
     }
     player->m_color = color;

@@ -1636,7 +1636,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     AddTabItem(2, set);
                     *aptr = set;
                     CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(
-                        IDX(g_gameReg->m_players[g_curPlayer].m_color),
+                        IDX(g_gameReg->m_players[g_curPlayer].GetColor()),
                         0
                     );
                     if (sel == NULL) {
@@ -2032,7 +2032,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     GruntzPlayer* p = &g_gameReg->m_players[pi];
                     CShadeTable* sel;
                     if (p->m_joined != false && p->m_doneFlag == false) {
-                        sel = g_gameReg->SpriteTable()->GetSel(IDX(p->m_color), 0);
+                        sel = g_gameReg->SpriteTable()->GetSel(IDX(p->GetColor()), 0);
                         if (pi == m_tabCycle) {
                             (*slot)->SetState(1);
                         }
