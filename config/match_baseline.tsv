@@ -2042,7 +2042,7 @@ gruntcombat	?Activate@CGrunt@@UAEXXZ	100.0000	100.0000	11	afd5005fdfcc	0x5caa0	1
 gruntcombat	?AdvanceMotion@CGrunt@@UAEXXZ	89.0043	89.0043	38	405ab99c0f4e	0x5f310	94.9570	
 gruntcombat	?ApplyCombatHitEffects@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	86.1670	86.1670	58	ff02815b1ede	0x597a0	86.1670	
 gruntcombat	?BeginAttack@CGrunt@@QAEHHH@Z	98.7500	98.7500	14	b814f4a251ce	0x5b570	98.7500	
-gruntcombat	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	13	e7c9db0a2c59	0x57890	100.0000	
+gruntcombat	?LoseMovementTool@CGrunt@@QAEHXZ	100.0000	100.0000	13	e7c9db0a2c59	0x57890	100.0000	
 gruntcombat	?CastSpell@CGrunt@@QAEHH@Z	100.0000	100.0000	27	e57d4b9c7433	0x57100	100.0000	
 gruntcombat	?CommitNeighbor@CGrunt@@QAEHHHHH@Z	96.6270	96.6270	23	4a0a304e7dd5	0x5b050	96.6270	
 gruntcombat	?ComputeFacing@CGrunt@@QAEXN@Z	100.0000	100.0000	3	b238dcf86fb0	0x57060	100.0000	
@@ -2067,7 +2067,7 @@ gruntcombat	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	51a80
 gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	88.8914	88.8914	80	a380b44c2590	0x5d210	88.8914	
 gruntcombat	?StopPowerupLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	1aa1e3145753	0x57ce0	100.0000	
 gruntcombat	?StopVehicleLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	da602215f904	0x57c10	100.0000	
-gruntcombat	?TryPowerupAtTile@CGrunt@@QAEHXZ	100.0000	100.0000	9	8988739565cc	0x57aa0	100.0000	
+gruntcombat	?TryDropToolAtCurrentTile@CGrunt@@QAEHXZ	100.0000	100.0000	9	8988739565cc	0x57aa0	100.0000	
 gruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	88.6115	88.6115	20	2983756924c4	0x3e520	88.6115	
 gruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	cpp:3fb5fe31d052	0x10730	100.0000	
 gruntcreationpoint	??_GCGruntCreationPoint@@UAEPAXI@Z	100.0000	100.0000	1	cpp:3fb5fe31d052	0x10700	100.0000	

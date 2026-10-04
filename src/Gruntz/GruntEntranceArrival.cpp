@@ -1307,7 +1307,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
     i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     i32 f1 = grid->CellFlagsAt(tx, ty);
     if (f1 & 0x2000000) {
-        BuildGruntLoseItemAnimation();
+        LoseMovementTool();
         g = g_gameReg;
     }
     grid = g->GetTileGrid();

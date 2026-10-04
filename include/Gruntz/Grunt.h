@@ -425,7 +425,7 @@ public:
         i32 countStats
     );
 
-    i32 BuildGruntLoseItemAnimation();
+    i32 LoseMovementTool();
 
     i32 ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 defer);
 
@@ -438,7 +438,7 @@ public:
     SetGruntActionTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     void ConsiderArrival(i32 clearArrivalState);
     void SetColorIndex(i32 colorIndex);
-    i32 TryPowerupAtTile();
+    i32 TryDropToolAtCurrentTile();
 
     i32 PathScan();
 

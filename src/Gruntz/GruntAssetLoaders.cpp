@@ -318,7 +318,7 @@ tail:
         );
     }
     if (m_aiType == AI_TOOLTHIEF) {
-        TryPowerupAtTile();
+        TryDropToolAtCurrentTile();
     }
     m_powerupType = GRUNT_NORMAL;
     m_deathType = deathType;

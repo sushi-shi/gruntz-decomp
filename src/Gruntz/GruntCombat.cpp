@@ -513,14 +513,14 @@ void CGrunt::SetColorIndex(i32 colorIndex) {
 }
 
 RVA(0x00057890, 0x19c)
-i32 CGrunt::BuildGruntLoseItemAnimation() {
+i32 CGrunt::LoseMovementTool() {
     FinishActiveAction();
-    PickupType reason = m_activePickupType;
-    if (reason != PICKUP_TOOB && reason != PICKUP_WINGZ && reason != PICKUP_SPRING) {
+    PickupType toolType = m_activePickupType;
+    if (toolType != PICKUP_TOOB && toolType != PICKUP_WINGZ && toolType != PICKUP_SPRING) {
         return 0;
     }
 
-    CWwdSpriteObject* spr = g_gameReg->World()->ChildGroup()->CreateSprite(
+    CWwdSpriteObject* lossAnimation = g_gameReg->World()->ChildGroup()->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY,
@@ -528,8 +528,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         "SingleAnimation",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix);
-    spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix, 0);
+    lossAnimation->SetImageSetByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix);
+    lossAnimation->SetAnimationByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix, 0);
 
     PLAY_GRUNT_CUE_IN_VIEW(0xe);
 
@@ -539,23 +539,23 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 }
 
 RVA(0x00057aa0, 0x9b)
-i32 CGrunt::TryPowerupAtTile() {
-    PickupType reason = m_activePickupType;
-    if (reason <= PICKUP_NONE || reason >= PICKUP_TOYZ_FIRST) {
+i32 CGrunt::TryDropToolAtCurrentTile() {
+    PickupType toolType = m_activePickupType;
+    if (toolType <= PICKUP_NONE || toolType >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
-    CWwdSpriteObject* h = m_object;
-    i32 mx = h->m_screenX;
-    i32 my = h->m_screenY;
-    i32 px = (mx & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 py = (my & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 tx = px >> TILE_SHIFT_PX;
-    i32 ty = py >> TILE_SHIFT_PX;
-    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(tx, ty);
-    if ((flags & BRICKZ_BLOCKED_MASK) || (flags & IDX(CELL_FLAG_SPECIAL))) {
+    CWwdSpriteObject* sprite = m_object;
+    i32 screenX = sprite->m_screenX;
+    i32 screenY = sprite->m_screenY;
+    i32 centerX = (screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 centerY = (screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 tileX = centerX >> TILE_SHIFT_PX;
+    i32 tileY = centerY >> TILE_SHIFT_PX;
+    i32 cellFlags = g_gameReg->GetTileGrid()->CellFlagsAt(tileX, tileY);
+    if ((cellFlags & BRICKZ_BLOCKED_MASK) || (cellFlags & IDX(CELL_FLAG_SPECIAL))) {
         return 0;
     }
-    m_triggerMgr->SpawnPowerupIcon(reason, px, py, 0, 1, 0);
+    m_triggerMgr->SpawnPowerupIcon(toolType, centerX, centerY, 0, 1, 0);
     return 1;
 }
 
@@ -1922,7 +1922,7 @@ void CGrunt::StepBehavior(char*) {
                 goto afterTile;
             }
             if (reason == PICKUP_SPRING || reason == PICKUP_TOOB) {
-                BuildGruntLoseItemAnimation();
+                LoseMovementTool();
             }
             if (m_wingzEnabled != false) {
                 goto afterTile;
@@ -1963,7 +1963,7 @@ void CGrunt::StepBehavior(char*) {
             if (m_activePickupType == PICKUP_TOOB) {
                 bool nameDiffers = IsNotAnimationAct("N");
                 if (nameDiffers) {
-                    BuildGruntLoseItemAnimation();
+                    LoseMovementTool();
                 }
             }
         }
@@ -2104,7 +2104,7 @@ afterArrival:
             ConsiderArrival(1);
             m_wingzTime = 0;
             SetWingzEnabled(false);
-            BuildGruntLoseItemAnimation();
+            LoseMovementTool();
         }
     }
 
