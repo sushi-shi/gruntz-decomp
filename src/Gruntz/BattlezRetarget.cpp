@@ -106,7 +106,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         UNSET_COORD(unit->m_arrivalCell);
         return 1;
     }
-    if (recA->m_humanControlled == false && cfgB->m_active == false) {
+    if (recA->IsHumanControlled() == false && cfgB->m_active == false) {
         unit->RecycleCoords();
         UNSET_COORD(unit->m_arrivalCell);
         return 1;

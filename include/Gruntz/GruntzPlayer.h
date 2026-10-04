@@ -48,6 +48,10 @@ public:
     i32 Deactivate();
     CString GetDefaultName(i32);
 
+    b32 IsHumanControlled() const {
+        return m_humanControlled;
+    }
+
     void SetHumanControlled(b32 controlled) {
         m_humanControlled = controlled;
     }

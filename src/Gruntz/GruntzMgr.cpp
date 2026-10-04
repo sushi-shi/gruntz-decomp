@@ -3505,7 +3505,7 @@ i32 CGruntzMgr::CountActivePlayers(b32 includeComputerPlayers) {
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* slot = &m_players[i];
         if (slot && slot->IsActive() != false
-            && (includeComputerPlayers != false || slot->m_humanControlled != false)) {
+            && (includeComputerPlayers != false || slot->IsHumanControlled() != false)) {
             count++;
         }
     }
@@ -3622,7 +3622,7 @@ i32 CGruntzMgr::AdvanceComputerPlayerTurns() {
     g_battlezTurnPlayerIndex = cursor;
     for (i32 i = 0; i < m_computerPlayerCount + 1; i++) {
         GruntzPlayer* slot = &m_players[i];
-        if (cursor == i && slot->m_humanControlled == false && slot->IsActive() != false) {
+        if (cursor == i && slot->IsHumanControlled() == false && slot->IsActive() != false) {
             slot->GetBattlezConfig()->StepBoard();
             cursor = g_battlezTurnPlayerIndex;
         }

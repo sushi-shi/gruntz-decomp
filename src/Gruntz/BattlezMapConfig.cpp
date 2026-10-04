@@ -295,7 +295,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::StepAllRowSpawns() {
-    if (g_gameReg->m_players[m_playerIndex].m_humanControlled == false
+    if (g_gameReg->m_players[m_playerIndex].IsHumanControlled() == false
         && g_gameReg->m_players[m_playerIndex].IsActive() != false) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
             this->StepRowSpawn(false);
@@ -1360,7 +1360,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                         unit->GetNextCoord(n);
                         if (unit->GetCoordAt(cur) != NULL) {
                             g_coordPool.Push(unit->GetCoordAt(cur));
-                            coordList->RemoveAt(cur);
+                            unit->RemoveCoordAt(cur);
                         }
                     }
                     return 1;

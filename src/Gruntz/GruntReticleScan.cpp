@@ -213,14 +213,14 @@ i32 CGrunt::StepDefenderBehavior() {
                                 i32 backDist = Max(backDx, backDy);
                                 if (backDist <= m_reachRect.right) {
                                     g_coordPool.Push(trimCoord);
-                                    m_coordList.RemoveAt(trimPos);
+                                    RemoveCoordAt(trimPos);
                                     while (pos != NULL) {
                                         POSITION nextPos = pos;
                                         Coord* coord = GetNextCoord(pos);
                                         if (coord != NULL) {
                                             g_coordPool.Push(coord);
                                         }
-                                        m_coordList.RemoveAt(nextPos);
+                                        RemoveCoordAt(nextPos);
                                     }
                                 } else {
                                     SetEntrancePos(1, 1);

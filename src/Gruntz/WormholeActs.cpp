@@ -150,7 +150,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 g_gameReg->GetTriggerMgr()->LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
             } else {
                 GruntzPlayer* board = &g_gameReg->m_players[owningPlayer];
-                if (board != NULL && board->m_humanControlled == false) {
+                if (board != NULL && board->IsHumanControlled() == false) {
                     board->GetBattlezConfig()->Clear();
                 }
             }
