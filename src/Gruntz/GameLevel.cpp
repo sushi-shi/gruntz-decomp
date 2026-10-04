@@ -145,11 +145,13 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         }
 
         // Byte-forced view of packed WWD storage.
-        block = reinterpret_cast<char*>(InflateMainBlock(source, buf, capacity));
-        if (block == NULL) {
+        hdr = reinterpret_cast<WwdHeader*>(InflateMainBlock(source, buf, capacity));
+        if (hdr == NULL) {
             delete[] buf;
             return 0;
         }
+        // Byte-forced view of packed WWD storage.
+        block = reinterpret_cast<char*>(hdr);
         ehAlloc = buf;
     }
 

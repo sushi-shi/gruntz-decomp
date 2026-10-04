@@ -1,7 +1,7 @@
 # Const-cast contracts
 
-This directory documents every remaining `const_cast` expression in `src/` and
-`include/`, and four repaired sites. Each site has its own page: our code, the declarations that conflict, source
+This directory documents every `const_cast` expression in `src/` and `include/`.
+Each site has its own page: our code, the declarations that conflict, source
 and Git provenance, a GitHub comparison, the safety evidence and its limits,
 and what would allow the cast to be removed.
 
@@ -20,14 +20,13 @@ prove that a vendor never writes through a pointer.
 | `zErrHandling::handle` | `const_cast<zErrHandling*>(this)` | [Error-handler identity](ztools-error-handle.md) |
 | `zErrHandling::handle_inl` | `const_cast<zErrHandling*>(this)` | [Inline error-handler identity](ztools-error-handle-inl.md) |
 | `zBitVec::body` | `const_cast<u32*>(&m_inline)` | [Mutable bitset accessor](ztools-bitvec-body.md) |
-| `CChatBox::HandleTextInputKey` | Repaired: writable owned CString copy | [Game chat input](chat-input.md) |
-| `CMultiStartDlg::OnChatSend` | Repaired: CString writable-buffer protocol | [Lobby chat message](chat-dialog.md) |
-| `CMenuSparkle::SerializeDispatch` | Repaired: load lower bound into writable temporary | [Sparkle lower bound](menu-sparkle-low.md) |
-| `CMenuSparkle::SerializeDispatch` | Repaired: load upper bound into writable temporary | [Sparkle upper bound](menu-sparkle-high.md) |
+| `CChatBox::HandleTextInputKey` | CString input view to mutable broadcast input | [Game chat input](chat-input.md) |
+| `CMultiStartDlg::OnChatSend` | CString message view to mutable broadcast input | [Lobby chat message](chat-dialog.md) |
+| `CMenuSparkle::SerializeDispatch` | `const_cast<i32*>(&g_menuSparkleLo)` | [Sparkle lower bound](menu-sparkle-low.md) |
+| `CMenuSparkle::SerializeDispatch` | `const_cast<i32*>(&g_menuSparkleHi)` | [Sparkle upper bound](menu-sparkle-high.md) |
 
 The repeated wrappers and paired fields are separate sites even when they
-share an explanation. There are six remaining expressions and ten pages,
-including the four removed casts and their replacement contracts.
+share an explanation. There are ten expressions and ten corresponding pages.
 
 ## How to read the evidence
 
@@ -51,8 +50,8 @@ Removing constness from a pointer does not itself modify its target. A write
 to an object defined as const is undefined behavior; using a const view of
 mutable storage is a different case. CString's ownership and cached-length
 rules also matter even when the underlying character allocation is mutable.
-The MenuSparkle pages document why the original read destinations were unsafe
-and how the repaired loads consume the stored values without writing constants.
+The MenuSparkle pages explicitly document an unsafe write destination; their
+presence here does not make it safe.
 
 ## Maintaining the inventory
 

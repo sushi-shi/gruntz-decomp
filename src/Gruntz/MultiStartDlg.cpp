@@ -838,8 +838,10 @@ void CMultiStartDlg::OnChatSend() {
         message += inputText;
         AppendChatLine(static_cast<const char*>(message));
         input->SetWindowTextA("");
-        g_multiState->BroadcastChatLine(message.GetBuffer(0), 0, 0, NULL);
-        message.ReleaseBuffer();
+        // Broadcast truncation writes into the CString buffer without updating its length;
+        // this local is destroyed immediately afterward.
+        g_multiState
+            ->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(message)), 0, 0, NULL);
     }
 }
 

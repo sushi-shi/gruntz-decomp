@@ -1,22 +1,22 @@
 # Typed map outputs and integer object IDs
 
-This page accounts for eight original cast expressions: **five output-reference casts removed**, plus **three integer-key casts retained**. The distinction matters: an opaque key is never dereferenced; an output reference actually writes a pointer object through another pointer type.
+This page accounts for eight original cast expressions: **three output-reference casts removed**, **two output-reference casts retained**, and **three integer-key casts retained**. The distinction matters: an opaque key is never dereferenced; an output reference actually writes a pointer object through another pointer type.
 
-## Five removed output-reference puns
+## Five output-reference sites: three fixed, two outstanding
 
 The original [MapTyped.h](../../include/Utils/MapTyped.h) expressions were:
 
 | Wrapper | Original expression | Status |
 | --- | --- | --- |
-| `MapLookup(CMapStringToPtr&, LPCTSTR, T*&)` | `map.Lookup(key, reinterpret_cast<void*&>(out))` | Fixed |
+| `MapLookup(CMapStringToPtr&, LPCTSTR, T*&)` | `map.Lookup(key, reinterpret_cast<void*&>(out))` | Retained unsafe seam; temporary-output repair reverted |
 | `MapLookup(CMapPtrToPtr&, void*, T*&)` | `map.Lookup(key, reinterpret_cast<void*&>(out))` | Fixed |
 | `MapGetNext(CMapStringToPtr&, POSITION&, K&, T*&)` | `map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out))` | Fixed |
 | `MapGetNext(CMapPtrToPtr&, POSITION&, K&, T*&)` | `map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out))` | Fixed |
-| `MapLookupById(CMapPtrToPtr&, i32, T*&)` | `map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out))` | Output cast fixed; key cast retained |
+| `MapLookupById(CMapPtrToPtr&, i32, T*&)` | `map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out))` | Both casts retained; output temporary repair reverted |
 
 The parameter `out` designates a caller-owned pointer object of type `T*`. Casting its reference to `void*&` does not convert that pointer's value: it asks MFC to access the **same pointer object** as `void*`. For non-void `T`, equal size/alignment under VC5 does not establish type accessibility. A successful write through the punned reference is not justified by standard C++ aliasing rules. No extra object is created by the cast. See [type accessibility](https://eel.is/c++draft/basic.lval) and [reference reinterpretation](https://eel.is/c++draft/expr.reinterpret.cast#11).
 
-The current lookup implementation uses real output storage:
+The pointer-key `MapLookup` overload uses real output storage:
 
 ```cpp
 void* value;
@@ -27,7 +27,7 @@ if (found) {
 return found;
 ```
 
-Both lookup overloads use that form; the ID overload uses the retained integer key conversion for its first argument. Failure leaves `out` untouched and returns the original `BOOL`, rather than overwriting it with null or normalizing the result. Both iteration wrappers now use:
+Failure leaves `out` untouched and returns the original `BOOL`, rather than overwriting it with null or normalizing the result. Both iteration wrappers now use:
 
 ```cpp
 void* value;
@@ -36,6 +36,26 @@ out = static_cast<T*>(value);
 ```
 
 Valid iteration always writes a value. The temporary ends after the call; it neither owns nor extends the pointed-to object's lifetime. A successful conversion still requires that the map's erased value represents the intended `T` object/address. It does not perform RTTI checking or a multiple-inheritance adjustment from an unrelated base pointer. This fix addresses output-slot aliasing, not corrupt maps or stale pointees.
+
+The string-key lookup currently retains its earlier implementation:
+
+```cpp
+template<class T> inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, T*& out) {
+    return map.Lookup(key, reinterpret_cast<void*&>(out));
+}
+```
+
+[CWapX::SerializeAnimationState](../../include/Gruntz/WapSerializationInline.h) loads its previous animation through `MapFind<CAnimationSequence>(CMapStringToPtr&, ...)`, which calls this overload. The temporary-output repair participated in the PR366 loss of that serializer's exact match. At the user's request to revert repairs causing those losses, this overload was restored to its pre-repair body. Its caller-owned pointer slot is again written through `void*&`. This is an explicitly outstanding aliasing hazard, not a declaration that byte matching makes the operation safe. The separate ID-lookup deferral is described next.
+
+The ID-key lookup likewise retains its earlier implementation:
+
+```cpp
+template<class T> inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, T*& out) {
+    return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
+}
+```
+
+[CTriggerMgr::UpdateTargetingCursor](../../src/Gruntz/TriggerMgr.cpp) reaches this wrapper through [ChildGroup::LookupRegisteredObject](../../include/DDrawMgr/DDrawChildGroup.h). Its temporary-output repair also changed the cursor's compiler output. A focused comparison restored this wrapper alone and recovered the prior cursor result. Reapplying the separate, type-correct `LONG` coordinate parameters then preserved that result, so the [coordinate repair](trigger-coordinates.md) remains. The ID wrapper's output-slot aliasing hazard is still outstanding; its separate integer-to-pointer key representation is described below. Three safe wrappers remain: pointer-key `MapLookup` and both `MapGetNext` overloads.
 
 ## SDK and GitHub comparison
 
@@ -65,4 +85,4 @@ These conversions depend on VC5's 32-bit integer/pointer representation and MFC'
 | [f4e8a7eb](https://github.com/sushi-shi/gruntz-decomp/commit/f4e8a7ebcf5ba18a929c02017e0e9c702af2a2a6) | Earliest serializer reconstruction already saved an ID and looked it up at postload, although raw offsets and map typing were still incomplete. |
 | [3b09d668](https://github.com/sushi-shi/gruntz-decomp/commit/3b09d668f2f3f65c69c40ad95f8e9afc5cdc30f0) | Removed `AddrWord` at all three retained key boundaries. Later names/getters did not change the ID domain. |
 
-The five genuine output temporaries are the targeted correction from this audit. Compiler verification belongs to the combined cleanup build; no byte-neutrality is assumed. No runtime game test was performed.
+Three genuine output temporaries remain from the targeted correction. The restored string-key and ID-key output puns are separately enumerated above so the original eight-site inventory stays auditable. Compiler verification belongs to the combined cleanup build; no byte-neutrality is assumed. No runtime game test was performed.

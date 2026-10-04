@@ -1,10 +1,9 @@
 # Shade-row byte buffers viewed as 16-bit pixels
 
-All sixteen original expressions were in
+All sixteen expressions are in
 [DDrawShadeBlit.cpp](../../src/DDrawMgr/DDrawShadeBlit.cpp). Each row below
-identifies one removed cast, including repeated expressions in different arms.
-The current implementation uses byte indices and copies through real word
-values; none of these sixteen casts remains.
+identifies one retained cast, including repeated expressions in different arms.
+The current implementation uses typed word pointers to traverse byte buffers.
 
 | Function and arm | Local | Expression |
 | --- | --- | --- |
@@ -25,12 +24,12 @@ values; none of these sixteen casts remains.
 | same arm | `s` | `reinterpret_cast<u16*>(src)` |
 | same arm | `sc` | `reinterpret_cast<u16*>(&g_scratch[count * 2 - 2])` |
 
-## Removed accesses and actual storage
+## Current accesses and actual storage
 
 The row functions accept `u8* dst, u8* src, i32 count`; the double-row
 variants also accept a byte displacement `rowDelta`. [Ints.h](../../include/Ints.h)
 defines `u8` as `unsigned char` and `u16` as `unsigned short`. The shared
-scratch object is explicitly `u8 g_scratch[1280]`. A typical former arm was:
+scratch object is explicitly `u8 g_scratch[1280]`. A typical arm is:
 
 ```cpp
 memcpy(g_scratch, dst, count * 2);
@@ -39,8 +38,8 @@ u16* s = reinterpret_cast<u16*>(src);
 u16* sc = reinterpret_cast<u16*>(g_scratch);
 ```
 
-The former following loop read `*s` and `*sc`, computes a palette/blend word,
-and writes `*d`. These were actual typed accesses, not unused casts.
+The following loop reads `*s` and `*sc`, computes a palette/blend word,
+and writes `*d`. These are actual typed accesses, not unused casts.
 `dst` originates in a locked DirectDraw surface; pitch and pixel format
 constrain it. `src` comes from `m_rleData`, a `new u8[]` allocation with
 one-byte run tokens. `EncodeRle16` writes two pixel bytes after each token;
@@ -71,27 +70,25 @@ of a word range after its last element. This review does not establish
 malformed-resource reachability or prove all retail call paths violate a
 precondition.
 
-## Implemented repair
+## Why the casts remain and what a repair requires
 
-The affected six switch arms now index byte buffers by `pixel * 2` and call
-`Load16`/`Store16`. These two [Pix16 helpers](../../include/Pix16.h) now use
-`memcpy` between the byte address and an actual `u16` object. Odd source or
-destination addresses do not become misaligned word lvalues. Forward and
-reverse indexing touches only the indexed pixels, avoiding the former
-post-loop decrements before the first pixel in these arms. The other view
-helpers in that header still use union-based pointer views; replacing a cast
-with one of those helpers is not itself a safety improvement.
+The current loops dereference and advance `u16*` cursors, while their public
+inputs and scratch storage are `u8*` and `u8[]`. Those declarations force the
+conversions in this implementation; the SDK does not require word-pointer
+access to these buffers. Keeping the instruction shape does not establish
+portable C++ safety.
 
-All four converter entry points reject nonpositive counts and counts above
-640, the maximum number of words fitting the shared scratch buffer. Normal
-RLE runs fit this limit. Double-row stores preserve the existing signed
-`rowDelta / 2 * 2` displacement. Little-endian pixel representation remains
-the target format; `memcpy` is not an endian conversion.
+A repair can index the byte buffers and use `memcpy` between each address
+and a real `u16` object. It also needs valid count bounds and reverse indices
+that never form a pointer before the array. Such a rewrite changes VC5's
+code generation substantially and is not present in the current source.
+The `Load16`/`Store16` helpers in [Pix16.h](../../include/Pix16.h) still use
+union-based views; merely replacing a direct cast with those helpers would
+not resolve the underlying typed-access issue.
 
-This is an intentional safety repair, not a claim of recovered original
-syntax. The mirrored scratch-copy start addresses and unrelated eight-bit
-cursor arithmetic are preserved and remain separate bounds obligations.
-No complete validation of malformed RLE resources is claimed.
+The mirrored scratch-copy start addresses and unrelated eight-bit cursor
+arithmetic require separate bounds analysis. No complete validation of
+malformed RLE resources is claimed.
 
 ## Git provenance and GitHub comparison
 
@@ -100,7 +97,7 @@ introduced the reconstructed `ConvertRow` operations. The mechanical
 [typedef-cast sweep](https://github.com/sushi-shi/gruntz-decomp/commit/6d500a7eab0cec44cf10b2e6e983867f4f5645bc)
 changed earlier C-style spelling. Later helper/union passes hid the
 conversions; that history did not establish portable aliasing safety.
-The sixteen removed direct expressions came from
+The sixteen current direct expressions came from
 [ba0a980744](https://github.com/sushi-shi/gruntz-decomp/commit/ba0a980744203a10bb208c6ecc27a8d4744843b1):
 it restored inline row converters and word walkers to reproduce the retail
 call/inline pattern. That is compiler and instruction evidence for the

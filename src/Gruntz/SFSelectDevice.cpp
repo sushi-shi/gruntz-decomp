@@ -89,15 +89,15 @@ i32 SFManager_SelectBestDevice() {
         FreeLibrary(g_sfDll);
         return 0;
     }
-    DWORD interfaceAddress;
-    g_sfManagerResult = manager->SF_QueryInterface(ID_SFMANL100API, &interfaceAddress);
+    // byte-evidenced: retail supplies its global pointer slot as the SDK DWORD output.
+    // This preserves the Win32 storage alias, not portable C++ typed access.
+    g_sfManagerResult =
+        manager->SF_QueryInterface(ID_SFMANL100API, reinterpret_cast<PDWORD>(&g_sfDevice));
     if (g_sfManagerResult != 0) {
         FreeLibrary(g_sfDll);
         return 0;
     }
 
-    // API-forced: the VC5 SoundFont SDK returns the interface address in a DWORD.
-    g_sfDevice = reinterpret_cast<SFMANL100API*>(interfaceAddress);
     g_sfDevice->SF_GetNumDevs(&g_sfDeviceCount);
     if (g_sfDeviceCount == 0) {
         return 0;

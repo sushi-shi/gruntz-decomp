@@ -229,18 +229,22 @@ i32 CBootyState::LoadGameAssetNamespaces(
         CString desc;
         i32 i = 0;
 
-        BootyCheatMessage* row = g_bootyCheatMessages;
+        // byte-evidenced: retail compares the row cursor as a signed integer.
+        i32 last = reinterpret_cast<i32>(
+            g_bootyCheatMessages[24].m_description + sizeof(BootyCheatMessage)
+        );
+        char* p = g_bootyCheatMessages[0].m_description;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
             i32 id = g_buteMgr.GetInt(bootyCheatz, grp, 1);
             grp.Format("Cheat%i", id);
             text = *g_buteMgr.GetString(grp, "Text", &empty);
             desc = *g_buteMgr.GetString(grp, "Desc", &empty);
-            strcpy(row->m_encodedCode, text);
-            strcpy(row->m_description, desc);
+            strcpy(p - 0x20, text);
+            strcpy(p, desc);
             i++;
-            row++;
-        } while (row != g_bootyCheatMessages + 25);
+            p += 0xa0;
+        } while (reinterpret_cast<i32>(p) < last); // byte-evidenced: signed cursor compare
         g_bootyCheatMessagesLoaded = true;
     }
 

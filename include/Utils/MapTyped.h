@@ -3,14 +3,9 @@
 
 #include <Ints.h>
 
-// Give MFC a void* object to write, then convert its value to the stored type.
+// The string lookup retains MFC's legacy output-slot type pun.
 template<class T> inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, T*& out) {
-    void* value;
-    BOOL found = map.Lookup(key, value);
-    if (found) {
-        out = static_cast<T*>(value);
-    }
-    return found;
+    return map.Lookup(key, reinterpret_cast<void*&>(out));
 }
 template<class T> inline BOOL MapLookup(CMapPtrToPtr& map, void* key, T*& out) {
     void* value;
@@ -47,12 +42,7 @@ inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, T*& out) {
 
 template<class T> inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, T*& out) {
     // API-forced: CMapPtrToPtr keys an integer id through its void* key.
-    void* value;
-    BOOL found = map.Lookup(reinterpret_cast<void*>(id), value);
-    if (found) {
-        out = static_cast<T*>(value);
-    }
-    return found;
+    return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
 }
 
 #endif // GRUNTZ_UTILS_MAPTYPED_H

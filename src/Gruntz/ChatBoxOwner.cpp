@@ -68,9 +68,10 @@ void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
 
     if (g_gameReg->GetCurrentState()->GetStateId() == GAMESTATE_MULTI) {
         CMulti* multi = static_cast<CMulti*>(g_gameReg->GetCurrentState());
-        CString input = m_gameText->GetInputText();
-        multi->BroadcastChatLine(input.GetBuffer(0), 1, 1, NULL);
-        input.ReleaseBuffer();
+        // The temporary shares m_inputText storage. Broadcasting can modify that buffer
+        // without CString copy-on-write or updating its cached length.
+        char* input = const_cast<char*>(static_cast<const char*>(m_gameText->GetInputText()));
+        multi->BroadcastChatLine(input, 1, 1, NULL);
     } else {
         if (m_gameText->GetInputText().Left(17).CompareNoCase("Enable Cheatzfile") == 0) {
             CString args = m_gameText->GetInputText();

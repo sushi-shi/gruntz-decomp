@@ -1,25 +1,10 @@
 # MenuSparkle: loading the lower delay bound
 
-**Disposition:** repaired. The lower archive value is read into writable
-local storage; animation timing continues to use the fixed bound. Both values
-are consumed in order and existing return-value handling is preserved:
-
-```cpp
-i32 storedLo;
-i32 storedHi;
-arc->Read(&storedLo, sizeof(storedLo));
-arc->Read(&storedHi, sizeof(storedHi));
-```
-
-This intentionally changes the retail read destinations. Loaded values are
-not applied to const globals: retail animation consumers use folded constants,
-and no supported mutable timing contract has been established. The source
-below describes the **removed cast**, its actual defect and provenance.
-
+**Disposition:** retained unsafe archive destination, with an operational warning. The cast is legal; writing through it would modify an object actually defined `const` in this reconstruction and therefore has undefined behavior. Retail supplies the same read-only address. Neither fact proves the original source used this declaration or this cast.
 
 ## Our code and the writable-buffer contract
 
-[MenuSparkle.cpp](../../src/Gruntz/MenuSparkle.cpp) previously defined and loaded the object as follows; the call is in the `SERIAL_LOAD` branch of `CMenuSparkle::SerializeDispatch`:
+[MenuSparkle.cpp](../../src/Gruntz/MenuSparkle.cpp) defines and loads the object as follows; the call is in the `SERIAL_LOAD` branch of `CMenuSparkle::SerializeDispatch`:
 
 ```cpp
 DATA(0x001ea3d4)
@@ -62,7 +47,7 @@ These commits are reconstruction history, not surviving original MenuSparkle sou
 | [95720259](https://github.com/sushi-shi/gruntz-decomp/commit/95720259045535511fcf3c8b759c0ee59c5dee76) | Added `const` and this cast after read-only-section/data-attribution findings. | The storage evidence is valid; claims that it proved the original qualifier/cast or guaranteed a fault were too strong. |
 | [5ce5a559](https://github.com/sushi-shi/gruntz-decomp/commit/5ce5a5591734cd05ab99f05f1675dea84853d09a) | Pruned source prose, removing the explanations while retaining the cast. | No site-specific safety justification; behavior unchanged. |
 
-The review records the original hazard without asserting a unique original declaration. The repair removes the cast and supplies a writable load destination. The constant definitions and save format remain unchanged.
+The current warning restores the operational hazard without asserting a unique original declaration. This document does not remove the cast or alter storage.
 
 ## GitHub comparison: genuinely writable archive members
 
@@ -85,4 +70,4 @@ WritableSparkleBounds loaded = {1000, 5000};
 i32 ok = arc->Read(&loaded.low, sizeof(loaded.low));
 ```
 
-This avoids the const-object violation because `loaded` is writable. Substituting it in Gruntz would change the read destination and subsequent state handling; making the existing global mutable would change its storage model and potentially constant folding. Either requires an explicit behavioral repair design, not a claim of source-neutral cast cleanup. The current repair chooses temporary load destinations without changing the constant definitions. The [upper-bound site](menu-sparkle-high.md) has the same hazard independently.
+This avoids the const-object violation because `loaded` is writable. Substituting it in Gruntz would change the read destination and subsequent state handling; making the existing global mutable would change its storage model and potentially constant folding. Either requires an explicit behavioral repair design, not a claim of source-neutral cast cleanup. No such substitution has been made. The [upper-bound site](menu-sparkle-high.md) has the same hazard independently.

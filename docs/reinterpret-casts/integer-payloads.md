@@ -1,6 +1,6 @@
 # Integer payloads and array cursors
 
-This page accounts for **seven starting expressions**. Three integer/pointer payload conversions remain. Four pointer-to-integer cursor conversions were removed after their surrounding code exposed array-boundary defects.
+This page accounts for **seven starting expressions**. Five expressions remain: three integer/pointer payload conversions and two cheat-row cursor conversions. The two flag-cursor conversions were removed by using the actual array endpoint.
 
 ## Action IDs in pointer-valued slots: two retained sites
 
@@ -38,11 +38,11 @@ At this expression there is no dereference, alignment change or expired object: 
 
 A concrete [Microsoft WordPad callback example](https://github.com/microsoft/VCSamples/blob/9e1d4475555b76a17a3568369867f1d7b6cc6126/VC2010Samples/MFC/ole/wordpad/wordpad.cpp#L279-L305) passes a live local's address through `LPARAM` to `EnumWindows`, then decodes it in the callback. This demonstrates a real integer message slot with explicit callback lifetime. It is an analogue only: unlike Windows' fixed `LPARAM` API, Gruntz's serializer signatures are under reconstruction and may be correctable.
 
-## Booty cursor conversions: four removed sites
+## Booty cursor conversions: two retained, two removed
 
-The initial [BootyStateActivate.cpp](../../src/Gruntz/BootyStateActivate.cpp) had these individual expressions:
+[BootyStateActivate.cpp](../../src/Gruntz/BootyStateActivate.cpp) contains the cheat-row expressions below; the flag-position expressions have been removed:
 
-| Starting site | Exact removed expression | Source → destination |
+| Starting site | Original expression | Source → destination |
 | --- | --- | --- |
 | `CBootyState::LoadGameAssetNamespaces`, end marker | `reinterpret_cast<i32>(g_bootyCheatMessages[24].m_description + sizeof(BootyCheatMessage))` | `char*` → signed `int` |
 | Same function, loop condition | `reinterpret_cast<i32>(p)` | `char*` → signed `int` |
@@ -51,9 +51,9 @@ The initial [BootyStateActivate.cpp](../../src/Gruntz/BootyStateActivate.cpp) ha
 
 ### Cheat rows
 
-[BootyCheatMessage](../../include/Gruntz/BootyMessages.h#L9) has a 32-byte encoded-code member and a 128-byte description member; the actual owner is a 25-element record array. The former end expression added a full 160-byte record size to the final description member. That goes beyond the member array's one-past position. Earlier in the same loop, `p - 0x20` reached a sibling member and `p += 0xa0` crossed between different description arrays. Casting the resulting address to an integer cannot make the preceding out-of-bounds pointer arithmetic valid. This was a real source-model defect even when its x86 instructions matched retail.
+[BootyCheatMessage](../../include/Gruntz/BootyMessages.h#L9) has a 32-byte encoded-code member and a 128-byte description member; the actual owner is a 25-element record array. The current end expression adds a full 160-byte record size to the final description member. That goes beyond the member array's one-past position. Earlier in the same loop, `p - 0x20` reaches a sibling member and `p += 0xa0` crosses between different description arrays. Casting the resulting address to an integer cannot make the preceding out-of-bounds pointer arithmetic valid. This is a real source-model defect even when its x86 instructions matched retail.
 
-The corrected loop uses a `BootyCheatMessage*` row iterator, copies into its two actual members, and stops at `g_bootyCheatMessages + 25`. Those are valid record-array operations with the same 25 logical records and storage. This fix does not add bounds to the existing string copies: oversized resource strings remain a separate precondition, not something the cast correction solves.
+A repair would use a `BootyCheatMessage*` row iterator, copy into its two actual members, and stop at `g_bootyCheatMessages + 25`. Those are valid record-array operations, but this rewrite is not in the current source because it changed the matched byte shape. The current signed-address comparison forces the integer casts; neither the SDK nor the record model requires that comparison. Oversized resource strings remain a separate risk in the unbounded string copies.
 
 [ad10628cd7](https://github.com/sushi-shi/gruntz-decomp/commit/ad10628cd75e7c7a81044097971a551c5e515a14) correctly unified a split table into 25 records but formed the problematic beyond-member endpoint to reproduce a retail address. [3b09d668f2](https://github.com/sushi-shi/gruntz-decomp/commit/3b09d668f2f3f65c69c40ad95f8e9afc5cdc30f0) replaced `AddrWord` carriers with the two explicit integer conversions. Later [d912316f58](https://github.com/sushi-shi/gruntz-decomp/commit/d912316f587991908868c1eba495a2a0fab77e20) renamed the record and fields. The naming change was not the origin of the pointer arithmetic.
 
@@ -63,4 +63,4 @@ The second loop iterates the four entries of `g_bootyFlagPos`, but compared its 
 
 The corrected condition is `flagPos != g_bootyFlagPos + 4`, keeping traversal within its own array. No aggregate combining unrelated arrays was invented. [1dabef28f6](https://github.com/sushi-shi/gruntz-decomp/commit/1dabef28f6a1d0aee8653cb7d036b3a01a9f0bdc) used `AddrWord` cursor/end carriers; [3b09d668f2](https://github.com/sushi-shi/gruntz-decomp/commit/3b09d668f2f3f65c69c40ad95f8e9afc5cdc30f0) made their signed-address comparison explicit. That commit's machine-comparison rationale did not establish portable array-boundary validity.
 
-These two repairs intentionally replace invalid or layout-dependent C++ traversal, rather than describing it as safe because of equal widths. The signed retail branch is evidence about generated instructions, not proof of the original source expression. No surviving original Booty loop source was found to settle its spelling. As an independent array-traversal example, [Microsoft WordPad’s pinned LoadAbbrevStrings](https://github.com/microsoft/VCSamples/blob/9e1d4475555b76a17a3568369867f1d7b6cc6126/VC2010Samples/MFC/ole/wordpad/wordpad.cpp#L417-L420) indexes records using their element count and accesses each record’s declared fields. It is an actual application pattern, not evidence of original Booty code.
+The flag repair removes layout-dependent traversal. The cheat-row traversal remains a known source-model defect; equal widths do not make it safe. The signed retail branch is evidence about generated instructions, not proof of the original source expression. No surviving original Booty loop source was found to settle its spelling. As an independent array-traversal example, [Microsoft WordPad’s pinned LoadAbbrevStrings](https://github.com/microsoft/VCSamples/blob/9e1d4475555b76a17a3568369867f1d7b6cc6126/VC2010Samples/MFC/ole/wordpad/wordpad.cpp#L417-L420) indexes records using their element count and accesses each record’s declared fields. It is an actual application pattern, not evidence of original Booty code.

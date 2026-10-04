@@ -1,25 +1,10 @@
 # MenuSparkle: loading the upper delay bound
 
-**Disposition:** repaired. The upper archive value is read into writable
-local storage; animation timing continues to use the fixed bound. Both values
-are consumed in order and existing return-value handling is preserved:
-
-```cpp
-i32 storedLo;
-i32 storedHi;
-arc->Read(&storedLo, sizeof(storedLo));
-arc->Read(&storedHi, sizeof(storedHi));
-```
-
-This intentionally changes the retail read destinations. Loaded values are
-not applied to const globals: retail animation consumers use folded constants,
-and no supported mutable timing contract has been established. The source
-below describes the **removed cast**, its actual defect and provenance.
-
+**Disposition:** retained unsafe archive destination, with an operational warning. This second load removes constness from an object actually defined `const`; a write to it would be undefined behavior. The retail destination is also read-only image storage. That observation does not uniquely identify the original C++ declaration or cast spelling.
 
 ## Our code and actual types
 
-[MenuSparkle.cpp](../../src/Gruntz/MenuSparkle.cpp) previously contained:
+[MenuSparkle.cpp](../../src/Gruntz/MenuSparkle.cpp) contains:
 
 ```cpp
 DATA(0x001ea3d8)
@@ -62,7 +47,7 @@ This is our reconstruction's history, not original-source attestation:
 | [95720259](https://github.com/sushi-shi/gruntz-decomp/commit/95720259045535511fcf3c8b759c0ee59c5dee76) | Changed definition/declaration to const and added the cast, citing read-only section/data-attribution evidence. | Observed protection supports the model; claiming uniquely proven constness, original cast syntax, or guaranteed fault exceeded the evidence. |
 | [5ce5a559](https://github.com/sushi-shi/gruntz-decomp/commit/5ce5a5591734cd05ab99f05f1675dea84853d09a) | Removed explanatory comments during prose pruning. | Retained the unsafe call; no independent site-specific safety reason was recorded. |
 
-The repaired load does not claim that making the global mutable would be an authentic reconstruction correction.
+The current operational warning repairs the explanation. It does not claim that making the global mutable is an authentic reconstruction correction.
 
 ## GitHub comparison: a writable CFile destination
 
@@ -87,4 +72,4 @@ WritableSparkleBounds loaded = {1000, 5000};
 i32 ok = arc->Read(&loaded.high, sizeof(loaded.high));
 ```
 
-This is explanatory code, not an applied patch or recovered source. Replacing the retail destination with it changes destination identity, persistence and failure behavior. Making the existing global mutable changes storage and may change folded consumers. Such a repair must be described as a behavioral/storage change, not harmless cast removal. No safe byte-identical alternative has been established. The current repair intentionally changes the read destinations to writable locals.
+This is explanatory code, not an applied patch or recovered source. Replacing the retail destination with it changes destination identity, persistence and failure behavior. Making the existing global mutable changes storage and may change folded consumers. Such a repair must be described as a behavioral/storage change, not harmless cast removal. No safe source-equivalent alternative has been established by the evidence above, and no C++ change was made for these pages.
