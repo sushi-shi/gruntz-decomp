@@ -2593,7 +2593,7 @@ RVA(0x001058d0, 0x34)
 void CStatusBarMgr::UpdateStatusSystems() {
     UpdateGruntOvenStatusBar();
     TickGruntWell();
-    UpdateRezConveyorStatusBar();
+    UpdateConveyorAnimations();
     UpdateResourceMachineAnimation();
     UpdateResourceDeliveryAnimation();
     UpdateChipGrinderStatusBar();
@@ -2613,7 +2613,7 @@ void CStatusBarMgr::Reset() {
 }
 
 RVA(0x00105990, 0x3b4)
-void CStatusBarMgr::UpdateRezConveyorStatusBar() {
+void CStatusBarMgr::UpdateConveyorAnimations() {
     for (i32 i = 0; i < 3; i++) {
         ClockInterval* clock = &m_conveyorSlots[i].m_clock;
         SbiHlRowState state = static_cast<SbiHlRowState>(m_conveyorSlots[i].m_state);
@@ -2698,7 +2698,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_RIGHT_RUNNING:
             if (rightMachine->m_clock.Expired()) {
                 if (++rightMachine->m_counter > 0x34) {
-                    SetRightRezMachineAnimation(
+                    SetRightMachineAnimation(
                         0x2b,
                         MACHINE_RIGHT_RUNNING,
                         g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d)
@@ -2713,7 +2713,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_RIGHT_SPEWING:
             if (rightMachine->m_clock.Expired()) {
                 if (++rightMachine->m_counter > 0x44) {
-                    SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
+                    SetRightMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
                 } else {
                     rightMachine->m_clock.Start(
                         g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d)
@@ -2727,7 +2727,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_SNOOZING:
             if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 8) {
-                    SetLeftRezMachineAnimation(
+                    SetLeftMachineAnimation(
                         1,
                         MACHINE_SNOOZING,
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
@@ -2742,12 +2742,12 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_WAKING:
             if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 0x13) {
-                    SetLeftRezMachineAnimation(
+                    SetLeftMachineAnimation(
                         0x14,
                         MACHINE_TURNING_WHEEL,
                         g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
                     );
-                    SetRightRezMachineAnimation(
+                    SetRightMachineAnimation(
                         0x2b,
                         MACHINE_RIGHT_RUNNING,
                         g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d)
@@ -2771,7 +2771,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_TURNING_WHEEL:
             if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 0x1d) {
-                    SetLeftRezMachineAnimation(
+                    SetLeftMachineAnimation(
                         0x14,
                         MACHINE_TURNING_WHEEL,
                         g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
@@ -2819,7 +2819,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
                     );
                 }
                 if (leftMachine->m_counter > 0x2a) {
-                    SetLeftRezMachineAnimation(
+                    SetLeftMachineAnimation(
                         1,
                         MACHINE_SNOOZING,
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
@@ -2851,12 +2851,12 @@ void CStatusBarMgr::ResetConveyorBelts() {
 
 RVA(0x00106660, 0x68)
 void CStatusBarMgr::ResetResourceMachine() {
-    SetLeftRezMachineAnimation(
+    SetLeftMachineAnimation(
         1,
         MACHINE_SNOOZING,
         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 100)
     );
-    SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
+    SetRightMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
     if (m_machineDisplay) {
         m_machineDisplay->SetFrames(m_leftMachine.m_counter, m_rightMachine.m_counter);
     }
@@ -2865,7 +2865,7 @@ void CStatusBarMgr::ResetResourceMachine() {
 }
 
 RVA(0x001066f0, 0x3b)
-void CStatusBarMgr::SetLeftRezMachineAnimation(
+void CStatusBarMgr::SetLeftMachineAnimation(
     i32 initialFrame,
     SbiMachineState state,
     i32 frameDelayMs
@@ -2876,7 +2876,7 @@ void CStatusBarMgr::SetLeftRezMachineAnimation(
 }
 
 RVA(0x00106740, 0x3b)
-void CStatusBarMgr::SetRightRezMachineAnimation(
+void CStatusBarMgr::SetRightMachineAnimation(
     i32 initialFrame,
     SbiMachineState state,
     i32 frameDelayMs
@@ -3047,7 +3047,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
             break;
         case BELT_SPEWING:
             if (belt->Expired()) {
-                SetRightRezMachineAnimation(
+                SetRightMachineAnimation(
                     0x35,
                     MACHINE_RIGHT_SPEWING,
                     g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d)
@@ -3106,7 +3106,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                 m_deliveryItemRect.right = m_deliveryTargetX + 0x17;
                 rectFlag = 1;
                 ResetConveyorBelts();
-                SetLeftRezMachineAnimation(
+                SetLeftMachineAnimation(
                     0x1e,
                     MACHINE_LEVER,
                     g_buteMgr.GetDword("StatusBar", "LeftMachineLeverDelay", 0x64)
@@ -3282,7 +3282,7 @@ i32 CStatusBarMgr::RequestResourceDelivery() {
         if (m_deliveryPickupType == 0) {
             return 0;
         }
-        SetLeftRezMachineAnimation(
+        SetLeftMachineAnimation(
             9,
             MACHINE_WAKING,
             g_buteMgr.GetDword("StatusBar", "LeftMachineWakingDelay", 100)

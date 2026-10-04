@@ -125,8 +125,8 @@ public:
     void UpdateStatusSystems();
     void Reset();
     void ToggleUnitSample(i32 unitIndex);
-    void SetLeftRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
-    void SetRightRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
+    void SetLeftMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
+    void SetRightMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void FinishGruntPlacement(b32 placed);
     void ClearResourceSlot(i32 category, StatusBarHighlightRow row);
     i32 AddResourceToSlot(i32 category, i32 pickupValue, i32 row);
@@ -146,7 +146,7 @@ public:
     void BuildGameTabPauseButton();
 
     i32 StartGruntOven(i32);
-    void UpdateRezConveyorStatusBar();
+    void UpdateConveyorAnimations();
     void UpdateResourceMachineAnimation();
     void ResetResourceMachine();
     void UpdateResourceDeliveryAnimation();
