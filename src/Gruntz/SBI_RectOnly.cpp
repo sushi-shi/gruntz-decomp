@@ -3938,15 +3938,13 @@ i32 CWarpStoneFly::SerializeDispatch(
     return 1;
 }
 
-// @early-stop
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(u32 dt) {
     i32 currentY = static_cast<i32>(m_currentY);
     i32 currentX = static_cast<i32>(m_currentX);
     if (currentX == m_targetX && currentY == m_targetY) {
-        i32 fragment = m_fragment;
-        CByteArray* collectedFragments = &g_gameReg->GetTriggerMgr()->m_collectedWarpStoneFragments;
-        collectedFragments->Add(static_cast<BYTE>(fragment));
+        WarpStoneFragment fragment = m_fragment;
+        g_gameReg->GetTriggerMgr()->AddWarpStoneFragment(fragment);
         m_owner->m_hlBusy = false;
         if (m_owner->GetState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
             m_owner->ResetWidgets(false);

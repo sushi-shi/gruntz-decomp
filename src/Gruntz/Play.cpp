@@ -1317,7 +1317,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             key.Format("Level%i", i);
             CTriggerMgr* bm = g_gameReg->GetTriggerMgr();
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
-            bm->m_collectedWarpStoneFragments.Add(static_cast<u8>(v));
+            bm->AddWarpStoneFragment(static_cast<WarpStoneFragment>(v));
         }
         self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
