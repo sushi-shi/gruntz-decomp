@@ -386,20 +386,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
         QuitToMenu();
     }
     if (nextState != GAMESTATE_HELP) {
-        RECT r;
-        m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
-        std::string s;
-        loadResourceText(0x81a9, s);
-        tagSIZE mode = m_mgr->GetModeSize();
-        r.right = mode.cx;
-        r.bottom = mode.cy;
-        r.left = 0;
-        r.top = 0;
-        DrawTextToOverlaySurface(m_world, s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-        RetireScene(0x50, 0x3e8, 0, true);
-        if (m_mgr && m_mgr->m_triggerMgr) {
-            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
-        }
+        return PrepareDepartureFade();
     }
     return 1;
 }
@@ -473,10 +460,12 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
 i32 CMulti::Connect(i32 mode) {
     m_connected = false;
     m_allPlayersReady = false;
-    if (Mgr()->PassClickToPlayState(mode, false, 0) == 0) {
-        Mgr()->ReportError(IDX(IDS_SET_GAME_STATE), 0x446);
-        return 0;
-    }
+    StateChangeOptions options(0x446);
+    options.connectRound = true;
+    return Mgr()->PassClickToPlayState(mode, false, 0, options);
+}
+
+i32 CMulti::FinishConnect() {
     m_pumpGuard = true;
     if (WaitForOtherPlayers() == 0) {
         m_pumpGuard = false;

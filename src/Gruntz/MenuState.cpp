@@ -242,11 +242,9 @@ void CMenuState::StopMusicChain() {
 i32 CMenuState::LeaveState(GameStateId) {
     m_world->GetDrawTarget()->TransExit();
     m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-    u32 start = timeGetTime();
-    StopMusicChain();
-    while (timeGetTime() < start + m_activateCueDurationMs)
-        ;
-    return 1;
+    m_startMusicAfterFade = false;
+    return BeginAudioDeparture(m_menuMusicCue,
+        m_activateCueDurationMs > 0 ? static_cast<u32>(m_activateCueDurationMs) : 0);
 }
 
 i32 CMenuState::Render() {

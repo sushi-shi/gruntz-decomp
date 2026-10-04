@@ -3,6 +3,7 @@
 
 #include <string>
 #include <Runtime/FadePlayback.h>
+#include <Runtime/StateTransition.h>
 
 #include <Ints.h>
 
@@ -21,6 +22,8 @@ class CRezDir;
 class CFileMemBase;
 class CGruntzMgr;
 class CFaderMgr;
+struct SoundCue;
+class SoundBuffer;
 
 class CMulti;
 
@@ -59,6 +62,14 @@ public:
         return 1;
     }
     virtual i32 LeaveState(GameStateId nextState);
+    bool StartDeparture(GameStateId nextState);
+    TransitionProgress AdvanceStateDeparture(u32 deltaMs);
+    void CancelDeparture();
+    bool IsDeparting() const { return m_departureActive; }
+    i32 RecoverDeparture();
+    virtual i32 RestoreDeparture() { return InputVirtual(); }
+    i32 BeginAudioDeparture(SoundCue* cue, u32 minimumDelayMs);
+    virtual i32 FinishDeparture(GameStateId nextState) { return 1; }
 
     virtual i32 OnChar(i32 charCode, i32 keyData) {
         return 0;
@@ -223,6 +234,11 @@ public:
     i32 m_cursorBufferIndex;
 
 private:
+    bool m_departureActive;
+    bool m_departureRestoreAttempted;
+    GameStateId m_departureTarget;
+    SoundBuffer* m_departureSound;
+    TransitionDelay m_departureDelay, m_departureRamp;
     FadePlayback m_sceneFade;
     bool m_scenePresentation;
 };
@@ -231,6 +247,10 @@ inline CState::CState() {
     m_mgr = NULL;
     m_faderMgr = NULL;
     m_scenePresentation = false;
+    m_departureActive = false;
+    m_departureRestoreAttempted = false;
+    m_departureTarget = GAMESTATE_NONE;
+    m_departureSound = NULL;
     m_resourceArchive = NULL;
     m_world = NULL;
     m_levelResources = NULL;

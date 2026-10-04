@@ -387,20 +387,33 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         QuitToMenu();
     }
     if (nextState != GAMESTATE_HELP) {
-        RECT r;
-        m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
-        std::string s;
-        loadResourceText(IDS_PLEASE_WAIT, s);
-        tagSIZE mode = m_mgr->GetModeSize();
-        r.right = mode.cx;
-        r.bottom = mode.cy;
-        r.left = 0;
-        r.top = 0;
-        DrawTextToOverlaySurface(m_world, s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-        RetireScene(0x50, 0x3e8, 0, true);
-        if (m_mgr && m_mgr->m_triggerMgr) {
-            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
-        }
+        return PrepareDepartureFade();
+    }
+    return 1;
+}
+
+i32 CPlay::PrepareDepartureFade() {
+    RECT r;
+    m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
+    std::string s;
+    loadResourceText(IDS_PLEASE_WAIT, s);
+    tagSIZE mode = m_mgr->GetModeSize();
+    r.right = mode.cx;
+    r.bottom = mode.cy;
+    r.left = 0;
+    r.top = 0;
+    DrawTextToOverlaySurface(m_world, s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
+    return BeginSceneFade(0x50, 0x3e8, 0, true);
+}
+
+i32 CPlay::RestoreDeparture() {
+    if (!m_world->GetDrawTarget()->PagesReady()) return 0;
+    return PrepareDepartureFade();
+}
+
+i32 CPlay::FinishDeparture(GameStateId nextState) {
+    if (nextState != GAMESTATE_HELP && m_mgr && m_mgr->m_triggerMgr) {
+        m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
     }
     return 1;
 }

@@ -33,6 +33,8 @@ class CDialog;
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
+#include <Gruntz/StateChange.h>
+#include <Runtime/StateTransition.h>
 #include <Gruntz/String.h>
 #include <Image/CImage.h>
 #include <Io/SaveGame.h>
@@ -69,7 +71,7 @@ class CTriggerMgr;
 class CPlay;
 class CGameStats;
 
-class CGruntzMgr : public CGameMgr {
+class CGruntzMgr : public CGameMgr, private StateTransitionHost {
 public:
     CGruntzMgr();
     virtual ~CGruntzMgr()  ;
@@ -82,6 +84,9 @@ public:
     void DelayedQuit();
     bool IsQuitPending() const;
     bool IsSceneFading() const;
+    bool IsStateTransitioning() const { return m_stateTransition.active() || m_completingStateChange; }
+    void AdvanceStateChange(u32 deltaMs);
+    void CancelStateChange();
 
     i32 LaunchPortal(i32 quitAfter);
 
@@ -190,10 +195,13 @@ public:
     i32 AdvanceComputerPlayerTurns();
     i32 InitializeBattlezPlayers();
     void SetCellHeight(i32 x, i32 y, i32 value);
-    i32 PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused);
-    i32 SwitchToNextState();
+    // Success means accepted; completion and errors are delivered by later callbacks.
+    i32 PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused,
+        const StateChangeOptions& options = StateChangeOptions());
+    i32 SwitchToNextState(const StateChangeOptions& options = StateChangeOptions(0x429));
 
-    i32 TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused);
+    i32 TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused,
+        const StateChangeOptions& options = StateChangeOptions());
 
     void EnterModalUI(const char* msg);
 
@@ -388,6 +396,15 @@ public:
     i32 m_computerPlayerCount;
     RECT m_viewBounds;
     GruntzPlayer m_players[4];
+private:
+    StateTransition m_stateTransition;
+    StateChange m_stateChange;
+    bool m_completingStateChange;
+    bool QueueStateChange(const StateChange& change);
+    virtual bool BeginDeparture();
+    virtual TransitionProgress AdvanceDeparture(u32 deltaMs);
+    virtual bool InstallDestination();
+    virtual TransitionProgress AdvanceArrival(u32 deltaMs);
 };
 
 extern i32 g_roundStartTimeMs;

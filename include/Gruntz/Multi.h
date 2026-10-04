@@ -125,6 +125,7 @@ public:
     void SendLobbyKeepAlive();
 
     i32 Connect(i32 mode);
+    i32 FinishConnect();
     i32 StartTitle();
     void CheckDropTimeout();
 
