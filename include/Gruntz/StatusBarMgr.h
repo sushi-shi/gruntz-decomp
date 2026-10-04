@@ -113,7 +113,6 @@ public:
 
     void StartDestructWarning(i32 countdownMs);
     i32 StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment);
-    void ResetCounters();
     void ResetGruntOvens();
     void EmptyGruntOven(i32 idx);
     i32 StartAvailableGruntOven();
