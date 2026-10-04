@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// @early-stop
 RVA(0x000ec670, 0x298)
 i32 CGrunt::StepBomberBehavior() {
     CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
@@ -82,8 +83,8 @@ i32 CGrunt::StepBomberBehavior() {
             if (IsArrivalRerollPending() != 0) {
 
                 CWwdSpriteObject* h = m_object;
-                SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(h, spanX, spanY, outX, outY)
-                TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
+                SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(h, spanX, spanY, destination)
+                TileSwitch(destination.m_x, destination.m_y, 0, m_arrivalFlags, 1, 0);
                 i32 coordCount = CoordCount();
                 if (coordCount != 0) {
                     i32 mx = Max(spanX, spanY);

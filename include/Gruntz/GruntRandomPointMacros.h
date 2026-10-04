@@ -13,16 +13,15 @@
         outY += rand() % spanY;                                                                    \
     }
 
-#define SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(object, spanX, spanY, outX, outY)                   \
+#define SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(object, spanX, spanY, point)                        \
     i32 spanX = abs(object->m_extent.right - object->m_extent.left);                               \
     i32 spanY = abs(object->m_extent.bottom - object->m_extent.top);                               \
-    i32 outX = object->m_extent.left;                                                              \
-    i32 outY = object->m_extent.top;                                                               \
+    Coord point = {object->m_extent.left, object->m_extent.top};                                   \
     if (spanX != 0) {                                                                              \
-        outX += rand() % spanX;                                                                    \
+        point.m_x += rand() % spanX;                                                               \
     }                                                                                              \
     if (spanY != 0) {                                                                              \
-        outY += rand() % spanY;                                                                    \
+        point.m_y += rand() % spanY;                                                               \
     }
 
 #define SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(object, baseX, spanX, baseY, spanY, outX, outY)   \
