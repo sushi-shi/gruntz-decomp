@@ -427,23 +427,23 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
             switch (cmd) {
                 case SBICMD_PAUSE:
                     HiCueFind();
-                    HiPost(0x8007);
+                    PostGameWindowCommand(0x8007);
                     return 1;
                 case SBICMD_LOAD_GAME:
                     HiCueFind();
-                    HiPost(0x80ce);
+                    PostGameWindowCommand(0x80ce);
                     return 1;
                 case SBICMD_SAVE_GAME:
                     HiCueFind();
-                    HiPost(0x80cf);
+                    PostGameWindowCommand(0x80cf);
                     return 1;
                 case SBICMD_BOOTY_STATE:
                     HiCueFind();
-                    HiPost(0x8035);
+                    PostGameWindowCommand(0x8035);
                     return 1;
                 case SBICMD_SETTINGS:
                     HiCueLookup();
-                    HiPost(0x80e2);
+                    PostGameWindowCommand(0x80e2);
                     return 1;
                 case SBICMD_QUIT:
                     HiCueLookup();
@@ -619,7 +619,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                         g_gameReg->FinalizeLevelAndShowResults();
                     } else if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         HiCueLookup();
-                        HiPost(0x806b);
+                        PostGameWindowCommand(0x806b);
                     } else {
                         HiCueLookup();
                         (static_cast<CPlay*>(g_gameReg->m_curState))->CloseLevelOverlay(0);
@@ -631,7 +631,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
                         HiCueLookup();
-                        HiPost(0x8023);
+                        PostGameWindowCommand(0x8023);
                     } else {
                         HiCueTimed();
                         g_gameReg->FinalizeLevelAndShowResults();
@@ -643,7 +643,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 x, i32 y) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
                         HiCueTimed();
-                        HiPost(0x8023);
+                        PostGameWindowCommand(0x8023);
                     } else {
                         HiCueTimed();
                         g_gameReg->FinalizeLevelAndShowResults();
@@ -2523,7 +2523,7 @@ i32 CStatusBarMgr::StartGruntOven(i32 idx) {
     sp->m_state = GRUNT_OVEN_COOKING;
 
     m_gruntOvenSlots[idx].m_cookingClock.Start(INT_MAX);
-    PlayTabCue(this, TAB_GRUNTZ, "GAME_GOOCOOKING1");
+    PlayVisibleTabCue(this, TAB_GRUNTZ, "GAME_GOOCOOKING1");
     return 1;
 }
 
@@ -2672,13 +2672,13 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 break;
             case HLROW_HOLD_HIGH:
                 if (clock->Expired()) {
-                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETURN");
+                    PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETURN");
                     m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_HIGH);
                 }
                 break;
             case HLROW_HOLD_LOW:
                 if (clock->Expired()) {
-                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTBACKUP");
+                    PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_REZBELTBACKUP");
                     m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_LOW);
                 }
                 break;
@@ -2759,7 +2759,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
                     m_resourceDeliveryClock.Start(
                         g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64)
                     );
-                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZMACHINE");
+                    PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_REZMACHINE");
                 } else {
                     leftMachine->m_clock.Start(
                         g_buteMgr.GetDword("StatusBar", "LeftMachineWakingDelay", 0x64)
@@ -2807,11 +2807,11 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
                     if (found) {
                         m_conveyorSlots[col].m_state = IDX(HLROW_RAMP_UP_HIGH);
                         m_conveyorSlots[col].m_counter = 0x13;
-                        PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETRACT");
+                        PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETRACT");
                     } else {
                         m_conveyorSlots[col].m_state = IDX(HLROW_RAMP_UP_LOW);
                         m_conveyorSlots[col].m_counter = 0xa;
-                        PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTDROP");
+                        PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_REZBELTDROP");
                     }
                     m_conveyorSlots[col].m_clock.Start(
                         g_buteMgr.GetDword("StatusBar", "ConveyorBeltDelay", 0x64)
@@ -3058,7 +3058,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
         case BELT_DROP_START:
             if (belt->Expired()) {
                 m_resourceDeliveryPhase = BELT_FALLING;
-                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPFALLOUT");
+                PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_CHIPFALLOUT");
                 belt->Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
             }
             break;
@@ -3076,7 +3076,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                 m_deliveryItemRect.bottom = 0x11c;
                 m_deliveryItemRect.top = 0x104;
                 rectFlag = 1;
-                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
+                PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
                 m_resourceDeliveryPhase = BELT_TRAVELLING;
                 belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
                 PickupType activeItem = static_cast<PickupType>(m_deliveryPickupType);
@@ -3139,7 +3139,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                 }
             }
             if (m_deliveryItemRect.top >= row * 0x20 + 0x13e) {
-                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
+                PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
                 AddResourceToSlot(col, m_deliveryPickupType, row);
                 PrepareNextResource();
             }
@@ -3213,7 +3213,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_grinderPickupType = 0;
         } else if (m_grinderItemRect.bottom >= 0x1bf) {
             if (m_grinderState != FALLING_ITEM_GRINDING) {
-                PlayTabCue(this, TAB_RESOURCE, "GAME_REZGRINDING");
+                PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_REZGRINDING");
                 m_grinderState = FALLING_ITEM_GRINDING;
             }
             delay = g_buteMgr.GetDword("StatusBar", "FallingItemShredderDelay", 0x64);

@@ -32,14 +32,15 @@ static __inline void HiCueTimed() {
     PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_TABHIGHLIGHT1");
 }
 
-static __inline void PlayTabCue(CStatusBarMgr* statusBar, StatusBarTab tab, const char* cueKey) {
+static __inline void
+PlayVisibleTabCue(CStatusBarMgr* statusBar, StatusBarTab tab, const char* cueKey) {
     if (statusBar->GetActiveTab() == tab && statusBar->GetDockState() != STATUSBAR_HIDDEN) {
         PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), cueKey);
     }
 }
 
-static __inline void HiPost(i32 cmdId) {
-    PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, cmdId, 0);
+static __inline void PostGameWindowCommand(i32 commandId) {
+    PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, commandId, 0);
 }
 
 inline b32 CStatusBarMgr::BeginGruntPlacement(i32 slot) {
