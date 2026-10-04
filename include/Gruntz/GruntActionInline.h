@@ -94,10 +94,10 @@ inline bool CGrunt::SettleActiveKnockback() {
 }
 
 inline void CGrunt::RestoreToolAfterToyUse(i32 defer) {
-    if (m_entranceReason == PICKUP_SCROLL) {
+    if (m_activePickupType == PICKUP_SCROLL) {
         g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
     }
-    LoadGruntTypeTable(m_toolId, 1, 0, defer);
+    LoadGruntTypeTable(m_savedToolType, 1, 0, defer);
     {
         i32 sortKey = m_object->m_screenY + 0x186a0;
         CWwdSpriteObject* object = m_object;

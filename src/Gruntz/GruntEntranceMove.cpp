@@ -558,7 +558,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     }
 
     SET_ANIMATION_ACT("A");
-    LoadGruntTypeTable(m_toolId, 1, 0, 0);
+    LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
     m_entranceActive = false;
 
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -596,11 +596,11 @@ i32 CGrunt::StepArrivalCommit() {
     }
     eq = IsAnimationAct("I");
     if (eq) {
-        if (m_entranceReason == PICKUP_WAND) {
+        if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
-        if (m_entranceReason != PICKUP_BOMB) {
+        if (m_activePickupType != PICKUP_BOMB) {
             goto finalize;
         }
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
@@ -855,7 +855,7 @@ i32 CGrunt::FinishActiveAction() {
         goto retZero;
     }
     if (IsAnimationAct("I")) {
-        if (m_entranceReason == PICKUP_WAND) {
+        if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);

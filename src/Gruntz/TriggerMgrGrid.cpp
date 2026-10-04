@@ -793,7 +793,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw->m_checkpointType == 0) {
                 sw->SwitchDown();
             } else {
-                PickupType gruntKind = g->ArrivalPickup();
+                PickupType gruntKind = g->GetEquippedToolType();
                 if (IDX(gruntKind) == sw->m_checkpointType
                     || sw->m_checkpointType == IDX(g->GetVehiclePickupType())) {
                     sw->SwitchDown();
@@ -1058,7 +1058,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         if (o->m_screenY != cell->m_lastTilePx.m_y) {
             return -1;
         }
-        PickupType k = cell->ArrivalPickup();
+        PickupType k = cell->GetEquippedToolType();
         if (k == PICKUP_WAND && cell->CanShowStamina() != 0) {
             if (cellTileX != argTileX || cellTileY != argTileY) {
                 return 0;
@@ -1067,7 +1067,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             return 1;
         }
         if (cellTileX == argTileX && cellTileY == argTileY) {
-            PickupType kSame = cell->ArrivalPickup();
+            PickupType kSame = cell->GetEquippedToolType();
             if (kSame != PICKUP_SPY) {
                 return 0;
             }
@@ -1077,7 +1077,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             cell->RunMoveConfig(cellTileX, cellTileY);
             return 1;
         }
-        PickupType kDiag = cell->ArrivalPickup();
+        PickupType kDiag = cell->GetEquippedToolType();
         if (kDiag == PICKUP_BOMB) {
 
             if (cellTileY != argTileY && cellTileX != argTileX) {
@@ -1111,7 +1111,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         }
         CGruntzMapMgr* map = g_gameReg->GetTileGrid();
         TileCollisionKind bute = map->CellTypeAt(bx >> TILE_SHIFT_PX, by >> TILE_SHIFT_PX);
-        PickupType kind = cell->ArrivalPickup();
+        PickupType kind = cell->GetEquippedToolType();
 
         switch (kind) {
             case PICKUP_GAUNTLETZ:
@@ -1194,7 +1194,7 @@ outOfRange:
                 (index),                                                                           \
                 (unit)->MoveTile().m_x,                                                            \
                 (unit)->MoveTile().m_y,                                                            \
-                (unit)->m_entranceReason,                                                          \
+                (unit)->m_activePickupType,                                                        \
                 WWDDRAW_NO_ANIMATION                                                               \
             );                                                                                     \
         }                                                                                          \
@@ -1342,7 +1342,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    if (cell->IsNotAnimationAct("B") && cell->ArrivalPickup() == PICKUP_WARPSTONE) {
+    if (cell->IsNotAnimationAct("B") && cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
         CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
         g_gameReg->m_gameStats->m_elapsedTimeMs += world->m_levelTimer->m_stamp.Elapsed();
         world->m_levelTimer->Stop();

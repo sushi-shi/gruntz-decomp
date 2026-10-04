@@ -119,7 +119,7 @@ i32 CSBI_SideTab::BuildHandle() {
     }
     i32 val;
     if (mode == STATUS_SAMPLE_TOOL) {
-        PickupType level = unit->ArrivalPickup();
+        PickupType level = unit->GetEquippedToolType();
         val = IDX(level);
         if (level == PICKUP_NONE) {
             m_sampleMode = STATUS_SAMPLE_HEALTH;

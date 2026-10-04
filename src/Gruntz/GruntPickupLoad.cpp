@@ -57,7 +57,7 @@ i32 CGrunt::LoadPickupSprites(
         return 0;
     }
     if (type >= PICKUP_COLORBRICK_FIRST && type <= PICKUP_BRICKZ_LAST) {
-        if (ArrivalPickup() != PICKUP_BRICK) {
+        if (GetEquippedToolType() != PICKUP_BRICK) {
             return 0;
         }
     }
@@ -70,7 +70,7 @@ i32 CGrunt::LoadPickupSprites(
     if (m_inCombat != false && m_neighborValid == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
-    if (m_entranceReason == PICKUP_WARPSTONE) {
+    if (m_activePickupType == PICKUP_WARPSTONE) {
         if (type >= PICKUP_EQUIPPABLE_FIRST && type <= PICKUP_EQUIPPABLE_LAST) {
             return 0;
         }

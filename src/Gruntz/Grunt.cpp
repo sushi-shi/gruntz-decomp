@@ -273,11 +273,11 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_neighborPlayerIndex = -1;
     m_neighborUnitIndex = -1;
     m_warpstoneAnchorIndex = 0;
-    m_entranceReason = PICKUP_NONE;
+    m_activePickupType = PICKUP_NONE;
     m_vehiclePickupType = PICKUP_NONE;
     m_brickPickupType = PICKUP_NONE;
     m_gruntKind = GRUNT_NORMAL;
-    m_toolId = PICKUP_NONE;
+    m_savedToolType = PICKUP_NONE;
     m_animSetName = "NORMALGRUNT";
     m_entranceCommitted = true;
     m_healthSprite = NULL;
@@ -949,7 +949,7 @@ i32 CGrunt::StepArrivalDrop(
     }
     if (0 != nudged) {
         if (CoordCount() == 1 && arrivalPhase == IDX(PICKUP_BOOMERANG)
-            && m_entranceReason == PICKUP_GAUNTLETZ) {
+            && m_activePickupType == PICKUP_GAUNTLETZ) {
             m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, pxX, pxY);
             SetEntrancePos(1, 1);
             return 1;
@@ -1235,11 +1235,11 @@ label_4c6e4:
     reason12 = 0;
     reason16 = 0;
     reason0e = 0;
-    if (m_entranceReason == PICKUP_TOOB) {
+    if (m_activePickupType == PICKUP_TOOB) {
         reason12 = 1;
-    } else if (m_entranceReason == PICKUP_WINGZ) {
+    } else if (m_activePickupType == PICKUP_WINGZ) {
         reason16 = 1;
-    } else if (m_entranceReason == PICKUP_SPRING) {
+    } else if (m_activePickupType == PICKUP_SPRING) {
         reason0e = 1;
     }
     if (reason0e == 0) {
@@ -1720,7 +1720,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
         }
     }
-    if (m_entranceReason == kind) {
+    if (m_activePickupType == kind) {
         if (kind != PICKUP_WINGZ) {
             return 1;
         }
@@ -1736,7 +1736,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_gruntKind == GRUNT_DEATHTOUCH) {
                 goto fail;
             }
-            if (m_entranceReason == kind) {
+            if (m_activePickupType == kind) {
                 if (kind != PICKUP_WINGZ) {
                     return 1;
                 }
@@ -1757,8 +1757,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     }
     fresh = 0;
     defer = 0;
-    if (m_entranceReason < PICKUP_EQUIPPABLE_END) {
-        m_toolId = m_entranceReason;
+    if (m_activePickupType < PICKUP_EQUIPPABLE_END) {
+        m_savedToolType = m_activePickupType;
     }
     switch (kind) {
         case PICKUP_NONE: {
@@ -2160,7 +2160,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_CONVERSION: {
-            m_toolId = m_entranceReason;
+            m_savedToolType = m_activePickupType;
             m_reachRect = MakeRect(-1, -1, 1, 1);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
@@ -2176,7 +2176,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_DEATHTOUCH: {
-            m_toolId = m_entranceReason;
+            m_savedToolType = m_activePickupType;
             m_reachRect = MakeRect(-1, -1, 1, 1);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
@@ -2359,7 +2359,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, NULL);
         }
     }
-    m_entranceReason = kind;
+    m_activePickupType = kind;
     ReadConfigFromButeMgr();
     LoadCellAnimNames(fresh, defer);
     LoadAnimNameTable(fresh, defer);

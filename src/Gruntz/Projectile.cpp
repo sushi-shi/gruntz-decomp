@@ -602,7 +602,7 @@ void CProjectile::ScanTargets(i32 impact) {
             if (m_sourcePlayerIndex == playerIndex && m_sourceUnitIndex == unitIndex) {
 
                 if (impact != 0 && g->IsEntranceCommitted() != false
-                    && g->m_entranceReason == PICKUP_NONE) {
+                    && g->m_activePickupType == PICKUP_NONE) {
                     g->LoadGruntTypeTable(PICKUP_BOOMERANG, 1, 0, 0);
                 }
                 return;

@@ -17,7 +17,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         return 0;
     }
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
-        if (m_entranceReason == PICKUP_BOMB && m_deathType != DEATH_MELT) {
+        if (m_activePickupType == PICKUP_BOMB && m_deathType != DEATH_MELT) {
             m_triggerMgr->BuildRockBreakParticles(
                 m_object->m_screenX,
                 m_object->m_screenY,

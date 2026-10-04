@@ -174,8 +174,8 @@ GZ_ENUM_END(GruntItemPose)
 
 class CGrunt : public CMovingLogic, public CWapX {
 public:
-    inline PickupType ArrivalPickupOf(PickupType entranceReason) const;
-    inline PickupType ArrivalPickup() const;
+    inline PickupType ResolveEquippedToolType(PickupType activePickupType) const;
+    inline PickupType GetEquippedToolType() const;
 
     PickupType GetGruntKind() const {
         return m_gruntKind;
@@ -393,7 +393,7 @@ public:
 
     i32 RectSegProbe(RECT* r, POINT* e1, POINT* e2);
 
-    PickupType m_entranceReason;
+    PickupType m_activePickupType;
     Coord m_entrancePx;
     Coord m_lastTilePx;
     Coord m_commitPx;
@@ -403,7 +403,7 @@ public:
     i32 m_toyBlendPct;
     PickupType m_brickPickupType;
     PickupType m_vehiclePickupType;
-    PickupType m_toolId;
+    PickupType m_savedToolType;
     PickupType m_entrancePickup;
     i32 m_helpCueId;
     i32 m_reserved1a8;

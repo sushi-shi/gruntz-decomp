@@ -486,7 +486,7 @@ i32 CGrunt::StepCompassMove() {
 
     if (m_toyTileIndex > 0) {
         CString str;
-        switch (m_entranceReason) {
+        switch (m_activePickupType) {
             case PICKUP_BABYWALKER:
                 str = "BABYWALKERGRUNT";
                 break;
@@ -764,11 +764,11 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     }
     eq = IsAnimationAct("I");
     if (eq) {
-        if (m_entranceReason == PICKUP_WAND) {
+        if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
-        if (m_entranceReason != PICKUP_BOMB) {
+        if (m_activePickupType != PICKUP_BOMB) {
             goto applyTail;
         }
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
@@ -1005,9 +1005,9 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
     ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));
-    ar->Write(&m_entranceReason, sizeof(m_entranceReason));
+    ar->Write(&m_activePickupType, sizeof(m_activePickupType));
     ar->Write(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
-    ar->Write(&m_toolId, sizeof(m_toolId));
+    ar->Write(&m_savedToolType, sizeof(m_savedToolType));
     ar->Write(&m_entrancePickup, sizeof(m_entrancePickup));
     ar->Write(&m_helpCueId, sizeof(m_helpCueId));
     ar->Write(&m_reserved1a8, sizeof(m_reserved1a8));

@@ -128,12 +128,12 @@ i32 CActionOptionsMenuBar::Refresh() {
         m_buttonIcon[0] = PICKUP_NONE;
     } else {
         m_buttonIcon[1] = grunt->GetVehiclePickupType();
-        if (grunt->m_entranceReason >= PICKUP_TOYZ_FIRST) {
+        if (grunt->m_activePickupType >= PICKUP_TOYZ_FIRST) {
             m_buttonState[1] = ACTIONOPTION_DISABLED;
         } else if (m_buttonState[1] == ACTIONOPTION_DISABLED) {
             m_buttonState[1] = ACTIONOPTION_NORMAL;
         }
-        PickupType prim = grunt->ArrivalPickup();
+        PickupType prim = grunt->GetEquippedToolType();
         m_buttonIcon[0] = prim;
         if (prim == PICKUP_NONE) {
             m_buttonIcon[0] = PICKUP_BARE_HANDS_ICON;

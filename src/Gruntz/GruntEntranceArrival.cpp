@@ -134,7 +134,7 @@ i32 CGrunt::UpdateAttackIdleAnimation() {
 // @early-stop
 RVA(0x00061940, 0x200)
 i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex) {
-    if (m_entranceReason >= PICKUP_TOYZ_FIRST) {
+    if (m_activePickupType >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
 
@@ -144,7 +144,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     m_combatActive = true;
 
     GruntAttackPose pose;
-    switch (m_entranceReason) {
+    switch (m_activePickupType) {
         case PICKUP_BOOMERANG:
             if (m_arrivalState != AI_NONE) {
                 m_entranceActive = true;
@@ -208,7 +208,7 @@ i32 CGrunt::StepAttackFire() {
     i32 flag = 0;
     if (advanced == WWDDRAW_EFFECT_FRAME) {
 
-        switch (m_entranceReason) {
+        switch (m_activePickupType) {
             case GRUNT_GUNHAT:
             case GRUNT_NERFGUN:
             case GRUNT_ROCK:
@@ -225,7 +225,7 @@ i32 CGrunt::StepAttackFire() {
                 spr->GetLogicRecord()->Dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->UserLogic());
                 if (s->LoadProjectileSprites(
-                        m_entranceReason,
+                        m_activePickupType,
                         m_playerIndex,
                         m_unitIndex,
                         m_attackTargetPx.m_x,
@@ -250,7 +250,7 @@ i32 CGrunt::StepAttackFire() {
                 spr->GetLogicRecord()->Dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->UserLogic());
                 if (s->LoadProjectileSprites(
-                        m_entranceReason,
+                        m_activePickupType,
                         m_playerIndex,
                         m_unitIndex,
                         m_attackTargetPx.m_x,
@@ -284,7 +284,7 @@ i32 CGrunt::StepAttackFire() {
                 CGrunt* tgt = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
                 if (tgt != NULL) {
                     tgt->StepCombatReaction(
-                        m_entranceReason,
+                        m_activePickupType,
                         m_struckPose,
                         m_playerIndex,
                         m_unitIndex,
@@ -293,7 +293,7 @@ i32 CGrunt::StepAttackFire() {
                         0,
                         m_gruntKind
                     );
-                    PickupType t = tgt->ArrivalPickup();
+                    PickupType t = tgt->GetEquippedToolType();
                     if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
                         m_triggerMgr->StartUnitDeath(
                             m_playerIndex,
@@ -328,7 +328,7 @@ i32 CGrunt::StepAttackFire() {
     if (!cur->IsComplete() && flag == 0) {
         return 0;
     }
-    if (m_entranceReason == GRUNT_BOOMERANG) {
+    if (m_activePickupType == GRUNT_BOOMERANG) {
         LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
     }
     CWwdSpriteObject* h = m_object;
@@ -374,7 +374,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
 
-        if (m_entranceReason == PICKUP_SCROLL) {
+        if (m_activePickupType == PICKUP_SCROLL) {
             SET_ANIMATION_ACT("P");
             i32 toyIdx = rand() % 2;
             SwitchAnimationAndMaybeAdvance(m_poseToy[toyIdx], 0);
@@ -502,7 +502,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
             CreateToySprite();
         }
         SET_ANIMATION_ACT("A");
-        LoadGruntTypeTable(m_toolId, 1, 0, 0);
+        LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
         m_entranceActive = false;
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->GetTileGrid();
@@ -624,7 +624,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
                 b32 focused = (m_playerIndex == g_curPlayer);
                 if (focused && idx > 0x5a) {
                     PLAY_GRUNT_CUE_IF_VISIBLE(4);
-                } else if (focused || m_entranceReason != PICKUP_NONE) {
+                } else if (focused || m_activePickupType != PICKUP_NONE) {
                     switch (idx) {
                         case GRUNT_IDLE_VARIANT_PRIMARY:
                             PLAY_GRUNT_CUE_IF_VISIBLE(5);
@@ -833,7 +833,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
             CreateToySprite();
         }
         SET_ANIMATION_ACT("A");
-        LoadGruntTypeTable(m_toolId, 1, 0, 0);
+        LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
         m_entranceActive = false;
 
         CMapMgr* grid = g_gameReg->GetTileGrid();
@@ -884,11 +884,11 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
     i32 vehicleScreenY = vehicleSprite->m_screenY;
     i32 vehicleScreenX = vehicleSprite->m_screenX;
     if (::PtInRect(&game->m_viewBounds, vehicleScreenX, vehicleScreenY)) {
-        if (m_entranceReason == PICKUP_GOKART) {
+        if (m_activePickupType == PICKUP_GOKART) {
             EnsureVehicleLoopSound(s_gruntzGokartgrunt);
             return 0;
         }
-        if (m_entranceReason == PICKUP_BIGWHEEL) {
+        if (m_activePickupType == PICKUP_BIGWHEEL) {
             EnsureVehicleLoopSound(s_gruntzBigwheelgrunt);
             return 0;
         }
@@ -996,7 +996,7 @@ i32 CGrunt::StepCombatReaction(
         goto tail;
     }
     if (IsAnimationAct("I")) {
-        if (m_entranceReason == PICKUP_WAND) {
+        if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
         ClearMoveTileFx(this);
@@ -1116,7 +1116,7 @@ i32 CGrunt::FinishStruckAnimation() {
         StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
         return 0;
     }
-    if (m_entranceReason == PICKUP_WARPSTONE) {
+    if (m_activePickupType == PICKUP_WARPSTONE) {
         ResetEntranceAnimation(1, 0, 0);
         return 0;
     }
@@ -1174,18 +1174,18 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     }
 
     GruntItemPose pose = GRUNT_ITEM1;
-    if (m_entranceReason == PICKUP_BOMB) {
+    if (m_activePickupType == PICKUP_BOMB) {
         SET_ANIMATION_ACT("M");
         m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
         m_timePerTile = g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64);
         m_entranceActive = true;
         m_bombRunActive = true;
         SetEntrancePos(1, 1);
-    } else if (m_entranceReason == PICKUP_TOOB) {
+    } else if (m_activePickupType == PICKUP_TOOB) {
         m_entranceActive = true;
         SET_ANIMATION_ACT("N");
         m_coordToggle = (m_coordToggle == false);
-    } else if (m_entranceReason == PICKUP_WAND) {
+    } else if (m_activePickupType == PICKUP_WAND) {
         i32 base;
         if (rand() % 100 < 80) {
             pose = GRUNT_ITEM2;
@@ -1241,7 +1241,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
             if (m_healthSprite != NULL) {
                 CreateStaminaSprite();
             }
-            if (m_entranceReason == PICKUP_WAND) {
+            if (m_activePickupType == PICKUP_WAND) {
                 LoadGruntAbilityTuning(m_moveVariant);
                 i32 hp = m_health - g_buteMgr.GetInt("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = Max(0, hp);
@@ -1255,7 +1255,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
             m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
-            m_entranceReason,
+            m_activePickupType,
             cue
         );
     }
@@ -1278,7 +1278,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
             m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
-            m_entranceReason,
+            m_activePickupType,
             cue
         );
     }

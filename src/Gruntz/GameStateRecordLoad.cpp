@@ -75,9 +75,9 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_reserved18c, sizeof(m_reserved18c));
     ar->Read(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Read(&m_brickPickupType, sizeof(m_brickPickupType));
-    ar->Read(&m_entranceReason, sizeof(m_entranceReason));
+    ar->Read(&m_activePickupType, sizeof(m_activePickupType));
     ar->Read(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
-    ar->Read(&m_toolId, sizeof(m_toolId));
+    ar->Read(&m_savedToolType, sizeof(m_savedToolType));
     ar->Read(&m_entrancePickup, sizeof(m_entrancePickup));
     ar->Read(&m_helpCueId, sizeof(m_helpCueId));
     ar->Read(&m_reserved1a8, sizeof(m_reserved1a8));
@@ -209,7 +209,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         m_payloads.AddTail(item);
     }
 
-    b32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);
+    b32 flag = (m_activePickupType >= PICKUP_TOYZ_FIRST);
     CShadeTable* r = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), flag);
     CWwdSpriteObject* cb = m_object;
     cb->SetDrawFill(SHADE_PAL_16, r);

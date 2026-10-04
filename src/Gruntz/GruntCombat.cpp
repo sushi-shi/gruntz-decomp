@@ -494,7 +494,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
         m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* sel =
-        g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
+        g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), m_activePickupType >= PICKUP_TOYZ_FIRST);
     CWwdSpriteObject* h = m_object;
     h->SetDrawFill(SHADE_PAL_16, sel);
 }
@@ -502,7 +502,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
 RVA(0x00057890, 0x19c)
 i32 CGrunt::BuildGruntLoseItemAnimation() {
     FinishActiveAction();
-    PickupType reason = m_entranceReason;
+    PickupType reason = m_activePickupType;
     if (reason != PICKUP_TOOB && reason != PICKUP_WINGZ && reason != PICKUP_SPRING) {
         return 0;
     }
@@ -527,7 +527,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
-    PickupType reason = m_entranceReason;
+    PickupType reason = m_activePickupType;
     if (reason <= PICKUP_NONE || reason >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
@@ -954,14 +954,14 @@ inline void CGrunt::SelectCombatHitCue(
         return;
     }
     if (attackKind == PICKUP_NERFGUN || attackKind == PICKUP_GLOVEZ || attackKind == PICKUP_WINGZ) {
-        if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
+        if (this->m_activePickupType == PICKUP_GRAVITYBOOTZ) {
             LK(s_blockbody2);
         } else {
             LK(s_impactmm2);
         }
         return;
     }
-    if (this->m_entranceReason == PICKUP_GUNHAT) {
+    if (this->m_activePickupType == PICKUP_GUNHAT) {
         if (attackKind == PICKUP_GAUNTLETZ || attackKind == PICKUP_SHOVEL
             || attackKind == PICKUP_SPRING || attackKind == PICKUP_CLUB) {
             LK(s_impactmm4);
@@ -970,11 +970,11 @@ inline void CGrunt::SelectCombatHitCue(
         }
         return;
     }
-    if (this->m_entranceReason == PICKUP_SHIELD) {
+    if (this->m_activePickupType == PICKUP_SHIELD) {
         LK(s_blockmetal1);
         return;
     }
-    if (this->m_entranceReason == PICKUP_SPRING) {
+    if (this->m_activePickupType == PICKUP_SPRING) {
         if (struckPose == 1) {
             LK(s_spring2);
         } else {
@@ -982,7 +982,7 @@ inline void CGrunt::SelectCombatHitCue(
         }
         return;
     }
-    if (this->m_entranceReason == PICKUP_TOOB && this->m_coordToggle != false) {
+    if (this->m_activePickupType == PICKUP_TOOB && this->m_coordToggle != false) {
         LK(s_toobz);
         return;
     }
@@ -1111,7 +1111,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 fromProjectile,
     PickupType attackerGruntKind
 ) {
-    if (this->m_gruntKind == GRUNT_INVULNERABLE && this->m_entranceReason != PICKUP_BOMB) {
+    if (this->m_gruntKind == GRUNT_INVULNERABLE && this->m_activePickupType != PICKUP_BOMB) {
         return 1;
     }
 
@@ -1139,7 +1139,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     }
 
-    i32 hit = AT(AT(g_hitTable, this->m_entranceReason), attackKind);
+    i32 hit = AT(AT(g_hitTable, this->m_activePickupType), attackKind);
     if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ
         && this->m_playerIndex == g_curPlayer) {
         i32 t = hit / 2;
@@ -1166,7 +1166,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 nh = this->m_health - hit;
     nh = max(0, nh);
     this->m_health = nh;
-    if (this->m_entranceReason == PICKUP_BOMB) {
+    if (this->m_activePickupType == PICKUP_BOMB) {
         m_triggerMgr
             ->StartUnitDeath(this->m_playerIndex, this->m_unitIndex, DEATH_NORMAL, srcPlayerIndex);
         return 0;
@@ -1201,7 +1201,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 0;
     }
 
-    if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
+    if (this->m_activePickupType == PICKUP_GRAVITYBOOTZ) {
         return 1;
     }
 
@@ -1368,7 +1368,7 @@ i32 CGrunt::CommitNeighbor(
     if (targetPlayerIndex == m_playerIndex && g_traitorMode == false) {
         return 0;
     }
-    PickupType reason = m_entranceReason;
+    PickupType reason = m_activePickupType;
     if (reason == PICKUP_WARPSTONE || reason == PICKUP_WAND) {
         return 0;
     }
@@ -1398,7 +1398,7 @@ i32 CGrunt::CommitNeighbor(
     }
 
     i32 flag = 0;
-    PickupType v = ArrivalPickup();
+    PickupType v = GetEquippedToolType();
     if (v == PICKUP_BOMB) {
         flag = IDX(v);
     }
@@ -1774,7 +1774,7 @@ void CGrunt::StepBehavior(char*) {
         i32 onMoveTile = 0;
         i32 onWingzTile = 0;
         {
-            PickupType reason = m_entranceReason;
+            PickupType reason = m_activePickupType;
             if (reason == PICKUP_TOOB) {
                 onMoveTile = 1;
             } else if (reason == PICKUP_WINGZ) {
@@ -1890,8 +1890,8 @@ void CGrunt::StepBehavior(char*) {
 
     tileKindDone:
         if (flags & 0x400) {
-            PickupType reason = m_entranceReason;
-            if (ArrivalPickupOf(reason) == PICKUP_GRAVITYBOOTZ) {
+            PickupType reason = m_activePickupType;
+            if (ResolveEquippedToolType(reason) == PICKUP_GRAVITYBOOTZ) {
                 goto afterTile;
             }
             if (reason == PICKUP_SPRING || reason == PICKUP_TOOB) {
@@ -1903,7 +1903,7 @@ void CGrunt::StepBehavior(char*) {
             if (m_gruntKind == GRUNT_INVULNERABLE) {
                 goto afterTile;
             }
-            if (m_entranceReason == PICKUP_BOMB) {
+            if (m_activePickupType == PICKUP_BOMB) {
                 bool nameDiffers = IsNotAnimationAct("M");
                 if (!nameDiffers) {
                     goto afterTile;
@@ -1933,7 +1933,7 @@ void CGrunt::StepBehavior(char*) {
             PLAY_VOICE_IN_VIEW(0x348);
             m_entranceTiming.Start(0x3e8);
         } else if (flags & 0x2000000) {
-            if (m_entranceReason == PICKUP_TOOB) {
+            if (m_activePickupType == PICKUP_TOOB) {
                 bool nameDiffers = IsNotAnimationAct("N");
                 if (nameDiffers) {
                     BuildGruntLoseItemAnimation();
@@ -2123,7 +2123,7 @@ kindDispatch:
                     pick = 0x10;
                 }
                 CShadeTable* sel =
-                    g_gameReg->SpriteTable()->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
+                    g_gameReg->SpriteTable()->GetSel(pick, m_activePickupType >= PICKUP_TOYZ_FIRST);
                 CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
                 obj->SetDrawFill(cmd, sel);
@@ -2180,15 +2180,15 @@ kindDispatch:
                             ps->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             m_powerupSprite = NULL;
                         }
-                        PickupType typeId = m_toolId;
-                        m_entranceReason = PICKUP_INVALID;
+                        PickupType typeId = m_savedToolType;
+                        m_activePickupType = PICKUP_INVALID;
                         LoadGruntTypeTable(typeId, 1, 0, 0);
                         break;
                     }
                 }
                 m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
                 ReadConfigFromButeMgr();
-                PickupType reason = m_entranceReason;
+                PickupType reason = m_activePickupType;
                 i32 vehicle = (reason >= PICKUP_TOYZ_FIRST) ? 1 : 0;
                 i32 variant = 0;
                 if (vehicle != 0) {
