@@ -1663,7 +1663,7 @@ i32 CGrunt::Place(
     m_lowStaminaCued = false;
     m_targetTeam = -1;
     SetCarriedToy(static_cast<PickupType>(carriedToyType));
-    LoadGruntTypeTable(typeKind, 1, 0, 0);
+    ApplyPickup(typeKind, 1, 0, 0);
     if (span != NULL) {
         SET_RECT_XY_EXTENTS(
             m_object->m_extent,
@@ -1730,8 +1730,8 @@ i32 CGrunt::Place(
 }
 
 RVA(0x0004dd50, 0x2400)
-i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
-    if (kind == PICKUP_INVALID) {
+i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 defer) {
+    if (pickupType == PICKUP_INVALID) {
         goto fail;
     }
     if (m_powerupType == GRUNT_CONVERSION) {
@@ -1750,8 +1750,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
         }
     }
-    if (m_activePickupType == kind) {
-        if (kind != PICKUP_WINGZ) {
+    if (m_activePickupType == pickupType) {
+        if (pickupType != PICKUP_WINGZ) {
             return 1;
         }
         m_wingzTime = 0x64;
@@ -1766,8 +1766,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupType == GRUNT_DEATHTOUCH) {
                 goto fail;
             }
-            if (m_activePickupType == kind) {
-                if (kind != PICKUP_WINGZ) {
+            if (m_activePickupType == pickupType) {
+                if (pickupType != PICKUP_WINGZ) {
                     return 1;
                 }
                 m_wingzTime = 0x64;
@@ -1779,7 +1779,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (m_coordToggle != false) {
         goto fail;
     }
-    if (kind != PICKUP_WINGZ) {
+    if (pickupType != PICKUP_WINGZ) {
         m_wingzEnabled = false;
         m_wingzTiming.m_intervalLo = 0;
         m_wingzTiming.m_intervalHi = 0;
@@ -1790,7 +1790,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (m_activePickupType < PICKUP_EQUIPPABLE_END) {
         m_savedToolType = m_activePickupType;
     }
-    switch (kind) {
+    switch (pickupType) {
         case PICKUP_NONE: {
             m_animSetName = "NORMALGRUNT";
             LOAD_GRUNT_TOOL_REACH()
@@ -2143,7 +2143,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_SCROLL: {
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
-            m_activeSpell = variant;
+            m_activeSpell = scrollSpell;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
             if (IsAnimationAct("D")) {
@@ -2383,13 +2383,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
 
     {
         CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-        if (kind == PICKUP_TOOB) {
+        if (pickupType == PICKUP_TOOB) {
             play->BuildGruntTypeNameTable(PICKUP_TOOB, 1, 1, NULL);
         } else {
             play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, NULL);
         }
     }
-    m_activePickupType = kind;
+    m_activePickupType = pickupType;
     ReadConfigFromButeMgr();
     LoadCellAnimNames(fresh, defer);
     LoadAnimNameTable(fresh, defer);
@@ -2428,7 +2428,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_triggerMgr->StopPendingFx();
         }
     }
-    if (kind == PICKUP_WARPSTONE) {
+    if (pickupType == PICKUP_WARPSTONE) {
         m_triggerMgr->ReinitGroup(m_object->m_screenX, m_object->m_screenY);
     }
     return 1;

@@ -1738,7 +1738,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         if (toy == PICKUP_SCROLL) {
                             toy = PICKUP_YOYO;
                         }
-                        grunt->LoadGruntTypeTable(toy, 1, 0, 0);
+                        grunt->ApplyPickup(toy, 1, 0, 0);
                         CreateLightFx(
                             g_gameReg->World()->ChildGroup(),
                             gruntX,

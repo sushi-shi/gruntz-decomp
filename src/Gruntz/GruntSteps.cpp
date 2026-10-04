@@ -103,12 +103,12 @@ DATA(0x0020dbf8)
 static char s_toyTiles[] = "ToyTiles";
 
 RVA(0x00050ca0, 0x2b)
-i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
+i32 CGrunt::ApplyPickupAndClearPending(PickupType pickupType) {
 
-    i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
+    i32 applied = ApplyPickup(pickupType, 0, 0, 0);
     m_pendingPickupType = PICKUP_INVALID;
     m_helpCueId = 0;
-    return r;
+    return applied;
 }
 
 // @early-stop

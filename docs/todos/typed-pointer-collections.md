@@ -69,7 +69,7 @@ source layer the original developers wrote around each collection.
 - `CGrunt::m_payloads`: `HeadPayload()` (NULL when empty),
   `DeleteHeadPayload()` and `DeleteAllPayloads()` replace the three
   open-coded drain loops (OnObjectRemoved, LoadStateRecord,
-  LoadGruntTypeTable). Serialization walks stay raw.
+  ApplyPickup). Serialization walks stay raw.
 
 - `CAniElement::m_records`: the existing checked `RecordAt(i)` replaces the
   open-coded `GetSize() > 0 ? GetAt(0) : NULL` and cast-around-`GetAt`

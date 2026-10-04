@@ -155,7 +155,7 @@ i32 CGrunt::UpdatePickupAnimation() {
         return 0;
     }
     if (mode >= PICKUP_POWERUPZ_FIRST) {
-        return LoadTypeTableClearMove(mode);
+        return ApplyPickupAndClearPending(mode);
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
         m_brickPickupType = mode;
@@ -166,7 +166,7 @@ i32 CGrunt::UpdatePickupAnimation() {
         if (mode >= PICKUP_TOYZ_FIRST) {
             return SetCarriedToy(mode);
         }
-        return LoadTypeTableClearMove(mode);
+        return ApplyPickupAndClearPending(mode);
     }
     return 0;
 }
@@ -404,7 +404,7 @@ i32 CGrunt::StartBombGruntRun() {
     BeginGruntEntranceAndReleaseCell(this);
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
-    if (LoadGruntTypeTable(PICKUP_BOMB, 1, 0, 1) == 0) {
+    if (ApplyPickup(PICKUP_BOMB, 1, 0, 1) == 0) {
         CWwdSpriteObject* h = m_object;
         m_triggerMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
@@ -558,7 +558,7 @@ i32 CGrunt::UpdateScrollUseAnimation() {
     }
 
     SET_ANIMATION_ACT("A");
-    LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
+    ApplyPickup(m_savedToolType, 1, 0, 0);
     m_entranceActive = false;
 
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;

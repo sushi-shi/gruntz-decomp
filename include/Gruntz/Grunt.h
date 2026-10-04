@@ -405,9 +405,9 @@ public:
 
     i32 BuildGruntLoseItemAnimation();
 
-    i32 LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer);
+    i32 ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 defer);
 
-    i32 LoadTypeTableClearMove(PickupType typeId);
+    i32 ApplyPickupAndClearPending(PickupType pickupType);
 
     void FaceTowardTile(i32 tileX, i32 tileY);
     void SnapToLastTile(i32 clearArrivalState);

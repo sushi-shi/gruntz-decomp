@@ -1176,7 +1176,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 if (cell->IsInCombat() != false && cell->m_attackQueued == false) {
                     RESET_GRUNT_COMBAT_STATE(cell)
                 }
-                cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+                cell->ApplyPickup(PICKUP_NONE, 1, 0, 0);
                 return 1;
             }
         }
@@ -1285,7 +1285,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
 
     CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
-    if (hit->LoadGruntTypeTable(cell->GetCarriedToyType(), 1, scrollSpell, 0) != 0) {
+    if (hit->ApplyPickup(cell->GetCarriedToyType(), 1, scrollSpell, 0) != 0) {
         cell->SetCarriedToy(PICKUP_NONE);
 
         if (hit->GetPlayerIndex() != playerIndex) {

@@ -524,7 +524,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
 
     PLAY_GRUNT_CUE_IN_VIEW(0xe);
 
-    LoadGruntTypeTable(PICKUP_NONE, 1, 0, 1);
+    ApplyPickup(PICKUP_NONE, 1, 0, 1);
     m_entranceActive = false;
     return 1;
 }
@@ -2200,7 +2200,7 @@ updatePowerup:
                         }
                         PickupType typeId = m_savedToolType;
                         m_activePickupType = PICKUP_INVALID;
-                        LoadGruntTypeTable(typeId, 1, 0, 0);
+                        ApplyPickup(typeId, 1, 0, 0);
                         break;
                     }
                 }

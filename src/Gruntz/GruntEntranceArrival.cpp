@@ -329,7 +329,7 @@ i32 CGrunt::StepAttackFire() {
         return 0;
     }
     if (m_activePickupType == GRUNT_BOOMERANG) {
-        LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+        ApplyPickup(PICKUP_NONE, 1, 0, 0);
     }
     CWwdSpriteObject* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
@@ -504,7 +504,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
             CreateToySprite();
         }
         SET_ANIMATION_ACT("A");
-        LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
+        ApplyPickup(m_savedToolType, 1, 0, 0);
         m_entranceActive = false;
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->GetTileGrid();
@@ -835,7 +835,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
             CreateToySprite();
         }
         SET_ANIMATION_ACT("A");
-        LoadGruntTypeTable(m_savedToolType, 1, 0, 0);
+        ApplyPickup(m_savedToolType, 1, 0, 0);
         m_entranceActive = false;
 
         CMapMgr* grid = g_gameReg->GetTileGrid();
