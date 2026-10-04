@@ -56,6 +56,10 @@ public:
         return m_difficulty;
     }
 
+    i32 GetMaxGruntz() const {
+        return m_maxGruntz;
+    }
+
     CBattlezMapConfig* GetBattlezConfig() {
         return &m_battlezConfig;
     }

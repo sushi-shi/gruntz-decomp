@@ -490,7 +490,7 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
         }
         units++;
     }
-    if (occupied >= m_ctx->m_players[m_playerIndex].m_maxGruntz) {
+    if (occupied >= m_ctx->m_players[m_playerIndex].GetMaxGruntz()) {
         return 1;
     }
     i32 i = 0;
@@ -576,7 +576,7 @@ candidateFound:
         r2++;
     }
     i32 budget = static_cast<i32>(
-        (static_cast<double>(m_ctx->m_players[m_playerIndex].m_maxGruntz)
+        (static_cast<double>(m_ctx->m_players[m_playerIndex].GetMaxGruntz())
          * static_cast<double>(m_gruntRatio) * g_diffScale)
     );
     if (roll >= m_defenderChance || freeCount >= budget) {
@@ -3365,7 +3365,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         }
         units++;
     }
-    if (occupied >= m_ctx->m_players[m_playerIndex].m_maxGruntz) {
+    if (occupied >= m_ctx->m_players[m_playerIndex].GetMaxGruntz()) {
         return 0;
     }
     i32 cell = m_triggerMgr->PlaceObject(

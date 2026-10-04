@@ -2049,7 +2049,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
             packet.m_rows[i].m_difficulty = static_cast<u8>(v);
             v = player->m_ready;
             packet.m_rows[i].m_ready = static_cast<u8>(v);
-            v = player->m_maxGruntz;
+            v = player->GetMaxGruntz();
             packet.m_rows[i].m_maxGruntz = static_cast<u8>(v);
             packet.m_rows[i].m_networkPlayerId = player->m_networkPlayerId;
             strcpy(packet.m_rows[i].m_name, static_cast<const char*>(player->GetName()));
@@ -2276,7 +2276,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     v = player->m_ready;
     packet.m_ready = static_cast<u8>(v);
     packet.m_active = true;
-    v = player->m_maxGruntz;
+    v = player->GetMaxGruntz();
     packet.m_maxGruntz = static_cast<u8>(v);
     v = player->m_networkPlayerId;
     packet.m_networkPlayerId = v;

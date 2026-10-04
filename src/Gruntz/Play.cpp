@@ -2123,7 +2123,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        if (g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[g_curPlayer] >= a->m_maxGruntz) {
+        if (g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[g_curPlayer] >= a->GetMaxGruntz()) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
@@ -2842,7 +2842,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     playerIndex = g_curPlayer;
     GruntzPlayer* cfg = &g_gameReg->m_players[playerIndex];
     if (cfg == NULL
-        || g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[playerIndex] >= cfg->m_maxGruntz) {
+        || g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[playerIndex] >= cfg->GetMaxGruntz()) {
         return 0;
     }
 
@@ -4565,7 +4565,7 @@ b32 CPlay::PlaceStartGruntz() {
                        && obj->m_smarts == g_curPlayer) {
 
                 GruntzPlayer* e = &g_gameReg->m_players[g_curPlayer];
-                if (e != NULL && counter < e->m_maxGruntz) {
+                if (e != NULL && counter < e->GetMaxGruntz()) {
                     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                     m_mgr->GetCommandMgr()->EnqueueSingle(
                         true,
@@ -5416,7 +5416,8 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     i32 id = g_curPlayer;
     GruntzPlayer* slot = &g_gameReg->m_players[id];
 
-    if (slot != NULL && g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[id] < slot->m_maxGruntz) {
+    if (slot != NULL
+        && g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[id] < slot->GetMaxGruntz()) {
         i32 i = 0;
         if (i < StartMarkerCount()) {
             do {
