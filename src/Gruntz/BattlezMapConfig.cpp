@@ -499,7 +499,7 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
         cand = static_cast<Coord*>(m_candArray.GetAt(i));
         if (cand != NULL) {
 
-            tileRec = m_board->m_rows[cand->m_y][cand->m_x];
+            tileRec = m_board->CellAtUnchecked(cand->m_x, cand->m_y);
             b32 usable = true;
             if (tileRec.m_flags & BRICKZ_CELL_OCCUPIED) {
 
@@ -2136,7 +2136,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             }
             if (g->MoveToTile(stepDx, stepDy, 0, 0x20000983, 1, 0) == 0) {
                 for (i32 scanRow = scan.top; scanRow < scan.bottom; scanRow++) {
-                    BrickzCell* rowCell = &m_board->m_rows[scanRow][scan.left];
+                    BrickzCell* rowCell = &m_board->CellAtUnchecked(scan.left, scanRow);
                     for (i32 scanCol = scan.left; scanCol < scan.right; scanCol++) {
                         CPtrList path(0xa);
                         if (!(rowCell->m_flags & BRICKZ_CELL_OCCUPIED)) {

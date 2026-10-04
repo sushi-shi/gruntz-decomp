@@ -45,7 +45,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             if (IntersectRect(&isect, &box, &gb)) {
                 u32 hits = 0;
                 for (i32 row = isect.top; row < isect.bottom; row++) {
-                    BrickzCell* cell = &m_board->m_rows[row][isect.left];
+                    BrickzCell* cell = &m_board->CellAtUnchecked(isect.left, row);
                     if (hits > 4) {
                         break;
                     }

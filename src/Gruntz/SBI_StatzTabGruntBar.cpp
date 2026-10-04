@@ -119,6 +119,20 @@ i32 CSBI_StatzTabGruntBar::Render() {
     return 1;
 }
 
+inline b32 CSBI_StatzTabGruntBar::UpdateIconImage(
+    CDDrawWorker* const& frames,
+    i32 frameIndex,
+    i32& previousIndex,
+    CImage*& image
+) {
+    if (previousIndex == frameIndex) {
+        return false;
+    }
+    image = frames->GetAt(frameIndex);
+    previousIndex = frameIndex;
+    return true;
+}
+
 // @early-stop
 RVA(0x000ea6c0, 0x237)
 i32 CSBI_StatzTabGruntBar::UpdateIcons() {
@@ -186,24 +200,15 @@ i32 CSBI_StatzTabGruntBar::UpdateIcons() {
         }
     }
 
-    if (m_healthIconIndex != healthIconIndex) {
-        CDDrawWorker* frames = m_iconFrames;
-        m_healthIconImage = frames->GetAt(healthIconIndex);
-        m_healthIconIndex = healthIconIndex;
+    if (UpdateIconImage(m_iconFrames, healthIconIndex, m_healthIconIndex, m_healthIconImage)) {
         iconsChanged = 1;
     }
 
-    if (m_toolIconIndex != toolIconIndex) {
-        CDDrawWorker* frames = m_iconFrames;
-        m_toolIconImage = frames->GetAt(toolIconIndex);
-        m_toolIconIndex = toolIconIndex;
+    if (UpdateIconImage(m_iconFrames, toolIconIndex, m_toolIconIndex, m_toolIconImage)) {
         iconsChanged = 1;
     }
 
-    if (m_toyIconIndex != toyIconIndex) {
-        CDDrawWorker* frames = m_iconFrames;
-        m_toyIconImage = frames->GetAt(toyIconIndex);
-        m_toyIconIndex = toyIconIndex;
+    if (UpdateIconImage(m_iconFrames, toyIconIndex, m_toyIconIndex, m_toyIconImage)) {
         iconsChanged = 1;
     }
 
@@ -220,10 +225,12 @@ i32 CSBI_StatzTabGruntBar::UpdateIcons() {
         iconsChanged = 1;
     }
 
-    if (m_selectionFrameIndex != selectionFrameIndex) {
-        CDDrawWorker* frames = m_selectionFrames;
-        m_selectionImage = frames->GetAt(selectionFrameIndex);
-        m_selectionFrameIndex = selectionFrameIndex;
+    if (UpdateIconImage(
+            m_selectionFrames,
+            selectionFrameIndex,
+            m_selectionFrameIndex,
+            m_selectionImage
+        )) {
         iconsChanged = 1;
     }
     return iconsChanged;

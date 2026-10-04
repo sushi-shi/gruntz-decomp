@@ -393,71 +393,71 @@ i32 CGrunt::StepCompassMove() {
             case TILEKIND_ARROW_UP_B:
                 tile.m_y -= 0x20;
                 next = tile;
-                facing = g_gruntMoveDirNorth;
+                facing = GruntDirectionCell(g_gruntMoveDirNorth);
                 break;
             case TILEKIND_ARROW_RIGHT_A:
             case TILEKIND_ARROW_RIGHT_B:
                 tile.m_x += 0x20;
                 next = tile;
-                facing = g_gruntMoveDirEast;
+                facing = GruntDirectionCell(g_gruntMoveDirEast);
                 break;
             case TILEKIND_ARROW_DOWN_A:
             case TILEKIND_ARROW_DOWN_B:
                 tile.m_y += 0x20;
                 next = tile;
-                facing = g_gruntMoveDirSouth;
+                facing = GruntDirectionCell(g_gruntMoveDirSouth);
                 break;
             case TILEKIND_ARROW_LEFT_A:
             case TILEKIND_ARROW_LEFT_B:
                 tile.m_x -= 0x20;
                 next = tile;
-                facing = g_gruntMoveDirWest;
+                facing = GruntDirectionCell(g_gruntMoveDirWest);
                 break;
             case TILEKIND_ARROW_CURRENT:
                 switch (m_facing.m_direction) {
                     case DIR_NORTH:
                         tile.m_y -= 0x20;
                         next = tile;
-                        facing = g_gruntMoveDirNorth;
+                        facing = GruntDirectionCell(g_gruntMoveDirNorth);
                         break;
                     case DIR_EAST:
                         tile.m_x += 0x20;
                         next = tile;
-                        facing = g_gruntMoveDirEast;
+                        facing = GruntDirectionCell(g_gruntMoveDirEast);
                         break;
                     case DIR_SOUTH:
                         tile.m_y += 0x20;
                         next = tile;
-                        facing = g_gruntMoveDirSouth;
+                        facing = GruntDirectionCell(g_gruntMoveDirSouth);
                         break;
                     case DIR_WEST:
                         tile.m_x -= 0x20;
                         next = tile;
-                        facing = g_gruntMoveDirWest;
+                        facing = GruntDirectionCell(g_gruntMoveDirWest);
                         break;
                     case DIR_NORTHEAST:
                         tile.m_x += 0x20;
                         tile.m_y -= 0x20;
                         next = tile;
-                        facing = g_gruntMoveDirNorthEast;
+                        facing = GruntDirectionCell(g_gruntMoveDirNorthEast);
                         break;
                     case DIR_SOUTHEAST:
                         tile.m_x += 0x20;
                         tile.m_y += 0x20;
                         next = tile;
-                        facing = g_gruntMoveDirSouthEast;
+                        facing = GruntDirectionCell(g_gruntMoveDirSouthEast);
                         break;
                     case DIR_SOUTHWEST:
                         tile.m_x -= 0x20;
                         tile.m_y += 0x20;
                         next = tile;
-                        facing = g_gruntMoveDirSouthWest;
+                        facing = GruntDirectionCell(g_gruntMoveDirSouthWest);
                         break;
                     case DIR_NORTHWEST:
                         tile.m_x -= 0x20;
                         tile.m_y -= 0x20;
                         next = tile;
-                        facing = g_gruntMoveDirNorthWest;
+                        facing = GruntDirectionCell(g_gruntMoveDirNorthWest);
                         break;
                     default:
                         next = tile;

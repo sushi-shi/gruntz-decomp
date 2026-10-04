@@ -326,6 +326,7 @@ public:
     }
 
     void ResetToSeek();
+    void SetAiAttackTarget(CGrunt* target);
     void ResetArrivalFlags();
     void RepathToward(CGrunt* target);
 
@@ -888,12 +889,6 @@ public:
         GruntEntranceMode entranceMode
     );
     i32 StepDefenderBehavior();
-};
-
-union LogicDispatchWord {
-    LogicRecordDispatchFn m_dispatch;
-    void (CGrunt::*m_gruntMethod)();
-    u32 m_bits;
 };
 
 typedef i32 (CGrunt::*GruntActHandler)();

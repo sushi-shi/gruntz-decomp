@@ -165,7 +165,7 @@ L_ed153:
         i32 bestRow = -1;
         grid->Clip(&isect);
         for (i32 row = isect.top; row < isect.bottom; row++) {
-            BrickzCell* cell = &grid->m_rows[row][isect.left];
+            BrickzCell* cell = &grid->CellAtUnchecked(isect.left, row);
             for (i32 col = isect.left; col < isect.right; col++) {
                 if ((cell->m_flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) != 0
                     || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
@@ -209,7 +209,7 @@ L_ed153:
         Coord* coord = GetHeadCoord();
         i32 col = coord->m_x;
         i32 row = coord->m_y;
-        BrickzCell* cell = &grid->m_rows[row][col];
+        BrickzCell* cell = &grid->CellAtUnchecked(col, row);
         if ((cell->m_flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) != 0
             || grid->CellTypeAt(col, row) == TILEKIND_GAUNTLET_BRICK_A
             || grid->CellTypeAt(col, row) == TILEKIND_GAUNTLET_BRICK_B) {
