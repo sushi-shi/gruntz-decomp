@@ -890,6 +890,7 @@ i32 PumpIdleFrame() {
     if (g_gameReg->m_curState == NULL) {
         return 0;
     }
+    g_gameReg->m_curState->CancelSceneFade();
     if (g_gameReg->m_curState->InputVirtual() == 0) {
         g_gameReg->ReportError(IDX(IDS_RESTORE_GAME), 0x435);
         return 0;
@@ -901,6 +902,7 @@ i32 PumpIdleFrame() {
 
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused) {
     if (IsQuitPending()) return 0;
+    if (m_curState) m_curState->CancelSceneFade();
     static_cast<void>(unused);
     TRACE("TransitionState %d\n", stateId);
     GameStateId previousState = GAMESTATE_NONE;
@@ -975,7 +977,11 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
             m_curState = NULL;
             return 0;
         }
-        st->EnterState(previousState);
+        if (!st->EnterState(previousState)) {
+            delete st;
+            m_curState = NULL;
+            return 0;
+        }
         m_owner->m_running = true;
         g_inputMgr->ReadAll();
         RefreshGameClock();
@@ -1017,6 +1023,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     }
     GameStateId oldId = GAMESTATE_NONE;
     if (m_curState) {
+        m_curState->CancelSceneFade();
         oldId = m_curState->Update();
         m_curState->LeaveState(next->Update());
         if (m_curState) {
@@ -1097,70 +1104,70 @@ i32 CGruntzMgr::GoToPrevLevel() {
 }
 
 i32 CGruntzMgr::ForwardCharToState(i32 charCode, i32 keyData) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnChar(charCode, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardKeyDownToState(i32 virtualKey, i32 keyData) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnKeyDown(virtualKey, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardKeyUpToState(i32 virtualKey, i32 keyData) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnKeyUp(virtualKey, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonDownToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnLButtonDown(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonUpToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnLButtonUp(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnLButtonDblClk(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonDownToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnRButtonDown(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonUpToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnRButtonUp(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnRButtonDblClk(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending()) {
+    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
         return m_curState->OnMouseMove(keyFlags, x, y);
     }
     return 0;
@@ -1286,6 +1293,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
         }
     }
 
+    if (m_curState) m_curState->CancelSceneFade();
     if (!m_world->SetDimensions(w, h, m_colorDepth)) {
         return 0;
     }
@@ -1831,12 +1839,17 @@ void CGruntzMgr::ResetClockGlobals() {
     g_debugDisplayFlags = DEBUG_DISPLAY_NONE;
 }
 
+bool CGruntzMgr::IsSceneFading() const {
+    return m_curState && m_curState->IsSceneFading();
+}
+
 bool CGruntzMgr::IsQuitPending() const {
     return m_owner && m_owner->IsQuitPending();
 }
 
 void CGruntzMgr::DelayedQuit() {
     if (!m_owner || IsQuitPending()) return;
+    if (m_curState) m_curState->CancelSceneFade();
     u32 delayMs = 0;
     SoundCue* cue = World() && World()->SoundRegistry()
         ? World()->SoundRegistry()->FindCue("MENU_ACTIVATE") : NULL;

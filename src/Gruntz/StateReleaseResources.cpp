@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 void CState::ReleaseResources() {
+    CancelSceneFade();
     if (m_world != NULL) {
         if (m_cursorSavedSurfaces[0] != NULL) {
             m_world->GetDeviceManager()->RemoveSurface(m_cursorSavedSurfaces[0]);

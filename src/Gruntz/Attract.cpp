@@ -49,6 +49,7 @@ i32 CState::LoadTitlePage(
     i32 unused4,
     b32 useOverlay
 ) {
+    CancelSceneFade();
     static_cast<void>(unused1);
     static_cast<void>(unused2);
     static_cast<void>(unused3);
@@ -334,6 +335,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
 }
 
 i32 CPreviewState::LoadScreen(const std::string& name, i32 doFlip, i32 unused3, i32 unused4) {
+    CancelSceneFade();
     if (m_world == NULL) {
         return 0;
     }

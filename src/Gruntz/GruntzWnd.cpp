@@ -175,7 +175,7 @@ i32 CGruntzWnd::OnClose() {
 
 i32 CGruntzWnd::OnPaint() {
     CGruntzMgr* mgr = GameMgr();
-    if (mgr && (mgr->IsQuitPending() || mgr->IsLobbyHostReady())) {
+    if (mgr && (mgr->IsQuitPending() || mgr->IsSceneFading() || mgr->IsLobbyHostReady())) {
         if (m_hwnd) {
             ValidateRect(m_hwnd, NULL);
         }

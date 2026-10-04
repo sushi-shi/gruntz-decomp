@@ -10,6 +10,9 @@
 
 class CPreviewState : public CState {
 public:
+    CPreviewState() : m_previewCountdownMs(0), m_previewIndex(0), m_resetTimerAfterFade(false) {}
+    virtual void OnSceneFadeComplete();
+    virtual i32 RestoreAfterSceneFade();
     i32 Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId);
 
     i32 Tick();
@@ -29,6 +32,7 @@ public:
     u32 m_previewCountdownMs;
     std::string m_previewName;
     i32 m_previewIndex;
+    bool m_resetTimerAfterFade;
 };
 
 #endif

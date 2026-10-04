@@ -402,3 +402,43 @@ RID retains its legacy width-dependent row orientation pending a dedicated codec
 BMP/RID parsing, the remaining clipped/shaded raster operations and the rendering
 host still need their own bounds/portability work. These component checks are not
 a whole-game rendering or browser-host validation.
+
+
+### Returning scene fades
+
+`FadePlayback` owns one `FadeEffect` and advances it from admitted frame deltas.
+Starting renders frame zero; the first callback establishes the timing epoch.
+Each later callback renders at most one new frame, including after a long gap.
+Lead time and duration use separate bounded counters; frame interpolation uses
+64-bit integer multiplication. Zero-duration fades still render their final frame.
+Final-only mode retains the delay but skips intermediate rendering.
+
+Completion, cancellation, replacement and render failure release the owned effect.
+A busy renderer requests another callback without completing or losing the final
+frame. FrameScheduler's zero delta on resume prevents inactive time from advancing
+an in-progress fade. Cancellation does not invoke the state's completion hook.
+
+Help-screen entry now uses this returning path. Preview fade methods also use it,
+with the preview timer reset by completion; the existing preview class has no
+runtime factory binding in the current source. The manager advances active fades
+before normal state updates and suppresses competing state input, commands (except
+quit), and repaint rendering. Resource reload, mode changes, state changes and
+shutdown cancel playback before changing its borrowed surfaces.
+
+The Windows sine adapter uses nonwaiting locks for returning playback. It retries
+busy surfaces, unlocks before reporting failure, and releases playback before
+asking the state to restore its display. The adapter retains its existing bounded
+2000-row/sample storage and rejects larger dimensions. Unmigrated synchronous
+callers retain their waiting/restoring lock path. Menu, gameplay/loading, booty and
+credits fades still require caller-continuation rewrites; this is not completion
+of the scene-transition or rendering-host port.
+
+```sh
+ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-fades.py --target all
+```
+
+The portable suite executes the same playback code under Linux ASan/UBSan and
+wasm32 Node. Probe effects verify frame order, timing boundaries, cancellation and
+ownership, failed initialization/rendering, busy final frames, arithmetic limits,
+and scheduler wrap/suspension. These tests do not execute DirectDraw rendering,
+state UI interactions or the game.

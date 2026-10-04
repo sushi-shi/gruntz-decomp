@@ -81,6 +81,7 @@ public:
     void OnCheckpointReached();
     void DelayedQuit();
     bool IsQuitPending() const;
+    bool IsSceneFading() const;
 
     i32 LaunchPortal(i32 quitAfter);
 

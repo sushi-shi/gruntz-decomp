@@ -22,6 +22,7 @@
 i32 g_buildNumber;
 
 i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+    CancelSceneFade();
     m_mgr = mgr;
     m_resourceArchive = mgr->m_resourceArchive;
     m_world = mgr->m_world;

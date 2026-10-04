@@ -5,6 +5,7 @@
 #include <Rez/RezMgr.h>
 
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Rez/FrameClock.h>
 #include <Rez/FrameCountdown.h>
@@ -38,6 +39,13 @@ i32 CGruntzMgr::UpdateFrame() {
         return 0;
     }
 
+    if (m_curState->IsSceneFading()) {
+        if (m_curState->AdvanceSceneFade(Timing().deltaMs()) < 0) {
+            ReportError(IDX(IDS_RESTORE_GAME), 0x435);
+            return 0;
+        }
+        return 1;
+    }
     GameStateId r = m_curState->Update();
     if (r != GAMESTATE_MULTI) {
         u32 dt = Timing().deltaMs();

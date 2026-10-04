@@ -3503,6 +3503,28 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "fadeplayback",
+      "source": "src/Runtime/FadePlayback.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "scenefade",
+      "source": "src/Gruntz/SceneFade.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }
