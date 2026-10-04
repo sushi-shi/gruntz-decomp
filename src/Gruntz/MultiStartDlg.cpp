@@ -1038,28 +1038,28 @@ void CMultiStartDlg::Watchdog() {
     }
     if (g_multiState->m_sessionTerminated != false) {
         KillTimer(1);
-        g_multiState->ReportVersionMsg("The game session has been terminated.", 0);
+        g_multiState->ShowNetworkMessage("The game session has been terminated.", 0);
         g_watchdogBusy = false;
         return;
     }
     if (g_multiState->m_colorSelectionRejected != false) {
         g_multiState->m_colorSelectionRejected = false;
-        g_multiState->ReportVersionMsg("Someone has already selected that color.", 0);
+        g_multiState->ShowNetworkMessage("Someone has already selected that color.", 0);
         g_watchdogBusy = false;
         return;
     }
     if (g_multiState->m_removedByHost != false) {
         KillTimer(1);
-        g_multiState->ReportVersionMsg("You have been removed from the game by the host.", 0);
+        g_multiState->ShowNetworkMessage("You have been removed from the game by the host.", 0);
     } else if (g_multiState->m_gameClosed != false) {
         KillTimer(1);
-        g_multiState->ReportVersionMsg("This game is closed.", 0);
+        g_multiState->ShowNetworkMessage("This game is closed.", 0);
     } else if (g_multiState->m_gameFull != false) {
         KillTimer(1);
-        g_multiState->ReportVersionMsg("This game is already full.", 0);
+        g_multiState->ShowNetworkMessage("This game is already full.", 0);
     } else if (g_multiState->m_versionMismatch != false) {
         KillTimer(1);
-        g_multiState->ReportVersionMsg(
+        g_multiState->ShowNetworkMessage(
             "This version is not the same as the host computer's version of the game.",
             0
         );
@@ -1099,7 +1099,7 @@ i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
     if (g_multiState->m_isHost != false) {
         b32 available = IsPlayerColorAvailable(color);
         if (available == false) {
-            g_multiState->ReportVersionMsg("Someone has already selected that color.", available);
+            g_multiState->ShowNetworkMessage("Someone has already selected that color.", available);
             return 0;
         }
         SetPlayerColorAvailable(player->GetColor(), true);

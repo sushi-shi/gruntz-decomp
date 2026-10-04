@@ -664,7 +664,7 @@ i32 CState::SetAssetGroupLoaded(
             m_world->GetImageRegistry()->InstallTree(tree, "GRUNTZ_" + resourceGroup, "_");
             g_resourceInstallActive = false;
             if (multiplayerSession != NULL) {
-                multiplayerSession->SendLobbyKeepAlive();
+                multiplayerSession->SendKeepAlive();
             }
         }
         if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup) == 0) {
@@ -691,7 +691,7 @@ i32 CState::SetAssetGroupLoaded(
     if (m_world->GetImageRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup)) {
         m_world->GetImageRegistry()->RemoveWithPrefix("GRUNTZ_" + resourceGroup, "_");
         if (multiplayerSession != NULL) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (m_world->SoundRegistry()->HasWithPrefix("GRUNTZ_" + resourceGroup)) {
@@ -784,7 +784,7 @@ i32 CPlay::LoadGruntImageNamespaces(CMulti* multiplayerSession) {
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_NORMALGRUNT", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -795,7 +795,7 @@ i32 CPlay::LoadGruntImageNamespaces(CMulti* multiplayerSession) {
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_DEATHZ", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -806,7 +806,7 @@ i32 CPlay::LoadGruntImageNamespaces(CMulti* multiplayerSession) {
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_ENTRANCEZ", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -817,7 +817,7 @@ i32 CPlay::LoadGruntImageNamespaces(CMulti* multiplayerSession) {
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_EXITZ", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -828,7 +828,7 @@ i32 CPlay::LoadGruntImageNamespaces(CMulti* multiplayerSession) {
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -839,7 +839,7 @@ i32 CPlay::LoadGruntImageNamespaces(CMulti* multiplayerSession) {
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_PICKUPS", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->GetImageRegistry()))
@@ -850,7 +850,7 @@ i32 CPlay::LoadGruntImageNamespaces(CMulti* multiplayerSession) {
         }
         self->m_world->GetImageRegistry()->InstallTree(s, "GRUNTZ_BOMBGRUNT", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     g_resourceInstallActive = false;
@@ -896,7 +896,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* multiplayerSession) {
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_EXITZ", "_");
         }
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
@@ -907,7 +907,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* multiplayerSession) {
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
@@ -918,7 +918,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* multiplayerSession) {
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_PICKUPS", "_");
         }
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->SoundRegistry()))
@@ -929,7 +929,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* multiplayerSession) {
                 ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         }
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     return 1;
@@ -949,7 +949,7 @@ i32 CPlay::LoadGruntAnimationNamespaces(CMulti* multiplayerSession) {
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_NORMALGRUNT", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_DEATHZ")) {
@@ -960,7 +960,7 @@ i32 CPlay::LoadGruntAnimationNamespaces(CMulti* multiplayerSession) {
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_DEATHZ", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
@@ -971,7 +971,7 @@ i32 CPlay::LoadGruntAnimationNamespaces(CMulti* multiplayerSession) {
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_ENTRANCEZ", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_EXITZ")) {
@@ -982,7 +982,7 @@ i32 CPlay::LoadGruntAnimationNamespaces(CMulti* multiplayerSession) {
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_EXITZ", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
@@ -993,7 +993,7 @@ i32 CPlay::LoadGruntAnimationNamespaces(CMulti* multiplayerSession) {
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_PICKUPS")) {
@@ -1004,7 +1004,7 @@ i32 CPlay::LoadGruntAnimationNamespaces(CMulti* multiplayerSession) {
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_PICKUPS", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     if (!self->m_world->GetAnimationRegistry()->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
@@ -1015,7 +1015,7 @@ i32 CPlay::LoadGruntAnimationNamespaces(CMulti* multiplayerSession) {
         self->m_world->GetAnimationRegistry()
             ->LoadFromTree(static_cast<CRezDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         if (multiplayerSession) {
-            multiplayerSession->SendLobbyKeepAlive();
+            multiplayerSession->SendKeepAlive();
         }
     }
     return 1;

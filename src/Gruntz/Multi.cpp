@@ -993,35 +993,35 @@ ret_false:
 }
 
 RVA(0x000b7e30, 0x63)
-void CMulti::ReportVersionMsg(char* msg, i32 code) {
-    char buf[512];
-    if (msg && *msg && Mgr()) {
+void CMulti::ShowNetworkMessage(char* message, i32 code) {
+    char formattedMessage[512];
+    if (message && *message && Mgr()) {
         if (code > 0) {
-            sprintf(buf, "%s (%i)", msg, code);
-            Mgr()->EnterModalUI(buf);
+            sprintf(formattedMessage, "%s (%i)", message, code);
+            Mgr()->EnterModalUI(formattedMessage);
         } else {
-            Mgr()->EnterModalUI(msg);
+            Mgr()->EnterModalUI(message);
         }
     }
 }
 
 RVA(0x000b7ec0, 0x7d)
-void CMulti::ReportStatusId(u32 strId, i32 level) {
-    char buf[0x12a];
+void CMulti::ShowNetworkMessageById(u32 stringId, i32 code) {
+    char message[0x12a];
     if (Mgr() && Mgr()->m_owner->m_hInstance) {
-        if (!LoadStringA(Mgr()->m_owner->m_hInstance, strId, buf, 0xfa)) {
-            strcpy(buf, "Error.");
+        if (!LoadStringA(Mgr()->m_owner->m_hInstance, stringId, message, 0xfa)) {
+            strcpy(message, "Error.");
         }
-        ReportVersionMsg(buf, level);
+        ShowNetworkMessage(message, code);
     }
 }
 
 RVA(0x000b7f60, 0x52)
-void CMulti::ReportNetError(i32 level) {
+void CMulti::ReportNetError(i32 code) {
     char buf[512];
     if (Mgr() && g_code != HRESULT_CODE(DPERR_USERCANCEL)) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
-        ReportVersionMsg(buf, level);
+        ShowNetworkMessage(buf, code);
     }
 }
 
@@ -1647,7 +1647,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (m_pollAbort != false) {
                 break;
             }
-            ReportVersionMsg("You have been dropped from the game.", 0);
+            ShowNetworkMessage("You have been dropped from the game.", 0);
             PostMessageA(NetGameMgr()->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             m_pollAbort = true;
             break;
@@ -2580,7 +2580,7 @@ i32 CMulti::WaitForOtherPlayers() {
                 }
                 if (resend == 0) {
                     resend = 0x1388;
-                    SendLobbyKeepAlive();
+                    SendKeepAlive();
                     BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, DPSEND_GUARANTEED);
                 }
             }
@@ -2629,7 +2629,7 @@ i32 CMulti::Poll(i32 token) {
             }
             if (resend == 0) {
                 resend = 0x1388;
-                SendLobbyKeepAlive();
+                SendKeepAlive();
                 BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, DPSEND_GUARANTEED);
             }
         }
@@ -2848,7 +2848,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
     Mgr()->VoiceMgr()->PauseAllVoices();
     i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
     SetActiveAndFocus(Mgr()->m_gameWnd->GetHwnd());
-    SendLobbyKeepAlive();
+    SendKeepAlive();
     return r;
 }
 
@@ -2858,7 +2858,7 @@ void CMulti::CheckDropTimeout() {
         return;
     }
     if (g_ackThrottleDeadline < static_cast<u32>(timeGetTime())) {
-        SendLobbyKeepAlive();
+        SendKeepAlive();
         g_ackThrottleDeadline = timeGetTime() + 0x3e8;
     }
     CNetCmdSlot* slot = m_session->FindLaggingSlot(0x2710);
@@ -2877,7 +2877,7 @@ CString CNetCmdSlot::GetPlayerName() {
 }
 
 RVA(0x000bc420, 0x2b)
-void CMulti::SendLobbyKeepAlive() {
+void CMulti::SendKeepAlive() {
     if (m_netMgr && m_localPlayer && m_gameStarted) {
         BroadcastPlayerIdMessage(NETMSG_KEEP_ALIVE, DPSEND_GUARANTEED);
     }
@@ -3018,28 +3018,28 @@ i32 CMulti::WaitForGameConfig() {
 
         if (timeGetTime() > deadline
             || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {
-            ReportStatusId(0x8022, 0);
+            ShowNetworkMessageById(0x8022, 0);
             return 0;
         }
         PollSession();
         if (m_sessionTerminated) {
-            ReportVersionMsg("The game session has been terminated.", 0);
+            ShowNetworkMessage("The game session has been terminated.", 0);
             return 0;
         }
         if (m_removedByHost) {
-            ReportVersionMsg("You have been removed from the game by the host.", 0);
+            ShowNetworkMessage("You have been removed from the game by the host.", 0);
             return 0;
         }
         if (m_gameClosed) {
-            ReportVersionMsg("This game is closed.", 0);
+            ShowNetworkMessage("This game is closed.", 0);
             return 0;
         }
         if (m_gameFull) {
-            ReportVersionMsg("This game is already full.", 0);
+            ShowNetworkMessage("This game is already full.", 0);
             return 0;
         }
         if (m_versionMismatch) {
-            ReportVersionMsg(
+            ShowNetworkMessage(
                 "This version is not the same as the host computer's version of the game.",
                 0
             );
@@ -3193,7 +3193,7 @@ void CMulti::HandleVersionCheck(CNetVersionPacket* packet) {
         b32 gameWasStarted = m_gameStarted;
         m_versionMismatch = true;
         if (gameWasStarted) {
-            ReportVersionMsg(
+            ShowNetworkMessage(
                 "This version is not the same as the host computer's version of the game.",
                 0
             );

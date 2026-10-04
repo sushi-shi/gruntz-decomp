@@ -112,13 +112,13 @@ public:
     }
     i32 GetCommandDelay();
     i32 GetResendDelay();
-    void ReportVersionMsg(char* msg, i32 code);
+    void ShowNetworkMessage(char* message, i32 code);
 
-    void ReportStatusId(u32 strId, i32 level);
-    void ReportNetError(i32 level);
+    void ShowNetworkMessageById(u32 stringId, i32 code);
+    void ReportNetError(i32 code);
     i32 JoinSession();
     i32 RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam);
-    void SendLobbyKeepAlive();
+    void SendKeepAlive();
 
     i32 LoadAndSynchronizeLevel(i32 level);
     i32 StartTitle();
