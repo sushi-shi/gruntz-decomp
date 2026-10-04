@@ -968,7 +968,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CWapX::ApplyAnimation(found, 0);
     i32 frame =
         static_cast<CAniRecordView*>(m_wwdObject->m_animationCursor.GetAnimation()->AtChecked(0))
-            ->m_param;
+            ->GetFrameParameter();
     SetImageFrameByName("GRUNTZ_EXITZ", frame);
     return 0;
 }

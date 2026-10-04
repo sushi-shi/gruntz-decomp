@@ -303,7 +303,6 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
     }
 }
 
-// @early-stop
 RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_animation == NULL) {
@@ -364,7 +363,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDSTEP_SET: {
                 CWwdSpriteObject* c = m_boundObject;
-                i32 frame = d->m_param;
+                i32 frame = d->GetFrameParameter();
                 CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
@@ -397,7 +396,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDSTEP_FORWARD_BY: {
                 CWwdSpriteObject* c = m_boundObject;
-                i32 step = d->m_param;
+                i32 step = d->GetFrameParameter();
                 CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
@@ -411,7 +410,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDSTEP_BACK_BY: {
                 CWwdSpriteObject* c = m_boundObject;
-                i32 step = d->m_param;
+                i32 step = d->GetFrameParameter();
                 CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
