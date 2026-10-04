@@ -43,7 +43,7 @@ public:
 
     CTransientDrawItem(CGameWorld* ctx) : CRenderState(NO_SEED) {
         m_id = 0;
-        m_ownerCtx = ctx;
+        m_world = ctx;
         m_flags = 0;
         m_dirty.m_rect.left = COORD_UNSET;
         m_dirty.Invalidate();

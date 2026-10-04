@@ -359,7 +359,7 @@ CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
 
 RVA(0x0015d8d0, 0xc3)
 CLevelPlane* CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT*) {
-    CLevelPlane* plane = new CLevelPlane(OwnerMgr(), m_planes.GetSize(), 0);
+    CLevelPlane* plane = new CLevelPlane(GetWorld(), m_planes.GetSize(), 0);
 
     if (plane->Read(planeData, blockBase, &m_viewportRect) == 0) {
         if (plane) {
@@ -389,7 +389,7 @@ CLevelPlane* CGameLevel::ReadObjectPlane(
     i32 depthY,
     const char* name
 ) {
-    CLevelPlane* plane = new CLevelPlane(OwnerMgr(), m_planes.GetSize(), 0);
+    CLevelPlane* plane = new CLevelPlane(GetWorld(), m_planes.GetSize(), 0);
 
     if (plane->InitGeometry(
             w,
@@ -1273,7 +1273,7 @@ i32 CGameLevel::TryLandOnPlatform(
         return 0;
     }
 
-    CDDrawChildGroup* children = OwnerMgr()->ChildGroup();
+    CDDrawChildGroup* children = GetWorld()->ChildGroup();
     POSITION pos = children->GetHeadPosition();
     while (pos != NULL) {
         CGameObject* platform = children->NextChild(pos);
@@ -1777,7 +1777,7 @@ i32 CGameLevel::IsLoaded() {
     if (m_viewportRect.left == COORD_UNSET) {
         goto fail;
     }
-    if (m_ownerCtx == NULL) {
+    if (m_world == NULL) {
         goto fail;
     }
     if (m_id != -1) {

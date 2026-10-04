@@ -40,7 +40,7 @@ i32 CAniPlayer::Start(
         == SBICMD_NONE) {
         return 0;
     }
-    m_timing.Start(m_frameDelayMs);
+    m_toggleTimer.Start(m_frameDelayMs);
     return 1;
 }
 
@@ -49,9 +49,9 @@ i32 CAniPlayer::Start(
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 unused) {
-    if (m_timing.Expired()) {
+    if (m_toggleTimer.Expired()) {
         m_frameIndex = (m_frameIndex == m_frameStart) ? m_frameEnd : m_frameStart;
-        m_timing.Start(m_frameDelayMs);
+        m_toggleTimer.Start(m_frameDelayMs);
     }
     return 1;
 }
@@ -87,6 +87,6 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId
         == 0) {
         return 0;
     }
-    SerializeClockPair(arc, mode, &m_timing);
+    SerializeClockPair(arc, mode, &m_toggleTimer);
     return 1;
 }

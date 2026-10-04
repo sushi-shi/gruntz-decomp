@@ -23,10 +23,10 @@ public:
     CInGameText(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;
-    i32 Update();
+    i32 UpdateHelpBook();
 
-    i32 m_cachedPlayerIndex;
-    i32 m_cachedUnitIndex;
+    i32 m_lastReaderPlayerIndex;
+    i32 m_lastReaderUnitIndex;
 };
 
 #endif // GRUNTZ_GRUNTZ_CINGAMETEXT_H

@@ -511,7 +511,7 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
         return 0;
     }
     ar->Write(&m_levelIndex, sizeof(m_levelIndex));
-    ar->Write(&m_levelType, sizeof(m_levelType));
+    ar->Write(&m_levelArea, sizeof(m_levelArea));
     ar->Write(&m_previousStateId, sizeof(m_previousStateId));
     ar->Write(&m_reserved38, sizeof(m_reserved38));
     ar->Write(&m_ready, sizeof(m_ready));
@@ -543,7 +543,7 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
         return 0;
     }
     ar->Read(&m_levelIndex, sizeof(m_levelIndex));
-    ar->Read(&m_levelType, sizeof(m_levelType));
+    ar->Read(&m_levelArea, sizeof(m_levelArea));
     ar->Read(&m_previousStateId, sizeof(m_previousStateId));
     ar->Read(&m_reserved38, sizeof(m_reserved38));
     ar->Read(&m_ready, sizeof(m_ready));

@@ -204,7 +204,7 @@ rva	size	name	kind	note
 0x1f02a8	0x14	??_7CWwdGridIter@@6B@	primary	
 0x1f02c0	0x14	??_7CAniFrameRecord@@6B@	primary	
 0x1f02d8	0x38	??_7CDDrawPaletteResource@@6B@	primary	palette resource
-0x1f0310	0x18	??_7CWwdGridShell@@6B@	primary	
+0x1f0310	0x18	??_7CObjectActivationGrid@@6B@	primary	
 0x1f0328	0x18	??_7CWwdGrid@@6B@	primary	
 0x1f04c8	0x4	??_7zBitVec@@6B@	primary	
 0x1f04cc	0x4	??_7zErrHandling@@6B@	primary	
@@ -227,7 +227,7 @@ rva	size	name	kind	note
 0x1f0790	0x14	??_7?$CArray@PAVCFader@@PAV1@@@6B@	primary	MFC CArray instantiation
 0x1f07a8	0x14	??_7CFader@@6B@	primary	
 0x1f07c0	0x14	??_7CFaderMesh@@6B@	primary	
-0x1f07d8	0x14	??_7?$CArray@URezElem40@@ABU1@@@6B@	primary	MFC CArray instantiation
+0x1f07d8	0x14	??_7?$CArray@UFaderMeshTile@@ABU1@@@6B@	primary	MFC CArray instantiation
 0x1f07f8	0x14	??_7CFaderFlat@@6B@	primary	
 0x1f0810	0x14	??_7CFaderRadial@@6B@	primary	
 0x1f0848	0x14	??_7CFaderSine@@6B@	primary	

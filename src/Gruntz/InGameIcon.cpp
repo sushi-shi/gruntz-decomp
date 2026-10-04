@@ -98,10 +98,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SwitchAnimationByName("GAME_CYCLE100", 0);
 
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
-    SetupSprite(NULL);
+    SetPickupSoundCue(NULL);
 
     m_glitterSprite = NULL;
-    m_peekTiming.Clear();
+    m_colorCycleTimer.Clear();
 
     InGameIconGlitter glitter = ICON_GLITTER_NONE;
     CImageSet* frameSet = m_wwdObject->GetImageSet();
@@ -111,61 +111,61 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
         if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BOMB));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BOOMERANG));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BRICKZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BRICK));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_CLUBZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_CLUB));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GAUNTLETZ));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GLOVEZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GLOVEZ));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GOOBERZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GOOBER));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GRAVITYBOOTZ));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_GUNHATZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GUNHAT));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_NERFGUNZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_NERFGUN));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_ROCKZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_ROCK));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SHIELDZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SHIELD));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SHOVELZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SHOVEL));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SPRINGZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SPRING));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SPYZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SPY));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_SWORDZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SWORD));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_TIMEBOMB));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_TOOBZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_TOOB));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WANDZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WAND));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
             m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_FIRST));
@@ -174,7 +174,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             i32 anchorY = m_object->m_screenY;
             lvl->m_anchors[0].m_x = anchorX;
             lvl->m_anchors[0].m_y = anchorY;
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
             m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_SECOND));
@@ -183,7 +183,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             i32 anchorY = m_object->m_screenY;
             lvl->m_anchors[1].m_x = anchorX;
             lvl->m_anchors[1].m_y = anchorY;
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
             m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_THIRD));
@@ -192,7 +192,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             i32 anchorY = m_object->m_screenY;
             lvl->m_anchors[2].m_x = anchorX;
             lvl->m_anchors[2].m_y = anchorY;
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WARPSTONE));
             m_object->SetHealth(IDX(WARPSTONE_FRAGMENT_FOURTH));
@@ -201,82 +201,82 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             i32 anchorY = m_object->m_screenY;
             lvl->m_anchors[3].m_x = anchorX;
             lvl->m_anchors[3].m_y = anchorY;
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WELDER));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOOLZ_WINGZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_WINGZ));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BABYWALKERZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BABYWALKER));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BEACHBALL));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_BIGWHEELZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BIGWHEEL));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_GOKARTZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GOKART));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_JACKINTHEBOX));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_JUMPROPEZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_JUMPROPE));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_POGOSTICKZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_POGOSTICK));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_SCROLLZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SCROLL));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SQUEAKTOY));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_TOYZ_YOYOZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_YOYO));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_MEGAPHONE));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH1") == 0) {
             m_object->SetSmarts(IDX(PICKUP_HEALTH1));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH2") == 0) {
             m_object->SetSmarts(IDX(PICKUP_HEALTH2));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_HEALTH3") == 0) {
             m_object->SetSmarts(IDX(PICKUP_HEALTH3));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_CONVERSION") == 0) {
             m_object->SetSmarts(IDX(PICKUP_CONVERSION));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH") == 0) {
             m_object->SetSmarts(IDX(PICKUP_DEATHTOUCH));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_GHOST") == 0) {
             m_object->SetSmarts(IDX(PICKUP_GHOST));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY") == 0) {
             m_object->SetSmarts(IDX(PICKUP_INVULNERABILITY));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR") == 0) {
             m_object->SetSmarts(IDX(PICKUP_REACTIVEARMOR));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_ROIDZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_ROIDZ));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SUPERSPEED));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (name.Compare("GAME_INGAMEICONZ_SECRETW") == 0) {
             if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
@@ -284,53 +284,53 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
                 return;
             }
             m_object->SetSmarts(IDX(PICKUP_W));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
         } else if (name.Compare("GAME_INGAMEICONZ_SECRETA") == 0) {
             if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->SetSmarts(IDX(PICKUP_A));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
         } else if (name.Compare("GAME_INGAMEICONZ_SECRETR") == 0) {
             if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->SetSmarts(IDX(PICKUP_R));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
         } else if (name.Compare("GAME_INGAMEICONZ_SECRETP") == 0) {
             if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->SetSmarts(IDX(PICKUP_P));
-            SetupSprite("GAME_POWERUP");
+            SetPickupSoundCue("GAME_POWERUP");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH") == 0) {
             m_object->SetSmarts(IDX(PICKUP_STOPWATCH));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_COIN") == 0) {
             m_object->SetSmarts(IDX(PICKUP_COIN));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_TOYBOX") == 0) {
             m_object->SetSmarts(IDX(PICKUP_TOYBOX));
-            SetupSprite("GAME_TREASURE");
+            SetPickupSoundCue("GAME_TREASURE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_MINICAM") == 0) {
             m_object->SetSmarts(IDX(PICKUP_MINICAM));
             glitter = ICON_GLITTER_CURSE_GREEN;
-            SetupSprite("GAME_CURSE");
+            SetPickupSoundCue("GAME_CURSE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_SCREENSHAKE") == 0) {
             m_object->SetSmarts(IDX(PICKUP_SCREENSHAKE));
             glitter = ICON_GLITTER_CURSE_GREEN;
-            SetupSprite("GAME_CURSE");
+            SetPickupSoundCue("GAME_CURSE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_RANDOMCOLORZ") == 0) {
             m_object->SetSmarts(IDX(PICKUP_RANDOMCOLORZ));
             glitter = ICON_GLITTER_CURSE_GREEN;
-            SetupSprite("GAME_CURSE");
+            SetPickupSoundCue("GAME_CURSE");
         } else if (name.Compare("GAME_INGAMEICONZ_POWERUPZ_BLACKSCREEN") == 0) {
             m_object->SetSmarts(IDX(PICKUP_BLACKSCREEN));
             glitter = ICON_GLITTER_CURSE_GREEN;
-            SetupSprite("GAME_CURSE");
+            SetPickupSoundCue("GAME_CURSE");
         }
     }
 
@@ -365,7 +365,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         m_glitterSprite->SetAnimationByName("GAME_CYCLE100", 0);
     }
 
-    if (HandleInput() == 0) {
+    if (ApplyPickupPalette() == 0) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
@@ -379,58 +379,58 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 }
 
 RVA(0x00097680, 0x110)
-i32 CInGameIcon::HandleInput() {
-    CWwdSpriteObject* obj = m_object;
-    PickupType cmd = GetPickupType();
-    CShadeTable* rec;
-    if (cmd == PICKUP_TOYBOX) {
-        i32 key = GetPlayerIndex();
-        PickupType sub = GetToyType();
-        if (sub < PICKUP_TOYZ_FIRST || sub > PICKUP_TOYZ_LAST) {
+i32 CInGameIcon::ApplyPickupPalette() {
+    CWwdSpriteObject* sprite = m_object;
+    PickupType pickupType = GetPickupType();
+    CShadeTable* palette;
+    if (pickupType == PICKUP_TOYBOX) {
+        i32 playerIndex = GetPlayerIndex();
+        PickupType toyType = GetToyType();
+        if (toyType < PICKUP_TOYZ_FIRST || toyType > PICKUP_TOYZ_LAST) {
             return 0;
         }
-        i32 icon = IDX(g_gameReg->GetPlayer(key).GetColor());
-        if (icon < 0 || icon >= TINT_COUNT) {
-            icon = IDX(TINT_ORANGE);
+        i32 colorIndex = IDX(g_gameReg->GetPlayer(playerIndex).GetColor());
+        if (colorIndex < 0 || colorIndex >= TINT_COUNT) {
+            colorIndex = IDX(TINT_ORANGE);
         }
-        rec = g_gameReg->GruntPalettes()->GetShadeTable(icon, 0);
-        if (rec == NULL) {
-            rec = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
+        palette = g_gameReg->GruntPalettes()->GetShadeTable(colorIndex, 0);
+        if (palette == NULL) {
+            palette = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
         }
-    } else if (cmd == PICKUP_SCROLL || cmd == PICKUP_WAND) {
-        i32 icon;
-        switch (static_cast<SpellId>(obj->GetFaceDirection())) {
+    } else if (pickupType == PICKUP_SCROLL || pickupType == PICKUP_WAND) {
+        i32 colorIndex;
+        switch (static_cast<SpellId>(sprite->GetFaceDirection())) {
             case SPELL_FREEZE:
-                icon = IDX(TINT_WHITE);
+                colorIndex = IDX(TINT_WHITE);
                 break;
             case SPELL_HEALTH:
-                icon = IDX(TINT_GREEN);
+                colorIndex = IDX(TINT_GREEN);
                 break;
             case SPELL_RESURRECTION:
-                icon = IDX(TINT_ORANGE);
+                colorIndex = IDX(TINT_ORANGE);
                 break;
             case SPELL_RANDOM_TOYZ:
-                icon = IDX(TINT_PINK);
+                colorIndex = IDX(TINT_PINK);
                 break;
             case SPELL_TELEPORT:
-                icon = IDX(TINT_BLUE);
+                colorIndex = IDX(TINT_BLUE);
                 break;
             case SPELL_ROLLING_BALLZ:
-                icon = IDX(TINT_RED);
+                colorIndex = IDX(TINT_RED);
                 break;
             default:
-                icon = IDX(TINT_BLACK);
+                colorIndex = IDX(TINT_BLACK);
                 break;
         }
-        rec = g_gameReg->GruntPalettes()->GetShadeTable(icon, 0);
-        if (rec == NULL) {
-            rec = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
+        palette = g_gameReg->GruntPalettes()->GetShadeTable(colorIndex, 0);
+        if (palette == NULL) {
+            palette = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
         }
     } else {
         return 1;
     }
-    CWwdSpriteObject* o = m_object;
-    o->SetDrawFill(SHADE_PAL_16, rec);
+    CWwdSpriteObject* renderSprite = m_object;
+    renderSprite->SetDrawFill(SHADE_PAL_16, palette);
     return 1;
 }
 
@@ -443,11 +443,11 @@ RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
     ACT_NAME_ID(idxA, "A")
     CActHandler* dslotA = &CActRegPool<CInGameIcon>::s_table[idxA];
-    *dslotA = static_cast<CActHandler>(&CInGameIcon::PeekCycle);
+    *dslotA = static_cast<CActHandler>(&CInGameIcon::UpdateAvailablePickup);
 
     ACT_NAME_ID(idxB, "B")
     CActHandler* dslotB = &CActRegPool<CInGameIcon>::s_table[idxB];
-    *dslotB = static_cast<CActHandler>(&CInGameIcon::Reposition);
+    *dslotB = static_cast<CActHandler>(&CInGameIcon::UpdateRespawn);
 }
 
 RVA(0x00097de0, 0x102)
@@ -504,137 +504,147 @@ i32 CToyPeek::SerializeDispatch(
 
 // @early-stop
 RVA(0x000984b0, 0x186)
-i32 CInGameIcon::PeekCycle() {
+i32 CInGameIcon::UpdateAvailablePickup() {
     m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
-    CWwdSpriteObject* obj = m_object;
-    PickupType cmd = GetPickupType();
-    if (cmd == PICKUP_TOYBOX) {
-        i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
-        CMapMgr* grid = g_gameReg->GetTileGrid();
-        i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
-        i32 cell = grid->CellFlagsAt(tileX, tileY);
-        if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
-            grid->SetObjectIdAt(tileX, tileY, 0);
+    CWwdSpriteObject* pickupObject = m_object;
+    PickupType pickupType = GetPickupType();
+    if (pickupType == PICKUP_TOYBOX) {
+        i32 tileY = pickupObject->m_screenY >> TILE_SHIFT_PX;
+        CMapMgr* tileGrid = g_gameReg->GetTileGrid();
+        i32 tileX = pickupObject->m_screenX >> TILE_SHIFT_PX;
+        i32 cellFlags = tileGrid->CellFlagsAt(tileX, tileY);
+        if ((cellFlags & BRICKZ_BLOCKED_MASK) != 0 || (cellFlags & IDX(CELL_FLAG_SPECIAL)) != 0) {
+            tileGrid->SetObjectIdAt(tileX, tileY, 0);
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
         return 0;
     }
-    if (cmd != PICKUP_WAND && cmd != PICKUP_SCROLL) {
+    if (pickupType != PICKUP_WAND && pickupType != PICKUP_SCROLL) {
         return 0;
     }
-    if (obj->GetFaceDirection() != 0) {
+    if (pickupObject->GetFaceDirection() != 0) {
         return 0;
     }
-    if (m_peekTiming.Expired()) {
-        CShadeTable* rec = g_gameReg->GruntPalettes()->GetShadeTable(GetRandomNumber() % 0x11, 0);
-        CWwdSpriteObject* o = m_object;
-        o->SetDrawFill(SHADE_PAL_16, rec);
-        m_peekTiming.Start(0xfa);
+    if (m_colorCycleTimer.Expired()) {
+        CShadeTable* palette =
+            g_gameReg->GruntPalettes()->GetShadeTable(GetRandomNumber() % 0x11, 0);
+        CWwdSpriteObject* renderSprite = m_object;
+        renderSprite->SetDrawFill(SHADE_PAL_16, palette);
+        m_colorCycleTimer.Start(0xfa);
     }
     return 0;
 }
 
 RVA(0x000986b0, 0x30c)
 
-i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
-    CWwdSpriteObject* obj;
-    CWwdSpriteObject* o;
-    CWwdSpriteObject* r;
-    CWwdSpriteObject* owner;
-    CWwdSpriteObject* rend;
-    CGrunt* cell;
-    CGrunt* placed;
-    PickupType cmd;
+i32 CInGameIcon::TryGivePickupToGrunt(i32 playerIndex, i32 unitIndex) {
+    CWwdSpriteObject* pickupObject;
+    CWwdSpriteObject* audibleObject;
+    CWwdSpriteObject* expiredObject;
+    CWwdSpriteObject* respawnObject;
+    CWwdSpriteObject* glitterObject;
+    CGrunt* recipient;
+    CGrunt* warpstoneRecipient;
+    PickupType pickupType;
     PickupType toyboxPickup;
-    b32 matchActive;
-    b32 flag;
-    i32 sub;
-    b32 ok;
-    PickupType pickup;
-    CGruntzMgr* reg = g_gameReg;
-    if (reg->GetGameMode() == GAMEMODE_QUESTZ && playerIndex != g_curPlayer
+    b32 ownedByRecipient;
+    b32 fromOtherPlayer;
+    i32 pickupParam;
+    b32 pickupAccepted;
+    PickupType initialPickupType;
+    CGruntzMgr* gameMgr = g_gameReg;
+    if (gameMgr->GetGameMode() == GAMEMODE_QUESTZ && playerIndex != g_curPlayer
         && GetPickupType() != PICKUP_TOYBOX) {
         goto fail;
     }
-    pickup = GetPickupType();
-    obj = m_object;
-    if (pickup == PICKUP_TOYBOX) {
+    initialPickupType = GetPickupType();
+    pickupObject = m_object;
+    if (initialPickupType == PICKUP_TOYBOX) {
 
         toyboxPickup = GetToyType();
-        matchActive = false;
-        flag = true;
+        ownedByRecipient = false;
+        fromOtherPlayer = true;
         if (GetPlayerIndex() == playerIndex) {
-            matchActive = true;
-            flag = false;
+            ownedByRecipient = true;
+            fromOtherPlayer = false;
         }
-        sub = obj->m_faceDirection;
-        cell = reg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
-        if (cell == NULL || cell->IsEntranceCommitted() == false) {
-            ok = false;
-        } else if (matchActive) {
-            ok = cell->BeginPickupAnimation(toyboxPickup, flag, 0, sub, 0);
+        pickupParam = pickupObject->m_faceDirection;
+        recipient = gameMgr->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
+        if (recipient == NULL || recipient->IsEntranceCommitted() == false) {
+            pickupAccepted = false;
+        } else if (ownedByRecipient) {
+            pickupAccepted =
+                recipient->BeginPickupAnimation(toyboxPickup, fromOtherPlayer, 0, pickupParam, 0);
         } else {
-            ok = cell->ApplyPickup(toyboxPickup, flag, sub, 0);
+            pickupAccepted = recipient->ApplyPickup(toyboxPickup, fromOtherPlayer, pickupParam, 0);
         }
-        reg = g_gameReg;
-        if (ok == false) {
+        gameMgr = g_gameReg;
+        if (pickupAccepted == false) {
             goto fail;
         }
-        if (m_cue != NULL) {
-            o = m_object;
-            if (::PtInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+        if (m_pickupSoundCue != NULL) {
+            audibleObject = m_object;
+            if (::PtInRect(
+                    &gameMgr->m_viewBounds,
+                    audibleObject->m_screenX,
+                    audibleObject->m_screenY
+                )) {
 
-                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-                reg = g_gameReg;
+                m_pickupSoundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
+                gameMgr = g_gameReg;
             }
         }
-        ClearTileBit(reg, m_object);
-        r = m_wwdObject;
-        r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        ClearTileBit(gameMgr, m_object);
+        expiredObject = m_wwdObject;
+        expiredObject->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         return 1;
     }
 
-    sub = obj->m_faceDirection;
-    cmd = GetPickupType();
-    cell = reg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->IsEntranceCommitted() == false) {
-        ok = false;
+    pickupParam = pickupObject->m_faceDirection;
+    pickupType = GetPickupType();
+    recipient = gameMgr->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
+    if (recipient == NULL || recipient->IsEntranceCommitted() == false) {
+        pickupAccepted = false;
     } else {
-        ok = cell->BeginPickupAnimation(cmd, 0, 0, sub, 1);
+        pickupAccepted = recipient->BeginPickupAnimation(pickupType, 0, 0, pickupParam, 1);
     }
-    reg = g_gameReg;
-    if (ok != false) {
-        if (cmd == PICKUP_WARPSTONE) {
-            placed = reg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
-            if (placed != NULL) {
-                placed->m_warpstoneAnchorIndex = m_object->m_health;
-                reg = g_gameReg;
+    gameMgr = g_gameReg;
+    if (pickupAccepted != false) {
+        if (pickupType == PICKUP_WARPSTONE) {
+            warpstoneRecipient = gameMgr->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
+            if (warpstoneRecipient != NULL) {
+                warpstoneRecipient->m_warpstoneAnchorIndex = m_object->m_health;
+                gameMgr = g_gameReg;
             }
         }
-        if (m_cue != NULL) {
-            o = m_object;
-            if (::PtInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+        if (m_pickupSoundCue != NULL) {
+            audibleObject = m_object;
+            if (::PtInRect(
+                    &gameMgr->m_viewBounds,
+                    audibleObject->m_screenX,
+                    audibleObject->m_screenY
+                )) {
 
-                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-                reg = g_gameReg;
+                m_pickupSoundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
+                gameMgr = g_gameReg;
             }
         }
-        ClearTileBit(reg, m_object);
-        owner = m_wwdObject;
-        if (owner->m_damage > 0) {
-            owner->Hide();
+        ClearTileBit(gameMgr, m_object);
+        respawnObject = m_wwdObject;
+        if (respawnObject->m_damage > 0) {
+            respawnObject->Hide();
             SET_ANIMATION_ACT("B");
-            owner = m_wwdObject;
-            m_driftTiming.Start(owner->m_damage);
+            respawnObject = m_wwdObject;
+            m_driftTiming.Start(respawnObject->m_damage);
             return 1;
         }
-        rend = m_glitterSprite;
-        if (rend != NULL) {
-            rend->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        glitterObject = m_glitterSprite;
+        if (glitterObject != NULL) {
+            glitterObject->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             m_glitterSprite = NULL;
         }
-        r = m_wwdObject;
-        r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+        expiredObject = m_wwdObject;
+        expiredObject->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         return 1;
     }
 fail:
@@ -643,35 +653,38 @@ fail:
 
 // @early-stop
 RVA(0x00098a90, 0x18d)
-i32 CInGameIcon::Reposition() {
+i32 CInGameIcon::UpdateRespawn() {
     m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     if (m_driftTiming.Expired()) {
-        CWwdSpriteObject* r = m_wwdObject;
-        r->Show();
+        CWwdSpriteObject* respawnObject = m_wwdObject;
+        respawnObject->Show();
         SET_ANIMATION_ACT("A");
 
-        CGruntzMgr* reg = g_gameReg;
-        CWwdSpriteObject* obj = m_object;
-        i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
-        i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
-        CMapMgr* grid = reg->GetTileGrid();
-        i32 cellVal = grid->ObjectIdAt(tileX, tileY);
-        if (cellVal != 0) {
+        CGruntzMgr* gameMgr = g_gameReg;
+        CWwdSpriteObject* pickupObject = m_object;
+        i32 tileX = pickupObject->m_screenX >> TILE_SHIFT_PX;
+        i32 tileY = pickupObject->m_screenY >> TILE_SHIFT_PX;
+        CMapMgr* tileGrid = gameMgr->GetTileGrid();
+        i32 occupantObjectId = tileGrid->ObjectIdAt(tileX, tileY);
+        if (occupantObjectId != 0) {
 
-            CGameObject* found = NULL;
-            if (reg->World()->ChildGroup()->LookupRegisteredObject(cellVal, found)
-                && found != NULL) {
-                found->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+            CGameObject* occupantObject = NULL;
+            if (gameMgr->World()->ChildGroup()->LookupRegisteredObject(
+                    occupantObjectId,
+                    occupantObject
+                )
+                && occupantObject != NULL) {
+                occupantObject->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             }
-            reg = g_gameReg;
-            grid = reg->GetTileGrid();
-            grid->SetObjectIdAt(tileX, tileY, 0);
+            gameMgr = g_gameReg;
+            tileGrid = gameMgr->GetTileGrid();
+            tileGrid->SetObjectIdAt(tileX, tileY, 0);
         }
-        obj = m_object;
+        pickupObject = m_object;
         g_gameReg->GetTileGrid()->SetObjectIdAt(
-            obj->m_screenX >> TILE_SHIFT_PX,
-            obj->m_screenY >> TILE_SHIFT_PX,
-            obj->GetObjectId()
+            pickupObject->m_screenX >> TILE_SHIFT_PX,
+            pickupObject->m_screenY >> TILE_SHIFT_PX,
+            pickupObject->GetObjectId()
         );
     }
     return 0;
@@ -698,17 +711,16 @@ i32 CInGameIcon::SerializeDispatch(
     }
 
     m_driftTiming.Serialize(ar, mode, typeId, obj);
-    m_peekTiming.Serialize(ar, mode, typeId, obj);
+    m_colorCycleTimer.Serialize(ar, mode, typeId, obj);
 
     switch (mode) {
         case SERIAL_SAVE: {
             memset(name, 0, sizeof(name));
-            if (m_cue != NULL) {
+            if (m_pickupSoundCue != NULL) {
                 strcpy(
                     name,
-                    static_cast<const char*>(
-                        m_ownerLogicRecord->OwnerMgr()->m_soundRegistry->FindCueKey(m_cue)
-                    )
+                    static_cast<const char*>(m_ownerLogicRecord->GetWorld()
+                                                 ->m_soundRegistry->FindCueKey(m_pickupSoundCue))
                 );
             }
             ar->Write(name, SERIAL_NAME_LEN);
@@ -724,15 +736,15 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = m_ownerLogicRecord->OwnerMgr()->m_soundRegistry->FindCue(name);
+                m_pickupSoundCue = m_ownerLogicRecord->GetWorld()->m_soundRegistry->FindCue(name);
             } else {
-                m_cue = NULL;
+                m_pickupSoundCue = NULL;
             }
             g_serialCounter++;
             i32 id;
             ar->Read(&id, sizeof(id));
             CWwdSpriteObject* sprite = LookupSpriteObjectById(
-                m_ownerLogicRecord->OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
+                m_ownerLogicRecord->GetWorld()->ChildGroup()->m_registeredGameObjectsById,
                 id
             );
             m_glitterSprite = sprite;
@@ -746,7 +758,7 @@ i32 CInGameIcon::SerializeDispatch(
             break;
         }
         case SERIAL_POSTLOAD:
-            if (HandleInput() == 0) {
+            if (ApplyPickupPalette() == 0) {
                 return 0;
             }
             break;
@@ -766,14 +778,14 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetImageSetByName("GAME_HELPBOX");
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
-    InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->GetHealth());
-    if (vis == INGAME_TEXT_EASY_ONLY) {
+    InGameTextVisibility visibilityMode = static_cast<InGameTextVisibility>(m_object->GetHealth());
+    if (visibilityMode == INGAME_TEXT_EASY_ONLY) {
 
         if (g_gameReg->GetEasyMode() == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
         }
-    } else if (vis == INGAME_TEXT_NORMAL_ONLY) {
+    } else if (visibilityMode == INGAME_TEXT_NORMAL_ONLY) {
         if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
@@ -781,10 +793,10 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    CWwdSpriteObject* o = m_object;
-    o->SetSortKey(SORTKEY_INGAME_INFO);
-    m_cachedPlayerIndex = -1;
-    m_cachedUnitIndex = -1;
+    CWwdSpriteObject* helpObject = m_object;
+    helpObject->SetSortKey(SORTKEY_INGAME_INFO);
+    m_lastReaderPlayerIndex = -1;
+    m_lastReaderUnitIndex = -1;
 }
 
 RVA(0x00099460, 0x102)
@@ -796,16 +808,16 @@ RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
     ACT_NAME_ID(idx, "A")
     CActHandler* dslot = &CActRegPool<CInGameText>::s_table[idx];
-    *dslot = static_cast<CActHandler>(&CInGameText::Update);
+    *dslot = static_cast<CActHandler>(&CInGameText::UpdateHelpBook);
 }
 
 RVA(0x000997c0, 0x1e7)
-i32 CInGameText::Update() {
+i32 CInGameText::UpdateHelpBook() {
     m_wwdObject->GetAnimationCursor().Advance(static_cast<i32>(g_engineFrameDelta));
 
     i32 playerIndex;
     i32 unitIndex;
-    CGrunt* found = g_gameReg->GetTriggerMgr()->FindGruntAtPoint(
+    CGrunt* reader = g_gameReg->GetTriggerMgr()->FindGruntAtPoint(
         m_object->m_screenX,
         m_object->m_screenY,
         &playerIndex,
@@ -813,37 +825,37 @@ i32 CInGameText::Update() {
         1
     );
 
-    if (found != NULL) {
+    if (reader != NULL) {
         if (playerIndex != g_curPlayer) {
             return 0;
         }
-        if (m_cachedUnitIndex != -1 && playerIndex == m_cachedPlayerIndex
-            && unitIndex == m_cachedUnitIndex) {
+        if (m_lastReaderUnitIndex != -1 && playerIndex == m_lastReaderPlayerIndex
+            && unitIndex == m_lastReaderUnitIndex) {
             return 0;
         }
 
-        if (found->GetAnimationActName() == "K") {
+        if (reader->GetAnimationActName() == "K") {
             return 0;
         }
 
-        if (!found->BeginPickupAnimation(PICKUP_HELPBOX, 0, m_object->GetSmarts(), 0, 1)) {
+        if (!reader->BeginPickupAnimation(PICKUP_HELPBOX, 0, m_object->GetSmarts(), 0, 1)) {
             return 0;
         }
 
-        CWwdSpriteObject* o = m_object;
-        i32 y = o->m_screenY;
-        i32 x = o->m_screenX;
-        CGruntzMgr* reg = g_gameReg;
-        if (::PtInRect(&reg->m_viewBounds, x, y)) {
-            PlayRegistryCueIfElapsed(reg->World()->SoundRegistry(), "GAME_HELPBOOK");
+        CWwdSpriteObject* helpObject = m_object;
+        i32 screenY = helpObject->m_screenY;
+        i32 screenX = helpObject->m_screenX;
+        CGruntzMgr* gameMgr = g_gameReg;
+        if (::PtInRect(&gameMgr->m_viewBounds, screenX, screenY)) {
+            PlayRegistryCueIfElapsed(gameMgr->World()->SoundRegistry(), "GAME_HELPBOOK");
         }
 
-        m_cachedPlayerIndex = playerIndex;
-        m_cachedUnitIndex = unitIndex;
+        m_lastReaderPlayerIndex = playerIndex;
+        m_lastReaderUnitIndex = unitIndex;
         Hide();
         return 0;
     }
-    m_cachedUnitIndex = -1;
+    m_lastReaderUnitIndex = -1;
     Show();
     return 0;
 }
@@ -861,23 +873,23 @@ i32 CInGameText::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_cachedPlayerIndex, sizeof(m_cachedPlayerIndex));
-            ar->Write(&m_cachedUnitIndex, sizeof(m_cachedUnitIndex));
+            ar->Write(&m_lastReaderPlayerIndex, sizeof(m_lastReaderPlayerIndex));
+            ar->Write(&m_lastReaderUnitIndex, sizeof(m_lastReaderUnitIndex));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_cachedPlayerIndex, sizeof(m_cachedPlayerIndex));
-            ar->Read(&m_cachedUnitIndex, sizeof(m_cachedUnitIndex));
+            ar->Read(&m_lastReaderPlayerIndex, sizeof(m_lastReaderPlayerIndex));
+            ar->Read(&m_lastReaderUnitIndex, sizeof(m_lastReaderUnitIndex));
             break;
     }
     return 1;
 }
 
 RVA(0x00099b10, 0x36)
-void CInGameIcon::SetupSprite(const char* category) {
+void CInGameIcon::SetPickupSoundCue(const char* soundKey) {
     SoundCue* found = NULL;
-    if (category != NULL) {
+    if (soundKey != NULL) {
         found = NULL;
-        MapLookup(g_gameReg->World()->SoundRegistry()->m_cues, category, found);
+        MapLookup(g_gameReg->World()->SoundRegistry()->m_cues, soundKey, found);
     }
-    m_cue = found;
+    m_pickupSoundCue = found;
 }

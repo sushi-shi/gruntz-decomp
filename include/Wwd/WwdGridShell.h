@@ -8,7 +8,8 @@
 
 struct WwdRegion;
 
-struct CWwdGridShell : public CWwdGrid {
+// @identity-TODO: original class spelling is unavailable.
+struct CObjectActivationGrid : public CWwdGrid {
     virtual void OnFound(WwdRegion* r) OVERRIDE;
 };
 

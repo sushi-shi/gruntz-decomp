@@ -52,9 +52,9 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, ax, centerY)
-    m_center.m_x = static_cast<double>(ax);
+    m_orbitCenter.m_x = static_cast<double>(ax);
     double cy = static_cast<double>(centerY);
-    m_center.m_y = cy;
+    m_orbitCenter.m_y = cy;
     i32 nx;
     if (m_object->GetSmarts() == 0) {
         nx = ax - TILE_SIZE_PX;
@@ -67,28 +67,28 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_position.m_y = cy;
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_ACTOR);
-    m_offset.m_x = m_center.m_x - px;
-    m_offset.m_y = m_center.m_y - cy;
+    m_orbitOffset.m_x = m_orbitCenter.m_x - px;
+    m_orbitOffset.m_y = m_orbitCenter.m_y - cy;
 
     if (m_object->GetDamage() == 0) {
-        m_angularVelocity =
+        m_orbitAngularVelocity =
             DATA_COMPGEN(0x001ea3f0, 3.1415927) / static_cast<double>(g_buteMgr.GetDword("Hazardz", "SpotLightTime", 0xbb8));
     } else {
-        m_angularVelocity =
+        m_orbitAngularVelocity =
             DATA_COMPGEN(0x001ea3f0, 3.1415927) / static_cast<double>(static_cast<u32>(m_object->GetDamage()));
     }
     if (m_object->m_direction == 1) {
-        m_angularVelocity = m_angularVelocity * DATA_COMPGEN(0x001ea3f8, -1.0);
+        m_orbitAngularVelocity = m_orbitAngularVelocity * DATA_COMPGEN(0x001ea3f8, -1.0);
     }
     if (m_object->GetPoints() == 1) {
-        m_angle = 3.1415927;
+        m_orbitAngle = 3.1415927;
     } else {
-        m_angle = 0;
+        m_orbitAngle = 0;
     }
     CShadeTable* looked = g_gameReg->GetLightFxMgr()->GetShadeTable(m_object->GetPowerup());
     CWwdSpriteObject* d = m_object;
     d->SetDrawFill(SHADE_DST_BY_SRC_16, looked);
-    m_focus = NULL;
+    m_orbitCenterObject = NULL;
     CLEAR_OBJECT_AREA
     m_targetPlayerIndex = -1;
     m_targetUnitIndex = -1;
@@ -155,21 +155,25 @@ i32 CSpotLight::Tick() {
         }
     }
 
-    double s = sin(m_angle);
-    double c = cos(m_angle);
-    double ox = m_offset.m_x;
-    double oy = -m_offset.m_y;
-    double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
-    CWwdSpriteObject* mv = m_focus;
+    double s = sin(m_orbitAngle);
+    double c = cos(m_orbitAngle);
+    double ox = m_orbitOffset.m_x;
+    double oy = -m_orbitOffset.m_y;
+    double dAngle = static_cast<double>(g_frameDelta) * m_orbitAngularVelocity;
+    CWwdSpriteObject* mv = m_orbitCenterObject;
     double rotatedX = ox * c + oy * s;
     double rotatedY = ox * s - oy * c;
     m_position.Init(rotatedX, rotatedY);
     if (mv != NULL) {
-        VEC2_SET(m_center, static_cast<double>(mv->m_screenX), static_cast<double>(mv->m_screenY));
+        VEC2_SET(
+            m_orbitCenter,
+            static_cast<double>(mv->m_screenX),
+            static_cast<double>(mv->m_screenY)
+        );
     }
-    m_position.m_x = m_center.m_x + rotatedX;
-    m_position.m_y = m_center.m_y + rotatedY;
-    m_angle = dAngle + m_angle;
+    m_position.m_x = m_orbitCenter.m_x + rotatedX;
+    m_position.m_y = m_orbitCenter.m_y + rotatedY;
+    m_orbitAngle = dAngle + m_orbitAngle;
     SET_SCREEN_POS(m_object, static_cast<i32>(m_position.m_x), static_cast<i32>(m_position.m_y));
     return 0;
 }
@@ -177,23 +181,23 @@ i32 CSpotLight::Tick() {
 RVA(0x000b1ee0, 0x11d)
 int CSpotLight::Update() {
     if (m_object->m_score == 1) {
-        double c = cos(m_angle);
-        double s = sin(m_angle);
-        double ox = m_offset.m_x;
-        double oy = -m_offset.m_y;
+        double c = cos(m_orbitAngle);
+        double s = sin(m_orbitAngle);
+        double ox = m_orbitOffset.m_x;
+        double oy = -m_orbitOffset.m_y;
 
-        double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
-        CWwdSpriteObject* focus = m_focus;
+        double dAngle = static_cast<double>(g_frameDelta) * m_orbitAngularVelocity;
+        CWwdSpriteObject* focus = m_orbitCenterObject;
         VEC2_SET(m_position, oy * s - ox * c, ox * s + oy * c);
         if (focus) {
             VEC2_SET(
-                m_center,
+                m_orbitCenter,
                 static_cast<double>(focus->m_screenX),
                 static_cast<double>(focus->m_screenY)
             );
         }
-        m_position.Init(m_center.m_x + m_position.m_x, m_center.m_y + m_position.m_y);
-        m_angle = dAngle + m_angle;
+        m_position.Init(m_orbitCenter.m_x + m_position.m_x, m_orbitCenter.m_y + m_position.m_y);
+        m_orbitAngle = dAngle + m_orbitAngle;
     }
     if (g_gameReg->m_triggerMgr->UnitAt(m_targetPlayerIndex, m_targetUnitIndex) == NULL) {
         SET_ANIMATION_ACT("A");
@@ -221,19 +225,19 @@ i32 CSpotLight::SerializeDispatch(
     CFileMemBase* s = static_cast<CFileMemBase*>(ar);
     switch (mode) {
         case SERIAL_SAVE:
-            s->Write(&m_angularVelocity, sizeof(m_angularVelocity));
+            s->Write(&m_orbitAngularVelocity, sizeof(m_orbitAngularVelocity));
             s->Write(&m_position.m_x, sizeof(m_position.m_x));
             s->Write(&m_position.m_y, sizeof(m_position.m_y));
-            s->Write(&m_center.m_x, sizeof(m_center.m_x));
-            s->Write(&m_center.m_y, sizeof(m_center.m_y));
-            s->Write(&m_offset.m_x, sizeof(m_offset.m_x));
-            s->Write(&m_offset.m_y, sizeof(m_offset.m_y));
-            s->Write(&m_angle, sizeof(m_angle));
+            s->Write(&m_orbitCenter.m_x, sizeof(m_orbitCenter.m_x));
+            s->Write(&m_orbitCenter.m_y, sizeof(m_orbitCenter.m_y));
+            s->Write(&m_orbitOffset.m_x, sizeof(m_orbitOffset.m_x));
+            s->Write(&m_orbitOffset.m_y, sizeof(m_orbitOffset.m_y));
+            s->Write(&m_orbitAngle, sizeof(m_orbitAngle));
             g_serialCounter++;
             {
                 i32 id = 0;
-                if (m_focus != NULL) {
-                    id = m_focus->GetObjectId();
+                if (m_orbitCenterObject != NULL) {
+                    id = m_orbitCenterObject->GetObjectId();
                 }
                 s->Write(&id, sizeof(id));
             }
@@ -242,21 +246,21 @@ i32 CSpotLight::SerializeDispatch(
             s->Write(&m_storyMode, sizeof(m_storyMode));
             break;
         case SERIAL_LOAD:
-            s->Read(&m_angularVelocity, sizeof(m_angularVelocity));
+            s->Read(&m_orbitAngularVelocity, sizeof(m_orbitAngularVelocity));
             s->Read(&m_position.m_x, sizeof(m_position.m_x));
             s->Read(&m_position.m_y, sizeof(m_position.m_y));
-            s->Read(&m_center.m_x, sizeof(m_center.m_x));
-            s->Read(&m_center.m_y, sizeof(m_center.m_y));
-            s->Read(&m_offset.m_x, sizeof(m_offset.m_x));
-            s->Read(&m_offset.m_y, sizeof(m_offset.m_y));
-            s->Read(&m_angle, sizeof(m_angle));
+            s->Read(&m_orbitCenter.m_x, sizeof(m_orbitCenter.m_x));
+            s->Read(&m_orbitCenter.m_y, sizeof(m_orbitCenter.m_y));
+            s->Read(&m_orbitOffset.m_x, sizeof(m_orbitOffset.m_x));
+            s->Read(&m_orbitOffset.m_y, sizeof(m_orbitOffset.m_y));
+            s->Read(&m_orbitAngle, sizeof(m_orbitAngle));
             g_serialCounter++;
             {
                 i32 id;
                 s->Read(&id, sizeof(id));
-                m_focus =
+                m_orbitCenterObject =
                     LookupSpriteObjectById(world->ChildGroup()->m_registeredGameObjectsById, id);
-                if (m_focus == NULL && id != 0) {
+                if (m_orbitCenterObject == NULL && id != 0) {
                     return 0;
                 }
             }

@@ -75,7 +75,7 @@ i32 CLevelPlane::Read(const WwdPlaneHeader* pd, const char* blockBase, LevelCoor
         nameBuf[len] = 0;
         if (len > 0) {
 
-            m_imageSets.SetAtGrow(static_cast<char>(n), (OwnerMgr())->FindImageSet(nameBuf));
+            m_imageSets.SetAtGrow(static_cast<char>(n), (GetWorld())->FindImageSet(nameBuf));
         }
     }
 
@@ -226,7 +226,7 @@ void CLevelPlane::Unload() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161c50, 0x3f)
 void CLevelPlane::SetImageSetByName(char index, const char* key) {
-    m_imageSets.SetAtGrow(index, OwnerMgr()->FindImageSet(key));
+    m_imageSets.SetAtGrow(index, GetWorld()->FindImageSet(key));
 }
 
 // @early-stop
@@ -486,7 +486,7 @@ i32 CLevelPlane::LoadObjectRecords(const char* recordCursor, i32 objectCount) {
     RECT planeBounds;
     SET_RECT_COMPONENTS(planeBounds, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
 
-    CGameWorld* world = OwnerMgr();
+    CGameWorld* world = GetWorld();
     CDDrawChildGroup* activeGroup = world->ChildGroup();
     if (activeGroup == NULL) {
         return 0;
@@ -580,7 +580,7 @@ i32 CLevelPlane::ReadObjectRecord(const PlaneObjectRecord* record) {
     i32 frameIndex = *fields++;
     i32 objectId = record->m_id;
 
-    CWwdSpriteObject* obj = new CWwdSpriteObject(OwnerMgr(), objectId, 0);
+    CWwdSpriteObject* obj = new CWwdSpriteObject(GetWorld(), objectId, 0);
     if (obj == NULL) {
         return 0;
     }
@@ -613,7 +613,7 @@ i32 CLevelPlane::ReadObjectRecord(const PlaneObjectRecord* record) {
     }
 
     CLogicRecord* logicTemplate =
-        OwnerMgr()->GetLogicRegistry()->FindTemplate(static_cast<const char*>(logicTypeName));
+        GetWorld()->GetLogicRegistry()->FindTemplate(static_cast<const char*>(logicTypeName));
     if (logicTemplate == NULL) {
         i32 bytesRead = static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
         delete obj;
@@ -796,7 +796,7 @@ void CLevelPlane::UpdateActiveRegionSizes() {
     if (m_spatialMgr == NULL) {
         return;
     }
-    CGameLevel* level = OwnerMgr()->GetLevel();
+    CGameLevel* level = GetWorld()->GetLevel();
     if (level == NULL) {
         return;
     }
@@ -886,7 +886,7 @@ i32 CLevelPlane::ValidateTiles(char* errOut) {
 
 RVA(0x00163670, 0x95)
 void CLevelPlane::ResolveColorKey() {
-    ColorDepth format = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface()->m_bpp;
+    ColorDepth format = GetWorld()->GetDisplayBuffers()->GetFrontSurface()->m_bpp;
     if (format == BPP_PALETTED_8) {
         return;
     }
@@ -902,7 +902,7 @@ void CLevelPlane::ResolveColorKey() {
         return;
     }
 
-    CDDrawPaletteResource* owner = OwnerMgr()->m_paletteRegistry->m_activePalette;
+    CDDrawPaletteResource* owner = GetWorld()->m_paletteRegistry->m_activePalette;
     if (owner == NULL) {
         return;
     }

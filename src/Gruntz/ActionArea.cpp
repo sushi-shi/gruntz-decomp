@@ -40,11 +40,11 @@ RVA(0x00007da0, 0x17e)
 CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_ACTIONAREA_RED");
     SET_ANIMATION_ACT("A");
-    CWwdSpriteObject* o = m_object;
-    o->SetSortKey(SORTKEY_ACTION_AREA);
-    m_phase = 1;
-    m_timing.m_intervalLo = 0;
-    m_timing.m_intervalHi = 0;
+    CWwdSpriteObject* sprite = m_object;
+    sprite->SetSortKey(SORTKEY_ACTION_AREA);
+    m_dimming = 1;
+    m_pulseTimer.m_intervalLo = 0;
+    m_pulseTimer.m_intervalHi = 0;
     Hide();
 }
 
@@ -60,25 +60,28 @@ RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
     ACT_NAME_ID(id, "A")
 
-    CActRegPool<CActionArea>::s_table[id] = static_cast<CActHandler>(&CActionArea::Tick);
+    CActRegPool<CActionArea>::s_table[id] =
+        static_cast<CActHandler>(&CActionArea::UpdateLightPulse);
 }
 
 RVA(0x00008440, 0xfe)
-i32 CActionArea::Tick() {
-    ClockInterval* timing = &m_timing;
-    i32* phase = &m_phase;
-    if (timing->Expired()) {
-        *phase = (*phase == 0);
-        timing->Start(0x1f4);
+i32 CActionArea::UpdateLightPulse() {
+    ClockInterval* pulseTimer = &m_pulseTimer;
+    i32* dimming = &m_dimming;
+    if (pulseTimer->Expired()) {
+        *dimming = (*dimming == 0);
+        pulseTimer->Start(0x1f4);
     }
-    if (*phase != 0) {
-        double t = static_cast<double>(timing->Elapsed());
+    if (*dimming != 0) {
+        double elapsedMs = static_cast<double>(pulseTimer->Elapsed());
         m_wwdObject->GetImageSet()->SetAllLightLevels(
-            static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
+            static_cast<i32>(((1.0 - elapsedMs * 0.002) * 50.0 - (-155.0)))
         );
     } else {
-        double t = static_cast<double>(timing->Elapsed());
-        m_wwdObject->GetImageSet()->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
+        double elapsedMs = static_cast<double>(pulseTimer->Elapsed());
+        m_wwdObject->GetImageSet()->SetAllLightLevels(
+            static_cast<i32>((elapsedMs * 0.1 - (-155.0)))
+        );
     }
     return 0;
 }
@@ -91,15 +94,15 @@ i32 CActionArea::ApplyColor(i32 owner) {
         case ACTION_AREA_BLUE_OWNER: {
             SetImageSetByName("GAME_ACTIONAREA_BLUE");
 
-            CImageSet* rec = m_wwdObject->GetImageSet();
-            rec->SetAllShadeModes(SHADE_ALPHA_16);
+            CImageSet* imageSet = m_wwdObject->GetImageSet();
+            imageSet->SetAllShadeModes(SHADE_ALPHA_16);
             break;
         }
         case ACTION_AREA_RED_OWNER: {
             SetImageSetByName("GAME_ACTIONAREA_RED");
 
-            CImageSet* rec = m_wwdObject->GetImageSet();
-            rec->SetAllShadeModes(SHADE_ALPHA_16);
+            CImageSet* imageSet = m_wwdObject->GetImageSet();
+            imageSet->SetAllShadeModes(SHADE_ALPHA_16);
             break;
         }
         default:
@@ -120,13 +123,13 @@ i32 CActionArea::SerializeDispatch(
         return 0;
     }
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
-    m_timing.Serialize(ar, mode, typeId, object);
+    m_pulseTimer.Serialize(ar, mode, typeId, object);
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_phase, sizeof(m_phase));
+            ar->Write(&m_dimming, sizeof(m_dimming));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_phase, sizeof(m_phase));
+            ar->Read(&m_dimming, sizeof(m_dimming));
             break;
     }
     return 1;

@@ -52,16 +52,16 @@ public:
 
     i32 m_id;
     i32 m_flags;
-    CGameWorld* m_ownerCtx;
+    CGameWorld* m_world;
 
     virtual ~CWapObj() OVERRIDE {
         m_id = WAPOBJ_ID_NONE;
         m_flags = 0;
-        m_ownerCtx = NULL;
+        m_world = NULL;
     }
 
     CWapObj() {
-        m_ownerCtx = NULL;
+        m_world = NULL;
     }
 
     CWapObj(CGameWorld* owner, i32 id, i32 flags);
@@ -72,13 +72,13 @@ public:
     CWapObj(CGameWorld* owner, i32 id, i32 flags, ENoSeed) {
         m_id = id;
         m_flags = flags;
-        m_ownerCtx = owner;
+        m_world = owner;
     }
 
     CWapObj(i32 id, CGameWorld* owner) {
         m_id = id;
         m_flags = 0;
-        m_ownerCtx = owner;
+        m_world = owner;
     }
 
     void AddFlags(i32 flags) {
@@ -89,8 +89,8 @@ public:
         m_flags &= ~flags;
     }
 
-    CGameWorld* OwnerMgr() const {
-        return m_ownerCtx;
+    CGameWorld* GetWorld() const {
+        return m_world;
     }
 };
 

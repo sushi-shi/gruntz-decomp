@@ -85,7 +85,7 @@ CAnimationSequence* AnimationRegistry::LoadAnimationFromSource(const char* key, 
     if (animation == NULL) {
         return NULL;
     }
-    if (animation->LoadResource(OwnerMgr()->SoundRegistry(), source, 0) == 0) {
+    if (animation->LoadResource(GetWorld()->SoundRegistry(), source, 0) == 0) {
 
         delete animation;
         return NULL;
@@ -102,7 +102,7 @@ CAnimationSequence* AnimationRegistry::LoadAnimationFromFile(const char* key, co
     if (animation == NULL) {
         return NULL;
     }
-    if (animation->LoadFile(OwnerMgr()->SoundRegistry(), path, 0) == 0) {
+    if (animation->LoadFile(GetWorld()->SoundRegistry(), path, 0) == 0) {
 
         delete animation;
         return NULL;

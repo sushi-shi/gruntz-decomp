@@ -36,7 +36,7 @@ inline i32 CWapX::SerializeAnimationState(
                 m_previousAnimation = NULL;
             } else {
                 CMapStringToPtr* map =
-                    &m_ownerLogicRecord->OwnerMgr()->m_animRegistry->m_animations;
+                    &m_ownerLogicRecord->GetWorld()->m_animRegistry->m_animations;
                 CAnimationSequence* previousAnimation = MapFind<CAnimationSequence>(*map, name);
                 m_previousAnimation = previousAnimation;
             }
@@ -49,7 +49,7 @@ inline i32 CWapX::SerializeAnimationState(
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_ownerLogicRecord->OwnerMgr()->m_animRegistry->FindAnimationKey(
+                        m_ownerLogicRecord->GetWorld()->m_animRegistry->FindAnimationKey(
                             m_previousAnimation
                         )
                     )

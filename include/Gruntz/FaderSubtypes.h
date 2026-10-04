@@ -14,7 +14,8 @@ GZ_ENUM_FORWARD(FaderMode);
 class CDDSurface;
 struct CDDPalette;
 
-struct RezElem40 {
+// @identity-TODO: original record spelling is unavailable.
+struct FaderMeshTile {
     CRect m_startRect;
     CRect m_endRect;
     // @identity-TODO: ApplyInit zeroes this word and array copies preserve it;
@@ -23,7 +24,7 @@ struct RezElem40 {
     float m_scale;
 };
 
-typedef CArray<RezElem40, const RezElem40&> CRezBufferObject;
+typedef CArray<FaderMeshTile, const FaderMeshTile&> FaderMeshTileArray;
 
 struct CFaderRadialCell {
     float m_vx;
@@ -49,7 +50,7 @@ public:
     b32 m_reverseOrder;
     i32 m_cols;
     i32 m_rows;
-    CRezBufferObject m_meshBuf;
+    FaderMeshTileArray m_tiles;
 };
 
 class CFaderSine : public CFader {

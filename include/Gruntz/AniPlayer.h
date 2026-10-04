@@ -30,7 +30,7 @@ public:
     i32 RenderCel();
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    ClockInterval m_timing;
+    ClockInterval m_toggleTimer;
 };
 
 #endif // GRUNTZ_GRUNTZ_CANIPLAYER_H

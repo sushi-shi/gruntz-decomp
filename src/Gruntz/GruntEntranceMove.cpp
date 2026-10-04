@@ -225,7 +225,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
         i32 r = GetRandom(0, 0x1e0);
         if (r > 0x140) {
             found = MapFind<CAnimationSequence>(
-                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+                m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezOne
             );
             if (onScreen) {
@@ -234,7 +234,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
             found = MapFind<CAnimationSequence>(
-                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+                m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezTwo
             );
             if (onScreen) {
@@ -243,7 +243,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         } else {
             found = MapFind<CAnimationSequence>(
-                m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+                m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
                 s_gruntzEntrancezThree
             );
             if (onScreen) {
@@ -253,13 +253,13 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
         found = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+            m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
             s_gruntzEntrancezDrop
         );
         key = s_gruntzEntrancezDrop;
     } else {
         found = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
+            m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,
             s_gruntzEntrancezRessurect
         );
         key = "GRUNTZ_DEATHZ_MELT";
@@ -297,7 +297,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
         CAnimationSequence* found = NULL;                                                          \
         CAnimationSequence* cached = m_wwdObject->GetAnimationCursor().GetAnimation();             \
         MapLookup(                                                                                 \
-            m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
+            m_wwdObject->GetWorld()->GetAnimationRegistry()->m_animations,                         \
             s_gruntzEntrancezDrop,                                                                 \
             found                                                                                  \
         );                                                                                         \
@@ -464,11 +464,11 @@ i32 CGrunt::SetWingzEnabled(b32 enable) {
         m_directionData[8].WalkName() = s_seItem;
 
         m_poseWalk = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->GetWorld()->m_animRegistry->m_animations,
             s_wgItem
         );
         CAnimationSequence* pose = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->GetWorld()->m_animRegistry->m_animations,
             s_wgItem
         );
         AT(m_poseIdle, GRUNT_IDLE3) = NULL;
@@ -504,27 +504,27 @@ i32 CGrunt::SetWingzEnabled(b32 enable) {
         m_directionData[8].IdleName() = s_seIdle;
 
         m_poseWalk = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->GetWorld()->m_animRegistry->m_animations,
             s_wgWalk
         );
         AT(m_poseIdle, GRUNT_IDLE1) = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->GetWorld()->m_animRegistry->m_animations,
             s_wgIdle1
         );
         AT(m_poseIdle, GRUNT_IDLE2) = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->GetWorld()->m_animRegistry->m_animations,
             s_wgIdle2
         );
         AT(m_poseIdle, GRUNT_IDLE3) = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->GetWorld()->m_animRegistry->m_animations,
             s_wgIdle3
         );
         AT(m_poseIdle, GRUNT_IDLE4) = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->GetWorld()->m_animRegistry->m_animations,
             s_wgIdle4
         );
         AT(m_poseIdle, GRUNT_IDLE5) = MapFind<CAnimationSequence>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+            m_wwdObject->GetWorld()->m_animRegistry->m_animations,
             s_wgIdle5
         );
     }

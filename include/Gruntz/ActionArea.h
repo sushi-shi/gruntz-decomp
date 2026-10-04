@@ -27,10 +27,10 @@ public:
 
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
-    i32 Tick();
+    i32 UpdateLightPulse();
 
-    i32 m_phase;
-    ClockInterval m_timing;
+    i32 m_dimming;
+    ClockInterval m_pulseTimer;
 };
 
 #endif // GRUNTZ_CACTIONAREA_H

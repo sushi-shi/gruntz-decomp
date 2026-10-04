@@ -33,11 +33,11 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32
     m_reserved44 = -1;
     m_reserved48 = -1;
     m_reserved14c = 0;
-    m_levelType = LevelAreaForLevel(levelIndex);
+    m_levelArea = LevelAreaForLevel(levelIndex);
     m_previousStateId = static_cast<GameStateId>(previousStateId);
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char areaKey[32];
-    sprintf(areaKey, "AREA%i", IDX(m_levelType));
+    sprintf(areaKey, "AREA%i", IDX(m_levelArea));
     CRezDir* levelResources = m_resourceArchive->GetDirFromPath(areaKey);
     m_levelResources = levelResources;
     if (levelResources == NULL) {

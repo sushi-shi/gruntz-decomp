@@ -395,7 +395,8 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->SetDamage(m_object->GetFaceDirection());
             sub->Dispatch(sl);
 
-            (static_cast<CSpotLight*>(sl->GetLogicRecord()->UserLogic()))->m_focus = m_object;
+            (static_cast<CSpotLight*>(sl->GetLogicRecord()->UserLogic()))->m_orbitCenterObject =
+                m_object;
         }
     }
     CWwdSpriteObject* o = m_object;

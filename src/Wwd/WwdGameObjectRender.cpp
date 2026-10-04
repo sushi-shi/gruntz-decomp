@@ -122,7 +122,7 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     CLogicRecord* logicTemplate,
     int objectFlags
 ) {
-    CWwdSpriteObject* result = new CWwdSpriteObject(OwnerMgr(), id, objectFlags, CWapObj::NO_SEED);
+    CWwdSpriteObject* result = new CWwdSpriteObject(GetWorld(), id, objectFlags, CWapObj::NO_SEED);
     if (result == NULL) {
         return NULL;
     }
@@ -149,7 +149,7 @@ RVA(0x00166780, 0x57)
 CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags) {
     CLogicRecord* logicTemplate =
-        MapFind<CLogicRecord>(OwnerMgr()->GetLogicRegistry()->m_templatesByName, name);
+        MapFind<CLogicRecord>(GetWorld()->GetLogicRegistry()->m_templatesByName, name);
     if (logicTemplate == NULL) {
         return NULL;
     }

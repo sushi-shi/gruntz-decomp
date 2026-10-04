@@ -47,9 +47,10 @@ struct GruntOvenSlot {
     ClockInterval m_cookingClock;
 };
 
-struct CSbiHlRow {
+// @identity-TODO: original record spelling is unavailable.
+struct StatusBarResourceSlot {
     RVA(0x000c86d0, 0x11)
-    CSbiHlRow() {}
+    StatusBarResourceSlot() {}
 
     i32 m_state;
 
@@ -60,7 +61,8 @@ struct CSbiHlRow {
     ClockInterval m_clock;
 };
 
-struct CSbiMachineRow {
+// @identity-TODO: original record spelling is unavailable.
+struct ResourceMachineAnimation {
     i32 m_state;
 
     union {
@@ -123,10 +125,10 @@ public:
     void UpdateStatusSystems();
     void Reset();
     void ToggleUnitSample(i32 unitIndex);
-    void SetLeftRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
-    void SetRightRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
+    void SetLeftMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
+    void SetRightMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void FinishGruntPlacement(b32 placed);
-    void ClearResourceSlot(i32 category, StatusBarHighlightRow row);
+    void ClearResourceSlot(i32 category, ResourceSlotRow row);
     i32 AddResourceToSlot(i32 category, i32 pickupValue, i32 row);
     i32 AddResourceToRow(i32 pickupValue, i32 row);
     i32 ConsumeReadyGrunt();
@@ -144,11 +146,11 @@ public:
     void BuildGameTabPauseButton();
 
     i32 StartGruntOven(i32);
-    void UpdateRezConveyorStatusBar();
+    void UpdateConveyorAnimations();
     void UpdateResourceMachineAnimation();
     void ResetResourceMachine();
     void UpdateResourceDeliveryAnimation();
-    i32 StartResourceGrinderDrop(i32 item, i32 x, i32 y);
+    i32 StartResourceGrinderDrop(i32 pickupValue, i32 barX, i32 barY);
     i32 RequestResourceDelivery();
     void ResetForLevel(i32);
 
@@ -158,9 +160,9 @@ public:
 
     i32 GetNextResourcePickup();
     i32 SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode);
-    void UpdateGruntOvenStatusBar();
+    void UpdateGruntOvens();
     void TickGruntWell();
-    void UpdateChipGrinderStatusBar();
+    void UpdateResourceGrinderAnimation();
     void RefreshResourceImages();
     void UpdateDestructWarningAnimation();
     i32 CreateCollapsedSprite();
@@ -169,12 +171,12 @@ public:
     void Teardown();
     i32 TryActivate();
     i32 RequestRedraw();
-    i32 SelectToolResource(StatusBarHighlightRow row);
-    i32 SelectToyResource(StatusBarHighlightRow row);
-    i32 SelectBrickResource(StatusBarHighlightRow row);
+    i32 SelectToolResource(ResourceSlotRow row);
+    i32 SelectToyResource(ResourceSlotRow row);
+    i32 SelectBrickResource(ResourceSlotRow row);
     i32 SetGameTabContent(GameTabContent content, b32 forceReload);
     i32 ClearButtonHighlights(StatusBarTab idx);
-    i32 HitTestSideTabs(i32 x, i32 y);
+    i32 HitTestSideTabs(i32 screenX, i32 screenY);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
@@ -191,10 +193,10 @@ public:
     i32 ClearUnitSample(i32 unitIndex);
     void FinishResourcePlacement(i32 consumed, i32 pickupValue);
     void ResetResourceSlots();
-    i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
+    i32 TryDiscardSelectedResourceAt(i32 screenX, i32 screenY, i32 pickupValue);
     void CloseLevelOverlay();
     i32 SelectGruntOvenForPlacement(i32 idx);
-    i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
+    i32 SelectUnitAndCenterCamera(i32 unitIndex, i32 trackUnit);
 
     const RECT* GetBarRect() const {
         return &m_barRect;
@@ -271,11 +273,11 @@ public:
     ClockInterval m_reserved2a0;
     ClockInterval m_reserved2b0;
 
-    CSbiHlRow m_conveyorSlots[3];
+    StatusBarResourceSlot m_conveyorSlots[3];
     CSBI_ImageSet* m_conveyorSprites[3];
 
-    CSbiMachineRow m_rightMachine;
-    CSbiMachineRow m_leftMachine;
+    ResourceMachineAnimation m_rightMachine;
+    ResourceMachineAnimation m_leftMachine;
     CSBI_GruntMachine* m_machineDisplay;
     // @identity-TODO: both words are save-streamed without a status-bar consumer.
     i32 m_reserved34c;
@@ -283,12 +285,12 @@ public:
     b32 m_gameplayControlsDisabled;
     b32 m_tabsBuilt;
     i32 m_selectedGruntOvenSlot;
-    StatusBarHighlightRow m_selectedResourceRow;
+    ResourceSlotRow m_selectedResourceRow;
     CStatusBarItem* m_resourceMainBackground;
     CStatusBarItem* m_resourceMachineFramework;
     CStatusBarItem* m_resourceUpperBackground;
     CStatusBarItem* m_resourceWindowBackground;
-    CSbiHlRow m_resourceSlots[12];
+    StatusBarResourceSlot m_resourceSlots[12];
     CSBI_ImageSet* m_resourceSlotSprites[12];
     SbiBeltPhase m_resourceDeliveryPhase;
     i32 m_deliveryPickupType;

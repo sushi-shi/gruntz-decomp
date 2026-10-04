@@ -20,8 +20,8 @@ public:
         return LOGIC_BOOMERANG;
     }
     virtual void AdvanceMotion() OVERRIDE;
-    virtual i32 LoadProjectileSprites(
-        PickupType kind,
+    virtual i32 LaunchProjectile(
+        PickupType weaponType,
         i32 sourcePlayerIndex,
         i32 sourceUnitIndex,
         i32 targetPxX,
@@ -31,9 +31,9 @@ public:
     ) OVERRIDE;
 
     i32 m_launchX, m_launchY;
-    double m_dirX, m_dirY;
-    double m_originX, m_originY;
-    double m_phase;
-    b32 m_launched;
+    double m_orbitRadiusX, m_orbitRadiusY;
+    double m_orbitCenterX, m_orbitCenterY;
+    double m_orbitAngle;
+    b32 m_returning;
 };
 #endif // GRUNTZ_BOOMERANG_H

@@ -96,32 +96,32 @@ i32 CRenderBuffer::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     if (!CRenderSurface::SetGeometry(w, h, bpp)) {
 
         if (m_id == IDX(DDRAW_PAGE_BACK)) {
-            OwnerMgr()->SetInitError(WORLDERR_FRONT_DIMENSIONS);
+            GetWorld()->SetInitError(WORLDERR_FRONT_DIMENSIONS);
         } else {
-            OwnerMgr()->SetInitError(WORLDERR_BACK_DIMENSIONS);
+            GetWorld()->SetInitError(WORLDERR_BACK_DIMENSIONS);
         }
         return 0;
     }
     if (m_id == IDX(DDRAW_PAGE_BACK)) {
-        CGameWorld* mgr = OwnerMgr();
+        CGameWorld* mgr = GetWorld();
         m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
             mgr->GetDisplayBuffers()->GetFrontSurface()->GetSurface(),
             DDSCAPS_BACKBUFFER
         );
         if (m_surface == NULL) {
-            OwnerMgr()->SetInitError(WORLDERR_FRONT_SURFACE_COPY);
+            GetWorld()->SetInitError(WORLDERR_FRONT_SURFACE_COPY);
             return 0;
         }
     }
     if (m_id != IDX(DDRAW_PAGE_BACK)) {
         if (HAS(static_cast<RenderBufferFlags>(m_flags), RENDER_BUFFER_SYSTEM_MEMORY)) {
             m_surface =
-                OwnerMgr()->GetDeviceManager()->CreateOffscreenSurface(w, h, BPP_UNSET, 0, -1);
+                GetWorld()->GetDeviceManager()->CreateOffscreenSurface(w, h, BPP_UNSET, 0, -1);
         } else {
-            m_surface = OwnerMgr()->GetDeviceManager()->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
+            m_surface = GetWorld()->GetDeviceManager()->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
         }
         if (m_surface == NULL) {
-            OwnerMgr()->SetInitError(WORLDERR_BACK_SURFACE_CREATE);
+            GetWorld()->SetInitError(WORLDERR_BACK_SURFACE_CREATE);
             return 0;
         }
     }
@@ -150,7 +150,7 @@ i32 CRenderBuffer::InitFromSurface(CDDSurface* src) {
 RVA(0x00163e20, 0x2d)
 void CRenderBuffer::Unload() {
     if (m_surface != NULL && m_ownsSurface != false) {
-        CDDrawDeviceManager* manager = OwnerMgr()->GetDeviceManager();
+        CDDrawDeviceManager* manager = GetWorld()->GetDeviceManager();
         manager->RemoveSurface(m_surface);
         m_surface = NULL;
     }
@@ -160,14 +160,14 @@ void CRenderBuffer::Unload() {
 RVA(0x00163e50, 0x8b)
 i32 CRenderBuffer::LoadImage(CRezItm* src) {
     BEGIN_FILE_IMAGE_PARSE(src, type, buf)
-    i32 r = m_surface->Resolve(OwnerMgr()->GetDeviceManager(), buf, type, src->GetSize(), 0);
+    i32 r = m_surface->Resolve(GetWorld()->GetDeviceManager(), buf, type, src->GetSize(), 0);
     src->UnLoad();
     return r;
 }
 
 RVA(0x00163ee0, 0x19)
 i32 CRenderBuffer::ResolveImageName(char* name) {
-    return m_surface->MakeImageKey(OwnerMgr()->GetDeviceManager(), name, 0);
+    return m_surface->MakeImageKey(GetWorld()->GetDeviceManager(), name, 0);
 }
 
 RVA(0x00163f00, 0x40)
@@ -322,10 +322,10 @@ i32 CRenderBuffer::SetGeom(i32 w, i32 h, ColorDepth bpp) {
                 sysmem = 0;
             }
         }
-        OwnerMgr()->GetDeviceManager()->RemoveSurface(m_surface);
+        GetWorld()->GetDeviceManager()->RemoveSurface(m_surface);
         m_surface = NULL;
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
-            CGameWorld* mgr = OwnerMgr();
+            CGameWorld* mgr = GetWorld();
             m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
                 mgr->GetDisplayBuffers()->GetFrontSurface()->GetSurface(),
                 DDSCAPS_BACKBUFFER
@@ -337,9 +337,9 @@ i32 CRenderBuffer::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         if (m_id != IDX(DDRAW_PAGE_BACK)) {
             if (sysmem != 0) {
                 m_surface =
-                    OwnerMgr()->GetDeviceManager()->CreateOffscreenSurface(w, h, bpp, 0, -1);
+                    GetWorld()->GetDeviceManager()->CreateOffscreenSurface(w, h, bpp, 0, -1);
             } else {
-                m_surface = OwnerMgr()->GetDeviceManager()->CreateKeyedSurface(w, h, bpp, 0, -1);
+                m_surface = GetWorld()->GetDeviceManager()->CreateKeyedSurface(w, h, bpp, 0, -1);
             }
             if (m_surface == NULL) {
                 return 0;
@@ -390,7 +390,7 @@ void CRenderBuffer::DrawLabel(RECT* rc, char* text) {
 
 RVA(0x001644a0, 0x1b0)
 i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
-    CGameWorld* surfaceManager = OwnerMgr();
+    CGameWorld* surfaceManager = GetWorld();
     m_width = w;
     m_height = h;
     m_bpp = bpp;
@@ -414,29 +414,29 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
         if (err != DDRAWERR_NONE) {
             switch (err) {
                 case DDRAWERR_CREATE:
-                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_CREATE);
+                    GetWorld()->SetInitError(WORLDERR_DDRAW_CREATE);
                     return 0;
                 case DDRAWERR_COOPERATIVE_LEVEL:
-                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_COOPERATIVE_LEVEL);
+                    GetWorld()->SetInitError(WORLDERR_DDRAW_COOPERATIVE_LEVEL);
                     return 0;
                 case DDRAWERR_CAPABILITIES:
-                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_CAPABILITIES);
+                    GetWorld()->SetInitError(WORLDERR_DDRAW_CAPABILITIES);
                     return 0;
                 case DDRAWERR_DISPLAY_MODE:
-                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_DISPLAY_MODE);
+                    GetWorld()->SetInitError(WORLDERR_DDRAW_DISPLAY_MODE);
                     return 0;
                 case DDRAWERR_COLOR_MASKS:
-                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_COLOR_MASKS);
+                    GetWorld()->SetInitError(WORLDERR_DDRAW_COLOR_MASKS);
                     return 0;
                 default:
-                    OwnerMgr()->SetInitError(WORLDERR_CREATE_DEVICE);
+                    GetWorld()->SetInitError(WORLDERR_CREATE_DEVICE);
                     return 0;
             }
         }
-        OwnerMgr()->SetInitError(WORLDERR_CREATE_DEVICE);
+        GetWorld()->SetInitError(WORLDERR_CREATE_DEVICE);
         return 0;
     }
-    CGameWorld* m2 = OwnerMgr();
+    CGameWorld* m2 = GetWorld();
     i32 amode = 1;
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(m2->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         amode = 2;
@@ -446,7 +446,7 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     if (surf != NULL && surf->IsValid()) {
         return 1;
     }
-    OwnerMgr()->SetInitError(WORLDERR_CREATE_PALETTE_SURFACE);
+    GetWorld()->SetInitError(WORLDERR_CREATE_PALETTE_SURFACE);
     return 0;
 }
 
@@ -477,7 +477,7 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
     }
-    CDDrawDeviceManager* manager = OwnerMgr()->GetDeviceManager();
+    CDDrawDeviceManager* manager = GetWorld()->GetDeviceManager();
     if (manager == NULL) {
         return 0;
     }
@@ -487,7 +487,7 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         return 0;
     }
     i32 amode = 1;
-    if (HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
+    if (HAS(static_cast<DDrawSurfaceMgrFlags>(GetWorld()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         amode = 2;
     }
     m_surface = manager->Create24BitPrimarySurface(amode);
@@ -510,7 +510,7 @@ i32 CRenderState::SetPosition(i32 x, i32 y) {
     m_screenY = y;
     m_flashInterval = 0x32;
     ResetDrawFill();
-    m_level = OwnerMgr()->GetLevel();
+    m_level = GetWorld()->GetLevel();
     return 1;
 }
 
@@ -523,7 +523,7 @@ i32 CRenderState::Init(
     GZ_ENUM_PARAM(SpriteStateFlags, i32) stateFlags,
     i32 flags
 ) {
-    m_ownerCtx = owner;
+    m_world = owner;
     m_id = id;
     m_flags = flags;
     ResetDrawFill();
@@ -564,7 +564,7 @@ i32 CLogicRecord::SerializeDispatch(
         case SERIAL_POSTLOAD:
             if (m_targetId) {
                 m_target = LookupObjectById(
-                    m_ownerCtx->ChildGroup()->m_registeredGameObjectsById,
+                    m_world->ChildGroup()->m_registeredGameObjectsById,
                     m_targetId
                 );
             }
@@ -760,8 +760,7 @@ i32 CLogicRecord::ResolveTarget(void* context) {
         return 0;
     }
     if (m_targetId) {
-        m_target =
-            LookupObjectById(m_ownerCtx->ChildGroup()->m_registeredGameObjectsById, m_targetId);
+        m_target = LookupObjectById(m_world->ChildGroup()->m_registeredGameObjectsById, m_targetId);
     }
     return 1;
 }
@@ -789,7 +788,7 @@ CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
     i32 flags
 ) {
 
-    CLogicRecord* record = new CLogicRecord(OwnerMgr(), m_templatesByName.GetCount());
+    CLogicRecord* record = new CLogicRecord(GetWorld(), m_templatesByName.GetCount());
 
     if (record->Init(dispatch, flags) == 0) {
         if (record != NULL) {
@@ -931,7 +930,7 @@ CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 
     if (data == NULL) {
         return NULL;
     }
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_world);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         src->UnLoad();
         if (w != NULL) {
@@ -953,7 +952,7 @@ CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 
 RVA(0x00165990, 0x77)
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags) {
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_world);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         if (w != NULL) {
             delete w;
@@ -967,7 +966,7 @@ CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags
 RVA(0x00165a10, 0x77)
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flags) {
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_world);
     if (w->LoadPaletteFromFile(path, flags) == 0) {
         if (w != NULL) {
             delete w;
@@ -990,7 +989,7 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 fl
     }
 
     i32 length = static_cast<i32>(src->GetSize());
-    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_world);
     if (w->CreatePaletteFromTrailingData(data, length, flags) == 0) {
         if (w != NULL) {
             delete w;
@@ -1151,7 +1150,7 @@ void CTransientPixel::Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay) 
 
 RVA(0x00166040, 0x66)
 i32 CTransientImage::SetImageByName(const char* imageSetName, i32 frameIndex) {
-    CImageSet* imageSet = OwnerMgr()->FindImageSet(imageSetName);
+    CImageSet* imageSet = GetWorld()->FindImageSet(imageSetName);
     CImage* image = imageSet != NULL ? imageSet->GetAt(frameIndex) : NULL;
     m_image = image;
     return image != NULL;

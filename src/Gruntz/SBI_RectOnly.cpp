@@ -112,7 +112,7 @@ i32 CStatusBarMgr::Initialize(CGameWorld* world) {
         return 0;
     }
     m_selectedGruntOvenSlot = -1;
-    m_selectedResourceRow = STATUS_HL_ROW_NONE;
+    m_selectedResourceRow = RESOURCE_ROW_NONE;
     m_resourceDeliveryActive = false;
     m_pendingResourceDeliveries = 0;
     m_levelOverlayActive = false;
@@ -517,7 +517,7 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 screenX, i32 screenY) {
                 case SBICMD_CURSOR_TARGET_FIRST + 0xd:
                 case SBICMD_CURSOR_TARGET_FIRST + 0xe:
                     HiCueLookup();
-                    PlaceCursorTarget(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
+                    SelectUnitAndCenterCamera(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
                     return 1;
                 case SBICMD_STAT_TOGGLE_FIRST + 0x0:
                 case SBICMD_STAT_TOGGLE_FIRST + 0x1:
@@ -579,32 +579,28 @@ i32 CStatusBarMgr::HandleClick(i32 mouseFlags, i32 screenX, i32 screenY) {
                 break;
             }
             switch (command) {
-                case SBICMD_TOOL_RESOURCE_CATEGORY:
-                case SBICMD_TOOL_RESOURCE_UPPER:
-                case SBICMD_TOOL_RESOURCE_MIDDLE:
-                case SBICMD_TOOL_RESOURCE_LOWER:
+                case SBICMD_TOOL_RESOURCE_TOP:
+                case SBICMD_TOOL_RESOURCE_UPPER_MIDDLE:
+                case SBICMD_TOOL_RESOURCE_LOWER_MIDDLE:
+                case SBICMD_TOOL_RESOURCE_BOTTOM:
                     SelectToolResource(
-                        static_cast<StatusBarHighlightRow>(
-                            IDX(command) - IDX(SBICMD_TOOL_RESOURCE_FIRST)
-                        )
+                        static_cast<ResourceSlotRow>(IDX(command) - IDX(SBICMD_TOOL_RESOURCE_FIRST))
                     );
                     return 1;
-                case SBICMD_TOY_RESOURCE_CATEGORY:
-                case SBICMD_TOY_RESOURCE_UPPER:
-                case SBICMD_TOY_RESOURCE_MIDDLE:
-                case SBICMD_TOY_RESOURCE_LOWER:
+                case SBICMD_TOY_RESOURCE_TOP:
+                case SBICMD_TOY_RESOURCE_UPPER_MIDDLE:
+                case SBICMD_TOY_RESOURCE_LOWER_MIDDLE:
+                case SBICMD_TOY_RESOURCE_BOTTOM:
                     SelectToyResource(
-                        static_cast<StatusBarHighlightRow>(
-                            IDX(command) - IDX(SBICMD_TOY_RESOURCE_FIRST)
-                        )
+                        static_cast<ResourceSlotRow>(IDX(command) - IDX(SBICMD_TOY_RESOURCE_FIRST))
                     );
                     return 1;
-                case SBICMD_BRICK_RESOURCE_CATEGORY:
-                case SBICMD_BRICK_RESOURCE_UPPER:
-                case SBICMD_BRICK_RESOURCE_MIDDLE:
-                case SBICMD_BRICK_RESOURCE_LOWER:
+                case SBICMD_BRICK_RESOURCE_TOP:
+                case SBICMD_BRICK_RESOURCE_UPPER_MIDDLE:
+                case SBICMD_BRICK_RESOURCE_LOWER_MIDDLE:
+                case SBICMD_BRICK_RESOURCE_BOTTOM:
                     SelectBrickResource(
-                        static_cast<StatusBarHighlightRow>(
+                        static_cast<ResourceSlotRow>(
                             IDX(command) - IDX(SBICMD_BRICK_RESOURCE_FIRST)
                         )
                     );
@@ -679,7 +675,7 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 screenX, i32 screenY) {
                 && g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() != false
                 && command >= SBICMD_CURSOR_TARGET_FIRST && command <= SBICMD_CURSOR_TARGET_LAST) {
                 HiCueTimed();
-                PlaceCursorTarget(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
+                SelectUnitAndCenterCamera(IDX(command) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
                 return 1;
             }
             break;
@@ -2337,10 +2333,10 @@ i32 CStatusBarMgr::SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode)
         return 0;
     }
 
-    CSBI_SideTab* r = m_unitSideTabs[unitIndex];
-    if (r != NULL) {
-        r->m_sampleMode = sampleMode;
-        r->SetEnabled(1);
+    CSBI_SideTab* sideTab = m_unitSideTabs[unitIndex];
+    if (sideTab != NULL) {
+        sideTab->m_sampleMode = sampleMode;
+        sideTab->SetEnabled(1);
         if (m_activeTab == TAB_STATZ) {
 
             m_unitSampleArrows[unitIndex]->SetSampledDirection(m_position, true);
@@ -2353,10 +2349,10 @@ i32 CStatusBarMgr::SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode)
 
 RVA(0x00104f90, 0xa8)
 i32 CStatusBarMgr::ClearUnitSample(i32 unitIndex) {
-    CSBI_SideTab* r = m_unitSideTabs[unitIndex];
-    if (r != NULL) {
-        r->m_sampleMode = STATUS_SAMPLE_NONE;
-        r->SetEnabled(0);
+    CSBI_SideTab* sideTab = m_unitSideTabs[unitIndex];
+    if (sideTab != NULL) {
+        sideTab->m_sampleMode = STATUS_SAMPLE_NONE;
+        sideTab->SetEnabled(0);
         if (m_activeTab == TAB_STATZ) {
 
             m_unitSampleArrows[unitIndex]->SetUnsampledDirection(m_position, true);
@@ -2369,52 +2365,53 @@ i32 CStatusBarMgr::ClearUnitSample(i32 unitIndex) {
 
 RVA(0x00105070, 0x10e)
 i32 CStatusBarMgr::BuildSideTabs() {
-    i32 i = 0;
-    for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
-        RECT rc;
+    i32 unitIndex = 0;
+    for (i32 tabBottom = 0xd9; tabBottom < 0x1e7; tabBottom += 0x12) {
+        RECT tabRect;
         if (m_position == STATUSBAR_DOCK_RIGHT) {
-            rc.left = m_barRect.left - 0x1c;
-            rc.right = m_barRect.left;
+            tabRect.left = m_barRect.left - 0x1c;
+            tabRect.right = m_barRect.left;
         } else {
-            rc.left = m_barRect.right;
-            rc.right = m_barRect.right + 0x1c;
+            tabRect.left = m_barRect.right;
+            tabRect.right = m_barRect.right + 0x1c;
         }
-        rc.top = strid - 0x11;
-        rc.bottom = strid;
-        CSBI_SideTab* newobj = new CSBI_SideTab;
+        tabRect.top = tabBottom - 0x11;
+        tabRect.bottom = tabBottom;
+        CSBI_SideTab* sideTab = new CSBI_SideTab;
 
-        b32 ok = newobj->Initialize(
+        b32 initialized = sideTab->Initialize(
             this,
             g_gameReg->World(),
-            static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + i),
+            static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + unitIndex),
             TAB_CONTROLS,
-            rc,
+            tabRect,
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
             g_curPlayer,
-            i,
-            m_unitSampleModes[i],
+            unitIndex,
+            m_unitSampleModes[unitIndex],
             m_position == STATUSBAR_DOCK_RIGHT
         );
-        if (ok == false) {
-            delete newobj;
+        if (initialized == false) {
+            delete sideTab;
             return 0;
         }
-        AddTabItem(0, newobj);
-        m_unitSideTabs[i] = newobj;
-        i++;
+        AddTabItem(0, sideTab);
+        m_unitSideTabs[unitIndex] = sideTab;
+        unitIndex++;
     }
     return 1;
 }
 
 RVA(0x00105280, 0x61)
-i32 CStatusBarMgr::HitTestSideTabs(i32 x, i32 y) {
+i32 CStatusBarMgr::HitTestSideTabs(i32 screenX, i32 screenY) {
     if (m_gameplayControlsDisabled == false) {
-        for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-            if (m_unitSideTabs[i] && m_unitSideTabs[i]->IsEnabled()) {
-                CSBI_SideTab* p = m_unitSideTabs[i];
-                b32 hit = p->IsEnabled() ? p->ContainsPoint(x, y) : false;
-                if (hit) {
-                    return i;
+        for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
+            if (m_unitSideTabs[unitIndex] && m_unitSideTabs[unitIndex]->IsEnabled()) {
+                CSBI_SideTab* sideTab = m_unitSideTabs[unitIndex];
+                b32 containsPoint =
+                    sideTab->IsEnabled() ? sideTab->ContainsPoint(screenX, screenY) : false;
+                if (containsPoint) {
+                    return unitIndex;
                 }
             }
         }
@@ -2424,37 +2421,38 @@ i32 CStatusBarMgr::HitTestSideTabs(i32 x, i32 y) {
 
 // @early-stop
 RVA(0x00105310, 0x11a)
-void CStatusBarMgr::UpdateGruntOvenStatusBar() {
+void CStatusBarMgr::UpdateGruntOvens() {
 
-    CSBI_ImageSet** slot = m_gruntOvenImages;
-    GruntOvenSlot* tab = m_gruntOvenSlots;
-    i32 n = 5;
+    CSBI_ImageSet** ovenImageSlot = m_gruntOvenImages;
+    GruntOvenSlot* ovenSlot = m_gruntOvenSlots;
+    i32 remainingOvens = 5;
     do {
-        if (tab->m_state == GRUNT_OVEN_COOKING) {
-            i64 d = static_cast<i64>(g_frameTime) - tab->m_cookingClock.GetStartTime();
+        if (ovenSlot->m_state == GRUNT_OVEN_COOKING) {
+            i64 elapsedMs = static_cast<i64>(g_frameTime) - ovenSlot->m_cookingClock.GetStartTime();
 
-            i32 elapsed = static_cast<i32>(max(0, d));
-            u32 delay = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
-            i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
-            if (frame >= 0x1a) {
-                tab->m_state = GRUNT_OVEN_READY;
-                frame = 0x1a;
+            i32 nonnegativeElapsedMs = static_cast<i32>(max(0, elapsedMs));
+            u32 frameDelayMs = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
+            i32 frameIndex =
+                static_cast<i32>((static_cast<u32>(nonnegativeElapsedMs) / frameDelayMs)) + 1;
+            if (frameIndex >= 0x1a) {
+                ovenSlot->m_state = GRUNT_OVEN_READY;
+                frameIndex = 0x1a;
                 PlayRegistryCueIfElapsed(
                     g_gameReg->World()->SoundRegistry(),
                     "GAME_COOKINGCOMPLETE"
                 );
             }
-            if (frame != tab->m_frameIndex) {
-                tab->m_frameIndex = frame;
-                CSBI_ImageSet* w = *slot;
-                if (w) {
-                    w->SetFrameIndex(frame);
+            if (frameIndex != ovenSlot->m_frameIndex) {
+                ovenSlot->m_frameIndex = frameIndex;
+                CSBI_ImageSet* ovenImage = *ovenImageSlot;
+                if (ovenImage) {
+                    ovenImage->SetFrameIndex(frameIndex);
                 }
             }
         }
-        ++slot;
-        ++tab;
-    } while (--n != 0);
+        ++ovenImageSlot;
+        ++ovenSlot;
+    } while (--remainingOvens != 0);
 }
 
 RVA(0x00105480, 0x7d)
@@ -2566,21 +2564,21 @@ void CStatusBarMgr::SetGruntWell(i32 value) {
 }
 
 RVA(0x00105800, 0x9e)
-i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
+i32 CStatusBarMgr::SelectUnitAndCenterCamera(i32 unitIndex, i32 trackUnit) {
     i32 playerIndex = g_curPlayer;
     if (g_gameReg->GetTriggerMgr()->SelectUnit(playerIndex, unitIndex, 0, 0) != 0) {
 
-        CGrunt* entry = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
-        if (entry != NULL) {
+        CGrunt* grunt = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
+        if (grunt != NULL) {
             (static_cast<CPlay*>(g_gameReg->GetCurrentState()))
                 ->SetCameraPosition(
-                    entry->GetSpriteObject()->m_screenX,
-                    entry->GetSpriteObject()->m_screenY
+                    grunt->GetSpriteObject()->m_screenX,
+                    grunt->GetSpriteObject()->m_screenY
                 );
-            if (activateCamera != 0) {
-                CTriggerMgr* obj = g_gameReg->GetTriggerMgr();
-                if (obj->IsUnitSelected(playerIndex, unitIndex)) {
-                    obj->SetCameraTarget(playerIndex, unitIndex);
+            if (trackUnit != 0) {
+                CTriggerMgr* triggerMgr = g_gameReg->GetTriggerMgr();
+                if (triggerMgr->IsUnitSelected(playerIndex, unitIndex)) {
+                    triggerMgr->SetCameraTarget(playerIndex, unitIndex);
                 }
             }
             return 1;
@@ -2591,12 +2589,12 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
 
 RVA(0x001058d0, 0x34)
 void CStatusBarMgr::UpdateStatusSystems() {
-    UpdateGruntOvenStatusBar();
+    UpdateGruntOvens();
     TickGruntWell();
-    UpdateRezConveyorStatusBar();
+    UpdateConveyorAnimations();
     UpdateResourceMachineAnimation();
     UpdateResourceDeliveryAnimation();
-    UpdateChipGrinderStatusBar();
+    UpdateResourceGrinderAnimation();
     UpdateDestructWarningAnimation();
 }
 
@@ -2613,7 +2611,7 @@ void CStatusBarMgr::Reset() {
 }
 
 RVA(0x00105990, 0x3b4)
-void CStatusBarMgr::UpdateRezConveyorStatusBar() {
+void CStatusBarMgr::UpdateConveyorAnimations() {
     for (i32 i = 0; i < 3; i++) {
         ClockInterval* clock = &m_conveyorSlots[i].m_clock;
         SbiHlRowState state = static_cast<SbiHlRowState>(m_conveyorSlots[i].m_state);
@@ -2692,13 +2690,13 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 
 RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::UpdateResourceMachineAnimation() {
-    CSbiMachineRow* rightMachine = &m_rightMachine;
-    CSbiMachineRow* leftMachine = &m_leftMachine;
+    ResourceMachineAnimation* rightMachine = &m_rightMachine;
+    ResourceMachineAnimation* leftMachine = &m_leftMachine;
     switch (static_cast<SbiMachineState>(rightMachine->m_state)) {
         case MACHINE_RIGHT_RUNNING:
             if (rightMachine->m_clock.Expired()) {
                 if (++rightMachine->m_counter > 0x34) {
-                    SetRightRezMachineAnimation(
+                    SetRightMachineAnimation(
                         0x2b,
                         MACHINE_RIGHT_RUNNING,
                         g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d)
@@ -2713,7 +2711,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_RIGHT_SPEWING:
             if (rightMachine->m_clock.Expired()) {
                 if (++rightMachine->m_counter > 0x44) {
-                    SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
+                    SetRightMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
                 } else {
                     rightMachine->m_clock.Start(
                         g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d)
@@ -2727,7 +2725,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_SNOOZING:
             if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 8) {
-                    SetLeftRezMachineAnimation(
+                    SetLeftMachineAnimation(
                         1,
                         MACHINE_SNOOZING,
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
@@ -2742,12 +2740,12 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_WAKING:
             if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 0x13) {
-                    SetLeftRezMachineAnimation(
+                    SetLeftMachineAnimation(
                         0x14,
                         MACHINE_TURNING_WHEEL,
                         g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
                     );
-                    SetRightRezMachineAnimation(
+                    SetRightMachineAnimation(
                         0x2b,
                         MACHINE_RIGHT_RUNNING,
                         g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d)
@@ -2771,7 +2769,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
         case MACHINE_TURNING_WHEEL:
             if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 0x1d) {
-                    SetLeftRezMachineAnimation(
+                    SetLeftMachineAnimation(
                         0x14,
                         MACHINE_TURNING_WHEEL,
                         g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
@@ -2819,7 +2817,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
                     );
                 }
                 if (leftMachine->m_counter > 0x2a) {
-                    SetLeftRezMachineAnimation(
+                    SetLeftMachineAnimation(
                         1,
                         MACHINE_SNOOZING,
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
@@ -2851,12 +2849,12 @@ void CStatusBarMgr::ResetConveyorBelts() {
 
 RVA(0x00106660, 0x68)
 void CStatusBarMgr::ResetResourceMachine() {
-    SetLeftRezMachineAnimation(
+    SetLeftMachineAnimation(
         1,
         MACHINE_SNOOZING,
         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 100)
     );
-    SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
+    SetRightMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
     if (m_machineDisplay) {
         m_machineDisplay->SetFrames(m_leftMachine.m_counter, m_rightMachine.m_counter);
     }
@@ -2865,7 +2863,7 @@ void CStatusBarMgr::ResetResourceMachine() {
 }
 
 RVA(0x001066f0, 0x3b)
-void CStatusBarMgr::SetLeftRezMachineAnimation(
+void CStatusBarMgr::SetLeftMachineAnimation(
     i32 initialFrame,
     SbiMachineState state,
     i32 frameDelayMs
@@ -2876,7 +2874,7 @@ void CStatusBarMgr::SetLeftRezMachineAnimation(
 }
 
 RVA(0x00106740, 0x3b)
-void CStatusBarMgr::SetRightRezMachineAnimation(
+void CStatusBarMgr::SetRightMachineAnimation(
     i32 initialFrame,
     SbiMachineState state,
     i32 frameDelayMs
@@ -2904,7 +2902,7 @@ void CStatusBarMgr::FinishGruntPlacement(b32 placed) {
 
 RVA(0x00106820, 0xa8)
 void CStatusBarMgr::FinishResourcePlacement(i32 consumed, i32 pickupValue) {
-    if (m_selectedResourceRow == STATUS_HL_ROW_NONE) {
+    if (m_selectedResourceRow == RESOURCE_ROW_NONE) {
         return;
     }
     PickupType item = static_cast<PickupType>(pickupValue);
@@ -2917,7 +2915,7 @@ void CStatusBarMgr::FinishResourcePlacement(i32 consumed, i32 pickupValue) {
     if (consumed != 0) {
         ClearResourceSlot(category, m_selectedResourceRow);
         for (i32 row = IDX(m_selectedResourceRow) - 1; row >= 0; row--) {
-            CSbiHlRow* cell = &m_resourceSlots[row + category * 4];
+            StatusBarResourceSlot* cell = &m_resourceSlots[row + category * 4];
             if (cell->m_state == IDX(HLROW_IDLE_CYCLE)) {
                 m_resourceSlots[row + category * 4 + 1].m_state = IDX(HLROW_IDLE_CYCLE);
                 cell[1].m_value = cell->m_value;
@@ -2929,13 +2927,13 @@ void CStatusBarMgr::FinishResourcePlacement(i32 consumed, i32 pickupValue) {
         m_resourceSlots[IDX(m_selectedResourceRow) + category * 4].m_value = pickupValue;
     }
     RefreshResourceImages();
-    m_selectedResourceRow = STATUS_HL_ROW_NONE;
+    m_selectedResourceRow = RESOURCE_ROW_NONE;
 }
 
 RVA(0x00106900, 0x8d)
 void CStatusBarMgr::ResetResourceSlots() {
     for (i32 i = 0; i < 4; i++) {
-        StatusBarHighlightRow row = static_cast<StatusBarHighlightRow>(i);
+        ResourceSlotRow row = static_cast<ResourceSlotRow>(i);
         ClearResourceSlot(0, row);
         ClearResourceSlot(1, row);
         ClearResourceSlot(2, row);
@@ -2946,11 +2944,11 @@ void CStatusBarMgr::ResetResourceSlots() {
     m_grinderPickupType = 0;
     SetRect(&m_grinderItemRect, 0, 0, 1, 1);
     SetRect(&m_deliveryItemRect, 0x49, 0xd7, 0x61, 0xef);
-    m_selectedResourceRow = STATUS_HL_ROW_NONE;
+    m_selectedResourceRow = RESOURCE_ROW_NONE;
 }
 
 RVA(0x001069c0, 0x2e)
-void CStatusBarMgr::ClearResourceSlot(i32 category, StatusBarHighlightRow row) {
+void CStatusBarMgr::ClearResourceSlot(i32 category, ResourceSlotRow row) {
     i32 idx = IDX(row) + category * 4;
     m_resourceSlots[idx].m_state = IDX(HLROW_OFF);
     m_resourceSlots[idx].m_value = 0;
@@ -3047,7 +3045,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
             break;
         case BELT_SPEWING:
             if (belt->Expired()) {
-                SetRightRezMachineAnimation(
+                SetRightMachineAnimation(
                     0x35,
                     MACHINE_RIGHT_SPEWING,
                     g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d)
@@ -3106,7 +3104,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                 m_deliveryItemRect.right = m_deliveryTargetX + 0x17;
                 rectFlag = 1;
                 ResetConveyorBelts();
-                SetLeftRezMachineAnimation(
+                SetLeftMachineAnimation(
                     0x1e,
                     MACHINE_LEVER,
                     g_buteMgr.GetDword("StatusBar", "LeftMachineLeverDelay", 0x64)
@@ -3133,7 +3131,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                 col = (item2 >= PICKUP_TOYZ_FIRST) ? 1 : 0;
             }
             i32 row;
-            CSbiHlRow* cell = &m_resourceSlots[col * 4 + 3];
+            StatusBarResourceSlot* cell = &m_resourceSlots[col * 4 + 3];
             for (row = 3; row >= 0; row--, cell--) {
                 if (cell->m_state != IDX(HLROW_IDLE_CYCLE)) {
                     break;
@@ -3172,42 +3170,42 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
 
 // @early-stop
 RVA(0x00107590, 0xc4)
-i32 CStatusBarMgr::StartResourceGrinderDrop(i32 item, i32 x, i32 y) {
-    m_grinderPickupType = item;
+i32 CStatusBarMgr::StartResourceGrinderDrop(i32 pickupValue, i32 barX, i32 barY) {
+    m_grinderPickupType = pickupValue;
     m_grinderState = FALLING_ITEM_DESCENDING;
     m_grinderClock.Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
-    CSBI_ImageSet* n = m_grinderItemDisplay;
-    i32 l = x - 0xc;
-    i32 t = y - 0xc;
-    i32 rr = x + 0xc;
-    i32 b = y + 0xc;
-    SET_RECT_COMPONENTS(m_grinderItemRect, l, t, rr, b);
-    if (n) {
+    CSBI_ImageSet* grinderImage = m_grinderItemDisplay;
+    i32 itemLeft = barX - 0xc;
+    i32 itemTop = barY - 0xc;
+    i32 itemRight = barX + 0xc;
+    i32 itemBottom = barY + 0xc;
+    SET_RECT_COMPONENTS(m_grinderItemRect, itemLeft, itemTop, itemRight, itemBottom);
+    if (grinderImage) {
 
-        RECT rc;
-        i32 x = m_barRect.left;
-        rc.left = l + x;
-        i32 y = m_barRect.top;
-        rc.top = t + y;
-        rc.bottom = y + b;
-        rc.right = x + rr;
-        n->SetBounds(rc);
+        RECT imageRect;
+        i32 barLeft = m_barRect.left;
+        imageRect.left = itemLeft + barLeft;
+        i32 barTop = m_barRect.top;
+        imageRect.top = itemTop + barTop;
+        imageRect.bottom = barTop + itemBottom;
+        imageRect.right = barLeft + itemRight;
+        grinderImage->SetBounds(imageRect);
     }
     RefreshResourceImages();
     return 1;
 }
 
 RVA(0x001076a0, 0x1f3)
-void CStatusBarMgr::UpdateChipGrinderStatusBar() {
+void CStatusBarMgr::UpdateResourceGrinderAnimation() {
 
     if (m_grinderState == FALLING_ITEM_INACTIVE) {
         return;
     }
 
-    i32 stepped = 0;
+    i32 animationActive = 0;
     if (m_grinderState == FALLING_ITEM_DESCENDING || m_grinderState == FALLING_ITEM_GRINDING) {
-        u32 delay = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
-        i32 speed = g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 4);
+        u32 frameDelayMs = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
+        i32 pixelsPerStep = g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 4);
 
         if (m_grinderItemRect.top >= 0x1c7) {
             m_grinderState = FALLING_ITEM_INACTIVE;
@@ -3217,62 +3215,62 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                 PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_REZGRINDING");
                 m_grinderState = FALLING_ITEM_GRINDING;
             }
-            delay = g_buteMgr.GetDword("StatusBar", "FallingItemShredderDelay", 0x64);
-            speed = g_buteMgr.GetInt("StatusBar", "FallingItemShredderSpeed", 2);
+            frameDelayMs = g_buteMgr.GetDword("StatusBar", "FallingItemShredderDelay", 0x64);
+            pixelsPerStep = g_buteMgr.GetInt("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        ClockInterval* clock = &m_grinderClock;
-        i64 d = static_cast<i64>(g_frameTime) - clock->GetStartTime();
-        if (d >= clock->GetInterval()) {
-            OFFSET_RECT_Y_EDGES(m_grinderItemRect, speed, speed);
-            CSBI_ImageSet* w = m_grinderItemDisplay;
-            if (w) {
-                RECT rc;
-                i32 sy = m_barRect.top;
-                rc.bottom = sy + m_grinderItemRect.bottom;
-                rc.top = sy + m_grinderItemRect.top;
-                i32 sx = m_barRect.left;
-                rc.left = m_grinderItemRect.left + sx;
-                rc.right = m_grinderItemRect.right + sx;
-                w->SetBounds(rc);
+        ClockInterval* grinderClock = &m_grinderClock;
+        i64 elapsedMs = static_cast<i64>(g_frameTime) - grinderClock->GetStartTime();
+        if (elapsedMs >= grinderClock->GetInterval()) {
+            OFFSET_RECT_Y_EDGES(m_grinderItemRect, pixelsPerStep, pixelsPerStep);
+            CSBI_ImageSet* grinderImage = m_grinderItemDisplay;
+            if (grinderImage) {
+                RECT imageRect;
+                i32 barTop = m_barRect.top;
+                imageRect.bottom = barTop + m_grinderItemRect.bottom;
+                imageRect.top = barTop + m_grinderItemRect.top;
+                i32 barLeft = m_barRect.left;
+                imageRect.left = m_grinderItemRect.left + barLeft;
+                imageRect.right = m_grinderItemRect.right + barLeft;
+                grinderImage->SetBounds(imageRect);
             }
-            clock->Start(delay);
+            grinderClock->Start(frameDelayMs);
         }
-        stepped = 1;
+        animationActive = 1;
     }
 
-    if (m_grinderItemDisplay != NULL && stepped) {
+    if (m_grinderItemDisplay != NULL && animationActive) {
         RefreshResourceImages();
     }
 }
 
 RVA(0x00107920, 0xb7)
-i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
-    if (m_selectedResourceRow == STATUS_HL_ROW_NONE) {
+i32 CStatusBarMgr::TryDiscardSelectedResourceAt(i32 screenX, i32 screenY, i32 pickupValue) {
+    if (m_selectedResourceRow == RESOURCE_ROW_NONE) {
         return 0;
     }
-    CStatusBarItem* r = HitTestItems(screenX, screenY);
-    if (r == NULL) {
+    CStatusBarItem* conveyorItem = HitTestItems(screenX, screenY);
+    if (conveyorItem == NULL) {
         return 0;
     }
-    SbiCommandId cmd = r->GetCommandId();
-    if (cmd != SBICMD_CONVEYOR_TOP && cmd != SBICMD_CONVEYOR_BOTTOM) {
+    SbiCommandId command = conveyorItem->GetCommandId();
+    if (command != SBICMD_CONVEYOR_TOP && command != SBICMD_CONVEYOR_BOTTOM) {
         return 0;
     }
 
-    i32 cx = screenX;
-    RECT rc = r->GetBounds();
-    i32 lo = rc.left + 0x1b;
-    i32 xHi = rc.right;
-    if (screenX < lo) {
-        cx = lo;
-    } else if (screenX > xHi - 0x1a) {
-        cx = xHi - 0x1a;
+    i32 clampedScreenX = screenX;
+    RECT conveyorRect = conveyorItem->GetBounds();
+    i32 minScreenX = conveyorRect.left + 0x1b;
+    i32 conveyorRight = conveyorRect.right;
+    if (screenX < minScreenX) {
+        clampedScreenX = minScreenX;
+    } else if (screenX > conveyorRight - 0x1a) {
+        clampedScreenX = conveyorRight - 0x1a;
     }
-    i32 localX = cx - m_barRect.left;
-    i32 localY = 0x1b3 - m_barRect.top;
-    StartResourceGrinderDrop(itemFrame, localX, localY);
-    FinishResourcePlacement(1, itemFrame);
+    i32 barX = clampedScreenX - m_barRect.left;
+    i32 barY = 0x1b3 - m_barRect.top;
+    StartResourceGrinderDrop(pickupValue, barX, barY);
+    FinishResourcePlacement(1, pickupValue);
     return 1;
 }
 
@@ -3282,7 +3280,7 @@ i32 CStatusBarMgr::RequestResourceDelivery() {
         if (m_deliveryPickupType == 0) {
             return 0;
         }
-        SetLeftRezMachineAnimation(
+        SetLeftMachineAnimation(
             9,
             MACHINE_WAKING,
             g_buteMgr.GetDword("StatusBar", "LeftMachineWakingDelay", 100)
@@ -3342,120 +3340,122 @@ void CStatusBarMgr::ResetForLevel(i32) {
 }
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::PrepareNextResource() {
-    PickupType result;
+    PickupType pickupType;
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
-            Coord* p = GetReward(0);
-            result = static_cast<PickupType>(p->m_x);
-            g_coordPool.Push(p);
+            Coord* queuedReward = GetReward(0);
+            pickupType = static_cast<PickupType>(queuedReward->m_x);
+            g_coordPool.Push(queuedReward);
             m_rewardQueue.RemoveAt(0, 1);
         } else {
-            result = PICKUP_NONE;
+            pickupType = PICKUP_NONE;
             if (m_deliveryItemDisplay) {
                 m_deliveryItemDisplay->SetFrameIndex(0);
             }
         }
     } else {
-        i32 r1 = WapRand(m_randomRewardThresholds[2]);
-        if (r1 <= m_randomRewardThresholds[0]) {
-            i32 r = WapRand(m_randomRewardThresholds[37]);
-            if (r <= m_randomRewardThresholds[17]) {
-                result = PICKUP_BOMB;
-            } else if (r <= m_randomRewardThresholds[18]) {
-                result = PICKUP_BOOMERANG;
-            } else if (r <= m_randomRewardThresholds[19]) {
-                result = PICKUP_BRICK;
-            } else if (r <= m_randomRewardThresholds[20]) {
-                result = PICKUP_CLUB;
-            } else if (r <= m_randomRewardThresholds[21]) {
-                result = PICKUP_GAUNTLETZ;
-            } else if (r <= m_randomRewardThresholds[22]) {
-                result = PICKUP_GLOVEZ;
-            } else if (r <= m_randomRewardThresholds[23]) {
-                result = PICKUP_GOOBER;
-            } else if (r <= m_randomRewardThresholds[24]) {
-                result = PICKUP_GRAVITYBOOTZ;
-            } else if (r <= m_randomRewardThresholds[25]) {
-                result = PICKUP_GUNHAT;
-            } else if (r <= m_randomRewardThresholds[26]) {
-                result = PICKUP_NERFGUN;
-            } else if (r <= m_randomRewardThresholds[27]) {
-                result = PICKUP_ROCK;
-            } else if (r <= m_randomRewardThresholds[28]) {
-                result = PICKUP_SHIELD;
-            } else if (r <= m_randomRewardThresholds[29]) {
-                result = PICKUP_SHOVEL;
-            } else if (r <= m_randomRewardThresholds[30]) {
-                result = PICKUP_SPRING;
-            } else if (r <= m_randomRewardThresholds[31]) {
-                result = PICKUP_SPY;
-            } else if (r <= m_randomRewardThresholds[32]) {
-                result = PICKUP_SWORD;
-            } else if (r <= m_randomRewardThresholds[33]) {
-                result = PICKUP_TIMEBOMB;
-            } else if (r <= m_randomRewardThresholds[34]) {
-                result = PICKUP_TOOB;
-            } else if (r <= m_randomRewardThresholds[35]) {
-                result = PICKUP_WAND;
+        i32 categoryRoll = WapRand(m_randomRewardThresholds[2]);
+        if (categoryRoll <= m_randomRewardThresholds[0]) {
+            i32 toolRoll = WapRand(m_randomRewardThresholds[37]);
+            if (toolRoll <= m_randomRewardThresholds[17]) {
+                pickupType = PICKUP_BOMB;
+            } else if (toolRoll <= m_randomRewardThresholds[18]) {
+                pickupType = PICKUP_BOOMERANG;
+            } else if (toolRoll <= m_randomRewardThresholds[19]) {
+                pickupType = PICKUP_BRICK;
+            } else if (toolRoll <= m_randomRewardThresholds[20]) {
+                pickupType = PICKUP_CLUB;
+            } else if (toolRoll <= m_randomRewardThresholds[21]) {
+                pickupType = PICKUP_GAUNTLETZ;
+            } else if (toolRoll <= m_randomRewardThresholds[22]) {
+                pickupType = PICKUP_GLOVEZ;
+            } else if (toolRoll <= m_randomRewardThresholds[23]) {
+                pickupType = PICKUP_GOOBER;
+            } else if (toolRoll <= m_randomRewardThresholds[24]) {
+                pickupType = PICKUP_GRAVITYBOOTZ;
+            } else if (toolRoll <= m_randomRewardThresholds[25]) {
+                pickupType = PICKUP_GUNHAT;
+            } else if (toolRoll <= m_randomRewardThresholds[26]) {
+                pickupType = PICKUP_NERFGUN;
+            } else if (toolRoll <= m_randomRewardThresholds[27]) {
+                pickupType = PICKUP_ROCK;
+            } else if (toolRoll <= m_randomRewardThresholds[28]) {
+                pickupType = PICKUP_SHIELD;
+            } else if (toolRoll <= m_randomRewardThresholds[29]) {
+                pickupType = PICKUP_SHOVEL;
+            } else if (toolRoll <= m_randomRewardThresholds[30]) {
+                pickupType = PICKUP_SPRING;
+            } else if (toolRoll <= m_randomRewardThresholds[31]) {
+                pickupType = PICKUP_SPY;
+            } else if (toolRoll <= m_randomRewardThresholds[32]) {
+                pickupType = PICKUP_SWORD;
+            } else if (toolRoll <= m_randomRewardThresholds[33]) {
+                pickupType = PICKUP_TIMEBOMB;
+            } else if (toolRoll <= m_randomRewardThresholds[34]) {
+                pickupType = PICKUP_TOOB;
+            } else if (toolRoll <= m_randomRewardThresholds[35]) {
+                pickupType = PICKUP_WAND;
             } else {
-                result = r > m_randomRewardThresholds[36] ? PICKUP_WINGZ : PICKUP_WELDER;
+                pickupType = toolRoll > m_randomRewardThresholds[36] ? PICKUP_WINGZ : PICKUP_WELDER;
             }
-        } else if (r1 <= m_randomRewardThresholds[1]) {
-            i32 r = WapRand(m_randomRewardThresholds[16]);
-            if (r <= m_randomRewardThresholds[7]) {
-                result = PICKUP_BABYWALKER;
-            } else if (r <= m_randomRewardThresholds[8]) {
-                result = PICKUP_BEACHBALL;
-            } else if (r <= m_randomRewardThresholds[9]) {
-                result = PICKUP_BIGWHEEL;
-            } else if (r <= m_randomRewardThresholds[10]) {
-                result = PICKUP_GOKART;
-            } else if (r <= m_randomRewardThresholds[11]) {
-                result = PICKUP_JACKINTHEBOX;
-            } else if (r <= m_randomRewardThresholds[12]) {
-                result = PICKUP_JUMPROPE;
-            } else if (r <= m_randomRewardThresholds[13]) {
-                result = PICKUP_POGOSTICK;
-            } else if (r <= m_randomRewardThresholds[14]) {
-                result = PICKUP_SCROLL;
+        } else if (categoryRoll <= m_randomRewardThresholds[1]) {
+            i32 toyRoll = WapRand(m_randomRewardThresholds[16]);
+            if (toyRoll <= m_randomRewardThresholds[7]) {
+                pickupType = PICKUP_BABYWALKER;
+            } else if (toyRoll <= m_randomRewardThresholds[8]) {
+                pickupType = PICKUP_BEACHBALL;
+            } else if (toyRoll <= m_randomRewardThresholds[9]) {
+                pickupType = PICKUP_BIGWHEEL;
+            } else if (toyRoll <= m_randomRewardThresholds[10]) {
+                pickupType = PICKUP_GOKART;
+            } else if (toyRoll <= m_randomRewardThresholds[11]) {
+                pickupType = PICKUP_JACKINTHEBOX;
+            } else if (toyRoll <= m_randomRewardThresholds[12]) {
+                pickupType = PICKUP_JUMPROPE;
+            } else if (toyRoll <= m_randomRewardThresholds[13]) {
+                pickupType = PICKUP_POGOSTICK;
+            } else if (toyRoll <= m_randomRewardThresholds[14]) {
+                pickupType = PICKUP_SCROLL;
             } else {
-                result = r > m_randomRewardThresholds[15] ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
+                pickupType =
+                    toyRoll > m_randomRewardThresholds[15] ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
             }
         } else {
-            i32 r = WapRand(m_randomRewardThresholds[6]);
-            if (r <= m_randomRewardThresholds[3]) {
-                result = PICKUP_REDBRICK;
-            } else if (r <= m_randomRewardThresholds[4]) {
-                result = PICKUP_BLUEBRICK;
+            i32 brickRoll = WapRand(m_randomRewardThresholds[6]);
+            if (brickRoll <= m_randomRewardThresholds[3]) {
+                pickupType = PICKUP_REDBRICK;
+            } else if (brickRoll <= m_randomRewardThresholds[4]) {
+                pickupType = PICKUP_BLUEBRICK;
             } else {
-                result = r > m_randomRewardThresholds[5] ? PICKUP_BLACKBRICK : PICKUP_GOLDBRICK;
+                pickupType =
+                    brickRoll > m_randomRewardThresholds[5] ? PICKUP_BLACKBRICK : PICKUP_GOLDBRICK;
             }
         }
-        if (result == PICKUP_WARPSTONE) {
-            result = PICKUP_GAUNTLETZ;
+        if (pickupType == PICKUP_WARPSTONE) {
+            pickupType = PICKUP_GAUNTLETZ;
         }
     }
-    m_deliveryPickupType = IDX(result);
+    m_deliveryPickupType = IDX(pickupType);
     m_resourceDeliveryPhase = BELT_IDLE;
     SetRect(&m_deliveryItemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_deliveryItemDisplay) {
-        RECT rc;
-        i32 x = m_barRect.left;
-        i32 y = m_barRect.top;
+        RECT imageRect;
+        i32 barLeft = m_barRect.left;
+        i32 barTop = m_barRect.top;
         SET_RECT_COMPONENTS(
-            rc,
-            m_deliveryItemRect.left + x,
-            m_deliveryItemRect.top + y,
-            m_deliveryItemRect.right + x,
-            m_deliveryItemRect.bottom + y
+            imageRect,
+            m_deliveryItemRect.left + barLeft,
+            m_deliveryItemRect.top + barTop,
+            m_deliveryItemRect.right + barLeft,
+            m_deliveryItemRect.bottom + barTop
         );
-        m_deliveryItemDisplay->SetBounds(rc);
+        m_deliveryItemDisplay->SetBounds(imageRect);
     }
     RefreshResourceImages();
-    i32 c = m_pendingResourceDeliveries;
+    i32 pendingDeliveries = m_pendingResourceDeliveries;
     m_resourceDeliveryActive = false;
-    if (c > 0) {
-        m_pendingResourceDeliveries = c - 1;
+    if (pendingDeliveries > 0) {
+        m_pendingResourceDeliveries = pendingDeliveries - 1;
         RequestResourceDelivery();
     }
     return 1;
@@ -3464,16 +3464,16 @@ i32 CStatusBarMgr::PrepareNextResource() {
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
     Coord reward = {pickupValue, score};
-    Coord* node = g_coordPool.PopCopy(reward);
-    i32 n = m_rewardQueue.GetSize();
-    for (i32 i = 0; i < n; i++) {
-        Coord* e = GetReward(i);
-        if (e != NULL && score < e->m_y) {
-            m_rewardQueue.InsertAt(i, node, 1);
+    Coord* queuedReward = g_coordPool.PopCopy(reward);
+    i32 rewardCount = m_rewardQueue.GetSize();
+    for (i32 rewardIndex = 0; rewardIndex < rewardCount; rewardIndex++) {
+        Coord* existingReward = GetReward(rewardIndex);
+        if (existingReward != NULL && score < existingReward->m_y) {
+            m_rewardQueue.InsertAt(rewardIndex, queuedReward, 1);
             return 1;
         }
     }
-    m_rewardQueue.Add(node);
+    m_rewardQueue.Add(queuedReward);
     return 1;
 }
 
@@ -3548,7 +3548,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     } while (n != 0);
 
     n = 3;
-    CSbiHlRow* r = m_conveyorSlots;
+    StatusBarResourceSlot* r = m_conveyorSlots;
     do {
         SerializeClockPair(s, mode, &r->m_clock);
         r++;
@@ -3556,7 +3556,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     } while (n != 0);
 
     i32 outer = 3;
-    CSbiHlRow* g = m_resourceSlots;
+    StatusBarResourceSlot* g = m_resourceSlots;
     do {
         n = 4;
         do {
@@ -3730,7 +3730,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         s->Write(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
     }
     {
-        CSbiHlRow* nb = m_resourceSlots;
+        StatusBarResourceSlot* nb = m_resourceSlots;
         i32 cnt = 3;
         do {
             for (i32 m = 0; m < 4; m++) {
@@ -3817,7 +3817,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
         ar->Read(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
         ar->Read(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
     }
-    CSbiHlRow* nb = m_resourceSlots;
+    StatusBarResourceSlot* nb = m_resourceSlots;
     i32 seq = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
@@ -4419,7 +4419,7 @@ void CStatusBarMgr::CycleMultiplayerPlayer(i32 reverse) {
 }
 
 RVA(0x0010b5d0, 0xdd)
-i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectToolResource(ResourceSlotRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex].m_state == IDX(HLROW_IDLE_CYCLE)) {
@@ -4437,7 +4437,7 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
 }
 
 RVA(0x0010b6f0, 0xdd)
-i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectToyResource(ResourceSlotRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex + 4].m_state == IDX(HLROW_IDLE_CYCLE)) {
@@ -4455,7 +4455,7 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
 }
 
 RVA(0x0010b810, 0xdd)
-i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectBrickResource(ResourceSlotRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex + 8].m_state == IDX(HLROW_IDLE_CYCLE)) {

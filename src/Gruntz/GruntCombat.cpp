@@ -308,7 +308,7 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
     }
 
     SoundCueRegistry* sounds =
-        (static_cast<CGameWorld*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
+        (static_cast<CGameWorld*>(m_ownerLogicRecord->GetWorld()))->SoundRegistry();
     sounds->PlayCue(s_gameAttack);
 
     switch (spell) {
@@ -845,7 +845,7 @@ void CWwdSpriteObject::SetAnimation(CAnimationSequence* animation, i32 advanceIm
 }
 
 RVA(0x00058bc0, 0xa1)
-i32 CMotionState::SetParams(
+i32 CMotionState::SetKinematics(
     double posX,
     double posY,
     double posZ,
@@ -1141,7 +1141,7 @@ i32 CGrunt::ApplyCombatHitEffects(
             enemy->SetHealth(min(h, HEALTH_FULL));
 
             SoundCueRegistry* registry =
-                (static_cast<CGameWorld*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
+                (static_cast<CGameWorld*>(m_ownerLogicRecord->GetWorld()))->SoundRegistry();
             if (registry->IsSilent() == false) {
                 SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {
@@ -1787,7 +1787,7 @@ void CGrunt::StepBehavior(char*) {
 
                 CInGameIcon* icon =
                     static_cast<CInGameIcon*>(result->GetLogicRecord()->UserLogic());
-                icon->PlaceAt(m_playerIndex, m_unitIndex);
+                icon->TryGivePickupToGrunt(m_playerIndex, m_unitIndex);
             }
         }
 
@@ -1871,7 +1871,7 @@ void CGrunt::StepBehavior(char*) {
             i32 ptx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 pty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
             CGameLevel* level = g_gameReg->World()->GetLevel();
-            TileCollisionKind kind = PbResolveCell(level, ptx, pty);
+            TileCollisionKind kind = LookupTileOriginCollisionDirect(level, ptx, pty);
 
             b32 gate = true;
             GruntDeathType hazard;

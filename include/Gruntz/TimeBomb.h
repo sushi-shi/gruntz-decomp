@@ -26,7 +26,7 @@ public:
     i32 UpdateCountdown();
 
     b32 m_fastPhase;
-    ClockInterval m_timing;
+    ClockInterval m_phaseTimer;
 };
 
 #endif // GRUNTZ_CTIMEBOMB_H

@@ -170,7 +170,7 @@ public:
         return m_mgr;
     }
     LevelArea GetLevelArea() const {
-        return m_levelType;
+        return m_levelArea;
     }
     i32 SetAssetGroupLoaded(
         const CString& resourceGroup,
@@ -190,7 +190,7 @@ public:
 
     CDDSurface* m_ownedSurface1;
     i32 m_levelIndex;
-    LevelArea m_levelType;
+    LevelArea m_levelArea;
 
     GameStateId m_previousStateId;
 

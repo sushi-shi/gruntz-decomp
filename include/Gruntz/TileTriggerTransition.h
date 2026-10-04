@@ -28,8 +28,8 @@ public:
     }
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
-    i32 ApplyAnimation(char* sprite, char* geom);
-    i32 TransitionAct();
+    i32 StartTransitionAnimation(char* imageSetName, char* animationName);
+    i32 UpdateTransitionAnimation();
 };
 
 #endif // GRUNTZ_TILETRIGGERTRANSITION_H

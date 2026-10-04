@@ -45,7 +45,7 @@ public:
         Unload();
         m_id = -1;
         m_flags = 0;
-        m_ownerCtx = NULL;
+        m_world = NULL;
     }
     virtual i32 IsLoaded() OVERRIDE;
 

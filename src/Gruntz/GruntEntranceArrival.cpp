@@ -227,7 +227,7 @@ i32 CGrunt::StepAttackFire() {
                 );
                 spr->GetLogicRecord()->Dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->UserLogic());
-                if (s->LoadProjectileSprites(
+                if (s->LaunchProjectile(
                         m_activePickupType,
                         m_playerIndex,
                         m_unitIndex,
@@ -252,7 +252,7 @@ i32 CGrunt::StepAttackFire() {
                 );
                 spr->GetLogicRecord()->Dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->GetLogicRecord()->UserLogic());
-                if (s->LoadProjectileSprites(
+                if (s->LaunchProjectile(
                         m_activePickupType,
                         m_playerIndex,
                         m_unitIndex,
@@ -937,13 +937,13 @@ i32 CGrunt::StartExitAnimation() {
     CAnimationSequence* found;
     i32 r = GetRandom(480);
     if (r > 0x140) {
-        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzOne);
+        found = m_wwdObject->GetWorld()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzOne);
         PLAY_VOICE_IF_VISIBLE(0x384);
     } else if (r > 0xa0) {
-        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzTwo);
+        found = m_wwdObject->GetWorld()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzTwo);
         PLAY_VOICE_IF_VISIBLE(0x385);
     } else {
-        found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzThree);
+        found = m_wwdObject->GetWorld()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzThree);
         PLAY_VOICE_IF_VISIBLE(0x386);
     }
 
@@ -1329,6 +1329,6 @@ i32 CGrunt::FinishToobMoveAnimation() {
         return 0;
     }
     CInGameIcon* icon = static_cast<CInGameIcon*>(found->GetLogicRecord()->UserLogic());
-    icon->PlaceAt(m_playerIndex, m_unitIndex);
+    icon->TryGivePickupToGrunt(m_playerIndex, m_unitIndex);
     return 0;
 }

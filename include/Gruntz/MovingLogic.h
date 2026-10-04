@@ -71,31 +71,31 @@ inline CMovingLogic::CMovingLogic(CMotionState::EInlineBase)
     : CUserLogic(CUserLogic::INLINE_BASE), m_motion(CMotionState::INLINE_BASE) {}
 
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
-    i32 lo0 = m_logicRecord->m_minX;
-    if (lo0 == 0) {
+    i32 minX = m_logicRecord->m_minX;
+    if (minX == 0) {
         Motion()->m_minBounds.m_x = g_movingLogicMin;
     } else {
-        Motion()->m_minBounds.m_x = static_cast<double>(lo0);
+        Motion()->m_minBounds.m_x = static_cast<double>(minX);
     }
-    i32 lo1 = m_logicRecord->m_minY;
-    if (lo1 == 0) {
+    i32 minY = m_logicRecord->m_minY;
+    if (minY == 0) {
         Motion()->m_minBounds.m_y = g_movingLogicMin;
     } else {
-        Motion()->m_minBounds.m_y = static_cast<double>(lo1);
+        Motion()->m_minBounds.m_y = static_cast<double>(minY);
     }
-    i32 hi0 = m_logicRecord->m_maxX;
-    if (hi0 == 0) {
+    i32 maxX = m_logicRecord->m_maxX;
+    if (maxX == 0) {
         Motion()->m_maxBounds.m_x = g_movingLogicMax;
     } else {
-        Motion()->m_maxBounds.m_x = static_cast<double>(hi0);
+        Motion()->m_maxBounds.m_x = static_cast<double>(maxX);
     }
-    i32 hi1 = m_logicRecord->m_maxY;
-    if (hi1 == 0) {
+    i32 maxY = m_logicRecord->m_maxY;
+    if (maxY == 0) {
         Motion()->m_maxBounds.m_y = g_movingLogicMax;
     } else {
-        Motion()->m_maxBounds.m_y = static_cast<double>(hi1);
+        Motion()->m_maxBounds.m_y = static_cast<double>(maxY);
     }
-    m_motion.SetParams(
+    m_motion.SetKinematics(
         static_cast<double>(m_object->m_screenX),
         static_cast<double>(m_object->m_screenY),
         0.0,
@@ -118,31 +118,31 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
 
 // Grunt construction preserves the out-of-line maximum-step setter.
 inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(owner) {
-    i32 lo0 = m_logicRecord->m_minX;
-    if (lo0 == 0) {
+    i32 minX = m_logicRecord->m_minX;
+    if (minX == 0) {
         Motion()->m_minBounds.m_x = g_movingLogicMin;
     } else {
-        Motion()->m_minBounds.m_x = static_cast<double>(lo0);
+        Motion()->m_minBounds.m_x = static_cast<double>(minX);
     }
-    i32 lo1 = m_logicRecord->m_minY;
-    if (lo1 == 0) {
+    i32 minY = m_logicRecord->m_minY;
+    if (minY == 0) {
         Motion()->m_minBounds.m_y = g_movingLogicMin;
     } else {
-        Motion()->m_minBounds.m_y = static_cast<double>(lo1);
+        Motion()->m_minBounds.m_y = static_cast<double>(minY);
     }
-    i32 hi0 = m_logicRecord->m_maxX;
-    if (hi0 == 0) {
+    i32 maxX = m_logicRecord->m_maxX;
+    if (maxX == 0) {
         Motion()->m_maxBounds.m_x = g_movingLogicMax;
     } else {
-        Motion()->m_maxBounds.m_x = static_cast<double>(hi0);
+        Motion()->m_maxBounds.m_x = static_cast<double>(maxX);
     }
-    i32 hi1 = m_logicRecord->m_maxY;
-    if (hi1 == 0) {
+    i32 maxY = m_logicRecord->m_maxY;
+    if (maxY == 0) {
         Motion()->m_maxBounds.m_y = g_movingLogicMax;
     } else {
-        Motion()->m_maxBounds.m_y = static_cast<double>(hi1);
+        Motion()->m_maxBounds.m_y = static_cast<double>(maxY);
     }
-    m_motion.SetParams(
+    m_motion.SetKinematics(
         static_cast<double>(m_object->m_screenX),
         static_cast<double>(m_object->m_screenY),
         0.0,

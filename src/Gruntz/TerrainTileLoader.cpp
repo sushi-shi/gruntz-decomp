@@ -49,7 +49,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = m_world->m_level;
 
-    TileCollisionKind cellType = PbResolveCell(grid, tileX, tileY);
+    TileCollisionKind cellType = LookupTileOriginCollisionDirect(grid, tileX, tileY);
 
     i32 px = tileX * TILE_SIZE_PX + TILE_HALF_PX;
     i32 py = tileY * TILE_SIZE_PX + TILE_HALF_PX;
@@ -257,7 +257,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                                 );
                                 if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->SetPlayerIndex(playerIndex);
-                                    icon->HandleInput();
+                                    icon->ApplyPickupPalette();
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
                                         i32 fxY = topY * 0x20 + 0x10;
@@ -323,7 +323,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                                 );
                                 if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->SetPlayerIndex(playerIndex);
-                                    icon->HandleInput();
+                                    icon->ApplyPickupPalette();
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
                                         i32 fxY = bottomY * 0x20 + 0x10;
@@ -393,7 +393,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                                 );
                                 if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->SetPlayerIndex(playerIndex);
-                                    icon->HandleInput();
+                                    icon->ApplyPickupPalette();
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = leftX * 0x20 + 0x10;
                                         i32 fxY = scanY * 0x20 + 0x10;
@@ -459,7 +459,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                                 );
                                 if (icon->GetPickupType() == PICKUP_TOYBOX) {
                                     icon->SetPlayerIndex(playerIndex);
-                                    icon->HandleInput();
+                                    icon->ApplyPickupPalette();
                                     if (playerIndex == g_curPlayer) {
                                         i32 fxX = rightX * 0x20 + 0x10;
                                         i32 fxY = scanY * 0x20 + 0x10;
