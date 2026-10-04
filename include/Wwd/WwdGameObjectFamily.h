@@ -106,6 +106,13 @@ public:
         m_score = score;
     }
 
+    i32 GetPoints() const {
+        return m_points;
+    }
+    void SetPoints(i32 points) {
+        m_points = points;
+    }
+
     void SetSpeedX(i32 speed) {
         m_speedX = speed;
     }

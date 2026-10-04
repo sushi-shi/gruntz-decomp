@@ -388,7 +388,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->m_direction = 0;
             sl->m_smarts = 2;
             sl->m_powerup = 0;
-            sl->m_points = i;
+            sl->SetPoints(i);
             sl->m_damage = m_object->m_faceDirection;
             sub->Dispatch(sl);
 

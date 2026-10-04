@@ -1049,14 +1049,14 @@ i32 CTriggerMgr::SpawnPuddle(
     sprite->GetLogicRecord()->Dispatch(sprite);
     sprite->m_smarts = playerIndex;
     sprite->SetScore(moveIcon);
-    sprite->m_points = gaugePoints;
+    sprite->SetPoints(gaugePoints);
     return PlacePuddle(sprite, animatePlacement);
 }
 
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     CGruntPuddle* puddle = static_cast<CGruntPuddle*>(sprite->GetLogicRecord()->UserLogic());
-    i32 gaugePoints = sprite->m_points;
+    i32 gaugePoints = sprite->GetPoints();
     if (gaugePoints == 0) {
         gaugePoints = 0x19;
     }
@@ -1131,7 +1131,7 @@ i32 CTriggerMgr::SpawnToyBox(i32 x, i32 y, i32 playerIndex, PickupType toyType, 
         return 0;
     }
     spr->SetImageSetByName("GAME_TOYBOX");
-    spr->m_points = IDX(toyType);
+    spr->SetPoints(IDX(toyType));
     spr->SetScore(playerIndex);
     spr->m_faceDirection = scrollSpell;
     spr->Hide();
@@ -2236,7 +2236,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     spr->SetImageSetByName(name);
     spr->m_damage = damage;
     spr->SetScore(0);
-    spr->m_points = 0;
+    spr->SetPoints(0);
     spr->m_smarts = 0;
     spr->m_powerup = 0;
     spr->m_health = 0;

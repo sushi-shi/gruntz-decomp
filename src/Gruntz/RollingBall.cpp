@@ -92,7 +92,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
         && m_object->GetSmarts() != 1) {
         time += 1000;
     }
-    m_explodeTiming.Start(m_object->m_points);
+    m_explodeTiming.Start(m_object->GetPoints());
     m_target.Set(snapX, snapY);
     m_explodeLatch = false;
     m_fallLatch = 0;
@@ -127,7 +127,7 @@ i32 CRollingBall::Update() {
     }
 
     CWwdSpriteObject* logic = m_object;
-    if (logic->m_points > 0) {
+    if (logic->GetPoints() > 0) {
         if (m_explodeTiming.Expired()) {
             anim->SetImageSetByName("LEVEL_ROLLINGBALL_EXPLOSION");
             SwitchAnimationByName("LEVEL_ROLLINGBALLEXPLOSION", 0);

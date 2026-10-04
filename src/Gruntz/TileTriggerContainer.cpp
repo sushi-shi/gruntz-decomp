@@ -248,7 +248,7 @@ void CTileTriggerContainer::AddLogicFromRecord(
         object->GetLogicRecord()->GetUserRect2(),
         object->GetSmarts(),
         object->m_damage,
-        object->m_points,
+        object->GetPoints(),
         object->m_health
     );
 }

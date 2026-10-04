@@ -47,7 +47,7 @@ public:
     }
 
     PickupType GetToyType() const {
-        return static_cast<PickupType>(m_object->m_points);
+        return static_cast<PickupType>(m_object->GetPoints());
     }
 
     i32 GetPlayerIndex() const {
