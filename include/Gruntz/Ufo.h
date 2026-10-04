@@ -17,7 +17,7 @@ public:
     CUFO() {}
     CUFO(CGameObject* obj);
 
-    virtual i32 Tick() OVERRIDE;
+    virtual i32 UpdateMovement() OVERRIDE;
 };
 
 #endif // GRUNTZ_CUFO_H

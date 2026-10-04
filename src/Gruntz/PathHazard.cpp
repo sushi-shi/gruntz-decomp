@@ -68,36 +68,39 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     CWwdSpriteObject* h = m_object;
     h->SetSortKey(SORTKEY_ACTOR);
 
-    m_wp[0].m_x = m_object->m_screenX;
-    m_wp[0].m_y = m_object->m_screenY;
-    m_wp[1].m_x = (m_object->m_extent.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[1].m_y = (m_object->m_extent.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[2].m_x = (m_object->m_extent.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[2].m_y = (m_object->m_extent.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[3].m_x = (m_object->m_area.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[3].m_y = (m_object->m_area.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[4].m_x = (m_object->m_area.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[4].m_y = (m_object->m_area.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[5].m_x = (m_object->m_switchRect.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[5].m_y = (m_object->m_switchRect.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[6].m_x = (m_object->m_switchRect.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[6].m_y = (m_object->m_switchRect.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[7].m_x = (m_object->m_clip.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[7].m_y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[8].m_x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[8].m_y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].m_x = (m_object->GetLogicRecord()->GetUserRect1().left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].m_y = (m_object->GetLogicRecord()->GetUserRect1().top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].m_x =
+    m_waypoints[0].m_x = m_object->m_screenX;
+    m_waypoints[0].m_y = m_object->m_screenY;
+    m_waypoints[1].m_x = (m_object->m_extent.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[1].m_y = (m_object->m_extent.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[2].m_x = (m_object->m_extent.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[2].m_y = (m_object->m_extent.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[3].m_x = (m_object->m_area.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[3].m_y = (m_object->m_area.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[4].m_x = (m_object->m_area.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[4].m_y = (m_object->m_area.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[5].m_x = (m_object->m_switchRect.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[5].m_y = (m_object->m_switchRect.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[6].m_x = (m_object->m_switchRect.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[6].m_y = (m_object->m_switchRect.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[7].m_x = (m_object->m_clip.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[7].m_y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[8].m_x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[8].m_y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[9].m_x =
+        (m_object->GetLogicRecord()->GetUserRect1().left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[9].m_y =
+        (m_object->GetLogicRecord()->GetUserRect1().top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[10].m_x =
         (m_object->GetLogicRecord()->GetUserRect1().right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].m_y =
+    m_waypoints[10].m_y =
         (m_object->GetLogicRecord()->GetUserRect1().bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].m_x =
+    m_waypoints[11].m_x =
         (m_object->GetLogicRecord()->GetUserRect2().left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].m_y = (m_object->GetLogicRecord()->GetUserRect2().top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].m_x =
+    m_waypoints[11].m_y =
+        (m_object->GetLogicRecord()->GetUserRect2().top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_waypoints[12].m_x =
         (m_object->GetLogicRecord()->GetUserRect2().right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].m_y =
+    m_waypoints[12].m_y =
         (m_object->GetLogicRecord()->GetUserRect2().bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
 
     i32 i = 1;
@@ -106,21 +109,21 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         if (found != false) {
             break;
         }
-        if (m_wp[i].m_x == TILE_HALF_PX && m_wp[i].m_y == TILE_HALF_PX) {
+        if (m_waypoints[i].m_x == TILE_HALF_PX && m_waypoints[i].m_y == TILE_HALF_PX) {
             found = true;
         } else {
             i++;
         }
     }
-    m_wpCount = i;
-    m_wpIndex = 0;
+    m_waypointCount = i;
+    m_waypointIndex = 0;
 
     CLogicRecord* record = m_object->GetLogicRecord();
     if (record->GetSpeed() == 0) {
         record->SetSpeed(g_buteMgr.GetDword("Hazardz", "PathHazardTimePerTile", 1000));
     }
 
-    if (BeginLeg() == 0) {
+    if (StartWaypointMovement() == 0) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     } else {
         SET_ANIMATION_ACT("A");
@@ -136,15 +139,15 @@ void CPathHazard::FireActivation(i32 id) {
 RVA(0x000b3cc0, 0x2ac)
 void RegisterPathHazardActions() {
     ACT_NAME_ID(id, "A")
-    CActRegPool<CPathHazard>::s_table[id] = static_cast<CActHandler>(&CPathHazard::ForwardTick);
+    CActRegPool<CPathHazard>::s_table[id] =
+        static_cast<CActHandler>(&CPathHazard::HandleMovementAct);
 
     ACT_NAME_ID(id2, "B")
-    CActRegPool<CPathHazard>::s_table[id2] =
-        static_cast<CActHandler>(&CPathHazard::ForwardSiblingTick);
+    CActRegPool<CPathHazard>::s_table[id2] = static_cast<CActHandler>(&CPathHazard::HandlePauseAct);
 }
 
 RVA(0x000b4020, 0x26c)
-i32 CPathHazard::Tick() {
+i32 CPathHazard::UpdateMovement() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
     CWwdSpriteObject* obj = m_object;
@@ -169,7 +172,7 @@ i32 CPathHazard::Tick() {
         if (ent != NULL && ent->GetPowerupType() != GRUNT_INVULNERABLE) {
 
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ || playerIndex == 0) {
-                if (this->HitTest(playerIndex, unitIndex) == 0) {
+                if (this->OnGruntContact(playerIndex, unitIndex) == 0) {
                     return 0;
                 }
             }
@@ -177,20 +180,20 @@ i32 CPathHazard::Tick() {
     }
 
     CWwdSpriteObject* sprite = m_object;
-    if (sprite->m_screenX == m_wpX) {
-        i32 wy = m_wpY;
+    if (sprite->m_screenX == m_targetX) {
+        i32 wy = m_targetY;
         if (sprite->m_screenY == wy) {
 
-            m_posX = static_cast<double>(m_wpX);
+            m_posX = static_cast<double>(m_targetX);
             m_posY = static_cast<double>(wy);
-            this->Arrive();
-            i32 segs = m_object->GetDamage();
-            if (segs > 0) {
-                m_leg.Start(segs);
+            this->AdvanceWaypoint();
+            i32 pauseMs = m_object->GetDamage();
+            if (pauseMs > 0) {
+                m_waypointPauseTimer.Start(pauseMs);
                 SET_ANIMATION_ACT("B");
                 return 0;
             }
-            this->BeginLeg();
+            this->StartWaypointMovement();
             return 0;
         }
     }
@@ -202,18 +205,18 @@ i32 CPathHazard::Tick() {
     i32 newY = static_cast<i32>((m_roundBiasY + m_posY));
 
     if (m_unitX > 0.0) {
-        CLAMP_UPPER_INPLACE(newX, m_wpX);
+        CLAMP_UPPER_INPLACE(newX, m_targetX);
     } else if (m_unitX < 0.0) {
-        if (newX < m_wpX) {
-            newX = m_wpX;
+        if (newX < m_targetX) {
+            newX = m_targetX;
         }
     }
 
     if (m_unitY > 0.0) {
-        CLAMP_UPPER_INPLACE(newY, m_wpY);
+        CLAMP_UPPER_INPLACE(newY, m_targetY);
     } else if (m_unitY < 0.0) {
-        if (newY < m_wpY) {
-            newY = m_wpY;
+        if (newY < m_targetY) {
+            newY = m_targetY;
         }
     }
 
@@ -222,42 +225,42 @@ i32 CPathHazard::Tick() {
 }
 
 RVA(0x000b4330, 0x8)
-i32 CUFO::Tick() {
-    CPathHazard::Tick();
+i32 CUFO::UpdateMovement() {
+    CPathHazard::UpdateMovement();
     return 0;
 }
 
 RVA(0x000b4350, 0x7e)
-i32 CRainCloud::Tick() {
-    if (m_strikeArmed != false) {
+i32 CRainCloud::UpdateMovement() {
+    if (m_flashActive != false) {
         i32 idx = 5;
-        if (!m_strike.Expired()) {
+        if (!m_flashTimer.Expired()) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 idx = 0;
             }
         } else {
-            m_strikeArmed = false;
+            m_flashActive = false;
         }
         CShadeTable* frame = g_gameReg->GetLightFxMgr()->GetShadeTable(idx);
         CWwdSpriteObject* spr = m_object;
         spr->SetDrawFillReversed(SHADE_DST_BY_SRC_16, frame);
     }
-    CPathHazard::Tick();
+    CPathHazard::UpdateMovement();
     return 0;
 }
 
 RVA(0x000b43f0, 0x1c7)
-i32 CPathHazard::SiblingTick() {
-    if (m_strikeArmed != false) {
+i32 CPathHazard::UpdateWaypointPause() {
+    if (m_flashActive != false) {
         i32 sel = 5;
-        i64 elapsed = static_cast<i64>(g_frameTime) - m_strike.m_start;
+        i64 elapsed = static_cast<i64>(g_frameTime) - m_flashTimer.m_start;
 
-        if (elapsed < m_strike.m_interval) {
+        if (elapsed < m_flashTimer.m_interval) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 sel = 0;
             }
         } else {
-            m_strikeArmed = false;
+            m_flashActive = false;
         }
         CShadeTable* frame = g_gameReg->GetLightFxMgr()->GetShadeTable(sel);
         CWwdSpriteObject* o = m_object;
@@ -289,7 +292,7 @@ i32 CPathHazard::SiblingTick() {
         if (ent != NULL && ent->GetPowerupType() != GRUNT_INVULNERABLE) {
 
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ || playerIndex == 0) {
-                if (this->HitTest(playerIndex, unitIndex) == 0) {
+                if (this->OnGruntContact(playerIndex, unitIndex) == 0) {
                     return 0;
                 }
             }
@@ -297,24 +300,24 @@ i32 CPathHazard::SiblingTick() {
     }
 
     CGruntzMgr* tableReg = g_gameReg;
-    i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_start;
-    if (legElapsed >= m_leg.m_interval) {
+    i64 pauseElapsed = static_cast<i64>(g_frameTime) - m_waypointPauseTimer.m_start;
+    if (pauseElapsed >= m_waypointPauseTimer.m_interval) {
         CShadeTable* frame = tableReg->GetLightFxMgr()->GetShadeTable(5);
         CWwdSpriteObject* o = m_object;
         o->SetDrawFill(SHADE_DST_BY_SRC_16, frame);
-        this->BeginLeg();
+        this->StartWaypointMovement();
         SET_ANIMATION_ACT("A");
-        m_strikeArmed = false;
+        m_flashActive = false;
     }
     return 0;
 }
 
 RVA(0x000b4640, 0x104)
-i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
-    m_strikeArmed = true;
-    m_strike.m_interval =
+i32 CRainCloud::OnGruntContact(i32 playerIndex, i32 unitIndex) {
+    m_flashActive = true;
+    m_flashTimer.m_interval =
         static_cast<i64>(g_buteMgr.GetDword("Hazardz", "RainCloudFlashTime", 0x7d0));
-    m_strike.m_start = static_cast<i64>(g_frameTime);
+    m_flashTimer.m_start = static_cast<i64>(g_frameTime);
     g_gameReg->GetTriggerMgr()->StartUnitDeath(playerIndex, unitIndex, DEATH_ELECTROCUTE, -1);
 
     CWwdSpriteObject* obj = m_object;
@@ -326,26 +329,26 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
 }
 
 RVA(0x000b47a0, 0x27)
-i32 CPathHazard::Arrive() {
-    i32 next = m_wpIndex + 1;
-    m_wpIndex = next;
-    if (next >= m_wpCount) {
-        m_wpIndex = 0;
+i32 CPathHazard::AdvanceWaypoint() {
+    i32 next = m_waypointIndex + 1;
+    m_waypointIndex = next;
+    if (next >= m_waypointCount) {
+        m_waypointIndex = 0;
     }
     return 1;
 }
 
 RVA(0x000b47e0, 0x170)
-i32 CPathHazard::BeginLeg() {
+i32 CPathHazard::StartWaypointMovement() {
     CWwdSpriteObject* obj = m_object;
-    i32 idx = m_wpIndex;
-    i32 wx = m_wp[idx].m_x;
-    m_wpX = wx;
-    i32 wy = m_wp[idx].m_y;
-    m_wpY = wy;
+    i32 idx = m_waypointIndex;
+    i32 wx = m_waypoints[idx].m_x;
+    m_targetX = wx;
+    i32 wy = m_waypoints[idx].m_y;
+    m_targetY = wy;
 
-    double dx = static_cast<double>(m_wpX) - static_cast<double>(obj->m_screenX);
-    double dy = static_cast<double>(m_wpY) - static_cast<double>(obj->m_screenY);
+    double dx = static_cast<double>(m_targetX) - static_cast<double>(obj->m_screenX);
+    double dy = static_cast<double>(m_targetY) - static_cast<double>(obj->m_screenY);
     double len = sqrt(dx * dx + dy * dy);
     double ux = dx / len;
     double uy = dy / len;
@@ -452,8 +455,8 @@ i32 CPathHazard::SerializeDispatch(
         typeId,
         object
     )
-    m_leg.Serialize(s, mode, typeId, object);
-    m_strike.Serialize(s, mode, typeId, object);
+    m_waypointPauseTimer.Serialize(s, mode, typeId, object);
+    m_flashTimer.Serialize(s, mode, typeId, object);
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
             s->Read(&m_speed, sizeof(m_speed));
@@ -463,17 +466,17 @@ i32 CPathHazard::SerializeDispatch(
             s->Read(&m_unitY, sizeof(m_unitY));
             s->Read(&m_roundBiasX, sizeof(m_roundBiasX));
             s->Read(&m_roundBiasY, sizeof(m_roundBiasY));
-            CPathWaypoint* p = m_wp;
+            CPathWaypoint* p = m_waypoints;
             i32 n = 13;
             do {
                 s->Read(p, sizeof(*p));
                 p += 1;
             } while (--n != 0);
-            s->Read(&m_wpIndex, sizeof(m_wpIndex));
-            s->Read(&m_wpX, sizeof(m_wpX));
-            s->Read(&m_wpY, sizeof(m_wpY));
-            s->Read(&m_wpCount, sizeof(m_wpCount));
-            s->Read(&m_strikeArmed, sizeof(m_strikeArmed));
+            s->Read(&m_waypointIndex, sizeof(m_waypointIndex));
+            s->Read(&m_targetX, sizeof(m_targetX));
+            s->Read(&m_targetY, sizeof(m_targetY));
+            s->Read(&m_waypointCount, sizeof(m_waypointCount));
+            s->Read(&m_flashActive, sizeof(m_flashActive));
         }
     } else {
         s->Write(&m_speed, sizeof(m_speed));
@@ -483,27 +486,27 @@ i32 CPathHazard::SerializeDispatch(
         s->Write(&m_unitY, sizeof(m_unitY));
         s->Write(&m_roundBiasX, sizeof(m_roundBiasX));
         s->Write(&m_roundBiasY, sizeof(m_roundBiasY));
-        CPathWaypoint* p = m_wp;
+        CPathWaypoint* p = m_waypoints;
         i32 n = 13;
         do {
             s->Write(p, sizeof(*p));
             p += 1;
         } while (--n != 0);
-        s->Write(&m_wpIndex, sizeof(m_wpIndex));
-        s->Write(&m_wpX, sizeof(m_wpX));
-        s->Write(&m_wpY, sizeof(m_wpY));
-        s->Write(&m_wpCount, sizeof(m_wpCount));
-        s->Write(&m_strikeArmed, sizeof(m_strikeArmed));
+        s->Write(&m_waypointIndex, sizeof(m_waypointIndex));
+        s->Write(&m_targetX, sizeof(m_targetX));
+        s->Write(&m_targetY, sizeof(m_targetY));
+        s->Write(&m_waypointCount, sizeof(m_waypointCount));
+        s->Write(&m_flashActive, sizeof(m_flashActive));
     }
     return 1;
 }
 
 RVA(0x000b5070, 0x5)
-i32 CPathHazard::ForwardTick() {
-    return Tick();
+i32 CPathHazard::HandleMovementAct() {
+    return UpdateMovement();
 }
 
 RVA(0x000b5080, 0x5)
-i32 CPathHazard::ForwardSiblingTick() {
-    return SiblingTick();
+i32 CPathHazard::HandlePauseAct() {
+    return UpdateWaypointPause();
 }
