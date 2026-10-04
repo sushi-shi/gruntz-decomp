@@ -869,7 +869,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     TileCollisionKind kind = view->CollisionAtHandle(attr, subX, subY);
     switch (kind) {
         case TILEKIND_TIME_SWITCH_UP: {
-            CTileTriggerSwitchLogic* obj = state->m_tileTriggers->FindSwitchLogic(
+            CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
                 ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
                 TRIGID_TIME_SWITCH_7
             );
@@ -884,7 +884,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             return 1;
         }
         case TILEKIND_SWITCH_A_UP: {
-            CTileTriggerSwitchLogic* obj = state->m_tileTriggers->FindSwitchLogic(
+            CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
                 ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
                 TRIGID_ANY
             );
@@ -899,7 +899,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             return 1;
         }
         case TILEKIND_SWITCH_B_UP: {
-            CTileTriggerSwitchLogic* obj = state->m_tileTriggers->FindSwitchLogic(
+            CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
                 ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
                 TRIGID_ANY
             );
@@ -912,14 +912,14 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             }
             obj->SwitchUp();
 
-            POSITION pos = state->m_tileTriggers->GetIdleHeadPosition();
+            POSITION pos = state->GetTileTriggers()->GetIdleHeadPosition();
             b32 found = false;
             b32 stop = false;
             while (pos != NULL) {
                 if (stop != false) {
                     break;
                 }
-                CTileTriggerLogic* child = state->m_tileTriggers->GetNextIdleLogic(pos);
+                CTileTriggerLogic* child = state->GetTileTriggers()->GetNextIdleLogic(pos);
                 if (child->FindIndexByKey(obj->m_cellKey) != 0) {
                     if (child->Tick() == 0) {
                         stop = true;
@@ -937,7 +937,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             return 1;
         }
         case TILEKIND_MULTI_SWITCH_UP: {
-            CTileTriggerSwitchLogic* obj = state->m_tileTriggers->FindSwitchLogic(
+            CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
                 ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
                 TRIGID_MULTI_SWITCH_3
             );
@@ -950,13 +950,13 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             }
             b32 found = false;
             if (obj->AreMultiSwitchLinksActive() != 0) {
-                POSITION pos = state->m_tileTriggers->GetIdleHeadPosition();
+                POSITION pos = state->GetTileTriggers()->GetIdleHeadPosition();
                 b32 stop = false;
                 while (pos != NULL) {
                     if (stop != false) {
                         break;
                     }
-                    CTileTriggerLogic* child = state->m_tileTriggers->GetNextIdleLogic(pos);
+                    CTileTriggerLogic* child = state->GetTileTriggers()->GetNextIdleLogic(pos);
                     if (child->FindIndexByKey(obj->m_cellKey) != 0) {
                         if (child->Tick() == 0) {
                             stop = true;
@@ -989,7 +989,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (g->GetPlayerIndex() != g_curPlayer) {
                 return 0;
             }
-            CTileTriggerSwitchLogic* obj = state->m_tileTriggers->FindSwitchLogic(
+            CTileTriggerSwitchLogic* obj = state->GetTileTriggers()->FindSwitchLogic(
                 ((sx >> TILE_SHIFT_PX) * 0x100) + (sy >> TILE_SHIFT_PX),
                 TRIGID_CHECKPOINT_SWITCH_8
             );
@@ -1173,7 +1173,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 }
                 SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
                 cell->FaceTowardPixel(bx, by);
-                if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
+                if (cell->IsPoweredUp() != false && cell->m_neighborValid == false) {
                     RESET_GRUNT_POWERED_STATE(cell)
                 }
                 cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
@@ -1255,7 +1255,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
 
         CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
         cell->FaceTowardPixel(destination.m_x, destination.m_y);
-        if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
+        if (cell->IsPoweredUp() != false && cell->m_neighborValid == false) {
             RESET_GRUNT_POWERED_STATE(cell)
         }
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
@@ -1280,7 +1280,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
     cell->FaceTowardPixel(destination.m_x, destination.m_y);
     cell->m_neighborValid = false;
-    if (cell->m_poweredUp != false) {
+    if (cell->IsPoweredUp() != false) {
         RESET_GRUNT_POWERED_STATE(cell)
     }
 

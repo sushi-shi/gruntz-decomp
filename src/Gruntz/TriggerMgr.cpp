@@ -1560,7 +1560,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {
-                    CGiantRockLogic* gr = root->m_tileTriggers->ScanNeighborhood(tx, ty);
+                    CGiantRockLogic* gr = root->GetTileTriggers()->ScanNeighborhood(tx, ty);
                     if (gr == NULL) {
                         CString msg;
                         msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
@@ -1572,25 +1572,25 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                         return 0;
                     }
                     gr->BuildRockBreakInGameText();
-                    root->m_tileTriggers->RemoveIdleLogic(gr);
+                    root->GetTileTriggers()->RemoveIdleLogic(gr);
                     continue;
                 }
                 if (type != TILEKIND_GAUNTLET_BRICK_A && type != TILEKIND_GAUNTLET_BRICK_B
                     && type != TILEKIND_GAUNTLET_BRICK_C) {
                     continue;
                 }
-                CTileActionEvent* o = root->m_tileTriggers->FindActionByCellKey(CellKey(tx, ty));
+                CTileActionEvent* o = root->GetTileTriggers()->FindActionByCellKey(CellKey(tx, ty));
                 if (o->BreakTopBrick(NULL)) {
-                    root->m_tileTriggers->RemoveActionEvent(o);
+                    root->GetTileTriggers()->RemoveActionEvent(o);
                 }
                 continue;
             }
 
             CTileTriggerLogic* lo =
-                root->m_tileTriggers->FindLogic(CellKey(tx, ty), TRIGID_COVERED_POWERUP_26);
+                root->GetTileTriggers()->FindLogic(CellKey(tx, ty), TRIGID_COVERED_POWERUP_26);
             if (lo != NULL) {
                 lo->ApplyMove(type);
-                root->m_tileTriggers->RemoveIdleLogic(lo);
+                root->GetTileTriggers()->RemoveIdleLogic(lo);
             } else {
                 CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* wg = reg->m_world->m_level->m_mainPlane;
