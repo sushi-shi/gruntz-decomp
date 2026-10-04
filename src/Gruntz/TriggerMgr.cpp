@@ -1353,9 +1353,9 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     CByteArray* arr = &m_collectedWarpStoneFragments;
     arr->RemoveAll();
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
-        i32 b;
-        ar->Read(&b, 1);
-        arr->SetAtGrow(ci, b);
+        u8 fragment;
+        ar->Read(&fragment, sizeof(fragment));
+        arr->SetAtGrow(ci, fragment);
     }
     ClearSelectedUnitIds();
 
