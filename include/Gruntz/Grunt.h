@@ -228,6 +228,9 @@ public:
     b32 IsBusy() const {
         return m_busy;
     }
+    void SetBusy(b32 busy) {
+        m_busy = busy;
+    }
 
     b32 IsInCombat() const {
         return m_inCombat;

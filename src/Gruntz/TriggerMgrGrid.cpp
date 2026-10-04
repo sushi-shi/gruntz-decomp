@@ -706,7 +706,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_busy = true;
+            g->SetBusy(true);
             g->MoveTo(x, y - 32, 0, -1, 1, 0);
             return 1;
 
@@ -715,7 +715,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_busy = true;
+            g->SetBusy(true);
             g->MoveTo(x + 32, y, 0, -1, 1, 0);
             return 1;
 
@@ -724,7 +724,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_busy = true;
+            g->SetBusy(true);
             g->MoveTo(x, y + 32, 0, -1, 1, 0);
             return 1;
 
@@ -733,13 +733,13 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_busy = true;
+            g->SetBusy(true);
             g->MoveTo(x - 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
             if (g != NULL && g->IsDeathAnimationStarted() == false) {
-                g->m_busy = true;
+                g->SetBusy(true);
                 switch (static_cast<GruntDirection>(g->m_facing.m_direction)) {
                     case DIR_NORTH:
                         g->MoveTo(x, y - 32, 0, -1, 1, 0);
