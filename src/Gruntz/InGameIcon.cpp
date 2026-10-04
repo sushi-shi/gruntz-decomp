@@ -778,14 +778,14 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetImageSetByName("GAME_HELPBOX");
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
-    InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->GetHealth());
-    if (vis == INGAME_TEXT_EASY_ONLY) {
+    InGameTextVisibility visibilityMode = static_cast<InGameTextVisibility>(m_object->GetHealth());
+    if (visibilityMode == INGAME_TEXT_EASY_ONLY) {
 
         if (g_gameReg->GetEasyMode() == false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
         }
-    } else if (vis == INGAME_TEXT_NORMAL_ONLY) {
+    } else if (visibilityMode == INGAME_TEXT_NORMAL_ONLY) {
         if (g_gameReg->GetEasyMode() != false && g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
@@ -793,10 +793,10 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    CWwdSpriteObject* o = m_object;
-    o->SetSortKey(SORTKEY_INGAME_INFO);
-    m_cachedPlayerIndex = -1;
-    m_cachedUnitIndex = -1;
+    CWwdSpriteObject* helpObject = m_object;
+    helpObject->SetSortKey(SORTKEY_INGAME_INFO);
+    m_lastReaderPlayerIndex = -1;
+    m_lastReaderUnitIndex = -1;
 }
 
 RVA(0x00099460, 0x102)
@@ -808,16 +808,16 @@ RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
     ACT_NAME_ID(idx, "A")
     CActHandler* dslot = &CActRegPool<CInGameText>::s_table[idx];
-    *dslot = static_cast<CActHandler>(&CInGameText::Update);
+    *dslot = static_cast<CActHandler>(&CInGameText::UpdateHelpBook);
 }
 
 RVA(0x000997c0, 0x1e7)
-i32 CInGameText::Update() {
+i32 CInGameText::UpdateHelpBook() {
     m_wwdObject->GetAnimationCursor().Advance(static_cast<i32>(g_engineFrameDelta));
 
     i32 playerIndex;
     i32 unitIndex;
-    CGrunt* found = g_gameReg->GetTriggerMgr()->FindGruntAtPoint(
+    CGrunt* reader = g_gameReg->GetTriggerMgr()->FindGruntAtPoint(
         m_object->m_screenX,
         m_object->m_screenY,
         &playerIndex,
@@ -825,37 +825,37 @@ i32 CInGameText::Update() {
         1
     );
 
-    if (found != NULL) {
+    if (reader != NULL) {
         if (playerIndex != g_curPlayer) {
             return 0;
         }
-        if (m_cachedUnitIndex != -1 && playerIndex == m_cachedPlayerIndex
-            && unitIndex == m_cachedUnitIndex) {
+        if (m_lastReaderUnitIndex != -1 && playerIndex == m_lastReaderPlayerIndex
+            && unitIndex == m_lastReaderUnitIndex) {
             return 0;
         }
 
-        if (found->GetAnimationActName() == "K") {
+        if (reader->GetAnimationActName() == "K") {
             return 0;
         }
 
-        if (!found->BeginPickupAnimation(PICKUP_HELPBOX, 0, m_object->GetSmarts(), 0, 1)) {
+        if (!reader->BeginPickupAnimation(PICKUP_HELPBOX, 0, m_object->GetSmarts(), 0, 1)) {
             return 0;
         }
 
-        CWwdSpriteObject* o = m_object;
-        i32 y = o->m_screenY;
-        i32 x = o->m_screenX;
-        CGruntzMgr* reg = g_gameReg;
-        if (::PtInRect(&reg->m_viewBounds, x, y)) {
-            PlayRegistryCueIfElapsed(reg->World()->SoundRegistry(), "GAME_HELPBOOK");
+        CWwdSpriteObject* helpObject = m_object;
+        i32 screenY = helpObject->m_screenY;
+        i32 screenX = helpObject->m_screenX;
+        CGruntzMgr* gameMgr = g_gameReg;
+        if (::PtInRect(&gameMgr->m_viewBounds, screenX, screenY)) {
+            PlayRegistryCueIfElapsed(gameMgr->World()->SoundRegistry(), "GAME_HELPBOOK");
         }
 
-        m_cachedPlayerIndex = playerIndex;
-        m_cachedUnitIndex = unitIndex;
+        m_lastReaderPlayerIndex = playerIndex;
+        m_lastReaderUnitIndex = unitIndex;
         Hide();
         return 0;
     }
-    m_cachedUnitIndex = -1;
+    m_lastReaderUnitIndex = -1;
     Show();
     return 0;
 }
@@ -873,12 +873,12 @@ i32 CInGameText::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_cachedPlayerIndex, sizeof(m_cachedPlayerIndex));
-            ar->Write(&m_cachedUnitIndex, sizeof(m_cachedUnitIndex));
+            ar->Write(&m_lastReaderPlayerIndex, sizeof(m_lastReaderPlayerIndex));
+            ar->Write(&m_lastReaderUnitIndex, sizeof(m_lastReaderUnitIndex));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_cachedPlayerIndex, sizeof(m_cachedPlayerIndex));
-            ar->Read(&m_cachedUnitIndex, sizeof(m_cachedUnitIndex));
+            ar->Read(&m_lastReaderPlayerIndex, sizeof(m_lastReaderPlayerIndex));
+            ar->Read(&m_lastReaderUnitIndex, sizeof(m_lastReaderUnitIndex));
             break;
     }
     return 1;
