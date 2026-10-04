@@ -710,6 +710,7 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     return 1;
 }
 
+// @early-stop
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
 
