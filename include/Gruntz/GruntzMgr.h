@@ -63,7 +63,7 @@ class CGameLevel;
 class CLightFxMgr;
 
 class CRezMgr;
-class CRegMgr;
+class Settings;
 class CFontConfig;
 class CTriggerMgr;
 class CPlay;
@@ -83,7 +83,7 @@ public:
 
     i32 LaunchPortal(i32 quitAfter);
 
-    i32 LaunchProcessInDir(char* sApp, char* sPath);
+    i32 LaunchProcessInDir(const std::string& app, const std::string& directory);
 
     void Post(i32 code);
     i32 OpenBattlezSetup();
@@ -306,7 +306,7 @@ public:
 
     CRezMgr* m_resourceArchive;
 
-    CRegMgr* m_settings;
+    Settings* m_settings;
 
     CObject* m_reserved3c;
     CFaderMgr* m_faderMgr;
@@ -408,7 +408,7 @@ extern i32 g_warpX;
 extern i32 g_warpY;
 
 std::string RunCustomWorldDialog(HWND parent);
-i32 __stdcall LaunchPortalExe(char* outPath);
+std::string FindPortalExecutable();
 
 char GetGruntzDriveLetter();
 void ResetPlayerColorAvailability();

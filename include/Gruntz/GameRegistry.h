@@ -7,7 +7,7 @@
 #include <Ints.h>
 
 class CDDrawChildGroup;
-class CRegMgr;
+class Settings;
 class CVoiceManager;
 
 class CState;

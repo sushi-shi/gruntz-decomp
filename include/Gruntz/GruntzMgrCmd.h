@@ -7,9 +7,9 @@
 #include <Ints.h>
 
 class CGruntzMgr;
-class CRegMgr;
+class Settings;
 
 i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path);
-void SaveFrontBufferShot(CRegMgr* reg, CGruntzMgr* mgr, i32 w, i32 h, char* name, i32 saveFlag);
+void SaveFrontBufferShot(Settings* reg, CGruntzMgr* mgr, i32 w, i32 h, char* name, i32 saveFlag);
 
 #endif

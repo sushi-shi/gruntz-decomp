@@ -72,7 +72,7 @@
 #include <SafeDelete.h>
 #include <Utils/DebugTiming.h>
 #include <Utils/MapTyped.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 #include <Wap32/EngStr.h>
 #include <Wwd/WwdFile.h>
 
@@ -825,33 +825,33 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
 
     if (g_hostServicesMode != false) {
         if (RunErrorDialog("MULTI_HOSTSERVICES", NetSetupDlgProc, 0) != 0) {
-            CRegMgr* store = NetGameMgr()->m_settings;
+            Settings* store = NetGameMgr()->m_settings;
             if (store != NULL && g_serviceId != NET_SERVICE_NONE) {
-                store->Set("Service", g_serviceId);
+                store->setInt("Service", g_serviceId);
                 {
-                    store->Set(
+                    store->setString(
                         "Player Name",
-                        (PlayerName()).c_str()
+                        PlayerName()
                     );
                 }
                 {
-                    store->Set(
+                    store->setString(
                         "Game Name",
-                        (GameName()).c_str()
+                        GameName()
                     );
                 }
             }
         }
     } else {
         if (RunErrorDialog("MULTI_JOINSERVICES", NetSetupDlgProc, 0) != 0) {
-            CRegMgr* store = NetGameMgr()->m_settings;
+            Settings* store = NetGameMgr()->m_settings;
             if (store != NULL) {
                 if (g_serviceId != NET_SERVICE_NONE) {
-                    store->Set("Service", g_serviceId);
+                    store->setInt("Service", g_serviceId);
                 }
-                store->Set(
+                store->setString(
                     "Player Name",
-                    (PlayerName()).c_str()
+                    PlayerName()
                 );
             }
         }
@@ -883,17 +883,15 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
                 ListBox_SetCurSel(combo, 0);
             }
 
-            DWORD cap = 0xa;
-            g_gameReg->m_settings->Get("Player Name", nameBuf, cap, "Player");
-            cap = 0x40;
-            g_gameReg->m_settings->Get("Game Name", gameBuf, cap, "Multiplayer Gruntz");
+            const std::string playerName = g_gameReg->m_settings->getString("Player Name", "Player").substr(0, 9);
+            const std::string gameName = g_gameReg->m_settings->getString("Game Name", "Multiplayer Gruntz").substr(0, 63);
 
             HWND edName = GetDlgItem(hDlg, 0x51b);
             Edit_LimitText(edName, 9);
-            SetDlgItemTextA(hDlg, 0x51b, nameBuf);
+            SetDlgItemTextA(hDlg, 0x51b, playerName.c_str());
             HWND edGame = GetDlgItem(hDlg, 0x51c);
             Edit_LimitText(edGame, 0x3f);
-            SetDlgItemTextA(hDlg, 0x51c, gameBuf);
+            SetDlgItemTextA(hDlg, 0x51c, gameName.c_str());
             return true;
         }
         case WM_COMMAND:
@@ -1088,12 +1086,12 @@ i32 CMulti::DetectConnectionConfig() {
         m_resendInterval = 0xa;
     }
 
-    CRegMgr* cfg = NetGameMgr()->m_settings;
+    Settings* cfg = NetGameMgr()->m_settings;
     std::string kDelay = m_providerConfigPrefix + "_CmdDelay";
     std::string kResend = m_providerConfigPrefix + "_Resend";
     std::string kDyn = m_providerConfigPrefix + "_DynCmdDelay";
-    i32 cd = cfg->Get((kDelay).c_str(), -1);
-    i32 rs = cfg->Get((kResend).c_str(), -1);
+    i32 cd = cfg->getInt(kDelay, -1);
+    i32 rs = cfg->getInt(kResend, -1);
     if (cd != -1 && rs != -1) {
         m_commandDelay = cd;
         m_resendInterval = rs;
@@ -1113,14 +1111,14 @@ i32 CMulti::DetectConnectionConfig() {
 }
 
 void CMulti::ApplyCmdDelayDefaults() {
-    CRegMgr* reg = g_gameReg->m_settings;
+    Settings* reg = g_gameReg->m_settings;
 
     std::string cmdDelayName = m_providerConfigPrefix + "_CmdDelay";
     std::string resendName = m_providerConfigPrefix + "_Resend";
     std::string dynCmdName = m_providerConfigPrefix + "_DynCmdDelay";
 
-    reg->Set((cmdDelayName).c_str(), m_commandDelay);
-    reg->Set((resendName).c_str(), m_resendInterval);
+    reg->setInt(cmdDelayName, m_commandDelay);
+    reg->setInt(resendName, m_resendInterval);
 }
 
 i32 CMulti::ShowMultiStartDlg() {
@@ -1226,7 +1224,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
 
     m_localPlayer =
         Network()
-            ->JoinSessionAndCreatePlayer(sel, (PlayerName()).c_str(), "", NULL);
+            ->JoinSessionAndCreatePlayer(sel, PlayerName().c_str(), "", NULL);
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
         return 0;
@@ -2740,12 +2738,12 @@ i32 CMulti::SetupTcpIpConfig() {
     m_commandDelay = 5;
     m_resendInterval = 0x3c;
 
-    CRegMgr* cfg = NetGameMgr()->m_settings;
+    Settings* cfg = NetGameMgr()->m_settings;
     std::string kDelay = m_providerConfigPrefix + "_CmdDelay";
     std::string kResend = m_providerConfigPrefix + "_Resend";
     std::string kDyn = m_providerConfigPrefix + "_DynCmdDelay";
-    i32 cd = cfg->Get((kDelay).c_str(), -1);
-    i32 rs = cfg->Get((kResend).c_str(), -1);
+    i32 cd = cfg->getInt(kDelay, -1);
+    i32 rs = cfg->getInt(kResend, -1);
     if (cd != -1 && rs != -1) {
         m_commandDelay = cd;
         m_resendInterval = rs;
@@ -2778,7 +2776,7 @@ i32 CMulti::SetupTcpIpConfig() {
 i32 CMulti::CreateLocalPlayer() {
     {
         m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
-            (PlayerName()).c_str(),
+            PlayerName().c_str(),
             "",
             NULL
         ));
@@ -2832,7 +2830,7 @@ i32 CMulti::CreateHostPlayer(
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
     m_localPlayer = Network()->CreatePlayer(
-        (PlayerName()).c_str(),
+        PlayerName().c_str(),
         "",
         NULL
     );

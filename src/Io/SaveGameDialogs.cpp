@@ -23,7 +23,7 @@
 #include <Io/SaveGame.h>
 #include <MsgParam.h>
 #include <RectMacros.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <stdio.h>

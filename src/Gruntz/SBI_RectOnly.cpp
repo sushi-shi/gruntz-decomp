@@ -80,7 +80,7 @@
 #include <Rez/RezMgr.h>
 #include <SafeDelete.h>
 #include <Utils/MapTyped.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 #include <Wap32/ScreenGeometry.h>
 #include <Wap32/TileGeometry.h>
 
@@ -153,14 +153,14 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
     m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
     SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
-    if ((static_cast<CRegMgr*>(g_gameReg->m_settings))->Get("StatusBar Position", 0) == 1) {
+    if ((static_cast<Settings*>(g_gameReg->m_settings))->getInt("StatusBar Position", 0) == 1) {
         DockStatusBarLeft();
     }
     return 1;
 }
 
 void CStatusBarMgr::Teardown() {
-    (static_cast<CRegMgr*>(g_gameReg->m_settings))->Set("StatusBar Position", IDX(m_position));
+    (static_cast<Settings*>(g_gameReg->m_settings))->setInt("StatusBar Position", IDX(m_position));
     ResetWidgets(false);
     ClearRewardQueue();
 }

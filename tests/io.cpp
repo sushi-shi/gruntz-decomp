@@ -1,4 +1,5 @@
 #include <Io/File.h>
+#include <Io/Settings.h>
 #include <Font/FontData.h>
 #include <Io/StreamArchive.h>
 #include <cassert>
@@ -13,7 +14,7 @@ int main(int argc, char** argv) {
     assert(closed.error() == io::NotOpen && !closed.finish());
     io::File file;
     assert(!file.open(path + "/missing", io::ReadOnly));
-    assert(file.error() == io::OpenFailed);
+    assert(file.error() == io::NotFound);
     assert(file.open(path, io::Replace));
     assert(file.write("abcd", 4));
     assert(file.size() == 4 && file.position() == 4);
@@ -95,6 +96,52 @@ int main(int argc, char** argv) {
     assert(restore.Open() && restore.Read(restored, sizeof(restored)) && restore.Ready());
     assert(std::memcmp(restored, fixture, sizeof(fixture)) == 0);
     assert(!restore.Read(restored, 1) && !restore.Ready());
+
+    const std::string configPath = path + ".cfg";
+    Settings settings;
+    assert(settings.load(configPath));
+    assert(settings.loaded() && settings.getInt("Sound", 7) == 7);
+    settings.setInt("Sound", 0);
+    settings.setInt("Negative", -2147483647 - 1);
+    settings.setInt("Maximum", 2147483647);
+    settings.setString("Player Name", "a=b%\n\xC3\xA9");
+    assert(settings.getInt("SOUND", 7) == 0);
+    assert(settings.getInt("Player Name", 12) == 12);
+    assert(settings.getString("Sound", "typed") == "typed");
+    assert(settings.save());
+    Settings loaded;
+    assert(loaded.load(configPath));
+    assert(loaded.getString("player name") == "a=b%\n\xC3\xA9");
+    assert(loaded.getInt("negative") == (-2147483647 - 1));
+    assert(loaded.getInt("maximum") == 2147483647);
+    loaded.setInt("sound", 1);
+    assert(loaded.save());
+    assert(settings.load(configPath) && settings.getInt("Sound") == 1);
+    io::MemoryOutput configBytes;
+    assert(settings.encode(configBytes));
+    io::MemoryInput configInput(&configBytes.bytes()[0], configBytes.bytes().size());
+    Settings memorySettings;
+    assert(memorySettings.decode(configInput) && memorySettings.getInt("Sound") == 1);
+    const char crlf[] = "GRUNTZ CONFIG 1\r\ni sound=1\r\n";
+    io::MemoryInput crlfInput(crlf, sizeof(crlf) - 1);
+    assert(memorySettings.decode(crlfInput) && memorySettings.getInt("sound") == 1);
+    const char* invalidConfigs[] = {
+        "", "GRUNTZ CONFIG 2\n", "GRUNTZ CONFIG 1\ni a=2147483648\n",
+        "GRUNTZ CONFIG 1\ns a=%XX\n", "GRUNTZ CONFIG 1\ns a=%00\n",
+        "GRUNTZ CONFIG 1\ni A=1\ni a=2\n", "GRUNTZ CONFIG 1\nx a=b\n"
+    };
+    for (size_t index = 0; index < sizeof(invalidConfigs) / sizeof(invalidConfigs[0]); ++index) {
+        io::MemoryInput invalid(invalidConfigs[index], std::strlen(invalidConfigs[index]));
+        assert(!memorySettings.decode(invalid));
+        assert(memorySettings.getInt("sound") == 1);
+    }
+    settings.setString("bad", std::string("nul\0value", 9));
+    assert(!settings.save());
+    assert(loaded.load(configPath) && loaded.getInt("sound") == 1);
+    Settings unavailable;
+    assert(unavailable.load(path + "-missing/config"));
+    assert(!unavailable.save());
+    assert(std::remove(configPath.c_str()) == 0);
     assert(std::remove(path.c_str()) == 0);
     return 0;
 }

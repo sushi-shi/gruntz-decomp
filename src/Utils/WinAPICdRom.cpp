@@ -4,7 +4,7 @@
 
 #include <Utils/WinAPICdRom.h>
 
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
 
 #include <stdio.h>
 
@@ -20,18 +20,16 @@ i32 IsGruntzCDInAnyDrive() {
 }
 
 char CheckCdRomRegistry() {
-    DWORD bufsize;
-    char sDrive[32];
+
     char drivePath[32];
     char sDir[256];
-    CRegMgr reg;
+    Settings reg;
     char cdDrive;
     i32 i;
 
-    if (reg.Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
-        bufsize = 30;
-        sDrive[0] = '\0';
-        if (reg.Get("CdRom Drive", sDrive, bufsize, NULL) && sDrive[0] > 20) {
+    if (reg.load(settingsPath())) {
+        const std::string sDrive = reg.getString("CdRom Drive");
+        if (!sDrive.empty() && sDrive[0] > 20) {
             cdDrive = sDrive[0];
             sprintf(drivePath, "%c:\\", cdDrive);
             if (GetDriveTypeA(drivePath) == DRIVE_CDROM) {
@@ -61,19 +59,16 @@ char CheckCdRomRegistry() {
 
 char GetGruntzDriveLetter() {
     if (g_cdDriveLetter == 0) {
-        DWORD valueSize;
-        char value[32];
+
         char drivePath[32];
         char exePath[256];
-        CRegMgr reg;
+        Settings reg;
         char drivePathScan[256];
         char letter;
 
-        if (reg.Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
-            valueSize = 0x1e;
-            value[0] = 0;
-            if (reg.Get("CdRom Drive", value, valueSize, NULL)
-                && static_cast<i8>(value[0]) > 0x14) {
+        if (reg.load(settingsPath())) {
+            const std::string value = reg.getString("CdRom Drive");
+            if (!value.empty() && static_cast<i8>(value[0]) > 0x14) {
                 char regLetter = value[0];
                 sprintf(drivePath, "%c:\\", regLetter);
                 if (GetDriveTypeA(drivePath) == DRIVE_CDROM) {

@@ -149,3 +149,37 @@ Snapshot save/restore overloads accept byte sources/sinks through `CStreamArchiv
 The adapter borrows them for the synchronous call and does not close the owner.
 Existing snapshot field layouts remain unchanged; this is not yet a redesign of
 the complete save format or all malformed-world/graphics decoder validation.
+
+### Configuration storage
+
+Preferences use `Settings`, an owning typed map with explicit `load()` and `save()`.
+The default file is `gruntz.cfg`; set `GRUNTZ_CONFIG` to select another file.
+The path is resolved when loaded, so later working-directory changes cannot redirect
+a save. The parent directory must exist. Missing files start with defaults; malformed
+or unreadable files fail without replacing live settings or overwriting the file.
+
+The text format starts with `GRUNTZ CONFIG 1`, followed by `i key=integer` or
+`s key=text` lines. Keys match case-insensitively for ASCII. Percent escapes preserve
+`%`, `=`, control characters and non-ASCII bytes; embedded nulls are rejected.
+LF and CRLF files are accepted. Integers are signed 32-bit, and the file is limited
+to 1 MiB. For example:
+
+```text
+GRUNTZ CONFIG 1
+i music=1
+i music volume=75
+s player name=Player
+```
+
+Game preference edits remain in memory and are flushed after state teardown at
+shutdown. The startup options dialog saves on confirmation and reports failures.
+Saving encodes first, writes/closes a temporary sibling, then replaces the destination;
+a write or replacement failure retains the previous file. The storage assumes one
+writer per path. Native Windows replacement uses its filesystem primitive; Linux
+and Emscripten use standard rename. Power-loss durability is not claimed.
+
+Existing registry values are not imported. Optional `CdRom Drive` and
+`Portal Executable` settings replace installer-registry lookups. Windows CD discovery,
+process launch, and URL association handling remain platform-backend work.
+Browser hosts can supply a path in a mounted persistent filesystem or persist the
+encoded bytes; browser persistence synchronization is separate from `save()`.

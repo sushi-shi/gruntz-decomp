@@ -29,7 +29,8 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
-#include <Utils/RegMgr.h>
+#include <Io/Settings.h>
+#include <Io/File.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -210,7 +211,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
 }
 
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
-    CRegMgr* reg = static_cast<CRegMgr*>(g_gameReg->m_settings);
+    Settings* reg = static_cast<Settings*>(g_gameReg->m_settings);
     if (pDX->m_bSaveAndValidate == false) {
         GetDlgItem(IDX(IDC_MULTI_GAME_NAME))->SetWindowTextA((g_multiState->GameName()).c_str());
         NetLobby::g_curDlg = GetSafeHwnd();
@@ -241,36 +242,33 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         static_cast<CEdit*>(GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT)))->LimitText(100);
         CustomMapSelection customFlag = static_cast<CustomMapSelection>(
-            reg->Get("CustomMultiMap", IDX(CUSTOM_MAP_UNINITIALIZED))
+            reg->getInt("CustomMultiMap", IDX(CUSTOM_MAP_UNINITIALIZED))
         );
         if (g_multiState->m_isHost != false && customFlag != CUSTOM_MAP_UNINITIALIZED) {
-            char mapName[0x100];
-            DWORD size = 0x100;
-            reg->Get("LastMultiMap", mapName, size, "");
+            const std::string mapName = reg->getString("LastMultiMap", "");
             m_usesCustomMap = customFlag;
             if (customFlag != CUSTOM_MAP_STANDARD) {
-                char path[0x100];
-                sprintf(path, "custom\\%s", mapName);
-                FILE* file = fopen(path, "rb");
-                if (file != NULL) {
+                const std::string path = "custom\\" + mapName;
+                io::File file;
+                if (file.open(path, io::ReadOnly)) {
                     CComboBox* worldCombo =
                         static_cast<CComboBox*>(GetDlgItem(IDX(IDC_MULTI_WORLD)));
                     CWnd* child = worldCombo->GetWindow(GW_CHILD);
                     if (child == NULL) {
                         return;
                     }
-                    child->SetWindowTextA(mapName);
+                    child->SetWindowTextA(mapName.c_str());
                     g_multiState->m_usesCustomLevel = true;
                     g_multiState->m_customLevelName = mapName;
                     g_multiState->m_builtInLevelName = "";
-                    fclose(file);
+
                 }
             } else {
                 CWnd* child = GetDlgItem(IDX(IDC_MULTI_WORLD))->GetWindow(GW_CHILD);
                 if (child == NULL) {
                     return;
                 }
-                child->SetWindowTextA(mapName);
+                child->SetWindowTextA(mapName.c_str());
                 g_multiState->m_usesCustomLevel = false;
                 g_multiState->m_customLevelName = "";
                 g_multiState->m_builtInLevelName = mapName;
@@ -299,8 +297,8 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         m_worldName = readWindowText(child->GetSafeHwnd());
         if (g_multiState->m_isHost != false) {
-            reg->Set("LastMultiMap", (m_worldName).c_str());
-            reg->Set("CustomMultiMap", m_usesCustomMap);
+            reg->setString("LastMultiMap", m_worldName);
+            reg->setInt("CustomMultiMap", m_usesCustomMap);
         }
         for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
             CEdit* nameControl = GetPlayerNameControl(i);

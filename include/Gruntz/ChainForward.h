@@ -5,10 +5,10 @@
 #include <Ints.h>
 
 class CGruntzMgr;
-class CRegMgr;
+class Settings;
 
 i32 SaveBackBufferShot(
-    CRegMgr* reg,
+    Settings* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,
@@ -16,7 +16,7 @@ i32 SaveBackBufferShot(
     i32 saveFlag
 );
 i32 SaveOverlayBufferShot(
-    CRegMgr* reg,
+    Settings* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,
