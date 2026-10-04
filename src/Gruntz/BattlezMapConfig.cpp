@@ -804,7 +804,7 @@ i32 CBattlezAiController::UpdateUnits() {
                             if (special != 0) {
                                 if (unit->IsInCombat() != false && unit->m_attackQueued == false
                                     && unit->m_attackWindupActive == false
-                                    && unit->m_stamina >= STAMINA_FULL) {
+                                    && unit->GetStamina() >= STAMINA_FULL) {
                                     if (unit->TryAttackRememberedTarget(0) != NULL) {
                                         return 1;
                                     }
@@ -873,7 +873,7 @@ i32 CBattlezAiController::UpdateUnits() {
                         == static_cast<u32>(i)) {
                         {
                             PickupType st3 = unit->GetEquippedToolType();
-                            if (st3 == PICKUP_WAND && unit->m_health > 0x1a) {
+                            if (st3 == PICKUP_WAND && unit->GetHealth() > 0x1a) {
                                 if (rand() % g_battlezWandUseChanceDenominator == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
                                     RECT spell;
