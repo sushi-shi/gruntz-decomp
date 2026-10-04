@@ -2940,7 +2940,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         m_tileClick.m_x = snapX;
         m_tileClick.m_y = snapY;
         CTriggerMgr* w = m_mgr->GetTriggerMgr();
-        if (w->m_actionOptionsMenu != NULL && w->m_actionOptionsMenu->m_active != false) {
+        if (w->m_actionOptionsMenu != NULL && w->m_actionOptionsMenu->IsActive() != false) {
             w->CloseActionOptionsMenu();
             return 1;
         }

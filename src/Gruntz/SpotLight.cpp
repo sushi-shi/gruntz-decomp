@@ -21,6 +21,7 @@
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -86,9 +87,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     }
     CShadeTable* looked = g_gameReg->GetLightFxMgr()->GetShadeTable(m_object->m_powerup);
     CWwdSpriteObject* d = m_object;
-    d->m_drawActive = true;
-    d->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    d->m_drawFillArg = looked;
+    d->SetDrawFill(SHADE_DST_BY_SRC_16, looked);
     m_focus = NULL;
     CLEAR_OBJECT_AREA
     m_targetPlayerIndex = -1;

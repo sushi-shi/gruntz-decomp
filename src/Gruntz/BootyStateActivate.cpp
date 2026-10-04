@@ -581,9 +581,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
         m_sprintSprites[i]->SetAnimationByName("GAME_GRUNTSPRINT", 0);
         {
             CWwdSpriteObject* o = m_sprintSprites[i];
-            o->m_drawActive = true;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = h;
+            o->SetDrawFill(SHADE_PAL_16, h);
         }
 
         i32 outX, outY;
@@ -784,9 +782,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[7]->SetAnimationByName("GAME_TELEPORTER", 0);
     m_icons[7]->Hide();
     CWwdSpriteObject* icon7 = m_icons[7];
-    icon7->m_drawActive = true;
-    icon7->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    icon7->m_drawFillArg = tint;
+    icon7->SetDrawFill(SHADE_DST_BY_SRC_16, tint);
 
     CWwdSpriteObject* ex = CreateSimpleAnimationSprite(0);
     m_icons[1] = ex;
@@ -796,9 +792,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     ex->SetImageSetByName("GRUNTZ_EXITZ");
     m_icons[1]->SetAnimationByName("GAME_GRUNTFLEX", 0);
     CWwdSpriteObject* icon1 = m_icons[1];
-    icon1->m_drawActive = true;
-    icon1->m_drawFillCmd = SHADE_PAL_16;
-    icon1->m_drawFillArg = handleA;
+    icon1->SetDrawFill(SHADE_PAL_16, handleA);
     m_icons[1]->Hide();
 
     CWwdSpriteObject* dt = CreateSimpleAnimationSprite(0);
@@ -809,9 +803,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     dt->SetImageSetByName("GRUNTZ_NORMALGRUNT_DEATH");
     m_icons[2]->SetAnimationByName("GAME_GRUNTTWITCH", 0);
     CWwdSpriteObject* icon2 = m_icons[2];
-    icon2->m_drawActive = true;
-    icon2->m_drawFillCmd = SHADE_PAL_16;
-    icon2->m_drawFillArg = handleA;
+    icon2->SetDrawFill(SHADE_PAL_16, handleA);
     m_icons[2]->Hide();
 
     CWwdSpriteObject* gl = CreateSimpleAnimationSprite(0);
@@ -822,9 +814,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     gl->SetImageSetByName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
     m_icons[3]->SetAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* icon3 = m_icons[3];
-    icon3->m_drawActive = true;
-    icon3->m_drawFillCmd = SHADE_PAL_16;
-    icon3->m_drawFillArg = handleA;
+    icon3->SetDrawFill(SHADE_PAL_16, handleA);
     m_icons[3]->Hide();
 
     CWwdSpriteObject* bb = CreateSimpleAnimationSprite(0);
@@ -835,9 +825,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     bb->SetImageSetByName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
     m_icons[4]->SetAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* beachBallIcon = m_icons[4];
-    beachBallIcon->m_drawActive = true;
-    beachBallIcon->m_drawFillCmd = SHADE_PAL_16;
-    beachBallIcon->m_drawFillArg = handleA;
+    beachBallIcon->SetDrawFill(SHADE_PAL_16, handleA);
     m_icons[4]->Hide();
 
     CWwdSpriteObject* rz = CreateSimpleAnimationSprite(0);
@@ -848,9 +836,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     rz->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
     m_icons[5]->SetAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* icon5 = m_icons[5];
-    icon5->m_drawActive = true;
-    icon5->m_drawFillCmd = SHADE_PAL_16;
-    icon5->m_drawFillArg = handleA;
+    icon5->SetDrawFill(SHADE_PAL_16, handleA);
     m_icons[5]->Hide();
 
     CWwdSpriteObject* cn = CreateSimpleAnimationSprite(0);
@@ -861,9 +847,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     cn->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_COIN");
     m_icons[6]->SetAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* icon6 = m_icons[6];
-    icon6->m_drawActive = true;
-    icon6->m_drawFillCmd = SHADE_PAL_16;
-    icon6->m_drawFillArg = handleA;
+    icon6->SetDrawFill(SHADE_PAL_16, handleA);
     m_icons[6]->Hide();
 
     for (i32 i = 0; i < 8; i++) {
@@ -875,9 +859,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         b->SetImageSetByName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
         m_bomb[i]->SetAnimationByName("GAME_GRUNTBOMBSPRINT", 0);
         CWwdSpriteObject* bp = m_bomb[i];
-        bp->m_drawActive = true;
-        bp->m_drawFillCmd = SHADE_PAL_16;
-        bp->m_drawFillArg = handleA;
+        bp->SetDrawFill(SHADE_PAL_16, handleA);
         SET_SCREEN_POS(
             m_bomb[i],
             0x2c6,
@@ -901,9 +883,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         g->SetImageSetByName("GRUNTZ_GOKARTGRUNT_EAST");
         m_gokart[i]->SetAnimationByName("GAME_CYCLE100", 0);
         CWwdSpriteObject* gp = m_gokart[i];
-        gp->m_drawActive = true;
-        gp->m_drawFillCmd = SHADE_PAL_16;
-        gp->m_drawFillArg = handleB;
+        gp->SetDrawFill(SHADE_PAL_16, handleB);
         SET_SCREEN_POS(
             m_gokart[i],
             -70,
@@ -1109,9 +1089,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         m_animSprites[i]->SetAnimationByName("GRUNTZ_NORMALGRUNT_WALK", 0);
         m_animSprites[i]->Hide();
         CWwdSpriteObject* anim = m_animSprites[i];
-        anim->m_drawActive = true;
-        anim->m_drawFillCmd = SHADE_PAL_16;
-        anim->m_drawFillArg = sel;
+        anim->SetDrawFill(SHADE_PAL_16, sel);
         m_visSprites[i] = CreateSimpleAnimationSprite(1);
         if (m_visSprites[i] == NULL) {
             return 0;
@@ -1241,9 +1219,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
                     m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
                     CWwdSpriteObject* g = m_animSprites[m_stepIndex];
-                    g->m_drawActive = true;
-                    g->m_drawFillCmd = SHADE_PAL_16;
-                    g->m_drawFillArg = sel;
+                    g->SetDrawFill(SHADE_PAL_16, sel);
                     m_visSprites[m_stepIndex]->Hide();
                     g_gameReg->VoiceMgr()
                         ->PlayVoice(NULL, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
@@ -1252,9 +1228,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                     m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     CWwdSpriteObject* g = m_animSprites[m_stepIndex];
-                    g->m_drawActive = true;
-                    g->m_drawFillCmd = SHADE_PAL_16;
-                    g->m_drawFillArg = sel;
+                    g->SetDrawFill(SHADE_PAL_16, sel);
                     m_visSprites[m_stepIndex]->Hide();
                     m_stepIndex++;
                     g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x441, 0, 1, -1, -1);
@@ -1277,8 +1251,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         }
     } else if (m_walkStarted != false) {
 
-        CWwdSpriteObject* spr = m_animSprites[m_stepIndex];
-        if (spr->m_animationCursor.IsComplete()) {
+        CAniAdvanceCursor* cursor = &m_animSprites[m_stepIndex]->m_animationCursor;
+        if (cursor->IsComplete()) {
             m_stepIndex++;
             if (m_stepIndex == g_gameReg->GetGameStats()->m_levelNumber % 4) {
                 m_stepIndex = 4;
@@ -1292,7 +1266,9 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             }
         }
     } else {
-        m_animSprites[m_stepIndex]->m_screenY -= 3;
+        i32 nextY = m_animSprites[m_stepIndex]->m_screenY;
+        nextY -= 3;
+        m_animSprites[m_stepIndex]->m_screenY = nextY;
     }
     return 0;
 }
