@@ -993,7 +993,6 @@ i32 CGrunt::StepWarpExit() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000646b0, 0x9c8)
 i32 CGrunt::StepCombatReaction(
     PickupType attackKind,
@@ -1014,18 +1013,13 @@ i32 CGrunt::StepCombatReaction(
         h->SetSortKey(v);
     }
 
-    bool ne;
-    bool eq;
-    ne = IsNotAnimationAct("A");
-    if (!ne) {
+    if (!IsNotAnimationAct("A")) {
         goto tail;
     }
-    ne = IsNotAnimationAct("D");
-    if (!ne) {
+    if (!IsNotAnimationAct("D")) {
         goto tail;
     }
-    eq = IsAnimationAct("I");
-    if (eq) {
+    if (IsAnimationAct("I")) {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
@@ -1038,8 +1032,7 @@ i32 CGrunt::StepCombatReaction(
     if (SettleActiveKnockback()) {
         goto tail;
     }
-    eq = IsAnimationAct("Q");
-    if (eq) {
+    if (IsAnimationAct("Q")) {
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
         return 0;
     }
@@ -1074,8 +1067,7 @@ tail:
 
     {
         CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        eq = (*rec == "F");
-        if (eq) {
+        if (*rec == "F") {
             if (m_entranceCommitted != false) {
                 return 0;
             }
@@ -1084,8 +1076,7 @@ tail:
     m_entranceActive = true;
     {
         CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-        ne = (*rec != "O");
-        if (ne) {
+        if (*rec != "O") {
             SET_ANIMATION_ACT("H");
             CGrunt* cellObj = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
             if (cellObj != NULL) {
