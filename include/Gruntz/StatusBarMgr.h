@@ -196,7 +196,7 @@ public:
 
     i32 OnPointerRelease(i32 keyFlags, i32 x, i32 y);
     i32 HandlePointerDrag(i32 keyFlags, i32 x, i32 y);
-    CStatusBarItem* HitTestItems(i32 x, i32 y);
+    CStatusBarItem* HitTestItems(i32 screenX, i32 screenY);
     void ResetWidgets(b32 deleteCollapsedSprite);
     void ClearActiveTabContent();
     void AddTabItem(i32 tab, CStatusBarItem* item) {

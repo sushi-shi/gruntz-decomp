@@ -789,44 +789,44 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
 }
 
 RVA(0x000ffcb0, 0xe2)
-CStatusBarItem* CStatusBarMgr::HitTestItems(i32 x, i32 y) {
-    POSITION n = m_tabLists[0].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
-        if (r) {
-            b32 hit = r->IsEnabled();
+CStatusBarItem* CStatusBarMgr::HitTestItems(i32 screenX, i32 screenY) {
+    POSITION itemPosition = m_tabLists[0].GetHeadPosition();
+    while (itemPosition) {
+        CStatusBarItem* item = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(itemPosition));
+        if (item) {
+            b32 hit = item->IsEnabled();
             if (hit) {
-                hit = r->ContainsPoint(x, y);
+                hit = item->ContainsPoint(screenX, screenY);
             }
             if (hit) {
-                return r;
-            }
-        }
-    }
-    CPtrList& tab = m_tabLists[IDX(m_activeTab)];
-    n = tab.GetHeadPosition();
-    while (n) {
-        CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
-        if (r) {
-            b32 hit = r->IsEnabled();
-            if (hit) {
-                hit = r->ContainsPoint(x, y);
-            }
-            if (hit) {
-                return r;
+                return item;
             }
         }
     }
-    n = m_tabLists[6].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
-        if (r) {
-            b32 hit = r->IsEnabled();
+    CPtrList& activeTabItems = m_tabLists[IDX(m_activeTab)];
+    itemPosition = activeTabItems.GetHeadPosition();
+    while (itemPosition) {
+        CStatusBarItem* item = static_cast<CStatusBarItem*>(activeTabItems.GetNext(itemPosition));
+        if (item) {
+            b32 hit = item->IsEnabled();
             if (hit) {
-                hit = r->ContainsPoint(x, y);
+                hit = item->ContainsPoint(screenX, screenY);
             }
             if (hit) {
-                return r;
+                return item;
+            }
+        }
+    }
+    itemPosition = m_tabLists[6].GetHeadPosition();
+    while (itemPosition) {
+        CStatusBarItem* item = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(itemPosition));
+        if (item) {
+            b32 hit = item->IsEnabled();
+            if (hit) {
+                hit = item->ContainsPoint(screenX, screenY);
+            }
+            if (hit) {
+                return item;
             }
         }
     }
@@ -841,138 +841,138 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_world == NULL) {
         return 0;
     }
-    i32 bx = m_barRect.left;
-    i32 by = m_barRect.top;
-    CGameWorld* code = m_world;
+    i32 barLeft = m_barRect.left;
+    i32 barTop = m_barRect.top;
+    CGameWorld* world = m_world;
 
-    CSBI_RectOnly* dockLeft = new CSBI_RectOnly;
-    if (!dockLeft->Setup(
+    CSBI_RectOnly* dockLeftButton = new CSBI_RectOnly;
+    if (!dockLeftButton->Setup(
             this,
-            code,
+            world,
             SBICMD_DOCK_LEFT,
             TAB_CONTROLS,
-            CRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
+            CRect(barLeft + 0x7c, barTop + 0xad, barLeft + 0x88, barTop + 0xb9),
             NULL,
             -1
         )) {
-        delete dockLeft;
+        delete dockLeftButton;
         return 0;
     }
-    AddTabItem(0, dockLeft);
+    AddTabItem(0, dockLeftButton);
 
-    CSBI_RectOnly* dockRight = new CSBI_RectOnly;
-    if (!dockRight->Setup(
+    CSBI_RectOnly* dockRightButton = new CSBI_RectOnly;
+    if (!dockRightButton->Setup(
             this,
-            code,
+            world,
             SBICMD_DOCK_RIGHT,
             TAB_CONTROLS,
-            CRect(bx + 0x8a, by + 0xad, bx + 0x96, by + 0xb9),
+            CRect(barLeft + 0x8a, barTop + 0xad, barLeft + 0x96, barTop + 0xb9),
             NULL,
             -1
         )) {
-        delete dockRight;
+        delete dockRightButton;
         return 0;
     }
-    AddTabItem(0, dockRight);
+    AddTabItem(0, dockRightButton);
 
-    CSBI_RectOnly* hide = new CSBI_RectOnly;
-    if (!hide->Setup(
+    CSBI_RectOnly* hideButton = new CSBI_RectOnly;
+    if (!hideButton->Setup(
             this,
-            code,
+            world,
             SBICMD_HIDE,
             TAB_CONTROLS,
-            CRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
+            CRect(barLeft + 0x83, barTop + 0xbb, barLeft + 0x8f, barTop + 0xc7),
             NULL,
             -1
         )) {
-        delete hide;
+        delete hideButton;
         return 0;
     }
-    AddTabItem(0, hide);
+    AddTabItem(0, hideButton);
 
-    CSBI_MenuItem* statzTab;
+    CSBI_MenuItem* statzTabButton;
     NEW_STATUS_BAR_ITEM(
-        statzTab,
+        statzTabButton,
         CSBI_MenuItem,
-        code,
+        world,
         SBICMD_TAB_STATZ,
         TAB_CONTROLS,
-        CRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0xad),
+        CRect(barLeft + 0x42, barTop + 0x82, barLeft + 0x62, barTop + 0xad),
         "GAME_STATUSBAR_TABZ_STATZTAB",
         -1,
         0
     );
-    AddTabItem(0, statzTab);
-    m_statzTabButton = statzTab;
+    AddTabItem(0, statzTabButton);
+    m_statzTabButton = statzTabButton;
 
-    CSBI_MenuItem* gruntzTab;
+    CSBI_MenuItem* gruntzTabButton;
     NEW_STATUS_BAR_ITEM(
-        gruntzTab,
+        gruntzTabButton,
         CSBI_MenuItem,
-        code,
+        world,
         SBICMD_TAB_GRUNTZ,
         TAB_CONTROLS,
-        CRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0xad),
+        CRect(barLeft + 0x04, barTop + 0x82, barLeft + 0x24, barTop + 0xad),
         "GAME_STATUSBAR_TABZ_GRUNTZTAB",
         -1,
         0
     );
-    AddTabItem(0, gruntzTab);
-    m_gruntzTabButton = gruntzTab;
+    AddTabItem(0, gruntzTabButton);
+    m_gruntzTabButton = gruntzTabButton;
 
-    CSBI_MenuItem* resourceTab;
+    CSBI_MenuItem* resourceTabButton;
     NEW_STATUS_BAR_ITEM(
-        resourceTab,
+        resourceTabButton,
         CSBI_MenuItem,
-        code,
+        world,
         SBICMD_TAB_RESOURCE,
         TAB_CONTROLS,
-        CRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0xad),
+        CRect(barLeft + 0x24, barTop + 0x82, barLeft + 0x44, barTop + 0xad),
         "GAME_STATUSBAR_TABZ_RESOURCETAB",
         -1,
         0
     );
-    AddTabItem(0, resourceTab);
-    m_resourceTabButton = resourceTab;
+    AddTabItem(0, resourceTabButton);
+    m_resourceTabButton = resourceTabButton;
 
-    CSBI_MenuItem* multiTab;
+    CSBI_MenuItem* multiplayerTabButton;
     NEW_STATUS_BAR_ITEM(
-        multiTab,
+        multiplayerTabButton,
         CSBI_MenuItem,
-        code,
+        world,
         SBICMD_TAB_MULTIPLAYER,
         TAB_CONTROLS,
-        CRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0xad),
+        CRect(barLeft + 0x60, barTop + 0x82, barLeft + 0x80, barTop + 0xad),
         "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
         -1,
         0
     );
-    AddTabItem(0, multiTab);
-    m_multiTabButton = multiTab;
+    AddTabItem(0, multiplayerTabButton);
+    m_multiTabButton = multiplayerTabButton;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        multiTab->m_state = MENUITEM_DISABLED;
-        CImageSet* f = multiTab->m_stateFrames;
-        if (f != NULL) {
-            multiTab->SetFrame(f->GetAt(IDX(MENUITEM_DISABLED)));
+        multiplayerTabButton->m_state = MENUITEM_DISABLED;
+        CImageSet* stateFrames = multiplayerTabButton->m_stateFrames;
+        if (stateFrames != NULL) {
+            multiplayerTabButton->SetFrame(stateFrames->GetAt(IDX(MENUITEM_DISABLED)));
         }
-        multiTab->SetEnabled(0);
-        multiTab->RequestRedraw();
+        multiplayerTabButton->SetEnabled(0);
+        multiplayerTabButton->RequestRedraw();
     }
 
-    CSBI_MenuItem* gameTab;
+    CSBI_MenuItem* gameTabButton;
     NEW_STATUS_BAR_ITEM(
-        gameTab,
+        gameTabButton,
         CSBI_MenuItem,
-        code,
+        world,
         SBICMD_TAB_GAME,
         TAB_CONTROLS,
-        CRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0xad),
+        CRect(barLeft + 0x7e, barTop + 0x82, barLeft + 0x9e, barTop + 0xad),
         "GAME_STATUSBAR_TABZ_GAMETAB",
         -1,
         0
     );
-    AddTabItem(0, gameTab);
-    m_gameTabButton = gameTab;
+    AddTabItem(0, gameTabButton);
+    m_gameTabButton = gameTabButton;
 
     if (BuildSideTabs() == 0) {
         return 0;
