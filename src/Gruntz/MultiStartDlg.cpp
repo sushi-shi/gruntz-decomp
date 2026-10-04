@@ -1133,7 +1133,7 @@ void CMultiStartDlg::OnOK() {
     if (g_multiState->Poll(verificationToken) == 0) {
         g_multiState->m_customLevelVerificationPending = false;
         EnableWindow(false);
-        g_gameReg->EnterModalUI(
+        g_gameReg->ShowModalMessage(
             "Unable to verify custom level with other players. The game will not start."
         );
         EnableWindow(true);
@@ -1143,7 +1143,7 @@ void CMultiStartDlg::OnOK() {
     } else {
         g_multiState->m_customLevelVerificationPending = false;
         EnableWindow(false);
-        g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
+        g_gameReg->ShowModalMessage("Not all players have the (same) custom level.");
         EnableWindow(true);
     }
 }

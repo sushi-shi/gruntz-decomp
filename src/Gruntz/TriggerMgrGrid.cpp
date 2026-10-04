@@ -483,7 +483,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_TIME_SWITCH));
                 return 0;
             }
@@ -507,7 +507,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (anyHit == 0) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_TIME_TRIGGER));
                 return 0;
             }
@@ -521,7 +521,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_SECRET_SWITCH));
                 return 0;
             }
@@ -538,7 +538,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (anyHit == 0) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_SECRET_TRIGGER));
                 return 0;
             }
@@ -570,7 +570,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_SWITCH));
                 return 0;
             }
@@ -590,7 +590,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (anyHit == 0) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_TRIGGER));
                 return 0;
             }
@@ -604,7 +604,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_MULTI_SWITCH));
                 return 0;
             }
@@ -627,7 +627,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (anyHit == 0) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_WIRE_MULTI_TRIGGER));
                 return 0;
             }
@@ -641,7 +641,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(
                     IDX(TRIGERR_LOOKUP_MISS),
                     IDX(TRIGSITE_WIRE_EXCLUSIVE_SWITCH)
@@ -666,7 +666,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (anyHit == 0) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(
                     IDX(TRIGERR_LINK_BROKEN),
                     IDX(TRIGSITE_WIRE_EXCLUSIVE_TRIGGER)
@@ -786,7 +786,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for plate at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_CHECKPOINT));
                 return 0;
             }
@@ -824,7 +824,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (anyHit == 0) {
                 CString msg;
                 msg.Format("No trigger logic found for plate at: x=%d, y=%d", x, y);
-                g_gameReg->EnterModalUI(static_cast<const char*>(msg));
+                g_gameReg->ShowModalMessage(static_cast<const char*>(msg));
                 g_gameReg->ReportError(
                     IDX(TRIGERR_LINK_BROKEN),
                     IDX(TRIGSITE_WIRE_CHECKPOINT_TRIGGER)
@@ -876,7 +876,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ShowModalMessage(msg);
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_40));
                 return 0;
             }
@@ -891,7 +891,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ShowModalMessage(msg);
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_34));
                 return 0;
             }
@@ -906,7 +906,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ShowModalMessage(msg);
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_36));
                 return 0;
             }
@@ -930,7 +930,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (found == false) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ShowModalMessage(msg);
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_APPLY_TRIGGER_36));
                 return 0;
             }
@@ -944,7 +944,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ShowModalMessage(msg);
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_38));
                 return 0;
             }
@@ -967,7 +967,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 if (found == false) {
                     CString msg;
                     msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
-                    g_gameReg->EnterModalUI(msg);
+                    g_gameReg->ShowModalMessage(msg);
                     g_gameReg->ReportError(
                         IDX(TRIGERR_LINK_BROKEN),
                         IDX(TRIGSITE_APPLY_TRIGGER_38)
@@ -996,7 +996,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             if (obj == NULL) {
                 CString msg;
                 msg.Format("No switch logic found for switch at: x=%d, y=%d", sx, sy);
-                g_gameReg->EnterModalUI(msg);
+                g_gameReg->ShowModalMessage(msg);
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_42));
                 return 0;
             }

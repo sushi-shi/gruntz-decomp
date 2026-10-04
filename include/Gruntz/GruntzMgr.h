@@ -208,9 +208,9 @@ public:
 
     i32 TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused);
 
-    void EnterModalUI(const char* msg);
+    void ShowModalMessage(const char* msg);
 
-    i32 ExitModalUI(class CDialog* dlg, b32 notify);
+    i32 RunMfcDialog(class CDialog* dlg, b32 notify);
     i32 FinishLevel(b32 pauseGame, b32 pauseMusic);
     i32 FillSaveInfo(SaveSlot* dst, const char* snapshot);
     void SetSaveSlot(SaveSlot* const& slot) {

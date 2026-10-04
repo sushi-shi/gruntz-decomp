@@ -231,14 +231,14 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
         CString(name)
     );
     if (r == 0) {
-        g_gameReg->EnterModalUI(
+        g_gameReg->ShowModalMessage(
             "The level that this game was saved on does not exist!\n\nThis "
             "saved game cannot be loaded and should be deleted."
         );
         return 0;
     }
     if (slot->m_checksum != r) {
-        g_gameReg->EnterModalUI(
+        g_gameReg->ShowModalMessage(
             "The level that this game was saved on has changed!\n\nThis "
             "saved game cannot be loaded and should be deleted."
         );

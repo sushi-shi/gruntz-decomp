@@ -1366,7 +1366,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
                         if (st->m_statusBar->GetState() == STATUSBAR_DOCK_RIGHT) {
                             st->m_statusBar->DockStatusBarLeft();
                             st->m_statusBar->DockStatusBarRight();
-                            EnterModalUI(
+                            ShowModalMessage(
                                 "This map is too small to be displayed under your "
                                 "desired video resolution. Default resolution will "
                                 "be used."
@@ -1378,7 +1378,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
                             st->m_statusBar->DockStatusBarLeft();
                         }
                     }
-                    EnterModalUI(
+                    ShowModalMessage(
                         "This map is too small to be displayed under your desired "
                         "video resolution. Default resolution will be used."
                     );
@@ -1549,7 +1549,7 @@ void CGruntzMgr::OnCheckpointReached() {
         return;
     }
     CCheckpointDlg dlg(NULL);
-    if (ExitModalUI(&dlg, false) == 1) {
+    if (RunMfcDialog(&dlg, false) == 1) {
         SendMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_QUICK_SAVE_PROMPT), 0);
     }
 }
@@ -1791,7 +1791,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
 }
 
 RVA(0x0008ef10, 0x9e)
-void CGruntzMgr::EnterModalUI(const char* msg) {
+void CGruntzMgr::ShowModalMessage(const char* msg) {
     CGameApp* app = m_owner;
     if (app == NULL) {
         return;
@@ -2363,7 +2363,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
 }
 
 RVA(0x000903f0, 0x10c)
-i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
+i32 CGruntzMgr::RunMfcDialog(CDialog* dlg, b32 notify) {
     if (m_voiceManager) {
         VoiceMgr()->PauseAllVoices();
     }
@@ -3266,7 +3266,7 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
     if (CheatMgr()->HasUsedCheats() != false) {
         CString name;
         name.LoadStringA(0x81aa);
-        EnterModalUI(name);
+        ShowModalMessage(name);
     } else if (RunModalDialog("GAME_SAVE", SaveGameDialogProc, false) == 1) {
         RunModalDialog("GAME_SAVEMSG", OkCancelDialogProc, false);
     }
@@ -3290,7 +3290,7 @@ i32 CGruntzMgr::Quicksave() {
     if (CheatMgr()->HasUsedCheats() != false) {
         CString name;
         name.LoadStringA(0x81aa);
-        EnterModalUI(name);
+        ShowModalMessage(name);
         return 1;
     }
     if (m_saveInfoRec == NULL || !(m_saveInfoRec->m_flags & 1)) {
@@ -3306,7 +3306,7 @@ i32 CGruntzMgr::Quicksave() {
     FillSaveInfo(m_saveInfoRec, NULL);
 
     if (g_gameReg->m_saveGame->Save(m_saveInfoRec->m_serial, 0x81a7) == 0) {
-        EnterModalUI("ERROR - Cannot Save Game.");
+        ShowModalMessage("ERROR - Cannot Save Game.");
         return 1;
     }
     ChatLog()->AddMessage("Game Quicksaved successfully.", GAME_TEXT_FLAGS_NONE, 0x11);
@@ -3545,7 +3545,7 @@ i32 CGruntzMgr::OpenBattlezSetup() {
         return 0;
     }
     ResetPlayerColorAvailability();
-    if (ExitModalUI(&dlg, true) != 1) {
+    if (RunMfcDialog(&dlg, true) != 1) {
         return 0;
     }
     if (dlg.m_customNameFlag != false) {

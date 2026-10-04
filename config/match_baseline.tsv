@@ -2375,8 +2375,8 @@ gruntzmgr	?DeactivateAllPlayers@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	a4915fdaf
 gruntzmgr	?DebugGruntTypeDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	553cf1cb4bdd	0x92ab0	100.0000	
 gruntzmgr	?DebugJumpLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	d8e640f381ff	0x8e780	100.0000	
 gruntzmgr	?DelayedQuit@CGruntzMgr@@QAEXXZ	94.6721	94.6721	12	451c0f547d93	0x8f530	94.6721	
-gruntzmgr	?EnterModalUI@CGruntzMgr@@QAEXPBD@Z	100.0000	100.0000	6	f140321df187	0x8ef10	100.0000	
-gruntzmgr	?ExitModalUI@CGruntzMgr@@QAEHPAVCDialog@@H@Z	100.0000	100.0000	9	70390eb00a7b	0x903f0	100.0000	
+gruntzmgr	?ShowModalMessage@CGruntzMgr@@QAEXPBD@Z	100.0000	100.0000	6	f140321df187	0x8ef10	100.0000	
+gruntzmgr	?RunMfcDialog@CGruntzMgr@@QAEHPAVCDialog@@H@Z	100.0000	100.0000	9	70390eb00a7b	0x903f0	100.0000	
 gruntzmgr	?FillSaveInfo@CGruntzMgr@@QAEHPAUSaveSlot@@PBD@Z	100.0000	100.0000	4	d83c755bffe0	0x927b0	100.0000	
 gruntzmgr	?FinalizeLevelAndShowResults@CGruntzMgr@@QAEXXZ	100.0000	100.0000	8	138a61f2d324	0x861e0	100.0000	
 gruntzmgr	?FindPlayerByNetworkId@CGruntzMgr@@QAEPAVGruntzPlayer@@H@Z	100.0000	100.0000	4	2ac7610a620f	0x92e80	100.0000	

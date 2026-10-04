@@ -4532,7 +4532,7 @@ b32 CPlay::PlaceStartGruntz() {
                 if (idx == -1) {
                     CString s;
                     s.Format("Could not add Grunt: Player=%d, x=%d, y=%d", obj->GetSmarts(), x, y);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    g_gameReg->ShowModalMessage(static_cast<LPCSTR>(s));
                     return false;
                 }
                 obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -5303,7 +5303,7 @@ i32 CPlay::AddLevelGruntz() {
             CString msg;
             msg.Format("Could not add Grunt: Player=%d, x=%d, y=%d", g->GetSmarts(), x, y);
 
-            (g_gameReg)->EnterModalUI(msg);
+            (g_gameReg)->ShowModalMessage(msg);
             return 0;
         }
         g->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

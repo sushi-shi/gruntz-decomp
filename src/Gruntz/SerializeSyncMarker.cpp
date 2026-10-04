@@ -32,7 +32,7 @@ i32 SerializeSyncMarker(CFileMemBase* arc, i32 mode, const char* name, i32 line)
         arc->Read(&readVal, sizeof(readVal));
         if (readVal != g_serialCounter + SERIAL_SYNC_MARKER_BASE) {
             wsprintfA(g_syncErrMsgBuf, "save/load out of sync at %s, %d", name, line);
-            g_gameReg->EnterModalUI(g_syncErrMsgBuf);
+            g_gameReg->ShowModalMessage(g_syncErrMsgBuf);
             return 0;
         }
     }

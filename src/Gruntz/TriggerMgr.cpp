@@ -1577,7 +1577,7 @@ i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 k
                             centerX,
                             centerY
                         );
-                        g_gameReg->EnterModalUI(msg);
+                        g_gameReg->ShowModalMessage(msg);
                         g_gameReg->ReportError(
                             IDX(TRIGERR_LOOKUP_MISS),
                             IDX(TRIGSITE_ROCK_SCAN_MISS)

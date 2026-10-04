@@ -998,9 +998,9 @@ void CMulti::ShowNetworkMessage(char* message, i32 code) {
     if (message && *message && Mgr()) {
         if (code > 0) {
             sprintf(formattedMessage, "%s (%i)", message, code);
-            Mgr()->EnterModalUI(formattedMessage);
+            Mgr()->ShowModalMessage(formattedMessage);
         } else {
-            Mgr()->EnterModalUI(message);
+            Mgr()->ShowModalMessage(message);
         }
     }
 }
@@ -1187,7 +1187,7 @@ void CMulti::ApplyCmdDelayDefaults() {
 RVA(0x000b86c0, 0x206)
 i32 CMulti::ShowMultiStartDlg() {
     CMultiStartDlg dlg(m_mgr, NULL);
-    i32 r = m_mgr->ExitModalUI(&dlg, false);
+    i32 r = m_mgr->RunMfcDialog(&dlg, false);
     g_netMessageEditHwnd = NULL;
     if (r != 1) {
         if (m_isHost != false) {
@@ -1360,7 +1360,7 @@ i32 CMulti::VerifyCustomLevel(CNetSessionListNode* session, CNetPlayerNode* loca
         g_connectRptMgr->m_levelVerifyResult = false;
         if (g_connectRptMgr->Poll(token) == 0) {
             m_customLevelVerificationPending = false;
-            g_gameReg->EnterModalUI(
+            g_gameReg->ShowModalMessage(
                 "Unable to verify custom level with other players. The game will not start."
             );
             goto notVerified;
@@ -1369,7 +1369,7 @@ i32 CMulti::VerifyCustomLevel(CNetSessionListNode* session, CNetPlayerNode* loca
         if (g_connectRptMgr->m_levelVerifyResult != false) {
             return 1;
         }
-        g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
+        g_gameReg->ShowModalMessage("Not all players have the (same) custom level.");
         m_customLevelVerificationPending = false;
         goto notVerified;
     }
