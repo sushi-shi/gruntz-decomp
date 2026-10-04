@@ -25,9 +25,10 @@ GZ_ENUM_CONST_BEGIN(AniRecordTiming)
     ANI_FRAME_QUANTUM_MS = 22
 GZ_ENUM_CONST_END(AniRecordTiming)
 
-struct CAniRecordView : public CObject {
-    virtual ~CAniRecordView() OVERRIDE {
-        CAniRecordView* r = this;
+// @identity-TODO: original class spelling is unavailable; retail vtable has no RTTI.
+struct CAniFrameRecord : public CObject {
+    virtual ~CAniFrameRecord() OVERRIDE {
+        CAniFrameRecord* r = this;
         if (r->m_cues != NULL) {
             delete[] r->m_cues;
         }
@@ -36,24 +37,24 @@ struct CAniRecordView : public CObject {
         r->m_cues = NULL;
     }
 
-    i32 Parse(SoundCueRegistry* ctx, const i16* src);
+    i32 Parse(SoundCueRegistry* soundRegistry, const i16* recordWords);
     i32 GetDurationMs();
-    void ResolveIndices(SoundCueRegistry* owner, const char* str);
+    void ResolveSoundCues(SoundCueRegistry* soundRegistry, const char* cueNames);
 
     i32 GetFrameParameter() const {
-        return m_param;
+        return m_frameParameter;
     }
 
-    i32 Rng2Next();
+    i32 NextRandomValue();
 
     SoundCue* PickCue() {
         if (m_cueCount == 0) {
             return NULL;
         }
-        return m_cues[Rng2Next() % m_cueCount];
+        return m_cues[NextRandomValue() % m_cueCount];
     }
 
-    inline CAniRecordView() {
+    inline CAniFrameRecord() {
         m_cueCount = 0;
         m_cues = NULL;
         m_loopMode = WWDLOOP_INVALID;
@@ -63,7 +64,7 @@ struct CAniRecordView : public CObject {
     WwdAnimStepMode m_stepMode;
     WwdAnimLoopMode m_loopMode;
     WwdAnimPositionMode m_positionMode;
-    i32 m_param;
+    i32 m_frameParameter;
     i32 m_duration;
     i32 m_drawValue;
     i32 m_positionDeltaX;

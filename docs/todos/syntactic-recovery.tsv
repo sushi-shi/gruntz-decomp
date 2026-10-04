@@ -44,7 +44,7 @@ rva	unit	function	lost_max	cur
 0x0f36a0	gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	83.8203
 0x065630	gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	96.2980	95.3490
 0x061940	gruntentrancearrival	?StartTargetedAttackAnimation@CGrunt@@QAEHHH@Z	91.5951	91.5705
-0x0646b0	gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	97.7331	97.1872
+0x0646b0	gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	97.7331	96.5821
 0x062110	gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	94.1261	92.4707
 0x06a6d0	gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	94.6523	93.9330
 0x067b00	gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9592	90.7347

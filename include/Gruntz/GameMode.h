@@ -267,12 +267,6 @@ public:
 
     CString GetWarlordName(i32 id);
 
-    void OnActivated();
-
-    i32 ForwardIdleAnim(i32 a, i32 b);
-    i32 Paint();
-    i32 BuildBootyGruntIdleAnimation();
-
     i32 HandleContinueInput();
 
     // @identity-TODO: construction and activation zero this word; no semantic read.

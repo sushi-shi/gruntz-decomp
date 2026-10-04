@@ -12,7 +12,7 @@
 
 class CWwdSpriteObject;
 struct CGameObject;
-class CAniRecordView;
+class CAniFrameRecord;
 class CAniElement;
 class CFileMemBase;
 
@@ -74,7 +74,7 @@ public:
     CWwdSpriteObject* m_boundObject;
     CAniElement* m_animation;
 
-    CAniRecordView* m_currentRecord;
+    CAniFrameRecord* m_currentRecord;
     i32 m_recordIndex;
     u32 m_frameTicksLeft;
     b32 m_useElapsedTime;

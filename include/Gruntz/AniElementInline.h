@@ -13,8 +13,8 @@ inline CObject* CAniElement::GetAt(i32 i) const {
     return NULL;
 }
 
-inline CAniRecordView* CAniElement::RecordAt(i32 index) const {
-    return static_cast<CAniRecordView*>(GetAt(index));
+inline CAniFrameRecord* CAniElement::RecordAt(i32 index) const {
+    return static_cast<CAniFrameRecord*>(GetAt(index));
 }
 
 #endif // GRUNTZ_ANIELEMENTINLINE_H

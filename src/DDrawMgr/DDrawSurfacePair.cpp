@@ -849,7 +849,7 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
 
     i32 i;
     for (i = 0; i < src->m_count; i++) {
-        CAniRecordView* rec = new CAniRecordView;
+        CAniFrameRecord* rec = new CAniFrameRecord;
 
         Pix16CPtr head;
         head.m_chars = cursor;
@@ -859,7 +859,7 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
             return 0;
         }
         m_records.Add(rec);
-        cursor += g_aniParsedNameLen + 0x14;
+        cursor += g_aniParsedCueListBytes + 0x14;
         m_durationMs += rec->GetDurationMs();
     }
     return 1;
@@ -905,8 +905,8 @@ void CAniElement::DeleteAll() {
     DELETE_ANI_ELEMENT_CONTENTS(i);
 }
 
-RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
-RVA_COMPGEN(0x001657a0, 0x66, ??1CAniRecordView@@UAE@XZ)
+RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniFrameRecord@@UAEPAXI@Z)
+RVA_COMPGEN(0x001657a0, 0x66, ??1CAniFrameRecord@@UAE@XZ)
 
 RVA(0x00165810, 0xa9)
 void CDDrawPaletteRegistry::Unload() {

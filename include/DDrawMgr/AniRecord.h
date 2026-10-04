@@ -3,5 +3,5 @@
 
 #include <rva.h>
 
-extern i32 g_aniParsedNameLen;
+extern i32 g_aniParsedCueListBytes;
 #endif // GRUNTZ_DDRAWMGR_ANIRECORD_H

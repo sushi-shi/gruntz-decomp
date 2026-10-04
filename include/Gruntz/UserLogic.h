@@ -154,8 +154,8 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 #define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                  \
     CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
-    CAniRecordView* record = animation->RecordAt(0);                                               \
-    i32 frame = record->m_param;
+    CAniFrameRecord* record = animation->RecordAt(0);                                              \
+    i32 frame = record->m_frameParameter;
 
 #define SET_OBJECT_FLAGS_INLINE(bits) m_wwdObject->AddFlags(bits)
 
@@ -178,8 +178,8 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 #define APPLY_CURRENT_ANIMATION_FRAME_SPRITE(name, animation, record)                              \
     CAniElement* animation = m_wwdObject->m_animationCursor.GetAnimation();                        \
-    CAniRecordView* record = animation->RecordAt(0);                                               \
-    APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
+    CAniFrameRecord* record = animation->RecordAt(0);                                              \
+    APPLY_LOOKUP_SPRITE_INLINE(name, record->m_frameParameter);
 
 #define SET_OBJECT_AREA(value)                                                                     \
     m_object->m_area.left = value;                                                                 \
