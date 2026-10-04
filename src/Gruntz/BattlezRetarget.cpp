@@ -75,7 +75,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             CBattlezMapConfig* b = m_ctx->m_players[band].GetBattlezConfig();
             if (b != NULL) {
                 i32 cnt = b->GetAttackWaypointCount();
-                Coord goal = b->m_marker;
+                Coord goal = b->GetBaseTile();
                 if (cnt != 0) {
                     Coord* pair = b->CoordAt(rand() % cnt);
                     goal = *pair;
@@ -96,8 +96,8 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             return 1;
         }
 
-        i32 y = recB->m_marker.m_y;
-        i32 x = recB->m_marker.m_x;
+        i32 y = recB->GetBaseTile().m_y;
+        i32 x = recB->GetBaseTile().m_x;
         unit->TileSwitch(x, y, 0, 0x987, 0, 0x4068);
         unit->ResetDwell();
         return 1;

@@ -20,6 +20,10 @@ class CPlay;
 
 class CBattlezMapConfig {
 public:
+    const Coord& GetBaseTile() const {
+        return m_marker;
+    }
+
     i32 LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty);
 
     CBattlezMapConfig();
