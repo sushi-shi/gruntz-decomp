@@ -40,7 +40,7 @@ i32 CAniPlayer::Start(
         == SBICMD_NONE) {
         return 0;
     }
-    m_timing.Start(m_interval);
+    m_timing.Start(m_frameDelayMs);
     return 1;
 }
 
@@ -51,7 +51,7 @@ RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 unused) {
     if (m_timing.Expired()) {
         m_frameIndex = (m_frameIndex == m_frameStart) ? m_frameEnd : m_frameStart;
-        m_timing.Start(m_interval);
+        m_timing.Start(m_frameDelayMs);
     }
     return 1;
 }

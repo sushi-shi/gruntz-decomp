@@ -16,8 +16,8 @@ public:
     CSBI_ImageSetAni() {
         m_kind = SBI_KIND_IMAGE_SET_ANI;
         m_frameSet = NULL;
-        m_loop = 0;
-        m_interval = 0x64;
+        m_looping = 0;
+        m_frameDelayMs = 0x64;
     }
 
     virtual ~CSBI_ImageSetAni() OVERRIDE;
@@ -36,17 +36,17 @@ public:
         const char* key,
         i32 frameStart,
         i32 frameEnd,
-        i32 intervalMs,
-        i32 loop,
-        i32 step
+        i32 frameDelayMs,
+        i32 looping,
+        i32 frameStep
     );
 
-    virtual void SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval);
+    virtual void SetRange(i32 start, i32 end, i32 frameStep, i32 looping, i32 frameDelayMs);
 
-    i32 m_interval;
-    i32 m_lastTime;
-    i32 m_loop;
-    i32 m_step;
+    i32 m_frameDelayMs;
+    i32 m_lastFrameTimeMs;
+    i32 m_looping;
+    i32 m_frameStep;
     i32 m_frameEnd;
     i32 m_frameStart;
 };
