@@ -37,7 +37,7 @@ inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
 }
 
 inline void CPlay::HandleSelectionGroupKey(i32 slot) {
-    if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
+    if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
         g_gameReg->GetTriggerMgr()->SaveSelectionGroup(slot);
     } else {
         g_gameReg->GetTriggerMgr()->RecallSelectionGroup(slot);

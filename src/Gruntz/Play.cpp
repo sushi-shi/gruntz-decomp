@@ -1822,7 +1822,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 idx = this->m_focusPlayerIndex;
         i32 pick;
         GruntzPlayer* area;
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)) {
+        if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON0)) {
             pick = idx - 1;
             if (pick < 0) {
                 pick = 3;
@@ -1874,7 +1874,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'Q') {
-        if ((g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) == 0) {
+        if ((g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) == 0) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
@@ -1893,7 +1893,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == 'C') {
         g_gameReg->GetTriggerMgr()->CenterOnGroup(
-            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
+            g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)
         );
         return 1;
     }
@@ -1911,7 +1911,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == VK_SPACE) {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
+        if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
             CDDrawWorkerHost* obj = this->m_world->GetLevel()->m_mainPlane;
             i32 bookmarkScrollX = obj->GetScrollPixelX();
             i32 bookmarkScrollY = obj->GetScrollPixelY();
@@ -1939,7 +1939,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (this->CameraBookmarkCount() == 0) {
             return 1;
         }
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)) {
+        if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON0)) {
             if (--this->m_cameraBookmarkIndex < 0) {
                 this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
             }
@@ -1974,12 +1974,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (vk == 'M' && (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5))) {
+    if (vk == 'M' && (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5))) {
         g_gameReg->SetMusicEnabled(g_gameReg->m_musicEnabled == false);
         return 1;
     }
 
-    if (vk == 'V' && (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5))) {
+    if (vk == 'V' && (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5))) {
         g_gameReg->m_isVoiceEnabled = (g_gameReg->m_isVoiceEnabled == false);
         return 1;
     }
@@ -2006,7 +2006,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'S') {
-        if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
+        if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
             g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == false);
             return 1;
         }
@@ -2060,7 +2060,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
         this->m_statusBar->CycleMultiplayerPlayer(
-            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)
+            g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON0)
         );
         return 1;
     }
@@ -2703,9 +2703,9 @@ drag_box: {
     );
     if (picked != NULL) {
         m_mgr->GetTriggerMgr()
-            ->SelectUnit(eventArg, x, g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5), 0);
+            ->SelectUnit(eventArg, x, g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5), 0);
         if (eventArg == g_curPlayer) {
-            if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
+            if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
                 goto ret1;
             }
             picked->PlaySelectionVoice(true);
@@ -2738,7 +2738,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
         if (m_selectionDragActive != false) {
             m_mgr->GetTriggerMgr()->SelectUnitsInRect(
                 m_selectionRect,
-                g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
+                g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)
             );
         }
         m_selectionDragActive = false;
@@ -6965,7 +6965,7 @@ i32 CPlay::FinishSelectionDrag() {
     if (m_selectionDragActive != false) {
         m_mgr->GetTriggerMgr()->SelectUnitsInRect(
             m_selectionRect,
-            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
+            g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)
         );
     }
     m_selectionDragActive = false;
