@@ -1731,7 +1731,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         (m_puddleSprites[i])->SetDrawFill(SHADE_PAL_16, tint);
         m_puddleSprites[i]->Hide();
 
-        if (i == QueryGruntSlots()) {
+        if (i == GetWinningPlayerIndex()) {
             m_gruntSprites[i] = CreateSimpleAnimationSprite(0);
             if (m_gruntSprites[i] == NULL) {
                 return 0;
@@ -1877,7 +1877,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
 
     CShadeTable* tint = g_gameReg->m_gruntPalettes->GetShadeTable(
-        IDX(g_gameReg->GetPlayer(QueryGruntSlots()).GetColor()),
+        IDX(g_gameReg->GetPlayer(GetWinningPlayerIndex()).GetColor()),
         0
     );
     if (tint == NULL) {
@@ -1898,11 +1898,11 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     CString bootyKey;
     joyKey.Format(
         "GRUNTZ_WARLORDZ_%s_JOY",
-        static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
+        static_cast<const char*>(GetWarlordName(GetWinningPlayerIndex()))
     );
     bootyKey.Format(
         "GRUNTZ_WARLORDZ_%s_BOOTY",
-        static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
+        static_cast<const char*>(GetWarlordName(GetWinningPlayerIndex()))
     );
     m_warlordBooty = CreateSimpleAnimationSprite(0);
     if (m_warlordBooty == NULL) {
@@ -2261,14 +2261,14 @@ CString CMultiBootyState::GetWarlordName(i32 id) {
 }
 
 RVA(0x0001ecf0, 0x2a)
-i32 CMultiBootyState::QueryGruntSlots() {
-    i32 i = 0;
-    while (i < 4) {
-        GruntzPlayer* p = &g_gameReg->GetPlayer(i);
-        if (p->HasJoinedRound() != false && p->IsEliminated() == false) {
-            return p->GetPlayerIndex();
+i32 CMultiBootyState::GetWinningPlayerIndex() {
+    i32 playerIndex = 0;
+    while (playerIndex < 4) {
+        GruntzPlayer* player = &g_gameReg->GetPlayer(playerIndex);
+        if (player->HasJoinedRound() != false && player->IsEliminated() == false) {
+            return player->GetPlayerIndex();
         }
-        i++;
+        playerIndex++;
     }
     return 0;
 }

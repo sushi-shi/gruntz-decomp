@@ -261,7 +261,7 @@ public:
 
     void DrawBattleStats();
 
-    i32 QueryGruntSlots();
+    i32 GetWinningPlayerIndex();
 
     void BuildPickupIconKey(CString* imageSetName, i32 pickupType);
 
