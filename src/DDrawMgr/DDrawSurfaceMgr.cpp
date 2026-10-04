@@ -376,6 +376,7 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
         return 0;
     }
 
+    // Retail reads into the pointer argument slot, overwriting subsequent arguments.
     S.Read(&hdrOut, sizeof(CSnapshotHeader));
     if (buf != NULL && len > 0) {
         S.Read(buf, len);
