@@ -491,7 +491,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             pos = state->m_tileTriggers->GetTimedHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* el = state->m_tileTriggers->GetNextTimedLogic(pos);
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                if (el->FindIndexByKey(sw->GetCellKey()) != 0) {
                     return 1;
                 }
             }
@@ -499,7 +499,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                if (el->FindIndexByKey(sw->GetCellKey()) != 0) {
                     el->RecordMove();
                     anyHit = 1;
                 }
@@ -530,7 +530,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                if (el->FindIndexByKey(sw->GetCellKey()) != 0) {
                     el->RecordMove();
                     anyHit = 1;
                 }
@@ -580,7 +580,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL && stop == 0) {
                 CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                if (el->FindIndexByKey(sw->GetCellKey()) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;
                     }
@@ -617,7 +617,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL && stop == 0) {
                 CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                if (el->FindIndexByKey(sw->GetCellKey()) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;
                     }
@@ -656,7 +656,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL && stop == 0) {
                 CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                if (el->FindIndexByKey(sw->GetCellKey()) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;
                     }
@@ -814,7 +814,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             pos = state->m_tileTriggers->GetIdleHeadPosition();
             while (pos != NULL && stop == 0) {
                 CTileTriggerLogic* el = state->m_tileTriggers->GetNextIdleLogic(pos);
-                if (el->FindIndexByKey(sw->m_cellKey) != 0) {
+                if (el->FindIndexByKey(sw->GetCellKey()) != 0) {
                     if (el->Tick() == 0) {
                         stop = 1;
                     }
@@ -920,7 +920,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                     break;
                 }
                 CTileTriggerLogic* child = state->GetTileTriggers()->GetNextIdleLogic(pos);
-                if (child->FindIndexByKey(obj->m_cellKey) != 0) {
+                if (child->FindIndexByKey(obj->GetCellKey()) != 0) {
                     if (child->Tick() == 0) {
                         stop = true;
                     }
@@ -957,7 +957,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                         break;
                     }
                     CTileTriggerLogic* child = state->GetTileTriggers()->GetNextIdleLogic(pos);
-                    if (child->FindIndexByKey(obj->m_cellKey) != 0) {
+                    if (child->FindIndexByKey(obj->GetCellKey()) != 0) {
                         if (child->Tick() == 0) {
                             stop = true;
                         }

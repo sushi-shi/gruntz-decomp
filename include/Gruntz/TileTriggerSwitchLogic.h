@@ -64,6 +64,10 @@ public:
         m_owner = owner;
     }
 
+    i32 GetCellKey() const {
+        return m_cellKey;
+    }
+
     TrigLogicId GetType() const {
         return m_typeId;
     }
