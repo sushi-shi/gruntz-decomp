@@ -371,7 +371,7 @@ i32 CCheckpointTrigger::Act() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
             return 0;
         }
-        if (child->m_linkGate == false) {
+        if (child->m_active == false) {
             return 0;
         }
     }

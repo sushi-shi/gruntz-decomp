@@ -116,9 +116,9 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     RECT clip,
     RECT switchRectA,
     RECT switchRectB,
-    b32 isMatch,
+    b32 active,
     i32 damageParam,
-    i32 checkpointType
+    i32 requiredPickupType
 ) {
     CTileTriggerSwitchLogic* obj = NULL;
     switch (logicType) {
@@ -162,9 +162,9 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
             tileY,
             cellKey,
             local,
-            isMatch,
+            active,
             damageParam,
-            checkpointType
+            requiredPickupType
         )
         == TRIGID_ANY) {
 

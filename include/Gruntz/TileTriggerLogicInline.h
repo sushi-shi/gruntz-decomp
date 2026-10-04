@@ -19,7 +19,7 @@ __inline i32 CTileTriggerLogic::Build(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    if (m_initGate != false) {
+    if (m_initialized != false) {
         return 0;
     }
     memcpy(m_linkKeys, rects, sizeof(m_linkKeys));
@@ -47,7 +47,7 @@ __inline i32 CTileTriggerLogic::Setup(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    if (m_initGate != false) {
+    if (m_initialized != false) {
         return 0;
     }
     m_tileY = tileY;
@@ -55,7 +55,7 @@ __inline i32 CTileTriggerLogic::Setup(
     m_owner = owner;
     m_typeTag = typeTag;
     m_cellKey = cellKey;
-    m_initGate = true;
+    m_initialized = true;
     m_tileToken = tileToken;
     m_startClock = g_frameTime;
     m_leadInSpan = leadInSpan;
@@ -79,7 +79,7 @@ __inline i32 CGiantRockLogic::Build(
     i32 textId,
     i32 pickupFaceDirection
 ) {
-    if (m_initGate != false) {
+    if (m_initialized != false) {
         return 0;
     }
     memcpy(m_replacementTiles, replacementTiles, sizeof(m_replacementTiles));
@@ -90,7 +90,7 @@ __inline i32 CGiantRockLogic::Build(
     m_tileY = tileY;
     m_cellKey = cellKey;
     m_owner = owner;
-    m_initGate = true;
+    m_initialized = true;
     m_startClock = g_frameTime;
     m_dutyOn = false;
     m_dutyOnSpan = 0;

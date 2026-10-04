@@ -136,9 +136,9 @@ public:
         RECT clip,
         RECT switchRectA,
         RECT switchRectB,
-        b32 isMatch,
+        b32 active,
         i32 damageParam,
-        i32 checkpointType
+        i32 requiredPickupType
     );
 
     i32 Serialize(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 payload);

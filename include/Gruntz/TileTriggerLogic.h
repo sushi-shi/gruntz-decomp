@@ -72,7 +72,7 @@ class CTileTriggerLogic {
 public:
     CTileTriggerLogic();
     ~CTileTriggerLogic() {
-        m_initGate = false;
+        m_initialized = false;
     }
 
     virtual i32 Tick();
@@ -148,7 +148,7 @@ public:
     // trigger initialization and updates do not reveal their original roles.
     i32 m_reserved14;
     i32 m_reserved18;
-    b32 m_initGate;
+    b32 m_initialized;
 
     CTileTriggerContainer* m_owner;
     u32 m_startClock;

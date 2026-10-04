@@ -791,12 +791,12 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_WIRE_CHECKPOINT));
                 return 0;
             }
-            if (sw->m_checkpointType == 0) {
+            if (sw->m_requiredPickupType == 0) {
                 sw->SwitchDown();
             } else {
                 PickupType gruntKind = g->GetEquippedToolType();
-                if (IDX(gruntKind) == sw->m_checkpointType
-                    || sw->m_checkpointType == IDX(g->GetCarriedToyType())) {
+                if (IDX(gruntKind) == sw->m_requiredPickupType
+                    || sw->m_requiredPickupType == IDX(g->GetCarriedToyType())) {
                     sw->SwitchDown();
                 } else {
                     RECT* view = g_gameReg->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
