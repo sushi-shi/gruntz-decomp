@@ -4,6 +4,11 @@
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
 
+inline void CGrunt::RecycleHeadCoord() {
+    Coord* coord = RemoveHeadCoord();
+    g_coordPool.Push(coord);
+}
+
 RVA(0x000343f0, 0x47)
 inline void CGrunt::RecycleCoords() {
     if (CoordsEmpty()) {
