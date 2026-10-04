@@ -1083,8 +1083,8 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
     memset(m_multiplayerHeadButtons, 0, sizeof(m_multiplayerHeadButtons));
-    m_machineItemSprite = NULL;
-    m_fallingItemSprite = NULL;
+    m_deliveryItemDisplay = NULL;
+    m_grinderItemDisplay = NULL;
     m_destructButtonImage = NULL;
     m_resourceMainBackground = NULL;
     m_resourceUpperBackground = NULL;
@@ -1136,8 +1136,8 @@ void CStatusBarMgr::ClearActiveTabContent() {
             m_resourceUpperBackground = NULL;
             m_resourceWindowBackground = NULL;
             m_resourceMachineFramework = NULL;
-            m_machineItemSprite = NULL;
-            m_fallingItemSprite = NULL;
+            m_deliveryItemDisplay = NULL;
+            m_grinderItemDisplay = NULL;
             break;
         }
     }
@@ -1837,17 +1837,17 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 SBICMD_RESOURCE_CURRENT_ITEM,
                 TAB_RESOURCE,
                 CRect(
-                    m_machineItemRect.left + bx,
-                    m_machineItemRect.top + by,
-                    m_machineItemRect.right + bx,
-                    m_machineItemRect.bottom + by
+                    m_deliveryItemRect.left + bx,
+                    m_deliveryItemRect.top + by,
+                    m_deliveryItemRect.right + bx,
+                    m_deliveryItemRect.bottom + by
                 ),
                 "GAME_INGAMEICONZ_GREYCHIPZ",
-                m_machineItem,
+                m_deliveryPickupType,
                 0
             );
             AddTabItem(3, imgSet);
-            m_machineItemSprite = imgSet;
+            m_deliveryItemDisplay = imgSet;
             imgSet->SetEnabled(0);
 
             {
@@ -1960,17 +1960,17 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 SBICMD_RESOURCE_FALLING_ITEM,
                 TAB_RESOURCE,
                 CRect(
-                    m_fallingItemRect.left + bx,
-                    m_fallingItemRect.top + by,
-                    m_fallingItemRect.right + bx,
-                    m_fallingItemRect.bottom + by
+                    m_grinderItemRect.left + bx,
+                    m_grinderItemRect.top + by,
+                    m_grinderItemRect.right + bx,
+                    m_grinderItemRect.bottom + by
                 ),
                 "GAME_INGAMEICONZ_NORMCHIPZ",
-                m_fallingItem,
+                m_grinderPickupType,
                 0
             );
             AddTabItem(3, imgSet);
-            m_fallingItemSprite = imgSet;
+            m_grinderItemDisplay = imgSet;
             imgSet->SetEnabled(0);
 
             ani = new CSBI_ImageSetAni;
@@ -2626,9 +2626,9 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             g_buteMgr.GetDword("StatusBar", "ConveyorBeltHoldDelay", 0x1f4)
                         );
                         StartResourceGrinderDrop(
-                            m_machineItem,
-                            m_machineItemRect.left + 0xc,
-                            m_machineItemRect.top + 0xc
+                            m_deliveryPickupType,
+                            m_deliveryItemRect.left + 0xc,
+                            m_deliveryItemRect.top + 0xc
                         );
                         PrepareNextResource();
                     }
@@ -2650,8 +2650,8 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                         clock->Start(
                             g_buteMgr.GetDword("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4)
                         );
-                        m_machinePhase = BELT_FALLING_OFF;
-                        m_beltClock.Start(
+                        m_resourceDeliveryPhase = BELT_FALLING_OFF;
+                        m_resourceDeliveryClock.Start(
                             g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32)
                         );
                     }
@@ -2750,8 +2750,10 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
                         m_conveyorSlots[i].m_state = IDX(HLROW_IDLE_CYCLE);
                         m_conveyorSlots[i].m_value = 1;
                     }
-                    m_machinePhase = BELT_IN_MACHINE;
-                    m_beltClock.Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
+                    m_resourceDeliveryPhase = BELT_IN_MACHINE;
+                    m_resourceDeliveryClock.Start(
+                        g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64)
+                    );
                     PlayTabCue(this, TAB_RESOURCE, "GAME_REZMACHINE");
                 } else {
                     leftMachine->m_clock.Start(
@@ -2781,7 +2783,7 @@ void CStatusBarMgr::UpdateResourceMachineAnimation() {
                     b32 found = false;
                     i32 r = 3;
                     i32 col;
-                    PickupType which = static_cast<PickupType>(m_machineItem);
+                    PickupType which = static_cast<PickupType>(m_deliveryPickupType);
                     if (which >= PICKUP_BRICKZ_FIRST) {
                         col = 2;
                     } else {
@@ -2932,12 +2934,12 @@ void CStatusBarMgr::ResetResourceSlots() {
         ClearResourceSlot(1, row);
         ClearResourceSlot(2, row);
     }
-    m_machinePhase = BELT_IDLE;
-    m_machineItem = 0;
-    m_fallActive = FALLING_ITEM_INACTIVE;
-    m_fallingItem = 0;
-    SetRect(&m_fallingItemRect, 0, 0, 1, 1);
-    SetRect(&m_machineItemRect, 0x49, 0xd7, 0x61, 0xef);
+    m_resourceDeliveryPhase = BELT_IDLE;
+    m_deliveryPickupType = 0;
+    m_grinderState = FALLING_ITEM_INACTIVE;
+    m_grinderPickupType = 0;
+    SetRect(&m_grinderItemRect, 0, 0, 1, 1);
+    SetRect(&m_deliveryItemRect, 0x49, 0xd7, 0x61, 0xef);
     m_selectedResourceRow = STATUS_HL_ROW_NONE;
 }
 
@@ -2960,8 +2962,8 @@ void CStatusBarMgr::RefreshResourceImages() {
     if (m_resourceWindowBackground) {
         m_resourceWindowBackground->RequestRedraw();
     }
-    if (m_machineItemSprite && m_machineItem) {
-        m_machineItemSprite->Notify(m_machineItem);
+    if (m_deliveryItemDisplay && m_deliveryPickupType) {
+        m_deliveryItemDisplay->Notify(m_deliveryPickupType);
     }
 
     CSBI_ImageSet** p = &m_resourceSlotSprites[4];
@@ -2981,8 +2983,8 @@ void CStatusBarMgr::RefreshResourceImages() {
     if (m_resourceMachineFramework) {
         m_resourceMachineFramework->RequestRedraw();
     }
-    if (m_fallingItemSprite) {
-        m_fallingItemSprite->Notify(m_fallingItem);
+    if (m_grinderItemDisplay) {
+        m_grinderItemDisplay->Notify(m_grinderPickupType);
     }
 }
 
@@ -3016,23 +3018,23 @@ RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
     i32 refreshFlag = 0;
     i32 rectFlag = 0;
-    ClockInterval* belt = &m_beltClock;
-    switch (m_machinePhase) {
+    ClockInterval* belt = &m_resourceDeliveryClock;
+    switch (m_resourceDeliveryPhase) {
         case BELT_IN_MACHINE:
             if (belt->Expired()) {
                 OFFSET_RECT_X_EDGES(
-                    m_machineItemRect,
+                    m_deliveryItemRect,
                     g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
                     g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2)
                 );
                 rectFlag = 1;
                 belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
             }
-            if (m_machineItemRect.left >= 0x6d) {
-                m_machineItemRect.left = 0x6d;
-                m_machineItemRect.right = 0x84;
+            if (m_deliveryItemRect.left >= 0x6d) {
+                m_deliveryItemRect.left = 0x6d;
+                m_deliveryItemRect.right = 0x84;
                 rectFlag = 1;
-                m_machinePhase = BELT_SPEWING;
+                m_resourceDeliveryPhase = BELT_SPEWING;
                 belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemInMachineTime", 0x7d0));
             }
             refreshFlag = 1;
@@ -3044,13 +3046,13 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                     MACHINE_RIGHT_SPEWING,
                     g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d)
                 );
-                m_machinePhase = BELT_DROP_START;
+                m_resourceDeliveryPhase = BELT_DROP_START;
                 belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemWaitTime", 0x1f4));
             }
             break;
         case BELT_DROP_START:
             if (belt->Expired()) {
-                m_machinePhase = BELT_FALLING;
+                m_resourceDeliveryPhase = BELT_FALLING;
                 PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPFALLOUT");
                 belt->Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
             }
@@ -3058,27 +3060,27 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
         case BELT_FALLING:
             if (belt->Expired()) {
                 OFFSET_RECT_Y_EDGES(
-                    m_machineItemRect,
+                    m_deliveryItemRect,
                     g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
                     g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2)
                 );
                 rectFlag = 1;
                 belt->Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
             }
-            if (m_machineItemRect.bottom >= 0x11c) {
-                m_machineItemRect.bottom = 0x11c;
-                m_machineItemRect.top = 0x104;
+            if (m_deliveryItemRect.bottom >= 0x11c) {
+                m_deliveryItemRect.bottom = 0x11c;
+                m_deliveryItemRect.top = 0x104;
                 rectFlag = 1;
                 PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
-                m_machinePhase = BELT_TRAVELLING;
+                m_resourceDeliveryPhase = BELT_TRAVELLING;
                 belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
-                PickupType activeItem = static_cast<PickupType>(m_machineItem);
+                PickupType activeItem = static_cast<PickupType>(m_deliveryPickupType);
                 if (activeItem >= PICKUP_BRICKZ_FIRST) {
-                    m_machineItemTargetX = 0x6d;
+                    m_deliveryTargetX = 0x6d;
                 } else if (activeItem >= PICKUP_TOYZ_FIRST) {
-                    m_machineItemTargetX = 0x45;
+                    m_deliveryTargetX = 0x45;
                 } else {
-                    m_machineItemTargetX = 0x1d;
+                    m_deliveryTargetX = 0x1d;
                 }
             }
             refreshFlag = 1;
@@ -3086,16 +3088,16 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
         case BELT_TRAVELLING:
             if (belt->Expired()) {
                 OFFSET_RECT_X_EDGES(
-                    m_machineItemRect,
+                    m_deliveryItemRect,
                     -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
                     -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2)
                 );
                 rectFlag = 1;
                 belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
             }
-            if (m_machineItemRect.left <= m_machineItemTargetX) {
-                m_machineItemRect.left = m_machineItemTargetX;
-                m_machineItemRect.right = m_machineItemTargetX + 0x17;
+            if (m_deliveryItemRect.left <= m_deliveryTargetX) {
+                m_deliveryItemRect.left = m_deliveryTargetX;
+                m_deliveryItemRect.right = m_deliveryTargetX + 0x17;
                 rectFlag = 1;
                 ResetConveyorBelts();
                 SetLeftRezMachineAnimation(
@@ -3103,14 +3105,14 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                     MACHINE_LEVER,
                     g_buteMgr.GetDword("StatusBar", "LeftMachineLeverDelay", 0x64)
                 );
-                m_machinePhase = BELT_IDLE;
+                m_resourceDeliveryPhase = BELT_IDLE;
             }
             refreshFlag = 1;
             break;
         case BELT_FALLING_OFF: {
             if (belt->Expired()) {
                 OFFSET_RECT_Y_EDGES(
-                    m_machineItemRect,
+                    m_deliveryItemRect,
                     g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
                     g_buteMgr.GetInt("StatusBar", "(FallingItemSpeed", 2)
                 );
@@ -3118,7 +3120,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                 belt->Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
             }
             i32 col;
-            PickupType item2 = static_cast<PickupType>(m_machineItem);
+            PickupType item2 = static_cast<PickupType>(m_deliveryPickupType);
             if (item2 >= PICKUP_BRICKZ_FIRST) {
                 col = 2;
             } else {
@@ -3131,9 +3133,9 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
                     break;
                 }
             }
-            if (m_machineItemRect.top >= row * 0x20 + 0x13e) {
+            if (m_deliveryItemRect.top >= row * 0x20 + 0x13e) {
                 PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
-                AddResourceToSlot(col, m_machineItem, row);
+                AddResourceToSlot(col, m_deliveryPickupType, row);
                 PrepareNextResource();
             }
             refreshFlag = 1;
@@ -3141,7 +3143,7 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
         }
     }
 
-    CSBI_ImageSet* w = m_machineItemSprite;
+    CSBI_ImageSet* w = m_deliveryItemDisplay;
     if (w) {
         if (rectFlag) {
             RECT rc;
@@ -3149,10 +3151,10 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
             i32 y = m_barRect.top;
             SET_RECT_COMPONENTS(
                 rc,
-                m_machineItemRect.left + x,
-                m_machineItemRect.top + y,
-                m_machineItemRect.right + x,
-                m_machineItemRect.bottom + y
+                m_deliveryItemRect.left + x,
+                m_deliveryItemRect.top + y,
+                m_deliveryItemRect.right + x,
+                m_deliveryItemRect.bottom + y
             );
             w->m_rect = rc;
         }
@@ -3165,15 +3167,15 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
 // @early-stop
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::StartResourceGrinderDrop(i32 item, i32 x, i32 y) {
-    m_fallingItem = item;
-    m_fallActive = FALLING_ITEM_DESCENDING;
-    m_fallClock.Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
-    CSBI_ImageSet* n = m_fallingItemSprite;
+    m_grinderPickupType = item;
+    m_grinderState = FALLING_ITEM_DESCENDING;
+    m_grinderClock.Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
+    CSBI_ImageSet* n = m_grinderItemDisplay;
     i32 l = x - 0xc;
     i32 t = y - 0xc;
     i32 rr = x + 0xc;
     i32 b = y + 0xc;
-    SET_RECT_COMPONENTS(m_fallingItemRect, l, t, rr, b);
+    SET_RECT_COMPONENTS(m_grinderItemRect, l, t, rr, b);
     if (n) {
 
         RECT rc;
@@ -3192,40 +3194,40 @@ i32 CStatusBarMgr::StartResourceGrinderDrop(i32 item, i32 x, i32 y) {
 RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 
-    if (m_fallActive == FALLING_ITEM_INACTIVE) {
+    if (m_grinderState == FALLING_ITEM_INACTIVE) {
         return;
     }
 
     i32 stepped = 0;
-    if (m_fallActive == FALLING_ITEM_DESCENDING || m_fallActive == FALLING_ITEM_GRINDING) {
+    if (m_grinderState == FALLING_ITEM_DESCENDING || m_grinderState == FALLING_ITEM_GRINDING) {
         u32 delay = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
         i32 speed = g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 4);
 
-        if (m_fallingItemRect.top >= 0x1c7) {
-            m_fallActive = FALLING_ITEM_INACTIVE;
-            m_fallingItem = 0;
-        } else if (m_fallingItemRect.bottom >= 0x1bf) {
-            if (m_fallActive != FALLING_ITEM_GRINDING) {
+        if (m_grinderItemRect.top >= 0x1c7) {
+            m_grinderState = FALLING_ITEM_INACTIVE;
+            m_grinderPickupType = 0;
+        } else if (m_grinderItemRect.bottom >= 0x1bf) {
+            if (m_grinderState != FALLING_ITEM_GRINDING) {
                 PlayTabCue(this, TAB_RESOURCE, "GAME_REZGRINDING");
-                m_fallActive = FALLING_ITEM_GRINDING;
+                m_grinderState = FALLING_ITEM_GRINDING;
             }
             delay = g_buteMgr.GetDword("StatusBar", "FallingItemShredderDelay", 0x64);
             speed = g_buteMgr.GetInt("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        ClockInterval* clock = &m_fallClock;
+        ClockInterval* clock = &m_grinderClock;
         i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
         if (d >= clock->m_interval) {
-            OFFSET_RECT_Y_EDGES(m_fallingItemRect, speed, speed);
-            CSBI_ImageSet* w = m_fallingItemSprite;
+            OFFSET_RECT_Y_EDGES(m_grinderItemRect, speed, speed);
+            CSBI_ImageSet* w = m_grinderItemDisplay;
             if (w) {
                 RECT rc;
                 i32 sy = m_barRect.top;
-                rc.bottom = sy + m_fallingItemRect.bottom;
-                rc.top = sy + m_fallingItemRect.top;
+                rc.bottom = sy + m_grinderItemRect.bottom;
+                rc.top = sy + m_grinderItemRect.top;
                 i32 sx = m_barRect.left;
-                rc.left = m_fallingItemRect.left + sx;
-                rc.right = m_fallingItemRect.right + sx;
+                rc.left = m_grinderItemRect.left + sx;
+                rc.right = m_grinderItemRect.right + sx;
                 w->m_rect = rc;
             }
             clock->Start(delay);
@@ -3233,7 +3235,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         stepped = 1;
     }
 
-    if (m_fallingItemSprite != NULL && stepped) {
+    if (m_grinderItemDisplay != NULL && stepped) {
         RefreshResourceImages();
     }
 }
@@ -3271,7 +3273,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
 RVA(0x00107a10, 0x62)
 i32 CStatusBarMgr::RequestResourceDelivery() {
     if (m_resourceDeliveryActive == false) {
-        if (m_machineItem == 0) {
+        if (m_deliveryPickupType == 0) {
             return 0;
         }
         SetLeftRezMachineAnimation(
@@ -3343,8 +3345,8 @@ i32 CStatusBarMgr::PrepareNextResource() {
             m_rewardQueue.RemoveAt(0, 1);
         } else {
             result = PICKUP_NONE;
-            if (m_machineItemSprite) {
-                m_machineItemSprite->Notify(0);
+            if (m_deliveryItemDisplay) {
+                m_deliveryItemDisplay->Notify(0);
             }
         }
     } else {
@@ -3427,21 +3429,21 @@ i32 CStatusBarMgr::PrepareNextResource() {
             result = PICKUP_GAUNTLETZ;
         }
     }
-    m_machineItem = IDX(result);
-    m_machinePhase = BELT_IDLE;
-    SetRect(&m_machineItemRect, 0x49, 0xd7, 0x61, 0xef);
-    if (m_machineItemSprite) {
+    m_deliveryPickupType = IDX(result);
+    m_resourceDeliveryPhase = BELT_IDLE;
+    SetRect(&m_deliveryItemRect, 0x49, 0xd7, 0x61, 0xef);
+    if (m_deliveryItemDisplay) {
         RECT rc;
         i32 x = m_barRect.left;
         i32 y = m_barRect.top;
         SET_RECT_COMPONENTS(
             rc,
-            m_machineItemRect.left + x,
-            m_machineItemRect.top + y,
-            m_machineItemRect.right + x,
-            m_machineItemRect.bottom + y
+            m_deliveryItemRect.left + x,
+            m_deliveryItemRect.top + y,
+            m_deliveryItemRect.right + x,
+            m_deliveryItemRect.bottom + y
         );
-        m_machineItemSprite->m_rect = rc;
+        m_deliveryItemDisplay->m_rect = rc;
     }
     RefreshResourceImages();
     i32 c = m_pendingResourceDeliveries;
@@ -3525,8 +3527,8 @@ i32 CStatusBarMgr::SerializeDispatch(
         }
     }
 
-    SerializeClockPair(s, mode, &m_beltClock);
-    SerializeClockPair(s, mode, &m_fallClock);
+    SerializeClockPair(s, mode, &m_resourceDeliveryClock);
+    SerializeClockPair(s, mode, &m_grinderClock);
     SerializeClockPair(s, mode, &m_rightMachine.m_clock);
     SerializeClockPair(s, mode, &m_leftMachine.m_clock);
     SerializeClockPair(s, mode, &m_destructWarningClock);
@@ -3639,8 +3641,8 @@ i32 CStatusBarMgr::SerializeDispatch(
     SER(m_resourceMachineFramework)
     SER(m_resourceUpperBackground)
     SER(m_resourceWindowBackground)
-    SER(m_machineItemSprite)
-    SER(m_fallingItemSprite)
+    SER(m_deliveryItemDisplay)
+    SER(m_grinderItemDisplay)
     SER(m_destructButtonImage)
 #undef SER
 
@@ -3691,19 +3693,19 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_activeTab, sizeof(m_activeTab));
     s->Write(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
     s->Write(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
-    s->Write(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
+    s->Write(&m_deliveryTargetX, sizeof(m_deliveryTargetX));
     s->Write(&m_pendingResourceDeliveries, sizeof(m_pendingResourceDeliveries));
     s->Write(&m_resourceDeliveryActive, sizeof(m_resourceDeliveryActive));
     s->Write(&m_reserved544, sizeof(m_reserved544));
-    s->Write(&m_fallingItemRect, sizeof(m_fallingItemRect));
-    s->Write(&m_machineItemRect, sizeof(m_machineItemRect));
+    s->Write(&m_grinderItemRect, sizeof(m_grinderItemRect));
+    s->Write(&m_deliveryItemRect, sizeof(m_deliveryItemRect));
     s->Write(&m_layoutLocked, sizeof(m_layoutLocked));
     s->Write(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
     s->Write(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
-    s->Write(&m_machinePhase, sizeof(m_machinePhase));
-    s->Write(&m_machineItem, sizeof(m_machineItem));
-    s->Write(&m_fallActive, sizeof(m_fallActive));
-    s->Write(&m_fallingItem, sizeof(m_fallingItem));
+    s->Write(&m_resourceDeliveryPhase, sizeof(m_resourceDeliveryPhase));
+    s->Write(&m_deliveryPickupType, sizeof(m_deliveryPickupType));
+    s->Write(&m_grinderState, sizeof(m_grinderState));
+    s->Write(&m_grinderPickupType, sizeof(m_grinderPickupType));
     s->Write(&m_rightMachine, 4);
     s->Write(&m_rightMachine.m_value, sizeof(m_rightMachine.m_value));
     s->Write(&m_leftMachine, 4);
@@ -3779,19 +3781,19 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_activeTab, sizeof(m_activeTab));
     ar->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
     ar->Read(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
-    ar->Read(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
+    ar->Read(&m_deliveryTargetX, sizeof(m_deliveryTargetX));
     ar->Read(&m_pendingResourceDeliveries, sizeof(m_pendingResourceDeliveries));
     ar->Read(&m_resourceDeliveryActive, sizeof(m_resourceDeliveryActive));
     ar->Read(&m_reserved544, sizeof(m_reserved544));
-    ar->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
-    ar->Read(&m_machineItemRect, sizeof(m_machineItemRect));
+    ar->Read(&m_grinderItemRect, sizeof(m_grinderItemRect));
+    ar->Read(&m_deliveryItemRect, sizeof(m_deliveryItemRect));
     ar->Read(&m_layoutLocked, sizeof(m_layoutLocked));
     ar->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
     ar->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
-    ar->Read(&m_machinePhase, sizeof(m_machinePhase));
-    ar->Read(&m_machineItem, sizeof(m_machineItem));
-    ar->Read(&m_fallActive, sizeof(m_fallActive));
-    ar->Read(&m_fallingItem, sizeof(m_fallingItem));
+    ar->Read(&m_resourceDeliveryPhase, sizeof(m_resourceDeliveryPhase));
+    ar->Read(&m_deliveryPickupType, sizeof(m_deliveryPickupType));
+    ar->Read(&m_grinderState, sizeof(m_grinderState));
+    ar->Read(&m_grinderPickupType, sizeof(m_grinderPickupType));
     ar->Read(&m_rightMachine, 4);
     ar->Read(&m_rightMachine.m_value, sizeof(m_rightMachine.m_value));
     ar->Read(&m_leftMachine, 4);
@@ -4503,7 +4505,7 @@ void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
 RVA(0x0010bbe0, 0x34)
 i32 CStatusBarMgr::GetNextResourcePickup() {
     if (m_resourceDeliveryActive == false) {
-        return m_machineItem;
+        return m_deliveryPickupType;
     }
     if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_pendingResourceDeliveries) {
         return GetReward(m_pendingResourceDeliveries)->m_x;

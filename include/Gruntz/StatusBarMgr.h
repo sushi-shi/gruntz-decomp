@@ -301,19 +301,19 @@ public:
     CStatusBarItem* m_resourceWindowBackground;
     CSbiHlRow m_resourceSlots[12];
     CSBI_ImageSet* m_resourceSlotSprites[12];
-    SbiBeltPhase m_machinePhase;
-    i32 m_machineItem;
-    ClockInterval m_beltClock;
-    CSBI_ImageSet* m_machineItemSprite;
-    // @identity-TODO: unaccessed word required by m_fallActive's retail offset.
+    SbiBeltPhase m_resourceDeliveryPhase;
+    i32 m_deliveryPickupType;
+    ClockInterval m_resourceDeliveryClock;
+    CSBI_ImageSet* m_deliveryItemDisplay;
+    // @identity-TODO: unaccessed word required by m_grinderState's retail offset.
     char m_pad4e4[0x4e8 - 0x4e4];
-    SbiFallingItemState m_fallActive;
-    i32 m_fallingItem;
-    ClockInterval m_fallClock;
-    CSBI_ImageSet* m_fallingItemSprite;
-    RECT m_fallingItemRect;
-    RECT m_machineItemRect;
-    i32 m_machineItemTargetX;
+    SbiFallingItemState m_grinderState;
+    i32 m_grinderPickupType;
+    ClockInterval m_grinderClock;
+    CSBI_ImageSet* m_grinderItemDisplay;
+    RECT m_grinderItemRect;
+    RECT m_deliveryItemRect;
+    i32 m_deliveryTargetX;
     b32 m_resourceDeliveryActive;
     i32 m_pendingResourceDeliveries;
 
@@ -390,8 +390,8 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_resourceUpperBackground = NULL;
     m_resourceWindowBackground = NULL;
     m_resourceMachineFramework = NULL;
-    m_machineItemSprite = NULL;
-    m_fallingItemSprite = NULL;
+    m_deliveryItemDisplay = NULL;
+    m_grinderItemDisplay = NULL;
     m_machineDisplay = NULL;
     m_destructButtonImage = NULL;
     m_gruntWellBackground = NULL;
