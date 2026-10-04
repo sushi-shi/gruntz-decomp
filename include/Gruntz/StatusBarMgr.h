@@ -150,7 +150,7 @@ public:
     void UpdateResourceMachineAnimation();
     void ResetResourceMachine();
     void UpdateResourceDeliveryAnimation();
-    i32 StartResourceGrinderDrop(i32 item, i32 x, i32 y);
+    i32 StartResourceGrinderDrop(i32 pickupValue, i32 barX, i32 barY);
     i32 RequestResourceDelivery();
     void ResetForLevel(i32);
 
@@ -193,7 +193,7 @@ public:
     i32 ClearUnitSample(i32 unitIndex);
     void FinishResourcePlacement(i32 consumed, i32 pickupValue);
     void ResetResourceSlots();
-    i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
+    i32 TryDiscardSelectedResourceAt(i32 screenX, i32 screenY, i32 pickupValue);
     void CloseLevelOverlay();
     i32 SelectGruntOvenForPlacement(i32 idx);
     i32 SelectUnitAndCenterCamera(i32 unitIndex, i32 trackUnit);

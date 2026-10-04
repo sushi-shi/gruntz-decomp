@@ -2542,7 +2542,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             {
                 const RECT* gr = m_statusBar->GetBarRect();
                 if (::PtInRect(gr, xr, y)) {
-                    if (m_statusBar->DropFallingItemAt(xr, y, m_selectedCursorId)) {
+                    if (m_statusBar->TryDiscardSelectedResourceAt(xr, y, m_selectedCursorId)) {
                         m_pickupPlacementActive = false;
                         SelectCursor(0);
                         return 1;

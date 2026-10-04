@@ -3169,26 +3169,26 @@ void CStatusBarMgr::UpdateResourceDeliveryAnimation() {
 
 // @early-stop
 RVA(0x00107590, 0xc4)
-i32 CStatusBarMgr::StartResourceGrinderDrop(i32 item, i32 x, i32 y) {
-    m_grinderPickupType = item;
+i32 CStatusBarMgr::StartResourceGrinderDrop(i32 pickupValue, i32 barX, i32 barY) {
+    m_grinderPickupType = pickupValue;
     m_grinderState = FALLING_ITEM_DESCENDING;
     m_grinderClock.Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
-    CSBI_ImageSet* n = m_grinderItemDisplay;
-    i32 l = x - 0xc;
-    i32 t = y - 0xc;
-    i32 rr = x + 0xc;
-    i32 b = y + 0xc;
-    SET_RECT_COMPONENTS(m_grinderItemRect, l, t, rr, b);
-    if (n) {
+    CSBI_ImageSet* grinderImage = m_grinderItemDisplay;
+    i32 itemLeft = barX - 0xc;
+    i32 itemTop = barY - 0xc;
+    i32 itemRight = barX + 0xc;
+    i32 itemBottom = barY + 0xc;
+    SET_RECT_COMPONENTS(m_grinderItemRect, itemLeft, itemTop, itemRight, itemBottom);
+    if (grinderImage) {
 
-        RECT rc;
-        i32 x = m_barRect.left;
-        rc.left = l + x;
-        i32 y = m_barRect.top;
-        rc.top = t + y;
-        rc.bottom = y + b;
-        rc.right = x + rr;
-        n->SetBounds(rc);
+        RECT imageRect;
+        i32 barLeft = m_barRect.left;
+        imageRect.left = itemLeft + barLeft;
+        i32 barTop = m_barRect.top;
+        imageRect.top = itemTop + barTop;
+        imageRect.bottom = barTop + itemBottom;
+        imageRect.right = barLeft + itemRight;
+        grinderImage->SetBounds(imageRect);
     }
     RefreshResourceImages();
     return 1;
@@ -3244,32 +3244,32 @@ void CStatusBarMgr::UpdateResourceGrinderAnimation() {
 }
 
 RVA(0x00107920, 0xb7)
-i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
+i32 CStatusBarMgr::TryDiscardSelectedResourceAt(i32 screenX, i32 screenY, i32 pickupValue) {
     if (m_selectedResourceRow == RESOURCE_ROW_NONE) {
         return 0;
     }
-    CStatusBarItem* r = HitTestItems(screenX, screenY);
-    if (r == NULL) {
+    CStatusBarItem* conveyorItem = HitTestItems(screenX, screenY);
+    if (conveyorItem == NULL) {
         return 0;
     }
-    SbiCommandId cmd = r->GetCommandId();
-    if (cmd != SBICMD_CONVEYOR_TOP && cmd != SBICMD_CONVEYOR_BOTTOM) {
+    SbiCommandId command = conveyorItem->GetCommandId();
+    if (command != SBICMD_CONVEYOR_TOP && command != SBICMD_CONVEYOR_BOTTOM) {
         return 0;
     }
 
-    i32 cx = screenX;
-    RECT rc = r->GetBounds();
-    i32 lo = rc.left + 0x1b;
-    i32 xHi = rc.right;
-    if (screenX < lo) {
-        cx = lo;
-    } else if (screenX > xHi - 0x1a) {
-        cx = xHi - 0x1a;
+    i32 clampedScreenX = screenX;
+    RECT conveyorRect = conveyorItem->GetBounds();
+    i32 minScreenX = conveyorRect.left + 0x1b;
+    i32 conveyorRight = conveyorRect.right;
+    if (screenX < minScreenX) {
+        clampedScreenX = minScreenX;
+    } else if (screenX > conveyorRight - 0x1a) {
+        clampedScreenX = conveyorRight - 0x1a;
     }
-    i32 localX = cx - m_barRect.left;
-    i32 localY = 0x1b3 - m_barRect.top;
-    StartResourceGrinderDrop(itemFrame, localX, localY);
-    FinishResourcePlacement(1, itemFrame);
+    i32 barX = clampedScreenX - m_barRect.left;
+    i32 barY = 0x1b3 - m_barRect.top;
+    StartResourceGrinderDrop(pickupValue, barX, barY);
+    FinishResourcePlacement(1, pickupValue);
     return 1;
 }
 
