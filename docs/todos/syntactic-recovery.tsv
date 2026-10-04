@@ -89,7 +89,7 @@ rva	unit	function	lost_max	cur
 0x079520	triggermgr	?HandleTargetSelection@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	99.8538	90.7510
 0x0798d0	triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	96.9403
 0x078a50	triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.1017
-0x078430	triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	99.3902
+0x078430	triggermgr	?ClearSelection@CTriggerMgr@@QAEXXZ	100.0000	99.3902
 0x0788d0	triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379
 0x07d450	triggermgr	?ToggleToolTargeting@CTriggerMgr@@QAEHXZ	100.0000	92.0121
 0x07d5c0	triggermgr	?ToggleToyTargeting@CTriggerMgr@@QAEHXZ	100.0000	99.1892

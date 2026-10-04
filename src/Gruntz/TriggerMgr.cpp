@@ -130,10 +130,10 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
                     && r.bottom >= box.top) {
                     if (i == g_curPlayer) {
                         if (selectionReset == false && g->IsEntranceCommitted() != false) {
-                            ResetAll();
+                            ClearSelection();
                             selectionReset = true;
                         }
-                        ResetCell(g_curPlayer, j, 1, 1);
+                        SelectUnit(g_curPlayer, j, 1, 1);
                     } else {
                         g->CreateHealthSprite();
                         g->m_hudRetireTiming.Start(
@@ -148,9 +148,9 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
 
 // @early-stop
 RVA(0x00078260, 0x165)
-i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection) {
-    if (fromSelection != 0) {
-        CPtrList* list = m_selLists;
+i32 CTriggerMgr::RemoveUnitFromSelection(i32 playerIndex, i32 unitIndex, i32 removeFromGroups) {
+    if (removeFromGroups != 0) {
+        CPtrList* list = m_selectionGroups;
         i32 k = 10;
         do {
             POSITION pos = list->GetHeadPosition();
@@ -166,17 +166,17 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             k--;
         } while (k != 0);
     }
-    POSITION pos = m_recList.GetHeadPosition();
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     while (pos != NULL) {
         POSITION cur = pos;
-        Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
+        Coord* p = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         if (p->m_x == playerIndex && p->m_y == unitIndex) {
-            if (m_recList.GetCount() == 1) {
+            if (m_selectedUnitIds.GetCount() == 1) {
                 StopPendingFx();
             }
             CGrunt* cell = UnitAt(playerIndex, unitIndex);
             if (cell != NULL) {
-                (static_cast<CGrunt*>(cell))->ClearAllSprites();
+                (static_cast<CGrunt*>(cell))->Deselect();
             }
             Coord removedIdentity = *p;
             if (m_cameraTargetIdentity == removedIdentity) {
@@ -194,7 +194,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                 }
             }
             g_coordPool.Push(p);
-            m_recList.RemoveAt(cur);
+            m_selectedUnitIds.RemoveAt(cur);
             return 1;
         }
     }
@@ -202,26 +202,26 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
 }
 
 RVA(0x00078430, 0x7f)
-void CTriggerMgr::ResetAll() {
-    POSITION pos = m_recList.GetHeadPosition();
+void CTriggerMgr::ClearSelection() {
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     while (pos != NULL) {
-        Coord* payload = static_cast<Coord*>(m_recList.GetNext(pos));
+        Coord* payload = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         CGrunt* cell = UnitAt(payload->m_x, payload->m_y);
         if (cell != NULL) {
-            (static_cast<CGrunt*>(cell))->ClearAllSprites();
+            (static_cast<CGrunt*>(cell))->Deselect();
             g_coordPool.Push(payload);
         }
     }
-    m_recList.RemoveAll();
+    m_selectedUnitIds.RemoveAll();
     StopPendingFx();
     ClearCameraSprite();
 }
 
 RVA(0x000784d0, 0x3a)
-i32 CTriggerMgr::RecordListHas(i32 playerIndex, i32 unitIndex) {
-    POSITION pos = m_recList.GetHeadPosition();
+i32 CTriggerMgr::IsUnitSelected(i32 playerIndex, i32 unitIndex) {
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     while (pos != NULL) {
-        Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
+        Coord* p = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         if (p->m_x == playerIndex && p->m_y == unitIndex) {
             return 1;
         }
@@ -237,9 +237,9 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
     u8 count = 0;
     u8 playerIndex; // retail leaves it uninitialized - only the loop writes it
     u8 unitIndices[0x80];
-    POSITION pos = m_recList.GetHeadPosition();
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     while (pos != NULL) {
-        Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
+        Coord* selection = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
         if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_entranceActive == false) {
@@ -285,9 +285,9 @@ void CTriggerMgr::EnqueueSelectedToolUse(
     u8 count = 0;
     u8 playerIndex; // retail leaves it uninitialized - only the loop writes it
     u8 unitIndices[0x80];
-    POSITION pos = m_recList.GetHeadPosition();
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     while (pos != NULL) {
-        Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
+        Coord* selection = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         CGrunt* grunt = UnitAt(selection->m_x, selection->m_y);
         playerIndex = static_cast<u8>(selection->m_x);
         if (grunt->GetPlayerIndex() == g_curPlayer && grunt->m_entranceActive == false) {
@@ -348,13 +348,13 @@ void CTriggerMgr::EnqueueSelectedToolUse(
 
 RVA(0x00078880, 0x3c)
 void CTriggerMgr::ClearRecords() {
-    POSITION pos = m_recList.GetHeadPosition();
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     if (pos != NULL) {
         do {
-            g_coordPool.Push(m_recList.GetNext(pos));
+            g_coordPool.Push(m_selectedUnitIds.GetNext(pos));
         } while (pos != NULL);
     }
-    m_recList.RemoveAll();
+    m_selectedUnitIds.RemoveAll();
 }
 
 RVA(0x000788d0, 0x64)
@@ -1232,13 +1232,13 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         u8 b = m_byteArr.GetAt(i);
         ar->Write(&b, sizeof(b));
     }
-    n = static_cast<u32>(m_recList.GetCount());
+    n = static_cast<u32>(m_selectedUnitIds.GetCount());
     ar->Write(&n, sizeof(n));
-    POSITION pos = m_recList.GetHeadPosition();
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     while (pos != NULL) {
-        ar->Write(m_recList.GetNext(pos), 8);
+        ar->Write(m_selectedUnitIds.GetNext(pos), 8);
     }
-    CPtrList* list = m_selLists;
+    CPtrList* list = m_selectionGroups;
     i32 k = 10;
     do {
         n = static_cast<u32>(list->GetCount());
@@ -1294,7 +1294,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(&g_curPlayer, sizeof(g_curPlayer));
     ar->Write(&g_groupSentinel, sizeof(g_groupSentinel));
     ar->Write(&m_pendingFxKind, sizeof(m_pendingFxKind));
-    ar->Write(&m_selSentinel, sizeof(m_selSentinel));
+    ar->Write(&m_lastRecalledGroup, sizeof(m_lastRecalledGroup));
     return 1;
 fail:
     return 0;
@@ -1359,10 +1359,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         Coord* node = g_coordPool.Pop();
         ar->Read(node, 8);
-        m_recList.AddTail(node);
+        m_selectedUnitIds.AddTail(node);
     }
 
-    CPtrList* sel = m_selLists;
+    CPtrList* sel = m_selectionGroups;
     i32 slot = 0xa;
     do {
         ar->Read(&count, sizeof(count));
@@ -1460,7 +1460,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ar->Read(&g_curPlayer, sizeof(g_curPlayer));
     ar->Read(&g_groupSentinel, sizeof(g_groupSentinel));
     ar->Read(&m_pendingFxKind, sizeof(m_pendingFxKind));
-    ar->Read(&m_selSentinel, sizeof(m_selSentinel));
+    ar->Read(&m_lastRecalledGroup, sizeof(m_lastRecalledGroup));
     return 1;
 }
 
@@ -2226,39 +2226,39 @@ i32 CTriggerMgr::SpawnPowerupIcon(
 }
 
 RVA(0x0007cc60, 0xa7)
-i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
-    POSITION pos = m_selLists[idx].GetHeadPosition();
+i32 CTriggerMgr::SaveSelectionGroup(i32 idx) {
+    POSITION pos = m_selectionGroups[idx].GetHeadPosition();
     if (pos != NULL) {
         do {
-            Coord* payload = static_cast<Coord*>(m_selLists[idx].GetNext(pos));
+            Coord* payload = static_cast<Coord*>(m_selectionGroups[idx].GetNext(pos));
             if (payload != NULL) {
                 g_coordPool.Push(payload);
             }
         } while (pos != NULL);
     }
-    CPtrList* sel = &m_selLists[idx];
+    CPtrList* sel = &m_selectionGroups[idx];
     sel->RemoveAll();
-    pos = m_recList.GetHeadPosition();
+    pos = m_selectedUnitIds.GetHeadPosition();
     while (pos != NULL) {
-        Coord* src = static_cast<Coord*>(m_recList.GetNext(pos));
+        Coord* src = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         Coord* dst = g_coordPool.Pop();
         *dst = *src;
         sel->AddTail(dst);
     }
-    m_selSentinel = -1;
+    m_lastRecalledGroup = -1;
     return 1;
 }
 
 RVA(0x0007cd40, 0x18f)
-i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
-    ResetAll();
+i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
+    ClearSelection();
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != NULL && ov->m_active != false) {
         CloseActionOptionsMenu();
     }
-    POSITION pos = m_selLists[slot].GetHeadPosition();
+    POSITION pos = m_selectionGroups[slot].GetHeadPosition();
     if (pos == NULL) {
-        m_selSentinel = -1;
+        m_lastRecalledGroup = -1;
         return 0;
     }
 
@@ -2270,11 +2270,11 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     bbox.top = grid->GetPlanePixelHeight() - 1;
     do {
         POSITION cur = pos;
-        Coord* payload = static_cast<Coord*>(m_selLists[slot].GetNext(pos));
+        Coord* payload = static_cast<Coord*>(m_selectionGroups[slot].GetNext(pos));
         CGrunt* cell = UnitAt(payload->m_x, payload->m_y);
         if (cell != NULL) {
-            ResetCell(payload->m_x, payload->m_y, 1, 0);
-            if (m_selSentinel == slot) {
+            SelectUnit(payload->m_x, payload->m_y, 1, 0);
+            if (m_lastRecalledGroup == slot) {
                 CGameObject* disp = cell->m_object;
                 i32 x = disp->m_screenX;
                 i32 y = disp->m_screenY;
@@ -2285,25 +2285,25 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
             }
         } else {
             g_coordPool.Push(payload);
-            m_selLists[slot].RemoveAt(cur);
+            m_selectionGroups[slot].RemoveAt(cur);
         }
     } while (pos != NULL);
-    if (m_selSentinel == slot) {
+    if (m_lastRecalledGroup == slot) {
         (static_cast<CPlay*>(g_gameReg->m_curState))
             ->ResetGoals(
                 bbox.left + (bbox.right - bbox.left) / 2,
                 bbox.top + (bbox.bottom - bbox.top) / 2
             );
-        m_selSentinel = -1;
+        m_lastRecalledGroup = -1;
         return 1;
     }
-    m_selSentinel = slot;
+    m_lastRecalledGroup = slot;
     return 1;
 }
 
 RVA(0x0007cf40, 0x12e)
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
-    POSITION pos = m_recList.GetHeadPosition();
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     if (pos == NULL) {
         return 0;
     }
@@ -2315,7 +2315,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     bbox.right = 0;
     bbox.bottom = 0;
     do {
-        Coord* k = static_cast<Coord*>(m_recList.GetNext(pos));
+        Coord* k = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
         CGrunt* cell = UnitAt(k->m_x, k->m_y);
         if (cell != NULL) {
             count++;
@@ -2336,7 +2336,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
         if (cell2 != NULL) {
             i32 playerIndex = cell2->GetPlayerIndex();
             i32 unitIndex = cell2->GetUnitIndex();
-            if (RecordListHas(playerIndex, unitIndex)) {
+            if (IsUnitSelected(playerIndex, unitIndex)) {
                 SetCameraTarget(playerIndex, unitIndex);
             }
         }
@@ -2345,8 +2345,8 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
 }
 
 RVA(0x0007d0c0, 0x57)
-void CTriggerMgr::ClearSelections() {
-    CPtrList* list = m_selLists;
+void CTriggerMgr::ClearSelectionGroups() {
+    CPtrList* list = m_selectionGroups;
     i32 k = 10;
     do {
         POSITION pos = list->GetHeadPosition();
@@ -2362,7 +2362,7 @@ void CTriggerMgr::ClearSelections() {
         list++;
         k--;
     } while (k != 0);
-    m_selSentinel = -1;
+    m_lastRecalledGroup = -1;
 }
 
 RVA(0x0007d140, 0x61)
@@ -2420,7 +2420,7 @@ i32 CTriggerMgr::SelectionListFind(i32 playerIndex, i32 unitIndex) {
         return 0;
     }
     i32 result = 0;
-    CPtrList* list = m_selLists;
+    CPtrList* list = m_selectionGroups;
     for (i32 i = 0; i < 10; i++, list++) {
         POSITION pos = list->GetHeadPosition();
         while (pos != NULL) {
@@ -2575,11 +2575,11 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     u8 buf[0x80];
     u8 count = 0;
     char x;
-    POSITION pos = m_recList.GetHeadPosition();
+    POSITION pos = m_selectedUnitIds.GetHeadPosition();
     if (pos != NULL) {
         i32 magic = g_curPlayer;
         do {
-            Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
+            Coord* p = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
 
             CGrunt* cell = UnitAt(p->m_x, p->m_y);
             x = static_cast<char>(p->m_x);

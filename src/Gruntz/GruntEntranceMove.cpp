@@ -144,7 +144,7 @@ i32 CGrunt::UpdatePickupAnimation() {
 
     RestorePreviousAppearance();
 
-    if (m_arrived != false) {
+    if (m_selected != false) {
         CreateHealthSprite();
         CreateStaminaSprite();
         CreateToySprite();
@@ -199,7 +199,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     CWwdSpriteObject* h = m_object;
     h->SetSortKey(SORTKEY_ACTOR);
 
-    ClearAllSprites();
+    Deselect();
 
     CString key;
 
@@ -305,14 +305,14 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         if (found == cached) {                                                                     \
             if (m_playerIndex == g_curPlayer) {                                                    \
                 g_gameReg->VoiceMgr()->PlayVoice(this, 0x33f, -1, 0, -1, -1);                      \
-                m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                         \
+                m_triggerMgr->SelectUnit(m_playerIndex, m_unitIndex, 0, 0);                        \
             }                                                                                      \
             m_entranceDropActive = true;                                                           \
             m_entranceTiming.Start(g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000));         \
             m_flashTiming.m_intervalLo = 0;                                                        \
             m_flashTiming.m_intervalHi = 0;                                                        \
-        } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {                      \
-            CommitArrival();                                                                       \
+        } else if (m_triggerMgr->IsUnitSelected(m_playerIndex, m_unitIndex)) {                     \
+            Select();                                                                              \
         }                                                                                          \
         m_entranceActive = false;                                                                  \
         ReadConfigFromButeMgr();                                                                   \
@@ -551,7 +551,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         return 0;
     }
 
-    if (m_arrived != false) {
+    if (m_selected != false) {
         CreateHealthSprite();
         CreateStaminaSprite();
         CreateToySprite();

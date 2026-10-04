@@ -194,8 +194,8 @@ public:
     i32 GetUnitIndex() const {
         return m_unitIndex;
     }
-    b32 HasArrived() const {
-        return m_arrived;
+    b32 IsSelected() const {
+        return m_selected;
     }
     b32 IsInCombat() const {
         return m_inCombat;
@@ -427,7 +427,7 @@ public:
     CWwdSpriteObject* m_toyTimeSprite;
     CWwdSpriteObject* m_wingzTimeSprite;
     CWwdSpriteObject* m_powerupSprite;
-    b32 m_arrived;
+    b32 m_selected;
     Coord m_reserved1dc;
     b32 m_entranceActive;
     b32 m_arrivalPending;
@@ -656,7 +656,7 @@ public:
         m_arrivalRerollTiming.Start(rand() % 30000 + 30000);
     }
     i32 ResolveEntranceArrival();
-    void ClearAllSprites();
+    void Deselect();
     i32 BuildEntranceAnimation(GruntEntranceMode mode);
     i32 LoadEntranceConfig();
 
@@ -667,7 +667,7 @@ public:
     i32 Save(CFileMemBase* ar);
 
     i32 LoadStateRecord(CFileMemBase* ar);
-    i32 CommitArrival();
+    i32 Select();
     void StopVehicleLoopSound();
     void StopPowerupLoopSound();
     void ReapplyLoopSoundParams();

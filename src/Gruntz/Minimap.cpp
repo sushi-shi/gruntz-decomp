@@ -144,7 +144,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                     continue;
                 }
                 SpriteTeamColorVariant teamColor = SPRITE_TEAM_COLOR_PRIMARY;
-                if (grunt->HasArrived() != false) {
+                if (grunt->IsSelected() != false) {
                     teamColor = SPRITE_TEAM_COLOR_SECONDARY;
                 }
 
@@ -156,8 +156,11 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
 
                     GetTileColor(m_mapMgr->TileIdAt(x, y), *pixel);
                 } else {
-                    m_gameMgr->m_spriteFactory
-                        ->GetToolColor(IDX(grunt->GetMoveIcon()), SPRITE_TEAM_COLOR_SECONDARY, *pixel);
+                    m_gameMgr->m_spriteFactory->GetToolColor(
+                        IDX(grunt->GetMoveIcon()),
+                        SPRITE_TEAM_COLOR_SECONDARY,
+                        *pixel
+                    );
                 }
             } else {
                 u16 color;

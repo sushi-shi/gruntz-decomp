@@ -55,9 +55,9 @@ public:
 
     i32 ByteTableHas(WarpStoneFragment fragment);
 
-    void ResetAll();
+    void ClearSelection();
 
-    i32 RecordListHas(i32 playerIndex, i32 unitIndex);
+    i32 IsUnitSelected(i32 playerIndex, i32 unitIndex);
 
     i32 StartPlayerVictorySequence(i32 playerIndex);
 
@@ -68,7 +68,7 @@ public:
     }
     void StopPendingFx();
 
-    void ClearSelections();
+    void ClearSelectionGroups();
 
     void ClearRecords();
 
@@ -101,7 +101,7 @@ public:
 
     CGrunt* FindNearestUnitForPlayer(CGrunt* g);
 
-    i32 RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection);
+    i32 RemoveUnitFromSelection(i32 playerIndex, i32 unitIndex, i32 removeFromGroups);
 
     i32
     SpawnPuddle(i32 x, i32 y, i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
@@ -137,7 +137,7 @@ public:
         RECT* span
     );
 
-    i32 ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep);
+    i32 SelectUnit(i32 playerIndex, i32 unitIndex, i32 extendSelection, i32 keepSelected);
 
     i32 LoadCameraSprite();
     void SetCameraTarget(i32 playerIndex, i32 unitIndex) {
@@ -200,9 +200,9 @@ public:
 
     i32 CycleMoveIcons(i32 skipPlayerIndex, b32 enable);
 
-    i32 RebuildSelectionList(i32 idx);
+    i32 SaveSelectionGroup(i32 idx);
 
-    i32 CenterSelectionGroup(i32 slot);
+    i32 RecallSelectionGroup(i32 slot);
 
     i32 ToggleToolTargeting();
     i32 ToggleToyTargeting();
@@ -246,7 +246,7 @@ public:
         memset(m_unitExited, 0, sizeof(m_unitExited));
         memset(m_gruntzExitedByPlayer, 0, sizeof(m_gruntzExitedByPlayer));
         memset(m_gruntzLostByPlayer, 0, sizeof(m_gruntzLostByPlayer));
-        m_selSentinel = -1;
+        m_lastRecalledGroup = -1;
         m_goal = NULL;
         m_overlay = NULL;
         m_world = NULL;
@@ -293,7 +293,7 @@ public:
     Coord m_cameraTargetIdentity;
     CWwdSpriteObject* m_goal;
 
-    CPtrList m_recList;
+    CPtrList m_selectedUnitIds;
 
     CGrunt** PlayerUnits(i32 playerIndex) {
         return &m_units[playerIndex * TM_UNITS_PER_PLAYER];
@@ -302,10 +302,10 @@ public:
         return PlayerUnits(playerIndex)[unitIndex];
     }
     Coord* HeadRec() {
-        return static_cast<Coord*>(m_recList.GetHead());
+        return static_cast<Coord*>(m_selectedUnitIds.GetHead());
     }
     CGrunt* SoleSelectedGrunt() {
-        if (m_recList.GetCount() != 1) {
+        if (m_selectedUnitIds.GetCount() != 1) {
             return NULL;
         }
         Coord rec = *HeadRec();
@@ -328,8 +328,8 @@ public:
 
     ClockInterval m_gooTimer;
     ClockInterval m_resourceTimer;
-    CPtrList m_selLists[10];
-    i32 m_selSentinel;
+    CPtrList m_selectionGroups[10];
+    i32 m_lastRecalledGroup;
     FinishLevelReason m_finishReasonFrame;
 
     SoundBuffer* m_rollingballLoop;

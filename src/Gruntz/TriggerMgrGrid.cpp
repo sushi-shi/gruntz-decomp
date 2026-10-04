@@ -75,7 +75,7 @@ void CTriggerMgr::Cleanup() {
         m_overlay = NULL;
     }
     ClearRecords();
-    ClearSelections();
+    ClearSelectionGroups();
 }
 
 // @early-stop
@@ -340,7 +340,7 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
         lastPlayerIndex = playerSelector;
         firstPlayerIndex = playerSelector;
     }
-    ResetAll();
+    ClearSelection();
     for (i32 playerIndex = firstPlayerIndex; playerIndex <= lastPlayerIndex; playerIndex++) {
         CGrunt** units = PlayerUnits(playerIndex);
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
@@ -355,7 +355,7 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
         m_gruntzExitedByPlayer[playerIndex] = 0;
         m_gruntzLostByPlayer[playerIndex] = 0;
     }
-    ClearSelections();
+    ClearSelectionGroups();
     return 1;
 }
 
@@ -423,7 +423,7 @@ CGrunt* CTriggerMgr::CellHitTest(
 }
 
 RVA(0x0006bfd0, 0x106)
-i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) {
+i32 CTriggerMgr::SelectUnit(i32 playerIndex, i32 unitIndex, i32 extendSelection, i32 keepSelected) {
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->IsEntranceCommitted() == false) {
         return 0;
@@ -436,19 +436,19 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
         cell->m_hudRetireTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
         return 0;
     }
-    if (force == 0) {
+    if (extendSelection == 0) {
 
-        ResetAll();
-    } else if (keep == 0) {
-        if (RemoveCellRecord(playerIndex, unitIndex, 0) != 0) {
+        ClearSelection();
+    } else if (keepSelected == 0) {
+        if (RemoveUnitFromSelection(playerIndex, unitIndex, 0) != 0) {
             return 1;
         }
     }
     Coord identity;
     Coord* slot = g_coordPool.PopCopy(*identity.Set(playerIndex, unitIndex));
-    m_recList.AddTail(slot);
+    m_selectedUnitIds.AddTail(slot);
 
-    return cell->CommitArrival();
+    return cell->Select();
 }
 
 // @early-stop

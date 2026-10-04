@@ -2091,7 +2091,7 @@ afterArrival:
             if (m_inCombat != false && m_attackQueued == false) {
                 RESET_GRUNT_COMBAT_STATE(this)
             }
-            if (m_arrived == false && m_hudRetireTiming.Expired()) {
+            if (m_selected == false && m_hudRetireTiming.Expired()) {
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)

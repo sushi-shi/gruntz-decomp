@@ -118,7 +118,7 @@ cast in a plain walk is the era idiom, not missing API. Remaining leads:
 - Coordinate recycle-and-empty blocks also open-coded for
   `CBattlezMapConfig::m_candArray` (FreeArrays, SerializeState; the
   waypoint loop differs in its NULL check), `CGruntzMapMgr::m_arr`,
-  `CTriggerMgr::m_recList`, `CProjectile::m_hitList` and the
+  `CTriggerMgr::m_selectedUnitIds`, `CProjectile::m_hitList` and the
   `CGrunt::m_coordList` variants; no single helper explains them yet.
 - Untouched owners (Wwd `CWwdGameObject::m_children`, Image `CDibMgr`,
   `CGameText`, `CWorldSoundSet`, `CVoiceManager`, `CDDSurface`, `CNetMgr`,

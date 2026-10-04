@@ -1014,7 +1014,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_reserved1ac, sizeof(m_reserved1ac));
     ar->Write(&m_reserved1b0, sizeof(m_reserved1b0));
     ar->Write(&m_reserved1b4, sizeof(m_reserved1b4));
-    ar->Write(&m_arrived, sizeof(m_arrived));
+    ar->Write(&m_selected, sizeof(m_selected));
     ar->Write(&m_entrancePx, sizeof(m_entrancePx));
     ar->Write(&m_lastTilePx, sizeof(m_lastTilePx));
     ar->Write(&m_commitPx, sizeof(m_commitPx));

@@ -96,7 +96,7 @@ inline Coord CGrunt::ScanCell() {
 
 inline void BeginGruntEntranceAndReleaseCell(CGrunt* grunt) {
     grunt->m_entranceActive = true;
-    grunt->m_triggerMgr->RemoveCellRecord(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), 1);
+    grunt->m_triggerMgr->RemoveUnitFromSelection(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), 1);
 }
 
 #endif // GRUNTZ_GRUNTMOVEMENTINLINE_H

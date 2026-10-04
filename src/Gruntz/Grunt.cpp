@@ -262,7 +262,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_poseDeath = NULL;
     memset(m_poseToy, 0, sizeof(m_poseToy));
     m_pickupAnimation = NULL;
-    m_arrived = false;
+    m_selected = false;
     m_wwdObject->m_objectType = WWD_OBJECT_TYPE_GRUNT;
     m_wwdObject->m_hitTypeFlags = 0x3d1;
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_COLLIDE);
@@ -661,8 +661,8 @@ store:
 
 // @early-stop
 RVA(0x0004b130, 0xc8)
-i32 CGrunt::CommitArrival() {
-    if (m_arrived != false) {
+i32 CGrunt::Select() {
+    if (m_selected != false) {
         return 1;
     }
 
@@ -677,12 +677,12 @@ i32 CGrunt::CommitArrival() {
     CreateStaminaSprite();
     CreateToyTimeSprite();
     CreateWingzTimeSprite();
-    m_arrived = true;
+    m_selected = true;
     return 1;
 }
 
 RVA(0x0004b240, 0xaa)
-void CGrunt::ClearAllSprites() {
+void CGrunt::Deselect() {
     if (m_selectedSprite) {
         m_selectedSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         m_selectedSprite = NULL;
@@ -709,7 +709,7 @@ void CGrunt::ClearAllSprites() {
             m_wingzTimeSprite = NULL;
         }
     }
-    m_arrived = false;
+    m_selected = false;
 }
 
 RVA(0x0004b320, 0x34)
@@ -2397,7 +2397,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     } else {
         UpdateArrival(defer, 1);
     }
-    if (m_arrived != false) {
+    if (m_selected != false) {
         if (m_playerIndex == g_curPlayer) {
             m_triggerMgr->StopPendingFx();
         }
