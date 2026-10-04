@@ -201,22 +201,22 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         }
         m_stateResources = (saved);
 
-        CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
+        CDDSurface* tgt = World()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
-        menuRoot()->GetDisplayBuffers()->CopyBackToOverlay();
+        World()->GetDisplayBuffers()->CopyBackToOverlay();
     } else {
-        menuRoot()->GetDisplayBuffers()->CopyFrontToOverlay();
-        CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->m_overlayBuffer->GetSurface();
+        World()->GetDisplayBuffers()->CopyFrontToOverlay();
+        CDDSurface* tgt = World()->GetDisplayBuffers()->m_overlayBuffer->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
-        menuRoot()->GetDisplayBuffers()->CopyOverlayToBack();
+        World()->GetDisplayBuffers()->CopyOverlayToBack();
     }
 
     RetireScene(0x50, 0x3e8, 0, true);
@@ -327,7 +327,7 @@ i32 CMenuState::RestoreDisplay() {
         return gate;
     }
 
-    menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->Fill(0);
+    World()->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->Fill(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
@@ -347,9 +347,9 @@ i32 CMenuState::RestoreDisplay() {
     }
     m_stateResources = (saved);
 
-    CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
+    CDDSurface* tgt = World()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
-    menuRoot()->GetDisplayBuffers()->CopyBackToOverlay();
+    World()->GetDisplayBuffers()->CopyBackToOverlay();
 
     RetireScene(0x50, 0x3e8, 0, true);
 

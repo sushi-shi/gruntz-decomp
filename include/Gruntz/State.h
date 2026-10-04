@@ -159,7 +159,7 @@ public:
 
     void Present(i32 pct);
 
-    CDDrawSurfaceMgr* menuRoot() {
+    CDDrawSurfaceMgr* World() {
         return m_world;
     }
     CRezMgr* ResourceArchive() {

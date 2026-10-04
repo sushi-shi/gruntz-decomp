@@ -79,9 +79,9 @@ i32 CState::LoadTitlePage(
         mode = DDRAW_PAGE_OVERLAY;
     }
 
-    if (menuRoot()->GetDisplayBuffers()->LoadPageImage(page, mode) == 0) {
+    if (World()->GetDisplayBuffers()->LoadPageImage(page, mode) == 0) {
         if (useOverlay != false) {
-            if (menuRoot()->GetDisplayBuffers()->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
+            if (World()->GetDisplayBuffers()->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
                 return 0;
             }
         }
@@ -112,7 +112,7 @@ i32 CState::PresentTitlePage(
     if (!m_stateResources) {
         return 0;
     }
-    menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
     return 1;
 }
 
@@ -389,11 +389,11 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     if (sym == NULL) {
         return 0;
     }
-    if (menuRoot()->GetDisplayBuffers()->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
+    if (World()->GetDisplayBuffers()->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
         return 0;
     }
     if (doFlip != 0) {
-        menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
+        World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
     }
     return 1;
 }

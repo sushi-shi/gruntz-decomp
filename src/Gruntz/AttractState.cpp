@@ -58,7 +58,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         return 0;
     }
 
-    menuRoot()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
+    World()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(false) >= 0) {
         do {
@@ -77,11 +77,11 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
-    SoundCueRegistry* reg = menuRoot()->SoundRegistry();
+    SoundCueRegistry* reg = World()->SoundRegistry();
     if (reg->m_soundStream) {
         reg->m_soundStream->StopAllStreams();
     }
-    menuRoot()->SoundRegistry()->RemoveWithPrefix("ATTRACT", "_");
+    World()->SoundRegistry()->RemoveWithPrefix("ATTRACT", "_");
 
     CState::ReleaseResources();
 }
@@ -97,7 +97,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     CString s;
     s.Format("TITLE%d", idx);
     LoadAndPresentTitlePage(s, 0, 0, 1, 0);
-    CDisplayBuffers* page = menuRoot()->GetDisplayBuffers();
+    CDisplayBuffers* page = World()->GetDisplayBuffers();
     page->CopyFrontToSurface(page->GetBackBuffer());
 
     i32 r = GetRandomNumber();
@@ -106,7 +106,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    SoundCue* found = menuRoot()->SoundRegistry()->FindCue(buf);
+    SoundCue* found = World()->SoundRegistry()->FindCue(buf);
     m_titleCue = found;
     if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {
@@ -137,7 +137,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
         return 1;
     }
     do {
-        (menuRoot()->SoundRegistry())->TickVolumeRamps();
+        (World()->SoundRegistry())->TickVolumeRamps();
     } while (m_titleCue->IsPlaying());
     return 1;
 }
@@ -145,7 +145,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy =
-        menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
         if (RestoreGraphics() == 0) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
@@ -153,7 +153,7 @@ i32 CAttract::Render() {
         }
     }
 
-    (menuRoot()->SoundRegistry())->TickVolumeRamps();
+    (World()->SoundRegistry())->TickVolumeRamps();
 
     CountDown(m_titleCountdownMs, g_frameDelta);
 
@@ -176,7 +176,7 @@ i32 CAttract::Render() {
 RVA(0x00014520, 0xc3)
 i32 CAttract::RestoreGraphics() {
 
-    if (menuRoot()->GetDisplayBuffers()->RestoreLostSurfaces() == 0) {
+    if (World()->GetDisplayBuffers()->RestoreLostSurfaces() == 0) {
         return 0;
     }
 
@@ -237,10 +237,8 @@ i32 CAttract::OnPaint() {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
-    menuRoot()->GetDisplayBuffers()->CopyFrontToSurface(
-        menuRoot()->GetDisplayBuffers()->GetBackBuffer()
-    );
+    World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    World()->GetDisplayBuffers()->CopyFrontToSurface(World()->GetDisplayBuffers()->GetBackBuffer());
     return 1;
 }
 
