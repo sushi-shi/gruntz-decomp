@@ -71,7 +71,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             sprintf(key, "LastDiff%d", i);
             g_battlezLastDifficulties[i] = reg->Get(key, 1);
             sprintf(key, "LastColour%d", i);
-            g_battlezLastColors[i] = reg->Get(key, IDX(g_gameReg->m_players[i].m_color));
+            g_battlezLastColors[i] = reg->Get(key, IDX(g_gameReg->m_players[i].GetColor()));
             g_gameReg->m_players[i].m_color = static_cast<ColorTint>(g_battlezLastColors[i]);
         }
 
@@ -297,7 +297,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 settings->Set(key, -1);
             }
             sprintf(key, "LastColour%d", i);
-            settings->Set(key, IDX(g_gameReg->m_players[i].m_color));
+            settings->Set(key, IDX(g_gameReg->m_players[i].GetColor()));
         }
         NetLobby::g_curDlg = NULL;
     }
@@ -581,7 +581,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[0].m_color);
+                color = TintColorRef(m_gameManager->m_players[0].GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -589,7 +589,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[1].m_color);
+                color = TintColorRef(m_gameManager->m_players[1].GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -597,7 +597,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[2].m_color);
+                color = TintColorRef(m_gameManager->m_players[2].GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -605,7 +605,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[3].m_color);
+                color = TintColorRef(m_gameManager->m_players[3].GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }

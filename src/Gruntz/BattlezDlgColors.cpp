@@ -53,7 +53,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
             b32 available = true;
             GruntzPlayer* player = m_gameManager->m_players;
             for (i32 j = 0; j < 4; j++) {
-                if (player->m_active != false && IDX(player->m_color) == i) {
+                if (player->m_active != false && IDX(player->GetColor()) == i) {
                     available = false;
                 }
                 player++;

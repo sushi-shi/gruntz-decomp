@@ -1735,7 +1735,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             continue;
         }
         CShadeTable* tint =
-            g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[i].m_color), 0);
+            g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[i].GetColor()), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1847,7 +1847,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         CString tabKey;
         CString flagKey;
         GruntzPlayer* pl = &g_gameReg->m_players[t];
-        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(IDX(pl->m_color), 0);
+        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(IDX(pl->GetColor()), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1891,8 +1891,10 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_tabSprites[t]->Show();
     }
 
-    CShadeTable* tint =
-        g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[QueryGruntSlots()].m_color), 0);
+    CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(
+        IDX(g_gameReg->m_players[QueryGruntSlots()].GetColor()),
+        0
+    );
     if (tint == NULL) {
         return 0;
     }
@@ -2355,7 +2357,7 @@ void CMultiBootyState::DrawBattleStats() {
         GruntzPlayer* player = &g_gameReg->m_players[i];
         if (player->m_joined != false) {
             i32 color;
-            switch (player->m_color) {
+            switch (player->GetColor()) {
                 case TINT_DKBLUE:
                     color = RGB(0, 0, 128);
                     break;

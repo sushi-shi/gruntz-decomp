@@ -40,7 +40,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     i32 idx;
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         if (g_gameReg->m_players[m_object->m_smarts].m_active != false) {
-            idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
+            idx = IDX(g_gameReg->m_players[m_object->m_smarts].GetColor());
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             // Retail leaves the inactive-player shade index unassigned.
@@ -74,7 +74,7 @@ i32 CGruntCreationPoint::SerializeDispatch(
         i32 idx;
         if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
             if (g_gameReg->m_players[m_object->m_smarts].m_active != false) {
-                idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
+                idx = IDX(g_gameReg->m_players[m_object->m_smarts].GetColor());
             } else {
                 idx = IDX(FindAvailablePlayerColor());
             }

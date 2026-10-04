@@ -3374,7 +3374,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         GRUNT_ENTRANCE_RESURRECT,
-        IDX(m_ctx->m_players[m_playerIndex].m_color),
+        IDX(m_ctx->m_players[m_playerIndex].GetColor()),
         0,
         0,
         0x11,

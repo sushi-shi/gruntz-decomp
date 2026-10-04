@@ -222,8 +222,8 @@ i32 CTriggerMgr::PlaceObject(
         if (m_unitCountByPlayer[playerIndex] < game->m_players[playerIndex].GetMaxGruntz()) {
             if (game->m_players[playerIndex].m_active != false
                 || (playerIndex != g_curPlayer
-                    && kindId == IDX(game->m_players[g_curPlayer].m_color))) {
-                kindId = IDX(game->m_players[playerIndex].m_color);
+                    && kindId == IDX(game->m_players[g_curPlayer].GetColor()))) {
+                kindId = IDX(game->m_players[playerIndex].GetColor());
             }
             if (playerIndex == g_curPlayer && aiType != 0) {
                 aiType = 0;
