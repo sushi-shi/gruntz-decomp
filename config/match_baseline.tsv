@@ -535,7 +535,7 @@ battlezmapconfig	?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z	100.0000	100.0000	5	c8407bb19
 battlezmapconfig	?Deserialize@CBattlezMapConfig@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	8	063feaaa09c0	0x2b950	100.0000	
 battlezmapconfig	?Drain@CDDrawChildGroup@@QAEPAUCGameObject@@XZ	100.0000	100.0000	6	f64290b14e40	0x31250	100.0000	
 battlezmapconfig	?EnterDefenderMode@CBattlezMapConfig@@QAEHPAVCGrunt@@H@Z	100.0000	100.0000	5	f163ab48d67b	0x2c0a0	100.0000	
-battlezmapconfig	?FindIdleGruntInBox@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z	83.1161	83.1161	12	00de023ef038	0x2ab80	83.1161	
+battlezmapconfig	?FindIdleGruntInBox@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z	83.3482	83.3482	13	b822e630de22	0x2ab80	83.3482	
 battlezmapconfig	?FreeArrays@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	5	a73c003f6cb5	0x25ca0	100.0000	
 battlezmapconfig	?GetScreenPos@CUserLogic@@QAEXPAUCoord@@@Z	100.0000	100.0000	3	bf89b38d9c40	0x29a50	100.0000	
 battlezmapconfig	?HandleUnitContact@CBattlezMapConfig@@QAEHPAVCGrunt@@0@Z	85.0936	85.0936	21	6f98bca5d0db	0x2ae00	86.5862	
@@ -4298,7 +4298,7 @@ trees	_send_tree	100.0000	100.0000	1	0a0643654ea9	0x189610	100.0000
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841	0x18a100	100.0000	
 trees	_tr_static_init	100.0000	100.0000	1	988facf51b1a	0x1884c0	100.0000	
 triggermgr	?ApplyGruntAreaEffect@CTriggerMgr@@QAEHHHHW4GruntAreaEffectKind@@H@Z	97.3865	97.3865	23	dfd457510c60	0x7b930	97.3865	
-triggermgr	?BuildRockBreakParticles@CTriggerMgr@@QAEHHHHH@Z	96.0535	96.0535	30	06cfea3c2e17	0x7b440	96.0535	
+triggermgr	?BuildRockBreakParticles@CTriggerMgr@@QAEHHHHH@Z	99.9030	99.9030	31	6b1c2704920c	0x7b440	99.9030	
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHW4WarpStoneFragment@@@Z	100.0000	100.0000	1	e63030c4e3bb	0x79b30	100.0000	
 triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	93.3186	93.3186	13	9341b2613e94	0x7cf40	98.9381	
 triggermgr	?CenterSelectionGroup@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	10	240972057f5d	0x7cd40	100.0000	

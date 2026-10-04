@@ -1595,9 +1595,10 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (u->IsEntranceDropActive() != false) {
                 continue;
             }
+            Coord tile = ScreenTile(u);
             POINT wpt;
-            wpt.y = u->GetScreenTileY();
-            wpt.x = u->GetScreenTileX();
+            wpt.y = tile.m_y;
+            wpt.x = tile.m_x;
             if (!PtInRect(&rect, wpt)) {
                 continue;
             }
