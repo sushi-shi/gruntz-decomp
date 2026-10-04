@@ -17,7 +17,7 @@ class CShadeTableCache;
 struct CShadeTable;
 struct CGameRegistry;
 class CDDrawSurfaceMgr;
-class CDDrawWorker;
+class CImageSet;
 
 class CLightFxMgr {
 public:
@@ -28,7 +28,7 @@ public:
 
     void Reset();
 
-    i32 ApplyShadeTable(CDDrawWorker* imageSet, i32 tableIndex, ShadeMode mode);
+    i32 ApplyShadeTable(CImageSet* imageSet, i32 tableIndex, ShadeMode mode);
 
     CShadeTable* GetShadeTable(i32 tableIndex) const {
         return m_tables[tableIndex];

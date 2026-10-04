@@ -12,7 +12,7 @@
 
 class CDDrawSurfaceMgr;
 
-class CDDrawWorker;
+class CImageSet;
 
 class CDDrawSurfacePair;
 
@@ -77,7 +77,7 @@ struct CDDrawFrameWorker : public CDDrawPlacedWorker {
         m_contentValue = 0;
     }
     virtual i32 PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex);
-    virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex);
+    virtual i32 PlaceFrame(i32 x, i32 y, CImageSet* source, i32 frameIndex);
     virtual i32 PlaceFrame(i32 x, i32 y, CImage* frame);
 
     i32 ResolveFrame(const char* workerName, i32 frameIndex);

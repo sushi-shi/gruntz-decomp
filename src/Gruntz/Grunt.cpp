@@ -637,7 +637,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
 
                     SwitchAnimation(m_poseAttackIdle);
                     {
-                        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+                        DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
                         const char* nm = FacingData()->AttackName().GetBuffer(0);
                         SetImageFrameByName(nm, frame);
                     }
@@ -660,7 +660,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
 
         SwitchAnimationAndMaybeAdvance(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
-            DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+            DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
             i32 row = facing.m_row;
             i32 column = facing.m_column;
             i32 index = 3 * row + column;
@@ -2391,7 +2391,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
     LoadAnimationSet(fresh, defer);
     if (fresh == 0) {
         if (IsAnimationAct("H")) {
-            DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
+            DECLARE_FIRST_ANIMATION_FRAME(handle, el, first)
             SetImageFrameByName(FacingData()->StruckName().GetBuffer(0), handle);
         } else {
             if (m_inCombat != false && m_attackQueued == false) {

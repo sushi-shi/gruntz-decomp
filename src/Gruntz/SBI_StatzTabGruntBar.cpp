@@ -120,7 +120,7 @@ i32 CSBI_StatzTabGruntBar::Render() {
 }
 
 inline b32 CSBI_StatzTabGruntBar::UpdateIconImage(
-    CDDrawWorker* const& frames,
+    CImageSet* const& frames,
     i32 frameIndex,
     i32& previousIndex,
     CImage*& image
@@ -217,7 +217,7 @@ i32 CSBI_StatzTabGruntBar::UpdateIcons() {
 
             m_groupIconImage = NULL;
         } else {
-            CDDrawWorker* frames = m_iconFrames;
+            CImageSet* frames = m_iconFrames;
             i32 groupIconIndex = groupMarker + 0x28;
             m_groupIconImage = frames->GetAt(groupIconIndex);
         }

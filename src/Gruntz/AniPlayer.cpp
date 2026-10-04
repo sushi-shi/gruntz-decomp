@@ -61,7 +61,7 @@ i32 CAniPlayer::TickToggle(i32 unused) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e5c10, 0x54)
 i32 CAniPlayer::RenderCel() {
-    CDDrawWorker* tbl = m_frameSet;
+    CImageSet* tbl = m_frameSet;
     CImage* cel = tbl->GetAt(m_frameIndex);
     SetFrame(cel);
     if (cel != NULL) {

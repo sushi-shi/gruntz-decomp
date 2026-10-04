@@ -10,7 +10,7 @@
 GZ_ENUM_FORWARD_SPLIT(WwdPlaneFlags, u32);
 #endif
 
-class CDDrawWorker;
+class CImageSet;
 
 typedef u8 Bytef;
 typedef u32 uLong;

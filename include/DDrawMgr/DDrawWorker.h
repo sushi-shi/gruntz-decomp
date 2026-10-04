@@ -18,13 +18,14 @@ class CRezDir;
 struct CRezItm;
 class CDDrawSurfaceMgr;
 
-class CDDrawWorker : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CImageSet : public CWapObj {
 public:
-    CDDrawWorker(CDDrawSurfaceMgr* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
+    CImageSet(CDDrawSurfaceMgr* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
         m_minIndex = 99999;
         m_maxIndex = 0;
     }
-    virtual ~CDDrawWorker() OVERRIDE;
+    virtual ~CImageSet() OVERRIDE;
 
     virtual i32 IsLoaded() OVERRIDE;
 
@@ -40,7 +41,7 @@ public:
     virtual CImage* LoadFrame(char* path, i32 index, i32 keyed);
 
     virtual CImage* InsertFrame(struct CRezItm* rec, i32 n, i32 flag);
-    virtual i32 ValidateFramesFromArchive(CRezDir* tab);
+    virtual i32 ReloadFramesFromArchive(CRezDir* tab);
 
     virtual i32 ReloadFrame(CRezItm* rec, i32 n, i32 flag);
 

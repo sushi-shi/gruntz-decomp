@@ -89,7 +89,7 @@ RVA(0x000616e0, 0xa8)
 i32 CGrunt::StartAttackIdleAnimation() {
     SwitchAnimation(m_poseAttackIdle);
 
-    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+    DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
 
     const char* name = FacingData()->AttackName().GetBuffer(0);
     SetImageFrameByName(name, frame);
@@ -179,7 +179,7 @@ i32 CGrunt::StartTargetedAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 
     SwitchAnimation(AT(m_poseAttack, pose));
 
-    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
+    DECLARE_FIRST_ANIMATION_FRAME(frame, desc, el)
 
     char* imageSetName = FacingData()->AttackName().GetBuffer(0);
     SetImageFrameByName(imageSetName, frame);
@@ -194,7 +194,7 @@ i32 CGrunt::StartRangedAttackAnimation() {
 
     SwitchAnimation(AT(m_poseAttack, GRUNT_ATTACK2));
 
-    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
+    DECLARE_FIRST_ANIMATION_FRAME(frame, desc, el)
 
     char* buf = FacingData()->AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
@@ -380,7 +380,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             i32 toyIdx = GetRandom(1);
             SwitchAnimationAndMaybeAdvance(m_poseToy[toyIdx], 0);
 
-            DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
+            DECLARE_FIRST_ANIMATION_FRAME(frame, desc, el)
             char* buf = (&m_frameSetName)->GetBuffer(0);
             SetImageFrameByName(buf, frame);
 
@@ -472,7 +472,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     CAnimationSequence* want = m_poseToy[sel];
     if (m_wwdObject->m_animationCursor.GetAnimation() != want) {
         SwitchAnimation(want);
-        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
+        DECLARE_FIRST_ANIMATION_FRAME(frame, desc, el)
         char* buf = (&m_frameSetName)->GetBuffer(0);
         SetImageFrameByName(buf, frame);
     }
@@ -527,7 +527,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
     if (diff >= m_toyTiming.GetInterval() && m_toyBreakStarted == false && ready == true) {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
-        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+        DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
         char* nm = (&m_frameSetName)->GetBuffer(0);
         SetImageFrameByName(nm, frame);
         m_toyBreakStarted = true;
@@ -688,7 +688,7 @@ void CGrunt::ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 pla
         i32 base = cell.m_row + col;
         CString key = m_directionData[base].IdleName();
 
-        APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
+        APPLY_FIRST_ANIMATION_FRAME_SPRITE(key, desc, elem)
     }
 }
 
@@ -858,7 +858,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
             m_toyBreakStarted = true;
             SwitchAnimationAndMaybeAdvance(AT(m_poseToy, GRUNT_TOY_BREAK), 0);
 
-            DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+            DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
             char* frameSetName = (&m_frameSetName)->GetBuffer(0);
             SetImageFrameByName(frameSetName, frame);
 

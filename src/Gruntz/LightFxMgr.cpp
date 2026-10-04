@@ -85,7 +85,7 @@ void CLightFxMgr::Reset() {
 }
 
 RVA(0x0009dcb0, 0x41)
-i32 CLightFxMgr::ApplyShadeTable(CDDrawWorker* imageSet, i32 tableIndex, ShadeMode mode) {
+i32 CLightFxMgr::ApplyShadeTable(CImageSet* imageSet, i32 tableIndex, ShadeMode mode) {
     if (!imageSet) {
         return 0;
     }

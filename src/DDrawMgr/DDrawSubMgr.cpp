@@ -93,7 +93,7 @@ i32 CDDrawPaletteRegistry::IsReady() {
 }
 
 RVA(0x00156dc0, 0x16)
-i32 CDDrawWorkerRegistry::IsLoaded() {
+i32 CImageSetRegistry::IsLoaded() {
     if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
@@ -101,31 +101,31 @@ i32 CDDrawWorkerRegistry::IsLoaded() {
 }
 
 RVA(0x00156de0, 0x6)
-LoadableClassId CDDrawWorkerRegistry::GetClassId() {
-    return CLASSID_WORKERREGISTRY;
+LoadableClassId CImageSetRegistry::GetClassId() {
+    return CLASSID_IMAGE_SET_REGISTRY;
 }
 
-RVA_COMPGEN(0x00156df0, 0x1e, ??_GCDDrawWorkerRegistry@@UAEPAXI@Z)
+RVA_COMPGEN(0x00156df0, 0x1e, ??_GCImageSetRegistry@@UAEPAXI@Z)
 RVA(0x00156e10, 0x68)
-CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
+CImageSetRegistry::~CImageSetRegistry() {
     Unload();
 }
 
 RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
+i32 CImageSetRegistry::LoadImageSetsFromDirectory(CRezMgr* parser, const char* key) {
     CRezDir* result = parser->GetRootDir()->GetDir(key);
 
     if (result != NULL) {
-        return InstallTree(result, "", "_");
+        return LoadImageSetsFromTree(result, "", "_");
     }
     return 0;
 }
 
 RVA(0x00156ec0, 0x40)
-void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
-    CDDrawWorker* worker = MapFind<CDDrawWorker>(m_workersByName, key);
+void CImageSetRegistry::RemoveByKey(const char* key) {
+    CImageSet* worker = MapFind<CImageSet>(m_imageSetsByName, key);
     if (worker != NULL) {
-        m_workersByName.RemoveKey(key);
+        m_imageSetsByName.RemoveKey(key);
         delete worker;
     }
 }
@@ -256,7 +256,7 @@ i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, const char* workerName, i32 fram
 }
 
 RVA(0x001572b0, 0x38)
-i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex) {
+i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CImageSet* source, i32 frameIndex) {
     CImage* frame = source->GetAt(frameIndex);
     m_frame = frame;
     SET_RESOLVE_POSITION_REFERENCED(x, y);
@@ -275,13 +275,8 @@ void CDDrawPlacedWorker::Unload() {
 }
 
 RVA(0x00157330, 0xa5)
-CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
-    i32 x,
-    i32 y,
-    CDDrawWorker* source,
-    i32 frameIndex,
-    i32 addHead
-) {
+CDDrawFrameWorker*
+CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImageSet* source, i32 frameIndex, i32 addHead) {
     CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
     if (w->PlaceFrame(x, y, source, frameIndex) == 0) {
         if (w != NULL) {

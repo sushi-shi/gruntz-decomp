@@ -269,7 +269,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
         ResetIdleAnimation(1, 0, 0);
     } else {
         SwitchAnimation(found);
-        APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
+        APPLY_FIRST_ANIMATION_FRAME_SPRITE(key, desc, elem)
     }
     return 0;
 }
@@ -364,7 +364,7 @@ i32 CGrunt::UpdateBombRunAnimation() {
         m_bombRunStarting = false;
         SwitchAnimation(AT(m_poseItem, GRUNT_ITEM2));
 
-        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+        DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
 
         const char* name = FacingData()->ItemName().GetBuffer(0);
         SetImageFrameByName(name, frame);
@@ -531,7 +531,7 @@ i32 CGrunt::SetWingzEnabled(b32 enable) {
 
     if (IsAnimationAct("D")) {
         SwitchAnimation(m_poseWalk);
-        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+        DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
         char* buf = FacingData()->WalkName().GetBuffer(0);
         SetImageFrameByName(buf, frame);
         return 1;
@@ -539,7 +539,7 @@ i32 CGrunt::SetWingzEnabled(b32 enable) {
 
     if (IsAnimationAct("A")) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
-        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+        DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
         char* buf = FacingData()->IdleName().GetBuffer(0);
         SetImageFrameByName(buf, frame);
     }
@@ -556,7 +556,7 @@ i32 CGrunt::UpdateScrollUseAnimation() {
     if (m_toyBreakStarted == false) {
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
 
-        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+        DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
 
         char* buf = (&m_frameSetName)->GetBuffer(0);
         SetImageFrameByName(buf, frame);
@@ -666,7 +666,7 @@ finalize:
     }
     SwitchAnimationByName("GRUNTZ_DEATHZ_FREEZE", 0);
     {
-        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
+        DECLARE_FIRST_ANIMATION_FRAME(frame, desc, elem)
         APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_FREEZE", frame);
     }
     m_freezeUnfrozen = false;

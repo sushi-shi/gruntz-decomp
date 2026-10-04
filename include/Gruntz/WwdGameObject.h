@@ -25,7 +25,7 @@ struct WwdSnapshot {
     i32 m_sortKey;
 };
 
-class CDDrawWorker;
+class CImageSet;
 
 class CImage;
 class CDDrawSurfacePair;

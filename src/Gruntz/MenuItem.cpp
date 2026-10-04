@@ -62,7 +62,7 @@ void CMenuItem::Cleanup() {
 
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
-    CDDrawWorker* animation = m_animation;
+    CImageSet* animation = m_animation;
     if (!animation) {
         return 0;
     }
@@ -74,7 +74,7 @@ i32 CMenuItem::GetFrameWidth() {
 }
 RVA(0x00185550, 0x2c)
 i32 CMenuItem::GetFrameHeight() {
-    CDDrawWorker* animation = m_animation;
+    CImageSet* animation = m_animation;
     if (!animation) {
         return 0;
     }
@@ -112,7 +112,7 @@ i32 CMenuItem::Update(u32) {
 
 RVA(0x001855f0, 0x94)
 i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
-    CDDrawWorker* animation = m_animation;
+    CImageSet* animation = m_animation;
     if (!animation) {
         return 0;
     }
@@ -251,7 +251,7 @@ i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 center
     return 1;
 }
 RVA(0x00185950, 0x1b)
-CDDrawWorker* CAnimatedMenuItem::GetStateAnimation() {
+CImageSet* CAnimatedMenuItem::GetStateAnimation() {
     switch (m_state) {
         case MENUSTATE_NORMAL:
             return m_normalAnimation;
@@ -265,7 +265,7 @@ CDDrawWorker* CAnimatedMenuItem::GetStateAnimation() {
 
 RVA(0x00185970, 0x4d)
 CImage* CAnimatedMenuItem::GetCurrentFrame() {
-    CDDrawWorker* animation = GetStateAnimation();
+    CImageSet* animation = GetStateAnimation();
     if (!animation) {
         return NULL;
     }
@@ -284,7 +284,7 @@ i32 CAnimatedMenuItem::AdvanceFrame() {
     }
     m_frameIndex = m_frameIndex + 1;
     if (HAS(m_flags, MENU_ITEM_HOLD_FINAL_ANIMATION_FRAME)) {
-        CDDrawWorker* animation = GetStateAnimation();
+        CImageSet* animation = GetStateAnimation();
         if (animation) {
             if (m_frameIndex > animation->GetMaxIndex()) {
                 m_frameIndex = m_frameIndex - 1;

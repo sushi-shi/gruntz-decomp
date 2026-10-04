@@ -306,7 +306,7 @@ i32 CStatusBarMgr::Render() {
                 below.bottom = v;
                 tgt->Restore(&below, 0);
             }
-            CDDrawWorker* cfg = m_world->FindWorker("GAME_STATUSBAR_MAINBAR");
+            CImageSet* cfg = m_world->FindWorker("GAME_STATUSBAR_MAINBAR");
             if (cfg) {
                 CImage* entry = DDRAW_WORKER_FRAME_AT_UNCHECKED(cfg, cfg->GetMinIndex());
                 if (entry) {
@@ -950,7 +950,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_multiTabButton = multiTab;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         multiTab->m_state = MENUITEM_DISABLED;
-        CDDrawWorker* f = multiTab->m_stateFrames;
+        CImageSet* f = multiTab->m_stateFrames;
         if (f != NULL) {
             multiTab->SetFrame(f->GetAt(IDX(MENUITEM_DISABLED)));
         }
@@ -3962,7 +3962,7 @@ i32 CWarpStoneFly::SerializeDispatch(
             i32 index = 0;
             memset(name, 0, SERIAL_NAME_LEN);
             if (obj != NULL) {
-                lvl->GetImageRegistry()->AnyValueMatches(obj, name, &index);
+                lvl->GetImageRegistry()->FindFrameIdentity(obj, name, &index);
             }
             arc->Write(name, SERIAL_NAME_LEN);
             arc->Write(&index, sizeof(index));

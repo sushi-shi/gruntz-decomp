@@ -153,7 +153,7 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target) {
         return 0;
     }
 
-    CDDrawWorker* spr = self->m_world->FindWorker("GAME_CHATBOX");
+    CImageSet* spr = self->m_world->FindWorker("GAME_CHATBOX");
     if (!spr) {
         return 0;
     }

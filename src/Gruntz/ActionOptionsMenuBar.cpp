@@ -45,7 +45,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    CDDrawWorker* spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
+    CImageSet* spr = g_gameReg->World()->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
@@ -305,7 +305,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         CImage* frame = m_frame;
         i32 zero = 0;
         if (frame) {
-            mgr->GetImageRegistry()->AnyValueMatches(frame, tmp, &zero);
+            mgr->GetImageRegistry()->FindFrameIdentity(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
@@ -317,7 +317,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         CImage* frame = m_buttonFrame[0];
         i32 zero = 0;
         if (frame) {
-            mgr->GetImageRegistry()->AnyValueMatches(frame, tmp, &zero);
+            mgr->GetImageRegistry()->FindFrameIdentity(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
@@ -329,7 +329,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
         CImage* frame = m_buttonFrame[1];
         i32 zero = 0;
         if (frame) {
-            mgr->GetImageRegistry()->AnyValueMatches(frame, tmp, &zero);
+            mgr->GetImageRegistry()->FindFrameIdentity(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));

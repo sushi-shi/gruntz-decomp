@@ -65,7 +65,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
-    {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)}
+    {APPLY_FIRST_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)}
 
     SNAP_OBJECT_TO_TILE_CENTER(m_object) CWwdSpriteObject* o = m_object;
     o->SetSortKey(0);
@@ -145,7 +145,7 @@ i32 CStaticHazard::UpdateIdleState() {
     }
     m_fired = true;
     SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
-    {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} SET_ANIMATION_ACT("B");
+    {APPLY_FIRST_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} SET_ANIMATION_ACT("B");
     return 0;
 }
 
@@ -161,7 +161,7 @@ i32 CStaticHazard::UpdateActiveState() {
 
                 SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
                 {
-                    APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)
+                    APPLY_FIRST_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)
                 } CWwdSpriteObject* o = m_object;
                 o->SetSortKey(0);
                 m_fired = false;
@@ -170,7 +170,7 @@ i32 CStaticHazard::UpdateActiveState() {
 
             SET_ANIMATION_ACT("A");
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
-            {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
+            {APPLY_FIRST_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
                 m_object;
             o->SetSortKey(0);
 
@@ -186,7 +186,7 @@ i32 CStaticHazard::UpdateActiveState() {
     } else if (m_fired == false && m_object->GetDamage() == 0) {
 
         SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
-        {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
+        {APPLY_FIRST_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
             m_object;
         o->SetSortKey(0);
         m_fired = true;
@@ -234,7 +234,7 @@ i32 CStaticHazard::UpdateActiveState() {
         CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
         if (sub->IsComplete()) {
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
-            {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CMapMgr* grid =
+            {APPLY_FIRST_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CMapMgr* grid =
                 g_gameReg->GetTileGrid();
             i32 row = m_tileRow;
             i32 col = m_tileCol;

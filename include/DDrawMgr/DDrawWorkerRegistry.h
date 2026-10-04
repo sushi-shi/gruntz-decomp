@@ -8,18 +8,19 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
-class CDDrawWorker;
-class CDDrawWorker;
+class CImageSet;
+class CImageSet;
 
 class CImage;
 struct PidHeader;
 class CRezDir;
 
-class CDDrawWorkerRegistry : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CImageSetRegistry : public CWapObj {
 public:
-    CDDrawWorkerRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
+    CImageSetRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
 
-    virtual ~CDDrawWorkerRegistry() OVERRIDE;
+    virtual ~CImageSetRegistry() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
     virtual i32 IsReady() OVERRIDE;
     virtual void Unload() OVERRIDE;
@@ -28,12 +29,12 @@ public:
     virtual CImage*
     CreateBlankFrameByKey(i32 width, i32 height, const char* key, i32 index, i32 keyed);
     virtual CImage*
-    CreateBlankFrameForWorker(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed);
+    CreateBlankFrameForImageSet(i32 width, i32 height, CImageSet* worker, i32 index, i32 keyed);
 
-    virtual CImage* CreateDescriptorFrameForWorker(
+    virtual CImage* CreateDescriptorFrameForImageSet(
         PidHeader* desc,
         FileImageFormat mode,
-        CDDrawWorker* worker,
+        CImageSet* worker,
         i32 index,
         u32 size
     );
@@ -47,31 +48,31 @@ public:
     );
 
     virtual CImage*
-    InsertFrameForWorker(struct CRezItm* rec, CDDrawWorker* worker, i32 index, i32 mode);
+    InsertFrameForImageSet(struct CRezItm* rec, CImageSet* worker, i32 index, i32 mode);
 
     virtual CImage* InsertFrameByKey(struct CRezItm* rec, const char* key, i32 index, i32 mode);
 
-    virtual CImage* LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 index, i32 keyed);
+    virtual CImage* LoadFrameForImageSet(char* path, CImageSet* worker, i32 index, i32 keyed);
     virtual CImage* LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed);
 
-    virtual i32 ProbeWorkerKey(class CRezMgr* parser, const char* key);
+    virtual i32 LoadImageSetsFromDirectory(class CRezMgr* parser, const char* key);
 
-    virtual i32 InstallTree(CRezDir* tree, const char* szName, const char* szKey);
+    virtual i32 LoadImageSetsFromTree(CRezDir* tree, const char* szName, const char* szKey);
 
-    virtual i32 LoadNamespace(CRezDir* tree, const char* szName, const char* szKey);
+    virtual i32 ReloadImageSetsFromTree(CRezDir* tree, const char* szName, const char* szKey);
 
-    virtual void RemoveWorker(CDDrawWorker* worker);
+    virtual void RemoveImageSet(CImageSet* worker);
     virtual void RemoveByKey(const char* key);
-    virtual void MapTeardown();
+    virtual void ClearImageSets();
 
-    CMapStringToOb m_workersByName;
+    CMapStringToOb m_imageSetsByName;
 
     i32 RemoveWithPrefix(const char* prefix, const char* separator);
 
-    i32 SumSizesEqual(const char* str, i32 raw);
+    i32 GetMemoryUsageByPrefix(const char* str, i32 raw);
     i32 HasWithPrefix(const char* prefix);
 
-    i32 AnyValueMatches(CImage* frame, char* outName, i32* outIndex);
+    i32 FindFrameIdentity(CImage* frame, char* outName, i32* outIndex);
 
     void ReadField(i32 handle, char* tmp, i32* outZero);
 };

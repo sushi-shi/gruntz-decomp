@@ -39,7 +39,7 @@ i32 CSBI_WellGoo::Setup(
 
     i32 colorIndex;
     CShadeTable* shadeTable;
-    CDDrawWorker* frames;
+    CImageSet* frames;
 
     CImage* f;
     if (host == NULL) {

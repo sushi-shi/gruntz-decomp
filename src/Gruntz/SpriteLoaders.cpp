@@ -35,7 +35,7 @@ CLevelTimer::CLevelTimer() {
 
 RVA(0x0009bb00, 0x119)
 i32 CLevelTimer::LoadTimerSprite(i32 originX, i32 originY) {
-    CDDrawWorker* spr = g_gameReg->World()->FindWorker("GAME_TIMER");
+    CImageSet* spr = g_gameReg->World()->FindWorker("GAME_TIMER");
     m_sprite = spr;
     if (!spr) {
         return 0;
@@ -142,7 +142,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
         d1sec = 10;
     }
 
-    CDDrawWorker* spr = m_sprite;
+    CImageSet* spr = m_sprite;
     m_frameMinTens = spr->GetAt(d10min);
     m_frameMinOnes = spr->GetAt(d1min);
     m_frameSecTens = spr->GetAt(d10sec);

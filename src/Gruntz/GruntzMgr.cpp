@@ -1293,15 +1293,15 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     }
 
     SoundCueRegistry* snd = w->SoundRegistry();
-    w->GetImageRegistry()->SumSizesEqual(NULL, 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix(NULL, 1);
     snd->SumAudioBytes(NULL);
     w->GetDeviceManager()->GetCapsChecked();
     w->GetDeviceManager()->GetCapsChecked();
-    w->GetImageRegistry()->SumSizesEqual(NULL, 1);
-    w->GetImageRegistry()->SumSizesEqual("GRUNTZ", 1);
-    w->GetImageRegistry()->SumSizesEqual("GAME", 1);
-    w->GetImageRegistry()->SumSizesEqual("LEVEL", 1);
-    w->GetImageRegistry()->SumSizesEqual("ACTION", 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix(NULL, 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix("GRUNTZ", 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix("GAME", 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix("LEVEL", 1);
+    w->GetImageRegistry()->GetMemoryUsageByPrefix("ACTION", 1);
     w->SoundRegistry()->SumAudioBytes(NULL);
     w->SoundRegistry()->SumAudioBytes("GRUNTZ");
     w->SoundRegistry()->SumAudioBytes("GAME");
@@ -2612,7 +2612,7 @@ i32 CGruntzMgr::ToggleMonolithOverlay() {
         return 0;
     }
 
-    CDDrawWorker* rec;
+    CImageSet* rec;
     {
         rec = m_world->FindWorker("GAME_MONOLITH");
     }
@@ -2679,7 +2679,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_world == NULL) {
         return 0;
     }
-    CDDrawWorker* out = World()->FindWorker("GAME_DEVHEADS");
+    CImageSet* out = World()->FindWorker("GAME_DEVHEADS");
     if (out == NULL) {
         return 0;
     }
@@ -2703,9 +2703,9 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 }
 
 RVA(0x000910d0, 0x75)
-i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
+i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
     if (sink && key) {
-        CDDrawWorker* row = World()->FindWorker(key);
+        CImageSet* row = World()->FindWorker(key);
         if (row) {
             CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->GetMinIndex());
             if (dst) {
@@ -2755,7 +2755,7 @@ RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->GetStateId() == GAMESTATE_PLAY && m_world) {
 
-        CDDrawWorker* set;
+        CImageSet* set;
         {
             set = World()->FindWorker("Gruntz");
         }
@@ -2787,7 +2787,7 @@ RVA(0x00091390, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->GetStateId() == GAMESTATE_PLAY && m_world) {
 
-        CDDrawWorker* set;
+        CImageSet* set;
         {
             set = World()->FindWorker("Gruntz");
         }

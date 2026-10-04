@@ -51,7 +51,7 @@ public:
 
     virtual void Unload() OVERRIDE;
 
-    void BindSprite(CWwdSpriteObject* src);
+    void BindSprite(CWwdSpriteObject* sprite);
     CAnimationSequence* GetAnimation() const {
         return m_animation;
     }
@@ -61,14 +61,18 @@ public:
     void SetAnimation(CAnimationSequence* animation);
     void RestartAnimation(i32 resetElapsedTime);
 
-    i32 CanSerialize(CFileMemBase* ar);
-    i32 Serialize(CFileMemBase* ar);
-    i32 Deserialize(CFileMemBase* ar);
-    i32 CanDeserialize(CFileMemBase* ar);
+    i32 CanSerialize(CFileMemBase* archive);
+    i32 Serialize(CFileMemBase* archive);
+    i32 Deserialize(CFileMemBase* archive);
+    i32 CanDeserialize(CFileMemBase* archive);
 
-    i32
-    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
-    i32 Advance(u32 elapsed);
+    i32 SerializeDispatch(
+        CFileMemBase* archive,
+        SerialMode mode,
+        LogicTypeId typeId,
+        CGameObject* object
+    );
+    i32 Advance(u32 elapsedMs);
     inline void AdvanceToNextRecord();
 
     CWwdSpriteObject* m_boundObject;

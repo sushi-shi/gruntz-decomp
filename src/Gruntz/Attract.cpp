@@ -442,7 +442,7 @@ i32 CState::RestoreGraphics() {
     if (path == NULL) {
         return 0;
     }
-    if (m_world->GetImageRegistry()->LoadNamespace(path, "GAME", "_") == -1) {
+    if (m_world->GetImageRegistry()->ReloadImageSetsFromTree(path, "GAME", "_") == -1) {
         return 0;
     }
     m_cursorSavedSurfaceValid[0] = 0;

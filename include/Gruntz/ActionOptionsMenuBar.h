@@ -19,7 +19,7 @@ GZ_ENUM_END(ActionOptionHit)
 class CFileMemBase;
 
 class CImage;
-class CDDrawWorker;
+class CImageSet;
 
 class CActionOptionsMenuBar {
 public:
@@ -65,8 +65,8 @@ public:
     CImage* m_buttonFrame[2];
     PickupType m_buttonIcon[2];
     b32 m_active;
-    CDDrawWorker* m_normChipSprite;
-    CDDrawWorker* m_highChipSprite;
-    CDDrawWorker* m_greyChipSprite;
+    CImageSet* m_normChipSprite;
+    CImageSet* m_highChipSprite;
+    CImageSet* m_greyChipSprite;
     b32 m_loaded;
 };

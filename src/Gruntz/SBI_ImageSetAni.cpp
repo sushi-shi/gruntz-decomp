@@ -35,7 +35,7 @@ i32 CSBI_ImageSetAni::Init(
     i32 looping,
     i32 frameStep
 ) {
-    CDDrawWorker* tbl;
+    CImageSet* tbl;
 
     if (host == NULL) {
         goto fail;

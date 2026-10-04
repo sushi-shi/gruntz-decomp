@@ -67,8 +67,9 @@ struct CAniFrameRecord : public CObject {
     i32 m_frameParameter;
     i32 m_duration;
     i32 m_eventCode;
-    i32 m_positionDeltaX;
-    i32 m_positionDeltaY;
+    // m_positionMode selects plot offsets, relative motion, or absolute position.
+    i32 m_positionParameterX;
+    i32 m_positionParameterY;
     u16 m_reserved28; // parsed from ANI frame record; never read
     i32 m_cueCount;
     SoundCue** m_cues;

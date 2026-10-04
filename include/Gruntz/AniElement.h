@@ -33,9 +33,9 @@ public:
     virtual ~CAnimationSequence() OVERRIDE;
     CObject* AtChecked(i32 i) const;
     inline CAniFrameRecord* RecordAt(i32 index) const;
-    i32 Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags);
-    i32 LoadResource(SoundCueRegistry* ctx, CRezItm* entry, i32 flags);
-    i32 LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused);
+    i32 Build(SoundCueRegistry* soundRegistry, CAniSource* source, i32 flags);
+    i32 LoadResource(SoundCueRegistry* soundRegistry, CRezItm* entry, i32 flags);
+    i32 LoadFile(SoundCueRegistry* soundRegistry, const char* filename, i32 unused);
 
     void DeleteAll();
 
