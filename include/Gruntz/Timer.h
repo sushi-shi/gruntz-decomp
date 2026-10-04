@@ -12,9 +12,9 @@
 
 class CDDrawSurfacePair;
 
-class CTimer {
+class CLevelTimer {
 public:
-    CTimer();
+    CLevelTimer();
     i32 LoadTimerSprite(i32 originX, i32 originY);
     void Reset();
     i32 Tick(i32 elapsedMs);
@@ -27,10 +27,10 @@ public:
 
     void Start() {
         m_stamp.m_interval = 0xffffffff;
-        if (m_currentMs != 0) {
+        if (m_remainingMs != 0) {
             m_running = true;
             m_stamp.m_start = static_cast<u32>(g_frameTime);
-            m_countdown.Start(m_currentMs);
+            m_countdown.Start(m_remainingMs);
         } else {
             m_stamp.m_start = static_cast<u32>(g_frameTime);
         }
@@ -42,7 +42,7 @@ public:
         m_countdown.m_intervalLo = 0;
         m_countdown.m_intervalHi = 0;
         m_running = false;
-        m_currentMs = 0;
+        m_remainingMs = 0;
     }
 
     i32 m_baseX;
@@ -59,7 +59,7 @@ public:
     ClockInterval m_countdown;
     ClockInterval m_stamp; // interval: only 0/-1 sentinel writes; never read
     b32 m_running;
-    i32 m_currentMs;
+    i32 m_remainingMs;
 };
 
 #define RESET_TIMER_SPRITES                                                                        \

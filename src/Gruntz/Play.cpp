@@ -261,7 +261,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CTimer* levelTimer = new CTimer;
+        CLevelTimer* levelTimer = new CLevelTimer;
         m_levelTimer = levelTimer;
         if (levelTimer == NULL) {
             return 0;
@@ -904,7 +904,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         g_levelBias100 = true;
     }
 
-    CTimer* worker = self->m_levelTimer;
+    CLevelTimer* worker = self->m_levelTimer;
     if (worker != NULL) {
         worker->Stop();
     }
@@ -5316,7 +5316,7 @@ i32 CPlay::OnStatusBarDockChanged(StatusBarDock dock, StatusBarDock) {
     CGruntzMgr* gameManager = m_mgr;
     i32 timerX = gameManager->m_modeSize.cx;
     i32 timerY = gameManager->m_modeSize.cy;
-    CTimer* timer;
+    CLevelTimer* timer;
     if (dock == STATUSBAR_DOCK_LEFT) {
         m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         timer = m_levelTimer;
@@ -5482,7 +5482,7 @@ i32 CPlay::ResetPlayState() {
         g_gameReg->GetPlayer(i).GetBattlezConfig()->StepAllRowSpawns();
     }
     m_winLoseBanner = false;
-    CTimer* fm = m_levelTimer;
+    CLevelTimer* fm = m_levelTimer;
     if (fm != NULL) {
         fm->Start();
     }

@@ -347,7 +347,7 @@ public:
     Anchor m_anchors[4];
 
     CPtrArray m_placedObjectCells[4];
-    CTimer* m_levelTimer;
+    CLevelTimer* m_levelTimer;
     ClockInterval m_messageBlinkTimer;
     b32 m_messageBlinkVisible;
     i32 m_lastMessageId;

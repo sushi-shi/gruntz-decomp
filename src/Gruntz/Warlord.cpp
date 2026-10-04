@@ -370,7 +370,7 @@ i32 CWarlord::UpdatePanicState() {
         }
     } else {
 
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_levelTimer->m_currentMs == 0) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_levelTimer->m_remainingMs == 0) {
             ResolveMovingAnimation();
             return 0;
         }

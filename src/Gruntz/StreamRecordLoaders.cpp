@@ -16,7 +16,7 @@
 #include <Io/FileMem.h>
 
 RVA(0x0009c650, 0x372)
-i32 CTimer::Deserialize(CFileMemBase* s) {
+i32 CLevelTimer::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
@@ -46,7 +46,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     SERIAL_READ_FRAME(s, reg, buf, idx, m_frameColon);
 
     s->Read(&m_running, sizeof(m_running));
-    s->Read(&m_currentMs, sizeof(m_currentMs));
+    s->Read(&m_remainingMs, sizeof(m_remainingMs));
 
     return 1;
 }
