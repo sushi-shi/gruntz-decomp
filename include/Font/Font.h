@@ -40,14 +40,29 @@ public:
 
     CSize MeasureText(CString text);
 
-    void DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend);
+    void
+    DrawGlyphRun(CString text, CDDSurface* surface, CRect clipRect, i32 x, i32 y, i32 blendGlyphs);
 
-    void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z);
-    void DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z);
+    void DrawLine(CString text, CDDSurface* surface, i32 x, i32 y, i32 blendGlyphs);
+    void DrawLineClipped(
+        CString text,
+        CDDSurface* surface,
+        CRect clipRect,
+        i32 x,
+        i32 y,
+        i32 blendGlyphs
+    );
 
     CSize MeasureWrapped(CString text, CRect rc);
 
-    void DrawWrapped(CString text, CDDSurface* surf, CRect rc, i32 z, i32 hcenter, i32 spacing);
+    void DrawWrapped(
+        CString remainingText,
+        CDDSurface* surface,
+        CRect bounds,
+        i32 blendGlyphs,
+        i32 centerText,
+        i32 lineSpacing
+    );
 
     CSize LayoutWrapped(CString text, CRect rc, i32* outLen);
 

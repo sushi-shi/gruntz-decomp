@@ -177,7 +177,7 @@ gruntwingztimesprite	5	5
 gruntzapp	16	16
 gruntzcmdmgr	44	44
 gruntzmapmgr	5	5
-gruntzmgr	174	166
+gruntzmgr	174	167
 gruntzmgrcmd	1	0
 gruntzplayer	17	17
 gruntzsoundz	36	36
@@ -1726,10 +1726,10 @@ font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	3	66c41973998e	0x179be0	100.0000
 font	??1Font@@QAE@XZ	100.0000	100.0000	1	1f230dd95b83	0x179710	100.0000	
 font	??1FontRenderer@@QAE@XZ	100.0000	100.0000	1	d87483f34623	0x179c00	100.0000	
 font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	8	637296edc0ab	0x179720	100.0000	
-font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	95.3125	95.3125	21	2111600fb11e	0x179e70	99.9583	
-font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	4	fea5e015e519	0x179c30	100.0000	
-font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	3	958ac6c3138a	0x179d10	100.0000	
-font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	99.4530	6	13b54291789a	0x17a460	100.0000	
+font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	95.3125	95.3125	22	f49a6d47d873	0x179e70	99.9583	
+font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	5	bb166fc7c017	0x179c30	100.0000	
+font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	4	e7aed90f383d	0x179d10	100.0000	
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	99.4530	99.4530	7	0a7d6a662c6a	0x17a460	100.0000	
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	5	03439c3e9b2f	0x1797b0	100.0000	
 font	?GetAt@CString@@QBEDH@Z	100.0000	100.0000	1	cpp:8c44cb1c6fc0	0x17b4f0	100.0000	
 font	?GetGlyphBitmap@Font@@QAEPAPAEE@Z	100.0000	100.0000	3	70012e6b0323	0x179b60	100.0000	
@@ -2063,7 +2063,7 @@ gruntcombat	?SetAnimation@CWwdSpriteObject@@QAEXPAVCAnimationSequence@@H@Z	100.0
 gruntcombat	?SetColorIndex@CGrunt@@QAEXH@Z	100.0000	100.0000	8	d4e790612a48	0x57800	100.0000	
 gruntcombat	?SetMaxStep@CMotionState@@QAEXN@Z	100.0000	100.0000	4	e837b01d910f	0x58ca0	100.0000	
 gruntcombat	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	51a80694a3bf	0x58bc0	100.0000	
-gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	80.0294	80.0294	85	fb8524d3e675	0x5d210	88.8914	
+gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	80.0294	80.0294	86	b6cf6ec9b8a0	0x5d210	88.8914	
 gruntcombat	?StopPowerupLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	1aa1e3145753	0x57ce0	100.0000	
 gruntcombat	?StopVehicleLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	da602215f904	0x57c10	100.0000	
 gruntcombat	?TryAttackRememberedTarget@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	14	3ab375cf6ab0	0x5b6f0	100.0000	
@@ -2084,7 +2084,7 @@ gruntdefensestep	?StepScrollGruntBehavior@CGrunt@@QAEHXZ	98.2388	98.1573	62	53ff
 gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	89.7321	89.7155	39	19f8fa50e73c	0xf36a0	90.0266	
 gruntentrancearrival	?FinishKnockbackAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	13	27a1d4c0fb21	0x654b0	100.0000	
 gruntentrancearrival	?FinishStruckAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	14	e3a4caae6835	0x65300	100.0000	
-gruntentrancearrival	?FinishToobMoveAnimation@CGrunt@@QAEHXZ	98.2192	98.2192	32	c16483ee9e06	0x65c20	98.2192	
+gruntentrancearrival	?FinishToobMoveAnimation@CGrunt@@QAEHXZ	98.2192	98.2192	33	0f590f59c218	0x65c20	98.2192	
 gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f0190319	0x62b40	100.0000	
 gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	97.3366	92.1733	2	32af34d26f5f	0x62b70	97.3366	
 gruntentrancearrival	?ResetIdleAnimation@CGrunt@@QAEXHHH@Z	97.6858	97.6858	27	7af35fbc7405	0x62e10	97.6858	
@@ -2452,7 +2452,7 @@ gruntzmgr	?RecomputeViewScale@CGruntzMgr@@QAEXXZ	100.0000	100.0000	12	f4900bcd6f
 gruntzmgr	?RefreshGameClock@CGruntzMgr@@QAEXXZ	100.0000	100.0000	4	3062c2275a73	0x8f620	100.0000	
 gruntzmgr	?RegisterLevelAssetKeys@CGruntzMgr@@QAEXXZ	100.0000	100.0000	8	bea8eb86401e	0x8dc90	100.0000	
 gruntzmgr	?RegisterSetSkillDebugCmd@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	4b2f13b6aad7	0x8e880	100.0000	
-gruntzmgr	?ReinitializeWorldForColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	98.3246	98.3246	15	79ccefd46b95	0x91a40	98.3246	
+gruntzmgr	?ReinitializeWorldForColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	100.0000	100.0000	16	aead5607736e	0x91a40	100.0000	
 gruntzmgr	?RejectWorldFileCommand@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	351210fa8816	0x8f320	100.0000	
 gruntzmgr	?ReportError@CGruntzMgr@@QAEXIJ@Z	100.0000	100.0000	1	8fbc3c2c767d	0x8dc60	100.0000	
 gruntzmgr	?ReportWorldStatus@CGruntzMgr@@QAEXW4WorldInitReportTag@@@Z	100.0000	100.0000	2	85d6809f7e98	0x90ac0	100.0000	
