@@ -82,7 +82,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (s == NULL) {
         goto fail;
     }
-    sel = g_gameReg->SpriteTable()->GetSel(IDX(g_gameReg->m_players[g_curPlayer].GetColor()), 0);
+    sel = g_gameReg->SpriteTable()->GetSel(IDX(g_gameReg->GetPlayer(g_curPlayer).GetColor()), 0);
     if (sel == NULL) {
         sel = g_gameReg->SpriteTable()->GetSel(1, 0);
     }

@@ -73,8 +73,8 @@ i32 CGruntCreationPoint::SerializeDispatch(
     if (mode != SERIAL_SAVE && mode == SERIAL_POSTLOAD) {
         i32 idx;
         if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-            if (g_gameReg->m_players[m_object->GetSmarts()].IsActive() != false) {
-                idx = IDX(g_gameReg->m_players[m_object->GetSmarts()].GetColor());
+            if (g_gameReg->GetPlayer(m_object->GetSmarts()).IsActive() != false) {
+                idx = IDX(g_gameReg->GetPlayer(m_object->GetSmarts()).GetColor());
             } else {
                 idx = IDX(FindAvailablePlayerColor());
             }

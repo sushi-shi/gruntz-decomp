@@ -316,7 +316,7 @@ void CPlay::ReleaseResources() {
     m_saveSlot.m_type = 0;
     i32 t = 0;
     do {
-        g_gameReg->m_players[t].m_active = false;
+        g_gameReg->GetPlayer(t).m_active = false;
         t++;
     } while (t < 4);
     if (m_mgr && m_mgr->ChatLog()) {
@@ -943,7 +943,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     for (i32 t = 0; t < 4; ++t) {
         CGruntzMgr* mgr = self->m_mgr;
         gameReg = g_gameReg;
-        GruntzPlayer* team = &mgr->m_players[t];
+        GruntzPlayer* team = &mgr->GetPlayer(t);
         if (gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             team->SeedForSlot(t);
             if (t == 0) {
@@ -1522,8 +1522,8 @@ void CPlay::FreeListTeardown() {
     }
     m_cameraBookmarks.RemoveAll();
     for (i = 0; i < 4; i++) {
-        m_mgr->m_players[i].GetBattlezConfig()->FreeArrays();
-        m_mgr->m_players[i].GetBattlezConfig()->Clear();
+        m_mgr->GetPlayer(i).GetBattlezConfig()->FreeArrays();
+        m_mgr->GetPlayer(i).GetBattlezConfig()->Clear();
     }
     m_cameraBookmarkIndex = -1;
 }
@@ -1828,7 +1828,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (pick < 0) {
                 pick = 3;
             }
-            area = &g_gameReg->m_players[pick];
+            area = &g_gameReg->GetPlayer(pick);
             while (pick != idx) {
                 if (area->HasJoinedRound() == false
                     || (area->HasDropped() == false && area->IsEliminated() == false)) {
@@ -1838,14 +1838,14 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (pick < 0) {
                     pick = 3;
                 }
-                area = &g_gameReg->m_players[pick];
+                area = &g_gameReg->GetPlayer(pick);
             }
         } else {
             pick = idx + 1;
             if (pick >= 4) {
                 pick = 0;
             }
-            area = &g_gameReg->m_players[pick];
+            area = &g_gameReg->GetPlayer(pick);
             while (pick != idx) {
                 if (area->HasJoinedRound() == false
                     || (area->HasDropped() == false && area->IsEliminated() == false)) {
@@ -1855,7 +1855,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (pick >= 4) {
                     pick = 0;
                 }
-                area = &g_gameReg->m_players[pick];
+                area = &g_gameReg->GetPlayer(pick);
             }
         }
         if (area->HasJoinedRound() != false && area->HasDropped() == false
@@ -1866,7 +1866,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'H') {
-        GruntzPlayer* a = &g_gameReg->m_players[g_curPlayer];
+        GruntzPlayer* a = &g_gameReg->GetPlayer(g_curPlayer);
         if (a == NULL) {
             return 1;
         }
@@ -2121,7 +2121,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gruntCreation == false) {
             return 1;
         }
-        GruntzPlayer* a = &g_gameReg->m_players[g_curPlayer];
+        GruntzPlayer* a = &g_gameReg->GetPlayer(g_curPlayer);
         if (a == NULL) {
             return 1;
         }
@@ -2842,7 +2842,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     i32 py;
     i32 i;
     playerIndex = g_curPlayer;
-    GruntzPlayer* cfg = &g_gameReg->m_players[playerIndex];
+    GruntzPlayer* cfg = &g_gameReg->GetPlayer(playerIndex);
     if (cfg == NULL
         || g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[playerIndex] >= cfg->GetMaxGruntz()) {
         return 0;
@@ -3665,7 +3665,7 @@ i32 CPlay::LoadCursorAnimation(
     if (tintForPlayer != false) {
         CGruntzMgr* w = m_mgr;
         i32 id = g_curPlayer;
-        CShadeTable* spr = w->SpriteTable()->GetSel(IDX(w->m_players[id].GetColor()), 0);
+        CShadeTable* spr = w->SpriteTable()->GetSel(IDX(w->GetPlayer(id).GetColor()), 0);
         if (spr == NULL) {
             spr = g_gameReg->SpriteTable()->GetSel(1, 0);
         }
@@ -4539,7 +4539,7 @@ b32 CPlay::PlaceStartGruntz() {
                        && dispatch == DispatchGruntCreationPointLogic
                        && obj->GetSmarts() == g_curPlayer) {
 
-                GruntzPlayer* e = &g_gameReg->m_players[g_curPlayer];
+                GruntzPlayer* e = &g_gameReg->GetPlayer(g_curPlayer);
                 if (e != NULL && counter < e->GetMaxGruntz()) {
                     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                     m_mgr->GetCommandMgr()->EnqueueSingle(
@@ -5393,7 +5393,7 @@ RVA(0x000d5f90, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 
     i32 id = g_curPlayer;
-    GruntzPlayer* slot = &g_gameReg->m_players[id];
+    GruntzPlayer* slot = &g_gameReg->GetPlayer(id);
 
     if (slot != NULL
         && g_gameReg->GetTriggerMgr()->m_unitCountByPlayer[id] < slot->GetMaxGruntz()) {
@@ -5459,7 +5459,7 @@ i32 CPlay::ResetPlayState() {
         CGameLevel* g = m_mgr->m_world->GetLevel();
         ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
     } else {
-        GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
+        GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
             ResetGoals(slot->m_focusX, slot->m_focusY);
         } else {
@@ -5475,7 +5475,7 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->m_players[i].GetBattlezConfig()->StepAllRowSpawns();
+        g_gameReg->GetPlayer(i).GetBattlezConfig()->StepAllRowSpawns();
     }
     m_winLoseBanner = false;
     CTimer* fm = m_levelTimer;
@@ -5995,7 +5995,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
                 CGruntzMgr* gameManager = m_mgr;
                 i32 playerIndex = g_curPlayer;
                 CShadeTable* shadeTable = gameManager->SpriteTable()->GetSel(
-                    IDX(gameManager->m_players[playerIndex].GetColor()),
+                    IDX(gameManager->GetPlayer(playerIndex).GetColor()),
                     0
                 );
                 if (shadeTable == NULL) {

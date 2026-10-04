@@ -131,7 +131,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
             return 0;
         }
         i32 localSlot = GetLocalPlayerSlotIndex();
-        b32 canEditWorld = (m_gameManager->m_players[localSlot].m_ready == false);
+        b32 canEditWorld = (m_gameManager->GetPlayer(localSlot).m_ready == false);
         worldCombo->EnableWindow(canEditWorld);
         customWorldButton->EnableWindow(canEditWorld);
         echoLatencyButton->EnableWindow(false);
@@ -209,7 +209,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
     CMulti* multi = g_multiState;
     if (multi->m_isHost) {
         i32 localSlot = GetLocalPlayerSlotIndex();
-        latencyCombo->EnableWindow(m_gameManager->m_players[localSlot].m_ready == false);
+        latencyCombo->EnableWindow(m_gameManager->GetPlayer(localSlot).m_ready == false);
     } else {
         latencyCombo->EnableWindow(false);
     }
@@ -326,7 +326,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             if (nameControl != NULL) {
                 CString name;
                 nameControl->GetWindowTextA(name);
-                m_gameManager->m_players[i].m_name = name;
+                m_gameManager->GetPlayer(i).m_name = name;
             }
         }
         NetLobby::g_curDlg = NULL;
@@ -549,7 +549,7 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
     CWnd* colorControl = GetPlayerColorControl(slot);
     GetMaxGruntzControl(slot);
     GetReadyControl(slot);
-    GruntzPlayer* player = &m_gameManager->m_players[slot];
+    GruntzPlayer* player = &m_gameManager->GetPlayer(slot);
     if (typeControl->GetCurSel() == 0) {
         if (player->IsHumanControlled() && player->IsActive()) {
             g_multiState->DropLobbyPlayer(player->m_playerIndex);
@@ -670,7 +670,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[0].GetColor());
+                color = TintColorRef(m_gameManager->GetPlayer(0).GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -678,7 +678,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[1].GetColor());
+                color = TintColorRef(m_gameManager->GetPlayer(1).GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -686,7 +686,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[2].GetColor());
+                color = TintColorRef(m_gameManager->GetPlayer(2).GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -694,7 +694,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
-                color = TintColorRef(m_gameManager->m_players[3].GetColor());
+                color = TintColorRef(m_gameManager->GetPlayer(3).GetColor());
             } else {
                 color = RGB(200, 200, 200);
             }
@@ -714,9 +714,9 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnPlayerColor0() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == false || m_gameManager->m_players[0].IsHumanControlled() != false)
-        && (m_gameManager->m_players[0].m_ready != false
-            || m_gameManager->m_players[0].m_networkPlayerId != multi->m_localPlayerId)) {
+    if ((multi->m_isHost == false || m_gameManager->GetPlayer(0).IsHumanControlled() != false)
+        && (m_gameManager->GetPlayer(0).m_ready != false
+            || m_gameManager->GetPlayer(0).m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 0, 1, NULL);
@@ -731,9 +731,9 @@ void CMultiStartDlg::OnPlayerColor0() {
 RVA(0x000c3950, 0xd1)
 void CMultiStartDlg::OnPlayerColor1() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == false || m_gameManager->m_players[1].IsHumanControlled() != false)
-        && (m_gameManager->m_players[1].m_ready != false
-            || m_gameManager->m_players[1].m_networkPlayerId != multi->m_localPlayerId)) {
+    if ((multi->m_isHost == false || m_gameManager->GetPlayer(1).IsHumanControlled() != false)
+        && (m_gameManager->GetPlayer(1).m_ready != false
+            || m_gameManager->GetPlayer(1).m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 1, 1, NULL);
@@ -748,9 +748,9 @@ void CMultiStartDlg::OnPlayerColor1() {
 RVA(0x000c3a70, 0xd1)
 void CMultiStartDlg::OnPlayerColor2() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == false || m_gameManager->m_players[2].IsHumanControlled() != false)
-        && (m_gameManager->m_players[2].m_ready != false
-            || m_gameManager->m_players[2].m_networkPlayerId != multi->m_localPlayerId)) {
+    if ((multi->m_isHost == false || m_gameManager->GetPlayer(2).IsHumanControlled() != false)
+        && (m_gameManager->GetPlayer(2).m_ready != false
+            || m_gameManager->GetPlayer(2).m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 2, 1, NULL);
@@ -765,9 +765,9 @@ void CMultiStartDlg::OnPlayerColor2() {
 RVA(0x000c3b90, 0xd1)
 void CMultiStartDlg::OnPlayerColor3() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == false || m_gameManager->m_players[3].IsHumanControlled() != false)
-        && (m_gameManager->m_players[3].m_ready != false
-            || m_gameManager->m_players[3].m_networkPlayerId != multi->m_localPlayerId)) {
+    if ((multi->m_isHost == false || m_gameManager->GetPlayer(3).IsHumanControlled() != false)
+        && (m_gameManager->GetPlayer(3).m_ready != false
+            || m_gameManager->GetPlayer(3).m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 3, 1, NULL);
@@ -880,9 +880,9 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
     b32 hasRemoteHumanPlayer = false;
     i32 localSlotIndex = this->GetLocalPlayerSlotIndex();
     b32 localReadyFlag =
-        g_multiState->m_isHost ? m_gameManager->m_players[localSlotIndex].m_ready : true;
+        g_multiState->m_isHost ? m_gameManager->GetPlayer(localSlotIndex).m_ready : true;
     for (i32 slotIndex = 0; slotIndex < 4; slotIndex++) {
-        GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
+        GruntzPlayer* player = &g_gameReg->GetPlayer(slotIndex);
         if (player) {
             if (player->m_networkPlayerId != g_multiState->m_localPlayerId
                 && player->IsHumanControlled() && player->IsActive()) {
@@ -1001,7 +1001,7 @@ void CMultiStartDlg::Watchdog() {
     }
     if (g_latencyDisplayTick == 0) {
         for (i32 i = 0; i < 4; i++) {
-            GruntzPlayer* player = &g_gameReg->m_players[i];
+            GruntzPlayer* player = &g_gameReg->GetPlayer(i);
             CWnd* latencyValueControl;
             CWnd* latencyUnitControl;
             switch (static_cast<PlayerSlot>(i)) {
@@ -1095,7 +1095,7 @@ i32 CMultiStartDlg::GetLocalPlayerSlotIndex() {
 
 RVA(0x000c4b60, 0x77)
 i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
-    GruntzPlayer* player = &m_gameManager->m_players[slot];
+    GruntzPlayer* player = &m_gameManager->GetPlayer(slot);
     if (g_multiState->m_isHost != false) {
         b32 available = IsPlayerColorAvailable(color);
         if (available == false) {
@@ -1184,28 +1184,28 @@ void CMultiStartDlg::HandlePlayerNameChange(i32 slot) {}
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection0() {
     CComboBox* combo = GetMaxGruntzControl(0);
-    g_gameReg->m_players[0].m_maxGruntz = combo->GetCurSel() + 1;
+    g_gameReg->GetPlayer(0).m_maxGruntz = combo->GetCurSel() + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4f30, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection1() {
     CComboBox* combo = GetMaxGruntzControl(1);
-    g_gameReg->m_players[1].m_maxGruntz = combo->GetCurSel() + 1;
+    g_gameReg->GetPlayer(1).m_maxGruntz = combo->GetCurSel() + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4f80, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection2() {
     CComboBox* combo = GetMaxGruntzControl(2);
-    g_gameReg->m_players[2].m_maxGruntz = combo->GetCurSel() + 1;
+    g_gameReg->GetPlayer(2).m_maxGruntz = combo->GetCurSel() + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4fd0, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection3() {
     CComboBox* combo = GetMaxGruntzControl(3);
-    g_gameReg->m_players[3].m_maxGruntz = combo->GetCurSel() + 1;
+    g_gameReg->GetPlayer(3).m_maxGruntz = combo->GetCurSel() + 1;
     BroadcastPlayerSlotChanges();
 }
 
@@ -1235,7 +1235,7 @@ void CMultiStartDlg::CommitReadySelection(i32 slotIndex) {
         return;
     }
     i32 checked = readyControl->GetCheck();
-    GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
+    GruntzPlayer* player = &g_gameReg->GetPlayer(slotIndex);
     if (!player) {
         return;
     }

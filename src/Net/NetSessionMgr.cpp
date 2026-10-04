@@ -475,7 +475,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, NetSlotState state) {
         return NULL;
     }
     (static_cast<CNetCmdSlot*>(slot))->ResetSlot();
-    return slot->Initialize(m_owner, &m_mgr->m_players[index], state) ? slot : NULL;
+    return slot->Initialize(m_owner, &m_mgr->GetPlayer(index), state) ? slot : NULL;
 }
 
 RVA(0x000c0070, 0x15)

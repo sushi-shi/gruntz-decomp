@@ -67,7 +67,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     i32 count = 0;
     GruntzPlayer* pslot = NULL;
     for (i32 k = 0; k < 4; k++) {
-        pslot = &g_gameReg->m_players[k];
+        pslot = &g_gameReg->GetPlayer(k);
         if (pslot->HasJoinedRound() && !pslot->HasDropped() && !pslot->IsEliminated()) {
             count++;
         }
@@ -126,8 +126,9 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         if (g_curPlayer == i) {
                             LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
                         }
-                        GruntzPlayer* slot = &g_gameReg->m_players[i];
-                        if (slot && slot->HasJoinedRound() && !slot->HasDropped() && !slot->IsEliminated()) {
+                        GruntzPlayer* slot = &g_gameReg->GetPlayer(i);
+                        if (slot && slot->HasJoinedRound() && !slot->HasDropped()
+                            && !slot->IsEliminated()) {
                             slot->m_clearedRound = true;
                             CGameObject* out = NULL;
                             if (MapLookupById(
@@ -207,7 +208,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             if (i == g_curPlayer) {
                 continue;
             }
-            GruntzPlayer* slot = &g_gameReg->m_players[i];
+            GruntzPlayer* slot = &g_gameReg->GetPlayer(i);
             if (slot->HasJoinedRound() && !slot->HasDropped() && !slot->IsEliminated()) {
                 return 0;
             }

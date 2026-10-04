@@ -94,7 +94,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->GetSmarts());
-    i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].GetColor());
+    i32 cfg = IDX(g_gameReg->GetPlayer(IDX(owner)).GetColor());
     if (cfg < 0 || cfg >= TINT_COUNT) {
         cfg = 0;
     }
@@ -282,7 +282,7 @@ i32 CWarlord::SerializeDispatch(
         case SERIAL_POSTLOAD: {
 
             CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(
-                IDX(g_gameReg->m_players[m_object->GetSmarts()].GetColor()),
+                IDX(g_gameReg->GetPlayer(m_object->GetSmarts()).GetColor()),
                 0
             );
             if (sel == NULL) {
@@ -431,7 +431,7 @@ i32 CWarlord::BuildFortSplashParticles() {
             tm->Start(0x3e8);
         }
 
-        GruntzPlayer* slot = &g_gameReg->m_players[m_object->GetSmarts()];
+        GruntzPlayer* slot = &g_gameReg->GetPlayer(m_object->GetSmarts());
         if (slot != NULL) {
             slot->m_warlordObjectId = 0;
         }

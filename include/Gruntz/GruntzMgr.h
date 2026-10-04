@@ -92,6 +92,10 @@ public:
         return m_tileGrid;
     }
 
+    GruntzPlayer& GetPlayer(i32 playerIndex) {
+        return m_players[playerIndex];
+    }
+
     CTriggerMgr* GetTriggerMgr() {
         return m_triggerMgr;
     }

@@ -1731,11 +1731,11 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
     m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].HasJoinedRound() == false) {
+        if (g_gameReg->GetPlayer(i).HasJoinedRound() == false) {
             continue;
         }
         CShadeTable* tint =
-            g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[i].GetColor()), 0);
+            g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->GetPlayer(i).GetColor()), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1846,7 +1846,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     for (i32 t = 0; t < 4; t++) {
         CString tabKey;
         CString flagKey;
-        GruntzPlayer* pl = &g_gameReg->m_players[t];
+        GruntzPlayer* pl = &g_gameReg->GetPlayer(t);
         CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(IDX(pl->GetColor()), 0);
         if (tint == NULL) {
             return 0;
@@ -1892,7 +1892,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
 
     CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(
-        IDX(g_gameReg->m_players[QueryGruntSlots()].GetColor()),
+        IDX(g_gameReg->GetPlayer(QueryGruntSlots()).GetColor()),
         0
     );
     if (tint == NULL) {
@@ -2279,7 +2279,7 @@ RVA(0x0001ecf0, 0x2a)
 i32 CMultiBootyState::QueryGruntSlots() {
     i32 i = 0;
     while (i < 4) {
-        GruntzPlayer* p = &g_gameReg->m_players[i];
+        GruntzPlayer* p = &g_gameReg->GetPlayer(i);
         if (p->HasJoinedRound() != false && p->IsEliminated() == false) {
             return p->m_playerIndex;
         }
@@ -2297,7 +2297,7 @@ void CMultiBootyState::DrawBattleStats() {
     i32 c;
 
     for (i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].HasJoinedRound() != false) {
+        if (g_gameReg->GetPlayer(i).HasJoinedRound() != false) {
             s.Format("%d", sumRun(g_gameReg->GetGameStats()->GetMiscPickupCounts(i), 4));
             rc.CopyRect(&s_col1Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -2354,7 +2354,7 @@ void CMultiBootyState::DrawBattleStats() {
     }
 
     for (i = 0; i < 4; i++) {
-        GruntzPlayer* player = &g_gameReg->m_players[i];
+        GruntzPlayer* player = &g_gameReg->GetPlayer(i);
         if (player->HasJoinedRound() != false) {
             i32 color;
             switch (player->GetColor()) {

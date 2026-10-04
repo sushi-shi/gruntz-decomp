@@ -1805,7 +1805,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         }
 
         i32 playerIndex = g->GetPlayerIndex();
-        GruntzPlayer* player = &g_gameReg->m_players[playerIndex];
+        GruntzPlayer* player = &g_gameReg->GetPlayer(playerIndex);
         i32 aiType = 0;
         b32 ok = false;
         i32 radius = 0;

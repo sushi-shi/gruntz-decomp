@@ -219,11 +219,11 @@ i32 CTriggerMgr::PlaceObject(
             kindId = kindDefault;
         }
 
-        if (m_unitCountByPlayer[playerIndex] < game->m_players[playerIndex].GetMaxGruntz()) {
-            if (game->m_players[playerIndex].IsActive() != false
+        if (m_unitCountByPlayer[playerIndex] < game->GetPlayer(playerIndex).GetMaxGruntz()) {
+            if (game->GetPlayer(playerIndex).IsActive() != false
                 || (playerIndex != g_curPlayer
-                    && kindId == IDX(game->m_players[g_curPlayer].GetColor()))) {
-                kindId = IDX(game->m_players[playerIndex].GetColor());
+                    && kindId == IDX(game->GetPlayer(g_curPlayer).GetColor()))) {
+                kindId = IDX(game->GetPlayer(playerIndex).GetColor());
             }
             if (playerIndex == g_curPlayer && aiType != 0) {
                 aiType = 0;

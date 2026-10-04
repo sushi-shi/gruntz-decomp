@@ -295,8 +295,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::StepAllRowSpawns() {
-    if (g_gameReg->m_players[m_playerIndex].IsHumanControlled() == false
-        && g_gameReg->m_players[m_playerIndex].IsActive() != false) {
+    if (g_gameReg->GetPlayer(m_playerIndex).IsHumanControlled() == false
+        && g_gameReg->GetPlayer(m_playerIndex).IsActive() != false) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
             this->StepRowSpawn(false);
         }
@@ -489,7 +489,7 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
         }
         units++;
     }
-    if (occupied >= m_ctx->m_players[m_playerIndex].GetMaxGruntz()) {
+    if (occupied >= m_ctx->GetPlayer(m_playerIndex).GetMaxGruntz()) {
         return 1;
     }
     i32 i = 0;
@@ -578,7 +578,7 @@ candidateFound:
         r2++;
     }
     i32 budget = static_cast<i32>(
-        (static_cast<double>(m_ctx->m_players[m_playerIndex].GetMaxGruntz())
+        (static_cast<double>(m_ctx->GetPlayer(m_playerIndex).GetMaxGruntz())
          * static_cast<double>(m_gruntRatio) * g_diffScale)
     );
     if (roll >= m_defenderChance || freeCount >= budget) {
@@ -3323,7 +3323,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
         }
         Coord current = ScreenTile(u);
         if (u->GetBattlezTask() == BZTASK_ADVANCE && u->GetTargetTeam() != -1) {
-            Coord marker = m_ctx->m_players[u->GetTargetTeam()].GetBattlezConfig()->GetBaseTile();
+            Coord marker = m_ctx->GetPlayer(u->GetTargetTeam()).GetBattlezConfig()->GetBaseTile();
             i32 dx = marker.m_x - current.m_x;
             i32 dy = marker.m_y - current.m_y;
             dx = abs(dx);
@@ -3356,7 +3356,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         }
         units++;
     }
-    if (occupied >= m_ctx->m_players[m_playerIndex].GetMaxGruntz()) {
+    if (occupied >= m_ctx->GetPlayer(m_playerIndex).GetMaxGruntz()) {
         return 0;
     }
     i32 cell = m_triggerMgr->PlaceObject(
@@ -3365,7 +3365,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         GRUNT_ENTRANCE_RESURRECT,
-        IDX(m_ctx->m_players[m_playerIndex].GetColor()),
+        IDX(m_ctx->GetPlayer(m_playerIndex).GetColor()),
         0,
         0,
         0x11,
@@ -3525,7 +3525,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     CGameObject* lvl = unit->m_object;
     i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
     i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
-    CPtrArray* coords = &m_ctx->m_players[kind].GetBattlezConfig()->m_attackWaypoints;
+    CPtrArray* coords = &m_ctx->GetPlayer(kind).GetBattlezConfig()->m_attackWaypoints;
     i32 count = coords->GetSize();
     if (count != 0) {
         i32 r = rand() % count;
