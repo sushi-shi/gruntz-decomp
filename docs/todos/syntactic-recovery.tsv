@@ -52,7 +52,7 @@ rva	unit	function	lost_max	cur
 0x051c00	gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	74.9682	62.8182
 0x032ce0	grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	80.2577
 0x07f960	grunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	99.3000
-0x0ed9f0	gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	89.5283	89.4658
+0x0ed9f0	gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	90.7694	90.7069
 0x083450	gruntzmgr	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	100.0000	99.7523
 0x175e40	imagepool	?InitBmp@CDib@@QAEHPBDPAUHDC__@@I@Z	100.0000	97.9776
 0x161590	imageset3g	?GetStride@CPixelTileImageSet@@UAEHXZ	100.0000	99.5000

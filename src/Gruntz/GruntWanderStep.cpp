@@ -88,10 +88,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
                 && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-                COMMIT_GRUNT_NEIGHBOR(g);
-                m_neighborScanEnabled = false;
-                this->RecycleCoords();
-                m_defenderState = AISTATE_RETREAT;
+                COMMIT_HIT_AND_RUN_ATTACK(g);
                 return 1;
             }
             if (g != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
@@ -134,10 +131,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (!IsGruntAtSavedScreenPos(slot)) {
                 return 1;
             }
-            COMMIT_GRUNT_NEIGHBOR(slot);
-            m_neighborScanEnabled = false;
-            this->RecycleCoords();
-            m_defenderState = AISTATE_RETREAT;
+            COMMIT_HIT_AND_RUN_ATTACK(slot);
             return 1;
         }
 
@@ -166,10 +160,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (!IsGruntAtSavedScreenPos(slot)) {
                 goto ph1;
             }
-            COMMIT_GRUNT_NEIGHBOR(slot);
-            m_neighborScanEnabled = false;
-            this->RecycleCoords();
-            m_defenderState = AISTATE_RETREAT;
+            COMMIT_HIT_AND_RUN_ATTACK(slot);
             m_dwell = DWELL_REPATH_MS;
             return 1;
         ph1:
