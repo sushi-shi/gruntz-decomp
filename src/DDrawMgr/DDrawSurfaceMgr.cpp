@@ -78,7 +78,7 @@ i32 CGameWorld::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         return 0;
     }
     if (!m_transientDrawList->IsReady()) {
-        SetInitError(WORLDERR_WORKER_LIST);
+        SetInitError(WORLDERR_TRANSIENT_DRAW_LIST);
         return 0;
     }
     if (!m_imageRegistry->IsReady()) {
@@ -86,11 +86,11 @@ i32 CGameWorld::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         return 0;
     }
     if (!m_logicRegistry->IsReady()) {
-        SetInitError(WORLDERR_WORKER_CACHE);
+        SetInitError(WORLDERR_LOGIC_REGISTRY);
         return 0;
     }
     if (!m_paletteRegistry->IsReady()) {
-        SetInitError(WORLDERR_WORKER_MAP);
+        SetInitError(WORLDERR_PALETTE_REGISTRY);
         return 0;
     }
     if (!m_animRegistry->IsReady()) {
