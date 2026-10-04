@@ -222,7 +222,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     g_savedSoundVolume = g_gameReg->GetSoundVolume();
     g_savedSoundEnabled = g_gameReg->m_soundEnabled;
     g_savedVoiceVolume = g_gameReg->GetVoiceVolume();
-    g_savedVoiceEnabled = g_gameReg->m_isVoiceEnabled;
+    g_savedVoiceEnabled = g_gameReg->IsVoiceEnabled();
     g_savedMidiVolume = g_gameReg->GetMidiManager()->GetMasterVolume();
     g_savedMusicEnabled = g_gameReg->m_musicEnabled;
     g_savedScrollSpeed = g_gameReg->GetScrollSpeed();
@@ -234,7 +234,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     LoadVideoResolutionConfig(hDlg, 0x52c, g_videoResolutionMode);
     CheckDlgButton(hDlg, 0x46d, g_gameReg->m_soundEnabled);
     ConfigureDialogScrollBar(hDlg, 0x470, g_gameReg->GetSoundVolume(), 0x50);
-    CheckDlgButton(hDlg, 0x475, g_gameReg->m_isVoiceEnabled);
+    CheckDlgButton(hDlg, 0x475, g_gameReg->IsVoiceEnabled());
     ConfigureDialogScrollBar(hDlg, 0x476, g_gameReg->GetVoiceVolume(), 0x50);
     CheckDlgButton(hDlg, 0x471, g_gameReg->m_musicEnabled);
     ConfigureDialogScrollBar(hDlg, 0x472, g_gameReg->GetMidiManager()->GetMasterVolume(), 0x64);
@@ -319,7 +319,7 @@ RVA(0x00036d50, 0x3c)
 void OnToggleVoiceOption(HWND hWnd) {
     if (g_gameReg) {
         i32 checked = IsDlgButtonChecked(hWnd, 0x475);
-        g_gameReg->m_isVoiceEnabled = checked;
+        g_gameReg->SetVoiceEnabled(checked);
         EnableWindow(GetDlgItem(hWnd, 0x476), checked);
     }
 }

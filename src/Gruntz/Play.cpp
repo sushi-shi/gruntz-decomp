@@ -1980,7 +1980,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'V' && (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5))) {
-        g_gameReg->m_isVoiceEnabled = (g_gameReg->m_isVoiceEnabled == false);
+        g_gameReg->SetVoiceEnabled((g_gameReg->IsVoiceEnabled() == false));
         return 1;
     }
 
