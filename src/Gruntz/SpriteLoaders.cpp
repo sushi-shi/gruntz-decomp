@@ -210,7 +210,6 @@ void CLevelTimer::AddTime(i32 minutes, i32 seconds) {
     m_countdown.m_interval += total;
 }
 
-// @early-stop
 RVA(0x0009c1c0, 0xdb)
 i32 CLevelTimer::SerializeDispatch(
     CFileMemBase* ar,
@@ -223,16 +222,14 @@ i32 CLevelTimer::SerializeDispatch(
     }
     switch (mode) {
         case SERIAL_SAVE: {
-            i32 r = Serialize(ar);
-            if (!r) {
-                return r;
+            if (Serialize(ar) == 0) {
+                return 0;
             }
             break;
         }
         case SERIAL_LOAD: {
-            i32 r = Deserialize(ar);
-            if (!r) {
-                return r;
+            if (Deserialize(ar) == 0) {
+                return 0;
             }
             break;
         }
