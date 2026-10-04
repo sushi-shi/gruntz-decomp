@@ -29,7 +29,8 @@ public:
         CState::ReleaseResources();
     }
 
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId);
+    virtual i32
+    LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId);
 
     virtual void ReleaseResources();
     RVA(0x0008c490, 0x4)
@@ -123,7 +124,7 @@ public:
     i32 HeaderWrite(CFileMemBase* ar);
     i32 HeaderRead(CFileMemBase* ar);
 
-    i32 ShadeScreen(i32 pct);
+    i32 ShadeBackBuffer(i32 brightnessPercent);
 
     i32 LoadTitlePage(
         const char* titleName,
@@ -150,22 +151,22 @@ public:
         i32 unused4
     );
 
-    i32 RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay);
+    i32 FadeSineToBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs, b32 useOverlay);
 
     i32 FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
     i32 FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
     i32 FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs);
     i32 FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs);
 
-    void Present(i32 pct);
+    void ShadeAndPresentScreen(i32 brightnessPercent);
 
-    CDDrawSurfaceMgr* menuRoot() {
+    CDDrawSurfaceMgr* World() {
         return m_world;
     }
     CRezMgr* ResourceArchive() {
         return static_cast<CRezMgr*>(m_resourceArchive);
     }
-    CGruntzMgr* owner() {
+    CGruntzMgr* GetGameManager() {
         return m_mgr;
     }
     i32 SetAssetGroupLoaded(

@@ -38,7 +38,7 @@
 #include <string.h>
 
 DATA(0x0024e360)
-b32 g_skipNextScreenEffect = false;
+b32 g_skipNextScreenShade = false;
 
 DATA(0x0024e35c)
 b32 g_skipNextRestoreMessage;
@@ -79,9 +79,9 @@ i32 CState::LoadTitlePage(
         mode = DDRAW_PAGE_OVERLAY;
     }
 
-    if (menuRoot()->GetDisplayBuffers()->LoadPageImage(page, mode) == 0) {
+    if (World()->GetDisplayBuffers()->LoadPageImage(page, mode) == 0) {
         if (useOverlay != false) {
-            if (menuRoot()->GetDisplayBuffers()->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
+            if (World()->GetDisplayBuffers()->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
                 return 0;
             }
         }
@@ -112,7 +112,7 @@ i32 CState::PresentTitlePage(
     if (!m_stateResources) {
         return 0;
     }
-    menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
     return 1;
 }
 
@@ -288,9 +288,9 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
 
 // @early-stop
 RVA(0x000fa8f0, 0x118)
-i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
-    CFaderMgr* mgr = m_faderMgr;
-    if (mgr == NULL) {
+i32 CState::FadeSineToBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs, b32 useOverlay) {
+    CFaderMgr* faderMgr = m_faderMgr;
+    if (faderMgr == NULL) {
         return 0;
     }
     if (m_world->GetDeviceManager() == NULL) {
@@ -300,34 +300,34 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
     if (targetSurface == NULL) {
         return 0;
     }
-    CRenderBuffer* sourcePair;
+    CRenderBuffer* sourceBuffer;
     if (useOverlay != false && m_world->GetDisplayBuffers()->HasOverlay() != 0) {
-        sourcePair = m_world->GetDisplayBuffers()->m_overlayBuffer;
+        sourceBuffer = m_world->GetDisplayBuffers()->m_overlayBuffer;
     } else {
-        sourcePair = m_world->GetDisplayBuffers()->GetBackBuffer();
+        sourceBuffer = m_world->GetDisplayBuffers()->GetBackBuffer();
     }
-    CDDSurface* sourceSurface = sourcePair->GetSurface();
+    CDDSurface* sourceSurface = sourceBuffer->GetSurface();
     if (sourceSurface == NULL) {
         return 0;
     }
 
-    CSineFaderConfig t;
-    t.m_clearToBlack = false;
-    t.m_intensityPercent = pct;
-    t.m_targetSurface = targetSurface;
-    t.m_sourceSurface = sourceSurface;
-    CFader* f = mgr->Add(FADERKIND_SINE, &t);
-    if (f == NULL) {
+    CSineFaderConfig config;
+    config.m_clearToBlack = false;
+    config.m_intensityPercent = intensityPercent;
+    config.m_targetSurface = targetSurface;
+    config.m_sourceSurface = sourceSurface;
+    CFader* fader = faderMgr->Add(FADERKIND_SINE, &config);
+    if (fader == NULL) {
         return 0;
     }
 
     if (g_disableFades != false) {
-        ActiveWait(dur);
+        ActiveWait(durationMs);
         m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Blt(sourceSurface);
     } else {
-        f->RunFade(dur, lead, 0);
+        fader->RunFade(durationMs, leadMs, 0);
     }
-    mgr->Remove(f);
+    faderMgr->Remove(fader);
     return 1;
 }
 
@@ -373,7 +373,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
 // Zero-ref: retail has no caller or address-taking reference.
 // @early-stop
 RVA(0x000fab90, 0xaa)
-i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
+i32 CPreviewState::LoadPreviewImage(char* imageName, i32 present, i32 unused3, i32 unused4) {
     if (m_world == NULL) {
         return 0;
     }
@@ -383,17 +383,17 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     if (m_stateResources == NULL) {
         return 0;
     }
-    char buf[64];
-    sprintf(buf, "\\SCREENZ\\%s", name);
-    CRezItm* sym = StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
-    if (sym == NULL) {
+    char resourcePath[64];
+    sprintf(resourcePath, "\\SCREENZ\\%s", imageName);
+    CRezItm* imageResource = StateResources()->GetRezFromPath(resourcePath, IMGTAG_XCP);
+    if (imageResource == NULL) {
         return 0;
     }
-    if (menuRoot()->GetDisplayBuffers()->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
+    if (World()->GetDisplayBuffers()->LoadPageImage(imageResource, DDRAW_PAGE_BACK) == 0) {
         return 0;
     }
-    if (doFlip != 0) {
-        menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    if (present != 0) {
+        World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
     }
     return 1;
 }
@@ -452,14 +452,14 @@ i32 CState::RestoreGraphics() {
 }
 
 RVA(0x000faec0, 0x67)
-void CState::Present(i32 pct) {
-    if (g_skipNextScreenEffect != false) {
-        g_skipNextScreenEffect = false;
+void CState::ShadeAndPresentScreen(i32 brightnessPercent) {
+    if (g_skipNextScreenShade != false) {
+        g_skipNextScreenShade = false;
         return;
     }
     m_world->GetDisplayBuffers()->CopyFrontToSurface(m_world->GetDisplayBuffers()->GetBackBuffer());
     m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->ShadeRect(
-        pct,
+        brightnessPercent,
         static_cast<RECT*>(0)
     );
     m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(
@@ -471,13 +471,16 @@ void CState::Present(i32 pct) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000faf50, 0x31)
-i32 CState::ShadeScreen(i32 pct) {
-    b32 v = g_skipNextScreenEffect;
-    if (v != false) {
-        g_skipNextScreenEffect = false;
-        return v;
+i32 CState::ShadeBackBuffer(i32 brightnessPercent) {
+    b32 skipShade = g_skipNextScreenShade;
+    if (skipShade != false) {
+        g_skipNextScreenShade = false;
+        return skipShade;
     }
-    return m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->ShadeRect(pct, NULL);
+    return m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->ShadeRect(
+        brightnessPercent,
+        NULL
+    );
 }
 
 RVA(0x000fafa0, 0x3b)

@@ -3,6 +3,6 @@
 
 #include <DinMgr2/InputDeviceGroup.h>
 
-extern CInputDeviceGroup* g_actorList;
+extern CInputDeviceGroup* g_joystickDevices;
 
 #endif // GRUNTZ_INPUTDEVICEGROUP_H

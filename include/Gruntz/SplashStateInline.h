@@ -6,10 +6,10 @@
 #include <Gruntz/SplashState.h>
 
 inline b32 CSplashState::IsAdvanceRequested() {
-    CInputDeviceGroup* actors = g_actorList;
-    i32 count = actors->m_count;
+    CInputDeviceGroup* devices = g_joystickDevices;
+    i32 count = devices->m_count;
     for (i32 i = 0; i < count; i++) {
-        if (actors->m_items[i]->GetPressedButtons() & IDX(INPUT_BUTTON0)) {
+        if (devices->m_items[i]->GetPressedButtons() & IDX(INPUT_BUTTON0)) {
             return true;
         }
     }

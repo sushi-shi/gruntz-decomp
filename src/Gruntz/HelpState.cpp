@@ -56,9 +56,13 @@ GameStateId CDemo::GetStateId() {
 }
 
 RVA(0x00095090, 0x6e)
-i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CHelpState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
 
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
     while (ShowCursor(false) >= 0)
@@ -87,7 +91,7 @@ i32 CHelpState::EnterState(GameStateId previousState) {
     if (LoadTitlePage(g_titleBuf, 0, 0, 0, 0, true) == 0) {
         return 0;
     }
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return 1;
 }
 
@@ -109,15 +113,15 @@ i32 CHelpState::Render() {
 
     m_world->SoundRegistry()->TickVolumeRamps();
 
-    CInputDeviceGroup* list = g_actorList;
+    CInputDeviceGroup* devices = g_joystickDevices;
     i32 i;
-    for (i = 0; i < list->m_count; i++) {
-        list->m_items[i]->Poll();
+    for (i = 0; i < devices->m_count; i++) {
+        devices->m_items[i]->Poll();
     }
 
-    i32 n = g_actorList->GetCount();
+    i32 n = g_joystickDevices->GetCount();
     for (i = 0; i < n; i++) {
-        if (g_actorList->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
+        if (g_joystickDevices->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
             PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
             m_mgr->m_owner->SetRunning(false);
             return 1;

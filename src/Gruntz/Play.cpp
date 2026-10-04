@@ -210,18 +210,18 @@ char g_customLevelText[0x200];
 
 // @early-stop
 RVA(0x000c7ec0, 0x5f5)
-i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) {
     {
-        if (mgr == NULL) {
+        if (gameManager == NULL) {
             return 0;
         }
-        GruntzPlayer* sub = mgr->m_players;
+        GruntzPlayer* sub = gameManager->m_players;
         if (sub == NULL) {
             return 0;
         }
         ResetAssetLoadState(sub);
 
-        if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+        if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
             return 0;
         }
 
@@ -273,7 +273,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         SetReturningToMenu(false);
         SetCompletedFinalLevel(false);
         ClearSaveSlot();
-        mgr->ResetClockGlobals();
+        gameManager->ResetClockGlobals();
         SetSavedGameTimeMs(0);
         m_rngSeed = timeGetTime();
         m_minimap = NULL;
@@ -284,7 +284,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
         OnSharedAssetDirectoriesResolved();
-        if (!LoadLevel(areaArg, 1)) {
+        if (!LoadLevel(levelIndex, 1)) {
             return 0;
         }
         if (!LoadCursorSprites(0, false)) {
@@ -405,7 +405,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         r.left = 0;
         r.top = 0;
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-        RetireScene(0x50, 0x3e8, 0, true);
+        FadeSineToBuffer(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->GetTriggerMgr()) {
             m_mgr->GetTriggerMgr()->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
         }
@@ -1113,7 +1113,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     if (!LoadTitlePage(nameBuf, 0, 0, 0, 0, true)) {
         goto fail0;
     }
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     DrawLevelInfoText();
     self->m_stateResources = prevTiles;
     {
@@ -1599,7 +1599,7 @@ i32 CPlay::RestoreGraphics() {
     m_statusBar->Render();
     m_stepCountdown = 2;
     m_world->GetDisplayBuffers()->CopyBackToOverlay();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return 1;
 }
 
@@ -3295,7 +3295,7 @@ void CPlay::DrawCustomLevelBanner() {
 
 RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
-    Present(0x3c);
+    ShadeAndPresentScreen(0x3c);
 
     CImageSet* set = m_world->FindImageSet("GAME_MESSAGEZ");
     if (set == NULL) {
@@ -5869,7 +5869,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
     }
 
     m_world->GetDisplayBuffers()->CopyBackToOverlay();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != NULL) {

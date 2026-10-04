@@ -45,9 +45,9 @@
 #include <string.h>
 
 RVA(0x0003bfa0, 0x42)
-i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 areaArg, i32 prevStateId) {
-    ctx->m_strWorldFile.Empty();
-    if (CPlay::LoadGameAssetNamespaces(ctx, areaArg, prevStateId) == 0) {
+i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) {
+    gameManager->m_strWorldFile.Empty();
+    if (CPlay::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId) == 0) {
         return 0;
     }
     m_demoCountdown = 0x124f80;
@@ -98,10 +98,10 @@ i32 CDemo::LoadLevelWorld(i32 unused) {
 RVA(0x0003c220, 0xa4)
 i32 CDemo::Render() {
     CPlay::Render();
-    CInputDeviceGroup* list = g_actorList;
-    i32 n = list->m_count;
+    CInputDeviceGroup* devices = g_joystickDevices;
+    i32 n = devices->m_count;
     for (i32 i = 0; i < n; i++) {
-        if (list->m_items[i]->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
+        if (devices->m_items[i]->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
             PostMessageA(m_mgr->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             break;
         }

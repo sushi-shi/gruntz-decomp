@@ -57,7 +57,7 @@
 #include <string.h>
 
 DATA(0x00245574)
-CInputDeviceGroup* g_actorList = NULL;
+CInputDeviceGroup* g_joystickDevices = NULL;
 DATA(0x00251608)
 i32 g_versionMajor = 0;
 DATA(0x0025160c)
@@ -71,12 +71,16 @@ CMenuState::~CMenuState() {
 }
 
 RVA(0x0009fe50, 0x343)
-i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    if (prevStateId == 0) {
+i32 CMenuState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
+    if (previousStateId == 0) {
         return 0;
     }
 
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
     m_mgr->EnsureStandardVideoMode(false);
@@ -86,21 +90,21 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     if (!m_world->GetImageRegistry()->HasWithPrefix("MENU")) {
-        CRezDir* imageSymbols = StateResources()->GetDirFromPath("IMAGEZ");
-        if (imageSymbols == NULL) {
+        CRezDir* imageResources = StateResources()->GetDirFromPath("IMAGEZ");
+        if (imageResources == NULL) {
             return 0;
         }
         g_resourceInstallActive = true;
-        m_world->GetImageRegistry()->LoadImageSetsFromTree(imageSymbols, "MENU", "_");
+        m_world->GetImageRegistry()->LoadImageSetsFromTree(imageResources, "MENU", "_");
         g_resourceInstallActive = false;
     }
 
     if (!m_world->SoundRegistry()->HasWithPrefix("MENU")) {
-        CRezDir* soundSymbols = StateResources()->GetDirFromPath("SOUNDZ");
-        if (soundSymbols == NULL) {
+        CRezDir* soundResources = StateResources()->GetDirFromPath("SOUNDZ");
+        if (soundResources == NULL) {
             return 0;
         }
-        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundSymbols), "MENU", "_");
+        m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundResources), "MENU", "_");
     }
 
     if (!m_world->GetDisplayBuffers()->HasOverlay()) {
@@ -135,7 +139,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         }
     }
 
-    if (!BuildMainMenuTree(m_menuTree, prevStateId)) {
+    if (!BuildMainMenuTree(m_menuTree, previousStateId)) {
         return 0;
     }
 
@@ -201,25 +205,25 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         }
         m_stateResources = (saved);
 
-        CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
+        CDDSurface* tgt = World()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
-        menuRoot()->GetDisplayBuffers()->CopyBackToOverlay();
+        World()->GetDisplayBuffers()->CopyBackToOverlay();
     } else {
-        menuRoot()->GetDisplayBuffers()->CopyFrontToOverlay();
-        CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->m_overlayBuffer->GetSurface();
+        World()->GetDisplayBuffers()->CopyFrontToOverlay();
+        CDDSurface* tgt = World()->GetDisplayBuffers()->m_overlayBuffer->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
-        menuRoot()->GetDisplayBuffers()->CopyOverlayToBack();
+        World()->GetDisplayBuffers()->CopyOverlayToBack();
     }
 
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     if (ShowCursor(true) < 0) {
         do {
@@ -279,10 +283,10 @@ i32 CMenuState::LeaveState(GameStateId) {
 
 RVA(0x000a0750, 0x1d0)
 i32 CMenuState::Render() {
-    CInputDeviceGroup* L = g_actorList;
+    CInputDeviceGroup* devices = g_joystickDevices;
 
-    for (i32 i = 0; i < L->m_count; i++) {
-        L->m_items[i]->Poll();
+    for (i32 i = 0; i < devices->m_count; i++) {
+        devices->m_items[i]->Poll();
     }
 
     HandleControllerInput();
@@ -327,7 +331,7 @@ i32 CMenuState::RestoreDisplay() {
         return gate;
     }
 
-    menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->Fill(0);
+    World()->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->Fill(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
@@ -347,11 +351,11 @@ i32 CMenuState::RestoreDisplay() {
     }
     m_stateResources = (saved);
 
-    CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
+    CDDSurface* tgt = World()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
-    menuRoot()->GetDisplayBuffers()->CopyBackToOverlay();
+    World()->GetDisplayBuffers()->CopyBackToOverlay();
 
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     if (ShowCursor(true) < 0) {
         do {
@@ -375,7 +379,12 @@ i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     } else if (key == VK_ESCAPE) {
         if (m_menuTree->ReturnToPreviousPage() == 0) {
             m_activateCueDurationMs = 0;
-            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+            PostMessageA(
+                GetGameManager()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_ATTRACT),
+                0
+            );
         }
     }
     return 1;

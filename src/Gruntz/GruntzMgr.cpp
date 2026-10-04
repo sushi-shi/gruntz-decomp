@@ -571,7 +571,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    g_actorList = g_inputMgr->CreateDeviceGroup(
+    g_joystickDevices = g_inputMgr->CreateDeviceGroup(
         g_inputMgr->GetJoystick(0),
         g_inputMgr->GetJoystick(1),
         g_inputMgr->GetJoystick(2),
@@ -580,7 +580,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         NULL,
         0
     );
-    if (!g_actorList) {
+    if (!g_joystickDevices) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40f);
         return 0;
     }
@@ -2330,7 +2330,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
     }
     if (m_world) {
         if (notify && m_curState && m_curState->GetStateId() != GAMESTATE_MENU) {
-            m_curState->Present(0x32);
+            m_curState->ShadeAndPresentScreen(0x32);
         } else {
             notify = false;
         }
@@ -2378,7 +2378,7 @@ i32 CGruntzMgr::RunMfcDialog(CDialog* dlg, b32 notify) {
     }
     if (m_world) {
         if (notify && m_curState && m_curState->GetStateId() != GAMESTATE_MENU) {
-            m_curState->Present(0x32);
+            m_curState->ShadeAndPresentScreen(0x32);
         } else {
             notify = false;
         }

@@ -40,9 +40,9 @@ b32 g_previewCancelQuits = false;
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de030, 0xc2)
 
-i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CPreviewState::LoadPreviewAssets(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) {
 
-    if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
+    if (CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId) == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {
@@ -52,13 +52,14 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
         return 0;
     }
     if (g_disableAudio == false && g_disableSound == false) {
-        CRezDir* set = StateResources()->GetDir("SOUNDZ");
-        if (set != NULL) {
-            m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(set), "PREVIEW", "_");
+        CRezDir* soundResources = StateResources()->GetDir("SOUNDZ");
+        if (soundResources != NULL) {
+            m_world->SoundRegistry()
+                ->LoadFromTree(static_cast<CRezDir*>(soundResources), "PREVIEW", "_");
         }
     }
-    m_previewName = "PREVIEW0";
-    m_previewIndex = 0;
+    m_currentPreviewName = "PREVIEW0";
+    m_nextPreviewIndex = 0;
     m_mgr->GetGameWindow()->DiscardMessages(WM_KEYDOWN, 0x40);
     return 1;
 }
@@ -66,10 +67,10 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de140, 0x33)
-void CPreviewState::ResetPreview() {
-    SoundCueRegistry* reg = m_world->SoundRegistry();
-    if (reg->m_soundStream != NULL) {
-        reg->m_soundStream->StopAllStreams();
+void CPreviewState::ReleasePreviewAssets() {
+    SoundCueRegistry* soundRegistry = m_world->SoundRegistry();
+    if (soundRegistry->m_soundStream != NULL) {
+        soundRegistry->m_soundStream->StopAllStreams();
     }
     m_world->SoundRegistry()->RemoveWithPrefix("PREVIEW", "_");
     CState::ReleaseResources();
@@ -78,10 +79,10 @@ void CPreviewState::ResetPreview() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de190, 0x35)
-i32 CPreviewState::NextScreenCmd(i32 unused) {
+i32 CPreviewState::BeginPreview(i32 unused) {
     while (ShowCursor(false) >= 0) {
     }
-    LoadLevelPreviewScreen();
+    ShowNextPreviewScreen();
     m_previewCountdownMs = 60000;
     return 1;
 }
@@ -97,10 +98,10 @@ i32 CPreviewState::AcceptPreviewCommand(i32 unused) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de200, 0x85)
-i32 CPreviewState::Tick() {
-    IDirectDrawSurface* surf =
+i32 CPreviewState::UpdatePreview() {
+    IDirectDrawSurface* frontSurface =
         m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
-    if (surf == NULL || surf->IsLost() != 0) {
+    if (frontSurface == NULL || frontSurface->IsLost() != 0) {
         if (RestoreGraphics() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
@@ -118,42 +119,54 @@ i32 CPreviewState::Tick() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de2c0, 0x5c)
-i32 CPreviewState::Refade() {
+i32 CPreviewState::RestorePreviewGraphics() {
     if (m_world->GetDisplayBuffers()->RestoreLostSurfaces() == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {
     }
-    i32 r =
-        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true);
-    RetireScene(0x50, 0x3e8, 0, true);
-    return r;
+    i32 result = LoadTitlePage(
+        const_cast<char*>(static_cast<const char*>(m_currentPreviewName)),
+        0,
+        0,
+        0,
+        0,
+        true
+    );
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
+    return result;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de340, 0x56)
-i32 CPreviewState::RefadeVirtual() {
+i32 CPreviewState::RedrawPreview() {
     if (IsActive() == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {
     }
-    i32 r =
-        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true);
-    RetireScene(0x50, 0x3e8, 0, true);
-    return r;
+    i32 result = LoadTitlePage(
+        const_cast<char*>(static_cast<const char*>(m_currentPreviewName)),
+        0,
+        0,
+        0,
+        0,
+        true
+    );
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
+    return result;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de3c0, 0x2d)
-i32 CPreviewState::OnKey(i32 key, i32 unused) {
-    if (key == VK_ESCAPE) {
+i32 CPreviewState::HandlePreviewKey(i32 virtualKey, i32 unused) {
+    if (virtualKey == VK_ESCAPE) {
         Cancel();
     }
-    if (key == VK_SPACE || key == VK_RETURN) {
-        LoadLevelPreviewScreen();
+    if (virtualKey == VK_SPACE || virtualKey == VK_RETURN) {
+        ShowNextPreviewScreen();
     }
     return 1;
 }
@@ -162,26 +175,33 @@ i32 CPreviewState::OnKey(i32 key, i32 unused) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de400, 0xd)
 i32 CPreviewState::OnLButtonDown(i32, i32, i32) {
-    LoadLevelPreviewScreen();
+    ShowNextPreviewScreen();
     return 1;
 }
 
 RVA(0x000de420, 0x115)
-void CPreviewState::LoadLevelPreviewScreen() {
-    char buf[64];
-    i32 idx = m_previewIndex;
-    m_previewIndex = idx + 1;
-    sprintf(buf, "PREVIEW%i", idx);
-    m_previewName = buf;
-    sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_previewName));
-    StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
+void CPreviewState::ShowNextPreviewScreen() {
+    char resourceKey[64];
+    i32 previewIndex = m_nextPreviewIndex;
+    m_nextPreviewIndex = previewIndex + 1;
+    sprintf(resourceKey, "PREVIEW%i", previewIndex);
+    m_currentPreviewName = resourceKey;
+    sprintf(resourceKey, "\\SCREENZ\\%s", static_cast<const char*>(m_currentPreviewName));
+    StateResources()->GetRezFromPath(resourceKey, IMGTAG_XCP);
     b32 failed = false;
-    if (LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true)
+    if (LoadTitlePage(
+            const_cast<char*>(static_cast<const char*>(m_currentPreviewName)),
+            0,
+            0,
+            0,
+            0,
+            true
+        )
         == 0) {
         failed = true;
     } else {
         PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_TELEPORTEROPEN");
-        RetireScene(0x50, 0x3e8, 0, true);
+        FadeSineToBuffer(0x50, 0x3e8, 0, true);
     }
     m_previewCountdownMs = 60000;
     if (failed) {

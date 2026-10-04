@@ -34,9 +34,13 @@
 #include <stddef.h>
 
 RVA(0x00013fb0, 0xd5)
-i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CAttract::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
 
-    if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
+    if (CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId) == 0) {
         return 0;
     }
 
@@ -45,27 +49,27 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         } while (ShowCursor(false) >= 0);
     }
 
-    owner()->EnsureStandardVideoMode(false);
+    GetGameManager()->EnsureStandardVideoMode(false);
 
-    CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
-    m_stateResources = (state);
-    if (state == NULL) {
+    CRezDir* stateResources = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
+    m_stateResources = (stateResources);
+    if (stateResources == NULL) {
         return 0;
     }
 
-    CRezDir* sound = state->GetDir("SOUNDZ");
-    if (sound == NULL) {
+    CRezDir* soundResources = stateResources->GetDir("SOUNDZ");
+    if (soundResources == NULL) {
         return 0;
     }
 
-    menuRoot()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
+    World()->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundResources), "ATTRACT", "_");
 
     if (ShowCursor(false) >= 0) {
         do {
         } while (ShowCursor(false) >= 0);
     }
 
-    if (static_cast<GameStateId>(prevStateId) == GAMESTATE_PLAY) {
+    if (static_cast<GameStateId>(previousStateId) == GAMESTATE_PLAY) {
         m_titleCueEnabled = false;
         m_titleCue = NULL;
     } else {
@@ -77,11 +81,11 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
-    SoundCueRegistry* reg = menuRoot()->SoundRegistry();
+    SoundCueRegistry* reg = World()->SoundRegistry();
     if (reg->m_soundStream) {
         reg->m_soundStream->StopAllStreams();
     }
-    menuRoot()->SoundRegistry()->RemoveWithPrefix("ATTRACT", "_");
+    World()->SoundRegistry()->RemoveWithPrefix("ATTRACT", "_");
 
     CState::ReleaseResources();
 }
@@ -97,7 +101,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     CString s;
     s.Format("TITLE%d", idx);
     LoadAndPresentTitlePage(s, 0, 0, 1, 0);
-    CDisplayBuffers* page = menuRoot()->GetDisplayBuffers();
+    CDisplayBuffers* page = World()->GetDisplayBuffers();
     page->CopyFrontToSurface(page->GetBackBuffer());
 
     i32 r = GetRandomNumber();
@@ -106,7 +110,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    SoundCue* found = menuRoot()->SoundRegistry()->FindCue(buf);
+    SoundCue* found = World()->SoundRegistry()->FindCue(buf);
     m_titleCue = found;
     if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {
@@ -117,9 +121,9 @@ i32 CAttract::EnterState(GameStateId previousState) {
         m_titleCountdownMs = 0x1f40;
     }
 
-    CInputDeviceGroup* list = g_actorList;
-    for (i32 i = 0; i < list->m_count; i++) {
-        list->m_items[i]->ResetState();
+    CInputDeviceGroup* devices = g_joystickDevices;
+    for (i32 i = 0; i < devices->m_count; i++) {
+        devices->m_items[i]->ResetState();
     }
     return 1;
 }
@@ -137,7 +141,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
         return 1;
     }
     do {
-        (menuRoot()->SoundRegistry())->TickVolumeRamps();
+        (World()->SoundRegistry())->TickVolumeRamps();
     } while (m_titleCue->IsPlaying());
     return 1;
 }
@@ -145,28 +149,33 @@ i32 CAttract::LeaveState(GameStateId nextState) {
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy =
-        menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
         if (RestoreGraphics() == 0) {
-            owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
+            GetGameManager()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
             return 0;
         }
     }
 
-    (menuRoot()->SoundRegistry())->TickVolumeRamps();
+    (World()->SoundRegistry())->TickVolumeRamps();
 
     CountDown(m_titleCountdownMs, g_frameDelta);
 
-    CInputDeviceGroup* list = g_actorList;
+    CInputDeviceGroup* devices = g_joystickDevices;
     i32 i;
-    for (i = 0; i < list->m_count; i++) {
-        list->m_items[i]->Poll();
+    for (i = 0; i < devices->m_count; i++) {
+        devices->m_items[i]->Poll();
     }
 
-    i32 n = g_actorList->GetCount();
+    i32 n = g_joystickDevices->GetCount();
     for (i = 0; i < n; i++) {
-        if (g_actorList->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
-            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        if (g_joystickDevices->GetAt(i)->GetPressedButtons() & IDX(INPUT_BUTTON8)) {
+            PostMessageA(
+                GetGameManager()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_MAIN_MENU),
+                0
+            );
             return 1;
         }
     }
@@ -176,7 +185,7 @@ i32 CAttract::Render() {
 RVA(0x00014520, 0xc3)
 i32 CAttract::RestoreGraphics() {
 
-    if (menuRoot()->GetDisplayBuffers()->RestoreLostSurfaces() == 0) {
+    if (World()->GetDisplayBuffers()->RestoreLostSurfaces() == 0) {
         return 0;
     }
 
@@ -209,14 +218,19 @@ i32 CAttract::RestoreDisplay() {
 RVA(0x00014720, 0x37)
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_SPACE || code == VK_RETURN || code == VK_ESCAPE) {
-        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(
+            GetGameManager()->GetGameWindow()->GetHwnd(),
+            WM_COMMAND,
+            IDX(CMD_MAIN_MENU),
+            0
+        );
     }
     return 1;
 }
 
 RVA(0x00014770, 0x24)
 i32 CAttract::OnLButtonDown(i32, i32, i32) {
-    PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+    PostMessageA(GetGameManager()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;
 }
 
@@ -237,10 +251,8 @@ i32 CAttract::OnPaint() {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    menuRoot()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
-    menuRoot()->GetDisplayBuffers()->CopyFrontToSurface(
-        menuRoot()->GetDisplayBuffers()->GetBackBuffer()
-    );
+    World()->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    World()->GetDisplayBuffers()->CopyFrontToSurface(World()->GetDisplayBuffers()->GetBackBuffer());
     return 1;
 }
 

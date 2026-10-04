@@ -163,14 +163,14 @@ char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 
 // @early-stop
 RVA(0x000b5460, 0x914)
-i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32 previousStateId) {
 
     g_gameReg->SetGameMode(GAMEMODE_MULTIPLAYER);
-    if (mgr == NULL) {
+    if (gameManager == NULL) {
         return 0;
     }
 
-    if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
+    if (CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId) == 0) {
         return 0;
     }
     g_connectRptMgr = this;
@@ -426,7 +426,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
         r.left = 0;
         r.top = 0;
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-        RetireScene(0x50, 0x3e8, 0, true);
+        FadeSineToBuffer(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->GetTriggerMgr()) {
             m_mgr->GetTriggerMgr()->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
         }

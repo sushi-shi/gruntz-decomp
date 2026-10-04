@@ -63,9 +63,13 @@ DATA(0x001e9708)
 static const double s_stepScale = 1000.0;
 
 RVA(0x00038d20, 0x176)
-i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+i32 CCreditsState::LoadGameAssetNamespaces(
+    CGruntzMgr* gameManager,
+    i32 levelIndex,
+    i32 previousStateId
+) {
 
-    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+    if (!CState::LoadGameAssetNamespaces(gameManager, levelIndex, previousStateId)) {
         return 0;
     }
     while (ShowCursor(false) >= 0)
@@ -80,15 +84,15 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         return 0;
     }
 
-    CRezDir* sounds = StateResources()->GetDir("SOUNDZ");
-    if (!sounds) {
+    CRezDir* soundResources = StateResources()->GetDir("SOUNDZ");
+    if (!soundResources) {
         return 0;
     }
-    m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(sounds), "CREDITZ", "_");
+    m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundResources), "CREDITZ", "_");
 
-    CRezDir* midiTable = StateResources()->GetDirFromPath("MIDIZ");
-    if (midiTable) {
-        CRezItm* creditsEntry = midiTable->GetRez("PLAY", REZ_TAG_XMI);
+    CRezDir* midiResources = StateResources()->GetDirFromPath("MIDIZ");
+    if (midiResources) {
+        CRezItm* creditsEntry = midiResources->GetRez("PLAY", REZ_TAG_XMI);
         if (creditsEntry) {
             u8* creditsData = creditsEntry->Load();
             if (creditsData) {
@@ -98,8 +102,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
         }
     }
 
-    if (midiTable) {
-        CRezItm* monolithEntry = midiTable->GetRez("MONOLITH", REZ_TAG_XMI);
+    if (midiResources) {
+        CRezItm* monolithEntry = midiResources->GetRez("MONOLITH", REZ_TAG_XMI);
         if (monolithEntry) {
             u8* monolithData = monolithEntry->Load();
             if (monolithData) {
@@ -117,9 +121,9 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
 
     SetupTitle();
     m_reserved20c = 2;
-    i32 r = FinishState();
+    i32 result = FinishState();
     m_musicStarted = false;
-    return r;
+    return result;
 }
 
 RVA(0x00038f00, 0x87)
@@ -158,8 +162,8 @@ i32 CCreditsState::EnterState(GameStateId previousState) {
 
 RVA(0x00039160, 0x46)
 i32 CCreditsState::LeaveState(GameStateId nextState) {
-    owner()->GetMidiManager()->EndCurrent();
-    owner()->GetMidiManager()->ClearSequences();
+    GetGameManager()->GetMidiManager()->EndCurrent();
+    GetGameManager()->GetMidiManager()->ClearSequences();
     m_stateResources = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     LoadAndPresentTitlePage("TITLE", 0, 0, 1, 0);
     return 1;
@@ -171,7 +175,7 @@ i32 CCreditsState::Render() {
         m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!RestoreGraphics()) {
-            owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
+            GetGameManager()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
         }
     }
@@ -179,34 +183,34 @@ i32 CCreditsState::Render() {
     m_world->SoundRegistry()->TickVolumeRamps();
 
     {
-        CInputDeviceGroup* L = g_actorList;
-        for (i32 i = 0; i < L->m_count; i++) {
-            L->m_items[i]->Poll();
+        CInputDeviceGroup* devices = g_joystickDevices;
+        for (i32 i = 0; i < devices->m_count; i++) {
+            devices->m_items[i]->Poll();
         }
     }
 
     {
-        CInputDeviceGroup* L = g_actorList;
-        i32 n = L->m_count;
+        CInputDeviceGroup* devices = g_joystickDevices;
+        i32 n = devices->m_count;
         for (i32 j = 0; j < n; j++) {
-            if (L->m_items[j]->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
+            if (devices->m_items[j]->GetPressedButtons() & IDX(INPUT_BUTTON_MASK)) {
 
                 if (m_previousStateId == GAMESTATE_MENU) {
                     PostMessageA(
-                        owner()->GetGameWindow()->GetHwnd(),
+                        GetGameManager()->GetGameWindow()->GetHwnd(),
                         WM_COMMAND,
                         IDX(CMD_MAIN_MENU),
                         0
                     );
                 } else {
                     PostMessageA(
-                        owner()->GetGameWindow()->GetHwnd(),
+                        GetGameManager()->GetGameWindow()->GetHwnd(),
                         WM_COMMAND,
                         IDX(CMD_ATTRACT),
                         0
                     );
                 }
-                owner()->m_owner->SetRunning(false);
+                GetGameManager()->m_owner->SetRunning(false);
                 break;
             }
         }
@@ -219,13 +223,14 @@ i32 CCreditsState::Render() {
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
     drawPages->GetBackBuffer()->CopyFrom(drawPages->m_overlayBuffer);
 
-    if (!m_musicStarted && owner()->IsMusicEnabled()) {
-        owner()->GetMidiManager()->PlaySequence("CREDITZ", true);
+    if (!m_musicStarted && GetGameManager()->IsMusicEnabled()) {
+        GetGameManager()->GetMidiManager()->PlaySequence("CREDITZ", true);
         m_musicStarted = true;
     }
 
     if (m_fxEnabled) {
-        MidiSequence* monolithSequence = owner()->GetMidiManager()->FindSequence("MONOLITH");
+        MidiSequence* monolithSequence =
+            GetGameManager()->GetMidiManager()->FindSequence("MONOLITH");
         if (monolithSequence && !monolithSequence->IsPlaying()) {
             LoadCreditzAssets();
         }
@@ -263,9 +268,19 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == GAMESTATE_MENU) {
-            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(
+                GetGameManager()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_MAIN_MENU),
+                0
+            );
         } else {
-            PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+            PostMessageA(
+                GetGameManager()->GetGameWindow()->GetHwnd(),
+                WM_COMMAND,
+                IDX(CMD_ATTRACT),
+                0
+            );
         }
     }
     return 1;
@@ -280,9 +295,14 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
         return 1;
     }
     if (m_previousStateId == GAMESTATE_MENU) {
-        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(
+            GetGameManager()->GetGameWindow()->GetHwnd(),
+            WM_COMMAND,
+            IDX(CMD_MAIN_MENU),
+            0
+        );
     } else {
-        PostMessageA(owner()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
+        PostMessageA(GetGameManager()->GetGameWindow()->GetHwnd(), WM_COMMAND, IDX(CMD_ATTRACT), 0);
     }
     return 1;
 }
@@ -316,7 +336,7 @@ i32 CCreditsState::InitAttractTitle() {
     CDDSurface* tgt = m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
     (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->CopyBackToOverlay();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return 1;
 }
 
