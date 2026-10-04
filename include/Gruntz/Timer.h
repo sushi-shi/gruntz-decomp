@@ -10,7 +10,7 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 
-class CDDrawSurfacePair;
+class CRenderBuffer;
 
 class CLevelTimer {
 public:
@@ -18,7 +18,7 @@ public:
     i32 LoadTimerSprite(i32 originX, i32 originY);
     void Reset();
     i32 Tick(i32 elapsedMs);
-    i32 Draw(CDDrawSurfacePair* target, b32 forceVisible);
+    i32 Draw(CRenderBuffer* target, b32 forceVisible);
     void SetTime(i32 minutes, i32 seconds);
     void AddTime(i32 minutes, i32 seconds);
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);

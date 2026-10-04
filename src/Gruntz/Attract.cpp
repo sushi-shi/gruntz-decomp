@@ -300,7 +300,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
     if (targetSurface == NULL) {
         return 0;
     }
-    CDDrawSurfacePair* sourcePair;
+    CRenderBuffer* sourcePair;
     if (useOverlay != false && m_world->GetDrawTarget()->HasOverlay() != 0) {
         sourcePair = m_world->GetDrawTarget()->m_overlayPair;
     } else {

@@ -457,8 +457,7 @@ i32 CPlay::Render() {
             }
         }
 
-        CDDrawSurfacePair* back =
-            static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
+        CRenderBuffer* back = static_cast<CRenderBuffer*>(m_world->GetDrawTarget()->GetBackPair());
         if (back == NULL) {
             return 0;
         }
@@ -549,8 +548,7 @@ i32 CPlay::Render() {
         }
 
         m_mgr->ChatLog()->AdvanceMessageTimer(static_cast<i32>(g_frameDelta));
-        CDDrawSurfacePair* view =
-            static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
+        CRenderBuffer* view = static_cast<CRenderBuffer*>(m_world->GetDrawTarget()->GetBackPair());
         if (view == NULL) {
             return 0;
         }
@@ -649,7 +647,7 @@ i32 CPlay::Render() {
     }
 
     RestoreCursorSaveUnder();
-    CDDrawSurfacePair* back = m_world->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* back = m_world->GetDrawTarget()->GetBackPair();
     if (back == NULL) {
         return 0;
     }
@@ -3307,7 +3305,7 @@ i32 CPlay::DrawStateMessage() {
         return 0;
     }
 
-    CDDrawSurfacePair* surf = m_world->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* surf = m_world->GetDrawTarget()->GetBackPair();
     if (surf == NULL) {
         return 0;
     }
@@ -3675,7 +3673,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
 }
 
 RVA(0x000d0b30, 0x200)
-i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
+i32 CPlay::SaveUnderAndDrawCursor(CRenderBuffer* pair) {
     i32 x = m_cursorX + m_cursorOffset.m_x;
     i32 y = m_cursorY + m_cursorOffset.m_y;
 
@@ -5344,7 +5342,7 @@ i32 CState::DrawScreenTextImage(const char* name) {
         return 0;
     }
     CDDrawSurfaceMgr* world = m_world;
-    CDDrawSurfacePair* page = world->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* page = world->GetDrawTarget()->GetBackPair();
     if (page == NULL) {
         return 0;
     }
@@ -5906,7 +5904,7 @@ i32 CPlay::ShowHelpMessage(i32 messageId) {
 
 RVA(0x000d72c0, 0x128)
 i32 CPlay::AdvanceLoadingBar(b32 final) {
-    CDDrawSurfacePair* view = m_world->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* view = m_world->GetDrawTarget()->GetBackPair();
     if (view == NULL) {
         return 0;
     }
@@ -6517,7 +6515,7 @@ i32 CPlay::ExpandViewport(i32 step) {
 RVA(0x000d9050, 0xc7)
 i32 CPlay::DrawDarknessView() {
     CDDrawSurfaceMgr* world = m_world;
-    CDDrawSurfacePair* backSurface = world->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* backSurface = world->GetDrawTarget()->GetBackPair();
     CObList& objects = *world->ChildGroup()->GetList();
 
     RECT viewport = world->GetLevel()->GetViewportRect();

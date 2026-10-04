@@ -14,7 +14,7 @@ class CState;
 class CWorldSoundSet;
 class CTriggerMgr;
 class CGameStats;
-struct CDDrawSubMgrPages;
+struct CDisplayBuffers;
 class CImageSetRegistry;
 
 class CGruntPaletteTable;

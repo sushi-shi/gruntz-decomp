@@ -117,7 +117,7 @@ i32 CMenuTree::DrawActivePage() {
     if (!m_activePage) {
         return 0;
     }
-    CDDrawSurfacePair* backBuffer = m_world->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* backBuffer = m_world->GetDrawTarget()->GetBackPair();
     if (!backBuffer) {
         return 0;
     }
@@ -126,7 +126,7 @@ i32 CMenuTree::DrawActivePage() {
 
 RVA(0x00182ce0, 0x36)
 i32 CMenuTree::PresentFrame() {
-    CDDrawSubMgrPages* drawTarget = m_world->GetDrawTarget();
+    CDisplayBuffers* drawTarget = m_world->GetDrawTarget();
     FlipFrontAndRestoreOverlay(drawTarget);
     return 1;
 }
@@ -261,7 +261,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
 // @early-stop
 RVA(0x00182f90, 0x92)
 i32 CMenuTree::DrawFocusCursors(
-    CDDrawSurfacePair* target,
+    CRenderBuffer* target,
     CMenuItem* item,
     i32 defaultCenterX,
     i32 defaultCenterY

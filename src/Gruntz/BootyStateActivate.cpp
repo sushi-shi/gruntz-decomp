@@ -1456,7 +1456,7 @@ i32 CBootyState::Render() {
 
     m_world->ChildGroup()->TickKillCues(1);
     m_world->ChildGroup()->RenderChildren(m_world->GetDrawTarget()->GetBackPair());
-    CDDrawSubMgrPages* dt = m_world->GetDrawTarget();
+    CDisplayBuffers* dt = m_world->GetDrawTarget();
     FlipFrontAndRestoreOverlay(dt);
     m_world->SoundRegistry()->TickVolumeRamps();
     return 1;
@@ -2469,7 +2469,7 @@ i32 CMultiBootyState::Render() {
     }
     DrawTextToBackSurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 
-    CDDrawSubMgrPages* dt = m_world->GetDrawTarget();
+    CDisplayBuffers* dt = m_world->GetDrawTarget();
     FlipFrontAndRestoreOverlay(dt);
     m_world->SoundRegistry()->TickVolumeRamps();
     return 1;

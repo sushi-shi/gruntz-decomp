@@ -32,7 +32,7 @@ struct CSnapshotHeader {
 #pragma pack(pop)
 
 class CWapObj;
-class CDDrawSubMgrPages;
+class CDisplayBuffers;
 class CTransientDrawList;
 class CImageSet;
 class CDDrawChildGroup;
@@ -76,7 +76,7 @@ public:
     virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual void Cleanup();
 
-    CDDrawSubMgrPages* const& GetDrawTarget() const {
+    CDisplayBuffers* const& GetDrawTarget() const {
         return m_drawTarget;
     }
 
@@ -147,7 +147,7 @@ public:
     i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);
     i32 RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId);
 
-    CDDrawSubMgrPages* m_drawTarget;
+    CDisplayBuffers* m_drawTarget;
 
     CDDrawChildGroup* m_childGroup;
     CTransientDrawList* m_transientDrawList;

@@ -357,7 +357,7 @@ void CLevelPlane::SetTileSizeFromImageSet(CImageSet* set) {
 
 // @early-stop
 RVA(0x00162010, 0x8bd)
-void CLevelPlane::Draw(CDDrawSurfacePair* ctx) {
+void CLevelPlane::Draw(CRenderBuffer* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
     }

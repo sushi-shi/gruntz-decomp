@@ -12,7 +12,7 @@ class CTriggerMgr;
 class CGruntzMapMgr;
 class CDDrawSurfaceMgr;
 class CDDSurface;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 
 GZ_ENUM_CONST_BEGIN(MinimapTileColor)
     MINIMAP_TILE_COLOR_COUNT = 0x1f4
@@ -39,11 +39,11 @@ public:
 
     i32 Refresh(i32 elapsedMs, b32 forceRefresh);
 
-    i32 Draw(CDDrawSurfacePair* target, RECT* bounds);
+    i32 Draw(CRenderBuffer* target, RECT* bounds);
 
     void DrawBorderRaw(RECT* rect, char* pixels, i32 color);
 
-    void DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color);
+    void DrawBorder(RECT* rect, CRenderBuffer* target, i32 color);
 
     i32 SetAreaPalette(LevelArea area);
 

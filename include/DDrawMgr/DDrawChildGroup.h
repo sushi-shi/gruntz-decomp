@@ -21,7 +21,7 @@ class CWwdSpriteObject;
 class CWwdGameObject;
 class CWwdDotObject;
 class CWwdDeferredObject;
-class CDrawSubWorker;
+class CRenderSurface;
 
 class CDDrawChildGroup : public CWapObj {
 public:
@@ -39,17 +39,14 @@ public:
     virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual void TickKillCues(i32 advance);
-    virtual void RenderChildren(class CDDrawSurfacePair* target);
+    virtual void RenderChildren(class CRenderBuffer* target);
 
-    virtual void BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePair* src);
+    virtual void BltDirtyChildren(CRenderBuffer* dst, CRenderBuffer* src);
 
     virtual void
-    BltDirtyChildrenEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc);
-    virtual void BltDirtyChildRegions(
-        CDDrawSurfacePair* dst,
-        CDDrawSurfacePair* src,
-        CDDrawSurfacePair* restoreSrc
-    );
+    BltDirtyChildrenEx(CRenderSurface* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc);
+    virtual void
+    BltDirtyChildRegions(CRenderBuffer* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc);
     virtual void InvalidateChildShadows();
     virtual void DestroyChildren();
     virtual void CollideBroadcast();

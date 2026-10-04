@@ -12,7 +12,7 @@
 
 class CDDrawSurfaceMgr;
 class CDDSurface;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 class CDDrawFrontSurface;
 
 GZ_ENUM_BEGIN(DDrawPageKind)
@@ -20,21 +20,22 @@ GZ_ENUM_BEGIN(DDrawPageKind)
     DDRAW_PAGE_OVERLAY = 2
 GZ_ENUM_END(DDrawPageKind)
 
-class CDDrawSubMgrPages : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CDisplayBuffers : public CWapObj {
 public:
-    CDDrawSubMgrPages(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
+    CDisplayBuffers(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_frontSurface = NULL;
         m_backPair = NULL;
         m_overlayPair = NULL;
     }
-    virtual ~CDDrawSubMgrPages() OVERRIDE;
+    virtual ~CDisplayBuffers() OVERRIDE;
 
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;
     RVA(0x001574a0, 0x6)
     virtual LoadableClassId GetClassId() OVERRIDE {
-        return CLASSID_SUBMGRPAGES;
+        return CLASSID_DISPLAY_BUFFERS;
     }
     virtual i32 CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags);
 
@@ -51,31 +52,32 @@ public:
     i32 CreateOverlay(i32 copyFromBack, i32 createFlag);
     void UnloadOverlay();
     void ClearAllPages(u32 color);
-    i32 CopyFrontToSurface(CDDrawSurfacePair* dst);
+    i32 CopyFrontToSurface(CRenderBuffer* dst);
     i32 HasOverlay();
     i32 CopyFrontToBackBuffers();
     i32 CopyFrontToOverlay();
     i32 CopyBackToOverlay();
     i32 CopyOverlayToBack();
 
-    CDDrawSurfacePair* GetBackPair() const {
+    CRenderBuffer* GetBackPair() const {
         return m_backPair;
     }
 
     CDDrawFrontSurface* m_frontSurface;
-    CDDrawSurfacePair* m_backPair;
-    CDDrawSurfacePair* m_overlayPair;
+    CRenderBuffer* m_backPair;
+    CRenderBuffer* m_overlayPair;
 };
 
-class CDrawSubWorker : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CRenderSurface : public CWapObj {
 public:
-    CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CRenderSurface(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
 protected:
     enum InlineCtorTag {
         INLINE_CTOR
     };
-    CDrawSubWorker(InlineCtorTag, CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+    CRenderSurface(InlineCtorTag, CDDrawSurfaceMgr* owner, i32 id, i32 flags)
         : CWapObj(owner, id, flags) {
         m_width = 0;
     }
@@ -100,9 +102,9 @@ public:
     }
 
     i32 RestoreIfLost();
-    void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size);
+    void BlitDirtyRect(CRenderBuffer* other, const POINT& pos, const SIZE& size);
 
-    virtual ~CDrawSubWorker() OVERRIDE {
+    virtual ~CRenderSurface() OVERRIDE {
         m_width = 0;
     }
 
@@ -114,7 +116,7 @@ public:
 };
 
 RVA(0x00158fd0, 0x41)
-inline i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
+inline i32 CRenderSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
@@ -129,7 +131,7 @@ inline i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
 }
 
 RVA(0x00159020, 0x55)
-inline i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
+inline i32 CRenderSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
@@ -146,10 +148,10 @@ inline i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     return 1;
 }
 
-class CDDrawFrontSurface : public CDrawSubWorker {
+class CDDrawFrontSurface : public CRenderSurface {
 public:
     CDDrawFrontSurface(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
-        : CDrawSubWorker(owner, id, flags) {
+        : CRenderSurface(owner, id, flags) {
         m_surface = NULL;
     }
 

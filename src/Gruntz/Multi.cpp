@@ -674,8 +674,7 @@ void CMulti::RenderGameFrame() {
         RestoreCursorSaveUnder();
         DrawVisibleWorld();
         m_statusBar->Render();
-        CDDrawSurfacePair* h =
-            static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
+        CRenderBuffer* h = static_cast<CRenderBuffer*>(m_world->GetDrawTarget()->GetBackPair());
         if (h == NULL) {
             return;
         }
@@ -687,7 +686,7 @@ void CMulti::RenderGameFrame() {
     RestoreCursorSaveUnder();
     StepViewportResize();
     if (m_tinyViewportCurseActive != false) {
-        (static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()))
+        (static_cast<CRenderBuffer*>(m_world->GetDrawTarget()->GetBackPair()))
             ->GetSurface()
             ->Fill(0);
         m_statusBar->RequestRedraw();
@@ -721,13 +720,10 @@ void CMulti::RenderGameFrame() {
             );
         }
         m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
-        m_minimap->Draw(
-            static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()),
-            &rc
-        );
+        m_minimap->Draw(static_cast<CRenderBuffer*>(m_world->GetDrawTarget()->GetBackPair()), &rc);
     }
     Mgr()->ChatLog()->AdvanceMessageTimer(g_frameDelta);
-    CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
+    CRenderBuffer* h = static_cast<CRenderBuffer*>(m_world->GetDrawTarget()->GetBackPair());
     if (h == NULL) {
         return;
     }

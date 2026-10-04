@@ -97,7 +97,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     CString s;
     s.Format("TITLE%d", idx);
     LoadAndPresentTitlePage(s, 0, 0, 1, 0);
-    CDDrawSubMgrPages* page = menuRoot()->GetDrawTarget();
+    CDisplayBuffers* page = menuRoot()->GetDrawTarget();
     page->CopyFrontToSurface(page->GetBackPair());
 
     i32 r = GetRandomNumber();

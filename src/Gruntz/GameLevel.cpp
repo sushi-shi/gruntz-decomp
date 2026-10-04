@@ -430,12 +430,12 @@ void CGameLevel::UpdatePlaneViewports(LevelCoordRect* coords) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015dad0, 0x2c)
-void CGameLevel::SyncToMainIndex(CDDrawSurfacePair* visitor){DRAW_PLANES_THROUGH_MAIN(visitor, i)}
+void CGameLevel::SyncToMainIndex(CRenderBuffer* visitor){DRAW_PLANES_THROUGH_MAIN(visitor, i)}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015db00, 0x2e)
-void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor){DRAW_PLANES_AFTER_MAIN(visitor, i)}
+void CGameLevel::SyncAfterMainIndex(CRenderBuffer* visitor){DRAW_PLANES_AFTER_MAIN(visitor, i)}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -488,7 +488,7 @@ RVA(0x0015dc50, 0x33)
 void CGameLevel::ResetMainPlane(){RESET_MAIN_PLANE_SELECTION(i)}
 
 RVA(0x0015dc90, 0x141)
-void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx) {
+void CGameLevel::VisitVisible(CRenderBuffer* visitor, CDDrawChildGroup* ctx) {
 
     CObList* chain = ctx->GetList();
 

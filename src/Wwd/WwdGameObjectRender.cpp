@@ -22,7 +22,7 @@
 #include <string.h>
 
 RVA(0x001660f0, 0xd1)
-void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
+void CWwdDotObject::Render(CRenderBuffer* dst) {
     if (m_clip.left == COORD_UNSET) {
         if (m_screenX < 0 || m_screenY < 0 || m_screenX >= dst->GetWidth()
             || m_screenY >= dst->GetHeight()) {
@@ -46,7 +46,7 @@ void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
 }
 
 RVA(0x001661d0, 0xc2)
-void CWwdDotObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
+void CWwdDotObject::BltDirty(CRenderBuffer* dst, CRenderBuffer* src) {
 
     m_shadow = m_dirty;
     if (m_shadow.IsValid()) {
@@ -57,11 +57,7 @@ void CWwdDotObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 }
 
 RVA(0x001662a0, 0x1fa)
-void CWwdDotObject::BltDirtyEx(
-    CDrawSubWorker* dst,
-    CDDrawSurfacePair* src,
-    CDDrawSurfacePair* restoreSrc
-) {
+void CWwdDotObject::BltDirtyEx(CRenderSurface* dst, CRenderBuffer* src, CRenderBuffer* restoreSrc) {
     if (m_dirty.IsValid() && m_shadow.IsValid()) {
         i32 dx = abs(m_dirty.m_position.x - m_shadow.m_position.x) + 1;
         i32 dy = abs(m_dirty.m_position.y - m_shadow.m_position.y) + 1;
@@ -84,9 +80,9 @@ void CWwdDotObject::BltDirtyEx(
 
 RVA(0x001664a0, 0x133)
 void CWwdDotObject::BltDirtyRegions(
-    CDDrawSurfacePair* dst,
-    CDDrawSurfacePair* src,
-    CDDrawSurfacePair* restoreSrc
+    CRenderBuffer* dst,
+    CRenderBuffer* src,
+    CRenderBuffer* restoreSrc
 ) {
     if (m_dirty.IsValid() && m_shadow.IsValid()) {
         const POINT& dirtyPos = m_dirty.m_position;
@@ -210,14 +206,14 @@ i32 CWwdGameObject::WalkChildWorkers() {
 }
 
 RVA(0x001668b0, 0x26)
-void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
+void CWwdGameObject::Render(CRenderBuffer* ctx) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
         static_cast<CGameObject*>(m_children.GetNext(pos))->Render(ctx);
     }
 }
 RVA(0x001668e0, 0x2d)
-void CWwdGameObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
+void CWwdGameObject::BltDirty(CRenderBuffer* dst, CRenderBuffer* src) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
         static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirty(dst, src);
@@ -225,9 +221,9 @@ void CWwdGameObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 }
 RVA(0x00166910, 0x34)
 void CWwdGameObject::BltDirtyEx(
-    CDrawSubWorker* dst,
-    CDDrawSurfacePair* src,
-    CDDrawSurfacePair* restoreSrc
+    CRenderSurface* dst,
+    CRenderBuffer* src,
+    CRenderBuffer* restoreSrc
 ) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
@@ -236,9 +232,9 @@ void CWwdGameObject::BltDirtyEx(
 }
 RVA(0x00166950, 0x34)
 void CWwdGameObject::BltDirtyRegions(
-    CDDrawSurfacePair* dst,
-    CDDrawSurfacePair* src,
-    CDDrawSurfacePair* restoreSrc
+    CRenderBuffer* dst,
+    CRenderBuffer* src,
+    CRenderBuffer* restoreSrc
 ) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {

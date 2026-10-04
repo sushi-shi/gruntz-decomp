@@ -135,7 +135,7 @@ i32 CSBI_WellGoo::Render() {
         return 1;
     }
 
-    CDDrawSurfacePair* backPair = g_gameReg->World()->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* backPair = g_gameReg->World()->GetDrawTarget()->GetBackPair();
     m_bottomImage->RenderFrame(backPair, m_centerX, m_rect.bottom + 3, 0);
 
     double fillHeight =

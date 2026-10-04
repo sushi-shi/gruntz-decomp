@@ -98,7 +98,7 @@ i32 CSBI_ImageSetAni::Render() {
         CImage* cel = m_frameSet->GetAt(m_frameIndex);
         SetFrame(cel);
         if (cel != NULL) {
-            CDDrawSurfacePair* surfaceCtx = g_gameReg->World()->m_drawTarget->m_backPair;
+            CRenderBuffer* surfaceCtx = g_gameReg->World()->m_drawTarget->m_backPair;
             cel->RenderFrame(
                 surfaceCtx,
                 cel->GetAnchorX() + m_rect.left,

@@ -19,7 +19,7 @@
 
 struct CGameObject;
 struct SoundCue;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 class CUserLogic;
 
 class CImageSet;

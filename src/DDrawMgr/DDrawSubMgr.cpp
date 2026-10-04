@@ -305,7 +305,7 @@ CTransientImage* CTransientDrawList::AddImage(i32 x, i32 y, CImage* image, i32 a
 }
 
 RVA(0x00157480, 0x1e)
-i32 CDDrawSubMgrPages::IsLoaded() {
+i32 CDisplayBuffers::IsLoaded() {
     if (m_backPair == NULL) {
         goto fail;
     }
@@ -320,10 +320,10 @@ fail:
     return 0;
 }
 
-RVA_COMPGEN(0x001574b0, 0x1e, ??_GCDDrawSubMgrPages@@UAEPAXI@Z)
+RVA_COMPGEN(0x001574b0, 0x1e, ??_GCDisplayBuffers@@UAEPAXI@Z)
 
 RVA(0x001574d0, 0x5b)
-CDDrawSubMgrPages::~CDDrawSubMgrPages() {
+CDisplayBuffers::~CDisplayBuffers() {
     Unload();
 }
 

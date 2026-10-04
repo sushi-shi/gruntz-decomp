@@ -69,7 +69,7 @@ i32 LayerBlitFrame(
         return 0;
     }
 
-    CDrawSubWorker* node;
+    CRenderSurface* node;
     if (useFront) {
         node = surfaceMgr->GetDrawTarget()->GetFrontSurface();
         if (!node) {
@@ -145,7 +145,7 @@ i32 DrawTextToOverlaySurface(
     i32 b,
     i32 flag
 ) {
-    CDDrawSurfacePair* overlaySurface = surfaceMgr->GetDrawTarget()->m_overlayPair;
+    CRenderBuffer* overlaySurface = surfaceMgr->GetDrawTarget()->m_overlayPair;
 
     if (overlaySurface == NULL) {
         return 0;
@@ -175,7 +175,7 @@ i32 DrawTextToBackSurface(
     i32 b,
     i32 flag
 ) {
-    CDDrawSurfacePair* backSurface = surfaceMgr->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* backSurface = surfaceMgr->GetDrawTarget()->GetBackPair();
     if (backSurface == NULL) {
         return 0;
     }

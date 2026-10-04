@@ -21,7 +21,8 @@ GZ_ENUM_FLAGS_BEGIN(DDrawSurfacePairFlags, i32)
 GZ_ENUM_FLAGS_END(DDrawSurfacePairFlags, i32)
 GZ_ENUM_FLAGS_OPS(DDrawSurfacePairFlags)
 
-class CDDrawSurfacePair : public CDrawSubWorker {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CRenderBuffer : public CRenderSurface {
 public:
     virtual i32 IsLoaded() OVERRIDE;
 
@@ -29,8 +30,8 @@ public:
     void DrawLabel(RECT* rc, char* text);
 
 public:
-    CDDrawSurfacePair(CDDrawSurfaceMgr* mgr, i32 kind, i32 flags)
-        : CDrawSubWorker(INLINE_CTOR, mgr, kind, flags) {
+    CRenderBuffer(CDDrawSurfaceMgr* mgr, i32 kind, i32 flags)
+        : CRenderSurface(INLINE_CTOR, mgr, kind, flags) {
         m_surface = NULL;
         m_ownsSurface = true;
     }
@@ -44,15 +45,15 @@ public:
     virtual i32 LoadImage(CRezItm* src);
     virtual i32 ResolveImageName(char* name);
 
-    virtual ~CDDrawSurfacePair() OVERRIDE;
+    virtual ~CRenderBuffer() OVERRIDE;
 
-    void BltSelf(CDDrawSurfacePair* src);
+    void BltSelf(CRenderBuffer* src);
     i32 RestoreIfLost();
 
     void DrawBox(RECT* rect, i32 color);
     void DrawCross(i32 x, i32 y);
 
-    void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size);
+    void BlitDirtyRect(CRenderBuffer* other, const POINT& pos, const SIZE& size);
 
     b32 m_ownsSurface;
 };

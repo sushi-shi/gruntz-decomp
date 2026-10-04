@@ -254,7 +254,7 @@ i32 CMenuPage::UpdateItems(u32 deltaMs) {
 }
 
 RVA(0x00183b60, 0xe8)
-i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
+i32 CMenuPage::Draw(CRenderBuffer* target) {
     if (HAS(m_flags, MENU_PAGE_MULTI_COLUMN)) {
         return DrawMultiColumn(target);
     }
@@ -440,7 +440,7 @@ i32 CMenuPage::CanWrap() {
 }
 
 RVA(0x00183e50, 0x11c)
-i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
+i32 CMenuPage::DrawMultiColumn(CRenderBuffer* target) {
     i32 left = m_bounds.left;
     i32 right = m_bounds.right;
     i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;

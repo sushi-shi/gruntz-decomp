@@ -13,7 +13,7 @@ GZ_ENUM_BEGIN(ChatBoxLayout)
 GZ_ENUM_END(ChatBoxLayout)
 
 class CDDrawSurfaceMgr;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 
 class CGameText;
 
@@ -46,7 +46,7 @@ public:
 
     void HandleTextInputKey(i32 charCode, i32 keyData);
 
-    i32 Draw(CDDrawSurfacePair* target);
+    i32 Draw(CRenderBuffer* target);
 
     i32 m_originX;
     i32 m_originY;

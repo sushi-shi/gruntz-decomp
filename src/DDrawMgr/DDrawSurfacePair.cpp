@@ -57,7 +57,7 @@ void CTransientDrawList::Unload() {
 }
 
 RVA(0x00163bf0, 0x6d)
-void CTransientDrawList::RenderAndPrune(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+void CTransientDrawList::RenderAndPrune(CRenderBuffer* backBuffer, CRenderBuffer* overlay) {
     POSITION pos = m_items.GetHeadPosition();
     while (pos) {
         POSITION cur = pos;
@@ -91,9 +91,9 @@ void CTransientDrawList::Clear() {
 }
 
 RVA(0x00163c90, 0x116)
-i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
+i32 CRenderBuffer::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_flags = flags;
-    if (!CDrawSubWorker::SetGeometry(w, h, bpp)) {
+    if (!CRenderSurface::SetGeometry(w, h, bpp)) {
 
         if (m_id == IDX(DDRAW_PAGE_BACK)) {
             OwnerMgr()->SetInitError(WORLDERR_FRONT_DIMENSIONS);
@@ -130,7 +130,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 }
 
 RVA(0x00163db0, 0x64)
-i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
+i32 CRenderBuffer::InitFromSurface(CDDSurface* src) {
 
     if (src == NULL) {
         return 0;
@@ -138,7 +138,7 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     i32 w = src->GetWidth();
     ColorDepth bpp = src->GetBitDepth();
     i32 h = src->GetHeight();
-    if (!CDrawSubWorker::SetGeometry(w, h, bpp)) {
+    if (!CRenderSurface::SetGeometry(w, h, bpp)) {
         return 0;
     }
     m_id = 0x63;
@@ -148,7 +148,7 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
 }
 
 RVA(0x00163e20, 0x2d)
-void CDDrawSurfacePair::Unload() {
+void CRenderBuffer::Unload() {
     if (m_surface != NULL && m_ownsSurface != false) {
         CDDrawDeviceManager* manager = OwnerMgr()->GetDeviceManager();
         manager->RemoveSurface(m_surface);
@@ -158,7 +158,7 @@ void CDDrawSurfacePair::Unload() {
 }
 
 RVA(0x00163e50, 0x8b)
-i32 CDDrawSurfacePair::LoadImage(CRezItm* src) {
+i32 CRenderBuffer::LoadImage(CRezItm* src) {
     BEGIN_FILE_IMAGE_PARSE(src, type, buf)
     i32 r = m_surface->Resolve(OwnerMgr()->GetDeviceManager(), buf, type, src->GetSize(), 0);
     src->UnLoad();
@@ -166,12 +166,12 @@ i32 CDDrawSurfacePair::LoadImage(CRezItm* src) {
 }
 
 RVA(0x00163ee0, 0x19)
-i32 CDDrawSurfacePair::ResolveImageName(char* name) {
+i32 CRenderBuffer::ResolveImageName(char* name) {
     return m_surface->MakeImageKey(OwnerMgr()->GetDeviceManager(), name, 0);
 }
 
 RVA(0x00163f00, 0x40)
-i32 CDDrawSurfacePair::RestoreIfLost() {
+i32 CRenderBuffer::RestoreIfLost() {
     if (m_surface == NULL) {
         return 1;
     }
@@ -189,7 +189,7 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 
 // @early-stop
 RVA(0x00163f40, 0x23e)
-void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
+void CRenderBuffer::DrawBox(RECT* rect, i32 color) {
 
     if (rect->left < 0 || rect->left >= m_width) {
         return;
@@ -265,7 +265,7 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 }
 
 RVA(0x00164180, 0xcd)
-void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
+void CRenderBuffer::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {
         return;
     }
@@ -311,7 +311,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 }
 
 RVA(0x00164250, 0x12b)
-i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
+i32 CRenderBuffer::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width != w || m_height != h || m_bpp != bpp) {
         i32 sysmem;
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_OVERLAY) {
@@ -345,7 +345,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
                 return 0;
             }
         }
-        if (!CDrawSubWorker::SetGeom(w, h, bpp)) {
+        if (!CRenderSurface::SetGeom(w, h, bpp)) {
             return 0;
         }
     }
@@ -353,7 +353,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
 }
 
 RVA(0x00164380, 0x98)
-void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
+void CRenderBuffer::DrawCount(RECT* rc, i32 n) {
     char buf[0x20];
     sprintf(buf, "%i", n);
     CDDSurface* w = m_surface;
@@ -372,7 +372,7 @@ void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
 }
 
 RVA(0x00164420, 0x79)
-void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
+void CRenderBuffer::DrawLabel(RECT* rc, char* text) {
     CDDSurface* w = m_surface;
     if (!w) {
         return;
@@ -451,14 +451,10 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
 }
 
 RVA(0x00164650, 0x3)
-void CDDrawSurfacePair::BlitDirtyRect(
-    CDDrawSurfacePair* other,
-    const POINT& pos,
-    const SIZE& size
-) {}
+void CRenderBuffer::BlitDirtyRect(CRenderBuffer* other, const POINT& pos, const SIZE& size) {}
 
 RVA(0x00164660, 0x46)
-i32 CDrawSubWorker::RestoreIfLost() {
+i32 CRenderSurface::RestoreIfLost() {
     CDDSurface* s = m_surface;
     if (s != NULL) {
         IDirectDrawSurface* dd = s->GetDirectDrawSurface();
@@ -501,7 +497,7 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (!m_surface->IsValid()) {
         return 0;
     }
-    return CDrawSubWorker::SetGeom(w, h, bpp);
+    return CRenderSurface::SetGeom(w, h, bpp);
 }
 
 RVA(0x00164790, 0x41)
@@ -1148,7 +1144,7 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 }
 
 RVA(0x00165fa0, 0x93)
-void CTransientPixel::Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+void CTransientPixel::Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay) {
     overlay->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
     backBuffer->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
 }
@@ -1162,7 +1158,7 @@ i32 CTransientImage::SetImageByName(const char* imageSetName, i32 frameIndex) {
 }
 
 RVA(0x001660b0, 0x33)
-void CTransientImage::Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+void CTransientImage::Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay) {
     m_image->RenderImage(this, backBuffer);
     if (overlay->GetSurface() != NULL
         && !HAS(

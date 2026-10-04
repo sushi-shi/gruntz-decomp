@@ -93,7 +93,7 @@ i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
 }
 
 RVA(0x00150660, 0x49)
-void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
+void CWwdSpriteObject::BltDirty(CRenderBuffer* dst, CRenderBuffer* src) {
 
     m_shadow = m_dirty;
     if (m_dirty.m_armed != -1) {
@@ -105,9 +105,9 @@ void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) 
 
 RVA(0x001506b0, 0x1ec)
 void CWwdSpriteObject::BltDirtyEx(
-    CDrawSubWorker* dst,
-    CDDrawSurfacePair* src,
-    CDDrawSurfacePair* restoreSrc
+    CRenderSurface* dst,
+    CRenderBuffer* src,
+    CRenderBuffer* restoreSrc
 ) {
     if (m_dirty.IsValid() && m_shadow.IsValid()) {
         RECT ir;
@@ -131,9 +131,9 @@ void CWwdSpriteObject::BltDirtyEx(
 
 RVA(0x001508a0, 0x117)
 void CWwdSpriteObject::BltDirtyRegions(
-    CDDrawSurfacePair* dst,
-    CDDrawSurfacePair* src,
-    CDDrawSurfacePair* restoreSrc
+    CRenderBuffer* dst,
+    CRenderBuffer* src,
+    CRenderBuffer* restoreSrc
 ) {
     if (m_dirty.IsValid() && m_shadow.IsValid()) {
         RECT ir;

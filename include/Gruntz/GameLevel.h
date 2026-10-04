@@ -14,7 +14,7 @@
 #include <Wwd/WwdTileHandle.h>
 
 class CFileMemBase;
-class CDDrawSurfacePair;
+class CRenderBuffer;
 struct WwdTileImageRecord;
 
 static const i32 s_tileClear = -1;
@@ -140,9 +140,9 @@ public:
 
     i32 SetViewportSizeAndUpdatePlanes(i32 w, i32 h);
 
-    void SyncToMainIndex(CDDrawSurfacePair* visitor);
+    void SyncToMainIndex(CRenderBuffer* visitor);
 
-    void SyncAfterMainIndex(CDDrawSurfacePair* visitor);
+    void SyncAfterMainIndex(CRenderBuffer* visitor);
 
     void ResetMainPlane();
 
@@ -172,7 +172,7 @@ public:
     i32 CanSaveName(CFileMemBase* s);
     i32 CanLoadName(CFileMemBase* s);
 
-    void VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx);
+    void VisitVisible(CRenderBuffer* visitor, CDDrawChildGroup* ctx);
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 

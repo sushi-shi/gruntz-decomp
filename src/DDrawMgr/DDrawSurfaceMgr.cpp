@@ -61,7 +61,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_hWnd = hWnd;
     m_flags = flags;
 
-    m_drawTarget = new CDDrawSubMgrPages(this);
+    m_drawTarget = new CDisplayBuffers(this);
     m_childGroup = new CDDrawChildGroup(this);
     m_transientDrawList = new CTransientDrawList(this);
     m_imageRegistry = new CImageSetRegistry(this);
@@ -151,7 +151,7 @@ void CDDrawSurfaceMgr::Cleanup() {
 
 RVA(0x00155f00, 0x41)
 b32 CDDrawSurfaceMgr::IsReady() {
-    CDDrawSubMgrPages* first = m_drawTarget;
+    CDisplayBuffers* first = m_drawTarget;
 
     return first != NULL && ChildGroup() != NULL && m_transientDrawList != NULL
            && m_imageRegistry != NULL && m_logicRegistry != NULL && first->IsLoaded() != 0

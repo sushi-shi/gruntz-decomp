@@ -360,7 +360,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
 }
 
 RVA(0x00159c90, 0x23)
-void CDDrawChildGroup::RenderChildren(CDDrawSurfacePair* target) {
+void CDDrawChildGroup::RenderChildren(CRenderBuffer* target) {
     POSITION n = m_list.GetHeadPosition();
     if (n != NULL) {
         do {
@@ -371,7 +371,7 @@ void CDDrawChildGroup::RenderChildren(CDDrawSurfacePair* target) {
 }
 
 RVA(0x00159cc0, 0x2a)
-void CDDrawChildGroup::BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
+void CDDrawChildGroup::BltDirtyChildren(CRenderBuffer* dst, CRenderBuffer* src) {
     POSITION n = m_list.GetHeadPosition();
     if (n != NULL) {
         do {
@@ -383,9 +383,9 @@ void CDDrawChildGroup::BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePai
 
 RVA(0x00159cf0, 0x42)
 void CDDrawChildGroup::BltDirtyChildrenEx(
-    CDrawSubWorker* dst,
-    CDDrawSurfacePair* src,
-    CDDrawSurfacePair* restoreSrc
+    CRenderSurface* dst,
+    CRenderBuffer* src,
+    CRenderBuffer* restoreSrc
 ) {
     POSITION n = m_list.GetHeadPosition();
     if (n != NULL) {
@@ -399,9 +399,9 @@ void CDDrawChildGroup::BltDirtyChildrenEx(
 
 RVA(0x00159d40, 0x42)
 void CDDrawChildGroup::BltDirtyChildRegions(
-    CDDrawSurfacePair* dst,
-    CDDrawSurfacePair* src,
-    CDDrawSurfacePair* restoreSrc
+    CRenderBuffer* dst,
+    CRenderBuffer* src,
+    CRenderBuffer* restoreSrc
 ) {
     POSITION n = m_list.GetHeadPosition();
     if (n != NULL) {
@@ -603,7 +603,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_HIT_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
         CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-        CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
+        CRenderBuffer* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -616,7 +616,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ATTACK_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
         CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-        CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
+        CRenderBuffer* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -629,7 +629,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_MOVE_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
         CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-        CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
+        CRenderBuffer* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -642,7 +642,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ORIGIN)) {
         POSITION pos = m_list.GetHeadPosition();
         CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-        CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
+        CRenderBuffer* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
@@ -686,7 +686,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
     }
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SURFACE_MEMORY)) {
         POSITION pos = m_list.GetHeadPosition();
-        CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
+        CRenderBuffer* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
         CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
         if (pos != NULL) {
             do {
@@ -735,7 +735,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
     }
     POSITION pos = m_list.GetHeadPosition();
     CLevelPlane* view = OwnerMgr()->GetLevel()->m_mainPlane;
-    CDDrawSurfacePair* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* drawHost = OwnerMgr()->GetDrawTarget()->GetBackPair();
     if (pos == NULL) {
         return;
     }

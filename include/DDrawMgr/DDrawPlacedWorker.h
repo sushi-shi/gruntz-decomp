@@ -14,7 +14,7 @@ class CDDrawSurfaceMgr;
 
 class CImageSet;
 
-class CDDrawSurfacePair;
+class CRenderBuffer;
 
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
 class CTransientDrawItem : public CRenderState {
@@ -29,7 +29,7 @@ public:
 
     virtual i32 SetPosition(i32 x, i32 y) OVERRIDE;
 
-    virtual void Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
+    virtual void Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay);
 
     i32 m_renderPassesRemaining;
 
@@ -62,7 +62,7 @@ struct CTransientPixel : public CTransientDrawItem {
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual void Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
+    virtual void Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay) OVERRIDE;
     CTransientPixel() {}
     CTransientPixel(CDDrawSurfaceMgr* ctx) : CTransientDrawItem(ctx) {
         m_pixelValue = 0;
@@ -74,7 +74,7 @@ struct CTransientPixel : public CTransientDrawItem {
 struct CTransientImage : public CTransientDrawItem {
     virtual ~CTransientImage() OVERRIDE;
 
-    virtual void Render(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
+    virtual void Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay) OVERRIDE;
     CTransientImage() {}
     CTransientImage(CDDrawSurfaceMgr* ctx) : CTransientDrawItem(ctx) {
         m_contentValue = 0;

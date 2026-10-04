@@ -310,7 +310,7 @@ i32 CStatusBarMgr::Render() {
             if (cfg) {
                 CImage* entry = IMAGE_SET_FRAME_AT_UNCHECKED(cfg, cfg->GetMinIndex());
                 if (entry) {
-                    CDDrawSubMgrPages* l1 = g_gameReg->World()->m_drawTarget;
+                    CDisplayBuffers* l1 = g_gameReg->World()->m_drawTarget;
                     entry->RenderFrame(
                         l1->m_backPair,
                         entry->GetAnchorX() + m_barRect.left,

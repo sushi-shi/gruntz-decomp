@@ -283,7 +283,7 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
 }
 
 RVA(0x00153470, 0x31a)
-void CImage::RenderImage(CRenderState* info, CDDrawSurfacePair* dst) {
+void CImage::RenderImage(CRenderState* info, CRenderBuffer* dst) {
     SpriteStateFlags mode = info->m_stateFlags;
     if (HAS(mode, SPRITE_STATE_HIDDEN)) {
         info->m_dirty.Invalidate();
@@ -399,7 +399,7 @@ void CImage::RenderImage(CRenderState* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00153790, 0x6a)
-void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
+void CImage::RenderFrame(CRenderBuffer* target, i32 x, i32 y, i32 flags) {
     RVA_DYNINIT(0x00153800, 0x10, s_clip)
     DATA(0x002bf2a0)
     static CRenderState s_clip;
@@ -409,13 +409,7 @@ void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
 }
 
 RVA(0x00153810, 0x95)
-void CImage::RenderFrameClipped(
-    CDDrawSurfacePair* target,
-    i32 x,
-    i32 y,
-    RECT* clipRect,
-    i32 flags
-) {
+void CImage::RenderFrameClipped(CRenderBuffer* target, i32 x, i32 y, RECT* clipRect, i32 flags) {
     RVA_DYNINIT(0x001538b0, 0x10, s_clip)
     DATA(0x002bf228)
     static CRenderState s_clip;
@@ -428,7 +422,7 @@ void CImage::RenderFrameClipped(
 }
 
 RVA(0x001538c0, 0x257)
-void CImage::BlitNorm(CRenderState* info, CDDrawSurfacePair* dst) {
+void CImage::BlitNorm(CRenderState* info, CRenderBuffer* dst) {
     LONG x = info->m_screenX - m_originX - info->m_imageOffsetX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_imageOffsetY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -448,7 +442,7 @@ void CImage::BlitNorm(CRenderState* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00153b20, 0x270)
-void CImage::BlitFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
+void CImage::BlitFlipV(CRenderState* info, CRenderBuffer* dst) {
     LONG x = info->m_screenX - info->m_imageOffsetX - m_anchorX - m_originX;
     LONG y = m_originY - m_anchorY + info->m_imageOffsetY + info->m_screenY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -465,7 +459,7 @@ void CImage::BlitFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00153d90, 0x259)
-void CImage::BlitFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
+void CImage::BlitFlipH(CRenderState* info, CRenderBuffer* dst) {
     LONG x = info->m_imageOffsetX - m_anchorX + m_originX + info->m_screenX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_imageOffsetY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -482,7 +476,7 @@ void CImage::BlitFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00153ff0, 0x280)
-void CImage::BlitShadeFlipHV(CRenderState* info, CDDrawSurfacePair* dst) {
+void CImage::BlitShadeFlipHV(CRenderState* info, CRenderBuffer* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_imageOffsetX;
     LONG y = info->m_screenY - m_anchorY + m_originY + info->m_imageOffsetY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -501,7 +495,7 @@ void CImage::BlitShadeFlipHV(CRenderState* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00154270, 0x257)
-void CImage::BlitShadeNorm(CRenderState* info, CDDrawSurfacePair* dst) {
+void CImage::BlitShadeNorm(CRenderState* info, CRenderBuffer* dst) {
     LONG x = info->m_screenX - m_originX - m_anchorX - info->m_imageOffsetX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_imageOffsetY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -519,7 +513,7 @@ void CImage::BlitShadeNorm(CRenderState* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x001544d0, 0x275)
-void CImage::BlitShadeFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
+void CImage::BlitShadeFlipV(CRenderState* info, CRenderBuffer* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_imageOffsetX - m_originX;
     LONG y = m_originY + info->m_imageOffsetY + info->m_screenY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -537,7 +531,7 @@ void CImage::BlitShadeFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00154750, 0x275)
-void CImage::BlitShadeFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
+void CImage::BlitShadeFlipH(CRenderState* info, CRenderBuffer* dst) {
     LONG x = info->m_imageOffsetX + m_originX + info->m_screenX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_imageOffsetY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);

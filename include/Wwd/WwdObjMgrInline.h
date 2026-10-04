@@ -25,7 +25,7 @@ static inline void DrawObjectDebugRect(
     CWwdGameObject* obj,
     const RECT& objectRect,
     CLevelPlane* view,
-    CDDrawSurfacePair* drawHost
+    CRenderBuffer* drawHost
 ) {
     i32 ox = obj->m_screenX;
     RECT rc;

@@ -142,7 +142,7 @@ void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
 }
 
 RVA(0x00020f40, 0x188)
-i32 CChatBox::Draw(CDDrawSurfacePair* target) {
+i32 CChatBox::Draw(CRenderBuffer* target) {
     CChatBox* self = this;
     if (!self->m_inputActive) {
         return 1;

@@ -215,7 +215,7 @@ i32 CCreditsState::Render() {
     StepVideo();
     DrawScrollingCredits();
 
-    CDDrawSubMgrPages* drawPages = m_world->GetDrawTarget();
+    CDisplayBuffers* drawPages = m_world->GetDrawTarget();
     drawPages->GetFrontSurface()->GetSurface()->Flip(NULL);
     drawPages->GetBackPair()->BltSelf(drawPages->m_overlayPair);
 
@@ -290,9 +290,9 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     if (m_videoPlaying != false) {
-        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyFrontToBackBuffers();
-        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyBackToOverlay();
-        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->ClearAllPages(0);
+        (static_cast<CDisplayBuffers*>(m_world->GetDrawTarget()))->CopyFrontToBackBuffers();
+        (static_cast<CDisplayBuffers*>(m_world->GetDrawTarget()))->CopyBackToOverlay();
+        (static_cast<CDisplayBuffers*>(m_world->GetDrawTarget()))->ClearAllPages(0);
         m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
         return 1;
     }
@@ -315,7 +315,7 @@ i32 CCreditsState::InitAttractTitle() {
     m_stateResources = saved;
     CDDSurface* tgt = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
-    (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyBackToOverlay();
+    (static_cast<CDisplayBuffers*>(m_world->GetDrawTarget()))->CopyBackToOverlay();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
@@ -430,9 +430,9 @@ i32 CCreditsState::StepVideo() {
     }
     i32 ret = 0;
     if (m_videoHandle) {
-        CDDrawSubMgrPages* v = m_world->GetDrawTarget();
-        CDDrawSurfacePair* dst = v->m_overlayPair;
-        CDDrawSurfacePair* src = v->GetBackPair();
+        CDisplayBuffers* v = m_world->GetDrawTarget();
+        CRenderBuffer* dst = v->m_overlayPair;
+        CRenderBuffer* src = v->GetBackPair();
         if (!m_videoHandle->Advance(dst->GetSurface()->GetDirectDrawSurface(), -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();
@@ -501,7 +501,7 @@ RVA_COMPGEN(0x00039fa0, 0x188, ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@
 RVA_COMPGEN(0x0003a1a0, 0x1e, ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z)
 
 RVA(0x0003a1d0, 0x1d)
-void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
+void CRenderBuffer::BltSelf(CRenderBuffer* src) {
     BLT_SURFACE_PAIR_SELF(this, src);
 }
 
