@@ -29,7 +29,7 @@ public:
     void ClearMessages();
     void Reset();
     i32 AddMessage(const char* str, GZ_ENUM_PARAM(GameTextFlags, i32) flags, i32 colorTint);
-    void AdvanceMessageTimer(i32 delta);
+    void AdvanceMessageTimer(i32 deltaMs);
 
     i32 HandleInputChar(i32 charCode, i32 keyData);
 
@@ -71,10 +71,10 @@ public:
     HFONT m_messageFont;
 };
 
-extern i32 g_chatTextWidth;
-extern i32 g_caretBlinkMs;
+extern i32 g_inputCaretOffsetX;
+extern i32 g_caretBlinkRemainingMs;
 extern b32 g_caretBlinkOn;
-extern i32 g_lastDrawTextFormat;
+extern i32 g_inputTextDrawFormat;
 
 struct GameTextLine {
     GameTextFlags m_flags;

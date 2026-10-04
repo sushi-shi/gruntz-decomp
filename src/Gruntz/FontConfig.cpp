@@ -16,11 +16,11 @@
 #include <string.h>
 
 DATA(0x0020c7a8)
-i32 g_lastDrawTextFormat = DT_SINGLELINE;
+i32 g_inputTextDrawFormat = DT_SINGLELINE;
 DATA(0x0022b434)
-i32 g_chatTextWidth = 0;
+i32 g_inputCaretOffsetX = 0;
 DATA(0x0022b438)
-i32 g_caretBlinkMs = 0;
+i32 g_caretBlinkRemainingMs = 0;
 DATA(0x0022b43c)
 b32 g_caretBlinkOn = false;
 
@@ -69,7 +69,7 @@ i32 CGameText::Initialize(i32 messageHoldMs, i32 crowdedMessageHoldMs) {
 
     CString arial("ARIAL");
 
-    const char* faceTF = static_cast<const char*>(
+    const char* trainingFontFace = static_cast<const char*>(
         *g_buteMgr.GetString("Font", "TrainingFont", static_cast<CString*>(&arial))
     );
     m_trainingFont = CreateFontA(
@@ -86,7 +86,7 @@ i32 CGameText::Initialize(i32 messageHoldMs, i32 crowdedMessageHoldMs) {
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         DEFAULT_PITCH | FF_DONTCARE,
-        faceTF
+        trainingFontFace
     );
     if (!m_trainingFont) {
         m_trainingFont = CreateFontA(
@@ -107,7 +107,7 @@ i32 CGameText::Initialize(i32 messageHoldMs, i32 crowdedMessageHoldMs) {
         );
     }
 
-    const char* faceMF = static_cast<const char*>(
+    const char* messageFontFace = static_cast<const char*>(
         *g_buteMgr.GetString("Font", "MessageFont", static_cast<CString*>(&arial))
     );
     m_messageFont = CreateFontA(
@@ -124,7 +124,7 @@ i32 CGameText::Initialize(i32 messageHoldMs, i32 crowdedMessageHoldMs) {
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         DEFAULT_PITCH | FF_DONTCARE,
-        faceMF
+        messageFontFace
     );
     if (!m_messageFont) {
         m_messageFont = CreateFontA(
@@ -213,15 +213,15 @@ i32 CGameText::AddMessage(const char* str, GZ_ENUM_PARAM(GameTextFlags, i32) fla
 }
 
 RVA(0x00021d80, 0x79)
-void CGameText::AdvanceMessageTimer(i32 delta) {
+void CGameText::AdvanceMessageTimer(i32 deltaMs) {
     if (m_inputActive) {
-        m_inputElapsedMs += delta;
+        m_inputElapsedMs += deltaMs;
     }
     i32 count = m_lines.GetCount();
     if (!count) {
         m_messageElapsedMs = 0;
     }
-    m_messageElapsedMs += delta;
+    m_messageElapsedMs += deltaMs;
 
     GameTextLine* item;
     if (count > 3) {
@@ -306,21 +306,21 @@ i32 CGameText::DrawInputCaret(HDC hdc, RECT* rect) {
     }
     CString text(m_inputText);
     if (text.IsEmpty()) {
-        g_chatTextWidth = 0;
+        g_inputCaretOffsetX = 0;
     } else {
         RECT rc = *rect;
         DrawTextA(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
-        i32 textW = rc.right - rc.left;
-        i32 provW = rect->right - rect->left;
-        g_chatTextWidth = Min(provW, textW);
+        i32 textWidth = rc.right - rc.left;
+        i32 availableWidth = rect->right - rect->left;
+        g_inputCaretOffsetX = Min(availableWidth, textWidth);
     }
 
     CDC* dc = CDC::FromHandle(hdc);
     if (dc != NULL) {
         CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
         CPen* saved = dc->SelectObject(&pen);
-        dc->MoveTo(rect->left + g_chatTextWidth, rect->top);
-        dc->LineTo(rect->left + g_chatTextWidth, rect->top + 0xc);
+        dc->MoveTo(rect->left + g_inputCaretOffsetX, rect->top);
+        dc->LineTo(rect->left + g_inputCaretOffsetX, rect->top + 0xc);
         dc->SelectObject(saved);
     }
     return 1;
@@ -341,14 +341,14 @@ i32 CGameText::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         }
     }
     i32 t;
-    if (g_frameDelta >= static_cast<u32>(g_caretBlinkMs)) {
+    if (g_frameDelta >= static_cast<u32>(g_caretBlinkRemainingMs)) {
         t = 0;
     } else {
-        t = g_caretBlinkMs - g_frameDelta;
+        t = g_caretBlinkRemainingMs - g_frameDelta;
     }
-    g_caretBlinkMs = t;
+    g_caretBlinkRemainingMs = t;
     if (t == 0) {
-        g_caretBlinkMs = 0xc8;
+        g_caretBlinkRemainingMs = 0xc8;
         g_caretBlinkOn ^= 1;
     }
     if (g_caretBlinkOn != false && text.IsEmpty()) {
@@ -366,7 +366,7 @@ i32 CGameText::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     RECT rc = *rect;
     pDraw(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
     i32 fmt = ((rc.right - rc.left) > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
-    g_lastDrawTextFormat = fmt;
+    g_inputTextDrawFormat = fmt;
     pDraw(hdc, text, text.GetLength(), rect, fmt);
     if (prev) {
         SelectObject(hdc, prev);
