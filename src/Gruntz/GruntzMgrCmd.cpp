@@ -525,9 +525,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         }
         case CMD_NO_OP80_8:
             return 1;
-        case CMD_MULTI_CONNECT:
+        case CMD_MULTI_LOAD_LEVEL:
             if (m_curState && m_curState->GetStateId() == GAMESTATE_MULTI) {
-                static_cast<CMulti*>(m_curState)->Connect(lParam);
+                static_cast<CMulti*>(m_curState)->LoadAndSynchronizeLevel(lParam);
             }
             return 1;
         case CMD_LOAD_GAME_DIALOG:

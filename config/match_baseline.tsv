@@ -3075,7 +3075,7 @@ multi	?BuiltInLevelName@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:08064d
 multi	?CheckDropTimeout@CMulti@@QAEXXZ	100.0000	100.0000	7	9e8a021f0876	0xbc2d0	100.0000	
 multi	?Close@CMulti@@QAEXXZ	100.0000	100.0000	1	6e22fe26f927	0xb7890	100.0000	
 multi	?CompleteLevel@CMulti@@UAEHXZ	100.0000	100.0000	1	a79763baa6d8	0xb6560	100.0000	
-multi	?Connect@CMulti@@QAEHH@Z	100.0000	100.0000	4	6dfdc24ad015	0xb67f0	100.0000	
+multi	?LoadAndSynchronizeLevel@CMulti@@QAEHH@Z	100.0000	100.0000	4	6dfdc24ad015	0xb67f0	100.0000	
 multi	?CreateHostPlayer@CMulti@@QAEHPAXPBDW4ColorTint@@HHHHH@Z	100.0000	100.0000	7	75d1f364a4f3	0xbc910	100.0000	
 multi	?CreateHostSessionAndPlayer@CMulti@@QAEPAVCNetSessionListNode@@XZ	100.0000	100.0000	11	acd304a533ee	0xb8b10	100.0000	
 multi	?CreateLocalPlayer@CMulti@@QAEHXZ	93.8426	93.8426	10	03845d14f9c4	0xbc750	93.8426	

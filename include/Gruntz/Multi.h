@@ -120,7 +120,7 @@ public:
     i32 RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam);
     void SendLobbyKeepAlive();
 
-    i32 Connect(i32 mode);
+    i32 LoadAndSynchronizeLevel(i32 level);
     i32 StartTitle();
     void CheckDropTimeout();
 
@@ -242,8 +242,8 @@ public:
     b32 m_versionMismatch;
     b32 m_outOfSync;
     b32 m_syncGate;
-    b32 m_pumpGuard;
-    b32 m_connected;
+    b32 m_waitingForPlayers;
+    b32 m_gameStarted;
     b32 m_waitDialogReplyReceived;
     b32 m_lobbyLaunch;
     b32 m_connectAccepted;
