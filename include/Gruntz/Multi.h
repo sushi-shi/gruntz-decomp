@@ -6,6 +6,7 @@
 #include <Enums.h>
 #include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GlyphStringDraw.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
 #include <Net/NetMsgId.h>
@@ -306,17 +307,5 @@ extern HWND g_netMessageEditHwnd;
 
 extern char g_gameKey[];
 extern u32 g_ackThrottleDeadline;
-
-i32 DrawTextToOverlaySurface(
-    CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
 
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

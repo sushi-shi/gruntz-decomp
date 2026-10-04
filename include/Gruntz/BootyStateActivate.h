@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GlyphStringDraw.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 #include <Wwd/WwdGameObjectFlags.h>
@@ -22,18 +23,6 @@ GZ_ENUM_END(SecretBonusTier)
 GZ_ENUM_CONST_BEGIN(BootyEffectCount)
     BOOTY_EXPLOSION_COUNT = 8
 GZ_ENUM_CONST_END(BootyEffectCount)
-
-i32 DrawTextToBackSurface(
-    CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
 
 inline CWwdSpriteObject* CreateSimpleAnimationSprite(i32 sortKey) {
     return g_gameReg->World()->ChildGroup()->CreateSprite(
