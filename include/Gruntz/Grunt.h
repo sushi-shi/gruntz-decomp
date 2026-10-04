@@ -295,6 +295,14 @@ public:
         m_defenderState = state;
     }
 
+    i32 GetDefenderQueuePosition() const {
+        return m_defenderQueuePosition;
+    }
+
+    void SetDefenderQueuePosition(i32 position) {
+        m_defenderQueuePosition = position;
+    }
+
     Coord DefenderPosition() const {
         return m_defenderPx;
     }
