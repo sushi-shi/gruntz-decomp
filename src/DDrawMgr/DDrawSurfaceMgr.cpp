@@ -209,18 +209,23 @@ i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
 }
 
 RVA(0x00156020, 0x505)
-i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
+i32 CDDrawSurfaceMgr::SaveSnapshot(
+    WorldSerializationCallback callback,
+    char* path,
+    char* snapshotName,
+    LogicTypeId typeId
+) {
     if (path == NULL) {
         return 0;
     }
-    SetSerializationCallback(cb);
+    SetSerializationCallback(callback);
 
-    CFileMem S;
+    CFileMem archive;
 
-    if (!S.SetName(path, 0, 0)) {
+    if (!archive.SetName(path, 0, 0)) {
         return 0;
     }
-    if (!S.Open()) {
+    if (!archive.Open()) {
         return 0;
     }
 
@@ -232,105 +237,109 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     header.m_month = now.GetMonth();
     header.m_day = now.GetDay();
     header.m_year = now.GetYear();
-    strcpy(header.m_name, name);
+    strcpy(header.m_name, snapshotName);
     header.m_childCount = ChildGroup()->CountActive();
     header.m_objIdCounter = g_wwdObjIdCounter;
-    S.Write(&header, sizeof(header));
+    archive.Write(&header, sizeof(header));
 
-    if (!InvokeCallbackInline(&S, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, NULL)) {
+    if (!InvokeSerializationCallback(&archive, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!ChildGroup()->WriteObjectSnapshots(&S, typeId)) {
+    if (!ChildGroup()->WriteObjectSnapshots(&archive, typeId)) {
         return 0;
     }
-    if (!InvokeCallbackInline(&S, SERIAL_PRESAVE, LOGIC_UNSET, NULL)) {
+    if (!InvokeSerializationCallback(&archive, SERIAL_PRESAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_PRESAVE, typeId)) {
+    if (!ChildGroup()->DispatchSerializationToObjects(&archive, SERIAL_PRESAVE, typeId)) {
         return 0;
     }
-    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_PRESAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
-    if (!InvokeCallbackInline(&S, SERIAL_SAVE, LOGIC_UNSET, NULL)) {
+    if (!InvokeSerializationCallback(&archive, SERIAL_SAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!ChildGroup()->SerializeObjects(&S, typeId)) {
+    if (!ChildGroup()->SerializeObjects(&archive, typeId)) {
         return 0;
     }
-    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_SAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
-    if (!InvokeCallbackInline(&S, SERIAL_POSTSAVE, LOGIC_UNSET, NULL)) {
+    if (!InvokeSerializationCallback(&archive, SERIAL_POSTSAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_POSTSAVE, typeId)) {
+    if (!ChildGroup()->DispatchSerializationToObjects(&archive, SERIAL_POSTSAVE, typeId)) {
         return 0;
     }
-    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_POSTSAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
 
-    S.Ready();
+    archive.Ready();
     return 1;
 }
 
 RVA(0x00156530, 0x557)
-i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
-    if (name == NULL) {
+i32 CDDrawSurfaceMgr::LoadSnapshot(
+    WorldSerializationCallback callback,
+    char* path,
+    LogicTypeId typeId
+) {
+    if (path == NULL) {
         return 0;
     }
-    SetSerializationCallback(cb);
+    SetSerializationCallback(callback);
 
-    CFileMem S;
+    CFileMem archive;
 
-    if (!S.SetName(name, 1, 0)) {
+    if (!archive.SetName(path, 1, 0)) {
         return 0;
     }
-    if (!S.Open()) {
+    if (!archive.Open()) {
         return 0;
     }
 
     CSnapshotHeader header;
-    S.Read(&header, sizeof(header));
+    archive.Read(&header, sizeof(header));
 
-    if (!InvokeCallbackInline(&S, SERIAL_RESTORE_BEGIN, typeId, &header)) {
+    if (!InvokeSerializationCallback(&archive, SERIAL_RESTORE_BEGIN, typeId, &header)) {
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
     ChildGroup()->ClearChildren();
-    if (!ChildGroup()->LoadObjects(&S, header.m_childCount, typeId)) {
+    if (!ChildGroup()->LoadObjects(&archive, header.m_childCount, typeId)) {
         return 0;
     }
-    if (!InvokeCallbackInline(&S, SERIAL_PRELOAD, typeId, &header)) {
+    if (!InvokeSerializationCallback(&archive, SERIAL_PRELOAD, typeId, &header)) {
         return 0;
     }
-    if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_PRELOAD, typeId)) {
+    if (!ChildGroup()->DispatchSerializationToObjects(&archive, SERIAL_PRELOAD, typeId)) {
         return 0;
     }
-    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_PRELOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
-    if (!InvokeCallbackInline(&S, SERIAL_LOAD, typeId, &header)) {
+    if (!InvokeSerializationCallback(&archive, SERIAL_LOAD, typeId, &header)) {
         return 0;
     }
-    if (!ChildGroup()->DeserializeObjects(&S, header.m_childCount, typeId)) {
+    if (!ChildGroup()->DeserializeObjects(&archive, header.m_childCount, typeId)) {
         return 0;
     }
-    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_LOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
-    if (!InvokeCallbackInline(&S, SERIAL_POSTLOAD, typeId, &header)) {
+    if (!InvokeSerializationCallback(&archive, SERIAL_POSTLOAD, typeId, &header)) {
         return 0;
     }
-    if (!ChildGroup()->DispatchSerializationToObjects(&S, SERIAL_POSTLOAD, typeId)) {
+    if (!ChildGroup()->DispatchSerializationToObjects(&archive, SERIAL_POSTLOAD, typeId)) {
         return 0;
     }
-    if (!this->GetLevel()->SerializeDispatch(&S, SERIAL_POSTLOAD, LOGIC_UNSET, 0)) {
+    if (!this->GetLevel()->SerializeDispatch(&archive, SERIAL_POSTLOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
 
-    S.Ready();
+    archive.Ready();
     this->GetLevel()->DeactivateDistantObjectsOnMainPlane();
     return 1;
 }

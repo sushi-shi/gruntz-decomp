@@ -1081,10 +1081,10 @@ ddrawsurfacemgr	?Init@CDDrawSurfaceMgr@@UAEHPAUHWND__@@HHW4ColorDepth@@H@Z	100.0
 ddrawsurfacemgr	?IsReady@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	5	051920d726db	0x155f00	100.0000	
 ddrawsurfacemgr	?LoadRecordFile@@YGHPBDPAUCSnapshotHeader@@PAXIH@Z	100.0000	100.0000	2	7075faff2c52	0x156ad0	100.0000	
 ddrawsurfacemgr	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	1	9dae9c02a324	0x157a50	100.0000	
-ddrawsurfacemgr	?RestoreChildren@CDDrawSurfaceMgr@@QAEHP6AHPAV1@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@ZPAD3@Z	97.1442	97.1442	6	38bdce865365	0x156530	97.1442	
+ddrawsurfacemgr	?LoadSnapshot@CDDrawSurfaceMgr@@QAEHP6AHPAV1@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@ZPAD3@Z	97.1442	97.1442	6	38bdce865365	0x156530	97.1442	
 ddrawsurfacemgr	?SetDimensions@CDDrawSurfaceMgr@@QAEHHHW4ColorDepth@@@Z	100.0000	100.0000	5	14eaddca911c	0x155f60	100.0000	
 ddrawsurfacemgr	?SetRestoreHandler@CDDrawSurfaceMgr@@QAEXP6AHXZ@Z	100.0000	100.0000	1	aede1752d17a	0x155f50	100.0000	
-ddrawsurfacemgr	?SnapshotChildren@CDDrawSurfaceMgr@@QAEHP6AHPAV1@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@ZPAD63@Z	93.8248	93.8248	10	5d7e01671f5d	0x156020	93.8248	
+ddrawsurfacemgr	?SaveSnapshot@CDDrawSurfaceMgr@@QAEHP6AHPAV1@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@ZPAD63@Z	93.8248	93.8248	10	5d7e01671f5d	0x156020	93.8248	
 ddrawsurfacepair	??1CAniFrameRecord@@UAE@XZ	100.0000	100.0000	1	5329dce8cbfc	0x1657a0	100.0000	
 ddrawsurfacepair	??1CDDrawPaletteResource@@UAE@XZ	100.0000	100.0000	1	c2ed036c6f36	0x165dd0	100.0000	
 ddrawsurfacepair	??_GCAniFrameRecord@@UAEPAXI@Z	100.0000	100.0000	1	cpp:fd7268026b8c	0x165780	100.0000	
