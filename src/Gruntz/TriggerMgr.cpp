@@ -1471,7 +1471,7 @@ RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     m_targetingCursorId = 0;
-    if (ov == NULL || ov->IsActive() == false) {
+    if (ov == NULL || ov->m_active == false) {
         return 0;
     }
     CGrunt* cell = SoleSelectedGrunt();
