@@ -85,7 +85,7 @@ rva	unit	function	lost_max	cur
 0x0fe910	sbi_rectonly	?HandleClick@CStatusBarMgr@@QAEHHHH@Z	99.7111	97.6338
 0x0fe6b0	sbi_rectonly	?Render@CStatusBarMgr@@QAEHXZ	100.0000	99.7895
 0x0ea6c0	sbi_statztabgruntbar	?UpdateIcons@CSBI_StatzTabGruntBar@@QAEHXZ	91.3681	91.2857
-0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	95.7703	95.4459
+0x0eb880	sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	100.0000	96.4189
 0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
 0x09c0e0	spriteloaders	?AddTime@CLevelTimer@@QAEXHH@Z	100.0000	99.8214
