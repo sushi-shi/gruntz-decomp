@@ -1336,7 +1336,7 @@ i32 CBootyState::Render() {
     }
 
     i64 elapsed = static_cast<i64>(g_frameTime) - m_frameTiming.m_start;
-    if (elapsed < m_frameTiming.m_interval) {
+    if (elapsed < m_frameTiming.GetInterval()) {
         return 0;
     }
     m_frameTiming.Start(0x21);

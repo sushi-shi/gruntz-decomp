@@ -3217,7 +3217,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 
         ClockInterval* clock = &m_grinderClock;
         i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
-        if (d >= clock->m_interval) {
+        if (d >= clock->GetInterval()) {
             OFFSET_RECT_Y_EDGES(m_grinderItemRect, speed, speed);
             CSBI_ImageSet* w = m_grinderItemDisplay;
             if (w) {
@@ -4348,7 +4348,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
         case DESTRUCT_WARNING_FORWARD: {
             ClockInterval* clock = &m_destructWarningClock;
             i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
-            if (d >= clock->m_interval) {
+            if (d >= clock->GetInterval()) {
                 m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame + 1);
                 if (m_destructButtonFrame >= DESTRUCT_FRAME_WARNING_LAST) {
                     m_destructButtonFrame = DESTRUCT_FRAME_WARNING_LAST;
@@ -4365,7 +4365,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
         case DESTRUCT_WARNING_REVERSE: {
             ClockInterval* clock = &m_destructWarningClock;
             i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
-            if (d >= clock->m_interval) {
+            if (d >= clock->GetInterval()) {
                 m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame - 1);
                 if (m_destructButtonFrame <= DESTRUCT_FRAME_WARNING_FIRST) {
                     m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;

@@ -2069,7 +2069,7 @@ afterArrival:
     if (m_toyTime > 0) {
         m_toyTime = static_cast<i32>(
             static_cast<double>(m_toyTiming.Remaining())
-            / static_cast<double>(static_cast<u32>(m_toyTiming.m_intervalLo))
+            / static_cast<double>(static_cast<u32>(m_toyTiming.GetInterval()))
             * DATA_COMPGEN(0x001e9a48, 100.0) - DATA_COMPGEN(0x001e9a50, -0.5) );
         if (m_toyTiming.Remaining() == 0) {
             m_toyTime = 0;
@@ -2083,7 +2083,7 @@ afterArrival:
         } else {
             m_stamina = static_cast<i32>(
                 static_cast<double>(m_attackTiming.Elapsed())
-                / static_cast<double>(static_cast<u32>(m_attackTiming.m_intervalLo))
+                / static_cast<double>(static_cast<u32>(m_attackTiming.GetInterval()))
                 * DATA_COMPGEN(0x001e9a48, 100.0) - DATA_COMPGEN(0x001e9a50, -0.5) );
         }
         if (m_stamina == STAMINA_FULL) {

@@ -82,7 +82,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
     }
 
     // Preserve subtraction before the start addition; Remaining reassociates this caller.
-    i64 rem = m_countdown.m_interval - static_cast<u32>(g_frameTime) + m_countdown.m_start;
+    i64 rem = m_countdown.GetInterval() - static_cast<u32>(g_frameTime) + m_countdown.m_start;
     i32 v = static_cast<i32>(max(0, rem));
     m_remainingMs = v;
 
