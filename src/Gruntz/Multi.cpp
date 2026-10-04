@@ -1979,7 +1979,7 @@ void CMulti::ApplyPlayerDrop(i32 playerId) {
             slot->BeginDrain();
             slot->ClearSyncState();
             slot->m_state = NETSLOT_DONE;
-            slot->GetPlayer()->m_doneFlag = true;
+            slot->GetPlayer()->m_dropped = true;
         }
         return;
     }

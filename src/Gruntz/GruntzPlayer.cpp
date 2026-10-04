@@ -124,7 +124,7 @@ GruntzPlayer::GruntzPlayer() {
     m_focusX = 0;
     m_focusY = 0;
     m_maxGruntz = 0xf;
-    m_doneFlag = false;
+    m_dropped = false;
     m_optionsPresenceCounted = false;
     m_latency.Clear();
 }
@@ -143,7 +143,7 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_focusX = 0;
     m_focusY = 0;
     m_maxGruntz = 0xf;
-    m_doneFlag = false;
+    m_dropped = false;
     m_optionsPresenceCounted = false;
     m_name = GetDefaultName(0);
     m_latency.Clear();
@@ -167,7 +167,7 @@ RVA(0x000daa60, 0x24)
 i32 GruntzPlayer::ClearRoundState() {
     m_active = true;
     m_ready = false;
-    m_doneFlag = false;
+    m_dropped = false;
     m_optionsPresenceCounted = false;
     m_latency.Clear();
     return 1;
@@ -231,7 +231,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
             ar->Read(&m_ready, sizeof(m_ready));
             ar->Read(&m_active, sizeof(m_active));
             ar->Read(&m_joined, sizeof(m_joined));
-            ar->Read(&m_clearedRound, sizeof(m_clearedRound));
+            ar->Read(&m_eliminated, sizeof(m_eliminated));
             g_serialCounter++;
             ar->Read(tmp, SERIAL_NAME_LEN);
             m_name = tmp;
@@ -250,7 +250,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
         ar->Write(&m_ready, sizeof(m_ready));
         ar->Write(&m_active, sizeof(m_active));
         ar->Write(&m_joined, sizeof(m_joined));
-        ar->Write(&m_clearedRound, sizeof(m_clearedRound));
+        ar->Write(&m_eliminated, sizeof(m_eliminated));
         g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
         strcpy(tmp, static_cast<const char*>(m_name));

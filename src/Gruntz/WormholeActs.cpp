@@ -94,7 +94,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         GAME_TEXT_FLAGS_NONE,
                         0x11
                 );
-                loser->m_clearedRound = true;
+                loser->m_eliminated = true;
             }
             g_gameReg->GetGameStats()->RecordFlagCapture(hitPlayerIndex, owningPlayer);
             g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(owningPlayer);
@@ -170,7 +170,7 @@ i32 CExitTrigger::AdvanceAnim() {
             if (slot->HasDropped() == false) {
                 return 0;
             }
-            slot->m_clearedRound = true;
+            slot->m_eliminated = true;
             m_resolved = false;
             if (m_warlordLogic != NULL) {
                 m_warlordLogic->ResolveDeathAnimation();
