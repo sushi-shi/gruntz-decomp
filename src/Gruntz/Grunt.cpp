@@ -1235,8 +1235,8 @@ i32 CGrunt::StepGruntMovement() {
     if ((destinationFlags & BRICKZ_CELL_OCCUPIED) && !(destinationFlags & 0x80)) {
         i32 owner = tileGrid->OccupantAt(targetTileX, targetTileY);
         m_triggerMgr->StartUnitDeath(
-            (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
-            owner & GRUNT_IDENTITY_COMPONENT_MASK,
+            GruntIdentity::UnpackPlayerIndex(owner),
+            GruntIdentity::UnpackUnitIndex(owner),
             DEATH_SQUASH,
             m_playerIndex
         );

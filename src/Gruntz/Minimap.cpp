@@ -137,8 +137,8 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
             if (occupantId != -1) {
 
                 CGrunt* grunt = m_triggerMgr->UnitAt(
-                    (occupantId >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
-                    occupantId & GRUNT_IDENTITY_COMPONENT_MASK
+                    GruntIdentity::UnpackPlayerIndex(occupantId),
+                    GruntIdentity::UnpackUnitIndex(occupantId)
                 );
                 if (grunt == NULL) {
                     continue;

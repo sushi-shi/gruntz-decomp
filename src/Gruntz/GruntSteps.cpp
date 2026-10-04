@@ -475,8 +475,8 @@ i32 CGrunt::StepCompassMove() {
 
             i32 owner = board->OccupantAt(mtx, mty);
             m_triggerMgr->StartUnitDeath(
-                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
-                owner & GRUNT_IDENTITY_COMPONENT_MASK,
+                GruntIdentity::UnpackPlayerIndex(owner),
+                GruntIdentity::UnpackUnitIndex(owner),
                 DEATH_SQUASH,
                 m_playerIndex
             );

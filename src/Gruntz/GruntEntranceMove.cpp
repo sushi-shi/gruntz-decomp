@@ -281,9 +281,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         i32 flags = grid->CellFlagsAt(tile.m_x, tile.m_y);                                         \
         if (flags & BRICKZ_CELL_OCCUPIED) {                                                        \
             i32 owner = grid->OccupantAt(static_cast<u32>(tile.m_x), static_cast<u32>(tile.m_y));  \
-            i32 playerIndex =                                                                      \
-                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;            \
-            i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;                                 \
+            i32 playerIndex = GruntIdentity::UnpackPlayerIndex(owner);                             \
+            i32 unitIndex = GruntIdentity::UnpackUnitIndex(owner);                                 \
             if (m_playerIndex != playerIndex || m_unitIndex != unitIndex) {                        \
                 m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, m_playerIndex); \
             }                                                                                      \

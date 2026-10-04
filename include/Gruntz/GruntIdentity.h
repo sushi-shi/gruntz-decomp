@@ -11,6 +11,14 @@ GZ_ENUM_CONST_BEGIN(GruntIdentityPacking)
 GZ_ENUM_CONST_END(GruntIdentityPacking)
 
 struct GruntIdentity {
+    static i32 UnpackPlayerIndex(i32 packedIdentity) {
+        return (packedIdentity >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+    }
+
+    static i32 UnpackUnitIndex(i32 packedIdentity) {
+        return packedIdentity & GRUNT_IDENTITY_COMPONENT_MASK;
+    }
+
     i32 m_playerIndex;
     i32 m_unitIndex;
 };
