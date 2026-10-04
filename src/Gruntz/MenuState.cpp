@@ -25,7 +25,6 @@
 #include <Gruntz/GameStats.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/State.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/MainMenuBuilder.h>
 #include <Gruntz/MenuStateInline.h>
@@ -39,6 +38,7 @@
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StartUpPrompt.h>
+#include <Gruntz/State.h>
 #include <Gruntz/String.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
