@@ -1898,7 +1898,6 @@ i32 CTriggerMgr::ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles
     return 1;
 }
 
-// @early-stop
 RVA(0x0007c110, 0x166)
 i32 CTriggerMgr::ConvertGrunt(
     i32 srcPlayerIndex,
@@ -1909,15 +1908,11 @@ i32 CTriggerMgr::ConvertGrunt(
     CGrunt* sourceGrunt = UnitAt(srcPlayerIndex, srcUnitIndex);
     i32 freeUnitIndex = 0;
     i32 dstBaseIndex = dstPlayerIndex * TM_UNITS_PER_PLAYER;
-    if (m_units[dstBaseIndex] != NULL) {
-        CGrunt** units = PlayerUnits(dstPlayerIndex);
-        while (freeUnitIndex < TM_UNITS_PER_PLAYER) {
-            units++;
-            freeUnitIndex++;
-            if (*units == NULL) {
-                break;
-            }
+    while (UnitAt(dstPlayerIndex, freeUnitIndex) != NULL) {
+        if (freeUnitIndex >= TM_UNITS_PER_PLAYER) {
+            return 0;
         }
+        freeUnitIndex++;
     }
     if (freeUnitIndex >= TM_UNITS_PER_PLAYER) {
         return 0;
