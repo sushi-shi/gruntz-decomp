@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 #include <Utils/Text.h>
 
 #include <Ints.h>
@@ -253,11 +254,12 @@ i32 MidiSequence::LoadFile(const char* path, const std::string& name) {
     if (strstr(path, g_singleDot) == NULL) {
         return LoadResource(path, name);
     }
-    CFile file;
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    io::File file;
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
-    u32 length = file.GetLength();
+    u32 length = file.size();
+    if (!file.good() || length == 0) return 0;
     if (length < 4) {
         return 0;
     }
@@ -265,7 +267,7 @@ i32 MidiSequence::LoadFile(const char* path, const std::string& name) {
     if (m_ownedData == NULL) {
         return 0;
     }
-    if (file.Read(m_ownedData, length) != length) {
+    if (file.read(m_ownedData, length) != length) {
         return 0;
     }
     return LoadBuffer(m_ownedData, length, name);

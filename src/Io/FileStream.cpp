@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -6,19 +7,19 @@
 
 #include <Gruntz/Multi.h>
 
-void CFileLog::ReopenSharedFile(char* path) {
-    g_gruntzLogFile.Open(path, CFile::modeCreate, NULL);
-    g_gruntzLogFile.Close();
-    g_gruntzLogFile.Open(path, CFile::modeWrite, NULL);
+io::File g_gruntzLogFile;
+
+bool CFileLog::ReopenSharedFile(const std::string& path) {
+    return g_gruntzLogFile.open(path, io::Replace);
 }
 
 void CloseFileIOGlobal() {
-    g_gruntzLogFile.Close();
+    g_gruntzLogFile.finish();
 }
 
-void CFileLog::OpenGruntzLog() {
+bool CFileLog::OpenGruntzLog() {
     CloseFileIOGlobal();
-    ReopenSharedFile("c:\\gruntz.log");
+    return ReopenSharedFile("gruntz.log");
 }
 
 i32 CFileLog::IsLoggingEnabled() {

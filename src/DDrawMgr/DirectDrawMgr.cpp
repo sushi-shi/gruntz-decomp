@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -720,13 +721,13 @@ CDDPalette* CDDrawDeviceManager::CreatePaletteFromTrailingData(void* data, u32 s
 }
 
 CDDPalette* CDDrawDeviceManager::LoadTrailingRgbPalette(const char* path, i32 z) {
-    CFile file;
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    io::File file;
+    if (!file.open(path, io::ReadOnly)) {
         return NULL;
     }
-    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
+    file.seek(-PALETTE_RGB_BYTE_COUNT, io::End);
     u8 buf[PALETTE_RGB_BYTE_COUNT];
-    if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
+    if (file.read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return NULL;
     }
     return CreateRgbPalette(buf, z);
@@ -1027,13 +1028,13 @@ i32 CDDrawDeviceManager::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32
 }
 
 i32 CDDrawDeviceManager::LoadDisplayPaletteFromFile(const char* path, i32 z) {
-    CFile file;
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    io::File file;
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
-    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
+    file.seek(-PALETTE_RGB_BYTE_COUNT, io::End);
     u8 buf[PALETTE_RGB_BYTE_COUNT];
-    if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
+    if (file.read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
     return SetDisplayPaletteFromRgb(buf, z);

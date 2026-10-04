@@ -1,5 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
+#include <Io/File.h>
 
 #include <vector>
 
@@ -11,7 +12,7 @@
 #include <Enums.h>
 #include <Wap32/Object.h>
 
-class CFile;
+
 
 
 GZ_ENUM_CONST_BEGIN(FlashShadeRampDefaults)
@@ -51,7 +52,7 @@ struct CShadeTable {
 
     i32 LoadFromFile(const std::string& path, i32 id);
     i32 LoadFromMem(u8* buf, u32 len, i32 id);
-    i32 ReadFrom(CFile* file, i32 id);
+    i32 ReadFrom(io::File* file, i32 id);
     i32 SaveToFile(const std::string& path);
 };
 

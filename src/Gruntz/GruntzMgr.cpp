@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 #include <Utils/Text.h>
 
 #include <Ints.h>
@@ -3504,15 +3505,16 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
 }
 
 i32 CGruntzMgr::IsBattlezMapFile(const std::string& path) {
-    CFile file;
+    io::File file;
     char hdr[0x5f4];
-    if (file.Open((path).c_str(), CFile::modeRead, NULL)) {
-        if (file.GetLength() < 0x5f4) {
-            file.Close();
+    if (file.open((path).c_str(), io::ReadOnly)) {
+        if (file.size() < 0x5f4) {
+            file.finish();
             return 0;
         }
-        file.Read(hdr, 0x5f4);
-        file.Close();
+        if (file.read(hdr, sizeof(hdr)) != sizeof(hdr)) return 0;
+        hdr[sizeof(hdr) - 1] = 0;
+        file.finish();
         if (strstr(hdr + 0x10, "Battlez")) {
             return 1;
         }

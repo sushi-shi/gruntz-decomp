@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -843,14 +844,15 @@ i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags) {
 }
 
 i32 CAniElement::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused) {
-    CFile fr;
-    if (fr.Open(filename, CFile::modeRead, NULL) == false) {
+    io::File fr;
+    if (fr.open(filename, io::ReadOnly) == false) {
         return 0;
     }
-    u32 size = fr.GetLength();
+    u32 size = fr.size();
+    if (!fr.good() || size == 0) return 0;
     RecordBytes<CAniSource> source;
     source.m_bytes = new u8[size];
-    if (fr.Read(source.m_bytes, size) == 0) {
+    if (fr.read(source.m_bytes, size) != size) {
         delete[] source.m_bytes;
         return 0;
     }
@@ -1027,17 +1029,18 @@ i32 CFileMem::Open() {
     }
 
     if (WantRead()) {
-        CFile* io = &m_file;
-        if (!io->Open((m_name).c_str(), CFile::modeRead, NULL)) {
+        io::File* io = &m_file;
+        if (!io->open((m_name).c_str(), io::ReadOnly)) {
             return 0;
         }
-        m_length = io->GetLength();
+        m_length = io->size();
+        if (!io->good()) return 0;
         m_offset = 0;
         return 1;
     }
 
-    CFile* out = &m_file;
-    if (!out->Open((m_name).c_str(), CFile::modeCreate | CFile::modeWrite, NULL)) {
+    io::File* out = &m_file;
+    if (!out->open((m_name).c_str(), io::Replace)) {
         return 0;
     }
     m_length = 0;
@@ -1046,20 +1049,19 @@ i32 CFileMem::Open() {
 }
 
 i32 CFileMem::Ready() {
-    CFile* io = &m_file;
-    io->Close();
-    return 1;
+    io::File* io = &m_file;
+    return io->finish();
 }
 
 i32 CFileMem::Read(void* buf, i32 n) {
     if (buf == NULL) {
         return 0;
     }
-    if (n == 0) {
+    if (n <= 0) {
         return 0;
     }
-    CFile* io = &m_file;
-    if (io->Read(buf, n) != static_cast<u32>(n)) {
+    io::File* io = &m_file;
+    if (io->read(buf, n) != static_cast<u32>(n)) {
         return 0;
     }
     m_offset += n;
@@ -1070,11 +1072,11 @@ i32 CFileMem::Write(const void* buf, i32 n) {
     if (buf == NULL) {
         return 0;
     }
-    if (n == 0) {
+    if (n <= 0) {
         return 0;
     }
-    CFile* io = &m_file;
-    io->Write(buf, n);
+    io::File* io = &m_file;
+    if (n > 0x7fffffff - m_offset || !io->write(buf, n)) return 0;
     m_length += n;
     m_offset += n;
     return 1;

@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Image/FileImage.h>
 
@@ -83,11 +84,12 @@ i32 CDDSurface::CreateFromBmpData(
 }
 
 i32 CDDSurface::CreateFromBmpFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
-    CFile file;
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    io::File file;
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     if (len == 0) {
         return 0;
     }
@@ -95,7 +97,7 @@ i32 CDDSurface::CreateFromBmpFile(CDDrawDeviceManager* manager, const char* path
     if (buf == NULL) {
         return 0;
     }
-    if (file.Read(buf, len) != len) {
+    if (file.read(buf, len) != len) {
         delete[] buf;
         return 0;
     }
@@ -145,13 +147,14 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
 }
 
 i32 CDDSurface::LoadBmp(CDDrawDeviceManager* manager, char* path) {
-    CFile file;
+    io::File file;
 
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
 
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     if (len == 0) {
         return 0;
     }
@@ -161,7 +164,7 @@ i32 CDDSurface::LoadBmp(CDDrawDeviceManager* manager, char* path) {
         return 0;
     }
 
-    if (file.Read(buf, len) != len) {
+    if (file.read(buf, len) != len) {
         delete[] buf;
         return 0;
     }
@@ -275,31 +278,31 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
         return 0;
     }
 
-    CFile file;
+    io::File file;
     if (mode != 0) {
-        if (!file.Open(path, CFile::modeNoTruncate | CFile::modeWrite, NULL)) {
+        if (!file.open(path, io::Update)) {
             Unlock();
             return 0;
         }
 
-        file.Seek(0, CFile::end);
+        file.seek(0, io::End);
     } else {
-        if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, NULL)) {
+        if (!file.open(path, io::Replace)) {
             Unlock();
             return 0;
         }
     }
 
-    file.Write(&fh.m_hdr, sizeof(fh.m_hdr));
-    file.Write(&info, sizeof(info));
+    file.write(&fh.m_hdr, sizeof(fh.m_hdr));
+    file.write(&info, sizeof(info));
 
     i32 row = m_apiDesc.dwHeight;
     while (--row >= 0) {
-        file.Write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth);
+        file.write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth);
     }
 
     Unlock();
-    return 1;
+    return file.finish();
 }
 
 i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
@@ -344,24 +347,24 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         return 0;
     }
 
-    CFile file;
+    io::File file;
     if (flag != 0) {
-        if (file.Open(path, CFile::modeNoTruncate | CFile::modeWrite, NULL) == false) {
+        if (file.open(path, io::Update) == false) {
             Unlock();
             delete[] line;
             return 0;
         }
 
-        file.Seek(0, CFile::end);
+        file.seek(0, io::End);
     } else {
-        if (file.Open(path, CFile::modeCreate | CFile::modeWrite, NULL) == false) {
+        if (file.open(path, io::Replace) == false) {
             Unlock();
             delete[] line;
             return 0;
         }
     }
-    file.Write(&bfh.m_hdr, sizeof(bfh.m_hdr));
-    file.Write(&bi, sizeof(bi));
+    file.write(&bfh.m_hdr, sizeof(bfh.m_hdr));
+    file.write(&bi, sizeof(bi));
 
     i32 row = this->m_apiDesc.dwHeight;
     while (--row >= 0) {
@@ -380,12 +383,12 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
             *dst++ = r;
             x++;
         }
-        file.Write(line, 3 * this->m_apiDesc.dwWidth);
+        file.write(line, 3 * this->m_apiDesc.dwWidth);
     }
 
     Unlock();
     delete[] line;
-    return 1;
+    return file.finish();
 }
 
 i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
@@ -425,36 +428,36 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
         return 0;
     }
 
-    CFile file;
+    io::File file;
     if (mode != 0) {
-        if (!file.Open(path, CFile::modeNoTruncate | CFile::modeWrite, NULL)) {
+        if (!file.open(path, io::Update)) {
             Unlock();
             return 0;
         }
 
-        file.Seek(0, CFile::end);
+        file.seek(0, io::End);
     } else {
-        if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, NULL)) {
+        if (!file.open(path, io::Replace)) {
             Unlock();
             return 0;
         }
     }
 
-    file.Write(&fh.m_hdr, sizeof(fh.m_hdr));
-    file.Write(&bi, sizeof(bi));
+    file.write(&fh.m_hdr, sizeof(fh.m_hdr));
+    file.write(&bi, sizeof(bi));
 
     for (i32 row = m_apiDesc.dwHeight - 1; row >= 0; row--) {
         i32 col = 0;
         if (static_cast<i32>(m_apiDesc.dwWidth) > 0) {
             do {
-                file.Write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth * 3);
+                file.write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth * 3);
                 ++col;
             } while (col < static_cast<i32>(m_apiDesc.dwWidth));
         }
     }
 
     Unlock();
-    return 1;
+    return file.finish();
 }
 
 i32 CDDSurface::CreateFromPcxData(
@@ -558,11 +561,12 @@ i32 CDDSurface::CreateFromPcxData(
 }
 
 i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
-    CFile file;
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    io::File file;
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     if (len == 0) {
         return 0;
     }
@@ -571,7 +575,7 @@ i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path
     if (fileData.m_bytes == NULL) {
         return 0;
     }
-    if (file.Read(fileData.m_bytes, len) != len) {
+    if (file.read(fileData.m_bytes, len) != len) {
         delete[] fileData.m_bytes;
         return 0;
     }
@@ -658,13 +662,14 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
 }
 
 i32 CDDSurface::LoadPcx(CDDrawDeviceManager* manager, char* path) {
-    CFile file;
+    io::File file;
 
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
 
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     if (len == 0) {
         return 0;
     }
@@ -675,7 +680,7 @@ i32 CDDSurface::LoadPcx(CDDrawDeviceManager* manager, char* path) {
         return 0;
     }
 
-    if (file.Read(fileData.m_bytes, len) != len) {
+    if (file.read(fileData.m_bytes, len) != len) {
         delete[] fileData.m_bytes;
         return 0;
     }
@@ -841,20 +846,21 @@ i32 CDDSurface::DecodePcxEx(
     i32 surfaceCaps,
     u32 colorKey
 ) {
-    CFile file;
+    io::File file;
 
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
 
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     RecordBytes<PidHeader> fileData;
     fileData.m_bytes = new u8[len];
     if (!fileData.m_bytes) {
         return 0;
     }
 
-    if (file.Read(fileData.m_bytes, len) != len) {
+    if (file.read(fileData.m_bytes, len) != len) {
         delete[] fileData.m_bytes;
         return 0;
     }
@@ -937,20 +943,21 @@ i32 CDDSurface::DecodePid(
 }
 
 i32 CDDSurface::LoadPid(CDDrawDeviceManager* manager, char* path, u32 colorKey) {
-    CFile file;
+    io::File file;
 
-    if (!file.Open(path, CFile::modeRead, NULL)) {
+    if (!file.open(path, io::ReadOnly)) {
         return 0;
     }
 
-    u32 len = file.GetLength();
+    u32 len = file.size();
+    if (!file.good() || len == 0) return 0;
     RecordBytes<PidHeader> fileData;
     fileData.m_bytes = new u8[len];
     if (!fileData.m_bytes) {
         return 0;
     }
 
-    if (file.Read(fileData.m_bytes, len) != len) {
+    if (file.read(fileData.m_bytes, len) != len) {
         delete[] fileData.m_bytes;
         return 0;
     }

@@ -256,8 +256,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
         return 0;
     }
 
-    S.Ready();
-    return 1;
+    return S.Ready();
 }
 
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
@@ -276,7 +275,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     }
 
     CSnapshotHeader header;
-    S.Read(&header, sizeof(header));
+    if (!S.Read(&header, sizeof(header))) return 0;
 
     if (!InvokeCallbackInline(&S, SERIAL_RESTORE_BEGIN, typeId, &header)) {
         return 0;
@@ -314,7 +313,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
         return 0;
     }
 
-    S.Ready();
+    if (!S.Ready()) return 0;
     LevelOf(this)->DeactivateDistantObjectsOnMainPlane();
     return 1;
 }
@@ -347,10 +346,9 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
         return 0;
     }
 
-    S.Read(&hdrOut, sizeof(CSnapshotHeader));
+    if (!hdrOut || !S.Read(hdrOut, sizeof(CSnapshotHeader))) return 0;
     if (buf != NULL && len > 0) {
-        S.Read(buf, len);
+        if (len > 0x7fffffffU || !S.Read(buf, len)) return 0;
     }
-    S.Ready();
-    return 1;
+    return S.Ready();
 }

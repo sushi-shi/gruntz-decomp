@@ -120,3 +120,19 @@ the portability work above. Build verification does not launch or validate gamep
 
 Project code is covered by `LICENSE`. Vendored SDK headers and zlib retain their
 own notices. Icons, cursors and other game resources retain their original ownership.
+
+### Owned file I/O
+
+`io::File` owns a standard binary file and is noncopyable. Open modes distinguish
+read-only, replacement, and update-without-truncation. Short reads, failed seeks,
+and failed writes retain an error until the next open; `finish()` closes the file
+and reports buffered-write/close failures. Destruction closes on early returns.
+The legacy runtime accepts file positions up to 2 GiB minus one; larger inputs
+are rejected explicitly. Paths are supplied by callers in the platform encoding.
+
+Font, palette, image, level, FEC, save, and logging callers no longer use MFC file
+or archive objects. The Windows Smacker backend borrows a native handle at its
+existing decoder boundary; the portable file layer contains no Windows APIs.
+
+Run `ASAN_OPTIONS=detect_leaks=0 nix develop --command python3 check-io.py` for
+native file ownership/error tests. This does not launch the game.

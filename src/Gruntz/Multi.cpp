@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 #include <Utils/Text.h>
 
 #include <Ints.h>
@@ -136,7 +137,7 @@ CMulti::~CMulti() {
     CMulti::ReleaseResources();
 }
 
-CFile g_gruntzLogFile;
+
 
 char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 

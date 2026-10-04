@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 #include <Image/Image.h>
@@ -10,21 +11,21 @@
 #include <Io/FileStream.h>
 
 i32 CDibPal::InitBmp(const char* path, u32 flags) {
-    CFile f;
-    if (f.Open(path, CFile::modeRead, NULL) == false) {
+    io::File f;
+    if (f.open(path, io::ReadOnly) == false) {
         return 0;
     }
 
     char fileHdr[14];
-    if (f.Read(fileHdr, 0xe) == 0) {
+    if (f.read(fileHdr, 0xe) != 0xe) {
         return 0;
     }
     char infoHdr[40];
-    if (f.Read(infoHdr, 0x28) == 0) {
+    if (f.read(infoHdr, 0x28) != 0x28) {
         return 0;
     }
     u8 raw[0x400];
-    if (f.Read(raw, 0x400) == 0) {
+    if (f.read(raw, 0x400) != 0x400) {
         return 0;
     }
 

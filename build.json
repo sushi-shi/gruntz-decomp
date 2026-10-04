@@ -3371,6 +3371,17 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "portablefile",
+      "source": "src/Io/File.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/File.h>
 
 #include <Ints.h>
 
@@ -136,9 +137,9 @@ BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
                 return true;
             }
             if (wParam == IDOK) {
-                (static_cast<CSaveGame*>(g_gameReg->m_saveGame))->CloseTempFile(g_slotState);
-                (static_cast<CSaveGame*>(g_gameReg->m_saveGame))
-                    ->Save(NULL, SAVE_STRING_SAVING_GAME);
+                CSaveGame* saves = static_cast<CSaveGame*>(g_gameReg->m_saveGame);
+                if (!saves->CloseTempFile(g_slotState)
+                    || !saves->Save(NULL, SAVE_STRING_SAVING_GAME)) return true;
                 EndDialog(hDlg, 1);
                 return true;
             }
@@ -567,20 +568,20 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
         }
     }
 
-    CFile f;
-    if (f.Open(lev->m_savePath, CFile::typeBinary | CFile::modeRead, NULL) == false) {
+    io::File f;
+    if (f.open(lev->m_savePath, io::ReadOnly) == false) {
         g_previewImage = NULL;
         return;
     }
 
-    f.Seek(-s_savePreviewBytes, CFile::end);
-    if (f.Read(readBuf, sizeof(readBuf)) != sizeof(readBuf)) {
+    f.seek(-s_savePreviewBytes, io::End);
+    if (f.read(readBuf, sizeof(readBuf)) != sizeof(readBuf)) {
         g_previewImage = NULL;
-        f.Close();
+        f.finish();
         return;
     }
 
-    f.Close();
+    f.finish();
     g_previewImage = g_previewMgr->AddDib(&readBuf[s_savePreviewBitmapOffset], DECODE_BMP);
     SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
 }

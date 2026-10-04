@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <io.h>
 
 #include <Ints.h>
 
@@ -250,7 +251,7 @@ i32 CMoviePlayer::OpenLo(
 }
 
 i32 CMoviePlayer::OpenHi(
-    i32 srcHandle,
+    io::File& source,
     MovieLayout mode,
     MovieOpenFlags openFlags,
     POINT* origin,
@@ -273,7 +274,10 @@ i32 CMoviePlayer::OpenHi(
     smackOpenFlags |= SMACKFILEHANDLE | SMACKTRACKS;
 
     SmackSource src;
-    src.m_handle = srcHandle;
+    const int descriptor = _fileno(source.nativeFile());
+    const long offset = source.position();
+    if (offset < 0 || _lseek(descriptor, offset, SEEK_SET) < 0) return 0;
+    src.m_handle = _get_osfhandle(descriptor);
     m_smackHandle = SmackOpen(src.m_path, smackOpenFlags, SMACKAUTOEXTRA);
     if (!m_smackHandle) {
         return 0;
@@ -306,12 +310,12 @@ i32 CMoviePlayer::Open(
         m_decodeStore.Close();
         return 0;
     }
-    i32 hi = m_decodeStore.Lookup(static_cast<unsigned int>(entryId));
+    io::File* hi = m_decodeStore.Lookup(static_cast<unsigned int>(entryId));
     if (!hi) {
         m_decodeStore.Close();
         return 0;
     }
-    if (!OpenHi(hi, mode, openFlags, origin, rect)) {
+    if (!OpenHi(*hi, mode, openFlags, origin, rect)) {
         m_decodeStore.Close();
         return 0;
     }
