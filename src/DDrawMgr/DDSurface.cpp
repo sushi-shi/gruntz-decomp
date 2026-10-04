@@ -338,7 +338,7 @@ i32 CDDSurface::Fill(u32 color) {
     i32 hr = this->BltEx(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(
-            const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"),
+            "C:\\Proj\\DDrawMgr\\DIRSURF.CPP",
             0x22c,
             hr
         );

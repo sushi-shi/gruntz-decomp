@@ -2811,7 +2811,7 @@ levelplane	?CanLoad@CLevelPlane@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	42b
 levelplane	?CanSave@CLevelPlane@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	84573fd5e297	0x163770	100.0000	
 levelplane	?DeactivateDistantObjects@CLevelPlane@@QAEHXZ	100.0000	99.9286	4	600408c8fc53	0x163370	100.0000	
 levelplane	?Draw@CLevelPlane@@QAEXPAVCRenderBuffer@@@Z	83.9207	83.9207	10	c980087f5d6b	0x162010	87.7566	
-levelplane	?InitGeometry@CLevelPlane@@UAEHHHHHHHPAUtagRECT@@PAD@Z	97.7143	97.7143	9	abecbc8ba1e9	0x1619f0	97.7143	
+levelplane	?InitGeometry@CLevelPlane@@UAEHHHHHHHPAUtagRECT@@PBD@Z	97.7143	97.7143	9	abecbc8ba1e9	0x1619f0	97.7143	
 levelplane	?Load@CLevelPlane@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	f1441657912a	0x1638c0	100.0000	
 levelplane	?LoadObjectRecords@CLevelPlane@@QAEHPBDH@Z	96.8533	96.8533	11	8e544cfbf735	0x1628f0	96.8533	
 levelplane	?Prune@CLevelPlane@@QAEHXZ	100.0000	100.0000	3	070d4d86fbf8	0x1628d0	100.0000	

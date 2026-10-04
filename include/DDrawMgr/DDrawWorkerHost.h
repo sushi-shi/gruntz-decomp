@@ -71,7 +71,7 @@ public:
         i32 movementXPercent,
         i32 movementYPercent,
         LevelCoordRect* viewportRect,
-        char* planeName
+        const char* planeName
     );
 
     virtual i32

@@ -146,12 +146,12 @@ public:
     }
     void handle(const char* s, i32 e) const {
         zMinErr::caller_ip = __caller_ip();
-        // PROVEN: the original const wrapper passes object identity to the void* error table.
+        // The sourced const wrapper passes identity; the error table does not write through it.
         hp->handle(const_cast<zErrHandling*>(this), s, e);
     }
     void handle_inl(const char* s, i32 e) const {
         zMinErr::caller_ip = __ip();
-        // PROVEN: the original const wrapper passes object identity to the void* error table.
+        // The sourced const wrapper passes identity; the error table does not write through it.
         hp->handle(const_cast<zErrHandling*>(this), s, e);
     }
     i32 geterr() {
