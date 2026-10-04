@@ -2703,9 +2703,9 @@ drag_box: {
     );
     if (picked != NULL) {
         m_mgr->GetTriggerMgr()
-            ->SelectUnit(eventArg, x, g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5), 0);
+            ->SelectUnit(eventArg, x, g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5), 0);
         if (eventArg == g_curPlayer) {
-            if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
+            if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
                 goto ret1;
             }
             picked->PlaySelectionVoice(true);
