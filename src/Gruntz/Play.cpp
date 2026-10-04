@@ -1860,7 +1860,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (area->HasJoinedRound() != false && area->HasDropped() == false
             && area->IsEliminated() == false) {
             this->m_focusPlayerIndex = pick;
-            this->SetCameraPosition(area->m_focusX, area->m_focusY);
+            this->SetCameraPosition(area->GetFocusX(), area->GetFocusY());
         }
     }
 
@@ -1869,7 +1869,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        this->SetCameraPosition(a->m_focusX, a->m_focusY);
+        this->SetCameraPosition(a->GetFocusX(), a->GetFocusY());
         return 1;
     }
 
@@ -5481,7 +5481,7 @@ i32 CPlay::StartLevelPlay() {
     } else {
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
-            SetCameraPosition(slot->m_focusX, slot->m_focusY);
+            SetCameraPosition(slot->GetFocusX(), slot->GetFocusY());
         } else {
             CGameLevel* g = m_mgr->World()->GetLevel();
             SetCameraPosition(g->m_header.m_startX, g->m_header.m_startY);

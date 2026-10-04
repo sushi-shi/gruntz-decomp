@@ -72,6 +72,14 @@ public:
         m_warlordObjectId = objectId;
     }
 
+    i32 GetFocusX() const {
+        return m_focusX;
+    }
+
+    i32 GetFocusY() const {
+        return m_focusY;
+    }
+
     ColorTint GetColor() const {
         return m_color;
     }
