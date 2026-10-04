@@ -1,5 +1,6 @@
 #ifndef GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H
 #define GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H
+#include <Io/Bytes.h>
 
 #include <Ints.h>
 
@@ -129,6 +130,8 @@ public:
 
     i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);
     i32 RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId);
+    i32 SnapshotChildren(HP_Callback cb, io::Output& target, const std::string& name, LogicTypeId typeId);
+    i32 RestoreChildren(HP_Callback cb, io::Input& source, LogicTypeId typeId);
 
     CDDrawSubMgrPages* m_drawTarget;
 

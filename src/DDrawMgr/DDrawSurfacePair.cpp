@@ -1016,13 +1016,6 @@ i32 CDDrawPaletteRegistry::RemovePaletteByName(const std::string& key) {
     return 1;
 }
 
-i32 CFileMemBase::SetName(const std::string& name, i32 mode, i32 option) {
-    m_name = name;
-    m_mode = mode;
-    m_option = option;
-    return 1;
-}
-
 i32 CFileMem::Open() {
     if ((m_name).empty()) {
         return 0;

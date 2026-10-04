@@ -32,39 +32,22 @@ i32 CShadeTable::Set(u32 size, i32 id) {
     return 1;
 }
 
-i32 CShadeTable::ReadFrom(io::File* file, i32 id) {
-    const u32 length = file->size();
-    if (!file->good() || length < sizeof(m_size)
-        || file->read(&m_size, sizeof(m_size)) != sizeof(m_size)
-        || m_size > length - sizeof(m_size)) return 0;
-    if (Set(m_size, id) == 0) {
-        return 0;
-    }
-    if (file->read(m_data, m_size) != m_size) { Free(); return 0; }
-    m_alloc = true;
-    m_key = id;
+i32 CShadeTable::ReadFrom(io::Input& source, i32 id) {
+    std::vector<unsigned char> bytes;
+    if (!io::readSizedBytes(source, bytes)) return 0;
+    if (!Set(static_cast<u32>(bytes.size()), id)) return 0;
+    if (!bytes.empty()) memcpy(m_data, &bytes[0], bytes.size());
     return 1;
 }
 
 i32 CShadeTable::LoadFromFile(const std::string& path, i32 id) {
     io::File file;
-    if (!file.open((path).c_str(), io::ReadOnly)) {
-        return 0;
-    }
-    i32 ok = ReadFrom(&file, id);
-    file.finish();
-    if (!ok) Free();
-    m_key = id;
-    return ok;
+    return file.open(path, io::ReadOnly) && ReadFrom(file, id);
 }
 
 i32 CShadeTable::LoadFromMem(u8* buf, u32 len, i32 id) {
-    if (!buf || len < sizeof(u32)) return 0;
-    u32 size;
-    memcpy(&size, buf, sizeof(size));
-    if (size > len - sizeof(size) || !Set(size, id)) return 0;
-    memcpy(m_data, buf + sizeof(size), size);
-    return 1;
+    io::MemoryInput source(buf, len);
+    return ReadFrom(source, id);
 }
 
 void CShadeTable::Free() {
@@ -80,7 +63,5 @@ i32 CShadeTable::SaveToFile(const std::string& path) {
     if (!file.open((path).c_str(), io::Replace)) {
         return 0;
     }
-    file.write(&m_size, sizeof(m_size));
-    file.write(m_data, m_size);
-    return file.finish();
+    return io::writeSizedBytes(file, m_data, m_size) && file.finish();
 }

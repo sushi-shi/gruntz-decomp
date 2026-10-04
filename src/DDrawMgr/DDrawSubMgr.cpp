@@ -341,17 +341,8 @@ AnimationRegistry::~AnimationRegistry() {
     Unload();
 }
 
-std::string CFileMemBase::GetName() {
-    return m_name;
-}
 
-i32 CFileMemBase::WantRead() {
-    return m_mode;
-}
 
-i32 CFileMemBase::WantCreate() {
-    return m_mode == 0;
-}
 
 i32 CFileMem::GetLength() {
     return m_length;
@@ -361,11 +352,6 @@ i32 CFileMem::GetOffset() {
     return m_offset;
 }
 
-void CFileMemBase::Reset() {
-    m_option = 0;
-    m_mode = 0;
-    (m_name).erase();
-}
 
 i32 SoundCueRegistry::BindSoundStream(b32 allowUnavailable) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();

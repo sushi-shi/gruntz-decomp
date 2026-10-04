@@ -52,7 +52,7 @@ struct CShadeTable {
 
     i32 LoadFromFile(const std::string& path, i32 id);
     i32 LoadFromMem(u8* buf, u32 len, i32 id);
-    i32 ReadFrom(io::File* file, i32 id);
+    i32 ReadFrom(io::Input& source, i32 id);
     i32 SaveToFile(const std::string& path);
 };
 

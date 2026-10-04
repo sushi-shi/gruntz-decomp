@@ -136,3 +136,16 @@ existing decoder boundary; the portable file layer contains no Windows APIs.
 
 Run `ASAN_OPTIONS=detect_leaks=0 nix develop --command python3 check-io.py` for
 native file ownership/error tests. This does not launch the game.
+
+### Storage-independent binary I/O
+
+`io::Input` and `io::Output` separate byte transport from binary parsing. Files own
+their handles; memory inputs copy their bytes and memory outputs own their vectors.
+`BinaryReader`/`BinaryWriter` encode 32-bit fields explicitly in little-endian order.
+Font and shade-table parsing uses identical code for disk and memory sources, with
+bounds checked before allocation and failed reads leaving decoded output unchanged.
+
+Snapshot save/restore overloads accept byte sources/sinks through `CStreamArchive`.
+The adapter borrows them for the synchronous call and does not close the owner.
+Existing snapshot field layouts remain unchanged; this is not yet a redesign of
+the complete save format or all malformed-world/graphics decoder validation.

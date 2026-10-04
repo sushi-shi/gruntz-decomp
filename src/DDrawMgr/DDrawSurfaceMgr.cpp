@@ -1,4 +1,5 @@
 #include <StdAfx.h>
+#include <Io/StreamArchive.h>
 
 #include <Ints.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -195,19 +196,15 @@ i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
 }
 
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
-    if (path == NULL) {
-        return 0;
-    }
+    if (!path || !name) return 0;
+    io::File file;
+    return file.open(path, io::Replace) && SnapshotChildren(cb, file, name, typeId) && file.finish();
+}
+
+i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, io::Output& target, const std::string& name, LogicTypeId typeId) {
     SetSerializationCallback(cb);
-
-    CFileMem S;
-
-    if (!S.SetName(path, 0, 0)) {
-        return 0;
-    }
-    if (!S.Open()) {
-        return 0;
-    }
+    CStreamArchive S(target);
+    if (!S.Open()) return 0;
 
     CSnapshotHeader header;
     memset(&header, 0, sizeof(header));
@@ -217,10 +214,10 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     header.m_month = now.GetMonth();
     header.m_day = now.GetDay();
     header.m_year = now.GetYear();
-    strcpy(header.m_name, name);
+    if (!copyTextToBuffer(name, header.m_name, sizeof(header.m_name))) return 0;
     header.m_childCount = ChildGroup()->CountActive();
     header.m_objIdCounter = g_wwdObjIdCounter;
-    S.Write(&header, sizeof(header));
+    if (!S.Write(&header, sizeof(header))) return 0;
 
     if (!InvokeCallbackInline(&S, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, NULL)) {
         return 0;
@@ -259,20 +256,16 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     return S.Ready();
 }
 
-i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
-    if (name == NULL) {
-        return 0;
-    }
+i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* path, LogicTypeId typeId) {
+    if (!path) return 0;
+    io::File file;
+    return file.open(path, io::ReadOnly) && RestoreChildren(cb, file, typeId) && file.finish();
+}
+
+i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, io::Input& source, LogicTypeId typeId) {
     SetSerializationCallback(cb);
-
-    CFileMem S;
-
-    if (!S.SetName(name, 1, 0)) {
-        return 0;
-    }
-    if (!S.Open()) {
-        return 0;
-    }
+    CStreamArchive S(source);
+    if (!S.Open()) return 0;
 
     CSnapshotHeader header;
     if (!S.Read(&header, sizeof(header))) return 0;
