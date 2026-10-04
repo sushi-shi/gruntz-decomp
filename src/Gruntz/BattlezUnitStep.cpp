@@ -262,14 +262,14 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         if (slot->IsEliminated() != false) {
             return 1;
         }
-        if (slot->m_active == false) {
+        if (slot->IsActive() == false) {
             return 1;
         }
         unit->SetTargetTeam(band);
         UNSET_COORD(unit->m_defenderPx);
     } else {
         GruntzPlayer* slot = &m_ctx->m_players[band];
-        if (slot->IsEliminated() != false || slot->m_active == false) {
+        if (slot->IsEliminated() != false || slot->IsActive() == false) {
 
             unit->RecycleCoords();
             UNSET_COORD(unit->m_arrivalCell);

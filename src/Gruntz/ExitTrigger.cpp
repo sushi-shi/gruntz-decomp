@@ -41,7 +41,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SwitchAnimationByName("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;
     GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
-    if (slot->m_active == false) {
+    if (slot->IsActive() == false) {
         m_resolved = false;
         return;
     }

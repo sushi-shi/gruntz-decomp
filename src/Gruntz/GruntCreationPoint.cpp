@@ -39,7 +39,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
 
     i32 idx;
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-        if (g_gameReg->m_players[m_object->m_smarts].m_active != false) {
+        if (g_gameReg->m_players[m_object->m_smarts].IsActive() != false) {
             idx = IDX(g_gameReg->m_players[m_object->m_smarts].GetColor());
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -73,7 +73,7 @@ i32 CGruntCreationPoint::SerializeDispatch(
     if (mode != SERIAL_SAVE && mode == SERIAL_POSTLOAD) {
         i32 idx;
         if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-            if (g_gameReg->m_players[m_object->m_smarts].m_active != false) {
+            if (g_gameReg->m_players[m_object->m_smarts].IsActive() != false) {
                 idx = IDX(g_gameReg->m_players[m_object->m_smarts].GetColor());
             } else {
                 idx = IDX(FindAvailablePlayerColor());

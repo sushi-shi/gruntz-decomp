@@ -551,9 +551,9 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
     GetReadyControl(slot);
     GruntzPlayer* player = &m_gameManager->m_players[slot];
     if (typeControl->GetCurSel() == 0) {
-        if (player->m_humanControlled && player->m_active) {
+        if (player->m_humanControlled && player->IsActive()) {
             g_multiState->DropLobbyPlayer(player->m_playerIndex);
-        } else if (!player->m_humanControlled && player->m_active) {
+        } else if (!player->m_humanControlled && player->IsActive()) {
             SetPlayerColorAvailable(player->GetColor(), true);
         }
         player->m_active = false;
@@ -563,13 +563,13 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
     } else {
         if (static_cast<MultiplayerPlayerKind>(typeControl->GetCurSel()) != MULTI_PLAYER_HUMAN) {
             if (player->m_humanControlled != false) {
-                if (player->m_active != false) {
+                if (player->IsActive() != false) {
                     g_multiState->DropLobbyPlayer(player->m_playerIndex);
                 }
                 ColorTint freeColor = FindAvailablePlayerColor();
                 player->m_color = freeColor;
                 SetPlayerColorAvailable(freeColor, false);
-            } else if (player->m_active == false) {
+            } else if (player->IsActive() == false) {
                 ColorTint freeColor = FindAvailablePlayerColor();
                 player->m_color = freeColor;
                 SetPlayerColorAvailable(freeColor, false);
@@ -885,7 +885,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
         GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
         if (player) {
             if (player->m_networkPlayerId != g_multiState->m_localPlayerId
-                && player->m_humanControlled && player->m_active) {
+                && player->m_humanControlled && player->IsActive()) {
                 hasRemoteHumanPlayer = true;
             }
             CEdit* nameControl = GetPlayerNameControl(slotIndex);
@@ -908,19 +908,19 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             } else {
                 readyControl->EnableWindow(false);
             }
-            if (player->m_ready == false && player->m_active) {
+            if (player->m_ready == false && player->IsActive()) {
                 readyControl->SetCheck(BST_UNCHECKED);
                 allLivePlayersReady = false;
-            } else if (player->m_active) {
+            } else if (player->IsActive()) {
                 readyControl->SetCheck(BST_CHECKED);
             } else {
                 readyControl->SetCheck(BST_UNCHECKED);
             }
             CComboBox* maxGruntzControl = GetMaxGruntzControl(slotIndex);
             maxGruntzControl->EnableWindow(
-                g_multiState->m_isHost && player->m_active && localReadyFlag == false
+                g_multiState->m_isHost && player->IsActive() && localReadyFlag == false
             );
-            SetMaxGruntzSelection(slotIndex, player->m_active ? player->GetMaxGruntz() : 0);
+            SetMaxGruntzSelection(slotIndex, player->IsActive() ? player->GetMaxGruntz() : 0);
             if (force == 0) {
                 if (this->GetLocalPlayerSlotIndex() == slotIndex) {
                     continue;
@@ -929,7 +929,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                     continue;
                 }
             }
-            if (player->m_active) {
+            if (player->IsActive()) {
                 GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
                 if (player->m_humanControlled) {
                     CComboBox* typeCombo = GetPlayerTypeControl(slotIndex);
@@ -1022,7 +1022,7 @@ void CMultiStartDlg::Watchdog() {
                     latencyUnitControl = GetDlgItem(CTRL_PLAYER_LATENCY_UNIT3);
                     break;
             }
-            if (player->m_active != false && player->m_humanControlled != false) {
+            if (player->IsActive() != false && player->m_humanControlled != false) {
                 char latencyText[0x20];
                 wsprintfA(latencyText, "%d", player->m_latency.m_avg);
                 latencyValueControl->SetWindowTextA(latencyText);

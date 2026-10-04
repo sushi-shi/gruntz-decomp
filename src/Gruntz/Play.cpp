@@ -952,7 +952,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             team->m_doneFlag = false;
-            team->m_joined = team->m_active;
+            team->m_joined = team->IsActive();
             team->m_clearedRound = false;
         }
     }
