@@ -53,6 +53,15 @@ inline void CGrunt::RepathToward(CGrunt* target) {
     }
 }
 
+#define RESUME_GRUNT_BATTLEZ_ADVANCE(grunt)                                                        \
+    do {                                                                                           \
+        UNSET_COORD((grunt)->m_arrivalCell);                                                       \
+        UNSET_COORD((grunt)->m_defenderPx);                                                        \
+        (grunt)->SetAiState(AISTATE_SEEK);                                                         \
+        (grunt)->SetBattlezTask(BZTASK_ADVANCE);                                                   \
+        (grunt)->RecycleCoords();                                                                  \
+    } while (0)
+
 #define MIRROR_GRUNT_ACROSS_ARRIVAL()                                                              \
     do {                                                                                           \
         i32 gx = ScanCell().m_x - m_arrivalCell.m_x + ScanCell().m_x;                              \
