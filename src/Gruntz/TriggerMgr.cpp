@@ -416,7 +416,7 @@ void CTriggerMgr::CloseActionOptionsMenu() {
 
 // @early-stop
 RVA(0x00078a50, 0x8a0)
-i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
+i32 CTriggerMgr::UpdateTargetingCursor(LONG x, LONG y) {
 
     CGrunt* cell = SoleSelectedGrunt();
     if (cell == NULL || cell->GetPlayerIndex() != g_curPlayer) {
@@ -480,10 +480,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
 
             POINT source = {cell->GetSpriteObject()->m_screenX, cell->GetSpriteObject()->m_screenY};
             m_world->GetLevel()->m_mainPlane->WorldToViewport(&source.x, &source.y);
-            m_world->GetLevel()->m_mainPlane->WorldToViewport(
-                reinterpret_cast<LONG*>(&x), // PROVEN: i32/LONG argument-slot alias.
-                reinterpret_cast<LONG*>(&y)  // PROVEN: i32/LONG argument-slot alias.
-            );
+            m_world->GetLevel()->m_mainPlane->WorldToViewport(&x, &y);
             u16 color;
             if (cell->IsWithinReach(x, y)) {
                 color = PackRgb16(0xff, 0, 0);

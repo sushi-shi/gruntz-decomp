@@ -43,11 +43,7 @@ i32 SfDeviceInitKeys() {
     for (i32 i = 1; i <= 0x7f; i++) {
         g_sfMidiLocation.m_BankIndex = static_cast<WORD>(i);
 
-        // Byte-evidenced two-argument vendor ABI.
-        (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(
-            g_sfDeviceId,
-            &g_sfMidiLocation
-        );
+        g_sfDevice->SF_ClearLoadedBank(g_sfDeviceId, &g_sfMidiLocation);
     }
     g_sfMidiLocation.m_BankIndex = 1;
     return 1;

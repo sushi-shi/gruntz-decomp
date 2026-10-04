@@ -3,12 +3,17 @@
 
 #include <Ints.h>
 
-// The MFC maps write pointer values through their native void*& output parameters.
+// The string lookup retains MFC's legacy output-slot type pun.
 template<class T> inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, T*& out) {
     return map.Lookup(key, reinterpret_cast<void*&>(out));
 }
 template<class T> inline BOOL MapLookup(CMapPtrToPtr& map, void* key, T*& out) {
-    return map.Lookup(key, reinterpret_cast<void*&>(out));
+    void* value;
+    BOOL found = map.Lookup(key, value);
+    if (found) {
+        out = static_cast<T*>(value);
+    }
+    return found;
 }
 template<class T> inline T* MapFind(CMapStringToOb& map, LPCTSTR key) {
     CObject* found = NULL;
@@ -24,11 +29,15 @@ template<class T> inline T* MapFind(CMapStringToPtr& map, LPCTSTR key) {
 
 template<class K, class T>
 inline void MapGetNext(CMapStringToPtr& map, POSITION& pos, K& key, T*& out) {
-    map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out));
+    void* value;
+    map.GetNextAssoc(pos, key, value);
+    out = static_cast<T*>(value);
 }
 template<class K, class T>
 inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, T*& out) {
-    map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out));
+    void* value;
+    map.GetNextAssoc(pos, key, value);
+    out = static_cast<T*>(value);
 }
 
 template<class T> inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, T*& out) {

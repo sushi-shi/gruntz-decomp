@@ -212,7 +212,7 @@ public:
     void EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targetY);
     void EnqueueSelectedToolUse(b32 isLocalCommand, i32 targetX, i32 targetY, b32 targetIsGrunt);
 
-    i32 UpdateTargetingCursor(i32 x, i32 y);
+    i32 UpdateTargetingCursor(LONG x, LONG y);
 
     void EnqueueGuardBegin(i32 playerIndex, i32 unitIndex);
     void EnqueueGuardEnd(i32 playerIndex, i32 unitIndex);

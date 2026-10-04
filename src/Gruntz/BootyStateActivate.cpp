@@ -1968,8 +1968,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(
         }
         w++;
         flagPos++;
-        // byte-evidenced: retail compares the table cursor as a signed integer.
-    } while (reinterpret_cast<i32>(flagPos) < reinterpret_cast<i32>(g_bootyTabPos));
+    } while (flagPos != g_bootyFlagPos + 4);
     return 1;
 }
 

@@ -282,7 +282,7 @@ i32 CNetMgr::ReadProviderSelection(HWND hList) {
 
 
 
-    // API-forced: the combo box keeps the node pointer as its item data.
+    // API-forced: the list box keeps the node pointer as its item data.
     m_selectedProvider = reinterpret_cast<CNetProviderNode*>(itemData);
     return itemData;
 }
@@ -427,7 +427,7 @@ i32 CNetMgr::ReadSessionSelection(HWND hList) {
         return 0;
     }
 
-    // API-forced: the combo box keeps the node pointer as its item data.
+    // API-forced: the list box keeps the node pointer as its item data.
     m_selectedSession = reinterpret_cast<CNetSessionListNode*>(itemData);
     return itemData;
 }

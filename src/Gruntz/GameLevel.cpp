@@ -391,17 +391,7 @@ CLevelPlane* CGameLevel::ReadObjectPlane(
 ) {
     CLevelPlane* plane = new CLevelPlane(GetWorld(), m_planes.GetSize(), 0);
 
-    if (plane->InitGeometry(
-            w,
-            h,
-            tileW,
-            tileH,
-            depthX,
-            depthY,
-            &m_viewportRect,
-            name
-        )
-        == 0) {
+    if (plane->InitGeometry(w, h, tileW, tileH, depthX, depthY, &m_viewportRect, name) == 0) {
         if (plane) {
             delete plane;
         }

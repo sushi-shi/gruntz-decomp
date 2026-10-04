@@ -80,6 +80,6 @@ i32 CUserLogic::SerializeDispatch(
 }
 
 RVA_COMPGEN(0x0016e9c0, 0x45, ??_G?$zSymTab@H@@UAEPAXI@Z)
-RVA_COMPGEN(0x0016ea10, 0x1, ?dtf@?$zSymTab@H@@CAXPAH@Z)
+RVA_COMPGEN(0x0016ea10, 0x1, ?dtf@?$zSymTab@H@@CAXPAX@Z)
 
 RVA_COMPGEN(0x0016ea20, 0x51, ??_G?$zDArray@VCString@@@@UAEPAXI@Z)

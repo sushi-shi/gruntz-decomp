@@ -2082,6 +2082,6 @@ RVA_COMPGEN(0x00174d50, 0x1e, ??_G?$zSymTab@VCSymTabItem@CButeMgr@@@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00174d70, 0x70, ??1?$zSymTab@VCSymTabItem@CButeMgr@@@@UAE@XZ)
 
-RVA_COMPGEN(0x00174de0, 0x9, ?dtf@?$zSymTab@V?$zSymTab@VCSymTabItem@CButeMgr@@@@@@CAXPAV?$zSymTab@VCSymTabItem@CButeMgr@@@@@Z)
+RVA_COMPGEN(0x00174de0, 0x9, ?dtf@?$zSymTab@V?$zSymTab@VCSymTabItem@CButeMgr@@@@@@CAXPAX@Z)
 
-RVA_COMPGEN(0x00174df0, 0x7c, ?dtf@?$zSymTab@VCSymTabItem@CButeMgr@@@@CAXPAVCSymTabItem@CButeMgr@@@Z)
+RVA_COMPGEN(0x00174df0, 0x7c, ?dtf@?$zSymTab@VCSymTabItem@CButeMgr@@@@CAXPAX@Z)

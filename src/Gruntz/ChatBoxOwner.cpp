@@ -129,9 +129,7 @@ void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
                             "Congratulations!  You have just enabled %d new cheats!\n",
                             enabled
                         );
-                        g_gameReg->AppendChatMessage(
-                            static_cast<const char*>(text)
-                        );
+                        g_gameReg->AppendChatMessage(static_cast<const char*>(text));
                     }
                 }
             }
