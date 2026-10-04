@@ -1082,18 +1082,18 @@ RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     Coord destination;
     Coord currentTile;
-    GruntDirectionCell rec;
+    GruntDirectionCell moveDirection;
     Coord targetPixel;
-    i32 flagHead;
-    i32 reason12, reason16, reason0e;
-    i32 tgtTileX, tgtTileY;
-    CGruntzMapMgr* bd;
+    i32 destinationFlags;
+    i32 usingToob, usingWingz, usingSpring;
+    i32 targetTileX, targetTileY;
+    CGruntzMapMgr* tileGrid;
 
     {
-        i32 entX = m_entrancePx.m_x;
-        i32 lastX = m_lastTilePx.m_x;
-        i32 entY = m_entrancePx.m_y;
-        if (entX == lastX && m_lastTilePx.m_y == entY) {
+        i32 destinationX = m_entrancePx.m_x;
+        i32 lastTileX = m_lastTilePx.m_x;
+        i32 destinationY = m_entrancePx.m_y;
+        if (destinationX == lastTileX && m_lastTilePx.m_y == destinationY) {
             return 1;
         }
     }
@@ -1105,28 +1105,28 @@ i32 CGrunt::StepGruntMovement() {
         }
     }
     if (CoordsEmpty()) {
-        goto label_dropRet0;
+        goto stopWithoutPath;
     }
     if (m_arrivalState != AI_BATTLEZ_PATH) {
-        Coord* co = RemoveHeadCoord();
-        destination = *co;
-        g_coordPool.Push(co);
+        Coord* pathCoord = RemoveHeadCoord();
+        destination = *pathCoord;
+        g_coordPool.Push(pathCoord);
     } else {
-        Coord* co = GetHeadCoord();
-        destination = *co;
+        Coord* pathCoord = GetHeadCoord();
+        destination = *pathCoord;
     }
 
     currentTile = ScreenTile(this);
-    rec = MovementDirection(currentTile, destination);
+    moveDirection = MovementDirection(currentTile, destination);
 
     targetPixel.Set(
         (destination.m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
         (destination.m_y << TILE_SHIFT_PX) + TILE_HALF_PX
     );
-    bd = g_gameReg->m_tileGrid;
-    tgtTileX = targetPixel.m_x >> TILE_SHIFT_PX;
-    tgtTileY = targetPixel.m_y >> TILE_SHIFT_PX;
-    flagHead = bd->CellFlagsAt(tgtTileX, tgtTileY);
+    tileGrid = g_gameReg->m_tileGrid;
+    targetTileX = targetPixel.m_x >> TILE_SHIFT_PX;
+    targetTileY = targetPixel.m_y >> TILE_SHIFT_PX;
+    destinationFlags = tileGrid->CellFlagsAt(targetTileX, targetTileY);
 
     {
         EnemyAiType st = m_arrivalState;
@@ -1137,80 +1137,80 @@ i32 CGrunt::StepGruntMovement() {
                 blockMove = 0;
             }
         }
-        if (blockMove != 0 && !(flagHead & BRICKZ_CELL_OCCUPIED)) {
-            i32 mask = m_arrivalFlags & flagHead;
+        if (blockMove != 0 && !(destinationFlags & BRICKZ_CELL_OCCUPIED)) {
+            i32 mask = m_arrivalFlags & destinationFlags;
             if (!(mask & BRICKZ_CELL_OCCUPIED)) {
                 if (mask == 0) {
-                    goto label_4c6e4;
+                    goto prepareTraversal;
                 }
-                if (flagHead & m_passableMask) {
-                    goto label_4c6e4;
+                if (destinationFlags & m_passableMask) {
+                    goto prepareTraversal;
                 }
             }
         }
     }
     if (m_entranceActive == false) {
-        i32 ltx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-        i32 lty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 lastFlag = bd->CellFlagsAt(ltx, lty);
-        if (!(lastFlag & 0x80)) {
+        i32 lastTileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 lastCellFlags = tileGrid->CellFlagsAt(lastTileX, lastTileY);
+        if (!(lastCellFlags & 0x80)) {
             if (m_arrivalState == AI_BATTLEZ_PATH) {
-                goto label_4cb2a;
+                goto stopBlockedMovement;
             }
             if (CoordsEmpty()) {
-                goto label_4cb2a;
+                goto stopBlockedMovement;
             }
             {
-                i32 mask = m_arrivalFlags & flagHead;
+                i32 mask = m_arrivalFlags & destinationFlags;
                 if (mask & BRICKZ_CELL_OCCUPIED) {
-                    goto label_4cb2a;
+                    goto stopBlockedMovement;
                 }
-                if (mask != 0 && !(flagHead & m_passableMask)) {
-                    goto label_4cb2a;
+                if (mask != 0 && !(destinationFlags & m_passableMask)) {
+                    goto stopBlockedMovement;
                 }
             }
-            if (!(flagHead & BRICKZ_CELL_OCCUPIED)) {
-                goto label_4c6e4;
+            if (!(destinationFlags & BRICKZ_CELL_OCCUPIED)) {
+                goto prepareTraversal;
             }
             {
                 Coord* node = g_coordPool.Pop();
-                node->Set(tgtTileX, tgtTileY);
+                node->Set(targetTileX, targetTileY);
                 AddHeadCoord(node);
             }
             if (PathScan() == 0) {
-                SetFacing(0x3e8, rec);
+                SetFacing(0x3e8, moveDirection);
                 SetEntrancePos(1, 0);
                 return 0;
             }
 
             if (CoordsEmpty()) {
-                goto label_4cb2a;
+                goto stopBlockedMovement;
             }
             {
-                Coord* co = GetHeadCoord();
-                i32 cx = co->m_x;
-                i32 cy = co->m_y;
+                Coord* pathCoord = GetHeadCoord();
+                i32 cx = pathCoord->m_x;
+                i32 cy = pathCoord->m_y;
                 targetPixel.Set(
                     (cx << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (cy << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
                 Coord current = ScreenTile(this);
-                rec = MovementDirection(current, *co);
-                CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-                if (bd->CellFlagsAtUnchecked(cx, cy) & BRICKZ_CELL_OCCUPIED) {
-                    SetFacing(0x3e8, rec);
+                moveDirection = MovementDirection(current, *pathCoord);
+                CGruntzMapMgr* tileGrid = g_gameReg->m_tileGrid;
+                if (tileGrid->CellFlagsAtUnchecked(cx, cy) & BRICKZ_CELL_OCCUPIED) {
+                    SetFacing(0x3e8, moveDirection);
                     SetEntrancePos(1, 0);
                     return 0;
                 }
-                Coord* co2 = RemoveHeadCoord();
-                g_coordPool.Push(co2);
-                goto label_4c6e4;
+                Coord* consumedCoord = RemoveHeadCoord();
+                g_coordPool.Push(consumedCoord);
+                goto prepareTraversal;
             }
         }
     }
 
-    if ((flagHead & BRICKZ_CELL_OCCUPIED) && !(flagHead & 0x80)) {
-        i32 owner = bd->OccupantAt(tgtTileX, tgtTileY);
+    if ((destinationFlags & BRICKZ_CELL_OCCUPIED) && !(destinationFlags & 0x80)) {
+        i32 owner = tileGrid->OccupantAt(targetTileX, targetTileY);
         m_triggerMgr->StartUnitDeath(
             (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
             owner & GRUNT_IDENTITY_COMPONENT_MASK,
@@ -1219,12 +1219,12 @@ i32 CGrunt::StepGruntMovement() {
         );
     }
 
-label_4c6e4:
+prepareTraversal:
     if (m_arrivalState == AI_BATTLEZ_PATH && !CoordsEmpty()) {
-        Coord* co = RemoveHeadCoord();
-        g_coordPool.Push(co);
+        Coord* pathCoord = RemoveHeadCoord();
+        g_coordPool.Push(pathCoord);
     }
-    if (flagHead & 0x80) {
+    if (destinationFlags & 0x80) {
         m_entranceActive = true;
     } else {
         if (IsNotAnimationAct("L")) {
@@ -1232,30 +1232,30 @@ label_4c6e4:
         }
     }
 
-    reason12 = 0;
-    reason16 = 0;
-    reason0e = 0;
+    usingToob = 0;
+    usingWingz = 0;
+    usingSpring = 0;
     if (m_activePickupType == PICKUP_TOOB) {
-        reason12 = 1;
+        usingToob = 1;
     } else if (m_activePickupType == PICKUP_WINGZ) {
-        reason16 = 1;
+        usingWingz = 1;
     } else if (m_activePickupType == PICKUP_SPRING) {
-        reason0e = 1;
+        usingSpring = 1;
     }
-    if (reason0e == 0) {
-        goto label_4cb4b;
+    if (usingSpring == 0) {
+        goto commitMovement;
     }
 
-    if (!(flagHead & 0x1400)) {
-        if (!(flagHead & 0x2)) {
-            goto label_4cb4b;
+    if (!(destinationFlags & 0x1400)) {
+        if (!(destinationFlags & 0x2)) {
+            goto commitMovement;
         }
     }
     if (targetPixel.m_x == m_entrancePx.m_x && targetPixel.m_y == m_entrancePx.m_y) {
-        if ((flagHead & BRICKZ_BLOCKED_MASK) == 0) {
-            goto label_4c92b;
+        if ((destinationFlags & BRICKZ_BLOCKED_MASK) == 0) {
+            goto validateSpringStep;
         }
-        goto label_4cb2a;
+        goto stopBlockedMovement;
     }
     {
         Coord beyondPixel;
@@ -1263,48 +1263,55 @@ label_4c6e4:
             targetPixel.m_x * 2 - m_lastTilePx.m_x,
             targetPixel.m_y * 2 - m_lastTilePx.m_y
         );
-        i32 btx = beyondPixel.m_x >> TILE_SHIFT_PX;
-        i32 bty = beyondPixel.m_y >> TILE_SHIFT_PX;
-        CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-        i32 beyondFlag = bd->CellFlagsAt(btx, bty);
-        if (beyondFlag & 0x20000939) {
-            goto label_4cb2a;
+        i32 beyondTileX = beyondPixel.m_x >> TILE_SHIFT_PX;
+        i32 beyondTileY = beyondPixel.m_y >> TILE_SHIFT_PX;
+        CGruntzMapMgr* tileGrid = g_gameReg->m_tileGrid;
+        i32 beyondCellFlags = tileGrid->CellFlagsAt(beyondTileX, beyondTileY);
+        if (beyondCellFlags & 0x20000939) {
+            goto stopBlockedMovement;
         }
         if (!CoordsEmpty() && m_arrivalState != AI_BATTLEZ_PATH) {
-            Coord* co = RemoveHeadCoord();
-            if (co->m_x == btx && co->m_y == bty) {
-                g_coordPool.Push(co);
+            Coord* pathCoord = RemoveHeadCoord();
+            if (pathCoord->m_x == beyondTileX && pathCoord->m_y == beyondTileY) {
+                g_coordPool.Push(pathCoord);
             } else {
-                AddHeadCoord(co);
+                AddHeadCoord(pathCoord);
             }
         }
         PLAY_GRUNT_CUE_IN_VIEW(8);
         targetPixel = beyondPixel;
     }
 
-label_4c92b: {
+validateSpringStep: {
     i32 lastTileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    tgtTileX = targetPixel.m_x >> TILE_SHIFT_PX;
+    targetTileX = targetPixel.m_x >> TILE_SHIFT_PX;
     i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    tgtTileY = targetPixel.m_y >> TILE_SHIFT_PX;
-    CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-    if (bd->CanStepBetween(lastTileX, lastTileY, tgtTileX, tgtTileY, m_arrivalFlags, m_passableMask)
+    targetTileY = targetPixel.m_y >> TILE_SHIFT_PX;
+    CGruntzMapMgr* tileGrid = g_gameReg->m_tileGrid;
+    if (tileGrid->CanStepBetween(
+            lastTileX,
+            lastTileY,
+            targetTileX,
+            targetTileY,
+            m_arrivalFlags,
+            m_passableMask
+        )
         == 0) {
-        goto label_4cb2a;
+        goto stopBlockedMovement;
     }
-    goto label_4cb4b;
+    goto commitMovement;
 }
 
-label_4cb2a:
-    SetFacing(0x3e8, rec);
+stopBlockedMovement:
+    SetFacing(0x3e8, moveDirection);
     SetEntrancePos(1, 1);
     return 0;
 
-label_4cb4b:
+commitMovement:
     m_reserved210 = 0;
     m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     m_coordRetryCount = 0;
-    SetFacing(0x3e8, rec);
+    SetFacing(0x3e8, moveDirection);
     {
         m_commitPx = m_lastTilePx;
         g_gameReg->GetTileGrid()->ReleaseCellOccupancy(
@@ -1312,49 +1319,49 @@ label_4cb4b:
             m_lastTilePx.m_y >> TILE_SHIFT_PX
         );
 
-        tgtTileX = targetPixel.m_x >> TILE_SHIFT_PX;
-        tgtTileY = targetPixel.m_y >> TILE_SHIFT_PX;
-        CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
-        bd2->AcquireCellOccupancy(tgtTileX, tgtTileY, m_playerIndex, m_unitIndex);
+        targetTileX = targetPixel.m_x >> TILE_SHIFT_PX;
+        targetTileY = targetPixel.m_y >> TILE_SHIFT_PX;
+        CGruntzMapMgr* occupancyGrid = g_gameReg->m_tileGrid;
+        occupancyGrid->AcquireCellOccupancy(targetTileX, targetTileY, m_playerIndex, m_unitIndex);
 
         m_lastTilePx = targetPixel;
         ComputeFacing(1.0);
     }
     m_arrivalPending = true;
-    if (reason12) {
-        if (flagHead & 0x100) {
+    if (usingToob) {
+        if (destinationFlags & 0x100) {
             if (m_coordToggle != false) {
-                goto label_ret1;
+                goto movementStarted;
             }
         } else {
             if (m_coordToggle == false) {
                 return 1;
             }
         }
-        RunMoveConfig(tgtTileX, tgtTileY);
+        RunMoveConfig(targetTileX, targetTileY);
         return 1;
     }
-    if (reason16) {
-        if (!(flagHead & 0xd02)) {
+    if (usingWingz) {
+        if (!(destinationFlags & 0xd02)) {
             return 1;
         }
         if (m_wingzEnabled != false) {
-            goto label_ret1;
+            goto movementStarted;
         }
         LoadWingzGruntSprites(true);
         return 1;
     }
-    if (reason0e) {
+    if (usingSpring) {
         SwitchAnimation(m_poseWalk);
         return 1;
     }
     return 1;
 
-label_dropRet0:
+stopWithoutPath:
     SetEntrancePos(1, 1);
     return 0;
 
-label_ret1:
+movementStarted:
     return 1;
 }
 
