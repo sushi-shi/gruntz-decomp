@@ -116,12 +116,89 @@ def fn_relocs(obj: Obj, secnum: int, lo: int, hi: int):
     return out
 
 
+
+def function_body(obj: Obj, secnum: int, lo: int, hi: int) -> bytes:
+    """Keep operands and inline data; remove only established terminal padding."""
+    body = obj.section_payload(secnum)[lo:hi]
+    for index, value, section in obj.iter_symbols():
+        offset = obj.symptr + index * 18
+        typ, storage, auxiliaries = struct.unpack_from("<HBB", obj.buf, offset + 14)
+        if section == secnum and value == lo and typ == 0x20 and storage in (2, 3):
+            if auxiliaries:
+                size = struct.unpack_from("<I", obj.buf, offset + 18 + 4)[0]
+                if 0 < size <= len(body):
+                    return body[:size]
+    if not body or body[-1] not in (0x90, 0xcc):
+        return body
+
+    relocations = {site - lo: target for site, target in obj.typed_relocations(secnum).items()
+                   if lo <= site < hi}
+    local_names = {name for _value, name, _storage in obj.section_members(secnum)}
+    # An in-section absolute reference can name an inline switch/selector table.
+    # A linear decode cannot establish padding after such data.
+    if any(typ == DIR32 and name in local_names for name, typ in relocations.values()):
+        return body
+    from gruntz.tool import objdump
+    decoded = []
+    for line in objdump.disassemble(body).splitlines():
+        if ":\t" not in line:
+            continue
+        address, rest = line.split(":\t", 1)
+        fields = rest.split("\t")
+        if len(fields) < 2 or not fields[-1].strip():
+            continue
+        assembly = fields[-1].strip().split(None, 1)
+        if assembly[0].startswith(".") or assembly[0] == "(bad)":
+            return body
+        decoded.append((int(address.strip(), 16), assembly[0],
+                        assembly[1] if len(assembly) > 1 else ""))
+    end = len(body)
+    remaining = len(decoded)
+    while remaining:
+        address, mnemonic, _operands = decoded[remaining - 1]
+        if mnemonic not in ("nop", "int3") or end - address != 1:
+            break
+        end = address
+        remaining -= 1
+    if end == len(body) or not remaining:
+        return body
+    terminal = decoded[remaining - 1][1]
+    if not (terminal.startswith("ret") or terminal == "jmp"):
+        return body
+    for _address, mnemonic, operands in decoded[:remaining]:
+        if mnemonic.startswith(("j", "loop", "call")):
+            target = re.fullmatch(r"0x([0-9a-f]+)", operands)
+            if target and end <= int(target[1], 16) < len(body):
+                return body
+    # Relocation fields, including addend bytes, must remain fully represented.
+    widths = {1: 2, 2: 2, 6: 4, 7: 4, 9: 2, 10: 2, 11: 4, 12: 4, 13: 1, 20: 4}
+    if any(typ not in widths or site + widths[typ] > end
+           for site, (_name, typ) in relocations.items()):
+        return body
+    if any(lo + end <= value < hi for value, _name, _storage
+           in obj.section_members(secnum)):
+        return body
+    addresses = {name: value for value, name, _storage in obj.section_members(secnum)}
+    for source_section in range(1, obj.nsec + 1):
+        source = obj.section_payload(source_section)
+        for site, (name, typ) in obj.typed_relocations(source_section).items():
+            if name not in addresses:
+                continue
+            if typ not in (DIR32, 7, 11, REL32):
+                return body
+            if site + 4 > len(source):
+                return body
+            destination = addresses[name] + struct.unpack_from("<i", source, site)[0]
+            if lo + end <= destination < hi:
+                return body
+    return body[:end]
+
+
 def insns(obj: Obj, secnum: int, lo: int, hi: int, *, intel: bool = True):
     """[(offset, mnemonic, operands)] for one window, via tool.objdump.
-    Offsets are window-relative; trailing int3/nop pad is trimmed first."""
+    Offsets are window-relative; only established padding is excluded."""
     from gruntz.tool import objdump
-    body = obj.section_payload(secnum)[lo:hi]
-    body = body.rstrip(b"\xcc").rstrip(b"\x90")
+    body = function_body(obj, secnum, lo, hi)
     if not body:
         return []
     text = objdump.disassemble(body, vma=0, intel=intel)
