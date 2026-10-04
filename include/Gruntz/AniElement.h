@@ -31,7 +31,7 @@ public:
     }
     virtual ~CAniElement() OVERRIDE;
     CObject* AtChecked(i32 i) const;
-    inline CAniRecordView* RecordAt(i32 index) const;
+    inline CAniFrameRecord* RecordAt(i32 index) const;
     i32 Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags);
     i32 Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags);
     i32 LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused);
@@ -53,7 +53,7 @@ public:
     for (index = 0; index < m_records.GetSize(); index++) {                                        \
         CObject* item = m_records.GetAt(index);                                                    \
         if (item != NULL) {                                                                        \
-            delete (static_cast<CAniRecordView*>(item));                                           \
+            delete (static_cast<CAniFrameRecord*>(item));                                          \
         }                                                                                          \
     }                                                                                              \
     if (m_name != NULL) {                                                                          \

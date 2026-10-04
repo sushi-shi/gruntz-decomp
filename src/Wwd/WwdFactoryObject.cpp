@@ -262,7 +262,7 @@ void CAniAdvanceCursor::Unload() {
 
 RVA(0x0015c2d0, 0x45)
 void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
-    CAniRecordView* e;
+    CAniFrameRecord* e;
     i32 v;
     m_animation = src;
     if (!src) {
@@ -290,7 +290,7 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
         return;
     }
     m_recordIndex = 0;
-    CAniRecordView* e;
+    CAniFrameRecord* e;
     e = src->RecordAt(0);
     m_currentRecord = e;
     m_finished = false;
@@ -328,7 +328,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
     if (m_finished == false) {
         CWwdSpriteObject* ctx = m_boundObject;
-        CAniRecordView* d = m_currentRecord;
+        CAniFrameRecord* d = m_currentRecord;
 
         switch (d->m_stepMode) {
             case WWDSTEP_NEXT: {
@@ -431,14 +431,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         ctx->m_plotDY = 0;
         switch (m_currentRecord->m_positionMode) {
             case WWDPOS_PLOT_OFFSET: {
-                CAniRecordView* pd = m_currentRecord;
+                CAniFrameRecord* pd = m_currentRecord;
                 CWwdSpriteObject* c = m_boundObject;
                 c->m_plotDX = pd->m_positionDeltaX;
                 c->m_plotDY = pd->m_positionDeltaY;
                 break;
             }
             case WWDPOS_MOVE_RELATIVE: {
-                CAniRecordView* pd = m_currentRecord;
+                CAniFrameRecord* pd = m_currentRecord;
                 CWwdSpriteObject* c = m_boundObject;
                 i32 x = c->m_screenX;
                 i32 dy = pd->m_positionDeltaY;
@@ -472,7 +472,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
         }
         if (shouldPlayCue) {
-            CAniRecordView* dd = m_currentRecord;
+            CAniFrameRecord* dd = m_currentRecord;
             if (HAS(dd->m_flags, ANI_RECORD_FLAG_POSITIONAL_CUE)) {
                 i32 sourceX = c->m_screenX;
                 SoundCue* soundCue = dd->PickCue();
@@ -487,7 +487,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
         }
 
-        CAniRecordView* rd = m_currentRecord;
+        CAniFrameRecord* rd = m_currentRecord;
         i32 reload = rd->m_duration;
         m_frameTicksLeft = reload;
         m_useElapsedTime = static_cast<u8>(!HAS(rd->m_flags, ANI_RECORD_FLAG_FRAME_COUNT));
@@ -505,7 +505,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDLOOP_RESET_ANIMATION: {
                 if (m_animation != NULL) {
                     m_recordIndex = 0;
-                    m_currentRecord = static_cast<CAniRecordView*>(m_animation->AtChecked(0));
+                    m_currentRecord = static_cast<CAniFrameRecord*>(m_animation->AtChecked(0));
                     m_finished = false;
                     m_scale = 1.0f;
                     m_curDraw = m_pendingDraw = m_currentRecord->m_drawValue;
@@ -514,10 +514,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDLOOP_RESTART_AT_SECOND: {
                 m_recordIndex = 1;
-                m_currentRecord = static_cast<CAniRecordView*>(m_animation->AtChecked(1));
+                m_currentRecord = static_cast<CAniFrameRecord*>(m_animation->AtChecked(1));
                 if (m_currentRecord == NULL) {
                     m_recordIndex = 0;
-                    m_currentRecord = static_cast<CAniRecordView*>(m_animation->AtChecked(0));
+                    m_currentRecord = static_cast<CAniFrameRecord*>(m_animation->AtChecked(0));
                 }
                 if (m_currentRecord != NULL) {
                     m_finished = false;
@@ -528,15 +528,15 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case WWDLOOP_AT_PARAM: {
-                if (m_currentRecord->m_param == m_boundObject->m_frameIndex) {
+                if (m_currentRecord->m_frameParameter == m_boundObject->m_frameIndex) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         m_recordIndex = m_recordIndex + 1;
                         m_currentRecord =
-                            static_cast<CAniRecordView*>(m_animation->AtChecked(m_recordIndex));
+                            static_cast<CAniFrameRecord*>(m_animation->AtChecked(m_recordIndex));
                         if (m_currentRecord == NULL) {
                             m_recordIndex = 0;
                             m_currentRecord =
-                                static_cast<CAniRecordView*>(m_animation->AtChecked(0));
+                                static_cast<CAniFrameRecord*>(m_animation->AtChecked(0));
                         }
                         if (m_currentRecord != NULL) {
                             m_curDraw = m_pendingDraw;
@@ -588,7 +588,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;
                         m_recordIndex = m_recordIndex + 1;
-                        CAniRecordView* p = a->RecordAt(m_recordIndex);
+                        CAniFrameRecord* p = a->RecordAt(m_recordIndex);
                         m_currentRecord = p;
                         if (p == NULL) {
                             m_recordIndex = 0;
@@ -709,7 +709,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     }
     CAniElement* w = m_animation;
     if (w != NULL) {
-        CAniRecordView* e = w->RecordAt(m_recordIndex);
+        CAniFrameRecord* e = w->RecordAt(m_recordIndex);
         m_currentRecord = e;
         if (e == NULL) {
             m_recordIndex = 0;
@@ -733,7 +733,7 @@ i32 CAniAdvanceCursor::CanDeserialize(CFileMemBase* ar) {
 }
 
 RVA(0x0015cbe0, 0x46)
-i32 CAniRecordView::Rng2Next() {
+i32 CAniFrameRecord::NextRandomValue() {
     return GetRandomNumber();
 }
 

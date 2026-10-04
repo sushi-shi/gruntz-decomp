@@ -946,7 +946,7 @@ i32 CGrunt::StartExitAnimation() {
 
     CWapX::ApplyAnimation(found, 0);
     i32 frame =
-        static_cast<CAniRecordView*>(m_wwdObject->m_animationCursor.GetAnimation()->AtChecked(0))
+        static_cast<CAniFrameRecord*>(m_wwdObject->m_animationCursor.GetAnimation()->AtChecked(0))
             ->GetFrameParameter();
     SetImageFrameByName("GRUNTZ_EXITZ", frame);
     return 0;
@@ -1087,8 +1087,8 @@ tail:
     i32 frame;
     {
         CAniElement* desc = m_wwdObject->m_animationCursor.GetAnimation();
-        CAniRecordView* elem = desc->RecordAt(0);
-        frame = elem->m_param;
+        CAniFrameRecord* elem = desc->RecordAt(0);
+        frame = elem->m_frameParameter;
     }
     {
         char* cn = FacingData()->StruckName().GetBuffer(0);

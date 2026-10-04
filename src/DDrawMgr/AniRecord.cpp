@@ -23,16 +23,16 @@
 #include <string.h>
 
 DATA(0x002bf3c4)
-i32 g_aniParsedNameLen = 0;
+i32 g_aniParsedCueListBytes = 0;
 
 RVA(0x00168c60, 0xa0)
-i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
-    const i16* p = src;
+i32 CAniFrameRecord::Parse(SoundCueRegistry* soundRegistry, const i16* recordWords) {
+    const i16* p = recordWords;
     m_flags = static_cast<u16>(*p++);
     m_stepMode = static_cast<WwdAnimStepMode>(*p++);
     m_loopMode = static_cast<WwdAnimLoopMode>(*p++);
     m_positionMode = static_cast<WwdAnimPositionMode>(*p++);
-    m_param = *p++;
+    m_frameParameter = *p++;
     m_duration = *p++;
     m_drawValue = *p++;
     m_positionDeltaX = *p++;
@@ -40,55 +40,55 @@ i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
     m_reserved28 = static_cast<u16>(*p++);
     m_cues = NULL;
     m_cueCount = 0;
-    g_aniParsedNameLen = 0;
+    g_aniParsedCueListBytes = 0;
     if (HAS(m_flags, ANI_RECORD_FLAG_HAS_CUES)) {
 
-        Pix16CPtr np;
-        np.m_swords = p;
-        const char* name = np.m_chars;
-        g_aniParsedNameLen = static_cast<i32>(strlen(name)) + 1;
-        ResolveIndices(ctx, name);
+        Pix16CPtr cueNameBytes;
+        cueNameBytes.m_swords = p;
+        const char* cueNames = cueNameBytes.m_chars;
+        g_aniParsedCueListBytes = static_cast<i32>(strlen(cueNames)) + 1;
+        ResolveSoundCues(soundRegistry, cueNames);
     }
     return 1;
 }
 
 RVA(0x00168d00, 0x14c)
-void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
-    if (owner == NULL || str == NULL) {
+void CAniFrameRecord::ResolveSoundCues(SoundCueRegistry* soundRegistry, const char* cueNames) {
+    if (soundRegistry == NULL || cueNames == NULL) {
         return;
     }
-    CStringArray tokens;
-    char tok[0x80];
-    i32 n = 0;
-    const char* s = str;
-    while (*s != 0) {
-        char c = *s;
-        if (c > '!') {
-            tok[n++] = c;
+    CStringArray cueNamesByIndex;
+    char cueNameBuffer[0x80];
+    i32 cueNameLength = 0;
+    const char* cursor = cueNames;
+    while (*cursor != 0) {
+        char character = *cursor;
+        if (character > '!') {
+            cueNameBuffer[cueNameLength++] = character;
         } else {
-            tok[n] = 0;
-            if (n > 0) {
-                tokens.Add(tok);
+            cueNameBuffer[cueNameLength] = 0;
+            if (cueNameLength > 0) {
+                cueNamesByIndex.Add(cueNameBuffer);
             }
-            n = 0;
+            cueNameLength = 0;
         }
-        s++;
+        cursor++;
     }
-    tok[n] = 0;
-    if (n > 0) {
-        tokens.Add(tok);
+    cueNameBuffer[cueNameLength] = 0;
+    if (cueNameLength > 0) {
+        cueNamesByIndex.Add(cueNameBuffer);
     }
-    m_cueCount = tokens.GetSize();
+    m_cueCount = cueNamesByIndex.GetSize();
     if (m_cueCount > 0) {
         m_cues = new SoundCue*[m_cueCount];
         for (i32 i = 0; i < m_cueCount; i++) {
-            m_cues[i] = owner->FindCue(tokens.GetAt(i));
+            m_cues[i] = soundRegistry->FindCue(cueNamesByIndex.GetAt(i));
         }
     }
 }
 
 RVA(0x00168e50, 0x1e)
-i32 CAniRecordView::GetDurationMs() {
+i32 CAniFrameRecord::GetDurationMs() {
     i32 duration = m_duration;
     i32 durationMs = ANI_FRAME_QUANTUM_MS;
     if (duration > 0) {
