@@ -29,7 +29,7 @@ public:
     CMenuPage() {
         m_world = NULL;
         m_menuTree = NULL;
-        m_headerAnimation = NULL;
+        m_headerFrames = NULL;
         m_focusedItem = NULL;
         m_flags = MENU_PAGE_FLAGS_NONE;
     }
@@ -43,18 +43,18 @@ public:
     i32 Configure(
         CMenuTree* menuTree,
         const char* pageKey,
-        const char* headerAnimationKey,
+        const char* headerImageSetKey,
         const char* parentPageKey,
         GZ_ENUM_PARAM(MenuPageFlags, i32) flags
     );
     void Reset();
     void ClearItems();
-    i32 ResolveHeaderAnimation(const char* animationKey);
+    i32 ResolveHeaderFrames(const char* imageSetKey);
     i32 AppendItem(CMenuItem* item);
 
     CMenuItem* AddItem(
         const char* name,
-        const char* animationKey,
+        const char* imageSetKey,
         i32 commandId,
         const char* targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags
@@ -62,7 +62,7 @@ public:
 
     CMenuItem* AddItem(
         const char* name,
-        const char* animationKey,
+        const char* imageSetKey,
         i32 commandId,
         i32 commandParam,
         i32 secondaryCommandId,
@@ -87,7 +87,7 @@ public:
 
     CAnimatedMenuItem* AddAnimatedItem(
         const char* name,
-        const char* animationKey,
+        const char* imageSetKey,
         i32 commandId,
         const char* targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
@@ -96,7 +96,7 @@ public:
 
     CAnimatedMenuItem* AddAnimatedItem(
         const char* name,
-        const char* animationKey,
+        const char* imageSetKey,
         i32 commandId,
         i32 commandParam,
         i32 secondaryCommandId,
@@ -134,15 +134,15 @@ public:
     i32 m_columnOffsetX;
     i32 m_contentOffsetX;
     i32 m_contentOffsetY;
-    CImageSet* m_headerAnimation;
+    CImageSet* m_headerFrames;
 
     CMenuItem* m_focusedItem;
 };
 
-#define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \
-    CImageSet* animation = m_world->FindImageSet(animationKey);                                    \
-    m_headerAnimation = animation;                                                                 \
-    return animation != NULL
+#define RESOLVE_MENU_HEADER_FRAMES(imageSetKey, imageSet)                                          \
+    CImageSet* imageSet = m_world->FindImageSet(imageSetKey);                                      \
+    m_headerFrames = imageSet;                                                                     \
+    return imageSet != NULL
 
 inline b32 CMenuItem::IsSelectable() {
     return m_state == MENUSTATE_NORMAL || m_state == MENUSTATE_SELECTED;

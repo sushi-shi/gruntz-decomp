@@ -28,7 +28,7 @@ RVA(0x001832f0, 0xa5)
 i32 CMenuPage::Configure(
     CMenuTree* menuTree,
     const char* pageKey,
-    const char* headerAnimationKey,
+    const char* headerImageSetKey,
     const char* parentPageKey,
     GZ_ENUM_PARAM(MenuPageFlags, i32) flags
 ) {
@@ -45,7 +45,7 @@ i32 CMenuPage::Configure(
     m_bounds = menuTree->m_bounds;
     m_contentOffsetX = 0;
     m_contentOffsetY = 0;
-    RESOLVE_MENU_HEADER_ANIMATION(headerAnimationKey, headerAnimation);
+    RESOLVE_MENU_HEADER_FRAMES(headerImageSetKey, headerFrames);
 }
 
 RVA(0x001833a0, 0x1a)
@@ -53,7 +53,7 @@ void CMenuPage::Reset() {
     ClearItems();
     m_world = NULL;
     m_menuTree = NULL;
-    m_headerAnimation = NULL;
+    m_headerFrames = NULL;
     m_focusedItem = NULL;
     m_flags = MENU_PAGE_FLAGS_NONE;
 }
@@ -73,8 +73,8 @@ void CMenuPage::ClearItems() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001833f0, 0x38)
-i32 CMenuPage::ResolveHeaderAnimation(const char* animationKey) {
-    RESOLVE_MENU_HEADER_ANIMATION(animationKey, headerAnimation);
+i32 CMenuPage::ResolveHeaderFrames(const char* imageSetKey) {
+    RESOLVE_MENU_HEADER_FRAMES(imageSetKey, headerFrames);
 }
 
 RVA(0x00183430, 0x24)
@@ -89,14 +89,14 @@ i32 CMenuPage::AppendItem(CMenuItem* item) {
 RVA(0x00183460, 0x13d)
 CMenuItem* CMenuPage::AddItem(
     const char* name,
-    const char* animationKey,
+    const char* imageSetKey,
     i32 commandId,
     const char* targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     CMenuItem* item = new CMenuItem();
 
-    if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
+    if (item->Init(this, name, imageSetKey, commandId, targetPageKey, flags) == 0) {
         if (item) {
             delete item;
         }
@@ -108,7 +108,7 @@ CMenuItem* CMenuPage::AddItem(
 RVA(0x001835a0, 0x14b)
 CMenuItem* CMenuPage::AddItem(
     const char* name,
-    const char* animationKey,
+    const char* imageSetKey,
     i32 commandId,
     i32 commandParam,
     i32 secondaryCommandId,
@@ -116,7 +116,7 @@ CMenuItem* CMenuPage::AddItem(
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     CMenuItem* item = new CMenuItem();
-    if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
+    if (item->Init(this, name, imageSetKey, commandId, targetPageKey, flags) == 0) {
         if (item) {
             delete item;
         }
@@ -132,14 +132,14 @@ CMenuItem* CMenuPage::AddItem(
 RVA(0x001836f0, 0x160)
 CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     const char* name,
-    const char* animationKey,
+    const char* imageSetKey,
     i32 commandId,
     const char* targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
     i32 framePeriodMs
 ) {
     CAnimatedMenuItem* item = new CAnimatedMenuItem();
-    if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
+    if (item->Init(this, name, imageSetKey, commandId, targetPageKey, flags) == 0) {
         if (item) {
             delete item;
         }
@@ -154,7 +154,7 @@ CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
 RVA(0x00183850, 0x13b)
 CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     const char* name,
-    const char* animationKey,
+    const char* imageSetKey,
     i32 commandId,
     i32 commandParam,
     i32 secondaryCommandId,
@@ -163,7 +163,7 @@ CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     i32 framePeriodMs
 ) {
     CAnimatedMenuItem* item = new CAnimatedMenuItem();
-    if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
+    if (item->Init(this, name, imageSetKey, commandId, targetPageKey, flags) == 0) {
         if (item) {
             delete item;
         }
@@ -262,10 +262,10 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
     i32 right = m_bounds.right;
     i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;
     i32 drawY = m_contentOffsetY + m_bounds.top;
-    CImageSet* headerAnimation = m_headerAnimation;
-    if (headerAnimation) {
+    CImageSet* headerFrames = m_headerFrames;
+    if (headerFrames) {
         CImage* headerFrame =
-            IMAGE_SET_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->GetMinIndex());
+            IMAGE_SET_FRAME_AT_UNCHECKED(headerFrames, headerFrames->GetMinIndex());
         if (headerFrame) {
             drawY += headerFrame->GetAnchorY();
             headerFrame->RenderFrame(target, centerX, drawY, 0);
@@ -445,10 +445,10 @@ i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
     i32 right = m_bounds.right;
     i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;
     i32 drawY = m_contentOffsetY + m_bounds.top;
-    CImageSet* headerAnimation = m_headerAnimation;
-    if (headerAnimation) {
+    CImageSet* headerFrames = m_headerFrames;
+    if (headerFrames) {
         CImage* headerFrame =
-            IMAGE_SET_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->GetMinIndex());
+            IMAGE_SET_FRAME_AT_UNCHECKED(headerFrames, headerFrames->GetMinIndex());
         if (headerFrame) {
             drawY += headerFrame->GetAnchorY();
             headerFrame->RenderFrame(target, centerX, drawY, 0);

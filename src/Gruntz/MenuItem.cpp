@@ -25,7 +25,7 @@ RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(
     CMenuPage* page,
     const char* name,
-    const char* animationKey,
+    const char* imageSetKey,
     i32 commandId,
     const char* targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags
@@ -48,8 +48,8 @@ i32 CMenuItem::Init(
         m_state = MENUSTATE_NORMAL;
     }
     if (!UsesStateAnimations()) {
-        m_animation = m_world->FindImageSet(animationKey);
-        if (!m_animation) {
+        m_stateFrames = m_world->FindImageSet(imageSetKey);
+        if (!m_stateFrames) {
             return 0;
         }
     }
@@ -62,11 +62,11 @@ void CMenuItem::Cleanup() {
 
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
-    CImageSet* animation = m_animation;
-    if (!animation) {
+    CImageSet* imageSet = m_stateFrames;
+    if (!imageSet) {
         return 0;
     }
-    CImage* frame = animation->GetAt(2);
+    CImage* frame = imageSet->GetAt(2);
     if (!frame) {
         return 0;
     }
@@ -74,11 +74,11 @@ i32 CMenuItem::GetFrameWidth() {
 }
 RVA(0x00185550, 0x2c)
 i32 CMenuItem::GetFrameHeight() {
-    CImageSet* animation = m_animation;
-    if (!animation) {
+    CImageSet* imageSet = m_stateFrames;
+    if (!imageSet) {
         return 0;
     }
-    CImage* frame = animation->GetAt(2);
+    CImage* frame = imageSet->GetAt(2);
     if (!frame) {
         return 0;
     }
@@ -112,8 +112,8 @@ i32 CMenuItem::Update(u32) {
 
 RVA(0x001855f0, 0x94)
 i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
-    CImageSet* animation = m_animation;
-    if (!animation) {
+    CImageSet* imageSet = m_stateFrames;
+    if (!imageSet) {
         return 0;
     }
 
@@ -122,7 +122,7 @@ i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
         centerY = m_fixedCenter.m_y;
     }
     MenuItemState state = m_state;
-    CImage* frame = animation->GetAt(IDX(state));
+    CImage* frame = imageSet->GetAt(IDX(state));
     if (!frame) {
         return 0;
     }
@@ -175,7 +175,7 @@ RVA(0x00185750, 0x123)
 i32 CAnimatedMenuItem::Init(
     CMenuPage* page,
     const char* name,
-    const char* animationKey,
+    const char* imageSetKey,
     i32 commandId,
     const char* targetPageKey,
     GZ_ENUM_PARAM(MenuItemFlags, i32) flags
@@ -183,23 +183,23 @@ i32 CAnimatedMenuItem::Init(
     if (!page) {
         return 0;
     }
-    if (!CMenuItem::Init(page, name, animationKey, commandId, targetPageKey, flags)) {
+    if (!CMenuItem::Init(page, name, imageSetKey, commandId, targetPageKey, flags)) {
         return 0;
     }
     m_frameIndex = 0;
     m_frameTimerMs = 0;
     m_framePeriodMs = 0x64;
 
-    char animationName[0x80];
+    char imageSetName[0x80];
 
-    sprintf(animationName, "%s_NORMAL", animationKey);
-    m_normalAnimation = m_world->FindImageSet(animationName);
+    sprintf(imageSetName, "%s_NORMAL", imageSetKey);
+    m_normalFrames = m_world->FindImageSet(imageSetName);
 
-    sprintf(animationName, "%s_SELECTED", animationKey);
-    m_selectedAnimation = m_world->FindImageSet(animationName);
+    sprintf(imageSetName, "%s_SELECTED", imageSetKey);
+    m_selectedFrames = m_world->FindImageSet(imageSetName);
 
-    sprintf(animationName, "%s_DISABLED", animationKey);
-    m_disabledAnimation = m_world->FindImageSet(animationName);
+    sprintf(imageSetName, "%s_DISABLED", imageSetKey);
+    m_disabledFrames = m_world->FindImageSet(imageSetName);
 
     return 1;
 }
@@ -251,29 +251,29 @@ i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 center
     return 1;
 }
 RVA(0x00185950, 0x1b)
-CImageSet* CAnimatedMenuItem::GetStateAnimation() {
+CImageSet* CAnimatedMenuItem::GetStateFrames() {
     switch (m_state) {
         case MENUSTATE_NORMAL:
-            return m_normalAnimation;
+            return m_normalFrames;
         case MENUSTATE_SELECTED:
-            return m_selectedAnimation;
+            return m_selectedFrames;
         case MENUSTATE_DISABLED:
-            return m_disabledAnimation;
+            return m_disabledFrames;
     }
     return NULL;
 }
 
 RVA(0x00185970, 0x4d)
 CImage* CAnimatedMenuItem::GetCurrentFrame() {
-    CImageSet* animation = GetStateAnimation();
-    if (!animation) {
+    CImageSet* imageSet = GetStateFrames();
+    if (!imageSet) {
         return NULL;
     }
 
-    CImage* frame = animation->GetAt(m_frameIndex);
+    CImage* frame = imageSet->GetAt(m_frameIndex);
     if (frame == NULL) {
-        m_frameIndex = animation->GetMinIndex();
-        frame = animation->GetAt(m_frameIndex);
+        m_frameIndex = imageSet->GetMinIndex();
+        frame = imageSet->GetAt(m_frameIndex);
     }
     return frame;
 }
@@ -284,9 +284,9 @@ i32 CAnimatedMenuItem::AdvanceFrame() {
     }
     m_frameIndex = m_frameIndex + 1;
     if (HAS(m_flags, MENU_ITEM_HOLD_FINAL_ANIMATION_FRAME)) {
-        CImageSet* animation = GetStateAnimation();
-        if (animation) {
-            if (m_frameIndex > animation->GetMaxIndex()) {
+        CImageSet* imageSet = GetStateFrames();
+        if (imageSet) {
+            if (m_frameIndex > imageSet->GetMaxIndex()) {
                 m_frameIndex = m_frameIndex - 1;
                 return 1;
             }

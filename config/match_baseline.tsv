@@ -2930,7 +2930,7 @@ menuitem	?GetFrameHeight@CAnimatedMenuItem@@UAEHXZ	100.0000	100.0000	3	6feeba199
 menuitem	?GetFrameHeight@CMenuItem@@UAEHXZ	100.0000	100.0000	5	092a7f262e97	0x185550	100.0000	
 menuitem	?GetFrameWidth@CAnimatedMenuItem@@UAEHXZ	100.0000	100.0000	3	a268f7ecedae	0x185880	100.0000	
 menuitem	?GetFrameWidth@CMenuItem@@UAEHXZ	100.0000	100.0000	5	26842f32fc31	0x185520	100.0000	
-menuitem	?GetStateAnimation@CAnimatedMenuItem@@QAEPAVCImageSet@@XZ	100.0000	100.0000	4	680ddfa812c3	0x185950	100.0000	
+menuitem	?GetStateFrames@CAnimatedMenuItem@@QAEPAVCImageSet@@XZ	100.0000	100.0000	4	680ddfa812c3	0x185950	100.0000	
 menuitem	?HitTest@CMenuItem@@QAEHHH@Z	100.0000	100.0000	2	8f92e2346f19	0x185700	100.0000	
 menuitem	?Init@CAnimatedMenuItem@@UAEHPAVCMenuPage@@PBD1H1H@Z	100.0000	100.0000	9	203d9826bc39	0x185750	100.0000	
 menuitem	?Init@CMenuItem@@UAEHPAVCMenuPage@@PBD1H1H@Z	100.0000	100.0000	6	13571cd772ce	0x185460	100.0000	
@@ -2977,7 +2977,7 @@ menupage	?PrepareForActivation@CMenuPage@@QAEHXZ	100.0000	100.0000	3	528d241a8f8
 menupage	?Reset@CAnimatedMenuItem@@UAEXXZ	100.0000	100.0000	1	f7f11b5ab5b4	0x184890	100.0000	
 menupage	?Reset@CMenuItem@@UAEXXZ	100.0000	100.0000	1	cpp:45f7ab6d8462	0x184730	100.0000	
 menupage	?Reset@CMenuPage@@QAEXXZ	100.0000	100.0000	4	d897c0f65b5a	0x1833a0	100.0000	
-menupage	?ResolveHeaderAnimation@CMenuPage@@QAEHPBD@Z	100.0000	100.0000	5	1121e702b314	0x1833f0	100.0000	
+menupage	?ResolveHeaderFrames@CMenuPage@@QAEHPBD@Z	100.0000	100.0000	5	1121e702b314	0x1833f0	100.0000	
 menupage	?ReturnToParentPage@CMenuPage@@QAEHH@Z	100.0000	100.0000	11	7c7175f31c16	0x183df0	100.0000	
 menupage	?SetFocusedItem@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	3	32abc00ef323	0x183ad0	100.0000	
 menupage	?SetFramePeriod@CAnimatedMenuItem@@UAEXH@Z	100.0000	100.0000	1	cpp:093fabaf8328	0x1847a0	100.0000	
