@@ -415,7 +415,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         CWwdSpriteObject* o = m_object;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
-        if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
+        if (::PtInRect(g_gameReg->GetViewBounds(), x, y)) {
             CreateParticlez(
                 g_gameReg->World()->ChildGroup(),
                 x - 30,
@@ -508,7 +508,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
             i32 cue = (questzCue);                                                                 \
             i32 x = h->m_screenX;                                                                  \
             i32 y = h->m_screenY;                                                                  \
-            if (::PtInRect(&g->m_viewBounds, x, y)) {                                              \
+            if (::PtInRect(g->GetViewBounds(), x, y)) {                                            \
                 g->VoiceMgr()->PlayVoice(h->GetObjectId(), cue, -1, -1, -1);                       \
             }                                                                                      \
         } else {                                                                                   \
@@ -528,7 +528,7 @@ i32 CWarlord::ResolveDeathAnimation() {
         CWwdSpriteObject* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
+        if (::PtInRect(g->GetViewBounds(), x, y)) {
             g->VoiceMgr()->PlayVoice(h->GetObjectId(), m_ownerTag, -1, -1, -1);
         }
     } else {

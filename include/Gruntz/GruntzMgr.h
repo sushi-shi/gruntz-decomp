@@ -141,6 +141,9 @@ public:
     CState* GetCurrentState() const {
         return m_curState;
     }
+    const RECT* GetViewBounds() const {
+        return &m_viewBounds;
+    }
 
     CState* TopState();
     void PushState(CState* s);

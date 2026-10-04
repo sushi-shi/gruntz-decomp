@@ -322,7 +322,7 @@ i32 CRainCloud::OnGruntContact(i32 playerIndex, i32 unitIndex) {
 
     CWwdSpriteObject* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
-    if (::PtInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
+    if (::PtInRect(reg->GetViewBounds(), obj->m_screenX, obj->m_screenY)) {
         PlayRegistryCueIfElapsed(reg->World()->SoundRegistry(), "LEVEL_CLOUDHAZARDKILL");
     }
     return 1;

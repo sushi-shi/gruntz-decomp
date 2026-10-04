@@ -903,8 +903,9 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
     WarpStoneFragment fragment = static_cast<WarpStoneFragment>(
         g_buteMgr.GetInt("WarpStone", const_cast<char*>(static_cast<const char*>(name)))
     );
-    if (worldX >= g_gameReg->m_viewBounds.right || worldX < g_gameReg->m_viewBounds.left
-        || worldY >= g_gameReg->m_viewBounds.bottom || worldY < g_gameReg->m_viewBounds.top) {
+    if (worldX >= g_gameReg->GetViewBounds()->right || worldX < g_gameReg->GetViewBounds()->left
+        || worldY >= g_gameReg->GetViewBounds()->bottom
+        || worldY < g_gameReg->GetViewBounds()->top) {
         play->SetCameraPosition(worldX, worldY);
     }
 
@@ -1614,7 +1615,7 @@ i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 k
             }
 
             CPoint pt(pxX, pxY);
-            if (!PtInRect(&g_gameReg->m_viewBounds, pt)) {
+            if (!PtInRect(g_gameReg->GetViewBounds(), pt)) {
                 continue;
             }
             CWwdSpriteObject* spr = m_world->ChildGroup()->CreateSprite(

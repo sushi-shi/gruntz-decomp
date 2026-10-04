@@ -366,7 +366,7 @@ i32 CDroppedObject::AdvanceFall() {
                             // fall through
                         case AREA_MINIATURE_MASTERZ:
                         default:
-                            if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
+                            if (::PtInRect(g_gameReg->GetViewBounds(), x, m_landY)) {
                                 CreateParticlez(
                                     g_gameReg->World()->ChildGroup(),
                                     x,
@@ -382,7 +382,7 @@ i32 CDroppedObject::AdvanceFall() {
                 }
             }
         } else {
-            if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
+            if (::PtInRect(g_gameReg->GetViewBounds(), x, m_landY)) {
                 CreateParticlez(
                     g_gameReg->World()->ChildGroup(),
                     x,

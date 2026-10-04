@@ -418,7 +418,7 @@ i32 CTeleporter::Update() {
         mgr = g_gameReg;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
-        if (::PtInRect(&mgr->m_viewBounds, x, y)) {
+        if (::PtInRect(mgr->GetViewBounds(), x, y)) {
             (static_cast<CTriggerMgr*>(mgr->GetTriggerMgr()))->m_teleportWanted = true;
         }
     }

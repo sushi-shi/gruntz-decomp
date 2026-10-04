@@ -889,7 +889,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
     CGruntzMgr* game = g_gameReg;
     i32 vehicleScreenY = vehicleSprite->m_screenY;
     i32 vehicleScreenX = vehicleSprite->m_screenX;
-    if (::PtInRect(&game->m_viewBounds, vehicleScreenX, vehicleScreenY)) {
+    if (::PtInRect(game->GetViewBounds(), vehicleScreenX, vehicleScreenY)) {
         if (m_activePickupType == PICKUP_GOKART) {
             EnsureVehicleLoopSound(s_gruntzGokartgrunt);
             return 0;
