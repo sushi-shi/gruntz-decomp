@@ -1047,7 +1047,7 @@ i32 CTriggerMgr::SpawnPuddle(
         return 0;
     }
     sprite->GetLogicRecord()->Dispatch(sprite);
-    sprite->m_smarts = playerIndex;
+    sprite->SetSmarts(playerIndex);
     sprite->SetScore(colorIndex);
     sprite->SetPoints(gaugePoints);
     return PlacePuddle(sprite, animatePlacement);
@@ -1534,7 +1534,7 @@ i32 CTriggerMgr::SpawnExplosion(i32 x, i32 y, i32 killerPlayerIndex, i32 animati
         CString key;
         key.Format("GAME_EXPLOSION%d", v);
         spr->SetAnimationByName(key, 0);
-        spr->m_smarts = killerPlayerIndex;
+        spr->SetSmarts(killerPlayerIndex);
         spr->SetScore(1);
     }
     return spr != NULL;
@@ -2237,7 +2237,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     spr->m_damage = damage;
     spr->SetScore(0);
     spr->SetPoints(0);
-    spr->m_smarts = 0;
+    spr->SetSmarts(0);
     spr->m_powerup = 0;
     spr->m_health = 0;
     spr->m_direction = 0;

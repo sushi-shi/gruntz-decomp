@@ -771,7 +771,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         if (txt == NULL) {
             return 0;
         }
-        txt->m_smarts = m_textId;
+        txt->SetSmarts(m_textId);
     }
 
     DECLARE_TILE_CENTER_PIXEL_PAIR_Y_FIRST(by, bx, m_tileY, m_tileX)
@@ -832,7 +832,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         if (rec == NULL) {
             return 0;
         }
-        rec->m_smarts = m_leadInSpan;
+        rec->SetSmarts(m_leadInSpan);
     }
     return 1;
 }

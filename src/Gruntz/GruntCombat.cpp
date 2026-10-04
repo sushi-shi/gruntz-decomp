@@ -430,7 +430,7 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
             northBallLogic->SetSpeed(
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
             );
-            northBall->m_smarts = 0;
+            northBall->SetSmarts(0);
             northBall->SetPoints(
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8))
             );
@@ -448,7 +448,7 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
             eastBallLogic->SetSpeed(
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
             );
-            eastBall->m_smarts = 0;
+            eastBall->SetSmarts(0);
             eastBall->SetPoints(
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8))
             );
@@ -466,7 +466,7 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
             southBallLogic->SetSpeed(
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
             );
-            southBall->m_smarts = 0;
+            southBall->SetSmarts(0);
             southBall->SetPoints(
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8))
             );
@@ -484,7 +484,7 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
             westBallLogic->SetSpeed(
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8))
             );
-            westBall->m_smarts = 0;
+            westBall->SetSmarts(0);
             westBall->SetPoints(
                 static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8))
             );

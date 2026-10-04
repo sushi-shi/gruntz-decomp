@@ -86,13 +86,13 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
         CString name;
         name = frameSet->GetName();
         if (name.Compare("LEVEL_KITCHENSLIME_NORTH") == 0) {
-            m_object->m_smarts = IDX(CARDINAL_NORTH);
+            m_object->SetSmarts(IDX(CARDINAL_NORTH));
         } else if (name.Compare("LEVEL_KITCHENSLIME_EAST") == 0) {
-            m_object->m_smarts = IDX(CARDINAL_EAST);
+            m_object->SetSmarts(IDX(CARDINAL_EAST));
         } else if (name.Compare("LEVEL_KITCHENSLIME_SOUTH") == 0) {
-            m_object->m_smarts = IDX(CARDINAL_SOUTH);
+            m_object->SetSmarts(IDX(CARDINAL_SOUTH));
         } else if (name.Compare("LEVEL_KITCHENSLIME_WEST") == 0) {
-            m_object->m_smarts = IDX(CARDINAL_WEST);
+            m_object->SetSmarts(IDX(CARDINAL_WEST));
         }
     }
 
@@ -272,14 +272,14 @@ i32 CKitchenSlime::LoadSprites() {
             }
 
             if (lvl->m_direction == 1) {
-                lvl->m_smarts = sw - 1;
+                lvl->SetSmarts(sw - 1);
                 if (Level()->GetSmarts() <= 0) {
-                    Level()->m_smarts = 4;
+                    Level()->SetSmarts(4);
                 }
             } else {
-                lvl->m_smarts++;
+                lvl->SetSmarts(lvl->GetSmarts() + 1);
                 if (Level()->GetSmarts() > 4) {
-                    Level()->m_smarts = 1;
+                    Level()->SetSmarts(1);
                 }
             }
         }
