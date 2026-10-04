@@ -674,7 +674,7 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     switch (r->GetTab()) {
         case TAB_STATZ:
             if (m_gameplayControlsDisabled == false
-                && g_gameReg->GetTriggerMgr()->m_playerControlEnabled != false
+                && g_gameReg->GetTriggerMgr()->IsPlayerControlEnabled() != false
                 && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
                 HiCueTimed();
                 PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
