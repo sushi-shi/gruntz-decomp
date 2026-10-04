@@ -842,7 +842,7 @@ applyTail:
             }
         }
     }
-    BuildEntranceAnimation(GRUNT_ENTRANCE_WORMHOLE);
+    StartEntranceAnimation(GRUNT_ENTRANCE_WORMHOLE);
     return 1;
 }
 

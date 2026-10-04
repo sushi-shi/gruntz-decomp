@@ -1687,7 +1687,7 @@ i32 CGrunt::Place(
     }
     m_object->SetDrawFill(SHADE_PAL_16, shade);
     if (entranceMode != GRUNT_ENTRANCE_NONE) {
-        BuildEntranceAnimation(entranceMode);
+        StartEntranceAnimation(entranceMode);
         return 1;
     }
 

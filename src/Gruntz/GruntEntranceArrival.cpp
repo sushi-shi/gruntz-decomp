@@ -901,7 +901,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
 }
 
 RVA(0x000641b0, 0x2c1)
-i32 CGrunt::BuildGruntExitAnimation() {
+i32 CGrunt::StartExitAnimation() {
     if (m_deathAnimStarted != false) {
         return 0;
     }
@@ -953,7 +953,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 
 // @early-stop
 RVA(0x00064540, 0x11c)
-i32 CGrunt::StepWarpExit() {
+i32 CGrunt::UpdateExitAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (sub->IsComplete()) {
         if (m_deathType == GRUNT_DEATH_WARPOUT) {

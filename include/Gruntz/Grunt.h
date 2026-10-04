@@ -385,7 +385,7 @@ public:
 
     i32 StartToolUseAnimation(i32 tileX, i32 tileY);
 
-    i32 BuildGruntExitAnimation();
+    i32 StartExitAnimation();
 
     i32 UpdateVehicleUseAnimation();
 
@@ -690,7 +690,7 @@ public:
     }
     i32 UpdateIdleAnimation();
     void Deselect();
-    i32 BuildEntranceAnimation(GruntEntranceMode mode);
+    i32 StartEntranceAnimation(GruntEntranceMode mode);
     i32 UpdateEntranceAnimation();
 
     void SetEntrancePos(i32 clearArrivalState, i32 recycleRoute);
@@ -773,7 +773,7 @@ public:
 
     i32 UpdatePickupAnimation();
 
-    i32 StepWarpExit();
+    i32 UpdateExitAnimation();
 
     i32 IsDropReady(i32 clearArrivalState = 0);
 

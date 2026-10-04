@@ -190,7 +190,7 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
 }
 
 RVA(0x00067bd0, 0x2ef)
-i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
+i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
     SET_ANIMATION_ACT("K");
 
     m_entranceArmed = true;

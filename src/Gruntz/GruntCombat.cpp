@@ -1523,7 +1523,7 @@ RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
     CActReg& registry = CActRegPool<CGrunt>::s_table;
     REGISTER_ACT(registry, "A", &CGrunt::UpdateIdleAnimation);
-    REGISTER_ACT(registry, "B", &CGrunt::StepWarpExit);
+    REGISTER_ACT(registry, "B", &CGrunt::UpdateExitAnimation);
     REGISTER_ACT(registry, "C", &CGrunt::UpdateDeathAnimation);
     REGISTER_ACT(registry, "D", &CGrunt::UpdateWalkAnimation);
     REGISTER_ACT(registry, "E", &CGrunt::UpdateAttackIdleAnimation);

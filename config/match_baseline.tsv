@@ -2082,7 +2082,7 @@ gruntdefensealt	?StepObjectGuardBehavior@CGrunt@@QAEHXZ	93.9505	93.9505	42	625f0
 gruntdefenselean	?StepMagicWandGruntBehavior@CGrunt@@QAEHXZ	96.3499	96.3499	57	e2f598d21fb0	0xf8240	96.3499	
 gruntdefensestep	?StepScrollGruntBehavior@CGrunt@@QAEHXZ	98.1573	98.1573	56	aa555e3b2b5f	0xf2b20	98.1573	
 gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	83.8369	83.8369	35	d6063ab53826	0xf36a0	90.0266	
-gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	24	cfd8c6204ccc	0x641b0	100.0000	
+gruntentrancearrival	?StartExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	24	cfd8c6204ccc	0x641b0	100.0000	
 gruntentrancearrival	?FinishKnockbackAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	12	f22e1ce1303a	0x654b0	100.0000	
 gruntentrancearrival	?FinishStruckAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	13	919f659a744b	0x65300	100.0000	
 gruntentrancearrival	?FinishToobMoveAnimation@CGrunt@@QAEHXZ	98.2192	98.2192	29	304424f20330	0x65c20	98.2192	
@@ -2096,7 +2096,7 @@ gruntentrancearrival	?StartToolUseAnimation@CGrunt@@QAEHHH@Z	95.3490	95.3490	34	
 gruntentrancearrival	?StartWalkAnimation@CGrunt@@QAEHXZ	98.2778	98.2778	24	3eaffb363a4e	0x637a0	98.2778	
 gruntentrancearrival	?StepAttackFire@CGrunt@@UAEHXZ	100.0000	100.0000	29	d4b5a718d107	0x61cb0	100.0000	
 gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	97.1872	97.1872	41	4632e694772e	0x646b0	97.7331	
-gruntentrancearrival	?StepWarpExit@CGrunt@@QAEHXZ	98.7662	98.7662	13	d4530badf642	0x64540	98.7662	
+gruntentrancearrival	?UpdateExitAnimation@CGrunt@@QAEHXZ	98.7662	98.7662	13	d4530badf642	0x64540	98.7662	
 gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	95.4099	95.4099	45	d2d4d1568373	0x62110	95.6149	
 gruntentrancearrival	?UpdateAttackIdleAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	33	b368357b872c	0x617c0	100.0000	
 gruntentrancearrival	?UpdateIdleAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	27	489c8777f0c6	0x633e0	100.0000	
@@ -2107,7 +2107,7 @@ gruntentrancearrival	?UpdateWalkAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	11	54
 gruntentrancemove	?ApplyAnimation@CWapX@@QAEXPAVCAniElement@@H@Z	100.0000	100.0000	4	fafe2a8299e3	0x6b2e0	100.0000	
 gruntentrancemove	?AtChecked@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	3	2ccca9e10314	0x6b270	100.0000	
 gruntentrancemove	?BeginFreezeAnimation@CGrunt@@QAEHXZ	95.2662	95.2662	30	9a214a009aaa	0x692f0	95.2662	
-gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	100.0000	23	8349ea810e7b	0x67bd0	100.0000	
+gruntentrancemove	?StartEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	100.0000	23	8349ea810e7b	0x67bd0	100.0000	
 gruntentrancemove	?FindAnimation@AnimationRegistry@@QAEPAVCAniElement@@PBD@Z	100.0000	100.0000	5	0abe5e6796c5	0x6b2a0	100.0000	
 gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	93.9330	93.9330	34	f6394abdee51	0x6a6d0	94.6523	
 gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.7347	90.7143	9	f013ce3ccd05	0x67b00	90.9592	
