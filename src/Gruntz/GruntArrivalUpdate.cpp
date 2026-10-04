@@ -177,7 +177,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     }
                 }
             } else {
-                ResetToSeek(this);
+                ResetToSeek();
             }
             break;
         }

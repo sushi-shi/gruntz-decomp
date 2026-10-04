@@ -239,7 +239,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         case AISTATE_CHASE: {
             CGrunt* sg = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (best != NULL && best != sg) {
-                ResetToSeek(this);
+                ResetToSeek();
                 return 1;
             }
             if (sg != NULL) {

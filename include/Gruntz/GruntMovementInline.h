@@ -35,9 +35,9 @@ inline void CGrunt::SetNeighbor(i32 playerIndex, i32 unitIndex) {
     m_neighborUnitIndex = unitIndex;
 }
 
-inline void ResetToSeek(CGrunt* grunt) {
-    UNSET_COORD(grunt->m_arrivalCell);
-    grunt->SetAiState(AISTATE_SEEK);
+inline void CGrunt::ResetToSeek() {
+    UNSET_COORD(m_arrivalCell);
+    SetAiState(AISTATE_SEEK);
 }
 
 inline void RepathToward(CGrunt* grunt, CGrunt* target) {

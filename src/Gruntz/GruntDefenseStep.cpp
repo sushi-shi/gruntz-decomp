@@ -86,7 +86,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
-                ResetToSeek(this);
+                ResetToSeek();
                 return 1;
             }
             if (occ == NULL || occ->IsEntranceCommitted() == false
