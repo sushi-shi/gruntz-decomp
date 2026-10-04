@@ -5071,7 +5071,7 @@ i32 CPlay::ValidateLevelTiles() {
             CDDrawWorkerHost* pl = m_world->GetLevel()->m_mainPlane;
             i32 tile = pl->m_tileHandles[pl->m_tileRowOffsets[obj->m_speedY] + obj->m_speedX];
             if (tile >= 0x12f && tile <= 0x149) {
-                if (m_tileTriggers->AddActionEvent(
+                if (m_tileTriggers->AddBrickStack(
                         static_cast<BrickTileId>(tile),
                         obj->m_speedX,
                         obj->m_speedY,

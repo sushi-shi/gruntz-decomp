@@ -157,9 +157,9 @@ i32 CTriggerMgr::HandleToolAnimationCue(
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B
                        || cellType == TILEKIND_GAUNTLET_BRICK_C) {
-                CTileActionEvent* event = state->m_tileTriggers->FindActionAt(tileX, tileY);
+                CBrickStack* event = state->m_tileTriggers->FindBrickStackAt(tileX, tileY);
                 if (event->BreakTopBrick(unit) != 0) {
-                    state->m_tileTriggers->RemoveActionEvent(event);
+                    state->m_tileTriggers->RemoveBrickStack(event);
                 }
                 return 1;
             } else {
@@ -499,26 +499,26 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                 return 1;
             }
             if (cellType == TILEKIND_HIDDEN_POWERUP) {
-                BrickTileId actionCode;
+                BrickTileId brickTile;
                 switch (unit->m_brickPickupType) {
                     case PICKUP_REDBRICK:
-                        actionCode = BRICKTILE_RED_1;
+                        brickTile = BRICKTILE_RED_1;
                         break;
                     case PICKUP_GOLDBRICK:
-                        actionCode = BRICKTILE_GOLD_1;
+                        brickTile = BRICKTILE_GOLD_1;
                         break;
                     case PICKUP_BLUEBRICK:
-                        actionCode = BRICKTILE_BLUE_1;
+                        brickTile = BRICKTILE_BLUE_1;
                         break;
                     case PICKUP_BLACKBRICK:
-                        actionCode = BRICKTILE_BLACK_1;
+                        brickTile = BRICKTILE_BLACK_1;
                         break;
                     default:
-                        actionCode = BRICKTILE_BROWN_1;
+                        brickTile = BRICKTILE_BROWN_1;
                         break;
                 }
-                if (state->m_tileTriggers->AddSwitchActionEvent(
-                        actionCode,
+                if (state->m_tileTriggers->AddPlayerBrickStack(
+                        brickTile,
                         tileX,
                         tileY,
                         CellKey(tileX, tileY),
@@ -535,9 +535,9 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                 return 1;
             }
             if (cellType == TILEKIND_GAUNTLET_BRICK_A || cellType == TILEKIND_GAUNTLET_BRICK_B) {
-                CTileActionEvent* event = state->m_tileTriggers->FindActionAt(tileX, tileY);
+                CBrickStack* event = state->m_tileTriggers->FindBrickStackAt(tileX, tileY);
                 if (event
-                        ->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(playerIndex))
+                        ->AddTopBrick(unit->m_brickPickupType, static_cast<PlayerSlot>(playerIndex))
                     == 0) {
                     return 0;
                 }

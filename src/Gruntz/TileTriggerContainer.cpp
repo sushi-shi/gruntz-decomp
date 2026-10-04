@@ -330,34 +330,34 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
 }
 
 RVA(0x00116a40, 0xf5)
-CTileActionEvent* CTileTriggerContainer::AddActionEvent(
-    BrickTileId actionCode,
+CBrickStack* CTileTriggerContainer::AddBrickStack(
+    BrickTileId brickTile,
     i32 tileX,
     i32 tileY,
     i32 cellKey,
     RECT revealedToPlayer
 ) {
-    CTileActionEvent* event = new CTileActionEvent;
+    CBrickStack* event = new CBrickStack;
     if (event == NULL) {
         return NULL;
     }
-    if (!event->Build(this, actionCode, tileX, tileY, cellKey, revealedToPlayer)) {
+    if (!event->Build(this, brickTile, tileX, tileY, cellKey, revealedToPlayer)) {
         delete event;
         return NULL;
     }
-    m_actionEvents.AddTail(event);
+    m_brickStacks.AddTail(event);
     return event;
 }
 
 RVA(0x00116b80, 0x120)
-CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
-    BrickTileId actionCode,
+CBrickStack* CTileTriggerContainer::AddPlayerBrickStack(
+    BrickTileId brickTile,
     i32 tileX,
     i32 tileY,
     i32 cellKey,
     i32 playerSlot
 ) {
-    CTileActionEvent* event = new CTileActionEvent;
+    CBrickStack* event = new CBrickStack;
     if (event == NULL) {
         return NULL;
     }
@@ -378,11 +378,11 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
             revealedToPlayer.left = 1;
             break;
     }
-    if (!event->Build(this, actionCode, tileX, tileY, cellKey, revealedToPlayer)) {
+    if (!event->Build(this, brickTile, tileX, tileY, cellKey, revealedToPlayer)) {
         delete event;
         return NULL;
     }
-    m_actionEvents.AddTail(event);
+    m_brickStacks.AddTail(event);
     return event;
 }
 
@@ -499,12 +499,12 @@ void CTileTriggerContainer::RemoveAll() {
         delete elem;
     }
     m_timedLogics.RemoveAll();
-    pos = m_actionEvents.GetHeadPosition();
+    pos = m_brickStacks.GetHeadPosition();
     while (pos != NULL) {
-        CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+        CBrickStack* elem = static_cast<CBrickStack*>(m_brickStacks.GetNext(pos));
         delete elem;
     }
-    m_actionEvents.RemoveAll();
+    m_brickStacks.RemoveAll();
     m_latchedLeaf = NULL;
 }
 
@@ -543,10 +543,10 @@ i32 CTileTriggerContainer::ActivateTimedLogic(CTileTriggerLogic* logic) {
 }
 
 RVA(0x001171d0, 0x20)
-CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
-    POSITION pos = m_actionEvents.GetHeadPosition();
+CBrickStack* CTileTriggerContainer::FindBrickStackByCellKey(i32 cellKey) {
+    POSITION pos = m_brickStacks.GetHeadPosition();
     while (pos != NULL) {
-        CTileActionEvent* data = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+        CBrickStack* data = static_cast<CBrickStack*>(m_brickStacks.GetNext(pos));
         if (data->m_cellKey == cellKey) {
             return data;
         }
@@ -555,14 +555,14 @@ CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
 }
 
 RVA(0x00117200, 0x53)
-i32 CTileTriggerContainer::RemoveActionEvent(CTileActionEvent* event) {
-    POSITION pos = m_actionEvents.GetHeadPosition();
+i32 CTileTriggerContainer::RemoveBrickStack(CBrickStack* event) {
+    POSITION pos = m_brickStacks.GetHeadPosition();
     while (pos != NULL) {
         POSITION cur_node = pos;
-        CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+        CBrickStack* elem = static_cast<CBrickStack*>(m_brickStacks.GetNext(pos));
         if (elem == event) {
             delete elem;
-            m_actionEvents.RemoveAt(cur_node);
+            m_brickStacks.RemoveAt(cur_node);
             return 1;
         }
     }
@@ -612,12 +612,11 @@ i32 CTileTriggerContainer::Serialize(
                     return 0;
                 }
             }
-            count = m_actionEvents.GetCount();
+            count = m_brickStacks.GetCount();
             archive->Write(&count, sizeof(count));
-            pos = m_actionEvents.GetHeadPosition();
+            pos = m_brickStacks.GetHeadPosition();
             while (pos != NULL) {
-                CTileActionEvent* event =
-                    static_cast<CTileActionEvent*>(m_actionEvents.GetNext(pos));
+                CBrickStack* event = static_cast<CBrickStack*>(m_brickStacks.GetNext(pos));
                 if (event->Serialize(archive, SERIAL_SAVE, typeId, payload) == 0) {
                     return 0;
                 }
@@ -663,12 +662,12 @@ i32 CTileTriggerContainer::Serialize(
             }
             archive->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
-                CTileActionEvent* event = new CTileActionEvent;
+                CBrickStack* event = new CBrickStack;
                 if (event->Serialize(archive, SERIAL_LOAD, typeId, payload) == 0) {
                     return 0;
                 }
                 event->m_owner = this;
-                m_actionEvents.AddTail(event);
+                m_brickStacks.AddTail(event);
             }
             if (LoadInitialized(archive) == 0) {
                 return 0;
@@ -911,7 +910,7 @@ CGiantRockLogic* CTileTriggerContainer::FindNearbyGiantRock(i32 tileX, i32 tileY
 // @early-stop
 RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::RevealTileContents(i32 tileX, i32 tileY, i32 playerSlot) {
-    CTileActionEvent* elem = FindActionAt(tileX, tileY);
+    CBrickStack* elem = FindBrickStackAt(tileX, tileY);
     if (elem != NULL) {
         if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
             i32* flags = elem->m_revealedToPlayer;
@@ -921,7 +920,7 @@ i32 CTileTriggerContainer::RevealTileContents(i32 tileX, i32 tileY, i32 playerSl
         } else {
             elem->m_revealedToPlayer[playerSlot] = 1;
         }
-        elem->SetActionCode(elem->GetActionCode());
+        elem->SetBrickTile(elem->GetBrickTile());
         return 1;
     }
 

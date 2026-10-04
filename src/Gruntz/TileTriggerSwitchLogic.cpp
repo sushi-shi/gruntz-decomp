@@ -1055,14 +1055,14 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
 }
 
 RVA(0x00112d80, 0xa)
-CTileActionEvent::CTileActionEvent() {
-    m_live = false;
+CBrickStack::CBrickStack() {
+    m_initialized = false;
 }
 
 // @early-stop
 RVA(0x00112da0, 0x100)
-i32 CTileActionEvent::SetActionCode(BrickTileId code) {
-    m_actionCode = code;
+i32 CBrickStack::SetBrickTile(BrickTileId code) {
+    m_brickTile = code;
     if (IsRevealedToPlayer(g_curPlayer) == 0
         && static_cast<u32>(IDX(code) - IDX(BRICKTILE_BROWN_1)) <= 0x1a) {
         switch (code) {
@@ -1117,10 +1117,10 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
 
 // @early-stop
 RVA(0x00112ee0, 0x42b)
-i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
-    BrickTileId newCode = m_actionCode;
+i32 CBrickStack::BreakTopBrick(CGrunt* grunt) {
+    BrickTileId newCode = m_brickTile;
     i32 effect = 0;
-    switch (m_actionCode) {
+    switch (m_brickTile) {
         case BRICKTILE_RED_1:
             effect = IDX(BRICKTILE_RED_1);
             newCode = BRICKTILE_CLEARED;
@@ -1253,11 +1253,11 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
                 flags[1] = 1;
                 flags[2] = 1;
                 flags[3] = 1;
-                SetActionCode(m_actionCode);
+                SetBrickTile(m_brickTile);
                 return 0;
             }
             m_revealedToPlayer[slot] = 1;
-            SetActionCode(m_actionCode);
+            SetBrickTile(m_brickTile);
             return 0;
         } else if (brickEffect == BRICKTILE_BLACK_1) {
             g_gameReg->GetTriggerMgr()->SpawnExplosion(
@@ -1305,70 +1305,70 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
         }
     }
 
-    if (newCode != m_actionCode) {
-        SetActionCode(newCode);
+    if (newCode != m_brickTile) {
+        SetBrickTile(newCode);
     }
     return newCode == BRICKTILE_CLEARED;
 }
 
 // @early-stop
 RVA(0x00113420, 0x358)
-i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
+i32 CBrickStack::AddTopBrick(PickupType toolId, PlayerSlot playerSlot) {
     if (toolId == PICKUP_BROWNBRICK) {
-        switch (m_actionCode) {
+        switch (m_brickTile) {
             case BRICKTILE_BROWN_1:
-                m_actionCode = BRICKTILE_BROWN_2;
+                m_brickTile = BRICKTILE_BROWN_2;
                 break;
             case BRICKTILE_RED_1:
-                m_actionCode = BRICKTILE_RED_2_LOW;
+                m_brickTile = BRICKTILE_RED_2_LOW;
                 break;
             case BRICKTILE_BLUE_1:
-                m_actionCode = BRICKTILE_BLUE_2_LOW;
+                m_brickTile = BRICKTILE_BLUE_2_LOW;
                 break;
             case BRICKTILE_GOLD_1:
-                m_actionCode = BRICKTILE_GOLD_2_LOW;
+                m_brickTile = BRICKTILE_GOLD_2_LOW;
                 break;
             case BRICKTILE_BLACK_1:
-                m_actionCode = BRICKTILE_BLACK_2_LOW;
+                m_brickTile = BRICKTILE_BLACK_2_LOW;
                 break;
             case BRICKTILE_BROWN_2:
-                m_actionCode = BRICKTILE_BROWN_3;
+                m_brickTile = BRICKTILE_BROWN_3;
                 break;
             case BRICKTILE_RED_2_LOW:
-                m_actionCode = BRICKTILE_RED_3_LOW;
+                m_brickTile = BRICKTILE_RED_3_LOW;
                 break;
             case BRICKTILE_RED_2_TOP:
-                m_actionCode = BRICKTILE_RED_3_MID;
+                m_brickTile = BRICKTILE_RED_3_MID;
                 break;
             case BRICKTILE_BLUE_2_LOW:
-                m_actionCode = BRICKTILE_BLUE_3_LOW;
+                m_brickTile = BRICKTILE_BLUE_3_LOW;
                 break;
             case BRICKTILE_BLUE_2_TOP:
-                m_actionCode = BRICKTILE_BLUE_3_MID;
+                m_brickTile = BRICKTILE_BLUE_3_MID;
                 break;
             case BRICKTILE_GOLD_2_LOW:
-                m_actionCode = BRICKTILE_GOLD_3_LOW;
+                m_brickTile = BRICKTILE_GOLD_3_LOW;
                 break;
             case BRICKTILE_GOLD_2_TOP:
-                m_actionCode = BRICKTILE_GOLD_3_MID;
+                m_brickTile = BRICKTILE_GOLD_3_MID;
                 break;
             case BRICKTILE_BLACK_2_LOW:
-                m_actionCode = BRICKTILE_BLACK_3_LOW;
+                m_brickTile = BRICKTILE_BLACK_3_LOW;
                 break;
             case BRICKTILE_BLACK_2_TOP:
-                m_actionCode = BRICKTILE_BLACK_3_MID;
+                m_brickTile = BRICKTILE_BLACK_3_MID;
                 break;
             default:
                 return 0;
         }
     } else if (toolId == PICKUP_REDBRICK) {
-        switch (m_actionCode) {
+        switch (m_brickTile) {
             case BRICKTILE_BROWN_1:
             case BRICKTILE_RED_1:
             case BRICKTILE_BLUE_1:
             case BRICKTILE_GOLD_1:
             case BRICKTILE_BLACK_1:
-                m_actionCode = BRICKTILE_RED_2_TOP;
+                m_brickTile = BRICKTILE_RED_2_TOP;
                 break;
             case BRICKTILE_BROWN_2:
             case BRICKTILE_RED_2_LOW:
@@ -1379,19 +1379,19 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_GOLD_2_TOP:
             case BRICKTILE_BLACK_2_LOW:
             case BRICKTILE_BLACK_2_TOP:
-                m_actionCode = BRICKTILE_RED_3_TOP;
+                m_brickTile = BRICKTILE_RED_3_TOP;
                 break;
             default:
                 return 0;
         }
     } else if (toolId == PICKUP_BLUEBRICK) {
-        switch (m_actionCode) {
+        switch (m_brickTile) {
             case BRICKTILE_BROWN_1:
             case BRICKTILE_RED_1:
             case BRICKTILE_BLUE_1:
             case BRICKTILE_GOLD_1:
             case BRICKTILE_BLACK_1:
-                m_actionCode = BRICKTILE_BLUE_2_TOP;
+                m_brickTile = BRICKTILE_BLUE_2_TOP;
                 break;
             case BRICKTILE_BROWN_2:
             case BRICKTILE_RED_2_LOW:
@@ -1402,19 +1402,19 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_GOLD_2_TOP:
             case BRICKTILE_BLACK_2_LOW:
             case BRICKTILE_BLACK_2_TOP:
-                m_actionCode = BRICKTILE_BLUE_3_TOP;
+                m_brickTile = BRICKTILE_BLUE_3_TOP;
                 break;
             default:
                 return 0;
         }
     } else if (toolId == PICKUP_BLACKBRICK) {
-        switch (m_actionCode) {
+        switch (m_brickTile) {
             case BRICKTILE_BROWN_1:
             case BRICKTILE_RED_1:
             case BRICKTILE_BLUE_1:
             case BRICKTILE_GOLD_1:
             case BRICKTILE_BLACK_1:
-                m_actionCode = BRICKTILE_BLACK_2_TOP;
+                m_brickTile = BRICKTILE_BLACK_2_TOP;
                 break;
             case BRICKTILE_BROWN_2:
             case BRICKTILE_RED_2_LOW:
@@ -1425,19 +1425,19 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_GOLD_2_TOP:
             case BRICKTILE_BLACK_2_LOW:
             case BRICKTILE_BLACK_2_TOP:
-                m_actionCode = BRICKTILE_BLACK_3_TOP;
+                m_brickTile = BRICKTILE_BLACK_3_TOP;
                 break;
             default:
                 return 0;
         }
     } else if (toolId == PICKUP_GOLDBRICK) {
-        switch (m_actionCode) {
+        switch (m_brickTile) {
             case BRICKTILE_BROWN_1:
             case BRICKTILE_RED_1:
             case BRICKTILE_BLUE_1:
             case BRICKTILE_GOLD_1:
             case BRICKTILE_BLACK_1:
-                m_actionCode = BRICKTILE_GOLD_2_TOP;
+                m_brickTile = BRICKTILE_GOLD_2_TOP;
                 break;
             case BRICKTILE_BROWN_2:
             case BRICKTILE_RED_2_LOW:
@@ -1448,7 +1448,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_GOLD_2_TOP:
             case BRICKTILE_BLACK_2_LOW:
             case BRICKTILE_BLACK_2_TOP:
-                m_actionCode = BRICKTILE_GOLD_3_TOP;
+                m_brickTile = BRICKTILE_GOLD_3_TOP;
                 break;
             default:
                 return 0;
@@ -1465,7 +1465,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
     } else {
         m_revealedToPlayer[IDX(playerSlot)] = 1;
     }
-    SetActionCode(m_actionCode);
+    SetBrickTile(m_brickTile);
     return 1;
 }
 
@@ -1691,12 +1691,7 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
 }
 
 RVA(0x00113f10, 0x3b)
-i32 CTileActionEvent::Serialize(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    i32 payload
-) {
+i32 CBrickStack::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
     }
@@ -1716,18 +1711,18 @@ i32 CTileActionEvent::Serialize(
 }
 
 RVA(0x00113f60, 0xa2)
-i32 CTileActionEvent::SerializeFields(CFileMemBase* ar) {
+i32 CBrickStack::SerializeFields(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
     if (g_gameReg->World() == NULL) {
         return 0;
     }
-    ar->Write(&m_actionCode, sizeof(m_actionCode));
+    ar->Write(&m_brickTile, sizeof(m_brickTile));
     ar->Write(&m_tileX, sizeof(m_tileX));
     ar->Write(&m_tileY, sizeof(m_tileY));
     ar->Write(&m_cellKey, sizeof(m_cellKey));
-    ar->Write(&m_live, sizeof(m_live));
+    ar->Write(&m_initialized, sizeof(m_initialized));
     ar->Write(&m_revealedToPlayer[0], sizeof(m_revealedToPlayer[0]));
     ar->Write(&m_revealedToPlayer[1], sizeof(m_revealedToPlayer[1]));
     ar->Write(&m_revealedToPlayer[2], sizeof(m_revealedToPlayer[2]));
@@ -1736,18 +1731,18 @@ i32 CTileActionEvent::SerializeFields(CFileMemBase* ar) {
 }
 
 RVA(0x00114040, 0xa2)
-i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
+i32 CBrickStack::DeserializeFields(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
     if (g_gameReg->World() == NULL) {
         return 0;
     }
-    ar->Read(&m_actionCode, sizeof(m_actionCode));
+    ar->Read(&m_brickTile, sizeof(m_brickTile));
     ar->Read(&m_tileX, sizeof(m_tileX));
     ar->Read(&m_tileY, sizeof(m_tileY));
     ar->Read(&m_cellKey, sizeof(m_cellKey));
-    ar->Read(&m_live, sizeof(m_live));
+    ar->Read(&m_initialized, sizeof(m_initialized));
     ar->Read(&m_revealedToPlayer[0], sizeof(m_revealedToPlayer[0]));
     ar->Read(&m_revealedToPlayer[1], sizeof(m_revealedToPlayer[1]));
     ar->Read(&m_revealedToPlayer[2], sizeof(m_revealedToPlayer[2]));

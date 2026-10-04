@@ -58,7 +58,7 @@ public:
     i32 UpdateTimedLogics(i32 unusedFrameDelta);
     i32 ActivateTimedLogic(CTileTriggerLogic* logic);
 
-    i32 RemoveActionEvent(CTileActionEvent* evt);
+    i32 RemoveBrickStack(CBrickStack* evt);
 
     RVA(0x000c8640, 0x70)
     ~CTileTriggerContainer() {
@@ -98,13 +98,8 @@ public:
 
     void AddLogicFromRecord(TileCollisionKind tileType, TrigLogicId logicType, CGameObject* object);
 
-    CTileActionEvent* AddActionEvent(
-        BrickTileId actionCode,
-        i32 tileX,
-        i32 tileY,
-        i32 cellKey,
-        RECT revealedToPlayer
-    );
+    CBrickStack*
+    AddBrickStack(BrickTileId brickTile, i32 tileX, i32 tileY, i32 cellKey, RECT revealedToPlayer);
 
     CGiantRockLogic* AddGiantRockLogic(
         i32 tileX,
@@ -116,16 +111,16 @@ public:
         i32 dutyOffSpan
     );
 
-    CTileActionEvent*
-    AddSwitchActionEvent(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, i32 playerSlot);
+    CBrickStack*
+    AddPlayerBrickStack(BrickTileId brickTile, i32 tileX, i32 tileY, i32 cellKey, i32 playerSlot);
 
     i32 Initialize();
     i32 RemoveSwitchLogic(i32 cellKey, TrigLogicId logicType);
 
     CTileTriggerSwitchLogic* FindSwitchLogic(i32 cellKey, TrigLogicId logicType);
 
-    CTileActionEvent* FindActionByCellKey(i32 cellKey);
-    CTileActionEvent* FindActionAt(i32 tileX, i32 tileY);
+    CBrickStack* FindBrickStackByCellKey(i32 cellKey);
+    CBrickStack* FindBrickStackAt(i32 tileX, i32 tileY);
 
     CGiantRockLogic* FindNearbyGiantRock(i32 tileX, i32 tileY);
 
@@ -162,7 +157,7 @@ public:
     CPtrList m_switchLogics;
     CPtrList m_idleLogics;
     CPtrList m_timedLogics;
-    CPtrList m_actionEvents;
+    CPtrList m_brickStacks;
     CTileTriggerLogic* m_latchedLeaf;
     b32 m_initialized;
 };
@@ -171,8 +166,8 @@ static inline i32 CellKey(i32 tileX, i32 tileY) {
     return (tileX << 8) + tileY;
 }
 
-inline CTileActionEvent* CTileTriggerContainer::FindActionAt(i32 tileX, i32 tileY) {
-    return FindActionByCellKey(CellKey(tileX, tileY));
+inline CBrickStack* CTileTriggerContainer::FindBrickStackAt(i32 tileX, i32 tileY) {
+    return FindBrickStackByCellKey(CellKey(tileX, tileY));
 }
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H
