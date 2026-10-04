@@ -707,7 +707,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 RECT rc = box;
                 view->WorldToViewport(&rc.left, &rc.top);
                 view->WorldToViewport(&rc.right, &rc.bottom);
-                if (fr->m_owned != NULL) {
+                if (fr->GetShadeBlitter() != NULL) {
                     drawHost->DrawLabel(&rc, s_dbgRle);
                 } else if (fr->m_surface != NULL
                            && SurfaceCaps(fr->m_surface, DDSCAPS_VIDEOMEMORY) != 0) {

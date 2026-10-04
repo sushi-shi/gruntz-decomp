@@ -2760,7 +2760,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
         if (set) {
             CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
             if (fr) {
-                CDDrawShadeBlit* fmt = fr->m_owned;
+                CDDrawShadeBlit* fmt = fr->GetShadeBlitter();
                 if (fmt) {
                     switch (fmt->m_drawType) {
                         case SHADE_DST_BY_SRC:
@@ -2792,7 +2792,7 @@ void CGruntzMgr::CheatEclipseToggle() {
         if (set) {
             CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
             if (fr) {
-                CDDrawShadeBlit* fmt = fr->m_owned;
+                CDDrawShadeBlit* fmt = fr->GetShadeBlitter();
                 if (fmt) {
                     ShadeMode st = fmt->m_drawType;
                     if (st != SHADE_DST_BY_LEVEL) {

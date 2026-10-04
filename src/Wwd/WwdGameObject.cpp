@@ -979,8 +979,8 @@ i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
             if (frame->m_surface && frame->m_surface->GetBitDepth() == BPP_RGB_24) {
                 size = size * 3;
             }
-            if (frame->m_owned) {
-                size = frame->m_owned->m_rleLen;
+            if (frame->GetShadeBlitter()) {
+                size = frame->GetShadeBlitter()->m_rleLen;
             }
             if (raw == 0) {
                 size += 0x34;
@@ -996,8 +996,8 @@ i32 CDDrawWorker::SetAllTypes(ShadeMode type) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
-        if (frame && frame->m_owned) {
-            frame->m_owned->Select(type, NULL);
+        if (frame && frame->GetShadeBlitter()) {
+            frame->GetShadeBlitter()->Select(type, NULL);
             count++;
         }
     }
@@ -1009,8 +1009,8 @@ i32 CDDrawWorker::SetAllLightLevels(i32 value) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
-        if (frame && frame->m_owned) {
-            frame->m_owned->m_light = value;
+        if (frame && frame->GetShadeBlitter()) {
+            frame->GetShadeBlitter()->m_light = value;
             count++;
         }
     }
@@ -1025,8 +1025,8 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
-        if (frame && frame->m_owned) {
-            frame->m_owned->m_palDescr = format;
+        if (frame && frame->GetShadeBlitter()) {
+            frame->GetShadeBlitter()->m_palDescr = format;
             count++;
         }
     }
@@ -1041,7 +1041,7 @@ ShadeMode CDDrawWorker::GetFirstFrameState() {
     if (frame == NULL) {
         return SHADE_COPY;
     }
-    CDDrawShadeBlit* fmt = frame->m_owned;
+    CDDrawShadeBlit* fmt = frame->GetShadeBlitter();
     if (fmt == NULL) {
         return SHADE_COPY;
     }
@@ -1056,7 +1056,7 @@ i32 CDDrawWorker::GetFirstFrameLightLevel() {
     if (frame == NULL) {
         return 1;
     }
-    CDDrawShadeBlit* fmt = frame->m_owned;
+    CDDrawShadeBlit* fmt = frame->GetShadeBlitter();
     if (fmt == NULL) {
         return 0;
     }
