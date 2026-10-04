@@ -2567,8 +2567,7 @@ i32 CBattlezAiController::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 r
         unit->GetScreenTile(&g2);
         left = g2.m_x;
     }
-    RECT box;
-    SET_RECT_COMPONENTS(box, left - 8, top - 8, right + 8, bottom + 8);
+    CRect box(left - 8, top - 8, right + 8, bottom + 8);
     {
         CMapMgr* board = m_tileGrid;
         board->Clip(&box);
