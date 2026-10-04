@@ -29,7 +29,6 @@
 #include <Gruntz/AssetRoot.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/Blk6c.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
