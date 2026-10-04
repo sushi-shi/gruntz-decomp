@@ -325,7 +325,7 @@ i32 CTriggerMgr::StartUnitDeath(
     if (deathType == DEATH_EXIT) {
         (static_cast<CGrunt*>(unit))->BuildGruntExitAnimation();
     } else {
-        (static_cast<CGrunt*>(unit))->LoadGruntDeathAnimations(deathType, deathParam);
+        (static_cast<CGrunt*>(unit))->StartDeath(deathType, deathParam);
     }
     return 1;
 }

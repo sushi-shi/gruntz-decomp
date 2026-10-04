@@ -399,7 +399,7 @@ public:
     i32 UpdateDecayFade();
     i32 UpdateToolUseAnimation();
 
-    i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex);
+    i32 StartDeath(GruntDeathType deathType, i32 killerPlayerIndex);
 
     i32 BeginPickupAnimation(
         PickupType type,

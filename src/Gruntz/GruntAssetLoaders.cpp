@@ -62,7 +62,7 @@ static char s_deathzSquash[] = "GRUNTZ_DEATHZ_SQUASH";
 static const char s_normalgruntDeath[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
 RVA(0x00060150, 0xdd0)
-i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex) {
+i32 CGrunt::StartDeath(GruntDeathType deathType, i32 killerPlayerIndex) {
     if (m_deathAnimStarted != false) {
         return 0;
     }
