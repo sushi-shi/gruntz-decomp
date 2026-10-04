@@ -233,7 +233,7 @@ i32 CTriggerMgr::IsUnitSelected(i32 playerIndex, i32 unitIndex) {
 
 RVA(0x00078520, 0x106)
 void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targetY) {
-    if (m_groupFlag == false) {
+    if (m_playerControlEnabled == false) {
         return;
     }
     u8 count = 0;
@@ -281,7 +281,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
     i32 targetY,
     b32 targetIsGrunt
 ) {
-    if (m_groupFlag == false) {
+    if (m_playerControlEnabled == false) {
         return;
     }
     u8 count = 0;
@@ -678,7 +678,7 @@ i32 CTriggerMgr::HandleTargetSelection(
     i32 spawnCursor
 ) {
     static_cast<void>(unused5);
-    if (m_groupFlag == false) {
+    if (m_playerControlEnabled == false) {
         return 0;
     }
     CGrunt* hit = CellHitTest(targetX, targetY, NULL, NULL, PLAYER_SLOT_ALL);
@@ -1164,7 +1164,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
         } while (playersRemaining != 0);
     }
     if (playerSelector == g_curPlayer) {
-        m_groupFlag = false;
+        m_playerControlEnabled = false;
     }
 
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -1293,7 +1293,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     ar->Write(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Write(&m_countdownActive, sizeof(m_countdownActive));
     ar->Write(&m_finishReason, sizeof(m_finishReason));
-    ar->Write(&m_groupFlag, sizeof(m_groupFlag));
+    ar->Write(&m_playerControlEnabled, sizeof(m_playerControlEnabled));
     ar->Write(&g_curPlayer, sizeof(g_curPlayer));
     ar->Write(&g_groupSentinel, sizeof(g_groupSentinel));
     ar->Write(&m_pendingFxKind, sizeof(m_pendingFxKind));
@@ -1459,7 +1459,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ar->Read(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Read(&m_countdownActive, sizeof(m_countdownActive));
     ar->Read(&m_finishReason, sizeof(m_finishReason));
-    ar->Read(&m_groupFlag, sizeof(m_groupFlag));
+    ar->Read(&m_playerControlEnabled, sizeof(m_playerControlEnabled));
     ar->Read(&g_curPlayer, sizeof(g_curPlayer));
     ar->Read(&g_groupSentinel, sizeof(g_groupSentinel));
     ar->Read(&m_pendingFxKind, sizeof(m_pendingFxKind));
@@ -1991,7 +1991,7 @@ void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
                 m_finishDelayTiming.Start(p->GetSound()->GetDurationMs() + 500);
                 PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_FINISHLEVEL");
                 m_finishState = FINISH_STATE_VICTORY;
-                m_groupFlag = false;
+                m_playerControlEnabled = false;
                 m_finishReason = reason;
                 return;
             }
@@ -2024,7 +2024,7 @@ void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
         default:
             return;
     }
-    m_groupFlag = false;
+    m_playerControlEnabled = false;
     m_finishReason = reason;
 }
 
@@ -2387,7 +2387,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
         unitsRemaining--;
     } while (unitsRemaining != 0);
     if (playerIndex == g_curPlayer) {
-        m_groupFlag = false;
+        m_playerControlEnabled = false;
     }
     (static_cast<CPlay*>(g_gameReg->m_curState))->FlushPendingOps();
     return 1;
@@ -2576,24 +2576,24 @@ i32 CTriggerMgr::ToggleToyTargeting() {
 }
 
 RVA(0x0007d6e0, 0xea)
-i32 CTriggerMgr::EnqueueGroupCells() {
-    if (m_groupFlag == false) {
+i32 CTriggerMgr::EnqueueSelectedStop() {
+    if (m_playerControlEnabled == false) {
         return 0;
     }
 
-    u8 buf[0x80];
+    u8 unitIndices[0x80];
     u8 count = 0;
-    char x;
+    char playerIndex;
     POSITION pos = m_selectedUnitIds.GetHeadPosition();
     if (pos != NULL) {
-        i32 magic = g_curPlayer;
+        i32 localPlayerIndex = g_curPlayer;
         do {
-            Coord* p = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
+            Coord* identity = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
 
-            CGrunt* cell = UnitAt(p->m_x, p->m_y);
-            x = static_cast<char>(p->m_x);
-            if (cell->GetPlayerIndex() == magic && cell->m_entranceActive == false) {
-                buf[count] = static_cast<u8>(p->m_y);
+            CGrunt* grunt = UnitAt(identity->m_x, identity->m_y);
+            playerIndex = static_cast<char>(identity->m_x);
+            if (grunt->GetPlayerIndex() == localPlayerIndex && grunt->m_entranceActive == false) {
+                unitIndices[count] = static_cast<u8>(identity->m_y);
                 count++;
             }
         } while (pos != NULL);
@@ -2601,8 +2601,8 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     if (count == 1) {
         g_gameReg->GetCommandMgr()->EnqueueSingle(
             true,
-            x,
-            static_cast<char>(buf[0]),
+            playerIndex,
+            static_cast<char>(unitIndices[0]),
             static_cast<char>(IDX(PLAYERCMD_STOP)),
             0,
             0,
@@ -2610,8 +2610,16 @@ i32 CTriggerMgr::EnqueueGroupCells() {
             0
         );
     } else {
-        g_gameReg->GetCommandMgr()
-            ->EnqueueMulti(true, x, count, buf, static_cast<char>(IDX(PLAYERCMD_STOP)), 0, 0, 0);
+        g_gameReg->GetCommandMgr()->EnqueueMulti(
+            true,
+            playerIndex,
+            count,
+            unitIndices,
+            static_cast<char>(IDX(PLAYERCMD_STOP)),
+            0,
+            0,
+            0
+        );
     }
     return 1;
 }

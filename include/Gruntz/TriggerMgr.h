@@ -207,7 +207,7 @@ public:
     i32 ToggleToolTargeting();
     i32 ToggleToyTargeting();
 
-    i32 EnqueueGroupCells();
+    i32 EnqueueSelectedStop();
 
     void SelectUnitsInRect(RECT selectionRect, b32 preserveSelection);
 
@@ -251,7 +251,7 @@ public:
         m_overlay = NULL;
         m_world = NULL;
         m_countdownActive = true;
-        m_groupFlag = true;
+        m_playerControlEnabled = true;
         m_rollingballLoop = NULL;
         m_teleportLoop = NULL;
         m_rollingballWanted = false;
@@ -336,7 +336,7 @@ public:
     SoundBuffer* m_teleportLoop;
     b32 m_rollingballWanted;
     b32 m_teleportWanted;
-    b32 m_groupFlag;
+    b32 m_playerControlEnabled;
 };
 
 extern i32 g_groupSentinel;

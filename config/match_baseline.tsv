@@ -4308,7 +4308,7 @@ triggermgr	?CollectLevelWarpStone@CTriggerMgr@@QAEXHH@Z	100.0000	100.0000	12	4f8
 triggermgr	?ConvertGrunt@CTriggerMgr@@QAEHHHHH@Z	94.3750	94.3750	22	4fe7b2b6a5a4	0x7c110	94.3750	
 triggermgr	?CycleMoveIcons@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	6	ee2eedf323d2	0x7c2e0	100.0000	
 triggermgr	?DestroyAllAnims@CTriggerMgr@@QAEXXZ	98.7857	98.7857	14	f1c1f364350d	0x7d330	98.7857	
-triggermgr	?EnqueueGroupCells@CTriggerMgr@@QAEHXZ	100.0000	100.0000	9	362371413f1b	0x7d6e0	100.0000	
+triggermgr	?EnqueueSelectedStop@CTriggerMgr@@QAEHXZ	100.0000	100.0000	9	362371413f1b	0x7d6e0	100.0000	
 triggermgr	?EnqueueSelectedMove@CTriggerMgr@@QAEXHHH@Z	100.0000	100.0000	10	df205f22e1a0	0x78520	100.0000	
 triggermgr	?EnqueueSelectedToolUse@CTriggerMgr@@QAEXHHHH@Z	100.0000	100.0000	10	d907e2b7f8a1	0x78680	100.0000	
 triggermgr	?FindNearestUnitForPlayer@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	89.5263	89.5263	8	2150f09ddc2c	0x77f80	89.5263	

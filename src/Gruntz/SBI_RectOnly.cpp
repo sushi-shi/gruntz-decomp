@@ -357,7 +357,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
+            if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
             switch (cmd) {
@@ -461,7 +461,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
+            if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
             switch (cmd) {
@@ -509,7 +509,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
+            if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
             if (cmd < SBICMD_MULTIPLAYER_HEAD_FIRST || cmd > SBICMD_MULTIPLAYER_HEAD_LAST) {
@@ -526,7 +526,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
+            if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
             if (cmd < SBICMD_GRUNT_SLOT_FIRST || cmd > SBICMD_GRUNT_SLOT_LAST) {
@@ -539,7 +539,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
+            if (g_gameReg->m_triggerMgr->m_playerControlEnabled == false) {
                 break;
             }
             switch (cmd) {
@@ -639,7 +639,8 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     SbiCommandId cmd = r->GetCommandId();
     switch (r->GetTab()) {
         case TAB_STATZ:
-            if (m_chatBoxDisabled == false && g_gameReg->GetTriggerMgr()->m_groupFlag != false
+            if (m_chatBoxDisabled == false
+                && g_gameReg->GetTriggerMgr()->m_playerControlEnabled != false
                 && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
                 HiCueTimed();
                 PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
