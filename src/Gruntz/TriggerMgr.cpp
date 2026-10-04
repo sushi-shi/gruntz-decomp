@@ -1994,7 +1994,7 @@ void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_finishState != FINISH_STATE_DEFEAT) {
                 SoundCue* p = m_world->SoundRegistry()->FindCue("GAME_FINISHLEVEL");
-                m_finishDelayTiming.Start(p->GetSound()->GetDurationMs() + 500);
+                StartFinishDelay(p->GetSound()->GetDurationMs() + 500);
                 PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_FINISHLEVEL");
                 m_finishState = FINISH_STATE_VICTORY;
                 m_playerControlEnabled = false;
@@ -2004,15 +2004,15 @@ void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
             break;
         case FINISH_REASON_WARPSTONE_RESET:
             m_finishState = FINISH_STATE_DEFEAT;
-            m_finishDelayTiming.Start(3000);
+            StartFinishDelay(3000);
             break;
         case FINISH_REASON_BATTLEZ_VICTORY:
             m_finishState = FINISH_STATE_VICTORY;
-            m_finishDelayTiming.Start(3000);
+            StartFinishDelay(3000);
             break;
         case FINISH_REASON_TIME_EXPIRED:
             m_finishState = FINISH_STATE_DEFEAT;
-            m_finishDelayTiming.Start(3000);
+            StartFinishDelay(3000);
             break;
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
             if (m_finishState == FINISH_STATE_ACTIVE) {
@@ -2021,11 +2021,11 @@ void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
                     m_localWarlord->ResolveDeathAnimation();
                 }
             }
-            m_finishDelayTiming.Start(3000);
+            StartFinishDelay(3000);
             break;
         case FINISH_REASON_BATTLEZ_DEFEAT:
             m_finishState = FINISH_STATE_DEFEAT;
-            m_finishDelayTiming.Start(3000);
+            StartFinishDelay(3000);
             break;
         default:
             return;

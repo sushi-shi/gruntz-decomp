@@ -390,8 +390,7 @@ i32 CWarlord::FinishJoyAnimation() {
         CTriggerMgr* h = g_gameReg->GetTriggerMgr();
         if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->GetSmarts() == g_curPlayer) {
             h->m_localWarlord = NULL;
-            ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_finishDelayTiming;
-            tm->Start(0x3e8);
+            g_gameReg->GetTriggerMgr()->StartFinishDelay(0x3e8);
         }
         ResolveMovingAnimation();
     }
@@ -427,8 +426,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         CTriggerMgr* h = g_gameReg->GetTriggerMgr();
         if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->GetSmarts() == g_curPlayer) {
             h->m_localWarlord = NULL;
-            ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_finishDelayTiming;
-            tm->Start(0x3e8);
+            g_gameReg->GetTriggerMgr()->StartFinishDelay(0x3e8);
         }
 
         GruntzPlayer* slot = &g_gameReg->GetPlayer(m_object->GetSmarts());
