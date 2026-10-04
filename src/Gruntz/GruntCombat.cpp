@@ -1408,7 +1408,7 @@ i32 CGrunt::CommitNeighbor(
         flag = IDX(v);
     }
     if (flag != 0) {
-        RunMoveConfig(targetPxX >> TILE_SHIFT_PX, targetPxY >> TILE_SHIFT_PX);
+        StartToolUseAnimation(targetPxX >> TILE_SHIFT_PX, targetPxY >> TILE_SHIFT_PX);
         return 1;
     }
 
@@ -1838,14 +1838,14 @@ void CGrunt::StepBehavior(char*) {
         } else if (onMoveTile != 0) {
             if (flags & 0x100) {
                 if (m_coordToggle == false) {
-                    RunMoveConfig(
+                    StartToolUseAnimation(
                         m_lastTilePx.m_x >> TILE_SHIFT_PX,
                         m_lastTilePx.m_y >> TILE_SHIFT_PX
                     );
                     return;
                 }
             } else if (m_coordToggle != false) {
-                RunMoveConfig(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
+                StartToolUseAnimation(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
                 return;
             }
         }

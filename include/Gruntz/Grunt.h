@@ -350,8 +350,8 @@ public:
         return m_arrivalCell;
     }
 
-    Coord MoveTile() {
-        return m_moveTile;
+    Coord ToolTargetTile() {
+        return m_toolTargetTile;
     }
 
     i32 CreateHealthSprite();
@@ -383,7 +383,7 @@ public:
 
     i32 BeginFreezeAnimation();
 
-    i32 RunMoveConfig(i32 tileX, i32 tileY);
+    i32 StartToolUseAnimation(i32 tileX, i32 tileY);
 
     i32 BuildGruntExitAnimation();
 
@@ -612,7 +612,7 @@ public:
 
     CAniElement* m_pickupAnimation;
     Coord m_reserved3dc;
-    Coord m_moveTile;
+    Coord m_toolTargetTile;
     i32 m_health;
     i32 m_stamina;
     i32 m_toyTime;

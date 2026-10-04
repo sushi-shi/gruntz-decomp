@@ -2089,7 +2089,7 @@ gruntentrancearrival	?FinishToobMoveAnimation@CGrunt@@QAEHXZ	98.2192	98.2192	27	
 gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f0190319	0x62b40	100.0000	
 gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	97.3366	92.1733	2	32af34d26f5f	0x62b70	97.3366	
 gruntentrancearrival	?ResetIdleAnimation@CGrunt@@QAEXHHH@Z	97.6858	97.6858	26	9570178849b3	0x62e10	97.6858	
-gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	95.3490	95.3490	31	33412ec409fc	0x65630	96.2980	
+gruntentrancearrival	?StartToolUseAnimation@CGrunt@@QAEHHH@Z	95.3490	95.3490	31	33412ec409fc	0x65630	96.2980	
 gruntentrancearrival	?StartAttackIdleAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	9	b421cb696624	0x616e0	100.0000	
 gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5705	91.5705	20	f9603b5f39b2	0x61940	91.5951	
 gruntentrancearrival	?StartRangedAttackAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	9	e3ea68ac088f	0x61bc0	100.0000	

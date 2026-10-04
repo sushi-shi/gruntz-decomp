@@ -1361,7 +1361,7 @@ commitMovement:
                 return 1;
             }
         }
-        RunMoveConfig(targetTileX, targetTileY);
+        StartToolUseAnimation(targetTileX, targetTileY);
         return 1;
     }
     if (usingWingz) {

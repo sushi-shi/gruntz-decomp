@@ -17,8 +17,8 @@ inline void CGrunt::ClearMoveTileFx() {
     m_triggerMgr->LoadTileArrivalFx(
         GetPlayerIndex(),
         GetUnitIndex(),
-        m_moveTile.m_x,
-        m_moveTile.m_y,
+        m_toolTargetTile.m_x,
+        m_toolTargetTile.m_y,
         GetActivePickupType(),
         WWDDRAW_NO_ANIMATION
     );
