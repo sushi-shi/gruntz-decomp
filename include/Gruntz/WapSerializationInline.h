@@ -12,7 +12,6 @@
 
 #include <string.h>
 
-// @early-stop
 RVA(0x00008c00, 0x152)
 inline i32 CWapX::SerializeAnimationState(
     CFileMemBase* archive,
@@ -37,7 +36,7 @@ inline i32 CWapX::SerializeAnimationState(
                 m_value = NULL;
             } else {
                 CMapStringToPtr* map =
-                    &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
+                    &m_ownerLogicRecord->OwnerMgr()->m_animRegistry->m_animations;
                 CAniElement* value = MapFind<CAniElement>(*map, name);
                 m_value = value;
             }
@@ -50,7 +49,7 @@ inline i32 CWapX::SerializeAnimationState(
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
+                        m_ownerLogicRecord->OwnerMgr()->m_animRegistry->FindAnimationKey(m_value)
                     )
                 );
             }

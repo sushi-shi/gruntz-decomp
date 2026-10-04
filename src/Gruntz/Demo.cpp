@@ -119,7 +119,7 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
     switch (static_cast<DemoMoverState>(st->EventCode())) {
         case DEMO_MOVER_SCROLL_TO_TARGET: {
 
-            CGameLevel* gh = st->m_ownerCtx->m_level;
+            CGameLevel* gh = st->OwnerMgr()->m_level;
             i32 curX = gh->m_mainPlane->GetScrollPixelX();
             i32 curY = gh->m_mainPlane->GetScrollPixelY();
             if (curX < st->m_scrollTargetX) {
@@ -153,9 +153,9 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
         case DEMO_MOVER_CHOOSE_TARGET: {
 
             st->m_scrollTargetX =
-                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->GetPlanePixelWidth());
+                GetRandom(st->OwnerMgr()->m_level->m_mainPlane->GetPlanePixelWidth());
             st->m_scrollTargetY =
-                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->GetPlanePixelHeight());
+                GetRandom(st->OwnerMgr()->m_level->m_mainPlane->GetPlanePixelHeight());
             st->SetEventCode(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }
