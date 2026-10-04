@@ -68,7 +68,7 @@ i32 CSBI_Image::Render() {
         if (cel != NULL) {
             i32 y = m_rect.top + cel->GetAnchorY();
             i32 x = m_rect.left + cel->GetAnchorX();
-            cel->RenderFrame(g_gameReg->World()->GetDrawTarget()->GetBackPair(), x, y, 0);
+            cel->RenderFrame(g_gameReg->m_world->GetDrawTarget()->GetBackPair(), x, y, 0);
         }
     }
     return 1;
