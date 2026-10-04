@@ -752,7 +752,7 @@ public:
 
     i32 UpdateArrival(i32 walking, i32 commit);
 
-    i32 StepArrivalDrop(
+    i32 MoveTo(
         i32 pxX,
         i32 pxY,
         i32 arrivalAction,
@@ -834,7 +834,7 @@ public:
         PickupType attackerPowerupType
     );
 
-    i32 TileSwitch(
+    i32 MoveToTile(
         i32 col,
         i32 row,
         i32 arrivalAction,

@@ -149,7 +149,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (static_cast<u32>(this->m_dwell) <= DWELL_REPATH_MS) {
             return 1;
         }
-        if (TileSwitch(
+        if (MoveToTile(
                 g->m_object->m_screenX >> TILE_SHIFT_PX,
                 g->m_object->m_screenY >> TILE_SHIFT_PX,
                 0,
@@ -206,7 +206,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             if (bestIdx != -1) {
                 this->m_arrivalCell.m_x = bestIdx;
                 CGameObject* base = g_gameReg->GetTriggerMgr()->UnitAt(0, bestIdx)->m_object;
-                if (TileSwitch(
+                if (MoveToTile(
                         base->m_screenX >> TILE_SHIFT_PX,
                         base->m_screenY >> TILE_SHIFT_PX,
                         0,
@@ -229,7 +229,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         }
         CGameObject* base =
             g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x)->m_object;
-        TileSwitch(
+        MoveToTile(
             base->m_screenX >> TILE_SHIFT_PX,
             base->m_screenY >> TILE_SHIFT_PX,
             0,

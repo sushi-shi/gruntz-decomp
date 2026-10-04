@@ -741,7 +741,7 @@ void CGrunt::Deselect() {
 }
 
 RVA(0x0004b320, 0x34)
-i32 CGrunt::TileSwitch(
+i32 CGrunt::MoveToTile(
     i32 col,
     i32 row,
     i32 arrivalAction,
@@ -752,7 +752,7 @@ i32 CGrunt::TileSwitch(
     Coord center;
     Coord* point =
         center.Set((col << TILE_SHIFT_PX) + TILE_HALF_PX, (row << TILE_SHIFT_PX) + TILE_HALF_PX);
-    return StepArrivalDrop(
+    return MoveTo(
         point->m_x,
         point->m_y,
         arrivalAction,
@@ -763,7 +763,7 @@ i32 CGrunt::TileSwitch(
 }
 
 RVA(0x0004b370, 0xb30)
-i32 CGrunt::StepArrivalDrop(
+i32 CGrunt::MoveTo(
     i32 pxX,
     i32 pxY,
     i32 arrivalAction,
@@ -1716,7 +1716,7 @@ i32 CGrunt::Place(
                     (defenderQueuePosition << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (defenderPickupType << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
-                StepArrivalDrop(defender.m_x, defender.m_y - TILE_SIZE_PX, 0, -1, 1, 0);
+                MoveTo(defender.m_x, defender.m_y - TILE_SIZE_PX, 0, -1, 1, 0);
             }
             break;
         case AI_DEFENDER:

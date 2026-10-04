@@ -50,7 +50,7 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
                 continue;
             }
             if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
-                grunt->TileSwitch(col, row, 0, 0xd87, 0, 0);
+                grunt->MoveToTile(col, row, 0, 0xd87, 0, 0);
                 grunt->ResetDwell();
                 return 1;
             }

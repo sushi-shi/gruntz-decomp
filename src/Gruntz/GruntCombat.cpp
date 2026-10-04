@@ -1991,7 +1991,7 @@ afterTile:
                     i32 baseCol = sx >> TILE_SHIFT_PX;
                     i32 wanderRow = rand() % 6 + baseRow - 3;
                     i32 wanderCol = rand() % 6 + baseCol - 3;
-                    TileSwitch(wanderCol, wanderRow, 0, m_arrivalFlags, 0, 0);
+                    MoveToTile(wanderCol, wanderRow, 0, m_arrivalFlags, 0, 0);
                     m_dwell = 0;
                 }
                 goto afterArrival;
@@ -2416,7 +2416,7 @@ void CGrunt::AdvanceMotion() {
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.Set(x, y);
-                                if (StepArrivalDrop(x, y, ARRIVAL_ACTION_USE_TOOL, -1, 1, 0)
+                                if (MoveTo(x, y, ARRIVAL_ACTION_USE_TOOL, -1, 1, 0)
                                     == ARRIVAL_ACTION_NONE) {
                                     m_arrivalAction = ARRIVAL_ACTION_NONE;
                                 }
@@ -2459,7 +2459,7 @@ void CGrunt::AdvanceMotion() {
                             i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.Set(x, y);
-                                if (StepArrivalDrop(x, y, ARRIVAL_ACTION_USE_TOY, -1, 1, 0)
+                                if (MoveTo(x, y, ARRIVAL_ACTION_USE_TOY, -1, 1, 0)
                                     == ARRIVAL_ACTION_NONE) {
                                     m_arrivalAction = ARRIVAL_ACTION_NONE;
                                 }

@@ -145,7 +145,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     Coord sp;
                     occ->GetScreenPos(&sp);
                     ScreenTile(&sp);
-                    if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
+                    if (MoveToTile(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(occ);
                         m_aiState = AISTATE_CHASE;
                         PLAY_VOICE_IF_VISIBLE(0x366);
@@ -168,7 +168,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(h, baseX, spanX, baseY, spanY, outX, outY)
                 if (outX < g_gameReg->GetTileGrid()->GetWidth()
                     && outY < g_gameReg->GetTileGrid()->GetHeight()) {
-                    TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
+                    MoveToTile(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 coordCount = CoordCount();
                 if (coordCount != 0) {

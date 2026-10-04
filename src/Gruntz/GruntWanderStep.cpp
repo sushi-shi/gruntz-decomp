@@ -94,7 +94,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (g != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
                 if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
                     g->GetScreenTile(&c);
-                    if (TileSwitch(c.m_x, c.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
+                    if (MoveToTile(c.m_x, c.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(g);
                         m_aiState = AISTATE_CHASE;
                         PLAY_VOICE_IF_VISIBLE(0x366);
@@ -214,7 +214,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             if (static_cast<u32>(py) >= static_cast<u32>(grid->GetHeight())) {
                 return 1;
             }
-            TileSwitch(px, py, 0, m_arrivalFlags, 1, 0);
+            MoveToTile(px, py, 0, m_arrivalFlags, 1, 0);
             return 1;
         }
 
@@ -229,7 +229,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lx, ax, ly, ay)
             if (lx < g_gameReg->GetTileGrid()->GetWidth()
                 && ly < g_gameReg->GetTileGrid()->GetHeight()) {
-                TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
+                MoveToTile(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
             }
             if (!CoordsEmpty()) {
                 ax = Max(ax, ay);

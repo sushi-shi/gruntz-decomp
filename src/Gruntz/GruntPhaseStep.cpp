@@ -117,7 +117,7 @@ state2: {
             && static_cast<u32>(py) < g_gameReg->GetTileGrid()->GetHeight()) {
             i32 flag = pl->CellFlagsAt(px, py);
             if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
-                if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
+                if (MoveToTile(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
                     m_aiState = AISTATE_COOLDOWN;
                     m_dwell = 0;
                     CMapMgr* hit = g_gameReg->GetTileGrid();
@@ -156,7 +156,7 @@ state0: {
     if (GruntInRadius(nb->m_playerIndex, nb->m_unitIndex) == 0) {
         goto s0_reset;
     }
-    if (TileSwitch(
+    if (MoveToTile(
             nb->m_object->m_screenX >> TILE_SHIFT_PX,
             nb->m_object->m_screenY >> TILE_SHIFT_PX,
             0,
@@ -166,7 +166,7 @@ state0: {
         )
         == 0) {
         m_passableMask |= 0x4020;
-        TileSwitch(
+        MoveToTile(
             nb->m_object->m_screenX >> TILE_SHIFT_PX,
             nb->m_object->m_screenY >> TILE_SHIFT_PX,
             0,

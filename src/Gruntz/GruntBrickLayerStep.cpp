@@ -129,7 +129,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     if (m_inCombat != false) {
         goto L_ed153;
     }
-    if (TileSwitch(
+    if (MoveToTile(
             g->m_object->m_screenX >> TILE_SHIFT_PX,
             g->m_object->m_screenY >> TILE_SHIFT_PX,
             0,
@@ -198,7 +198,7 @@ L_ed153:
                 );
                 SetEntrancePos(1, 1);
             } else {
-                TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
+                MoveToTile(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
             }
         }
         grid->Clip(NULL);

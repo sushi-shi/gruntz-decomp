@@ -80,7 +80,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
                     Coord* pair = b->CoordAt(rand() % cnt);
                     goal = *pair;
                 }
-                if (unit->TileSwitch(goal.m_x, goal.m_y, 0, 0x9cf, 0, 0x4020) != 0) {
+                if (unit->MoveToTile(goal.m_x, goal.m_y, 0, 0x9cf, 0, 0x4020) != 0) {
                     unit->m_arrivalCell.Set(band, 0);
                     AcceptAlways(unit);
                 }
@@ -98,7 +98,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
 
         i32 y = recB->GetBaseTile().m_y;
         i32 x = recB->GetBaseTile().m_x;
-        unit->TileSwitch(x, y, 0, 0x987, 0, 0x4068);
+        unit->MoveToTile(x, y, 0, 0x987, 0, 0x4068);
         unit->ResetDwell();
         return 1;
     }

@@ -681,7 +681,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 1;
             }
             g->m_busy = true;
-            g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
+            g->MoveTo(x, y - 32, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_RIGHT_A:
@@ -690,7 +690,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 1;
             }
             g->m_busy = true;
-            g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
+            g->MoveTo(x + 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_DOWN_A:
@@ -699,7 +699,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 1;
             }
             g->m_busy = true;
-            g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
+            g->MoveTo(x, y + 32, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_LEFT_A:
@@ -708,7 +708,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 1;
             }
             g->m_busy = true;
-            g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
+            g->MoveTo(x - 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
@@ -716,19 +716,19 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 g->m_busy = true;
                 switch (static_cast<GruntDirection>(g->m_facing.m_direction)) {
                     case DIR_NORTH:
-                        g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
+                        g->MoveTo(x, y - 32, 0, -1, 1, 0);
                         break;
                     case DIR_EAST:
-                        g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
+                        g->MoveTo(x + 32, y, 0, -1, 1, 0);
                         break;
                     case DIR_SOUTH:
-                        g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
+                        g->MoveTo(x, y + 32, 0, -1, 1, 0);
                         break;
                     case DIR_WEST:
-                        g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
+                        g->MoveTo(x - 32, y, 0, -1, 1, 0);
                         break;
                     default:
-                        g->StepArrivalDrop(x, y, 0, -1, 1, 0);
+                        g->MoveTo(x, y, 0, -1, 1, 0);
                         break;
                 }
                 return 1;
@@ -1332,7 +1332,7 @@ i32 CTriggerMgr::MoveUnitTo(
     i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     cell->m_coordRetryCount = 0;
-    return cell->StepArrivalDrop(bx, by, arrivalAction, -1, 1, 0) != 0;
+    return cell->MoveTo(bx, by, arrivalAction, -1, 1, 0) != 0;
 }
 
 RVA(0x0006ea00, 0x125)

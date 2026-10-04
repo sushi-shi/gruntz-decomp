@@ -1115,7 +1115,7 @@ i32 CGrunt::FinishStruckAnimation() {
         return 0;
     }
     if (m_neighborScanEnabled == false && m_tileMoveCommitted != false) {
-        StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
+        MoveTo(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
         return 0;
     }
     if (m_activePickupType == PICKUP_WARPSTONE) {
@@ -1152,7 +1152,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
         return 0;
     }
     if (m_neighborScanEnabled == false && m_tileMoveCommitted != false) {
-        StepArrivalDrop(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
+        MoveTo(m_commitPx.m_x, m_commitPx.m_y, 0, -1, 1, 0);
         return 0;
     }
     StartAttackIdleAnimation();

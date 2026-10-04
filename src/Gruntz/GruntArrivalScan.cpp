@@ -45,7 +45,7 @@ i32 CGrunt::StepBomberBehavior() {
     if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
         if (static_cast<u32>(m_dwell) > 0xfa) {
             CGameObject* oh = occ->m_object;
-            if (TileSwitch(
+            if (MoveToTile(
                     oh->m_screenX >> TILE_SHIFT_PX,
                     oh->m_screenY >> TILE_SHIFT_PX,
                     0,
@@ -85,7 +85,7 @@ i32 CGrunt::StepBomberBehavior() {
 
                 CWwdSpriteObject* h = m_object;
                 SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(h, spanX, spanY, destination)
-                TileSwitch(destination.m_x, destination.m_y, 0, m_arrivalFlags, 1, 0);
+                MoveToTile(destination.m_x, destination.m_y, 0, m_arrivalFlags, 1, 0);
                 i32 coordCount = CoordCount();
                 if (coordCount != 0) {
                     i32 mx = Max(spanX, spanY);

@@ -29,7 +29,7 @@ rva	unit	function	lost_max	cur
 0x022810	fontconfig	?Draw3DText@CGameText@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	94.0260	93.9167
 0x045d30	fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	97.0000	94.2786
 0x04d800	grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAUtagRECT@@W4GruntEntranceMode@@@Z	96.4877	96.4386
-0x04b370	grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	32.5807	0.0000
+0x04b370	grunt	?MoveTo@CGrunt@@QAEHHHHHHH@Z	32.5807	0.0000
 0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	73.7003
 0x0f0130	gruntarrivalupdate	?StepGauntletGruntBehavior@CGrunt@@QAEHXZ	97.2870	96.4049
 0x0ecc90	gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	90.2045	90.1894

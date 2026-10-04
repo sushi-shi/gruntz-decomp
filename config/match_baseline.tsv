@@ -2026,9 +2026,9 @@ grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	3	377cfb0ff26b	0x4
 grunt	?Select@CGrunt@@QAEHXZ	100.0000	100.0000	10	a3eed23a95a7	0x4b130	100.0000	
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	11	37ce3fa1d95c	0x4d060	100.0000	
 grunt	?SetFacing@CGrunt@@QAEXHUGruntDirectionCell@@@Z	95.3966	95.3966	13	15ad5caa3c46	0x4ac10	95.3966	
-grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	32.5218	32.5218	39	623e1937ea7e	0x4b370	32.8881	
+grunt	?MoveTo@CGrunt@@QAEHHHHHHH@Z	32.5218	32.5218	39	623e1937ea7e	0x4b370	32.8881	
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	75.2132	75.2132	48	8cf7732c9838	0x4c170	76.5825	
-grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	100.0000	100.0000	5	71afba7b0007	0x4b320	100.0000	
+grunt	?MoveToTile@CGrunt@@QAEHHHHHHH@Z	100.0000	100.0000	5	71afba7b0007	0x4b320	100.0000	
 gruntarrivalneighbor	?StepPostGuardBehavior@CGrunt@@QAEHXZ	100.0000	100.0000	18	824a0baf54fa	0xf26f0	100.0000	
 gruntarrivalscan	?StepBomberBehavior@CGrunt@@QAEHXZ	97.5918	97.5918	35	3c6b707ecdc1	0xec670	97.5918	
 gruntarrivalupdate	?StepGauntletGruntBehavior@CGrunt@@QAEHXZ	96.4049	96.4049	70	3232ec47a019	0xf0130	97.2870	

@@ -188,7 +188,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                         && this->GruntInRadius(best->m_playerIndex, best->m_unitIndex) != 0) {
                         Coord cc;
                         best->GetScreenPos(&cc);
-                        if (this->TileSwitch(
+                        if (this->MoveToTile(
                                 cc.m_x >> TILE_SHIFT_PX,
                                 cc.m_y >> TILE_SHIFT_PX,
                                 0,
@@ -220,7 +220,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     CMapMgr* grid = g_gameReg->GetTileGrid();
                     if (static_cast<u32>(baseCol) < static_cast<u32>(grid->GetWidth())
                         && static_cast<u32>(baseRow) < static_cast<u32>(grid->GetHeight())) {
-                        this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
+                        this->MoveToTile(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
                     }
                     i32 steps = CoordCount();
                     if (steps != 0) {

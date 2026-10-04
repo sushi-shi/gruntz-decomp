@@ -104,7 +104,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
                     return 1;
                 }
-                if (TileSwitch(
+                if (MoveToTile(
                         g->m_object->m_screenX >> TILE_SHIFT_PX,
                         g->m_object->m_screenY >> TILE_SHIFT_PX,
                         0,
@@ -127,7 +127,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 if (static_cast<u32>(baseX) < static_cast<u32>(g_gameReg->GetTileGrid()->GetWidth())
                     && static_cast<u32>(baseY)
                            < static_cast<u32>(g_gameReg->GetTileGrid()->GetHeight())) {
-                    TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
+                    MoveToTile(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
                 if (!CoordsEmpty()) {
                     spanX = Max(spanX, spanY);

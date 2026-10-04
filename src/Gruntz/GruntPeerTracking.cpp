@@ -66,7 +66,7 @@ i32 CGrunt::StepToyerBehavior() {
     }
     if (GruntInRadius(p->m_playerIndex, p->m_unitIndex)) {
         CGameObject* b = p->m_object;
-        TileSwitch(
+        MoveToTile(
             b->m_screenX >> TILE_SHIFT_PX,
             b->m_screenY >> TILE_SHIFT_PX,
             0,
