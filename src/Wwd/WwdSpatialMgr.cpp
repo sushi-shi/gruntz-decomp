@@ -125,7 +125,7 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
                     record->SetLogicEvent(ACT_OBJECT_REMOVED);
                     record->Dispatch(obj);
                 }
-                m_activeGroup->RemoveAll(cur, obj);
+                m_activeGroup->UnregisterObjectAt(cur, obj);
                 if (obj != NULL) {
                     delete obj;
                 }

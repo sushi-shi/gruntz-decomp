@@ -108,8 +108,8 @@ public:
 
     i32 LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused);
 
-    void RemoveAll(POSITION pos, CGameObject* obj);
-    void RemoveByPosition(POSITION pos, CGameObject* obj);
+    void UnregisterObjectAt(POSITION pos, CGameObject* obj);
+    void DeactivateObjectAt(POSITION pos, CGameObject* obj);
     void RegisterObjectId(CWwdGameObject* obj);
     void PruneList();
     i32 CountActive();

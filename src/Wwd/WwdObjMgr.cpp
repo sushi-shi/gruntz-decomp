@@ -1001,13 +1001,13 @@ i32 CDDrawChildGroup::SumWeighted() {
 }
 
 RVA(0x0015ab30, 0x38)
-void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
+void CDDrawChildGroup::UnregisterObjectAt(POSITION pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
     m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015ab70, 0x27)
-void CDDrawChildGroup::RemoveByPosition(POSITION pos, CGameObject* obj) {
+void CDDrawChildGroup::DeactivateObjectAt(POSITION pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
 }
 
