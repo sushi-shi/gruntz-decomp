@@ -290,3 +290,50 @@ bounded filenames on Linux and wasm32. Native tests also force a real stdio
 write/close failure with `RLIMIT_FSIZE` and verify that the old referenced save
 remains intact. The Windows game integration is compiled and reviewed; it is not
 launched by this suite.
+
+
+### Bounded REZ archives
+
+`rez::decode` reads version-1 archive metadata through `io::RandomInput`, implemented
+by owned files and memory inputs. It decodes little-endian fields explicitly,
+checks complete headers and records, bounds every string/key array/member span,
+and rejects overlapping directory blocks (including cycles). All decoded names
+and records are owned. The caller's prior result is replaced only after the entire
+directory graph passes validation. Payloads stay in the source until requested.
+
+Default limits are 16 MiB per directory block, 64 MiB total directory bytes,
+1,000,000 records and depth 256. Callers of the codec can supply other limits.
+The current file backend supports offsets through 2 GiB minus one byte. Empty
+members and directories are allowed; nonempty spans must start after the header.
+
+The game validates primary and additional archives before installing their
+records. Malformed replacements preserve the currently open archive. Bulk loading
+owns each member separately; it does not infer a contiguous byte range from the
+sum of member sizes. Member reads and seeks check bounds before pointer arithmetic.
+Replacement recycles entries with their hash-node identity intact, and individual
+unload invalidates the directory's loaded status.
+
+Run the portable decoder checks and optionally inspect local assets with:
+
+```sh
+nix develop .#portable --command python3 check-rez.py --target all [archive.rez ...]
+```
+
+Linux uses ASan/UBSan; wasm32 runs the synthetic fixtures in Node. Local archive
+arguments are read on Linux only. Tests cover truncation boundaries, missing
+terminators, invalid kinds/counts/ranges, cycles, configured limits, failed reads,
+transactional result replacement and deterministic malformed-input mutations.
+
+The production archive manager has a separate Windows console component test:
+
+```sh
+nix develop --command python3 check-rez-windows.py
+```
+
+It compiles the actual archive, storage and container implementations with MSVC
+and runs only the test executable under Wine. It covers malformed primary/overlay
+archives, repeated replacement, noncontiguous member data, loaded/unloaded reads,
+invalid seeks, end of member, reset and close/reopen. Do not run it concurrently
+with the Windows game build; they share the worktree's toolchain prefix. Neither
+suite launches the game. Directory-backed emulation/path lookup still uses the
+legacy Windows implementation and is not covered by the portable codec claim.

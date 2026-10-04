@@ -3,6 +3,16 @@
 #include <stddef.h>
 #include <vector>
 namespace io {
+inline bool containsRange(size_t length, size_t offset, size_t count) {
+    return offset <= length && count <= length - offset;
+}
+// Exact reads at absolute byte offsets; implementations may change their cursor.
+class RandomInput {
+public:
+    virtual ~RandomInput() {}
+    virtual size_t size() = 0;
+    virtual bool readAt(size_t offset, void* data, size_t count) = 0;
+};
 class Input {
 public:
     virtual ~Input() {}
@@ -17,10 +27,11 @@ public:
     virtual bool write(const void* data, size_t count) = 0;
     virtual bool good() const = 0;
 };
-class MemoryInput : public Input {
+class MemoryInput : public Input, public RandomInput {
 public:
     MemoryInput(const void* bytes, size_t length);
     virtual size_t read(void* data, size_t count);
+    virtual bool readAt(size_t offset, void* data, size_t count);
     virtual size_t size() { return m_bytes.size(); }
     virtual long position() { return static_cast<long>(m_offset); }
     virtual bool good() const { return m_good; }

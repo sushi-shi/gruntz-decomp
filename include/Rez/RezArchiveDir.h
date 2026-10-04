@@ -63,7 +63,7 @@ public:
     i32 UnLoad(b32 unloadAllSubDirs = false);
 
     i32 IsLoaded() {
-        return m_pMemBlock != NULL;
+        return m_loaded;
     }
 
     REZTIME GetTime() {
@@ -105,10 +105,6 @@ private:
 
     CRezTyp* GetOrMakeTyp(REZTYPE type);
 
-    i32 ReadAllDirs(CBaseRezFile* rezFile, u32 pos, u32 size, b32 overwriteItems);
-
-    i32 ReadDirBlock(CBaseRezFile* rezFile, u32 pos, u32 size, b32 overwriteItems);
-
     CRezItm* CreateRezInternal(REZID id, const char* name, CRezTyp* type, CBaseRezFile* rezFile);
 
     i32 RemoveRezInternal(CRezTyp* type, CRezItm* item);
@@ -119,9 +115,6 @@ private:
 
     u32 m_nDirPos;
     u32 m_nDirSize;
-    u32 m_nItemsPos;
-
-    u32 m_nItemsSize;
 
     REZTIME m_nLastTimeModified;
     CRezMgr* m_pRezMgr;
@@ -131,7 +124,7 @@ private:
     CRezDirHash m_heDir;
     CRezDirHashTable m_haDir;
     CRezTypeHashTable m_haTypes;
-    u8* m_pMemBlock;
+    bool m_loaded;
 };
 
 #endif
