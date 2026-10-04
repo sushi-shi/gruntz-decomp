@@ -221,19 +221,11 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             return 1;
         }
 
-        UNSET_COORD(unit->m_arrivalCell);
-        UNSET_COORD(unit->m_defenderPx);
-        unit->SetAiState(AISTATE_SEEK);
-        unit->SetBattlezTask(BZTASK_ADVANCE);
-        unit->RecycleCoords();
+        RESUME_GRUNT_BATTLEZ_ADVANCE(unit);
         return 1;
     }
 
-    UNSET_COORD(unit->m_arrivalCell);
-    UNSET_COORD(unit->m_defenderPx);
-    unit->SetAiState(AISTATE_SEEK);
-    unit->SetBattlezTask(BZTASK_ADVANCE);
-    unit->RecycleCoords();
+    RESUME_GRUNT_BATTLEZ_ADVANCE(unit);
     return 1;
 }
 
