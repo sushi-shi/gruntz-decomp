@@ -2188,21 +2188,13 @@ updatePowerup:
                     case PICKUP_SUPERSPEED:
                     case PICKUP_ROIDZ:
                     case PICKUP_REACTIVEARMOR: {
-                        CWwdSpriteObject* ps = m_powerupSprite;
                         m_powerupType = GRUNT_NORMAL;
-                        if (ps != NULL) {
-                            ps->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-                            m_powerupSprite = NULL;
-                        }
+                        HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
                         break;
                     }
                     case PICKUP_DEATHTOUCH: {
-                        CWwdSpriteObject* ps = m_powerupSprite;
                         m_powerupType = GRUNT_NORMAL;
-                        if (ps != NULL) {
-                            ps->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-                            m_powerupSprite = NULL;
-                        }
+                        HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
                         PickupType typeId = m_savedToolType;
                         m_activePickupType = PICKUP_INVALID;
                         ApplyPickup(typeId, 1, 0, 0);
