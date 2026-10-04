@@ -6110,7 +6110,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
         char buf[SERIAL_NAME_LEN];
         memset(buf, 0, sizeof(buf));
         if (m_cursorSprite != NULL) {
-            strcpy(buf, m_cursorSprite->m_name);
+            strcpy(buf, m_cursorSprite->GetName());
         }
         s->Write(buf, SERIAL_NAME_LEN);
     }

@@ -107,7 +107,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     CDDrawWorker* frameSet = m_wwdObject->GetImageSet();
     if (frameSet != NULL) {
         CString name;
-        name = frameSet->m_name;
+        name = frameSet->GetName();
 
         if (name.Compare("GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_BOMB);

@@ -137,7 +137,7 @@ i32 CSBI_ImageSet::SerializeFields(
             g_serialCounter++;
             memset(buf, 0, SERIAL_NAME_LEN);
             if (m_frameSet) {
-                strcpy(buf, m_frameSet->m_name);
+                strcpy(buf, m_frameSet->GetName());
             }
             s->Write(buf, SERIAL_NAME_LEN);
             break;

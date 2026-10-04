@@ -84,7 +84,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     CDDrawWorker* frameSet = Anim()->GetImageSet();
     if (frameSet != NULL) {
         CString name;
-        name = frameSet->m_name;
+        name = frameSet->GetName();
         if (name.Compare("LEVEL_KITCHENSLIME_NORTH") == 0) {
             m_object->m_smarts = IDX(CARDINAL_NORTH);
         } else if (name.Compare("LEVEL_KITCHENSLIME_EAST") == 0) {

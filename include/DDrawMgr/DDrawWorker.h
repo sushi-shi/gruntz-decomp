@@ -52,6 +52,10 @@ public:
     i32 GetMemoryUsage(i32 raw);
     i32 FindFrame(CImage* frame, char* outName, i32* outIndex);
 
+    const char* GetName() const {
+        return m_name;
+    }
+
     i32 GetMinIndex() const {
         return m_minIndex;
     }

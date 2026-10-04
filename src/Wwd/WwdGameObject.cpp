@@ -241,7 +241,7 @@ i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
     char tmp[0x100];
     memset(tmp, 0, SERIAL_NAME_LEN);
     if (m_imageSet != NULL) {
-        strcpy(tmp, m_imageSet->m_name);
+        strcpy(tmp, m_imageSet->GetName());
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 

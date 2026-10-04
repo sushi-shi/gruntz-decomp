@@ -234,7 +234,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(CRezDir* dir, const char* sub, const cha
 RVA(0x00155280, 0x22)
 void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     if (worker != NULL) {
-        m_workersByName.RemoveKey(worker->m_name);
+        m_workersByName.RemoveKey(worker->GetName());
         delete worker;
     }
 }

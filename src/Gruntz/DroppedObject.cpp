@@ -110,7 +110,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     CDDrawWorker* frameSet = m_wwdObject->GetImageSet();
     if (frameSet != NULL) {
         CString name;
-        name = frameSet->m_name;
+        name = frameSet->GetName();
         if (name.Compare("LEVEL_OBJECTDROPPER_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
             m_travelDx = 0;
