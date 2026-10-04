@@ -173,7 +173,7 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     if (m_rows == NULL) {
         return 0;
     }
-    memset(m_cellPool, 0, count * 0x1c);
+    memset(m_cellPool, 0, count * sizeof(BrickzCell));
     for (u32 i = 0; i < static_cast<u32>(height); i++) {
         m_rows[i] = &m_cellPool[i * width];
     }

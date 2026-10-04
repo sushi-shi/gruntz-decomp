@@ -177,10 +177,9 @@ i32 CGrunt::StepScrollGruntBehavior() {
                         SetEntrancePos(1, 1);
                     }
                 }
-                m_dwell = 0;
-                return 1;
+            } else {
+                ResetArrivalReroll();
             }
-            ResetArrivalReroll();
             m_dwell = 0;
             return 1;
 

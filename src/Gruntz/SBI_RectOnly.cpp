@@ -1584,7 +1584,6 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
     m_chatBoxDisabled = false;
 }
 
-// @early-stop
 RVA(0x00102250, 0x1de4)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_world;
@@ -1642,8 +1641,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == NULL) {
                         sel = g_gameReg->SpriteTable()->GetSel(1, 0);
                     }
-                    set->m_frameSet->SetAllTypes(SHADE_PAL_16);
-                    set->m_frameSet->SetAllFormats(sel);
+                    set->GetFrameSet()->SetAllTypes(SHADE_PAL_16);
+                    set->GetFrameSet()->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
                     y += 0x36;
