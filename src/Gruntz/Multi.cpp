@@ -251,10 +251,10 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     memset(&m_saveSlot, 0, sizeof(m_saveSlot));
     m_savedEffectsEnabled = NetGameMgr()->m_isEffectsEnabled;
     NetGameMgr()->m_isEffectsEnabled = true;
-    if (LoadImageBanks() == 0) {
+    if (ResolveSharedAssetDirectories() == 0) {
         return 0;
     }
-    PostLoadImageBanks();
+    OnSharedAssetDirectoriesResolved();
     m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_MULTI");
     if (m_stateResources == NULL) {
         return 0;

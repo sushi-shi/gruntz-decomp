@@ -280,10 +280,10 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         if (m_mgr->IsLoadingSaveGame() == false) {
             m_mgr->SetSaveSlot(NULL);
         }
-        if (!LoadImageBanks()) {
+        if (!ResolveSharedAssetDirectories()) {
             return 0;
         }
-        PostLoadImageBanks();
+        OnSharedAssetDirectoriesResolved();
         if (!LoadLevel(areaArg, 1)) {
             return 0;
         }
@@ -3342,7 +3342,7 @@ i32 CPlay::DrawStateMessage() {
 }
 
 RVA(0x000cffe0, 0x3c)
-i32 CPlay::LoadImageBanks() {
+i32 CPlay::ResolveSharedAssetDirectories() {
     CPlay* self = this;
     if (!self->m_resourceArchive) {
         return 0;

@@ -2444,7 +2444,7 @@ gruntzmgr	?PlayMovieEntry@CGruntzMgr@@QAEHH@Z	98.2079	98.2079	19	00d70d021d55	0x
 gruntzmgr	?PollUnlessIdle@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	dbe21b788619	0x8f2f0	100.0000	
 gruntzmgr	?PopTopIfMatches@CGruntzMgr@@QAEHPAVCState@@@Z	100.0000	100.0000	1	0f523aae546b	0x909e0	100.0000	
 gruntzmgr	?Post@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	2	1f6af8253893	0x90220	100.0000	
-gruntzmgr	?PostLoadImageBanks@CPlay@@UAEXXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0xd0030	100.0000	
+gruntzmgr	?OnSharedAssetDirectoriesResolved@CPlay@@UAEXXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0xd0030	100.0000	
 gruntzmgr	?PostSlotCommandB1@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	2	aa1f135b14c5	0x920e0	100.0000	
 gruntzmgr	?PostSlotCommandB6@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	2	8b524068f909	0x92130	100.0000	
 gruntzmgr	?PsycheDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	dd3ae7856754	0x92a30	100.0000	
@@ -3427,7 +3427,7 @@ play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	13	1b527160ebc6	
 play	?LoadCursorAnimation@CPlay@@QAEHPBDHHHH@Z	100.0000	100.0000	13	02dea499bebf	0xd0920	100.0000	
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	15	e432690facdb	0xd0120	99.0221	
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	99.2876	99.2876	25	f3fc019ab55f	0xc7ec0	99.2876	
-play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	2795e0276fc5	0xcffe0	100.0000	
+play	?ResolveSharedAssetDirectories@CPlay@@UAEHXZ	100.0000	100.0000	4	2795e0276fc5	0xcffe0	100.0000	
 play	?LoadLevel@CPlay@@UAEHHH@Z	97.8293	97.8293	70	b476cf200d13	0xca200	97.8293	
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	100.0000	100.0000	8	f3d2f96e4a2c	0xd7440	100.0000	
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	98.3240	98.3240	29	cbbc9da36002	0xd8060	98.3240	
