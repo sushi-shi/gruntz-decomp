@@ -37,7 +37,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                     m_rollingballLoop =
                         static_cast<SoundBuffer*>(out->GetSound()->AcquireInstance());
                     if (m_rollingballLoop) {
-                        m_rollingballLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+                        m_rollingballLoop->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
                     }
                 }
             }
@@ -52,7 +52,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                 if (out && out->GetSound()) {
                     m_teleportLoop = static_cast<SoundBuffer*>(out->GetSound()->AcquireInstance());
                     if (m_teleportLoop) {
-                        m_teleportLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+                        m_teleportLoop->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
                     }
                 }
             }

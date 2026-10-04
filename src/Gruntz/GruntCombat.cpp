@@ -580,7 +580,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
     if (sound == NULL) {
         return;
     }
-    sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+    sound->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
 }
 
 RVA(0x00057c10, 0x1e)
@@ -609,7 +609,7 @@ void CGrunt::EnsurePowerupLoopSound(const char* key) {
     if (sound == NULL) {
         return;
     }
-    sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+    sound->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
 }
 
 RVA(0x00057ce0, 0x1e)
@@ -630,11 +630,11 @@ void CGrunt::ReapplyLoopSoundParams() {
     }
     SoundBuffer* vehicleSound = m_vehicleLoopSound;
     if (vehicleSound != NULL) {
-        vehicleSound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+        vehicleSound->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
     }
     SoundBuffer* powerupSound = m_powerupLoopSound;
     if (powerupSound != NULL) {
-        powerupSound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+        powerupSound->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
     }
 }
 

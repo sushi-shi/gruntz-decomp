@@ -908,7 +908,7 @@ i32 CProjectile::LaunchSound(const char* key) {
 
     m_sound = static_cast<SoundBuffer*>(cue->GetSound()->AcquireInstance());
     if (m_sound != NULL) {
-        m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+        m_sound->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
         return 1;
     }
 fail:

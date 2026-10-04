@@ -340,7 +340,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
 
     CGruntzMgr* reg = g_gameReg;
     SoundCueRegistry* set = reg->m_world->SoundRegistry();
-    i32 token = reg->m_soundVolume;
+    i32 token = reg->GetSoundVolume();
     if (set->IsSilent() == false) {
         SoundCue* found = set->FindCue("BOOTY_LOOP");
         if (found != NULL) {
@@ -1301,7 +1301,7 @@ i32 CBootyState::CheckPerfectBonus() {
     i32 phase = st->m_screenX;
     if (phase == static_cast<i32>(0xffffff7e)) {
         CDDrawSurfaceMgr* host = g_gameReg->World();
-        i32 item = g_gameReg->m_soundVolume;
+        i32 item = g_gameReg->GetSoundVolume();
         SoundCueRegistry* cueRegistry = host->SoundRegistry();
         if (cueRegistry->IsSilent() == false) {
             SoundCue* found = cueRegistry->FindCue("BOOTY_PERFECT");
@@ -1964,7 +1964,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
     RetireScene(0x50, 0x3e8, 0, true);
 
     CDDrawSurfaceMgr* host = g_gameReg->World();
-    i32 item = g_gameReg->m_soundVolume;
+    i32 item = g_gameReg->GetSoundVolume();
     SoundCueRegistry* cueRegistry = host->SoundRegistry();
     if (cueRegistry->IsSilent() == false) {
         SoundCue* found = cueRegistry->FindCue("BOOTY_LOOP");

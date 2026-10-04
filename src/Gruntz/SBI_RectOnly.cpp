@@ -710,7 +710,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
                         SoundBuffer* voice = sample->AcquireInstance();
                         m_destructWarningSound = voice;
                         if (voice) {
-                            voice->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
+                            voice->ApplyAndPlay(g_gameReg->GetSoundVolume(), 0, 0, true);
                         }
                     }
                 }

@@ -217,7 +217,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
         return;
     }
     g_savedEasyMode = g_gameReg->GetEasyMode();
-    g_savedSoundVolume = g_gameReg->m_soundVolume;
+    g_savedSoundVolume = g_gameReg->GetSoundVolume();
     g_savedSoundEnabled = g_gameReg->m_soundEnabled;
     g_savedVoiceVolume = g_gameReg->m_voiceVolume;
     g_savedVoiceEnabled = g_gameReg->m_isVoiceEnabled;
@@ -231,7 +231,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     CheckDlgButton(hDlg, 0x455, g_gameReg->GetEasyMode());
     LoadVideoResolutionConfig(hDlg, 0x52c, g_videoResolutionMode);
     CheckDlgButton(hDlg, 0x46d, g_gameReg->m_soundEnabled);
-    ConfigureDialogScrollBar(hDlg, 0x470, g_gameReg->m_soundVolume, 0x50);
+    ConfigureDialogScrollBar(hDlg, 0x470, g_gameReg->GetSoundVolume(), 0x50);
     CheckDlgButton(hDlg, 0x475, g_gameReg->m_isVoiceEnabled);
     ConfigureDialogScrollBar(hDlg, 0x476, g_gameReg->m_voiceVolume, 0x50);
     CheckDlgButton(hDlg, 0x471, g_gameReg->m_musicEnabled);
