@@ -32,7 +32,7 @@
 
 RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
-    m_drawTarget = NULL;
+    m_displayBuffers = NULL;
     m_childGroup = NULL;
     m_transientDrawList = NULL;
     m_imageRegistry = NULL;
@@ -61,7 +61,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_hWnd = hWnd;
     m_flags = flags;
 
-    m_drawTarget = new CDisplayBuffers(this);
+    m_displayBuffers = new CDisplayBuffers(this);
     m_childGroup = new CDDrawChildGroup(this);
     m_transientDrawList = new CTransientDrawList(this);
     m_imageRegistry = new CImageSetRegistry(this);
@@ -104,7 +104,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_DIRECT_OBJECT_MOVEMENT)) {
         m_level->m_flags |= 4;
     }
-    if (!m_drawTarget->CreateChildren(w, h, bpp, flags)) {
+    if (!m_displayBuffers->CreateChildren(w, h, bpp, flags)) {
         SetInitError(WORLDERR_CREATE_PAGES);
         return 0;
     }
@@ -138,7 +138,7 @@ void CDDrawSurfaceMgr::Cleanup() {
     SAFE_DELETE(m_level);
     SAFE_DELETE(m_soundRegistry);
     SAFE_DELETE(m_soundStream);
-    SAFE_DELETE(m_drawTarget);
+    SAFE_DELETE(m_displayBuffers);
     SAFE_DELETE(m_childGroup);
     SAFE_DELETE(m_transientDrawList);
     SAFE_DELETE(m_imageRegistry);
@@ -151,7 +151,7 @@ void CDDrawSurfaceMgr::Cleanup() {
 
 RVA(0x00155f00, 0x41)
 b32 CDDrawSurfaceMgr::IsReady() {
-    CDisplayBuffers* first = m_drawTarget;
+    CDisplayBuffers* first = m_displayBuffers;
 
     return first != NULL && ChildGroup() != NULL && m_transientDrawList != NULL
            && m_imageRegistry != NULL && m_logicRegistry != NULL && first->IsLoaded() != 0
@@ -165,10 +165,10 @@ void CDDrawSurfaceMgr::SetRestoreHandler(SurfaceRestoreFn handler) {
 
 RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
-    CDDrawFrontSurface* child = m_drawTarget->GetFrontSurface();
+    CDDrawFrontSurface* child = m_displayBuffers->GetFrontSurface();
 
     if (child->GetWidth() != x || child->GetHeight() != y) {
-        if (m_drawTarget->ResizePages(x, y, bpp) == BPP_UNSET) {
+        if (m_displayBuffers->ResizePages(x, y, bpp) == BPP_UNSET) {
             return 0;
         }
         if (m_level != NULL) {

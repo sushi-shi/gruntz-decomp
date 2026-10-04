@@ -103,8 +103,8 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         m_world->SoundRegistry()->LoadFromTree(static_cast<CRezDir*>(soundSymbols), "MENU", "_");
     }
 
-    if (!m_world->GetDrawTarget()->HasOverlay()) {
-        if (!m_world->GetDrawTarget()->CreateOverlay(0, 0x30000)) {
+    if (!m_world->GetDisplayBuffers()->HasOverlay()) {
+        if (!m_world->GetDisplayBuffers()->CreateOverlay(0, 0x30000)) {
             return 0;
         }
     }
@@ -201,22 +201,22 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         }
         m_stateResources = (saved);
 
-        CDDSurface* tgt = menuRoot()->GetDrawTarget()->GetBackPair()->GetSurface();
+        CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
-        menuRoot()->GetDrawTarget()->CopyBackToOverlay();
+        menuRoot()->GetDisplayBuffers()->CopyBackToOverlay();
     } else {
-        menuRoot()->GetDrawTarget()->CopyFrontToOverlay();
-        CDDSurface* tgt = menuRoot()->GetDrawTarget()->m_overlayPair->GetSurface();
+        menuRoot()->GetDisplayBuffers()->CopyFrontToOverlay();
+        CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->m_overlayBuffer->GetSurface();
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
                 g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
-        menuRoot()->GetDrawTarget()->CopyOverlayToBack();
+        menuRoot()->GetDisplayBuffers()->CopyOverlayToBack();
     }
 
     RetireScene(0x50, 0x3e8, 0, true);
@@ -268,8 +268,8 @@ void CMenuState::StopMusicChain() {
 
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::LeaveState(GameStateId) {
-    m_world->GetDrawTarget()->CopyOverlayToBack();
-    m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
+    m_world->GetDisplayBuffers()->CopyOverlayToBack();
+    m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Flip(NULL);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_activateCueDurationMs)
@@ -327,7 +327,7 @@ i32 CMenuState::RestoreDisplay() {
         return gate;
     }
 
-    menuRoot()->GetDrawTarget()->GetBackPair()->GetSurface()->Fill(0);
+    menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface()->Fill(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
@@ -347,9 +347,9 @@ i32 CMenuState::RestoreDisplay() {
     }
     m_stateResources = (saved);
 
-    CDDSurface* tgt = menuRoot()->GetDrawTarget()->GetBackPair()->GetSurface();
+    CDDSurface* tgt = menuRoot()->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
-    menuRoot()->GetDrawTarget()->CopyBackToOverlay();
+    menuRoot()->GetDisplayBuffers()->CopyBackToOverlay();
 
     RetireScene(0x50, 0x3e8, 0, true);
 

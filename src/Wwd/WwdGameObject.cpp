@@ -179,7 +179,7 @@ i32 CWwdSpriteObject::IntersectsViewport() {
         return top <= r->bottom;
     } else {
 
-        CDDrawFrontSurface* g = OwnerMgr()->GetDrawTarget()->GetFrontSurface();
+        CDDrawFrontSurface* g = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface();
 
         i32 gw = g->GetWidth();
         i32 gh = g->GetHeight();

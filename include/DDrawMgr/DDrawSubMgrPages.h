@@ -25,8 +25,8 @@ class CDisplayBuffers : public CWapObj {
 public:
     CDisplayBuffers(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_frontSurface = NULL;
-        m_backPair = NULL;
-        m_overlayPair = NULL;
+        m_backBuffer = NULL;
+        m_overlayBuffer = NULL;
     }
     virtual ~CDisplayBuffers() OVERRIDE;
 
@@ -59,13 +59,13 @@ public:
     i32 CopyBackToOverlay();
     i32 CopyOverlayToBack();
 
-    CRenderBuffer* GetBackPair() const {
-        return m_backPair;
+    CRenderBuffer* GetBackBuffer() const {
+        return m_backBuffer;
     }
 
     CDDrawFrontSurface* m_frontSurface;
-    CRenderBuffer* m_backPair;
-    CRenderBuffer* m_overlayPair;
+    CRenderBuffer* m_backBuffer;
+    CRenderBuffer* m_overlayBuffer;
 };
 
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.

@@ -120,7 +120,7 @@ i32 CSBI_GruntMachine::Render() {
         idx = m_rightFrameIndex;
         m_rightFrame = cfg->GetAt(idx);
 
-        CRenderBuffer* ctx = g_gameReg->World()->GetDrawTarget()->m_backPair;
+        CRenderBuffer* ctx = g_gameReg->World()->GetDisplayBuffers()->m_backBuffer;
 
         CImage* f = m_backgroundImage;
         if (f) {

@@ -147,7 +147,7 @@ i32 CSBI_SideTab::UpdateSampleIcon() {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_hasSample) {
-        CRenderBuffer* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
+        CRenderBuffer* ctx = g_gameReg->World()->GetDisplayBuffers()->GetBackBuffer();
         m_backgroundImage->RenderFrame(ctx, m_drawPosition.m_x, m_drawPosition.m_y, 0);
         m_iconImage->RenderFrame(ctx, m_drawPosition.m_x + m_iconOffsetX, m_drawPosition.m_y, 0);
     }

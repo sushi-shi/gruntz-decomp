@@ -66,8 +66,8 @@ void CTransientDrawList::RenderAndPrune(CRenderBuffer* backBuffer, CRenderBuffer
         child->m_renderPassesRemaining--;
         if ((overlay->GetSurface() != NULL
              && !HAS(
-                 static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
-                 SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
+                 static_cast<RenderBufferFlags>(overlay->m_flags),
+                 RENDER_BUFFER_SKIP_TRANSIENT_OVERLAY_DRAW
              ))
             || child->m_renderPassesRemaining <= 0) {
             m_items.RemoveAt(cur);
@@ -105,7 +105,7 @@ i32 CRenderBuffer::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     if (m_id == IDX(DDRAW_PAGE_BACK)) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
-            mgr->GetDrawTarget()->GetFrontSurface()->GetSurface(),
+            mgr->GetDisplayBuffers()->GetFrontSurface()->GetSurface(),
             DDSCAPS_BACKBUFFER
         );
         if (m_surface == NULL) {
@@ -114,7 +114,7 @@ i32 CRenderBuffer::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
     }
     if (m_id != IDX(DDRAW_PAGE_BACK)) {
-        if (HAS(static_cast<DDrawSurfacePairFlags>(m_flags), SURFACEPAIR_SYSTEM_MEMORY)) {
+        if (HAS(static_cast<RenderBufferFlags>(m_flags), RENDER_BUFFER_SYSTEM_MEMORY)) {
             m_surface =
                 OwnerMgr()->GetDeviceManager()->CreateOffscreenSurface(w, h, BPP_UNSET, 0, -1);
         } else {
@@ -327,7 +327,7 @@ i32 CRenderBuffer::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
-                mgr->GetDrawTarget()->GetFrontSurface()->GetSurface(),
+                mgr->GetDisplayBuffers()->GetFrontSurface()->GetSurface(),
                 DDSCAPS_BACKBUFFER
             );
             if (m_surface == NULL) {
@@ -1162,8 +1162,8 @@ void CTransientImage::Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay) 
     m_image->RenderImage(this, backBuffer);
     if (overlay->GetSurface() != NULL
         && !HAS(
-            static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
-            SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
+            static_cast<RenderBufferFlags>(overlay->m_flags),
+            RENDER_BUFFER_SKIP_TRANSIENT_OVERLAY_DRAW
         )) {
         m_image->RenderImage(this, overlay);
     }

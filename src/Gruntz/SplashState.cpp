@@ -85,14 +85,14 @@ i32 CSplashState::EnterState(GameStateId previousState) {
 
 RVA(0x000f98f0, 0x16)
 i32 CSplashState::LeaveState(GameStateId nextState) {
-    m_world->GetDrawTarget()->ClearAllPages(0);
+    m_world->GetDisplayBuffers()->ClearAllPages(0);
     return 1;
 }
 
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
     IDirectDrawSurface* in =
-        m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
+        m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
         if (!RestoreGraphics()) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x447);
@@ -125,7 +125,7 @@ i32 CSplashState::Render() {
 
 RVA(0x000f9a80, 0x44)
 i32 CSplashState::RestoreGraphics() {
-    if (m_world->GetDrawTarget()->RestoreLostSurfaces() == 0) {
+    if (m_world->GetDisplayBuffers()->RestoreLostSurfaces() == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {

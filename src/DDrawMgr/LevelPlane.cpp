@@ -886,7 +886,7 @@ i32 CLevelPlane::ValidateTiles(char* errOut) {
 
 RVA(0x00163670, 0x95)
 void CLevelPlane::ResolveColorKey() {
-    ColorDepth format = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->m_bpp;
+    ColorDepth format = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface()->m_bpp;
     if (format == BPP_PALETTED_8) {
         return;
     }

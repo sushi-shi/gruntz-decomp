@@ -25,7 +25,7 @@ i32 SaveBackBufferShot(
     char* name,
     i32 saveFlag
 ) {
-    CRenderBuffer* pair = owner->World()->GetDrawTarget()->GetBackPair();
+    CRenderBuffer* pair = owner->World()->GetDisplayBuffers()->GetBackBuffer();
     if (pair == NULL) {
         return 0;
     }
@@ -45,7 +45,7 @@ i32 SaveOverlayBufferShot(
     char* name,
     i32 saveFlag
 ) {
-    CRenderBuffer* pair = owner->World()->GetDrawTarget()->m_overlayPair;
+    CRenderBuffer* pair = owner->World()->GetDisplayBuffers()->m_overlayBuffer;
     if (pair == NULL) {
         return 0;
     }

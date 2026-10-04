@@ -82,7 +82,7 @@ RVA(0x000eb880, 0xbd)
 i32 CSBI_WarlordHead::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
-        CRenderBuffer* target = g_gameReg->m_world->m_drawTarget->GetBackPair();
+        CRenderBuffer* target = g_gameReg->m_world->m_displayBuffers->GetBackBuffer();
 
         CImage* f;
         if (m_displayState == 1) {

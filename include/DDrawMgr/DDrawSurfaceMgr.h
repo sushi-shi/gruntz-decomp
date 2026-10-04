@@ -76,8 +76,8 @@ public:
     virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual void Cleanup();
 
-    CDisplayBuffers* const& GetDrawTarget() const {
-        return m_drawTarget;
+    CDisplayBuffers* const& GetDisplayBuffers() const {
+        return m_displayBuffers;
     }
 
     class CGameLevel* GetLevel() const {
@@ -147,7 +147,7 @@ public:
     i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);
     i32 RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId);
 
-    CDisplayBuffers* m_drawTarget;
+    CDisplayBuffers* m_displayBuffers;
 
     CDDrawChildGroup* m_childGroup;
     CTransientDrawList* m_transientDrawList;

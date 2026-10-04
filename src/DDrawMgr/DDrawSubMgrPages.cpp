@@ -55,19 +55,19 @@ RVA(0x001588f0, 0x1c5)
 i32 CDisplayBuffers::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
     m_frontSurface = new CDDrawFrontSurface(m_ownerCtx, 0, 0);
-    m_backPair = new CRenderBuffer(m_ownerCtx, IDX(DDRAW_PAGE_BACK), 0);
-    m_overlayPair = new CRenderBuffer(m_ownerCtx, IDX(DDRAW_PAGE_OVERLAY), 0);
+    m_backBuffer = new CRenderBuffer(m_ownerCtx, IDX(DDRAW_PAGE_BACK), 0);
+    m_overlayBuffer = new CRenderBuffer(m_ownerCtx, IDX(DDRAW_PAGE_OVERLAY), 0);
 
     if (m_frontSurface->SetGeometry(w, h, bpp) == BPP_UNSET) {
         OwnerMgr()->SetInitError(WORLDERR_FRONT_SURFACE);
         return 0;
     }
-    if (m_backPair->Create(w, h, bpp, 0) == BPP_UNSET) {
+    if (m_backBuffer->Create(w, h, bpp, 0) == BPP_UNSET) {
         OwnerMgr()->SetInitError(WORLDERR_BACK_SURFACE);
         return 0;
     }
     if (!HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_SKIP_OVERLAY)) {
-        if (m_overlayPair->Create(w, h, bpp, 0) == BPP_UNSET) {
+        if (m_overlayBuffer->Create(w, h, bpp, 0) == BPP_UNSET) {
             OwnerMgr()->SetInitError(WORLDERR_OVERLAY_SURFACE);
             return 0;
         }
@@ -78,8 +78,8 @@ i32 CDisplayBuffers::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 RVA(0x00158ac0, 0x44)
 void CDisplayBuffers::Unload() {
     SAFE_DELETE(m_frontSurface);
-    SAFE_DELETE(m_backPair);
-    SAFE_DELETE(m_overlayPair);
+    SAFE_DELETE(m_backBuffer);
+    SAFE_DELETE(m_overlayBuffer);
 }
 
 // @dead-code
@@ -88,12 +88,12 @@ RVA(0x00158b10, 0x2c)
 i32 CDisplayBuffers::ResolvePageImage(char* name, DDrawPageKind pageIndex) {
     CRenderBuffer* p;
     if (pageIndex == DDRAW_PAGE_OVERLAY) {
-        p = m_overlayPair;
+        p = m_overlayBuffer;
         if (!p) {
             return 0;
         }
     } else {
-        p = m_backPair;
+        p = m_backBuffer;
         if (!p) {
             return 0;
         }
@@ -105,12 +105,12 @@ RVA(0x00158b40, 0x2c)
 i32 CDisplayBuffers::LoadPageImage(CRezItm* src, DDrawPageKind pageIndex) {
     CRenderBuffer* p;
     if (pageIndex == DDRAW_PAGE_OVERLAY) {
-        p = m_overlayPair;
+        p = m_overlayBuffer;
         if (!p) {
             return 0;
         }
     } else {
-        p = m_backPair;
+        p = m_backBuffer;
         if (!p) {
             return 0;
         }
@@ -122,7 +122,7 @@ i32 CDisplayBuffers::LoadPageImage(CRezItm* src, DDrawPageKind pageIndex) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158b70, 0x1c)
 void CDisplayBuffers::BltDirtyChildrenEx() {
-    OwnerMgr()->ChildGroup()->BltDirtyChildrenEx(m_frontSurface, m_backPair, m_overlayPair);
+    OwnerMgr()->ChildGroup()->BltDirtyChildrenEx(m_frontSurface, m_backBuffer, m_overlayBuffer);
 }
 
 // @dead-code
@@ -132,8 +132,8 @@ void CDisplayBuffers::FlipAndNotify() {
     m_frontSurface->GetSurface()->Flip(NULL);
     CDDrawSurfaceMgr* n = OwnerMgr();
     CDDrawChildGroup* c = n->ChildGroup();
-    CDisplayBuffers* s = n->GetDrawTarget();
-    c->BltDirtyChildren(s->GetBackPair(), s->m_overlayPair);
+    CDisplayBuffers* s = n->GetDisplayBuffers();
+    c->BltDirtyChildren(s->GetBackBuffer(), s->m_overlayBuffer);
 }
 
 RVA(0x00158bc0, 0x2e)
@@ -141,7 +141,7 @@ i32 CDisplayBuffers::RestoreLostSurfaces() {
     if (m_frontSurface && !m_frontSurface->RestoreIfLost()) {
         return 0;
     }
-    if (m_overlayPair && !m_overlayPair->RestoreIfLost()) {
+    if (m_overlayBuffer && !m_overlayBuffer->RestoreIfLost()) {
         return 0;
     }
     return 1;
@@ -154,11 +154,11 @@ i32 CDisplayBuffers::ResizePages(i32 w, i32 h, ColorDepth bpp) {
         if (!m_frontSurface->SetGeom(w, h, bpp)) {
             return 0;
         }
-        if (!m_backPair->SetGeom(w, h, bpp)) {
+        if (!m_backBuffer->SetGeom(w, h, bpp)) {
             return 0;
         }
-        if (m_overlayPair && m_overlayPair->IsLoaded()) {
-            if (!m_overlayPair->SetGeom(w, h, bpp)) {
+        if (m_overlayBuffer && m_overlayBuffer->IsLoaded()) {
+            if (!m_overlayBuffer->SetGeom(w, h, bpp)) {
                 return 0;
             }
         }
@@ -185,11 +185,11 @@ i32 CDisplayBuffers::CopyFrontToSurface(CRenderBuffer* dst) {
 
 RVA(0x00158cb0, 0x6a)
 i32 CDisplayBuffers::CreateOverlay(i32 copyFromBack, i32 createFlag) {
-    if (m_overlayPair->IsLoaded()) {
+    if (m_overlayBuffer->IsLoaded()) {
         return 0;
     }
-    CRenderBuffer* backBuffer = m_backPair;
-    if (!m_overlayPair->Create(
+    CRenderBuffer* backBuffer = m_backBuffer;
+    if (!m_overlayBuffer->Create(
             backBuffer->GetWidth(),
             backBuffer->GetHeight(),
             backBuffer->m_bpp,
@@ -198,36 +198,36 @@ i32 CDisplayBuffers::CreateOverlay(i32 copyFromBack, i32 createFlag) {
         return 0;
     }
     if (copyFromBack) {
-        BLT_SURFACE_PAIR_SELF(m_overlayPair, m_backPair);
+        COPY_RENDER_BUFFER(m_overlayBuffer, m_backBuffer);
     }
     return 1;
 }
 
 RVA(0x00158d20, 0x16)
 i32 CDisplayBuffers::HasOverlay() {
-    if (!m_overlayPair) {
+    if (!m_overlayBuffer) {
         return 0;
     }
-    return m_overlayPair->IsLoaded() != 0;
+    return m_overlayBuffer->IsLoaded() != 0;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158d40, 0xd)
 void CDisplayBuffers::UnloadOverlay() {
-    if (m_overlayPair != NULL) {
-        m_overlayPair->Unload();
+    if (m_overlayBuffer != NULL) {
+        m_overlayBuffer->Unload();
     }
 }
 
 RVA(0x00158d50, 0x61)
 void CDisplayBuffers::ClearAllPages(u32 color) {
-    m_backPair->GetSurface()->Fill(color);
+    m_backBuffer->GetSurface()->Fill(color);
     m_frontSurface->GetSurface()->Flip(NULL);
-    m_backPair->GetSurface()->Fill(color);
+    m_backBuffer->GetSurface()->Fill(color);
     m_frontSurface->GetSurface()->Flip(NULL);
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
-        m_backPair->GetSurface()->Fill(color);
+        m_backBuffer->GetSurface()->Fill(color);
         m_frontSurface->GetSurface()->Flip(NULL);
     }
 }
@@ -235,7 +235,7 @@ void CDisplayBuffers::ClearAllPages(u32 color) {
 RVA(0x00158dc0, 0x7d)
 i32 CDisplayBuffers::CopyFrontToBackBuffers() {
     CDDrawFrontSurface* front = m_frontSurface;
-    CRenderBuffer* back = m_backPair;
+    CRenderBuffer* back = m_backBuffer;
     b32 ok;
     if (front == NULL) {
         ok = false;
@@ -256,7 +256,7 @@ i32 CDisplayBuffers::CopyFrontToBackBuffers() {
     if (ok
         && HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         m_frontSurface->GetSurface()->Flip(NULL);
-        CRenderBuffer* a = m_backPair;
+        CRenderBuffer* a = m_backBuffer;
         CDDrawFrontSurface* b = m_frontSurface;
         if (b == NULL) {
             return 0;
@@ -284,13 +284,13 @@ i32 CDisplayBuffers::CopyFrontToOverlay() {
     CDDSurface* as;
     i32 hr;
 
-    if (!m_overlayPair) {
+    if (!m_overlayBuffer) {
         goto fail;
     }
-    if (!m_overlayPair->IsLoaded()) {
+    if (!m_overlayBuffer->IsLoaded()) {
         goto fail;
     }
-    a = m_overlayPair;
+    a = m_overlayBuffer;
     b = m_frontSurface;
     if (!b) {
         return 0;
@@ -311,35 +311,35 @@ fail:
 
 RVA(0x00158e90, 0x47)
 i32 CDisplayBuffers::CopyBackToOverlay() {
-    if (!m_backPair) {
+    if (!m_backBuffer) {
         return 0;
     }
-    if (!m_overlayPair) {
+    if (!m_overlayBuffer) {
         return 0;
     }
-    if (!m_overlayPair->IsLoaded()) {
+    if (!m_overlayBuffer->IsLoaded()) {
         return 0;
     }
-    CRenderBuffer* a = m_backPair;
-    CRenderBuffer* b = m_overlayPair;
-    BLT_SURFACE_PAIR_SELF(b, a);
+    CRenderBuffer* a = m_backBuffer;
+    CRenderBuffer* b = m_overlayBuffer;
+    COPY_RENDER_BUFFER(b, a);
     return 1;
 }
 
 RVA(0x00158ee0, 0x47)
 i32 CDisplayBuffers::CopyOverlayToBack() {
-    if (!m_backPair) {
+    if (!m_backBuffer) {
         return 0;
     }
-    if (!m_overlayPair) {
+    if (!m_overlayBuffer) {
         return 0;
     }
-    if (!m_overlayPair->IsLoaded()) {
+    if (!m_overlayBuffer->IsLoaded()) {
         return 0;
     }
-    CRenderBuffer* a = m_overlayPair;
-    CRenderBuffer* b = m_backPair;
-    BLT_SURFACE_PAIR_SELF(b, a);
+    CRenderBuffer* a = m_overlayBuffer;
+    CRenderBuffer* b = m_backBuffer;
+    COPY_RENDER_BUFFER(b, a);
     return 1;
 }
 

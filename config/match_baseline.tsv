@@ -804,7 +804,7 @@ creditsstate	??1CMoviePlayer@@QAE@XZ	100.0000	100.0000	1	cpp:752db8b0aca8	0x38fc
 creditsstate	??1CRgn@@UAE@XZ	100.0000	100.0000	1	cpp:752db8b0aca8	0x8c400	100.0000	
 creditsstate	??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z	100.0000	100.0000	1	cpp:bfc207d045a5	0x3a1a0	100.0000	
 creditsstate	??_GCCreditsState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:752db8b0aca8	0x8d5b0	100.0000	
-creditsstate	?BltSelf@CRenderBuffer@@QAEXPAV1@@Z	100.0000	100.0000	2	403207dc4823	0x3a1d0	100.0000	
+creditsstate	?CopyFrom@CRenderBuffer@@QAEXPAV1@@Z	100.0000	100.0000	2	403207dc4823	0x3a1d0	100.0000	
 creditsstate	?DrawScrollingCredits@CCreditsState@@QAEHXZ	97.5411	97.5411	10	b8278f4825ef	0x396f0	97.5411	
 creditsstate	?EnterState@CCreditsState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	65b5b13ffe2a	0x39120	100.0000	
 creditsstate	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	2	f2e26d7c7b28	0x39c40	100.0000	

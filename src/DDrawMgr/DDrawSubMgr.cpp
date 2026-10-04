@@ -306,10 +306,10 @@ CTransientImage* CTransientDrawList::AddImage(i32 x, i32 y, CImage* image, i32 a
 
 RVA(0x00157480, 0x1e)
 i32 CDisplayBuffers::IsLoaded() {
-    if (m_backPair == NULL) {
+    if (m_backBuffer == NULL) {
         goto fail;
     }
-    if (m_overlayPair == NULL) {
+    if (m_overlayBuffer == NULL) {
         goto fail;
     }
     if (m_frontSurface != NULL) {
@@ -839,10 +839,10 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
         listenerX = OwnerMgr()->GetLevel()->m_mainPlane->GetScrollPixelX();
     }
     if (maxPanOffsetPx <= 0) {
-        maxPanOffsetPx = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->GetWidth() << 2;
+        maxPanOffsetPx = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface()->GetWidth() << 2;
     }
     if (fullPanOffsetPx <= 0) {
-        fullPanOffsetPx = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->GetWidth() / 3;
+        fullPanOffsetPx = OwnerMgr()->GetDisplayBuffers()->GetFrontSurface()->GetWidth() / 3;
     }
 
     i32 panOffsetPx = sourceX - listenerX;

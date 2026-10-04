@@ -15,11 +15,11 @@ class CDDSurface;
 class CDDrawSurfaceMgr;
 struct CRezItm;
 
-GZ_ENUM_FLAGS_BEGIN(DDrawSurfacePairFlags, i32)
-    SURFACEPAIR_SYSTEM_MEMORY = 0x10000,
-    SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER = 0x20000
-GZ_ENUM_FLAGS_END(DDrawSurfacePairFlags, i32)
-GZ_ENUM_FLAGS_OPS(DDrawSurfacePairFlags)
+GZ_ENUM_FLAGS_BEGIN(RenderBufferFlags, i32)
+    RENDER_BUFFER_SYSTEM_MEMORY = 0x10000,
+    RENDER_BUFFER_SKIP_TRANSIENT_OVERLAY_DRAW = 0x20000
+GZ_ENUM_FLAGS_END(RenderBufferFlags, i32)
+GZ_ENUM_FLAGS_OPS(RenderBufferFlags)
 
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
 class CRenderBuffer : public CRenderSurface {
@@ -47,7 +47,7 @@ public:
 
     virtual ~CRenderBuffer() OVERRIDE;
 
-    void BltSelf(CRenderBuffer* src);
+    void CopyFrom(CRenderBuffer* src);
     i32 RestoreIfLost();
 
     void DrawBox(RECT* rect, i32 color);
@@ -58,7 +58,7 @@ public:
     b32 m_ownsSurface;
 };
 
-#define BLT_SURFACE_PAIR_SELF(dst, src)                                                            \
+#define COPY_RENDER_BUFFER(dst, src)                                                               \
     (dst)->GetSurface()->BltFast(0, 0, (src)->GetSurface(), &(src)->m_srcRect, DDBLTFAST_WAIT)
 
 #endif // GRUNTZ_CDDRAWSURFACEPAIR_H
