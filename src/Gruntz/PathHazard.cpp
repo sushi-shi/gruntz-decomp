@@ -389,7 +389,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->SetSmarts(2);
             sl->m_powerup = 0;
             sl->SetPoints(i);
-            sl->SetDamage(m_object->m_faceDirection);
+            sl->SetDamage(m_object->GetFaceDirection());
             sub->Dispatch(sl);
 
             (static_cast<CSpotLight*>(sl->GetLogicRecord()->UserLogic()))->m_focus = m_object;

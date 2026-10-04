@@ -399,7 +399,7 @@ i32 CInGameIcon::HandleInput() {
         }
     } else if (cmd == PICKUP_SCROLL || cmd == PICKUP_WAND) {
         i32 icon;
-        switch (static_cast<SpellId>(obj->m_faceDirection)) {
+        switch (static_cast<SpellId>(obj->GetFaceDirection())) {
             case SPELL_FREEZE:
                 icon = IDX(TINT_WHITE);
                 break;
@@ -522,7 +522,7 @@ i32 CInGameIcon::PeekCycle() {
     if (cmd != PICKUP_WAND && cmd != PICKUP_SCROLL) {
         return 0;
     }
-    if (obj->m_faceDirection != 0) {
+    if (obj->GetFaceDirection() != 0) {
         return 0;
     }
     if (m_peekTiming.Expired()) {

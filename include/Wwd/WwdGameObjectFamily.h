@@ -99,6 +99,10 @@ public:
         m_moveMode = mode;
     }
 
+    i32 GetFaceDirection() const {
+        return m_faceDirection;
+    }
+
     i32 GetDamage() const {
         return m_damage;
     }
