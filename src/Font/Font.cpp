@@ -4,6 +4,7 @@
 #include <Ints.h>
 
 #include <Font/Font.h>
+#include <Font/FontData.h>
 
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>
@@ -65,56 +66,46 @@ void Font::FreeMemory() {
     }
 }
 
-i32 Font::LoadFont(const std::string& szFileName) {
-    FreeMemory();
-
+i32 Font::LoadFont(const std::string& path) {
     io::File file;
-    if (!file.open((szFileName).c_str(), io::ReadOnly)) {
-        return 0;
+    return file.open(path, io::ReadOnly) && LoadFont(file);
+}
+
+i32 Font::LoadFontMemory(const void* data, size_t size) {
+    io::MemoryInput source(data, size);
+    return LoadFont(source);
+}
+
+i32 Font::LoadFont(io::Input& source) {
+    assets::FontData data;
+    if (!assets::readFont(source, data)) return 0;
+    if (!AllocateMemory(static_cast<i32>(data.glyphs.size()))) return 0;
+    for (i32 i = 0; i < m_count; ++i) {
+        const assets::GlyphData& glyph = data.glyphs[i];
+        m_glyphs[i] = CSize(glyph.width, glyph.height);
+        m_surfaces[i] = new u8[glyph.pixels.size()];
+        if (!glyph.pixels.empty()) memcpy(m_surfaces[i], &glyph.pixels[0], glyph.pixels.size());
+        if (m_glyphs[i].cy > m_maxHeight) m_maxHeight = m_glyphs[i].cy;
     }
-
-    i32 count;
-    if (file.read(&count, sizeof(count)) != sizeof(count) || count < 1 || count > 256) return 0;
-    AllocateMemory(count);
-
-    for (i32 i = 0; i < m_count; i++) {
-        if (file.read(&m_glyphs[i], sizeof(CSize)) != sizeof(CSize)
-            || m_glyphs[i].cx < 0 || m_glyphs[i].cy < 0
-            || (m_glyphs[i].cy && m_glyphs[i].cx > INT_MAX / m_glyphs[i].cy)
-            || static_cast<u32>(m_glyphs[i].cx * m_glyphs[i].cy) > file.size() || !file.good()) {
-            FreeMemory(); return 0;
-        }
-        m_surfaces[i] = new u8[m_glyphs[i].cx * m_glyphs[i].cy];
-        const u32 bytes = m_glyphs[i].cx * m_glyphs[i].cy;
-        if (file.read(m_surfaces[i], bytes) != bytes) { FreeMemory(); return 0; }
-    }
-
-    file.finish();
-
-    i32 maxHeight = 0;
-    for (i32 j = 0; j < m_count; j++) {
-        maxHeight = max(maxHeight, m_glyphs[j].cy);
-    }
-    m_maxHeight = maxHeight;
-
     return 1;
 }
 
-i32 Font::SaveFont(const std::string& szFileName) {
+i32 Font::SaveFont(const std::string& path) {
+    assets::FontData data;
+    if (m_count < 1 || m_count > 256) return 0;
+    data.glyphs.resize(m_count, assets::GlyphData());
+    for (i32 i = 0; i < m_count; ++i) {
+        if (m_glyphs[i].cx < 0 || m_glyphs[i].cy < 0
+            || (m_glyphs[i].cy && m_glyphs[i].cx > INT_MAX / m_glyphs[i].cy)) return 0;
+        assets::GlyphData& glyph = data.glyphs[i];
+        glyph.width = m_glyphs[i].cx;
+        glyph.height = m_glyphs[i].cy;
+        const size_t length = static_cast<size_t>(glyph.width) * glyph.height;
+        if (length && !m_surfaces[i]) return 0;
+        if (length) glyph.pixels.assign(m_surfaces[i], m_surfaces[i] + length);
+    }
     io::File file;
-    if (!file.open((szFileName).c_str(), io::Replace)) {
-        return 0;
-    }
-
-    file.write(&m_count, sizeof(m_count));
-
-    for (i32 i = 0; i < m_count; i++) {
-        CSize g = m_glyphs[i];
-        file.write(&g, sizeof(CSize));
-        file.write(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
-    }
-
-    return file.finish();
+    return file.open(path, io::Replace) && assets::writeFont(file, data) && file.finish();
 }
 
 u8** Font::GetSurface(u8 c) {

@@ -3,16 +3,17 @@
 #include <stdio.h>
 #include <string>
 #include <stddef.h>
+#include <Io/Bytes.h>
 
 namespace io {
 enum Access { ReadOnly, Replace, Update };
 enum Origin { Start, Current, End };
 enum Error { NoError, NotOpen, OpenFailed, ReadFailed, WriteFailed, SeekFailed, TooLarge, CloseFailed };
 
-class File {
+class File : public Input, public Output {
 public:
     File();
-    ~File();
+    virtual ~File();
     bool open(const std::string& path, Access access);
     bool open(const char* path, Access access);
     bool finish();

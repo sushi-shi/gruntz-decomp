@@ -3382,6 +3382,39 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "portablebytes",
+      "source": "src/Io/Bytes.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "fontdata",
+      "source": "src/Font/FontData.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "streamarchive",
+      "source": "src/Io/StreamArchive.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

@@ -2,6 +2,7 @@
 #define SRC_FONT_FONT_H
 
 #include <string>
+#include <Io/Bytes.h>
 
 #include <Ints.h>
 
@@ -13,6 +14,8 @@ public:
     void FreeMemory();
     i32 LoadFont(const std::string& szFileName);
     i32 SaveFont(const std::string& szFileName);
+    i32 LoadFont(io::Input& source);
+    i32 LoadFontMemory(const void* data, size_t size);
 
     u8** GetSurface(u8 c);
     CSize& GetGlyph(CSize& out, u8 c);
