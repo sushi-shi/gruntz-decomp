@@ -3873,7 +3873,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_hudRect.bottom = min(m_cursorY, box.bottom);
         m_hudRect.bottom = max(m_hudRect.bottom, m_dragClampMaxY);
     }
-    if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->m_pendingFxKind == 0) {
+    if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->HasPendingFx() == false) {
         FlushPendingOps();
     }
     return 1;
@@ -6932,7 +6932,7 @@ i32 CPlay::FlushPendingOps() {
         changed = true;
     }
     CTriggerMgr* fx = g_gameReg->GetTriggerMgr();
-    if (fx->m_pendingFxKind != 0) {
+    if (fx->HasPendingFx() != false) {
         changed = true;
     }
     fx->m_pendingFxKind = 0;
