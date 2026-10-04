@@ -33,11 +33,19 @@ class CWwdSpriteObject;
 
 class CMenuState : public CState {
     inline void HandleControllerInput();
+    i32 RestoreMenuImages();
+    i32 PrepareMenuTitle();
+    bool m_startMusicAfterFade;
 
 public:
     CMenuState() {
         m_menuTree = NULL;
+        m_activateCueDurationMs = 0;
+        m_menuMusicCue = NULL;
+        m_startMusicAfterFade = false;
     }
+    virtual void OnSceneFadeComplete();
+    virtual i32 RestoreAfterSceneFade();
     virtual i32 RestoreDisplay()  ;
 
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId)  ;
@@ -131,6 +139,8 @@ public:
     CMoviePlayer* m_videoHandle;
 
     i32 InitAttractTitle();
+    i32 PrepareAttractTitle();
+    virtual i32 RestoreAfterSceneFade();
 
     i32 SetupTitle();
 };

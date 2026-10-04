@@ -20,7 +20,9 @@ public:
     FadePlayback();
     ~FadePlayback();
     // Takes ownership, including on failure. Replacing a fade cancels it first.
-    bool start(FadeEffect* effect, u32 durationMs, u32 leadMs, bool finalOnly);
+    // A nonzero retry timeout bounds consecutive busy callbacks in admitted time.
+    bool start(FadeEffect* effect, u32 durationMs, u32 leadMs, bool finalOnly,
+        u32 retryTimeoutMs = 0);
     // At most one rendered frame per callback. Pass the admitted gameplay delta;
     // suspension/resume must contribute zero. The first callback establishes the epoch.
     FadeProgress advance(u32 deltaMs);
@@ -31,6 +33,7 @@ private:
     FadePlayback& operator=(const FadePlayback&);
     FadeEffect* m_effect;
     u32 m_count, m_frame, m_durationMs, m_elapsedMs, m_leadMs;
-    bool m_begun, m_first, m_finalOnly;
+    u32 m_retryTimeoutMs, m_retryElapsedMs;
+    bool m_begun, m_first, m_finalOnly, m_retrying;
 };
 #endif
