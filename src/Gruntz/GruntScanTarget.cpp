@@ -64,7 +64,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 i32 pa;
                 PRIO(pa, m_activePickupType);
                 i32 pb;
-                PRIO(pb, cand->m_activePickupType);
+                PRIO(pb, cand->GetActivePickupType());
                 if (pa <= pb) {
                     i32 dx = cand->GetScreenTileX() - cx;
                     i32 dy = cand->GetScreenTileY() - cy;
@@ -163,7 +163,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     i32 pa;
                     PRIO(pa, m_activePickupType);
                     i32 pb;
-                    PRIO(pb, best->m_activePickupType);
+                    PRIO(pb, best->GetActivePickupType());
                     if (pa <= pb
                         && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
                                != 0) {
@@ -177,13 +177,13 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 i32 seekPa;
                 PRIO(seekPa, m_activePickupType);
                 i32 seekPb;
-                PRIO(seekPb, best->m_activePickupType);
+                PRIO(seekPb, best->GetActivePickupType());
                 if (seekPa <= seekPb && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
                     COPY_LAST_TILE_TO_DEFENDER
                     i32 pathPa;
                     PRIO(pathPa, m_activePickupType);
                     i32 pathPb;
-                    PRIO(pathPb, best->m_activePickupType);
+                    PRIO(pathPb, best->GetActivePickupType());
                     if (pathPa <= pathPb
                         && this->GruntInRadius(best->m_playerIndex, best->m_unitIndex) != 0) {
                         Coord cc;
@@ -246,7 +246,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 i32 pa;
                 PRIO(pa, m_activePickupType);
                 i32 pb;
-                PRIO(pb, sg->m_activePickupType);
+                PRIO(pb, sg->GetActivePickupType());
                 if (pa <= pb && sg->IsEntranceCommitted() != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
                     RepathToward(this, sg);
@@ -279,7 +279,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     i32 pa;
                     PRIO(pa, m_activePickupType);
                     i32 pb;
-                    PRIO(pb, sg->m_activePickupType);
+                    PRIO(pb, sg->GetActivePickupType());
                     if (pa <= pb && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0
                         && sg->IsEntranceCommitted() != false) {
                         if (m_attackQueued != false || m_attackWindupActive != false

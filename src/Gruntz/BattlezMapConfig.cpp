@@ -1378,7 +1378,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if (pathHeadFlags & 0x8) {
             i32 wingzOrToobGate = pathHeadFlags & 0x100;
             if (wingzOrToobGate) {
-                PickupType er = unit->m_activePickupType;
+                PickupType er = unit->GetActivePickupType();
                 PickupType p = unit->ResolveEquippedToolType(er);
                 if (p == PICKUP_WINGZ) {
                     goto returnOne;
@@ -1513,7 +1513,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         }
         CPtrList list(10);
         i32 flags = 0;
-        PickupType er = unit->m_activePickupType;
+        PickupType er = unit->GetActivePickupType();
         if (unit->ResolveEquippedToolType(er) == PICKUP_TOOB) {
             flags = BATTLEZ_ROUTE_TOOB_TRAVERSAL;
         }
@@ -2238,7 +2238,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & 0x20) {
-        PickupType er = g->m_activePickupType;
+        PickupType er = g->GetActivePickupType();
         if (g->ResolveEquippedToolType(er) == PICKUP_BOMB
             || g->ResolveEquippedToolType(er) == PICKUP_TIMEBOMB) {
             if (g->ResolveEquippedToolType(er) == PICKUP_BOMB) {
@@ -2353,7 +2353,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
-        PickupType er2 = g->m_activePickupType;
+        PickupType er2 = g->GetActivePickupType();
         if (g->ResolveEquippedToolType(er2) != PICKUP_WINGZ) {
             if (g->ResolveEquippedToolType(er2) == PICKUP_SHOVEL) {
                 m_triggerMgr->UseEquippedToolAt(
@@ -2718,20 +2718,20 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             m_board->Clip(&box);
 
             i32 flags = 0;
-            PickupType prim = unit->m_activePickupType;
+            PickupType prim = unit->GetActivePickupType();
             PickupType t = unit->ResolveEquippedToolType(prim);
             if (t == PICKUP_TOOB) {
                 flags = 0x100;
             }
             t = prim;
             if (prim > PICKUP_EQUIPPABLE_LAST) {
-                t = unit->m_savedToolType;
+                t = unit->GetSavedToolType();
             }
             if (t == PICKUP_WINGZ) {
                 flags = 0x942;
             }
             if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = unit->m_savedToolType;
+                prim = unit->GetSavedToolType();
             }
             if (prim == PICKUP_SPRING) {
                 flags = 0x1000;
@@ -2855,7 +2855,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                     if (SquaredDistance(dx, dy) <= 0x190) {
 
                         i32 flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER;
-                        PickupType entranceReason = unit->m_activePickupType;
+                        PickupType entranceReason = unit->GetActivePickupType();
                         if (unit->ResolveEquippedToolType(entranceReason) == PICKUP_WINGZ) {
                             flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER_WINGZ;
                         }
@@ -3468,7 +3468,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     CPtrList list(10);
 
     i32 flags = BATTLEZ_ROUTE_ALL_TOOLS;
-    PickupType er = unit->m_activePickupType;
+    PickupType er = unit->GetActivePickupType();
     if (unit->ResolveEquippedToolType(er) == PICKUP_WINGZ) {
         flags = BATTLEZ_ROUTE_ALL_TOOLS_WINGZ;
     }

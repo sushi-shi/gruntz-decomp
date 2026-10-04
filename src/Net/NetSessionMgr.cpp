@@ -130,7 +130,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 continue;
             }
             i32 rnd = rand();
-            PickupType type = grunt->m_activePickupType;
+            PickupType type = grunt->GetActivePickupType();
             i32 wp;
             PRIO(wp, type);
             b32 da = grunt->m_daFlag;
@@ -142,11 +142,11 @@ void CNetSession::BuildGruntzCrcInfo() {
                 "[toy=%d][da=%d][wp=%d][iic=%d][qat=%d][qax=%d][ia=%d][iad=%d][rnd=%d]\n",
                 player,
                 g,
-                grunt->m_health,
+                grunt->GetHealth(),
                 grunt->m_object->m_screenX,
                 grunt->m_object->m_screenY,
                 grunt->m_facing.m_direction,
-                grunt->m_stamina,
+                grunt->GetStamina(),
                 grunt->m_toyTime,
                 tool,
                 toy,
@@ -692,12 +692,12 @@ i32 CNetSession::ComputeChecksum() {
         for (i32 g = 0; g < TM_UNITS_PER_PLAYER; g++) {
             CGrunt* grunt = m_owner->Mgr()->m_triggerMgr->UnitAt(player, g);
             if (grunt != NULL) {
-                sum += IDX(grunt->m_facing.m_direction) + grunt->m_stamina + grunt->m_toyTime
-                       + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
-                       + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
-                       + grunt->LastTilePx().m_y;
+                sum += IDX(grunt->m_facing.m_direction) + grunt->GetStamina() + grunt->m_toyTime
+                       + grunt->GetHealth() + grunt->m_object->m_screenY
+                       + grunt->m_object->m_sortKey + grunt->m_object->m_screenX
+                       + grunt->LastTilePx().m_x + grunt->LastTilePx().m_y;
 
-                PickupType carried = grunt->m_activePickupType;
+                PickupType carried = grunt->GetActivePickupType();
                 PickupType effective = grunt->ResolveEquippedToolType(carried);
                 sum += IDX(grunt->GetCarriedToyType()) + grunt->IsEntranceCommitted()
                        + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);

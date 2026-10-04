@@ -142,9 +142,9 @@ i32 CSBI_StatzTabGruntBar::Update() {
         timerVal = -1;
     } else {
 
-        statusVal = HealthGlyphIndex(unit->m_health);
+        statusVal = HealthGlyphIndex(unit->GetHealth());
 
-        PickupType level = unit->m_activePickupType;
+        PickupType level = unit->GetActivePickupType();
         abilityVal = -1;
         overrideVal = -1;
         selectVal = 0;
@@ -153,7 +153,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         if (cap != PICKUP_NONE) {
             abilityVal = IDX(level);
             if (level > PICKUP_EQUIPPABLE_LAST) {
-                abilityVal = IDX(unit->m_savedToolType);
+                abilityVal = IDX(unit->GetSavedToolType());
             }
             if (abilityVal == IDX(PICKUP_BRICK)) {
                 abilityVal = IDX(unit->GetBrickPickupType()) + 0x11;

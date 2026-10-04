@@ -180,6 +180,12 @@ public:
     PickupType GetPowerupType() const {
         return m_powerupType;
     }
+    PickupType GetActivePickupType() const {
+        return m_activePickupType;
+    }
+    PickupType GetSavedToolType() const {
+        return m_savedToolType;
+    }
     PickupType GetCarriedToyType() const {
         return m_carriedToyType;
     }
@@ -193,6 +199,21 @@ public:
     }
     i32 GetUnitIndex() const {
         return m_unitIndex;
+    }
+    i32 GetStamina() const {
+        return m_stamina;
+    }
+    i32 GetHealth() const {
+        return m_health;
+    }
+    void SetHealth(i32 health) {
+        m_health = health;
+    }
+    b32 IsUnregisteredFromBoard() const {
+        return m_cellRemovalNotified;
+    }
+    void MarkUnregisteredFromBoard() {
+        m_cellRemovalNotified = true;
     }
     b32 IsSelected() const {
         return m_selected;

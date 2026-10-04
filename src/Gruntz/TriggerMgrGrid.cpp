@@ -259,7 +259,7 @@ i32 CTriggerMgr::SpawnGrunt(
             } else if (mode == GRUNT_ENTRANCE_RESURRECT || mode == GRUNT_ENTRANCE_DROP) {
 
                 if (mode == GRUNT_ENTRANCE_RESURRECT) {
-                    logic->m_health = HEALTH_RESPAWN;
+                    logic->SetHealth(HEALTH_RESPAWN);
                 }
             } else {
                 if (onSpecialTile != 0) {

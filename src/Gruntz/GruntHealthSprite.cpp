@@ -68,7 +68,7 @@ i32 CGruntHealthSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 displaye
 
 RVA(0x0007f160, 0xd)
 i32 CGruntHealthSprite::GetDisplayedValue(CGrunt* g) {
-    return g->m_health;
+    return g->GetHealth();
 }
 
 RVA(0x0007f180, 0xb4)

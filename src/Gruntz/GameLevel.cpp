@@ -552,7 +552,7 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
     } else if (target->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
         flags = DispatchMove(target, destX, destY, moveFlags);
     } else {
-        MoveMode kind = target->m_moveMode;
+        MoveMode kind = target->GetMoveMode();
         if (kind == MOVE_DIRECT) {
             flags = DispatchMove(target, destX, destY, moveFlags);
         } else {
@@ -566,7 +566,7 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
 
                 flags = DispatchMove(target, nx, ny, moveFlags);
 
-                if (target->m_moveMode != kind) {
+                if (target->GetMoveMode() != kind) {
                     ok = false;
                 } else if ((flags & IDX(MOVE_RESULT_TILE_COLLISION)) != 0) {
                     ok = false;
@@ -588,7 +588,7 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
     }
 
     i32 result = 0;
-    MoveMode moveMode = target->m_moveMode;
+    MoveMode moveMode = target->GetMoveMode();
     i32 prevX = target->m_screenX;
     i32 prevY = target->m_screenY;
 
@@ -600,26 +600,26 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
             break;
         case MOVE_RISING:
             result = MoveRising(target, destX, destY, moveFlags);
-            if (target->m_moveMode == MOVE_FALLING) {
+            if (target->GetMoveMode() == MOVE_FALLING) {
                 result |= IDX(MOVE_RESULT_TILE_TOP);
             }
             break;
         case MOVE_FALLING:
             result = MoveFalling(target, destX, destY, moveFlags);
-            if (target->m_moveMode == MOVE_GROUNDED) {
+            if (target->GetMoveMode() == MOVE_GROUNDED) {
                 result |= IDX(MOVE_RESULT_TILE_BOTTOM);
             }
             break;
         case MOVE_AUTO_VERTICAL:
             if (destY < prevY) {
                 result = MoveRising(target, destX, destY, moveFlags);
-                if (target->m_moveMode == MOVE_FALLING) {
+                if (target->GetMoveMode() == MOVE_FALLING) {
                     result |= IDX(MOVE_RESULT_TILE_TOP);
-                    target->m_moveMode = MOVE_AUTO_VERTICAL;
+                    target->SetMoveMode(MOVE_AUTO_VERTICAL);
                 }
             } else {
                 result = MoveFalling(target, destX, destY, moveFlags);
-                if (target->m_moveMode == MOVE_GROUNDED) {
+                if (target->GetMoveMode() == MOVE_GROUNDED) {
                     result |= IDX(MOVE_RESULT_TILE_BOTTOM);
                 }
             }
@@ -648,7 +648,6 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
     return result;
 }
 
-// @early-stop
 RVA(0x0015e130, 0x1bb)
 i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
@@ -704,7 +703,7 @@ i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
 
     if (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
         if (HoldMove(t, t->m_carrier, destX, destY, moveFlags) == 0) {
-            t->m_moveMode = MOVE_FALLING;
+            t->SetMoveMode(MOVE_FALLING);
         }
     } else {
         destY = FreeMove(t, destX, destY, moveFlags);
@@ -715,7 +714,7 @@ rebracket:
     if (bracket != 0) {
         destX = mid;
     }
-    t->m_moveMode = MOVE_CLIMBING;
+    t->SetMoveMode(MOVE_CLIMBING);
 
 commit:
     SET_SCREEN_POS(t, destX, destY);
@@ -740,7 +739,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
         }
     }
 
-    if (t->m_moveMode != MOVE_GROUNDED) {
+    if (t->GetMoveMode() != MOVE_GROUNDED) {
         destY = ResolveFloorCollision(t, destX, destY, moveFlags);
     }
 
@@ -759,14 +758,14 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
             }
             if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
                 destX = coord;
-                t->m_moveMode = MOVE_CLIMBING;
+                t->SetMoveMode(MOVE_CLIMBING);
             } else {
-                t->m_moveMode = MOVE_CLIMBING;
+                t->SetMoveMode(MOVE_CLIMBING);
             }
         }
     }
 
-    if (t->m_moveMode == MOVE_GROUNDED && destX != savedDestX) {
+    if (t->GetMoveMode() == MOVE_GROUNDED && destX != savedDestX) {
         if (result & IDX(MOVE_RESULT_AXIS_BLOCKED)) {
             result &=
                 ~IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_RIGHT | MOVE_RESULT_TILE_LEFT);
@@ -810,7 +809,7 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
             if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
                 destX = coord;
             }
-            t->m_moveMode = MOVE_CLIMBING;
+            t->SetMoveMode(MOVE_CLIMBING);
         }
     }
 
@@ -826,11 +825,11 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
 
     if (t->m_screenY < destY) {
         cursor = ResolveFloorCollision(t, destX, destY, moveFlags);
-        if (t->m_moveMode != MOVE_GROUNDED) {
+        if (t->GetMoveMode() != MOVE_GROUNDED) {
             i32 hi = t->m_extent.bottom + cursor + 1;
             i32 lo = t->m_extent.top + cursor - 1;
             if (AxisProbe(destX, lo) != TILEKIND_CLIMB && AxisProbe(destX, hi) != TILEKIND_CLIMB) {
-                t->m_moveMode = MOVE_FALLING;
+                t->SetMoveMode(MOVE_FALLING);
             }
         }
     } else {
@@ -842,7 +841,7 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
             i32 probe;
             i32 top = t->m_extent.bottom + cursor + 1;
             if (SpanCheck(destX, top - cursor + t->m_screenY, top, &probe) != 0 && probe > cursor) {
-                t->m_moveMode = MOVE_GROUNDED;
+                t->SetMoveMode(MOVE_GROUNDED);
                 cursor = probe - t->m_extent.bottom - 1;
             }
         }
@@ -861,9 +860,11 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
 
 RVA(0x0015e720, 0x14c)
 i32 CGameLevel::StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags) {
-    i32 mid = t->m_extent.right + destX;
-    i32 lo = t->m_extent.top + destY;
-    i32 hi = t->m_extent.bottom + destY;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 mid = bounds.right;
+    i32 lo = bounds.top;
+    i32 hi = bounds.bottom;
     i32 cur = lo;
 
     while (cur <= hi) {
@@ -887,9 +888,11 @@ i32 CGameLevel::StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
 
 RVA(0x0015e870, 0x14c)
 i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags) {
-    i32 mid = t->m_extent.left + destX;
-    i32 lo = t->m_extent.top + destY;
-    i32 hi = t->m_extent.bottom + destY;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 mid = bounds.left;
+    i32 lo = bounds.top;
+    i32 hi = bounds.bottom;
     i32 cur = lo;
 
     while (cur <= hi) {
@@ -915,9 +918,11 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015e9c0, 0x139)
 i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
-    i32 hiX = t->m_extent.right + x;
-    i32 fixedY = t->m_extent.top + y;
-    i32 col = t->m_extent.left + x;
+    RECT bounds;
+    t->ExtentAt(x, y, bounds);
+    i32 hiX = bounds.right;
+    i32 fixedY = bounds.top;
+    i32 col = bounds.left;
     while (col <= hiX) {
         TileCollisionKind result;
         PROBE_TILE(this, col, fixedY, result);
@@ -936,9 +941,11 @@ i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
 // @early-stop
 RVA(0x0015eb00, 0x2d2)
 i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
-    i32 mid = t->m_extent.right + destX;
-    i32 cur = t->m_extent.left + destX;
-    i32 hiY = t->m_extent.bottom + destY + 1;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 mid = bounds.right;
+    i32 cur = bounds.left;
+    i32 hiY = bounds.bottom + 1;
 
     if (cur <= mid) {
         do {
@@ -955,7 +962,7 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
                         return destY;
                     }
                 }
-            } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
+            } else if (t->GetMoveMode() != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
                 if (AxisProbe(cur, hiY) == TILEKIND_CLIMB) {
                     if (AxisProbe(cur, hiY - 1) != TILEKIND_CLIMB) {
                         return destY;
@@ -970,15 +977,17 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
         } while (cur <= mid);
     }
 
-    t->m_moveMode = MOVE_FALLING;
+    t->SetMoveMode(MOVE_FALLING);
     return destY;
 }
 
 RVA(0x0015ede0, 0x2a7)
 i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
-    i32 lo = t->m_extent.left + destX;
-    i32 mid = t->m_extent.right + destX;
-    i32 hiY = destY + t->m_extent.bottom + 1;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 lo = bounds.left;
+    i32 mid = bounds.right;
+    i32 hiY = bounds.bottom + 1;
 
     TileCollisionKind first;
     PROBE_TILE(this, destX, hiY, first);
@@ -999,13 +1008,13 @@ i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 
                     do {
                         TileCollisionKind g = AxisProbe(cur, y);
                         if (g != TILEKIND_SOLID && g != TILEKIND_GROUND) {
-                            t->m_moveMode = MOVE_GROUNDED;
+                            t->SetMoveMode(MOVE_GROUNDED);
                             return y - t->m_extent.bottom;
                         }
                         --y;
                     } while (y >= floor);
                 }
-            } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
+            } else if (t->GetMoveMode() != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
                 i32 floor = hiY - base;
                 i32 hi = hiY;
                 if (hi > floor) {
@@ -1013,7 +1022,7 @@ i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 
                     if (y >= floor) {
                         do {
                             if (AxisProbe(cur, y) != TILEKIND_CLIMB) {
-                                t->m_moveMode = MOVE_GROUNDED;
+                                t->SetMoveMode(MOVE_GROUNDED);
                                 return hi - t->m_extent.bottom - 1;
                             }
                             hi = y;
@@ -1052,9 +1061,11 @@ i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
 // @early-stop
 RVA(0x0015f1c0, 0x171)
 i32 CGameLevel::ResolveCeilingCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
-    i32 startCol = t->m_extent.left + destX;
-    i32 mid = t->m_extent.right + destX;
-    i32 ceil = destY + t->m_extent.top - 1;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 startCol = bounds.left;
+    i32 mid = bounds.right;
+    i32 ceil = bounds.top - 1;
     i32 cur = startCol;
 
     if (cur <= mid) {
@@ -1068,7 +1079,7 @@ i32 CGameLevel::ResolveCeilingCollision(CGameObject* t, i32 destX, i32 destY, i3
                     do {
 
                         if (AxisProbe(startCol, y) != TILEKIND_SOLID) {
-                            t->m_moveMode = MOVE_FALLING;
+                            t->SetMoveMode(MOVE_FALLING);
                             return y - t->m_extent.top;
                         }
                         ++y;
@@ -1146,7 +1157,7 @@ i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
                     ++cur;
                     if (cur > y) {
                         y = cur - t->m_extent.bottom - 1;
-                        t->m_moveMode = MOVE_GROUNDED;
+                        t->SetMoveMode(MOVE_GROUNDED);
                     }
                     goto done;
                 }
@@ -1163,7 +1174,7 @@ done:
 RVA(0x0015f7b0, 0x11f)
 i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
     y = ResolveFloorCollision(t, x, y, flags);
-    if (t->m_moveMode == MOVE_GROUNDED) {
+    if (t->GetMoveMode() == MOVE_GROUNDED) {
         return y;
     }
     i32 headRow = t->m_extent.bottom + y + 1;
@@ -1172,7 +1183,7 @@ i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
     PROBE_TILE(this, x, footRow, result);
     if (result != TILEKIND_CLIMB) {
         if (AxisProbe(x, headRow) != TILEKIND_CLIMB) {
-            t->m_moveMode = MOVE_FALLING;
+            t->SetMoveMode(MOVE_FALLING);
         }
     }
     return y;
@@ -1269,7 +1280,7 @@ i32 CGameLevel::TryLandOnPlatform(
         CGameObject* platform = children->NextChild(pos);
         if (platform->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {
             if (CanLandOnPlatform(object, platform, destX, destY, outLandingY, moveFlags) != 0) {
-                object->m_moveMode = MOVE_GROUNDED;
+                object->SetMoveMode(MOVE_GROUNDED);
                 object->m_carrier = platform;
                 object->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER));
                 return 1;

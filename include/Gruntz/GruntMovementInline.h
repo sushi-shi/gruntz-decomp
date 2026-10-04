@@ -19,13 +19,13 @@ inline void ClearMoveTileFx(CGrunt* grunt) {
         grunt->GetUnitIndex(),
         grunt->m_moveTile.m_x,
         grunt->m_moveTile.m_y,
-        grunt->m_activePickupType,
+        grunt->GetActivePickupType(),
         WWDDRAW_NO_ANIMATION
     );
 }
 
 inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
-    if (grunt->m_cellRemovalNotified == false) {
+    if (grunt->IsUnregisteredFromBoard() == false) {
         grunt->m_triggerMgr
             ->UnregisterUnit(grunt->GetPlayerIndex(), grunt->GetUnitIndex(), exitedLevel);
     }
