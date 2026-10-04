@@ -328,7 +328,7 @@ CONTROL = {
         "the level record's extent rect, which our source read as four i32 "
         "named player0..3 - the second live instance of the pattern, and the "
         "last one; a signature slip here puts the row back in retail's column"),
-    "?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z": (16, 2,
+    "?SelectUnitsInRect@CTriggerMgr@@QAEXUtagRECT@@H@Z": (16, 2,
         "a rect by value at both of its call sites"),
     "?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z": (16, 4,
         "four sites, so the row also proves the sweep is not finding one hole "

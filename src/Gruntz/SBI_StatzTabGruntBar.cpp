@@ -165,7 +165,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         }
 
         if (m_selectKey != NULL) {
-            selectVal = table->SelectionListFind(playerIndex, unitIndex);
+            selectVal = table->GetUnitSelectionGroupMarker(playerIndex, unitIndex);
         }
 
         timerVal = m_timerValue;

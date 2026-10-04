@@ -4301,7 +4301,7 @@ triggermgr	?ApplyGruntAreaEffect@CTriggerMgr@@QAEHHHHW4GruntAreaEffectKind@@H@Z	
 triggermgr	?BuildRockBreakParticles@CTriggerMgr@@QAEHHHHH@Z	99.9030	99.9030	32	05e404e4de90	0x7b440	99.9030	
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHW4WarpStoneFragment@@@Z	100.0000	100.0000	1	e63030c4e3bb	0x79b30	100.0000	
 triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.4071	98.4071	15	a249bbbec88c	0x7cf40	98.9381	
-triggermgr	?ClearRecords@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	98d431b263e3	0x78880	100.0000	
+triggermgr	?ClearSelectedUnitIds@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	98d431b263e3	0x78880	100.0000	
 triggermgr	?ClearSelection@CTriggerMgr@@QAEXXZ	100.0000	100.0000	8	1d245aafe6c6	0x78430	100.0000	
 triggermgr	?ClearSelectionGroups@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	72c0a3cb63f8	0x7d0c0	100.0000	
 triggermgr	?CloseActionOptionsMenu@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	13f6ecbd236d	0x78a30	100.0000	
@@ -4313,7 +4313,7 @@ triggermgr	?EnqueueSelectedToolUse@CTriggerMgr@@QAEXHHHH@Z	100.0000	100.0000	10	
 triggermgr	?FindNearestUnitForPlayer@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	89.5263	89.5263	8	2150f09ddc2c	0x77f80	89.5263	
 triggermgr	?HandleActionOptionsPointer@CTriggerMgr@@QAEHHH@Z	95.5098	95.5098	45	51338178b868	0x7b1b0	100.0000	
 triggermgr	?HandleTargetSelection@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	99.5968	99.5968	23	84b3a0555dfc	0x79520	99.8538	
-triggermgr	?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	90.2439	90.2439	14	09354c6085d4	0x78060	90.2439	
+triggermgr	?SelectUnitsInRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	90.2439	90.2439	14	09354c6085d4	0x78060	90.2439	
 triggermgr	?IsUnitSelected@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	3	63a948ba02cc	0x784d0	100.0000	
 triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	97.6185	97.6185	24	edbb5cdf9ba9	0x7abc0	97.6185	
 triggermgr	?LoadCameraSprite@CTriggerMgr@@QAEHXZ	100.0000	100.0000	9	87d3d9a7d335	0x78960	100.0000	
@@ -4333,7 +4333,7 @@ triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	100.0000	100.0000	10	e16f35292a7
 triggermgr	?SaveSelectionGroup@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	7	9c10c9090368	0x7cc60	100.0000	
 triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	13	992260228e41	0x7a760	99.1927	
 triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	100.0000	8	8955d62c25e8	0x788d0	100.0000	
-triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	3	7a5a0dfb1497	0x7d2a0	100.0000	
+triggermgr	?GetUnitSelectionGroupMarker@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	3	7a5a0dfb1497	0x7d2a0	100.0000	
 triggermgr	?Serialize@CTriggerMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	4	a35bfe20b3a1	0x7a5e0	100.0000	
 triggermgr	?ConvertGrunt@CTriggerMgr@@QAEHHHHH@Z	94.3750	94.3750	21	b660a284cbd5	0x7c110	94.3750	
 triggermgr	?SpawnPowerupIcon@CTriggerMgr@@QAEHW4PickupType@@HHHHH@Z	100.0000	100.0000	14	f50b3c4ce42e	0x7c620	100.0000	

@@ -74,7 +74,7 @@ void CTriggerMgr::Cleanup() {
         delete ov;
         m_overlay = NULL;
     }
-    ClearRecords();
+    ClearSelectedUnitIds();
     ClearSelectionGroups();
 }
 

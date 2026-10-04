@@ -2770,7 +2770,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
             m_minimap->EndMinimapPan(keyFlags, x, y);
         }
         if (m_worldReady != false) {
-            m_mgr->GetTriggerMgr()->HudRect(
+            m_mgr->GetTriggerMgr()->SelectUnitsInRect(
                 m_hudRect,
                 g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
             );
@@ -6959,7 +6959,7 @@ i32 CPlay::CanQuickSave() {
 RVA(0x000da440, 0x60)
 i32 CPlay::PostHudRect() {
     if (m_worldReady != false) {
-        m_mgr->GetTriggerMgr()->HudRect(
+        m_mgr->GetTriggerMgr()->SelectUnitsInRect(
             m_hudRect,
             g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
         );

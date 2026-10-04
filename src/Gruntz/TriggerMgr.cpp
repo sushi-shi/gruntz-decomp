@@ -109,34 +109,36 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
 
 // @early-stop
 RVA(0x00078060, 0x18d)
-void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
-    CGameLevel* view = m_world->GetLevel();
-    const RECT* vp = view->m_mainPlane->GetPlaneViewRect();
-    r.left += vp->left - view->m_viewportRect.left;
-    r.top += vp->top - view->m_viewportRect.top;
-    vp = view->m_mainPlane->GetPlaneViewRect();
-    r.right += vp->left - view->m_viewportRect.left;
-    r.bottom += vp->top - view->m_viewportRect.top;
-    for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
-        for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
-            CGrunt* g = UnitAt(i, j);
-            if (g) {
-                CGameObject* pos = g->m_object;
-                i32 cx = pos->m_screenX;
-                i32 cy = pos->m_screenY;
-                RECT box;
-                SetRect(&box, cx - 0xf, cy - 0xf, cx + 0xf, cy + 0xf);
-                if (r.left <= box.right && r.right >= box.left && r.top <= box.bottom
-                    && r.bottom >= box.top) {
-                    if (i == g_curPlayer) {
-                        if (selectionReset == false && g->IsEntranceCommitted() != false) {
+void CTriggerMgr::SelectUnitsInRect(RECT selectionRect, b32 preserveSelection) {
+    CGameLevel* level = m_world->GetLevel();
+    const RECT* planeView = level->m_mainPlane->GetPlaneViewRect();
+    selectionRect.left += planeView->left - level->m_viewportRect.left;
+    selectionRect.top += planeView->top - level->m_viewportRect.top;
+    planeView = level->m_mainPlane->GetPlaneViewRect();
+    selectionRect.right += planeView->left - level->m_viewportRect.left;
+    selectionRect.bottom += planeView->top - level->m_viewportRect.top;
+    for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {
+        for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
+            CGrunt* grunt = UnitAt(playerIndex, unitIndex);
+            if (grunt) {
+                CGameObject* object = grunt->m_object;
+                i32 centerX = object->m_screenX;
+                i32 centerY = object->m_screenY;
+                RECT gruntBounds;
+                SetRect(&gruntBounds, centerX - 0xf, centerY - 0xf, centerX + 0xf, centerY + 0xf);
+                if (selectionRect.left <= gruntBounds.right
+                    && selectionRect.right >= gruntBounds.left
+                    && selectionRect.top <= gruntBounds.bottom
+                    && selectionRect.bottom >= gruntBounds.top) {
+                    if (playerIndex == g_curPlayer) {
+                        if (preserveSelection == false && grunt->IsEntranceCommitted() != false) {
                             ClearSelection();
-                            selectionReset = true;
+                            preserveSelection = true;
                         }
-                        SelectUnit(g_curPlayer, j, 1, 1);
+                        SelectUnit(g_curPlayer, unitIndex, 1, 1);
                     } else {
-                        g->CreateHealthSprite();
-                        g->m_hudRetireTiming.Start(
+                        grunt->CreateHealthSprite();
+                        grunt->m_hudRetireTiming.Start(
                             g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388)
                         );
                     }
@@ -347,7 +349,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
 }
 
 RVA(0x00078880, 0x3c)
-void CTriggerMgr::ClearRecords() {
+void CTriggerMgr::ClearSelectedUnitIds() {
     POSITION pos = m_selectedUnitIds.GetHeadPosition();
     if (pos != NULL) {
         do {
@@ -1353,7 +1355,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&b, 1);
         arr->SetAtGrow(ci, b);
     }
-    ClearRecords();
+    ClearSelectedUnitIds();
 
     ar->Read(&count, sizeof(count));
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
@@ -2421,25 +2423,25 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
 }
 
 RVA(0x0007d2a0, 0x64)
-i32 CTriggerMgr::SelectionListFind(i32 playerIndex, i32 unitIndex) {
+i32 CTriggerMgr::GetUnitSelectionGroupMarker(i32 playerIndex, i32 unitIndex) {
     if (playerIndex != g_curPlayer) {
         return 0;
     }
-    i32 result = 0;
+    i32 marker = 0;
     CPtrList* list = m_selectionGroups;
-    for (i32 i = 0; i < 10; i++, list++) {
+    for (i32 groupIndex = 0; groupIndex < 10; groupIndex++, list++) {
         POSITION pos = list->GetHeadPosition();
         while (pos != NULL) {
             Coord* payload = static_cast<Coord*>(list->GetNext(pos));
             if (payload->m_x == playerIndex && payload->m_y == unitIndex) {
-                if (result != 0) {
+                if (marker != 0) {
                     return 10;
                 }
-                result = i;
+                marker = groupIndex;
             }
         }
     }
-    return result;
+    return marker;
 }
 
 // @early-stop

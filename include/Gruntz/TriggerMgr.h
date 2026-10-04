@@ -61,7 +61,7 @@ public:
 
     i32 StartPlayerVictorySequence(i32 playerIndex);
 
-    i32 SelectionListFind(i32 playerIndex, i32 unitIndex);
+    i32 GetUnitSelectionGroupMarker(i32 playerIndex, i32 unitIndex);
 
     b32 HasPendingFx() const {
         return m_pendingFxKind != 0;
@@ -70,7 +70,7 @@ public:
 
     void ClearSelectionGroups();
 
-    void ClearRecords();
+    void ClearSelectedUnitIds();
 
     i32 StartUnitDeathForObject(
         CGrunt* unit,
@@ -209,7 +209,7 @@ public:
 
     i32 EnqueueGroupCells();
 
-    void HudRect(RECT r, b32 selectionReset);
+    void SelectUnitsInRect(RECT selectionRect, b32 preserveSelection);
 
     i32 UpdateFrame(i32 deltaMs);
 
@@ -301,15 +301,15 @@ public:
     CGrunt* UnitAt(i32 playerIndex, i32 unitIndex) {
         return PlayerUnits(playerIndex)[unitIndex];
     }
-    Coord* HeadRec() {
+    Coord* FirstSelectedUnitId() {
         return static_cast<Coord*>(m_selectedUnitIds.GetHead());
     }
     CGrunt* SoleSelectedGrunt() {
         if (m_selectedUnitIds.GetCount() != 1) {
             return NULL;
         }
-        Coord rec = *HeadRec();
-        return UnitAt(rec.m_x, rec.m_y);
+        Coord identity = *FirstSelectedUnitId();
+        return UnitAt(identity.m_x, identity.m_y);
     }
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;
