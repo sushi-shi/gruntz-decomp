@@ -1207,7 +1207,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     CGrunt* hit;
     i32 scrollSpell;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->IsEntranceCommitted() == false || cell->m_busy != false) {
+    if (cell == NULL || cell->IsEntranceCommitted() == false || cell->IsBusy() != false) {
         return 0;
     }
     i32 argTileX = worldX >> TILE_SHIFT_PX;
@@ -1326,7 +1326,7 @@ i32 CTriggerMgr::MoveUnitTo(
     if (cell->IsGuarding() != false) {
         END_GUARD(cell);
     }
-    if (cell->m_busy != false) {
+    if (cell->IsBusy() != false) {
         return 0;
     }
     CANCEL_UNIT_TOOL_EFFECTS(cell, playerIndex, unitIndex);

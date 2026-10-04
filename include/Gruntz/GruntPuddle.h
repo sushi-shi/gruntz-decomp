@@ -10,8 +10,6 @@
 
 class CFileMemBase;
 
-struct CGruntPuddleSink {};
-
 extern char g_puddleSpriteKey[];
 
 class CGruntPuddle : public CUserLogic, public CWapX {

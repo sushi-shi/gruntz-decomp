@@ -224,6 +224,10 @@ public:
     b32 IsSelected() const {
         return m_selected;
     }
+    b32 IsBusy() const {
+        return m_busy;
+    }
+
     b32 IsInCombat() const {
         return m_inCombat;
     }
@@ -264,6 +268,12 @@ public:
     RVA(0x000759e0, 0x18)
     Coord EntrancePx() {
         return m_entrancePx;
+    }
+    void SetEntrancePx(const Coord& pixels) {
+        m_entrancePx = pixels;
+    }
+    void SetEntrancePx(i32 pixelX, i32 pixelY) {
+        m_entrancePx.Set(pixelX, pixelY);
     }
 
     PickupType GetColorIndex() const {

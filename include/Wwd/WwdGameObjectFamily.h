@@ -257,6 +257,9 @@ public:
     i32 GetHealth() const {
         return m_health;
     }
+    void SetHealth(i32 health) {
+        m_health = health;
+    }
 
     i32 m_health;
 

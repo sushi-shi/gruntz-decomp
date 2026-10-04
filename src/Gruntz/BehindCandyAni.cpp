@@ -7,7 +7,6 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/AnimSink.h>
 #include <Gruntz/BigAnimationMacros.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>

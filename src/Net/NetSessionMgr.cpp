@@ -701,7 +701,7 @@ i32 CNetSession::ComputeChecksum() {
                 PickupType carried = grunt->GetActivePickupType();
                 PickupType effective = grunt->ResolveEquippedToolType(carried);
                 sum += IDX(grunt->GetCarriedToyType()) + grunt->IsEntranceCommitted()
-                       + grunt->m_busy + grunt->m_daFlag + IDX(effective);
+                       + grunt->IsBusy() + grunt->m_daFlag + IDX(effective);
 
                 i32 priority;
                 PRIO(priority, carried);

@@ -392,7 +392,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (unit->IsDeathAnimationStarted() != false) {
                     continue;
                 }
-                if (unit->m_busy != false) {
+                if (unit->IsBusy() != false) {
                     continue;
                 }
                 if (unit->IsInCombat() != false) {
@@ -1555,7 +1555,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 Coord* nt = unit->GetTailCoord();
                 Coord entrance;
                 SET_TILE_CENTER_PIXEL_PAIR(entrance.m_x, entrance.m_y, nt->m_x, nt->m_y)
-                unit->m_entrancePx = entrance;
+                unit->SetEntrancePx(entrance);
                 return 1;
             }
         }
@@ -2617,7 +2617,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         }
         unit->MoveToTile(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
         if (flag != false) {
-            unit->m_entrancePx = saved;
+            unit->SetEntrancePx(saved);
         }
     }
 
@@ -2660,7 +2660,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (u->m_deathAnimStarted != false) {
                 continue;
             }
-            if (u->m_busy != false) {
+            if (u->IsBusy() != false) {
                 continue;
             }
             if (u->m_inCombat != false) {
@@ -2837,7 +2837,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         CGrunt* cand = m_triggerMgr->UnitAt(m_playerIndex, r);
         if (cand != NULL) {
             if (IsGruntAtSavedScreenPos(cand) && cand->IsEntranceCommitted() != false
-                && cand->IsDeathAnimationStarted() == false && cand->m_busy == false
+                && cand->IsDeathAnimationStarted() == false && cand->IsBusy() == false
                 && cand->IsInCombat() == false) {
                 if (!cand->IsAnimationAct("I") && !cand->IsAnimationAct("G")
                     && !cand->IsAnimationAct("L") && !cand->IsAnimationAct("P")
@@ -2901,7 +2901,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->IsDeathAnimationStarted() != false) {
         return 0;
     }
-    if (unit->m_busy != false) {
+    if (unit->IsBusy() != false) {
         return 0;
     }
     if (unit->IsInCombat() != false) {
@@ -3113,7 +3113,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
                     Coord* tail = unit->GetTailCoord();
                     i32 tailX = tail->m_x;
                     i32 tailY = tail->m_y;
-                    unit->m_entrancePx.Set(
+                    unit->SetEntrancePx(
                         (tailX << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (tailY << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
@@ -3487,7 +3487,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
                 unit->AppendCoords(list);
                 Coord* tail = unit->GetTailCoord();
-                unit->m_entrancePx.Set(
+                unit->SetEntrancePx(
                     (tail->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (tail->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                 );

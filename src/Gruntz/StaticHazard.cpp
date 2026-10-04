@@ -71,13 +71,13 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     o->SetSortKey(0);
     m_tileCol = m_object->m_screenX >> TILE_SHIFT_PX;
     m_tileRow = m_object->m_screenY >> TILE_SHIFT_PX;
-    m_object->m_health = 0;
+    m_object->SetHealth(0);
     switch (g_gameReg->m_curState->m_levelType) {
         case AREA_TROUBLE_IN_THE_TROPICZ:
         case AREA_HIGH_ON_SWEETZ:
         case AREA_MINIATURE_MASTERZ:
         case AREA_GRUNTZ_IN_SPACE:
-            m_object->m_health = m_object->m_screenY + 0x186b0;
+            m_object->SetHealth(m_object->m_screenY + 0x186b0);
             break;
         default:
             break;

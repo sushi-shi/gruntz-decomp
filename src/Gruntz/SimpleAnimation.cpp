@@ -8,7 +8,6 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/AnimSink.h>
 #include <Gruntz/BigAnimationMacros.h>
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
