@@ -178,7 +178,7 @@ public:
     inline PickupType GetEquippedToolType() const;
     inline void CancelToolAnimationEffects();
     inline void UnregisterFromBoard(i32 exitedLevel);
-    inline void BeginGruntEntranceAndReleaseCell();
+    inline void SetBusyAndDeselect();
 
     PickupType GetPowerupType() const {
         return m_powerupType;

@@ -93,7 +93,7 @@ inline Coord CGrunt::ScanCell() {
     return t;
 }
 
-inline void CGrunt::BeginGruntEntranceAndReleaseCell() {
+inline void CGrunt::SetBusyAndDeselect() {
     m_busy = true;
     m_triggerMgr->RemoveUnitFromSelection(GetPlayerIndex(), GetUnitIndex(), 1);
 }

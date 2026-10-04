@@ -400,7 +400,7 @@ i32 CGrunt::StartBombGruntRun() {
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
-    BeginGruntEntranceAndReleaseCell();
+    SetBusyAndDeselect();
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
     if (ApplyPickup(PICKUP_BOMB, 1, 0, 1) == 0) {
@@ -636,7 +636,7 @@ finalize:
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
-    BeginGruntEntranceAndReleaseCell();
+    SetBusyAndDeselect();
     SET_ANIMATION_ACT("Q");
     {
         i32 z = m_object->m_screenY + 0x186a0;
