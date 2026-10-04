@@ -219,6 +219,9 @@ GruntRec* AllocateGruntRecord(i32 clear);
 void RecycleGruntRecord(GruntRec* cmd);
 
 struct CNetSession {
+    i32 GetCommandTick() const {
+        return m_commandTick;
+    }
 
     CGruntzMgr* m_mgr;
 

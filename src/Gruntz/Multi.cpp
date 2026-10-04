@@ -461,7 +461,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_reserved5e8 = 0;
     m_accumTime = 0;
     m_lastFrameSyncTime = timeGetTime();
-    m_processedCommandTick = m_session->m_commandTick - 1;
+    m_processedCommandTick = m_session->GetCommandTick() - 1;
     m_outOfSync = false;
 
     if (CPlay::LoadByMode(mode, 0) == 0) {
@@ -494,7 +494,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_reserved5e8 = 0;
     m_accumTime = 0;
     m_lastFrameSyncTime = timeGetTime();
-    m_processedCommandTick = m_session->m_commandTick - 1;
+    m_processedCommandTick = m_session->GetCommandTick() - 1;
     m_outOfSync = false;
     Mgr()->ChatLog()->ClearMessages();
     m_session->ResetRound();
@@ -531,7 +531,7 @@ i32 CMulti::Render() {
 
     m_frameDelta = t - oldT;
     m_accumTime += m_frameDelta;
-    i32 newId = m_session->m_commandTick;
+    i32 newId = m_session->GetCommandTick();
     if (m_processedCommandTick != newId) {
         m_processedCommandTick = newId;
         CGruntzCmdMgr* mgr = Mgr()->GetCommandMgr();
@@ -2706,7 +2706,7 @@ i32 CMulti::CreateSession() {
     }
 
     Session()->m_localPlayer = LocalPlayer();
-    i32 commandTickSnapshot = m_session->m_commandTick;
+    i32 commandTickSnapshot = m_session->GetCommandTick();
     u8 b = static_cast<u8>(commandTickSnapshot);
     if (b == 0) {
         b = 0x7f;
