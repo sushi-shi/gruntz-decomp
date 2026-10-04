@@ -147,7 +147,7 @@ i32 CAttract::Render() {
     IDirectDrawSurface* busy =
         menuRoot()->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
-        if (InputVirtual() == 0) {
+        if (RestoreGraphics() == 0) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
             return 0;
         }
@@ -174,7 +174,7 @@ i32 CAttract::Render() {
 }
 
 RVA(0x00014520, 0xc3)
-i32 CAttract::InputVirtual() {
+i32 CAttract::RestoreGraphics() {
 
     if (menuRoot()->GetDrawTarget()->PagesReady() == 0) {
         return 0;

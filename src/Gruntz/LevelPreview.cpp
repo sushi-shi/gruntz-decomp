@@ -101,7 +101,7 @@ i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (surf == NULL || surf->IsLost() != 0) {
-        if (InputVirtual() == 0) {
+        if (RestoreGraphics() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
         }

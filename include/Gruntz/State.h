@@ -50,7 +50,7 @@ public:
     }
     virtual i32 OnPaint();
 
-    virtual i32 InputVirtual();
+    virtual i32 RestoreGraphics();
     RVA(0x0008c510, 0x8)
     virtual i32 EnterState(GameStateId previousState) {
         return 1;

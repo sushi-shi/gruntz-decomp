@@ -294,8 +294,8 @@ i32 CMenuState::Render() {
 }
 
 RVA(0x000a09a0, 0x6a)
-i32 CMenuState::InputVirtual() {
-    if (CState::InputVirtual() == 0) {
+i32 CMenuState::RestoreGraphics() {
+    if (CState::RestoreGraphics() == 0) {
         return 0;
     }
     CRezDir* tree = StateResources()->GetDirFromPath("IMAGEZ");

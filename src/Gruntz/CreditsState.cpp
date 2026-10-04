@@ -167,7 +167,7 @@ i32 CCreditsState::Render() {
     IDirectDrawSurface* in =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (!in || in->IsLost()) {
-        if (!InputVirtual()) {
+        if (!RestoreGraphics()) {
             owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
         }
@@ -221,7 +221,7 @@ i32 CCreditsState::Render() {
 }
 
 RVA(0x000393b0, 0x3a)
-i32 CCreditsState::InputVirtual() {
+i32 CCreditsState::RestoreGraphics() {
 
     if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;

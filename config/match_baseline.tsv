@@ -470,7 +470,7 @@ attract	?FadeSineToBackBuffer@CState@@QAEHHHH@Z	99.0566	99.0566	10	653379960d4c	
 attract	?FadeSineToBlack@CState@@QAEHHHH@Z	100.0000	100.0000	10	4ee96b6a6469	0xfaa60	100.0000	
 attract	?HeaderRead@CState@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	c97f9e73261b	0xfb1c0	100.0000	
 attract	?HeaderWrite@CState@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	2df35518c12c	0xfaff0	100.0000	
-attract	?InputVirtual@CState@@UAEHXZ	99.5403	99.5403	10	7b10715581bb	0xface0	99.5403	
+attract	?RestoreGraphics@CState@@UAEHXZ	99.5403	99.5403	10	7b10715581bb	0xface0	99.5403	
 attract	?LoadAndPresentTitlePage@CState@@QAEHPBDHHHH@Z	100.0000	100.0000	4	8293548dde2d	0xfa350	100.0000	
 attract	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	99.6875	99.6875	9	22f8786c0166	0xfab90	99.6875	
 attract	?LoadTitlePage@CState@@QAEHPBDHHHHH@Z	99.8809	99.8809	6	cb6890d303c3	0xfa1f0	99.8809	
@@ -485,7 +485,7 @@ attractstate	??_GCAttract@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8bef3a64de37	0x8cd6
 attractstate	?CompleteLevel@CState@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c690	100.0000	
 attractstate	?EnterState@CAttract@@UAEHW4GameStateId@@@Z	100.0000	100.0000	16	a400233c4a7f	0x14120	100.0000	
 attractstate	?EnterState@CState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c510	100.0000	
-attractstate	?InputVirtual@CAttract@@UAEHXZ	100.0000	100.0000	4	f6116744cfa9	0x14520	100.0000	
+attractstate	?RestoreGraphics@CAttract@@UAEHXZ	100.0000	100.0000	4	f6116744cfa9	0x14520	100.0000	
 attractstate	?IsActive@CState@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c490	100.0000	
 attractstate	?LeaveState@CAttract@@UAEHW4GameStateId@@@Z	100.0000	100.0000	10	344cc469cd50	0x14340	100.0000	
 attractstate	?LoadGameAssetNamespaces@CAttract@@UAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	11	63d08844c98e	0x13fb0	100.0000	
@@ -620,8 +620,8 @@ bootystateactivate	?FormatHudText@CBootyState@@QAEXPAVCString@@W4BootyStatRow@@@
 bootystateactivate	?GenMenuRandPos@CBootyState@@QAEXW4GruntDirection@@PAH1@Z	100.0000	100.0000	3	b973546ff5e5	0x19cd0	100.0000	
 bootystateactivate	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:08064dd2c3eb	0x1f450	100.0000	
 bootystateactivate	?GetWarlordName@CMultiBootyState@@QAE?AVCString@@H@Z	100.0000	100.0000	1	06674543a617	0x1ec20	100.0000	
-bootystateactivate	?InputVirtual@CBootyState@@UAEHXZ	100.0000	100.0000	9	ea12eafdef00	0x1c8a0	100.0000	
-bootystateactivate	?InputVirtual@CMultiBootyState@@UAEHXZ	100.0000	100.0000	9	0bc483d550f1	0x1f6f0	100.0000	
+bootystateactivate	?RestoreGraphics@CBootyState@@UAEHXZ	100.0000	100.0000	9	ea12eafdef00	0x1c8a0	100.0000	
+bootystateactivate	?RestoreGraphics@CMultiBootyState@@UAEHXZ	100.0000	100.0000	9	0bc483d550f1	0x1f6f0	100.0000	
 bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	89.7500	89.7500	14	dd96ed652cc1	0x18e40	89.7500	
 bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	89.7500	89.7500	14	f89154b63788	0x1e660	89.7500	
 bootystateactivate	?LevelMsgHudDriver@CBootyState@@QAEHXZ	92.3644	92.3644	22	bcaeb9b253d9	0x1a700	92.3685	
@@ -810,7 +810,7 @@ creditsstate	?EnterState@CCreditsState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	
 creditsstate	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	2	f2e26d7c7b28	0x39c40	100.0000	
 creditsstate	?FlashColor@CCreditsState@@QAEHXZ	100.0000	100.0000	2	dd1d76024e34	0x39d00	100.0000	
 creditsstate	?InitAttractTitle@CCreditsState@@QAEHXZ	100.0000	100.0000	10	f5cfa529d50e	0x39570	100.0000	
-creditsstate	?InputVirtual@CCreditsState@@UAEHXZ	100.0000	100.0000	3	5e1fc160fc8a	0x393b0	100.0000	
+creditsstate	?RestoreGraphics@CCreditsState@@UAEHXZ	100.0000	100.0000	3	5e1fc160fc8a	0x393b0	100.0000	
 creditsstate	?LeaveState@CCreditsState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	7	05a856343d2c	0x39160	100.0000	
 creditsstate	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	8	6845eeef9fa1	0x39dc0	100.0000	
 creditsstate	?LoadGameAssetNamespaces@CCreditsState@@UAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	11	19032d344aa5	0x38d20	100.0000	
@@ -2445,7 +2445,7 @@ gruntzmgr	?PostLoadImageBanks@CPlay@@UAEXXZ	100.0000	100.0000	1	cpp:a91121d9b9bb
 gruntzmgr	?PostSlotCommandB1@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	2	aa1f135b14c5	0x920e0	100.0000	
 gruntzmgr	?PostSlotCommandB6@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	2	8b524068f909	0x92130	100.0000	
 gruntzmgr	?PsycheDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	dd3ae7856754	0x92a30	100.0000	
-gruntzmgr	?PumpIdleFrame@@YAHXZ	100.0000	100.0000	5	7e669a304d64	0x8b8c0	100.0000	
+gruntzmgr	?RestoreGameGraphics@@YAHXZ	100.0000	100.0000	5	7e669a304d64	0x8b8c0	100.0000	
 gruntzmgr	?PushState@CGruntzMgr@@QAEXPAVCState@@@Z	100.0000	100.0000	2	fca3810fc51e	0x909b0	100.0000	
 gruntzmgr	?Quickload@CGruntzMgr@@QAEHXZ	100.0000	100.0000	7	0eb74798971c	0x92710	100.0000	
 gruntzmgr	?Quicksave@CGruntzMgr@@QAEHXZ	100.0000	100.0000	9	f6d53f421679	0x92530	100.0000	
@@ -2612,7 +2612,7 @@ hazardlogicdispatch	?DispatchUFOLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3
 helpstate	??1CHelpState@@UAE@XZ	100.0000	100.0000	1	b63e248c85f6	0x8cf30	100.0000	
 helpstate	??1CSplashState@@UAE@XZ	100.0000	100.0000	1	922ae3985212	0x8d000	100.0000	
 helpstate	?EnterState@CHelpState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	5	89ba71198bc0	0x95140	100.0000	
-helpstate	?InputVirtual@CHelpState@@UAEHXZ	100.0000	100.0000	4	b444570eac88	0x95320	100.0000	
+helpstate	?RestoreGraphics@CHelpState@@UAEHXZ	100.0000	100.0000	4	b444570eac88	0x95320	100.0000	
 helpstate	?LeaveState@CHelpState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	2	e8f680503dcd	0x951d0	100.0000	
 helpstate	?LoadGameAssetNamespaces@CHelpState@@UAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	6	24c54b84a012	0x95090	100.0000	
 helpstate	?OnKeyDown@CHelpState@@UAEHHH@Z	100.0000	100.0000	2	8211c0b194fc	0x953f0	100.0000	
@@ -2999,7 +2999,7 @@ menustate	??1CMenuTree@@QAE@XZ	100.0000	100.0000	23	eab4ab1773fc	0xa0360	100.000
 menustate	?BuildVersionString@CMenuState@@QAEXVCRect@@@Z	100.0000	100.0000	3	1f1333787547	0xa0d80	100.0000	
 menustate	?EnterState@CMenuState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	11	b393c6a892db	0xa03f0	100.0000	
 menustate	?InitializeMembers@CMenuTree@@QAEXXZ	100.0000	100.0000	3	2cfb3c0a3651	0xa0280	100.0000	
-menustate	?InputVirtual@CMenuState@@UAEHXZ	100.0000	100.0000	5	b594b9ce2377	0xa09a0	100.0000	
+menustate	?RestoreGraphics@CMenuState@@UAEHXZ	100.0000	100.0000	5	b594b9ce2377	0xa09a0	100.0000	
 menustate	?LeaveState@CMenuState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	6	32c79817bb03	0xa06d0	100.0000	
 menustate	?LoadGameAssetNamespaces@CMenuState@@UAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	23	d3fb04c4c695	0x9fe50	100.0000	
 menustate	?OnKeyDown@CMenuState@@UAEHHH@Z	100.0000	100.0000	2	38a0544df744	0xa0b90	100.0000	
@@ -3418,7 +3418,7 @@ play	?GetMusicVariant@CPlay@@QAEHXZ	100.0000	100.0000	5	09c585130342	0xda200	100
 play	?GetClassId@CImage@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	28b6fdb30070	0xd5de0	100.0000	
 play	?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z	100.0000	100.0000	3	5014ee547511	0xd53a0	100.0000	
 play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	97.4138	20	1fe5b0001cb8	0xd0db0	97.4138	
-play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	13	c580f12ce965	0xcb800	100.0000	
+play	?RestoreGraphics@CPlay@@UAEHXZ	100.0000	100.0000	13	c580f12ce965	0xcb800	100.0000	
 play	?IsLoaded@CImage@@UAEHXZ	100.0000	100.0000	1	5b02a6fa2d76	0xd5dc0	100.0000	
 play	?IsReady@CWapObj@@UAEHXZ	100.0000	100.0000	1	56d7de4182c2	0xd5da0	100.0000	
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	12	4ab1c9706986	0xc8b80	100.0000	
@@ -4059,7 +4059,7 @@ sparam	?Sparam_Add@@YAHPADPBD1@Z	100.0000	100.0000	3	866b58e2eac4	0xf9280	100.00
 sparam	?Sparam_Add@@YAHPADPBDH@Z	100.0000	100.0000	6	866b58e2eac4	0xf93b0	100.0000	
 sparam	?Sparam_Get@@YAHPADPBD1@Z	100.0000	100.0000	24	41897b881100	0xf9160	100.0000	
 splashstate	?EnterState@CSplashState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	f0e442c6f3df	0xf9880	100.0000	
-splashstate	?InputVirtual@CSplashState@@UAEHXZ	100.0000	100.0000	5	d3a51435be0b	0xf9a80	100.0000	
+splashstate	?RestoreGraphics@CSplashState@@UAEHXZ	100.0000	100.0000	5	d3a51435be0b	0xf9a80	100.0000	
 splashstate	?LeaveState@CSplashState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	85cb0bf37b9c	0xf98f0	100.0000	
 splashstate	?LoadGameAssetNamespaces@CSplashState@@UAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	10	90538957de86	0xf9780	100.0000	
 splashstate	?OnKeyDown@CSplashState@@UAEHHH@Z	100.0000	100.0000	2	38688a272428	0xf9b40	100.0000	

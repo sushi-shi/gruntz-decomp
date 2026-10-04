@@ -101,7 +101,7 @@ i32 CHelpState::Render() {
     IDirectDrawSurface* busy =
         m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->GetDirectDrawSurface();
     if (busy == NULL || busy->IsLost() != 0) {
-        if (InputVirtual() == 0) {
+        if (RestoreGraphics() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x445);
             return 0;
         }
@@ -127,7 +127,7 @@ i32 CHelpState::Render() {
 }
 
 RVA(0x00095320, 0x56)
-i32 CHelpState::InputVirtual() {
+i32 CHelpState::RestoreGraphics() {
     if (m_world->GetDrawTarget()->PagesReady() == 0) {
         return 0;
     }

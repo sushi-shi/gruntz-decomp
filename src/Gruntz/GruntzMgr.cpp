@@ -204,7 +204,7 @@ DATA(0x0020fab8)
 GUID g_dplayAppGuid =
     {0xf41cf640, 0x91b2, 0x11d1, {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}};
 DATA(0x0020fac8)
-b32 g_pendingFrame = true;
+b32 g_graphicsRestoreEnabled = true;
 DATA(0x00212610)
 i32 g_warpX = -1;
 DATA(0x00212614)
@@ -487,7 +487,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_world->GetLevel()->UpdatePlaneViewports(&rect);
     }
     SET_SIZE_COMPONENTS(m_modeSize, SCREEN_W_PX, SCREEN_H_PX);
-    m_world->SetRestoreHandler(&PumpIdleFrame);
+    m_world->SetRestoreHandler(&RestoreGameGraphics);
     CGameLevel* view = m_world->GetLevel();
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
@@ -913,11 +913,11 @@ void CGruntzMgr::FinalizeLevelAndShowResults() {
 }
 
 RVA(0x0008b8c0, 0x76)
-i32 PumpIdleFrame() {
-    if (g_pendingFrame == false) {
+i32 RestoreGameGraphics() {
+    if (g_graphicsRestoreEnabled == false) {
         return 0;
     }
-    g_pendingFrame = false;
+    g_graphicsRestoreEnabled = false;
     if (g_gameReg == NULL) {
         return 0;
     }
@@ -931,12 +931,12 @@ i32 PumpIdleFrame() {
     if (g_gameReg->m_curState == NULL) {
         return 0;
     }
-    if (g_gameReg->m_curState->InputVirtual() == 0) {
+    if (g_gameReg->m_curState->RestoreGraphics() == 0) {
         g_gameReg->ReportError(IDX(IDS_RESTORE_GAME), 0x435);
         return 0;
     }
     g_gameReg->RefreshGameClock();
-    g_pendingFrame = true;
+    g_graphicsRestoreEnabled = true;
     return 1;
 }
 
@@ -2996,7 +2996,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    m_world->SetRestoreHandler(&PumpIdleFrame);
+    m_world->SetRestoreHandler(&RestoreGameGraphics);
     CGameLevel* view = m_world->GetLevel();
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;

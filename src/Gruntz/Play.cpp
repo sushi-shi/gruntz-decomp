@@ -1553,8 +1553,8 @@ void CPlay::ModeCleanup() {
 }
 
 RVA(0x000cb800, 0x191)
-i32 CPlay::InputVirtual() {
-    if (!CState::InputVirtual()) {
+i32 CPlay::RestoreGraphics() {
+    if (!CState::RestoreGraphics()) {
         return 0;
     }
     while (ShowCursor(false) >= 0)

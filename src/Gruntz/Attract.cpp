@@ -414,7 +414,7 @@ i32 CState::OnPaint() {
 
 // @early-stop
 RVA(0x000face0, 0x17c)
-i32 CState::InputVirtual() {
+i32 CState::RestoreGraphics() {
     if (m_world == NULL) {
         return 0;
     }

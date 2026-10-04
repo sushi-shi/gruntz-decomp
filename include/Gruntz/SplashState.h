@@ -22,7 +22,7 @@ public:
     virtual GameStateId Update() OVERRIDE;
     virtual i32 Render() OVERRIDE;
     virtual i32 RestoreDisplay() OVERRIDE;
-    virtual i32 InputVirtual() OVERRIDE;
+    virtual i32 RestoreGraphics() OVERRIDE;
     virtual i32 EnterState(GameStateId previousState) OVERRIDE;
     virtual i32 LeaveState(GameStateId nextState) OVERRIDE;
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
