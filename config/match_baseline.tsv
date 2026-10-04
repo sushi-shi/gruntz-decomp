@@ -659,7 +659,7 @@ brickz	?UpdateDiagonals@CMapMgr@@QAEHPAVCGruntzMgr@@@Z	90.1655	90.1655	6	55d5c54
 brickzcellflags	?ComputeCellFlags@CMapMgr@@QAEXHHH@Z	97.6687	97.6687	15	eb87c0ad6bd0	0x77790	97.6687	
 brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	92.7670	92.7670	14	ae532b618e64	0x77df0	93.2718	
 brickzcellflags	?SetCell@CDDrawWorkerHost@@QAEXHHH@Z	100.0000	100.0000	2	ca91274c34f6	0x77dc0	100.0000	
-brickzload	?BuildCellAttributes@CGruntzMapMgr@@QAEHHH@Z	91.9190	91.9190	39	67851bd62ef6	0x810f0	91.9190	
+brickzload	?BuildCellAttributes@CGruntzMapMgr@@QAEHHH@Z	92.0270	92.0270	40	22d53bde2c14	0x810f0	92.0270	
 buteglobals	??_G?$zDArray@VCString@@@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b2b2a3648e76	0x16ea20	100.0000	
 buteglobals	??_G?$zSymTab@H@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b2b2a3648e76	0x16e9c0	100.0000	
 buteglobals	?SerializeDispatch@CUserLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	10	28ae952c36fd	0x16e7f0	100.0000	
