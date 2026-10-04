@@ -514,6 +514,9 @@ public:
     POSITION AddTailCoord(Coord* coord) {
         return m_coordList.AddTail(coord);
     }
+    void RemoveCoordAt(POSITION position) {
+        m_coordList.RemoveAt(position);
+    }
     Coord* RemoveHeadCoord() {
         return static_cast<Coord*>(m_coordList.RemoveHead());
     }

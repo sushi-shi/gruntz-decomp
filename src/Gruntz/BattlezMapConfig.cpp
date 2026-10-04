@@ -1360,7 +1360,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                         unit->GetNextCoord(n);
                         if (unit->GetCoordAt(cur) != NULL) {
                             g_coordPool.Push(unit->GetCoordAt(cur));
-                            coordList->RemoveAt(cur);
+                            unit->RemoveCoordAt(cur);
                         }
                     }
                     return 1;
