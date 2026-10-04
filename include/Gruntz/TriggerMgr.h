@@ -35,6 +35,10 @@ class CGruntPuddle;
 
 class CTriggerMgr {
 public:
+    FinishLevelReason GetFinishReason() const {
+        return m_finishReasonFrame;
+    }
+
     FinishLevelState GetFinishState() const {
         return m_phase;
     }
