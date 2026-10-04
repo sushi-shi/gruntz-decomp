@@ -213,10 +213,10 @@ CString g_bootyStatLabels[8] = {
 };
 
 DATA(0x00229f30)
-SecretMsgRow g_secretMsgRows[25];
+BootyCheatMessage g_bootyCheatMessages[25];
 
 DATA(0x0022af10)
-b32 g_bootyCheatBuilt = false;
+b32 g_bootyCheatMessagesLoaded = false;
 
 RVA(0x00018830, 0x380)
 i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
@@ -225,7 +225,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         return 0;
     }
 
-    if (g_bootyCheatBuilt == false) {
+    if (g_bootyCheatMessagesLoaded == false) {
         CString bootyCheatz("BootyCheatz");
         CString empty("");
         CString grp;
@@ -234,8 +234,10 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         i32 i = 0;
 
         // byte-evidenced: retail compares the row cursor as a signed integer.
-        i32 last = reinterpret_cast<i32>(g_secretMsgRows[24].m_strB + sizeof(SecretMsgRow));
-        char* p = g_secretMsgRows[0].m_strB;
+        i32 last = reinterpret_cast<i32>(
+            g_bootyCheatMessages[24].m_description + sizeof(BootyCheatMessage)
+        );
+        char* p = g_bootyCheatMessages[0].m_description;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
             i32 id = g_buteMgr.GetInt(bootyCheatz, grp, 1);
@@ -247,7 +249,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
             i++;
             p += 0xa0;
         } while (reinterpret_cast<i32>(p) < last); // byte-evidenced: signed cursor compare
-        g_bootyCheatBuilt = true;
+        g_bootyCheatMessagesLoaded = true;
     }
 
     m_mgr->EnsureStandardVideoMode(false);
@@ -378,8 +380,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
         s.Format("The Secret of Secretz:");
         DrawTextToOverlaySurface(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
-        CString s2(g_secretMsgRows[24].m_strA);
-        CString s3(g_secretMsgRows[24].m_strB);
+        CString s2(g_bootyCheatMessages[24].m_encodedCode);
+        CString s3(g_bootyCheatMessages[24].m_description);
         for (i32 k = 0; k < s2.GetLength(); k++) {
             s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
         }
@@ -434,8 +436,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
                 }
             }
             i32 idx = rowBase * 3 + j;
-            CString s5(g_secretMsgRows[idx].m_strA);
-            CString s6(g_secretMsgRows[idx].m_strB);
+            CString s5(g_bootyCheatMessages[idx].m_encodedCode);
+            CString s6(g_bootyCheatMessages[idx].m_description);
             for (i32 k = 0; k < s5.GetLength(); k++) {
                 s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
             }
