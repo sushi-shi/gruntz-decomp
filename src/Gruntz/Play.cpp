@@ -1850,7 +1850,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (area->HasJoinedRound() != false && area->HasDropped() == false
             && area->IsEliminated() == false) {
             this->m_focusPlayerIndex = pick;
-            this->ResetGoals(area->m_focusX, area->m_focusY);
+            this->SetCameraPosition(area->m_focusX, area->m_focusY);
         }
     }
 
@@ -1859,7 +1859,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        this->ResetGoals(a->m_focusX, a->m_focusY);
+        this->SetCameraPosition(a->m_focusX, a->m_focusY);
         return 1;
     }
 
@@ -1939,7 +1939,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
         }
         Coord* e = this->CameraBookmarkAt(this->m_cameraBookmarkIndex);
-        this->ResetGoals(e->m_x, e->m_y);
+        this->SetCameraPosition(e->m_x, e->m_y);
         return 1;
     }
 
@@ -4004,7 +4004,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     if (changed) {
-        self->ResetGoals(sx, sy);
+        self->SetCameraPosition(sx, sy);
     }
     return 1;
 }
@@ -5307,43 +5307,43 @@ i32 CPlay::AddLevelGruntz() {
 
 // @early-stop
 RVA(0x000d5b20, 0xbb)
-i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
-    CGruntzMgr* w = m_mgr;
-    i32 ex = w->m_modeSize.cx;
-    i32 ey = w->m_modeSize.cy;
-    CTimer* pt;
-    if (mode == STATUSBAR_DOCK_LEFT) {
+i32 CPlay::OnStatusBarDockChanged(StatusBarDock dock, StatusBarDock) {
+    CGruntzMgr* gameManager = m_mgr;
+    i32 timerX = gameManager->m_modeSize.cx;
+    i32 timerY = gameManager->m_modeSize.cy;
+    CTimer* timer;
+    if (dock == STATUSBAR_DOCK_LEFT) {
         m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
-        pt = m_levelTimer;
-        if (pt != NULL) {
-            ex -= 0x37;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+        timer = m_levelTimer;
+        if (timer != NULL) {
+            timerX -= 0x37;
+            timerY -= 0x16;
+            timer->m_baseX = timerX;
+            timer->m_baseY = timerY;
         }
-    } else if (mode == STATUSBAR_DOCK_RIGHT) {
+    } else if (dock == STATUSBAR_DOCK_RIGHT) {
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
-        pt = m_levelTimer;
-        if (pt != NULL) {
-            ex -= 0xd7;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+        timer = m_levelTimer;
+        if (timer != NULL) {
+            timerX -= 0xd7;
+            timerY -= 0x16;
+            timer->m_baseX = timerX;
+            timer->m_baseY = timerY;
         }
     } else {
         m_chatBox->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
-        pt = m_levelTimer;
-        if (pt != NULL) {
-            ex -= 0x37;
-            ey -= 0x16;
-            pt->m_baseX = ex;
-            pt->m_baseY = ey;
+        timer = m_levelTimer;
+        if (timer != NULL) {
+            timerX -= 0x37;
+            timerY -= 0x16;
+            timer->m_baseX = timerX;
+            timer->m_baseY = timerY;
         }
     }
 
     if (m_mgr->GetTriggerMgr()->m_cameraSprite != NULL) {
-        CTriggerMgr* g = m_mgr->GetTriggerMgr();
-        g->ClearCameraSprite();
+        CTriggerMgr* triggerManager = m_mgr->GetTriggerMgr();
+        triggerManager->ClearCameraSprite();
         m_mgr->GetTriggerMgr()->LoadCameraSprite();
     }
     return 1;
@@ -5379,12 +5379,12 @@ RVA_COMPGEN(0x000d5e50, 0x1e, ??_GCImage@@UAEPAXI@Z)
 RVA_COMPGEN(0x000d5e80, 0x5b, ??1CImage@@UAE@XZ)
 
 RVA(0x000d5f00, 0x69)
-i32 CPlay::ResetGoals(i32 x, i32 y) {
-    CGruntzMgr* w = m_mgr;
-    CTriggerMgr* g = w->GetTriggerMgr();
-    g->StopCameraTracking();
-    CDDrawWorkerHost* pg = m_mgr->World()->GetLevel()->m_mainPlane;
-    pg->SetScrollPosition(x, y);
+i32 CPlay::SetCameraPosition(i32 worldX, i32 worldY) {
+    CGruntzMgr* gameManager = m_mgr;
+    CTriggerMgr* triggerManager = gameManager->GetTriggerMgr();
+    triggerManager->StopCameraTracking();
+    CDDrawWorkerHost* mainPlane = m_mgr->World()->GetLevel()->m_mainPlane;
+    mainPlane->SetScrollPosition(worldX, worldY);
     return 1;
 }
 
@@ -5456,14 +5456,14 @@ i32 CPlay::ResetPlayState() {
             (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
         }
         CGameLevel* g = m_mgr->World()->GetLevel();
-        ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
+        SetCameraPosition(g->m_header.m_startX, g->m_header.m_startY);
     } else {
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
-            ResetGoals(slot->m_focusX, slot->m_focusY);
+            SetCameraPosition(slot->m_focusX, slot->m_focusY);
         } else {
             CGameLevel* g = m_mgr->World()->GetLevel();
-            ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
+            SetCameraPosition(g->m_header.m_startX, g->m_header.m_startY);
         }
     }
     if (m_cursorSnapSprite != NULL) {

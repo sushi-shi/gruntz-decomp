@@ -219,9 +219,9 @@ public:
         b32 tintForPlayer
     );
     i32 AdvanceCursorAnimation(i32 elapsedMs);
-    i32 ResetGoals(i32, i32);
+    i32 SetCameraPosition(i32 worldX, i32 worldY);
 
-    i32 PositionBridgeToggle(StatusBarDock mode, StatusBarDock unused);
+    i32 OnStatusBarDockChanged(StatusBarDock dock, StatusBarDock unused);
 
     b32 PlaceStartGruntz();
     i32 ValidateLevelTiles();

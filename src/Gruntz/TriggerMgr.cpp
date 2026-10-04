@@ -903,7 +903,7 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
     );
     if (worldX >= g_gameReg->m_viewBounds.right || worldX < g_gameReg->m_viewBounds.left
         || worldY >= g_gameReg->m_viewBounds.bottom || worldY < g_gameReg->m_viewBounds.top) {
-        play->ResetGoals(worldX, worldY);
+        play->SetCameraPosition(worldX, worldY);
     }
 
     CGameLevel* level = g_gameReg->World()->GetLevel();
@@ -2310,7 +2310,7 @@ i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
     } while (pos != NULL);
     if (m_lastRecalledGroup == slot) {
         (static_cast<CPlay*>(g_gameReg->m_curState))
-            ->ResetGoals(
+            ->SetCameraPosition(
                 bbox.left + (bbox.right - bbox.left) / 2,
                 bbox.top + (bbox.bottom - bbox.top) / 2
             );
@@ -2350,7 +2350,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     } while (pos != NULL);
     i32 cy = bbox.top + (bbox.bottom - bbox.top) / 2;
     i32 cx = bbox.left + (bbox.right - bbox.left) / 2;
-    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(cx, cy);
+    (static_cast<CPlay*>(g_gameReg->m_curState))->SetCameraPosition(cx, cy);
     if (doSelect != 0 && count == 1) {
         CGrunt* cell2 = SoleSelectedGrunt();
         if (cell2 != NULL) {

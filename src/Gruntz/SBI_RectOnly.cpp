@@ -188,7 +188,7 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
     }
     old = m_position;
     m_position = state;
-    (static_cast<CPlay*>(g_gameReg->m_curState))->PositionBridgeToggle(state, old);
+    (static_cast<CPlay*>(g_gameReg->m_curState))->OnStatusBarDockChanged(state, old);
     return 1;
 }
 
@@ -2537,7 +2537,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
         CGrunt* entry = g_gameReg->GetTriggerMgr()->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
             (static_cast<CPlay*>(g_gameReg->m_curState))
-                ->ResetGoals(entry->m_object->m_screenX, entry->m_object->m_screenY);
+                ->SetCameraPosition(entry->m_object->m_screenX, entry->m_object->m_screenY);
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->GetTriggerMgr();
                 if (obj->IsUnitSelected(playerIndex, unitIndex)) {
