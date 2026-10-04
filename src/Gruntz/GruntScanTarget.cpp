@@ -179,7 +179,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 i32 seekPb;
                 PRIO(seekPb, best->GetActivePickupType());
                 if (seekPa <= seekPb && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                    COPY_LAST_TILE_TO_DEFENDER
+                    m_defenderPx = m_lastTilePx;
                     i32 pathPa;
                     PRIO(pathPa, m_activePickupType);
                     i32 pathPb;

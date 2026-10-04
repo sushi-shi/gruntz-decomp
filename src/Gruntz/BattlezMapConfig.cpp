@@ -586,7 +586,7 @@ candidateFound:
     } else {
         unit->SetBattlezTask(BZTASK_UNASSIGNED);
     }
-    unit->m_aiType = AI_BATTLEZ_PATH;
+    unit->SetAiType(AI_BATTLEZ_PATH);
     unit->SetAiState(AISTATE_SEEK);
     UNSET_COORD(unit->m_arrivalCell);
     UNSET_COORD(unit->m_unusedBattleCell);
@@ -595,7 +595,7 @@ candidateFound:
     unit->SetDefenderPickupType(PICKUP_NONE);
     unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
-    unit->m_blockedVoicePending = true;
+    unit->SetBlockedVoicePending(true);
     return 1;
 }
 
@@ -657,7 +657,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->IsInCombat() == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->GetEquippedToolType();
-                                if (st2 == PICKUP_BRICK && unit->m_aiType == AI_DEFENDER
+                                if (st2 == PICKUP_BRICK && unit->GetAiType() == AI_DEFENDER
                                     && unit->m_aiState == AISTATE_BATTLEZ_ROUTE_TARGET) {
                                     unit->BeginPickupAnimation(PICKUP_NONE, 1, 0, 0, 1);
                                 }
@@ -2694,16 +2694,11 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (t == PICKUP_TOOB) {
                 flags = 0x100;
             }
-            t = prim;
-            if (prim > PICKUP_EQUIPPABLE_LAST) {
-                t = unit->GetSavedToolType();
-            }
+            t = unit->ResolveEquippedToolType(prim);
             if (t == PICKUP_WINGZ) {
                 flags = 0x942;
             }
-            if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = unit->GetSavedToolType();
-            }
+            prim = unit->ResolveEquippedToolType(prim);
             if (prim == PICKUP_SPRING) {
                 flags = 0x1000;
             }
@@ -2714,10 +2709,10 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                     unit->SetAiState(AISTATE_SEEK);
                     unit->SetRoutePassableMask(0);
                 }
-                if (unit->m_blockedVoicePending != false) {
+                if (unit->IsBlockedVoicePending() != false) {
                     __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeTiming.m_start;
                     if (elapsed >= m_routeTiming.m_interval) {
-                        unit->m_blockedVoicePending = false;
+                        unit->SetBlockedVoicePending(false);
                         CGameObject* lvl = unit->m_object;
 
                         RECT* hit = g_gameReg->World()->GetLevel()->m_mainPlane->GetPlaneViewRect();
@@ -2741,7 +2736,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         }
         return 1;
     }
-    unit->m_blockedVoicePending = true;
+    unit->SetBlockedVoicePending(true);
     return 0;
 }
 
@@ -3352,7 +3347,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (unit == NULL) {
         return 0;
     }
-    unit->m_aiType = AI_BATTLEZ_PATH;
+    unit->SetAiType(AI_BATTLEZ_PATH);
     UNSET_COORD(unit->m_arrivalCell);
     unit->SetBattlezTargetPlayerIndex(-1);
     UNSET_COORD(unit->m_unusedBattleCell);
@@ -3361,7 +3356,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     unit->SetDefenderPickupType(PICKUP_NONE);
     unit->SetDefenderQueuePosition(0);
     unit->ResetDwell();
-    unit->m_blockedVoicePending = true;
+    unit->SetBlockedVoicePending(true);
     unit->SetBattlezTask(BZTASK_ADVANCE);
     return 1;
 }

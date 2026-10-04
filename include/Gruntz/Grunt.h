@@ -518,6 +518,14 @@ public:
     RECT m_toyUseRect;
     RECT m_toyUseExclusionRect;
     EnemyAiType m_aiType;
+
+    EnemyAiType GetAiType() const {
+        return m_aiType;
+    }
+
+    void SetAiType(EnemyAiType type) {
+        m_aiType = type;
+    }
     GruntAiState m_aiState;
     BattlezTask m_battlezTask;
     i32 m_defenderRadius;
@@ -624,6 +632,14 @@ public:
     u32 m_toyTileIndex;
     i32 m_warpstoneAnchorIndex;
     b32 m_blockedVoicePending;
+
+    b32 IsBlockedVoicePending() const {
+        return m_blockedVoicePending;
+    }
+
+    void SetBlockedVoicePending(b32 pending) {
+        m_blockedVoicePending = pending;
+    }
 
     CAniElement* m_poseWalk;
     CAniElement* m_poseAttack[2];

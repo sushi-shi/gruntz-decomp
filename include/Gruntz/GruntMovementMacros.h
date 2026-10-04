@@ -47,10 +47,6 @@
     m_defenderPx.m_x = m_lastTilePx.m_x;                                                           \
     m_defenderPx.m_y = m_lastTilePx.m_y;
 
-#define COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER                                                   \
-    this->m_defenderPx.m_x = this->m_lastTilePx.m_x;                                               \
-    this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
-
 #define SET_GRUNT_ARRIVAL_TARGET(target)                                                           \
     SetEntrancePos(1, 1);                                                                          \
     m_arrivalCell.m_x = target->GetPlayerIndex();                                                  \
