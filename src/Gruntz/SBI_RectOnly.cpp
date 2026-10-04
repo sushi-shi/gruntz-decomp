@@ -112,7 +112,7 @@ i32 CStatusBarMgr::Initialize(CDDrawSurfaceMgr* world) {
         return 0;
     }
     m_selectedGruntOvenSlot = -1;
-    m_pendingHlRow = STATUS_HL_ROW_NONE;
+    m_selectedResourceRow = STATUS_HL_ROW_NONE;
     m_resourceDeliveryActive = false;
     m_pendingResourceDeliveries = 0;
     m_levelOverlayActive = false;
@@ -2895,42 +2895,42 @@ void CStatusBarMgr::FinishGruntPlacement(b32 placed) {
 }
 
 RVA(0x00106820, 0xa8)
-void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
-    if (m_pendingHlRow == STATUS_HL_ROW_NONE) {
+void CStatusBarMgr::FinishResourcePlacement(i32 consumed, i32 pickupValue) {
+    if (m_selectedResourceRow == STATUS_HL_ROW_NONE) {
         return;
     }
-    PickupType item = static_cast<PickupType>(key);
-    i32 group;
+    PickupType item = static_cast<PickupType>(pickupValue);
+    i32 category;
     if (item >= PICKUP_BRICKZ_FIRST) {
-        group = 2;
+        category = 2;
     } else {
-        group = (item >= PICKUP_TOYZ_FIRST);
+        category = (item >= PICKUP_TOYZ_FIRST);
     }
-    if (shift != 0) {
-        ClearHlCell(group, m_pendingHlRow);
-        for (i32 row = IDX(m_pendingHlRow) - 1; row >= 0; row--) {
-            CSbiHlRow* cell = &m_resourceSlots[row + group * 4];
+    if (consumed != 0) {
+        ClearResourceSlot(category, m_selectedResourceRow);
+        for (i32 row = IDX(m_selectedResourceRow) - 1; row >= 0; row--) {
+            CSbiHlRow* cell = &m_resourceSlots[row + category * 4];
             if (cell->m_state == IDX(HLROW_IDLE_CYCLE)) {
-                m_resourceSlots[row + group * 4 + 1].m_state = IDX(HLROW_IDLE_CYCLE);
+                m_resourceSlots[row + category * 4 + 1].m_state = IDX(HLROW_IDLE_CYCLE);
                 cell[1].m_value = cell->m_value;
                 cell->m_state = IDX(HLROW_OFF);
                 cell->m_value = 0;
             }
         }
     } else {
-        m_resourceSlots[IDX(m_pendingHlRow) + group * 4].m_value = key;
+        m_resourceSlots[IDX(m_selectedResourceRow) + category * 4].m_value = pickupValue;
     }
-    NotifyAllSlots();
-    m_pendingHlRow = STATUS_HL_ROW_NONE;
+    RefreshResourceImages();
+    m_selectedResourceRow = STATUS_HL_ROW_NONE;
 }
 
 RVA(0x00106900, 0x8d)
 void CStatusBarMgr::InitTabRects() {
     for (i32 i = 0; i < 4; i++) {
         StatusBarHighlightRow row = static_cast<StatusBarHighlightRow>(i);
-        ClearHlCell(0, row);
-        ClearHlCell(1, row);
-        ClearHlCell(2, row);
+        ClearResourceSlot(0, row);
+        ClearResourceSlot(1, row);
+        ClearResourceSlot(2, row);
     }
     m_machinePhase = BELT_IDLE;
     m_machineItem = 0;
@@ -2938,19 +2938,19 @@ void CStatusBarMgr::InitTabRects() {
     m_fallingItem = 0;
     SetRect(&m_fallingItemRect, 0, 0, 1, 1);
     SetRect(&m_machineItemRect, 0x49, 0xd7, 0x61, 0xef);
-    m_pendingHlRow = STATUS_HL_ROW_NONE;
+    m_selectedResourceRow = STATUS_HL_ROW_NONE;
 }
 
 RVA(0x001069c0, 0x2e)
-void CStatusBarMgr::ClearHlCell(i32 group, StatusBarHighlightRow row) {
-    i32 idx = IDX(row) + group * 4;
+void CStatusBarMgr::ClearResourceSlot(i32 category, StatusBarHighlightRow row) {
+    i32 idx = IDX(row) + category * 4;
     m_resourceSlots[idx].m_state = IDX(HLROW_OFF);
     m_resourceSlots[idx].m_value = 0;
-    NotifyAllSlots();
+    RefreshResourceImages();
 }
 
 RVA(0x00106a00, 0xbf)
-void CStatusBarMgr::NotifyAllSlots() {
+void CStatusBarMgr::RefreshResourceImages() {
     if (m_resourceMainBackground) {
         m_resourceMainBackground->RequestRedraw();
     }
@@ -2989,26 +2989,26 @@ void CStatusBarMgr::NotifyAllSlots() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00106af0, 0x37)
-i32 CStatusBarMgr::SetHlCellByTier(i32 handle, i32 group) {
-    PickupType item = static_cast<PickupType>(handle);
-    i32 row;
+i32 CStatusBarMgr::AddResourceToRow(i32 pickupValue, i32 row) {
+    PickupType item = static_cast<PickupType>(pickupValue);
+    i32 category;
     if (item >= PICKUP_BRICKZ_FIRST) {
-        row = 2;
+        category = 2;
     } else {
-        row = (item >= PICKUP_TOYZ_FIRST);
+        category = (item >= PICKUP_TOYZ_FIRST);
     }
-    return SetHlCell(row, handle, group);
+    return AddResourceToSlot(category, pickupValue, row);
 }
 
 RVA(0x00106b40, 0x44)
-i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
-    i32 idx = group + row * 4;
+i32 CStatusBarMgr::AddResourceToSlot(i32 category, i32 pickupValue, i32 row) {
+    i32 idx = row + category * 4;
     if (m_resourceSlots[idx].m_state != IDX(HLROW_OFF)) {
         return 0;
     }
-    m_resourceSlots[idx].m_value = handle;
+    m_resourceSlots[idx].m_value = pickupValue;
     m_resourceSlots[idx].m_state = IDX(HLROW_IDLE_CYCLE);
-    NotifyAllSlots();
+    RefreshResourceImages();
     return 1;
 }
 
@@ -3133,7 +3133,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             }
             if (m_machineItemRect.top >= row * 0x20 + 0x13e) {
                 PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
-                SetHlCell(col, m_machineItem, row);
+                AddResourceToSlot(col, m_machineItem, row);
                 PrepareNextResource();
             }
             refreshFlag = 1;
@@ -3157,7 +3157,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             w->m_rect = rc;
         }
         if (refreshFlag) {
-            NotifyAllSlots();
+            RefreshResourceImages();
         }
     }
 }
@@ -3185,7 +3185,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
         rc.right = x + rr;
         n->m_rect = rc;
     }
-    NotifyAllSlots();
+    RefreshResourceImages();
     return 1;
 }
 
@@ -3234,13 +3234,13 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     }
 
     if (m_fallingItemSprite != NULL && stepped) {
-        NotifyAllSlots();
+        RefreshResourceImages();
     }
 }
 
 RVA(0x00107920, 0xb7)
 i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
-    if (m_pendingHlRow == STATUS_HL_ROW_NONE) {
+    if (m_selectedResourceRow == STATUS_HL_ROW_NONE) {
         return 0;
     }
     CStatusBarItem* r = HitTestItems(screenX, screenY);
@@ -3264,7 +3264,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     i32 localX = cx - m_barRect.left;
     i32 localY = 0x1b3 - m_barRect.top;
     UpdateFallingItemStatusBar(itemFrame, localX, localY);
-    EnterHlRow(1, itemFrame);
+    FinishResourcePlacement(1, itemFrame);
     return 1;
 }
 
@@ -3443,7 +3443,7 @@ i32 CStatusBarMgr::PrepareNextResource() {
         );
         m_machineItemSprite->m_rect = rc;
     }
-    NotifyAllSlots();
+    RefreshResourceImages();
     i32 c = m_pendingResourceDeliveries;
     m_resourceDeliveryActive = false;
     if (c > 0) {
@@ -3687,7 +3687,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_reserved350, sizeof(m_reserved350));
     s->Write(&m_gameplayControlsDisabled, sizeof(m_gameplayControlsDisabled));
     s->Write(&m_selectedGruntOvenSlot, sizeof(m_selectedGruntOvenSlot));
-    s->Write(&m_pendingHlRow, sizeof(m_pendingHlRow));
+    s->Write(&m_selectedResourceRow, sizeof(m_selectedResourceRow));
     s->Write(&m_activeTab, sizeof(m_activeTab));
     s->Write(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
     s->Write(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
@@ -3775,7 +3775,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_reserved350, sizeof(m_reserved350));
     ar->Read(&m_gameplayControlsDisabled, sizeof(m_gameplayControlsDisabled));
     ar->Read(&m_selectedGruntOvenSlot, sizeof(m_selectedGruntOvenSlot));
-    ar->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
+    ar->Read(&m_selectedResourceRow, sizeof(m_selectedResourceRow));
     ar->Read(&m_activeTab, sizeof(m_activeTab));
     ar->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
     ar->Read(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
@@ -4419,9 +4419,9 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
         i32* slot = &m_resourceSlots[rowIndex].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
             HiCueTimed();
-            m_pendingHlRow = row;
+            m_selectedResourceRow = row;
             *slot = 0;
-            NotifyAllSlots();
+            RefreshResourceImages();
             return 1;
         }
     }
@@ -4437,9 +4437,9 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
         i32* slot = &m_resourceSlots[rowIndex + 4].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
             HiCueTimed();
-            m_pendingHlRow = row;
+            m_selectedResourceRow = row;
             *slot = 0;
-            NotifyAllSlots();
+            RefreshResourceImages();
             return 1;
         }
     }
@@ -4455,9 +4455,9 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
         i32* slot = &m_resourceSlots[rowIndex + 8].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(handle)) {
             HiCueTimed();
-            m_pendingHlRow = row;
+            m_selectedResourceRow = row;
             *slot = 0;
-            NotifyAllSlots();
+            RefreshResourceImages();
             return 1;
         }
     }
@@ -4483,9 +4483,9 @@ i32 CStatusBarMgr::SelectGruntOvenForPlacement(i32 idx) {
 }
 
 RVA(0x0010bb50, 0x24)
-void CStatusBarMgr::ReportTab(i32 tab) {
-    UpdateFallingItemStatusBar(tab, 0x4f, 0x1b3);
-    EnterHlRow(1, tab);
+void CStatusBarMgr::DiscardSelectedResource(i32 pickupValue) {
+    UpdateFallingItemStatusBar(pickupValue, 0x4f, 0x1b3);
+    FinishResourcePlacement(1, pickupValue);
 }
 
 RVA(0x0010bb90, 0x3f)

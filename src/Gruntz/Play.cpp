@@ -2298,7 +2298,7 @@ recorder_place:
         goto tail_default2;
     }
     i32 st = this->m_selectedCursorId;
-    StatusBarHighlightRow ph = this->m_statusBar->m_pendingHlRow;
+    StatusBarHighlightRow ph = this->m_statusBar->m_selectedResourceRow;
     i32 lvl;
     if (st >= 0x22) {
         lvl = 2;
@@ -2307,11 +2307,11 @@ recorder_place:
     }
     this->m_pickupPlacementActive = false;
     if (vk == VK_DELETE || vk == VK_DECIMAL) {
-        statusBar->ReportTab(st);
+        statusBar->DiscardSelectedResource(st);
         this->SelectCursor(0);
         return 1;
     }
-    statusBar->EnterHlRow(0, st);
+    statusBar->FinishResourcePlacement(0, st);
     this->SelectCursor(0);
     if (lvl == 0) {
         if (ph == STATUS_HL_ROW_CATEGORY) {
@@ -2637,7 +2637,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
         waypoint_cancel:
             m_pickupPlacementActive = false;
-            m_statusBar->EnterHlRow(0, m_selectedCursorId);
+            m_statusBar->FinishResourcePlacement(0, m_selectedCursorId);
             SelectCursor(0);
             return 1;
         }
@@ -4483,7 +4483,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (player == static_cast<u32>(g_curPlayer)) {
                 m_pickupPlacementActive = false;
-                m_statusBar->EnterHlRow(sel, m_selectedCursorId);
+                m_statusBar->FinishResourcePlacement(sel, m_selectedCursorId);
                 SelectCursor(0);
             }
             return r;
@@ -6969,7 +6969,7 @@ i32 CPlay::CancelCursorAction() {
         i32 cursorId = m_selectedCursorId;
         CStatusBarMgr* statusBar = m_statusBar;
         m_pickupPlacementActive = false;
-        statusBar->EnterHlRow(0, cursorId);
+        statusBar->FinishResourcePlacement(0, cursorId);
         SelectCursor(0);
         changed = true;
     }

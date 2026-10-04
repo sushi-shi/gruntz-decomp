@@ -127,9 +127,9 @@ public:
     void SetLeftRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void SetRightRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void FinishGruntPlacement(b32 placed);
-    void ClearHlCell(i32 group, StatusBarHighlightRow row);
-    i32 SetHlCell(i32 row, i32 handle, i32 group);
-    i32 SetHlCellByTier(i32 handle, i32 group);
+    void ClearResourceSlot(i32 category, StatusBarHighlightRow row);
+    i32 AddResourceToSlot(i32 category, i32 pickupValue, i32 row);
+    i32 AddResourceToRow(i32 pickupValue, i32 row);
     i32 ConsumeReadyGrunt();
     void LockDestructButton(i32 resetWarningAnimation);
 
@@ -162,7 +162,7 @@ public:
     void UpdateGruntOvenStatusBar();
     void TickGruntWell();
     void UpdateChipGrinderStatusBar();
-    void NotifyAllSlots();
+    void RefreshResourceImages();
     void UpdateDestructWarningAnimation();
     i32 CreateCollapsedSprite();
     i32 SetTabState(SbiCommandId cmd, SbiMenuItemState state);
@@ -203,7 +203,7 @@ public:
         m_tabLists[tab].AddTail(item);
     }
     i32 ClearUnitSample(i32 unitIndex);
-    void EnterHlRow(i32 row, i32 group);
+    void FinishResourcePlacement(i32 consumed, i32 pickupValue);
     void InitTabRects();
     i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
     void CloseLevelOverlay();
@@ -224,7 +224,7 @@ public:
     i32 SetCollapsedSpritePosition(i32 x, i32 y);
     i32 HitTestCollapsedSprite(i32 x, i32 y);
     i32 QueuePickupReward(i32 pickupValue, i32 score);
-    void ReportTab(i32 tab);
+    void DiscardSelectedResource(i32 pickupValue);
 
     i32 DockStatusBarLeft();
     i32 HideStatusBar();
@@ -294,7 +294,7 @@ public:
     b32 m_gameplayControlsDisabled;
     b32 m_tabsBuilt;
     i32 m_selectedGruntOvenSlot;
-    StatusBarHighlightRow m_pendingHlRow;
+    StatusBarHighlightRow m_selectedResourceRow;
     CStatusBarItem* m_resourceMainBackground;
     CStatusBarItem* m_resourceMachineFramework;
     CStatusBarItem* m_resourceUpperBackground;
