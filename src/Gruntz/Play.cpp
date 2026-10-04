@@ -320,7 +320,7 @@ void CPlay::ReleaseResources() {
         t++;
     } while (t < 4);
     if (m_mgr && m_mgr->ChatLog()) {
-        m_mgr->ChatLog()->FreeNodes();
+        m_mgr->ChatLog()->ClearMessages();
     }
     SAFE_DELETE(m_statusBar)
     CChatBox* hit = m_chatBox;
@@ -553,7 +553,7 @@ i32 CPlay::Render() {
             m_minimap->Draw(m_world->GetDrawTarget()->GetBackPair(), &rc);
         }
 
-        m_mgr->ChatLog()->Scroll(static_cast<i32>(g_frameDelta));
+        m_mgr->ChatLog()->AdvanceMessageTimer(static_cast<i32>(g_frameDelta));
         CDDrawSurfacePair* view =
             static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
         if (view == NULL) {
@@ -1439,7 +1439,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             g_playActive = true;
             self->m_renderDisabled = false;
             self->m_mgr->CheckSavedMode();
-            self->m_mgr->ChatLog()->FreeNodes();
+            self->m_mgr->ChatLog()->ClearMessages();
         }
         return 1;
     }
@@ -1782,7 +1782,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (rec->m_inputActive != false) {
             rec->HandleTextInputKey('\r', lparam);
         } else {
-            rec->m_fontConfig->EndInput();
+            rec->m_gameText->EndInput();
             rec->m_inputActive = true;
             this->m_chatBox->HandleTextInputKey('\r', lparam);
         }
@@ -1795,7 +1795,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         CChatBox* rec = this->m_chatBox;
         if (rec->m_inputActive != false) {
             this->FlushPendingOps();
-            this->m_chatBox->m_fontConfig->EndInput();
+            this->m_chatBox->m_gameText->EndInput();
             this->m_chatBox->m_inputActive = false;
             return 1;
         }

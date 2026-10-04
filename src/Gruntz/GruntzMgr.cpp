@@ -670,8 +670,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     CheatMgr()->RegisterCheats();
-    m_chatLog = new CFontConfig;
-    if (!ChatLog()->LoadFontConfig(0x1388, 0xbb8)) {
+    m_chatLog = new CGameText;
+    if (!ChatLog()->Initialize(0x1388, 0xbb8)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x41a);
         return 0;
     }
@@ -2130,11 +2130,11 @@ i32 CGruntzMgr::IsStandardMode() {
 
 RVA(0x0008f9c0, 0x1d)
 i32 CGruntzMgr::AppendChatMessage(char* msg) {
-    CFontConfig* log = m_chatLog;
+    CGameText* log = m_chatLog;
     if (log == NULL) {
         return 0;
     }
-    return log->AddItem(msg, FONT_ITEM_FLAGS_NONE, 0x11);
+    return log->AddMessage(msg, GAME_TEXT_FLAGS_NONE, 0x11);
 }
 
 RVA(0x0008f9f0, 0x3e)
@@ -3309,7 +3309,7 @@ i32 CGruntzMgr::Quicksave() {
         EnterModalUI("ERROR - Cannot Save Game.");
         return 1;
     }
-    ChatLog()->AddItem("Game Quicksaved successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
+    ChatLog()->AddMessage("Game Quicksaved successfully.", GAME_TEXT_FLAGS_NONE, 0x11);
     return 1;
 }
 
@@ -3327,7 +3327,7 @@ i32 CGruntzMgr::Quickload() {
             return 1;
         }
         PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
-        ChatLog()->AddItem("Game Quickloaded successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
+        ChatLog()->AddMessage("Game Quickloaded successfully.", GAME_TEXT_FLAGS_NONE, 0x11);
         return 1;
     }
     return RunLoadGameDialog();

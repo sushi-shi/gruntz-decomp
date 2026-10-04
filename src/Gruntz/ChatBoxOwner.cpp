@@ -32,9 +32,9 @@
 #include <strstrea.h>
 
 RVA(0x000204e0, 0x19)
-i32 CChatBox::Attach(CDDrawSurfaceMgr* world, CFontConfig* fontConfig) {
+i32 CChatBox::Attach(CDDrawSurfaceMgr* world, CGameText* gameText) {
     m_world = world;
-    m_fontConfig = fontConfig;
+    m_gameText = gameText;
     return m_attached = true;
 }
 
@@ -56,23 +56,23 @@ void CChatBox::Configure(ChatBoxLayout layout) {
         tagSIZE screenSize = g_gameReg->m_modeSize;
         m_originY = screenSize.cy - 66;
     }
-    m_fontConfig->m_reserved34 = 1;
+    m_gameText->m_reserved34 = 1;
 }
 
 // @early-stop
 RVA(0x000205c0, 0x741)
 void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
-    if (m_fontConfig->HandleInputChar(charCode, keyData) == 0) {
+    if (m_gameText->HandleInputChar(charCode, keyData) == 0) {
         return;
     }
 
     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
         CMulti* multi = static_cast<CMulti*>(g_gameReg->m_curState);
-        char* input = const_cast<char*>(static_cast<const char*>(m_fontConfig->GetInputText()));
+        char* input = const_cast<char*>(static_cast<const char*>(m_gameText->GetInputText()));
         multi->BroadcastChatLine(input, 1, 1, NULL);
     } else {
-        if (m_fontConfig->GetInputText().Left(17).CompareNoCase("Enable Cheatzfile") == 0) {
-            CString args = m_fontConfig->GetInputText();
+        if (m_gameText->GetInputText().Left(17).CompareNoCase("Enable Cheatzfile") == 0) {
+            CString args = m_gameText->GetInputText();
             args = args.Right(args.GetLength() - 18);
             i32 length = args.GetLength();
             i32 split = args.Find(' ');
@@ -134,10 +134,10 @@ void CChatBox::HandleTextInputKey(i32 charCode, i32 keyData) {
                 }
             }
         } else {
-            g_gameReg->CheatMgr()->CheckCode(m_fontConfig->GetInputText());
+            g_gameReg->CheatMgr()->CheckCode(m_gameText->GetInputText());
         }
     }
-    m_fontConfig->EndInput();
+    m_gameText->EndInput();
     m_inputActive = false;
 }
 
@@ -188,7 +188,7 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target) {
             self->m_originX + 0x267,
             self->m_originY + 0x37
         );
-        self->m_fontConfig->RenderInputText(hdc, 0x21b, &rect);
+        self->m_gameText->RenderInputText(hdc, 0x21b, &rect);
     } else {
         CRect rect(
             self->m_originX + 0x4c,
@@ -196,7 +196,7 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target) {
             self->m_originX + 0x1c7,
             self->m_originY + 0x37
         );
-        self->m_fontConfig->RenderInputText(hdc, 0x17b, &rect);
+        self->m_gameText->RenderInputText(hdc, 0x17b, &rect);
     }
     surface->GetDirectDrawSurface()->ReleaseDC(hdc);
     return 1;

@@ -60,7 +60,7 @@ class CLightFxMgr;
 
 class CRezMgr;
 class CRegMgr;
-class CFontConfig;
+class CGameText;
 class CTriggerMgr;
 class CPlay;
 class CGameStats;
@@ -331,7 +331,7 @@ public:
         return m_resourceArchive;
     }
 
-    CFontConfig* ChatLog() {
+    CGameText* ChatLog() {
         return m_chatLog;
     }
 
@@ -358,7 +358,7 @@ public:
 
     CSaveGame* m_saveGame;
 
-    CFontConfig* m_chatLog;
+    CGameText* m_chatLog;
     CVoiceManager* m_voiceManager;
 
     // @identity-TODO: initialized to zero; no reader identifies this word.

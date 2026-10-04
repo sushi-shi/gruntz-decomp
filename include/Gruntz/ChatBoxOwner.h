@@ -15,13 +15,13 @@ GZ_ENUM_END(ChatBoxLayout)
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;
 
-class CFontConfig;
+class CGameText;
 
 class CChatBox {
 public:
     CChatBox() {
         m_world = NULL;
-        m_fontConfig = NULL;
+        m_gameText = NULL;
         m_attached = false;
         m_inputActive = false;
         m_originX = 0;
@@ -29,7 +29,7 @@ public:
         m_layout = CHATBOX_WITH_RIGHT_STATUSBAR;
     }
 
-    i32 Attach(CDDrawSurfaceMgr* world, CFontConfig* fontConfig);
+    i32 Attach(CDDrawSurfaceMgr* world, CGameText* gameText);
 
     void Deactivate();
 
@@ -46,7 +46,7 @@ public:
     ChatBoxLayout m_layout;
     b32 m_attached;
     b32 m_inputActive;
-    CFontConfig* m_fontConfig;
+    CGameText* m_gameText;
 
     CDDrawSurfaceMgr* m_world;
 };

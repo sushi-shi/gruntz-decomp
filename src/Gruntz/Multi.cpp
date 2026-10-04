@@ -336,7 +336,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     g_lastNow = 0;
     g_frameTime = 0;
     m_savedClock = 0;
-    NetGameMgr()->ChatLog()->FreeNodes();
+    NetGameMgr()->ChatLog()->ClearMessages();
     m_connected = true;
     return 1;
 }
@@ -496,7 +496,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_lastFrameSyncTime = timeGetTime();
     m_processedCommandTick = m_session->m_commandTick - 1;
     m_outOfSync = false;
-    Mgr()->ChatLog()->FreeNodes();
+    Mgr()->ChatLog()->ClearMessages();
     m_session->ResetRound();
     Mgr()->VoiceMgr()->PauseAllVoices();
     return 1;
@@ -725,7 +725,7 @@ void CMulti::RenderGameFrame() {
             &rc
         );
     }
-    Mgr()->ChatLog()->Scroll(g_frameDelta);
+    Mgr()->ChatLog()->AdvanceMessageTimer(g_frameDelta);
     CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
     if (h == NULL) {
         return;
@@ -1628,8 +1628,8 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (player == NULL) {
                 return 1;
             }
-            (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
-                ->AddItem(text, FONT_ITEM_COLORED | FONT_ITEM_SHADOW, IDX(player->GetColor()));
+            (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
+                ->AddMessage(text, GAME_TEXT_COLORED | GAME_TEXT_SHADOW, IDX(player->GetColor()));
             SoundCueRegistry* registry = m_world->SoundRegistry();
             if (registry->m_silentMode != false) {
                 break;
@@ -1871,8 +1871,8 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
                     const_cast<char*>(static_cast<const char*>(result))
                 );
             } else {
-                (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
-                    ->AddItem(result, FONT_ITEM_FLAGS_NONE, 0x11);
+                (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
+                    ->AddMessage(result, GAME_TEXT_FLAGS_NONE, 0x11);
             }
             break;
         }
@@ -1951,8 +1951,8 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     SetPlayerColorAvailable(slot->GetColor(), true);
 
     CString line = slot->GetName() + " has left the game.";
-    (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
-        ->AddItem(const_cast<char*>(static_cast<const char*>(line)), FONT_ITEM_SHADOW, 0x11);
+    (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
+        ->AddMessage(const_cast<char*>(static_cast<const char*>(line)), GAME_TEXT_SHADOW, 0x11);
 
     if (player != NULL) {
         Network()->RemovePlayer(player);
@@ -2390,8 +2390,8 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
         if (player == NULL) {
             return 0;
         }
-        (static_cast<CFontConfig*>(NetGameMgr()->ChatLog()))
-            ->AddItem(line, FONT_ITEM_COLORED | FONT_ITEM_SHADOW, IDX(player->GetColor()));
+        (static_cast<CGameText*>(NetGameMgr()->ChatLog()))
+            ->AddMessage(line, GAME_TEXT_COLORED | GAME_TEXT_SHADOW, IDX(player->GetColor()));
     }
 
     g_netChatPacket.m_messageId = STAT_CHAT;

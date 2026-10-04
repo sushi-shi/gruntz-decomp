@@ -86,12 +86,12 @@ i32 CExitTrigger::AdvanceAnim() {
             GruntzPlayer* loser = &g_gameReg->m_players[owningPlayer];
             GruntzPlayer* winner = &g_gameReg->m_players[hitPlayerIndex];
             if (loser != NULL) {
-                g_gameReg->ChatLog()->AddItem(
+                g_gameReg->ChatLog()->AddMessage(
                     static_cast<const char*>(
                         loser->GetName() + " was conquered by " + winner->GetName()
                             + DATA_COMPGEN(0x0020d168, "!")
                         ),
-                        FONT_ITEM_FLAGS_NONE,
+                        GAME_TEXT_FLAGS_NONE,
                         0x11
                 );
                 loser->m_clearedRound = true;
