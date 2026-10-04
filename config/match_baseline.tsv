@@ -2044,13 +2044,7 @@ gruntcombat	?ApplyCombatHitEffects@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	86.1670	8
 gruntcombat	?BeginAttack@CGrunt@@QAEHHH@Z	98.7500	98.7500	14	b814f4a251ce	0x5b570	98.7500	
 gruntcombat	?LoseMovementTool@CGrunt@@QAEHXZ	100.0000	100.0000	13	e7c9db0a2c59	0x57890	100.0000	
 gruntcombat	?CastSpell@CGrunt@@QAEHH@Z	100.0000	100.0000	27	e57d4b9c7433	0x57100	100.0000	
-<<<<<<< HEAD
-gruntcombat	?CommitNeighbor@CGrunt@@QAEHHHHH@Z	96.6270	96.6270	23	4a0a304e7dd5	0x5b050	96.6270	
-||||||| parent of e6b90f7eb (refactor: identify remembered grunt attack targets and actions)
-gruntcombat	?CommitNeighbor@CGrunt@@QAEHHHHH@Z	96.6270	96.6270	22	5e0335ecddfa	0x5b050	96.6270	
-=======
-gruntcombat	?AttackGrunt@CGrunt@@QAEHHHHH@Z	96.6270	96.6270	22	5e0335ecddfa	0x5b050	96.6270	
->>>>>>> e6b90f7eb (refactor: identify remembered grunt attack targets and actions)
+gruntcombat	?AttackGrunt@CGrunt@@QAEHHHHH@Z	96.6270	96.6270	23	4a0a304e7dd5	0x5b050	96.6270	
 gruntcombat	?ComputeFacing@CGrunt@@QAEXN@Z	100.0000	100.0000	3	b238dcf86fb0	0x57060	100.0000	
 gruntcombat	?DestroyAnims@CGrunt@@QAEXXZ	100.0000	100.0000	3	de0bd26e422a	0x57d80	100.0000	
 gruntcombat	?DispatchGruntLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	8	a5ba36b87279	0x5baf0	100.0000	
@@ -2095,16 +2089,8 @@ gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f01
 gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	97.3366	97.2871	2	32af34d26f5f	0x62b70	97.3366	
 gruntentrancearrival	?ResetIdleAnimation@CGrunt@@QAEXHHH@Z	97.6858	97.6858	26	9570178849b3	0x62e10	97.6858	
 gruntentrancearrival	?StartAttackIdleAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	9	b421cb696624	0x616e0	100.0000	
-<<<<<<< HEAD
 gruntentrancearrival	?StartExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	26	6d1902116155	0x641b0	100.0000	
-gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5705	91.5705	23	a1335f49c9ad	0x61940	91.5951	
-||||||| parent of e6b90f7eb (refactor: identify remembered grunt attack targets and actions)
-gruntentrancearrival	?StartExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	25	365d02b9eae0	0x641b0	100.0000	
-gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5705	91.5705	21	4f6449bf12b2	0x61940	91.5951	
-=======
-gruntentrancearrival	?StartExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	25	365d02b9eae0	0x641b0	100.0000	
-gruntentrancearrival	?StartTargetedAttackAnimation@CGrunt@@QAEHHH@Z	91.5705	91.5705	21	4f6449bf12b2	0x61940	91.5951	
->>>>>>> e6b90f7eb (refactor: identify remembered grunt attack targets and actions)
+gruntentrancearrival	?StartTargetedAttackAnimation@CGrunt@@QAEHHH@Z	91.5705	91.5705	23	a1335f49c9ad	0x61940	91.5951	
 gruntentrancearrival	?StartRangedAttackAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	9	e3ea68ac088f	0x61bc0	100.0000	
 gruntentrancearrival	?StartToolUseAnimation@CGrunt@@QAEHHH@Z	95.3490	95.3490	35	a1a5555718e7	0x65630	96.2980	
 gruntentrancearrival	?StartWalkAnimation@CGrunt@@QAEHXZ	98.2778	98.2778	24	3eaffb363a4e	0x637a0	98.2778	

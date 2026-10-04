@@ -1431,16 +1431,8 @@ i32 CGrunt::AttackGrunt(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPx
         m_arrivalPending = false;
     }
     m_inCombat = true;
-<<<<<<< HEAD
-    nb->CreateHealthSprite();
-    nb->ArmCombatTimeout();
-||||||| parent of e6b90f7eb (refactor: identify remembered grunt attack targets and actions)
-    nb->CreateHealthSprite();
-    ArmGruntCombatTimeout(nb);
-=======
     target->CreateHealthSprite();
-    ArmGruntCombatTimeout(target);
->>>>>>> e6b90f7eb (refactor: identify remembered grunt attack targets and actions)
+    target->ArmCombatTimeout();
     HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
     i32 stamina = m_stamina;
     SetAttackTargetIdentity(targetPlayerIndex, targetUnitIndex);

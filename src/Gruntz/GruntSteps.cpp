@@ -1056,7 +1056,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
     ar->Write(&m_aiType, sizeof(m_aiType));
     ar->Write(&m_aiState, sizeof(m_aiState));
-    ar->Write(&m_battleState, sizeof(m_battleState));
+    ar->Write(&m_battlezTask, sizeof(m_battlezTask));
     ar->Write(&m_defenderRadius, sizeof(m_defenderRadius));
     ar->Write(&m_defenderQueuePosition, sizeof(m_defenderQueuePosition));
     ar->Write(&m_defenderPickupType, sizeof(m_defenderPickupType));
@@ -1103,7 +1103,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_powerupDuration, sizeof(m_powerupDuration));
     ar->Write(&m_warpstoneAnchorIndex, sizeof(m_warpstoneAnchorIndex));
     ar->Write(&m_lowStaminaCued, sizeof(m_lowStaminaCued));
-    ar->Write(&m_targetTeam, sizeof(m_targetTeam));
+    ar->Write(&m_battlezTargetPlayerIndex, sizeof(m_battlezTargetPlayerIndex));
     ar->Write(&m_arrivalTargetPx, sizeof(m_arrivalTargetPx));
 
     {

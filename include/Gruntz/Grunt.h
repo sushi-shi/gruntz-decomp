@@ -286,11 +286,11 @@ public:
     }
 
     BattlezTask GetBattlezTask() const {
-        return m_battleState;
+        return m_battlezTask;
     }
 
     void SetBattlezTask(BattlezTask task) {
-        m_battleState = task;
+        m_battlezTask = task;
     }
 
     i32 GetRouteBlockedMask() const {
@@ -317,12 +317,12 @@ public:
         m_dwell = 0;
     }
 
-    i32 GetTargetTeam() const {
-        return m_targetTeam;
+    i32 GetBattlezTargetPlayerIndex() const {
+        return m_battlezTargetPlayerIndex;
     }
 
-    void SetTargetTeam(i32 team) {
-        m_targetTeam = team;
+    void SetBattlezTargetPlayerIndex(i32 playerIndex) {
+        m_battlezTargetPlayerIndex = playerIndex;
     }
 
     void ResetToSeek();
@@ -518,11 +518,11 @@ public:
     RECT m_toyUseExclusionRect;
     EnemyAiType m_aiType;
     GruntAiState m_aiState;
-    BattlezTask m_battleState;
+    BattlezTask m_battlezTask;
     i32 m_defenderRadius;
     i32 m_defenderQueuePosition;
     PickupType m_defenderPickupType;
-    i32 m_targetTeam;
+    i32 m_battlezTargetPlayerIndex;
     i32 m_dwell;
     Coord m_arrivalCell;
     Coord m_unusedBattleCell; // invalidated with arrival/defender cells; never read

@@ -252,38 +252,38 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (aiState == AISTATE_RETURN) {
         return 1;
     }
-    i32 band = unit->GetTargetTeam();
-    if (band == -1) {
-        band = GetRandom(3);
-        if (band == m_playerIndex) {
-            band++;
+    i32 targetPlayerIndex = unit->GetBattlezTargetPlayerIndex();
+    if (targetPlayerIndex == -1) {
+        targetPlayerIndex = GetRandom(3);
+        if (targetPlayerIndex == m_playerIndex) {
+            targetPlayerIndex++;
         }
-        band = band % 4;
-        GruntzPlayer* slot = &m_ctx->GetPlayer(band);
+        targetPlayerIndex = targetPlayerIndex % 4;
+        GruntzPlayer* slot = &m_ctx->GetPlayer(targetPlayerIndex);
         if (slot->IsEliminated() != false) {
             return 1;
         }
         if (slot->IsActive() == false) {
             return 1;
         }
-        unit->SetTargetTeam(band);
+        unit->SetBattlezTargetPlayerIndex(targetPlayerIndex);
         UNSET_COORD(unit->m_defenderPx);
     } else {
-        GruntzPlayer* slot = &m_ctx->GetPlayer(band);
+        GruntzPlayer* slot = &m_ctx->GetPlayer(targetPlayerIndex);
         if (slot->IsEliminated() != false || slot->IsActive() == false) {
 
             unit->RecycleCoords();
             UNSET_COORD(unit->m_arrivalCell);
             UNSET_COORD(unit->m_defenderPx);
-            unit->SetTargetTeam(-1);
+            unit->SetBattlezTargetPlayerIndex(-1);
             unit->SetAiState(AISTATE_SEEK);
             unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
             unit->SetRoutePassableMask(g_battlezRoutePassableMask);
             return 1;
         }
     }
-    band = unit->GetTargetTeam();
-    CBattlezMapConfig* bundle = m_ctx->GetPlayer(band).GetBattlezConfig();
+    targetPlayerIndex = unit->GetBattlezTargetPlayerIndex();
+    CBattlezMapConfig* bundle = m_ctx->GetPlayer(targetPlayerIndex).GetBattlezConfig();
     Coord marker = bundle->GetBaseTile();
     if (unit->CoordsEmpty()) {
         switch (unit->GetAiState()) {
@@ -296,7 +296,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 if (gx == -1) {
                     if (bundle->GetAttackWaypointCount() != 0) {
                         Coord out;
-                        goal = *PickSpawnCoord(&out, unit, band);
+                        goal = *PickSpawnCoord(&out, unit, targetPlayerIndex);
                     }
                     unit->m_defenderPx = goal;
                     unit->SetAiState(AISTATE_BATTLEZ_ROUTE_TARGET);
