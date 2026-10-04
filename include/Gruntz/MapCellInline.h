@@ -21,7 +21,7 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     {                                                                                              \
         CGruntzMgr* tileRegistry = (reg);                                                          \
         CLevelPlane* plane = tileRegistry->m_world->GetLevel()->m_mainPlane;                       \
-        SET_WORKER_HOST_CELL(plane, tileX, tileY, tile);                                           \
+        SET_LEVEL_PLANE_CELL(plane, tileX, tileY, tile);                                           \
         tileRegistry->GetTileGrid()->ComputeCellFlags(tileX, tileY, tile);                         \
     }
 

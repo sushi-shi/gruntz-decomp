@@ -22,7 +22,7 @@ measured on a function whose two sides are otherwise the same code, and each
 cost a false row before it was separated out:
 
   WALK   the source register is a `*p++` cursor and C2 pre-loaded two steps of
-         the walk. CLevelPlane::ReadPlaneObjects reads its record with one
+         the walk. CLevelPlane::ReadObjectRecord reads its record with one
          `*p++` per member on both sides, and retail pairs the loads at exactly
          one of sixty sites.
   ARG    the source slots are INCOMING STACK ARGUMENTS nothing in the function
@@ -422,7 +422,7 @@ mov DWORD PTR [esi+0x17c],ebx
 mov ecx,esi
 mov DWORD PTR [esi+0x180],edi
 """
-#: ReadPlaneObjects: a `*p++` walk whose two steps C2 pre-loaded
+#: ReadObjectRecord: a `*p++` walk whose two steps C2 pre-loaded
 FIXTURE_WALK = """
 mov eax,DWORD PTR [ebp+0x0]
 mov ecx,DWORD PTR [ebp+0x4]

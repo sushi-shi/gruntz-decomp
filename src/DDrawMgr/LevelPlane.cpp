@@ -113,7 +113,7 @@ i32 CLevelPlane::Read(const WwdPlaneHeader* pd, const char* blockBase, LevelCoor
     m_fillFx.dwFillColor = pd->m_fillColor;
     m_flags = IDX(pd->m_flags);
 
-    APPLY_WORKER_HOST_BOUNDS(bounds);
+    APPLY_LEVEL_PLANE_VIEWPORT(bounds);
 
     m_scrollScaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scrollScaleY = static_cast<float>(m_movementYPercent) * 0.01f;
@@ -145,7 +145,7 @@ i32 CLevelPlane::Read(const WwdPlaneHeader* pd, const char* blockBase, LevelCoor
     UpdatePlaneViewRect();
 
     if (pd->m_objectsOffset != 0) {
-        if (RebuildPlanes(blockBase + pd->m_objectsOffset, pd->m_objectsCount) == 0) {
+        if (LoadObjectRecords(blockBase + pd->m_objectsOffset, pd->m_objectsCount) == 0) {
             return 0;
         }
     }
@@ -193,7 +193,7 @@ i32 CLevelPlane::InitGeometry(
     if (planeName != NULL) {
         strcpy(m_planeName, planeName);
     }
-    APPLY_WORKER_HOST_BOUNDS(viewportRect);
+    APPLY_LEVEL_PLANE_VIEWPORT(viewportRect);
     m_scrollScaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scrollScaleY = static_cast<float>(m_movementYPercent) * 0.01f;
     m_tileHandles = new i32[m_tileColumns * m_tileRows];
@@ -320,7 +320,7 @@ void CLevelPlane::UpdatePlaneViewRect() {
 
 RVA(0x00161e80, 0x79)
 void CLevelPlane::SetViewportRect(LevelCoordRect* coords) {
-    APPLY_WORKER_HOST_BOUNDS(coords);
+    APPLY_LEVEL_PLANE_VIEWPORT(coords);
 }
 
 RVA(0x00161f00, 0x75)
@@ -473,8 +473,8 @@ i32 CLevelPlane::Prune() {
 
 // @early-stop
 RVA(0x001628f0, 0x1fc)
-i32 CLevelPlane::RebuildPlanes(const char* base, i32 count) {
-    if (base == NULL) {
+i32 CLevelPlane::LoadObjectRecords(const char* recordCursor, i32 objectCount) {
+    if (recordCursor == NULL) {
         return 0;
     }
 
@@ -483,15 +483,15 @@ i32 CLevelPlane::RebuildPlanes(const char* base, i32 count) {
         m_spatialMgr = NULL;
     }
 
-    RECT rc;
-    SET_RECT_COMPONENTS(rc, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
+    RECT planeBounds;
+    SET_RECT_COMPONENTS(planeBounds, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
 
-    CDDrawSurfaceMgr* reg = OwnerMgr();
-    CDDrawChildGroup* activeGroup = reg->ChildGroup();
+    CDDrawSurfaceMgr* world = OwnerMgr();
+    CDDrawChildGroup* activeGroup = world->ChildGroup();
     if (activeGroup == NULL) {
         return 0;
     }
-    CGameLevel* level = reg->GetLevel();
+    CGameLevel* level = world->GetLevel();
     if (level == NULL) {
         return 0;
     }
@@ -525,7 +525,7 @@ i32 CLevelPlane::RebuildPlanes(const char* base, i32 count) {
     m_spatialMgr = newSpatialMgr;
     if (newSpatialMgr->Init(
             activeGroup,
-            &rc,
+            &planeBounds,
             defaultCellSize,
             largeCellSize,
             smallCellSize,
@@ -539,14 +539,14 @@ i32 CLevelPlane::RebuildPlanes(const char* base, i32 count) {
         return 0;
     }
 
-    for (i32 i = 0; i < count; i++) {
+    for (i32 objectIndex = 0; objectIndex < objectCount; objectIndex++) {
         // Byte-forced view of packed WWD storage.
 
-        i32 r = ReadPlaneObjects(reinterpret_cast<const PlaneObjectRecord*>(base));
-        if (r == 0) {
+        i32 bytesRead = ReadObjectRecord(reinterpret_cast<const PlaneObjectRecord*>(recordCursor));
+        if (bytesRead == 0) {
             return 0;
         }
-        base += r;
+        recordCursor += bytesRead;
     }
     return 1;
 }
@@ -564,60 +564,60 @@ static inline void ReadPlaneString(char* buf, const char*& cursor, i32 len) {
 // @early-stop
 RVA(0x00162af0, 0x806)
 
-i32 CLevelPlane::ReadPlaneObjects(const PlaneObjectRecord* src) {
-    if (src == NULL) {
+i32 CLevelPlane::ReadObjectRecord(const PlaneObjectRecord* record) {
+    if (record == NULL) {
         return 0;
     }
 
-    const i32* p = src->m_fields;
-    i32 nameLen = *p++;
-    i32 logicLen = *p++;
-    i32 imageSetLen = *p++;
-    i32 soundLen = *p++;
-    i32 x = *p++;
-    i32 y = *p++;
-    i32 z = *p++;
-    i32 gridIndex = *p++;
-    i32 id = src->m_id;
+    const i32* fields = record->m_fields;
+    i32 nameLen = *fields++;
+    i32 logicLen = *fields++;
+    i32 imageSetLen = *fields++;
+    i32 animationAndSoundNameLength = *fields++;
+    i32 x = *fields++;
+    i32 y = *fields++;
+    i32 z = *fields++;
+    i32 frameIndex = *fields++;
+    i32 objectId = record->m_id;
 
-    CWwdSpriteObject* obj = new CWwdSpriteObject(OwnerMgr(), id, 0);
+    CWwdSpriteObject* obj = new CWwdSpriteObject(OwnerMgr(), objectId, 0);
     if (obj == NULL) {
         return 0;
     }
 
-    const char* strCursor = src->m_strings;
-    char buf[0x400];
+    const char* strCursor = record->m_strings;
+    char stringBuffer[0x400];
 
-    ReadPlaneString(buf, strCursor, nameLen);
-    CString name(buf);
+    ReadPlaneString(stringBuffer, strCursor, nameLen);
+    CString name(stringBuffer);
 
-    ReadPlaneString(buf, strCursor, logicLen);
-    CString logic(buf);
+    ReadPlaneString(stringBuffer, strCursor, logicLen);
+    CString logicTypeName(stringBuffer);
 
-    ReadPlaneString(buf, strCursor, imageSetLen);
-    CString imageSet(buf);
+    ReadPlaneString(stringBuffer, strCursor, imageSetLen);
+    CString imageSetName(stringBuffer);
 
-    ReadPlaneString(buf, strCursor, soundLen);
-    CString sound(buf);
+    ReadPlaneString(stringBuffer, strCursor, animationAndSoundNameLength);
+    CString animationAndSoundName(stringBuffer);
 
     if (x < 0 || x >= m_planePixelWidth || y < 0 || y >= m_planePixelHeight) {
-        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+        i32 bytesRead = static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
         delete obj;
-        return used;
+        return bytesRead;
     }
 
-    if (logic.IsEmpty()) {
-        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+    if (logicTypeName.IsEmpty()) {
+        i32 bytesRead = static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
         delete obj;
-        return used;
+        return bytesRead;
     }
 
     CLogicRecord* logicTemplate =
-        OwnerMgr()->GetLogicRegistry()->FindTemplate(static_cast<const char*>(logic));
+        OwnerMgr()->GetLogicRegistry()->FindTemplate(static_cast<const char*>(logicTypeName));
     if (logicTemplate == NULL) {
-        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+        i32 bytesRead = static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
         delete obj;
-        return used;
+        return bytesRead;
     }
 
     if (obj->Setup(x, y, z, logicTemplate) == 0) {
@@ -627,45 +627,45 @@ i32 CLevelPlane::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE));
 
-    CLogicRecord* anim = obj->GetLogicRecord();
-    if (anim == NULL) {
+    CLogicRecord* logicRecord = obj->GetLogicRecord();
+    if (logicRecord == NULL) {
         delete obj;
         return 0;
     }
 
-    if (!imageSet.IsEmpty()) {
-        if (gridIndex != -1) {
-            obj->SetImageFrameByName(static_cast<const char*>(imageSet), gridIndex);
+    if (!imageSetName.IsEmpty()) {
+        if (frameIndex != -1) {
+            obj->SetImageFrameByName(static_cast<const char*>(imageSetName), frameIndex);
         } else {
-            obj->SetImageSetByName(static_cast<const char*>(imageSet));
+            obj->SetImageSetByName(static_cast<const char*>(imageSetName));
         }
     }
 
-    if (!sound.IsEmpty()) {
-        obj->SetAnimationByName(static_cast<const char*>(sound), 0);
-        obj->SetSoundCueByName(static_cast<const char*>(sound));
+    if (!animationAndSoundName.IsEmpty()) {
+        obj->SetAnimationByName(static_cast<const char*>(animationAndSoundName), 0);
+        obj->SetSoundCueByName(static_cast<const char*>(animationAndSoundName));
     }
 
     if (!name.IsEmpty()) {
         obj->m_name = static_cast<const char*>(name);
     }
 
-    p++;
+    fields++;
 
-    obj->AddFlags(static_cast<u32>(*p++));
-    obj->m_stateFlags = static_cast<SpriteStateFlags>(*p++);
-    anim->m_userFlags = *p++;
+    obj->AddFlags(static_cast<u32>(*fields++));
+    obj->m_stateFlags = static_cast<SpriteStateFlags>(*fields++);
+    logicRecord->m_userFlags = *fields++;
 
-    obj->m_score = *p++;
-    obj->m_points = *p++;
-    obj->m_powerup = *p++;
-    obj->m_damage = *p++;
-    obj->m_smarts = *p++;
-    obj->m_health = *p++;
-    SET_RECT_COMPONENTS(obj->m_extent, *p++, *p++, *p++, *p++);
-    SET_RECT_COMPONENTS(obj->m_area, *p++, *p++, *p++, *p++);
-    SET_RECT_COMPONENTS(obj->m_switchRect, *p++, *p++, *p++, *p++);
-    SET_RECT_COMPONENTS(obj->m_clip, *p++, *p++, *p++, *p++);
+    obj->m_score = *fields++;
+    obj->m_points = *fields++;
+    obj->m_powerup = *fields++;
+    obj->m_damage = *fields++;
+    obj->m_smarts = *fields++;
+    obj->m_health = *fields++;
+    SET_RECT_COMPONENTS(obj->m_extent, *fields++, *fields++, *fields++, *fields++);
+    SET_RECT_COMPONENTS(obj->m_area, *fields++, *fields++, *fields++, *fields++);
+    SET_RECT_COMPONENTS(obj->m_switchRect, *fields++, *fields++, *fields++, *fields++);
+    SET_RECT_COMPONENTS(obj->m_clip, *fields++, *fields++, *fields++, *fields++);
 
     if (obj->m_area.left == 0 && obj->m_area.right == 0) {
         obj->m_area.left = COORD_UNSET;
@@ -680,47 +680,47 @@ i32 CLevelPlane::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->m_switchRect.left = COORD_UNSET;
     }
 
-    SET_RECT_COMPONENTS(anim->m_userRect1, *p++, *p++, *p++, *p++);
-    SET_RECT_COMPONENTS(anim->m_userRect2, *p++, *p++, *p++, *p++);
-    anim->m_user1 = *p++;
-    anim->m_user2 = *p++;
-    anim->m_user3 = *p++;
-    anim->m_user4 = *p++;
-    anim->m_user5 = *p++;
-    anim->m_user6 = *p++;
-    anim->m_user7 = *p++;
-    anim->m_user8 = *p++;
-    anim->m_minX = *p++;
-    anim->m_minY = *p++;
-    anim->m_maxX = *p++;
-    anim->m_maxY = *p++;
-    obj->m_speedX = *p++;
-    obj->m_speedY = *p++;
-    anim->m_tweakX = *p++;
-    anim->m_tweakY = *p++;
-    anim->m_counter = *p++;
-    anim->SetSpeed(*p++);
-    anim->m_width = *p++;
-    anim->m_height = *p++;
-    obj->m_direction = *p++;
-    obj->m_faceDirection = *p++;
-    anim->m_timeDelay = *p++;
-    anim->m_frameDelay = *p++;
-    obj->m_objectType = *p++;
-    obj->m_hitTypeFlags = *p++;
+    SET_RECT_COMPONENTS(logicRecord->m_userRect1, *fields++, *fields++, *fields++, *fields++);
+    SET_RECT_COMPONENTS(logicRecord->m_userRect2, *fields++, *fields++, *fields++, *fields++);
+    logicRecord->m_user1 = *fields++;
+    logicRecord->m_user2 = *fields++;
+    logicRecord->m_user3 = *fields++;
+    logicRecord->m_user4 = *fields++;
+    logicRecord->m_user5 = *fields++;
+    logicRecord->m_user6 = *fields++;
+    logicRecord->m_user7 = *fields++;
+    logicRecord->m_user8 = *fields++;
+    logicRecord->m_minX = *fields++;
+    logicRecord->m_minY = *fields++;
+    logicRecord->m_maxX = *fields++;
+    logicRecord->m_maxY = *fields++;
+    obj->m_speedX = *fields++;
+    obj->m_speedY = *fields++;
+    logicRecord->m_tweakX = *fields++;
+    logicRecord->m_tweakY = *fields++;
+    logicRecord->m_counter = *fields++;
+    logicRecord->SetSpeed(*fields++);
+    logicRecord->m_width = *fields++;
+    logicRecord->m_height = *fields++;
+    obj->m_direction = *fields++;
+    obj->m_faceDirection = *fields++;
+    logicRecord->m_timeDelay = *fields++;
+    logicRecord->m_frameDelay = *fields++;
+    obj->m_objectType = *fields++;
+    obj->m_hitTypeFlags = *fields++;
 
-    u32 w = static_cast<u32>(*p++);
+    u32 w = static_cast<u32>(*fields++);
     if (w > 0) {
         obj->m_strideX = static_cast<i32>(w);
     }
-    u32 h = static_cast<u32>(*p++);
+    u32 h = static_cast<u32>(*fields++);
     if (h > 0) {
         obj->m_strideY = static_cast<i32>(h);
     }
 
     m_spatialMgr->ParkObject(static_cast<CWwdGameObject*>(obj));
 
-    return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+    return static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
 }
 
 RVA(0x00163300, 0x70)

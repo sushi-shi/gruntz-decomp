@@ -4,7 +4,7 @@
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Wap32/CoordUnset.h>
 
-#define APPLY_WORKER_HOST_BOUNDS(coords)                                                           \
+#define APPLY_LEVEL_PLANE_VIEWPORT(coords)                                                         \
     if (coords->left != COORD_UNSET) {                                                             \
         LevelCoordRect local;                                                                      \
         CopyRect((&local), (coords));                                                              \

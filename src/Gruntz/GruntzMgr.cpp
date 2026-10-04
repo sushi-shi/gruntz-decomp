@@ -2649,7 +2649,7 @@ i32 CGruntzMgr::ToggleMonolithOverlay() {
             for (i32 j = 0; j < spr->GetTileColumns(); j++) {
                 i32 val = parity ? savedIdx : -1;
                 parity ^= 1;
-                SET_WORKER_HOST_CELL(spr, j, i, val);
+                SET_LEVEL_PLANE_CELL(spr, j, i, val);
             }
             parity ^= 1;
         }

@@ -52,7 +52,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
 
 RVA(0x00077dc0, 0x1d)
 void CLevelPlane::SetCell(i32 x, i32 y, i32 id) {
-    SET_WORKER_HOST_CELL(this, x, y, id);
+    SET_LEVEL_PLANE_CELL(this, x, y, id);
 }
 
 RVA(0x00077df0, 0x13d)

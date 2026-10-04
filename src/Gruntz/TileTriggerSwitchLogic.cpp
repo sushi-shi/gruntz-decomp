@@ -398,10 +398,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CLevelPlane* pl = reg->m_world->GetLevel()->m_mainPlane;
             if (now == TILEKIND_GREENPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xfb);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xfb);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xfb);
             } else {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xfc);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xfc);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xfc);
             }
             break;
@@ -420,10 +420,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CLevelPlane* pl = reg->m_world->GetLevel()->m_mainPlane;
             if (now == TILEKIND_PURPLEPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xff);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xff);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xff);
             } else {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0x100);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0x100);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0x100);
             }
             break;
@@ -442,10 +442,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CLevelPlane* pl = reg->m_world->GetLevel()->m_mainPlane;
             if (now == TILEKIND_ORANGEPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xf7);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xf7);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xf7);
             } else {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xf8);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xf8);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xf8);
             }
             break;
@@ -799,7 +799,7 @@ i32 CTileTriggerLogic::UncoverPickup(TileCollisionKind tileKind) {
                 i32 tx = m_tileX;
                 i32 v = L->m_tileHandles[tx + L->m_tileRowOffsets[ty]] + 1;
                 CLevelPlane* L2 = g_gameReg->World()->GetLevel()->m_mainPlane;
-                SET_WORKER_HOST_CELL(L2, tx, ty, v);
+                SET_LEVEL_PLANE_CELL(L2, tx, ty, v);
                 (reg->GetTileGrid())->ComputeCellFlags(tx, ty, v);
                 break;
             }
@@ -885,7 +885,7 @@ i32 CTileSecretTriggerLogic::Tick() {
         mgr->World()
             ->m_level->m_mainPlane
             ->m_tileHandles[mgr->World()->m_level->m_mainPlane->m_tileRowOffsets[idx] + grp];
-    SET_WORKER_HOST_CELL(g_gameReg->World()->m_level->m_mainPlane, grp, idx, oldTok);
+    SET_LEVEL_PLANE_CELL(g_gameReg->World()->m_level->m_mainPlane, grp, idx, oldTok);
     mgr->GetTileGrid()->ComputeCellFlags(grp, idx, oldTok);
     m_tileToken = newTok;
     return 1;
@@ -1110,7 +1110,7 @@ i32 CBrickStack::SetBrickTile(BrickTileId code) {
         return 0;
     }
     CLevelPlane* layer2 = g_gameReg->World()->GetLevel()->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tx, ty, IDX(code));
+    SET_LEVEL_PLANE_CELL(layer2, tx, ty, IDX(code));
     reg->GetTileGrid()->ComputeCellFlags(tx, ty, IDX(code));
     return 1;
 }
