@@ -217,22 +217,25 @@ i32 CSBI_WellGoo::SerializeFields(
             if (fr->GetShadeBlitter() != NULL) {
                 fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
-            if (node != NULL && m_frame->GetShadeBlitter() != NULL) {
-                m_frame->GetShadeBlitter()->m_palDescr = node;
+            fr = m_frame;
+            if (node != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = node;
             }
             fr = m_baseFrame;
             if (fr->GetShadeBlitter() != NULL) {
                 fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
-            if (node != NULL && m_baseFrame->GetShadeBlitter() != NULL) {
-                m_baseFrame->GetShadeBlitter()->m_palDescr = node;
+            fr = m_baseFrame;
+            if (node != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = node;
             }
             fr = m_fgFrame;
             if (fr->GetShadeBlitter() != NULL) {
                 fr->GetShadeBlitter()->Select(SHADE_PAL_16, NULL);
             }
-            if (node != NULL && m_fgFrame->GetShadeBlitter() != NULL) {
-                m_fgFrame->GetShadeBlitter()->m_palDescr = node;
+            fr = m_fgFrame;
+            if (node != NULL && fr->GetShadeBlitter() != NULL) {
+                fr->GetShadeBlitter()->m_palDescr = node;
             }
             break;
         }
