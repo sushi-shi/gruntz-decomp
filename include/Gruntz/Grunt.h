@@ -90,7 +90,7 @@ class CGruntPuddle;
 
 class CArchive;
 
-struct CGruntCellRec {
+struct CGruntDirectionData {
     GZ_ENUM_BEGIN(NameSlot)
         NAME_ATTACK = 0,
         NAME_STRUCK = 1,
@@ -125,9 +125,9 @@ struct CGruntCellRec {
         DoubleVector2 m_step;
     } m_motion;
 
-    i32 SerializeStrings(class CFileMemBase* ar);
+    i32 Save(class CFileMemBase* ar);
 
-    i32 DeserializeStrings(class CFileMemBase* ar);
+    i32 Load(class CFileMemBase* ar);
 };
 extern GruntDirectionCell g_gruntMoveDirNorth;
 extern GruntDirectionCell g_gruntMoveDirNorthEast;
@@ -177,11 +177,11 @@ public:
     inline PickupType ResolveEquippedToolType(PickupType activePickupType) const;
     inline PickupType GetEquippedToolType() const;
 
-    PickupType GetGruntKind() const {
-        return m_gruntKind;
+    PickupType GetPowerupType() const {
+        return m_powerupType;
     }
-    PickupType GetVehiclePickupType() const {
-        return m_vehiclePickupType;
+    PickupType GetCarriedToyType() const {
+        return m_carriedToyType;
     }
     PickupType GetBrickPickupType() const {
         return m_brickPickupType;
@@ -201,7 +201,7 @@ public:
         return m_inCombat;
     }
     b32 IsGuarding() const {
-        return m_tileClaimed;
+        return m_guarding;
     }
     b32 IsSpawnProtected() const {
         return m_spawnProtectionActive;
@@ -342,7 +342,7 @@ public:
     i32 RectContains(i32 x, i32 y);
 
     void RecycleCoords();
-    i32 VehicleContactContains(i32 x, i32 y);
+    i32 IsInToyUseRange(i32 x, i32 y);
     void SetNeighbor(i32 playerIndex, i32 unitIndex);
     i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     CGrunt* FindGridNeighbor(i32 validate);
@@ -411,7 +411,7 @@ public:
     i32 m_reserved18c;
     i32 m_toyBlendPct;
     PickupType m_brickPickupType;
-    PickupType m_vehiclePickupType;
+    PickupType m_carriedToyType;
     PickupType m_savedToolType;
     PickupType m_pendingPickupType;
     i32 m_helpCueId;
@@ -452,12 +452,12 @@ public:
     b32 m_wingzEnabled;
     b32 m_freezeDelayDone;
     b32 m_freezeUnfrozen;
-    b32 m_resetApplied;
+    b32 m_idleVariantActive;
     i32 m_arrivalFlags;
     i32 m_passableMask;
     i32 m_routeBlockedMask;
     i32 m_routePassableMask;
-    PickupType m_gruntKind;
+    PickupType m_powerupType;
     b32 m_entranceArmed;
 
     class CTriggerMgr* m_triggerMgr;
@@ -470,8 +470,8 @@ public:
     RECT m_reachRect;
     RECT m_reachExclusionRect;
 
-    RECT m_vehicleContactRect;
-    RECT m_vehicleContactExclusionRect;
+    RECT m_toyUseRect;
+    RECT m_toyUseExclusionRect;
     EnemyAiType m_aiType;
     GruntAiState m_aiState;
     BattlezTask m_battleState;
@@ -536,9 +536,9 @@ public:
         return m_deathAnimStarted;
     }
 
-    CGruntCellRec* EntranceCell() {
-        GruntDirectionCell c = m_entranceCell;
-        return &m_cells[3 * c.m_row + c.m_column];
+    CGruntDirectionData* FacingData() {
+        GruntDirectionCell c = m_facing;
+        return &m_directionData[3 * c.m_row + c.m_column];
     }
     i32 PayloadCount() const {
         return m_payloads.GetCount();
@@ -596,23 +596,23 @@ public:
     double m_movePosY;
     i32 m_reserved418;
     u32 m_timePerTile;
-    b32 m_tileClaimed;
+    b32 m_guarding;
     SoundBuffer* m_vehicleLoopSound;
     SoundBuffer* m_powerupLoopSound;
     i32 m_reserved42c;
     i32 m_reserved430;
     i32 m_startingItemId;
     i32 m_recordedFrameTick;
-    GruntDirectionCell m_entranceCell;
+    GruntDirectionCell m_facing;
     CString m_frameSetName;
     CString m_deathFrameSetName;
     i32 m_arrivalPhase;
     b32 m_pendingTrigger;
     Coord m_pendingTriggerPx;
     b32 m_lowStaminaCued;
-    b32 m_arrivalNotified;
+    b32 m_guardCommandPending;
 
-    CGruntCellRec m_cells[9];
+    CGruntDirectionData m_directionData[9];
 
     ClockInterval m_toyTiming;
     ClockInterval m_idleDelayTiming;
@@ -623,7 +623,7 @@ public:
     ClockInterval m_combatTiming;
     ClockInterval m_hudRetireTiming;
     ClockInterval m_wingzTiming;
-    ClockInterval m_conversionTiming;
+    ClockInterval m_powerupTiming;
     ClockInterval m_shimmerTiming;
     ClockInterval m_walkVoiceTiming;
     i32 m_reserved8d0;
@@ -632,7 +632,7 @@ public:
     CGrunt(CGameObject* owner);
 
     void LoadCellAnimNames(i32 kind, i32 directionOnly);
-    void ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
+    void ResetIdleAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
 
     i32 IsArrivalRerollPending() {
         return !m_arrivalRerollTiming.Expired();
@@ -651,11 +651,11 @@ public:
     }
 
     void ResetArrivalReroll() {
-        ResetEntranceAnimation(1, 1, 0);
+        ResetIdleAnimation(1, 1, 0);
         m_arrivalRerollTiming.Clear();
         m_arrivalRerollTiming.Start(rand() % 30000 + 30000);
     }
-    i32 ResolveEntranceArrival();
+    i32 UpdateIdleAnimation();
     void Deselect();
     i32 BuildEntranceAnimation(GruntEntranceMode mode);
     i32 LoadEntranceConfig();
@@ -736,7 +736,7 @@ public:
     void RestorePreviousAppearance();
     void ApplyPendingPickup();
 
-    i32 StepEntranceReinit();
+    i32 StartWalkAnimation();
 
     i32 UpdatePickupAnimation();
 
@@ -809,7 +809,7 @@ public:
         i32 extraPassableMask
     );
 
-    i32 LoadVehicleGruntSprites(PickupType kind);
+    i32 SetCarriedToy(PickupType toyType);
 
     i32 Place(
         class CTriggerMgr* board,
@@ -817,7 +817,7 @@ public:
         i32 unitIndex,
         PickupType moveIcon,
         PickupType typeKind,
-        i32 vehicleKind,
+        i32 carriedToyType,
         EnemyAiType aiType,
         i32 defenderRadiusMinusOne,
         i32 defenderQueuePosition,

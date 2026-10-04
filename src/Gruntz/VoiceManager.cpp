@@ -401,10 +401,10 @@ i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
     if (grunt == NULL) {
         return 0;
     }
-    if (grunt->GetGruntKind() == GRUNT_DEATHTOUCH) {
+    if (grunt->GetPowerupType() == GRUNT_DEATHTOUCH) {
         return VOICE_CUES_PER_BAND * 19 + cueId;
     }
-    if (grunt->GetGruntKind() == GRUNT_CONVERSION) {
+    if (grunt->GetPowerupType() == GRUNT_CONVERSION) {
         return VOICE_CUES_PER_BAND * 13 + cueId;
     }
     switch (static_cast<u32>(IDX(grunt->m_activePickupType))) {

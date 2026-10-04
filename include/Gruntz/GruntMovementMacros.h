@@ -77,10 +77,10 @@
     do {                                                                                           \
         newPos.m_y = (ny);                                                                         \
         newPos.m_x = (nx);                                                                         \
-        this->m_entranceCell = (cell);                                                             \
+        this->m_facing = (cell);                                                                   \
     } while (0)
 
-#define MV_VEC(V) m_entranceCell = g_gruntDir##V
+#define MV_VEC(V) m_facing = g_gruntDir##V
 
 #define MV_N                                                                                       \
     MV_VEC(North);                                                                                 \
@@ -118,19 +118,19 @@
     m_lastTilePx.m_x -= 0x10;                                                                      \
     m_lastTilePx.m_y += 0x10
 
-#define REGION_INIT()                                                                              \
+#define INIT_TOY_USE_RECTS()                                                                       \
     do {                                                                                           \
-        RECT a;                                                                                    \
-        a.left = -1;                                                                               \
-        a.top = -1;                                                                                \
-        a.right = 1;                                                                               \
-        a.bottom = 1;                                                                              \
-        m_vehicleContactRect = a;                                                                  \
-        a.left = 0;                                                                                \
-        a.top = 0;                                                                                 \
-        a.right = 0;                                                                               \
-        a.bottom = 0;                                                                              \
-        m_vehicleContactExclusionRect = a;                                                         \
+        RECT bounds;                                                                               \
+        bounds.left = -1;                                                                          \
+        bounds.top = -1;                                                                           \
+        bounds.right = 1;                                                                          \
+        bounds.bottom = 1;                                                                         \
+        m_toyUseRect = bounds;                                                                     \
+        bounds.left = 0;                                                                           \
+        bounds.top = 0;                                                                            \
+        bounds.right = 0;                                                                          \
+        bounds.bottom = 0;                                                                         \
+        m_toyUseExclusionRect = bounds;                                                            \
     } while (0)
 
 #endif // GRUNTZ_GRUNTMOVEMENTMACROS_H

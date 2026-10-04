@@ -41,7 +41,7 @@
 RVA(0x000f7d90, 0x171)
 i32 CGrunt::StepToyerBehavior() {
     m_defenderPx = m_lastTilePx;
-    if (m_vehiclePickupType == PICKUP_NONE) {
+    if (m_carriedToyType == PICKUP_NONE) {
         m_aiType = AI_POSTGUARD;
         m_aiState = AISTATE_SEEK;
         m_dwell = 0;
@@ -55,8 +55,7 @@ i32 CGrunt::StepToyerBehavior() {
         return 1;
     }
     CGameObject* a = p->m_object;
-    if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p)
-        && VehicleContactContains(a->m_screenX, a->m_screenY)) {
+    if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p) && IsInToyUseRange(a->m_screenX, a->m_screenY)) {
         CGameObject* b = p->m_object;
         g_gameReg->GetTriggerMgr()
             ->UseToyAt(m_playerIndex, m_unitIndex, b->m_screenX, b->m_screenY);

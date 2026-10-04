@@ -76,7 +76,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Read(&m_brickPickupType, sizeof(m_brickPickupType));
     ar->Read(&m_activePickupType, sizeof(m_activePickupType));
-    ar->Read(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
+    ar->Read(&m_carriedToyType, sizeof(m_carriedToyType));
     ar->Read(&m_savedToolType, sizeof(m_savedToolType));
     ar->Read(&m_pendingPickupType, sizeof(m_pendingPickupType));
     ar->Read(&m_helpCueId, sizeof(m_helpCueId));
@@ -109,8 +109,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_arrivalActive, sizeof(m_arrivalActive));
     ar->Read(&m_reachRect, sizeof(m_reachRect));
     ar->Read(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
-    ar->Read(&m_vehicleContactRect, sizeof(m_vehicleContactRect));
-    ar->Read(&m_vehicleContactExclusionRect, sizeof(m_vehicleContactExclusionRect));
+    ar->Read(&m_toyUseRect, sizeof(m_toyUseRect));
+    ar->Read(&m_toyUseExclusionRect, sizeof(m_toyUseExclusionRect));
     ar->Read(&m_health, sizeof(m_health));
     ar->Read(&m_stamina, sizeof(m_stamina));
     ar->Read(&m_toyTime, sizeof(m_toyTime));
@@ -144,10 +144,10 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_wingzEnabled, sizeof(m_wingzEnabled));
     ar->Read(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
     ar->Read(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));
-    ar->Read(&m_resetApplied, sizeof(m_resetApplied));
+    ar->Read(&m_idleVariantActive, sizeof(m_idleVariantActive));
     ar->Read(&m_arrivalFlags, sizeof(m_arrivalFlags));
     ar->Read(&m_passableMask, sizeof(m_passableMask));
-    ar->Read(&m_gruntKind, sizeof(m_gruntKind));
+    ar->Read(&m_powerupType, sizeof(m_powerupType));
     ar->Read(&m_entranceArmed, sizeof(m_entranceArmed));
     ar->Read(&m_deathType, sizeof(m_deathType));
     ar->Read(&m_spawnProtectionActive, sizeof(m_spawnProtectionActive));
@@ -156,7 +156,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));
     ar->Read(&m_pendingTrigger, sizeof(m_pendingTrigger));
     ar->Read(&m_killerPlayerIndex, sizeof(m_killerPlayerIndex));
-    ar->Read(&m_tileClaimed, sizeof(m_tileClaimed));
+    ar->Read(&m_guarding, sizeof(m_guarding));
     ar->Read(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
     ar->Read(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
     ar->Read(&m_routeBlockedMask, sizeof(m_routeBlockedMask));
@@ -173,11 +173,11 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_targetTeam, sizeof(m_targetTeam));
     ar->Read(&m_arrivalTargetPx, sizeof(m_arrivalTargetPx));
 
-    CGruntCellRec* row = m_cells;
+    CGruntDirectionData* row = m_directionData;
     for (i32 gi = 0; gi < 3; ++gi, row += 3) {
-        CGruntCellRec* cell = row;
+        CGruntDirectionData* cell = row;
         for (i32 gj = 0; gj < 3; ++gj, ++cell) {
-            if (cell->DeserializeStrings(ar) == 0) {
+            if (cell->Load(ar) == 0) {
                 return 0;
             }
         }
@@ -214,7 +214,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     CWwdSpriteObject* cb = m_object;
     cb->SetDrawFill(SHADE_PAL_16, r);
 
-    if (m_gruntKind == GRUNT_GHOST) {
+    if (m_powerupType == GRUNT_GHOST) {
         CWwdSpriteObject* cb2 = m_object;
         i32 v = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
         SET_DRAW_FILL_FRACTION(cb2, SHADE_PAL_ALPHA_16, v);

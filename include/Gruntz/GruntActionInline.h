@@ -34,10 +34,10 @@ inline void CGrunt::RestorePreviousAppearance() {
         m_tileMoveCommitted = false;
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
-        char* name = EntranceCell()->WalkName().GetBuffer(0);
+        char* name = FacingData()->WalkName().GetBuffer(0);
         SetImageSetByName(name);
     } else {
-        ResetEntranceAnimation(1, 0, 0);
+        ResetIdleAnimation(1, 0, 0);
     }
 }
 
@@ -55,7 +55,7 @@ inline void CGrunt::ApplyPendingPickup() {
         return;
     }
     if (mode >= PICKUP_TOYZ_FIRST) {
-        LoadVehicleGruntSprites(mode);
+        SetCarriedToy(mode);
         return;
     }
     LoadGruntTypeTable(mode, 1, 0, 1);

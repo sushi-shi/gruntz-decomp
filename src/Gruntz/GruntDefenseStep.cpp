@@ -63,7 +63,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 }
                 if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
                     && IsGruntAtSavedScreenPos(occ)) {
-                    if (m_vehiclePickupType == PICKUP_SCROLL) {
+                    if (m_carriedToyType == PICKUP_SCROLL) {
                         g_gameReg->GetTriggerMgr()->UseToyAt(
                             m_playerIndex,
                             m_unitIndex,
@@ -103,7 +103,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (m_vehiclePickupType == PICKUP_SCROLL) {
+            if (m_carriedToyType == PICKUP_SCROLL) {
                 g_gameReg->GetTriggerMgr()->UseToyAt(
                     m_playerIndex,
                     m_unitIndex,
@@ -125,7 +125,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (occ != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(occ)
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
-                if (m_vehiclePickupType == PICKUP_SCROLL) {
+                if (m_carriedToyType == PICKUP_SCROLL) {
                     g_gameReg->GetTriggerMgr()->UseToyAt(
                         m_playerIndex,
                         m_unitIndex,
@@ -154,7 +154,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_dwell = 0;
                 return 1;
             }
-            if (m_resetApplied != false) {
+            if (m_idleVariantActive != false) {
                 return 1;
             }
             if (m_hasExtent == false) {

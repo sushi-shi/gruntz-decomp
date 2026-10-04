@@ -240,13 +240,13 @@ CGrunt::~CGrunt() {
     OnObjectRemoved();
 }
 
-RVA_COMPGEN(0x0000f400, 0x1b, ??0CGruntCellRec@@QAE@XZ)
+RVA_COMPGEN(0x0000f400, 0x1b, ??0CGruntDirectionData@@QAE@XZ)
 
-RVA_COMPGEN(0x0000f430, 0x10, ??1CGruntCellRec@@QAE@XZ)
+RVA_COMPGEN(0x0000f430, 0x10, ??1CGruntDirectionData@@QAE@XZ)
 
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCALE), CWapX(owner) {
-    m_entranceCell = g_gruntMoveDirSouth;
+    m_facing = g_gruntMoveDirSouth;
     m_startingItemId = m_object->m_powerup;
     m_recordedFrameTick = g_frameTicks;
     m_object->m_moveMode = MOVE_GROUNDED;
@@ -274,9 +274,9 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_neighborUnitIndex = -1;
     m_warpstoneAnchorIndex = 0;
     m_activePickupType = PICKUP_NONE;
-    m_vehiclePickupType = PICKUP_NONE;
+    m_carriedToyType = PICKUP_NONE;
     m_brickPickupType = PICKUP_NONE;
-    m_gruntKind = GRUNT_NORMAL;
+    m_powerupType = GRUNT_NORMAL;
     m_savedToolType = PICKUP_NONE;
     m_animSetName = "NORMALGRUNT";
     m_entranceCommitted = true;
@@ -301,8 +301,8 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     RECT zero;
     SET_RECT_COMPONENTS(zero, 0, 0, 0, 0);
     m_reachExclusionRect = zero;
-    m_vehicleContactRect = zero;
-    m_vehicleContactExclusionRect = zero;
+    m_toyUseRect = zero;
+    m_toyUseExclusionRect = zero;
 
     m_toyTiming.Clear();
     m_idleDelayTiming.Clear();
@@ -313,12 +313,12 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_combatTiming.Clear();
     m_hudRetireTiming.Clear();
     m_wingzTiming.Clear();
-    m_conversionTiming.Clear();
+    m_powerupTiming.Clear();
     m_shimmerTiming.Clear();
     m_walkVoiceTiming.Clear();
     m_arrivalRerollTiming.Clear();
     m_unusedBattleCell.Set(-1, -1);
-    m_arrivalNotified = false;
+    m_guardCommandPending = false;
     m_aiState = AISTATE_SEEK;
     m_battleState = BZTASK_UNASSIGNED;
     {
@@ -347,7 +347,7 @@ void CGrunt::ReadConfigFromButeMgr() {
         1000
     );
 
-    if (m_gruntKind == GRUNT_SUPERSPEED) {
+    if (m_powerupType == GRUNT_SUPERSPEED) {
         m_timePerTile >>= 1;
     }
 }
@@ -355,62 +355,88 @@ void CGrunt::ReadConfigFromButeMgr() {
 RVA(0x00048470, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     if (kind == 0) {
-        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_WALK;
-        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
-        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_WALK;
-        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_WALK;
-        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
-        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_WALK;
-        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_WALK;
-        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_WALK;
-        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_WALK;
-        m_cells[0].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_STRUCK;
-        m_cells[1].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
-        m_cells[2].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_STRUCK;
-        m_cells[3].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_STRUCK;
-        m_cells[4].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
-        m_cells[5].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_STRUCK;
-        m_cells[6].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_STRUCK;
-        m_cells[7].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_STRUCK;
-        m_cells[8].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_STRUCK;
-        m_cells[0].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ATTACK;
-        m_cells[1].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
-        m_cells[2].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ATTACK;
-        m_cells[3].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ATTACK;
-        m_cells[4].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
-        m_cells[5].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ATTACK;
-        m_cells[6].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ATTACK;
-        m_cells[7].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ATTACK;
-        m_cells[8].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ATTACK;
-        m_cells[0].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_IDLE;
-        m_cells[1].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
-        m_cells[2].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_IDLE;
-        m_cells[3].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_IDLE;
-        m_cells[4].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
-        m_cells[5].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_IDLE;
-        m_cells[6].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_IDLE;
-        m_cells[7].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_IDLE;
-        m_cells[8].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_IDLE;
-        m_cells[0].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ITEM;
-        m_cells[1].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
-        m_cells[2].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ITEM;
-        m_cells[3].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ITEM;
-        m_cells[4].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
-        m_cells[5].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ITEM;
-        m_cells[6].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ITEM;
-        m_cells[7].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ITEM;
-        m_cells[8].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ITEM;
+        m_directionData[0].WalkName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_WALK;
+        m_directionData[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
+        m_directionData[2].WalkName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_WALK;
+        m_directionData[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_WALK;
+        m_directionData[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
+        m_directionData[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_WALK;
+        m_directionData[6].WalkName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_WALK;
+        m_directionData[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_WALK;
+        m_directionData[8].WalkName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_WALK;
+        m_directionData[0].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_STRUCK;
+        m_directionData[1].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
+        m_directionData[2].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_STRUCK;
+        m_directionData[3].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_STRUCK;
+        m_directionData[4].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
+        m_directionData[5].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_STRUCK;
+        m_directionData[6].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_STRUCK;
+        m_directionData[7].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_STRUCK;
+        m_directionData[8].StruckName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_STRUCK;
+        m_directionData[0].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ATTACK;
+        m_directionData[1].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
+        m_directionData[2].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ATTACK;
+        m_directionData[3].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ATTACK;
+        m_directionData[4].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
+        m_directionData[5].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ATTACK;
+        m_directionData[6].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ATTACK;
+        m_directionData[7].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ATTACK;
+        m_directionData[8].AttackName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ATTACK;
+        m_directionData[0].IdleName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_IDLE;
+        m_directionData[1].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
+        m_directionData[2].IdleName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_IDLE;
+        m_directionData[3].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_IDLE;
+        m_directionData[4].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
+        m_directionData[5].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_IDLE;
+        m_directionData[6].IdleName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_IDLE;
+        m_directionData[7].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_IDLE;
+        m_directionData[8].IdleName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_IDLE;
+        m_directionData[0].ItemName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ITEM;
+        m_directionData[1].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
+        m_directionData[2].ItemName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ITEM;
+        m_directionData[3].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ITEM;
+        m_directionData[4].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
+        m_directionData[5].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ITEM;
+        m_directionData[6].ItemName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ITEM;
+        m_directionData[7].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ITEM;
+        m_directionData[8].ItemName() =
+            "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ITEM;
         m_deathFrameSetName = "GRUNTZ_" + m_animSetName + "_DEATH";
     } else if (dirOnly != 0) {
-        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST;
-        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
-        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST;
-        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST;
-        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
-        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST;
-        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST;
-        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH;
-        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST;
+        m_directionData[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST;
+        m_directionData[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
+        m_directionData[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST;
+        m_directionData[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST;
+        m_directionData[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
+        m_directionData[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST;
+        m_directionData[6].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST;
+        m_directionData[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH;
+        m_directionData[8].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST;
         m_frameSetName = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_BREAK;
     } else {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
@@ -588,7 +614,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 RVA(0x0004ac10, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
-    if (SameCellTag(&m_entranceCell, &facing)) {
+    if (SameCellTag(&m_facing, &facing)) {
         return;
     }
 
@@ -610,7 +636,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     SwitchAnimation(m_poseAttackIdle);
                     {
                         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-                        const char* nm = EntranceCell()->AttackName().GetBuffer(0);
+                        const char* nm = FacingData()->AttackName().GetBuffer(0);
                         SetImageFrameByName(nm, frame);
                     }
                     goto store;
@@ -623,9 +649,9 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     }
                 }
 
-                m_entranceCell = facing;
+                m_facing = facing;
                 SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE2));
-                ResetEntranceAnimation(1, 0, 0);
+                ResetIdleAnimation(1, 0, 0);
                 return;
             }
         }
@@ -637,7 +663,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
             i32 column = facing.m_column;
             i32 index = 3 * row + column;
 
-            const char* nm = m_cells[index].IdleName().GetBuffer(0);
+            const char* nm = m_directionData[index].IdleName().GetBuffer(0);
             SetImageFrameByName(nm, frame);
         }
         goto store;
@@ -651,12 +677,12 @@ walk:
         i32 column = facing.m_column;
         i32 index = 3 * row + column;
 
-        const char* nm = m_cells[index].WalkName().GetBuffer(0);
+        const char* nm = m_directionData[index].WalkName().GetBuffer(0);
         SetImageSetByName(nm);
     }
 
 store:
-    m_entranceCell = facing;
+    m_facing = facing;
 }
 
 // @early-stop
@@ -666,9 +692,9 @@ i32 CGrunt::Select() {
         return 1;
     }
 
-    if (m_tileClaimed != false && g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
+    if (m_guarding != false && g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
         m_triggerMgr->EnqueueGuardEnd(m_playerIndex, m_unitIndex);
-    } else if (m_tileClaimed != false) {
+    } else if (m_guarding != false) {
         END_GUARD(this);
     }
     CreateSelectedSprite();
@@ -850,7 +876,7 @@ i32 CGrunt::StepArrivalDrop(
     commitEntrance:
         m_entrancePx.Set(pxX, pxY);
         if (reinit != 0) {
-            StepEntranceReinit();
+            StartWalkAnimation();
         }
     commitPhase:
         m_arrivalPhase = arrivalPhase;
@@ -1576,7 +1602,7 @@ i32 CGrunt::Place(
     i32 unitIndex,
     PickupType moveIcon,
     PickupType typeKind,
-    i32 vehicleKind,
+    i32 carriedToyType,
     EnemyAiType aiType,
     i32 defenderRadiusMinusOne,
     i32 defenderQueuePosition,
@@ -1623,7 +1649,7 @@ i32 CGrunt::Place(
     m_daFlag = 1;
     m_arrivalPhase = 0;
     m_toolConfigured = true;
-    m_tileClaimed = false;
+    m_guarding = false;
     m_neighborScanEnabled = true;
     m_tileMoveCommitted = false;
     m_entranceArmed = false;
@@ -1636,7 +1662,7 @@ i32 CGrunt::Place(
     m_savedMoveIcon = -1;
     m_lowStaminaCued = false;
     m_targetTeam = -1;
-    LoadVehicleGruntSprites(static_cast<PickupType>(vehicleKind));
+    SetCarriedToy(static_cast<PickupType>(carriedToyType));
     LoadGruntTypeTable(typeKind, 1, 0, 0);
     if (span != NULL) {
         SET_RECT_XY_EXTENTS(
@@ -1677,7 +1703,7 @@ i32 CGrunt::Place(
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
-    ResetEntranceAnimation(1, 0, 0);
+    ResetIdleAnimation(1, 0, 0);
     switch (aiType) {
         case AI_POSTGUARD:
             m_defenderPx = m_lastTilePx;
@@ -1708,10 +1734,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (kind == PICKUP_INVALID) {
         goto fail;
     }
-    if (m_gruntKind == GRUNT_CONVERSION) {
+    if (m_powerupType == GRUNT_CONVERSION) {
         goto fail;
     }
-    if (m_gruntKind == GRUNT_DEATHTOUCH) {
+    if (m_powerupType == GRUNT_DEATHTOUCH) {
         goto fail;
     }
     if (fresh == 0) {
@@ -1734,10 +1760,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     }
     if (defer == 0) {
         if (FinishActiveAction() != 0) {
-            if (m_gruntKind == GRUNT_CONVERSION) {
+            if (m_powerupType == GRUNT_CONVERSION) {
                 goto fail;
             }
-            if (m_gruntKind == GRUNT_DEATHTOUCH) {
+            if (m_powerupType == GRUNT_DEATHTOUCH) {
                 goto fail;
             }
             if (m_activePickupType == kind) {
@@ -2172,9 +2198,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
             m_passableMask = 0;
-            m_gruntKind = GRUNT_CONVERSION;
-            m_conversionTiming.m_interval = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupType = GRUNT_CONVERSION;
+            m_powerupTiming.m_interval = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
+            m_powerupTiming.m_start = g_frameTime;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_CONVERSIONLOOP");
             break;
@@ -2188,12 +2214,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
             m_passableMask = 0;
-            m_gruntKind = GRUNT_DEATHTOUCH;
+            m_powerupType = GRUNT_DEATHTOUCH;
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "DeathTouchTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2201,14 +2227,14 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_GHOST: {
-            m_gruntKind = GRUNT_GHOST;
+            m_powerupType = GRUNT_GHOST;
             i32 t = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
             SET_DRAW_FILL_FRACTION(m_object, SHADE_PAL_ALPHA_16, t);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2216,12 +2242,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_INVULNERABILITY: {
-            m_gruntKind = GRUNT_INVULNERABLE;
+            m_powerupType = GRUNT_INVULNERABLE;
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2229,13 +2255,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_REACTIVEARMOR: {
-            m_gruntKind = GRUNT_REACTIVEARMOR;
+            m_powerupType = GRUNT_REACTIVEARMOR;
             CreatePowerupSprite(3);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2243,13 +2269,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_ROIDZ: {
-            m_gruntKind = GRUNT_ROIDZ;
+            m_powerupType = GRUNT_ROIDZ;
             CreatePowerupSprite(1);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "RoidzTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2257,13 +2283,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_SUPERSPEED: {
-            m_gruntKind = GRUNT_SUPERSPEED;
+            m_powerupType = GRUNT_SUPERSPEED;
             CreatePowerupSprite(2);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "SuperSpeedTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             ReadConfigFromButeMgr();
@@ -2370,16 +2396,16 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (fresh == 0) {
         if (IsAnimationAct("H")) {
             DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
-            SetImageFrameByName(EntranceCell()->StruckName().GetBuffer(0), handle);
+            SetImageFrameByName(FacingData()->StruckName().GetBuffer(0), handle);
         } else {
             if (m_inCombat != false && m_attackQueued == false) {
                 RESET_GRUNT_COMBAT_STATE(this)
             }
             if (IsAnimationAct("D")) {
-                SetImageSetByName(EntranceCell()->WalkName().GetBuffer(0));
+                SetImageSetByName(FacingData()->WalkName().GetBuffer(0));
                 SwitchAnimation(m_poseWalk);
             } else {
-                ResetEntranceAnimation(1, 0, 0);
+                ResetIdleAnimation(1, 0, 0);
                 if (m_arrivalPending == false) {
                     m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                 }

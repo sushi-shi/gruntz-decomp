@@ -148,6 +148,23 @@ class TuStateNoiseTests(unittest.TestCase):
             noise.exact_closure_rejections(100.0, 6, 6, metrics, other),
         )
 
+    def test_exact_closure_accepts_trimmed_size_only_with_identical_full_payload(self):
+        metrics = {
+            "size": 320, "text_sha": "complete-payload",
+            "reloc_stream_complete": True, "reloc_stream": [],
+        }
+        self.assertEqual(
+            noise.exact_closure_rejections(100.0, 310, 320, metrics, metrics), []
+        )
+        for changed in (
+            dict(metrics, size=319),
+            dict(metrics, text_sha="different-payload"),
+            {key: value for key, value in metrics.items() if key != "text_sha"},
+        ):
+            with self.subTest(changed=changed):
+                self.assertTrue(noise.exact_closure_rejections(100.0, 310, 320, changed, metrics))
+                self.assertTrue(noise.exact_closure_rejections(100.0, 310, 320, metrics, changed))
+
     def test_disposable_objects_use_the_authoritative_canonical_view(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "raw.obj"
@@ -186,7 +203,7 @@ class TuStateNoiseTests(unittest.TestCase):
 
 
 class PermuteCliGateTests(unittest.TestCase):
-    def run_cli(self, diagnosis: str, hist: float = 99.0):
+    def run_cli(self, diagnosis: str, best: float = 99.0):
         binding = SimpleNamespace(rva=0x123456, unit="unit", name="?Target@@YAHXZ")
 
         def diagnose(_token):
@@ -198,7 +215,7 @@ class PermuteCliGateTests(unittest.TestCase):
                  functions=[binding]
              )), \
              mock.patch("gruntz.verify.baseline.load", return_value={
-                 (binding.unit, binding.name): {"hist": hist}
+                 (binding.unit, binding.name): {"hist": 100.0, "best": best}
              }), \
              mock.patch("gruntz.permute.tu_state_noise.main", return_value=17) as run:
             result = cli.main([
@@ -212,11 +229,11 @@ class PermuteCliGateTests(unittest.TestCase):
         self.assertEqual(result, 17)
         run.assert_called_once()
 
-    def test_public_command_refuses_cfg_and_historical_exact(self):
+    def test_public_command_refuses_cfg_and_current_source_exact(self):
         result, run = self.run_cli("class: CFG")
         self.assertEqual(result, 2)
         run.assert_not_called()
-        result, run = self.run_cli("class: REGALLOC/SCHEDULING", hist=100.0)
+        result, run = self.run_cli("class: REGALLOC/SCHEDULING", best=100.0)
         self.assertEqual(result, 2)
         run.assert_not_called()
 
@@ -232,7 +249,7 @@ class PermuteCliGateTests(unittest.TestCase):
                  functions=[binding]
              )), \
              mock.patch("gruntz.verify.baseline.load", return_value={
-                 (binding.unit, binding.name): {"hist": 99.0}
+                 (binding.unit, binding.name): {"hist": 100.0, "best": 99.0}
              }), \
              mock.patch("gruntz.permute.match_variants.main", return_value=19) as run:
             result = cli.main([

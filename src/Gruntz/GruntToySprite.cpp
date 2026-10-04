@@ -73,7 +73,7 @@ i32 CGruntToySprite::Update() {
     if (e == NULL) {
         return 0;
     }
-    PickupType layer = e->GetVehiclePickupType();
+    PickupType layer = e->GetCarriedToyType();
     if (m_lastLayer != layer) {
         m_lastLayer = layer;
         m_object->SetImageFrame(IDX(layer));

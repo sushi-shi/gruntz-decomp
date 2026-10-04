@@ -113,57 +113,57 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
 
 // @early-stop
 RVA(0x00050ce0, 0x3c4)
-i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
-    m_vehiclePickupType = kind;
+i32 CGrunt::SetCarriedToy(PickupType toyType) {
+    m_carriedToyType = toyType;
     m_pendingPickupType = PICKUP_INVALID;
 
     CString name;
 
-    switch (kind) {
+    switch (toyType) {
         case PICKUP_BABYWALKER:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "BABYWALKERGRUNT";
             break;
         case PICKUP_BEACHBALL:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "BEACHBALLGRUNT";
             break;
         case PICKUP_BIGWHEEL:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "BIGWHEELGRUNT";
             break;
         case PICKUP_GOKART:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "GOKARTGRUNT";
             break;
         case PICKUP_JACKINTHEBOX:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "JACKINTHEBOXGRUNT";
             break;
         case PICKUP_JUMPROPE:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "JUMPROPEGRUNT";
             break;
         case PICKUP_POGOSTICK:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "POGOSTICKGRUNT";
             break;
         case PICKUP_SCROLL:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "SCROLLGRUNT";
             break;
         case PICKUP_SQUEAKTOY:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "SQUEAKTOYGRUNT";
             break;
         case PICKUP_YOYO:
-            REGION_INIT();
+            INIT_TOY_USE_RECTS();
             name = "YOYOGRUNT";
             break;
         default:
             break;
     }
-#undef REGION_INIT
+#undef INIT_TOY_USE_RECTS
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, NULL);
 
@@ -341,35 +341,35 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 }
 
 RVA(0x00051a20, 0x17d)
-i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
-    i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
-    i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
+i32 CGrunt::IsInToyUseRange(i32 x, i32 y) {
+    i32 originTileX = LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 originTileY = LastTilePx().m_y >> TILE_SHIFT_PX;
     x >>= TILE_SHIFT_PX;
     y >>= TILE_SHIFT_PX;
 
-    RECT r1 = m_vehicleContactRect;
-    RECT r2 = m_vehicleContactExclusionRect;
-    OFFSET_RECT_COMPONENTS(r1, dx, dy);
-    r1.right++;
-    r1.bottom++;
-    OFFSET_RECT_COMPONENTS(r2, dx, dy);
+    RECT useBounds = m_toyUseRect;
+    RECT exclusionBounds = m_toyUseExclusionRect;
+    OFFSET_RECT_COMPONENTS(useBounds, originTileX, originTileY);
+    useBounds.right++;
+    useBounds.bottom++;
+    OFFSET_RECT_COMPONENTS(exclusionBounds, originTileX, originTileY);
 
-    if (m_vehiclePickupType == PICKUP_NONE) {
+    if (m_carriedToyType == PICKUP_NONE) {
         return 0;
     }
 
-    if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
-        if (IsRectEmpty(&r2)) {
-            if (::PtInRect(&r1, x, y)) {
+    if (IsRectEmpty(&useBounds) || IsRectEmpty(&exclusionBounds)) {
+        if (IsRectEmpty(&exclusionBounds)) {
+            if (::PtInRect(&useBounds, x, y)) {
                 return 1;
             }
             return 0;
         }
         return 0;
     }
-    if (::PtInRect(&r1, x, y)) {
+    if (::PtInRect(&useBounds, x, y)) {
 
-        if (!::PtInRect(&r2, x, y)) {
+        if (!::PtInRect(&exclusionBounds, x, y)) {
             return 1;
         }
     }
@@ -414,7 +414,7 @@ i32 CGrunt::StepCompassMove() {
                 facing = g_gruntMoveDirWest;
                 break;
             case TILEKIND_ARROW_CURRENT:
-                switch (m_entranceCell.m_direction) {
+                switch (m_facing.m_direction) {
                     case DIR_NORTH:
                         tile.m_y -= 0x20;
                         next = tile;
@@ -505,7 +505,7 @@ i32 CGrunt::StepCompassMove() {
         u32 toyCount =
             g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_toyTiles, 1);
         if (m_toyTileIndex < toyCount) {
-            switch (m_entranceCell.m_direction) {
+            switch (m_facing.m_direction) {
                 case DIR_NORTH:
                     next.Set(tile.m_x, tile.m_y - 0x20);
                     facing = g_gruntMoveDirNorth;
@@ -663,7 +663,7 @@ RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     Coord tile = LastTilePx();
     Coord next;
-    switch (m_entranceCell.m_direction) {
+    switch (m_facing.m_direction) {
         case DIR_NORTH:
             next.Set(tile.m_x, tile.m_y - 0x20);
             break;
@@ -879,7 +879,7 @@ i32 CGrunt::SerializeDispatch(
             m_triggerMgr = g_gameReg->GetTriggerMgr();
             break;
     }
-    m_entranceCell.Serialize(ar, mode, typeId, object);
+    m_facing.Serialize(ar, mode, typeId, object);
     m_toyTiming.Serialize(ar, mode, typeId, object);
     m_idleDelayTiming.Serialize(ar, mode, typeId, object);
     m_idleWindowTiming.Serialize(ar, mode, typeId, object);
@@ -889,7 +889,7 @@ i32 CGrunt::SerializeDispatch(
     m_combatTiming.Serialize(ar, mode, typeId, object);
     m_hudRetireTiming.Serialize(ar, mode, typeId, object);
     m_wingzTiming.Serialize(ar, mode, typeId, object);
-    m_conversionTiming.Serialize(ar, mode, typeId, object);
+    m_powerupTiming.Serialize(ar, mode, typeId, object);
     m_shimmerTiming.Serialize(ar, mode, typeId, object);
     m_walkVoiceTiming.Serialize(ar, mode, typeId, object);
     m_arrivalRerollTiming.Serialize(ar, mode, typeId, object);
@@ -1006,7 +1006,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));
     ar->Write(&m_activePickupType, sizeof(m_activePickupType));
-    ar->Write(&m_vehiclePickupType, sizeof(m_vehiclePickupType));
+    ar->Write(&m_carriedToyType, sizeof(m_carriedToyType));
     ar->Write(&m_savedToolType, sizeof(m_savedToolType));
     ar->Write(&m_pendingPickupType, sizeof(m_pendingPickupType));
     ar->Write(&m_helpCueId, sizeof(m_helpCueId));
@@ -1039,8 +1039,8 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_arrivalActive, sizeof(m_arrivalActive));
     ar->Write(&m_reachRect, sizeof(m_reachRect));
     ar->Write(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
-    ar->Write(&m_vehicleContactRect, sizeof(m_vehicleContactRect));
-    ar->Write(&m_vehicleContactExclusionRect, sizeof(m_vehicleContactExclusionRect));
+    ar->Write(&m_toyUseRect, sizeof(m_toyUseRect));
+    ar->Write(&m_toyUseExclusionRect, sizeof(m_toyUseExclusionRect));
     ar->Write(&m_health, sizeof(m_health));
     ar->Write(&m_stamina, sizeof(m_stamina));
     ar->Write(&m_toyTime, sizeof(m_toyTime));
@@ -1074,10 +1074,10 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_wingzEnabled, sizeof(m_wingzEnabled));
     ar->Write(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
     ar->Write(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));
-    ar->Write(&m_resetApplied, sizeof(m_resetApplied));
+    ar->Write(&m_idleVariantActive, sizeof(m_idleVariantActive));
     ar->Write(&m_arrivalFlags, sizeof(m_arrivalFlags));
     ar->Write(&m_passableMask, sizeof(m_passableMask));
-    ar->Write(&m_gruntKind, sizeof(m_gruntKind));
+    ar->Write(&m_powerupType, sizeof(m_powerupType));
     ar->Write(&m_entranceArmed, sizeof(m_entranceArmed));
     ar->Write(&m_deathType, sizeof(m_deathType));
     ar->Write(&m_spawnProtectionActive, sizeof(m_spawnProtectionActive));
@@ -1086,7 +1086,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));
     ar->Write(&m_pendingTrigger, sizeof(m_pendingTrigger));
     ar->Write(&m_killerPlayerIndex, sizeof(m_killerPlayerIndex));
-    ar->Write(&m_tileClaimed, sizeof(m_tileClaimed));
+    ar->Write(&m_guarding, sizeof(m_guarding));
     ar->Write(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
     ar->Write(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
     ar->Write(&m_routeBlockedMask, sizeof(m_routeBlockedMask));
@@ -1107,7 +1107,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         i32 row, col;
         for (row = 0; row < 3; row++) {
             for (col = 0; col < 3; col++) {
-                if (m_cells[3 * row + col].SerializeStrings(ar) == 0) {
+                if (m_directionData[3 * row + col].Save(ar) == 0) {
                     return 0;
                 }
             }

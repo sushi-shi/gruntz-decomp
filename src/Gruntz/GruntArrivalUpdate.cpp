@@ -72,7 +72,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 this->m_attackWindupActive = false;
                 this->m_attackQueued = false;
                 this->m_inCombat = false;
-                ResetEntranceAnimation(1, 0, 0);
+                ResetIdleAnimation(1, 0, 0);
                 return 1;
             }
             if (atTarget) {
@@ -88,7 +88,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             this->m_attackWindupActive = false;
             this->m_attackQueued = false;
             this->m_inCombat = false;
-            ResetEntranceAnimation(1, 0, 0);
+            ResetIdleAnimation(1, 0, 0);
             return 1;
         }
         this->m_attackQueued = false;
@@ -124,7 +124,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 this->m_dwell = 0;
                 break;
             }
-            if (this->m_resetApplied == false && this->m_hasExtent != false
+            if (this->m_idleVariantActive == false && this->m_hasExtent != false
                 && static_cast<u32>(this->m_dwell) > 3000) {
                 if (IsArrivalRerollPending() != 0) {
                     CGameObject* base = this->m_object;

@@ -164,7 +164,7 @@ i32 CGrunt::UpdatePickupAnimation() {
     }
     if (mode < PICKUP_BRICKZ_FIRST) {
         if (mode >= PICKUP_TOYZ_FIRST) {
-            return LoadVehicleGruntSprites(mode);
+            return SetCarriedToy(mode);
         }
         return LoadTypeTableClearMove(mode);
     }
@@ -175,7 +175,7 @@ RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     CGrunt* other = m_triggerMgr->UnitAt(playerIndex, unitIndex);
     if (other != NULL && other->IsEntranceCommitted() != false
-        && other->GetGruntKind() != GRUNT_GHOST) {
+        && other->GetPowerupType() != GRUNT_GHOST) {
         i32 ox = other->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oy = other->m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 tx = m_defenderPx.m_x >> TILE_SHIFT_PX;
@@ -266,7 +266,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     }
 
     if (!found) {
-        ResetEntranceAnimation(1, 0, 0);
+        ResetIdleAnimation(1, 0, 0);
     } else {
         SwitchAnimation(found);
         APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
@@ -354,7 +354,7 @@ i32 CGrunt::LoadEntranceConfig() {
     if (!cur->IsComplete()) {
         return 0;
     }
-    ResetEntranceAnimation(1, 0, 0);
+    ResetIdleAnimation(1, 0, 0);
     return 0;
 }
 
@@ -367,7 +367,7 @@ i32 CGrunt::RearmEntranceDrop() {
 
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-        const char* name = EntranceCell()->ItemName().GetBuffer(0);
+        const char* name = FacingData()->ItemName().GetBuffer(0);
         SetImageFrameByName(name, frame);
     }
 
@@ -397,7 +397,7 @@ i32 CGrunt::StartBombGruntRun() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
-    m_gruntKind = GRUNT_NORMAL;
+    m_powerupType = GRUNT_NORMAL;
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
@@ -427,7 +427,7 @@ i32 CGrunt::StartBombGruntRun() {
     m_bombRunActive = true;
     PLAY_GRUNT_CUE_IN_VIEW(8);
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
-    char* cn = EntranceCell()->ItemName().GetBuffer(0);
+    char* cn = FacingData()->ItemName().GetBuffer(0);
     SetImageSetByName(cn);
     return 0;
 }
@@ -440,24 +440,24 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         m_wingzTiming.Start(static_cast<i32>((static_cast<double>(m_wingzTime) * 100.0 - (-0.5))));
         CreateWingzTimeSprite();
 
-        m_cells[0].IdleName() = s_nwItem;
-        m_cells[1].IdleName() = s_nItem;
-        m_cells[2].IdleName() = s_neItem;
-        m_cells[3].IdleName() = s_wItem;
-        m_cells[4].IdleName() = s_nItem;
-        m_cells[5].IdleName() = s_eItem;
-        m_cells[6].IdleName() = s_swItem;
-        m_cells[7].IdleName() = s_sItem;
-        m_cells[8].IdleName() = s_seItem;
-        m_cells[0].WalkName() = s_nwItem;
-        m_cells[1].WalkName() = s_nItem;
-        m_cells[2].WalkName() = s_neItem;
-        m_cells[3].WalkName() = s_wItem;
-        m_cells[4].WalkName() = s_nItem;
-        m_cells[5].WalkName() = s_eItem;
-        m_cells[6].WalkName() = s_swItem;
-        m_cells[7].WalkName() = s_sItem;
-        m_cells[8].WalkName() = s_seItem;
+        m_directionData[0].IdleName() = s_nwItem;
+        m_directionData[1].IdleName() = s_nItem;
+        m_directionData[2].IdleName() = s_neItem;
+        m_directionData[3].IdleName() = s_wItem;
+        m_directionData[4].IdleName() = s_nItem;
+        m_directionData[5].IdleName() = s_eItem;
+        m_directionData[6].IdleName() = s_swItem;
+        m_directionData[7].IdleName() = s_sItem;
+        m_directionData[8].IdleName() = s_seItem;
+        m_directionData[0].WalkName() = s_nwItem;
+        m_directionData[1].WalkName() = s_nItem;
+        m_directionData[2].WalkName() = s_neItem;
+        m_directionData[3].WalkName() = s_wItem;
+        m_directionData[4].WalkName() = s_nItem;
+        m_directionData[5].WalkName() = s_eItem;
+        m_directionData[6].WalkName() = s_swItem;
+        m_directionData[7].WalkName() = s_sItem;
+        m_directionData[8].WalkName() = s_seItem;
 
         m_poseWalk =
             MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
@@ -476,24 +476,24 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         m_wingzTiming.m_intervalHi = 0;
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
 
-        m_cells[0].WalkName() = s_nwWalk;
-        m_cells[1].WalkName() = s_nWalk;
-        m_cells[2].WalkName() = s_neWalk;
-        m_cells[3].WalkName() = s_wWalk;
-        m_cells[4].WalkName() = s_nWalk;
-        m_cells[5].WalkName() = s_eWalk;
-        m_cells[6].WalkName() = s_swWalk;
-        m_cells[7].WalkName() = s_sWalk;
-        m_cells[8].WalkName() = s_seWalk;
-        m_cells[0].IdleName() = s_nwIdle;
-        m_cells[1].IdleName() = s_nIdle;
-        m_cells[2].IdleName() = s_neIdle;
-        m_cells[3].IdleName() = s_wIdle;
-        m_cells[4].IdleName() = s_nIdle;
-        m_cells[5].IdleName() = s_eIdle;
-        m_cells[6].IdleName() = s_swIdle;
-        m_cells[7].IdleName() = s_sIdle;
-        m_cells[8].IdleName() = s_seIdle;
+        m_directionData[0].WalkName() = s_nwWalk;
+        m_directionData[1].WalkName() = s_nWalk;
+        m_directionData[2].WalkName() = s_neWalk;
+        m_directionData[3].WalkName() = s_wWalk;
+        m_directionData[4].WalkName() = s_nWalk;
+        m_directionData[5].WalkName() = s_eWalk;
+        m_directionData[6].WalkName() = s_swWalk;
+        m_directionData[7].WalkName() = s_sWalk;
+        m_directionData[8].WalkName() = s_seWalk;
+        m_directionData[0].IdleName() = s_nwIdle;
+        m_directionData[1].IdleName() = s_nIdle;
+        m_directionData[2].IdleName() = s_neIdle;
+        m_directionData[3].IdleName() = s_wIdle;
+        m_directionData[4].IdleName() = s_nIdle;
+        m_directionData[5].IdleName() = s_eIdle;
+        m_directionData[6].IdleName() = s_swIdle;
+        m_directionData[7].IdleName() = s_sIdle;
+        m_directionData[8].IdleName() = s_seIdle;
 
         m_poseWalk =
             MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgWalk);
@@ -512,7 +512,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (IsAnimationAct("D")) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        char* buf = EntranceCell()->WalkName().GetBuffer(0);
+        char* buf = FacingData()->WalkName().GetBuffer(0);
         SetImageFrameByName(buf, frame);
         return 1;
     }
@@ -520,7 +520,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (IsAnimationAct("A")) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-        char* buf = EntranceCell()->IdleName().GetBuffer(0);
+        char* buf = FacingData()->IdleName().GetBuffer(0);
         SetImageFrameByName(buf, frame);
     }
     return 1;
@@ -663,7 +663,7 @@ i32 CGrunt::UpdateFreezeAnimation() {
             ReadConfigFromButeMgr();
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
-            ResetEntranceAnimation(1, 0, 0);
+            ResetIdleAnimation(1, 0, 0);
             Coord tile = ScreenTile(LastTilePx());
             if (g_gameReg->GetTileGrid()->CellFlagsAt(tile.m_x, tile.m_y) & 0x80) {
                 m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);

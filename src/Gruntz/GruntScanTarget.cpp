@@ -60,7 +60,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             CGrunt* cand =
                 g_gameReg->GetTriggerMgr()->UnitAt(candidatePlayerIndex, candidateUnitIndex);
             if (cand != NULL && cand->IsEntranceCommitted() != false
-                && cand->GetGruntKind() != GRUNT_GHOST) {
+                && cand->GetPowerupType() != GRUNT_GHOST) {
                 i32 pa;
                 PRIO(pa, m_activePickupType);
                 i32 pb;
@@ -207,7 +207,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 }
             }
 
-            if (m_resetApplied != false || m_hasExtent == false
+            if (m_idleVariantActive != false || m_hasExtent == false
                 || static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }

@@ -9,7 +9,7 @@
 #include <string.h>
 
 RVA(0x00056da0, 0xc7)
-i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
+i32 CGruntDirectionData::Save(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
@@ -30,7 +30,7 @@ i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
 }
 
 RVA(0x00056eb0, 0x94)
-i32 CGruntCellRec::DeserializeStrings(CFileMemBase* ar) {
+i32 CGruntDirectionData::Load(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }

@@ -875,7 +875,16 @@ def exact_closure_rejections(
     out = []
     if score != 100.0:
         out.append("unrounded objdiff score is not exactly 100.0")
-    if candidate_size != retail_size:
+    # Objdiff may omit terminal alignment from its size while the binding and
+    # COFF metrics include it. Equal complete payloads prove that extent without
+    # accepting a size mismatch on the score alone.
+    complete_payload_equal = (
+        candidate_metrics.get("size") == retail_size
+        and retail_metrics.get("size") == retail_size
+        and candidate_metrics.get("text_sha") is not None
+        and candidate_metrics["text_sha"] == retail_metrics.get("text_sha")
+    )
+    if candidate_size != retail_size and not complete_payload_equal:
         out.append(f"target size is not exact: candidate {candidate_size}, retail {retail_size}")
     if not candidate_metrics.get("reloc_stream_complete"):
         out.append("candidate ordered relocation addends are not fully decoded")

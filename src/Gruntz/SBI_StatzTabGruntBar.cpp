@@ -159,7 +159,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
                 abilityVal = IDX(unit->GetBrickPickupType()) + 0x11;
             }
         }
-        PickupType badge = unit->GetVehiclePickupType();
+        PickupType badge = unit->GetCarriedToyType();
         if (badge != PICKUP_NONE) {
             overrideVal = IDX(badge);
         }

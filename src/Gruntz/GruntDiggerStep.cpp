@@ -80,7 +80,7 @@ i32 CGrunt::StepDiggerBehavior() {
                 m_attackWindupActive = false;
                 m_attackQueued = false;
                 m_inCombat = false;
-                ResetEntranceAnimation(1, 0, 0);
+                ResetIdleAnimation(1, 0, 0);
                 return 1;
             }
             if (atTarget) {
@@ -96,7 +96,7 @@ i32 CGrunt::StepDiggerBehavior() {
             m_attackWindupActive = false;
             m_attackQueued = false;
             m_inCombat = false;
-            ResetEntranceAnimation(1, 0, 0);
+            ResetIdleAnimation(1, 0, 0);
             return 1;
         }
         m_attackQueued = false;
