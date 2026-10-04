@@ -9,6 +9,7 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GlyphStringDraw.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
@@ -439,28 +440,6 @@ i32 LayerBlitFrame(
     b32 useColorKey
 );
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, b32 snapFlag);
-i32 DrawTextToOverlaySurface(
-    CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
-i32 DrawTextToBackSurface(
-    CDDrawSurfaceMgr* surfaceMgr,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 shadow,
-    i32 r,
-    i32 g,
-    i32 b,
-    i32 flag
-);
 void Cmd_ResetScroll();
 i32 InitializeLevelArea(i32 levelIndex);
 void ActiveWait(u32 ms);

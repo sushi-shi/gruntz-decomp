@@ -19,6 +19,8 @@
 
 #include <string.h>
 
+// Keep this callable body synchronized with LogicTypeTableInline.h. The shared
+// inline-only form does not emit this function; see rule-exceptions.tsv.
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicHit")) {

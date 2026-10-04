@@ -108,6 +108,13 @@ inline TileCollisionKind CMapMgr::CellTypeAt(i32 x, i32 y) const {
     return m_rows[y][x].m_typeCode;
 }
 
+inline i32 CMapMgr::TileIdAt(u32 x, u32 y) const {
+    if (x < m_width && y < m_height) {
+        return m_rows[y][x].m_tileId;
+    }
+    return 0;
+}
+
 inline BrickzCell CMapMgr::CellAt(i32 x, i32 y) {
     BrickzCell cell;
     const BrickzCell* source;

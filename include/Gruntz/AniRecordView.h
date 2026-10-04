@@ -40,6 +40,10 @@ struct CAniRecordView : public CObject {
     i32 GetDurationMs();
     void ResolveIndices(SoundCueRegistry* owner, const char* str);
 
+    i32 GetFrameParameter() const {
+        return m_param;
+    }
+
     i32 Rng2Next();
 
     SoundCue* PickCue() {

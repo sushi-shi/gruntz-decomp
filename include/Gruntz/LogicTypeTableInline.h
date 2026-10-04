@@ -8,6 +8,8 @@
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/UserLogic.h>
 
+// Keep this selectively visible body synchronized with UserLogic.cpp; removing
+// it changes the constructor call boundaries. See rule-exceptions.tsv.
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicHit")) {
         obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(DispatchLogicHit, "LogicHit", 2);
