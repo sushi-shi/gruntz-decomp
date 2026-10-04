@@ -794,7 +794,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (!UpdateBattlezSpecialEligibility(unit, special)) {
                                 return 0;
                             }
-                            if (unit->GetGruntKind() == GRUNT_GHOST) {
+                            if (unit->GetPowerupType() == GRUNT_GHOST) {
                                 special = 0;
                             }
                             if (special != 0) {
@@ -821,7 +821,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                         other->m_object->m_screenY
                                                     )
                                                     != 0) {
-                                                    if (unit->GetGruntKind() != PICKUP_GHOST) {
+                                                    if (unit->GetPowerupType() != PICKUP_GHOST) {
                                                         if (other->IsInCombat() == false) {
                                                             if (HandleUnitContact(unit, other)
                                                                 != 0) {
@@ -1594,7 +1594,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
                 continue;
             }
             i32 keep = 1;
-            if (u->GetGruntKind() == GRUNT_GHOST) {
+            if (u->GetPowerupType() == GRUNT_GHOST) {
                 if (GetRandom(0, 99) > 5) {
                     keep = 0;
                 }
@@ -1663,7 +1663,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->IsAnimationAct("L")) {
         return 0;
     }
-    if (other->GetGruntKind() == GRUNT_GHOST) {
+    if (other->GetPowerupType() == GRUNT_GHOST) {
         return 0;
     }
     if (other->IsSpawnProtected() != false) {
@@ -1974,7 +1974,7 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
 
 RVA(0x0002c140, 0x420)
 i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
-    if (unit->GetGruntKind() != GRUNT_NORMAL) {
+    if (unit->GetPowerupType() != GRUNT_NORMAL) {
         return 0;
     }
     PickupType prim = unit->GetEquippedToolType();
@@ -2047,7 +2047,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             i32 gy = g->m_screenY >> TILE_SHIFT_PX;
             CPoint wpt(gx, gy);
             if (box.PtInRect(wpt)) {
-                if (special != 0 && unit->GetGruntKind() == GRUNT_NORMAL) {
+                if (special != 0 && unit->GetPowerupType() == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                         CMapMgr* bd = m_board;
                         bd->Clip(NULL);
@@ -2686,7 +2686,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (!u->IsNotAnimationAct("L")) {
                 continue;
             }
-            if (u->m_gruntKind == GRUNT_GHOST) {
+            if (u->m_powerupType == GRUNT_GHOST) {
                 continue;
             }
             Coord c;
@@ -3292,7 +3292,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
     if (src == NULL) {
         return 0;
     }
-    if (src->GetGruntKind() == GRUNT_GHOST) {
+    if (src->GetPowerupType() == GRUNT_GHOST) {
         return 0;
     }
     if (src->GetBattlezTask() == BZTASK_ADVANCE) {

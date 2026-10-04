@@ -1667,17 +1667,17 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                 && area.bottom >= gruntTop) {
                 switch (effect) {
                     case GRUNT_AREA_EFFECT_DROP:
-                        if (grunt->GetGruntKind() != GRUNT_INVULNERABLE) {
+                        if (grunt->GetPowerupType() != GRUNT_INVULNERABLE) {
                             StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, deathParam);
                         }
                         break;
                     case GRUNT_AREA_EFFECT_EXPLODE:
-                        if (grunt->GetGruntKind() != GRUNT_INVULNERABLE) {
+                        if (grunt->GetPowerupType() != GRUNT_INVULNERABLE) {
                             StartUnitDeath(playerIndex, unitIndex, DEATH_EXPLODE, deathParam);
                         }
                         break;
                     case GRUNT_AREA_EFFECT_SQUASH:
-                        if (grunt->GetGruntKind() != GRUNT_INVULNERABLE) {
+                        if (grunt->GetPowerupType() != GRUNT_INVULNERABLE) {
                             StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, deathParam);
                         }
                         break;

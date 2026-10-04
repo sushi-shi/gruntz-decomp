@@ -147,7 +147,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_resetApplied, sizeof(m_resetApplied));
     ar->Read(&m_arrivalFlags, sizeof(m_arrivalFlags));
     ar->Read(&m_passableMask, sizeof(m_passableMask));
-    ar->Read(&m_gruntKind, sizeof(m_gruntKind));
+    ar->Read(&m_powerupType, sizeof(m_powerupType));
     ar->Read(&m_entranceArmed, sizeof(m_entranceArmed));
     ar->Read(&m_deathType, sizeof(m_deathType));
     ar->Read(&m_spawnProtectionActive, sizeof(m_spawnProtectionActive));
@@ -214,7 +214,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     CWwdSpriteObject* cb = m_object;
     cb->SetDrawFill(SHADE_PAL_16, r);
 
-    if (m_gruntKind == GRUNT_GHOST) {
+    if (m_powerupType == GRUNT_GHOST) {
         CWwdSpriteObject* cb2 = m_object;
         i32 v = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
         SET_DRAW_FILL_FRACTION(cb2, SHADE_PAL_ALPHA_16, v);

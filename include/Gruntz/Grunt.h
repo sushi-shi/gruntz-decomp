@@ -177,8 +177,8 @@ public:
     inline PickupType ResolveEquippedToolType(PickupType activePickupType) const;
     inline PickupType GetEquippedToolType() const;
 
-    PickupType GetGruntKind() const {
-        return m_gruntKind;
+    PickupType GetPowerupType() const {
+        return m_powerupType;
     }
     PickupType GetCarriedToyType() const {
         return m_carriedToyType;
@@ -457,7 +457,7 @@ public:
     i32 m_passableMask;
     i32 m_routeBlockedMask;
     i32 m_routePassableMask;
-    PickupType m_gruntKind;
+    PickupType m_powerupType;
     b32 m_entranceArmed;
 
     class CTriggerMgr* m_triggerMgr;
@@ -623,7 +623,7 @@ public:
     ClockInterval m_combatTiming;
     ClockInterval m_hudRetireTiming;
     ClockInterval m_wingzTiming;
-    ClockInterval m_conversionTiming;
+    ClockInterval m_powerupTiming;
     ClockInterval m_shimmerTiming;
     ClockInterval m_walkVoiceTiming;
     i32 m_reserved8d0;

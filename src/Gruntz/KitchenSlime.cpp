@@ -134,7 +134,7 @@ i32 CKitchenSlime::Tick() {
             &unitIndex,
             static_cast<RECT*>(0)
         ));
-        if (ent && ent->GetGruntKind() != GRUNT_INVULNERABLE) {
+        if (ent && ent->GetPowerupType() != GRUNT_INVULNERABLE) {
             (static_cast<CTriggerMgr*>(g_gameReg->GetTriggerMgr()))
                 ->StartUnitDeath(playerIndex, unitIndex, DEATH_MELT, -1);
         }

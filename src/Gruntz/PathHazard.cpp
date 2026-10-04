@@ -166,7 +166,7 @@ i32 CPathHazard::Tick() {
             &unitIndex,
             &rect
         );
-        if (ent != NULL && ent->GetGruntKind() != GRUNT_INVULNERABLE) {
+        if (ent != NULL && ent->GetPowerupType() != GRUNT_INVULNERABLE) {
 
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ || playerIndex == 0) {
                 if (this->HitTest(playerIndex, unitIndex) == 0) {
@@ -286,7 +286,7 @@ i32 CPathHazard::SiblingTick() {
             &unitIndex,
             &rect
         );
-        if (ent != NULL && ent->GetGruntKind() != GRUNT_INVULNERABLE) {
+        if (ent != NULL && ent->GetPowerupType() != GRUNT_INVULNERABLE) {
 
             if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ || playerIndex == 0) {
                 if (this->HitTest(playerIndex, unitIndex) == 0) {

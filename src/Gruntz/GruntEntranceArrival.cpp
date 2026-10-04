@@ -291,10 +291,10 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenX,
                         m_object->m_screenY,
                         0,
-                        m_gruntKind
+                        m_powerupType
                     );
                     PickupType t = tgt->GetEquippedToolType();
-                    if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
+                    if (t == PICKUP_BOMB && m_powerupType != GRUNT_INVULNERABLE) {
                         m_triggerMgr->StartUnitDeath(
                             m_playerIndex,
                             m_unitIndex,
@@ -312,7 +312,7 @@ i32 CGrunt::StepAttackFire() {
 
         m_entranceActive = true;
         u32 dt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "AttackDowntime");
-        if (m_gruntKind == GRUNT_ROIDZ) {
+        if (m_powerupType == GRUNT_ROIDZ) {
             dt = 0;
         }
         m_attackTiming.Start(dt);
@@ -921,7 +921,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
-    m_gruntKind = GRUNT_NORMAL;
+    m_powerupType = GRUNT_NORMAL;
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
@@ -1234,7 +1234,7 @@ i32 CGrunt::UpdateToolUseAnimation() {
             m_entranceActive = true;
             u32 downtime =
                 g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "ItemDowntime");
-            if (m_gruntKind == GRUNT_ROIDZ) {
+            if (m_powerupType == GRUNT_ROIDZ) {
                 downtime = 0;
             }
             m_attackTiming.Start(downtime);

@@ -316,7 +316,7 @@ tail:
     if (m_aiType == AI_TOOLTHIEF) {
         TryPowerupAtTile();
     }
-    m_gruntKind = GRUNT_NORMAL;
+    m_powerupType = GRUNT_NORMAL;
     m_deathType = deathType;
     return 0;
 }

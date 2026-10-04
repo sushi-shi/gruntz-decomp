@@ -889,7 +889,7 @@ i32 CGrunt::SerializeDispatch(
     m_combatTiming.Serialize(ar, mode, typeId, object);
     m_hudRetireTiming.Serialize(ar, mode, typeId, object);
     m_wingzTiming.Serialize(ar, mode, typeId, object);
-    m_conversionTiming.Serialize(ar, mode, typeId, object);
+    m_powerupTiming.Serialize(ar, mode, typeId, object);
     m_shimmerTiming.Serialize(ar, mode, typeId, object);
     m_walkVoiceTiming.Serialize(ar, mode, typeId, object);
     m_arrivalRerollTiming.Serialize(ar, mode, typeId, object);
@@ -1077,7 +1077,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_resetApplied, sizeof(m_resetApplied));
     ar->Write(&m_arrivalFlags, sizeof(m_arrivalFlags));
     ar->Write(&m_passableMask, sizeof(m_passableMask));
-    ar->Write(&m_gruntKind, sizeof(m_gruntKind));
+    ar->Write(&m_powerupType, sizeof(m_powerupType));
     ar->Write(&m_entranceArmed, sizeof(m_entranceArmed));
     ar->Write(&m_deathType, sizeof(m_deathType));
     ar->Write(&m_spawnProtectionActive, sizeof(m_spawnProtectionActive));

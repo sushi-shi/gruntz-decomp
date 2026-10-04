@@ -276,7 +276,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_activePickupType = PICKUP_NONE;
     m_carriedToyType = PICKUP_NONE;
     m_brickPickupType = PICKUP_NONE;
-    m_gruntKind = GRUNT_NORMAL;
+    m_powerupType = GRUNT_NORMAL;
     m_savedToolType = PICKUP_NONE;
     m_animSetName = "NORMALGRUNT";
     m_entranceCommitted = true;
@@ -313,7 +313,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_combatTiming.Clear();
     m_hudRetireTiming.Clear();
     m_wingzTiming.Clear();
-    m_conversionTiming.Clear();
+    m_powerupTiming.Clear();
     m_shimmerTiming.Clear();
     m_walkVoiceTiming.Clear();
     m_arrivalRerollTiming.Clear();
@@ -347,7 +347,7 @@ void CGrunt::ReadConfigFromButeMgr() {
         1000
     );
 
-    if (m_gruntKind == GRUNT_SUPERSPEED) {
+    if (m_powerupType == GRUNT_SUPERSPEED) {
         m_timePerTile >>= 1;
     }
 }
@@ -1708,10 +1708,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (kind == PICKUP_INVALID) {
         goto fail;
     }
-    if (m_gruntKind == GRUNT_CONVERSION) {
+    if (m_powerupType == GRUNT_CONVERSION) {
         goto fail;
     }
-    if (m_gruntKind == GRUNT_DEATHTOUCH) {
+    if (m_powerupType == GRUNT_DEATHTOUCH) {
         goto fail;
     }
     if (fresh == 0) {
@@ -1734,10 +1734,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     }
     if (defer == 0) {
         if (FinishActiveAction() != 0) {
-            if (m_gruntKind == GRUNT_CONVERSION) {
+            if (m_powerupType == GRUNT_CONVERSION) {
                 goto fail;
             }
-            if (m_gruntKind == GRUNT_DEATHTOUCH) {
+            if (m_powerupType == GRUNT_DEATHTOUCH) {
                 goto fail;
             }
             if (m_activePickupType == kind) {
@@ -2172,9 +2172,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
             m_passableMask = 0;
-            m_gruntKind = GRUNT_CONVERSION;
-            m_conversionTiming.m_interval = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupType = GRUNT_CONVERSION;
+            m_powerupTiming.m_interval = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
+            m_powerupTiming.m_start = g_frameTime;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_CONVERSIONLOOP");
             break;
@@ -2188,12 +2188,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
             m_passableMask = 0;
-            m_gruntKind = GRUNT_DEATHTOUCH;
+            m_powerupType = GRUNT_DEATHTOUCH;
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "DeathTouchTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2201,14 +2201,14 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_GHOST: {
-            m_gruntKind = GRUNT_GHOST;
+            m_powerupType = GRUNT_GHOST;
             i32 t = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
             SET_DRAW_FILL_FRACTION(m_object, SHADE_PAL_ALPHA_16, t);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2216,12 +2216,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_INVULNERABILITY: {
-            m_gruntKind = GRUNT_INVULNERABLE;
+            m_powerupType = GRUNT_INVULNERABLE;
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2229,13 +2229,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_REACTIVEARMOR: {
-            m_gruntKind = GRUNT_REACTIVEARMOR;
+            m_powerupType = GRUNT_REACTIVEARMOR;
             CreatePowerupSprite(3);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2243,13 +2243,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_ROIDZ: {
-            m_gruntKind = GRUNT_ROIDZ;
+            m_powerupType = GRUNT_ROIDZ;
             CreatePowerupSprite(1);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "RoidzTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             StopPowerupLoopSound();
@@ -2257,13 +2257,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_SUPERSPEED: {
-            m_gruntKind = GRUNT_SUPERSPEED;
+            m_powerupType = GRUNT_SUPERSPEED;
             CreatePowerupSprite(2);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "SuperSpeedTime", 0x4e20);
             }
-            m_conversionTiming.m_interval = static_cast<u32>(m_powerupDuration);
-            m_conversionTiming.m_start = g_frameTime;
+            m_powerupTiming.m_interval = static_cast<u32>(m_powerupDuration);
+            m_powerupTiming.m_start = g_frameTime;
             m_shimmerTiming.m_intervalLo = 0;
             m_shimmerTiming.m_intervalHi = 0;
             ReadConfigFromButeMgr();

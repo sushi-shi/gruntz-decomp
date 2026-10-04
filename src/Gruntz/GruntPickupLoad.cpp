@@ -33,7 +33,7 @@ i32 CGrunt::BeginPickupAnimation(
     i32 pickupParam,
     i32 countStats
 ) {
-    if (m_gruntKind == GRUNT_CONVERSION || m_gruntKind == GRUNT_DEATHTOUCH) {
+    if (m_powerupType == GRUNT_CONVERSION || m_powerupType == GRUNT_DEATHTOUCH) {
         return 0;
     }
     if (forced == 0) {

@@ -802,7 +802,7 @@ void CGrunt::OnStruck(b32 wasHit) {
     i32 c = ++m_struckCount;
 
     if (wasHit == false) {
-        if (m_gruntKind == GRUNT_GHOST) {
+        if (m_powerupType == GRUNT_GHOST) {
             return;
         }
         if (c < 5) {
@@ -1111,7 +1111,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 fromProjectile,
     PickupType attackerGruntKind
 ) {
-    if (this->m_gruntKind == GRUNT_INVULNERABLE && this->m_activePickupType != PICKUP_BOMB) {
+    if (this->m_powerupType == GRUNT_INVULNERABLE && this->m_activePickupType != PICKUP_BOMB) {
         return 1;
     }
 
@@ -1148,7 +1148,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     if (attackerGruntKind == GRUNT_DEATHTOUCH) {
         hit = 0x64;
-    } else if (this->m_gruntKind == GRUNT_REACTIVEARMOR) {
+    } else if (this->m_powerupType == GRUNT_REACTIVEARMOR) {
         hit = static_cast<i32>((static_cast<float>(hit) * 0.25f));
         if (fromProjectile == 0) {
             CGrunt* enemy = m_triggerMgr->UnitAt(srcPlayerIndex, srcUnitIndex);
@@ -1902,7 +1902,7 @@ void CGrunt::StepBehavior(char*) {
             if (m_wingzEnabled != false) {
                 goto afterTile;
             }
-            if (m_gruntKind == GRUNT_INVULNERABLE) {
+            if (m_powerupType == GRUNT_INVULNERABLE) {
                 goto afterTile;
             }
             if (m_activePickupType == PICKUP_BOMB) {
@@ -2098,11 +2098,11 @@ afterArrival:
         }
     }
 
-kindDispatch:
-    if (m_gruntKind != GRUNT_NORMAL) {
-        if (m_gruntKind == GRUNT_CONVERSION) {
+updatePowerup:
+    if (m_powerupType != GRUNT_NORMAL) {
+        if (m_powerupType == GRUNT_CONVERSION) {
 
-            if (!m_conversionTiming.Expired()) {
+            if (!m_powerupTiming.Expired()) {
                 return;
             }
             i32 bite = m_health - 5;
@@ -2113,10 +2113,10 @@ kindDispatch:
                 m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 return;
             }
-            m_conversionTiming.Start(g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4));
+            m_powerupTiming.Start(g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4));
             return;
         }
-        if (m_gruntKind == GRUNT_INVULNERABLE) {
+        if (m_powerupType == GRUNT_INVULNERABLE) {
 
             if (m_shimmerTiming.Expired()) {
                 i32 pick = rand() % 16;
@@ -2130,11 +2130,11 @@ kindDispatch:
                 obj->SetDrawFill(cmd, sel);
             }
         }
-        i32 leftMs = static_cast<i32>(m_conversionTiming.Remaining());
+        i32 leftMs = static_cast<i32>(m_powerupTiming.Remaining());
         if (leftMs <= 0xbb8) {
-            if (m_gruntKind == GRUNT_GHOST) {
+            if (m_powerupType == GRUNT_GHOST) {
 
-                u32 remMs = m_conversionTiming.Remaining();
+                u32 remMs = m_powerupTiming.Remaining();
                 i32 frac = static_cast<i32>(
                     static_cast<double>(
                         g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0x100)
@@ -2152,22 +2152,22 @@ kindDispatch:
                 }
             }
             if (leftMs == 0) {
-                switch (m_gruntKind) {
+                switch (m_powerupType) {
                     case PICKUP_GHOST: {
                         CWwdSpriteObject* obj = m_object;
-                        m_gruntKind = GRUNT_NORMAL;
+                        m_powerupType = GRUNT_NORMAL;
                         obj->m_drawActive = true;
                         obj->m_drawFillCmd = SHADE_PAL_16;
                         break;
                     }
                     case PICKUP_INVULNERABILITY:
-                        m_gruntKind = GRUNT_NORMAL;
+                        m_powerupType = GRUNT_NORMAL;
                         break;
                     case PICKUP_SUPERSPEED:
                     case PICKUP_ROIDZ:
                     case PICKUP_REACTIVEARMOR: {
                         CWwdSpriteObject* ps = m_powerupSprite;
-                        m_gruntKind = GRUNT_NORMAL;
+                        m_powerupType = GRUNT_NORMAL;
                         if (ps != NULL) {
                             ps->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             m_powerupSprite = NULL;
@@ -2176,7 +2176,7 @@ kindDispatch:
                     }
                     case PICKUP_DEATHTOUCH: {
                         CWwdSpriteObject* ps = m_powerupSprite;
-                        m_gruntKind = GRUNT_NORMAL;
+                        m_powerupType = GRUNT_NORMAL;
                         if (ps != NULL) {
                             ps->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             m_powerupSprite = NULL;
@@ -2233,7 +2233,7 @@ void CGrunt::FinalizeStep(char* name) {
         }
     }
     if (m_powerupLoopSound != NULL) {
-        if (m_gruntKind == GRUNT_NORMAL) {
+        if (m_powerupType == GRUNT_NORMAL) {
             StopPowerupLoopSound();
         } else {
             CGruntzMgr* g = g_gameReg;

@@ -175,7 +175,7 @@ RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     CGrunt* other = m_triggerMgr->UnitAt(playerIndex, unitIndex);
     if (other != NULL && other->IsEntranceCommitted() != false
-        && other->GetGruntKind() != GRUNT_GHOST) {
+        && other->GetPowerupType() != GRUNT_GHOST) {
         i32 ox = other->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oy = other->m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 tx = m_defenderPx.m_x >> TILE_SHIFT_PX;
@@ -397,7 +397,7 @@ i32 CGrunt::StartBombGruntRun() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
-    m_gruntKind = GRUNT_NORMAL;
+    m_powerupType = GRUNT_NORMAL;
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
