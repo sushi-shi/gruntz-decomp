@@ -1123,7 +1123,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     LoadLoadingBarSprite();
     AdvanceLoadingBar(false);
-    FreeListTeardown();
+    ClearLevelState();
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
@@ -1444,7 +1444,7 @@ fail0:
 RVA(0x000cb400, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
-    FreeListTeardown();
+    ClearLevelState();
     if (m_world) {
         m_world->ChildGroup()->ClearChildren();
     }
@@ -1456,7 +1456,7 @@ void CPlay::OnExit() {
 }
 
 RVA(0x000cb480, 0x22c)
-void CPlay::FreeListTeardown() {
+void CPlay::ClearLevelState() {
     i32 i;
     i32 k;
     if (m_world == NULL) {

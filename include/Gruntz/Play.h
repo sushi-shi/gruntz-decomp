@@ -124,7 +124,7 @@ public:
 
     virtual i32 HandleDragMove(i32 keyFlags, i32 x, i32 y);
     virtual void OnExit();
-    virtual void FreeListTeardown();
+    virtual void ClearLevelState();
     virtual void ModeCleanup();
 
     virtual i32 DrawStateMessage();

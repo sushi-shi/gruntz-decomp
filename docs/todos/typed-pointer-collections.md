@@ -84,7 +84,7 @@ source layer the original developers wrote around each collection.
 - `CPlay` coordinate arrays: `FreeStartMarkers()` and
   `FreePlacedObjectCells(group)` (in `PlayInline.h`; `Play.h` cannot take
   `CoordPool.h` without perturbing its includers) cover ReleaseResources,
-  FreeListTeardown and LoadPlayState; count-based appends are `Add`. The
+  ClearLevelState and LoadPlayState; count-based appends are `Add`. The
   camera bookmarks stay open-coded: ReleaseResources resets
   `m_cameraBookmarkIndex` between the recycle loop and `SetSize`.
 

@@ -3416,7 +3416,7 @@ play	?FinishSelectionDrag@CPlay@@QAEHXZ	100.0000	100.0000	7	a8c534d9bb17	0xda440
 play	?FlipBoth@CImage@@UAEXPAX@Z	100.0000	100.0000	1	c59c57547a67	0xd5e20	100.0000	
 play	?FlipHorizontal@CImage@@UAEXPAX@Z	100.0000	100.0000	1	943780ed0842	0xd5e00	100.0000	
 play	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	1	a609e028be41	0xcee70	100.0000	
-play	?FreeListTeardown@CPlay@@UAEXXZ	100.0000	100.0000	27	09b7c9d2bed1	0xcb480	100.0000	
+play	?ClearLevelState@CPlay@@UAEXXZ	100.0000	100.0000	27	09b7c9d2bed1	0xcb480	100.0000	
 play	?GetClassId@CImage@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	28b6fdb30070	0xd5de0	100.0000	
 play	?GetMusicVariant@CPlay@@QAEHXZ	100.0000	100.0000	7	02ff027cee81	0xda200	100.0000	
 play	?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z	100.0000	100.0000	3	5014ee547511	0xd53a0	100.0000	
