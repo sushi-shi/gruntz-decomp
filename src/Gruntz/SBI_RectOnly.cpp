@@ -3938,6 +3938,7 @@ i32 CWarpStoneFly::SerializeDispatch(
     return 1;
 }
 
+// @early-stop
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(u32 dt) {
     i32 currentY = static_cast<i32>(m_currentY);
