@@ -2391,7 +2391,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     do {
         CGrunt* unit = *units;
         if (unit != NULL && unit->IsDeathAnimationStarted() == false) {
-            (static_cast<CGrunt*>(unit))->BuildGruntExitAnimation();
+            (static_cast<CGrunt*>(unit))->StartExitAnimation();
         }
         units++;
         unitsRemaining--;

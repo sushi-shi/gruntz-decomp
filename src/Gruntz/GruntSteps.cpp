@@ -842,7 +842,7 @@ applyTail:
             }
         }
     }
-    BuildEntranceAnimation(GRUNT_ENTRANCE_WORMHOLE);
+    StartEntranceAnimation(GRUNT_ENTRANCE_WORMHOLE);
     return 1;
 }
 
@@ -1065,7 +1065,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_tileMoveCommitted, sizeof(m_tileMoveCommitted));
     ar->Write(&m_reserved3dc, sizeof(m_reserved3dc));
     ar->Write(&m_toolTargetTile, sizeof(m_toolTargetTile));
-    ar->Write(&m_arrivalPhase, sizeof(m_arrivalPhase));
+    ar->Write(&m_arrivalAction, sizeof(m_arrivalAction));
     ar->Write(&m_timePerTile, sizeof(m_timePerTile));
     ar->Write(&m_movePosX, sizeof(m_movePosX));
     ar->Write(&m_movePosY, sizeof(m_movePosY));

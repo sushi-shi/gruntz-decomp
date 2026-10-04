@@ -70,11 +70,11 @@ GZ_ENUM_CONST_BEGIN(GruntDirectionGrid)
     GRUNT_DIRECTION_GRID_WIDTH = 3
 GZ_ENUM_CONST_END(GruntDirectionGrid)
 
-GZ_ENUM_CONST_BEGIN(GruntArrivalTag)
-    ARRIVAL_TAG_NONE = 0,
-    ARRIVAL_TAG_TRIGGER_A = 2,
-    ARRIVAL_TAG_TRIGGER_B = 3
-GZ_ENUM_CONST_END(GruntArrivalTag)
+GZ_ENUM_CONST_BEGIN(GruntArrivalAction)
+    ARRIVAL_ACTION_NONE = 0,
+    ARRIVAL_ACTION_USE_TOOL = 2,
+    ARRIVAL_ACTION_USE_TOY = 3
+GZ_ENUM_CONST_END(GruntArrivalAction)
 
 extern GruntDirectionCell g_gruntDirNorth;
 extern GruntDirectionCell g_gruntDirNorthEast;
@@ -178,7 +178,7 @@ public:
     inline PickupType GetEquippedToolType() const;
     inline void CancelToolAnimationEffects();
     inline void UnregisterFromBoard(i32 exitedLevel);
-    inline void BeginGruntEntranceAndReleaseCell();
+    inline void SetBusyAndDeselect();
 
     PickupType GetPowerupType() const {
         return m_powerupType;
@@ -385,7 +385,7 @@ public:
 
     i32 StartToolUseAnimation(i32 tileX, i32 tileY);
 
-    i32 BuildGruntExitAnimation();
+    i32 StartExitAnimation();
 
     i32 UpdateVehicleUseAnimation();
 
@@ -639,7 +639,7 @@ public:
     GruntDirectionCell m_facing;
     CString m_frameSetName;
     CString m_deathFrameSetName;
-    i32 m_arrivalPhase;
+    i32 m_arrivalAction;
     b32 m_pendingTrigger;
     Coord m_pendingTriggerPx;
     b32 m_lowStaminaCued;
@@ -690,7 +690,7 @@ public:
     }
     i32 UpdateIdleAnimation();
     void Deselect();
-    i32 BuildEntranceAnimation(GruntEntranceMode mode);
+    i32 StartEntranceAnimation(GruntEntranceMode mode);
     i32 UpdateEntranceAnimation();
 
     void SetEntrancePos(i32 clearArrivalState, i32 recycleRoute);
@@ -754,7 +754,7 @@ public:
     i32 StepArrivalDrop(
         i32 pxX,
         i32 pxY,
-        i32 arrivalPhase,
+        i32 arrivalAction,
         i32 blockedMask,
         i32 clearEndpointFlags,
         i32 extraPassableMask
@@ -773,7 +773,7 @@ public:
 
     i32 UpdatePickupAnimation();
 
-    i32 StepWarpExit();
+    i32 UpdateExitAnimation();
 
     i32 IsDropReady(i32 clearArrivalState = 0);
 
@@ -836,7 +836,7 @@ public:
     i32 TileSwitch(
         i32 col,
         i32 row,
-        i32 arrivalPhase,
+        i32 arrivalAction,
         i32 blockedMask,
         i32 clearEndpointFlags,
         i32 extraPassableMask

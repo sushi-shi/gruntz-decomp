@@ -744,7 +744,7 @@ RVA(0x0004b320, 0x34)
 i32 CGrunt::TileSwitch(
     i32 col,
     i32 row,
-    i32 arrivalPhase,
+    i32 arrivalAction,
     i32 blockedMask,
     i32 clearEndpointFlags,
     i32 extraPassableMask
@@ -755,7 +755,7 @@ i32 CGrunt::TileSwitch(
     return StepArrivalDrop(
         point->m_x,
         point->m_y,
-        arrivalPhase,
+        arrivalAction,
         blockedMask,
         clearEndpointFlags,
         extraPassableMask
@@ -766,7 +766,7 @@ RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
     i32 pxY,
-    i32 arrivalPhase,
+    i32 arrivalAction,
     i32 blockedMask,
     i32 clearEndpointFlags,
     i32 extraPassableMask
@@ -877,7 +877,7 @@ i32 CGrunt::StepArrivalDrop(
             StartWalkAnimation();
         }
     commitPhase:
-        m_arrivalPhase = arrivalPhase;
+        m_arrivalAction = arrivalAction;
         return 1;
     }
 
@@ -969,7 +969,7 @@ i32 CGrunt::StepArrivalDrop(
         }
     }
     if (0 != nudged) {
-        if (CoordCount() == 1 && arrivalPhase == IDX(PICKUP_BOOMERANG)
+        if (CoordCount() == 1 && arrivalAction == IDX(PICKUP_BOOMERANG)
             && m_activePickupType == PICKUP_GAUNTLETZ) {
             m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, pxX, pxY);
             SetEntrancePos(1, 1);
@@ -1065,8 +1065,8 @@ reCommit:
     if (m_arrivalPending == false) {
         return 0;
     }
-    m_arrivalPhase = arrivalPhase;
-    return arrivalPhase != 0;
+    m_arrivalAction = arrivalAction;
+    return arrivalAction != 0;
 
 reProbe:
     pxX = walkX * TILE_SIZE_PX + TILE_HALF_PX;
@@ -1095,8 +1095,8 @@ reProbe:
     if (m_arrivalPending == false) {
         return 0;
     }
-    m_arrivalPhase = arrivalPhase;
-    return arrivalPhase != 0;
+    m_arrivalAction = arrivalAction;
+    return arrivalAction != 0;
 }
 
 RVA(0x0004c170, 0xbe7)
@@ -1391,7 +1391,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
     m_reserved210 = 0;
     m_entrancePx = m_lastTilePx;
     if (clearArrivalState) {
-        m_arrivalPhase = 0;
+        m_arrivalAction = 0;
         m_arrivalActive = false;
     }
     if (recycleRoute && m_aiType != AI_BATTLEZ_PATH && !CoordsEmpty()) {
@@ -1645,7 +1645,7 @@ i32 CGrunt::Place(
     m_moveIcon = moveIcon;
     m_triggerMgr = board;
     m_daFlag = 1;
-    m_arrivalPhase = 0;
+    m_arrivalAction = 0;
     m_toolConfigured = true;
     m_guarding = false;
     m_neighborScanEnabled = true;
@@ -1687,7 +1687,7 @@ i32 CGrunt::Place(
     }
     m_object->SetDrawFill(SHADE_PAL_16, shade);
     if (entranceMode != GRUNT_ENTRANCE_NONE) {
-        BuildEntranceAnimation(entranceMode);
+        StartEntranceAnimation(entranceMode);
         return 1;
     }
 

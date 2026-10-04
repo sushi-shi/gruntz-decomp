@@ -348,7 +348,7 @@ RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
         StopVehicleLoopSound();
-        if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B && m_arrivalActive != false) {
+        if (m_arrivalAction == ARRIVAL_ACTION_USE_TOY && m_arrivalActive != false) {
             CGrunt* occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
@@ -901,7 +901,7 @@ i32 CGrunt::UpdateVehicleUseAnimation() {
 }
 
 RVA(0x000641b0, 0x2c1)
-i32 CGrunt::BuildGruntExitAnimation() {
+i32 CGrunt::StartExitAnimation() {
     if (m_deathAnimStarted != false) {
         return 0;
     }
@@ -926,7 +926,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         RESET_GRUNT_COMBAT_STATE(this)
     }
 
-    BeginGruntEntranceAndReleaseCell();
+    SetBusyAndDeselect();
 
     SET_ANIMATION_ACT("B");
 
@@ -953,7 +953,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 
 // @early-stop
 RVA(0x00064540, 0x11c)
-i32 CGrunt::StepWarpExit() {
+i32 CGrunt::UpdateExitAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (sub->IsComplete()) {
         if (m_deathType == GRUNT_DEATH_WARPOUT) {

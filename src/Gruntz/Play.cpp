@@ -4154,7 +4154,7 @@ i32 CPlay::ExecuteCommand(
             if (g != NULL && g->IsEntranceCommitted() != false) {
                 g->m_arrivalActive = false;
             }
-            if (!m_mgr->GetTriggerMgr()->ClearCell(
+            if (!m_mgr->GetTriggerMgr()->MoveUnitTo(
                     player,
                     gi,
                     static_cast<u16>(targetXOrPlayerIndex),
@@ -4238,7 +4238,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, px, py, 2)) {
+                if (!m_mgr->GetTriggerMgr()->MoveUnitTo(player, gi, px, py, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->IsEntranceCommitted() == false) {
                         return 0;
@@ -4288,7 +4288,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, sx, sy, 2)) {
+                if (!m_mgr->GetTriggerMgr()->MoveUnitTo(player, gi, sx, sy, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->IsEntranceCommitted() == false) {
                         return 0;
@@ -4347,7 +4347,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, px, py, 3)) {
+                if (!m_mgr->GetTriggerMgr()->MoveUnitTo(player, gi, px, py, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->IsEntranceCommitted() == false) {
                         return 0;
@@ -4397,7 +4397,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->GetTriggerMgr()->ClearCell(player, gi, sx, sy, 3)) {
+                if (!m_mgr->GetTriggerMgr()->MoveUnitTo(player, gi, sx, sy, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->IsEntranceCommitted() == false) {
                         return 0;

@@ -45,7 +45,7 @@ public:
 
     i32 Load(CFileMemBase* ar);
 
-    i32 SetLevel(CDDrawSurfaceMgr* lvl);
+    i32 SetWorld(CDDrawSurfaceMgr* world);
 
     i32 UpdateCameraTracking();
 
@@ -156,7 +156,7 @@ public:
     i32 UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY);
     i32 UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY);
 
-    i32 ClearCell(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY, i32 arrivalPhase);
+    i32 MoveUnitTo(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY, i32 arrivalAction);
 
     union HitSpanArg {
         RECT* m_span;

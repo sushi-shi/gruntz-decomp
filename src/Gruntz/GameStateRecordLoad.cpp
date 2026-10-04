@@ -135,7 +135,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_tileMoveCommitted, sizeof(m_tileMoveCommitted));
     ar->Read(&m_reserved3dc, sizeof(m_reserved3dc));
     ar->Read(&m_toolTargetTile, sizeof(m_toolTargetTile));
-    ar->Read(&m_arrivalPhase, sizeof(m_arrivalPhase));
+    ar->Read(&m_arrivalAction, sizeof(m_arrivalAction));
     ar->Read(&m_timePerTile, sizeof(m_timePerTile));
     ar->Read(&m_movePosX, sizeof(m_movePosX));
     ar->Read(&m_movePosY, sizeof(m_movePosY));
