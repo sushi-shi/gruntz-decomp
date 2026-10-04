@@ -4324,7 +4324,7 @@ triggermgr	?LoadExplosionSprites@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	5	5f7
 triggermgr	?LoseLevelWarpStone@CTriggerMgr@@QAEXXZ	100.0000	100.0000	12	4356c304d7df	0x79d90	100.0000	
 triggermgr	?NearestOtherPlayerUnitDistSq@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	7	0ca1bb338796	0x7d1d0	100.0000	
 triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	96.7910	96.7910	12	2c25670f9f09	0x798d0	100.0000	
-triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	91.3955	91.3955	42	c24e9c915e14	0x78a50	91.3955	
+triggermgr	?UpdateTargetingCursor@CTriggerMgr@@QAEHHH@Z	91.3955	91.3955	42	c24e9c915e14	0x78a50	91.3955	
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	12	1b6d1311c719	0x7a240	100.0000	
 triggermgr	?RecallSelectionGroup@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	12	f78c6d640be2	0x7cd40	100.0000	
 triggermgr	?RemoveUnitFromSelection@CTriggerMgr@@QAEHHHH@Z	95.8400	95.8400	13	a92f3072b96c	0x78260	95.8400	
@@ -4340,7 +4340,7 @@ triggermgr	?SpawnTileFx@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	7	ecbb1ab8a584	
 triggermgr	?SpawnToyBox@CTriggerMgr@@QAEHHHHW4PickupType@@H@Z	100.0000	100.0000	13	c4ed19ca4251	0x7a3f0	100.0000	
 triggermgr	?StartPlayerDefeatSequence@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	13	88fe836450f1	0x7a510	100.0000	
 triggermgr	?StartPlayerVictorySequence@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	8	9e04207b5f07	0x7d140	100.0000	
-triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	4	e0e465c84cab	0x7be10	100.0000	
+triggermgr	?CancelTargeting@CTriggerMgr@@QAEXXZ	100.0000	100.0000	4	e0e465c84cab	0x7be10	100.0000	
 triggermgr	?ToggleToolTargeting@CTriggerMgr@@QAEHXZ	100.0000	100.0000	12	209ba52fd1a6	0x7d450	100.0000	
 triggermgr	?ToggleToyTargeting@CTriggerMgr@@QAEHXZ	100.0000	100.0000	13	f5032bd84b7b	0x7d5c0	100.0000	
 triggermgr	?UnregisterUnit@CTriggerMgr@@QAEXHHH@Z	99.8039	99.8039	16	8ba213f419b0	0x79fb0	99.8039	

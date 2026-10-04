@@ -2421,7 +2421,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
     }
     if (m_selected != false) {
         if (m_playerIndex == g_curPlayer) {
-            m_triggerMgr->StopPendingFx();
+            m_triggerMgr->CancelTargeting();
         }
     }
     if (pickupType == PICKUP_WARPSTONE) {

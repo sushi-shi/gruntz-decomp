@@ -2398,7 +2398,7 @@ recorder_place:
 tail_default:
 
 {
-    g_gameReg->GetTriggerMgr()->m_pendingFxKind = 0;
+    g_gameReg->GetTriggerMgr()->m_targetingCursorId = 0;
     this->LoadCursorSprites(0, false);
 }
 tail_default2:
@@ -2691,7 +2691,7 @@ drag_box: {
             g_gameReg->GetTriggerMgr()
                 ->HandleTargetSelection(ex, ey, 0, 0, 0, TARGET_SELECTION_TOY, 1);
         }
-        g_gameReg->GetTriggerMgr()->m_pendingFxKind = 0;
+        g_gameReg->GetTriggerMgr()->m_targetingCursorId = 0;
         LoadCursorSprites(0, false);
         m_selectionAnchorX = xr;
         m_selectionAnchorY = y;
@@ -3836,7 +3836,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             LevelCoordRect* vr = v->m_mainPlane->GetPlaneViewRect();
             i32 wx = vr->left - v->m_viewportRect.left + x;
             i32 wy = vr->top - v->m_viewportRect.top + y;
-            m_mgr->GetTriggerMgr()->PlaceObjectFull(wx, wy);
+            m_mgr->GetTriggerMgr()->UpdateTargetingCursor(wx, wy);
             return 1;
         }
         if (m_cursorSnapSprite != NULL) {
@@ -3861,7 +3861,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_selectionRect.bottom = min(m_cursorY, box.bottom);
         m_selectionRect.bottom = max(m_selectionRect.bottom, m_selectionAnchorY);
     }
-    if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->HasPendingFx() == false) {
+    if (m_cursorTargetValid != false && m_mgr->GetTriggerMgr()->IsTargeting() == false) {
         FlushPendingOps();
     }
     return 1;
@@ -5473,7 +5473,7 @@ i32 CPlay::ResetPlayState() {
     CTriggerMgr* tl = m_mgr->GetTriggerMgr();
     tl->m_countdownActive = true;
     tl->m_finishState = FINISH_STATE_ACTIVE;
-    tl->m_pendingFxKind = 0;
+    tl->m_targetingCursorId = 0;
     tl->m_gooTimer.Clear();
     tl->m_resourceTimer.Clear();
     tl->m_finishReason = FINISH_REASON_NONE;
@@ -6924,10 +6924,10 @@ i32 CPlay::FlushPendingOps() {
         changed = true;
     }
     CTriggerMgr* fx = g_gameReg->GetTriggerMgr();
-    if (fx->HasPendingFx() != false) {
+    if (fx->IsTargeting() != false) {
         changed = true;
     }
-    fx->m_pendingFxKind = 0;
+    fx->m_targetingCursorId = 0;
     LoadCursorSprites(0, false);
     return changed;
 }
