@@ -54,7 +54,7 @@ ours-only - there is no function in the tree that takes scalars where retail
 takes an aggregate, or the reverse - and every named callee's hole-SIZE
 multiset matches exactly. Two functions differ, both in the COUNT of holes at
 one size (`CGrunt::StepGruntMovement` 2 vs 6, the tail-merged 12-byte
-`GruntDirectionCell`; `CStatusBarMgr::BuildTabzDialog` 15 vs 14), which is an
+`GruntDirectionCell`; `CStatusBarMgr::BuildLevelOverlay` 15 vs 14), which is an
 inlining or block-layout divergence, not a signature. The retail-only /
 ours-only verdict held under BOTH the earlier positional frame rule and this
 one, so it does not rest on the filter.

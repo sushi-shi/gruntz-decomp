@@ -1976,7 +1976,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'A') {
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2001,7 +2001,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == false);
             return 1;
         }
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2022,7 +2022,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'D') {
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2043,19 +2043,21 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'F') {
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-        this->m_statusBar->AdvanceTab(g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0));
+        this->m_statusBar->CycleMultiplayerPlayer(
+            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)
+        );
         return 1;
     }
 
     if (vk == 'G') {
-        if (statusBar->m_chatBoxDisabled != false) {
+        if (statusBar->m_gameplayControlsDisabled != false) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
@@ -2069,7 +2071,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (lv->GetActiveTab() != TAB_GAME) {
             lv->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
-        lv->SetTab(GAME_TAB_MENU, true);
+        lv->SetGameTabContent(GAME_TAB_MENU, true);
         lv->RequestRedraw();
         return 1;
     }
@@ -2405,7 +2407,7 @@ tail_default:
 }
 tail_default2:
 
-    if (this->m_statusBar->m_chatBoxDisabled != false) {
+    if (this->m_statusBar->m_gameplayControlsDisabled != false) {
         return 1;
     }
     {
@@ -2717,7 +2719,7 @@ drag_box: {
         }
     }
     LoadCursorSprites(0, false);
-    i32 hit = m_statusBar->HitTest(xr, y);
+    i32 hit = m_statusBar->HitTestSideTabs(xr, y);
     if (hit != -1) {
         m_statusBar->PlaceCursorTarget(hit, 0);
         return 1;
@@ -2804,7 +2806,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
 
-    i32 idx = m_statusBar->HitTest(x, y);
+    i32 idx = m_statusBar->HitTestSideTabs(x, y);
     if (idx != -1) {
         m_statusBar->PlaceCursorTarget(idx, 1);
         return 1;
@@ -2821,7 +2823,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         if (m_mgr->GetTriggerMgr()
                 ->PickGruntAtScreenPoint(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
-            m_statusBar->ToggleStat(unitIndex);
+            m_statusBar->ToggleUnitSample(unitIndex);
             return 1;
         }
     }
@@ -2922,9 +2924,9 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (::PtInRect(m_statusBar->GetBarRect(), x, y)) {
         return 1;
     }
-    i32 idx = m_statusBar->HitTest(x, y);
+    i32 idx = m_statusBar->HitTestSideTabs(x, y);
     if (idx != -1) {
-        m_statusBar->ClearStat(idx);
+        m_statusBar->ClearUnitSample(idx);
         CTriggerMgr* w = m_mgr->GetTriggerMgr();
         w->StopCameraTracking();
         return 1;
@@ -5520,7 +5522,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
         if (g->GetActiveTab() != TAB_GAME) {
             g->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
-        g->SetTab(GAME_TAB_MISSION_STATUS, true);
+        g->SetGameTabContent(GAME_TAB_MISSION_STATUS, true);
         g->RequestRedraw();
     }
     m_statusBar->BuildGameTabResumeButton(true);
@@ -5540,7 +5542,7 @@ i32 CPlay::CloseLevelOverlay(i32) {
     if (m_levelOverlayOpen != false) {
         CStatusBarMgr* worker = m_statusBar;
         m_levelOverlayOpen = false;
-        worker->ExitMode();
+        worker->CloseLevelOverlay();
         if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
             g_frameTime = m_savedGameTimeMs;
         }

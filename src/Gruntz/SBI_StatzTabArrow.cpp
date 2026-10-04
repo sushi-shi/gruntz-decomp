@@ -67,19 +67,19 @@ void CSBI_StatzTabArrow::SetSampledDirection(StatusBarDock position, b32 animate
 
 // @early-stop
 RVA(0x000ea1f0, 0x1fa)
-i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
+i32 CSBI_StatzTabGruntBar::Initialize(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
     SbiCommandId cmd,
     StatusBarTab tab,
-    RECT g,
-    const char* key,
+    RECT rect,
+    const char* iconSetName,
     i32 playerIndex,
     i32 unitIndex,
-    i32 selMode
+    i32 showSelectionGroup
 ) {
-    CDDrawSurfaceMgr* h;
-    CDDrawWorker* head;
+    CDDrawSurfaceMgr* world;
+    CDDrawWorker* iconFrames;
 
     if (host == NULL) {
         goto fail;
@@ -87,64 +87,66 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (owner == NULL) {
         goto fail;
     }
-    h = host;
-    Initialize(owner, tab, h);
+    world = host;
+    CStatusBarItem::Initialize(owner, tab, world);
 
-    m_rect = g;
+    m_rect = rect;
 
     m_cmd = cmd;
-    head = h->FindWorker(key);
-    m_glyphMap = head;
-    if (head == NULL) {
+    iconFrames = world->FindWorker(iconSetName);
+    m_iconFrames = iconFrames;
+    if (iconFrames == NULL) {
         return 0;
     }
-    CImage* v;
-    v = head->GetAt(0x21);
-    m_statusGlyph = v;
-    if (v == NULL) {
+    CImage* healthBackground;
+    healthBackground = iconFrames->GetAt(0x21);
+    m_healthBackgroundImage = healthBackground;
+    if (healthBackground == NULL) {
         return 0;
     }
-    CImage* w;
-    w = head->GetAt(0x22);
-    m_abilityGlyph = w;
-    if (w == NULL) {
+    CImage* toolBackground;
+    toolBackground = iconFrames->GetAt(0x22);
+    m_toolBackgroundImage = toolBackground;
+    if (toolBackground == NULL) {
         return 0;
     }
 
-    CImage* val;
-    if (selMode != 0) {
-        CDDrawWorker* sel = m_host->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR");
-        m_timerGlyphMap = sel;
-        if (sel == NULL) {
+    CImage* toyBackground;
+    if (showSelectionGroup != 0) {
+        CDDrawWorker* selectionFrames =
+            m_host->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR");
+        m_selectionFrames = selectionFrames;
+        if (selectionFrames == NULL) {
             return 0;
         }
-        CImage* x = m_glyphMap->GetAt(0x23);
-        m_selectKey = x;
-        if (x == NULL) {
+        CImage* groupBackground = m_iconFrames->GetAt(0x23);
+        m_groupBackgroundImage = groupBackground;
+        if (groupBackground == NULL) {
             return 0;
         }
-        val = m_glyphMap->GetAt(0x22);
+        toyBackground = m_iconFrames->GetAt(0x22);
     } else {
-        CDDrawWorker* sel = m_host->FindWorker("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR");
-        m_timerGlyphMap = sel;
-        if (sel == NULL) {
+        CDDrawWorker* selectionFrames =
+            m_host->FindWorker("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR");
+        m_selectionFrames = selectionFrames;
+        if (selectionFrames == NULL) {
             return 0;
         }
-        val = m_glyphMap->GetAt(0x23);
+        toyBackground = m_iconFrames->GetAt(0x23);
     }
-    m_overrideGlyph = val;
-    if (val == NULL) {
+    m_toyBackgroundImage = toyBackground;
+    if (toyBackground == NULL) {
         goto fail;
     }
     m_playerIndex = playerIndex;
     m_unitIndex = unitIndex;
-    m_timerValue = -1;
-    m_overrideValue = -1;
-    m_abilityValue = -1;
-    m_statusValue = -1;
-    m_selectValue = 0;
-    m_timerTiming.Clear();
-    Update();
+    m_selectionFrameIndex = -1;
+    m_toyIconIndex = -1;
+    m_toolIconIndex = -1;
+    m_healthIconIndex = -1;
+    m_groupMarker = 0;
+    m_selectionAnimationClock.Clear();
+    UpdateIcons();
     return 1;
 fail:
     return 0;

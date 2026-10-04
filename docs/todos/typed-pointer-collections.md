@@ -39,8 +39,8 @@ source layer the original developers wrote around each collection.
   without the check in retail and stay raw.
 
 - `CStatusBarMgr::m_tabLists`: `DELETE_STATUS_ITEMS(list)` deletes every item
-  and empties the list (ResetWidgets, ClearTabGroup, SetTab, ExitMode). It is
-  a macro: `ClearTabGroup` re-reads `m_activeTab` for `RemoveAll`, which an
+  and empties the list (ResetWidgets, ClearActiveTabContent, SetGameTabContent, CloseLevelOverlay). It is
+  a macro: `ClearActiveTabContent` re-reads `m_activeTab` for `RemoveAll`, which an
   inline taking the index drops (100 -> 66.5). Render/refresh/hit-test walks
   stay raw.
 

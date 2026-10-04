@@ -20,9 +20,9 @@ class CStatusBarMgr;
 class CSBI_SideTab : public CStatusBarItem {
 public:
     CSBI_SideTab() {
-        m_topFrame = NULL;
-        m_bottomFrame = NULL;
-        m_sampledValue = -1;
+        m_backgroundImage = NULL;
+        m_iconImage = NULL;
+        m_iconIndex = -1;
         m_sampleMode = STATUS_SAMPLE_UNINITIALIZED;
     }
     virtual ~CSBI_SideTab() OVERRIDE;
@@ -33,7 +33,7 @@ public:
     virtual i32 Refresh(i32 deltaMs) OVERRIDE;
     virtual i32 Render() OVERRIDE;
 
-    i32 BuildStatzTabStatusBar(
+    i32 Initialize(
         CStatusBarMgr* parent,
         CDDrawSurfaceMgr* host,
         SbiCommandId cmd,
@@ -41,24 +41,24 @@ public:
         RECT rc,
         const char* unused,
 
-        i32 rowIndex,
-        i32 colIndex,
-        StatusSampleMode enabled,
+        i32 playerIndex,
+        i32 unitIndex,
+        StatusSampleMode sampleMode,
         i32 onLeft
     );
 
-    i32 BuildHandle();
+    i32 UpdateSampleIcon();
 
-    CImage* m_topFrame;
-    CImage* m_bottomFrame;
-    i32 m_sampledValue;
-    i32 m_rowIndex;
-    i32 m_colIndex;
+    CImage* m_backgroundImage;
+    CImage* m_iconImage;
+    i32 m_iconIndex;
+    i32 m_playerIndex;
+    i32 m_unitIndex;
     StatusSampleMode m_sampleMode;
     Coord m_drawPosition;
-    i32 m_bottomFrameDy;
+    i32 m_iconOffsetX;
     i32 m_onLeft;
-    i32 m_drawGate;
+    i32 m_hasSample;
 };
 
 #endif // GRUNTZ_SBI_SIDETAB_H

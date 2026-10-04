@@ -36,16 +36,16 @@
 #include <string.h>
 
 RVA(0x000e9600, 0x18c)
-i32 CSBI_SideTab::BuildStatzTabStatusBar(
+i32 CSBI_SideTab::Initialize(
     CStatusBarMgr* parent,
     CDDrawSurfaceMgr* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
     const char* unused,
-    i32 rowIndex,
-    i32 colIndex,
-    StatusSampleMode enabled,
+    i32 playerIndex,
+    i32 unitIndex,
+    StatusSampleMode sampleMode,
     i32 onLeft
 ) {
     static_cast<void>(unused);
@@ -63,31 +63,33 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_redrawFrames = 0;
     m_cmd = cmd;
 
-    if (enabled != STATUS_SAMPLE_NONE) {
+    if (sampleMode != STATUS_SAMPLE_NONE) {
         SetEnabled(1);
     } else {
         SetEnabled(0);
     }
-    m_rowIndex = rowIndex;
-    m_colIndex = colIndex;
+    m_playerIndex = playerIndex;
+    m_unitIndex = unitIndex;
     m_onLeft = onLeft;
 
     if (onLeft != 0) {
-        m_topFrame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", 1);
+        m_backgroundImage =
+            g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", 1);
         m_drawPosition.m_x = parent->GetBarRect()->left - (rc.right - rc.left) / 2;
-        m_bottomFrameDy = 1;
+        m_iconOffsetX = 1;
     } else {
-        m_topFrame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", 1);
+        m_backgroundImage =
+            g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", 1);
         m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->GetBarRect()->right;
-        m_bottomFrameDy = -1;
+        m_iconOffsetX = -1;
     }
-    m_drawPosition.m_y = colIndex * 0x12 + 0xd1;
-    if (m_topFrame == NULL) {
+    m_drawPosition.m_y = unitIndex * 0x12 + 0xd1;
+    if (m_backgroundImage == NULL) {
         goto fail;
     }
-    m_sampleMode = enabled;
-    m_sampledValue = -1;
-    m_drawGate = BuildHandle();
+    m_sampleMode = sampleMode;
+    m_iconIndex = -1;
+    m_hasSample = UpdateSampleIcon();
     return 1;
 fail:
     return 0;
@@ -95,26 +97,26 @@ fail:
 
 RVA(0x000e9800, 0x9)
 void CSBI_SideTab::Reset() {
-    m_topFrame = NULL;
-    m_bottomFrame = NULL;
+    m_backgroundImage = NULL;
+    m_iconImage = NULL;
 }
 
 RVA(0x000e9820, 0x11)
 i32 CSBI_SideTab::Refresh(i32 unused) {
-    m_drawGate = BuildHandle();
+    m_hasSample = UpdateSampleIcon();
     return 0;
 }
 
 // @early-stop
 RVA(0x000e9850, 0x111)
-i32 CSBI_SideTab::BuildHandle() {
+i32 CSBI_SideTab::UpdateSampleIcon() {
     StatusSampleMode mode = m_sampleMode;
     if (mode == STATUS_SAMPLE_NONE) {
         return 0;
     }
-    CGrunt* unit = g_gameReg->GetTriggerMgr()->UnitAt(m_rowIndex, m_colIndex);
+    CGrunt* unit = g_gameReg->GetTriggerMgr()->UnitAt(m_playerIndex, m_unitIndex);
     if (unit == NULL) {
-        m_owner->ClearStat(m_colIndex);
+        m_owner->ClearUnitSample(m_unitIndex);
         return 0;
     }
     i32 val;
@@ -124,7 +126,7 @@ i32 CSBI_SideTab::BuildHandle() {
         if (level == PICKUP_NONE) {
             m_sampleMode = STATUS_SAMPLE_HEALTH;
         }
-    } else if (mode == STATUS_SAMPLE_VEHICLE) {
+    } else if (mode == STATUS_SAMPLE_TOY) {
         val = IDX(unit->GetCarriedToyType());
         if (unit->GetCarriedToyType() == PICKUP_NONE) {
             m_sampleMode = STATUS_SAMPLE_HEALTH;
@@ -133,22 +135,21 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_sampleMode == STATUS_SAMPLE_HEALTH) {
         val = HealthGlyphIndex(unit->GetHealth());
     }
-    if (m_sampledValue == val) {
+    if (m_iconIndex == val) {
         return 1;
     }
     CImage* glyph = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", val);
-    m_sampledValue = val;
-    m_bottomFrame = glyph;
+    m_iconIndex = val;
+    m_iconImage = glyph;
     return 1;
 }
 
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
-    if (m_drawGate) {
+    if (m_hasSample) {
         CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->GetBackPair();
-        m_topFrame->RenderFrame(ctx, m_drawPosition.m_x, m_drawPosition.m_y, 0);
-        m_bottomFrame
-            ->RenderFrame(ctx, m_drawPosition.m_x + m_bottomFrameDy, m_drawPosition.m_y, 0);
+        m_backgroundImage->RenderFrame(ctx, m_drawPosition.m_x, m_drawPosition.m_y, 0);
+        m_iconImage->RenderFrame(ctx, m_drawPosition.m_x + m_iconOffsetX, m_drawPosition.m_y, 0);
     }
     return 1;
 }
@@ -174,18 +175,18 @@ i32 CSBI_SideTab::SerializeFields(
         case SERIAL_SAVE: {
             i32 v;
 
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_topFrame);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_backgroundImage);
 
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_bottomFrame);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_iconImage);
 
-            s->Write(&m_sampledValue, sizeof(m_sampledValue));
-            s->Write(&m_rowIndex, sizeof(m_rowIndex));
-            s->Write(&m_colIndex, sizeof(m_colIndex));
+            s->Write(&m_iconIndex, sizeof(m_iconIndex));
+            s->Write(&m_playerIndex, sizeof(m_playerIndex));
+            s->Write(&m_unitIndex, sizeof(m_unitIndex));
             s->Write(&m_sampleMode, sizeof(m_sampleMode));
             s->Write(&m_drawPosition, sizeof(m_drawPosition));
-            s->Write(&m_bottomFrameDy, sizeof(m_bottomFrameDy));
+            s->Write(&m_iconOffsetX, sizeof(m_iconOffsetX));
             s->Write(&m_onLeft, sizeof(m_onLeft));
-            s->Write(&m_drawGate, sizeof(m_drawGate));
+            s->Write(&m_hasSample, sizeof(m_hasSample));
             break;
         }
 
@@ -193,18 +194,18 @@ i32 CSBI_SideTab::SerializeFields(
             CObject* out;
             i32 idx;
 
-            GS_IDXREF(m_topFrame);
+            GS_IDXREF(m_backgroundImage);
 
-            GS_IDXREF(m_bottomFrame);
+            GS_IDXREF(m_iconImage);
 
-            s->Read(&m_sampledValue, sizeof(m_sampledValue));
-            s->Read(&m_rowIndex, sizeof(m_rowIndex));
-            s->Read(&m_colIndex, sizeof(m_colIndex));
+            s->Read(&m_iconIndex, sizeof(m_iconIndex));
+            s->Read(&m_playerIndex, sizeof(m_playerIndex));
+            s->Read(&m_unitIndex, sizeof(m_unitIndex));
             s->Read(&m_sampleMode, sizeof(m_sampleMode));
             s->Read(&m_drawPosition, sizeof(m_drawPosition));
-            s->Read(&m_bottomFrameDy, sizeof(m_bottomFrameDy));
+            s->Read(&m_iconOffsetX, sizeof(m_iconOffsetX));
             s->Read(&m_onLeft, sizeof(m_onLeft));
-            s->Read(&m_drawGate, sizeof(m_drawGate));
+            s->Read(&m_hasSample, sizeof(m_hasSample));
             break;
         }
     }

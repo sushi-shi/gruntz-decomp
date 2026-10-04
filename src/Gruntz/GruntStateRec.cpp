@@ -37,27 +37,27 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
         case SERIAL_SAVE: {
             i32 v;
 
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_statusGlyph);
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_statusGlyphLatched);
-            s->Write(&m_statusValue, sizeof(m_statusValue));
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_healthBackgroundImage);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_healthIconImage);
+            s->Write(&m_healthIconIndex, sizeof(m_healthIconIndex));
 
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_abilityGlyph);
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_abilityGlyphLatched);
-            s->Write(&m_abilityValue, sizeof(m_abilityValue));
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_overrideGlyph);
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_overrideGlyphLatched);
-            s->Write(&m_overrideValue, sizeof(m_overrideValue));
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_selectKey);
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_selectGlyph);
-            s->Write(&m_selectValue, sizeof(m_selectValue));
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_timerGlyph);
-            s->Write(&m_timerValue, sizeof(m_timerValue));
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_toolBackgroundImage);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_toolIconImage);
+            s->Write(&m_toolIconIndex, sizeof(m_toolIconIndex));
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_toyBackgroundImage);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_toyIconImage);
+            s->Write(&m_toyIconIndex, sizeof(m_toyIconIndex));
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_groupBackgroundImage);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_groupIconImage);
+            s->Write(&m_groupMarker, sizeof(m_groupMarker));
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_selectionImage);
+            s->Write(&m_selectionFrameIndex, sizeof(m_selectionFrameIndex));
             s->Write(&m_playerIndex, sizeof(m_playerIndex));
             s->Write(&m_unitIndex, sizeof(m_unitIndex));
 
-            SERIAL_WRITE_WORKER(s, buf, m_glyphMap);
+            SERIAL_WRITE_WORKER(s, buf, m_iconFrames);
 
-            SERIAL_WRITE_WORKER(s, buf, m_timerGlyphMap);
+            SERIAL_WRITE_WORKER(s, buf, m_selectionFrames);
             break;
         }
 
@@ -65,24 +65,24 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             CObject* out;
             i32 idx;
 
-            GS_IDXREF(m_statusGlyph);
-            GS_IDXREF(m_statusGlyphLatched);
-            s->Read(&m_statusValue, sizeof(m_statusValue));
-            GS_IDXREF(m_abilityGlyph);
-            GS_IDXREF(m_abilityGlyphLatched);
-            s->Read(&m_abilityValue, sizeof(m_abilityValue));
-            GS_IDXREF(m_overrideGlyph);
-            GS_IDXREF(m_overrideGlyphLatched);
-            s->Read(&m_overrideValue, sizeof(m_overrideValue));
-            GS_IDXREF(m_selectKey);
-            GS_IDXREF(m_selectGlyph);
-            s->Read(&m_selectValue, sizeof(m_selectValue));
-            GS_IDXREF(m_timerGlyph);
-            s->Read(&m_timerValue, sizeof(m_timerValue));
+            GS_IDXREF(m_healthBackgroundImage);
+            GS_IDXREF(m_healthIconImage);
+            s->Read(&m_healthIconIndex, sizeof(m_healthIconIndex));
+            GS_IDXREF(m_toolBackgroundImage);
+            GS_IDXREF(m_toolIconImage);
+            s->Read(&m_toolIconIndex, sizeof(m_toolIconIndex));
+            GS_IDXREF(m_toyBackgroundImage);
+            GS_IDXREF(m_toyIconImage);
+            s->Read(&m_toyIconIndex, sizeof(m_toyIconIndex));
+            GS_IDXREF(m_groupBackgroundImage);
+            GS_IDXREF(m_groupIconImage);
+            s->Read(&m_groupMarker, sizeof(m_groupMarker));
+            GS_IDXREF(m_selectionImage);
+            s->Read(&m_selectionFrameIndex, sizeof(m_selectionFrameIndex));
             s->Read(&m_playerIndex, sizeof(m_playerIndex));
             s->Read(&m_unitIndex, sizeof(m_unitIndex));
-            GS_NAMEREF(m_glyphMap);
-            GS_NAMEREF(m_timerGlyphMap);
+            GS_NAMEREF(m_iconFrames);
+            GS_NAMEREF(m_selectionFrames);
             break;
         }
     }
