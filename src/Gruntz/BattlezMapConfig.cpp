@@ -2154,11 +2154,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                 RECYCLE_HEAD_COORD(path)
                                 if (!path.IsEmpty()) {
                                     g->RecycleCoords();
-                                    POSITION qp = path.GetHeadPosition();
-                                    while (qp != NULL) {
-                                        Coord* step = static_cast<Coord*>(path.GetNext(qp));
-                                        g->AddTailCoord(step);
-                                    }
+                                    g->AppendCoords(path);
                                     Coord* nt = g->GetTailCoord();
                                     SET_TILE_CENTER_PIXEL_PAIR(
                                         g->m_entrancePx.m_x,
@@ -2882,10 +2878,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                             if (list.GetHeadPosition() != NULL) {
                                 unit->RecycleCoords();
                                 cand->RecycleCoords();
-                                POSITION pp = list.GetHeadPosition();
-                                while (pp != NULL) {
-                                    cand->AddTailCoord(static_cast<Coord*>(list.GetNext(pp)));
-                                }
+                                cand->AppendCoords(list);
                                 unit->SetAiState(AISTATE_SEEK);
                                 cand->SetAiState(AISTATE_RETREAT);
                             }
@@ -3493,10 +3486,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
                 unit->RecycleCoords();
 
-                POSITION pp = list.GetHeadPosition();
-                while (pp != NULL) {
-                    unit->AddTailCoord(static_cast<Coord*>(list.GetNext(pp)));
-                }
+                unit->AppendCoords(list);
                 Coord* tail = unit->GetTailCoord();
                 unit->m_entrancePx.Set(
                     (tail->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,

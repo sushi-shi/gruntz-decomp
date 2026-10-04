@@ -550,6 +550,12 @@ public:
     POSITION AddTailCoord(Coord* coord) {
         return m_coordList.AddTail(coord);
     }
+    void AppendCoords(CPtrList& coords) {
+        POSITION position = coords.GetHeadPosition();
+        while (position != NULL) {
+            AddTailCoord(static_cast<Coord*>(coords.GetNext(position)));
+        }
+    }
     void RemoveCoordAt(POSITION position) {
         m_coordList.RemoveAt(position);
     }
