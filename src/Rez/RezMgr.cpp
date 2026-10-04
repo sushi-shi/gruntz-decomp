@@ -35,9 +35,12 @@ i32 g_period500CountdownMs = 0;
 i32 g_period100CountdownMs = 0;
 
 i32 CGruntzMgr::UpdateFrame() {
-    if (m_curState == NULL || IsQuitPending()) {
-        return 0;
+    if (IsQuitPending()) return 0;
+    if (IsStateTransitioning()) {
+        AdvanceStateChange(Timing().deltaMs());
+        return 1;
     }
+    if (m_curState == NULL) return 0;
 
     if (m_curState->IsSceneFading()) {
         if (m_curState->AdvanceSceneFade(Timing().deltaMs()) < 0) {

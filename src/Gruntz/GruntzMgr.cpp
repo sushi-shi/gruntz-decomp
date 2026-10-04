@@ -5,6 +5,7 @@
 #include <Ints.h>
 
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzMgrCmd.h>
 
 #include <Bute/ButeMgr.h>
 #include <Crypto/BitStreamBlowfish.h>
@@ -202,6 +203,7 @@ i32 g_warpY = -1;
 
 CGruntzMgr::CGruntzMgr() {
     m_curState = NULL;
+    m_completingStateChange = false;
     m_world = NULL;
     m_resourceArchive = NULL;
     m_settings = NULL;
@@ -716,17 +718,9 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         title = formatText("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         titleImage = attract->GetRezFromPath((title).c_str(), IMGTAG_XCP);
     }
-    if (!TransitionState(mode, 1, false, 0)) {
-        if (mode == GAMESTATE_MULTI) {
-            if (!TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
-                ReportError(IDX(IDS_SET_GAME_STATE), 0x41c);
-                return 0;
-            }
-        } else {
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x41d);
-            return 0;
-        }
-    }
+    StateChangeOptions startup(mode == GAMESTATE_MULTI ? 0x41c : 0x41d,
+        IDS_SET_GAME_STATE, mode == GAMESTATE_MULTI ? GAMESTATE_ATTRACT : GAMESTATE_NONE);
+    if (!TransitionState(mode, 1, false, 0, startup)) return 0;
     g_frameDelta = 0;
     return 1;
 }
@@ -737,6 +731,7 @@ std::string CGruntzMgr::GetRezPath() {
 
 
 void CGruntzMgr::Close() {
+    CancelStateChange();
     if (m_world) {
         World()->SetRestoreHandler(NULL);
     }
@@ -890,8 +885,11 @@ i32 PumpIdleFrame() {
     if (g_gameReg->m_curState == NULL) {
         return 0;
     }
-    g_gameReg->m_curState->CancelSceneFade();
-    if (g_gameReg->m_curState->InputVirtual() == 0) {
+    CState* state = g_gameReg->m_curState;
+    state->CancelSceneFade();
+    const bool restored = state->IsDeparting() ? state->RecoverDeparture() != 0
+        : state->InputVirtual() != 0;
+    if (!restored) {
         g_gameReg->ReportError(IDX(IDS_RESTORE_GAME), 0x435);
         return 0;
     }
@@ -900,34 +898,57 @@ i32 PumpIdleFrame() {
     return 1;
 }
 
-i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused) {
-    if (IsQuitPending()) return 0;
-    if (m_curState) m_curState->CancelSceneFade();
-    static_cast<void>(unused);
-    TRACE("TransitionState %d\n", stateId);
-    GameStateId previousState = GAMESTATE_NONE;
-    if (m_curState != NULL) {
-        previousState = m_curState->Update();
-        i32 savedSub = m_curState->m_levelIndex;
-        m_curState->LeaveState(stateId);
-        if (keepCurrent != false) {
-            PushState(m_curState);
-            areaArg = savedSub;
-            m_curState = NULL;
-        } else {
-            if (m_curState != NULL) {
-                delete m_curState;
-            }
+bool CGruntzMgr::QueueStateChange(const StateChange& change) {
+    if (IsQuitPending() || IsStateTransitioning()) return false;
+    m_stateChange = change;
+    m_loadingSaveGame = change.options.restoreSave;
+    if (!m_stateTransition.request()) return false;
+    // A command can arrive after the previous state stopped normal rendering.
+    if (m_owner) m_owner->m_running = true;
+    return true;
+}
+
+i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent,
+    i32 unused, const StateChangeOptions& options) {
+    StateChange change;
+    change.target = stateId;
+    change.level = areaArg;
+    change.keepCurrent = keepCurrent != false;
+    change.options = options;
+    return QueueStateChange(change);
+}
+
+bool CGruntzMgr::BeginDeparture() {
+    m_stateChange.previous = m_curState ? m_curState->Update() : GAMESTATE_NONE;
+    if (!m_curState) return true;
+    if (m_stateChange.keepCurrent) m_stateChange.level = m_curState->m_levelIndex;
+    return m_curState->StartDeparture(m_stateChange.target);
+}
+
+TransitionProgress CGruntzMgr::AdvanceDeparture(u32 deltaMs) {
+    return m_curState ? m_curState->AdvanceStateDeparture(deltaMs) : TransitionComplete;
+}
+
+bool CGruntzMgr::InstallDestination() {
+    if (IsQuitPending()) return false;
+    if (m_stateChange.kind == ReloadState) {
+        if (!m_curState || !static_cast<CPlay*>(m_curState)->LoadByMode(
+                m_stateChange.level, m_stateChange.loadMode)) return false;
+    } else if (m_stateChange.kind == ResumeStackedState) {
+        CState* next = TopState();
+        if (!next || next == m_curState) return false;
+        delete m_curState;
+        m_curState = next;
+        PopTopIfMatches(next);
+    } else {
+        if (m_curState && m_stateChange.keepCurrent) PushState(m_curState);
+        else {
+            delete m_curState;
             m_curState = NULL;
             ClearStateStack();
-            m_curState = NULL;
         }
-    } else if (keepCurrent == false) {
-        ClearStateStack();
-    }
-
-    TRACE("creating state %d\n", stateId);
-    switch (stateId) {
+        m_curState = NULL;
+    switch (m_stateChange.target) {
         case GAMESTATE_ATTRACT:
             m_curState = new CAttract;
             break;
@@ -960,33 +981,84 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
             break;
     }
 
-    if (m_curState == NULL) {
-        m_owner->m_running = false;
-        return 0;
+        if (!m_curState) return false;
+        if (!m_curState->LoadGameAssetNamespaces(this, m_stateChange.level,
+                IDX(m_stateChange.previous))) {
+            delete m_curState;
+            m_curState = NULL;
+            return false;
+        }
     }
-    RefreshGameClock();
-    {
-        CState* st = m_curState;
-
-        b32 ok = st->LoadGameAssetNamespaces(this, areaArg, IDX(previousState));
-        st = m_curState;
-        if (ok == false) {
-            if (st != NULL) {
-                delete st;
+    if (IsQuitPending() || !m_stateTransition.active()) return false;
+    if (!m_curState->EnterState(m_stateChange.previous)) {
+        if (m_stateChange.kind != ResumeStackedState || !m_curState->RestoreDisplay()) {
+            if (m_stateChange.kind == ReplaceState) {
+                delete m_curState;
+                m_curState = NULL;
             }
-            m_curState = NULL;
-            return 0;
+            return false;
         }
-        if (!st->EnterState(previousState)) {
-            delete st;
-            m_curState = NULL;
-            return 0;
+    }
+    if (IsQuitPending() || !m_stateTransition.active()) return false;
+    if (m_owner) m_owner->m_running = true;
+    g_inputMgr->ReadAll();
+    RefreshGameClock();
+    return true;
+}
+
+TransitionProgress CGruntzMgr::AdvanceArrival(u32 deltaMs) {
+    if (!m_curState) return TransitionFailed;
+    if (m_curState->IsSceneFading()) {
+        if (m_curState->AdvanceSceneFade(deltaMs) < 0) return TransitionFailed;
+        if (m_curState->IsSceneFading()) return TransitionPending;
+    }
+    return TransitionComplete;
+}
+
+void CGruntzMgr::CancelStateChange() {
+    m_stateTransition.cancel();
+    m_stateChange = StateChange();
+    m_loadingSaveGame = false;
+    if (m_curState) m_curState->CancelDeparture();
+}
+
+void CGruntzMgr::AdvanceStateChange(u32 deltaMs) {
+    if (!m_stateTransition.active()) return;
+    const TransitionProgress result = m_stateTransition.advance(*this, deltaMs);
+    if (IsQuitPending() || result == TransitionPending) return;
+    StateChangeOptions options = m_stateChange.options;
+    m_stateChange = StateChange();
+    if (result == TransitionFailed) {
+        m_loadingSaveGame = false;
+        if (m_curState) m_curState->CancelDeparture();
+        if (options.fallback != GAMESTATE_NONE) {
+            const GameStateId fallback = options.fallback;
+            options.fallback = GAMESTATE_NONE;
+            options.snapshot.erase();
+            options.restoreSave = false;
+            options.postCommand = false;
+            options.connectRound = false;
+            if (TransitionState(fallback, 1, false, 0, options)) return;
         }
-        m_owner->m_running = true;
-        g_inputMgr->ReadAll();
-        RefreshGameClock();
-        TRACE("TransitionState %d done\n", stateId);
-        return 1;
+        ReportError(IDX(options.error), options.site);
+        return;
+    }
+    m_completingStateChange = true;
+    bool completed = true;
+    if (options.restoreSave) {
+        if (!RestoreGameFromFile(this, options.snapshot)) {
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x465);
+            completed = false;
+        } else if (!IsQuitPending()) CheckSavedMode();
+    }
+    m_loadingSaveGame = false;
+    if (completed && !IsQuitPending() && options.connectRound) {
+        completed = m_curState && m_curState->Update() == GAMESTATE_MULTI
+            && static_cast<CMulti*>(m_curState)->FinishConnect();
+    }
+    m_completingStateChange = false;
+    if (completed && !IsQuitPending() && options.postCommand) {
+        PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(options.afterCommand), 0);
     }
 }
 
@@ -1010,55 +1082,29 @@ i32 CMulti::GetFrame() {
     return m_session->m_commandTick;
 }
 
-i32 CGruntzMgr::SwitchToNextState() {
-    if (IsActive() == 0) {
-        return 0;
-    }
+i32 CGruntzMgr::SwitchToNextState(const StateChangeOptions& options) {
     CState* next = TopState();
-    if (next == NULL) {
-        return 0;
-    }
-    if (m_curState == next) {
-        return 0;
-    }
-    GameStateId oldId = GAMESTATE_NONE;
-    if (m_curState) {
-        m_curState->CancelSceneFade();
-        oldId = m_curState->Update();
-        m_curState->LeaveState(next->Update());
-        if (m_curState) {
-            delete m_curState;
-        }
-        m_curState = NULL;
-    }
-    m_curState = next;
-    PopTopIfMatches(next);
-    if (m_curState->EnterState(oldId) == GAMESTATE_NONE && m_curState->RestoreDisplay() == 0) {
-        return 0;
-    }
-    m_owner->m_running = true;
-    RefreshGameClock();
-    return 1;
+    if (!IsActive() || !next || next == m_curState) return 0;
+    StateChange change;
+    change.kind = ResumeStackedState;
+    change.target = next->Update();
+    change.options = options;
+    return QueueStateChange(change);
 }
 
-i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused) {
-    b32 inPlay = false;
-    if (m_curState->Update() == GAMESTATE_PLAY) {
-        inPlay = true;
+i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused,
+    const StateChangeOptions& options) {
+    if (m_curState && !forceTransition && (m_curState->Update() == GAMESTATE_PLAY
+            || m_curState->Update() == GAMESTATE_MULTI)) {
+        StateChange change;
+        change.kind = ReloadState;
+        change.target = m_curState->Update();
+        change.level = areaArg;
+        change.loadMode = unused;
+        change.options = options;
+        return QueueStateChange(change);
     }
-    if (m_curState->Update() == GAMESTATE_MULTI) {
-        inPlay = true;
-    }
-    if (inPlay && forceTransition == false) {
-        CState* st = m_curState;
-        m_curState->LeaveState(m_curState->Update());
-        if (static_cast<CPlay*>(st)->LoadByMode(areaArg, unused) == 0) {
-            return 0;
-        }
-        m_curState->EnterState(m_curState->Update());
-        return 1;
-    }
-    return TransitionState(GAMESTATE_PLAY, areaArg, false, 0);
+    return TransitionState(GAMESTATE_PLAY, areaArg, false, 0, options);
 }
 
 i32 CGruntzMgr::GoToNextLevel() {
@@ -1072,11 +1118,7 @@ i32 CGruntzMgr::GoToNextLevel() {
         next = IDX(QUESTLEVEL_FIRST);
     }
     if (next <= IDX(QUESTLEVEL_CAMPAIGN_LAST) || next >= IDX(QUESTLEVEL_TRAINING_FIRST)) {
-        st->LeaveState(st->Update());
-        if ((static_cast<CPlay*>(st))->LoadByMode(next, 1)) {
-            st->EnterState(st->Update());
-            return 1;
-        }
+        return PassClickToPlayState(next, false, 1, StateChangeOptions(0x436, IDS_CHANGE_LEVEL));
     }
     ReportError(IDX(IDS_CHANGE_LEVEL), 0x436);
     return 0;
@@ -1093,81 +1135,77 @@ i32 CGruntzMgr::GoToPrevLevel() {
         prev = IDX(QUESTLEVEL_TRAINING_LAST);
     }
     if (prev <= IDX(QUESTLEVEL_CAMPAIGN_LAST) || prev >= IDX(QUESTLEVEL_TRAINING_FIRST)) {
-        st->LeaveState(st->Update());
-        if ((static_cast<CPlay*>(st))->LoadByMode(prev, 1)) {
-            st->EnterState(st->Update());
-            return 1;
-        }
+        return PassClickToPlayState(prev, false, 1, StateChangeOptions(0x437, IDS_CHANGE_LEVEL));
     }
     ReportError(IDX(IDS_CHANGE_LEVEL), 0x437);
     return 0;
 }
 
 i32 CGruntzMgr::ForwardCharToState(i32 charCode, i32 keyData) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnChar(charCode, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardKeyDownToState(i32 virtualKey, i32 keyData) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnKeyDown(virtualKey, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardKeyUpToState(i32 virtualKey, i32 keyData) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnKeyUp(virtualKey, keyData);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonDownToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnLButtonDown(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonUpToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnLButtonUp(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardLButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnLButtonDblClk(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonDownToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnRButtonDown(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonUpToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnRButtonUp(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardRButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnRButtonDblClk(keyFlags, x, y);
     }
     return 0;
 }
 
 i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
-    if (m_curState && !IsQuitPending() && !IsSceneFading()) {
+    if (m_curState && !IsQuitPending() && !IsStateTransitioning() && !IsSceneFading()) {
         return m_curState->OnMouseMove(keyFlags, x, y);
     }
     return 0;
@@ -1571,11 +1609,11 @@ i32 CGruntzMgr::WarpCheat() {
         if (m_curState->Update() != GAMESTATE_PLAY) {
             i32 last = m_settings->getInt("Last Warp Level", -1);
             if (last != -1) {
-                if (!PassClickToPlayState(last, false, 1)) {
+                if (!PassClickToPlayState(last, false, 1, StateChangeOptions(0x43b).then(
+                        static_cast<GruntzCommandId>(0x80ca)))) {
                     ReportError(IDX(IDS_SET_GAME_STATE), 0x43b);
                     return 0;
                 }
-                PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, 0x80ca, 0);
                 return 1;
             }
         } else {
@@ -1849,7 +1887,7 @@ bool CGruntzMgr::IsQuitPending() const {
 
 void CGruntzMgr::DelayedQuit() {
     if (!m_owner || IsQuitPending()) return;
-    if (m_curState) m_curState->CancelSceneFade();
+    CancelStateChange();
     u32 delayMs = 0;
     SoundCue* cue = World() && World()->SoundRegistry()
         ? World()->SoundRegistry()->FindCue("MENU_ACTIVATE") : NULL;
@@ -2773,6 +2811,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 void CGruntzMgr::OnWorldModeLoaded(ColorDepth mode) {}
 
 i32 CGruntzMgr::ResetWorldState() {
+    if (IsStateTransitioning()) return 0;
     CState* st = m_curState;
     if (st == NULL) {
         return 1;

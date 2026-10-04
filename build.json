@@ -3525,6 +3525,28 @@
         "/MT",
         "/GX"
       ]
+    },
+    {
+      "name": "statetransition",
+      "source": "src/Runtime/StateTransition.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
+    },
+    {
+      "name": "statedeparture",
+      "source": "src/Gruntz/StateDeparture.cpp",
+      "flags": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/MT",
+        "/GX"
+      ]
     }
   ]
 }

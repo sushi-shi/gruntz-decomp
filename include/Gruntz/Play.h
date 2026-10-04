@@ -87,6 +87,9 @@ public:
     virtual i32 InputVirtual()  ;
     virtual i32 EnterState(GameStateId previousState)  ;
     virtual i32 LeaveState(GameStateId nextState)  ;
+    virtual i32 FinishDeparture(GameStateId nextState);
+    virtual i32 RestoreDeparture();
+    i32 PrepareDepartureFade();
     virtual i32 OnChar(i32 charCode, i32 keyData)  ;
     virtual i32 OnKeyDown(i32 virtualKey, i32 keyData)  ;
     virtual i32 OnKeyUp(i32 virtualKey, i32 keyData)  ;

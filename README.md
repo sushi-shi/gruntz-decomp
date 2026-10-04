@@ -436,9 +436,9 @@ busy surfaces, unlocks before reporting failure, and releases playback before
 asking the state to restore its display. The adapter retains its existing bounded
 2000-row/sample storage and rejects larger dimensions. Unmigrated synchronous
 callers retain their waiting/restoring lock path. Gameplay/loading and booty fades
-still require caller-continuation rewrites. Departing states must remain alive
-through their fades and audio ramps; menu, attract and booty exit audio waits are
-still synchronous. This is not completion of the scene-transition or rendering-host port.
+still require caller-continuation rewrites. The returning state-departure path
+below retains states through exit fades and audio ramps. This is not completion
+of the scene-transition or rendering-host port.
 
 ```sh
 ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-fades.py --target all
@@ -450,3 +450,38 @@ ownership, failed initialization/rendering, busy final frames, bounded recovery
 retries and timeout reset/saturation, arithmetic limits,
 and scheduler wrap/suspension. These tests do not execute DirectDraw rendering,
 state UI interactions or the game.
+
+### Returning state departures
+
+State-change requests are owned by `CGruntzMgr`. A successful request means it was
+accepted; departure, installation and arrival run on later frame callbacks.
+Requests made by a state never delete that state on its own call stack. The
+manager retains the departing state and its resources until its fade/audio work
+finishes, then replaces it, pushes it onto the state stack or reloads it in place.
+Input, commands other than quit, and repaint rendering are gated during this work.
+Quit cancels pending transitions and completion actions.
+
+Menu, attract and both booty states advance departure audio ramps from callbacks.
+The menu activation-cue delay uses admitted elapsed time. Gameplay/multiplayer exit
+fades now return, with player-unit removal deferred until the fade completes. A
+lost departure surface rebuilds the loading screen once instead of restoring the
+normal gameplay scene or repeating departure side effects. The audio adapter
+forces stop at the ramp deadline and reports failure if the stop fails.
+
+Requests own save snapshot paths, error/fallback choices and follow-up commands.
+Snapshot restoration and multiplayer connection run after the destination has
+entered and its returning fade has completed. A failed transition can request its
+configured fallback once. Reentrant cancellation during a phase cannot resurrect
+the canceled request.
+
+```sh
+ASAN_OPTIONS=detect_leaks=0 nix develop .#portable --command python3 check-state-transitions.py --target all
+```
+
+The portable tests cover phase order, retained-state lifetime, per-phase failure,
+cancellation and replacement during callbacks, delay saturation, clock wrap and
+suspension. They do not execute the production graphics/audio adapters or game UI.
+Loading/entry gameplay fades, booty scene fades, movie playback and multiplayer
+waits remain synchronous. Menu `StopMusicChain` still has separate modal/movie
+callers to migrate. Destination loading itself remains synchronous within its
+installation callback; this is not a complete browser-host lifecycle yet.

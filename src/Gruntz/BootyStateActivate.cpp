@@ -324,14 +324,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
 }
 
 i32 CBootyState::LeaveState(GameStateId nextState) {
-    SoundCue* found = m_world->SoundRegistry()->FindCue("BOOTY_LOOP");
-    if (found && found->m_sound->IsPlaying()) {
-        found->m_sound->RampVolumeTo(0, 0x1f4, true);
-        while (found->m_sound->IsPlaying()) {
-            m_world->SoundRegistry()->TickVolumeRamps();
-        }
-    }
-    return 1;
+    return BeginAudioDeparture(m_world->SoundRegistry()->FindCue("BOOTY_LOOP"), 0);
 }
 
 i32 CBootyState::ShowSecretBonusMessage() {
@@ -1917,14 +1910,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 }
 
 i32 CMultiBootyState::LeaveState(GameStateId nextState) {
-    SoundCue* found = m_world->SoundRegistry()->FindCue("BOOTY_LOOP");
-    if (found && found->m_sound->IsPlaying()) {
-        found->m_sound->RampVolumeTo(0, 0x1f4, true);
-        while (found->m_sound->IsPlaying()) {
-            m_world->SoundRegistry()->TickVolumeRamps();
-        }
-    }
-    return 1;
+    return BeginAudioDeparture(m_world->SoundRegistry()->FindCue("BOOTY_LOOP"), 0);
 }
 
 std::string CMultiBootyState::BuildPowerupIconKey(i32 key) {
