@@ -6,8 +6,12 @@
 #include <cstring>
 #include <string>
 #include <cstdio>
+#include <unistd.h>
 int main(int argc, char** argv) {
     assert(argc == 2);
+#ifdef __EMSCRIPTEN__
+    static_assert(sizeof(void*) == 4, "This suite must exercise wasm32");
+#endif
     const std::string path = argv[1];
     io::File closed;
     assert(!closed.write("x", 1));
@@ -141,7 +145,54 @@ int main(int argc, char** argv) {
     Settings unavailable;
     assert(unavailable.load(path + "-missing/config"));
     assert(!unavailable.save());
+
+    // Resolve a relative settings path once, then change the working directory.
+    char previousDirectory[4096];
+    assert(getcwd(previousDirectory, sizeof(previousDirectory)));
+#ifdef __EMSCRIPTEN__
+    const std::string directory = "/tmp/";
+#else
+    const std::string directory = path.substr(0, path.find_last_of('/') + 1);
+#endif
+    assert(chdir(directory.c_str()) == 0);
+    Settings relativeSettings;
+    assert(relativeSettings.load("relative.cfg"));
+    assert(chdir(previousDirectory) == 0);
+    relativeSettings.setInt("Sound", 1);
+    assert(relativeSettings.save());
+    Settings relativeReload;
+    assert(relativeReload.load(directory + "relative.cfg") && relativeReload.getInt("sound") == 1);
+    assert(std::remove((directory + "relative.cfg").c_str()) == 0);
+    const unsigned char integers[] = {0,0,0,0, 255,255,255,127, 0,0,0,128, 255,255,255,255};
+    io::MemoryInput integerInput(integers, sizeof(integers));
+    io::BinaryReader numbers(integerInput);
+    unsigned int number = 1;
+    assert(numbers.u32(number) && number == 0);
+    assert(numbers.u32(number) && number == 0x7fffffffU);
+    assert(numbers.u32(number) && number == 0x80000000U);
+    assert(numbers.u32(number) && number == 0xffffffffU);
+    assert(!numbers.u32(number) && number == 0xffffffffU);
+    io::MemoryInput invalidMemory(NULL, 1);
+    assert(!invalidMemory.good());
+    io::MemoryInput empty(NULL, 0);
+    io::BinaryReader emptyReader(empty);
+    assert(emptyReader.bytes(NULL, 0));
+    io::File missing;
+    assert(!missing.open(static_cast<const char*>(NULL), io::ReadOnly));
+    io::MemoryOutput invalidOutput;
+    assert(!invalidOutput.write(NULL, 1) && !invalidOutput.good());
+    io::MemoryOutput rejectedSnapshot;
+    CStreamArchive invalidArchive(rejectedSnapshot);
+    assert(invalidArchive.Open());
+    assert(!invalidArchive.Write(integers, -1) && !invalidArchive.Ready());
+    assert(file.open(path, io::Replace));
+    assert(io::writeSizedBytes(file, &colors[0], colors.size()) && file.finish());
+    assert(file.open(path, io::ReadOnly));
+    std::vector<unsigned char> fileColors;
+    assert(io::readSizedBytes(file, fileColors) && fileColors == colors && file.finish());
     assert(std::remove(configPath.c_str()) == 0);
     assert(std::remove(path.c_str()) == 0);
+    std::printf("I/O, codecs, snapshots and settings passed (%u-bit pointers).\n",
+                static_cast<unsigned int>(sizeof(void*) * 8));
     return 0;
 }
