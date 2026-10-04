@@ -121,7 +121,7 @@ public:
     void RefreshGameClock();
     void HandleAppActivation(b32 active, i32 unused);
     i32 CheckPlayState();
-    i32 RestoreVideoMode(b32 save);
+    i32 EnsureStandardVideoMode(b32 save);
     i32 SetVideoMode(i32 w, i32 h, b32 saveMode);
 
     i32 TryNextResolution();
@@ -157,7 +157,7 @@ public:
 
     i32 IsMoviePathValid();
     void ReportWorldStatus(WorldInitReportTag tag);
-    i32 LoadMonologoSprite();
+    i32 ToggleMonolithOverlay();
     i32 CheatRevealTreasures();
 
     i32 SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx);
@@ -169,10 +169,10 @@ public:
     i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user);
 
     i32 ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user);
-    i32 SetColorDepth(ColorDepth depth);
-    i32 LoadWorldMode(ColorDepth mode);
+    i32 ConfigureSurfaceColorKey(ColorDepth depth);
+    i32 ReinitializeWorldForColorDepth(ColorDepth depth);
     void OnWorldModeLoaded(ColorDepth mode);
-    i32 ResetWorldState();
+    i32 ToggleColorDepth();
     void PauseMusicIfEnabled();
     void ResumeMusicIfEnabled();
 
@@ -208,9 +208,9 @@ public:
 
     i32 TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused);
 
-    void EnterModalUI(const char* msg);
+    void ShowModalMessage(const char* msg);
 
-    i32 ExitModalUI(class CDialog* dlg, b32 notify);
+    i32 RunMfcDialog(class CDialog* dlg, b32 notify);
     i32 FinishLevel(b32 pauseGame, b32 pauseMusic);
     i32 FillSaveInfo(SaveSlot* dst, const char* snapshot);
     void SetSaveSlot(SaveSlot* const& slot) {
@@ -248,10 +248,10 @@ public:
 
     void SetGameClock(i32 now, i32 delta, i32 abs);
     void ResetClockGlobals();
-    i32 TickStateMgrs();
+    i32 UpdateGameplayInput();
     void SetSoundEnabled(b32 enabled);
-    i32 CheckSavedMode();
-    i32 IsLobbyHostReady();
+    i32 ApplySavedVideoMode();
+    i32 PaintCurrentState();
     void OnMusicMuteBegin();
     void OnMusicMuteEnd();
     void OnMusicFadeStep(i32 value);
@@ -285,12 +285,12 @@ public:
     GruntzPlayer* FindPlayerByNetworkId(i32 networkPlayerId);
     i32 ResetPlayerSlot(i32 slot);
     void ResetAllPlayerSlots();
-    i32 IsStandardMode();
+    i32 IsStandardVideoMode();
     i32 DebugJumpLevel();
     i32 PostSlotCommandB1(i32 slot);
     i32 PostSlotCommandB6(i32 slot);
 
-    i32 LoadSaveMessageSprite();
+    i32 RunSaveGameDialog();
 
     i32 IsBattlezMapFile(CString path);
 
@@ -407,7 +407,7 @@ public:
     // @identity-TODO: initialized to zero; no reader identifies this word.
     i32 m_reserveda8;
     b32 m_modalBusy;
-    b32 m_renderGate;
+    b32 m_renderSuspended;
 
     // @identity-TODO: construction and lobby startup only zero this word.
     i32 m_reservedb4;
@@ -456,7 +456,7 @@ extern i32 g_roundStartTimeMs;
 
 i32 RestoreGameGraphics();
 
-extern b32 g_monologoShown;
+extern b32 g_monolithOverlayVisible;
 
 extern char g_msgScratch[256];
 

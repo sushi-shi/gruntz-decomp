@@ -1122,28 +1122,28 @@ void CMultiStartDlg::OnOK() {
     }
     g_multiState->BroadcastPlayerIdMessage(NETMSG_VERIFY_CUSTOM_LEVEL, DPSEND_GUARANTEED);
     i32 customLevel = g_multiState->m_usesCustomLevel;
-    i32 verificationToken = g_gameReg->ResolveLevelChecksum(
+    i32 levelChecksum = g_gameReg->ResolveLevelChecksum(
         false,
         false,
         customLevel,
         0,
         customLevel != 0 ? g_multiState->CustomLevelName() : g_multiState->BuiltInLevelName()
     );
-    g_multiState->m_levelVerifyResult = false;
-    if (g_multiState->Poll(verificationToken) == 0) {
+    g_multiState->m_levelChecksumsMatch = false;
+    if (g_multiState->ExchangeLevelChecksums(levelChecksum) == 0) {
         g_multiState->m_customLevelVerificationPending = false;
         EnableWindow(false);
-        g_gameReg->EnterModalUI(
+        g_gameReg->ShowModalMessage(
             "Unable to verify custom level with other players. The game will not start."
         );
         EnableWindow(true);
-    } else if (g_multiState->m_levelVerifyResult != false) {
+    } else if (g_multiState->m_levelChecksumsMatch != false) {
         g_multiState->m_customLevelVerificationPending = true;
         CDialog::OnOK();
     } else {
         g_multiState->m_customLevelVerificationPending = false;
         EnableWindow(false);
-        g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
+        g_gameReg->ShowModalMessage("Not all players have the (same) custom level.");
         EnableWindow(true);
     }
 }

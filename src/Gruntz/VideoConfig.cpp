@@ -135,7 +135,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     CGruntzMgr* reg = g_gameReg;
                     SET_SIZE_COMPONENTS(reg->m_savedModeSize, w, h);
                     if (g_gameReg->IsInPlayState()) {
-                        g_gameReg->CheckSavedMode();
+                        g_gameReg->ApplySavedVideoMode();
                     }
                     return true;
                 }

@@ -7,7 +7,7 @@
     {                                                                                              \
         CString s;                                                                                 \
         s.Format((format), (x), (y));                                                              \
-        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));                                           \
+        g_gameReg->ShowModalMessage(static_cast<LPCSTR>(s));                                       \
     }
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGRMACROS_H

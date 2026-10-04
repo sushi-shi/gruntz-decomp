@@ -251,10 +251,10 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     memset(&m_saveSlot, 0, sizeof(m_saveSlot));
     m_savedEffectsEnabled = NetGameMgr()->m_isEffectsEnabled;
     NetGameMgr()->m_isEffectsEnabled = true;
-    if (LoadImageBanks() == 0) {
+    if (ResolveSharedAssetDirectories() == 0) {
         return 0;
     }
-    PostLoadImageBanks();
+    OnSharedAssetDirectoriesResolved();
     m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_MULTI");
     if (m_stateResources == NULL) {
         return 0;
@@ -568,7 +568,7 @@ i32 CMulti::Render() {
     if (m_session->AdvanceTick() && m_pollAbort == false) {
         tickAdvanced = 1;
     }
-    TickStateMgrs();
+    UpdateGameplayInput();
     CDDrawWorkerHost* mainPlane = m_world->GetLevel()->m_mainPlane;
     if (mainPlane) {
         mainPlane->ActivateVisibleObjects();
@@ -998,9 +998,9 @@ void CMulti::ShowNetworkMessage(char* message, i32 code) {
     if (message && *message && Mgr()) {
         if (code > 0) {
             sprintf(formattedMessage, "%s (%i)", message, code);
-            Mgr()->EnterModalUI(formattedMessage);
+            Mgr()->ShowModalMessage(formattedMessage);
         } else {
-            Mgr()->EnterModalUI(message);
+            Mgr()->ShowModalMessage(message);
         }
     }
 }
@@ -1187,7 +1187,7 @@ void CMulti::ApplyCmdDelayDefaults() {
 RVA(0x000b86c0, 0x206)
 i32 CMulti::ShowMultiStartDlg() {
     CMultiStartDlg dlg(m_mgr, NULL);
-    i32 r = m_mgr->ExitModalUI(&dlg, false);
+    i32 r = m_mgr->RunMfcDialog(&dlg, false);
     g_netMessageEditHwnd = NULL;
     if (r != 1) {
         if (m_isHost != false) {
@@ -1349,7 +1349,7 @@ i32 CMulti::VerifyCustomLevel(CNetSessionListNode* session, CNetPlayerNode* loca
     if (m_customLevelVerificationPending != false) {
         i32 cfgId = m_usesCustomLevel;
 
-        i32 token = (g_gameReg)->ResolveLevelChecksum(
+        i32 checksum = (g_gameReg)->ResolveLevelChecksum(
             false,
             false,
             cfgId,
@@ -1357,19 +1357,19 @@ i32 CMulti::VerifyCustomLevel(CNetSessionListNode* session, CNetPlayerNode* loca
             cfgId != 0 ? CustomLevelName() : BuiltInLevelName()
         );
 
-        g_connectRptMgr->m_levelVerifyResult = false;
-        if (g_connectRptMgr->Poll(token) == 0) {
+        g_connectRptMgr->m_levelChecksumsMatch = false;
+        if (g_connectRptMgr->ExchangeLevelChecksums(checksum) == 0) {
             m_customLevelVerificationPending = false;
-            g_gameReg->EnterModalUI(
+            g_gameReg->ShowModalMessage(
                 "Unable to verify custom level with other players. The game will not start."
             );
             goto notVerified;
         }
 
-        if (g_connectRptMgr->m_levelVerifyResult != false) {
+        if (g_connectRptMgr->m_levelChecksumsMatch != false) {
             return 1;
         }
-        g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
+        g_gameReg->ShowModalMessage("Not all players have the (same) custom level.");
         m_customLevelVerificationPending = false;
         goto notVerified;
     }
@@ -1785,13 +1785,13 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
         }
 
         case NETMSG_VERIFY_OK:
-            m_verifyDone = true;
-            m_levelVerifyResult = true;
+            m_levelVerificationComplete = true;
+            m_levelChecksumsMatch = true;
             return 1;
 
         case NETMSG_VERIFY_FAILED:
-            m_levelVerifyResult = false;
-            m_verifyDone = true;
+            m_levelChecksumsMatch = false;
+            m_levelVerificationComplete = true;
             return 1;
 
         case NETMSG_LEVEL_CHECKSUM: {
@@ -2602,14 +2602,14 @@ ready:
 }
 
 RVA(0x000bba10, 0x1fb)
-i32 CMulti::Poll(i32 token) {
+i32 CMulti::ExchangeLevelChecksums(i32 checksum) {
     if (m_isHost == false) {
-        BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, DPSEND_GUARANTEED);
+        BroadcastValueMessage(STAT_LEVEL_CHECKSUM, checksum, DPSEND_GUARANTEED);
         i32 resend = 0x1388;
         i32 abort = 0x3a98;
-        m_verifyDone = false;
+        m_levelVerificationComplete = false;
 
-        while (m_verifyDone == false) {
+        while (m_levelVerificationComplete == false) {
             u32 start = timeGetTime();
             Sleep(0x32);
             PollSession();
@@ -2630,19 +2630,19 @@ i32 CMulti::Poll(i32 token) {
             if (resend == 0) {
                 resend = 0x1388;
                 SendKeepAlive();
-                BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, DPSEND_GUARANTEED);
+                BroadcastValueMessage(STAT_LEVEL_CHECKSUM, checksum, DPSEND_GUARANTEED);
             }
         }
         return 1;
     }
 
     i32 abort = 0x3a98;
-    m_verifyDone = false;
+    m_levelVerificationComplete = false;
     for (i32 i = 0; i < 4; i++) {
         m_levelChecksumReceived[i] = 0;
         m_levelChecksums[i] = 0;
     }
-    while (m_verifyDone == false) {
+    while (m_levelVerificationComplete == false) {
         u32 start = timeGetTime();
         Sleep(0x32);
         PollSession();
@@ -2665,7 +2665,7 @@ i32 CMulti::Poll(i32 token) {
                 && player->IsHumanControlled() != false) {
                 if (m_levelChecksumReceived[i] == 0) {
                     allAcked = 0;
-                } else if (!(m_levelChecksums[i] == token && token != 0)) {
+                } else if (!(m_levelChecksums[i] == checksum && checksum != 0)) {
                     allAgree = 0;
                 }
             }
@@ -2673,12 +2673,12 @@ i32 CMulti::Poll(i32 token) {
         if (allAcked != 0) {
             if (allAgree != 0) {
                 BroadcastPlayerIdMessage(STAT_VERIFY_AGREE, DPSEND_GUARANTEED);
-                m_levelVerifyResult = true;
-                m_verifyDone = true;
+                m_levelChecksumsMatch = true;
+                m_levelVerificationComplete = true;
             } else {
                 BroadcastPlayerIdMessage(STAT_VERIFY_DISAGREE, DPSEND_GUARANTEED);
-                m_levelVerifyResult = false;
-                m_verifyDone = true;
+                m_levelChecksumsMatch = false;
+                m_levelVerificationComplete = true;
             }
         }
     }
@@ -3243,6 +3243,6 @@ i32 CMulti::OnChar(i32 charCode, i32 keyData) {
     return CPlay::OnChar(charCode, keyData);
 }
 RVA(0x000bd3c0, 0x9)
-void CMulti::TickStateMgrs() {
-    m_mgr->TickStateMgrs();
+void CMulti::UpdateGameplayInput() {
+    m_mgr->UpdateGameplayInput();
 }

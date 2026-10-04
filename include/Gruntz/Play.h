@@ -112,13 +112,13 @@ public:
         return 0;
     }
     RVA(0x0008c950, 0x3)
-    virtual i32 GetFrame() {
+    virtual i32 GetNetworkCommandTick() {
         return 0;
     }
 
     virtual i32 CountObjectsByCategory(i32 category);
 
-    virtual i32 LoadImageBanks();
+    virtual i32 ResolveSharedAssetDirectories();
 
     virtual i32 LoadLevel(i32 level, i32 unused);
 
@@ -130,11 +130,11 @@ public:
     virtual i32 DrawStateMessage();
 
     RVA(0x000d0030, 0x1)
-    virtual void PostLoadImageBanks() {}
+    virtual void OnSharedAssetDirectoriesResolved() {}
 
     virtual void DrawChatMessages(HDC dc);
 
-    virtual void TickStateMgrs();
+    virtual void UpdateGameplayInput();
 
     virtual void UpdateWorldFrame();
     virtual i32 UpdateWorldFixedSteps();

@@ -171,7 +171,7 @@ DATA(0x00245568)
 i32 g_debugGruntAiType;
 
 DATA(0x002455e8)
-b32 g_monologoShown;
+b32 g_monolithOverlayVisible;
 
 DATA(0x0024556c)
 CGruntzMgr* g_gameReg = NULL;
@@ -239,7 +239,7 @@ CGruntzMgr::CGruntzMgr() {
     m_delayedQuitPending = false;
     m_reserveda8 = 0;
     m_modalBusy = false;
-    m_renderGate = false;
+    m_renderSuspended = false;
     m_reservedb4 = 0;
     m_loadingSaveGame = false;
     m_isCheckpointPrompts = true;
@@ -403,7 +403,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         g_enableEmulation = true;
     }
     m_modalBusy = false;
-    m_renderGate = false;
+    m_renderSuspended = false;
     m_driveLetterProbed = false;
     m_driveLetter = 0;
     GetGruntzDriveLetter();
@@ -516,7 +516,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.ZZZ"), true);
     ResourceArchive()->OpenAdditional(const_cast<char*>("GRUNTZ.XXX"), true);
-    SetColorDepth(m_colorDepth);
+    ConfigureSurfaceColorKey(m_colorDepth);
 
     m_faderMgr = new CFaderMgr;
     if (!m_faderMgr->SetDefaults(NULL, NULL, NULL)) {
@@ -1075,7 +1075,7 @@ i32 CMulti::UnusedPlayQuery() {
 }
 
 RVA(0x0008d220, 0xa)
-i32 CMulti::GetFrame() {
+i32 CMulti::GetNetworkCommandTick() {
     return m_session->GetCommandTick();
 }
 
@@ -1321,7 +1321,7 @@ i32 CDDrawDeviceManager::GetCapsChecked() {
 }
 
 RVA(0x0008ddd0, 0x7e)
-i32 CGruntzMgr::RestoreVideoMode(b32 save) {
+i32 CGruntzMgr::EnsureStandardVideoMode(b32 save) {
     if (IS_STANDARD_VIDEO_MODE) {
         if (save) {
             m_savedModeSize = m_modeSize;
@@ -1336,10 +1336,11 @@ i32 CGruntzMgr::RestoreVideoMode(b32 save) {
 }
 
 RVA(0x0008de70, 0x61)
-i32 CGruntzMgr::CheckSavedMode() {
+i32 CGruntzMgr::ApplySavedVideoMode() {
 
     if ((m_modeSize.cx == m_savedModeSize.cx && m_modeSize.cy == m_savedModeSize.cy)
-        || SetVideoMode(m_savedModeSize.cx, m_savedModeSize.cy, true) || RestoreVideoMode(true)) {
+        || SetVideoMode(m_savedModeSize.cx, m_savedModeSize.cy, true)
+        || EnsureStandardVideoMode(true)) {
         return 1;
     }
     ReportError(IDX(IDS_SET_VIDEO_MODE), 0x45e);
@@ -1366,7 +1367,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
                         if (st->m_statusBar->GetState() == STATUSBAR_DOCK_RIGHT) {
                             st->m_statusBar->DockStatusBarLeft();
                             st->m_statusBar->DockStatusBarRight();
-                            EnterModalUI(
+                            ShowModalMessage(
                                 "This map is too small to be displayed under your "
                                 "desired video resolution. Default resolution will "
                                 "be used."
@@ -1378,7 +1379,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
                             st->m_statusBar->DockStatusBarLeft();
                         }
                     }
-                    EnterModalUI(
+                    ShowModalMessage(
                         "This map is too small to be displayed under your desired "
                         "video resolution. Default resolution will be used."
                     );
@@ -1549,7 +1550,7 @@ void CGruntzMgr::OnCheckpointReached() {
         return;
     }
     CCheckpointDlg dlg(NULL);
-    if (ExitModalUI(&dlg, false) == 1) {
+    if (RunMfcDialog(&dlg, false) == 1) {
         SendMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_QUICK_SAVE_PROMPT), 0);
     }
 }
@@ -1791,7 +1792,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
 }
 
 RVA(0x0008ef10, 0x9e)
-void CGruntzMgr::EnterModalUI(const char* msg) {
+void CGruntzMgr::ShowModalMessage(const char* msg) {
     CGameApp* app = m_owner;
     if (app == NULL) {
         return;
@@ -2121,7 +2122,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f980, 0x21)
-i32 CGruntzMgr::IsStandardMode() {
+i32 CGruntzMgr::IsStandardVideoMode() {
     if (IS_STANDARD_VIDEO_MODE) {
         return 1;
     }
@@ -2363,7 +2364,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
 }
 
 RVA(0x000903f0, 0x10c)
-i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
+i32 CGruntzMgr::RunMfcDialog(CDialog* dlg, b32 notify) {
     if (m_voiceManager) {
         VoiceMgr()->PauseAllVoices();
     }
@@ -2599,7 +2600,7 @@ void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
 }
 
 RVA(0x00090d10, 0x18e)
-i32 CGruntzMgr::LoadMonologoSprite() {
+i32 CGruntzMgr::ToggleMonolithOverlay() {
     if (m_curState == NULL) {
         return 0;
     }
@@ -2651,15 +2652,15 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             }
             parity ^= 1;
         }
-        g_monologoShown = true;
+        g_monolithOverlayVisible = true;
         return 1;
     }
     if (found->m_flags & 2) {
         found->ClearFlags(2);
-        g_monologoShown = true;
+        g_monolithOverlayVisible = true;
     } else {
         found->AddFlags(2);
-        g_monologoShown = false;
+        g_monolithOverlayVisible = false;
     }
     return 1;
 }
@@ -2719,7 +2720,7 @@ i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
 }
 
 RVA(0x00091170, 0xad)
-i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
+i32 CGruntzMgr::ConfigureSurfaceColorKey(ColorDepth depth) {
     if (depth != BPP_PALETTED_8 && depth != BPP_RGB_16 && depth != BPP_RGB_24) {
         return 0;
     }
@@ -2811,7 +2812,7 @@ void CGruntzMgr::CheatEclipseToggle() {
 }
 
 RVA(0x00091500, 0x42)
-i32 CGruntzMgr::IsLobbyHostReady() {
+i32 CGruntzMgr::PaintCurrentState() {
     if (m_curState == NULL) {
         return 0;
     }
@@ -2960,14 +2961,14 @@ i32 CGruntzMgr::SetVoiceVolume(i32 v) {
 
 // @early-stop
 RVA(0x00091a40, 0x2f9)
-i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
+i32 CGruntzMgr::ReinitializeWorldForColorDepth(ColorDepth depth) {
     if (m_world == NULL) {
         return 0;
     }
-    if (m_colorDepth == mode) {
+    if (m_colorDepth == depth) {
         return 1;
     }
-    if (mode != BPP_PALETTED_8 && mode != BPP_RGB_16) {
+    if (depth != BPP_PALETTED_8 && depth != BPP_RGB_16) {
         return 0;
     }
 
@@ -2979,7 +2980,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     }
     m_resourceArchive = NULL;
 
-    m_colorDepth = mode;
+    m_colorDepth = depth;
     g_enableTrueColor = false;
     g_enableHiColor = false;
     if (m_colorDepth == BPP_RGB_16) {
@@ -3024,7 +3025,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    SetColorDepth(m_colorDepth);
+    ConfigureSurfaceColorKey(m_colorDepth);
 
     SAFE_DELETE(m_worldSounds)
 
@@ -3040,7 +3041,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     return 1;
 }
 
-// @identity-TODO: placement after LoadWorldMode is the only evidence for the hook's name.
+// @identity-TODO: placement after ReinitializeWorldForColorDepth is the only evidence for the hook's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091e00, 0x3)
@@ -3049,7 +3050,7 @@ void CGruntzMgr::OnWorldModeLoaded(ColorDepth mode) {}
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091e20, 0x17d)
-i32 CGruntzMgr::ResetWorldState() {
+i32 CGruntzMgr::ToggleColorDepth() {
     CState* st = m_curState;
     if (st == NULL) {
         return 1;
@@ -3061,7 +3062,7 @@ i32 CGruntzMgr::ResetWorldState() {
 
     CState* s = m_curState;
     m_modalBusy = true;
-    m_renderGate = true;
+    m_renderSuspended = true;
     if (s) {
         delete s;
         m_curState = NULL;
@@ -3074,12 +3075,12 @@ i32 CGruntzMgr::ResetWorldState() {
     CWaitCursorScope waitCursor;
 
     if (m_colorDepth == BPP_PALETTED_8) {
-        if (LoadWorldMode(BPP_RGB_16) == BPP_UNSET) {
+        if (ReinitializeWorldForColorDepth(BPP_RGB_16) == BPP_UNSET) {
             ReportError(IDX(IDS_CHANGE_COLOR_DEPTH), 0x443);
             return 0;
         }
     } else {
-        if (LoadWorldMode(BPP_PALETTED_8) == BPP_UNSET) {
+        if (ReinitializeWorldForColorDepth(BPP_PALETTED_8) == BPP_UNSET) {
             ReportError(IDX(IDS_CHANGE_COLOR_DEPTH), 0x444);
             return 0;
         }
@@ -3089,7 +3090,7 @@ i32 CGruntzMgr::ResetWorldState() {
     }
     TransitionState(stateId, 1, false, 0);
     m_modalBusy = false;
-    m_renderGate = false;
+    m_renderSuspended = false;
     return 1;
 }
 
@@ -3120,7 +3121,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
 }
 
 RVA(0x000920b0, 0x1c)
-i32 CGruntzMgr::TickStateMgrs() {
+i32 CGruntzMgr::UpdateGameplayInput() {
     g_inputMgr->PollAll();
     g_gameplayInput->Update();
     return 1;
@@ -3262,11 +3263,11 @@ void CGruntzMgr::SetMusicEnabled(b32 enabled) {
 }
 
 RVA(0x00092420, 0xa4)
-i32 CGruntzMgr::LoadSaveMessageSprite() {
+i32 CGruntzMgr::RunSaveGameDialog() {
     if (CheatMgr()->HasUsedCheats() != false) {
         CString name;
         name.LoadStringA(0x81aa);
-        EnterModalUI(name);
+        ShowModalMessage(name);
     } else if (RunModalDialog("GAME_SAVE", SaveGameDialogProc, false) == 1) {
         RunModalDialog("GAME_SAVEMSG", OkCancelDialogProc, false);
     }
@@ -3290,11 +3291,11 @@ i32 CGruntzMgr::Quicksave() {
     if (CheatMgr()->HasUsedCheats() != false) {
         CString name;
         name.LoadStringA(0x81aa);
-        EnterModalUI(name);
+        ShowModalMessage(name);
         return 1;
     }
     if (m_saveInfoRec == NULL || !(m_saveInfoRec->m_flags & 1)) {
-        return LoadSaveMessageSprite();
+        return RunSaveGameDialog();
     }
 
     if (&(static_cast<CPlay*>(m_curState))->m_saveSlot == NULL) {
@@ -3306,7 +3307,7 @@ i32 CGruntzMgr::Quicksave() {
     FillSaveInfo(m_saveInfoRec, NULL);
 
     if (g_gameReg->m_saveGame->Save(m_saveInfoRec->m_serial, 0x81a7) == 0) {
-        EnterModalUI("ERROR - Cannot Save Game.");
+        ShowModalMessage("ERROR - Cannot Save Game.");
         return 1;
     }
     ChatLog()->AddMessage("Game Quicksaved successfully.", GAME_TEXT_FLAGS_NONE, 0x11);
@@ -3545,7 +3546,7 @@ i32 CGruntzMgr::OpenBattlezSetup() {
         return 0;
     }
     ResetPlayerColorAvailability();
-    if (ExitModalUI(&dlg, true) != 1) {
+    if (RunMfcDialog(&dlg, true) != 1) {
         return 0;
     }
     if (dlg.m_customNameFlag != false) {
@@ -3722,7 +3723,7 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     ar->Write(&g_gooPuddlez, sizeof(g_gooPuddlez));
     ar->Write(&g_explosionz, sizeof(g_explosionz));
     ar->Write(&m_isEasyMode, sizeof(m_isEasyMode));
-    ar->Write(&g_monologoShown, sizeof(g_monologoShown));
+    ar->Write(&g_monolithOverlayVisible, sizeof(g_monolithOverlayVisible));
     ar->Write(&g_screenShakeAmplitudeX, sizeof(g_screenShakeAmplitudeX));
     ar->Write(&g_screenShakeAmplitudeY, sizeof(g_screenShakeAmplitudeY));
     ar->Write(&g_screenShakeMinDelayMs, sizeof(g_screenShakeMinDelayMs));
@@ -3769,7 +3770,7 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     ar->Read(&g_gooPuddlez, sizeof(g_gooPuddlez));
     ar->Read(&g_explosionz, sizeof(g_explosionz));
     ar->Read(&m_isEasyMode, sizeof(m_isEasyMode));
-    ar->Read(&g_monologoShown, sizeof(g_monologoShown));
+    ar->Read(&g_monolithOverlayVisible, sizeof(g_monolithOverlayVisible));
     ar->Read(&g_screenShakeAmplitudeX, sizeof(g_screenShakeAmplitudeX));
     ar->Read(&g_screenShakeAmplitudeY, sizeof(g_screenShakeAmplitudeY));
     ar->Read(&g_screenShakeMinDelayMs, sizeof(g_screenShakeMinDelayMs));

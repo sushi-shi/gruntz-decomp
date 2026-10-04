@@ -280,10 +280,10 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         if (m_mgr->IsLoadingSaveGame() == false) {
             m_mgr->SetSaveSlot(NULL);
         }
-        if (!LoadImageBanks()) {
+        if (!ResolveSharedAssetDirectories()) {
             return 0;
         }
-        PostLoadImageBanks();
+        OnSharedAssetDirectoriesResolved();
         if (!LoadLevel(areaArg, 1)) {
             return 0;
         }
@@ -691,7 +691,7 @@ i32 CPlay::Render() {
 
 RVA(0x000c9c20, 0x79)
 void CPlay::UpdateWorldFrame() {
-    TickStateMgrs();
+    UpdateGameplayInput();
     {
 
         CGameLevel* lvl = m_world->GetLevel();
@@ -745,7 +745,7 @@ i32 CPlay::UpdateWorldFixedSteps() {
                     lvl->m_mainPlane->DeactivateDistantObjects();
                 }
             }
-            TickStateMgrs();
+            UpdateGameplayInput();
             {
                 CGameLevel* lvl = m_world->GetLevel();
                 if (lvl->m_mainPlane != NULL) {
@@ -776,7 +776,7 @@ i32 CPlay::ProfileInputFrame() {
     DWORD(WINAPI * tg)(void) = timeGetTime;
 
     i32 activateMs = static_cast<i32>(tg());
-    TickStateMgrs();
+    UpdateGameplayInput();
     activateMs = static_cast<i32>(tg() - static_cast<u32>(activateMs));
 
     i32 deactMs = static_cast<i32>(tg());
@@ -917,7 +917,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     self->m_mgr->m_worldSounds->Teardown();
     self->m_mgr->VoiceMgr()->PauseAllVoices();
     self->m_mgr->VoiceMgr()->ClearVoiceIndicatorSlots();
-    self->m_mgr->RestoreVideoMode(false);
+    self->m_mgr->EnsureStandardVideoMode(false);
 
     if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
@@ -1429,7 +1429,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
         if ((g_gameReg)->GetGameMode() == GAMEMODE_MULTIPLAYER) {
             g_skipNextRestoreMessage = true;
             self->m_loadingScreenVisible = false;
-            self->m_mgr->CheckSavedMode();
+            self->m_mgr->ApplySavedVideoMode();
         }
         self->m_mgr->ChatLog()->ClearMessages();
         return 1;
@@ -3112,7 +3112,7 @@ void CPlay::DrawDebugStatsFull() {
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
             m_packetsSent,
             m_packetsRcvd,
-            GetFrame(),
+            GetNetworkCommandTick(),
             g_frameTime
         );
         strcat(buf, scratch);
@@ -3209,7 +3209,7 @@ void CPlay::DrawDebugStats() {
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
             m_packetsSent,
             m_packetsRcvd,
-            GetFrame(),
+            GetNetworkCommandTick(),
             g_frameTime
         );
         strcat(buf, scratch);
@@ -3244,8 +3244,8 @@ void CPlay::DrawDebugStats() {
 }
 
 RVA(0x000cfbb0, 0x8)
-void CPlay::TickStateMgrs() {
-    m_mgr->TickStateMgrs();
+void CPlay::UpdateGameplayInput() {
+    m_mgr->UpdateGameplayInput();
 }
 
 RVA(0x000cfbd0, 0x8f)
@@ -3342,7 +3342,7 @@ i32 CPlay::DrawStateMessage() {
 }
 
 RVA(0x000cffe0, 0x3c)
-i32 CPlay::LoadImageBanks() {
+i32 CPlay::ResolveSharedAssetDirectories() {
     CPlay* self = this;
     if (!self->m_resourceArchive) {
         return 0;
@@ -4532,7 +4532,7 @@ b32 CPlay::PlaceStartGruntz() {
                 if (idx == -1) {
                     CString s;
                     s.Format("Could not add Grunt: Player=%d, x=%d, y=%d", obj->GetSmarts(), x, y);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    g_gameReg->ShowModalMessage(static_cast<LPCSTR>(s));
                     return false;
                 }
                 obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -5303,7 +5303,7 @@ i32 CPlay::AddLevelGruntz() {
             CString msg;
             msg.Format("Could not add Grunt: Player=%d, x=%d, y=%d", g->GetSmarts(), x, y);
 
-            (g_gameReg)->EnterModalUI(msg);
+            (g_gameReg)->ShowModalMessage(msg);
             return 0;
         }
         g->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -5856,7 +5856,7 @@ i32 CPlay::LoadRequiredCharacterAssets(CMulti* multiplayerSession, i32* loadedAs
 
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(GameStateId mode) {
-    (g_gameReg)->CheckSavedMode();
+    (g_gameReg)->ApplySavedVideoMode();
     m_statusBar->Deactivate();
     m_statusBar->UpdateStatusBar(0);
     m_mgr->RefreshGameClock();

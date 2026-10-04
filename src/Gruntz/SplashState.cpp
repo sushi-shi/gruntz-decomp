@@ -49,7 +49,7 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prev
         return 0;
     }
     SetCursor(NULL);
-    m_mgr->RestoreVideoMode(false);
+    m_mgr->EnsureStandardVideoMode(false);
 
     m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_SPLASH");
     if (!m_stateResources) {

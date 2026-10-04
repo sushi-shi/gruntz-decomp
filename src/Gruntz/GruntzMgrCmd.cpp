@@ -154,7 +154,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!playState) {
                             return 1;
                         }
-                        if (!LoadMonologoSprite()) {
+                        if (!ToggleMonolithOverlay()) {
                             return 1;
                         }
                         PLAYCUE("GAME_MONOLITH");
@@ -162,7 +162,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!m_musicEnabled) {
                             return 1;
                         }
-                        if (g_monologoShown) {
+                        if (g_monolithOverlayVisible) {
                             m_midi->PlaySequence("MONOLITH", true);
                             return 1;
                         }
@@ -519,7 +519,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!RestoreGameFromFile(this, si->m_serial)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x465);
             }
-            CheckSavedMode();
+            ApplySavedVideoMode();
             m_loadingSaveGame = false;
             return 1;
         }
@@ -542,7 +542,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (m_curState->GetStateId() == GAMESTATE_PLAY) {
                 CPlay* _g = PickPlayOrPausedState();
                 if (_g->CanQuickSave()) {
-                    LoadSaveMessageSprite();
+                    RunSaveGameDialog();
                 }
             }
             return 1;
@@ -930,11 +930,11 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         }
-        case CMD_RESTORE_VIDEO_MODE:
+        case CMD_STANDARD_RESOLUTION:
             if (!IsInPlayState()) {
                 return 1;
             }
-            RestoreVideoMode(false);
+            EnsureStandardVideoMode(false);
             return 1;
         case CMD_NEXT_RESOLUTION:
             if (!IsInPlayState()) {

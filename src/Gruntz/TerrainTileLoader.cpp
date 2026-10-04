@@ -144,7 +144,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                 if (rock == NULL) {
                     CString diag;
                     diag.Format("No giant rock logic found at: x=%d, y=%d", px, py);
-                    g_gameReg->EnterModalUI(static_cast<const char*>(diag));
+                    g_gameReg->ShowModalMessage(static_cast<const char*>(diag));
                     g_gameReg->ReportError(
                         IDX(TRIGERR_LOOKUP_MISS),
                         IDX(TRIGSITE_ARRIVAL_GIANT_ROCK)

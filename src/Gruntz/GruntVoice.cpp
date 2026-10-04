@@ -84,7 +84,7 @@ RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
 RVA(0x00119320, 0x15)
 void ButeParseErrorSink(const char* msg) {
     if (g_gameReg) {
-        g_gameReg->EnterModalUI(msg);
+        g_gameReg->ShowModalMessage(msg);
     }
 }
 
