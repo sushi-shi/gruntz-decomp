@@ -103,7 +103,7 @@ i32 CGrunt::StepDiggerBehavior() {
         return 1;
     }
 
-    if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
+    if (g == NULL || GruntInRadius(g->GetPlayerIndex(), g->GetUnitIndex()) == 0) {
         m_blockedVoicePending = false;
         goto L_tailc;
     }

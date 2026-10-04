@@ -185,7 +185,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     i32 pathPb;
                     PRIO(pathPb, best->GetActivePickupType());
                     if (pathPa <= pathPb
-                        && this->GruntInRadius(best->m_playerIndex, best->m_unitIndex) != 0) {
+                        && this->GruntInRadius(best->GetPlayerIndex(), best->GetUnitIndex()) != 0) {
                         Coord cc;
                         best->GetScreenPos(&cc);
                         if (this->MoveToTile(
@@ -248,7 +248,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 i32 pb;
                 PRIO(pb, sg->GetActivePickupType());
                 if (pa <= pb && sg->IsEntranceCommitted() != false
-                    && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
+                    && this->GruntInRadius(sg->GetPlayerIndex(), sg->GetUnitIndex()) != 0) {
                     RepathToward(sg);
                     if (m_inCombat != false || m_stamina < STAMINA_FULL) {
                         return 1;
@@ -281,7 +281,8 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     PRIO(pa, m_activePickupType);
                     i32 pb;
                     PRIO(pb, sg->GetActivePickupType());
-                    if (pa <= pb && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0
+                    if (pa <= pb
+                        && this->GruntInRadius(sg->GetPlayerIndex(), sg->GetUnitIndex()) != 0
                         && sg->IsEntranceCommitted() != false) {
                         if (m_attackQueued != false || m_attackWindupActive != false
                             || m_stamina < STAMINA_FULL) {

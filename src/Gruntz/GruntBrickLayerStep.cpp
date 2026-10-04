@@ -113,7 +113,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     }
 
     if (g == NULL || static_cast<u32>(m_dwell) <= DWELL_REPATH_MS
-        || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
+        || GruntInRadius(g->GetPlayerIndex(), g->GetUnitIndex()) == 0) {
         m_blockedVoicePending = false;
         goto L_ed153;
     }

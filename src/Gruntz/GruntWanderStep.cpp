@@ -93,7 +93,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 return 1;
             }
             if (g != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
+                if (GruntInRadius(g->GetPlayerIndex(), g->GetUnitIndex()) != 0) {
                     g->GetScreenTile(&c);
                     if (MoveToTile(c.m_x, c.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(g);
@@ -115,7 +115,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 return 1;
             }
             if (slot == NULL || slot->IsEntranceCommitted() == false
-                || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
+                || GruntInRadius(slot->GetPlayerIndex(), slot->GetUnitIndex()) == 0) {
                 m_aiState = AISTATE_SEEK;
                 return 1;
             }
@@ -142,7 +142,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 return 1;
             }
             CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
-            if (slot == NULL || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0
+            if (slot == NULL || GruntInRadius(slot->GetPlayerIndex(), slot->GetUnitIndex()) == 0
                 || slot->IsEntranceCommitted() == false) {
                 goto ph1;
             }

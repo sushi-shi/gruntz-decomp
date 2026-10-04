@@ -102,7 +102,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 return 1;
             }
             if (g != NULL && static_cast<u32>(m_dwell) > 500) {
-                if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
+                if (GruntInRadius(g->GetPlayerIndex(), g->GetUnitIndex()) == 0) {
                     return 1;
                 }
                 if (MoveToTile(
@@ -149,7 +149,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 return 1;
             }
             if (t == NULL || t->IsEntranceCommitted() == false
-                || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0) {
+                || GruntInRadius(t->GetPlayerIndex(), t->GetUnitIndex()) == 0) {
                 m_aiState = AISTATE_SEEK;
                 return 1;
             }
@@ -167,7 +167,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
 
             if (m_inCombat != false) {
                 CGrunt* t = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
-                if (t == NULL || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0
+                if (t == NULL || GruntInRadius(t->GetPlayerIndex(), t->GetUnitIndex()) == 0
                     || t->IsEntranceCommitted() == false) {
                     m_aiState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;

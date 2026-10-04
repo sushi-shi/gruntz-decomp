@@ -64,7 +64,7 @@ i32 CGrunt::StepToyerBehavior() {
     if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
         return 1;
     }
-    if (GruntInRadius(p->m_playerIndex, p->m_unitIndex)) {
+    if (GruntInRadius(p->GetPlayerIndex(), p->GetUnitIndex())) {
         CGameObject* b = p->m_object;
         MoveToTile(
             b->m_screenX >> TILE_SHIFT_PX,

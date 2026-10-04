@@ -137,7 +137,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
     }
 
 L_ed006b:
-    if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
+    if (g == NULL || GruntInRadius(g->GetPlayerIndex(), g->GetUnitIndex()) == 0) {
         m_blockedVoicePending = false;
         goto L_scanb;
     }

@@ -134,7 +134,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         this->m_defenderPx = this->m_lastTilePx;
-        if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
+        if (g == NULL || GruntInRadius(g->GetPlayerIndex(), g->GetUnitIndex()) == 0) {
             this->m_blockedVoicePending = false;
             return 1;
         }
