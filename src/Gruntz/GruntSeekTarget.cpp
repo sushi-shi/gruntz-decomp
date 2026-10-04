@@ -43,7 +43,7 @@
 
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
-    COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
+    this->m_defenderPx = this->m_lastTilePx;
     if (!this->CoordsEmpty()
         && g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x) == NULL) {
         this->RecycleCoords();
@@ -133,7 +133,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             }
             return 1;
         }
-        COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
+        this->m_defenderPx = this->m_lastTilePx;
         if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
             this->m_blockedVoicePending = false;
             return 1;
