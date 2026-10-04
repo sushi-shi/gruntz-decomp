@@ -272,7 +272,7 @@ i32 CTriggerMgr::SpawnGrunt(
             m_units[base + unitIndex] = logic;
             m_unitCountByPlayer[playerIndex] += 1;
             m_unitExited[base + unitIndex] = 0;
-            game->GetGameStats()->m_gruntzByPlayer[playerIndex] += 1;
+            game->GetGameStats()->m_gruntzSpawnedByPlayer[playerIndex] += 1;
             return unitIndex;
         }
     }

@@ -83,7 +83,7 @@ i32 CGrunt::BeginPickupAnimation(
             && type != PICKUP_WARPSTONE) {
             g_gameReg->GetGameStats()->m_toolzCollected++;
             g_gameReg->GetGameStats()
-                ->m_weaponPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_BOMB)]++;
+                ->m_toolPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_BOMB)]++;
         } else if (type >= PICKUP_TOYZ_FIRST && type <= PICKUP_TOYZ_LAST) {
             g_gameReg->GetGameStats()->m_toyzCollected++;
             g_gameReg->GetGameStats()
@@ -91,10 +91,10 @@ i32 CGrunt::BeginPickupAnimation(
         } else if (type >= PICKUP_TIMEDPOWERUP_FIRST && type <= PICKUP_TIMEDPOWERUP_LAST) {
             g_gameReg->GetGameStats()->m_powerupzCollected++;
             g_gameReg->GetGameStats()
-                ->m_powerupPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_GHOST)]++;
+                ->m_timedPowerupPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_GHOST)]++;
         } else if (type >= PICKUP_CURSEZ_FIRST && type <= PICKUP_CURSEZ_LAST) {
             g_gameReg->GetGameStats()
-                ->m_miscPickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_RANDOMCOLORZ)]++;
+                ->m_cursePickupsByPlayer[m_playerIndex][IDX(type) - IDX(PICKUP_RANDOMCOLORZ)]++;
         }
     }
 
@@ -253,7 +253,7 @@ i32 CGrunt::BeginPickupAnimation(
                     && n != PICKUP_WARPSTONE) {
                     g_gameReg->GetGameStats()->m_toolzCollected++;
                     g_gameReg->GetGameStats()
-                        ->m_weaponPickupsByPlayer[m_playerIndex][IDX(n) - IDX(PICKUP_BOMB)]++;
+                        ->m_toolPickupsByPlayer[m_playerIndex][IDX(n) - IDX(PICKUP_BOMB)]++;
                 } else if (n >= PICKUP_TOYZ_FIRST && n <= PICKUP_TOYZ_LAST) {
                     g_gameReg->GetGameStats()->m_toyzCollected++;
                     g_gameReg->GetGameStats()
