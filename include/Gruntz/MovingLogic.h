@@ -62,7 +62,6 @@ public:
     GZ_ENUM_STORAGE(MoveRequestFlags, i32) m_moveFlags;
 
 private:
-    void InitOwner(const double& timeScale);
     void BeginMotion();
 };
 
@@ -72,7 +71,43 @@ inline CMovingLogic::CMovingLogic(CMotionState::EInlineBase)
     : CUserLogic(CUserLogic::INLINE_BASE), m_motion(CMotionState::INLINE_BASE) {}
 
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
-    InitOwner(0.001);
+    i32 lo0 = m_logicRecord->m_minX;
+    if (lo0 == 0) {
+        Motion()->m_minBounds.m_x = g_movingLogicMin;
+    } else {
+        Motion()->m_minBounds.m_x = static_cast<double>(lo0);
+    }
+    i32 lo1 = m_logicRecord->m_minY;
+    if (lo1 == 0) {
+        Motion()->m_minBounds.m_y = g_movingLogicMin;
+    } else {
+        Motion()->m_minBounds.m_y = static_cast<double>(lo1);
+    }
+    i32 hi0 = m_logicRecord->m_maxX;
+    if (hi0 == 0) {
+        Motion()->m_maxBounds.m_x = g_movingLogicMax;
+    } else {
+        Motion()->m_maxBounds.m_x = static_cast<double>(hi0);
+    }
+    i32 hi1 = m_logicRecord->m_maxY;
+    if (hi1 == 0) {
+        Motion()->m_maxBounds.m_y = g_movingLogicMax;
+    } else {
+        Motion()->m_maxBounds.m_y = static_cast<double>(hi1);
+    }
+    m_motion.SetParams(
+        static_cast<double>(m_object->m_screenX),
+        static_cast<double>(m_object->m_screenY),
+        0.0,
+        static_cast<double>(m_object->m_speedX),
+        static_cast<double>(m_object->m_speedY),
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        static_cast<double>(g_frameTime) * 0.001,
+        0.0
+    );
     CMotionState* m = Motion();
     double maxStep = static_cast<double>(g_defaultMaxStep);
     m->m_maxStep.m_x = maxStep;
@@ -81,8 +116,7 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     BeginMotion();
 }
 
-// The bounds setup is written out, not an InitOwner call: CGrunt's constructor
-// carries enough inline sites that a nested InitOwner expansion is declined.
+// Grunt construction preserves the out-of-line maximum-step setter.
 inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(owner) {
     i32 lo0 = m_logicRecord->m_minX;
     if (lo0 == 0) {
@@ -123,46 +157,6 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(
     );
     m_motion.SetMaxStep(static_cast<double>(g_defaultMaxStep));
     BeginMotion();
-}
-
-inline void CMovingLogic::InitOwner(const double& timeScale) {
-    i32 lo0 = m_logicRecord->m_minX;
-    if (lo0 == 0) {
-        Motion()->m_minBounds.m_x = g_movingLogicMin;
-    } else {
-        Motion()->m_minBounds.m_x = static_cast<double>(lo0);
-    }
-    i32 lo1 = m_logicRecord->m_minY;
-    if (lo1 == 0) {
-        Motion()->m_minBounds.m_y = g_movingLogicMin;
-    } else {
-        Motion()->m_minBounds.m_y = static_cast<double>(lo1);
-    }
-    i32 hi0 = m_logicRecord->m_maxX;
-    if (hi0 == 0) {
-        Motion()->m_maxBounds.m_x = g_movingLogicMax;
-    } else {
-        Motion()->m_maxBounds.m_x = static_cast<double>(hi0);
-    }
-    i32 hi1 = m_logicRecord->m_maxY;
-    if (hi1 == 0) {
-        Motion()->m_maxBounds.m_y = g_movingLogicMax;
-    } else {
-        Motion()->m_maxBounds.m_y = static_cast<double>(hi1);
-    }
-    m_motion.SetParams(
-        static_cast<double>(m_object->m_screenX),
-        static_cast<double>(m_object->m_screenY),
-        0.0,
-        static_cast<double>(m_object->m_speedX),
-        static_cast<double>(m_object->m_speedY),
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        static_cast<double>(g_frameTime) * timeScale,
-        0.0
-    );
 }
 
 inline void CMovingLogic::BeginMotion() {
