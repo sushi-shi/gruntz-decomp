@@ -86,9 +86,9 @@ public:
     i32 CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner);
     void Destroy();
 
-    void PumpMessages(u32 filterMsg, i32 count);
+    void DiscardMessages(u32 filterMsg, i32 count);
 
-    void PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count);
+    void DiscardMessagesInRange(u32 filterMin, u32 filterMax, i32 count);
 
     HWND m_hwnd;
     CGameApp* m_owner;

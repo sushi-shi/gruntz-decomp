@@ -25,7 +25,7 @@ inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
     m_monitorCurseActive = false;
     m_randomColorsCurseActive = false;
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
-    m_hudSuppressed = true;
+    m_inputBlocked = true;
     m_cameraBookmarkIndex = -1;
     m_defeatCountdownActive = false;
     m_scrollEdgeActive = 0;

@@ -289,7 +289,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     while (ShowCursor(false) >= 0) {
     }
 
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
 
     m_secretHudHandled = false;
 
@@ -1709,7 +1709,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     while (ShowCursor(false) >= 0) {
     }
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
 
     m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {

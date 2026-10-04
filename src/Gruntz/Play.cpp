@@ -894,7 +894,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // The asset loader also accesses index 0x25, overlapping saved exception-chain state.
     i32 initScratch[0x25];
 
-    self->m_hudSuppressed = true;
+    self->m_inputBlocked = true;
     g_frameDelta = 0;
     g_lastNow = 0;
     g_frameTime = 0;
@@ -1127,7 +1127,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
 
     if (!InitializeLevelArea(level)) {
         goto fail0;
@@ -1145,13 +1145,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
-        RegisterInputBindings();
+        DiscardQueuedInput();
 
         AdvanceLoadingBar(false);
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
-        RegisterInputBindings();
+        DiscardQueuedInput();
 
         if (!LoadActionTileSprites(diff)) {
             goto fail0;
@@ -1162,12 +1162,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (diff != 0 && (g_gameReg)->GetGameMode() == GAMEMODE_QUESTZ) {
         UnloadGruntAndWarlordAssets(savedThis);
     }
     AdvanceLoadingBar(false);
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadLevelImages(reload)) {
         goto fail0;
     }
@@ -1175,7 +1175,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadGameImages(reload)) {
         goto fail0;
     }
@@ -1183,12 +1183,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadGruntImageNamespaces(savedThis)) {
         goto fail0;
     }
     AdvanceLoadingBar(false);
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadLevelSounds(reload)) {
         goto fail0;
     }
@@ -1196,7 +1196,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadGameSounds(reload)) {
         goto fail0;
     }
@@ -1204,7 +1204,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadGruntSoundNamespaces(NULL)) {
         goto fail0;
     }
@@ -1212,12 +1212,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     ConfigureSoundReplayDelays();
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadLevelAnims(reload)) {
         goto fail0;
     }
@@ -1225,7 +1225,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadGameAnims(reload)) {
         goto fail0;
     }
@@ -1233,7 +1233,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadGruntAnimationNamespaces(NULL)) {
         goto fail0;
     }
@@ -1241,7 +1241,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     if (!LoadLevelWorld(reload)) {
         goto fail0;
     }
@@ -1249,7 +1249,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
 
     self->m_mgr->RecomputeViewScale();
     if (self->m_world->GetLevel()->m_mainPlane != NULL) {
@@ -1264,7 +1264,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (modeFlag) {
         (savedThis)->SendLobbyKeepAlive();
     }
-    RegisterInputBindings();
+    DiscardQueuedInput();
     self->m_mgr->GetTileGrid()->Reset();
 
     {
@@ -1366,7 +1366,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                     if (modeFlag) {
                         (savedThis)->SendLobbyKeepAlive();
                     }
-                    RegisterInputBindings();
+                    DiscardQueuedInput();
                     if (LoadMusicSequences(reload)) {
                         goto okContinue;
                     }
@@ -1380,7 +1380,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         if (modeFlag) {
             (savedThis)->SendLobbyKeepAlive();
         }
-        RegisterInputBindings();
+        DiscardQueuedInput();
         AdvanceLoadingBar(true);
         ActiveWait(0x64);
         if (modeFlag) {
@@ -1398,14 +1398,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             && gameReg->IsLoadingSaveGame() == false) {
             CString scr;
             self->m_waitingForStart = true;
-            self->m_hudSuppressed = false;
+            self->m_inputBlocked = false;
             RECT rect;
             SET_RECT_COMPONENTS(rect, 0, 0, SCREEN_W_PX, SCREEN_H_PX);
             if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
                 DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
         } else {
-            self->m_hudSuppressed = true;
+            self->m_inputBlocked = true;
         }
 
         self->m_scrollEdgeLock = 0;
@@ -1626,12 +1626,12 @@ i32 CPlay::RestoreDisplay() {
 
 RVA(0x000cbaf0, 0x16f)
 i32 CPlay::OnChar(i32 charCode, i32 keyData) {
-    if (m_hudSuppressed != false) {
+    if (m_inputBlocked != false) {
         return 1;
     }
     if (m_renderDisabled != false) {
         m_renderDisabled = false;
-        m_hudSuppressed = true;
+        m_inputBlocked = true;
         EnterMode(GAMESTATE_PLAY);
         m_waitingForStart = true;
         return 1;
@@ -1682,7 +1682,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
 
 RVA(0x000cbcc0, 0x17c0)
 i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
-    if (this->m_hudSuppressed != false) {
+    if (this->m_inputBlocked != false) {
         return 1;
     }
     if (this->m_renderDisabled != false) {
@@ -2487,11 +2487,11 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     i32 sx;
     i32 sy;
 
-    if (m_hudSuppressed != false) {
+    if (m_inputBlocked != false) {
         return 1;
     }
     if (m_renderDisabled != false) {
-        m_hudSuppressed = true;
+        m_inputBlocked = true;
         m_renderDisabled = false;
         EnterMode(GAMESTATE_PLAY);
         m_waitingForStart = true;
@@ -2755,7 +2755,7 @@ ret1:
 
 RVA(0x000ce530, 0xe3)
 i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
-    if (m_hudSuppressed == false) {
+    if (m_inputBlocked == false) {
         if (m_minimap != NULL && m_statusBar->GetState() != STATUSBAR_HIDDEN
             && m_statusBar->GetActiveTab() != TAB_GAME) {
             m_minimap->EndMinimapPan(keyFlags, x, y);
@@ -2781,7 +2781,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
 // @early-stop
 RVA(0x000ce660, 0x362)
 i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
-    if (m_hudSuppressed != false || m_statusBar == NULL) {
+    if (m_inputBlocked != false || m_statusBar == NULL) {
         return 1;
     }
     if (m_levelOverlayOpen != false
@@ -2882,11 +2882,11 @@ i32 CPlay::OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) {
 
 RVA(0x000ceae0, 0x268)
 i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
-    if (m_hudSuppressed != false) {
+    if (m_inputBlocked != false) {
         return 1;
     }
     if (m_renderDisabled != false) {
-        m_hudSuppressed = true;
+        m_inputBlocked = true;
         m_renderDisabled = false;
         EnterMode(GAMESTATE_PLAY);
         m_waitingForStart = true;
@@ -5900,8 +5900,8 @@ i32 CPlay::EnterMode(GameStateId mode) {
         g_frameTime = m_savedClock;
     }
     m_statusBar->Deactivate();
-    RegisterInputBindings();
-    m_hudSuppressed = false;
+    DiscardQueuedInput();
+    m_inputBlocked = false;
     return 1;
 }
 
@@ -6149,7 +6149,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_renderDisabled, sizeof(m_renderDisabled));
     s->Write(&m_levelTimeExpired, sizeof(m_levelTimeExpired));
     s->Write(&m_initialFramePending, sizeof(m_initialFramePending));
-    s->Write(&m_hudSuppressed, sizeof(m_hudSuppressed));
+    s->Write(&m_inputBlocked, sizeof(m_inputBlocked));
     s->Write(&m_waitingForStart, sizeof(m_waitingForStart));
     s->Write(&m_levelOverlayOpen, sizeof(m_levelOverlayOpen));
     s->Write(&m_helpMessageActive, sizeof(m_helpMessageActive));
@@ -6286,7 +6286,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_renderDisabled, sizeof(m_renderDisabled));
     ar->Read(&m_levelTimeExpired, sizeof(m_levelTimeExpired));
     ar->Read(&m_initialFramePending, sizeof(m_initialFramePending));
-    ar->Read(&m_hudSuppressed, sizeof(m_hudSuppressed));
+    ar->Read(&m_inputBlocked, sizeof(m_inputBlocked));
     ar->Read(&m_waitingForStart, sizeof(m_waitingForStart));
     ar->Read(&m_levelOverlayOpen, sizeof(m_levelOverlayOpen));
     ar->Read(&m_helpMessageActive, sizeof(m_helpMessageActive));
@@ -6566,16 +6566,16 @@ i32 CPlay::NotifyVisibleEntities() {
 }
 
 RVA(0x000d9160, 0xac)
-i32 CPlay::RegisterInputBindings() {
-    m_mgr->m_gameWnd->PumpMessages(WM_CHAR, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_MOUSEMOVE, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONDOWN, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONUP, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_LBUTTONDBLCLK, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONDOWN, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONUP, 0x40);
-    m_mgr->m_gameWnd->PumpMessages(WM_RBUTTONDBLCLK, 0x40);
+i32 CPlay::DiscardQueuedInput() {
+    m_mgr->m_gameWnd->DiscardMessages(WM_CHAR, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_MOUSEMOVE, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONUP, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_LBUTTONDBLCLK, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONUP, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_RBUTTONDBLCLK, 0x40);
     return 1;
 }
 

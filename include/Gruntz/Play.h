@@ -227,7 +227,7 @@ public:
     i32 ValidateLevelTiles();
 
     i32 AdvanceLoadingBar(b32 final);
-    i32 RegisterInputBindings();
+    i32 DiscardQueuedInput();
 
     i32 LoadLevelAnims(i32 force);
 
@@ -367,7 +367,7 @@ public:
     b32 m_monitorCurseActive;
     b32 m_randomColorsCurseActive;
     ViewportResizeMode m_viewportResizeMode;
-    b32 m_hudSuppressed;
+    b32 m_inputBlocked;
 
     CPtrArray m_cameraBookmarks;
     i32 m_cameraBookmarkIndex;

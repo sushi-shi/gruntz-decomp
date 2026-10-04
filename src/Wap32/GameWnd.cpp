@@ -286,7 +286,7 @@ i32 CGameWnd::OnClose() {
 }
 
 RVA(0x0013d4e0, 0x43)
-void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
+void CGameWnd::DiscardMessages(u32 filterMsg, i32 count) {
     MSG msg;
     for (i32 i = 0; i < count; ++i) {
         if (!PeekMessageA(&msg, m_hwnd, filterMsg, filterMsg, PM_REMOVE)) {
@@ -298,7 +298,7 @@ void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013d530, 0x55)
-void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
+void CGameWnd::DiscardMessagesInRange(u32 filterMin, u32 filterMax, i32 count) {
     MSG msg;
     for (i32 i = 0; i < count; ++i) {
         if (!PeekMessageA(&msg, m_hwnd, filterMin, filterMax, PM_REMOVE)) {

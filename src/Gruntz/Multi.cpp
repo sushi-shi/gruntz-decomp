@@ -179,7 +179,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_darknessCurseActive = false;
     m_monitorCurseActive = false;
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
-    m_hudSuppressed = true;
+    m_inputBlocked = true;
     m_cameraBookmarkIndex = -1;
     m_defeatCountdownActive = false;
     m_scrollEdgeActive = 0;

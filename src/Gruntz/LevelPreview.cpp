@@ -59,7 +59,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     }
     m_previewName = "PREVIEW0";
     m_previewIndex = 0;
-    m_mgr->m_gameWnd->PumpMessages(WM_KEYDOWN, 0x40);
+    m_mgr->m_gameWnd->DiscardMessages(WM_KEYDOWN, 0x40);
     return 1;
 }
 
