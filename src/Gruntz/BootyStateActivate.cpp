@@ -110,7 +110,7 @@ const Coord g_bootyLetterCoords[16] = {
 };
 
 DATA(0x001e9068)
-const i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
+const i32 g_bootyWarpLetterX[4] = {420, 475, 530, 585};
 DATA(0x001e9078)
 const Coord g_bootyCursePos[4] = {{190, 437}, {306, 437}, {422, 437}, {538, 437}};
 DATA(0x001e9098)
@@ -160,7 +160,7 @@ const RECT s_labelRects[7] = {
 };
 
 DATA(0x001e93a8)
-const char g_secretChars[] = "WARP";
+const char g_bootyWarpLetterCharacters[] = "WARP";
 DATA(0x001e93b0)
 const float g_secretRatioScale = 100.0f;
 DATA(0x001e93b4)
@@ -304,7 +304,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     if (!BuildStatRevealSprites()) {
         return 0;
     }
-    if (!BuildBootyWalkingGruntz()) {
+    if (!BuildWarpLetterRevealAnimation()) {
         return 0;
     }
     if (!BuildBootyPerfectAnimation()) {
@@ -1082,7 +1082,7 @@ void CBootyState::FormatStatValue(CString* buf, BootyStatRow sel) {
 
 // @early-stop
 RVA(0x0001b450, 0x1ac)
-i32 CBootyState::BuildBootyWalkingGruntz() {
+i32 CBootyState::BuildWarpLetterRevealAnimation() {
     if (g_gameReg->GetGameStats()->IsCustomLevel() != false) {
         return 1;
     }
@@ -1094,17 +1094,17 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         return 0;
     }
     for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
-        m_animSprites[i] = CreateSimpleAnimationSprite(1);
-        if (m_animSprites[i] == NULL) {
+        m_letterRevealSprites[i] = CreateSimpleAnimationSprite(1);
+        if (m_letterRevealSprites[i] == NULL) {
             return 0;
         }
-        m_animSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_NORTH_WALK");
-        m_animSprites[i]->SetAnimationByName("GRUNTZ_NORMALGRUNT_WALK", 0);
-        m_animSprites[i]->Hide();
-        CWwdSpriteObject* anim = m_animSprites[i];
+        m_letterRevealSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_NORTH_WALK");
+        m_letterRevealSprites[i]->SetAnimationByName("GRUNTZ_NORMALGRUNT_WALK", 0);
+        m_letterRevealSprites[i]->Hide();
+        CWwdSpriteObject* anim = m_letterRevealSprites[i];
         anim->SetDrawFill(SHADE_PAL_16, sel);
-        m_visSprites[i] = CreateSimpleAnimationSprite(1);
-        if (m_visSprites[i] == NULL) {
+        m_letterPlaceholderSprites[i] = CreateSimpleAnimationSprite(1);
+        if (m_letterPlaceholderSprites[i] == NULL) {
             return 0;
         }
         RVA_DYNINIT(0x0001b670, 0xa, s_buf)
@@ -1113,17 +1113,17 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         const char* prefix = (i < (g_gameReg->GetGameStats()->GetLevelNumber() - 1) % 4 + 1)
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
-        s_buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
-        m_visSprites[i]->SetImageSetByName(s_buf);
-        m_visSprites[i]->SetAnimationByName("GAME_CYCLE100", 0);
-        SET_SCREEN_POS(m_visSprites[i], g_idleSpriteIds[i] + 0xfa, 0xdc);
+        s_buf.Format("%sSECRET%c", prefix, g_bootyWarpLetterCharacters[i]);
+        m_letterPlaceholderSprites[i]->SetImageSetByName(s_buf);
+        m_letterPlaceholderSprites[i]->SetAnimationByName("GAME_CYCLE100", 0);
+        SET_SCREEN_POS(m_letterPlaceholderSprites[i], g_bootyWarpLetterX[i] + 0xfa, 0xdc);
     }
     return 1;
 }
 
 // @early-stop
 RVA(0x0001b690, 0x7e0)
-i32 CBootyState::UpdateBootyWalkingGruntz() {
+i32 CBootyState::UpdateWarpLetterRevealAnimation() {
     CGameStats* gameStats = g_gameReg->GetGameStats();
     if (gameStats->IsCustomLevel() != false) {
         return 1;
@@ -1132,7 +1132,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     if (levelNumber > 0x24) {
         return 1;
     }
-    if (m_stepIndex >= WARPLETTER_COUNT) {
+    if (m_warpLetterIndex >= WARPLETTER_COUNT) {
         return 1;
     }
 
@@ -1141,12 +1141,14 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         if (levelNumber < 0x24) {
             for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
                 if (i <= (g_gameReg->GetGameStats()->GetLevelNumber() - 1) % 4) {
-                    m_visSprites[i]->Hide();
-                    SET_SCREEN_POS(m_animSprites[i], g_idleSpriteIds[i], 0xdc);
-                    m_animSprites[i]->Show();
+                    m_letterPlaceholderSprites[i]->Hide();
+                    SET_SCREEN_POS(m_letterRevealSprites[i], g_bootyWarpLetterX[i], 0xdc);
+                    m_letterRevealSprites[i]->Show();
                     if ((g_gameReg->GetGameStats())->CurrentAreaHasWarpLetter(i) == 0) {
-                        m_animSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
-                        m_animSprites[i]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
+                        m_letterRevealSprites[i]->SetImageSetByName(
+                            "GRUNTZ_NORMALGRUNT_SOUTH_IDLE"
+                        );
+                        m_letterRevealSprites[i]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
                         CString letter;
                         switch (static_cast<WarpLetter>(i)) {
@@ -1163,55 +1165,57 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                                 letter = "P";
                                 break;
                         }
-                        m_animSprites[i]->SetImageSetByName("GRUNTZ_PICKUPS");
-                        m_animSprites[i]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
+                        m_letterRevealSprites[i]->SetImageSetByName("GRUNTZ_PICKUPS");
+                        m_letterRevealSprites[i]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
                     }
                 } else {
-                    SET_SCREEN_POS(m_visSprites[i], g_idleSpriteIds[i], 0xdc);
-                    m_visSprites[i]->Show();
-                    m_animSprites[i]->Hide();
+                    SET_SCREEN_POS(m_letterPlaceholderSprites[i], g_bootyWarpLetterX[i], 0xdc);
+                    m_letterPlaceholderSprites[i]->Show();
+                    m_letterRevealSprites[i]->Hide();
                 }
             }
         }
-        m_stepIndex = 4;
+        m_warpLetterIndex = 4;
         return 1;
     }
 
-    if (m_visSprites[0]->m_screenX != g_idleSpriteIds[0]) {
+    if (m_letterPlaceholderSprites[0]->m_screenX != g_bootyWarpLetterX[0]) {
         for (i32 k = 0; k < 4; k++) {
-            m_visSprites[k]->m_screenX -= 10;
+            m_letterPlaceholderSprites[k]->m_screenX -= 10;
         }
     }
-    if (m_stepIndex == 0 && m_animSprites[0]->IsHidden()) {
-        m_animSprites[0]->Show();
-        SET_SCREEN_POS(m_animSprites[0], g_idleSpriteIds[0], 0x1f4);
+    if (m_warpLetterIndex == 0 && m_letterRevealSprites[0]->IsHidden()) {
+        m_letterRevealSprites[0]->Show();
+        SET_SCREEN_POS(m_letterRevealSprites[0], g_bootyWarpLetterX[0], 0x1f4);
     }
 
-    if (m_soundStarted == false && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
-        if ((g_gameReg->GetGameStats())->CurrentAreaHasWarpLetter(m_stepIndex) == 0) {
-            m_soundStarted = true;
+    if (m_missingLetterSoundStarted == false
+        && m_letterRevealSprites[m_warpLetterIndex]->m_screenY <= 0x195) {
+        if ((g_gameReg->GetGameStats())->CurrentAreaHasWarpLetter(m_warpLetterIndex) == 0) {
+            m_missingLetterSoundStarted = true;
             SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
             ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D");
         }
     }
 
-    if (m_soundStarted != false) {
+    if (m_missingLetterSoundStarted != false) {
         SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
         SoundCue* res = ss->FindCue("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D");
         if (res == NULL) {
             return 1;
         }
         if (res->IsPlaying() != 0) {
-            m_visSprites[m_stepIndex]->m_stateFlags ^= SPRITE_STATE_HIDDEN;
+            m_letterPlaceholderSprites[m_warpLetterIndex]->m_stateFlags ^= SPRITE_STATE_HIDDEN;
         } else {
-            m_visSprites[m_stepIndex]->Hide();
+            m_letterPlaceholderSprites[m_warpLetterIndex]->Hide();
         }
     }
 
-    if (m_walkStarted == false && m_animSprites[m_stepIndex]->m_screenY <= 0xdc) {
+    if (m_letterRevealStarted == false
+        && m_letterRevealSprites[m_warpLetterIndex]->m_screenY <= 0xdc) {
         {
             CString letter;
-            switch (static_cast<WarpLetter>(m_stepIndex)) {
+            switch (static_cast<WarpLetter>(m_warpLetterIndex)) {
                 case WARPLETTER_W:
                     letter = "W";
                     break;
@@ -1227,61 +1231,73 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             }
             CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(0, 0);
             if (sel != NULL) {
-                if ((g_gameReg->GetGameStats())->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
+                if ((g_gameReg->GetGameStats())->CurrentAreaHasWarpLetter(m_warpLetterIndex) != 0) {
                     PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_FLAGRISE");
-                    m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
-                    m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
-                    CWwdSpriteObject* g = m_animSprites[m_stepIndex];
+                    m_letterRevealSprites[m_warpLetterIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
+                    m_letterRevealSprites[m_warpLetterIndex]->SetAnimationByName(
+                        "GRUNTZ_PICKUPS_" + letter,
+                        0
+                    );
+                    CWwdSpriteObject* g = m_letterRevealSprites[m_warpLetterIndex];
                     g->SetDrawFill(SHADE_PAL_16, sel);
-                    m_visSprites[m_stepIndex]->Hide();
+                    m_letterPlaceholderSprites[m_warpLetterIndex]->Hide();
                     g_gameReg->VoiceMgr()
                         ->PlayVoice(NULL, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
-                    m_walkStarted = true;
+                    m_letterRevealStarted = true;
                 } else {
-                    m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
-                    m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
-                    CWwdSpriteObject* g = m_animSprites[m_stepIndex];
+                    m_letterRevealSprites[m_warpLetterIndex]->SetImageSetByName(
+                        "GRUNTZ_NORMALGRUNT_SOUTH_IDLE"
+                    );
+                    m_letterRevealSprites[m_warpLetterIndex]->SetAnimationByName(
+                        "GRUNTZ_NORMALGRUNT_IDLE4",
+                        0
+                    );
+                    CWwdSpriteObject* g = m_letterRevealSprites[m_warpLetterIndex];
                     g->SetDrawFill(SHADE_PAL_16, sel);
-                    m_visSprites[m_stepIndex]->Hide();
-                    m_stepIndex++;
+                    m_letterPlaceholderSprites[m_warpLetterIndex]->Hide();
+                    m_warpLetterIndex++;
                     g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x441, 0, 1, -1, -1);
-                    if (m_stepIndex == g_gameReg->GetGameStats()->GetLevelNumber() % 4) {
-                        m_stepIndex = 4;
+                    if (m_warpLetterIndex == g_gameReg->GetGameStats()->GetLevelNumber() % 4) {
+                        m_warpLetterIndex = 4;
                         return 1;
                     }
-                    if (m_stepIndex < 4) {
-                        m_animSprites[m_stepIndex]->Show();
+                    if (m_warpLetterIndex < 4) {
+                        m_letterRevealSprites[m_warpLetterIndex]->Show();
                         SET_SCREEN_POS(
-                            m_animSprites[m_stepIndex],
-                            g_idleSpriteIds[m_stepIndex],
+                            m_letterRevealSprites[m_warpLetterIndex],
+                            g_bootyWarpLetterX[m_warpLetterIndex],
                             0x1f4
                         );
-                        m_soundStarted = false;
-                        m_walkStarted = false;
+                        m_missingLetterSoundStarted = false;
+                        m_letterRevealStarted = false;
                     }
                 }
             }
         }
-    } else if (m_walkStarted != false) {
+    } else if (m_letterRevealStarted != false) {
 
-        CAniAdvanceCursor* cursor = &m_animSprites[m_stepIndex]->m_animationCursor;
+        CAniAdvanceCursor* cursor = &m_letterRevealSprites[m_warpLetterIndex]->m_animationCursor;
         if (cursor->IsComplete()) {
-            m_stepIndex++;
-            if (m_stepIndex == g_gameReg->GetGameStats()->GetLevelNumber() % 4) {
-                m_stepIndex = 4;
+            m_warpLetterIndex++;
+            if (m_warpLetterIndex == g_gameReg->GetGameStats()->GetLevelNumber() % 4) {
+                m_warpLetterIndex = 4;
                 return 1;
             }
-            if (m_stepIndex < 4) {
-                m_animSprites[m_stepIndex]->Show();
-                SET_SCREEN_POS(m_animSprites[m_stepIndex], g_idleSpriteIds[m_stepIndex], 0x1f4);
-                m_walkStarted = false;
-                m_soundStarted = false;
+            if (m_warpLetterIndex < 4) {
+                m_letterRevealSprites[m_warpLetterIndex]->Show();
+                SET_SCREEN_POS(
+                    m_letterRevealSprites[m_warpLetterIndex],
+                    g_bootyWarpLetterX[m_warpLetterIndex],
+                    0x1f4
+                );
+                m_letterRevealStarted = false;
+                m_missingLetterSoundStarted = false;
             }
         }
     } else {
-        i32 nextY = m_animSprites[m_stepIndex]->m_screenY;
+        i32 nextY = m_letterRevealSprites[m_warpLetterIndex]->m_screenY;
         nextY -= 3;
-        m_animSprites[m_stepIndex]->m_screenY = nextY;
+        m_letterRevealSprites[m_warpLetterIndex]->m_screenY = nextY;
     }
     return 0;
 }
@@ -1394,14 +1410,14 @@ i32 CBootyState::Render() {
         // FALL THROUGH
         case BOOTYSEQ_WALK:
             UpdateStatRevealAnimation();
-            if (UpdateBootyWalkingGruntz() == 0) {
+            if (UpdateWarpLetterRevealAnimation() == 0) {
                 break;
             }
             m_activation = BOOTYSEQ_PERFECT_BONUS;
             break;
         case BOOTYSEQ_PERFECT_BONUS: {
             UpdateStatRevealAnimation();
-            UpdateBootyWalkingGruntz();
+            UpdateWarpLetterRevealAnimation();
             CheckPerfectBonus();
             if (m_secretHudHandled == false
                 && g_gameReg->GetGameStats()->IsCustomLevel() == false) {
@@ -1577,12 +1593,17 @@ i32 CBootyState::HandleContinueInput() {
                 ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A");
                 if (g_gameReg->GetGameStats()->GetLevelNumber() < 0x24) {
                     for (i32 p = 0; p < 4; p++) {
-                        m_visSprites[p]->Hide();
-                        SET_SCREEN_POS(m_animSprites[p], g_idleSpriteIds[p], 0xdc);
-                        m_animSprites[p]->Show();
+                        m_letterPlaceholderSprites[p]->Hide();
+                        SET_SCREEN_POS(m_letterRevealSprites[p], g_bootyWarpLetterX[p], 0xdc);
+                        m_letterRevealSprites[p]->Show();
                         if ((g_gameReg->GetGameStats())->CurrentAreaHasWarpLetter(p) == 0) {
-                            m_animSprites[p]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
-                            m_animSprites[p]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
+                            m_letterRevealSprites[p]->SetImageSetByName(
+                                "GRUNTZ_NORMALGRUNT_SOUTH_IDLE"
+                            );
+                            m_letterRevealSprites[p]->SetAnimationByName(
+                                "GRUNTZ_NORMALGRUNT_IDLE4",
+                                0
+                            );
                         } else {
                             CString letter;
                             switch (static_cast<WarpLetter>(p)) {
@@ -1599,8 +1620,11 @@ i32 CBootyState::HandleContinueInput() {
                                     letter = "P";
                                     break;
                             }
-                            m_animSprites[p]->SetImageSetByName("GRUNTZ_PICKUPS");
-                            m_animSprites[p]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
+                            m_letterRevealSprites[p]->SetImageSetByName("GRUNTZ_PICKUPS");
+                            m_letterRevealSprites[p]->SetAnimationByName(
+                                "GRUNTZ_PICKUPS_" + letter,
+                                0
+                            );
                         }
                     }
                 }

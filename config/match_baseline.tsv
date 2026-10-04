@@ -608,7 +608,7 @@ bootystateactivate	??_GCBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c338efc04c
 bootystateactivate	??_GCMultiBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c338efc04c88	0x8d4e0	100.0000	
 bootystateactivate	?HandleContinueInput@CBootyState@@QAEHXZ	98.4743	98.4743	30	d9990bcad246	0x1ce60	98.4743	
 bootystateactivate	?BuildBootyPerfectAnimation@CBootyState@@QAEHXZ	100.0000	100.0000	6	ad20e350cf7d	0x1c070	100.0000	
-bootystateactivate	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	99.7697	99.7697	20	c7fc3111c69b	0x1b450	99.7697	
+bootystateactivate	?BuildWarpLetterRevealAnimation@CBootyState@@QAEHXZ	99.7697	99.7697	20	c7fc3111c69b	0x1b450	99.7697	
 bootystateactivate	?BuildGruntSprintAnimation@CBootyState@@QAEHXZ	98.4014	98.4014	11	f341ea33ad82	0x19920	98.4014	
 bootystateactivate	?BuildPickupIconKey@CMultiBootyState@@QAEXPAVCString@@H@Z	100.0000	100.0000	3	221011f49cf5	0x1e720	100.0000	
 bootystateactivate	?BuildWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	100.0000	100.0000	14	a89ad70b7db5	0x19540	100.0000	
@@ -650,7 +650,7 @@ bootystateactivate	?RestoreGraphics@CBootyState@@UAEHXZ	100.0000	100.0000	10	546
 bootystateactivate	?RestoreGraphics@CMultiBootyState@@UAEHXZ	100.0000	100.0000	10	84de0160f8e3	0x1f6f0	100.0000	
 bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	100.0000	100.0000	8	d0c36174ae0a	0x1c9d0	100.0000	
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000	12	67c4ec97f559	0x18f00	100.0000	
-bootystateactivate	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	98.7295	98.7295	41	59e83c61c2d4	0x1b690	98.7295	
+bootystateactivate	?UpdateWarpLetterRevealAnimation@CBootyState@@QAEHXZ	98.7295	98.7295	41	59e83c61c2d4	0x1b690	98.7295	
 bootystateactivate	?UpdateGruntSprintAnimation@CBootyState@@QAEXXZ	94.0341	94.0341	5	5dfe3861290f	0x19b90	94.0341	
 bootystateactivate	?UpdateWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	98.0597	98.0597	9	910feb9d728e	0x196c0	98.0597	
 brickz	?FindPathWithEndpointOverrides@CMapMgr@@QAEHHHHHPAVCPtrList@@HHH@Z	90.2761	90.2761	9	6356f8a0f989	0x81e10	90.2761	

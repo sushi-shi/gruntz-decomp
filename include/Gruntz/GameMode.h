@@ -139,9 +139,9 @@ public:
         m_secretHudHandled = false;
         m_activation = BOOTYSEQ_WARP_CUE;
         m_statRowIndex = 0;
-        m_stepIndex = 0;
-        m_walkStarted = false;
-        m_soundStarted = false;
+        m_warpLetterIndex = 0;
+        m_letterRevealStarted = false;
+        m_missingLetterSoundStarted = false;
         m_skipAnimations = false;
         m_secretGate = false;
         m_levelCompleteGate = false;
@@ -177,8 +177,8 @@ public:
     i32 HandleContinueInput();
     i32 ShowSecretBonusMessage();
     void ShowLevelCompleteMessage();
-    i32 BuildBootyWalkingGruntz();
-    i32 UpdateBootyWalkingGruntz();
+    i32 BuildWarpLetterRevealAnimation();
+    i32 UpdateWarpLetterRevealAnimation();
 
     i32 BuildStatRevealSprites();
     i32 UpdateStatRevealAnimation();
@@ -222,11 +222,11 @@ public:
     i32 m_readyFlags[8];
     i32 m_statLabelVisible[8];
     i32 m_statRowIndex;
-    CWwdSpriteObject* m_visSprites[4];
-    CWwdSpriteObject* m_animSprites[WARPLETTER_COUNT];
-    i32 m_stepIndex;
-    b32 m_walkStarted;
-    b32 m_soundStarted;
+    CWwdSpriteObject* m_letterPlaceholderSprites[4];
+    CWwdSpriteObject* m_letterRevealSprites[WARPLETTER_COUNT];
+    i32 m_warpLetterIndex;
+    b32 m_letterRevealStarted;
+    b32 m_missingLetterSoundStarted;
     b32 m_secretGate;
 
     CWwdSpriteObject* m_bootyPerfectSprite;
