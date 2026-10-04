@@ -837,18 +837,18 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         m_entranceActive = false;
 
         CMapMgr* grid = g_gameReg->GetTileGrid();
-        i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-        i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 flags = grid->CellFlagsAt(tx, ty);
-        if (flags & 0x80) {
+        i32 tileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 tileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 cellFlags = grid->CellFlagsAt(tileX, tileY);
+        if (cellFlags & 0x80) {
             SetEntrancePos(1, 1);
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         }
         return 0;
     }
 
-    i64 elapsed = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
-    if (elapsed >= m_toyTiming.m_interval) {
+    i64 toyElapsedMs = static_cast<i64>(g_frameTime) - m_toyTiming.m_start;
+    if (toyElapsedMs >= m_toyTiming.m_interval) {
         if (m_entranceStamped == false && IsGruntAtSavedScreenPos(this)) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
             SetEntrancePos(1, 1);
@@ -856,16 +856,16 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             SwitchAnimationAndMaybeAdvance(AT(m_poseToy, GRUNT_TOY_BREAK), 0);
 
             DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
-            char* buf = (&m_frameSetName)->GetBuffer(0);
-            SetImageFrameByName(buf, frame);
+            char* frameSetName = (&m_frameSetName)->GetBuffer(0);
+            SetImageFrameByName(frameSetName, frame);
 
-            CWwdSpriteObject* h = m_object;
-            CGruntzMgr* g = g_gameReg;
-            i32 y = h->m_screenY;
-            i32 x = h->m_screenX;
-            const RECT& rect = *g->m_world->m_level->m_mainPlane->GetPlaneViewRect();
-            if (::PtInRect(&rect, x, y)) {
-                g->VoiceMgr()->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
+            CWwdSpriteObject* gruntSprite = m_object;
+            CGruntzMgr* game = g_gameReg;
+            i32 screenY = gruntSprite->m_screenY;
+            i32 screenX = gruntSprite->m_screenX;
+            const RECT& rect = *game->m_world->m_level->m_mainPlane->GetPlaneViewRect();
+            if (::PtInRect(&rect, screenX, screenY)) {
+                game->VoiceMgr()->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
                 StopVehicleLoopSound();
                 return 0;
             }
@@ -874,16 +874,16 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         return 0;
     }
 
-    i64 elapsed2 = static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start;
-    if (elapsed2 >= m_idleDelayTiming.m_interval) {
+    i64 idleCueElapsedMs = static_cast<i64>(g_frameTime) - m_idleDelayTiming.m_start;
+    if (idleCueElapsedMs >= m_idleDelayTiming.m_interval) {
         PLAY_GRUNT_CUE_IN_VIEW(0xd);
     }
 
-    CWwdSpriteObject* h2 = m_object;
-    CGruntzMgr* g2 = g_gameReg;
-    i32 hy = h2->m_screenY;
-    i32 hx = h2->m_screenX;
-    if (::PtInRect(&g2->m_viewBounds, hx, hy)) {
+    CWwdSpriteObject* vehicleSprite = m_object;
+    CGruntzMgr* game = g_gameReg;
+    i32 vehicleScreenY = vehicleSprite->m_screenY;
+    i32 vehicleScreenX = vehicleSprite->m_screenX;
+    if (::PtInRect(&game->m_viewBounds, vehicleScreenX, vehicleScreenY)) {
         if (m_entranceReason == PICKUP_GOKART) {
             EnsureVehicleLoopSound(s_gruntzGokartgrunt);
             return 0;

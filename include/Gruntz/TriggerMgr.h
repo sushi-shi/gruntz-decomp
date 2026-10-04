@@ -114,6 +114,9 @@ public:
     CGruntPuddle* GetPuddleAt(POSITION position) {
         return static_cast<CGruntPuddle*>(m_baseList.GetAt(position));
     }
+    void RemovePuddleAt(POSITION position) {
+        m_baseList.RemoveAt(position);
+    }
 
     i32 PlaceObject(
         i32 playerIndex,

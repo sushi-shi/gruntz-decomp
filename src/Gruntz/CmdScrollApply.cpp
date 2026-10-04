@@ -33,8 +33,8 @@ void Cmd_ResetScroll() {
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
-    i32 scrollX = v->m_scrollPixelX;
-    i32 scrollY = v->m_scrollPixelY;
+    i32 scrollX = v->GetScrollPixelX();
+    i32 scrollY = v->GetScrollPixelY();
 
     if (g_scrollClock > g_frameTime) {
         CountDown(g_scrollTimer, g_frameDelta);
@@ -74,12 +74,12 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     g_lastScrollY = scrollY;
 
     CDDrawWorkerHost* scrollPlane = pm->m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_PRODUCT_CAST(scrollPlane, scrollX, scrollY);
+    scrollPlane->SetScrollPosition(scrollX, scrollY);
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != NULL) {
-        i32 nx = gm->m_scrollPixelX;
-        i32 ny = gm->m_scrollPixelY;
+        i32 nx = gm->GetScrollPixelX();
+        i32 ny = gm->GetScrollPixelY();
         if (deltaX != 0 || deltaY != 0) {
             nx = static_cast<i32>((static_cast<float>(nx) - static_cast<float>(deltaX) * -0.05f));
             ny = static_cast<i32>((static_cast<float>(ny) - static_cast<float>(deltaY) * -0.05f));
@@ -88,7 +88,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             CDDrawWorkerHost* g2 = g_backView;
-            SET_SCROLL_POSITION_PRODUCT_CAST(g2, nx, ny);
+            g2->SetScrollPosition(nx, ny);
             g_scrollPace.m_period = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollPace.m_lastTime = g_frameTime;
         }

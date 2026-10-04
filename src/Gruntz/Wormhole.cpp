@@ -239,7 +239,7 @@ i32 CGruntPuddle::Remove() {
             while (pos != NULL) {
                 POSITION current = pos;
                 if (manager->GetNextPuddle(pos) == this) {
-                    manager->m_baseList.RemoveAt(current);
+                    manager->RemovePuddleAt(current);
                     return 0;
                 }
             }

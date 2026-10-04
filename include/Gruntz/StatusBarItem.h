@@ -51,6 +51,10 @@ public:
         return m_tab;
     }
 
+    StatusBarItemKind GetKind() const {
+        return m_kind;
+    }
+
     b32 IsEnabled() const {
         return m_enabled;
     }

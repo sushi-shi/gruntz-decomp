@@ -26,6 +26,10 @@ public:
     CGruntPuddle() {}
     CGruntPuddle(CGameObject* obj);
 
+    i32 GetPlayerIndex() const {
+        return m_playerIndex;
+    }
+
     i32 GetMoveIcon() const {
         return m_moveIcon;
     }

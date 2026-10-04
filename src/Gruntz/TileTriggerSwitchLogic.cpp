@@ -112,9 +112,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
-    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
-    reg->GetTileGrid()->ComputeCellFlags(tileX, tileY, v);
+    SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
@@ -131,9 +129,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
-    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
-    reg->GetTileGrid()->ComputeCellFlags(tileX, tileY, v);
+    SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
@@ -997,9 +993,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
-    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
-    reg->GetTileGrid()->ComputeCellFlags(tileX, tileY, v);
+    SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
     m_linkGate = true;
     return 1;
 }
@@ -1012,9 +1006,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
-    CDDrawWorkerHost* layer2 = g_gameReg->World()->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
-    reg->GetTileGrid()->ComputeCellFlags(tileX, tileY, v);
+    SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
     m_linkGate = false;
     return 1;
 }

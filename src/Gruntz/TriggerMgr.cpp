@@ -363,7 +363,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_RAW_FIRST(t, x, y);
+    t->SetScrollPosition(x, y);
     return 1;
 }
 
@@ -1079,7 +1079,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
                 return 0;
             }
             existing->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-            m_baseList.RemoveAt(cur);
+            RemovePuddleAt(cur);
             stop = 1;
             replacedExisting = 1;
         }
@@ -1092,7 +1092,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
             CGruntPuddle* existing = GetNextPuddle(pos);
             if (existing->IsPending() == false) {
                 existing->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
-                m_baseList.RemoveAt(cur);
+                RemovePuddleAt(cur);
                 stop = 1;
             }
         }
@@ -1804,7 +1804,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             continue;
         }
 
-        i32 playerIndex = g->m_playerIndex;
+        i32 playerIndex = g->GetPlayerIndex();
         GruntzPlayer* player = &g_gameReg->m_players[playerIndex];
         i32 aiType = 0;
         b32 ok = false;
@@ -1862,7 +1862,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         if (ok) {
             g->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
 
-            m_baseList.RemoveAt(cur);
+            RemovePuddleAt(cur);
             CreateLightFx(
                 g_gameReg->World()->ChildGroup(),
                 (tx << TILE_SHIFT_PX) + TILE_HALF_PX,

@@ -2309,32 +2309,36 @@ void CGrunt::FinalizeStep(char* name) {
 RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
-        bool eq;
-        eq = IsAnimationAct("A");
-        if (eq && !CoordsEmpty()) {
-            Coord* co = GetHeadCoord();
-            i32 fl = MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->GetTileGrid(), co->m_x, co->m_y);
-            if (!(fl & BRICKZ_CELL_OCCUPIED) && !((m_arrivalFlags & fl) & BRICKZ_CELL_OCCUPIED)
-                && ((m_arrivalFlags & fl) == 0 || (m_passableMask & fl) != 0)) {
-                Coord* tc = GetTailCoord();
+        bool isIdle;
+        isIdle = IsAnimationAct("A");
+        if (isIdle && !CoordsEmpty()) {
+            Coord* nextPathTile = GetHeadCoord();
+            i32 nextCellFlags = MAP_CELL_FLAGS_AT_UNCHECKED(
+                g_gameReg->GetTileGrid(), nextPathTile->m_x, nextPathTile->m_y
+            );
+            if (!(nextCellFlags & BRICKZ_CELL_OCCUPIED)
+                && !((m_arrivalFlags & nextCellFlags) & BRICKZ_CELL_OCCUPIED)
+                && ((m_arrivalFlags & nextCellFlags) == 0 || (m_passableMask & nextCellFlags) != 0)) {
+                Coord* destinationTile = GetTailCoord();
                 m_entrancePx.Set(
-                    (tc->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
-                    (tc->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
+                    (destinationTile->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (destinationTile->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
                 m_coordRetryCount = 0;
                 StepEntranceReinit();
             } else if (static_cast<u32>(m_coordRetryCount) <= 5) {
                 if (PathScan() != 0) {
-                    Coord* h2 = GetTailCoord();
+                    Coord* reroutedDestinationTile = GetTailCoord();
                     m_entrancePx.Set(
-                        (h2->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
-                        (h2->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
+                        (reroutedDestinationTile->m_x << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (reroutedDestinationTile->m_y << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
                     if (!CoordsEmpty()) {
-                        Coord* h3 = GetHeadCoord();
-                        i32 fl2 =
-                            MAP_CELL_FLAGS_AT_UNCHECKED(g_gameReg->GetTileGrid(), h3->m_x, h3->m_y);
-                        if (!(fl2 & BRICKZ_CELL_OCCUPIED)) {
+                        Coord* reroutedNextTile = GetHeadCoord();
+                        i32 reroutedCellFlags = MAP_CELL_FLAGS_AT_UNCHECKED(
+                            g_gameReg->GetTileGrid(), reroutedNextTile->m_x, reroutedNextTile->m_y
+                        );
+                        if (!(reroutedCellFlags & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;
                             StepEntranceReinit();
                         }

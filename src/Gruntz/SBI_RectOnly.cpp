@@ -664,7 +664,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
     r->OnPointerDrag(keyFlags, x, y);
-    if (r->m_kind != SBI_KIND_MENU_ITEM) {
+    if (r->GetKind() != SBI_KIND_MENU_ITEM) {
         ClearTabSprites(TAB_ALL);
         return 1;
     }
