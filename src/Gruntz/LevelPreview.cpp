@@ -119,7 +119,7 @@ i32 CPreviewState::Tick() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de2c0, 0x5c)
 i32 CPreviewState::Refade() {
-    if (m_world->GetDrawTarget()->PagesReady() == 0) {
+    if (m_world->GetDrawTarget()->RestoreLostSurfaces() == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {

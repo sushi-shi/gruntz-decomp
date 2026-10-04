@@ -236,7 +236,7 @@ i32 CCreditsState::Render() {
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::RestoreGraphics() {
 
-    if (m_world->GetDrawTarget()->PagesReady() == 0) {
+    if (m_world->GetDrawTarget()->RestoreLostSurfaces() == 0) {
         return 0;
     }
     if (ShowCursor(false) >= 0) {
@@ -290,8 +290,8 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     if (m_videoPlaying != false) {
-        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->PresentBackPage();
-        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->TransTitle();
+        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyFrontToBackBuffers();
+        (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyBackToOverlay();
         (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->ClearAllPages(0);
         m_world->GetDrawTarget()->m_overlayPair->GetSurface()->Fill(0);
         return 1;
@@ -315,7 +315,7 @@ i32 CCreditsState::InitAttractTitle() {
     m_stateResources = saved;
     CDDSurface* tgt = m_world->GetDrawTarget()->GetBackPair()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
-    (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->TransTitle();
+    (static_cast<CDDrawSubMgrPages*>(m_world->GetDrawTarget()))->CopyBackToOverlay();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }

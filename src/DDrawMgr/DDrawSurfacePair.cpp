@@ -458,7 +458,7 @@ void CDDrawSurfacePair::BlitDirtyRect(
 ) {}
 
 RVA(0x00164660, 0x46)
-i32 CDrawSubWorker::Probe() {
+i32 CDrawSubWorker::RestoreIfLost() {
     CDDSurface* s = m_surface;
     if (s != NULL) {
         IDirectDrawSurface* dd = s->GetDirectDrawSurface();

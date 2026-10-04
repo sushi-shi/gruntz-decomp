@@ -128,7 +128,7 @@ i32 CHelpState::Render() {
 
 RVA(0x00095320, 0x56)
 i32 CHelpState::RestoreGraphics() {
-    if (m_world->GetDrawTarget()->PagesReady() == 0) {
+    if (m_world->GetDrawTarget()->RestoreLostSurfaces() == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {

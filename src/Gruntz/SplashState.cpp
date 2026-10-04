@@ -125,7 +125,7 @@ i32 CSplashState::Render() {
 
 RVA(0x000f9a80, 0x44)
 i32 CSplashState::RestoreGraphics() {
-    if (m_world->GetDrawTarget()->PagesReady() == 0) {
+    if (m_world->GetDrawTarget()->RestoreLostSurfaces() == 0) {
         return 0;
     }
     while (ShowCursor(false) >= 0) {

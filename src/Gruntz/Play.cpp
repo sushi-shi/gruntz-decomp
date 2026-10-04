@@ -1594,7 +1594,7 @@ i32 CPlay::RestoreGraphics() {
     m_statusBar->RequestRedraw();
     m_statusBar->Render();
     m_stepCountdown = 2;
-    m_world->GetDrawTarget()->TransTitle();
+    m_world->GetDrawTarget()->CopyBackToOverlay();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
@@ -2991,7 +2991,7 @@ i32 CPlay::PrepareReturnToMenu() {
     m_mgr->m_strWorldFile.Empty();
     if (m_completedFinalLevel != false) {
         if (m_world->GetDrawTarget()->HasOverlay() != 0) {
-            m_world->GetDrawTarget()->TransEnter();
+            m_world->GetDrawTarget()->CopyFrontToOverlay();
         }
         m_mgr->PlayMovieEntry(IDX(MOVIE_ENTRY_ENDING));
     }
@@ -5862,7 +5862,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
         }
     }
 
-    m_world->GetDrawTarget()->TransTitle();
+    m_world->GetDrawTarget()->CopyBackToOverlay();
     RetireScene(0x50, 0x3e8, 0, true);
 
     CGameLevel* lvl = m_world->m_level;

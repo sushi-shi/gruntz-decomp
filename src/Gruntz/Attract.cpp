@@ -421,7 +421,7 @@ i32 CState::RestoreGraphics() {
 
     while (ShowCursor(false) >= 0)
         ;
-    if (m_world->GetDrawTarget()->PagesReady() == 0) {
+    if (m_world->GetDrawTarget()->RestoreLostSurfaces() == 0) {
         return 0;
     }
     if (g_skipNextRestoreMessage == false) {
@@ -457,10 +457,10 @@ void CState::Present(i32 pct) {
         g_skipNextScreenEffect = false;
         return;
     }
-    m_world->GetDrawTarget()->BlitPage(m_world->GetDrawTarget()->GetBackPair());
+    m_world->GetDrawTarget()->CopyFrontToSurface(m_world->GetDrawTarget()->GetBackPair());
     m_world->GetDrawTarget()->GetBackPair()->GetSurface()->ShadeRect(pct, static_cast<RECT*>(0));
     m_world->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(static_cast<CDDSurface*>(0));
-    m_world->GetDrawTarget()->BlitPage(m_world->GetDrawTarget()->GetBackPair());
+    m_world->GetDrawTarget()->CopyFrontToSurface(m_world->GetDrawTarget()->GetBackPair());
 }
 
 // @dead-code

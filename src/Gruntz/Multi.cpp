@@ -778,7 +778,7 @@ i32 CMulti::SetupLobbyConnection() {
         return 0;
     }
 
-    m_world->GetDrawTarget()->PresentBackPage();
+    m_world->GetDrawTarget()->CopyFrontToBackBuffers();
 
     m_world->GetDeviceManager()->FlipToGDISurface();
     m_stateResources = saved;
@@ -840,7 +840,7 @@ i32 CMulti::SetupNetworkConnection() {
         return 0;
     }
     LoadAndPresentTitlePage("BACKGND", 0, 0, 1, 0);
-    m_world->GetDrawTarget()->PresentBackPage();
+    m_world->GetDrawTarget()->CopyFrontToBackBuffers();
     CNetProviderNode* provider = SelectNetworkProvider();
     if (!provider) {
         return 0;

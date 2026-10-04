@@ -137,8 +137,8 @@ void CDDrawSubMgrPages::FlipAndNotify() {
 }
 
 RVA(0x00158bc0, 0x2e)
-i32 CDDrawSubMgrPages::PagesReady() {
-    if (m_frontSurface && !m_frontSurface->Probe()) {
+i32 CDDrawSubMgrPages::RestoreLostSurfaces() {
+    if (m_frontSurface && !m_frontSurface->RestoreIfLost()) {
         return 0;
     }
     if (m_overlayPair && !m_overlayPair->RestoreIfLost()) {
@@ -167,7 +167,7 @@ i32 CDDrawSubMgrPages::ResizePages(i32 w, i32 h, ColorDepth bpp) {
 }
 
 RVA(0x00158c70, 0x36)
-i32 CDDrawSubMgrPages::BlitPage(CDDrawSurfacePair* dst) {
+i32 CDDrawSubMgrPages::CopyFrontToSurface(CDDrawSurfacePair* dst) {
     if (!m_frontSurface) {
         return 0;
     }
@@ -233,7 +233,7 @@ void CDDrawSubMgrPages::ClearAllPages(u32 color) {
 }
 
 RVA(0x00158dc0, 0x7d)
-i32 CDDrawSubMgrPages::PresentBackPage() {
+i32 CDDrawSubMgrPages::CopyFrontToBackBuffers() {
     CDDrawFrontSurface* front = m_frontSurface;
     CDDrawSurfacePair* back = m_backPair;
     b32 ok;
@@ -277,7 +277,7 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
 
 // @early-stop
 RVA(0x00158e40, 0x4c)
-i32 CDDrawSubMgrPages::TransEnter() {
+i32 CDDrawSubMgrPages::CopyFrontToOverlay() {
     CDDrawSurfacePair* a;
     CDDrawFrontSurface* b;
     CDDSurface* bs;
@@ -310,7 +310,7 @@ fail:
 }
 
 RVA(0x00158e90, 0x47)
-i32 CDDrawSubMgrPages::TransTitle() {
+i32 CDDrawSubMgrPages::CopyBackToOverlay() {
     if (!m_backPair) {
         return 0;
     }
@@ -327,7 +327,7 @@ i32 CDDrawSubMgrPages::TransTitle() {
 }
 
 RVA(0x00158ee0, 0x47)
-i32 CDDrawSubMgrPages::TransExit() {
+i32 CDDrawSubMgrPages::CopyOverlayToBack() {
     if (!m_backPair) {
         return 0;
     }

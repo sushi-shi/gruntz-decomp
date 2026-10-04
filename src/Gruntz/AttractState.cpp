@@ -98,7 +98,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     s.Format("TITLE%d", idx);
     LoadAndPresentTitlePage(s, 0, 0, 1, 0);
     CDDrawSubMgrPages* page = menuRoot()->GetDrawTarget();
-    page->BlitPage(page->GetBackPair());
+    page->CopyFrontToSurface(page->GetBackPair());
 
     i32 r = GetRandomNumber();
     const char* pick = (r % 2) ? DATA_COMPGEN(0x0020b5bc, "2") : "";
@@ -176,7 +176,7 @@ i32 CAttract::Render() {
 RVA(0x00014520, 0xc3)
 i32 CAttract::RestoreGraphics() {
 
-    if (menuRoot()->GetDrawTarget()->PagesReady() == 0) {
+    if (menuRoot()->GetDrawTarget()->RestoreLostSurfaces() == 0) {
         return 0;
     }
 
@@ -238,7 +238,7 @@ i32 CAttract::OnPaint() {
         } while (ShowCursor(false) >= 0);
     }
     menuRoot()->GetDrawTarget()->GetFrontSurface()->GetSurface()->Flip(NULL);
-    menuRoot()->GetDrawTarget()->BlitPage(menuRoot()->GetDrawTarget()->GetBackPair());
+    menuRoot()->GetDrawTarget()->CopyFrontToSurface(menuRoot()->GetDrawTarget()->GetBackPair());
     return 1;
 }
 
