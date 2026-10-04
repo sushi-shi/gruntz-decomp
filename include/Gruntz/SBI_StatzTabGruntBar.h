@@ -61,6 +61,13 @@ public:
 
     i32 UpdateIcons();
 
+    static b32 UpdateIconImage(
+        CDDrawWorker* const& frames,
+        i32 frameIndex,
+        i32& previousIndex,
+        CImage*& image
+    );
+
     CImage* m_healthBackgroundImage;
     CImage* m_healthIconImage;
     i32 m_healthIconIndex;
