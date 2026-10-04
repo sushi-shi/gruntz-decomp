@@ -1729,7 +1729,7 @@ font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	7	71a406f64b82	0x179720	100
 font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	95.3125	95.3125	20	54607cc64f3b	0x179e70	99.9583	
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	4	fea5e015e519	0x179c30	100.0000	
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	2	c01f11ef0c34	0x179d10	100.0000	
-font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	99.4530	99.4530	6	13b54291789a	0x17a460	100.0000	
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	99.4530	6	13b54291789a	0x17a460	100.0000	
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	4	d9e3adf02ee6	0x1797b0	100.0000	
 font	?GetAt@CString@@QBEDH@Z	100.0000	100.0000	1	cpp:8c44cb1c6fc0	0x17b4f0	100.0000	
 font	?GetGlyph@Font@@QAEAAVCSize@@AAV2@E@Z	100.0000	100.0000	2	beec20d9221d	0x179b80	100.0000	
