@@ -2006,7 +2006,7 @@ grunt	??1CGruntDirectionData@@QAE@XZ	100.0000	100.0000	1	e59cc6f4dade	0xf430	100
 grunt	??_GCGrunt@@UAEPAXI@Z	100.0000	100.0000	1	cpp:519f525779f2	0xf2c0	100.0000	
 grunt	?ApplyPickup@CGrunt@@QAEHW4PickupType@@HHH@Z	93.9891	93.9891	50	14d5c81acb73	0x4dd50	97.4240	
 grunt	?BuildImageSetNames@CGrunt@@QAEXHH@Z	100.0000	100.0000	10	5abcfdc867d8	0x48470	100.0000	
-grunt	?Classify@MotionEntity@@QAEPAUGruntDirectionCell@@PAU1@D@Z	98.1910	98.1910	3	512c27f6c0d4	0x4a780	98.1910	
+grunt	?GetDirectionTo@MotionEntity@@QAEPAUGruntDirectionCell@@PAU1@D@Z	98.1910	98.1910	3	512c27f6c0d4	0x4a780	98.1910	
 grunt	?CreateHealthSprite@CGrunt@@QAEHXZ	99.6552	99.6552	10	640cbae8a5cb	0x4d130	99.6552	
 grunt	?CreatePowerupSprite@CGrunt@@QAEHH@Z	99.6296	99.6296	10	3250578dcac9	0x4d650	99.6296	
 grunt	?CreateSelectedSprite@CGrunt@@QAEHXZ	91.9231	91.9231	11	912e1420bc04	0x4d730	91.9231	

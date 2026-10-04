@@ -499,7 +499,7 @@ void CGrunt::LoadAnimationSet(i32 toyMode, i32 mobileToy) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0004a780, 0x1ec)
-GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
+GruntDirectionCell* MotionEntity::GetDirectionTo(MotionEntity* other, char exact) {
     if (other == NULL) {
         return &g_gruntMoveDirCenter;
     }
