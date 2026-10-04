@@ -926,7 +926,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         RESET_GRUNT_COMBAT_STATE(this)
     }
 
-    BeginGruntEntranceAndReleaseCell(this);
+    BeginGruntEntranceAndReleaseCell();
 
     SET_ANIMATION_ACT("B");
 
