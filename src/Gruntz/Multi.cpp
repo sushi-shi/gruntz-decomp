@@ -219,7 +219,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         lat->Clear();
     }
 
-    NetGameMgr()->m_loadingSaveGame = false;
+    NetGameMgr()->SetLoadingSaveGame(false);
     Mgr()->ResetClockGlobals();
     Mgr()->DeactivateAllPlayers();
     ResetPlayerColorAvailability();

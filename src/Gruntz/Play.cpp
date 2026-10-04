@@ -277,7 +277,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         SetSavedClock(0);
         m_rngSeed = timeGetTime();
         m_minimap = NULL;
-        if (m_mgr->m_loadingSaveGame == false) {
+        if (m_mgr->IsLoadingSaveGame() == false) {
             m_mgr->m_saveInfoRec = NULL;
         }
         if (!LoadImageBanks()) {
@@ -1398,13 +1398,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
 
         gameReg = g_gameReg;
-        if (gameReg->m_loadingSaveGame == false) {
+        if (gameReg->IsLoadingSaveGame() == false) {
             CDDSurface* mapHost = self->m_world->GetDrawTarget()->GetFrontSurface()->GetSurface();
             mapHost->ShadeRect(0x32, NULL);
             gameReg = g_gameReg;
         }
 
-        if (gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == false) {
+        if (gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER
+            && gameReg->IsLoadingSaveGame() == false) {
             CString scr;
             self->m_inGame = true;
             self->m_hudSuppressed = false;
