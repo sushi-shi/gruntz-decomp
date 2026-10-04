@@ -419,8 +419,8 @@ i32 CGrunt::StartBombGruntRun() {
         dy += h->m_screenY >> TILE_SHIFT_PX;
     }
     FaceTowardTile(dx, dy);
-    m_moveTile.m_x = dx;
-    m_moveTile.m_y = dy;
+    m_toolTargetTile.m_x = dx;
+    m_toolTargetTile.m_y = dy;
     SET_ANIMATION_ACT("M");
     m_timePerTile = static_cast<i32>(g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64));
     m_bombRunStarting = true;

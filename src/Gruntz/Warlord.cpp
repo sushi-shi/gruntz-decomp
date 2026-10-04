@@ -390,7 +390,7 @@ i32 CWarlord::FinishJoyAnimation() {
         CTriggerMgr* h = g_gameReg->GetTriggerMgr();
         if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->GetSmarts() == g_curPlayer) {
             h->m_pendingFx = NULL;
-            ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_cueTimer;
+            ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_finishDelayTiming;
             tm->Start(0x3e8);
         }
         ResolveMovingAnimation();
@@ -427,7 +427,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         CTriggerMgr* h = g_gameReg->GetTriggerMgr();
         if (h->GetFinishState() != FINISH_STATE_ACTIVE && m_object->GetSmarts() == g_curPlayer) {
             h->m_pendingFx = NULL;
-            ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_cueTimer;
+            ClockInterval* tm = &g_gameReg->GetTriggerMgr()->m_finishDelayTiming;
             tm->Start(0x3e8);
         }
 

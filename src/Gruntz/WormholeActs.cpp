@@ -147,7 +147,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
             }
             if (owningPlayer == g_curPlayer) {
-                g_gameReg->GetTriggerMgr()->LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
+                g_gameReg->GetTriggerMgr()->BeginLevelFinish(FINISH_REASON_BATTLEZ_DEFEAT);
             } else {
                 GruntzPlayer* board = &g_gameReg->GetPlayer(owningPlayer);
                 if (board != NULL && board->IsHumanControlled() == false) {

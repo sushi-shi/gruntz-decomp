@@ -1161,7 +1161,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
 
 // @early-stop
 RVA(0x00065630, 0x34b)
-i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
+i32 CGrunt::StartToolUseAnimation(i32 tileX, i32 tileY) {
     if (IsAnimationAct("I")) {
         ClearMoveTileFx();
     } else {
@@ -1169,8 +1169,8 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     }
 
     FaceTowardTile(tileX, tileY);
-    m_moveTile.m_x = tileX;
-    m_moveTile.m_y = tileY;
+    m_toolTargetTile.m_x = tileX;
+    m_toolTargetTile.m_y = tileY;
     if (m_inCombat != false && m_attackQueued == false) {
         RESET_GRUNT_COMBAT_STATE(this)
     }
@@ -1252,11 +1252,11 @@ i32 CGrunt::UpdateToolUseAnimation() {
                 }
             }
         }
-        m_triggerMgr->LoadTileArrivalFx(
+        m_triggerMgr->HandleToolAnimationCue(
             m_playerIndex,
             m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
+            m_toolTargetTile.m_x,
+            m_toolTargetTile.m_y,
             m_activePickupType,
             cue
         );
@@ -1275,11 +1275,11 @@ i32 CGrunt::FinishToobMoveAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {
         WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
-        m_triggerMgr->LoadTileArrivalFx(
+        m_triggerMgr->HandleToolAnimationCue(
             m_playerIndex,
             m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
+            m_toolTargetTile.m_x,
+            m_toolTargetTile.m_y,
             m_activePickupType,
             cue
         );

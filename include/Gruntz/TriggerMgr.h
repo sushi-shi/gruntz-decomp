@@ -36,11 +36,11 @@ class CGruntPuddle;
 class CTriggerMgr {
 public:
     FinishLevelReason GetFinishReason() const {
-        return m_finishReasonFrame;
+        return m_finishReason;
     }
 
     FinishLevelState GetFinishState() const {
-        return m_phase;
+        return m_finishState;
     }
 
     i32 Load(CFileMemBase* ar);
@@ -207,13 +207,13 @@ public:
     i32 ToggleToolTargeting();
     i32 ToggleToyTargeting();
 
-    i32 EnqueueGroupCells();
+    i32 EnqueueSelectedStop();
 
     void SelectUnitsInRect(RECT selectionRect, b32 preserveSelection);
 
     i32 UpdateFrame(i32 deltaMs);
 
-    void LoadFinishLevelSprite(FinishLevelReason state);
+    void BeginLevelFinish(FinishLevelReason reason);
 
     i32 ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles);
 
@@ -221,12 +221,12 @@ public:
 
     i32 CenterOnGroup(i32 doSelect);
 
-    i32 LoadTileArrivalFx(
+    i32 HandleToolAnimationCue(
         i32 playerIndex,
         i32 unitIndex,
         i32 tileX,
         i32 tileY,
-        PickupType reason,
+        PickupType toolType,
         WwdAniDrawValue cue
     );
 
@@ -251,7 +251,7 @@ public:
         m_overlay = NULL;
         m_world = NULL;
         m_countdownActive = true;
-        m_groupFlag = true;
+        m_playerControlEnabled = true;
         m_rollingballLoop = NULL;
         m_teleportLoop = NULL;
         m_rollingballWanted = false;
@@ -277,7 +277,7 @@ public:
 
     i32 LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind);
 
-    i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind);
+    i32 SpawnToyBox(i32 x, i32 y, i32 playerIndex, PickupType toyType, i32 scrollSpell);
 
     CPtrList m_baseList;
     CGrunt* m_units[PLAYER_SLOT_COUNT * TM_UNITS_PER_PLAYER];
@@ -318,9 +318,9 @@ public:
     char m_reserved274[0x10];
     b32 m_levelWarpStoneCollected;
 
-    FinishLevelState m_phase;
+    FinishLevelState m_finishState;
 
-    ClockInterval m_cueTimer;
+    ClockInterval m_finishDelayTiming;
 
     CWarlord* m_pendingFx;
     b32 m_countdownActive;
@@ -330,13 +330,13 @@ public:
     ClockInterval m_resourceTimer;
     CPtrList m_selectionGroups[10];
     i32 m_lastRecalledGroup;
-    FinishLevelReason m_finishReasonFrame;
+    FinishLevelReason m_finishReason;
 
     SoundBuffer* m_rollingballLoop;
     SoundBuffer* m_teleportLoop;
     b32 m_rollingballWanted;
     b32 m_teleportWanted;
-    b32 m_groupFlag;
+    b32 m_playerControlEnabled;
 };
 
 extern i32 g_groupSentinel;

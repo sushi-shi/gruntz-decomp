@@ -24,7 +24,7 @@ class CGameObject;
 GZ_ENUM_FORWARD(SerialMode);
 GZ_ENUM_FORWARD(LogicTypeId);
 
-struct CTriRecord {
+struct CGruntDirectionRecord {
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
 
     i32 m_row;
@@ -32,7 +32,7 @@ struct CTriRecord {
     GruntDirection m_direction;
 };
 
-struct GruntDirectionCell : public CTriRecord {
+struct GruntDirectionCell : public CGruntDirectionRecord {
     GruntDirectionCell() {}
     GruntDirectionCell(i32 row_, i32 column_, GruntDirection direction_) {
         m_row = row_;

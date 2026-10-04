@@ -74,9 +74,9 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     }
     if (count <= 1) {
         CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-        if (m_phase == FINISH_STATE_DEFEAT && play->m_statusBar->m_levelOverlayActive == false
+        if (m_finishState == FINISH_STATE_DEFEAT && play->m_statusBar->m_levelOverlayActive == false
             && play->m_statusBar->m_quitConfirmationActive == false && m_pendingFx == NULL) {
-            if (m_cueTimer.Expired()) {
+            if (m_finishDelayTiming.Expired()) {
                 play->OpenLevelOverlay(false);
             }
         }
@@ -86,11 +86,11 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         return 0;
     }
 
-    if (m_phase == FINISH_STATE_DEFEAT) {
+    if (m_finishState == FINISH_STATE_DEFEAT) {
         if (m_pendingFx != NULL) {
             return 0;
         }
-        if (m_cueTimer.Expired()) {
+        if (m_finishDelayTiming.Expired()) {
             if (g_gameReg->GetGameMode() == GAMEMODE_MULTIPLAYER) {
 
                 (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = true;
@@ -102,8 +102,8 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         return 0;
     }
 
-    if (m_phase == FINISH_STATE_VICTORY) {
-        if (!m_cueTimer.Expired()) {
+    if (m_finishState == FINISH_STATE_VICTORY) {
+        if (!m_finishDelayTiming.Expired()) {
             goto done;
         }
         if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_pendingFx != NULL) {
@@ -124,7 +124,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                 for (i = 0; i < 4; i++) {
                     if (i != idx) {
                         if (g_curPlayer == i) {
-                            LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
+                            BeginLevelFinish(FINISH_REASON_BATTLEZ_DEFEAT);
                         }
                         GruntzPlayer* slot = &g_gameReg->GetPlayer(i);
                         if (slot && slot->HasJoinedRound() && !slot->HasDropped()
@@ -146,7 +146,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         }
                     } else {
                         if (g_curPlayer == i) {
-                            g_gameReg->GetTriggerMgr()->LoadFinishLevelSprite(
+                            g_gameReg->GetTriggerMgr()->BeginLevelFinish(
                                 FINISH_REASON_BATTLEZ_VICTORY
                             );
                         }
@@ -178,7 +178,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
         if (g_gameReg->GetGameMode() == GAMEMODE_BATTLEZ) {
             if (obj->m_winLoseBanner != false && m_unitCountByPlayer[g_curPlayer] == 0) {
-                LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
+                BeginLevelFinish(FINISH_REASON_TIME_EXPIRED);
                 return 0;
             }
         }
@@ -187,9 +187,9 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                 return 0;
             }
             if (obj->m_winLoseBanner != false) {
-                LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
+                BeginLevelFinish(FINISH_REASON_TIME_EXPIRED);
             } else {
-                LoadFinishLevelSprite(FINISH_REASON_NO_GRUNTZ_REMAIN);
+                BeginLevelFinish(FINISH_REASON_NO_GRUNTZ_REMAIN);
             }
             return 0;
         }
@@ -213,7 +213,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                 return 0;
             }
         }
-        LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_VICTORY);
+        BeginLevelFinish(FINISH_REASON_BATTLEZ_VICTORY);
     }
 done:
     return 0;

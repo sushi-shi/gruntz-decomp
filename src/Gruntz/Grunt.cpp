@@ -614,7 +614,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 RVA(0x0004ac10, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
-    if (SameCellTag(&m_facing, &facing)) {
+    if (SameGruntDirection(&m_facing, &facing)) {
         return;
     }
 
@@ -1361,7 +1361,7 @@ commitMovement:
                 return 1;
             }
         }
-        RunMoveConfig(targetTileX, targetTileY);
+        StartToolUseAnimation(targetTileX, targetTileY);
         return 1;
     }
     if (usingWingz) {

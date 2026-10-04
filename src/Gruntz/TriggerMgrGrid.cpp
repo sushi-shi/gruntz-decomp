@@ -1063,7 +1063,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             if (cellTileX != argTileX || cellTileY != argTileY) {
                 return 0;
             }
-            cell->RunMoveConfig(cellTileX, cellTileY + 1);
+            cell->StartToolUseAnimation(cellTileX, cellTileY + 1);
             return 1;
         }
         if (cellTileX == argTileX && cellTileY == argTileY) {
@@ -1074,7 +1074,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             if (cell->CanShowStamina() == 0) {
                 return 0;
             }
-            cell->RunMoveConfig(cellTileX, cellTileY);
+            cell->StartToolUseAnimation(cellTileX, cellTileY);
             return 1;
         }
         PickupType kDiag = cell->GetEquippedToolType();
@@ -1090,7 +1090,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             if (cell->CanShowStamina() == 0) {
                 return 0;
             }
-            cell->RunMoveConfig(argTileX, argTileY);
+            cell->StartToolUseAnimation(argTileX, argTileY);
             return 1;
         }
         i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -1118,13 +1118,13 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 if (bute == TILEKIND_GAUNTLET_ROCK_A || bute == TILEKIND_GAUNTLET_ROCK_B
                     || bute == TILEKIND_GIANT_ROCK || bute == TILEKIND_GAUNTLET_BRICK_A
                     || bute == TILEKIND_GAUNTLET_BRICK_B || bute == TILEKIND_GAUNTLET_BRICK_C) {
-                    cell->RunMoveConfig(argTileX, argTileY);
+                    cell->StartToolUseAnimation(argTileX, argTileY);
                     return 1;
                 }
                 return 0;
             case PICKUP_SHOVEL:
                 if (bute == TILEKIND_COVERED_POWERUP || bute == TILEKIND_REVEALED_POWERUP) {
-                    cell->RunMoveConfig(argTileX, argTileY);
+                    cell->StartToolUseAnimation(argTileX, argTileY);
                     return 1;
                 }
                 return 0;
@@ -1134,7 +1134,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                     CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
                     if (cand->IsPending() == false && cand->GetTileX() == argTileX
                         && cand->GetTileY() == argTileY) {
-                        cell->RunMoveConfig(argTileX, argTileY);
+                        cell->StartToolUseAnimation(argTileX, argTileY);
                         cand->SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                         cand->m_pending = true;
                         return 1;
@@ -1143,12 +1143,12 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 return 0;
             }
             case PICKUP_SPY:
-                cell->RunMoveConfig(cellTileX, cellTileY);
+                cell->StartToolUseAnimation(cellTileX, cellTileY);
                 return 1;
             case PICKUP_BRICK:
                 if (bute == TILEKIND_HIDDEN_POWERUP || bute == TILEKIND_GAUNTLET_BRICK_A
                     || bute == TILEKIND_GAUNTLET_BRICK_B) {
-                    cell->RunMoveConfig(argTileX, argTileY);
+                    cell->StartToolUseAnimation(argTileX, argTileY);
                     return 1;
                 }
                 return 0;
@@ -1189,11 +1189,11 @@ outOfRange:
 #define CANCEL_UNIT_ARRIVAL_FX(unit, player, index)                                                \
     {                                                                                              \
         if ((unit)->IsAnimationAct("I")) {                                                         \
-            LoadTileArrivalFx(                                                                     \
+            HandleToolAnimationCue(                                                                \
                 (player),                                                                          \
                 (index),                                                                           \
-                (unit)->MoveTile().m_x,                                                            \
-                (unit)->MoveTile().m_y,                                                            \
+                (unit)->ToolTargetTile().m_x,                                                      \
+                (unit)->ToolTargetTile().m_y,                                                      \
                 (unit)->m_activePickupType,                                                        \
                 WWDDRAW_NO_ANIMATION                                                               \
             );                                                                                     \
@@ -1249,7 +1249,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         if (kind == PICKUP_SCROLL) {
             scrollSpell = cell->m_scrollSpell;
         }
-        if (LoadToyBoxIcon(destination.m_x, destination.m_y, playerIndex, kind, scrollSpell) == 0) {
+        if (SpawnToyBox(destination.m_x, destination.m_y, playerIndex, kind, scrollSpell) == 0) {
             return 0;
         }
 

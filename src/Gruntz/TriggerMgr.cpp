@@ -233,7 +233,7 @@ i32 CTriggerMgr::IsUnitSelected(i32 playerIndex, i32 unitIndex) {
 
 RVA(0x00078520, 0x106)
 void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targetY) {
-    if (m_groupFlag == false) {
+    if (m_playerControlEnabled == false) {
         return;
     }
     u8 count = 0;
@@ -281,7 +281,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
     i32 targetY,
     b32 targetIsGrunt
 ) {
-    if (m_groupFlag == false) {
+    if (m_playerControlEnabled == false) {
         return;
     }
     u8 count = 0;
@@ -678,7 +678,7 @@ i32 CTriggerMgr::HandleTargetSelection(
     i32 spawnCursor
 ) {
     static_cast<void>(unused5);
-    if (m_groupFlag == false) {
+    if (m_playerControlEnabled == false) {
         return 0;
     }
     CGrunt* hit = CellHitTest(targetX, targetY, NULL, NULL, PLAYER_SLOT_ALL);
@@ -955,7 +955,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
             fx->ResolveDeathAnimation();
         }
     }
-    this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_RESET);
+    this->BeginLevelFinish(FINISH_REASON_WARPSTONE_RESET);
 }
 
 RVA(0x00079ea0, 0xc2)
@@ -1018,7 +1018,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
                     fx->ResolveJoyAnimation();
                 }
             }
-            this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_EXIT);
+            this->BeginLevelFinish(FINISH_REASON_WARPSTONE_EXIT);
         }
     } else {
         if (cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
@@ -1105,7 +1105,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
 }
 
 RVA(0x0007a3f0, 0xd7)
-i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind) {
+i32 CTriggerMgr::SpawnToyBox(i32 x, i32 y, i32 playerIndex, PickupType toyType, i32 scrollSpell) {
     CDDrawChildGroup* fac = m_world->ChildGroup();
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
@@ -1130,9 +1130,9 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
         return 0;
     }
     spr->SetImageSetByName("GAME_TOYBOX");
-    spr->m_points = IDX(kind);
-    spr->m_score = col;
-    spr->m_faceDirection = moveKind;
+    spr->m_points = IDX(toyType);
+    spr->m_score = playerIndex;
+    spr->m_faceDirection = scrollSpell;
     spr->Hide();
     return 1;
 }
@@ -1164,7 +1164,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
         } while (playersRemaining != 0);
     }
     if (playerSelector == g_curPlayer) {
-        m_groupFlag = false;
+        m_playerControlEnabled = false;
     }
 
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -1191,7 +1191,7 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) 
         }
     }
 
-    SerializeClockPair(ar, mode, &m_cueTimer);
+    SerializeClockPair(ar, mode, &m_finishDelayTiming);
     SerializeClockPair(ar, mode, &m_gooTimer);
     SerializeClockPair(ar, mode, &m_resourceTimer);
     return 1;
@@ -1289,11 +1289,11 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     }
     ar->Write(&m_cameraTrackingActive, sizeof(m_cameraTrackingActive));
     ar->Write(&m_levelWarpStoneCollected, sizeof(m_levelWarpStoneCollected));
-    ar->Write(&m_phase, sizeof(m_phase));
+    ar->Write(&m_finishState, sizeof(m_finishState));
     ar->Write(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Write(&m_countdownActive, sizeof(m_countdownActive));
-    ar->Write(&m_finishReasonFrame, sizeof(m_finishReasonFrame));
-    ar->Write(&m_groupFlag, sizeof(m_groupFlag));
+    ar->Write(&m_finishReason, sizeof(m_finishReason));
+    ar->Write(&m_playerControlEnabled, sizeof(m_playerControlEnabled));
     ar->Write(&g_curPlayer, sizeof(g_curPlayer));
     ar->Write(&g_groupSentinel, sizeof(g_groupSentinel));
     ar->Write(&m_pendingFxKind, sizeof(m_pendingFxKind));
@@ -1455,11 +1455,11 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
     ar->Read(&m_cameraTrackingActive, sizeof(m_cameraTrackingActive));
     ar->Read(&m_levelWarpStoneCollected, sizeof(m_levelWarpStoneCollected));
-    ar->Read(&m_phase, sizeof(m_phase));
+    ar->Read(&m_finishState, sizeof(m_finishState));
     ar->Read(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Read(&m_countdownActive, sizeof(m_countdownActive));
-    ar->Read(&m_finishReasonFrame, sizeof(m_finishReasonFrame));
-    ar->Read(&m_groupFlag, sizeof(m_groupFlag));
+    ar->Read(&m_finishReason, sizeof(m_finishReason));
+    ar->Read(&m_playerControlEnabled, sizeof(m_playerControlEnabled));
     ar->Read(&g_curPlayer, sizeof(g_curPlayer));
     ar->Read(&g_groupSentinel, sizeof(g_groupSentinel));
     ar->Read(&m_pendingFxKind, sizeof(m_pendingFxKind));
@@ -1983,49 +1983,49 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipPlayerIndex, b32 enable) {
 
 // @early-stop
 RVA(0x0007c3d0, 0x1d0)
-void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
-    switch (state) {
+void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
+    switch (reason) {
         case FINISH_REASON_WARPSTONE_EXIT:
-            if (m_phase != FINISH_STATE_DEFEAT) {
+            if (m_finishState != FINISH_STATE_DEFEAT) {
                 SoundCue* p = m_world->SoundRegistry()->FindCue("GAME_FINISHLEVEL");
-                m_cueTimer.Start(p->GetSound()->GetDurationMs() + 500);
+                m_finishDelayTiming.Start(p->GetSound()->GetDurationMs() + 500);
                 PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_FINISHLEVEL");
-                m_phase = FINISH_STATE_VICTORY;
-                m_groupFlag = false;
-                m_finishReasonFrame = state;
+                m_finishState = FINISH_STATE_VICTORY;
+                m_playerControlEnabled = false;
+                m_finishReason = reason;
                 return;
             }
             break;
         case FINISH_REASON_WARPSTONE_RESET:
-            m_phase = FINISH_STATE_DEFEAT;
-            m_cueTimer.Start(3000);
+            m_finishState = FINISH_STATE_DEFEAT;
+            m_finishDelayTiming.Start(3000);
             break;
         case FINISH_REASON_BATTLEZ_VICTORY:
-            m_phase = FINISH_STATE_VICTORY;
-            m_cueTimer.Start(3000);
+            m_finishState = FINISH_STATE_VICTORY;
+            m_finishDelayTiming.Start(3000);
             break;
         case FINISH_REASON_TIME_EXPIRED:
-            m_phase = FINISH_STATE_DEFEAT;
-            m_cueTimer.Start(3000);
+            m_finishState = FINISH_STATE_DEFEAT;
+            m_finishDelayTiming.Start(3000);
             break;
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
-            if (m_phase == FINISH_STATE_ACTIVE) {
-                m_phase = FINISH_STATE_DEFEAT;
+            if (m_finishState == FINISH_STATE_ACTIVE) {
+                m_finishState = FINISH_STATE_DEFEAT;
                 if (m_pendingFx != NULL) {
                     m_pendingFx->ResolveDeathAnimation();
                 }
             }
-            m_cueTimer.Start(3000);
+            m_finishDelayTiming.Start(3000);
             break;
         case FINISH_REASON_BATTLEZ_DEFEAT:
-            m_phase = FINISH_STATE_DEFEAT;
-            m_cueTimer.Start(3000);
+            m_finishState = FINISH_STATE_DEFEAT;
+            m_finishDelayTiming.Start(3000);
             break;
         default:
             return;
     }
-    m_groupFlag = false;
-    m_finishReasonFrame = state;
+    m_playerControlEnabled = false;
+    m_finishReason = reason;
 }
 
 RVA(0x0007c620, 0x500)
@@ -2387,7 +2387,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
         unitsRemaining--;
     } while (unitsRemaining != 0);
     if (playerIndex == g_curPlayer) {
-        m_groupFlag = false;
+        m_playerControlEnabled = false;
     }
     (static_cast<CPlay*>(g_gameReg->m_curState))->FlushPendingOps();
     return 1;
@@ -2576,24 +2576,24 @@ i32 CTriggerMgr::ToggleToyTargeting() {
 }
 
 RVA(0x0007d6e0, 0xea)
-i32 CTriggerMgr::EnqueueGroupCells() {
-    if (m_groupFlag == false) {
+i32 CTriggerMgr::EnqueueSelectedStop() {
+    if (m_playerControlEnabled == false) {
         return 0;
     }
 
-    u8 buf[0x80];
+    u8 unitIndices[0x80];
     u8 count = 0;
-    char x;
+    char playerIndex;
     POSITION pos = m_selectedUnitIds.GetHeadPosition();
     if (pos != NULL) {
-        i32 magic = g_curPlayer;
+        i32 localPlayerIndex = g_curPlayer;
         do {
-            Coord* p = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
+            Coord* identity = static_cast<Coord*>(m_selectedUnitIds.GetNext(pos));
 
-            CGrunt* cell = UnitAt(p->m_x, p->m_y);
-            x = static_cast<char>(p->m_x);
-            if (cell->GetPlayerIndex() == magic && cell->m_entranceActive == false) {
-                buf[count] = static_cast<u8>(p->m_y);
+            CGrunt* grunt = UnitAt(identity->m_x, identity->m_y);
+            playerIndex = static_cast<char>(identity->m_x);
+            if (grunt->GetPlayerIndex() == localPlayerIndex && grunt->m_entranceActive == false) {
+                unitIndices[count] = static_cast<u8>(identity->m_y);
                 count++;
             }
         } while (pos != NULL);
@@ -2601,8 +2601,8 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     if (count == 1) {
         g_gameReg->GetCommandMgr()->EnqueueSingle(
             true,
-            x,
-            static_cast<char>(buf[0]),
+            playerIndex,
+            static_cast<char>(unitIndices[0]),
             static_cast<char>(IDX(PLAYERCMD_STOP)),
             0,
             0,
@@ -2610,8 +2610,16 @@ i32 CTriggerMgr::EnqueueGroupCells() {
             0
         );
     } else {
-        g_gameReg->GetCommandMgr()
-            ->EnqueueMulti(true, x, count, buf, static_cast<char>(IDX(PLAYERCMD_STOP)), 0, 0, 0);
+        g_gameReg->GetCommandMgr()->EnqueueMulti(
+            true,
+            playerIndex,
+            count,
+            unitIndices,
+            static_cast<char>(IDX(PLAYERCMD_STOP)),
+            0,
+            0,
+            0
+        );
     }
     return 1;
 }
