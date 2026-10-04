@@ -79,7 +79,7 @@ i32 CGrunt::StepDefenderBehavior() {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1)) {
+                if (TryAttackRememberedTarget(1)) {
                     return 1;
                 }
                 if (occOnTile && occ == NULL) {
@@ -108,7 +108,7 @@ i32 CGrunt::StepDefenderBehavior() {
             return 1;
         }
         if (m_attackWindupActive == false && m_stamina >= STAMINA_FULL && occOnTile) {
-            COMMIT_GRUNT_NEIGHBOR(occ);
+            ATTACK_GRUNT(occ);
             this->RecycleCoords();
             return 1;
         }

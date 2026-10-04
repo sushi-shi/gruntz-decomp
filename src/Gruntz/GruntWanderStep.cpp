@@ -55,7 +55,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
         if (attackQueued == false) {
             if (m_attackWindupActive == false) {
                 if (m_stamina >= STAMINA_FULL) {
-                    if (FindGridNeighbor(1) != NULL) {
+                    if (TryAttackRememberedTarget(1) != NULL) {
                         m_aiState = AISTATE_RETREAT;
                         return 1;
                     }

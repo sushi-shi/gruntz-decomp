@@ -72,7 +72,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                         );
                         return 1;
                     }
-                    COMMIT_GRUNT_NEIGHBOR(occ);
+                    ATTACK_GRUNT(occ);
                     return 1;
                 }
             } else if (occ == NULL) {
@@ -114,7 +114,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 return 1;
             }
             if (IsGruntAtSavedScreenPos(occ)) {
-                COMMIT_GRUNT_NEIGHBOR(occ);
+                ATTACK_GRUNT(occ);
             }
             m_aiState = AISTATE_ATTACK;
             return 1;
@@ -137,7 +137,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 if (!IsGruntAtSavedScreenPos(occ)) {
                     return 1;
                 }
-                COMMIT_GRUNT_NEIGHBOR(occ);
+                ATTACK_GRUNT(occ);
                 return 1;
             }
             if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {

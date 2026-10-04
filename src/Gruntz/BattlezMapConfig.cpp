@@ -801,7 +801,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (unit->IsInCombat() != false && unit->m_attackQueued == false
                                     && unit->m_attackWindupActive == false
                                     && unit->m_stamina >= STAMINA_FULL) {
-                                    if (unit->FindGridNeighbor(0) != NULL) {
+                                    if (unit->TryAttackRememberedTarget(0) != NULL) {
                                         return 1;
                                     }
                                 }
@@ -1695,7 +1695,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     }
     CGameObject* ul3 = other->m_object;
     (static_cast<CGrunt*>(actor))
-        ->CommitNeighbor(
+        ->AttackGrunt(
             other->GetPlayerIndex(),
             other->GetUnitIndex(),
             ul3->m_screenX,

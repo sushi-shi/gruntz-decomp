@@ -27,8 +27,8 @@
 #define PIXEL_PAIR_NOT_AT_POSITION(pixelX, pixelY, savedX, savedY)                                 \
     pixelX != savedX || pixelY != savedY
 
-#define COMMIT_GRUNT_NEIGHBOR(target)                                                              \
-    CommitNeighbor(                                                                                \
+#define ATTACK_GRUNT(target)                                                                       \
+    AttackGrunt(                                                                                   \
         target->GetPlayerIndex(),                                                                  \
         target->GetUnitIndex(),                                                                    \
         target->LastTilePx().m_x,                                                                  \
@@ -37,7 +37,7 @@
 
 #define COMMIT_HIT_AND_RUN_ATTACK(target)                                                          \
     do {                                                                                           \
-        COMMIT_GRUNT_NEIGHBOR(target);                                                             \
+        ATTACK_GRUNT(target);                                                                      \
         m_neighborScanEnabled = false;                                                             \
         RecycleCoords();                                                                           \
         m_aiState = AISTATE_RETREAT;                                                               \

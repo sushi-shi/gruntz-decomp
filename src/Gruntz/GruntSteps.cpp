@@ -1026,7 +1026,10 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_colorIndex, sizeof(m_colorIndex));
     ar->Write(&m_savedColorIndex, sizeof(m_savedColorIndex));
     ar->Write(&m_entranceCommitted, sizeof(m_entranceCommitted));
-    ar->Write(&m_neighborPlayerIndex, sizeof(m_neighborPlayerIndex) + sizeof(m_neighborUnitIndex));
+    ar->Write(
+        &m_attackTargetPlayerIndex,
+        sizeof(m_attackTargetPlayerIndex) + sizeof(m_attackTargetUnitIndex)
+    );
     ar->Write(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Write(&m_reserved210, sizeof(m_reserved210));
     ar->Write(&m_struckPose, sizeof(m_struckPose));

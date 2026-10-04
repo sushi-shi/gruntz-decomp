@@ -64,7 +64,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 }
                 if (IsWithinReach(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
                     && IsGruntAtSavedScreenPos(occ)) {
-                    COMMIT_GRUNT_NEIGHBOR(occ);
+                    ATTACK_GRUNT(occ);
                     return 1;
                 }
                 PLAY_VOICE_IN_VIEW(0x366);
@@ -104,7 +104,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             if (!IsGruntAtSavedScreenPos(occ)) {
                 return 1;
             }
-            COMMIT_GRUNT_NEIGHBOR(occ);
+            ATTACK_GRUNT(occ);
             m_aiState = AISTATE_ATTACK;
             return 1;
         }

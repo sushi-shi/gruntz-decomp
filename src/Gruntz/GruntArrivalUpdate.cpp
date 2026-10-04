@@ -56,7 +56,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 return 1;
             }
             if (this->m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1) != NULL) {
+                if (TryAttackRememberedTarget(1) != NULL) {
                     return 1;
                 }
                 if (atTarget && g == NULL) {
@@ -101,7 +101,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             if (g != NULL && this->m_inCombat == false && this->m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
                 && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-                COMMIT_GRUNT_NEIGHBOR(g);
+                ATTACK_GRUNT(g);
                 break;
             }
             if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
@@ -172,7 +172,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     if (this->m_inCombat == false && this->m_stamina >= STAMINA_FULL
                         && IsWithinReach(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && IsGruntAtSavedScreenPos(slot)) {
-                        COMMIT_GRUNT_NEIGHBOR(slot);
+                        ATTACK_GRUNT(slot);
                         this->m_aiState = AISTATE_ATTACK;
                     }
                 }
@@ -195,7 +195,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 }
                 if (IsWithinReach(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                     && IsGruntAtSavedScreenPos(slot)) {
-                    COMMIT_GRUNT_NEIGHBOR(slot);
+                    ATTACK_GRUNT(slot);
                     break;
                 }
             } else if (slot == NULL) {

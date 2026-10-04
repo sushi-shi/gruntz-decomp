@@ -270,8 +270,8 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_wwdObject->m_attackTypeMask = 1;
     m_playerIndex = -1;
     m_unitIndex = -1;
-    m_neighborPlayerIndex = -1;
-    m_neighborUnitIndex = -1;
+    m_attackTargetPlayerIndex = -1;
+    m_attackTargetUnitIndex = -1;
     m_warpstoneAnchorIndex = 0;
     m_activePickupType = PICKUP_NONE;
     m_carriedToyType = PICKUP_NONE;

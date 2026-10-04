@@ -2481,7 +2481,7 @@ void CTriggerMgr::DestroyAllAnims() {
             actualDispatch.m_dispatch = record->GetDispatch();
             projectileDispatch.m_dispatch = DispatchProjectileLogic;
             if (actualDispatch.m_bits == projectileDispatch.m_bits) {
-                (static_cast<CGrunt*>(record->UserLogic()))->m_neighborPlayerIndex = 0;
+                (static_cast<CGrunt*>(record->UserLogic()))->m_attackTargetPlayerIndex = 0;
             }
         }
     }

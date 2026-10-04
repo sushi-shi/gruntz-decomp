@@ -110,12 +110,12 @@ i32 CGrunt::UpdateAttackIdleAnimation() {
     if (m_stamina >= STAMINA_FULL) {
         if (m_attackQueued != false) {
             m_attackQueued = false;
-            CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
+            CGrunt* n = m_triggerMgr->UnitAt(m_attackTargetPlayerIndex, m_attackTargetUnitIndex);
             if (n != NULL && n->IsEntranceCommitted() != false) {
                 if (IsWithinReach(n->m_object->m_screenX, n->m_object->m_screenY)) {
-                    CommitNeighbor(
-                        m_neighborPlayerIndex,
-                        m_neighborUnitIndex,
+                    AttackGrunt(
+                        m_attackTargetPlayerIndex,
+                        m_attackTargetUnitIndex,
                         n->m_object->m_screenX,
                         n->m_object->m_screenY
                     );
@@ -133,12 +133,12 @@ i32 CGrunt::UpdateAttackIdleAnimation() {
 
 // @early-stop
 RVA(0x00061940, 0x200)
-i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex) {
+i32 CGrunt::StartTargetedAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex) {
     if (m_activePickupType >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
 
-    SetNeighbor(targetPlayerIndex, targetUnitIndex);
+    SetAttackTargetIdentity(targetPlayerIndex, targetUnitIndex);
     SET_ANIMATION_ACT("F");
 
     m_attackWindupActive = true;
@@ -172,17 +172,17 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     PLAY_GRUNT_CUE_IN_VIEW(1);
 
     {
-        CWwdSpriteObject* h = m_object;
-        i32 z = h->m_screenY + 0x186c1;
-        h->SetSortKey(z);
+        CWwdSpriteObject* sprite = m_object;
+        i32 sortKey = sprite->m_screenY + 0x186c1;
+        sprite->SetSortKey(sortKey);
     }
 
     SwitchAnimation(AT(m_poseAttack, pose));
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
-    char* buf = FacingData()->AttackName().GetBuffer(0);
-    SetImageFrameByName(buf, frame);
+    char* imageSetName = FacingData()->AttackName().GetBuffer(0);
+    SetImageFrameByName(imageSetName, frame);
     m_struckPose = 1;
     return 0;
 }
@@ -281,7 +281,8 @@ i32 CGrunt::StepAttackFire() {
             }
             default: {
 
-                CGrunt* tgt = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
+                CGrunt* tgt =
+                    m_triggerMgr->UnitAt(m_attackTargetPlayerIndex, m_attackTargetUnitIndex);
                 if (tgt != NULL) {
                     tgt->StepCombatReaction(
                         m_activePickupType,
@@ -299,7 +300,7 @@ i32 CGrunt::StepAttackFire() {
                             m_playerIndex,
                             m_unitIndex,
                             DEATH_EXPLODE,
-                            m_neighborPlayerIndex
+                            m_attackTargetPlayerIndex
                         );
                         return 0;
                     }
@@ -1073,7 +1074,7 @@ tail:
                               m_lastTilePx.m_y >> TILE_SHIFT_PX
                           )
                           & 0x80)) {
-                        CommitNeighbor(srcPlayerIndex, srcUnitIndex, cx, cy);
+                        AttackGrunt(srcPlayerIndex, srcUnitIndex, cx, cy);
                     }
                 }
             }

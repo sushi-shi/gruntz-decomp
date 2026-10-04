@@ -30,9 +30,9 @@ inline void CGrunt::UnregisterFromBoard(i32 exitedLevel) {
     }
 }
 
-inline void CGrunt::SetNeighbor(i32 playerIndex, i32 unitIndex) {
-    m_neighborPlayerIndex = playerIndex;
-    m_neighborUnitIndex = unitIndex;
+inline void CGrunt::SetAttackTargetIdentity(i32 playerIndex, i32 unitIndex) {
+    m_attackTargetPlayerIndex = playerIndex;
+    m_attackTargetUnitIndex = unitIndex;
 }
 
 inline void CGrunt::ResetToSeek() {

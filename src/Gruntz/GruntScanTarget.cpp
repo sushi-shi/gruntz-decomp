@@ -123,7 +123,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1) != NULL) {
+                if (TryAttackRememberedTarget(1) != NULL) {
                     return 1;
                 }
                 if (atTarget && best == NULL) {
@@ -167,7 +167,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     if (pa <= pb
                         && this->IsWithinReach(best->m_object->m_screenX, best->m_object->m_screenY)
                                != 0) {
-                        COMMIT_GRUNT_NEIGHBOR(best);
+                        ATTACK_GRUNT(best);
                         return 1;
                     }
                 }
@@ -260,7 +260,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     if (!IsGruntAtSavedScreenPos(sg)) {
                         return 1;
                     }
-                    COMMIT_GRUNT_NEIGHBOR(sg);
+                    ATTACK_GRUNT(sg);
                     m_aiState = AISTATE_ATTACK;
                     return 1;
                 }
@@ -290,7 +290,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                         if (this->IsWithinReach(sg->m_object->m_screenX, sg->m_object->m_screenY)
                                 != 0
                             && IsGruntAtSavedScreenPos(sg)) {
-                            COMMIT_GRUNT_NEIGHBOR(sg);
+                            ATTACK_GRUNT(sg);
                             return 1;
                         }
                     }

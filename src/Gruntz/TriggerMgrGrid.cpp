@@ -1106,7 +1106,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             if (hit->GetPlayerIndex() == cell->GetPlayerIndex() && g_traitorMode == false) {
                 return 0;
             }
-            return cell->CommitNeighbor(hitPlayerIndex, hitUnitIndex, bx, by) != 0;
+            return cell->AttackGrunt(hitPlayerIndex, hitUnitIndex, bx, by) != 0;
         }
         if (cell->CanShowStamina() == 0) {
             return 0;

@@ -386,9 +386,9 @@ public:
     void RecycleCoords();
     void RecycleHeadCoord();
     i32 IsInToyUseRange(i32 x, i32 y);
-    void SetNeighbor(i32 playerIndex, i32 unitIndex);
-    i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
-    CGrunt* FindGridNeighbor(i32 validate);
+    void SetAttackTargetIdentity(i32 playerIndex, i32 unitIndex);
+    i32 AttackGrunt(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
+    CGrunt* TryAttackRememberedTarget(i32 requireTargetAtTile);
 
     i32 StepDumbChaserBehavior();
 
@@ -480,8 +480,8 @@ public:
     PickupType m_colorIndex;
     i32 m_savedColorIndex;
     b32 m_entranceCommitted;
-    i32 m_neighborPlayerIndex;
-    i32 m_neighborUnitIndex;
+    i32 m_attackTargetPlayerIndex;
+    i32 m_attackTargetUnitIndex;
     Coord m_attackTargetPx;
     i32 m_reserved210;
     i32 m_struckPose;
@@ -812,7 +812,7 @@ public:
 
     i32 BeginAttack(i32 targetPxX, i32 targetPxY);
 
-    i32 StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex);
+    i32 StartTargetedAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex);
 
     i32 StartRangedAttackAnimation();
 

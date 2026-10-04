@@ -144,7 +144,7 @@ state0: {
     }
     if (m_inCombat == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(nb)
         && IsWithinReach(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
-        COMMIT_GRUNT_NEIGHBOR(nb);
+        ATTACK_GRUNT(nb);
         CWwdSpriteObject* hit = nb->m_object;
         m_arrivalCell.Set(hit->m_screenX >> TILE_SHIFT_PX, hit->m_screenY >> TILE_SHIFT_PX);
         m_aiState = AISTATE_ATTACK;

@@ -1373,25 +1373,20 @@ i32 CGrunt::ApplyCombatHitEffects(
 
 // @early-stop
 RVA(0x0005b050, 0x40b)
-i32 CGrunt::CommitNeighbor(
-    i32 targetPlayerIndex,
-    i32 targetUnitIndex,
-    i32 targetPxX,
-    i32 targetPxY
-) {
+i32 CGrunt::AttackGrunt(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY) {
     if (targetPlayerIndex == m_playerIndex && g_traitorMode == false) {
         return 0;
     }
-    PickupType reason = m_activePickupType;
-    if (reason == PICKUP_WARPSTONE || reason == PICKUP_WAND) {
+    PickupType toolType = m_activePickupType;
+    if (toolType == PICKUP_WARPSTONE || toolType == PICKUP_WAND) {
         return 0;
     }
     {
-        CGruntzMapMgr* bd = g_gameReg->GetTileGrid();
-        i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-        i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 flags = bd->CellFlagsAt(tx, ty);
-        if (flags & 0x80) {
+        CGruntzMapMgr* grid = g_gameReg->GetTileGrid();
+        i32 tileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 tileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 cellFlags = grid->CellFlagsAt(tileX, tileY);
+        if (cellFlags & 0x80) {
             return 0;
         }
     }
@@ -1400,33 +1395,33 @@ i32 CGrunt::CommitNeighbor(
     ArmCombatTimeout();
     m_neighborScanEnabled = true;
 
-    CGrunt* nb = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
-    if (nb == NULL || nb->IsEntranceCommitted() == false || m_entranceCommitted == false) {
+    CGrunt* target = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
+    if (target == NULL || target->IsEntranceCommitted() == false || m_entranceCommitted == false) {
         return 0;
     }
 
-    bool eq;
-    eq = IsAnimationAct("F");
-    if (eq) {
+    bool matchesAct;
+    matchesAct = IsAnimationAct("F");
+    if (matchesAct) {
         return 0;
     }
 
-    i32 flag = 0;
-    PickupType v = GetEquippedToolType();
-    if (v == PICKUP_BOMB) {
-        flag = IDX(v);
+    i32 bombTool = 0;
+    PickupType equippedToolType = GetEquippedToolType();
+    if (equippedToolType == PICKUP_BOMB) {
+        bombTool = IDX(equippedToolType);
     }
-    if (flag != 0) {
+    if (bombTool != 0) {
         StartToolUseAnimation(targetPxX >> TILE_SHIFT_PX, targetPxY >> TILE_SHIFT_PX);
         return 1;
     }
 
-    eq = IsAnimationAct("I");
-    if (eq) {
+    matchesAct = IsAnimationAct("I");
+    if (matchesAct) {
         CancelToolAnimationEffects();
     } else {
-        eq = IsAnimationAct("N");
-        if (eq) {
+        matchesAct = IsAnimationAct("N");
+        if (matchesAct) {
             SettleTubeMove();
         }
     }
@@ -1436,25 +1431,33 @@ i32 CGrunt::CommitNeighbor(
         m_arrivalPending = false;
     }
     m_inCombat = true;
+<<<<<<< HEAD
     nb->CreateHealthSprite();
     nb->ArmCombatTimeout();
+||||||| parent of e6b90f7eb (refactor: identify remembered grunt attack targets and actions)
+    nb->CreateHealthSprite();
+    ArmGruntCombatTimeout(nb);
+=======
+    target->CreateHealthSprite();
+    ArmGruntCombatTimeout(target);
+>>>>>>> e6b90f7eb (refactor: identify remembered grunt attack targets and actions)
     HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
     i32 stamina = m_stamina;
-    SetNeighbor(targetPlayerIndex, targetUnitIndex);
+    SetAttackTargetIdentity(targetPlayerIndex, targetUnitIndex);
     m_attackTargetPx.Set(targetPxX, targetPxY);
     if (stamina < STAMINA_FULL || m_busy != false) {
         m_attackQueued = true;
         return 1;
     }
     m_attackQueued = false;
-    nb->HandleCombatContact(
+    target->HandleCombatContact(
         m_object->m_screenX,
         m_object->m_screenY,
         false,
         m_playerIndex,
         m_unitIndex
     );
-    StartNeighborAttackAnimation(targetPlayerIndex, targetUnitIndex);
+    StartTargetedAttackAnimation(targetPlayerIndex, targetUnitIndex);
     return 1;
 }
 
@@ -1482,29 +1485,29 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
 }
 
 RVA(0x0005b6f0, 0xb5)
-CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
-    if (m_neighborPlayerIndex == -1) {
+CGrunt* CGrunt::TryAttackRememberedTarget(i32 requireTargetAtTile) {
+    if (m_attackTargetPlayerIndex == -1) {
         return NULL;
     }
-    if (m_neighborUnitIndex == -1) {
+    if (m_attackTargetUnitIndex == -1) {
         return NULL;
     }
 
-    CGrunt* n = m_triggerMgr->UnitAt(m_neighborPlayerIndex, m_neighborUnitIndex);
-    if (n != NULL && n->IsEntranceCommitted() != false) {
-        if (validate != 0) {
-            if (!IsGruntAtSavedScreenPos(n)) {
+    CGrunt* target = m_triggerMgr->UnitAt(m_attackTargetPlayerIndex, m_attackTargetUnitIndex);
+    if (target != NULL && target->IsEntranceCommitted() != false) {
+        if (requireTargetAtTile != 0) {
+            if (!IsGruntAtSavedScreenPos(target)) {
                 return NULL;
             }
         }
-        if (IsWithinReach(n->m_object->m_screenX, n->m_object->m_screenY)) {
-            CommitNeighbor(
-                m_neighborPlayerIndex,
-                m_neighborUnitIndex,
-                n->m_object->m_screenX,
-                n->m_object->m_screenY
+        if (IsWithinReach(target->m_object->m_screenX, target->m_object->m_screenY)) {
+            AttackGrunt(
+                m_attackTargetPlayerIndex,
+                m_attackTargetUnitIndex,
+                target->m_object->m_screenX,
+                target->m_object->m_screenY
             );
-            return n;
+            return target;
         }
     }
 
@@ -2061,7 +2064,7 @@ afterTile:
             }
         } else if (m_inCombat != false && m_attackQueued == false && m_attackWindupActive == false
                    && m_stamina >= STAMINA_FULL && m_neighborScanEnabled != false) {
-            FindGridNeighbor(0);
+            TryAttackRememberedTarget(0);
         }
         {
 

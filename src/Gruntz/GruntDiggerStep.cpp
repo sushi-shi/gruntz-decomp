@@ -64,7 +64,7 @@ i32 CGrunt::StepDiggerBehavior() {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1) != NULL) {
+                if (TryAttackRememberedTarget(1) != NULL) {
                     return 1;
                 }
                 if (atTarget && g == NULL) {
@@ -113,7 +113,7 @@ i32 CGrunt::StepDiggerBehavior() {
     if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
         && g->m_object->m_screenY == g->m_lastTilePx.m_y
         && IsWithinReach(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-        COMMIT_GRUNT_NEIGHBOR(g);
+        ATTACK_GRUNT(g);
         m_dwell = 0;
         return 1;
     }
