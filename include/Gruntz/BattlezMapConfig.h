@@ -158,6 +158,10 @@ public:
     CPtrArray m_spawnTiles;
     CPtrArray m_attackWaypoints;
 
+    CPtrArray* GetAttackWaypoints() {
+        return &m_attackWaypoints;
+    }
+
     i32 GetAttackWaypointCount() const {
         return m_attackWaypoints.GetSize();
     }

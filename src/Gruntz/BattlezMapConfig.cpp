@@ -3507,7 +3507,7 @@ Coord* CBattlezAiController::PickAttackWaypoint(Coord* out, CGrunt* unit, i32 ta
     i32 tileX = object->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = object->m_screenY >> TILE_SHIFT_PX;
     CPtrArray* attackWaypoints =
-        &m_game->GetPlayer(targetPlayerIndex).GetBattlezAiController()->m_attackWaypoints;
+        m_game->GetPlayer(targetPlayerIndex).GetBattlezAiController()->GetAttackWaypoints();
     i32 waypointCount = attackWaypoints->GetSize();
     if (waypointCount != 0) {
         i32 waypointIndex = rand() % waypointCount;
