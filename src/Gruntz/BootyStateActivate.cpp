@@ -1756,7 +1756,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             continue;
         }
         CShadeTable* tint =
-            g_gameReg->m_gruntPalettes->GetShadeTable(IDX(g_gameReg->GetPlayer(i).GetColor()), 0);
+            g_gameReg->GruntPalettes()->GetShadeTable(IDX(g_gameReg->GetPlayer(i).GetColor()), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1803,7 +1803,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_toolIcons[i]->Hide();
 
         {
-            CShadeTable* iconTint = g_gameReg->m_gruntPalettes->GetShadeTable(0x10, 0);
+            CShadeTable* iconTint = g_gameReg->GruntPalettes()->GetShadeTable(0x10, 0);
             if (iconTint == NULL) {
                 return 0;
             }
@@ -1863,7 +1863,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         CString tabKey;
         CString flagKey;
         GruntzPlayer* pl = &g_gameReg->GetPlayer(t);
-        CShadeTable* tint = g_gameReg->m_gruntPalettes->GetShadeTable(IDX(pl->GetColor()), 0);
+        CShadeTable* tint = g_gameReg->GruntPalettes()->GetShadeTable(IDX(pl->GetColor()), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1907,7 +1907,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_tabSprites[t]->Show();
     }
 
-    CShadeTable* tint = g_gameReg->m_gruntPalettes->GetShadeTable(
+    CShadeTable* tint = g_gameReg->GruntPalettes()->GetShadeTable(
         IDX(g_gameReg->GetPlayer(GetWinningPlayerIndex()).GetColor()),
         0
     );
