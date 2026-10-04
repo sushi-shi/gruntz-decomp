@@ -35,15 +35,16 @@ rva	unit	function	lost_max	cur
 0x0ecc90	gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	90.2045	90.1894
 0x0ef6b0	gruntchargestep	?StepDumbChaserBehavior@CGrunt@@QAEHXZ	95.9763	95.8860
 0x05f310	gruntcombat	?AdvanceMotion@CGrunt@@UAEXXZ	94.9570	88.8077
-0x059230	gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	99.1168	97.4074
 0x0597a0	gruntcombat	?ApplyCombatHitEffects@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.2468	73.1162
+0x059230	gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	99.1168	97.4074
 0x057db0	gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	68.8303
 0x05d210	gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	88.1116	87.5067
 0x0f8240	gruntdefenselean	?StepMagicWandGruntBehavior@CGrunt@@QAEHXZ	96.3499	95.6614
 0x0f2b20	gruntdefensestep	?StepScrollGruntBehavior@CGrunt@@QAEHXZ	96.9379	96.8563
 0x0f36a0	gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	83.8203
+0x065630	gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	96.2980	95.3490
 0x061940	gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5951	91.5705
-0x0646b0	gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	94.8659	93.1449
+0x0646b0	gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	97.7331	97.1872
 0x062110	gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	94.1261	92.4707
 0x067bd0	gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	99.5161
 0x06a6d0	gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	92.1188	91.5107
@@ -97,6 +98,7 @@ rva	unit	function	lost_max	cur
 0x07d5c0	triggermgr	?ToggleToyTargeting@CTriggerMgr@@QAEHXZ	100.0000	99.1892
 0x0788d0	triggermgr	?UpdateCameraTracking@CTriggerMgr@@QAEHXZ	100.0000	99.1379
 0x06d300	triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	98.7466	93.6448
+0x06dae0	triggermgrgrid	?UseEquippedToolAt@CTriggerMgr@@QAEHHHHH@Z	90.2044	90.1934
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.5538	89.1185
 0x041aa0	wormhole	?Update@CTeleporter@@QAEHXZ	100.0000	99.6154
 0x1523f0	wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623
