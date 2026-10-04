@@ -69,7 +69,7 @@ i32 CGameObject::IsLoaded() {
 
 RVA(0x0015b390, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
-    : CResolveNode(owner, id, objectFlags, CResolveNode::INLINE_SEED),
+    : CRenderState(owner, id, objectFlags, CRenderState::INLINE_SEED),
       m_region(WwdRegion::INLINE_SEED),
       m_shadow(WwdDirtyRect::INLINE_SEED) {
     AttachToOwner(owner, id);

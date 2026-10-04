@@ -772,15 +772,15 @@ checkpointdlg	??_GCCheckpointDlg@@UAEPAXI@Z	100.0000	100.0000	1	cpp:249003fe119e
 checkpointdlg	?DoDataExchange@CCheckpointDlg@@UAEXPAVCDataExchange@@@Z	100.0000	100.0000	5	c2b7ed7627bc	0x23520	100.0000	
 checkpointdlg	?GetMessageMap@CCheckpointDlg@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	097f05bc9ca5	0x23570	100.0000	
 checkpointdlg	?OnToggleCheckpointPrompts@CCheckpointDlg@@QAEXXZ	100.0000	100.0000	8	6bf60624c122	0x23590	100.0000	
-cimage	$anon_data_cf50ae9c4a9e49df02fc2ae2da337ac76b0f2cd30e4aa866a189f4ffd43bc32d_0	100.0000	100.0000	1	cpp:9c430ea5f670		100.0000	
-cimage	$anon_data_f8efa41188c799faca11abf8507cd484d04b4f96638a3009a41c039e5e794ba6_0	100.0000	100.0000	1	cpp:9c430ea5f670		100.0000	
-cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	99.2786	9	72fd0e3ef4ba	0x153d90	100.0000	
-cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	98.6087	9	6a42054090c3	0x153b20	100.0000	
-cimage	?BlitNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	100.0000	8	5eeabb31a567	0x1538c0	100.0000	
-cimage	?BlitShadeFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	99.4067	8	90267422e8c3	0x154750	100.0000	
-cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	98.5070	8	d52669e778e7	0x153ff0	100.0000	
-cimage	?BlitShadeFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	99.3110	8	168bf28f0bda	0x1544d0	100.0000	
-cimage	?BlitShadeNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	100.0000	8	0bc916278da1	0x154270	100.0000	
+cimage	$anon_data_fa30dfcd80927e29bc7e86842c467ee3bcf5542b8d18bf857e1cf4bacece9fc8_0	100.0000	100.0000	1	cpp:9c430ea5f670		100.0000	
+cimage	$anon_data_413f6997de39985e6e954a74aa2cd672c97c76ae77fdf3af6727b0fdd9ffa101_0	100.0000	100.0000	1	cpp:9c430ea5f670		100.0000	
+cimage	?BlitFlipH@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	99.2786	9	72fd0e3ef4ba	0x153d90	100.0000	
+cimage	?BlitFlipV@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	98.6087	9	6a42054090c3	0x153b20	100.0000	
+cimage	?BlitNorm@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	100.0000	8	5eeabb31a567	0x1538c0	100.0000	
+cimage	?BlitShadeFlipH@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	99.4067	8	90267422e8c3	0x154750	100.0000	
+cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	98.5070	8	d52669e778e7	0x153ff0	100.0000	
+cimage	?BlitShadeFlipV@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	99.3110	8	168bf28f0bda	0x1544d0	100.0000	
+cimage	?BlitShadeNorm@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	100.0000	8	0bc916278da1	0x154270	100.0000	
 cimage	?BuildShadeBlitter@CImage@@QAEHPAUPidHeader@@I@Z	100.0000	100.0000	8	22ee8b3b3ddc	0x153180	100.0000	
 cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	1	ef4f2298fab7	0x1532b0	100.0000	
 cimage	?Create@CImage@@UAEHPADH@Z	100.0000	100.0000	8	fa9d0c444116	0x152e90	100.0000	
@@ -790,7 +790,7 @@ cimage	?LoadDispatch@CImage@@UAEHPAUPidHeader@@W4FileImageFormat@@IH@Z	100.0000	
 cimage	?Reload@CImage@@UAEHPAUCRezItm@@H@Z	100.0000	100.0000	9	40053f31f104	0x153380	100.0000	
 cimage	?RenderFrame@CImage@@QAEXPAVCDDrawSurfacePair@@HHH@Z	100.0000	100.0000	3	c28702cda3ac	0x153790	100.0000	
 cimage	?RenderFrameClipped@CImage@@QAEXPAVCDDrawSurfacePair@@HHPAUtagRECT@@H@Z	100.0000	100.0000	4	04acb4351ced	0x153810	100.0000	
-cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.0267	98.0267	13	3265164452a9	0x153470	100.0000	
+cimage	?RenderImage@CImage@@UAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	98.0267	98.0267	13	3265164452a9	0x153470	100.0000	
 cimage	?Resolve@CImage@@UAEHPAUCRezItm@@H@Z	100.0000	100.0000	6	4e1b0b239f5e	0x152f20	100.0000	
 cimage	?SetOrigin@CImage@@QAEHPAUPidHeader@@W4FileImageFormat@@@Z	100.0000	100.0000	2	0d9b6a5b4c76	0x153330	100.0000	
 cimage	?Unload@CImage@@UAEXXZ	100.0000	100.0000	12	2d3bf7b2e5b2	0x153260	100.0000	
@@ -823,12 +823,12 @@ creditsstate	?RestoreGraphics@CCreditsState@@UAEHXZ	100.0000	100.0000	4	5cf440b9
 creditsstate	?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z	100.0000	100.0000	1	cpp:d628819a671d	0x39fa0	100.0000	
 creditsstate	?SetupTitle@CCreditsState@@QAEHXZ	99.8254	99.8254	11	ad0437fee2ed	0x39a60	99.8254	
 creditsstate	?StepVideo@CCreditsState@@QAEHXZ	100.0000	100.0000	10	f8731a32b8e9	0x39c60	100.0000	
-cremusnode	??0CResolveNode@@QAE@XZ	100.0000	100.0000	1	0919a30dbb9e	0x1549d0	100.0000	
-cremusnode	??1CResolveNode@@UAE@XZ	100.0000	100.0000	1	cpp:e7b04c8f265f	0x154a50	100.0000	
-cremusnode	??_GCResolveNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7080d67c2b03	0x154a30	100.0000	
+cremusnode	??0CRenderState@@QAE@XZ	100.0000	100.0000	1	0919a30dbb9e	0x1549d0	100.0000	
+cremusnode	??1CRenderState@@UAE@XZ	100.0000	100.0000	1	cpp:e7b04c8f265f	0x154a50	100.0000	
+cremusnode	??_GCRenderState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7080d67c2b03	0x154a30	100.0000	
 cremusnode	?GetClassId@CWapObj@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	46cfa8d9c789	0x154a00	100.0000	
-cremusnode	?IsLoaded@CResolveNode@@UAEHXZ	100.0000	100.0000	2	471509acc5d9	0x154a10	100.0000	
-cremusnode	?Unload@CResolveNode@@UAEXXZ	100.0000	100.0000	4	8e17728d11b8	0x154a80	100.0000	
+cremusnode	?IsLoaded@CRenderState@@UAEHXZ	100.0000	100.0000	2	471509acc5d9	0x154a10	100.0000	
+cremusnode	?Unload@CRenderState@@UAEXXZ	100.0000	100.0000	4	8e17728d11b8	0x154a80	100.0000	
 cursorsnapactreg	?AdvanceAnim@CCursorSnapSprite@@QAEHXZ	100.0000	100.0000	2	c726194767b0	0x3a910	100.0000	
 cursorsnapactreg	?RegisterCursorSnapActions@@YAXXZ	100.0000	100.0000	3	c0e9f5470dc0	0x3a710	100.0000	
 cursorsnapsprite	??0CCursorSnapSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	8e60cf597b8b	0x3a340	100.0000	
@@ -1103,7 +1103,7 @@ ddrawsurfacepair	?DrawCross@CDDrawSurfacePair@@QAEXHH@Z	100.0000	100.0000	5	09c0
 ddrawsurfacepair	?DrawLabel@CDDrawSurfacePair@@QAEXPAUtagRECT@@PAD@Z	100.0000	100.0000	5	e4923f417fbd	0x164420	100.0000	
 ddrawsurfacepair	?FindLogicTypeKey@CLogicRecordRegistry@@QAE?AVCString@@PAUCLogicRecord@@@Z	100.0000	100.0000	4	facd2d300917	0x165360	100.0000	
 ddrawsurfacepair	?GetClassId@CDDrawPaletteResource@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	f409f7b8bb6a	0x165da0	100.0000	
-ddrawsurfacepair	?Init@CResolveNode@@QAEHPAVCDDrawSurfaceMgr@@HHHHH@Z	100.0000	100.0000	6	34dcb6c5d65a	0x1647e0	100.0000	
+ddrawsurfacepair	?Init@CRenderState@@QAEHPAVCDDrawSurfaceMgr@@HHHHH@Z	100.0000	100.0000	6	34dcb6c5d65a	0x1647e0	100.0000	
 ddrawsurfacepair	?InitFromSurface@CDDrawSurfacePair@@UAEHPAVCDDSurface@@@Z	100.0000	100.0000	4	1793400824a3	0x163db0	100.0000	
 ddrawsurfacepair	?IsLoaded@CDDrawPaletteResource@@UAEHXZ	100.0000	100.0000	1	a83169df8ace	0x165d90	100.0000	
 ddrawsurfacepair	?Load@CLogicRecord@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	c1de13dd2f24	0x164d80	100.0000	
@@ -1133,7 +1133,7 @@ ddrawsurfacepair	?SetGeom@CDDrawFrontSurface@@UAEHHHW4ColorDepth@@@Z	100.0000	10
 ddrawsurfacepair	?SetGeom@CDDrawSurfacePair@@UAEHHHW4ColorDepth@@@Z	100.0000	100.0000	13	9ab92eb1d474	0x164250	100.0000	
 ddrawsurfacepair	?SetGeometry@CDDrawFrontSurface@@UAEHHHW4ColorDepth@@@Z	91.3694	91.3694	13	090915fcc0dd	0x1644a0	91.3694	
 ddrawsurfacepair	?SetName@CFileMemBase@@UAEHPBDHH@Z	100.0000	100.0000	2	51ed711f6679	0x165e30	100.0000	
-ddrawsurfacepair	?SetPosition@CResolveNode@@UAEHHH@Z	100.0000	100.0000	6	d151731a050c	0x164790	100.0000	
+ddrawsurfacepair	?SetPosition@CRenderState@@UAEHHH@Z	100.0000	100.0000	6	d151731a050c	0x164790	100.0000	
 ddrawsurfacepair	?Unload@CDDrawPaletteRegistry@@UAEXXZ	100.0000	100.0000	3	2b91d599c815	0x165810	100.0000	
 ddrawsurfacepair	?Unload@CDDrawSurfacePair@@UAEXXZ	100.0000	100.0000	4	1adeafff2dfe	0x163e20	100.0000	
 ddrawsurfacepair	?Unload@CLogicRecordRegistry@@UAEXXZ	100.0000	100.0000	3	189b784e1fc7	0x165210	100.0000	
@@ -4691,7 +4691,7 @@ wwdgrid	?Start@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@H@Z	100.0000	100.0000
 wwdobjmgr	$anon_data_4b4a651f341dbc9d701700528760e8e5f8b7305b5c177d4ce5bc8392045cfa56_0	100.0000	100.0000	1	cpp:11acfc2de0ce		100.0000	
 wwdobjmgr	$anon_data_96bc6c3c8574c1d4b73930a013fa03b8393128e29124882adc7502395c0efd26_0	100.0000	100.0000	1	cpp:11acfc2de0ce		100.0000	
 wwdobjmgr	??0CLogicRecord@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	dd30650e02f1	0x15b300	100.0000	
-wwdobjmgr	??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	2	aec85e98c6be	0x15b2c0	100.0000	
+wwdobjmgr	??0CRenderState@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	2	aec85e98c6be	0x15b2c0	100.0000	
 wwdobjmgr	??0WwdDirtyRect@@QAE@XZ	100.0000	100.0000	1	f41ada049733	0x15b270	100.0000	
 wwdobjmgr	??0WwdGridNode@@QAE@XZ	100.0000	100.0000	1	3bc7a3cbf745	0x15b2a0	100.0000	
 wwdobjmgr	??0WwdRegion@@QAE@XZ	100.0000	100.0000	1	ba46103562ca	0x15b2b0	100.0000	

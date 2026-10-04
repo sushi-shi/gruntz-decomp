@@ -283,7 +283,7 @@ i32 CImage::Reload(CRezItm* src, i32 keyed) {
 }
 
 RVA(0x00153470, 0x31a)
-void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
+void CImage::RenderImage(CRenderState* info, CDDrawSurfacePair* dst) {
     SpriteStateFlags mode = info->m_stateFlags;
     if (HAS(mode, SPRITE_STATE_HIDDEN)) {
         info->m_dirty.Invalidate();
@@ -402,7 +402,7 @@ RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     RVA_DYNINIT(0x00153800, 0x10, s_clip)
     DATA(0x002bf2a0)
-    static CResolveNode s_clip;
+    static CRenderState s_clip;
     if (s_clip.Init(OwnerMgr(), 0, x, y, flags, 0)) {
         this->RenderImage(&s_clip, target);
     }
@@ -418,7 +418,7 @@ void CImage::RenderFrameClipped(
 ) {
     RVA_DYNINIT(0x001538b0, 0x10, s_clip)
     DATA(0x002bf228)
-    static CResolveNode s_clip;
+    static CRenderState s_clip;
     if (s_clip.Init(OwnerMgr(), 0, x, y, flags, 0)) {
         if (clipRect != NULL) {
             s_clip.m_clip = *clipRect;
@@ -428,7 +428,7 @@ void CImage::RenderFrameClipped(
 }
 
 RVA(0x001538c0, 0x257)
-void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
+void CImage::BlitNorm(CRenderState* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -448,7 +448,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00153b20, 0x270)
-void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
+void CImage::BlitFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -465,7 +465,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00153d90, 0x259)
-void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
+void CImage::BlitFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -482,7 +482,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00153ff0, 0x280)
-void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
+void CImage::BlitShadeFlipHV(CRenderState* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
     LONG y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -501,7 +501,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00154270, 0x257)
-void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
+void CImage::BlitShadeNorm(CRenderState* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -519,7 +519,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x001544d0, 0x275)
-void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
+void CImage::BlitShadeFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
     LONG y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
@@ -537,7 +537,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00154750, 0x275)
-void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
+void CImage::BlitShadeFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);

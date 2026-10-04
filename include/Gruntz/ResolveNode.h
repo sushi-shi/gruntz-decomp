@@ -60,7 +60,8 @@ struct WwdDirtyRect {
     i32 m_armed;
 };
 
-class CResolveNode : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CRenderState : public CWapObj {
 public:
     b32 IsHidden() const {
         return HAS(m_stateFlags, SPRITE_STATE_HIDDEN);
@@ -84,19 +85,19 @@ public:
 
     virtual i32 SetPosition(i32 x, i32 y);
 
-    CResolveNode();
+    CRenderState();
 
-    CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     enum EInlineSeed {
         INLINE_SEED
     };
-    CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed);
+    CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed);
 
     enum ENoSeed {
         NO_SEED
     };
-    CResolveNode(ENoSeed) : m_dirty(WwdDirtyRect::NO_SEED) {}
+    CRenderState(ENoSeed) : m_dirty(WwdDirtyRect::NO_SEED) {}
     i32 Init(
         CDDrawSurfaceMgr* owner,
         i32 id,
@@ -106,7 +107,7 @@ public:
         i32 flags
     );
 
-    virtual ~CResolveNode() OVERRIDE {
+    virtual ~CRenderState() OVERRIDE {
         m_screenX = COORD_UNSET;
         m_dirty.Reset();
     }

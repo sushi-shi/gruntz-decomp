@@ -14,7 +14,7 @@ struct CRezItm;
 class CDDrawDeviceManager;
 
 class CString;
-class CResolveNode;
+class CRenderState;
 class CDDrawSurfacePair;
 
 class CDDrawSurfaceMgr;
@@ -30,7 +30,7 @@ struct PidHeader;
 extern b32 g_resourceInstallActive;
 extern i32 g_surfaceColorKey;
 
-class CResolveNode;
+class CRenderState;
 
 class CImage : public CWapObj {
 public:
@@ -53,7 +53,7 @@ public:
     virtual i32 Resolve(CRezItm* src, i32 keyed);
     virtual i32 Create(char* path, i32 keyed);
     virtual i32 Reload(CRezItm* src, i32 keyed);
-    virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);
+    virtual void RenderImage(CRenderState* info, CDDrawSurfacePair* dst);
     virtual void FlipVertical(void* unused);
     virtual void FlipHorizontal(void* unused);
     virtual void FlipBoth(void* unused);
@@ -65,13 +65,13 @@ public:
     void RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags);
     void RenderFrameClipped(CDDrawSurfacePair* target, i32 x, i32 y, RECT* clipRect, i32 flags);
 
-    void BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst);
-    void BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst);
-    void BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst);
-    void BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst);
-    void BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst);
-    void BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst);
-    void BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst);
+    void BlitNorm(CRenderState* info, CDDrawSurfacePair* dst);
+    void BlitFlipV(CRenderState* info, CDDrawSurfacePair* dst);
+    void BlitFlipH(CRenderState* info, CDDrawSurfacePair* dst);
+    void BlitShadeFlipHV(CRenderState* info, CDDrawSurfacePair* dst);
+    void BlitShadeNorm(CRenderState* info, CDDrawSurfacePair* dst);
+    void BlitShadeFlipV(CRenderState* info, CDDrawSurfacePair* dst);
+    void BlitShadeFlipH(CRenderState* info, CDDrawSurfacePair* dst);
 
     const i32& GetWidth() const {
         return m_width;

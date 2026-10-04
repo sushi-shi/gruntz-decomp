@@ -292,7 +292,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
 // @early-stop
 RVA(0x00150d60, 0x14d)
 i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
-    CResolveNode::SetPosition(x, y);
+    CRenderState::SetPosition(x, y);
     m_screenX = x;
     m_screenY = y;
     m_sortKey = sortKey;

@@ -17,7 +17,7 @@ class CImageSet;
 class CDDrawSurfacePair;
 
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
-class CTransientDrawItem : public CResolveNode {
+class CTransientDrawItem : public CRenderState {
 public:
     virtual ~CTransientDrawItem() OVERRIDE {
         m_dirty.Reset();
@@ -41,7 +41,7 @@ public:
 
     CTransientDrawItem() {}
 
-    CTransientDrawItem(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
+    CTransientDrawItem(CDDrawSurfaceMgr* ctx) : CRenderState(NO_SEED) {
         m_id = 0;
         m_ownerCtx = ctx;
         m_flags = 0;

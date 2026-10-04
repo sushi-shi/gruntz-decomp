@@ -505,7 +505,7 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
 }
 
 RVA(0x00164790, 0x41)
-i32 CResolveNode::SetPosition(i32 x, i32 y) {
+i32 CRenderState::SetPosition(i32 x, i32 y) {
     m_screenX = x;
     m_plotDX = 0;
     m_plotDY = 0;
@@ -519,7 +519,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
 }
 
 RVA(0x001647e0, 0x48)
-i32 CResolveNode::Init(
+i32 CRenderState::Init(
     CDDrawSurfaceMgr* owner,
     i32 id,
     i32 resolveX,

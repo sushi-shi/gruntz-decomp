@@ -206,7 +206,7 @@ i32 CTransientPixel::PlacePixel(i32 x, i32 y, i32 pixelValue) {
 RVA(0x00157130, 0x17)
 void CTransientPixel::Unload() {
     m_pixelValue = 0;
-    CResolveNode::Unload();
+    CRenderState::Unload();
 }
 
 RVA(0x00157150, 0xa5)
@@ -266,7 +266,7 @@ i32 CTransientImage::PlaceImage(i32 x, i32 y, CImage* image) {
 RVA(0x00157310, 0x1a)
 void CTransientDrawItem::Unload() {
     m_contentValue = 0;
-    CResolveNode::Unload();
+    CRenderState::Unload();
 }
 
 RVA(0x00157330, 0xa5)
