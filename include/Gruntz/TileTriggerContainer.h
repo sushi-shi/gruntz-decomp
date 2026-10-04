@@ -120,6 +120,7 @@ public:
     CTileTriggerSwitchLogic* FindSwitchLogic(i32 cellKey, TrigLogicId logicType);
 
     CTileActionEvent* FindActionByCellKey(i32 cellKey);
+    CTileActionEvent* FindActionAt(i32 tileX, i32 tileY);
 
     CGiantRockLogic* ScanNeighborhood(i32 tileX, i32 tileY);
 
@@ -163,6 +164,10 @@ public:
 
 static inline i32 CellKey(i32 tileX, i32 tileY) {
     return (tileX << 8) + tileY;
+}
+
+inline CTileActionEvent* CTileTriggerContainer::FindActionAt(i32 tileX, i32 tileY) {
+    return FindActionByCellKey(CellKey(tileX, tileY));
 }
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H
