@@ -46,7 +46,6 @@ i32 DispatchLightFxLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CLightFx)
 }
 
-// @early-stop
 RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_shadeTableIndex = 2;
