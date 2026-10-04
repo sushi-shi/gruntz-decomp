@@ -278,24 +278,24 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
     i32 width = rect->right - rect->left + 1;
 
     u16* topPixels = Pix16(
-        pixels + rect->top * surface->GetDescription().lPitch + rect->left * surface->m_bytesPerPixel
+        pixels + rect->top * surface->m_apiDesc.lPitch + rect->left * surface->m_bytesPerPixel
     );
     for (i32 topX = 0; topX < width; topX++) {
         topPixels[topX] = static_cast<u16>(color);
     }
 
     u16* bottomPixels = Pix16(
-        pixels + rect->bottom * surface->GetDescription().lPitch + rect->left * surface->m_bytesPerPixel
+        pixels + rect->bottom * surface->m_apiDesc.lPitch + rect->left * surface->m_bytesPerPixel
     );
     for (i32 bottomX = 0; bottomX < width; bottomX++) {
         bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
     i32 height = rect->bottom - rect->top + 1;
-    i32 leftOffset = rect->left * surface->m_bytesPerPixel + rect->top * surface->GetDescription().lPitch;
+    i32 leftOffset = rect->left * surface->m_bytesPerPixel + rect->top * surface->m_apiDesc.lPitch;
     i32 rightOffset =
-        rect->right * surface->m_bytesPerPixel + rect->top * surface->GetDescription().lPitch;
-    i32 rowStride = surface->GetDescription().lPitch;
+        rect->right * surface->m_bytesPerPixel + rect->top * surface->m_apiDesc.lPitch;
+    i32 rowStride = surface->m_apiDesc.lPitch;
     for (i32 y = 0; y < height; y++) {
         *Pix16(pixels + leftOffset) = static_cast<u16>(color);
         *Pix16(pixels + rightOffset) = static_cast<u16>(color);
