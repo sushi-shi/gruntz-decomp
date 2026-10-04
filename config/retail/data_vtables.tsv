@@ -227,7 +227,7 @@ rva	size	name	kind	note
 0x1f0790	0x14	??_7?$CArray@PAVCFader@@PAV1@@@6B@	primary	MFC CArray instantiation
 0x1f07a8	0x14	??_7CFader@@6B@	primary	
 0x1f07c0	0x14	??_7CFaderMesh@@6B@	primary	
-0x1f07d8	0x14	??_7?$CArray@URezElem40@@ABU1@@@6B@	primary	MFC CArray instantiation
+0x1f07d8	0x14	??_7?$CArray@UFaderMeshTile@@ABU1@@@6B@	primary	MFC CArray instantiation
 0x1f07f8	0x14	??_7CFaderFlat@@6B@	primary	
 0x1f0810	0x14	??_7CFaderRadial@@6B@	primary	
 0x1f0848	0x14	??_7CFaderSine@@6B@	primary	

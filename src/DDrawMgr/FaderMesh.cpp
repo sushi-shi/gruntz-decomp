@@ -31,14 +31,14 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     m_cols = cfg->m_cols;
     m_rows = cfg->m_rows;
 
-    m_meshBuf.RemoveAll();
+    m_tiles.RemoveAll();
 
     i32 halfW = m_dstSurface->GetWidth() / 2;
     i32 halfH = m_dstSurface->GetHeight() / 2;
     i32 cellW = m_sourceSurface->GetWidth() / m_cols;
     i32 cellH = m_sourceSurface->GetHeight() / m_rows;
     float radius = static_cast<float>(sqrt(static_cast<double>((SQR(cellW) + SQR(cellH)))));
-    RezElem40 elem;
+    FaderMeshTile elem;
     for (i32 r = 0; r < m_rows; r++) {
         for (i32 c = 0; c < m_cols; c++) {
             i32 x = c * cellW;
@@ -72,7 +72,7 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
 
-            m_meshBuf.Add(elem);
+            m_tiles.Add(elem);
         }
     }
     return 1;
@@ -86,8 +86,8 @@ void CFaderMesh::RenderFrame(i32 frame) {
     } else {
         m_dstSurface->Clear(0);
     }
-    for (i32 i = 0; i < m_meshBuf.GetSize(); i++) {
-        RezElem40 elem = m_meshBuf[i];
+    for (i32 i = 0; i < m_tiles.GetSize(); i++) {
+        FaderMeshTile elem = m_tiles[i];
         u32 cur = frame;
         u32 total = GetFrameCount();
         float t = static_cast<float>(cur) / static_cast<float>(total);
@@ -143,10 +143,10 @@ i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
 
-RVA_COMPGEN(0x0017f130, 0x1ce, ?Serialize@?$CArray@URezElem40@@ABU1@@@UAEXAAVCArchive@@@Z)
-RVA_COMPGEN(0x0017f300, 0x3, ??0RezElem40@@QAE@XZ)
-RVA_COMPGEN(0x0017f310, 0x1e, ??_G?$CArray@URezElem40@@ABU1@@@UAEPAXI@Z)
-RVA_COMPGEN(0x0017f330, 0x51, ??1?$CArray@URezElem40@@ABU1@@@UAE@XZ)
-RVA_COMPGEN(0x0017f390, 0x164, ?SetSize@?$CArray@URezElem40@@ABU1@@@QAEXHH@Z)
-RVA_COMPGEN(0x0017f500, 0x23, ?ConstructElements@@YGXPAURezElem40@@H@Z)
-template void CArray<RezElem40, const RezElem40&>::SetSize(int, int);
+RVA_COMPGEN(0x0017f130, 0x1ce, ?Serialize@?$CArray@UFaderMeshTile@@ABU1@@@UAEXAAVCArchive@@@Z)
+RVA_COMPGEN(0x0017f300, 0x3, ??0FaderMeshTile@@QAE@XZ)
+RVA_COMPGEN(0x0017f310, 0x1e, ??_G?$CArray@UFaderMeshTile@@ABU1@@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017f330, 0x51, ??1?$CArray@UFaderMeshTile@@ABU1@@@UAE@XZ)
+RVA_COMPGEN(0x0017f390, 0x164, ?SetSize@?$CArray@UFaderMeshTile@@ABU1@@@QAEXHH@Z)
+RVA_COMPGEN(0x0017f500, 0x23, ?ConstructElements@@YGXPAUFaderMeshTile@@H@Z)
+template void CArray<FaderMeshTile, const FaderMeshTile&>::SetSize(int, int);
