@@ -33,7 +33,7 @@
     {                                                                                              \
         m_gameMode = GAMEMODE_QUESTZ;                                                              \
         m_strWorldFile.Empty();                                                                    \
-        if (!PassClickToPlayState((N), 0, 1))                                                      \
+        if (!LoadLevel((N), 0, 1))                                                                 \
             ReportError(IDX(IDS_SET_GAME_STATE), (ERR));                                           \
         return 1;                                                                                  \
     }

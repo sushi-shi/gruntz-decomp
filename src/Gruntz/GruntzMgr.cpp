@@ -1113,7 +1113,7 @@ i32 CGruntzMgr::SwitchToNextState() {
 }
 
 RVA(0x0008d780, 0x95)
-i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused) {
+i32 CGruntzMgr::LoadLevel(i32 level, b32 forceTransition, i32 unused) {
     b32 inPlay = false;
     if (m_curState->GetStateId() == GAMESTATE_PLAY) {
         inPlay = true;
@@ -1124,13 +1124,13 @@ i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unuse
     if (inPlay && forceTransition == false) {
         CState* st = m_curState;
         m_curState->LeaveState(m_curState->GetStateId());
-        if (static_cast<CPlay*>(st)->LoadByMode(areaArg, unused) == 0) {
+        if (static_cast<CPlay*>(st)->LoadLevel(level, unused) == 0) {
             return 0;
         }
         m_curState->EnterState(m_curState->GetStateId());
         return 1;
     }
-    return TransitionState(GAMESTATE_PLAY, areaArg, false, 0);
+    return TransitionState(GAMESTATE_PLAY, level, false, 0);
 }
 
 RVA(0x0008d850, 0x83)
@@ -1146,7 +1146,7 @@ i32 CGruntzMgr::GoToNextLevel() {
     }
     if (next <= IDX(QUESTLEVEL_CAMPAIGN_LAST) || next >= IDX(QUESTLEVEL_TRAINING_FIRST)) {
         st->LeaveState(st->GetStateId());
-        if ((static_cast<CPlay*>(st))->LoadByMode(next, 1)) {
+        if ((static_cast<CPlay*>(st))->LoadLevel(next, 1)) {
             st->EnterState(st->GetStateId());
             return 1;
         }
@@ -1168,7 +1168,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
     }
     if (prev <= IDX(QUESTLEVEL_CAMPAIGN_LAST) || prev >= IDX(QUESTLEVEL_TRAINING_FIRST)) {
         st->LeaveState(st->GetStateId());
-        if ((static_cast<CPlay*>(st))->LoadByMode(prev, 1)) {
+        if ((static_cast<CPlay*>(st))->LoadLevel(prev, 1)) {
             st->EnterState(st->GetStateId());
             return 1;
         }
@@ -1560,7 +1560,7 @@ RVA(0x0008e780, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
     i32 level = RunModalDialog("DEBUG_JUMPLEVEL", JumpLevelDialogProc, true);
     if (level > 0) {
-        return PassClickToPlayState(level, false, 1);
+        return LoadLevel(level, false, 1);
     }
     return 0;
 }
@@ -1685,7 +1685,7 @@ i32 CGruntzMgr::WarpCheat() {
         if (m_curState->GetStateId() != GAMESTATE_PLAY) {
             i32 last = m_settings->Get("Last Warp Level", -1);
             if (last != -1) {
-                if (!PassClickToPlayState(last, false, 1)) {
+                if (!LoadLevel(last, false, 1)) {
                     ReportError(IDX(IDS_SET_GAME_STATE), 0x43b);
                     return 0;
                 }

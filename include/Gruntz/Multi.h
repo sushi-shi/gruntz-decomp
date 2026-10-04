@@ -65,7 +65,7 @@ public:
     virtual i32 UnusedPlayQuery() OVERRIDE;
     virtual i32 GetFrame() OVERRIDE;
 
-    virtual i32 LoadByMode(i32 mode, i32 unused) OVERRIDE;
+    virtual i32 LoadLevel(i32 level, i32 unused) OVERRIDE;
 
     virtual void OnExit() OVERRIDE;
     virtual void TickStateMgrs() OVERRIDE;

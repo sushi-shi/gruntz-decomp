@@ -120,7 +120,7 @@ public:
 
     virtual i32 LoadImageBanks();
 
-    virtual i32 LoadByMode(i32 level, i32 unused);
+    virtual i32 LoadLevel(i32 level, i32 unused);
 
     virtual i32 HandleDragMove(i32 keyFlags, i32 x, i32 y);
     virtual void OnExit();

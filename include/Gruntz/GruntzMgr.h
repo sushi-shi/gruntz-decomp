@@ -203,7 +203,7 @@ public:
     i32 AdvanceComputerPlayerTurns();
     i32 InitializeBattlezPlayers();
     void SetCellHeight(i32 x, i32 y, i32 value);
-    i32 PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused);
+    i32 LoadLevel(i32 level, b32 forceTransition, i32 unused);
     i32 SwitchToNextState();
 
     i32 TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused);

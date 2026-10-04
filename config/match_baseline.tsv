@@ -2435,7 +2435,7 @@ gruntzmgr	?OnMusicMuteBegin@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	f322623ccaa2	
 gruntzmgr	?OnMusicMuteEnd@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	da4469dfca4c	0x91590	100.0000	
 gruntzmgr	?OnWorldModeLoaded@CGruntzMgr@@QAEXW4ColorDepth@@@Z	100.0000	100.0000	1	84cce07f6655	0x91e00	100.0000	
 gruntzmgr	?OpenBattlezSetup@CGruntzMgr@@QAEHXZ	100.0000	100.0000	7	f7561204f136	0x92f00	100.0000	
-gruntzmgr	?PassClickToPlayState@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	93062e877473	0x8d780	100.0000	
+gruntzmgr	?LoadLevel@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	93062e877473	0x8d780	100.0000	
 gruntzmgr	?PauseMusicIfEnabled@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	d0116817a7d3	0x92000	100.0000	
 gruntzmgr	?PickPausedThenPlayState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	ded88d0e202a	0x929b0	100.0000	
 gruntzmgr	?PickPlayOrPausedState@CGruntzMgr@@QAEPAVCPlay@@XZ	100.0000	100.0000	1	229eafeff5a0	0x92990	100.0000	
@@ -3097,7 +3097,7 @@ multi	?HandleVersionCheck@CMulti@@QAEXPAUCNetVersionPacket@@@Z	100.0000	100.0000
 multi	?InitializeFields@CNetSession@@QAEXXZ	96.9697	96.9697	5	664deca0c2c4	0xbbf80	96.9697	
 multi	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	3	ae97412c48c6	0xb7fe0	100.0000	
 multi	?LeaveState@CMulti@@UAEHW4GameStateId@@@Z	100.0000	100.0000	13	e4bd56dccdff	0xb63f0	100.0000	
-multi	?LoadByMode@CMulti@@UAEHHH@Z	100.0000	100.0000	15	7245425e2d61	0xb6580	100.0000	
+multi	?LoadLevel@CMulti@@UAEHHH@Z	100.0000	100.0000	15	7245425e2d61	0xb6580	100.0000	
 multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	98.8348	98.8348	24	12bc7db7499c	0xb5460	98.8348	
 multi	?MultiJoinDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	9	08d8cff00778	0xb8020	100.0000	
 multi	?NetSetupDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	9	8e7642590583	0xb7b10	100.0000	
@@ -3424,7 +3424,7 @@ play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	97.4138	21	00f615af4386	0xd0db0	97
 play	?IsLoaded@CImage@@UAEHXZ	100.0000	100.0000	1	5b02a6fa2d76	0xd5dc0	100.0000	
 play	?IsReady@CWapObj@@UAEHXZ	100.0000	100.0000	1	56d7de4182c2	0xd5da0	100.0000	
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	13	1b527160ebc6	0xc8b80	100.0000	
-play	?LoadByMode@CPlay@@UAEHHH@Z	97.8293	97.8293	68	477d921dc5b1	0xca200	97.8293	
+play	?LoadLevel@CPlay@@UAEHHH@Z	97.8293	97.8293	68	477d921dc5b1	0xca200	97.8293	
 play	?LoadCursorAnimation@CPlay@@QAEHPBDHHHH@Z	100.0000	100.0000	13	02dea499bebf	0xd0920	100.0000	
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	15	e432690facdb	0xd0120	99.0221	
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	99.2876	99.2876	24	10c76e6e8b09	0xc7ec0	99.2876	

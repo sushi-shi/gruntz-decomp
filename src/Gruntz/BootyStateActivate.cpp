@@ -1648,7 +1648,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         } else {
 
             g_gameReg
-                ->PassClickToPlayState((nextLevelStats->GetLevelNumber() % 0x28) + 1, false, 1);
+                ->LoadLevel((nextLevelStats->GetLevelNumber() % 0x28) + 1, false, 1);
         }
     }
     return 1;

@@ -317,7 +317,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
 
-    if (LoadByMode(1, 1) == 0) {
+    if (LoadLevel(1, 1) == 0) {
         return 0;
     }
     m_pumpGuard = true;
@@ -440,7 +440,7 @@ i32 CMulti::CompleteLevel() {
 }
 
 RVA(0x000b6580, 0x1eb)
-i32 CMulti::LoadByMode(i32 mode, i32 unused) {
+i32 CMulti::LoadLevel(i32 level, i32 unused) {
     g_battlezTurnPlayerIndex = 0;
     GruntzPlayer* host = Mgr()->FindPlayerByNetworkId(m_localPlayerId);
     if (!host) {
@@ -464,7 +464,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_processedCommandTick = m_session->GetCommandTick() - 1;
     m_outOfSync = false;
 
-    if (CPlay::LoadByMode(mode, 0) == 0) {
+    if (CPlay::LoadLevel(level, 0) == 0) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
@@ -506,7 +506,7 @@ RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
     m_connected = false;
     m_allPlayersReady = false;
-    if (Mgr()->PassClickToPlayState(mode, false, 0) == 0) {
+    if (Mgr()->LoadLevel(mode, false, 0) == 0) {
         Mgr()->ReportError(IDX(IDS_SET_GAME_STATE), 0x446);
         return 0;
     }

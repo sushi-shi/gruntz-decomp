@@ -48,27 +48,27 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_NEW_GAME:
         case CMD_NEW_GAME_ALT:
             m_gameMode = GAMEMODE_QUESTZ;
-            if (!PassClickToPlayState(1, false, 1)) {
+            if (!LoadLevel(1, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41e);
             }
             return 1;
         case CMD_LOAD_WORLD:
             m_gameMode = GAMEMODE_QUESTZ;
             m_strWorldFile.Empty();
-            if (!PassClickToPlayState(lParam, false, 1)) {
+            if (!LoadLevel(lParam, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_CONTINUE_AT_MAX_LEVEL:
             m_gameMode = GAMEMODE_QUESTZ;
             m_strWorldFile.Empty();
-            if (!PassClickToPlayState(IDX(m_saveGame->m_maxLevel), false, 1)) {
+            if (!LoadLevel(IDX(m_saveGame->m_maxLevel), false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_START_BATTLEZ_GAME:
             m_gameMode = GAMEMODE_BATTLEZ;
-            if (!PassClickToPlayState(1, false, 1)) {
+            if (!LoadLevel(1, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x420);
             }
             return 1;
@@ -513,7 +513,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 m_gameMode = GAMEMODE_QUESTZ;
                 m_isCustomLevel = false;
             }
-            if (!PassClickToPlayState(si->m_levelId, false, 1)) {
+            if (!LoadLevel(si->m_levelId, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x421);
             }
             if (!RestoreGameFromFile(this, si->m_serial)) {
@@ -964,7 +964,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!_g) {
                 return 1;
             }
-            if (!PassClickToPlayState(m_curState->m_levelIndex, false, 1)) {
+            if (!LoadLevel(m_curState->m_levelIndex, false, 1)) {
                 ReportError(IDX(IDS_CHANGE_LEVEL), 0x434);
             }
             return 1;

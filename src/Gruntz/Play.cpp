@@ -284,7 +284,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
         PostLoadImageBanks();
-        if (!LoadByMode(areaArg, 1)) {
+        if (!LoadLevel(areaArg, 1)) {
             return 0;
         }
         if (!LoadCursorSprites(0, false)) {
@@ -882,7 +882,7 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 RVA(0x000ca200, 0xe54)
-i32 CPlay::LoadByMode(i32 level, i32) {
+i32 CPlay::LoadLevel(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
     CRezDir* bank;
