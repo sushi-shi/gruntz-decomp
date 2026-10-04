@@ -199,7 +199,7 @@ i32 CGruntzWnd::OnClose() {
 RVA(0x00094bc0, 0x31)
 i32 CGruntzWnd::OnPaint() {
     CGruntzMgr* mgr = GameMgr();
-    if (mgr && mgr->IsLobbyHostReady()) {
+    if (mgr && mgr->PaintCurrentState()) {
         if (m_hwnd) {
             ValidateRect(m_hwnd, NULL);
         }

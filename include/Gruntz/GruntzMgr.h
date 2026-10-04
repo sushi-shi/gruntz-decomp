@@ -251,7 +251,7 @@ public:
     i32 TickStateMgrs();
     void SetSoundEnabled(b32 enabled);
     i32 CheckSavedMode();
-    i32 IsLobbyHostReady();
+    i32 PaintCurrentState();
     void OnMusicMuteBegin();
     void OnMusicMuteEnd();
     void OnMusicFadeStep(i32 value);
@@ -290,7 +290,7 @@ public:
     i32 PostSlotCommandB1(i32 slot);
     i32 PostSlotCommandB6(i32 slot);
 
-    i32 LoadSaveMessageSprite();
+    i32 RunSaveGameDialog();
 
     i32 IsBattlezMapFile(CString path);
 

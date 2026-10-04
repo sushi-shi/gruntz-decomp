@@ -2811,7 +2811,7 @@ void CGruntzMgr::CheatEclipseToggle() {
 }
 
 RVA(0x00091500, 0x42)
-i32 CGruntzMgr::IsLobbyHostReady() {
+i32 CGruntzMgr::PaintCurrentState() {
     if (m_curState == NULL) {
         return 0;
     }
@@ -3262,7 +3262,7 @@ void CGruntzMgr::SetMusicEnabled(b32 enabled) {
 }
 
 RVA(0x00092420, 0xa4)
-i32 CGruntzMgr::LoadSaveMessageSprite() {
+i32 CGruntzMgr::RunSaveGameDialog() {
     if (CheatMgr()->HasUsedCheats() != false) {
         CString name;
         name.LoadStringA(0x81aa);
@@ -3294,7 +3294,7 @@ i32 CGruntzMgr::Quicksave() {
         return 1;
     }
     if (m_saveInfoRec == NULL || !(m_saveInfoRec->m_flags & 1)) {
-        return LoadSaveMessageSprite();
+        return RunSaveGameDialog();
     }
 
     if (&(static_cast<CPlay*>(m_curState))->m_saveSlot == NULL) {

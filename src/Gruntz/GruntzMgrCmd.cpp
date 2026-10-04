@@ -542,7 +542,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (m_curState->GetStateId() == GAMESTATE_PLAY) {
                 CPlay* _g = PickPlayOrPausedState();
                 if (_g->CanQuickSave()) {
-                    LoadSaveMessageSprite();
+                    RunSaveGameDialog();
                 }
             }
             return 1;
