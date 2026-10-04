@@ -20,6 +20,23 @@ public:
     void SetLevelNumber(i32 levelNumber);
     void RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
     void ClearFlagCaptures();
+
+    const i32* GetWeaponPickupCounts(i32 playerIndex) const {
+        return m_weaponPickupsByPlayer[playerIndex];
+    }
+
+    const i32* GetToyPickupCounts(i32 playerIndex) const {
+        return m_toyPickupsByPlayer[playerIndex];
+    }
+
+    const i32* GetPowerupPickupCounts(i32 playerIndex) const {
+        return m_powerupPickupsByPlayer[playerIndex];
+    }
+
+    const i32* GetMiscPickupCounts(i32 playerIndex) const {
+        return m_miscPickupsByPlayer[playerIndex];
+    }
+
     i32 CountAllFlagCaptures(i32 validatedPlayerIndex);
     i32 GetFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
     void RecordKill(i32 killerPlayerIndex, i32 victimPlayerIndex);

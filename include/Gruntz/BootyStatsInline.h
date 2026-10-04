@@ -15,7 +15,7 @@ static __inline i32 maxRunIndex(const i32* values, i32 count) {
     return bestIndex;
 }
 
-static __inline i32 sumRun(i32* p, i32 n) {
+static __inline i32 sumRun(const i32* p, i32 n) {
     i32 s = 0;
     i32 k;
     for (k = 0; k < n; k++) {
