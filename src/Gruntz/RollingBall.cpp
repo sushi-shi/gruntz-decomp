@@ -263,13 +263,7 @@ i32 CRollingBall::Update() {
                     CWwdSpriteObject* o2 = m_object;
                     i32 by = o2->m_screenY >> TILE_SHIFT_PX;
                     i32 bx = o2->m_screenX >> TILE_SHIFT_PX;
-                    i32 sink;
-                    if (static_cast<u32>(bx) < board->m_width
-                        && static_cast<u32>(by) < board->m_height) {
-                        sink = board->m_rowInts[by][bx * 7 + 3];
-                    } else {
-                        sink = 0;
-                    }
+                    i32 sink = board->TileIdAt(bx, by);
                     switch (static_cast<MovingDeathTileSetAId>(sink)) {
                         case MOVING_DEATH_A_SE_1:
                             m_target.m_x += 0x10;
