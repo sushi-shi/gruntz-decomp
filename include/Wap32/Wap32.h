@@ -238,6 +238,10 @@ public:
         m_running = running;
     }
 
+    CGameMgr* GetGameManager() const {
+        return m_gameMgr;
+    }
+
     CGameWnd* m_gameWnd;
     CGameMgr* m_gameMgr;
     HINSTANCE m_hInstance;

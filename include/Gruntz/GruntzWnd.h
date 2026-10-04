@@ -32,7 +32,7 @@ public:
     virtual i32 OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
 
     CGruntzMgr* GameMgr() {
-        return static_cast<CGruntzMgr*>(m_owner->m_gameMgr);
+        return static_cast<CGruntzMgr*>(m_owner->GetGameManager());
     }
 };
 
