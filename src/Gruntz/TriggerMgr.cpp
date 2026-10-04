@@ -955,7 +955,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
             fx->ResolveDeathAnimation();
         }
     }
-    this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_RESET);
+    this->BeginLevelFinish(FINISH_REASON_WARPSTONE_RESET);
 }
 
 RVA(0x00079ea0, 0xc2)
@@ -1018,7 +1018,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
                     fx->ResolveJoyAnimation();
                 }
             }
-            this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_EXIT);
+            this->BeginLevelFinish(FINISH_REASON_WARPSTONE_EXIT);
         }
     } else {
         if (cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
@@ -1191,7 +1191,7 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) 
         }
     }
 
-    SerializeClockPair(ar, mode, &m_cueTimer);
+    SerializeClockPair(ar, mode, &m_finishDelayTiming);
     SerializeClockPair(ar, mode, &m_gooTimer);
     SerializeClockPair(ar, mode, &m_resourceTimer);
     return 1;
@@ -1289,10 +1289,10 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     }
     ar->Write(&m_cameraTrackingActive, sizeof(m_cameraTrackingActive));
     ar->Write(&m_levelWarpStoneCollected, sizeof(m_levelWarpStoneCollected));
-    ar->Write(&m_phase, sizeof(m_phase));
+    ar->Write(&m_finishState, sizeof(m_finishState));
     ar->Write(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Write(&m_countdownActive, sizeof(m_countdownActive));
-    ar->Write(&m_finishReasonFrame, sizeof(m_finishReasonFrame));
+    ar->Write(&m_finishReason, sizeof(m_finishReason));
     ar->Write(&m_groupFlag, sizeof(m_groupFlag));
     ar->Write(&g_curPlayer, sizeof(g_curPlayer));
     ar->Write(&g_groupSentinel, sizeof(g_groupSentinel));
@@ -1455,10 +1455,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
     ar->Read(&m_cameraTrackingActive, sizeof(m_cameraTrackingActive));
     ar->Read(&m_levelWarpStoneCollected, sizeof(m_levelWarpStoneCollected));
-    ar->Read(&m_phase, sizeof(m_phase));
+    ar->Read(&m_finishState, sizeof(m_finishState));
     ar->Read(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Read(&m_countdownActive, sizeof(m_countdownActive));
-    ar->Read(&m_finishReasonFrame, sizeof(m_finishReasonFrame));
+    ar->Read(&m_finishReason, sizeof(m_finishReason));
     ar->Read(&m_groupFlag, sizeof(m_groupFlag));
     ar->Read(&g_curPlayer, sizeof(g_curPlayer));
     ar->Read(&g_groupSentinel, sizeof(g_groupSentinel));
@@ -1983,49 +1983,49 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipPlayerIndex, b32 enable) {
 
 // @early-stop
 RVA(0x0007c3d0, 0x1d0)
-void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
-    switch (state) {
+void CTriggerMgr::BeginLevelFinish(FinishLevelReason reason) {
+    switch (reason) {
         case FINISH_REASON_WARPSTONE_EXIT:
-            if (m_phase != FINISH_STATE_DEFEAT) {
+            if (m_finishState != FINISH_STATE_DEFEAT) {
                 SoundCue* p = m_world->SoundRegistry()->FindCue("GAME_FINISHLEVEL");
-                m_cueTimer.Start(p->GetSound()->GetDurationMs() + 500);
+                m_finishDelayTiming.Start(p->GetSound()->GetDurationMs() + 500);
                 PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_FINISHLEVEL");
-                m_phase = FINISH_STATE_VICTORY;
+                m_finishState = FINISH_STATE_VICTORY;
                 m_groupFlag = false;
-                m_finishReasonFrame = state;
+                m_finishReason = reason;
                 return;
             }
             break;
         case FINISH_REASON_WARPSTONE_RESET:
-            m_phase = FINISH_STATE_DEFEAT;
-            m_cueTimer.Start(3000);
+            m_finishState = FINISH_STATE_DEFEAT;
+            m_finishDelayTiming.Start(3000);
             break;
         case FINISH_REASON_BATTLEZ_VICTORY:
-            m_phase = FINISH_STATE_VICTORY;
-            m_cueTimer.Start(3000);
+            m_finishState = FINISH_STATE_VICTORY;
+            m_finishDelayTiming.Start(3000);
             break;
         case FINISH_REASON_TIME_EXPIRED:
-            m_phase = FINISH_STATE_DEFEAT;
-            m_cueTimer.Start(3000);
+            m_finishState = FINISH_STATE_DEFEAT;
+            m_finishDelayTiming.Start(3000);
             break;
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
-            if (m_phase == FINISH_STATE_ACTIVE) {
-                m_phase = FINISH_STATE_DEFEAT;
+            if (m_finishState == FINISH_STATE_ACTIVE) {
+                m_finishState = FINISH_STATE_DEFEAT;
                 if (m_pendingFx != NULL) {
                     m_pendingFx->ResolveDeathAnimation();
                 }
             }
-            m_cueTimer.Start(3000);
+            m_finishDelayTiming.Start(3000);
             break;
         case FINISH_REASON_BATTLEZ_DEFEAT:
-            m_phase = FINISH_STATE_DEFEAT;
-            m_cueTimer.Start(3000);
+            m_finishState = FINISH_STATE_DEFEAT;
+            m_finishDelayTiming.Start(3000);
             break;
         default:
             return;
     }
     m_groupFlag = false;
-    m_finishReasonFrame = state;
+    m_finishReason = reason;
 }
 
 RVA(0x0007c620, 0x500)

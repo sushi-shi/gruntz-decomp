@@ -5481,11 +5481,11 @@ i32 CPlay::ResetPlayState() {
     }
     CTriggerMgr* tl = m_mgr->GetTriggerMgr();
     tl->m_countdownActive = true;
-    tl->m_phase = FINISH_STATE_ACTIVE;
+    tl->m_finishState = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
     tl->m_gooTimer.Clear();
     tl->m_resourceTimer.Clear();
-    tl->m_finishReasonFrame = FINISH_REASON_NONE;
+    tl->m_finishReason = FINISH_REASON_NONE;
     tl->m_rollingballWanted = false;
     tl->m_teleportWanted = false;
     tl->m_groupFlag = true;

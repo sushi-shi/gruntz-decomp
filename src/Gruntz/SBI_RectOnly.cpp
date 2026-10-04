@@ -579,7 +579,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
         case TAB_DIALOG:
             switch (cmd) {
                 case SBICMD_DIALOG_PRIMARY:
-                    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->m_triggerMgr->m_finishState == FINISH_STATE_VICTORY) {
                         HiCueLookup();
                         g_gameReg->FinalizeLevelAndShowResults();
                     } else if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
@@ -592,7 +592,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     break;
                 case SBICMD_DIALOG_SECONDARY:
                     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                        if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                        if (g_gameReg->m_triggerMgr->m_finishState == FINISH_STATE_VICTORY) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
                         HiCueLookup();
@@ -604,7 +604,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     break;
                 case SBICMD_DIALOG_YES:
                     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
-                        if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
+                        if (g_gameReg->m_triggerMgr->m_finishState == FINISH_STATE_VICTORY) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
                         HiCueTimed();

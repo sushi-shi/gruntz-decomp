@@ -36,11 +36,11 @@ class CGruntPuddle;
 class CTriggerMgr {
 public:
     FinishLevelReason GetFinishReason() const {
-        return m_finishReasonFrame;
+        return m_finishReason;
     }
 
     FinishLevelState GetFinishState() const {
-        return m_phase;
+        return m_finishState;
     }
 
     i32 Load(CFileMemBase* ar);
@@ -213,7 +213,7 @@ public:
 
     i32 UpdateFrame(i32 deltaMs);
 
-    void LoadFinishLevelSprite(FinishLevelReason state);
+    void BeginLevelFinish(FinishLevelReason reason);
 
     i32 ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles);
 
@@ -318,9 +318,9 @@ public:
     char m_reserved274[0x10];
     b32 m_levelWarpStoneCollected;
 
-    FinishLevelState m_phase;
+    FinishLevelState m_finishState;
 
-    ClockInterval m_cueTimer;
+    ClockInterval m_finishDelayTiming;
 
     CWarlord* m_pendingFx;
     b32 m_countdownActive;
@@ -330,7 +330,7 @@ public:
     ClockInterval m_resourceTimer;
     CPtrList m_selectionGroups[10];
     i32 m_lastRecalledGroup;
-    FinishLevelReason m_finishReasonFrame;
+    FinishLevelReason m_finishReason;
 
     SoundBuffer* m_rollingballLoop;
     SoundBuffer* m_teleportLoop;
