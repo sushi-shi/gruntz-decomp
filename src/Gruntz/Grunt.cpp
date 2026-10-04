@@ -291,7 +291,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
     m_attackWindupActive = false;
     m_attackQueued = false;
     m_arrivalActive = false;
-    m_coordToggle = false;
+    m_toobWaterMode = false;
     m_wingzEnabled = false;
     m_vehicleLoopSound = NULL;
     m_powerupLoopSound = NULL;
@@ -1351,11 +1351,11 @@ commitMovement:
     m_arrivalPending = true;
     if (usingToob) {
         if (destinationFlags & 0x100) {
-            if (m_coordToggle != false) {
+            if (m_toobWaterMode != false) {
                 goto movementStarted;
             }
         } else {
-            if (m_coordToggle == false) {
+            if (m_toobWaterMode == false) {
                 return 1;
             }
         }
@@ -1774,7 +1774,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             }
         }
     }
-    if (m_coordToggle != false) {
+    if (m_toobWaterMode != false) {
         goto fail;
     }
     if (pickupType != PICKUP_WINGZ) {
@@ -2002,7 +2002,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
         case PICKUP_TOOB: {
             m_animSetName = "TOOBGRUNT";
             LOAD_GRUNT_TOOL_REACH()
-            m_coordToggle = false;
+            m_toobWaterMode = false;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);

@@ -1070,7 +1070,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_movePosX, sizeof(m_movePosX));
     ar->Write(&m_movePosY, sizeof(m_movePosY));
     ar->Write(&m_reserved8d0, sizeof(m_reserved8d0));
-    ar->Write(&m_coordToggle, sizeof(m_coordToggle));
+    ar->Write(&m_toobWaterMode, sizeof(m_toobWaterMode));
     ar->Write(&m_wingzEnabled, sizeof(m_wingzEnabled));
     ar->Write(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
     ar->Write(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));

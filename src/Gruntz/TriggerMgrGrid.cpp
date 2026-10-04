@@ -263,7 +263,7 @@ i32 CTriggerMgr::SpawnGrunt(
                 }
             } else {
                 if (onSpecialTile != 0) {
-                    logic->SetupTubeAnim(true);
+                    logic->SetToobWaterMode(true);
                 }
                 WireTileSwitchLogic(logic, x, y);
             }

@@ -69,14 +69,14 @@ inline void CGrunt::SettleTubeMove() {
     i32 redo = 1;
     if (PIXEL_PAIR_NOT_AT_POSITION(pixelX, pixelY, saved.m_x, saved.m_y)) {
         if (IsDropReady(1)) {
-            m_coordToggle = (m_coordToggle == false);
+            m_toobWaterMode = (m_toobWaterMode == false);
             redo = 0;
         }
     }
     SnapToLastTile(1);
     if (redo) {
         SET_ANIMATION_ACT("D");
-        SetupTubeAnim(m_coordToggle);
+        SetToobWaterMode(m_toobWaterMode);
     }
 }
 

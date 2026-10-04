@@ -985,7 +985,7 @@ inline void CGrunt::SelectCombatHitCue(
         }
         return;
     }
-    if (this->m_activePickupType == PICKUP_TOOB && this->m_coordToggle != false) {
+    if (this->m_activePickupType == PICKUP_TOOB && this->m_toobWaterMode != false) {
         LK(s_toobz);
         return;
     }
@@ -1836,14 +1836,14 @@ void CGrunt::StepBehavior(char*) {
             }
         } else if (onMoveTile != 0) {
             if (flags & 0x100) {
-                if (m_coordToggle == false) {
+                if (m_toobWaterMode == false) {
                     StartToolUseAnimation(
                         m_lastTilePx.m_x >> TILE_SHIFT_PX,
                         m_lastTilePx.m_y >> TILE_SHIFT_PX
                     );
                     return;
                 }
-            } else if (m_coordToggle != false) {
+            } else if (m_toobWaterMode != false) {
                 StartToolUseAnimation(
                     m_lastTilePx.m_x >> TILE_SHIFT_PX,
                     m_lastTilePx.m_y >> TILE_SHIFT_PX

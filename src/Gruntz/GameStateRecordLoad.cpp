@@ -140,7 +140,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_movePosX, sizeof(m_movePosX));
     ar->Read(&m_movePosY, sizeof(m_movePosY));
     ar->Read(&m_reserved8d0, sizeof(m_reserved8d0));
-    ar->Read(&m_coordToggle, sizeof(m_coordToggle));
+    ar->Read(&m_toobWaterMode, sizeof(m_toobWaterMode));
     ar->Read(&m_wingzEnabled, sizeof(m_wingzEnabled));
     ar->Read(&m_freezeDelayDone, sizeof(m_freezeDelayDone));
     ar->Read(&m_freezeUnfrozen, sizeof(m_freezeUnfrozen));

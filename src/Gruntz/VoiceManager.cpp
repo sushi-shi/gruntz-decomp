@@ -445,7 +445,7 @@ i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
         case IDX(PICKUP_TIMEBOMB):
             return VOICE_CUES_PER_BAND * 28 + cueId;
         case IDX(PICKUP_TOOB):
-            if (grunt->m_coordToggle != false) {
+            if (grunt->m_toobWaterMode != false) {
                 return VOICE_CUES_PER_BAND * 30 + cueId;
             }
             return VOICE_CUES_PER_BAND * 29 + cueId;

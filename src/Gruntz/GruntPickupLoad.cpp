@@ -61,7 +61,7 @@ i32 CGrunt::BeginPickupAnimation(
             return 0;
         }
     }
-    if (m_coordToggle != false) {
+    if (m_toobWaterMode != false) {
         return 0;
     }
     if (m_wingzEnabled != false) {

@@ -389,7 +389,7 @@ public:
 
     i32 UpdateVehicleUseAnimation();
 
-    i32 SetupTubeAnim(b32 isWater);
+    i32 SetToobWaterMode(b32 isWater);
 
     i32 SetWingzEnabled(b32 enable);
 
@@ -475,7 +475,7 @@ public:
     b32 m_toyBreakStarted;
     b32 m_bombRunStarting;
     b32 m_arrivalActive;
-    b32 m_coordToggle;
+    b32 m_toobWaterMode;
     b32 m_wingzEnabled;
     b32 m_freezeDelayDone;
     b32 m_freezeUnfrozen;

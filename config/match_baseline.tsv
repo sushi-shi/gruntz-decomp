@@ -2235,7 +2235,7 @@ grunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	100.0000	100.0000	1	cpp:842b47
 grunttoytimesprite	??_GCGruntToyTimeSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:842b478c8568	0x12100	100.0000	
 grunttoytimesprite	?GetDisplayedValue@CGruntToyTimeSprite@@UAEHPAVCGrunt@@@Z	100.0000	100.0000	2	f0027ab1f471	0x7fca0	100.0000	
 grunttoytimesprite	?GetTypeTag@CGruntToyTimeSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x120e0	100.0000	
-grunttubeanim	?SetupTubeAnim@CGrunt@@QAEHH@Z	100.0000	100.0000	30	8b2d16fd3951	0x50a50	100.0000	
+grunttubeanim	?SetToobWaterMode@CGrunt@@QAEHH@Z	100.0000	100.0000	30	8b2d16fd3951	0x50a50	100.0000	
 gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	12	93faba6e51ec	0x1198a0	100.0000	
 gruntvoice	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	98.3167	92.5083	5	d90e73cb783e	0x119b50	98.3167	
 gruntvoice	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	5	d90e73cb783e	0x13470	100.0000	

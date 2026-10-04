@@ -1186,7 +1186,7 @@ i32 CGrunt::StartToolUseAnimation(i32 tileX, i32 tileY) {
     } else if (m_activePickupType == PICKUP_TOOB) {
         m_entranceActive = true;
         SET_ANIMATION_ACT("N");
-        m_coordToggle = (m_coordToggle == false);
+        m_toobWaterMode = (m_toobWaterMode == false);
     } else if (m_activePickupType == PICKUP_WAND) {
         i32 voiceBase;
         if (rand() % 100 < 80) {
@@ -1295,7 +1295,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         CreateToySprite();
     }
     SET_ANIMATION_ACT("D");
-    SetupTubeAnim(m_coordToggle);
+    SetToobWaterMode(m_toobWaterMode);
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->GetTileGrid();
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
