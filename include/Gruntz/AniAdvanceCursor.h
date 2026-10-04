@@ -55,8 +55,8 @@ public:
     CAnimationSequence* GetAnimation() const {
         return m_animation;
     }
-    void SetConsumeDraw(b32 consume) {
-        m_consumeDraw = consume;
+    void SetConsumeAnimationEvents(b32 consume) {
+        m_consumeEvents = consume;
     }
     void SetAnimation(CAnimationSequence* animation);
     void RestartAnimation(i32 resetElapsedTime);
@@ -79,9 +79,9 @@ public:
     u32 m_frameTicksLeft;
     b32 m_useElapsedTime;
     b32 m_finished;
-    i32 m_consumeDraw;
-    i32 m_pendingDraw;
-    i32 m_curDraw;
+    i32 m_consumeEvents;
+    i32 m_pendingEventCode;
+    i32 m_currentEventCode;
 
     union {
         float m_scale;

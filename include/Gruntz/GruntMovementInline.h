@@ -20,7 +20,7 @@ inline void CGrunt::CancelToolAnimationEffects() {
         m_toolTargetTile.m_x,
         m_toolTargetTile.m_y,
         GetActivePickupType(),
-        WWDDRAW_NO_ANIMATION
+        ANIM_EVENT_NO_ANIMATION
     );
 }
 

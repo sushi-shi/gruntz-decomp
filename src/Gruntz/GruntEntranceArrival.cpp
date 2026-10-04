@@ -206,7 +206,7 @@ RVA(0x00061cb0, 0x380)
 i32 CGrunt::StepAttackFire() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     i32 flag = 0;
-    if (advanced == WWDDRAW_EFFECT_FRAME) {
+    if (advanced == ANIM_EVENT_EFFECT_FRAME) {
 
         switch (m_activePickupType) {
             case GRUNT_GUNHAT:
@@ -1235,8 +1235,8 @@ RVA(0x00065a60, 0x159)
 i32 CGrunt::UpdateToolUseAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     if (advanced > 0) {
-        WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
-        if (cue == WWDDRAW_TOOL_APPLIES) {
+        AnimationEventCode cue = static_cast<AnimationEventCode>(advanced);
+        if (cue == ANIM_EVENT_TOOL_APPLIES) {
             m_busy = true;
             u32 downtime =
                 g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "ItemDowntime");
@@ -1280,7 +1280,7 @@ RVA(0x00065c20, 0x1d5)
 i32 CGrunt::FinishToobMoveAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {
-        WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
+        AnimationEventCode cue = static_cast<AnimationEventCode>(advanced);
         m_triggerMgr->HandleToolAnimationCue(
             m_playerIndex,
             m_unitIndex,

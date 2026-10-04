@@ -66,7 +66,7 @@ struct CAniFrameRecord : public CObject {
     WwdAnimPositionMode m_positionMode;
     i32 m_frameParameter;
     i32 m_duration;
-    i32 m_drawValue;
+    i32 m_eventCode;
     i32 m_positionDeltaX;
     i32 m_positionDeltaY;
     u16 m_reserved28; // parsed from ANI frame record; never read
