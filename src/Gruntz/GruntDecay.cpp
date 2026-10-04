@@ -25,7 +25,7 @@ i32 CGrunt::UpdateDeathAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY,
                 m_playerIndex,
-                IDX(m_moveIcon),
+                IDX(m_colorIndex),
                 m_deathType != DEATH_MELT,
                 0x19
             );

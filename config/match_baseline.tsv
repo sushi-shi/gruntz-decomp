@@ -2060,7 +2060,7 @@ gruntcombat	?PlaySelectionVoice@CGrunt@@QAEXH@Z	100.0000	100.0000	10	4dba3c3e448
 gruntcombat	?PathScan@CGrunt@@QAEHXZ	79.1767	79.1767	24	2e5d9270a272	0x57db0	90.5849	
 gruntcombat	?ReapplyLoopSoundParams@CGrunt@@QAEXXZ	100.0000	100.0000	4	51a437cd4a39	0x57d10	100.0000	
 gruntcombat	?RegisterGruntActions@@YAXXZ	100.0000	100.0000	11	24d955af8006	0x5be30	100.0000	
-gruntcombat	?SelectMoveIcon@CGrunt@@QAEXH@Z	100.0000	100.0000	7	e41260012047	0x57800	100.0000	
+gruntcombat	?SetColorIndex@CGrunt@@QAEXH@Z	100.0000	100.0000	7	e41260012047	0x57800	100.0000	
 gruntcombat	?SetAnimation@CWwdSpriteObject@@QAEXPAVCAniElement@@H@Z	100.0000	100.0000	4	7edcd46dd11b	0x58b60	100.0000	
 gruntcombat	?SetMaxStep@CMotionState@@QAEXN@Z	100.0000	100.0000	4	e837b01d910f	0x58ca0	100.0000	
 gruntcombat	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	51a80694a3bf	0x58bc0	100.0000	
@@ -3472,7 +3472,7 @@ play	?SetCursorFrame@CPlay@@QAEHH@Z	100.0000	100.0000	2	5c65a40d247f	0xd1b30	100
 play	?SetDarknessCurse@CPlay@@QAEHH@Z	100.0000	100.0000	4	d4cb8309d9f4	0xd8aa0	100.0000	
 play	?SetDefeatCountdown@CPlay@@QAEHHH@Z	100.0000	100.0000	5	a30870cedd80	0xd9240	100.0000	
 play	?SetMonitorCurse@CPlay@@QAEHH@Z	100.0000	100.0000	4	c4ad640ddb69	0xd8b20	100.0000	
-play	?SetRandomMoveIconsCurse@CPlay@@QAEHH@Z	100.0000	100.0000	6	7a5b6853e109	0xd8bc0	100.0000	
+play	?SetRandomColorsCurse@CPlay@@QAEHH@Z	100.0000	100.0000	6	7a5b6853e109	0xd8bc0	100.0000	
 play	?SetTinyViewportCurse@CPlay@@QAEHH@Z	100.0000	100.0000	5	85afc5e8b858	0xd8a00	100.0000	
 play	?ShrinkViewport@CPlay@@QAEHH@Z	100.0000	100.0000	9	70a57e9cf6fb	0xd8dc0	100.0000	
 play	?StepScroll@CPlay@@QAEXXZ	100.0000	88.0345	6	811dca1566f5	0xd1ac0	100.0000	
@@ -4308,7 +4308,7 @@ triggermgr	?ClearSelectionGroups@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	72c0a3c
 triggermgr	?CloseActionOptionsMenu@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	1a9fcbfa21a2	0x78a30	100.0000	
 triggermgr	?CollectLevelWarpStone@CTriggerMgr@@QAEXHH@Z	100.0000	100.0000	13	e36e03ceea61	0x79b80	100.0000	
 triggermgr	?ConvertGrunt@CTriggerMgr@@QAEHHHHH@Z	94.3750	94.3750	22	4fe7b2b6a5a4	0x7c110	94.3750	
-triggermgr	?CycleMoveIcons@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	6	ee2eedf323d2	0x7c2e0	100.0000	
+triggermgr	?SetRandomGruntColors@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	6	ee2eedf323d2	0x7c2e0	100.0000	
 triggermgr	?DestroyAllAnims@CTriggerMgr@@QAEXXZ	98.7857	98.7857	14	f1c1f364350d	0x7d330	98.7857	
 triggermgr	?DropBattlezWarpStone@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	8	0489018caab2	0x79ea0	100.0000	
 triggermgr	?EnqueueSelectedMove@CTriggerMgr@@QAEXHHH@Z	100.0000	100.0000	12	d6d5c69c2adb	0x78520	100.0000	

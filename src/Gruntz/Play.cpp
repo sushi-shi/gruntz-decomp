@@ -641,9 +641,9 @@ i32 CPlay::Render() {
                 SetMonitorCurse(false);
             }
         }
-        if (m_region3Gate != false) {
-            if (m_region3Timing.Expired()) {
-                SetRandomMoveIconsCurse(false);
+        if (m_randomColorsCurseActive != false) {
+            if (m_randomColorsCurseTimer.Expired()) {
+                SetRandomColorsCurse(false);
             }
         }
         return 1;
@@ -1418,7 +1418,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_region0Gate = false;
         self->m_region1Gate = false;
         self->m_region2Gate = false;
-        self->m_region3Gate = false;
+        self->m_randomColorsCurseActive = false;
         self->m_defeatCountdownActive = false;
         self->m_focusPlayerIndex = 3;
         self->m_renderDisabled = true;
@@ -4124,7 +4124,7 @@ i32 CPlay::ExecuteCommand(
                 static_cast<u16>(targetYOrUnitIndex),
                 100000,
                 GRUNT_ENTRANCE_DROP,
-                g_groupSentinel,
+                g_defaultGruntColorIndex,
                 0,
                 0,
                 0,
@@ -6028,7 +6028,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
     SerializeClockPair(ar, mode, &m_region1Timing);
     SerializeClockPair(ar, mode, &m_defeatCountdownTiming);
     SerializeClockPair(ar, mode, &m_region2Timing);
-    SerializeClockPair(ar, mode, &m_region3Timing);
+    SerializeClockPair(ar, mode, &m_randomColorsCurseTimer);
     SerializeClockPair(ar, mode, &m_bootyTiming);
     return 1;
 }
@@ -6147,7 +6147,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_region0Gate, sizeof(m_region0Gate));
     s->Write(&m_region1Gate, sizeof(m_region1Gate));
     s->Write(&m_region2Gate, sizeof(m_region2Gate));
-    s->Write(&m_region3Gate, sizeof(m_region3Gate));
+    s->Write(&m_randomColorsCurseActive, sizeof(m_randomColorsCurseActive));
     s->Write(&m_viewportResizeMode, sizeof(m_viewportResizeMode));
     s->Write(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
     s->Write(&m_cursorUsesPlayerTint, sizeof(m_cursorUsesPlayerTint));
@@ -6284,7 +6284,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_region0Gate, sizeof(m_region0Gate));
     ar->Read(&m_region1Gate, sizeof(m_region1Gate));
     ar->Read(&m_region2Gate, sizeof(m_region2Gate));
-    ar->Read(&m_region3Gate, sizeof(m_region3Gate));
+    ar->Read(&m_randomColorsCurseActive, sizeof(m_randomColorsCurseActive));
     ar->Read(&m_viewportResizeMode, sizeof(m_viewportResizeMode));
     ar->Read(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
     ar->Read(&m_cursorUsesPlayerTint, sizeof(m_cursorUsesPlayerTint));
@@ -6327,7 +6327,7 @@ void CPlay::RegionEnter() {
 RVA(0x000d8960, 0x75)
 void CPlay::RegionLeave() {
     if (m_region0Gate == false && m_region1Gate == false && m_region2Gate == false
-        && m_region3Gate == false && m_savedMusicSequence != NULL) {
+        && m_randomColorsCurseActive == false && m_savedMusicSequence != NULL) {
         m_mgr->m_midi->EndCurrent();
         m_mgr->m_midi->m_currentSequence = m_savedMusicSequence;
         if (g_gameReg->m_musicEnabled != false) {
@@ -6380,16 +6380,16 @@ i32 CPlay::SetMonitorCurse(b32 active) {
 }
 
 RVA(0x000d8bc0, 0x71)
-i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
+i32 CPlay::SetRandomColorsCurse(b32 active) {
     if (active != false) {
-        m_region3Gate = true;
+        m_randomColorsCurseActive = true;
         RegionEnter();
     } else {
-        m_region3Gate = false;
+        m_randomColorsCurseActive = false;
         RegionLeave();
-        g_gameReg->GetTriggerMgr()->CycleMoveIcons(-1, false);
+        g_gameReg->GetTriggerMgr()->SetRandomGruntColors(-1, false);
     }
-    m_region3Timing.Start(REGION_INTERVAL_MS);
+    m_randomColorsCurseTimer.Start(REGION_INTERVAL_MS);
     return 1;
 }
 

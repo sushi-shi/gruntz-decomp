@@ -93,8 +93,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_arrivalPending, sizeof(m_arrivalPending));
     ar->Read(&m_playerIndex, sizeof(m_playerIndex));
     ar->Read(&m_unitIndex, sizeof(m_unitIndex));
-    ar->Read(&m_moveIcon, sizeof(m_moveIcon));
-    ar->Read(&m_savedMoveIcon, sizeof(m_savedMoveIcon));
+    ar->Read(&m_colorIndex, sizeof(m_colorIndex));
+    ar->Read(&m_savedColorIndex, sizeof(m_savedColorIndex));
     ar->Read(&m_entranceCommitted, sizeof(m_entranceCommitted));
     ar->Read(&m_neighborPlayerIndex, sizeof(m_neighborPlayerIndex) + sizeof(m_neighborUnitIndex));
     ar->Read(&m_attackTargetPx, sizeof(m_attackTargetPx));
@@ -210,7 +210,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     }
 
     b32 flag = (m_activePickupType >= PICKUP_TOYZ_FIRST);
-    CShadeTable* r = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), flag);
+    CShadeTable* r = g_gameReg->SpriteTable()->GetSel(IDX(m_colorIndex), flag);
     CWwdSpriteObject* cb = m_object;
     cb->SetDrawFill(SHADE_PAL_16, r);
 

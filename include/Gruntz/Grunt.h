@@ -266,8 +266,8 @@ public:
         return m_entrancePx;
     }
 
-    PickupType GetMoveIcon() const {
-        return m_moveIcon;
+    PickupType GetColorIndex() const {
+        return m_colorIndex;
     }
 
     Coord LastTilePx() {
@@ -421,7 +421,7 @@ public:
     i32
     SetGruntActionTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     void ConsiderArrival(i32 clearArrivalState);
-    void SelectMoveIcon(i32 moveIconId);
+    void SetColorIndex(i32 colorIndex);
     i32 TryPowerupAtTile();
 
     i32 PathScan();
@@ -461,8 +461,8 @@ public:
     b32 m_arrivalPending;
     i32 m_playerIndex;
     i32 m_unitIndex;
-    PickupType m_moveIcon;
-    i32 m_savedMoveIcon;
+    PickupType m_colorIndex;
+    i32 m_savedColorIndex;
     b32 m_entranceCommitted;
     i32 m_neighborPlayerIndex;
     i32 m_neighborUnitIndex;
@@ -849,7 +849,7 @@ public:
         class CTriggerMgr* board,
         i32 playerIndex,
         i32 unitIndex,
-        PickupType moveIcon,
+        PickupType colorIndex,
         PickupType typeKind,
         i32 carriedToyType,
         EnemyAiType aiType,

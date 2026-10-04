@@ -23,7 +23,7 @@ inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
     m_region0Gate = false;
     m_region1Gate = false;
     m_region2Gate = false;
-    m_region3Gate = false;
+    m_randomColorsCurseActive = false;
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_hudSuppressed = true;
     m_cameraBookmarkIndex = -1;

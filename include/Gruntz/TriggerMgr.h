@@ -116,8 +116,14 @@ public:
 
     i32 RemoveUnitFromSelection(i32 playerIndex, i32 unitIndex, i32 removeFromGroups);
 
-    i32
-    SpawnPuddle(i32 x, i32 y, i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
+    i32 SpawnPuddle(
+        i32 x,
+        i32 y,
+        i32 playerIndex,
+        i32 colorIndex,
+        b32 animatePlacement,
+        i32 gaugePoints
+    );
 
     i32 PlacePuddle(CGameObject* sprite, b32 animatePlacement);
 
@@ -140,7 +146,7 @@ public:
         i32 y,
         i32 z,
         GruntEntranceMode mode,
-        i32 kindDefault,
+        i32 defaultColorIndex,
         i32 typeKind,
         i32 carriedToyType,
         i32 aiType,
@@ -219,11 +225,11 @@ public:
 
     i32 HandleActionOptionsPointer(i32 x, i32 y);
 
-    i32 ConvertGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 moveIcon);
+    i32 ConvertGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 colorIndex);
 
     void LoseLevelWarpStone();
 
-    i32 CycleMoveIcons(i32 skipPlayerIndex, b32 enable);
+    i32 SetRandomGruntColors(i32 skipPlayerIndex, b32 enable);
 
     i32 SaveSelectionGroup(i32 idx);
 
@@ -364,6 +370,6 @@ public:
     b32 m_playerControlEnabled;
 };
 
-extern i32 g_groupSentinel;
+extern i32 g_defaultGruntColorIndex;
 
 #endif

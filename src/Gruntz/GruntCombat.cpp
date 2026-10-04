@@ -496,16 +496,18 @@ i32 CGrunt::CastSpell(i32 spellOverride) {
 }
 
 RVA(0x00057800, 0x64)
-void CGrunt::SelectMoveIcon(i32 moveIconId) {
-    if (IDX(m_moveIcon) == moveIconId) {
+void CGrunt::SetColorIndex(i32 colorIndex) {
+    if (IDX(m_colorIndex) == colorIndex) {
         return;
     }
-    m_moveIcon = static_cast<PickupType>(moveIconId);
-    if (moveIconId < 0 || moveIconId >= IDX(PICKUP_TIMEBOMB)) {
-        m_moveIcon = PICKUP_NONE;
+    m_colorIndex = static_cast<PickupType>(colorIndex);
+    if (colorIndex < 0 || colorIndex >= IDX(PICKUP_TIMEBOMB)) {
+        m_colorIndex = PICKUP_NONE;
     }
-    CShadeTable* sel =
-        g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), m_activePickupType >= PICKUP_TOYZ_FIRST);
+    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(
+        IDX(m_colorIndex),
+        m_activePickupType >= PICKUP_TOYZ_FIRST
+    );
     CWwdSpriteObject* h = m_object;
     h->SetDrawFill(SHADE_PAL_16, sel);
 }
@@ -1133,7 +1135,7 @@ i32 CGrunt::ApplyCombatHitEffects(
                    this->m_playerIndex,
                    this->m_unitIndex,
                    srcPlayerIndex,
-                   IDX(enemy->GetMoveIcon())
+                   IDX(enemy->GetColorIndex())
                ) != 0) {
             i32 h = enemy->GetHealth() + 0x19;
             enemy->SetHealth(min(h, HEALTH_FULL));
@@ -2147,7 +2149,7 @@ updatePowerup:
 
             if (m_shimmerTiming.Expired()) {
                 i32 pick = rand() % 16;
-                if (pick == IDX(m_moveIcon)) {
+                if (pick == IDX(m_colorIndex)) {
                     pick = 0x10;
                 }
                 CShadeTable* sel =

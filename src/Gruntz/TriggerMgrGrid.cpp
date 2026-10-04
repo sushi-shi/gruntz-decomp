@@ -86,7 +86,7 @@ i32 CTriggerMgr::SpawnGrunt(
     i32 y,
     i32 z,
     GruntEntranceMode mode,
-    i32 kindDefault,
+    i32 defaultColorIndex,
     i32 typeKind,
     i32 carriedToyType,
     i32 aiType,
@@ -152,78 +152,78 @@ i32 CTriggerMgr::SpawnGrunt(
         CGrunt* logic = static_cast<CGrunt*>(sprite->GetLogicRecord()->UserLogic());
         CGruntzMgr* game = g_gameReg;
 
-        i32 kindId;
+        i32 colorIndex;
         if (game->GetGameMode() == GAMEMODE_QUESTZ) {
             switch (aiType) {
                 case BZUNIT_BOMB:
-                    kindId = IDX(PICKUP_BOMB);
+                    colorIndex = IDX(PICKUP_BOMB);
                     break;
                 case BZUNIT_GUNHAT:
-                    kindId = IDX(PICKUP_GUNHAT);
+                    colorIndex = IDX(PICKUP_GUNHAT);
                     break;
                 case BZUNIT_GAUNTLETZ:
-                    kindId = IDX(PICKUP_GAUNTLETZ);
+                    colorIndex = IDX(PICKUP_GAUNTLETZ);
                     break;
                 case BZUNIT_CLUB:
-                    kindId = IDX(PICKUP_CLUB);
+                    colorIndex = IDX(PICKUP_CLUB);
                     break;
                 case BZUNIT_SHIELD:
-                    kindId = IDX(PICKUP_SHIELD);
+                    colorIndex = IDX(PICKUP_SHIELD);
                     break;
                 case BZUNIT_GLOVEZ:
-                    kindId = IDX(PICKUP_GLOVEZ);
+                    colorIndex = IDX(PICKUP_GLOVEZ);
                     break;
                 case BZUNIT_BRICK:
-                    kindId = IDX(PICKUP_BRICK);
+                    colorIndex = IDX(PICKUP_BRICK);
                     typeKind = 1;
                     break;
                 case BZUNIT_GRAVITYBOOTZ:
-                    kindId = IDX(PICKUP_GRAVITYBOOTZ);
+                    colorIndex = IDX(PICKUP_GRAVITYBOOTZ);
                     typeKind = 3;
                     break;
                 case BZUNIT_SPY:
-                    kindId = IDX(PICKUP_SPY);
+                    colorIndex = IDX(PICKUP_SPY);
                     typeKind = 7;
                     break;
                 case BZUNIT_NERFGUN:
-                    kindId = IDX(PICKUP_NERFGUN);
+                    colorIndex = IDX(PICKUP_NERFGUN);
                     typeKind = 13;
                     break;
                 case BZUNIT_BOOMERANG:
-                    kindId = IDX(PICKUP_BOOMERANG);
+                    colorIndex = IDX(PICKUP_BOOMERANG);
                     typeKind = 5;
                     break;
                 case BZUNIT_GOOBER:
-                    kindId = IDX(PICKUP_GOOBER);
+                    colorIndex = IDX(PICKUP_GOOBER);
                     break;
                 case BZUNIT_SWORD:
-                    kindId = IDX(PICKUP_SWORD);
+                    colorIndex = IDX(PICKUP_SWORD);
                     break;
                 case BZUNIT_ROCK:
-                    kindId = IDX(PICKUP_ROCK);
+                    colorIndex = IDX(PICKUP_ROCK);
                     typeKind = 17;
                     break;
                 case BZUNIT_SHOVEL:
-                    kindId = IDX(PICKUP_SHOVEL);
+                    colorIndex = IDX(PICKUP_SHOVEL);
                     typeKind = 19;
                     break;
                 case BZUNIT_SHOVEL_MOUNTED:
-                    kindId = IDX(PICKUP_SHOVEL);
+                    colorIndex = IDX(PICKUP_SHOVEL);
                     carriedToyType = IDX(PICKUP_SCROLL);
                     break;
                 default:
-                    kindId = kindDefault;
+                    colorIndex = defaultColorIndex;
                     break;
             }
         } else {
-            kindId = kindDefault;
+            colorIndex = defaultColorIndex;
         }
 
         if (m_unitCountByPlayer[playerIndex] < game->GetPlayer(playerIndex).GetMaxGruntz()) {
             if (game->GetPlayer(playerIndex).IsActive() != false
                 || (playerIndex != g_curPlayer
-                    && kindId == IDX(game->GetPlayer(g_curPlayer).GetColor()))) {
-                kindId = IDX(game->GetPlayer(playerIndex).GetColor());
+                    && colorIndex == IDX(game->GetPlayer(g_curPlayer).GetColor()))) {
+                colorIndex = IDX(game->GetPlayer(playerIndex).GetColor());
             }
             if (playerIndex == g_curPlayer && aiType != 0) {
                 aiType = 0;
@@ -232,7 +232,7 @@ i32 CTriggerMgr::SpawnGrunt(
                     this,
                     playerIndex,
                     unitIndex,
-                    static_cast<PickupType>(kindId),
+                    static_cast<PickupType>(colorIndex),
                     static_cast<PickupType>(typeKind),
                     carriedToyType,
                     static_cast<EnemyAiType>(aiType),

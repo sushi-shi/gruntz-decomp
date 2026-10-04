@@ -195,7 +195,7 @@ public:
     i32 SetDarknessCurse(b32 active);
     i32 SetTinyViewportCurse(b32 active);
     i32 SetMonitorCurse(b32 active);
-    i32 SetRandomMoveIconsCurse(b32 active);
+    i32 SetRandomColorsCurse(b32 active);
 
     i32 ShrinkViewport(i32 step);
     i32 ExpandViewport(i32 step);
@@ -361,11 +361,11 @@ public:
     ClockInterval m_region0Timing;
     ClockInterval m_region1Timing;
     ClockInterval m_region2Timing;
-    ClockInterval m_region3Timing;
+    ClockInterval m_randomColorsCurseTimer;
     b32 m_region0Gate;
     b32 m_region1Gate;
     b32 m_region2Gate;
-    b32 m_region3Gate;
+    b32 m_randomColorsCurseActive;
     ViewportResizeMode m_viewportResizeMode;
     b32 m_hudSuppressed;
 

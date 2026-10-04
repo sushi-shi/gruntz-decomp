@@ -77,7 +77,7 @@
 #include <stdlib.h>
 
 DATA(0x00244ca4)
-i32 g_groupSentinel;
+i32 g_defaultGruntColorIndex;
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -1034,7 +1034,7 @@ i32 CTriggerMgr::SpawnPuddle(
     i32 x,
     i32 y,
     i32 playerIndex,
-    i32 moveIcon,
+    i32 colorIndex,
     b32 animatePlacement,
     i32 gaugePoints
 ) {
@@ -1048,7 +1048,7 @@ i32 CTriggerMgr::SpawnPuddle(
     }
     sprite->GetLogicRecord()->Dispatch(sprite);
     sprite->m_smarts = playerIndex;
-    sprite->SetScore(moveIcon);
+    sprite->SetScore(colorIndex);
     sprite->SetPoints(gaugePoints);
     return PlacePuddle(sprite, animatePlacement);
 }
@@ -1296,7 +1296,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     ar->Write(&m_finishReason, sizeof(m_finishReason));
     ar->Write(&m_playerControlEnabled, sizeof(m_playerControlEnabled));
     ar->Write(&g_curPlayer, sizeof(g_curPlayer));
-    ar->Write(&g_groupSentinel, sizeof(g_groupSentinel));
+    ar->Write(&g_defaultGruntColorIndex, sizeof(g_defaultGruntColorIndex));
     ar->Write(&m_targetingCursorId, sizeof(m_targetingCursorId));
     ar->Write(&m_lastRecalledGroup, sizeof(m_lastRecalledGroup));
     return 1;
@@ -1462,7 +1462,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ar->Read(&m_finishReason, sizeof(m_finishReason));
     ar->Read(&m_playerControlEnabled, sizeof(m_playerControlEnabled));
     ar->Read(&g_curPlayer, sizeof(g_curPlayer));
-    ar->Read(&g_groupSentinel, sizeof(g_groupSentinel));
+    ar->Read(&g_defaultGruntColorIndex, sizeof(g_defaultGruntColorIndex));
     ar->Read(&m_targetingCursorId, sizeof(m_targetingCursorId));
     ar->Read(&m_lastRecalledGroup, sizeof(m_lastRecalledGroup));
     return 1;
@@ -1840,7 +1840,7 @@ i32 CTriggerMgr::ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles
                     (tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                     0x186a0,
                     GRUNT_ENTRANCE_RESURRECT,
-                    puddle->GetMoveIcon(),
+                    puddle->GetColorIndex(),
                     0,
                     0,
                     aiType,
@@ -1861,7 +1861,7 @@ i32 CTriggerMgr::ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles
                         (tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                         0x186a0,
                         GRUNT_ENTRANCE_RESURRECT,
-                        puddle->GetMoveIcon(),
+                        puddle->GetColorIndex(),
                         0,
                         0,
                         0,
@@ -1903,7 +1903,7 @@ i32 CTriggerMgr::ConvertGrunt(
     i32 srcPlayerIndex,
     i32 srcUnitIndex,
     i32 dstPlayerIndex,
-    i32 moveIcon
+    i32 colorIndex
 ) {
     CGrunt* sourceGrunt = UnitAt(srcPlayerIndex, srcUnitIndex);
     i32 freeUnitIndex = 0;
@@ -1941,7 +1941,7 @@ i32 CTriggerMgr::ConvertGrunt(
             this,
             dstPlayerIndex,
             freeUnitIndex,
-            static_cast<PickupType>(moveIcon),
+            static_cast<PickupType>(colorIndex),
             toolType,
             carriedToyType,
             AI_NONE,
@@ -1962,7 +1962,7 @@ i32 CTriggerMgr::ConvertGrunt(
 }
 
 RVA(0x0007c2e0, 0xb5)
-i32 CTriggerMgr::CycleMoveIcons(i32 skipPlayerIndex, b32 enable) {
+i32 CTriggerMgr::SetRandomGruntColors(i32 skipPlayerIndex, b32 enable) {
     i32 playerIndex = 0;
     CGrunt** playerUnits = m_units;
     for (; playerIndex < PLAYER_SLOT_COUNT; playerIndex++, playerUnits += TM_UNITS_PER_PLAYER) {
@@ -1970,18 +1970,18 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipPlayerIndex, b32 enable) {
             CGrunt** units = playerUnits;
             i32 unitsRemaining = TM_UNITS_PER_PLAYER;
             do {
-                CGrunt* g = *units;
-                if (g != NULL) {
+                CGrunt* grunt = *units;
+                if (grunt != NULL) {
                     if (enable != false) {
-                        i32 t = rand() % 0x11;
-                        if (g->m_savedMoveIcon == -1) {
-                            g->m_savedMoveIcon = IDX(g->GetMoveIcon());
+                        i32 colorIndex = rand() % 0x11;
+                        if (grunt->m_savedColorIndex == -1) {
+                            grunt->m_savedColorIndex = IDX(grunt->GetColorIndex());
                         }
-                        (static_cast<CGrunt*>(g))->SelectMoveIcon(t);
-                        (static_cast<CPlay*>(g_gameReg->m_curState))->SetRandomMoveIconsCurse(true);
-                    } else if (g->m_savedMoveIcon != -1) {
-                        (static_cast<CGrunt*>(g))->SelectMoveIcon(g->m_savedMoveIcon);
-                        g->m_savedMoveIcon = -1;
+                        (static_cast<CGrunt*>(grunt))->SetColorIndex(colorIndex);
+                        (static_cast<CPlay*>(g_gameReg->m_curState))->SetRandomColorsCurse(true);
+                    } else if (grunt->m_savedColorIndex != -1) {
+                        (static_cast<CGrunt*>(grunt))->SetColorIndex(grunt->m_savedColorIndex);
+                        grunt->m_savedColorIndex = -1;
                     }
                 }
                 units++;

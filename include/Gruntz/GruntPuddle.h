@@ -30,8 +30,8 @@ public:
         return m_playerIndex;
     }
 
-    i32 GetMoveIcon() const {
-        return m_moveIcon;
+    i32 GetColorIndex() const {
+        return m_colorIndex;
     }
 
     i32 GetTileX() const {
@@ -45,7 +45,7 @@ public:
     }
 
     i32 Idle();
-    i32 Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
+    i32 Place(i32 playerIndex, i32 colorIndex, b32 animatePlacement, i32 gaugePoints);
     i32 Remove();
     void SetBute(char* key);
 
@@ -59,7 +59,7 @@ public:
     i32 m_gaugePoints;
     i32 m_playerIndex;
 
-    i32 m_moveIcon;
+    i32 m_colorIndex;
 };
 
 i32 CellTargetable(i32 col, i32 row);

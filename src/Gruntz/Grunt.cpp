@@ -441,7 +441,7 @@ void CGrunt::BuildImageSetNames(i32 toyMode, i32 mobileToy) {
     } else {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
     }
-    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(IDX(m_moveIcon), toyMode);
+    CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(IDX(m_colorIndex), toyMode);
     CWwdSpriteObject* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 
@@ -1598,7 +1598,7 @@ i32 CGrunt::Place(
     class CTriggerMgr* board,
     i32 playerIndex,
     i32 unitIndex,
-    PickupType moveIcon,
+    PickupType colorIndex,
     PickupType typeKind,
     i32 carriedToyType,
     EnemyAiType aiType,
@@ -1642,7 +1642,7 @@ i32 CGrunt::Place(
     m_defenderRadius = defenderRadiusMinusOne + 1;
     m_arrivalRerollTiming.Clear();
     m_holdTiming.Clear();
-    m_moveIcon = moveIcon;
+    m_colorIndex = colorIndex;
     m_triggerMgr = board;
     m_daFlag = 1;
     m_arrivalAction = 0;
@@ -1657,7 +1657,7 @@ i32 CGrunt::Place(
     m_cellRemovalNotified = false;
     m_killerPlayerIndex = -1;
     m_passableMask = 0;
-    m_savedMoveIcon = -1;
+    m_savedColorIndex = -1;
     m_lowStaminaCued = false;
     m_targetTeam = -1;
     SetCarriedToy(static_cast<PickupType>(carriedToyType));
@@ -1678,10 +1678,10 @@ i32 CGrunt::Place(
     } else {
         m_hasExtent = true;
     }
-    if (m_moveIcon < PICKUP_NONE || m_moveIcon >= PICKUP_MOVEICON_END) {
-        m_moveIcon = PICKUP_NONE;
+    if (m_colorIndex < PICKUP_NONE || m_colorIndex >= PICKUP_MOVEICON_END) {
+        m_colorIndex = PICKUP_NONE;
     }
-    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), 0);
+    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(IDX(m_colorIndex), 0);
     if (shade == NULL) {
         shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
@@ -2313,7 +2313,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
             return 1;
         }
         case PICKUP_RANDOMCOLORZ: {
-            m_triggerMgr->CycleMoveIcons(m_playerIndex, true);
+            m_triggerMgr->SetRandomGruntColors(m_playerIndex, true);
             return 1;
         }
         case PICKUP_SCREENSHAKE: {

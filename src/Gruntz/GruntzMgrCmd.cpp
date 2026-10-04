@@ -307,7 +307,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
-                        m_triggerMgr->CycleMoveIcons(-1, true);
+                        m_triggerMgr->SetRandomGruntColors(-1, true);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("How about a little color in your Gruntz?");
                         return 1;
