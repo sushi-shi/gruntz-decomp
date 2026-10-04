@@ -53,7 +53,7 @@ public:
 
     i32 RenderActionOptionsMenu();
 
-    i32 ByteTableHas(WarpStoneFragment fragment);
+    i32 HasWarpStoneFragment(WarpStoneFragment fragment);
 
     void ClearSelection();
 
@@ -190,7 +190,7 @@ public:
 
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId unusedTypeId, i32 unusedPayload);
 
-    i32 ScanGroup(CFileMemBase* ar);
+    i32 Save(CFileMemBase* ar);
 
     i32 HandleActionOptionsPointer(i32 x, i32 y);
 
@@ -312,8 +312,8 @@ public:
         return UnitAt(identity.m_x, identity.m_y);
     }
     CActionOptionsMenuBar* m_overlay;
-    CByteArray m_byteArr;
-    // @identity-TODO: ScanGroup and Load transfer this complete span; no trigger
+    CByteArray m_collectedWarpStoneFragments;
+    // @identity-TODO: Save and Load transfer this complete span; no trigger
     // operation accesses its components to prove a scalar array or aggregate type.
     char m_reserved274[0x10];
     b32 m_groupInitialized;

@@ -879,11 +879,11 @@ i32 CTriggerMgr::RenderActionOptionsMenu() {
 }
 
 RVA(0x00079b30, 0x3e)
-i32 CTriggerMgr::ByteTableHas(WarpStoneFragment fragment) {
+i32 CTriggerMgr::HasWarpStoneFragment(WarpStoneFragment fragment) {
 
-    i32 n = m_byteArr.GetSize();
-    for (i32 i = 0; i < n; i++) {
-        if (IDX(fragment) == m_byteArr[i]) {
+    i32 fragmentCount = m_collectedWarpStoneFragments.GetSize();
+    for (i32 fragmentIndex = 0; fragmentIndex < fragmentCount; fragmentIndex++) {
+        if (IDX(fragment) == m_collectedWarpStoneFragments[fragmentIndex]) {
             return 1;
         }
     }
@@ -924,7 +924,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (lvl->m_statusBar->StartWarpStoneFly(outR, outC, fragment) != 0) {
         lvl->m_statusBar->m_hlBusy = true;
     } else {
-        m_byteArr.Add(static_cast<u8>(IDX(fragment)));
+        m_collectedWarpStoneFragments.Add(static_cast<u8>(IDX(fragment)));
     }
     m_groupInitialized = true;
 }
@@ -941,8 +941,8 @@ void CTriggerMgr::ResetSpawnState() {
     CStatusBarMgr* st = world->m_statusBar;
     SAFE_DELETE(st->m_retabNotify);
     world->m_statusBar->m_hlBusy = false;
-    if (m_byteArr.GetSize() > 0) {
-        m_byteArr.RemoveAt(m_byteArr.GetUpperBound(), 1);
+    if (m_collectedWarpStoneFragments.GetSize() > 0) {
+        m_collectedWarpStoneFragments.RemoveAt(m_collectedWarpStoneFragments.GetUpperBound(), 1);
         CStatusBarMgr* ctx = world->m_statusBar;
         if (ctx->GetState() != STATUSBAR_HIDDEN && ctx->GetActiveTab() == TAB_GAME) {
             ctx->ResetWidgets(false);
@@ -1186,7 +1186,7 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) 
             }
         }
     } else {
-        if (this->ScanGroup(ar) == 0) {
+        if (this->Save(ar) == 0) {
             return 0;
         }
     }
@@ -1199,7 +1199,7 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) 
 
 // @early-stop
 RVA(0x0007a760, 0x373)
-i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
+i32 CTriggerMgr::Save(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
@@ -1229,10 +1229,10 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(m_unitExited, 0xf0);
     ar->Write(m_gruntzExitedByPlayer, 0x10);
     ar->Write(m_gruntzLostByPlayer, 0x10);
-    u32 n = static_cast<u32>(m_byteArr.GetSize());
+    u32 n = static_cast<u32>(m_collectedWarpStoneFragments.GetSize());
     ar->Write(&n, sizeof(n));
     for (u32 i = 0; i < n; i++) {
-        u8 b = m_byteArr.GetAt(i);
+        u8 b = m_collectedWarpStoneFragments.GetAt(i);
         ar->Write(&b, sizeof(b));
     }
     n = static_cast<u32>(m_selectedUnitIds.GetCount());
@@ -1349,7 +1349,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     i32 count;
     u32 ci;
     ar->Read(&count, sizeof(count));
-    CByteArray* arr = &m_byteArr;
+    CByteArray* arr = &m_collectedWarpStoneFragments;
     arr->RemoveAll();
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 b;

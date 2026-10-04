@@ -4299,7 +4299,7 @@ trees	_set_data_type	100.0000	100.0000	1	167de8f88841	0x18a100	100.0000
 trees	_tr_static_init	100.0000	100.0000	1	988facf51b1a	0x1884c0	100.0000	
 triggermgr	?ApplyGruntAreaEffect@CTriggerMgr@@QAEHHHHW4GruntAreaEffectKind@@H@Z	97.3865	97.3865	28	c612386a38bb	0x7b930	97.3865	
 triggermgr	?BuildRockBreakParticles@CTriggerMgr@@QAEHHHHH@Z	99.9030	99.9030	32	05e404e4de90	0x7b440	99.9030	
-triggermgr	?ByteTableHas@CTriggerMgr@@QAEHW4WarpStoneFragment@@@Z	100.0000	100.0000	1	e63030c4e3bb	0x79b30	100.0000	
+triggermgr	?HasWarpStoneFragment@CTriggerMgr@@QAEHW4WarpStoneFragment@@@Z	100.0000	100.0000	1	e63030c4e3bb	0x79b30	100.0000	
 triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.8053	98.8053	15	a249bbbec88c	0x7cf40	98.9381	
 triggermgr	?ClearSelectedUnitIds@CTriggerMgr@@QAEXXZ	100.0000	100.0000	4	c57a85ee8a09	0x78880	100.0000	
 triggermgr	?ClearSelection@CTriggerMgr@@QAEXXZ	100.0000	100.0000	8	1d245aafe6c6	0x78430	100.0000	
@@ -4332,7 +4332,7 @@ triggermgr	?RenderActionOptionsMenu@CTriggerMgr@@QAEHXZ	100.0000	100.0000	2	c895
 triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	100.0000	100.0000	10	e16f35292a79	0x79d90	100.0000	
 triggermgr	?ResurrectGruntsInArea@CTriggerMgr@@QAEHHHH@Z	91.9724	91.9724	28	a44004469767	0x7be60	91.9724	
 triggermgr	?SaveSelectionGroup@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	7	9c10c9090368	0x7cc60	100.0000	
-triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	14	f46a6cb736c5	0x7a760	99.1927	
+triggermgr	?Save@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	14	f46a6cb736c5	0x7a760	99.1927	
 triggermgr	?SelectUnitsInRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	90.2439	90.2439	15	31d113943287	0x78060	90.2439	
 triggermgr	?Serialize@CTriggerMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	4	a35bfe20b3a1	0x7a5e0	100.0000	
 triggermgr	?SpawnPowerupIcon@CTriggerMgr@@QAEHW4PickupType@@HHHHH@Z	100.0000	100.0000	14	f50b3c4ce42e	0x7c620	100.0000	
