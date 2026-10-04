@@ -160,9 +160,9 @@ public:
 
     i32 GetNextResourcePickup();
     i32 SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode);
-    void UpdateGruntOvenStatusBar();
+    void UpdateGruntOvens();
     void TickGruntWell();
-    void UpdateChipGrinderStatusBar();
+    void UpdateResourceGrinderAnimation();
     void RefreshResourceImages();
     void UpdateDestructWarningAnimation();
     i32 CreateCollapsedSprite();

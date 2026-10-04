@@ -2420,37 +2420,38 @@ i32 CStatusBarMgr::HitTestSideTabs(i32 x, i32 y) {
 
 // @early-stop
 RVA(0x00105310, 0x11a)
-void CStatusBarMgr::UpdateGruntOvenStatusBar() {
+void CStatusBarMgr::UpdateGruntOvens() {
 
-    CSBI_ImageSet** slot = m_gruntOvenImages;
-    GruntOvenSlot* tab = m_gruntOvenSlots;
-    i32 n = 5;
+    CSBI_ImageSet** ovenImageSlot = m_gruntOvenImages;
+    GruntOvenSlot* ovenSlot = m_gruntOvenSlots;
+    i32 remainingOvens = 5;
     do {
-        if (tab->m_state == GRUNT_OVEN_COOKING) {
-            i64 d = static_cast<i64>(g_frameTime) - tab->m_cookingClock.GetStartTime();
+        if (ovenSlot->m_state == GRUNT_OVEN_COOKING) {
+            i64 elapsedMs = static_cast<i64>(g_frameTime) - ovenSlot->m_cookingClock.GetStartTime();
 
-            i32 elapsed = static_cast<i32>(max(0, d));
-            u32 delay = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
-            i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
-            if (frame >= 0x1a) {
-                tab->m_state = GRUNT_OVEN_READY;
-                frame = 0x1a;
+            i32 nonnegativeElapsedMs = static_cast<i32>(max(0, elapsedMs));
+            u32 frameDelayMs = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
+            i32 frameIndex =
+                static_cast<i32>((static_cast<u32>(nonnegativeElapsedMs) / frameDelayMs)) + 1;
+            if (frameIndex >= 0x1a) {
+                ovenSlot->m_state = GRUNT_OVEN_READY;
+                frameIndex = 0x1a;
                 PlayRegistryCueIfElapsed(
                     g_gameReg->World()->SoundRegistry(),
                     "GAME_COOKINGCOMPLETE"
                 );
             }
-            if (frame != tab->m_frameIndex) {
-                tab->m_frameIndex = frame;
-                CSBI_ImageSet* w = *slot;
-                if (w) {
-                    w->SetFrameIndex(frame);
+            if (frameIndex != ovenSlot->m_frameIndex) {
+                ovenSlot->m_frameIndex = frameIndex;
+                CSBI_ImageSet* ovenImage = *ovenImageSlot;
+                if (ovenImage) {
+                    ovenImage->SetFrameIndex(frameIndex);
                 }
             }
         }
-        ++slot;
-        ++tab;
-    } while (--n != 0);
+        ++ovenImageSlot;
+        ++ovenSlot;
+    } while (--remainingOvens != 0);
 }
 
 RVA(0x00105480, 0x7d)
@@ -2587,12 +2588,12 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
 
 RVA(0x001058d0, 0x34)
 void CStatusBarMgr::UpdateStatusSystems() {
-    UpdateGruntOvenStatusBar();
+    UpdateGruntOvens();
     TickGruntWell();
     UpdateConveyorAnimations();
     UpdateResourceMachineAnimation();
     UpdateResourceDeliveryAnimation();
-    UpdateChipGrinderStatusBar();
+    UpdateResourceGrinderAnimation();
     UpdateDestructWarningAnimation();
 }
 
@@ -3194,16 +3195,16 @@ i32 CStatusBarMgr::StartResourceGrinderDrop(i32 item, i32 x, i32 y) {
 }
 
 RVA(0x001076a0, 0x1f3)
-void CStatusBarMgr::UpdateChipGrinderStatusBar() {
+void CStatusBarMgr::UpdateResourceGrinderAnimation() {
 
     if (m_grinderState == FALLING_ITEM_INACTIVE) {
         return;
     }
 
-    i32 stepped = 0;
+    i32 animationActive = 0;
     if (m_grinderState == FALLING_ITEM_DESCENDING || m_grinderState == FALLING_ITEM_GRINDING) {
-        u32 delay = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
-        i32 speed = g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 4);
+        u32 frameDelayMs = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
+        i32 pixelsPerStep = g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 4);
 
         if (m_grinderItemRect.top >= 0x1c7) {
             m_grinderState = FALLING_ITEM_INACTIVE;
@@ -3213,31 +3214,31 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                 PlayVisibleTabCue(this, TAB_RESOURCE, "GAME_REZGRINDING");
                 m_grinderState = FALLING_ITEM_GRINDING;
             }
-            delay = g_buteMgr.GetDword("StatusBar", "FallingItemShredderDelay", 0x64);
-            speed = g_buteMgr.GetInt("StatusBar", "FallingItemShredderSpeed", 2);
+            frameDelayMs = g_buteMgr.GetDword("StatusBar", "FallingItemShredderDelay", 0x64);
+            pixelsPerStep = g_buteMgr.GetInt("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        ClockInterval* clock = &m_grinderClock;
-        i64 d = static_cast<i64>(g_frameTime) - clock->GetStartTime();
-        if (d >= clock->GetInterval()) {
-            OFFSET_RECT_Y_EDGES(m_grinderItemRect, speed, speed);
-            CSBI_ImageSet* w = m_grinderItemDisplay;
-            if (w) {
-                RECT rc;
-                i32 sy = m_barRect.top;
-                rc.bottom = sy + m_grinderItemRect.bottom;
-                rc.top = sy + m_grinderItemRect.top;
-                i32 sx = m_barRect.left;
-                rc.left = m_grinderItemRect.left + sx;
-                rc.right = m_grinderItemRect.right + sx;
-                w->SetBounds(rc);
+        ClockInterval* grinderClock = &m_grinderClock;
+        i64 elapsedMs = static_cast<i64>(g_frameTime) - grinderClock->GetStartTime();
+        if (elapsedMs >= grinderClock->GetInterval()) {
+            OFFSET_RECT_Y_EDGES(m_grinderItemRect, pixelsPerStep, pixelsPerStep);
+            CSBI_ImageSet* grinderImage = m_grinderItemDisplay;
+            if (grinderImage) {
+                RECT imageRect;
+                i32 barTop = m_barRect.top;
+                imageRect.bottom = barTop + m_grinderItemRect.bottom;
+                imageRect.top = barTop + m_grinderItemRect.top;
+                i32 barLeft = m_barRect.left;
+                imageRect.left = m_grinderItemRect.left + barLeft;
+                imageRect.right = m_grinderItemRect.right + barLeft;
+                grinderImage->SetBounds(imageRect);
             }
-            clock->Start(delay);
+            grinderClock->Start(frameDelayMs);
         }
-        stepped = 1;
+        animationActive = 1;
     }
 
-    if (m_grinderItemDisplay != NULL && stepped) {
+    if (m_grinderItemDisplay != NULL && animationActive) {
         RefreshResourceImages();
     }
 }
