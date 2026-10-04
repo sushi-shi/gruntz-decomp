@@ -160,7 +160,8 @@ public:
 
     i32 LoadCameraSprite();
     void SetCameraTarget(i32 playerIndex, i32 unitIndex) {
-        m_cameraTargetIdentity.Set(playerIndex, unitIndex);
+        Coord target = {playerIndex, unitIndex};
+        m_cameraTargetIdentity = target;
         m_cameraTrackingActive = true;
         LoadCameraSprite();
     }
