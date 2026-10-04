@@ -44,6 +44,10 @@ public:
 
     int Deserialize(CFileMemBase* s);
 
+    b32 IsActive() const {
+        return m_active;
+    }
+
     i32 GetPlayerIndex() const {
         return m_playerIndex;
     }

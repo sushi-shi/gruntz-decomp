@@ -424,7 +424,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
     }
 
     CActionOptionsMenuBar* ov = m_actionOptionsMenu;
-    if (ov != NULL && ov->m_active != false) {
+    if (ov != NULL && ov->IsActive() != false) {
         ov->UpdateHoverState(x, y);
         return 1;
     }
@@ -840,7 +840,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
             return 0;
         }
     }
-    if (m_actionOptionsMenu->m_active != false) {
+    if (m_actionOptionsMenu->IsActive() != false) {
         return 0;
     }
     CGrunt* selectedGrunt = SoleSelectedGrunt();
@@ -1471,7 +1471,7 @@ RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_actionOptionsMenu;
     m_targetingCursorId = 0;
-    if (ov == NULL || ov->m_active == false) {
+    if (ov == NULL || ov->IsActive() == false) {
         return 0;
     }
     CGrunt* cell = SoleSelectedGrunt();
@@ -2272,7 +2272,7 @@ RVA(0x0007cd40, 0x18f)
 i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
     ClearSelection();
     CActionOptionsMenuBar* ov = m_actionOptionsMenu;
-    if (ov != NULL && ov->m_active != false) {
+    if (ov != NULL && ov->IsActive() != false) {
         CloseActionOptionsMenu();
     }
     POSITION pos = m_selectionGroups[slot].GetHeadPosition();
