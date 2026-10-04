@@ -1870,7 +1870,7 @@ i32 CTriggerMgr::ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles
                     != -1) {
                     resurrected = true;
                 }
-            } else if (player->GetBattlezAiController()->TrySeedSpawnAt(tileX, tileY) != 0) {
+            } else if (player->GetBattlezAiController()->TryResurrectGruntAt(tileX, tileY) != 0) {
                 resurrected = true;
             }
         }

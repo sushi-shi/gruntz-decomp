@@ -39,7 +39,7 @@ public:
     i32 Serialize(CFileMemBase*);
     i32 Deserialize(CFileMemBase*);
     i32 ClaimCellFromRow(i32, i32, i32, i32);
-    i32 TrySeedSpawnAt(i32, i32);
+    i32 TryResurrectGruntAt(i32 tileX, i32 tileY);
     i32 RouteToNearestGooPuddle(CGrunt* unit);
     i32 HasAvailableGooPuddleAt(i32 tileX, i32 tileY);
     i32 ForcePlaceFromReserve(CGrunt*);

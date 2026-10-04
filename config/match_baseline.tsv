@@ -562,7 +562,7 @@ battlezmapconfig	?Serialize@CBattlezAiController@@QAEHPAVCFileMemBase@@@Z	100.00
 battlezmapconfig	?SerializeState@CBattlezAiController@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	6	ada8ffd40e09	0x2bfc0	100.0000	
 battlezmapconfig	?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord@@HH@Z	100.0000	100.0000	3	8ee313cafd66	0x311e0	100.0000	
 battlezmapconfig	?SpawnInitialGrunts@CBattlezAiController@@QAEHXZ	100.0000	100.0000	8	c870b5138380	0x25c20	100.0000	
-battlezmapconfig	?TrySeedSpawnAt@CBattlezAiController@@QAEHHH@Z	100.0000	100.0000	24	962c00c9fb30	0x30990	100.0000	
+battlezmapconfig	?TryResurrectGruntAt@CBattlezAiController@@QAEHHH@Z	100.0000	100.0000	24	962c00c9fb30	0x30990	100.0000	
 battlezmapconfig	?TrySpawnGrunt@CBattlezAiController@@QAEHH@Z	90.2321	90.2321	34	15e6fc2feef4	0x26470	90.2321	
 battlezmapconfig	?Update@CBattlezAiController@@QAEHXZ	95.3292	95.3292	31	d2bbd89c0b56	0x25d90	95.4948	
 battlezmapconfig	?UpdateUnits@CBattlezAiController@@QAEHXZ	84.9887	84.9887	57	00f7e4bea987	0x267c0	88.2172	

@@ -3329,7 +3329,7 @@ i32 CBattlezAiController::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32
 }
 
 RVA(0x00030990, 0x11b)
-i32 CBattlezAiController::TrySeedSpawnAt(i32 ax, i32 ay) {
+i32 CBattlezAiController::TryResurrectGruntAt(i32 tileX, i32 tileY) {
     i32 occupied = 0;
     CGrunt** units = m_triggerMgr->PlayerUnits(m_playerIndex);
     for (i32 unitsRemaining = TM_UNITS_PER_PLAYER; unitsRemaining != 0; unitsRemaining--) {
@@ -3341,10 +3341,10 @@ i32 CBattlezAiController::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (occupied >= m_game->GetPlayer(m_playerIndex).GetMaxGruntz()) {
         return 0;
     }
-    i32 cell = m_triggerMgr->SpawnGrunt(
+    i32 unitIndex = m_triggerMgr->SpawnGrunt(
         m_playerIndex,
-        (ax << TILE_SHIFT_PX) + TILE_HALF_PX,
-        (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
+        (tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
+        (tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         GRUNT_ENTRANCE_RESURRECT,
         IDX(m_game->GetPlayer(m_playerIndex).GetColor()),
@@ -3356,10 +3356,10 @@ i32 CBattlezAiController::TrySeedSpawnAt(i32 ax, i32 ay) {
         0,
         NULL
     );
-    if (cell == -1) {
+    if (unitIndex == -1) {
         return 0;
     }
-    CGrunt* unit = m_game->GetTriggerMgr()->UnitAt(m_playerIndex, cell);
+    CGrunt* unit = m_game->GetTriggerMgr()->UnitAt(m_playerIndex, unitIndex);
     if (unit == NULL) {
         return 0;
     }
