@@ -297,7 +297,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
 
     CWwdSpriteObject* o = m_object;
-    i32 zk = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
+    i32 zk = o->m_frameImage->GetAnchorY() + o->m_screenY + 0x186a0;
     o->SetSortKey(zk);
     memset(m_state, 0, sizeof(m_state));
     if (!m_object->HasMovementBounds()) {

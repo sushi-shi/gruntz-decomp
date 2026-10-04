@@ -73,6 +73,14 @@ public:
     void BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst);
     void BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst);
 
+    const i32& GetAnchorX() const {
+        return m_anchorX;
+    }
+
+    const i32& GetAnchorY() const {
+        return m_anchorY;
+    }
+
     i32 m_width;
     i32 m_height;
     i32 m_anchorX;

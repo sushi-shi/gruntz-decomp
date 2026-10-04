@@ -127,10 +127,10 @@ i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
         return 0;
     }
     frame->RenderFrame(target, centerX, centerY, 0);
-    m_hitLeft = centerX - frame->m_anchorX;
-    m_hitRight = centerX + frame->m_anchorX;
-    m_hitTop = centerY - frame->m_anchorY;
-    m_hitBottom = centerY + frame->m_anchorY;
+    m_hitLeft = centerX - frame->GetAnchorX();
+    m_hitRight = centerX + frame->GetAnchorX();
+    m_hitTop = centerY - frame->GetAnchorY();
+    m_hitBottom = centerY + frame->GetAnchorY();
     return 1;
 }
 RVA(0x00185690, 0x25)
@@ -244,10 +244,10 @@ i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 center
         return 0;
     }
     frame->RenderFrame(target, centerX, centerY, 0);
-    m_hitLeft = centerX - frame->m_anchorX;
-    m_hitRight = centerX + frame->m_anchorX;
-    m_hitTop = centerY - frame->m_anchorY;
-    m_hitBottom = centerY + frame->m_anchorY;
+    m_hitLeft = centerX - frame->GetAnchorX();
+    m_hitRight = centerX + frame->GetAnchorX();
+    m_hitTop = centerY - frame->GetAnchorY();
+    m_hitBottom = centerY + frame->GetAnchorY();
     return 1;
 }
 RVA(0x00185950, 0x1b)

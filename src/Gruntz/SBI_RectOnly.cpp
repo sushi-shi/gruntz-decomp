@@ -279,8 +279,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                     CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
                     entry->RenderFrame(
                         l1->m_backPair,
-                        entry->m_anchorX + m_barRect.left,
-                        entry->m_anchorY + m_barRect.top,
+                        entry->GetAnchorX() + m_barRect.left,
+                        entry->GetAnchorY() + m_barRect.top,
                         0
                     );
                 }
@@ -334,8 +334,8 @@ RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CWwdSpriteObject* r = m_barSprite;
     CImage* L = r->m_frameImage;
-    i32 xlo = r->m_screenX - L->m_anchorX;
-    i32 ylo = r->m_screenY - L->m_anchorY;
+    i32 xlo = r->m_screenX - L->GetAnchorX();
+    i32 ylo = r->m_screenY - L->GetAnchorY();
     i32 xhi = L->m_width + xlo;
     i32 yhi = L->m_height + ylo;
     if (x >= xhi || x < xlo || y >= yhi || y < ylo) {
@@ -4218,7 +4218,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].HasJoinedRound() != false && g_gameReg->m_players[i].HasDropped() == false
+        if (g_gameReg->m_players[i].HasJoinedRound() != false
+            && g_gameReg->m_players[i].HasDropped() == false
             && g_gameReg->m_players[i].IsEliminated() == false) {
             count++;
         }
