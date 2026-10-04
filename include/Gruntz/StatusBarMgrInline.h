@@ -42,15 +42,15 @@ static __inline void HiPost(i32 cmdId) {
     PostMessageA(g_gameReg->GetGameWindow()->GetHwnd(), WM_COMMAND, cmdId, 0);
 }
 
-inline b32 CStatusBarMgr::ActivateReadySlot(i32 slot) {
+inline b32 CStatusBarMgr::BeginGruntPlacement(i32 slot) {
     if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SelectCursor(0x66)) {
         return false;
     }
     HiCueTimed();
-    m_activeSlot = slot;
-    m_slots[slot].m_value = 1;
-    if (m_slotNotify[slot]) {
-        m_slotNotify[slot]->Notify(1);
+    m_selectedGruntOvenSlot = slot;
+    m_gruntOvenSlots[slot].m_frameIndex = 1;
+    if (m_gruntOvenImages[slot]) {
+        m_gruntOvenImages[slot]->Notify(1);
     }
     return true;
 }

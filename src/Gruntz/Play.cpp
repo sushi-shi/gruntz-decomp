@@ -1320,7 +1320,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
             bm->AddWarpStoneFragment(static_cast<WarpStoneFragment>(v));
         }
-        self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
+        self->m_statusBar->ResetForLevel(self->m_levelIndex);
 
         CWwdSpriteObject* scrollSink = self->m_world->ChildGroup()->CreateSprite(
             0,
@@ -1349,7 +1349,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
                     && BuildRockAndCoveredPowerupLogics() && ValidateLevelTiles()
                     && AddLevelGruntz()) {
                     self->m_world->ChildGroup()->TickKillCues(0);
-                    self->m_statusBar->StartChipMachineCycle();
+                    self->m_statusBar->PrepareNextResource();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                     while (ShowCursor(false) >= 0)
                         ;
@@ -2287,7 +2287,7 @@ recorder_place:
     }
     if (this->m_gruntPlacementActive != false) {
         this->m_gruntPlacementActive = false;
-        this->m_statusBar->CommitSlot(false);
+        this->m_statusBar->FinishGruntPlacement(false);
         this->SelectCursor(0);
         if (vk != VK_INSERT) {
             goto tail_default;
@@ -2298,7 +2298,7 @@ recorder_place:
         goto tail_default2;
     }
     i32 st = this->m_selectedCursorId;
-    StatusBarHighlightRow ph = this->m_statusBar->m_pendingHlRow;
+    StatusBarHighlightRow ph = this->m_statusBar->m_selectedResourceRow;
     i32 lvl;
     if (st >= 0x22) {
         lvl = 2;
@@ -2307,11 +2307,11 @@ recorder_place:
     }
     this->m_pickupPlacementActive = false;
     if (vk == VK_DELETE || vk == VK_DECIMAL) {
-        statusBar->ReportTab(st);
+        statusBar->DiscardSelectedResource(st);
         this->SelectCursor(0);
         return 1;
     }
-    statusBar->EnterHlRow(0, st);
+    statusBar->FinishResourcePlacement(0, st);
     this->SelectCursor(0);
     if (lvl == 0) {
         if (ph == STATUS_HL_ROW_CATEGORY) {
@@ -2470,7 +2470,7 @@ tail_default2:
                 lv->SelectBrickResource(STATUS_HL_ROW_CATEGORY);
                 return 1;
             case VK_INSERT:
-                lv->ActivateSlot(-1);
+                lv->SelectGruntOvenForPlacement(-1);
                 break;
         }
     }
@@ -2524,7 +2524,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
     if (m_levelOverlayOpen != false
         || g_gameReg->GetTriggerMgr()->m_playerControlEnabled == false) {
-        return m_statusBar->UpdateStatusBarTabHighlight(eventArg, x, y);
+        return m_statusBar->HandleClick(eventArg, x, y);
     }
 
     xr = x;
@@ -2568,7 +2568,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x340, -1, 1, -1, -1);
             }
             m_gruntPlacementActive = false;
-            m_statusBar->CommitSlot(eventArg);
+            m_statusBar->FinishGruntPlacement(eventArg);
             SelectCursor(0);
             return 1;
         }
@@ -2637,7 +2637,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
         waypoint_cancel:
             m_pickupPlacementActive = false;
-            m_statusBar->EnterHlRow(0, m_selectedCursorId);
+            m_statusBar->FinishResourcePlacement(0, m_selectedCursorId);
             SelectCursor(0);
             return 1;
         }
@@ -2675,7 +2675,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         const RECT* gr = m_statusBar->GetBarRect();
         if (::PtInRect(gr, xr, y)) {
             CancelCursorAction();
-            return m_statusBar->UpdateStatusBarTabHighlight(eventArg, xr, y);
+            return m_statusBar->HandleClick(eventArg, xr, y);
         }
         if (m_chatBox->HitTest(xr, y)) {
             return 1;
@@ -2865,7 +2865,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         RECT er;
         SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
         if (::PtInRect(&er, px, py)) {
-            if (!m_statusBar->FindReadySlot()) {
+            if (!m_statusBar->ConsumeReadyGrunt()) {
                 return 1;
             }
             char ab = static_cast<char>(g_curPlayer);
@@ -4483,7 +4483,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (player == static_cast<u32>(g_curPlayer)) {
                 m_pickupPlacementActive = false;
-                m_statusBar->EnterHlRow(sel, m_selectedCursorId);
+                m_statusBar->FinishResourcePlacement(sel, m_selectedCursorId);
                 SelectCursor(0);
             }
             return r;
@@ -6961,7 +6961,7 @@ i32 CPlay::CancelCursorAction() {
     if (m_gruntPlacementActive != false) {
         CStatusBarMgr* statusBar = m_statusBar;
         m_gruntPlacementActive = false;
-        statusBar->CommitSlot(false);
+        statusBar->FinishGruntPlacement(false);
         SelectCursor(0);
         changed = true;
     }
@@ -6969,7 +6969,7 @@ i32 CPlay::CancelCursorAction() {
         i32 cursorId = m_selectedCursorId;
         CStatusBarMgr* statusBar = m_statusBar;
         m_pickupPlacementActive = false;
-        statusBar->EnterHlRow(0, cursorId);
+        statusBar->FinishResourcePlacement(0, cursorId);
         SelectCursor(0);
         changed = true;
     }

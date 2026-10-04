@@ -35,16 +35,16 @@ class CWarpStoneFly;
 class CSBI_MenuItem;
 class CSBI_GruntMachine;
 class SoundBuffer;
-GZ_ENUM_BEGIN(SbiSlotState)
-    SLOT_ARMED = 0,
-    SLOT_FILLING = 1,
-    SLOT_READY = 2
-GZ_ENUM_END(SbiSlotState)
+GZ_ENUM_BEGIN(GruntOvenSlotState)
+    GRUNT_OVEN_EMPTY = 0,
+    GRUNT_OVEN_COOKING = 1,
+    GRUNT_OVEN_READY = 2
+GZ_ENUM_END(GruntOvenSlotState)
 
-struct CSbiSlot {
-    SbiSlotState m_state;
-    i32 m_value;
-    ClockInterval m_clock;
+struct GruntOvenSlot {
+    GruntOvenSlotState m_state;
+    i32 m_frameIndex;
+    ClockInterval m_cookingClock;
 };
 
 struct CSbiHlRow {
@@ -75,7 +75,7 @@ class CSBI_StatzTabArrow;
 class CSBI_WarlordHead;
 class CWarpStoneFly;
 
-const i32 s_slotCommitLevel = 0x1a;
+const i32 s_gruntOvenReadyFrame = 0x1a;
 
 const i32 s_activateErrId = 0x80e4;
 const i32 s_activateErrTag = 0x44b;
@@ -97,7 +97,7 @@ GZ_ENUM_CONST_END(GruntWellPct)
     }
 
 class CStatusBarMgr {
-    inline b32 ActivateReadySlot(i32 slot);
+    inline b32 BeginGruntPlacement(i32 slot);
 
 public:
     CStatusBarMgr();
@@ -114,9 +114,9 @@ public:
     void StartDestructWarning(i32 countdownMs);
     i32 StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment);
     void ResetCounters();
-    void ResetSlots();
-    void ArmSlot(i32 idx);
-    i32 AnySlotActive();
+    void ResetGruntOvens();
+    void EmptyGruntOven(i32 idx);
+    i32 StartAvailableGruntOven();
     void AdvanceGruntWell(i32 delta);
     void DrainGruntWell(i32 delta);
     void SetGruntWellTarget(i32 value);
@@ -126,43 +126,43 @@ public:
     void ToggleUnitSample(i32 unitIndex);
     void SetLeftRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void SetRightRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
-    void CommitSlot(b32 active);
-    void ClearHlCell(i32 group, StatusBarHighlightRow row);
-    i32 SetHlCell(i32 row, i32 handle, i32 group);
-    i32 SetHlCellByTier(i32 handle, i32 group);
-    i32 FindReadySlot();
+    void FinishGruntPlacement(b32 placed);
+    void ClearResourceSlot(i32 category, StatusBarHighlightRow row);
+    i32 AddResourceToSlot(i32 category, i32 pickupValue, i32 row);
+    i32 AddResourceToRow(i32 pickupValue, i32 row);
+    i32 ConsumeReadyGrunt();
     void LockDestructButton(i32 resetWarningAnimation);
 
     i32 BuildStatusBarTabs();
 
     i32 BuildLevelOverlay();
-    i32 StartChipMachineCycle();
+    i32 PrepareNextResource();
     i32 Initialize(CDDrawSurfaceMgr* world);
     i32 Render();
-    i32 UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y);
+    i32 HandleClick(i32 mouseFlags, i32 x, i32 y);
     i32 UpdateStatusBar(i32 deltaMs);
     void BuildGameTabResumeButton(b32 show);
     void BuildGameTabPauseButton();
 
-    i32 LoadGooCookingSprite(i32);
+    i32 StartGruntOven(i32);
     void UpdateRezConveyorStatusBar();
-    void LoadRezMachineConfig();
-    void UpdateRezMachineSnoozeStatusBar();
-    void LoadChipMachineConfig();
-    i32 UpdateFallingItemStatusBar(i32 item, i32 x, i32 y);
-    i32 UpdateRezMachineWakeStatusBar();
-    void LoadMultiplayerBattlezConfig(i32);
+    void UpdateResourceMachineAnimation();
+    void ResetResourceMachine();
+    void UpdateResourceDeliveryAnimation();
+    i32 StartResourceGrinderDrop(i32 item, i32 x, i32 y);
+    i32 RequestResourceDelivery();
+    void ResetForLevel(i32);
 
     void ResetConveyorBelts();
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    i32 GetActiveValue();
+    i32 GetNextResourcePickup();
     i32 SetUnitSampleMode(i32 unitIndex, StatusSampleMode sampleMode);
     void UpdateGruntOvenStatusBar();
     void TickGruntWell();
     void UpdateChipGrinderStatusBar();
-    void NotifyAllSlots();
+    void RefreshResourceImages();
     void UpdateDestructWarningAnimation();
     i32 CreateCollapsedSprite();
     i32 SetTabState(SbiCommandId cmd, SbiMenuItemState state);
@@ -196,18 +196,18 @@ public:
 
     i32 OnPointerRelease(i32 keyFlags, i32 x, i32 y);
     i32 HandlePointerDrag(i32 keyFlags, i32 x, i32 y);
-    CStatusBarItem* HitTestRects(i32 x, i32 y);
+    CStatusBarItem* HitTestItems(i32 x, i32 y);
     void ResetWidgets(b32 keepLists);
     void ClearActiveTabContent();
     void AddTabItem(i32 tab, CStatusBarItem* item) {
         m_tabLists[tab].AddTail(item);
     }
     i32 ClearUnitSample(i32 unitIndex);
-    void EnterHlRow(i32 row, i32 group);
-    void InitTabRects();
+    void FinishResourcePlacement(i32 consumed, i32 pickupValue);
+    void ResetResourceSlots();
     i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
     void CloseLevelOverlay();
-    i32 ActivateSlot(i32 idx);
+    i32 SelectGruntOvenForPlacement(i32 idx);
     i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
 
     const RECT* GetBarRect() const {
@@ -224,7 +224,7 @@ public:
     i32 SetCollapsedSpritePosition(i32 x, i32 y);
     i32 HitTestCollapsedSprite(i32 x, i32 y);
     i32 QueuePickupReward(i32 pickupValue, i32 score);
-    void ReportTab(i32 tab);
+    void DiscardSelectedResource(i32 pickupValue);
 
     i32 DockStatusBarLeft();
     i32 HideStatusBar();
@@ -268,11 +268,11 @@ public:
     CSBI_MenuItem* m_confirmYesButton;
     CSBI_MenuItem* m_confirmNoButton;
 
-    CSBI_ImageSet* m_slotNotify[5];
+    CSBI_ImageSet* m_gruntOvenImages[5];
     CStatusBarItem* m_gruntWellBackground;
     CSBI_WellGoo* m_gruntWellGoo;
 
-    CSbiSlot m_slots[5];
+    GruntOvenSlot m_gruntOvenSlots[5];
 
     i32 m_gruntWellLevel;
     i32 m_gruntWellTargetLevel;
@@ -293,29 +293,29 @@ public:
     i32 m_reserved350;
     b32 m_gameplayControlsDisabled;
     b32 m_tabsBuilt;
-    i32 m_activeSlot;
-    StatusBarHighlightRow m_pendingHlRow;
+    i32 m_selectedGruntOvenSlot;
+    StatusBarHighlightRow m_selectedResourceRow;
     CStatusBarItem* m_resourceMainBackground;
     CStatusBarItem* m_resourceMachineFramework;
     CStatusBarItem* m_resourceUpperBackground;
     CStatusBarItem* m_resourceWindowBackground;
     CSbiHlRow m_resourceSlots[12];
     CSBI_ImageSet* m_resourceSlotSprites[12];
-    SbiBeltPhase m_machinePhase;
-    i32 m_machineItem;
-    ClockInterval m_beltClock;
-    CSBI_ImageSet* m_machineItemSprite;
-    // @identity-TODO: unaccessed word required by m_fallActive's retail offset.
+    SbiBeltPhase m_resourceDeliveryPhase;
+    i32 m_deliveryPickupType;
+    ClockInterval m_resourceDeliveryClock;
+    CSBI_ImageSet* m_deliveryItemDisplay;
+    // @identity-TODO: unaccessed word required by m_grinderState's retail offset.
     char m_pad4e4[0x4e8 - 0x4e4];
-    SbiFallingItemState m_fallActive;
-    i32 m_fallingItem;
-    ClockInterval m_fallClock;
-    CSBI_ImageSet* m_fallingItemSprite;
-    RECT m_fallingItemRect;
-    RECT m_machineItemRect;
-    i32 m_machineItemTargetX;
-    b32 m_rezActive;
-    i32 m_rezTick;
+    SbiFallingItemState m_grinderState;
+    i32 m_grinderPickupType;
+    ClockInterval m_grinderClock;
+    CSBI_ImageSet* m_grinderItemDisplay;
+    RECT m_grinderItemRect;
+    RECT m_deliveryItemRect;
+    i32 m_deliveryTargetX;
+    b32 m_resourceDeliveryActive;
+    i32 m_pendingResourceDeliveries;
 
     CPtrArray m_rewardQueue;
     // @identity-TODO: initialized to 1 and save-streamed; reward processing never reads it.
@@ -382,7 +382,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     memset(m_unitSampleModes, 0, sizeof(m_unitSampleModes));
     memset(m_unitSideTabs, 0, sizeof(m_unitSideTabs));
     memset(m_unitSampleArrows, 0, sizeof(m_unitSampleArrows));
-    memset(m_slotNotify, 0, sizeof(m_slotNotify));
+    memset(m_gruntOvenImages, 0, sizeof(m_gruntOvenImages));
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
     memset(m_multiplayerHeadButtons, 0, sizeof(m_multiplayerHeadButtons));
@@ -390,8 +390,8 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_resourceUpperBackground = NULL;
     m_resourceWindowBackground = NULL;
     m_resourceMachineFramework = NULL;
-    m_machineItemSprite = NULL;
-    m_fallingItemSprite = NULL;
+    m_deliveryItemDisplay = NULL;
+    m_grinderItemDisplay = NULL;
     m_machineDisplay = NULL;
     m_destructButtonImage = NULL;
     m_gruntWellBackground = NULL;
