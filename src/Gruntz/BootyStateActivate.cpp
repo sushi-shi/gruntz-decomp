@@ -46,7 +46,7 @@
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/ImageState.h>
+#include <Gruntz/State.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/MovieEntryId.h>

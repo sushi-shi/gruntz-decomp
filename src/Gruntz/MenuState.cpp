@@ -25,7 +25,7 @@
 #include <Gruntz/GameStats.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/ImageState.h>
+#include <Gruntz/State.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/MainMenuBuilder.h>
 #include <Gruntz/MenuStateInline.h>
