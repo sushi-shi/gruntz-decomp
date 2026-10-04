@@ -3591,7 +3591,7 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
             if (!player->GetBattlezAiController()->LoadConfig(this, idx, difficulty)) {
                 return 0;
             }
-            player->GetBattlezAiController()->Clear();
+            player->GetBattlezAiController()->Deactivate();
             player++;
             idx++;
             player->SetHumanControlled(false);

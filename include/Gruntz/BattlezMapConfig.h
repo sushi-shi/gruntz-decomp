@@ -30,7 +30,7 @@ public:
     ~CBattlezAiController();
     void FreeArrays();
     i32 SpawnInitialGrunts();
-    void Clear();
+    void Deactivate();
     i32 EnterDefenderMode(CGrunt*, i32);
     i32 PathCrossesMarkedTile(CGrunt*);
     i32 IsCoordOccupied(CGrunt*, i32, i32);

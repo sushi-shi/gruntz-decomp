@@ -1645,7 +1645,7 @@ CGrunt* CBattlezAiController::PickRandomIdleUnit(i32) {
 }
 
 RVA(0x0002ade0, 0x7)
-void CBattlezAiController::Clear() {
+void CBattlezAiController::Deactivate() {
     m_active = false;
 }
 

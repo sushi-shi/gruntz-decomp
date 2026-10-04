@@ -338,7 +338,7 @@ i32 GruntzPlayer::Deactivate() {
         return 0;
     }
     if (m_humanControlled == false) {
-        GetBattlezAiController()->Clear();
+        GetBattlezAiController()->Deactivate();
     }
     m_active = false;
     return 1;
