@@ -5,7 +5,7 @@
 
 #include <DDrawMgr/LogicRecord.h>
 
-inline CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 logicFlags)
+inline CLogicRecord::CLogicRecord(CGameWorld* owner, i32 id, i32 logicFlags)
     : CWapObj(owner, id, logicFlags, CWapObj::NO_SEED) {
     ResetLogicFields();
 }

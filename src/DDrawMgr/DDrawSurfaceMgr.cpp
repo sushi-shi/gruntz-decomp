@@ -31,7 +31,7 @@
 #include <string.h>
 
 RVA(0x00155840, 0x41)
-CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
+CGameWorld::CGameWorld() {
     m_displayBuffers = NULL;
     m_childGroup = NULL;
     m_transientDrawList = NULL;
@@ -50,14 +50,14 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     g_engineFrameDelta = 0;
 }
 
-RVA_COMPGEN(0x00155890, 0x1e, ??_GCDDrawSurfaceMgr@@UAEPAXI@Z)
+RVA_COMPGEN(0x00155890, 0x1e, ??_GCGameWorld@@UAEPAXI@Z)
 RVA(0x001558b0, 0x46)
-CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
+CGameWorld::~CGameWorld() {
     Cleanup();
 }
 
 RVA(0x00155900, 0x519)
-i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
+i32 CGameWorld::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_hWnd = hWnd;
     m_flags = flags;
 
@@ -134,7 +134,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
 }
 
 RVA(0x00155e20, 0xd1)
-void CDDrawSurfaceMgr::Cleanup() {
+void CGameWorld::Cleanup() {
     SAFE_DELETE(m_level);
     SAFE_DELETE(m_soundRegistry);
     SAFE_DELETE(m_soundStream);
@@ -150,7 +150,7 @@ void CDDrawSurfaceMgr::Cleanup() {
 }
 
 RVA(0x00155f00, 0x41)
-b32 CDDrawSurfaceMgr::IsReady() {
+b32 CGameWorld::IsReady() {
     CDisplayBuffers* first = m_displayBuffers;
 
     return first != NULL && ChildGroup() != NULL && m_transientDrawList != NULL
@@ -159,12 +159,12 @@ b32 CDDrawSurfaceMgr::IsReady() {
 }
 
 RVA(0x00155f50, 0x10)
-void CDDrawSurfaceMgr::SetRestoreHandler(SurfaceRestoreFn handler) {
+void CGameWorld::SetRestoreHandler(SurfaceRestoreFn handler) {
     SetSurfaceRestoreHandler(handler);
 }
 
 RVA(0x00155f60, 0x56)
-i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
+i32 CGameWorld::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
     CDDrawFrontSurface* child = m_displayBuffers->GetFrontSurface();
 
     if (child->GetWidth() != x || child->GetHeight() != y) {
@@ -184,7 +184,7 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00155fc0, 0x2e)
-void CDDrawSurfaceMgr::ShutdownSound() {
+void CGameWorld::ShutdownSound() {
     if (m_soundRegistry != NULL) {
 
         SoundStream* inner = m_soundRegistry->GetSoundStream();
@@ -201,7 +201,7 @@ void CDDrawSurfaceMgr::ShutdownSound() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00155ff0, 0x22)
-i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
+i32 CGameWorld::EnsureSoundInitialized() {
     if (m_soundStream != NULL && m_soundStream->m_initialized == false) {
         return m_soundStream->InitializeDevice(m_hWnd, DSSCL_NORMAL);
     }
@@ -209,7 +209,7 @@ i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
 }
 
 RVA(0x00156020, 0x505)
-i32 CDDrawSurfaceMgr::SaveSnapshot(
+i32 CGameWorld::SaveSnapshot(
     WorldSerializationCallback callback,
     char* path,
     char* snapshotName,
@@ -281,11 +281,7 @@ i32 CDDrawSurfaceMgr::SaveSnapshot(
 }
 
 RVA(0x00156530, 0x557)
-i32 CDDrawSurfaceMgr::LoadSnapshot(
-    WorldSerializationCallback callback,
-    char* path,
-    LogicTypeId typeId
-) {
+i32 CGameWorld::LoadSnapshot(WorldSerializationCallback callback, char* path, LogicTypeId typeId) {
     if (path == NULL) {
         return 0;
     }
@@ -345,7 +341,7 @@ i32 CDDrawSurfaceMgr::LoadSnapshot(
 }
 
 RVA(0x00156a90, 0x3a)
-i32 CDDrawSurfaceMgr::DispatchSerializationCallback(
+i32 CGameWorld::DispatchSerializationCallback(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,

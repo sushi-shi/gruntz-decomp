@@ -1307,7 +1307,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     if (self->m_mgr->GetGameMode() == GAMEMODE_BATTLEZ) {
         self->m_mgr->InitializeBattlezPlayers();
     }
-    self->m_mgr->m_saveGame
+    self->m_mgr->GetSaveGame()
         ->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, self->m_mgr);
     {
         CString key;
@@ -5346,7 +5346,7 @@ i32 CState::DrawScreenTextImage(const char* name) {
     if (src == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     CRenderBuffer* page = world->GetDisplayBuffers()->GetBackBuffer();
     if (page == NULL) {
         return 0;
@@ -5435,12 +5435,11 @@ i32 CPlay::StartLevelPlay() {
             if (reg->CheatMgr()->HasUsedCheats() == false) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
-                    (static_cast<CSaveGame*>(reg->m_saveGame))
-                        ->SetMaxLevel(static_cast<QuestLevel>(id));
+                    reg->GetSaveGame()->SetMaxLevel(static_cast<QuestLevel>(id));
                     reg = g_gameReg;
                 }
             }
-            (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
+            reg->GetSaveGame()->Save(NULL, 0x81a6);
         }
         CGameLevel* g = m_mgr->World()->GetLevel();
         SetCameraPosition(g->m_header.m_startX, g->m_header.m_startY);
@@ -6038,7 +6037,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mc = m_world;
+    CGameWorld* mc = m_world;
     if (mc == NULL) {
         return 0;
     }
@@ -6171,7 +6170,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* res = g_gameReg->World();
+    CGameWorld* res = g_gameReg->World();
     if (res == NULL) {
         return 0;
     }
@@ -6258,7 +6257,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 id;
         ar->Read(&id, sizeof(id));
         CWwdSpriteObject* sink =
-            LookupSerialRef(res->ChildGroup()->m_registeredGameObjectsById, id);
+            LookupSpriteObjectById(res->ChildGroup()->m_registeredGameObjectsById, id);
         m_cursorSnapSprite = sink;
         if (sink == NULL && id != 0) {
             return 0;
@@ -6440,7 +6439,7 @@ i32 CPlay::StepViewportResize() {
 
 RVA(0x000d8dc0, 0xce)
 i32 CPlay::ShrinkViewport(i32 step) {
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     b32 changed = false;
     RECT resized = world->GetLevel()->GetViewportRect();
 
@@ -6470,7 +6469,7 @@ i32 CPlay::ShrinkViewport(i32 step) {
 RVA(0x000d8ed0, 0x128)
 i32 CPlay::ExpandViewport(i32 step) {
     b32 changed = false;
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     CGruntzMgr* manager = m_mgr;
     CStatusBarMgr* statusBar = m_statusBar;
 
@@ -6519,7 +6518,7 @@ i32 CPlay::ExpandViewport(i32 step) {
 
 RVA(0x000d9050, 0xc7)
 i32 CPlay::DrawDarknessView() {
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     CRenderBuffer* backSurface = world->GetDisplayBuffers()->GetBackBuffer();
     CObList& objects = *world->ChildGroup()->GetList();
 
@@ -6574,7 +6573,7 @@ i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
 
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::RandomizePlayerAssignments() {
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
 
     CObList* objects = world->ChildGroup()->GetList();
     if (objects == NULL) {

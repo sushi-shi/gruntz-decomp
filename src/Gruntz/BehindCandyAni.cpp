@@ -50,6 +50,6 @@ void CBehindCandyAni::RegisterActs() {
 
 RVA(0x000adbb0, 0x17)
 i32 CBehindCandyAni::AdvanceAnim() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     return 0;
 }

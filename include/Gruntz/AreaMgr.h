@@ -6,7 +6,7 @@
 #include <Gruntz/SpawnList.h>
 #include <Ints.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CRezDir;
 
 class CAreaMgr {
@@ -21,10 +21,10 @@ public:
 
     ~CAreaMgr();
 
-    i32 LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src);
-    i32 LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src);
-    i32 LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src);
-    i32 LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src);
+    i32 LoadObjectResources(CGameWorld* surfaceMgr, CRezDir* src);
+    i32 LoadObjectImageResources(CGameWorld* surfaceMgr, CRezDir* src);
+    i32 LoadObjectSoundResources(CGameWorld* surfaceMgr, CRezDir* src);
+    i32 LoadObjectAnimResources(CGameWorld* surfaceMgr, CRezDir* src);
 
     i32 InitializeArea1Stage1();
     i32 InitializeArea1Stage2();

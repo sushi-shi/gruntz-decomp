@@ -139,7 +139,7 @@ i32 CLightFx::RebindNode() {
 
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete() && m_deleteWhenComplete)
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->GetAnimationCursor().IsComplete() && m_deleteWhenComplete)
     return 0;
 }

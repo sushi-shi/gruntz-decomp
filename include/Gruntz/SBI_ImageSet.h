@@ -22,16 +22,9 @@ public:
     virtual void Reset() OVERRIDE;
     virtual i32 Refresh(i32 deltaMs) OVERRIDE;
     virtual i32 Render() OVERRIDE;
-    virtual i32 SetupImage(
-        CStatusBarMgr*,
-        CDDrawSurfaceMgr*,
-        SbiCommandId,
-        StatusBarTab,
-        RECT,
-        const char*,
-        i32,
-        i32
-    ) OVERRIDE;
+    virtual i32
+    SetupImage(CStatusBarMgr*, CGameWorld*, SbiCommandId, StatusBarTab, RECT, const char*, i32, i32)
+        OVERRIDE;
 
     virtual void SetFrameIndex(i32 frameIndex);
 

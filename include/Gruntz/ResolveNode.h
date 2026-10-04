@@ -11,7 +11,7 @@
 
 #include <stddef.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 struct WwdDirtyRect {
     WwdDirtyRect();
@@ -94,19 +94,19 @@ public:
 
     CRenderState();
 
-    CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CRenderState(CGameWorld* owner, i32 id, i32 flags);
 
     enum EInlineSeed {
         INLINE_SEED
     };
-    CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed);
+    CRenderState(CGameWorld* owner, i32 id, i32 flags, EInlineSeed);
 
     enum ENoSeed {
         NO_SEED
     };
     CRenderState(ENoSeed) : m_dirty(WwdDirtyRect::NO_SEED) {}
     i32 Init(
-        CDDrawSurfaceMgr* owner,
+        CGameWorld* owner,
         i32 id,
         i32 resolveX,
         i32 resolveY,

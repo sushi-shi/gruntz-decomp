@@ -1206,7 +1206,7 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* lvl = m_world;
+    CGameWorld* lvl = m_world;
     if (lvl == NULL) {
         return 0;
     }
@@ -1312,7 +1312,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
     if (world == NULL) {
         return 0;
     }
@@ -1384,7 +1384,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&key, sizeof(key));
         if (key != 0) {
             CWwdSpriteObject* obj =
-                LookupSerialRef(world->ChildGroup()->m_registeredGameObjectsById, key);
+                LookupSpriteObjectById(world->ChildGroup()->m_registeredGameObjectsById, key);
             m_cameraSprite = obj;
             if (obj == NULL) {
                 return 0;

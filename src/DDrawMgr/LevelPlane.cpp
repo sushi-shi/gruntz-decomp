@@ -39,7 +39,7 @@
 #include <string.h>
 
 RVA(0x001615a0, 0x9a)
-CLevelPlane::CLevelPlane(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CLevelPlane::CLevelPlane(CGameWorld* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
 
     m_tileHandles = NULL;
@@ -486,7 +486,7 @@ i32 CLevelPlane::LoadObjectRecords(const char* recordCursor, i32 objectCount) {
     RECT planeBounds;
     SET_RECT_COMPONENTS(planeBounds, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
 
-    CDDrawSurfaceMgr* world = OwnerMgr();
+    CGameWorld* world = OwnerMgr();
     CDDrawChildGroup* activeGroup = world->ChildGroup();
     if (activeGroup == NULL) {
         return 0;

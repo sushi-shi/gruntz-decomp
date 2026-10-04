@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CDDSurface;
 class CRenderBuffer;
 class CDDrawFrontSurface;
@@ -23,7 +23,7 @@ GZ_ENUM_END(DDrawPageKind)
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
 class CDisplayBuffers : public CWapObj {
 public:
-    CDisplayBuffers(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
+    CDisplayBuffers(CGameWorld* owner) : CWapObj(owner, 0, 0) {
         m_frontSurface = NULL;
         m_backBuffer = NULL;
         m_overlayBuffer = NULL;
@@ -74,13 +74,13 @@ public:
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
 class CRenderSurface : public CWapObj {
 public:
-    CRenderSurface(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CRenderSurface(CGameWorld* owner, i32 id, i32 flags);
 
 protected:
     enum InlineCtorTag {
         INLINE_CTOR
     };
-    CRenderSurface(InlineCtorTag, CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+    CRenderSurface(InlineCtorTag, CGameWorld* owner, i32 id, i32 flags)
         : CWapObj(owner, id, flags) {
         m_width = 0;
     }
@@ -153,8 +153,7 @@ inline i32 CRenderSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
 
 class CDDrawFrontSurface : public CRenderSurface {
 public:
-    CDDrawFrontSurface(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
-        : CRenderSurface(owner, id, flags) {
+    CDDrawFrontSurface(CGameWorld* owner, i32 id, i32 flags) : CRenderSurface(owner, id, flags) {
         m_surface = NULL;
     }
 

@@ -234,7 +234,7 @@ i32 CWarlord::SerializeDispatch(
 
     switch (mode) {
         case SERIAL_SAVE: {
-            CDDrawSurfaceMgr* world = m_ownerLogicRecord->OwnerMgr();
+            CGameWorld* world = m_ownerLogicRecord->OwnerMgr();
             if (world == NULL) {
                 goto fail;
             }
@@ -258,7 +258,7 @@ i32 CWarlord::SerializeDispatch(
             break;
         }
         case SERIAL_LOAD: {
-            CDDrawSurfaceMgr* world = m_ownerLogicRecord->OwnerMgr();
+            CGameWorld* world = m_ownerLogicRecord->OwnerMgr();
             if (world == NULL) {
                 return 0;
             }
@@ -331,7 +331,7 @@ i32 CWarlord::FinishIdleAnimation() {
 
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::UpdateMovingState() {
-    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) != 1) {
+    if (m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
@@ -358,7 +358,7 @@ i32 CWarlord::UpdateMovingState() {
 
 RVA(0x00044d10, 0x106)
 i32 CWarlord::UpdatePanicState() {
-    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) != 1) {
+    if (m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 

@@ -256,7 +256,7 @@ done:
 // @early-stop
 RVA(0x00110c10, 0xeee)
 i32 CTileTriggerLogic::Tick() {
-    CDDrawSurfaceMgr* world = g_gameReg->World();
+    CGameWorld* world = g_gameReg->World();
     CTileTriggerTransition* trans = NULL;
 
     TileCollisionKind srcId = PbResolveCell(world->GetLevel(), m_tileX, m_tileY);
@@ -721,7 +721,7 @@ CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 RVA(0x001122a0, 0x241)
 i32 CGiantRockLogic::BreakRock() {
 
-    CDDrawSurfaceMgr* gameMgr = g_gameReg->World();
+    CGameWorld* gameMgr = g_gameReg->World();
 
     i32 inRect = 0;
     POINT pt;

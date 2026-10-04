@@ -445,7 +445,7 @@ CString GetColorName(i32 colorIdx, b32 upper);
 CString GetDifficultyName(i32 diffIdx, b32 upper);
 
 i32 LayerBlitFrame(
-    CDDrawSurfaceMgr* surfaceMgr,
+    CGameWorld* surfaceMgr,
     CImage* src,
     i32 x,
     i32 y,

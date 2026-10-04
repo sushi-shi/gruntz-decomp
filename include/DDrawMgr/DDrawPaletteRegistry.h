@@ -13,7 +13,7 @@
 
 class CDDrawPaletteRegistry : public CWapObj {
 public:
-    CDDrawPaletteRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
+    CDDrawPaletteRegistry(CGameWorld* owner) : CWapObj(owner, 0, 0) {
         m_activePalette = NULL;
     }
     virtual i32 IsLoaded() OVERRIDE;

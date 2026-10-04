@@ -210,7 +210,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->GetAnimationCursor().Advance(static_cast<i32>(g_engineFrameDelta));
 
     double drift = static_cast<double>(g_frameDelta) * m_speed;
     if (m_travelDx > 0) {
@@ -341,7 +341,7 @@ void CDroppedObject::RegisterActs() {
 
 RVA(0x000c7090, 0x230)
 i32 CDroppedObject::AdvanceFall() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
     i32 landed = static_cast<i32>((m_fallY - (-0.5)));
     if (landed > m_landY) {
@@ -358,7 +358,7 @@ i32 CDroppedObject::AdvanceFall() {
                 if (cell == IDX(CELL_FLAG_REVEALED_POWERUP)) {
                     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 } else {
-                    switch (g_gameReg->GetCurrentState()->m_levelType) {
+                    switch (g_gameReg->GetCurrentState()->GetLevelArea()) {
                         case AREA_HIGH_ON_SWEETZ:
                         case AREA_HIGH_ROLLERZ:
                         case AREA_GRUNTZ_IN_SPACE:
@@ -404,8 +404,8 @@ i32 CDroppedObject::AdvanceFall() {
 
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::AdvanceAnimation() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->GetAnimationCursor().IsComplete())
     return 0;
 }
 
@@ -461,7 +461,7 @@ void CDroppedObjectShadow::RegisterActs() {
 // @early-stop
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
-    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == ANIM_EVENT_EFFECT_FRAME) {
+    if (m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta) == ANIM_EVENT_EFFECT_FRAME) {
         CWwdSpriteObject* o = m_object;
         g_gameReg->World()->ChildGroup()->CreateSprite(
             0,
@@ -472,7 +472,7 @@ i32 CDroppedObjectShadow::Advance() {
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
     }
-    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->GetAnimationCursor().IsComplete())
     return 0;
 }
 

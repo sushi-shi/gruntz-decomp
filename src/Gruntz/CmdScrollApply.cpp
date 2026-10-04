@@ -95,7 +95,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         }
     }
 
-    CDDrawSurfaceMgr* o = pm->World();
+    CGameWorld* o = pm->World();
     SET_RECT_COMPONENTS(
         pm->m_viewBounds,
         o->GetLevel()->m_mainPlane->GetPlaneViewRect()->left - 0x60,

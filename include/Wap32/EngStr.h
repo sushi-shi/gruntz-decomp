@@ -10,7 +10,7 @@ GZ_ENUM_CONST_BEGIN(EngStrLayout)
     ENGSTR_SHADOW_OFFSET_Y_PX = 3
 GZ_ENUM_CONST_END(EngStrLayout)
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 i32 EngStr_RenderText(
     void* worldContext,
@@ -26,7 +26,7 @@ i32 EngStr_RenderText(
 );
 
 i32 DrawTextToFrontSurface(
-    CDDrawSurfaceMgr* surfaceMgr,
+    CGameWorld* surfaceMgr,
     class CString* text,
     struct tagRECT* bounds,
     i32 fontSelection,

@@ -32,7 +32,7 @@
 #include <strstrea.h>
 
 RVA(0x000204e0, 0x19)
-i32 CChatBox::Attach(CDDrawSurfaceMgr* world, CGameText* gameText) {
+i32 CChatBox::Attach(CGameWorld* world, CGameText* gameText) {
     m_world = world;
     m_gameText = gameText;
     return m_attached = true;

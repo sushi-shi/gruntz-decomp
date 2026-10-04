@@ -29,7 +29,7 @@ public:
 
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,

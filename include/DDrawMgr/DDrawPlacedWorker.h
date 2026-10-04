@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 class CImageSet;
 
@@ -41,7 +41,7 @@ public:
 
     CTransientDrawItem() {}
 
-    CTransientDrawItem(CDDrawSurfaceMgr* ctx) : CRenderState(NO_SEED) {
+    CTransientDrawItem(CGameWorld* ctx) : CRenderState(NO_SEED) {
         m_id = 0;
         m_ownerCtx = ctx;
         m_flags = 0;
@@ -64,7 +64,7 @@ struct CTransientPixel : public CTransientDrawItem {
 
     virtual void Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay) OVERRIDE;
     CTransientPixel() {}
-    CTransientPixel(CDDrawSurfaceMgr* ctx) : CTransientDrawItem(ctx) {
+    CTransientPixel(CGameWorld* ctx) : CTransientDrawItem(ctx) {
         m_pixelValue = 0;
     }
     virtual i32 PlacePixel(i32 x, i32 y, i32 pixelValue);
@@ -76,7 +76,7 @@ struct CTransientImage : public CTransientDrawItem {
 
     virtual void Render(CRenderBuffer* backBuffer, CRenderBuffer* overlay) OVERRIDE;
     CTransientImage() {}
-    CTransientImage(CDDrawSurfaceMgr* ctx) : CTransientDrawItem(ctx) {
+    CTransientImage(CGameWorld* ctx) : CTransientDrawItem(ctx) {
         m_contentValue = 0;
     }
     virtual i32 PlaceImage(i32 x, i32 y, const char* imageSetName, i32 frameIndex);

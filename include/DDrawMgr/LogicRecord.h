@@ -20,7 +20,7 @@ struct CGameObject;
 
 typedef i32(__cdecl* LogicRecordDispatchFn)(CGameObject* obj);
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 struct CLogicRecord : public CWapObj {
 
@@ -34,9 +34,9 @@ struct CLogicRecord : public CWapObj {
 
     CLogicRecord() {}
 
-    CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 logicFlags);
+    CLogicRecord(CGameWorld* owner, i32 id, i32 logicFlags);
 
-    CLogicRecord(CDDrawSurfaceMgr* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
+    CLogicRecord(CGameWorld* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
         ResetLogicFields();
     }
 

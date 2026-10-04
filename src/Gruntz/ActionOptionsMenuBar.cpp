@@ -278,7 +278,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     if (reg == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = reg->World();
+    CGameWorld* mgr = reg->World();
     if (mgr == NULL) {
         return 0;
     }
@@ -346,7 +346,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (gr == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = gr->World();
+    CGameWorld* mgr = gr->World();
     if (mgr == NULL) {
         return 0;
     }

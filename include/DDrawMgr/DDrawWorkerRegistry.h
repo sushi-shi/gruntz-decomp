@@ -18,7 +18,7 @@ class CRezDir;
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
 class CImageSetRegistry : public CWapObj {
 public:
-    CImageSetRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
+    CImageSetRegistry(CGameWorld* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
 
     virtual ~CImageSetRegistry() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;

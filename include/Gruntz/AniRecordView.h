@@ -8,7 +8,7 @@
 #include <Wwd/WwdAnimStepMode.h>
 
 class SoundCueRegistry;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 struct SoundCue;
 
 struct CDDPalette; // The class key is ABI-significant in MSVC mangling.

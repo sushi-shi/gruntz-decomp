@@ -36,7 +36,7 @@ public:
         OVERRIDE;
     virtual i32 Setup(
         CStatusBarMgr* owner,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,

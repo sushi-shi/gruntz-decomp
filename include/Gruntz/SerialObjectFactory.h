@@ -7,11 +7,11 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CFileMemBase;
 
 i32 __cdecl GameSerializationCallback(
-    CDDrawSurfaceMgr* ctx,
+    CGameWorld* ctx,
     CFileMemBase* archive,
     SerialMode mode,
     LogicTypeId typeId,

@@ -14,7 +14,7 @@
 #include <stddef.h>
 
 class CStatusBarMgr;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 class CSBI_GruntMachine : public CStatusBarItem {
 public:
@@ -36,7 +36,7 @@ public:
 
     i32 Initialize(
         CStatusBarMgr* owner,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rect,

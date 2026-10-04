@@ -295,7 +295,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
         i32 sortKey = m_object->m_screenY + 0x186a0;                                               \
         m_object->SetSortKey(sortKey);                                                             \
         CAnimationSequence* found = NULL;                                                          \
-        CAnimationSequence* cached = m_wwdObject->m_animationCursor.GetAnimation();                \
+        CAnimationSequence* cached = m_wwdObject->GetAnimationCursor().GetAnimation();             \
         MapLookup(                                                                                 \
             m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,                         \
             s_gruntzEntrancezDrop,                                                                 \
@@ -322,7 +322,7 @@ i32 CGrunt::StartEntranceAnimation(GruntEntranceMode mode) {
 RVA(0x00067f80, 0x313)
 // @early-stop
 i32 CGrunt::UpdateEntranceAnimation() {
-    if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
+    if (m_wwdObject->GetAnimationCursor().Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         RESOLVE_ENTRANCE_OCCUPANT();
         CWwdSpriteObject* h = m_object;
         i32 oldX = m_lastTilePx.m_x;
@@ -349,7 +349,7 @@ i32 CGrunt::UpdateEntranceAnimation() {
         COMPLETE_ENTRANCE_COMMIT();
     }
 
-    CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
+    CAniAdvanceCursor* cur = &m_wwdObject->GetAnimationCursor();
     if (!cur->IsComplete()) {
         return 0;
     }
@@ -729,7 +729,7 @@ i32 CGrunt::StartDeathMovement() {
     i32 tileX = h->m_screenX >> TILE_SHIFT_PX;
     i32 tileId = b->TileIdAt(tileX, tileY);
 
-    LevelArea area = state->m_levelType;
+    LevelArea area = state->GetLevelArea();
 
     if (area < AREA_TILESET_B_FIRST) {
         switch (static_cast<MovingDeathTileSetAId>(tileId)) {
@@ -933,8 +933,8 @@ CAnimationSequence* AnimationRegistry::FindAnimation(const char* key) {
 
 RVA(0x0006b2e0, 0x39)
 void CWapX::ApplyAnimation(CAnimationSequence* animation, i32 advanceImmediately) {
-    m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
-    CAniAdvanceCursor* cursor = &m_wwdObject->m_animationCursor;
+    m_previousAnimation = m_wwdObject->GetAnimationCursor().GetAnimation();
+    CAniAdvanceCursor* cursor = &m_wwdObject->GetAnimationCursor();
     cursor->SetAnimation(animation);
     if (advanceImmediately != 0) {
         cursor->Advance(static_cast<i32>(g_engineFrameDelta));

@@ -12,7 +12,7 @@
 
 class CLogicRecordRegistry : public CWapObj {
 public:
-    CLogicRecordRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
+    CLogicRecordRegistry(CGameWorld* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
     virtual ~CLogicRecordRegistry() OVERRIDE;
 
     RVA(0x001576d0, 0x16)

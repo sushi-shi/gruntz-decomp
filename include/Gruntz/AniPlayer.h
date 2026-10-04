@@ -15,7 +15,7 @@ class CAniPlayer : public CSBI_ImageSetAni {
 public:
     i32 Start(
         CStatusBarMgr* owner,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,

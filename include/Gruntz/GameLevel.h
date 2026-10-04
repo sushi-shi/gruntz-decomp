@@ -57,7 +57,7 @@ struct CRezItm;
 
 struct CGameObject;
 class CDDrawChildGroup;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 struct LevelDims {
     i32 m_w;
@@ -115,7 +115,7 @@ public:
     virtual i32 LoadFromFile(const char* path);
     virtual void ReleaseChildren();
 
-    CGameLevel(class CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CGameLevel(class CGameWorld* owner, i32 id, i32 flags);
 
     void SetSpatialDefaults() {
         m_defaultActiveGridCellSize[0] = 500;

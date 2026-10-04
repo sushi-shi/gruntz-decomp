@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 class CDDSurface;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 struct CRezItm;
 
 GZ_ENUM_FLAGS_BEGIN(RenderBufferFlags, i32)
@@ -30,7 +30,7 @@ public:
     void DrawLabel(RECT* rc, char* text);
 
 public:
-    CRenderBuffer(CDDrawSurfaceMgr* mgr, i32 kind, i32 flags)
+    CRenderBuffer(CGameWorld* mgr, i32 kind, i32 flags)
         : CRenderSurface(INLINE_CTOR, mgr, kind, flags) {
         m_surface = NULL;
         m_ownsSurface = true;

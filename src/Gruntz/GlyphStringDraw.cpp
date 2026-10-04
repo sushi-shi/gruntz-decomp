@@ -21,14 +21,7 @@
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00115220, 0xa4)
-i32 DrawGlyphString(
-    CDDrawSurfaceMgr* ctx,
-    i32 x,
-    i32 y,
-    const char* str,
-    CImageSet* font,
-    i32 advance
-) {
+i32 DrawGlyphString(CGameWorld* ctx, i32 x, i32 y, const char* str, CImageSet* font, i32 advance) {
     if (!ctx) {
         return 0;
     }
@@ -55,7 +48,7 @@ i32 DrawGlyphString(
 
 RVA(0x00115300, 0xf5)
 i32 LayerBlitFrame(
-    CDDrawSurfaceMgr* surfaceMgr,
+    CGameWorld* surfaceMgr,
     CImage* src,
     i32 x,
     i32 y,
@@ -104,7 +97,7 @@ i32 LayerBlitFrame(
 
 RVA(0x00115440, 0x45)
 i32 DrawTextToFrontSurface(
-    CDDrawSurfaceMgr* surfaceMgr,
+    CGameWorld* surfaceMgr,
     CString* text,
     RECT* bounds,
     i32 fontSelection,
@@ -135,7 +128,7 @@ i32 DrawTextToFrontSurface(
 
 RVA(0x001154b0, 0x45)
 i32 DrawTextToOverlaySurface(
-    CDDrawSurfaceMgr* surfaceMgr,
+    CGameWorld* surfaceMgr,
     CString* text,
     RECT* bounds,
     i32 fontSelection,
@@ -165,7 +158,7 @@ i32 DrawTextToOverlaySurface(
 }
 RVA(0x00115520, 0x45)
 i32 DrawTextToBackSurface(
-    CDDrawSurfaceMgr* surfaceMgr,
+    CGameWorld* surfaceMgr,
     CString* text,
     RECT* bounds,
     i32 fontSelection,

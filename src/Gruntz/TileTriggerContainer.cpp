@@ -50,7 +50,7 @@ RVA_DYNINIT(0x00115ed0, 0x1a, s_gruntDirCenter)
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00115b60, 0x97)
 i32 DrawCenteredPageText(
-    CDDrawSurfaceMgr* world,
+    CGameWorld* world,
     const CString* text,
     RECT* bounds,
     i32 useMessageFont,

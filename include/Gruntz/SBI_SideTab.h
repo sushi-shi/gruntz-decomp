@@ -35,7 +35,7 @@ public:
 
     i32 Initialize(
         CStatusBarMgr* parent,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,

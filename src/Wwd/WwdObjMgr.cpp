@@ -694,7 +694,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 if (obj->m_screenX == COORD_UNSET) {
                     continue;
                 }
-                if (obj->GetClassId() != CLASSID_SERIALREF) {
+                if (obj->GetClassId() != CLASSID_WWD_SPRITE_OBJECT) {
                     continue;
                 }
                 CImage* fr = obj->GetFrameImage();
@@ -839,12 +839,12 @@ CWwdGameObject* CDDrawChildGroup::FindById(i32 id) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a810, 0x42)
-CWwdGameObject* CDDrawChildGroup::FindSerialRefById(i32 id) {
+CWwdGameObject* CDDrawChildGroup::FindSpriteById(i32 id) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id) {
+        if (obj->GetClassId() == CLASSID_WWD_SPRITE_OBJECT && obj->m_id == id) {
             return obj;
         }
     }
@@ -858,7 +858,7 @@ CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicR
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id) {
+        if (obj->GetClassId() == CLASSID_WWD_SPRITE_OBJECT && obj->m_id == id) {
 
             CLogicRecord* record = obj->GetLogicRecord();
             if (record->GetDispatch() == logicRecord->GetDispatch()) {
@@ -895,7 +895,7 @@ CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 colli
     while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
 
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id
+        if (obj->GetClassId() == CLASSID_WWD_SPRITE_OBJECT && obj->m_id == id
             && obj->m_objectType == collisionCategory) {
             return obj;
         }
@@ -921,12 +921,12 @@ CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a9d0, 0x45)
-CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
+CWwdGameObject* CDDrawChildGroup::FindSpriteByObjectId(i32 objectId) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->GetObjectId() == objectId) {
+        if (obj->GetClassId() == CLASSID_WWD_SPRITE_OBJECT && obj->GetObjectId() == objectId) {
             return obj;
         }
     }
@@ -1311,7 +1311,7 @@ WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
 }
 
 RVA(0x0015b2c0, 0x3d)
-CRenderState::CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CRenderState::CRenderState(CGameWorld* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;
@@ -1320,7 +1320,7 @@ CRenderState::CRenderState(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 }
 
 RVA(0x0015b300, 0x40)
-CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 logicFlags)
+CLogicRecord::CLogicRecord(CGameWorld* owner, i32 id, i32 logicFlags)
     : CWapObj(owner, id, logicFlags, CWapObj::NO_SEED) {
     ResetLogicFields();
 }

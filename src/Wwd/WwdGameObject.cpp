@@ -282,7 +282,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        CDDrawSurfaceMgr* mgr = OwnerMgr();
+        CGameWorld* mgr = OwnerMgr();
         SoundCue* found = mgr->SoundRegistry()->FindCue(name);
         m_soundCue = found;
     }

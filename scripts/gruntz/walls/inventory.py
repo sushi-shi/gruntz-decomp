@@ -27,7 +27,7 @@ them are the first kind. `CGruntSelectedSprite::Update` reads as the biggest
 opportunity in the whole queue at cur 84.85 against hist 99.24, and its bank
 is also 99.24 - that source already reached the peak and there is nothing to
 do. The `L` flag marks the 46 that are real; the deepest is
-`CDDrawSurfaceMgr::SaveSnapshot`, banked at 70.12 against a 77.52 peak.
+`CGameWorld::SaveSnapshot`, banked at 70.12 against a 77.52 peak.
 
 An `L` row is a question, not a promise, so read `walls priors` before working
 one: some of these peaks were given up DELIBERATELY, because the shape that

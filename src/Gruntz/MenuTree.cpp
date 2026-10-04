@@ -28,7 +28,7 @@
 
 RVA(0x00182ab0, 0x7b)
 i32 CMenuTree::Configure(
-    CDDrawSurfaceMgr* world,
+    CGameWorld* world,
     HWND windowHandle,
     RECT* bounds,
     i32 headerGap,

@@ -44,11 +44,11 @@ class AnimationRegistry;
 class CDDrawDeviceManager;
 class SoundStream;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CFileMemBase;
 
 typedef i32(__cdecl* WorldSerializationCallback)(
-    CDDrawSurfaceMgr*,
+    CGameWorld*,
     CFileMemBase*,
     SerialMode,
     LogicTypeId,
@@ -70,13 +70,14 @@ GZ_ENUM_FLAGS_BEGIN(DDrawSurfaceMgrFlags, i32)
 GZ_ENUM_FLAGS_END(DDrawSurfaceMgrFlags, i32)
 GZ_ENUM_FLAGS_OPS(DDrawSurfaceMgrFlags)
 
-class CDDrawSurfaceMgr : public CObject {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CGameWorld : public CObject {
 public:
     inline CImageSet* FindImageSet(LPCTSTR name);
     inline class CImage* FindFrame(LPCTSTR name, i32 index);
-    CDDrawSurfaceMgr();
+    CGameWorld();
 
-    virtual ~CDDrawSurfaceMgr() OVERRIDE;
+    virtual ~CGameWorld() OVERRIDE;
     virtual b32 IsReady();
 
     virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);

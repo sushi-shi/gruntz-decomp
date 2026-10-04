@@ -84,7 +84,7 @@ i32 CExitTrigger::SerializeDispatch(
     CFileMemBase* arc = ar;
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(ar, arc, mode, typeId, object)
 
-    CDDrawSurfaceMgr* holder = g_gameReg->World();
+    CGameWorld* holder = g_gameReg->World();
     switch (mode) {
         case SERIAL_LOAD: {
             CGameObject* found;

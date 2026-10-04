@@ -59,6 +59,6 @@ void CToobSpikez::RegisterActs() {
 
 RVA(0x00114bc0, 0x17)
 i32 CToobSpikez::AdvanceAnim() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     return 0;
 }

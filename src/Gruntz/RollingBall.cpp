@@ -115,10 +115,10 @@ void CRollingBall::RegisterActs() {
 
 RVA(0x000b0140, 0xba8)
 i32 CRollingBall::Update() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
 
     CWwdSpriteObject* anim = m_wwdObject;
-    if (anim->m_animationCursor.IsComplete()) {
+    if (anim->GetAnimationCursor().IsComplete()) {
         anim->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
@@ -220,7 +220,7 @@ i32 CRollingBall::Update() {
                 case TILEKIND_DEATHBRIDGE_UP:
                 case TILEKIND_TOGGLEDEATHBRIDGE_UP: {
 
-                    switch (g_gameReg->GetCurrentState()->m_levelType) {
+                    switch (g_gameReg->GetCurrentState()->GetLevelArea()) {
                         case AREA_HIGH_ON_SWEETZ:
                         case AREA_HIGH_ROLLERZ:
                         case AREA_GRUNTZ_IN_SPACE:
@@ -328,7 +328,7 @@ i32 CRollingBall::Update() {
                 }
 
                 case TILEKIND_REVEALED_POWERUP: {
-                    switch (static_cast<LevelArea>(g_gameReg->GetCurrentState()->m_levelType)) {
+                    switch (static_cast<LevelArea>(g_gameReg->GetCurrentState()->GetLevelArea())) {
                         case AREA_HIGH_ON_SWEETZ:
                         case AREA_HIGH_ROLLERZ:
                         case AREA_GRUNTZ_IN_SPACE:

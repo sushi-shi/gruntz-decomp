@@ -24,7 +24,7 @@
 RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(
     CStatusBarMgr* owner,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,

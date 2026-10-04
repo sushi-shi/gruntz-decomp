@@ -4,15 +4,16 @@
 #include <Utils/MapTyped.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
-inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
+inline CWwdSpriteObject* LookupSpriteObjectById(CMapPtrToPtr& byId, i32 objectId) {
     CGameObject* found = NULL;
-    if (MapLookupById(byId, id, found) == false) {
+    if (MapLookupById(byId, objectId, found) == false) {
         return NULL;
     }
     if (found == NULL) {
         return NULL;
     }
-    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(found) : NULL;
+    return found->GetClassId() == CLASSID_WWD_SPRITE_OBJECT ? static_cast<CWwdSpriteObject*>(found)
+                                                            : NULL;
 }
 
 #endif // GRUNTZ_SERIALREFLOOKUP_H

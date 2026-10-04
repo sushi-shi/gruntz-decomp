@@ -38,7 +38,7 @@
 RVA(0x000e9600, 0x18c)
 i32 CSBI_SideTab::Initialize(
     CStatusBarMgr* parent,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rc,
@@ -164,7 +164,7 @@ i32 CSBI_SideTab::SerializeFields(
     if (s == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* reg = g_gameReg->World();
+    CGameWorld* reg = g_gameReg->World();
     if (reg == NULL) {
         return 0;
     }

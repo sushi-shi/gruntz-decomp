@@ -26,7 +26,7 @@
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rect,
@@ -113,7 +113,7 @@ i32 CSBI_ImageSet::SerializeFields(
     if (archive == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* world = g_gameReg->World();
+    CGameWorld* world = g_gameReg->World();
     if (world == NULL) {
         return 0;
     }

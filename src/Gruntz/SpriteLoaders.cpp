@@ -249,7 +249,7 @@ i32 CLevelTimer::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* mgr = g_gameReg->World();
+    CGameWorld* mgr = g_gameReg->World();
     if (mgr == NULL) {
         return 0;
     }

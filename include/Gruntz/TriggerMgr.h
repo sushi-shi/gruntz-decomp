@@ -25,7 +25,7 @@ class CGrunt;
 class CWarlord;
 struct CGameObject;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class SoundBuffer;
 struct CTmOverlay;
 class CWwdSpriteObject;
@@ -52,7 +52,7 @@ public:
 
     i32 Load(CFileMemBase* ar);
 
-    i32 SetWorld(CDDrawSurfaceMgr* world);
+    i32 SetWorld(CGameWorld* world);
 
     i32 UpdateCameraTracking();
 
@@ -333,7 +333,7 @@ public:
     i32 m_gruntzExitedByPlayer[PLAYER_SLOT_COUNT];
     i32 m_gruntzLostByPlayer[PLAYER_SLOT_COUNT];
 
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
 
     b32 m_cameraTrackingActive;
     Coord m_cameraTargetIdentity;

@@ -36,7 +36,7 @@
 RVA(0x000e8a70, 0x18c)
 i32 CSBI_GruntMachine::Initialize(
     CStatusBarMgr* owner,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rect,
@@ -45,7 +45,7 @@ i32 CSBI_GruntMachine::Initialize(
     i32 rightFrameIndex
 ) {
 
-    CDDrawSurfaceMgr* world;
+    CGameWorld* world;
     CImage* backgroundImage;
     CImageSet* machineFrames;
     CImage* leftImage;
@@ -166,7 +166,7 @@ i32 CSBI_GruntMachine::SerializeFields(
     if (s == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* reg = g_gameReg->World();
+    CGameWorld* reg = g_gameReg->World();
     if (reg == NULL) {
         return 0;
     }

@@ -14,7 +14,7 @@
 
 class CImageSet;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 class CSBI_MenuItem : public CSBI_Image {
 public:
@@ -35,7 +35,7 @@ public:
 
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
-        CDDrawSurfaceMgr* host,
+        CGameWorld* host,
         SbiCommandId cmd,
         StatusBarTab tab,
         RECT rc,

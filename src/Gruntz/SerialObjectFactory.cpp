@@ -102,7 +102,7 @@ i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path) {
 // @early-stop
 RVA(0x0000d2a0, 0x1984)
 i32 __cdecl GameSerializationCallback(
-    CDDrawSurfaceMgr* ctx,
+    CGameWorld* ctx,
     CFileMemBase* archive,
     SerialMode mode,
     LogicTypeId typeId,

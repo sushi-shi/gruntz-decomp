@@ -40,8 +40,6 @@
 
 #include <string.h>
 
-// @early-stop
-
 RVA(0x000862f0, 0x4369)
 i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
     switch (nID) {
@@ -762,9 +760,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_RETURN_TO_ATTRACT:
             if (!TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x42c);
-                return 1;
+            } else {
+                PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             }
-            PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         case CMD_SHOW_STATE0:
             if (!TransitionState(GAMESTATE_SPLASH, 1, false, 0)) {
@@ -826,9 +824,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             if (!TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x430);
-                return 1;
+            } else {
+                PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             }
-            PostMessageA(m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         case CMD_CAPTURE_WORLD:
             if (g_cdPromptResult) {
@@ -960,6 +958,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!_g) {
                 return 1;
             }
+            // Preserve the CString assignment call even when reloading the same world file.
+            m_strWorldFile = m_strWorldFile;
             if (!LoadLevel(m_curState->m_levelIndex, false, 1)) {
                 ReportError(IDX(IDS_CHANGE_LEVEL), 0x434);
             }

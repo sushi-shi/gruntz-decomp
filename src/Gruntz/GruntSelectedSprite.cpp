@@ -66,7 +66,7 @@ i32 CGruntSelectedSprite::Update() {
         m_gruntIdentity.m_unitIndex
     );
     if (e != NULL && e->IsSelected() != false) {
-        m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+        m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
         m_object->m_screenX = e->GetSpriteObject()->m_screenX;
         m_object->m_screenY = e->GetSpriteObject()->m_screenY;
     }

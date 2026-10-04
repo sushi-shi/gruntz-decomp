@@ -11,7 +11,7 @@
 #include <Gruntz/StaticHazard.h>
 
 RVA(0x0000a3b0, 0x6e2)
-void RegisterGameObjectLogicTypes(CDDrawSurfaceMgr* ctx) {
+void RegisterGameObjectLogicTypes(CGameWorld* ctx) {
     ctx->GetLogicRegistry()->RegisterLogicType(DispatchAniCycleLogic, "AniCycle", 2);
     CAniCycle::RegisterActs();
     ctx->GetLogicRegistry()->RegisterLogicType(DispatchDoNothingNormalLogic, "DoNothingNormal", 0);

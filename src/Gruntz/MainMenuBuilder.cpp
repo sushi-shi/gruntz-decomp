@@ -270,7 +270,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
     page->AddItem(s_logo, s_menuMoviezLogo, 0x8170, NULL, MENU_ITEM_FLAGS_NONE);
     page->AddItem(s_intro, s_menuMoviezIntro, 0x8171, NULL, MENU_ITEM_FLAGS_NONE);
     item = page->AddItem(s_final, s_menuMoviezFinal, 0x8173, NULL, MENU_ITEM_FLAGS_NONE);
-    if (g_gameReg->m_saveGame->CheckMagic() == 0) {
+    if (g_gameReg->GetSaveGame()->CheckMagic() == 0) {
         item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem("CREDITZ", s_menuMoviezCreditz, 0x8021, NULL, MENU_ITEM_FLAGS_NONE);
@@ -285,7 +285,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         delete page;
         return 0;
     }
-    questProgress = g_gameReg->m_saveGame->CurrentLevel();
+    questProgress = g_gameReg->GetSaveGame()->CurrentLevel();
     page->AddItem("TRAINING", s_menuQuestzTraining, 0, "TRAINING", MENU_ITEM_FLAGS_NONE);
     page->AddItem(
         s_area1,

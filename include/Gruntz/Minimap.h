@@ -10,7 +10,7 @@
 class CGruntzMgr;
 class CTriggerMgr;
 class CGruntzMapMgr;
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CDDSurface;
 class CRenderBuffer;
 
@@ -74,7 +74,7 @@ public:
     CGruntzMgr* m_gameMgr;
     CTriggerMgr* m_triggerMgr;
     CGruntzMapMgr* m_mapMgr;
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
     CDDSurface* m_surface;
     // @identity-TODO: unaccessed span required by m_boundsRect's retail offset;
     // Init clears m_boundsRect and m_drawRect without accessing this storage.

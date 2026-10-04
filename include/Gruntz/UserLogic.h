@@ -148,8 +148,8 @@ typedef i32 (CUserLogic::*CActHandler)();
 #define APPLY_LOOKUP_SPRITE_INLINE(name, frame) m_wwdObject->SetImageFrameByName(name, frame)
 
 #define ADVANCE_CURRENT_ANIMATION_CURSOR(cursor, elapsed)                                          \
-    m_wwdObject->m_animationCursor.Advance(elapsed);                                               \
-    CAniAdvanceCursor* cursor = &m_wwdObject->m_animationCursor;
+    m_wwdObject->GetAnimationCursor().Advance(elapsed);                                            \
+    CAniAdvanceCursor* cursor = &m_wwdObject->GetAnimationCursor();
 
 #define GET_SCREEN_TILE_Y_FIRST(logic, out)                                                        \
     (logic)->GetScreenPos((&out));                                                                 \
@@ -320,12 +320,12 @@ public:
     }
 
     void SwitchAnimationAndMaybeAdvance(CAnimationSequence* anim, i32 advanceImmediately) {
-        m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
+        m_previousAnimation = m_wwdObject->GetAnimationCursor().GetAnimation();
         m_wwdObject->SetAnimation(anim, advanceImmediately);
     }
 
     i32 SwitchAnimationByName(const char* key, i32 advanceImmediately) {
-        m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
+        m_previousAnimation = m_wwdObject->GetAnimationCursor().GetAnimation();
         return m_wwdObject->SetAnimationByName(key, advanceImmediately);
     }
 };

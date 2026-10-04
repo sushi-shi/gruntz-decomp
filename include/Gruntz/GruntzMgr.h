@@ -44,7 +44,7 @@ class CImageSetRegistry;
 
 class CImageSet;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 
 struct IDirectPlayLobby;
 
@@ -235,6 +235,9 @@ public:
     i32 RunMfcDialog(class CDialog* dlg, b32 notify);
     i32 FinishLevel(b32 pauseGame, b32 pauseMusic);
     i32 FillSaveInfo(SaveSlot* dst, const char* snapshot);
+    CSaveGame* GetSaveGame() const {
+        return m_saveGame;
+    }
     void SetSaveSlot(SaveSlot* const& slot) {
         m_saveInfoRec = slot;
     }
@@ -361,7 +364,7 @@ public:
         m_isBuiltInBattlezLevel = builtIn;
     }
 
-    CDDrawSurfaceMgr* const& World() {
+    CGameWorld* const& World() {
         return m_world;
     }
 
@@ -382,7 +385,7 @@ public:
     }
 
     CState* m_curState;
-    CDDrawSurfaceMgr* m_world;
+    CGameWorld* m_world;
 
     CRezMgr* m_resourceArchive;
 

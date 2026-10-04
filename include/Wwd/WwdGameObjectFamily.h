@@ -39,9 +39,9 @@ public:
         INLINE_BASE_AND_REGION
     };
 
-    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags);
-    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase);
-    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBaseAndRegion);
+    CGameObject(CGameWorld* owner, i32 id, i32 objectFlags);
+    CGameObject(CGameWorld* owner, i32 id, i32 objectFlags, EInlineBase);
+    CGameObject(CGameWorld* owner, i32 id, i32 objectFlags, EInlineBaseAndRegion);
     virtual ~CGameObject() OVERRIDE {
         Unload();
     }
@@ -189,7 +189,7 @@ public:
     void AddLogicBump(char* key);
     i32 NotifyForEventCode(i32 eventCode);
 
-    void AttachToOwner(CDDrawSurfaceMgr* owner, i32 id);
+    void AttachToOwner(CGameWorld* owner, i32 id);
 
     const i32& GetSortKey() const {
         return m_sortKey;
@@ -292,7 +292,7 @@ inline i32 CGameObject::AttackBits(CGameObject* target) const {
     return bits;
 }
 
-inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
+inline void CGameObject::AttachToOwner(CGameWorld* owner, i32 id) {
     m_screenX = COORD_UNSET;
     m_posCache = NULL;
     m_logicRecord = new CLogicRecord(owner, id, 0);
@@ -304,34 +304,29 @@ inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
     g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
 
-inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase)
+inline CGameObject::CGameObject(CGameWorld* owner, i32 id, i32 objectFlags, EInlineBase)
     : CRenderState(owner, id, objectFlags) {
     AttachToOwner(owner, id);
 }
 
-inline CGameObject::CGameObject(
-    CDDrawSurfaceMgr* owner,
-    i32 id,
-    i32 objectFlags,
-    EInlineBaseAndRegion
-)
+inline CGameObject::CGameObject(CGameWorld* owner, i32 id, i32 objectFlags, EInlineBaseAndRegion)
     : CRenderState(owner, id, objectFlags), m_region(WwdRegion::BASE_CALL) {
     AttachToOwner(owner, id);
 }
 
 class CWwdSpriteObject : public CGameObject {
 public:
-    CWwdSpriteObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+    CWwdSpriteObject(CGameWorld* owner, i32 id, i32 objectFlags)
         : CGameObject(owner, id, objectFlags),
           m_animationCursor(owner, id, objectFlags, CAniAdvanceCursor::INLINE_CURSOR) {
         ResetSpriteFields();
     }
-    CWwdSpriteObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, CWapObj::ENoSeed)
+    CWwdSpriteObject(CGameWorld* owner, i32 id, i32 objectFlags, CWapObj::ENoSeed)
         : CGameObject(owner, id, objectFlags),
           m_animationCursor(owner, id, objectFlags, CWapObj::NO_SEED) {
         ResetSpriteFields();
     }
-    CWwdSpriteObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase)
+    CWwdSpriteObject(CGameWorld* owner, i32 id, i32 objectFlags, EInlineBase)
         : CGameObject(owner, id, objectFlags, INLINE_BASE),
           m_animationCursor(owner, id, objectFlags) {
         ResetSpriteFields();
@@ -366,6 +361,10 @@ public:
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
+
+    CAniAdvanceCursor& GetAnimationCursor() {
+        return m_animationCursor;
+    }
 
     CImageSet* GetImageSet() const {
         return m_imageSet;
@@ -405,7 +404,7 @@ public:
 
 class CWwdGameObject : public CWwdSpriteObject {
 public:
-    CWwdGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+    CWwdGameObject(CGameWorld* owner, i32 id, i32 objectFlags)
         : CWwdSpriteObject(owner, id, objectFlags), m_children(0xa) {
         m_reserved1f8 = 0;
     }
@@ -449,7 +448,7 @@ public:
 
 class CWwdDeferredObject : public CGameObject {
 public:
-    CWwdDeferredObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+    CWwdDeferredObject(CGameWorld* owner, i32 id, i32 objectFlags)
         : CGameObject(owner, id, objectFlags, INLINE_BASE_AND_REGION) {}
     virtual ~CWwdDeferredObject() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
@@ -471,7 +470,7 @@ public:
 
 class CWwdDotObject : public CGameObject {
 public:
-    CWwdDotObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+    CWwdDotObject(CGameWorld* owner, i32 id, i32 objectFlags)
         : CGameObject(owner, id, objectFlags, INLINE_BASE_AND_REGION) {
         m_dotColor = 0;
     }

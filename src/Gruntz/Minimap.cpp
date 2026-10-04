@@ -82,7 +82,7 @@ i32 CMinimap::AllocSurface() {
     }
     FreeSurface();
     CGruntzMapMgr* mapMgr = m_mapMgr;
-    CDDrawSurfaceMgr* world = m_world;
+    CGameWorld* world = m_world;
 
     SIZE
     size = mapMgr->GetGridSize();

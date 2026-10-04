@@ -17,7 +17,7 @@ typedef struct tagRECT LevelCoordRect;
 
 struct CWwdSpatialMgr;
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CRenderBuffer;
 
 class CImageSet;
@@ -55,7 +55,7 @@ public:
         return m_tileRows;
     }
 
-    CLevelPlane(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CLevelPlane(CGameWorld* owner, i32 id, i32 flags);
     virtual ~CLevelPlane() OVERRIDE;
 
     virtual i32 IsLoaded() OVERRIDE;

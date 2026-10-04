@@ -69,7 +69,7 @@ void CSBI_StatzTabArrow::SetSampledDirection(StatusBarDock position, b32 animate
 RVA(0x000ea1f0, 0x1fa)
 i32 CSBI_StatzTabGruntBar::Initialize(
     CStatusBarMgr* owner,
-    CDDrawSurfaceMgr* host,
+    CGameWorld* host,
     SbiCommandId cmd,
     StatusBarTab tab,
     RECT rect,
@@ -78,7 +78,7 @@ i32 CSBI_StatzTabGruntBar::Initialize(
     i32 unitIndex,
     i32 showSelectionGroup
 ) {
-    CDDrawSurfaceMgr* world;
+    CGameWorld* world;
     CImageSet* iconFrames;
 
     if (host == NULL) {

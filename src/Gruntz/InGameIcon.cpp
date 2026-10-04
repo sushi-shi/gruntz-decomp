@@ -505,7 +505,7 @@ i32 CToyPeek::SerializeDispatch(
 // @early-stop
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     CWwdSpriteObject* obj = m_object;
     PickupType cmd = GetPickupType();
     if (cmd == PICKUP_TOYBOX) {
@@ -644,7 +644,7 @@ fail:
 // @early-stop
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     if (m_driftTiming.Expired()) {
         CWwdSpriteObject* r = m_wwdObject;
         r->Show();
@@ -731,7 +731,7 @@ i32 CInGameIcon::SerializeDispatch(
             g_serialCounter++;
             i32 id;
             ar->Read(&id, sizeof(id));
-            CWwdSpriteObject* sprite = LookupSerialRef(
+            CWwdSpriteObject* sprite = LookupSpriteObjectById(
                 m_ownerLogicRecord->OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
                 id
             );
@@ -801,7 +801,7 @@ void RegisterTextLogic() {
 
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
-    m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->GetAnimationCursor().Advance(static_cast<i32>(g_engineFrameDelta));
 
     i32 playerIndex;
     i32 unitIndex;

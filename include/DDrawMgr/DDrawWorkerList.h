@@ -14,7 +14,7 @@ class CImageSet;
 // @identity-TODO: original class spelling is unavailable; runtime class is inherited.
 class CTransientDrawList : public CWapObj {
 public:
-    CTransientDrawList(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {}
+    CTransientDrawList(CGameWorld* owner) : CWapObj(owner, 0, 0) {}
 
     virtual ~CTransientDrawList() OVERRIDE;
 

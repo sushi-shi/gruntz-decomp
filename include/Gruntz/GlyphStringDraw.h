@@ -3,14 +3,14 @@
 
 #include <Ints.h>
 
-class CDDrawSurfaceMgr;
+class CGameWorld;
 class CDDSurface;
 class CString;
 struct tagRECT;
 typedef tagRECT RECT;
 
 i32 DrawTextToOverlaySurface(
-    CDDrawSurfaceMgr* surfaceMgr,
+    CGameWorld* surfaceMgr,
     CString* text,
     RECT* bounds,
     i32 fontSelection,
@@ -21,7 +21,7 @@ i32 DrawTextToOverlaySurface(
     i32 centerText
 );
 i32 DrawTextToBackSurface(
-    CDDrawSurfaceMgr* surfaceMgr,
+    CGameWorld* surfaceMgr,
     CString* text,
     RECT* bounds,
     i32 fontSelection,

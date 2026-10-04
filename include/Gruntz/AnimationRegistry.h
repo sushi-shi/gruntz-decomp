@@ -12,7 +12,7 @@ struct CRezItm;
 
 class AnimationRegistry : public CWapObj {
 public:
-    AnimationRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
+    AnimationRegistry(CGameWorld* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
 
     virtual i32 IsLoaded() OVERRIDE;
     virtual i32 IsReady() OVERRIDE;

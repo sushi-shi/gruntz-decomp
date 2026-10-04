@@ -103,7 +103,7 @@ i32 CRenderBuffer::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
         return 0;
     }
     if (m_id == IDX(DDRAW_PAGE_BACK)) {
-        CDDrawSurfaceMgr* mgr = OwnerMgr();
+        CGameWorld* mgr = OwnerMgr();
         m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
             mgr->GetDisplayBuffers()->GetFrontSurface()->GetSurface(),
             DDSCAPS_BACKBUFFER
@@ -325,7 +325,7 @@ i32 CRenderBuffer::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         OwnerMgr()->GetDeviceManager()->RemoveSurface(m_surface);
         m_surface = NULL;
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
-            CDDrawSurfaceMgr* mgr = OwnerMgr();
+            CGameWorld* mgr = OwnerMgr();
             m_surface = mgr->GetDeviceManager()->WrapAttachedSurface(
                 mgr->GetDisplayBuffers()->GetFrontSurface()->GetSurface(),
                 DDSCAPS_BACKBUFFER
@@ -390,7 +390,7 @@ void CRenderBuffer::DrawLabel(RECT* rc, char* text) {
 
 RVA(0x001644a0, 0x1b0)
 i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
-    CDDrawSurfaceMgr* surfaceManager = OwnerMgr();
+    CGameWorld* surfaceManager = OwnerMgr();
     m_width = w;
     m_height = h;
     m_bpp = bpp;
@@ -436,7 +436,7 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
         OwnerMgr()->SetInitError(WORLDERR_CREATE_DEVICE);
         return 0;
     }
-    CDDrawSurfaceMgr* m2 = OwnerMgr();
+    CGameWorld* m2 = OwnerMgr();
     i32 amode = 1;
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(m2->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         amode = 2;
@@ -516,7 +516,7 @@ i32 CRenderState::SetPosition(i32 x, i32 y) {
 
 RVA(0x001647e0, 0x48)
 i32 CRenderState::Init(
-    CDDrawSurfaceMgr* owner,
+    CGameWorld* owner,
     i32 id,
     i32 resolveX,
     i32 resolveY,
