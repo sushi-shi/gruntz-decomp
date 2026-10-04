@@ -472,7 +472,7 @@ public:
 
     RECT m_vehicleContactRect;
     RECT m_vehicleContactExclusionRect;
-    EnemyAiType m_arrivalState;
+    EnemyAiType m_aiType;
     GruntAiState m_defenderState;
     BattlezTask m_battleState;
     i32 m_defenderRadius;
@@ -818,7 +818,7 @@ public:
         PickupType moveIcon,
         PickupType typeKind,
         i32 vehicleKind,
-        EnemyAiType kind,
+        EnemyAiType aiType,
         i32 defenderRadiusMinusOne,
         i32 defenderQueuePosition,
         i32 defenderPickupType,

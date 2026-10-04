@@ -146,7 +146,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     GruntAttackPose pose;
     switch (m_activePickupType) {
         case PICKUP_BOOMERANG:
-            if (m_arrivalState != AI_NONE) {
+            if (m_aiType != AI_NONE) {
                 m_entranceActive = true;
             }
             pose = GRUNT_ATTACK2;

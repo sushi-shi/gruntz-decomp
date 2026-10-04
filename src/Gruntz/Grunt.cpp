@@ -816,7 +816,7 @@ i32 CGrunt::StepArrivalDrop(
             }
             return 0;
         }
-        if (m_arrivalState == AI_BATTLEZ_PATH) {
+        if (m_aiType == AI_BATTLEZ_PATH) {
             reinit = 0;
             goto commitEntrance;
         }
@@ -957,7 +957,7 @@ nudgeDone:
     if (nudged != 0) {
         goto pathGate;
     }
-    if (AI_NONE != m_arrivalState) {
+    if (AI_NONE != m_aiType) {
         SetEntrancePos(1, 1);
         return 0;
     }
@@ -1094,7 +1094,7 @@ i32 CGrunt::StepGruntMovement() {
             return 1;
         }
     }
-    if (m_arrivalState == AI_BATTLEZ_PATH) {
+    if (m_aiType == AI_BATTLEZ_PATH) {
         CBattlezMapConfig* slot = g_gameReg->m_players[m_playerIndex].GetBattlezConfig();
         if (slot != NULL && slot->ValidateUnitPath(this) == 0) {
             SetEntrancePos(1, 1);
@@ -1104,7 +1104,7 @@ i32 CGrunt::StepGruntMovement() {
     if (CoordsEmpty()) {
         goto stopWithoutPath;
     }
-    if (m_arrivalState != AI_BATTLEZ_PATH) {
+    if (m_aiType != AI_BATTLEZ_PATH) {
         Coord* pathCoord = RemoveHeadCoord();
         destination = *pathCoord;
         g_coordPool.Push(pathCoord);
@@ -1126,7 +1126,7 @@ i32 CGrunt::StepGruntMovement() {
     destinationFlags = tileGrid->CellFlagsAt(targetTileX, targetTileY);
 
     {
-        EnemyAiType st = m_arrivalState;
+        EnemyAiType st = m_aiType;
         i32 blockMove = 1;
         if (st == AI_OBJECTGUARD) {
             if (((m_defenderPx.m_x ^ targetPixel.m_x) & 0xffffffe0) == 0
@@ -1151,7 +1151,7 @@ i32 CGrunt::StepGruntMovement() {
         i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 lastCellFlags = tileGrid->CellFlagsAt(lastTileX, lastTileY);
         if (!(lastCellFlags & 0x80)) {
-            if (m_arrivalState == AI_BATTLEZ_PATH) {
+            if (m_aiType == AI_BATTLEZ_PATH) {
                 goto stopBlockedMovement;
             }
             if (CoordsEmpty()) {
@@ -1217,7 +1217,7 @@ i32 CGrunt::StepGruntMovement() {
     }
 
 prepareTraversal:
-    if (m_arrivalState == AI_BATTLEZ_PATH && !CoordsEmpty()) {
+    if (m_aiType == AI_BATTLEZ_PATH && !CoordsEmpty()) {
         Coord* pathCoord = RemoveHeadCoord();
         g_coordPool.Push(pathCoord);
     }
@@ -1267,7 +1267,7 @@ prepareTraversal:
         if (beyondCellFlags & 0x20000939) {
             goto stopBlockedMovement;
         }
-        if (!CoordsEmpty() && m_arrivalState != AI_BATTLEZ_PATH) {
+        if (!CoordsEmpty() && m_aiType != AI_BATTLEZ_PATH) {
             Coord* pathCoord = RemoveHeadCoord();
             if (pathCoord->m_x == beyondTileX && pathCoord->m_y == beyondTileY) {
                 g_coordPool.Push(pathCoord);
@@ -1370,7 +1370,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
         m_arrivalPhase = 0;
         m_arrivalActive = false;
     }
-    if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && !CoordsEmpty()) {
+    if (recycleRoute && m_aiType != AI_BATTLEZ_PATH && !CoordsEmpty()) {
         this->RecycleCoords();
     }
 }
@@ -1577,15 +1577,15 @@ i32 CGrunt::Place(
     PickupType moveIcon,
     PickupType typeKind,
     i32 vehicleKind,
-    EnemyAiType kind,
+    EnemyAiType aiType,
     i32 defenderRadiusMinusOne,
     i32 defenderQueuePosition,
     i32 defenderPickupType,
     RECT* span,
     GruntEntranceMode entranceMode
 ) {
-    if (kind != AI_NONE) {
-        if (kind != AI_BATTLEZ_PATH) {
+    if (aiType != AI_NONE) {
+        if (aiType != AI_BATTLEZ_PATH) {
             m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
         } else {
             m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -1608,7 +1608,7 @@ i32 CGrunt::Place(
     m_moveVariantOverride = 0;
     m_moveVariant = 0;
     m_helpCueId = 0;
-    m_arrivalState = kind;
+    m_aiType = aiType;
     m_brickPickupType = PICKUP_BROWNBRICK;
     m_playerIndex = playerIndex;
     m_defenderQueuePosition = defenderQueuePosition;
@@ -1678,14 +1678,14 @@ i32 CGrunt::Place(
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
     ResetEntranceAnimation(1, 0, 0);
-    switch (kind) {
+    switch (aiType) {
         case AI_POSTGUARD:
             m_defenderPx = m_lastTilePx;
             break;
         case AI_OBJECTGUARD:
             if (defenderQueuePosition == 0 && defenderPickupType == 0) {
                 m_defenderPx = m_lastTilePx;
-                m_arrivalState = AI_POSTGUARD;
+                m_aiType = AI_POSTGUARD;
             } else {
                 Coord defender;
                 m_defenderPx = *defender.Set(
@@ -1790,7 +1790,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             ResetArrivalFlags(this);
-            if (m_arrivalState == AI_DEFENDER) {
+            if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             MarkQuestzArrival(this);
@@ -1846,7 +1846,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_toolConfigured = true;
-            if (m_arrivalState == AI_BATTLEZ_PATH) {
+            if (m_aiType == AI_BATTLEZ_PATH) {
                 if (m_battleState != BZTASK_ADVANCE) {
                     if (!this->CoordsEmpty()) {
                         RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
@@ -1881,7 +1881,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             LOAD_GRUNT_TOOL_REACH()
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             ResetArrivalFlags(this);
-            if (m_arrivalState == AI_DEFENDER) {
+            if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             MarkQuestzArrival(this);
@@ -1895,7 +1895,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
-            if (m_arrivalState == AI_DEFENDER) {
+            if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
@@ -1908,7 +1908,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
-            if (m_arrivalState == AI_DEFENDER) {
+            if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
@@ -2011,7 +2011,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
-            if (m_arrivalState == AI_DEFENDER) {
+            if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
@@ -2024,7 +2024,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             ResetArrivalFlags(this);
             MarkQuestzArrival(this);
-            if (m_arrivalState == AI_DEFENDER) {
+            if (m_aiType == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
             m_passableMask = 0xd02;

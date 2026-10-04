@@ -872,7 +872,7 @@ i32 CGrunt::HandleCombatContact(
     i32 otherUnitIndex
 ) {
     if (isAttacker == false) {
-        switch (m_arrivalState) {
+        switch (m_aiType) {
             case AI_NONE:
                 break;
             case AI_SMARTCHASER:
@@ -1657,7 +1657,7 @@ void CGrunt::Activate() {
     m_wingzTime = 0;
     m_entranceActive = false;
     m_arrivalPending = false;
-    m_arrivalState = AI_NONE;
+    m_aiType = AI_NONE;
     m_inCombat = false;
     m_resetApplied = false;
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
@@ -1957,8 +1957,7 @@ afterTile:
         }
         {
             i32 hp = m_health;
-            if (hp <= 5 && hp > 0
-                && (m_arrivalState == AI_SMARTCHASER || m_arrivalState == AI_HITANDRUNNER)) {
+            if (hp <= 5 && hp > 0 && (m_aiType == AI_SMARTCHASER || m_aiType == AI_HITANDRUNNER)) {
                 if (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
 
                     i32 baseRow = sy >> TILE_SHIFT_PX;
@@ -1982,9 +1981,9 @@ afterTile:
             SET_RECT_COMPONENTS(rs, col5 - reach, row5 - reach, reach + col5 + 1, reach + row5 + 1);
             grid->Clip(&rs);
         }
-        if (m_arrivalState != AI_NONE) {
+        if (m_aiType != AI_NONE) {
             if (!IsHoldPending()) {
-                switch (m_arrivalState) {
+                switch (m_aiType) {
                     case AI_DUMBCHASER:
                         StepDumbChaserBehavior();
                         break;
@@ -2084,7 +2083,7 @@ afterArrival:
         }
     }
 
-    if (m_arrivalState == AI_BATTLEZ_PATH) {
+    if (m_aiType == AI_BATTLEZ_PATH) {
         ExpireBattlezCombatState(this);
     } else {
         if (IsCombatTimeoutExpired()) {
@@ -2310,7 +2309,7 @@ void CGrunt::FinalizeStep(char* name) {
 
 RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
-    if (m_arrivalState != AI_BATTLEZ_PATH) {
+    if (m_aiType != AI_BATTLEZ_PATH) {
         bool isIdle;
         isIdle = IsAnimationAct("A");
         if (isIdle && !CoordsEmpty()) {

@@ -820,7 +820,7 @@ applyTail:
         m_lastTilePx.Set(-1, -1);
         SetEntrancePos(1, 1);
         this->RecycleCoords();
-        if (m_arrivalState == AI_BATTLEZ_PATH) {
+        if (m_aiType == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;
             m_routePassableMask = 0;
         }
@@ -1051,7 +1051,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_reserved430, sizeof(m_reserved430));
     ar->Write(&m_startingItemId, sizeof(m_startingItemId));
     ar->Write(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
-    ar->Write(&m_arrivalState, sizeof(m_arrivalState));
+    ar->Write(&m_aiType, sizeof(m_aiType));
     ar->Write(&m_defenderState, sizeof(m_defenderState));
     ar->Write(&m_battleState, sizeof(m_battleState));
     ar->Write(&m_defenderRadius, sizeof(m_defenderRadius));

@@ -121,7 +121,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_reserved430, sizeof(m_reserved430));
     ar->Read(&m_startingItemId, sizeof(m_startingItemId));
     ar->Read(&m_recordedFrameTick, sizeof(m_recordedFrameTick));
-    ar->Read(&m_arrivalState, sizeof(m_arrivalState));
+    ar->Read(&m_aiType, sizeof(m_aiType));
     ar->Read(&m_defenderState, sizeof(m_defenderState));
     ar->Read(&m_battleState, sizeof(m_battleState));
     ar->Read(&m_defenderRadius, sizeof(m_defenderRadius));

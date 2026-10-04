@@ -313,7 +313,7 @@ tail:
     if (m_activePickupType == PICKUP_WARPSTONE && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         m_triggerMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
     }
-    if (m_arrivalState == AI_TOOLTHIEF) {
+    if (m_aiType == AI_TOOLTHIEF) {
         TryPowerupAtTile();
     }
     m_gruntKind = GRUNT_NORMAL;
