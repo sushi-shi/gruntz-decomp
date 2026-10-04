@@ -22,14 +22,14 @@ inline PickupType CGrunt::ResolveEquippedToolType(PickupType activePickupType) c
 
 #define EQUIPPED_TOOL_TERNARY_LE(grunt)                                                            \
     ((grunt->GetActivePickupType() <= PICKUP_EQUIPPABLE_LAST) ? grunt->GetActivePickupType()       \
-                                                              : grunt->m_savedToolType)
+                                                              : grunt->GetSavedToolType())
 
 #define EQUIPPED_TOOL_TERNARY_GT(grunt)                                                            \
-    ((grunt->GetActivePickupType() > PICKUP_EQUIPPABLE_LAST) ? grunt->m_savedToolType              \
+    ((grunt->GetActivePickupType() > PICKUP_EQUIPPABLE_LAST) ? grunt->GetSavedToolType()           \
                                                              : grunt->GetActivePickupType())
 
 #define EQUIPPED_TOOL_OF_TERNARY_LE(grunt, activePickupType)                                       \
-    ((activePickupType <= PICKUP_EQUIPPABLE_LAST) ? activePickupType : grunt->m_savedToolType)
+    ((activePickupType <= PICKUP_EQUIPPABLE_LAST) ? activePickupType : grunt->GetSavedToolType())
 
 #define ADD_BATTLEZ_TRAVERSAL_FLAGS(grunt, flags)                                                  \
     {                                                                                              \

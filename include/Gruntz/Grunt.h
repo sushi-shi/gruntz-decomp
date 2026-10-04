@@ -183,6 +183,9 @@ public:
     PickupType GetActivePickupType() const {
         return m_activePickupType;
     }
+    PickupType GetSavedToolType() const {
+        return m_savedToolType;
+    }
     PickupType GetCarriedToyType() const {
         return m_carriedToyType;
     }

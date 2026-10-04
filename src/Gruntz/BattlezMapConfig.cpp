@@ -2725,13 +2725,13 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             }
             t = prim;
             if (prim > PICKUP_EQUIPPABLE_LAST) {
-                t = unit->m_savedToolType;
+                t = unit->GetSavedToolType();
             }
             if (t == PICKUP_WINGZ) {
                 flags = 0x942;
             }
             if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = unit->m_savedToolType;
+                prim = unit->GetSavedToolType();
             }
             if (prim == PICKUP_SPRING) {
                 flags = 0x1000;

@@ -153,7 +153,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         if (cap != PICKUP_NONE) {
             abilityVal = IDX(level);
             if (level > PICKUP_EQUIPPABLE_LAST) {
-                abilityVal = IDX(unit->m_savedToolType);
+                abilityVal = IDX(unit->GetSavedToolType());
             }
             if (abilityVal == IDX(PICKUP_BRICK)) {
                 abilityVal = IDX(unit->GetBrickPickupType()) + 0x11;
