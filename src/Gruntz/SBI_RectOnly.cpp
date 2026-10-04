@@ -979,7 +979,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (BuildActiveTabContent() == 0) {
         return 0;
     }
-    if (BuildTabzDialog() == 0) {
+    if (BuildLevelOverlay() == 0) {
         return 0;
     }
     m_tabsBuilt = true;
@@ -3325,7 +3325,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     clock->Clear();
     m_layoutLocked = false;
     SAFE_DELETE(m_warpStoneFly);
-    ExitMode();
+    CloseLevelOverlay();
     m_observerTabAvailable = false;
     m_destructButtonLocked = false;
     TryActivate();
@@ -4026,7 +4026,7 @@ i32 CWarpStoneFly::Draw() {
 }
 
 RVA(0x0010a340, 0xbcb)
-i32 CStatusBarMgr::BuildTabzDialog() {
+i32 CStatusBarMgr::BuildLevelOverlay() {
     if (m_levelOverlayActive == false) {
         return 1;
     }
@@ -4309,7 +4309,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 }
 
 RVA(0x0010b210, 0xc5)
-void CStatusBarMgr::ExitMode() {
+void CStatusBarMgr::CloseLevelOverlay() {
     if (m_levelOverlayActive == false) {
         return;
     }

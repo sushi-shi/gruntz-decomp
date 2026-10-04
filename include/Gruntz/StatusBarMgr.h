@@ -135,7 +135,7 @@ public:
 
     i32 BuildStatusBarTabs();
 
-    i32 BuildTabzDialog();
+    i32 BuildLevelOverlay();
     i32 StartChipMachineCycle();
     i32 Initialize(CDDrawSurfaceMgr* world);
     i32 Render();
@@ -206,7 +206,7 @@ public:
     void EnterHlRow(i32 row, i32 group);
     void InitTabRects();
     i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
-    void ExitMode();
+    void CloseLevelOverlay();
     i32 ActivateSlot(i32 idx);
     i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
 

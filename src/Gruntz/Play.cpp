@@ -5540,7 +5540,7 @@ i32 CPlay::CloseLevelOverlay(i32) {
     if (m_levelOverlayOpen != false) {
         CStatusBarMgr* worker = m_statusBar;
         m_levelOverlayOpen = false;
-        worker->ExitMode();
+        worker->CloseLevelOverlay();
         if (g_gameReg->GetGameMode() != GAMEMODE_MULTIPLAYER) {
             g_frameTime = m_savedGameTimeMs;
         }

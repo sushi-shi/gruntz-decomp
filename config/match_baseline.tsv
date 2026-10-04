@@ -3766,7 +3766,7 @@ sbi_rectonly	?BuildGameTabPauseButton@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	6	
 sbi_rectonly	?BuildGameTabResumeButton@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	6	875193a915f5	0x102180	100.0000	
 sbi_rectonly	?BuildSideTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	5	ecfb352b6448	0x105070	100.0000	
 sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	13	65c402aafdcf	0xffde0	100.0000	
-sbi_rectonly	?BuildTabzDialog@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	25	189dc8732fc8	0x10a340	100.0000	
+sbi_rectonly	?BuildLevelOverlay@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	25	189dc8732fc8	0x10a340	100.0000	
 sbi_rectonly	?ClearButtonHighlights@CStatusBarMgr@@QAEHW4StatusBarTab@@@Z	100.0000	100.0000	3	371a5cc3fb75	0x101420	100.0000	
 sbi_rectonly	?ClearHlCell@CStatusBarMgr@@QAEXHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	2	39821914feb1	0x1069c0	100.0000	
 sbi_rectonly	?ClearUnitSample@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	11	896dd06b7358	0x104f90	100.0000	
@@ -3780,7 +3780,7 @@ sbi_rectonly	?DrainGruntWell@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	4	36055d40
 sbi_rectonly	?Draw@CWarpStoneFly@@QAEHXZ	100.0000	100.0000	4	0b6e475ba078	0x10a2f0	100.0000	
 sbi_rectonly	?DropFallingItemAt@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	4	03e20edb4ae5	0x107920	100.0000	
 sbi_rectonly	?EnterHlRow@CStatusBarMgr@@QAEXHH@Z	100.0000	100.0000	2	a4c96eaa7d91	0x106820	100.0000	
-sbi_rectonly	?ExitMode@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	11	524275ea26fe	0x10b210	100.0000	
+sbi_rectonly	?CloseLevelOverlay@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	11	524275ea26fe	0x10b210	100.0000	
 sbi_rectonly	?FindReadySlot@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	1	16035efbd748	0x109a90	100.0000	
 sbi_rectonly	?GetActiveValue@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	6	9e482b6e9297	0x10bbe0	100.0000	
 sbi_rectonly	?HandleDoubleClick@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	15	1f82a1bb5eb2	0xff850	100.0000	
