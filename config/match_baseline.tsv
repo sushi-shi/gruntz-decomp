@@ -4316,7 +4316,7 @@ triggermgr	?EnqueueSelectedStop@CTriggerMgr@@QAEHXZ	100.0000	100.0000	11	7b09fd7
 triggermgr	?EnqueueSelectedToolUse@CTriggerMgr@@QAEXHHHH@Z	100.0000	100.0000	12	c916b431b4c1	0x78680	100.0000	
 triggermgr	?FindNearestUnitForPlayer@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	89.5263	89.5263	8	2150f09ddc2c	0x77f80	89.5263	
 triggermgr	?GetUnitSelectionGroupMarker@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	4	07c667b074ee	0x7d2a0	100.0000	
-triggermgr	?HandleActionOptionsPointer@CTriggerMgr@@QAEHHH@Z	95.7549	95.7549	47	ba162382eca4	0x7b1b0	100.0000	
+triggermgr	?HandleActionOptionsPointer@CTriggerMgr@@QAEHHH@Z	100.0000	95.7549	47	ba162382eca4	0x7b1b0	100.0000	
 triggermgr	?HandleTargetSelection@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	90.7510	90.7510	25	5fc1aec14992	0x79520	99.8538	
 triggermgr	?HasWarpStoneFragment@CTriggerMgr@@QAEHW4WarpStoneFragment@@@Z	100.0000	100.0000	2	887a8ef0b592	0x79b30	100.0000	
 triggermgr	?IsUnitSelected@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	3	63a948ba02cc	0x784d0	100.0000	
