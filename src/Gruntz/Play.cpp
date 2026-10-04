@@ -3131,7 +3131,7 @@ void CPlay::DrawDebugStatsFull() {
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, RGB(255, 255, 255));
     SetBkColor(hdc, RGB(0, 0, 0));
-    PostSetup(hdc);
+    DrawChatMessages(hdc);
 
     {
         RECT lr = m_world->GetLevel()->GetViewportRect();
@@ -3224,7 +3224,7 @@ void CPlay::DrawDebugStats() {
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, RGB(255, 255, 255));
     SetBkColor(hdc, RGB(0, 0, 0));
-    PostSetup(hdc);
+    DrawChatMessages(hdc);
 
     if (buf[0] != 0) {
         RECT lr;
@@ -3373,7 +3373,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
 }
 
 RVA(0x000d00a0, 0x5a)
-void CPlay::PostSetup(HDC dc) {
+void CPlay::DrawChatMessages(HDC dc) {
     CRect dst(m_world->GetLevel()->GetViewportRect());
     m_mgr->ChatLog()->DrawTextLines(8, dc, &dst, 0x10);
 }
@@ -6535,21 +6535,21 @@ i32 CPlay::ExpandViewport(i32 step) {
 }
 
 RVA(0x000d9050, 0xc7)
-i32 CPlay::NotifyVisibleEntities() {
-    CDDrawSurfaceMgr* v = m_world;
-    CDDrawSurfacePair* held = v->GetDrawTarget()->GetBackPair();
-    CObList& chain = *v->ChildGroup()->GetList();
+i32 CPlay::DrawDarknessView() {
+    CDDrawSurfaceMgr* world = m_world;
+    CDDrawSurfacePair* backSurface = world->GetDrawTarget()->GetBackPair();
+    CObList& objects = *world->ChildGroup()->GetList();
 
-    RECT r = v->GetLevel()->GetViewportRect();
-    r.right = r.right + 1;
-    r.bottom = r.bottom + 1;
-    held->GetSurface()->Restore(&r, 0);
+    RECT viewport = world->GetLevel()->GetViewportRect();
+    viewport.right = viewport.right + 1;
+    viewport.bottom = viewport.bottom + 1;
+    backSurface->GetSurface()->Restore(&viewport, 0);
 
-    POSITION pos = chain.GetHeadPosition();
+    POSITION pos = objects.GetHeadPosition();
 
     while (pos != NULL) {
-        CGameObject* o = v->ChildGroup()->NextChild(pos);
-        LogicRecordDispatchFn dispatch = o->GetLogicRecord()->GetDispatch();
+        CGameObject* object = world->ChildGroup()->NextChild(pos);
+        LogicRecordDispatchFn dispatch = object->GetLogicRecord()->GetDispatch();
         if (dispatch == DispatchGruntLogic || dispatch == DispatchInGameIconLogic
             || dispatch == DispatchGruntPuddleLogic || dispatch == DispatchGruntToySpriteLogic
             || dispatch == DispatchGruntStaminaSpriteLogic
@@ -6559,7 +6559,7 @@ i32 CPlay::NotifyVisibleEntities() {
             || dispatch == DispatchGruntSelectedSpriteLogic
             || dispatch == DispatchGruntPowerupSpriteLogic
             || dispatch == DispatchStatusBarSpriteLogic || dispatch == DispatchLightFxLogic) {
-            o->Render(held);
+            object->Render(backSurface);
         }
     }
     return 1;

@@ -88,7 +88,7 @@ inline void CPlay::DrawVisibleWorld() {
 
 inline void CPlay::DrawWorldView() {
     if (m_darknessCurseActive != false) {
-        NotifyVisibleEntities();
+        DrawDarknessView();
     } else {
         DrawVisibleWorld();
     }

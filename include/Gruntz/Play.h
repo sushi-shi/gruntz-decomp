@@ -132,7 +132,7 @@ public:
     RVA(0x000d0030, 0x1)
     virtual void PostLoadImageBanks() {}
 
-    virtual void PostSetup(HDC dc);
+    virtual void DrawChatMessages(HDC dc);
 
     virtual void TickStateMgrs();
 
@@ -199,7 +199,7 @@ public:
 
     i32 ShrinkViewport(i32 step);
     i32 ExpandViewport(i32 step);
-    i32 NotifyVisibleEntities();
+    i32 DrawDarknessView();
 
     i32 ResetViewport();
 

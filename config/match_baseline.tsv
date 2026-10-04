@@ -3432,7 +3432,7 @@ play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	98.3240	98.3240	27	919f80d226
 play	?LoadRequiredCharacterAssets@CPlay@@QAEHPAVCMulti@@PAH@Z	99.4069	99.4069	18	869d13b80d26	0xd65d0	99.4069	
 play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.7500	14	2b7b9a07eae7	0xd12b0	98.7500	
 play	?ModeCleanup@CPlay@@UAEXXZ	100.0000	100.0000	11	27b6d14da59e	0xcb740	100.0000	
-play	?NotifyVisibleEntities@CPlay@@QAEHXZ	100.0000	100.0000	14	1a36ebae9557	0xd9050	100.0000	
+play	?DrawDarknessView@CPlay@@QAEHXZ	100.0000	100.0000	14	1a36ebae9557	0xd9050	100.0000	
 play	?OnChar@CPlay@@UAEHHH@Z	100.0000	100.0000	12	0a16de9ef283	0xcbaf0	100.0000	
 play	?OnExit@CPlay@@UAEXXZ	100.0000	100.0000	7	c034af7433a6	0xcb400	100.0000	
 play	?OnKeyDown@CPlay@@UAEHHH@Z	92.5834	92.2827	56	a70d9fe1c622	0xcbcc0	92.6943	
@@ -3448,7 +3448,7 @@ play	?OpenLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	9	9f6ca1feeba5	0xd6440	1
 play	?PauseGame@CPlay@@UAEHXZ	100.0000	100.0000	6	e20fd2c213e4	0xcee90	100.0000	
 play	?PlaceStartGruntz@CPlay@@QAEHXZ	100.0000	100.0000	23	c92f270201af	0xd2b20	100.0000	
 play	?PlayCurseMusic@CPlay@@QAEXXZ	100.0000	100.0000	4	771bfb0caa55	0xd88f0	100.0000	
-play	?PostSetup@CPlay@@UAEXPAUHDC__@@@Z	100.0000	100.0000	6	5de8309b973f	0xd00a0	100.0000	
+play	?DrawChatMessages@CPlay@@UAEXPAUHDC__@@@Z	100.0000	100.0000	6	5de8309b973f	0xd00a0	100.0000	
 play	?ProfileDeltaFrame@CPlay@@QAEHXZ	100.0000	100.0000	12	9f152b6e28be	0xca0a0	100.0000	
 play	?ProfileInputFrame@CPlay@@QAEHXZ	100.0000	100.0000	16	dfc2c540f7fd	0xc9e40	100.0000	
 play	?QuitToMenu@CPlay@@QAEHXZ	100.0000	100.0000	5	251d2c9eb122	0xcef50	100.0000	
