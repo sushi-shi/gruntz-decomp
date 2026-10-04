@@ -289,7 +289,7 @@ streamrecordloaders	2	2
 terraintileloader	1	0
 tilelogicpump	57	54
 tilescan	1	0
-tileswitchlogic	50	38
+tileswitchlogic	50	39
 tiletriggercontainer	27	25
 toobspikez	7	6
 trees	21	21
@@ -4204,7 +4204,7 @@ tileswitchlogic	??0CTileTimeTriggerLogic@@QAE@XZ	100.0000	100.0000	1	37d9946b8a9
 tileswitchlogic	??0CTileTimeTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	9068e036337e	0x1127c0	100.0000	
 tileswitchlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	3	cd7437dd3a87	0x1107f0	100.0000	
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	3	ead4a14add32	0x110430	100.0000	
-tileswitchlogic	?AddTopBrick@CBrickStack@@QAEHW4PickupType@@W4PlayerSlot@@@Z	98.6645	98.6645	3	a8e340b8bfcd	0x113420	98.6645	
+tileswitchlogic	?AddTopBrick@CBrickStack@@QAEHW4PickupType@@W4PlayerSlot@@@Z	100.0000	100.0000	4	280c15259834	0x113420	100.0000	
 tileswitchlogic	?AreCheckpointSwitchLinksActive@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	7	ade923d544fc	0x112c70	100.0000	
 tileswitchlogic	?AreMultiSwitchLinksActive@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	18	d70fe482acea	0x111f40	100.0000	
 tileswitchlogic	?BreakRock@CGiantRockLogic@@QAEHXZ	100.0000	100.0000	27	82fc667bd8af	0x1122a0	100.0000	
