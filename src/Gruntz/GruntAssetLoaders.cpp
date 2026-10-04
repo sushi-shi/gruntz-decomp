@@ -174,10 +174,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             );
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
+                tag = 0x357;
                 m_poseDeath = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(
                     s_deathzQuickfall
                 );
-                tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
                     o->SetSortKey(-1);
@@ -203,10 +203,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             );
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
+                tag = 0x357;
                 m_poseDeath = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(
                     s_deathzQuickfall2
                 );
-                tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
                     o->SetSortKey(-1);
