@@ -64,7 +64,7 @@ i32 CExitTrigger::AdvanceAnim() {
         CWwdSpriteObject* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;
-        g_gameReg->GetTriggerMgr()->HitTestApply(trig->m_screenX, trig->m_screenY, span);
+        g_gameReg->GetTriggerMgr()->CheckWarpStoneExit(trig->m_screenX, trig->m_screenY, span);
     } else if (m_resolved != false) {
         i32 hitPlayerIndex;
         i32 hitUnitIndex;

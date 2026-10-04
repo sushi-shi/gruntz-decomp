@@ -172,7 +172,7 @@ public:
         RECT* m_span;
         i32 m_outPlayerIndex;
     };
-    void HitTestApply(i32 x, i32 y, HitSpanArg span);
+    void CheckWarpStoneExit(i32 x, i32 y, HitSpanArg span);
 
     CGrunt* FindGruntAtPoint(
         i32 worldX,

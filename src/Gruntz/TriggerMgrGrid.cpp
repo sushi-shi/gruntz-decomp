@@ -1337,17 +1337,17 @@ i32 CTriggerMgr::MoveUnitTo(
 }
 
 RVA(0x0006ea00, 0x125)
-void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
+void CTriggerMgr::CheckWarpStoneExit(i32 x, i32 y, HitSpanArg span) {
 
-    CGrunt* cell = FindGruntInArea(x, y, span.m_span, &span.m_outPlayerIndex, &y, NULL);
-    if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
+    CGrunt* grunt = FindGruntInArea(x, y, span.m_span, &span.m_outPlayerIndex, &y, NULL);
+    if (grunt == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    if (cell->IsNotAnimationAct("B") && cell->GetEquippedToolType() == PICKUP_WARPSTONE) {
-        CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-        g_gameReg->m_gameStats->m_elapsedTimeMs += world->m_levelTimer->m_stamp.Elapsed();
-        world->m_levelTimer->Stop();
-        world->CancelDefeatCountdown();
+    if (grunt->IsNotAnimationAct("B") && grunt->GetEquippedToolType() == PICKUP_WARPSTONE) {
+        CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+        g_gameReg->m_gameStats->m_elapsedTimeMs += play->m_levelTimer->m_stamp.Elapsed();
+        play->m_levelTimer->Stop();
+        play->CancelDefeatCountdown();
         StartPlayerVictorySequence(g_curPlayer);
     }
 }
