@@ -123,15 +123,8 @@ i32 CGrunt::StepDiggerBehavior() {
     if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {
         goto L_tailc;
     }
-    if (MoveToTile(
-            g->m_object->m_screenX >> TILE_SHIFT_PX,
-            g->m_object->m_screenY >> TILE_SHIFT_PX,
-            0,
-            m_arrivalFlags,
-            1,
-            0
-        )
-        != 0) {
+    Coord targetTile = ScreenTile(g);
+    if (MoveToTile(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
         if (m_blockedVoicePending != false) {
             PLAY_VOICE_IN_VIEW(0x366);
             m_blockedVoicePending = false;

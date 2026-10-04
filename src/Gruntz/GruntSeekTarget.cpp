@@ -149,15 +149,8 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (static_cast<u32>(this->m_dwell) <= DWELL_REPATH_MS) {
             return 1;
         }
-        if (MoveToTile(
-                g->m_object->m_screenX >> TILE_SHIFT_PX,
-                g->m_object->m_screenY >> TILE_SHIFT_PX,
-                0,
-                this->m_arrivalFlags,
-                1,
-                0
-            )
-            == 0) {
+        Coord targetTile = ScreenTile(g);
+        if (MoveToTile(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0) == 0) {
             return 1;
         }
         if (this->m_blockedVoicePending != false) {
@@ -205,15 +198,8 @@ i32 CGrunt::StepToolThiefBehavior() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCell.m_x = bestIdx;
-                CGameObject* base = g_gameReg->GetTriggerMgr()->UnitAt(0, bestIdx)->m_object;
-                if (MoveToTile(
-                        base->m_screenX >> TILE_SHIFT_PX,
-                        base->m_screenY >> TILE_SHIFT_PX,
-                        0,
-                        this->m_arrivalFlags,
-                        1,
-                        0
-                    )
+                Coord targetTile = ScreenTile(g_gameReg->GetTriggerMgr()->UnitAt(0, bestIdx));
+                if (MoveToTile(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0)
                     != 0) {
                     PLAY_VOICE_IN_VIEW(0x366);
                 }
@@ -227,16 +213,9 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (static_cast<u32>(this->m_dwell) <= 0x3e8) {
             return 1;
         }
-        CGameObject* base =
-            g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x)->m_object;
-        MoveToTile(
-            base->m_screenX >> TILE_SHIFT_PX,
-            base->m_screenY >> TILE_SHIFT_PX,
-            0,
-            this->m_arrivalFlags,
-            1,
-            0
-        );
+        Coord targetTile =
+            ScreenTile(g_gameReg->GetTriggerMgr()->UnitAt(0, this->m_arrivalCell.m_x));
+        MoveToTile(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0);
     }
     this->m_dwell = 0;
     return 1;

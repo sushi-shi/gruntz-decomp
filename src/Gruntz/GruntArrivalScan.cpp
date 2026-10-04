@@ -15,6 +15,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -37,23 +38,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000ec670, 0x298)
 i32 CGrunt::StepBomberBehavior() {
     CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     m_defenderPx = m_lastTilePx;
     if (occ != NULL && GruntInRadius(occ->GetPlayerIndex(), occ->GetUnitIndex()) != 0) {
         if (static_cast<u32>(m_dwell) > 0xfa) {
-            CGameObject* oh = occ->m_object;
-            if (MoveToTile(
-                    oh->m_screenX >> TILE_SHIFT_PX,
-                    oh->m_screenY >> TILE_SHIFT_PX,
-                    0,
-                    m_arrivalFlags,
-                    1,
-                    0
-                )
-                != 0) {
+            Coord targetTile = ScreenTile(occ);
+            if (MoveToTile(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                 CGameObject* oh2 = occ->m_object;
                 if (m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
