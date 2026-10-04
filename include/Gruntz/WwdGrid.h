@@ -31,15 +31,15 @@ public:
     i32 m_count;
     i32 m_cols;
     i32 m_rows;
-    i32 m_shiftY;
-    i32 m_shiftX;
+    i32 m_cellWidthShift;
+    i32 m_cellHeightShift;
     i32 m_cellCount;
     i32 m_width;
     i32 m_height;
 
     WwdRect m_bounds;
-    i32 m_cellH;
-    i32 m_cellW;
+    i32 m_cellWidth;
+    i32 m_cellHeight;
     BucketHead* m_buckets;
 };
 

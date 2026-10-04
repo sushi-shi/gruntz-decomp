@@ -26,12 +26,13 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     }
     m_width = rect.right - rect.left;
     m_height = rect.bottom - rect.top;
-    m_shiftY = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
-    m_shiftX = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
-    m_cellH = static_cast<i32>(pow(DATA_COMPGEN(0x001f0ab0, 2.0), static_cast<double>(m_shiftY)));
-    m_cellW = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftX)));
-    m_cols = m_width / m_cellH + 1;
-    m_rows = m_height / m_cellW + 1;
+    m_cellWidthShift = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
+    m_cellHeightShift = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
+    m_cellWidth =
+        static_cast<i32>(pow(DATA_COMPGEN(0x001f0ab0, 2.0), static_cast<double>(m_cellWidthShift)));
+    m_cellHeight = static_cast<i32>(pow(2.0, static_cast<double>(m_cellHeightShift)));
+    m_cols = m_width / m_cellWidth + 1;
+    m_rows = m_height / m_cellHeight + 1;
     m_cellCount = m_rows * m_cols;
     BucketHead* arr = new BucketHead[m_cellCount];
     m_buckets = arr;
@@ -73,9 +74,9 @@ void CWwdGrid::FreeBuckets() {
 
 RVA(0x00191840, 0x48)
 i32 CWwdGrid::Add(WwdRegion* r) {
-    i32 col = (r->m_y - m_bounds.m_minY) >> m_shiftX;
-    i32 row = (r->m_x - m_bounds.m_minX) >> m_shiftY;
-    BucketHead* bucket = m_buckets + (col * m_cols + row);
+    i32 row = (r->m_y - m_bounds.m_minY) >> m_cellHeightShift;
+    i32 column = (r->m_x - m_bounds.m_minX) >> m_cellWidthShift;
+    BucketHead* bucket = m_buckets + (row * m_cols + column);
     r->m_bucket = bucket;
     bucket->InsertFirst(r);
     ++m_count;
@@ -97,10 +98,10 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     WWD_RECT_RETURN_IF_DISJOINT(q, m_bounds, 0)
     WWD_RECT_CLAMP_COMPONENTS(q, m_bounds)
     WwdRect cell;
-    cell.m_minY = (q.m_minY - m_bounds.m_minY) >> m_shiftX;
-    cell.m_minX = (q.m_minX - m_bounds.m_minX) >> m_shiftY;
-    cell.m_maxY = (q.m_maxY - m_bounds.m_minY) >> m_shiftX;
-    cell.m_maxX = (q.m_maxX - m_bounds.m_minX) >> m_shiftY;
+    cell.m_minY = (q.m_minY - m_bounds.m_minY) >> m_cellHeightShift;
+    cell.m_minX = (q.m_minX - m_bounds.m_minX) >> m_cellWidthShift;
+    cell.m_maxY = (q.m_maxY - m_bounds.m_minY) >> m_cellHeightShift;
+    cell.m_maxX = (q.m_maxX - m_bounds.m_minX) >> m_cellWidthShift;
     i32 base = cell.m_minY * m_cols + cell.m_minX;
     for (i32 y = cell.m_minY; y <= cell.m_maxY; y++) {
         i32 idx = base;
@@ -157,15 +158,15 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_remove = remove;
     WWD_RECT_RETURN_IF_DISJOINT(m_rect, grid->m_bounds, NULL)
     WWD_RECT_CLAMP_COMPONENTS(m_rect, grid->m_bounds)
-    m_colStart = (m_rect.m_minY - grid->m_bounds.m_minY) >> grid->m_shiftX;
-    m_rowStart = (m_rect.m_minX - grid->m_bounds.m_minX) >> grid->m_shiftY;
-    m_colEnd = (m_rect.m_maxY - grid->m_bounds.m_minY) >> grid->m_shiftX;
-    m_rowEnd = (m_rect.m_maxX - grid->m_bounds.m_minX) >> grid->m_shiftY;
-    i32 base = m_colStart * grid->m_cols + m_rowStart;
-    m_col = m_colStart;
-    m_row = m_rowStart;
-    m_rowBase = base;
-    m_cell = base;
+    m_firstRow = (m_rect.m_minY - grid->m_bounds.m_minY) >> grid->m_cellHeightShift;
+    m_firstColumn = (m_rect.m_minX - grid->m_bounds.m_minX) >> grid->m_cellWidthShift;
+    m_lastRow = (m_rect.m_maxY - grid->m_bounds.m_minY) >> grid->m_cellHeightShift;
+    m_lastColumn = (m_rect.m_maxX - grid->m_bounds.m_minX) >> grid->m_cellWidthShift;
+    i32 base = m_firstRow * grid->m_cols + m_firstColumn;
+    m_row = m_firstRow;
+    m_column = m_firstColumn;
+    m_rowStartBucketIndex = base;
+    m_bucketIndex = base;
     m_next = static_cast<WwdRegion*>(grid->m_buckets[base].GetFirst());
     return GetNext();
 }
@@ -176,19 +177,19 @@ WwdRegion* CWwdGridIter::GetNext() {
     for (;;) {
         m_cur = m_next;
         while (m_cur == NULL) {
-            if (m_row < m_rowEnd) {
-                ++m_cell;
-                ++m_row;
+            if (m_column < m_lastColumn) {
+                ++m_bucketIndex;
+                ++m_column;
             } else {
-                if (m_col >= m_colEnd) {
+                if (m_row >= m_lastRow) {
                     return NULL;
                 }
-                m_rowBase += m_grid->m_cols;
-                m_cell = m_rowBase;
-                m_row = m_rowStart;
-                ++m_col;
+                m_rowStartBucketIndex += m_grid->m_cols;
+                m_bucketIndex = m_rowStartBucketIndex;
+                m_column = m_firstColumn;
+                ++m_row;
             }
-            m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].GetFirst());
+            m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_bucketIndex].GetFirst());
         }
         while (m_cur != NULL) {
             m_next = static_cast<WwdRegion*>(m_cur->Next());
@@ -197,7 +198,7 @@ WwdRegion* CWwdGridIter::GetNext() {
                 continue;
             }
             if (m_remove) {
-                m_grid->m_buckets[m_cell].Delete(m_cur);
+                m_grid->m_buckets[m_bucketIndex].Delete(m_cur);
                 m_cur->m_bucket = NULL;
                 --m_grid->m_count;
             }

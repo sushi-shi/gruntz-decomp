@@ -89,14 +89,14 @@ public:
     WwdRegion* m_cur;
     WwdRegion* m_next;
     WwdRect m_rect;
-    i32 m_rowStart;
-    i32 m_colStart;
-    i32 m_rowEnd;
-    i32 m_colEnd;
-    i32 m_cell;
+    i32 m_firstColumn;
+    i32 m_firstRow;
+    i32 m_lastColumn;
+    i32 m_lastRow;
+    i32 m_bucketIndex;
+    i32 m_column;
     i32 m_row;
-    i32 m_col;
-    i32 m_rowBase;
+    i32 m_rowStartBucketIndex;
     i32 m_remove;
 };
 
