@@ -25,6 +25,17 @@ public:
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
 
+    void Start() {
+        m_stamp.m_interval = 0xffffffff;
+        if (m_currentMs != 0) {
+            m_running = true;
+            m_stamp.m_start = static_cast<u32>(g_frameTime);
+            m_countdown.Start(m_currentMs);
+        } else {
+            m_stamp.m_start = static_cast<u32>(g_frameTime);
+        }
+    }
+
     void Stop() {
         m_stamp.m_intervalLo = 0;
         m_stamp.m_intervalHi = 0;

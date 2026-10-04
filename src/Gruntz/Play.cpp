@@ -5475,14 +5475,7 @@ i32 CPlay::ResetPlayState() {
     m_winLoseBanner = false;
     CTimer* fm = m_levelTimer;
     if (fm != NULL) {
-        fm->m_stamp.m_interval = 0xffffffff;
-        if (fm->m_currentMs != 0) {
-            fm->m_running = true;
-            fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
-            fm->m_countdown.Start(fm->m_currentMs);
-        } else {
-            fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
-        }
+        fm->Start();
     }
     CTriggerMgr* tl = m_mgr->GetTriggerMgr();
     tl->m_countdownActive = true;
