@@ -151,7 +151,7 @@ i32 CBattlezAiController::LoadConfig(
     m_playerIndex = playerIndex;
     m_triggerMgr = mgr->GetTriggerMgr();
     m_tileGrid = mgr->GetTileGrid();
-    m_play = static_cast<CPlay*>(mgr->m_curState);
+    m_play = static_cast<CPlay*>(mgr->GetCurrentState());
     m_tileTriggers = m_play->GetTileTriggers();
     m_active = true;
 

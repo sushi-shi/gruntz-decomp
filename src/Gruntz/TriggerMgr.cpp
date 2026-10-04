@@ -377,7 +377,8 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     i32 vx = g_gameReg->m_modeSize.cx;
     i32 vy = g_gameReg->m_modeSize.cy;
-    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->GetDockState();
+    StatusBarDock pos =
+        (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_statusBar->GetDockState();
 
     i32 ax, cx;
     if (pos != STATUSBAR_DOCK_RIGHT) {
@@ -427,7 +428,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
         ov->UpdateHoverState(x, y);
         return 1;
     }
-    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* world = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     if (m_targetingCursorId == 0) {
 
         if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
@@ -692,7 +693,7 @@ i32 CTriggerMgr::HandleTargetSelection(
         } else if (hit != NULL) {
             if (hit == selectedGrunt) {
                 m_targetingCursorId = 0;
-                (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, false);
+                (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->LoadCursorSprites(0, false);
                 CGameObject* sprite = hit->m_object;
 
                 this->OpenActionOptionsMenu(
@@ -893,7 +894,7 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
     if (m_levelWarpStoneCollected != false || g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         return;
     }
-    CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* play = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     CString name;
     name.Format("Level%i", play->m_levelIndex);
     WarpStoneFragment fragment = static_cast<WarpStoneFragment>(
@@ -935,7 +936,7 @@ void CTriggerMgr::LoseLevelWarpStone() {
     if (m_levelWarpStoneCollected == false) {
         return;
     }
-    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* world = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     CStatusBarMgr* st = world->m_statusBar;
     SAFE_DELETE(st->m_warpStoneFly);
     world->m_statusBar->m_layoutLocked = false;
@@ -975,7 +976,7 @@ i32 CTriggerMgr::DropBattlezWarpStone(i32 x, i32 y, i32 anchorIndex) {
             0
         );
     } else {
-        CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+        CPlay* world = static_cast<CPlay*>(g_gameReg->GetCurrentState());
         i32 idx = anchorIndex - 1;
         CPlay::Anchor* rec = (idx < 0 || idx >= 4) ? NULL : &world->m_anchors[idx];
         if (rec != NULL) {
@@ -1166,7 +1167,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
         m_playerControlEnabled = false;
     }
 
-    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* world = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     world->CancelCursorAction();
     world->CancelDefeatCountdown();
     return 1;
@@ -1472,7 +1473,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
         return 0;
     }
     CGrunt* cell = SoleSelectedGrunt();
-    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* world = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     ActionOptionHit kind = ov->HitTestButtons(x, y);
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
         PickupType alt = cell->GetEquippedToolType();
@@ -1547,7 +1548,7 @@ i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 k
         killerPlayerIndex
     );
 
-    CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* root = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     i32 tileCx = centerX >> TILE_SHIFT_PX;
     i32 tileCy = centerY >> TILE_SHIFT_PX;
     for (i32 tx = tileCx - radiusTiles; tx <= tileCx + radiusTiles; tx++) {
@@ -1785,7 +1786,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
 
 RVA(0x0007be10, 0x34)
 void CTriggerMgr::CancelTargeting() {
-    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* world = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     if (m_targetingCursorId == 0 && world->m_cursorTargetValid == false) {
         return;
     }
@@ -1974,7 +1975,8 @@ i32 CTriggerMgr::SetRandomGruntColors(i32 skipPlayerIndex, b32 enable) {
                             grunt->m_savedColorIndex = IDX(grunt->GetColorIndex());
                         }
                         (static_cast<CGrunt*>(grunt))->SetColorIndex(colorIndex);
-                        (static_cast<CPlay*>(g_gameReg->m_curState))->SetRandomColorsCurse(true);
+                        (static_cast<CPlay*>(g_gameReg->GetCurrentState()))
+                            ->SetRandomColorsCurse(true);
                     } else if (grunt->m_savedColorIndex != -1) {
                         (static_cast<CGrunt*>(grunt))->SetColorIndex(grunt->m_savedColorIndex);
                         grunt->m_savedColorIndex = -1;
@@ -2110,7 +2112,7 @@ i32 CTriggerMgr::SpawnPickup(
         case PICKUP_WARPSTONE:
             if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
 
-                CState* state = g_gameReg->m_curState;
+                CState* state = g_gameReg->GetCurrentState();
                 CString levelKey;
                 levelKey.Format("Level%i", state->m_levelIndex);
                 imageSetName.Format(
@@ -2305,7 +2307,7 @@ i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
         }
     } while (pos != NULL);
     if (m_lastRecalledGroup == slot) {
-        (static_cast<CPlay*>(g_gameReg->m_curState))
+        (static_cast<CPlay*>(g_gameReg->GetCurrentState()))
             ->SetCameraPosition(
                 bbox.left + (bbox.right - bbox.left) / 2,
                 bbox.top + (bbox.bottom - bbox.top) / 2
@@ -2396,7 +2398,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     if (playerIndex == g_curPlayer) {
         m_playerControlEnabled = false;
     }
-    (static_cast<CPlay*>(g_gameReg->m_curState))->CancelCursorAction();
+    (static_cast<CPlay*>(g_gameReg->GetCurrentState()))->CancelCursorAction();
     return 1;
 }
 

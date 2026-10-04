@@ -358,7 +358,7 @@ void CCheckpointTrigger::RegisterActs() {
 
 RVA(0x0010f6a0, 0x235)
 i32 CCheckpointTrigger::TryActivateCheckpoint() {
-    CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* play = static_cast<CPlay*>(g_gameReg->GetCurrentState());
 
     for (i32 i = 0; i < m_switchCount; i++) {
         i32 key = m_switchKeys[i];

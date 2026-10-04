@@ -1008,7 +1008,7 @@ i32 CMinimap::BeginMinimapPan(i32, i32 cursorX, i32 cursorY) {
         return 0;
     }
 
-    CPlay* play = static_cast<CPlay*>(m_gameMgr->m_curState);
+    CPlay* play = static_cast<CPlay*>(m_gameMgr->GetCurrentState());
     if (play != NULL) {
         play->SetCameraPosition(
             cell[0] * TILE_SIZE_PX + TILE_HALF_PX,
@@ -1062,7 +1062,7 @@ i32 CMinimap::ContinueMinimapPan(i32, i32 cursorX, i32 cursorY) {
     if (!ScreenPointToCell(cursorX, cursorY, cell, MINIMAP_SNAP_MARGIN_PX)) {
         return 0;
     }
-    CPlay* play = static_cast<CPlay*>(m_gameMgr->m_curState);
+    CPlay* play = static_cast<CPlay*>(m_gameMgr->GetCurrentState());
     if (play != NULL) {
         play->SetCameraPosition(
             cell[0] * TILE_SIZE_PX + TILE_HALF_PX,

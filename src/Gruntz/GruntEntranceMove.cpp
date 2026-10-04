@@ -706,7 +706,7 @@ i32 CGrunt::StartDeathMovement() {
     m_moveSpeed = 16.0 / static_cast<double>(g_buteMgr.GetDword("Grunt", s_movingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;
-    CState* state = g->m_curState;
+    CState* state = g->GetCurrentState();
     CGruntzMapMgr* b = g->GetTileGrid();
     CWwdSpriteObject* h = m_object;
     i32 tileY = h->m_screenY >> TILE_SHIFT_PX;

@@ -128,7 +128,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
             return;
     }
 
-    g_gameReg->m_curState->SetAssetGroupLoaded(m_warlordName, 1, 0, NULL);
+    g_gameReg->GetCurrentState()->SetAssetGroupLoaded(m_warlordName, 1, 0, NULL);
 
     m_idleAnims[0] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
@@ -370,7 +370,7 @@ i32 CWarlord::UpdatePanicState() {
         }
     } else {
 
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_levelTimer->m_remainingMs == 0) {
+        if ((static_cast<CPlay*>(g_gameReg->GetCurrentState()))->m_levelTimer->m_remainingMs == 0) {
             ResolveMovingAnimation();
             return 0;
         }

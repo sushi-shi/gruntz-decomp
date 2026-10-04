@@ -456,7 +456,7 @@ i32 CTriggerMgr::SelectUnit(i32 playerIndex, i32 unitIndex, i32 extendSelection,
 RVA(0x0006c130, 0xe38)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
-    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* state = static_cast<CPlay*>(g_gameReg->GetCurrentState());
 
     if (g != NULL) {
         g->m_neighborScanEnabled = true;
@@ -839,7 +839,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 // @early-stop
 RVA(0x0006d300, 0x5db)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
-    CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
+    CPlay* state = static_cast<CPlay*>(g_gameReg->GetCurrentState());
     CGameLevel* view = m_world->GetLevel();
     i32 x = sx;
     i32 y = sy;
@@ -1345,7 +1345,7 @@ void CTriggerMgr::CheckWarpStoneExit(i32 x, i32 y, HitSpanArg span) {
         return;
     }
     if (grunt->IsNotAnimationAct("B") && grunt->GetEquippedToolType() == PICKUP_WARPSTONE) {
-        CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+        CPlay* play = static_cast<CPlay*>(g_gameReg->GetCurrentState());
         g_gameReg->m_gameStats->m_elapsedTimeMs += play->m_levelTimer->m_stamp.Elapsed();
         play->m_levelTimer->Stop();
         play->CancelDefeatCountdown();

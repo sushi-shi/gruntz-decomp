@@ -138,6 +138,10 @@ public:
     i32 ForwardRButtonDblClkToState(i32 keyFlags, i32 x, i32 y);
     i32 ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y);
 
+    CState* GetCurrentState() const {
+        return m_curState;
+    }
+
     CState* TopState();
     void PushState(CState* s);
     i32 PopTopIfMatches(CState* s);

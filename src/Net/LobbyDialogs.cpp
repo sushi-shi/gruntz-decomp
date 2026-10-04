@@ -46,7 +46,7 @@ namespace NetLobby {
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
-                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
+                g_curMulti = static_cast<CMulti*>(g_gameReg->GetCurrentState());
                 InitializeHostWaitDialog(hWnd, g_curMulti);
                 GetAsyncKeyState(VK_PAUSE);
                 return true;
@@ -99,7 +99,7 @@ namespace NetLobby {
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
-                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
+                g_curMulti = static_cast<CMulti*>(g_gameReg->GetCurrentState());
                 InitializeJoinWaitDialog(hWnd, g_curMulti);
                 return true;
             case WM_COMMAND:
@@ -144,7 +144,7 @@ namespace NetLobby {
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
-                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
+                g_curMulti = static_cast<CMulti*>(g_gameReg->GetCurrentState());
                 InitializeLobbyDialog(hWnd, g_curMulti);
                 return true;
             case WM_COMMAND:
@@ -192,7 +192,7 @@ namespace NetLobby {
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
-                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
+                g_curMulti = static_cast<CMulti*>(g_gameReg->GetCurrentState());
                 InitializeSessionWaitDialog(hWnd, g_curMulti);
                 return true;
             case WM_COMMAND:
@@ -271,7 +271,7 @@ namespace NetLobby {
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
-                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
+                g_curMulti = static_cast<CMulti*>(g_gameReg->GetCurrentState());
                 InitializeDropWaitDialog(hWnd, g_curMulti);
                 return true;
             case WM_COMMAND:
@@ -389,7 +389,7 @@ namespace NetLobby {
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
-                g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
+                g_curMulti = static_cast<CMulti*>(g_gameReg->GetCurrentState());
                 InitializeDropInDialog(hWnd, g_curMulti);
                 return true;
             case WM_COMMAND:

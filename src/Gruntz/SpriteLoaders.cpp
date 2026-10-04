@@ -89,7 +89,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
     if (v == 0) {
 
         Stop();
-        CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
+        CPlay* ls = static_cast<CPlay*>(g_gameReg->GetCurrentState());
         ls->m_levelTimeExpired = true;
         ls->m_messageBlinkTimer.Start(0x1f4);
         g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(g_curPlayer);
