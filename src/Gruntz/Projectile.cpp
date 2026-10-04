@@ -496,39 +496,40 @@ i32 CBoomerang::LaunchProjectile(
         == 0) {
         return 0;
     }
-    double duration = static_cast<double>(m_timePerTile);
-    double d = 3.1415927 / ((duration / 32.0) * m_flightDist);
-    CWwdSpriteObject* owner = m_object;
-    m_launchX = owner->m_screenX;
-    m_launchY = owner->m_screenY;
-    double originY =
-        (static_cast<double>(m_targetPxY) + static_cast<double>(owner->m_screenY)) * 0.5;
-    m_originX = (static_cast<double>(m_targetPxX) + static_cast<double>(owner->m_screenX)) * 0.5;
-    m_originY = originY;
-    m_dirX = m_originX - static_cast<double>(m_launchX);
-    m_dirY = originY - static_cast<double>(m_launchY);
-    m_phase = 0.0;
-    m_velScale = d;
-    CGrunt* g = g_gameReg->GetTriggerMgr()->UnitAt(sourcePlayerIndex, sourceUnitIndex);
-    if (g != NULL) {
-        g->StartHold(static_cast<i32>((duration * m_flightDist * 0.0625 - (-500.0))));
-        g->RecycleCoords();
+    double timePerTile = static_cast<double>(m_timePerTile);
+    double angularRate = 3.1415927 / ((timePerTile / 32.0) * m_flightDist);
+    CWwdSpriteObject* projectileObject = m_object;
+    m_launchX = projectileObject->m_screenX;
+    m_launchY = projectileObject->m_screenY;
+    double orbitCenterY =
+        (static_cast<double>(m_targetPxY) + static_cast<double>(projectileObject->m_screenY)) * 0.5;
+    m_orbitCenterX =
+        (static_cast<double>(m_targetPxX) + static_cast<double>(projectileObject->m_screenX)) * 0.5;
+    m_orbitCenterY = orbitCenterY;
+    m_orbitRadiusX = m_orbitCenterX - static_cast<double>(m_launchX);
+    m_orbitRadiusY = orbitCenterY - static_cast<double>(m_launchY);
+    m_orbitAngle = 0.0;
+    m_velScale = angularRate;
+    CGrunt* sourceGrunt = g_gameReg->GetTriggerMgr()->UnitAt(sourcePlayerIndex, sourceUnitIndex);
+    if (sourceGrunt != NULL) {
+        sourceGrunt->StartHold(static_cast<i32>((timePerTile * m_flightDist * 0.0625 - (-500.0))));
+        sourceGrunt->RecycleCoords();
     }
-    m_launched = false;
+    m_returning = false;
     return 1;
 }
 
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
-    double s;
-    double c;
-    if (m_launched == false && m_phase > 3.1415927) {
+    double sinAngle;
+    double cosAngle;
+    if (m_returning == false && m_orbitAngle > 3.1415927) {
         SET_SCREEN_POS(m_object, m_targetPxX, m_targetPxY);
         if (m_shadow != NULL) {
             SET_SCREEN_POS(m_shadow, m_targetPxX, m_targetPxY);
         }
-        m_launched = true;
-    } else if (m_phase > 6.2831854 && m_launched != false) {
+        m_returning = true;
+    } else if (m_orbitAngle > 6.2831854 && m_returning != false) {
         ScanTargets(1);
         if (m_shadow != NULL) {
             m_shadow->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -539,20 +540,20 @@ void CBoomerang::AdvanceMotion() {
     }
     ScanTargets(0);
 
-    s = sin(m_phase);
-    c = cos(m_phase);
-    double vx = m_dirX;
-    double vy = -m_dirY;
-    double phaseDelta = static_cast<double>(g_frameDelta) * m_velScale;
-    double xSinTerm = vy * s;
-    double xCosTerm = vx * c;
-    double ySinTerm = vx * s;
-    double yCosTerm = vy * c;
+    sinAngle = sin(m_orbitAngle);
+    cosAngle = cos(m_orbitAngle);
+    double radiusX = m_orbitRadiusX;
+    double negRadiusY = -m_orbitRadiusY;
+    double angleDelta = static_cast<double>(g_frameDelta) * m_velScale;
+    double xSinTerm = negRadiusY * sinAngle;
+    double xCosTerm = radiusX * cosAngle;
+    double ySinTerm = radiusX * sinAngle;
+    double yCosTerm = negRadiusY * cosAngle;
     m_posX = xSinTerm - xCosTerm;
     m_posY = ySinTerm + yCosTerm;
-    m_posX = m_originX + m_posX;
-    m_posY = m_originY + m_posY;
-    m_phase = phaseDelta + m_phase;
+    m_posX = m_orbitCenterX + m_posX;
+    m_posY = m_orbitCenterY + m_posY;
+    m_orbitAngle = angleDelta + m_orbitAngle;
     SET_SCREEN_POS(m_object, static_cast<i32>(m_posX), static_cast<i32>(m_posY));
     if (m_shadow != NULL) {
         SET_SCREEN_POS(m_shadow, static_cast<i32>(m_posX), static_cast<i32>(m_posY));
@@ -769,22 +770,22 @@ i32 CBoomerang::SerializeDispatch(
         case SERIAL_LOAD:
             ar->Read(&m_launchX, sizeof(m_launchX));
             ar->Read(&m_launchY, sizeof(m_launchY));
-            ar->Read(&m_dirX, sizeof(m_dirX));
-            ar->Read(&m_dirY, sizeof(m_dirY));
-            ar->Read(&m_originX, sizeof(m_originX));
-            ar->Read(&m_originY, sizeof(m_originY));
-            ar->Read(&m_phase, sizeof(m_phase));
-            ar->Read(&m_launched, sizeof(m_launched));
+            ar->Read(&m_orbitRadiusX, sizeof(m_orbitRadiusX));
+            ar->Read(&m_orbitRadiusY, sizeof(m_orbitRadiusY));
+            ar->Read(&m_orbitCenterX, sizeof(m_orbitCenterX));
+            ar->Read(&m_orbitCenterY, sizeof(m_orbitCenterY));
+            ar->Read(&m_orbitAngle, sizeof(m_orbitAngle));
+            ar->Read(&m_returning, sizeof(m_returning));
             break;
         case SERIAL_SAVE:
             ar->Write(&m_launchX, sizeof(m_launchX));
             ar->Write(&m_launchY, sizeof(m_launchY));
-            ar->Write(&m_dirX, sizeof(m_dirX));
-            ar->Write(&m_dirY, sizeof(m_dirY));
-            ar->Write(&m_originX, sizeof(m_originX));
-            ar->Write(&m_originY, sizeof(m_originY));
-            ar->Write(&m_phase, sizeof(m_phase));
-            ar->Write(&m_launched, sizeof(m_launched));
+            ar->Write(&m_orbitRadiusX, sizeof(m_orbitRadiusX));
+            ar->Write(&m_orbitRadiusY, sizeof(m_orbitRadiusY));
+            ar->Write(&m_orbitCenterX, sizeof(m_orbitCenterX));
+            ar->Write(&m_orbitCenterY, sizeof(m_orbitCenterY));
+            ar->Write(&m_orbitAngle, sizeof(m_orbitAngle));
+            ar->Write(&m_returning, sizeof(m_returning));
             break;
     }
     return CProjectile::SerializeDispatch(ar, mode, typeId, object) ? 1 : 0;
