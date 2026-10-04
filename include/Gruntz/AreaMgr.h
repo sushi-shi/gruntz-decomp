@@ -68,7 +68,7 @@ public:
     i32 InitializeTrainingStage4();
 
     i32 m_currentLevelIndex;
-    CSpawnList m_spawnEntryList;
+    CResourceNameList m_objectResources;
 };
 
 extern CAreaMgr g_areaMgr;

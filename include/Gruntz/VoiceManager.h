@@ -57,7 +57,7 @@ public:
     );
 
     i32 PlayVoice(i32 sourceObjectId, i32 voiceGroup, i32 variantIndex, i32 priority, i32 percent);
-    CSpawnList* BuildVoiceGroup(i32 voiceGroup);
+    CResourceNameList* BuildVoiceGroup(i32 voiceGroup);
     i32 IsAnyVoicePlaying();
     i32 IsVoiceSlotPlaying(i32 slotIndex);
     void StopVoice(i32 sourceObjectId);

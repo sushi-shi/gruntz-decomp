@@ -40,7 +40,7 @@ CAreaMgr::~CAreaMgr() {
     Reset();
 }
 
-RVA_COMPGEN(0x00099ca0, 0x49, ??1CSpawnList@@QAE@XZ)
+RVA_COMPGEN(0x00099ca0, 0x49, ??1CResourceNameList@@QAE@XZ)
 
 RVA(0x00099d10, 0x20)
 i32 InitializeLevelArea(i32 levelIndex) {
@@ -190,13 +190,13 @@ void CAreaMgr::Reset() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009a0d0, 0x133)
-CSpawnEntry* CSpawnList::FindEntry(CString name, b32 useHash) {
-    for (POSITION n = m_list.GetHeadPosition(); n != NULL;) {
-        CSpawnEntry* e = NextEntry(n);
+CResourceNameEntry* CResourceNameList::FindEntry(CString name, b32 allowPrefixMatch) {
+    for (POSITION n = m_entries.GetHeadPosition(); n != NULL;) {
+        CResourceNameEntry* e = NextEntry(n);
         if (e == NULL) {
             continue;
         }
-        if (useHash != false) {
+        if (allowPrefixMatch != false) {
             CString nm = e->GetName();
             if (strncmp(nm, name, nm.GetLength()) == 0) {
                 return e;
@@ -211,10 +211,10 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, b32 useHash) {
 }
 
 RVA(0x0009a290, 0x138)
-CSpawnEntry* CSpawnList::FindByName(const CString& name) {
+CResourceNameEntry* CResourceNameList::FindByName(const CString& name) {
     CString key = name + "_";
-    for (POSITION n = m_list.GetHeadPosition(); n != NULL;) {
-        CSpawnEntry* e = NextEntry(n);
+    for (POSITION n = m_entries.GetHeadPosition(); n != NULL;) {
+        CResourceNameEntry* e = NextEntry(n);
         if (e == NULL) {
             continue;
         }
@@ -231,32 +231,32 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
 }
 
 RVA(0x0009a420, 0x1c)
-void CSpawnList::ClearFlags() {
-    POSITION p = m_list.GetHeadPosition();
+void CResourceNameList::ClearPresenceMarks() {
+    POSITION p = m_entries.GetHeadPosition();
     if (p == NULL) {
         return;
     }
     do {
-        CSpawnEntry* e = NextEntry(p);
+        CResourceNameEntry* e = NextEntry(p);
         if (e != NULL) {
-            e->m_flag = false;
+            e->m_resourcePresent = false;
         }
     } while (p != NULL);
 }
 
 RVA(0x0009a450, 0x36)
-void CSpawnList::DeleteAllEntries() {
-    POSITION node = m_list.GetHeadPosition();
+void CResourceNameList::DeleteAllEntries() {
+    POSITION node = m_entries.GetHeadPosition();
     while (node != NULL) {
-        CSpawnEntry* e = NextEntry(node);
+        CResourceNameEntry* e = NextEntry(node);
         if (e != NULL) {
             delete e;
         }
     }
-    m_list.RemoveAll();
+    m_entries.RemoveAll();
 }
 
-RVA_COMPGEN(0x0009a4a0, 0x5, ??1CSpawnEntry@@QAE@XZ)
+RVA_COMPGEN(0x0009a4a0, 0x5, ??1CResourceNameEntry@@QAE@XZ)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -276,7 +276,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     if (surfaceMgr == NULL) {
         return 0;
     }
-    m_spawnEntryList.ClearFlags();
+    m_objectResources.ClearPresenceMarks();
 
     CMapStringToOb* registryMap = &surfaceMgr->GetImageRegistry()->m_workersByName;
     if (registryMap == NULL) {
@@ -290,9 +290,9 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
         CObject* workerObject = NULL;
         registryMap->GetNextAssoc(pos, key, workerObject);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
-            CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
-            if (spawnEntry != NULL) {
-                spawnEntry->m_flag = true;
+            CResourceNameEntry* resourceEntry = m_objectResources.FindByName(key);
+            if (resourceEntry != NULL) {
+                resourceEntry->m_resourcePresent = true;
             } else {
                 toRemove.AddTail(workerObject);
             }
@@ -306,33 +306,37 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     }
     toRemove.RemoveAll();
 
-    CSpawnList* spawnList = &m_spawnEntryList;
-    CSpawnEntry* spawnEntry = spawnList->FirstEntry();
-    while (spawnEntry != NULL) {
-        if (spawnEntry->m_flag == false) {
+    CResourceNameList* resources = &m_objectResources;
+    CResourceNameEntry* resourceEntry = resources->FirstEntry();
+    while (resourceEntry != NULL) {
+        if (resourceEntry->m_resourcePresent == false) {
             char resourcePath[0x80];
             g_resourceInstallActive = true;
-            sprintf(resourcePath, "IMAGEZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
+            sprintf(
+                resourcePath,
+                "IMAGEZ_%s",
+                static_cast<LPCTSTR>(resourceEntry->GetObjectResourceSuffix())
+            );
             CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
             if (resourceTree == NULL) {
                 return 0;
             }
             surfaceMgr->GetImageRegistry()->InstallTree(
                 resourceTree,
-                const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
+                const_cast<char*>(static_cast<LPCTSTR>(resourceEntry->GetName())),
                 "_"
             );
-            TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
+            TRACE("%s\n", static_cast<LPCTSTR>(resourceEntry->GetName()));
             g_resourceInstallActive = false;
-            spawnEntry->m_flag = true;
+            resourceEntry->m_resourcePresent = true;
         }
-        spawnEntry = spawnList->NextEntry();
+        resourceEntry = resources->NextEntry();
     }
     return 1;
 }
 
 RVA(0x0009a830, 0xa4)
-CString CSpawnEntry::GetTail() {
+CString CResourceNameEntry::GetObjectResourceSuffix() {
     CString tmp;
     i32 len = m_name.GetLength();
     if (len == 0) {
@@ -350,7 +354,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     if (surfaceMgr == NULL) {
         return 0;
     }
-    m_spawnEntryList.ClearFlags();
+    m_objectResources.ClearPresenceMarks();
 
     CMapStringToPtr* registryMap = &surfaceMgr->SoundRegistry()->m_cues;
     if (registryMap == NULL) {
@@ -364,9 +368,9 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
         SoundCue* cue = NULL;
         MapGetNext(*registryMap, pos, key, cue);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
-            CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
-            if (spawnEntry != NULL) {
-                spawnEntry->m_flag = true;
+            CResourceNameEntry* resourceEntry = m_objectResources.FindByName(key);
+            if (resourceEntry != NULL) {
+                resourceEntry->m_resourcePresent = true;
             } else {
                 toRemove.AddTail(cue);
             }
@@ -380,25 +384,29 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* sr
     }
     toRemove.RemoveAll();
 
-    CSpawnList* spawnList = &m_spawnEntryList;
-    CSpawnEntry* spawnEntry = spawnList->FirstEntry();
-    while (spawnEntry != NULL) {
-        if (spawnEntry->m_flag == false) {
+    CResourceNameList* resources = &m_objectResources;
+    CResourceNameEntry* resourceEntry = resources->FirstEntry();
+    while (resourceEntry != NULL) {
+        if (resourceEntry->m_resourcePresent == false) {
             char resourcePath[0x80];
-            sprintf(resourcePath, "SOUNDZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
+            sprintf(
+                resourcePath,
+                "SOUNDZ_%s",
+                static_cast<LPCTSTR>(resourceEntry->GetObjectResourceSuffix())
+            );
             CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
             if (resourceTree == NULL) {
                 return 0;
             }
             surfaceMgr->SoundRegistry()->LoadFromTree(
                 resourceTree,
-                const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
+                const_cast<char*>(static_cast<LPCTSTR>(resourceEntry->GetName())),
                 "_"
             );
-            TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
-            spawnEntry->m_flag = true;
+            TRACE("%s\n", static_cast<LPCTSTR>(resourceEntry->GetName()));
+            resourceEntry->m_resourcePresent = true;
         }
-        spawnEntry = spawnList->NextEntry();
+        resourceEntry = resources->NextEntry();
     }
     return 1;
 }
@@ -408,7 +416,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
     if (surfaceMgr == NULL) {
         return 0;
     }
-    m_spawnEntryList.ClearFlags();
+    m_objectResources.ClearPresenceMarks();
 
     CMapStringToPtr* registryMap = &surfaceMgr->GetAnimationRegistry()->m_animations;
     if (registryMap == NULL) {
@@ -422,9 +430,9 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
         CAniElement* animation = NULL;
         MapGetNext(*registryMap, pos, key, animation);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
-            CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
-            if (spawnEntry != NULL) {
-                spawnEntry->m_flag = true;
+            CResourceNameEntry* resourceEntry = m_objectResources.FindByName(key);
+            if (resourceEntry != NULL) {
+                resourceEntry->m_resourcePresent = true;
             } else {
                 toRemove.AddTail(animation);
             }
@@ -438,25 +446,29 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
     }
     toRemove.RemoveAll();
 
-    CSpawnList* spawnList = &m_spawnEntryList;
-    CSpawnEntry* spawnEntry = spawnList->FirstEntry();
-    while (spawnEntry != NULL) {
-        if (spawnEntry->m_flag == false) {
+    CResourceNameList* resources = &m_objectResources;
+    CResourceNameEntry* resourceEntry = resources->FirstEntry();
+    while (resourceEntry != NULL) {
+        if (resourceEntry->m_resourcePresent == false) {
             char resourcePath[0x80];
-            sprintf(resourcePath, "ANIZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
+            sprintf(
+                resourcePath,
+                "ANIZ_%s",
+                static_cast<LPCTSTR>(resourceEntry->GetObjectResourceSuffix())
+            );
             CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
             if (resourceTree == NULL) {
                 return 0;
             }
             surfaceMgr->GetAnimationRegistry()->LoadFromTree(
                 resourceTree,
-                const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
+                const_cast<char*>(static_cast<LPCTSTR>(resourceEntry->GetName())),
                 "_"
             );
-            TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
-            spawnEntry->m_flag = true;
+            TRACE("%s\n", static_cast<LPCTSTR>(resourceEntry->GetName()));
+            resourceEntry->m_resourcePresent = true;
         }
-        spawnEntry = spawnList->NextEntry();
+        resourceEntry = resources->NextEntry();
     }
     return 1;
 }
