@@ -334,8 +334,8 @@ void CImage::RenderImage(CRenderState* info, CDDrawSurfacePair* dst) {
         return;
     }
 
-    LONG x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
-    LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
+    LONG x = m_originX - m_anchorX + info->m_imageOffsetX + info->m_screenX;
+    LONG y = m_originY - m_anchorY + info->m_imageOffsetY + info->m_screenY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     RECT d;
     d.left = x;
@@ -429,8 +429,8 @@ void CImage::RenderFrameClipped(
 
 RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CRenderState* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
-    LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
+    LONG x = info->m_screenX - m_originX - info->m_imageOffsetX - m_anchorX;
+    LONG y = info->m_screenY - m_originY - info->m_imageOffsetY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
@@ -449,8 +449,8 @@ void CImage::BlitNorm(CRenderState* info, CDDrawSurfacePair* dst) {
 
 RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
-    LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
+    LONG x = info->m_screenX - info->m_imageOffsetX - m_anchorX - m_originX;
+    LONG y = m_originY - m_anchorY + info->m_imageOffsetY + info->m_screenY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
@@ -466,8 +466,8 @@ void CImage::BlitFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
 
 RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
-    LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
+    LONG x = info->m_imageOffsetX - m_anchorX + m_originX + info->m_screenX;
+    LONG y = info->m_screenY - m_originY - m_anchorY - info->m_imageOffsetY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
@@ -483,8 +483,8 @@ void CImage::BlitFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
 
 RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CRenderState* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
-    LONG y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
+    LONG x = info->m_screenX - m_anchorX + m_originX + info->m_imageOffsetX;
+    LONG y = info->m_screenY - m_anchorY + m_originY + info->m_imageOffsetY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
@@ -492,8 +492,8 @@ void CImage::BlitShadeFlipHV(CRenderState* info, CDDrawSurfacePair* dst) {
     s.top = d.top - y;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
-    if (info->m_drawActive) {
-        m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
+    if (info->m_hasShadeOverride) {
+        m_owned->Select(info->m_shadeMode, info->m_shadeTable);
         m_owned->m_light = info->m_fillFraction;
     }
     m_owned->Blit(&d, dst->GetSurface(), &s, 0, 0);
@@ -502,8 +502,8 @@ void CImage::BlitShadeFlipHV(CRenderState* info, CDDrawSurfacePair* dst) {
 
 RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CRenderState* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
-    LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
+    LONG x = info->m_screenX - m_originX - m_anchorX - info->m_imageOffsetX;
+    LONG y = info->m_screenY - m_originY - m_anchorY - info->m_imageOffsetY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
@@ -511,8 +511,8 @@ void CImage::BlitShadeNorm(CRenderState* info, CDDrawSurfacePair* dst) {
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
-    if (info->m_drawActive) {
-        m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
+    if (info->m_hasShadeOverride) {
+        m_owned->Select(info->m_shadeMode, info->m_shadeTable);
     }
     m_owned->Blit(&d, dst->GetSurface(), &s, 1, 1);
     info->m_dirty.Set(d, w, h);
@@ -520,8 +520,8 @@ void CImage::BlitShadeNorm(CRenderState* info, CDDrawSurfacePair* dst) {
 
 RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
-    LONG y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
+    LONG x = info->m_screenX - m_anchorX - info->m_imageOffsetX - m_originX;
+    LONG y = m_originY + info->m_imageOffsetY + info->m_screenY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
@@ -529,8 +529,8 @@ void CImage::BlitShadeFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
     s.top = d.top - y;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
-    if (info->m_drawActive) {
-        m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
+    if (info->m_hasShadeOverride) {
+        m_owned->Select(info->m_shadeMode, info->m_shadeTable);
     }
     m_owned->Blit(&d, dst->GetSurface(), &s, 1, 0);
     info->m_dirty.Set(d, w, h);
@@ -538,8 +538,8 @@ void CImage::BlitShadeFlipV(CRenderState* info, CDDrawSurfacePair* dst) {
 
 RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
-    LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
+    LONG x = info->m_imageOffsetX + m_originX + info->m_screenX - m_anchorX;
+    LONG y = info->m_screenY - m_originY - info->m_imageOffsetY - m_anchorY;
     DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
@@ -547,8 +547,8 @@ void CImage::BlitShadeFlipH(CRenderState* info, CDDrawSurfacePair* dst) {
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
-    if (info->m_drawActive) {
-        m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
+    if (info->m_hasShadeOverride) {
+        m_owned->Select(info->m_shadeMode, info->m_shadeTable);
     }
     m_owned->Blit(&d, dst->GetSurface(), &s, 0, 1);
     info->m_dirty.Set(d, w, h);

@@ -112,8 +112,8 @@ public:
         m_dirty.Reset();
     }
 
-    i32 m_plotDX;
-    i32 m_plotDY;
+    i32 m_imageOffsetX;
+    i32 m_imageOffsetY;
 
     WwdDirtyRect m_dirty;
 
@@ -121,10 +121,10 @@ public:
     SpriteStateFlags m_stateFlags;
     i32 m_flashCountdown;
     i32 m_flashInterval;
-    CShadeTable* m_drawFillArg;
-    ShadeMode m_drawFillCmd;
+    CShadeTable* m_shadeTable;
+    ShadeMode m_shadeMode;
     i32 m_fillFraction;
-    b32 m_drawActive;
+    b32 m_hasShadeOverride;
     i32 m_screenX;
 
     i32 m_screenY;
@@ -137,13 +137,13 @@ public:
     (node)->m_screenY = (y)
 
 #define SET_DRAW_FILL_SPLIT(activeNode, node, mode, table)                                         \
-    activeNode->m_drawActive = true;                                                               \
-    node->m_drawFillCmd = mode;                                                                    \
-    node->m_drawFillArg = table
+    activeNode->m_hasShadeOverride = true;                                                         \
+    node->m_shadeMode = mode;                                                                      \
+    node->m_shadeTable = table
 
 #define SET_DRAW_FILL_FRACTION(node, mode, fraction)                                               \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillCmd = mode;                                                                    \
+    node->m_hasShadeOverride = true;                                                               \
+    node->m_shadeMode = mode;                                                                      \
     node->m_fillFraction = fraction
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

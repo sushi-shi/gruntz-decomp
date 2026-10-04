@@ -507,8 +507,8 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
 RVA(0x00164790, 0x41)
 i32 CRenderState::SetPosition(i32 x, i32 y) {
     m_screenX = x;
-    m_plotDX = 0;
-    m_plotDY = 0;
+    m_imageOffsetX = 0;
+    m_imageOffsetY = 0;
     m_stateFlags = SPRITE_STATE_NONE;
     m_flashCountdown = 0;
     m_screenY = y;
