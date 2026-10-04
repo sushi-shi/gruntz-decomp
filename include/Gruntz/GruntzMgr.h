@@ -193,6 +193,13 @@ public:
         return m_midi;
     }
 
+    i32 GetScrollSpeed() const {
+        return m_scrollSpeed;
+    }
+    void SetScrollSpeed(i32 speed) {
+        m_scrollSpeed = speed;
+    }
+
     i32 GetVoiceVolume() const {
         return m_voiceVolume;
     }

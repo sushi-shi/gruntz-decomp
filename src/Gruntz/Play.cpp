@@ -3908,7 +3908,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     i32 sx = g->GetScrollPixelX();
     i32 sy = g->GetScrollPixelY();
-    double frac = static_cast<double>(w->m_scrollSpeed) * 0.01;
+    double frac = static_cast<double>(w->GetScrollSpeed()) * 0.01;
     i32 speed = static_cast<i32>(frac * s_scrollSpeedRange + s_minScrollSpeed);
 
     SIZE

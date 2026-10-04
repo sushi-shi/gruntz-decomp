@@ -225,7 +225,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     g_savedVoiceEnabled = g_gameReg->m_isVoiceEnabled;
     g_savedMidiVolume = g_gameReg->GetMidiManager()->GetMasterVolume();
     g_savedMusicEnabled = g_gameReg->m_musicEnabled;
-    g_savedScrollSpeed = g_gameReg->m_scrollSpeed;
+    g_savedScrollSpeed = g_gameReg->GetScrollSpeed();
     g_unusedMusicEnabledSnapshot = g_gameReg->m_musicEnabled;
     g_savedResolutionMode = GetResolutionCode();
     g_videoResolutionMode = GetResolutionCode();
@@ -238,7 +238,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     ConfigureDialogScrollBar(hDlg, 0x476, g_gameReg->GetVoiceVolume(), 0x50);
     CheckDlgButton(hDlg, 0x471, g_gameReg->m_musicEnabled);
     ConfigureDialogScrollBar(hDlg, 0x472, g_gameReg->GetMidiManager()->GetMasterVolume(), 0x64);
-    ConfigureDialogScrollBar(hDlg, 0x478, g_gameReg->m_scrollSpeed, 0x64);
+    ConfigureDialogScrollBar(hDlg, 0x478, g_gameReg->GetScrollSpeed(), 0x64);
 }
 
 // @early-stop
@@ -276,7 +276,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     }
     i32 qv = GetDialogScrollPosition(hDlg, 0x478);
     if (qv >= 0 && qv <= 100) {
-        g_gameReg->m_scrollSpeed = qv;
+        g_gameReg->SetScrollSpeed(qv);
     }
 }
 
@@ -303,7 +303,7 @@ void ApplyGameOptions() {
             g_gameReg->GetMidiManager()->SetMasterVolume(g_savedMidiVolume);
         }
     }
-    g_gameReg->m_scrollSpeed = g_savedScrollSpeed;
+    g_gameReg->SetScrollSpeed(g_savedScrollSpeed);
 }
 
 RVA(0x00036d00, 0x40)
@@ -441,7 +441,6 @@ void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
     }
 }
 
-// @early-stop
 RVA(0x00037260, 0x220)
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     if (!hCtrl) {
@@ -482,7 +481,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x478)) {
-        g_gameReg->m_scrollSpeed = pos;
+        g_gameReg->SetScrollSpeed(pos);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x476)) {
