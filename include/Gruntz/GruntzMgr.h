@@ -235,6 +235,9 @@ public:
     i32 RunMfcDialog(class CDialog* dlg, b32 notify);
     i32 FinishLevel(b32 pauseGame, b32 pauseMusic);
     i32 FillSaveInfo(SaveSlot* dst, const char* snapshot);
+    CSaveGame* GetSaveGame() const {
+        return m_saveGame;
+    }
     void SetSaveSlot(SaveSlot* const& slot) {
         m_saveInfoRec = slot;
     }

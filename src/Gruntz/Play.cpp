@@ -1307,7 +1307,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     if (self->m_mgr->GetGameMode() == GAMEMODE_BATTLEZ) {
         self->m_mgr->InitializeBattlezPlayers();
     }
-    self->m_mgr->m_saveGame
+    self->m_mgr->GetSaveGame()
         ->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, self->m_mgr);
     {
         CString key;
@@ -5435,12 +5435,11 @@ i32 CPlay::StartLevelPlay() {
             if (reg->CheatMgr()->HasUsedCheats() == false) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
-                    (static_cast<CSaveGame*>(reg->m_saveGame))
-                        ->SetMaxLevel(static_cast<QuestLevel>(id));
+                    reg->GetSaveGame()->SetMaxLevel(static_cast<QuestLevel>(id));
                     reg = g_gameReg;
                 }
             }
-            (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
+            reg->GetSaveGame()->Save(NULL, 0x81a6);
         }
         CGameLevel* g = m_mgr->World()->GetLevel();
         SetCameraPosition(g->m_header.m_startX, g->m_header.m_startY);
