@@ -2368,8 +2368,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             DECLARE_CURRENT_ANIMATION_FRAME(handle, el, first)
             SetImageFrameByName(EntranceCell()->StruckName().GetBuffer(0), handle);
         } else {
-            if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
+            if (m_inCombat != false && m_neighborValid == false) {
+                RESET_GRUNT_COMBAT_STATE(this)
             }
             if (IsAnimationAct("D")) {
                 SetImageSetByName(EntranceCell()->WalkName().GetBuffer(0));

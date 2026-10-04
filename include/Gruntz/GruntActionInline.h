@@ -28,8 +28,8 @@ inline void CGrunt::RestorePreviousAppearance() {
     m_entranceActive = false;
     bool previousWasWalk = (::GetAnimationActName(m_previousAnimationActId) == "D");
     if (previousWasWalk) {
-        if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+        if (m_inCombat != false && m_neighborValid == false) {
+            RESET_GRUNT_COMBAT_STATE(this)
         }
         m_tileMoveCommitted = false;
         SET_ANIMATION_ACT("D");

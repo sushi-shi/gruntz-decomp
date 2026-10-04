@@ -45,7 +45,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
     CGrunt* occ;
     switch (m_defenderState) {
         case AISTATE_ATTACK:
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
@@ -94,7 +94,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 goto seek;
             }
             RepathToward(this, occ);
-            if (m_poweredUp != false) {
+            if (m_inCombat != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -122,7 +122,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
 
         case AISTATE_SEEK:
             occ = m_triggerMgr->FindNearestEnemy(this);
-            if (occ != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
+            if (occ != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(occ)
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_vehiclePickupType == PICKUP_SCROLL) {

@@ -71,8 +71,8 @@ i32 CGrunt::StepDefenderBehavior() {
 
     FIND_NEAREST_ENEMY_AT_TARGET(occ, occOnTile)
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
         b32 neighborValid = m_neighborValid;
         if (neighborValid == false) {
             if (m_combatActive) {
@@ -85,7 +85,7 @@ i32 CGrunt::StepDefenderBehavior() {
                 if (occOnTile && occ == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     return 1;
                 }
             } else {
@@ -96,7 +96,7 @@ i32 CGrunt::StepDefenderBehavior() {
             if (m_neighborValid) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_COMBAT_STATE(this)
         } else {
             m_neighborValid = false;
         }

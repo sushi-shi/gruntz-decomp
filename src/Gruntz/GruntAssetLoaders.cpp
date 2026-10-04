@@ -84,8 +84,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_neighborValid == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 

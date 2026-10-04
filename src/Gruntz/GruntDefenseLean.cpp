@@ -49,7 +49,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
     CGrunt* occ;
     switch (m_defenderState) {
         case AISTATE_ATTACK:
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
@@ -92,7 +92,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 goto seek;
             }
             RepathToward(this, occ);
-            if (m_poweredUp != false) {
+            if (m_inCombat != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {

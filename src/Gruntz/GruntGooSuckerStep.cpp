@@ -77,8 +77,8 @@ i32 CGrunt::StepGooSuckerBehavior() {
 
     FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
         b32 neighborValid = m_neighborValid;
         if (neighborValid == false) {
             if (m_combatActive != false) {
@@ -91,7 +91,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (atTarget && g == NULL) {
                     goto L_yes;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     goto L_yes;
                 }
                 if (m_neighborValid != false) {
@@ -101,14 +101,14 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (atTarget) {
                     goto L_yes;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     goto L_yes;
                 }
                 if (m_neighborValid != false) {
                     goto L_yes;
                 }
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_COMBAT_STATE(this)
         } else {
             m_neighborValid = false;
         }
@@ -141,14 +141,14 @@ L_ed006b:
         m_blockedVoicePending = false;
         goto L_scanb;
     }
-    if (m_poweredUp != false) {
+    if (m_inCombat != false) {
         goto L_scanb;
     }
     if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
     }
-    if (m_poweredUp != false) {
+    if (m_inCombat != false) {
         goto L_scanb;
     }
     if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {

@@ -47,10 +47,10 @@ i32 CGrunt::StepPostGuardBehavior() {
             return 1;
     }
 
-    if (m_poweredUp == false) {
+    if (m_inCombat == false) {
         m_defenderState = AISTATE_SEEK;
     }
-    if (m_poweredUp != false) {
+    if (m_inCombat != false) {
         if (m_neighborValid != false) {
             return 1;
         }
@@ -68,7 +68,7 @@ i32 CGrunt::StepPostGuardBehavior() {
     if (occ == NULL) {
         return 1;
     }
-    if (m_poweredUp != false) {
+    if (m_inCombat != false) {
         return 1;
     }
     if (m_stamina < STAMINA_FULL) {

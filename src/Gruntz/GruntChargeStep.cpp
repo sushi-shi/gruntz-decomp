@@ -52,8 +52,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
         }
     }
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
         b32 neighborValid = m_neighborValid;
         if (neighborValid == false) {
             if (m_combatActive != false) {
@@ -66,25 +66,25 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 if (hitGate != false && g == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     return 1;
                 }
                 if (m_neighborValid != false) {
                     return 1;
                 }
-                RESET_GRUNT_POWERED_STATE(this)
+                RESET_GRUNT_COMBAT_STATE(this)
                 return 1;
             }
             if (hitGate != false) {
                 return 1;
             }
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 return 1;
             }
             if (m_neighborValid != false) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_COMBAT_STATE(this)
             return 1;
         }
         m_neighborValid = false;
@@ -94,7 +94,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
     switch (m_defenderState) {
         case AISTATE_SEEK: {
 
-            if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
+            if (g != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
                 && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
@@ -153,7 +153,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 return 1;
             }
             RepathToward(this, t);
-            if (m_poweredUp == false && m_stamina >= STAMINA_FULL
+            if (m_inCombat == false && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && IsGruntAtSavedScreenPos(t)) {
                 COMMIT_GRUNT_NEIGHBOR(t);
@@ -164,7 +164,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
         }
         case AISTATE_ATTACK: {
 
-            if (m_poweredUp != false) {
+            if (m_inCombat != false) {
                 CGrunt* t = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (t == NULL || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0
                     || t->IsEntranceCommitted() == false) {

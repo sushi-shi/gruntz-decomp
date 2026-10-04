@@ -100,7 +100,7 @@ i32 CGrunt::StartAttackIdleAnimation() {
 
 RVA(0x000617c0, 0x127)
 i32 CGrunt::UpdateAttackIdleAnimation() {
-    if (m_poweredUp == false) {
+    if (m_inCombat == false) {
         ResetEntranceAnimation(1, 0, 0);
         return 0;
     }
@@ -334,9 +334,9 @@ i32 CGrunt::StepAttackFire() {
     CWwdSpriteObject* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
     h->SetSortKey(zkey);
-    i32 poweredUpSnapshot = m_poweredUp;
+    i32 inCombatSnapshot = m_inCombat;
     m_entranceActive = false;
-    if (poweredUpSnapshot != 0) {
+    if (inCombatSnapshot != 0) {
         StartAttackIdleAnimation();
         return 0;
     }
@@ -362,8 +362,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             }
         }
 
-        if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+        if (m_inCombat != false && m_neighborValid == false) {
+            RESET_GRUNT_COMBAT_STATE(this)
         }
         m_entranceActive = true;
         SetEntrancePos(1, 1);
@@ -421,8 +421,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (walking != 0) {
 
         m_toyTileIndex = 0;
-        if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+        if (m_inCombat != false && m_neighborValid == false) {
+            RESET_GRUNT_COMBAT_STATE(this)
         }
         SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
@@ -756,8 +756,8 @@ i32 CGrunt::StepEntranceReinit() {
     if (IsAnimationAct("I")) {
         ClearMoveTileFx(this);
     }
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_neighborValid == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     m_tileMoveCommitted = false;
     if (CoordsEmpty()) {
@@ -920,8 +920,8 @@ i32 CGrunt::BuildGruntExitAnimation() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
     m_gruntKind = GRUNT_NORMAL;
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_neighborValid == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
 
     BeginGruntEntranceAndReleaseCell(this);
@@ -1169,8 +1169,8 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     FaceTowardTile(tileX, tileY);
     m_moveTile.m_x = tileX;
     m_moveTile.m_y = tileY;
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_neighborValid == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
 
     GruntItemPose pose = GRUNT_ITEM1;

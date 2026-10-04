@@ -806,8 +806,8 @@ applyTail:
     if (m_wingzEnabled != false) {
         LoadWingzGruntSprites(false);
     }
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_neighborValid == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     m_triggerMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
     {
@@ -1032,7 +1032,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_struckPose, sizeof(m_struckPose));
     ar->Write(&m_combatActive, sizeof(m_combatActive));
     ar->Write(&m_neighborValid, sizeof(m_neighborValid));
-    ar->Write(&m_poweredUp, sizeof(m_poweredUp));
+    ar->Write(&m_inCombat, sizeof(m_inCombat));
     ar->Write(&m_daFlag, sizeof(m_daFlag));
     ar->Write(&m_entranceStamped, sizeof(m_entranceStamped));
     ar->Write(&m_bombRunActive, sizeof(m_bombRunActive));

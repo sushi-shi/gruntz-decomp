@@ -1421,7 +1421,7 @@ i32 CGrunt::CommitNeighbor(
         m_triggerMgr->WireTileSwitchLogic(this, m_object->m_screenX, m_object->m_screenY);
         m_arrivalPending = false;
     }
-    m_poweredUp = true;
+    m_inCombat = true;
     nb->CreateHealthSprite();
     ArmGruntCombatTimeout(nb);
     HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
@@ -1451,7 +1451,7 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
             if (m_stamina >= STAMINA_FULL) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
-                m_poweredUp = true;
+                m_inCombat = true;
                 m_combatActive = true;
                 CreateHealthSprite();
 
@@ -1656,7 +1656,7 @@ void CGrunt::Activate() {
     m_entranceActive = false;
     m_arrivalPending = false;
     m_arrivalState = AI_NONE;
-    m_poweredUp = false;
+    m_inCombat = false;
     m_resetApplied = false;
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
     m_passableMask = 0;
@@ -1667,8 +1667,8 @@ void CGrunt::Activate() {
 DATA(0x001e9a68)
 const double s_fpZero = 0.0;
 
-static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
-    if (grunt->m_poweredUp != false && grunt->m_stamina >= STAMINA_FULL) {
+static inline void ExpireBattlezCombatState(CGrunt* grunt) {
+    if (grunt->m_inCombat != false && grunt->m_stamina >= STAMINA_FULL) {
         bool eq;
         {
             eq = grunt->IsAnimationAct("E");
@@ -1677,8 +1677,8 @@ static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
             eq = grunt->IsAnimationAct("A");
         }
         if (eq) {
-            if (grunt->m_poweredUp != false && grunt->m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(grunt)
+            if (grunt->m_inCombat != false && grunt->m_neighborValid == false) {
+                RESET_GRUNT_COMBAT_STATE(grunt)
             }
         }
     }
@@ -2033,7 +2033,7 @@ afterTile:
                         break;
                 }
             }
-        } else if (m_poweredUp != false && m_neighborValid == false && m_combatActive == false
+        } else if (m_inCombat != false && m_neighborValid == false && m_combatActive == false
                    && m_stamina >= STAMINA_FULL && m_neighborScanEnabled != false) {
             FindGridNeighbor(0);
         }
@@ -2083,11 +2083,11 @@ afterArrival:
     }
 
     if (m_arrivalState == AI_BATTLEZ_PATH) {
-        ExpireBattlezPoweredState(this);
+        ExpireBattlezCombatState(this);
     } else {
         if (IsCombatTimeoutExpired()) {
-            if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
+            if (m_inCombat != false && m_neighborValid == false) {
+                RESET_GRUNT_COMBAT_STATE(this)
             }
             if (m_arrived == false && m_hudRetireTiming.Expired()) {
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)

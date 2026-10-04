@@ -56,8 +56,8 @@ i32 CGrunt::StepDiggerBehavior() {
 
     m_defenderPx = m_lastTilePx;
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
         b32 neighborValid = m_neighborValid;
         if (neighborValid == false) {
             if (m_combatActive != false) {
@@ -70,7 +70,7 @@ i32 CGrunt::StepDiggerBehavior() {
                 if (atTarget && g == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     return 1;
                 }
                 if (m_neighborValid != false) {
@@ -79,14 +79,14 @@ i32 CGrunt::StepDiggerBehavior() {
                 m_entranceActive = false;
                 m_combatActive = false;
                 m_neighborValid = false;
-                m_poweredUp = false;
+                m_inCombat = false;
                 ResetEntranceAnimation(1, 0, 0);
                 return 1;
             }
             if (atTarget) {
                 return 1;
             }
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 return 1;
             }
             if (m_neighborValid != false) {
@@ -95,7 +95,7 @@ i32 CGrunt::StepDiggerBehavior() {
             m_entranceActive = false;
             m_combatActive = false;
             m_neighborValid = false;
-            m_poweredUp = false;
+            m_inCombat = false;
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
@@ -107,7 +107,7 @@ i32 CGrunt::StepDiggerBehavior() {
         m_blockedVoicePending = false;
         goto L_tailc;
     }
-    if (m_poweredUp != false) {
+    if (m_inCombat != false) {
         goto L_tailc;
     }
     if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
@@ -117,7 +117,7 @@ i32 CGrunt::StepDiggerBehavior() {
         m_dwell = 0;
         return 1;
     }
-    if (m_poweredUp != false) {
+    if (m_inCombat != false) {
         goto L_tailc;
     }
     if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {
@@ -141,7 +141,7 @@ i32 CGrunt::StepDiggerBehavior() {
 
 L_tailc:
     if (CoordsEmpty()) {
-        if ((m_poweredUp == false) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
+        if ((m_inCombat == false) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
             i32 r = m_defenderRadius;
             CRect box(tileX - r, tileY - r, tileX + r, tileY + r);
             CRect gb(0, 0, grid->GetWidth(), grid->GetHeight());

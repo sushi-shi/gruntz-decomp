@@ -115,8 +115,8 @@ i32 CGrunt::StepSmartChaserBehavior() {
         }
     }
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
         b32 neighborValid = m_neighborValid;
         if (neighborValid == false) {
             if (m_combatActive != false) {
@@ -129,25 +129,25 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 if (atTarget && best == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     return 1;
                 }
                 if (m_neighborValid != false) {
                     return 1;
                 }
-                RESET_GRUNT_POWERED_STATE(this)
+                RESET_GRUNT_COMBAT_STATE(this)
                 return 1;
             }
             if (atTarget) {
                 return 1;
             }
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 return 1;
             }
             if (m_neighborValid != false) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_COMBAT_STATE(this)
             return 1;
         }
         m_neighborValid = false;
@@ -158,7 +158,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         case AISTATE_SEEK: {
 
             if (best != NULL) {
-                if (m_poweredUp == false && m_stamina >= STAMINA_FULL
+                if (m_inCombat == false && m_stamina >= STAMINA_FULL
                     && IsGruntAtSavedScreenPos(best)) {
                     i32 pa;
                     PRIO(pa, m_entranceReason);
@@ -250,7 +250,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 if (pa <= pb && sg->IsEntranceCommitted() != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
                     RepathToward(this, sg);
-                    if (m_poweredUp != false || m_stamina < STAMINA_FULL) {
+                    if (m_inCombat != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }
                     if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
@@ -268,7 +268,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             return 1;
         }
         case AISTATE_ATTACK: {
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 m_defenderState = AISTATE_CHASE;
                 m_dwell = DWELL_REPATH_MS;
                 return 1;

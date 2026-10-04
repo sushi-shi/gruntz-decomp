@@ -197,8 +197,8 @@ public:
     b32 HasArrived() const {
         return m_arrived;
     }
-    b32 IsPoweredUp() const {
-        return m_poweredUp;
+    b32 IsInCombat() const {
+        return m_inCombat;
     }
     b32 IsGuarding() const {
         return m_tileClaimed;
@@ -434,7 +434,7 @@ public:
     i32 m_struckPose;
     b32 m_combatActive;
     b32 m_neighborValid;
-    b32 m_poweredUp;
+    b32 m_inCombat;
     i32 m_daFlag;
     b32 m_entranceStamped;
     b32 m_bombRunActive;

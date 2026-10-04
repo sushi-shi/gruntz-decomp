@@ -398,8 +398,8 @@ i32 CGrunt::StartBombGruntRun() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
     m_gruntKind = GRUNT_NORMAL;
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_neighborValid == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     BeginGruntEntranceAndReleaseCell(this);
     SnapToLastTile(1);
@@ -634,8 +634,8 @@ finalize:
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
-    if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+    if (m_inCombat != false && m_neighborValid == false) {
+        RESET_GRUNT_COMBAT_STATE(this)
     }
     BeginGruntEntranceAndReleaseCell(this);
     SET_ANIMATION_ACT("Q");

@@ -100,7 +100,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                 if (defender != NULL && defender->IsAtSavedScreenPos()
                     && defender->m_entranceCommitted != false
                     && defender->IsDeathAnimationStarted() == false
-                    && defender->m_entranceActive == false && defender->m_poweredUp == false
+                    && defender->m_entranceActive == false && defender->m_inCombat == false
                     && BattlezActDiffersFromIGLPJCR(defender)) {
                     HandleUnitContact(defender, target);
                 }

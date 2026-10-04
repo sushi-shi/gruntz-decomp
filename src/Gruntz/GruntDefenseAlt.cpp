@@ -49,8 +49,8 @@ i32 CGrunt::StepObjectGuardBehavior() {
         inRange = 1;
     }
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
         b32 neighborValid = m_neighborValid;
         if (neighborValid == false) {
             if (m_combatActive != false) {
@@ -63,25 +63,25 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 if (inRange != 0 && occ == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == false) {
+                if (m_inCombat == false) {
                     return 1;
                 }
                 if (m_neighborValid != false) {
                     return 1;
                 }
-                RESET_GRUNT_POWERED_STATE(this)
+                RESET_GRUNT_COMBAT_STATE(this)
                 return 1;
             }
             if (inRange != 0) {
                 return 1;
             }
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 return 1;
             }
             if (m_neighborValid != false) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            RESET_GRUNT_COMBAT_STATE(this)
             return 1;
         }
         m_neighborValid = false;
@@ -92,7 +92,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
         case AISTATE_SEEK: {
             CGrunt* o = m_triggerMgr->FindNearestEnemy(this);
             if (o != NULL) {
-                if (m_poweredUp != false) {
+                if (m_inCombat != false) {
                     return 1;
                 }
                 if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
@@ -101,7 +101,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     return 1;
                 }
             }
-            if (m_poweredUp != false) {
+            if (m_inCombat != false) {
                 return 1;
             }
             {
@@ -177,7 +177,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 goto resetState;
             }
             StepArrivalDrop(o->m_lastTilePx.m_x, o->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
-            if (m_poweredUp != false) {
+            if (m_inCombat != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -216,7 +216,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (o == NULL) {
                 return 1;
             }
-            if (m_poweredUp == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
+            if (m_inCombat == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
                 && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(o);
                 m_defenderState = AISTATE_ATTACK;

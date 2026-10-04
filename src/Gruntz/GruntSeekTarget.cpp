@@ -93,8 +93,8 @@ i32 CGrunt::StepToolThiefBehavior() {
     reason = IDX(this->ArrivalPickup());
     if (reason != 0) {
         FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
-        b32 powered = this->m_poweredUp;
-        if (powered != false) {
+        b32 inCombat = this->m_inCombat;
+        if (inCombat != false) {
             b32 neighborValid = this->m_neighborValid;
             if (neighborValid == false) {
                 if (this->m_combatActive != false) {
@@ -107,25 +107,25 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (atTarget && g == NULL) {
                         return 1;
                     }
-                    if (this->m_poweredUp == false) {
+                    if (this->m_inCombat == false) {
                         return 1;
                     }
                     if (this->m_neighborValid != false) {
                         return 1;
                     }
-                    RESET_CURRENT_GRUNT_POWERED_STATE
+                    RESET_CURRENT_GRUNT_COMBAT_STATE
                     return 1;
                 } else {
                     if (atTarget) {
                         return 1;
                     }
-                    if (this->m_poweredUp == false) {
+                    if (this->m_inCombat == false) {
                         return 1;
                     }
                     if (this->m_neighborValid != false) {
                         return 1;
                     }
-                    RESET_CURRENT_GRUNT_POWERED_STATE
+                    RESET_CURRENT_GRUNT_COMBAT_STATE
                     return 1;
                 }
             } else {
@@ -138,7 +138,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             this->m_blockedVoicePending = false;
             return 1;
         }
-        if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL) {
+        if (this->m_inCombat == false && this->m_stamina >= STAMINA_FULL) {
             i32 x = g->m_object->m_screenX;
             if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 

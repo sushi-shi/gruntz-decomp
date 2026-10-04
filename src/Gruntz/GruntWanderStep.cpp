@@ -48,8 +48,8 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
     i32 flag = 0;
     FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(g, flag)
 
-    b32 powered = m_poweredUp;
-    if (powered != false) {
+    b32 inCombat = m_inCombat;
+    if (inCombat != false) {
         b32 neighborValid = m_neighborValid;
         if (neighborValid == false) {
             if (m_combatActive == false) {
@@ -61,18 +61,18 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                     if (flag != 0 && g == NULL) {
                         goto retreat;
                     }
-                    if (m_poweredUp == false || m_neighborValid != false) {
+                    if (m_inCombat == false || m_neighborValid != false) {
                         goto retreat;
                     }
-                    RESET_GRUNT_POWERED_STATE(this)
+                    RESET_GRUNT_COMBAT_STATE(this)
                 } else {
                     if (flag != 0) {
                         goto retreat;
                     }
-                    if (m_poweredUp == false || m_neighborValid != false) {
+                    if (m_inCombat == false || m_neighborValid != false) {
                         goto retreat;
                     }
-                    RESET_GRUNT_POWERED_STATE(this)
+                    RESET_GRUNT_COMBAT_STATE(this)
                 }
             }
         } else {
@@ -85,7 +85,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
     switch (m_defenderState) {
         case AISTATE_SEEK: {
             Coord c;
-            if (g != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
+            if (g != NULL && m_inCombat == false && m_stamina >= STAMINA_FULL
                 && IsGruntAtSavedScreenPos(g)
                 && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                 COMMIT_HIT_AND_RUN_ATTACK(g);
@@ -119,7 +119,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 return 1;
             }
             RepathToward(this, slot);
-            if (m_poweredUp != false) {
+            if (m_inCombat != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -136,7 +136,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
         }
 
         case AISTATE_ATTACK: {
-            if (m_poweredUp == false) {
+            if (m_inCombat == false) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
