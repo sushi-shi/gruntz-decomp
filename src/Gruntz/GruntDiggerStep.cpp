@@ -154,7 +154,7 @@ L_tailc:
             i32 bestRow = -1;
             grid->Clip(&isect);
             for (i32 row = isect.top; row < isect.bottom; row++) {
-                BrickzCell* cell = &grid->m_rows[row][isect.left];
+                BrickzCell* cell = &grid->CellAtUnchecked(isect.left, row);
                 for (i32 col = isect.left; col < isect.right; col++) {
                     if ((cell->m_flags & IDX(CELL_FLAG_COVERED_POWERUP)) != 0) {
                         i32 dr = row - tileY;
@@ -197,7 +197,7 @@ L_tailc:
         Coord* coord = GetHeadCoord();
         i32 col = coord->m_x;
         i32 row = coord->m_y;
-        BrickzCell* cell = &grid->m_rows[row][col];
+        BrickzCell* cell = &grid->CellAtUnchecked(col, row);
         if ((cell->m_flags & IDX(CELL_FLAG_REVEALED_POWERUP)) != 0
             || (cell->m_flags & IDX(CELL_FLAG_COVERED_POWERUP)) != 0) {
             m_triggerMgr->UseEquippedToolAt(

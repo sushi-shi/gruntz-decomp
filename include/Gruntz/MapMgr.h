@@ -112,6 +112,7 @@ public:
     i32 CellFlagsAt(i32 x, i32 y);
     i32& CellFlagsAtUnchecked(i32 x, i32 y);
     BrickzCell CellAt(i32 x, i32 y);
+    BrickzCell& CellAtUnchecked(i32 x, i32 y);
     TileCollisionKind CellTypeAt(i32 x, i32 y) const;
     i32 TileIdAt(u32 x, u32 y) const;
     i32 ObjectIdAt(u32 x, u32 y) const;

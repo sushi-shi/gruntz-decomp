@@ -115,6 +115,10 @@ inline i32 CMapMgr::TileIdAt(u32 x, u32 y) const {
     return 0;
 }
 
+inline BrickzCell& CMapMgr::CellAtUnchecked(i32 x, i32 y) {
+    return m_rows[y][x];
+}
+
 inline BrickzCell CMapMgr::CellAt(i32 x, i32 y) {
     BrickzCell cell;
     const BrickzCell* source;

@@ -212,7 +212,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
 
         Coord* cell = GetHeadCoord();
 
-        BrickzCell& gc = g_gameReg->GetTileGrid()->m_rows[cell->m_y][cell->m_x];
+        BrickzCell& gc = g_gameReg->GetTileGrid()->CellAtUnchecked(cell->m_x, cell->m_y);
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (!this->CoordsEmpty()) {
