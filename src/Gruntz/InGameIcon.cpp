@@ -365,7 +365,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         m_glitterSprite->SetAnimationByName("GAME_CYCLE100", 0);
     }
 
-    if (HandleInput() == 0) {
+    if (ApplyPickupPalette() == 0) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
@@ -379,58 +379,58 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 }
 
 RVA(0x00097680, 0x110)
-i32 CInGameIcon::HandleInput() {
-    CWwdSpriteObject* obj = m_object;
-    PickupType cmd = GetPickupType();
-    CShadeTable* rec;
-    if (cmd == PICKUP_TOYBOX) {
-        i32 key = GetPlayerIndex();
-        PickupType sub = GetToyType();
-        if (sub < PICKUP_TOYZ_FIRST || sub > PICKUP_TOYZ_LAST) {
+i32 CInGameIcon::ApplyPickupPalette() {
+    CWwdSpriteObject* sprite = m_object;
+    PickupType pickupType = GetPickupType();
+    CShadeTable* palette;
+    if (pickupType == PICKUP_TOYBOX) {
+        i32 playerIndex = GetPlayerIndex();
+        PickupType toyType = GetToyType();
+        if (toyType < PICKUP_TOYZ_FIRST || toyType > PICKUP_TOYZ_LAST) {
             return 0;
         }
-        i32 icon = IDX(g_gameReg->GetPlayer(key).GetColor());
-        if (icon < 0 || icon >= TINT_COUNT) {
-            icon = IDX(TINT_ORANGE);
+        i32 colorIndex = IDX(g_gameReg->GetPlayer(playerIndex).GetColor());
+        if (colorIndex < 0 || colorIndex >= TINT_COUNT) {
+            colorIndex = IDX(TINT_ORANGE);
         }
-        rec = g_gameReg->GruntPalettes()->GetShadeTable(icon, 0);
-        if (rec == NULL) {
-            rec = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
+        palette = g_gameReg->GruntPalettes()->GetShadeTable(colorIndex, 0);
+        if (palette == NULL) {
+            palette = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
         }
-    } else if (cmd == PICKUP_SCROLL || cmd == PICKUP_WAND) {
-        i32 icon;
-        switch (static_cast<SpellId>(obj->GetFaceDirection())) {
+    } else if (pickupType == PICKUP_SCROLL || pickupType == PICKUP_WAND) {
+        i32 colorIndex;
+        switch (static_cast<SpellId>(sprite->GetFaceDirection())) {
             case SPELL_FREEZE:
-                icon = IDX(TINT_WHITE);
+                colorIndex = IDX(TINT_WHITE);
                 break;
             case SPELL_HEALTH:
-                icon = IDX(TINT_GREEN);
+                colorIndex = IDX(TINT_GREEN);
                 break;
             case SPELL_RESURRECTION:
-                icon = IDX(TINT_ORANGE);
+                colorIndex = IDX(TINT_ORANGE);
                 break;
             case SPELL_RANDOM_TOYZ:
-                icon = IDX(TINT_PINK);
+                colorIndex = IDX(TINT_PINK);
                 break;
             case SPELL_TELEPORT:
-                icon = IDX(TINT_BLUE);
+                colorIndex = IDX(TINT_BLUE);
                 break;
             case SPELL_ROLLING_BALLZ:
-                icon = IDX(TINT_RED);
+                colorIndex = IDX(TINT_RED);
                 break;
             default:
-                icon = IDX(TINT_BLACK);
+                colorIndex = IDX(TINT_BLACK);
                 break;
         }
-        rec = g_gameReg->GruntPalettes()->GetShadeTable(icon, 0);
-        if (rec == NULL) {
-            rec = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
+        palette = g_gameReg->GruntPalettes()->GetShadeTable(colorIndex, 0);
+        if (palette == NULL) {
+            palette = g_gameReg->GruntPalettes()->GetShadeTable(IDX(TINT_GREEN), 0);
         }
     } else {
         return 1;
     }
-    CWwdSpriteObject* o = m_object;
-    o->SetDrawFill(SHADE_PAL_16, rec);
+    CWwdSpriteObject* renderSprite = m_object;
+    renderSprite->SetDrawFill(SHADE_PAL_16, palette);
     return 1;
 }
 
@@ -745,7 +745,7 @@ i32 CInGameIcon::SerializeDispatch(
             break;
         }
         case SERIAL_POSTLOAD:
-            if (HandleInput() == 0) {
+            if (ApplyPickupPalette() == 0) {
                 return 0;
             }
             break;

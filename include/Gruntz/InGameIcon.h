@@ -60,7 +60,7 @@ public:
 
     void SetPickupSoundCue(const char* soundKey);
 
-    i32 HandleInput();
+    i32 ApplyPickupPalette();
     virtual void FireActivation(i32 id) OVERRIDE;
 
     i32 RefreshCell();
