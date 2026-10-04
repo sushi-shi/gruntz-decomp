@@ -309,7 +309,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     SoundCueRegistry* slot =
-        (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->SoundRegistry();
+        (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
     slot->PlayCue(s_gameAttack);
 
     switch (idx) {
@@ -1128,7 +1128,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             enemy->m_health = min(h, HEALTH_FULL);
 
             SoundCueRegistry* registry =
-                (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->SoundRegistry();
+                (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->OwnerMgr()))->SoundRegistry();
             if (registry->m_silentMode == false) {
                 SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {
