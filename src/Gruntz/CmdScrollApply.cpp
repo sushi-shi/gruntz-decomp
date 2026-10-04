@@ -32,7 +32,7 @@ void Cmd_ResetScroll() {
 }
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
-    CDDrawWorkerHost* v = pm->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* v = pm->World()->GetLevel()->m_mainPlane;
     i32 scrollX = v->GetScrollPixelX();
     i32 scrollY = v->GetScrollPixelY();
 
@@ -62,7 +62,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    CDDrawWorkerHost* boundsPlane = pm->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* boundsPlane = pm->World()->GetLevel()->m_mainPlane;
     CLAMP_UPPER_INPLACE(scrollX, boundsPlane->GetPlanePixelWidth() - cx);
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
@@ -74,10 +74,10 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    CDDrawWorkerHost* scrollPlane = pm->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* scrollPlane = pm->World()->GetLevel()->m_mainPlane;
     scrollPlane->SetScrollPosition(scrollX, scrollY);
 
-    CDDrawWorkerHost* gm = g_backView;
+    CLevelPlane* gm = g_backView;
     if (gm != NULL) {
         i32 nx = gm->GetScrollPixelX();
         i32 ny = gm->GetScrollPixelY();
@@ -88,7 +88,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         if (static_cast<i64>(g_frameTime) - g_scrollPace.m_lastTime >= g_scrollPace.m_period) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
-            CDDrawWorkerHost* g2 = g_backView;
+            CLevelPlane* g2 = g_backView;
             g2->SetScrollPosition(nx, ny);
             g_scrollPace.m_period = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollPace.m_lastTime = g_frameTime;
@@ -127,7 +127,7 @@ DATA(0x002452cc)
 i32 g_screenShakeAmplitudeY;
 
 DATA(0x0024c27c)
-CDDrawWorkerHost* g_backView;
+CLevelPlane* g_backView;
 
 RVA_DYNINIT(0x000ebd00, 0x17, g_scrollPace)
 DATA(0x0024cfb0)

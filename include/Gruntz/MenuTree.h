@@ -38,8 +38,8 @@ public:
     i32 AddPage(CMenuPage* page);
     i32 SetActivePage(CMenuPage* page);
     i32 SetActivePageByKey(const char* pageKey);
-    i32 ConfigureLeftCursorAnimation(const char* animationKey, i32 framePeriodMs, i32 offsetX);
-    i32 ConfigureRightCursorAnimation(const char* animationKey, i32 framePeriodMs, i32 offsetX);
+    i32 ConfigureLeftCursorAnimation(const char* imageSetKey, i32 framePeriodMs, i32 offsetX);
+    i32 ConfigureRightCursorAnimation(const char* imageSetKey, i32 framePeriodMs, i32 offsetX);
     i32 UpdateCursorAnimations(i32 deltaMs);
     i32 DrawFocusCursors(
         CDDrawSurfacePair* target,
@@ -79,13 +79,13 @@ public:
     CMenuPage* m_activePage;
     CString m_focusSoundKey;
     CString m_activationSoundKey;
-    CImageSet* m_leftCursorAnimation;
+    CImageSet* m_leftCursorFrames;
     CImage* m_leftCursorFrame;
     i32 m_leftCursorFramePeriodMs;
     i32 m_leftCursorFrameTimerMs;
     i32 m_leftCursorOffsetX;
     i32 m_leftCursorFrameIndex;
-    CImageSet* m_rightCursorAnimation;
+    CImageSet* m_rightCursorFrames;
     CImage* m_rightCursorFrame;
     i32 m_rightCursorFramePeriodMs;
     i32 m_rightCursorFrameTimerMs;
@@ -97,8 +97,8 @@ public:
     m_world = NULL;                                                                                \
     m_windowHandle = NULL;                                                                         \
     m_activePage = NULL;                                                                           \
-    m_leftCursorAnimation = NULL;                                                                  \
-    m_rightCursorAnimation = NULL;                                                                 \
+    m_leftCursorFrames = NULL;                                                                     \
+    m_rightCursorFrames = NULL;                                                                    \
     m_leftCursorFrame = NULL;                                                                      \
     m_rightCursorFrame = NULL;                                                                     \
     m_focusSoundKey.Empty();                                                                       \

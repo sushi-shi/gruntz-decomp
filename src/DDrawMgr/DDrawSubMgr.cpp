@@ -131,7 +131,7 @@ void CImageSetRegistry::RemoveByKey(const char* key) {
 }
 
 RVA(0x00156f00, 0x16)
-i32 CDDrawWorkerList::IsLoaded() {
+i32 CTransientDrawList::IsLoaded() {
     if (m_ownerCtx == NULL) {
         goto fail;
     }
@@ -144,24 +144,24 @@ fail:
 }
 
 RVA(0x00156f20, 0x6)
-LoadableClassId CDDrawWorkerList::GetClassId() {
-    return CLASSID_WORKERLIST;
+LoadableClassId CTransientDrawList::GetClassId() {
+    return CLASSID_TRANSIENT_DRAW_LIST;
 }
 
-RVA_COMPGEN(0x00156f30, 0x1e, ??_GCDDrawWorkerList@@UAEPAXI@Z)
+RVA_COMPGEN(0x00156f30, 0x1e, ??_GCTransientDrawList@@UAEPAXI@Z)
 RVA(0x00156f50, 0x68)
-CDDrawWorkerList::~CDDrawWorkerList() {
+CTransientDrawList::~CTransientDrawList() {
     Unload();
 }
 
 RVA(0x00156fc0, 0x6)
-i32 CDDrawWorkerList::IsReady() {
+i32 CTransientDrawList::IsReady() {
     return 1;
 }
 
 RVA(0x00156fd0, 0x8b)
-CDDrawPixelWorker* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelValue) {
-    CDDrawPixelWorker* w = new CDDrawPixelWorker(OwnerMgr());
+CTransientPixel* CTransientDrawList::CreatePixelWorker(i32 x, i32 y, i32 pixelValue) {
+    CTransientPixel* w = new CTransientPixel(OwnerMgr());
     if (w->PlacePixel(x, y, pixelValue) == 0) {
         if (w != NULL) {
             delete w;
@@ -173,7 +173,7 @@ CDDrawPixelWorker* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelVa
 }
 
 RVA(0x00157060, 0x16)
-i32 CDDrawPixelWorker::IsLoaded() {
+i32 CTransientPixel::IsLoaded() {
     if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
@@ -181,43 +181,43 @@ i32 CDDrawPixelWorker::IsLoaded() {
 }
 
 RVA(0x00157080, 0x19)
-i32 CDDrawPlacedWorker::SetPosition(i32 x, i32 y) {
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+i32 CTransientDrawItem::SetPosition(i32 x, i32 y) {
+    SET_POSITION_AND_RESET_RENDER_PASSES(x, y);
 }
 
 RVA(0x001570a0, 0x6)
-LoadableClassId CDDrawPixelWorker::GetClassId() {
-    return CLASSID_PIXEL_WORKER;
+LoadableClassId CTransientPixel::GetClassId() {
+    return CLASSID_TRANSIENT_PIXEL;
 }
 
-RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawPixelWorker@@UAEPAXI@Z)
+RVA_COMPGEN(0x001570b0, 0x1e, ??_GCTransientPixel@@UAEPAXI@Z)
 RVA(0x001570d0, 0x39)
-CDDrawPixelWorker::~CDDrawPixelWorker() {
+CTransientPixel::~CTransientPixel() {
     m_pixelValue = 0;
     m_dirty.Reset();
 }
 
 RVA(0x00157110, 0x20)
-i32 CDDrawPixelWorker::PlacePixel(i32 x, i32 y, i32 pixelValue) {
+i32 CTransientPixel::PlacePixel(i32 x, i32 y, i32 pixelValue) {
     m_pixelValue = static_cast<char>(pixelValue);
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    SET_POSITION_AND_RESET_RENDER_PASSES(x, y);
 }
 
 RVA(0x00157130, 0x17)
-void CDDrawPixelWorker::Unload() {
+void CTransientPixel::Unload() {
     m_pixelValue = 0;
     CResolveNode::Unload();
 }
 
 RVA(0x00157150, 0xa5)
-CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
+CTransientImage* CTransientDrawList::CreateFrameWorker(
     i32 x,
     i32 y,
     const char* workerName,
     i32 frameIndex,
     i32 addHead
 ) {
-    CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
+    CTransientImage* w = new CTransientImage(OwnerMgr());
     if (w->PlaceFrame(x, y, workerName, frameIndex) == 0) {
         if (w != NULL) {
             delete w;
@@ -233,51 +233,56 @@ CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
 }
 
 RVA(0x00157200, 0xb)
-i32 CDDrawPlacedWorker::IsLoaded() {
+i32 CTransientDrawItem::IsLoaded() {
     return m_contentValue != 0;
 }
 
 RVA(0x00157210, 0x6)
-LoadableClassId CDDrawPlacedWorker::GetClassId() {
-    return CLASSID_PLACED_WORKER;
+LoadableClassId CTransientDrawItem::GetClassId() {
+    return CLASSID_TRANSIENT_DRAW_ITEM;
 }
 
-RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawFrameWorker@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157220, 0x1e, ??_GCTransientImage@@UAEPAXI@Z)
 RVA(0x00157240, 0x3c)
-CDDrawFrameWorker::~CDDrawFrameWorker() {
+CTransientImage::~CTransientImage() {
     m_contentValue = 0;
     m_dirty.Reset();
 }
 
 RVA(0x00157280, 0x30)
-i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
+i32 CTransientImage::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
     ResolveFrame(workerName, frameIndex);
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    SET_POSITION_AND_RESET_RENDER_PASSES(x, y);
 }
 
 RVA(0x001572b0, 0x38)
-i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CImageSet* source, i32 frameIndex) {
+i32 CTransientImage::PlaceFrame(i32 x, i32 y, CImageSet* source, i32 frameIndex) {
     CImage* frame = source->GetAt(frameIndex);
     m_frame = frame;
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    SET_POSITION_AND_RESET_RENDER_PASSES(x, y);
 }
 
 RVA(0x001572f0, 0x20)
-i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CImage* frame) {
+i32 CTransientImage::PlaceFrame(i32 x, i32 y, CImage* frame) {
     m_frame = frame;
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    SET_POSITION_AND_RESET_RENDER_PASSES(x, y);
 }
 
 RVA(0x00157310, 0x1a)
-void CDDrawPlacedWorker::Unload() {
+void CTransientDrawItem::Unload() {
     m_contentValue = 0;
     CResolveNode::Unload();
 }
 
 RVA(0x00157330, 0xa5)
-CDDrawFrameWorker*
-CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImageSet* source, i32 frameIndex, i32 addHead) {
-    CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
+CTransientImage* CTransientDrawList::CreateFrameWorker(
+    i32 x,
+    i32 y,
+    CImageSet* source,
+    i32 frameIndex,
+    i32 addHead
+) {
+    CTransientImage* w = new CTransientImage(OwnerMgr());
     if (w->PlaceFrame(x, y, source, frameIndex) == 0) {
         if (w != NULL) {
             delete w;
@@ -293,8 +298,8 @@ CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImageSet* source, i32 frameIn
 }
 
 RVA(0x001573e0, 0xa0)
-CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead) {
-    CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
+CTransientImage* CTransientDrawList::CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead) {
+    CTransientImage* w = new CTransientImage(OwnerMgr());
     if (w->PlaceFrame(x, y, frame) == 0) {
         if (w != NULL) {
             delete w;

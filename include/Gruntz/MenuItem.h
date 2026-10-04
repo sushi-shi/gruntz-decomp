@@ -33,7 +33,7 @@ public:
     virtual i32 Init(
         CMenuPage* page,
         const char* name,
-        const char* animationKey,
+        const char* imageSetKey,
         i32 commandId,
         const char* targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags
@@ -101,7 +101,7 @@ public:
     i32 m_secondaryCommandId;
     MenuItemFlags m_flags;
     MenuItemState m_state;
-    CImageSet* m_animation;
+    CImageSet* m_stateFrames;
 
     POSITION m_listPosition;
 
@@ -124,7 +124,7 @@ inline CMenuItem::~CMenuItem() {
 inline void CMenuItem::Reset() {
     m_menuTree = NULL;
     m_page = NULL;
-    m_animation = NULL;
+    m_stateFrames = NULL;
     m_world = NULL;
     m_listPosition = NULL;
     m_hitLeft = UNINIT_FILL;

@@ -93,8 +93,8 @@ i32 CLightFxMgr::ApplyShadeTable(CImageSet* imageSet, i32 tableIndex, ShadeMode 
         tableIndex = 0;
     }
     CShadeTable* table = m_tables[tableIndex];
-    imageSet->SetAllTypes(mode);
+    imageSet->SetAllShadeModes(mode);
 
-    imageSet->SetAllFormats(table);
+    imageSet->SetAllShadeTables(table);
     return 1;
 }

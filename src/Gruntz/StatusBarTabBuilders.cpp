@@ -69,7 +69,7 @@ i32 CSBI_GruntMachine::Initialize(
     if (backgroundImage == NULL) {
         return 0;
     }
-    machineFrames = m_host->FindWorker(frameSetName);
+    machineFrames = m_host->FindImageSet(frameSetName);
     m_machineFrames = machineFrames;
     if (machineFrames == NULL) {
         return 0;
@@ -88,8 +88,8 @@ i32 CSBI_GruntMachine::Initialize(
     if (shadeTable == NULL) {
         shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
     }
-    m_machineFrames->SetAllTypes(SHADE_PAL_16);
-    m_machineFrames->SetAllFormats(shadeTable);
+    m_machineFrames->SetAllShadeModes(SHADE_PAL_16);
+    m_machineFrames->SetAllShadeTables(shadeTable);
     rightImage = m_machineFrames->GetAt(m_rightFrameIndex);
     m_rightFrame = rightImage;
     return rightImage != NULL;
@@ -177,7 +177,7 @@ i32 CSBI_GruntMachine::SerializeFields(
         case SERIAL_SAVE: {
             i32 v;
 
-            SERIAL_WRITE_WORKER(s, buf, m_machineFrames);
+            SERIAL_WRITE_IMAGE_SET(s, buf, m_machineFrames);
             s->Write(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
             SERIAL_WRITE_FRAME(s, reg, buf, v, m_leftFrame);

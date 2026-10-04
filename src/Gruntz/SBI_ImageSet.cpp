@@ -49,7 +49,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (frameSetName == NULL) {
         return 0;
     }
-    frames = host->FindWorker(frameSetName);
+    frames = host->FindImageSet(frameSetName);
     m_frameSet = frames;
     if (frames == NULL) {
         goto fail;
@@ -126,7 +126,7 @@ i32 CSBI_ImageSet::SerializeFields(
             if (strlen(frameSetName)) {
                 CImageSet* frames;
 
-                frames = world->FindWorker(frameSetName);
+                frames = world->FindImageSet(frameSetName);
                 m_frameSet = frames;
             } else {
                 m_frameSet = NULL;

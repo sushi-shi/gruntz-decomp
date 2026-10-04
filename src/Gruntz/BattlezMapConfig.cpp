@@ -3531,7 +3531,7 @@ template void FreeNodePool<Coord>::Push(void* p);
 RVA_COMPGEN(0x000311b0, 0x14, ?Push@?$FreeNodePool@UCoord@@@@QAEXPAX@Z)
 
 RVA(0x000311e0, 0x4c)
-void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
+void CLevelPlane::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     Coord result;
     i32 sx = m_shiftX;
     i32 sy = m_shiftY;

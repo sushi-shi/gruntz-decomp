@@ -8,12 +8,12 @@
 
 #include <string.h>
 
-#define SERIAL_READ_WORKER(ar, mgr, name, field)                                                   \
+#define SERIAL_READ_IMAGE_SET(ar, mgr, name, field)                                                \
     do {                                                                                           \
         g_serialCounter++;                                                                         \
         (ar)->Read(name, SERIAL_NAME_LEN);                                                         \
         if (strlen(name) != 0) {                                                                   \
-            (field) = (mgr)->FindWorker(name);                                                     \
+            (field) = (mgr)->FindImageSet(name);                                                   \
         } else {                                                                                   \
             (field) = NULL;                                                                        \
         }                                                                                          \
@@ -44,7 +44,7 @@
         (ar)->Write(name, SERIAL_NAME_LEN);                                                        \
     } while (0)
 
-#define SERIAL_WRITE_WORKER(ar, name, field)                                                       \
+#define SERIAL_WRITE_IMAGE_SET(ar, name, field)                                                    \
     g_serialCounter++;                                                                             \
     memset(name, 0, sizeof(name));                                                                 \
     if ((field) != NULL) {                                                                         \

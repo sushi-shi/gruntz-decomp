@@ -181,20 +181,20 @@ i32 CMenuTree::SetActivePageByKey(const char* pageKey) {
 
 RVA(0x00182df0, 0x69)
 i32 CMenuTree::ConfigureLeftCursorAnimation(
-    const char* animationKey,
+    const char* imageSetKey,
     i32 framePeriodMs,
     i32 offsetX
 ) {
     if (!m_world) {
         return 0;
     }
-    CImageSet* animation = m_world->FindWorker(animationKey);
-    m_leftCursorAnimation = animation;
-    if (!animation) {
+    CImageSet* imageSet = m_world->FindImageSet(imageSetKey);
+    m_leftCursorFrames = imageSet;
+    if (!imageSet) {
         return 0;
     }
-    m_leftCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->GetMinIndex());
-    m_leftCursorFrameIndex = animation->GetMinIndex();
+    m_leftCursorFrame = IMAGE_SET_FRAME_AT_UNCHECKED(imageSet, imageSet->GetMinIndex());
+    m_leftCursorFrameIndex = imageSet->GetMinIndex();
     m_leftCursorFramePeriodMs = framePeriodMs;
     m_leftCursorFrameTimerMs = framePeriodMs;
     m_leftCursorOffsetX = offsetX;
@@ -203,20 +203,20 @@ i32 CMenuTree::ConfigureLeftCursorAnimation(
 
 RVA(0x00182e60, 0x69)
 i32 CMenuTree::ConfigureRightCursorAnimation(
-    const char* animationKey,
+    const char* imageSetKey,
     i32 framePeriodMs,
     i32 offsetX
 ) {
     if (!m_world) {
         return 0;
     }
-    CImageSet* animation = m_world->FindWorker(animationKey);
-    m_rightCursorAnimation = animation;
-    if (!animation) {
+    CImageSet* imageSet = m_world->FindImageSet(imageSetKey);
+    m_rightCursorFrames = imageSet;
+    if (!imageSet) {
         return 0;
     }
-    m_rightCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->GetMinIndex());
-    m_rightCursorFrameIndex = animation->GetMinIndex();
+    m_rightCursorFrame = IMAGE_SET_FRAME_AT_UNCHECKED(imageSet, imageSet->GetMinIndex());
+    m_rightCursorFrameIndex = imageSet->GetMinIndex();
     m_rightCursorFramePeriodMs = framePeriodMs;
     m_rightCursorFrameTimerMs = framePeriodMs;
     m_rightCursorOffsetX = offsetX;
@@ -225,34 +225,34 @@ i32 CMenuTree::ConfigureRightCursorAnimation(
 
 RVA(0x00182ed0, 0xbc)
 i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
-    CImageSet* leftAnimation = m_leftCursorAnimation;
-    if (leftAnimation) {
+    CImageSet* leftFrames = m_leftCursorFrames;
+    if (leftFrames) {
         if (static_cast<u32>(m_leftCursorFrameTimerMs) > static_cast<u32>(deltaMs)) {
             m_leftCursorFrameTimerMs -= deltaMs;
         } else {
             m_leftCursorFrameTimerMs = m_leftCursorFramePeriodMs;
-            CImage* frame = leftAnimation->GetAt(++m_leftCursorFrameIndex);
+            CImage* frame = leftFrames->GetAt(++m_leftCursorFrameIndex);
             m_leftCursorFrame = frame;
             if (frame == NULL) {
                 m_leftCursorFrame =
-                    DDRAW_WORKER_FRAME_AT_UNCHECKED(leftAnimation, leftAnimation->GetMinIndex());
-                m_leftCursorFrameIndex = leftAnimation->GetMinIndex();
+                    IMAGE_SET_FRAME_AT_UNCHECKED(leftFrames, leftFrames->GetMinIndex());
+                m_leftCursorFrameIndex = leftFrames->GetMinIndex();
             }
         }
     }
-    CImageSet* rightAnimation = m_rightCursorAnimation;
-    if (rightAnimation) {
+    CImageSet* rightFrames = m_rightCursorFrames;
+    if (rightFrames) {
         if (static_cast<u32>(m_rightCursorFrameTimerMs) > static_cast<u32>(deltaMs)) {
             m_rightCursorFrameTimerMs -= deltaMs;
             return 1;
         }
         m_rightCursorFrameTimerMs = m_rightCursorFramePeriodMs;
-        CImage* frame = rightAnimation->GetAt(++m_rightCursorFrameIndex);
+        CImage* frame = rightFrames->GetAt(++m_rightCursorFrameIndex);
         m_rightCursorFrame = frame;
         if (frame == NULL) {
             m_rightCursorFrame =
-                DDRAW_WORKER_FRAME_AT_UNCHECKED(rightAnimation, rightAnimation->GetMinIndex());
-            m_rightCursorFrameIndex = rightAnimation->GetMinIndex();
+                IMAGE_SET_FRAME_AT_UNCHECKED(rightFrames, rightFrames->GetMinIndex());
+            m_rightCursorFrameIndex = rightFrames->GetMinIndex();
         }
     }
     return 1;

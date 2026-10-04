@@ -22,7 +22,7 @@ public:
     virtual i32 Init(
         CMenuPage* page,
         const char* name,
-        const char* animationKey,
+        const char* imageSetKey,
         i32 commandId,
         const char* targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags
@@ -30,9 +30,9 @@ public:
     RVA(0x00184890, 0x1a)
     virtual void Reset() OVERRIDE {
         m_framePeriodMs = 0x64;
-        m_normalAnimation = NULL;
-        m_selectedAnimation = NULL;
-        m_disabledAnimation = NULL;
+        m_normalFrames = NULL;
+        m_selectedFrames = NULL;
+        m_disabledFrames = NULL;
         m_frameIndex = 0;
         m_frameTimerMs = 0;
     }
@@ -53,13 +53,13 @@ public:
     }
     virtual void SetFramePeriod(i32 framePeriodMs);
 
-    CImageSet* GetStateAnimation();
+    CImageSet* GetStateFrames();
     CImage* GetCurrentFrame();
     i32 AdvanceFrame();
 
-    CImageSet* m_normalAnimation;
-    CImageSet* m_selectedAnimation;
-    CImageSet* m_disabledAnimation;
+    CImageSet* m_normalFrames;
+    CImageSet* m_selectedFrames;
+    CImageSet* m_disabledFrames;
     i32 m_frameIndex;
     i32 m_frameTimerMs;
     i32 m_framePeriodMs;
@@ -71,9 +71,9 @@ inline void CAnimatedMenuItem::SetFramePeriod(i32 framePeriodMs) {
 }
 
 inline CAnimatedMenuItem::CAnimatedMenuItem() {
-    m_normalAnimation = NULL;
-    m_selectedAnimation = NULL;
-    m_disabledAnimation = NULL;
+    m_normalFrames = NULL;
+    m_selectedFrames = NULL;
+    m_disabledFrames = NULL;
     m_frameIndex = 0;
     m_frameTimerMs = 0;
     SetFramePeriod(0x64);

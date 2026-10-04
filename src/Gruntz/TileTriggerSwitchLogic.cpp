@@ -109,7 +109,7 @@ RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
@@ -126,7 +126,7 @@ RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
@@ -396,12 +396,12 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->GetLevel()->m_mainPlane;
+            CLevelPlane* pl = reg->m_world->GetLevel()->m_mainPlane;
             if (now == TILEKIND_GREENPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xfb);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xfb);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xfb);
             } else {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xfc);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xfc);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xfc);
             }
             break;
@@ -418,12 +418,12 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->GetLevel()->m_mainPlane;
+            CLevelPlane* pl = reg->m_world->GetLevel()->m_mainPlane;
             if (now == TILEKIND_PURPLEPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xff);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xff);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xff);
             } else {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0x100);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0x100);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0x100);
             }
             break;
@@ -440,12 +440,12 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->GetLevel()->m_mainPlane;
+            CLevelPlane* pl = reg->m_world->GetLevel()->m_mainPlane;
             if (now == TILEKIND_ORANGEPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xf7);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xf7);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xf7);
             } else {
-                SET_WORKER_HOST_CELL(pl, tx, ty, 0xf8);
+                SET_LEVEL_PLANE_CELL(pl, tx, ty, 0xf8);
                 reg->GetTileGrid()->ComputeCellFlags(tx, ty, 0xf8);
             }
             break;
@@ -612,7 +612,7 @@ i32 CTileTriggerLogic::Tick() {
 
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 x, i32 y, i32 value) {
-    CDDrawWorkerHost* grid = m_world->GetLevel()->m_mainPlane;
+    CLevelPlane* grid = m_world->GetLevel()->m_mainPlane;
     i32 idx = grid->m_tileRowOffsets[y] + x;
     grid->m_tileHandles[idx] = value;
 
@@ -795,11 +795,11 @@ i32 CTileTriggerLogic::UncoverPickup(TileCollisionKind tileKind) {
             case TILEKIND_COVERED_POWERUP: {
                 i32 ty = m_tileY;
                 CGruntzMgr* reg = g_gameReg;
-                CDDrawWorkerHost* L = reg->World()->GetLevel()->m_mainPlane;
+                CLevelPlane* L = reg->World()->GetLevel()->m_mainPlane;
                 i32 tx = m_tileX;
                 i32 v = L->m_tileHandles[tx + L->m_tileRowOffsets[ty]] + 1;
-                CDDrawWorkerHost* L2 = g_gameReg->World()->GetLevel()->m_mainPlane;
-                SET_WORKER_HOST_CELL(L2, tx, ty, v);
+                CLevelPlane* L2 = g_gameReg->World()->GetLevel()->m_mainPlane;
+                SET_LEVEL_PLANE_CELL(L2, tx, ty, v);
                 (reg->GetTileGrid())->ComputeCellFlags(tx, ty, v);
                 break;
             }
@@ -885,7 +885,7 @@ i32 CTileSecretTriggerLogic::Tick() {
         mgr->World()
             ->m_level->m_mainPlane
             ->m_tileHandles[mgr->World()->m_level->m_mainPlane->m_tileRowOffsets[idx] + grp];
-    SET_WORKER_HOST_CELL(g_gameReg->World()->m_level->m_mainPlane, grp, idx, oldTok);
+    SET_LEVEL_PLANE_CELL(g_gameReg->World()->m_level->m_mainPlane, grp, idx, oldTok);
     mgr->GetTileGrid()->ComputeCellFlags(grp, idx, oldTok);
     m_tileToken = newTok;
     return 1;
@@ -992,7 +992,7 @@ RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
@@ -1005,7 +1005,7 @@ RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
     SET_MAIN_PLANE_TILE(g_gameReg, tileX, tileY, v);
@@ -1104,13 +1104,13 @@ i32 CBrickStack::SetBrickTile(BrickTileId code) {
 
     i32 ty = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* layer = reg->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* layer = reg->World()->GetLevel()->m_mainPlane;
     i32 tx = m_tileX;
     if (layer->m_tileHandles[tx + layer->m_tileRowOffsets[ty]] == IDX(code)) {
         return 0;
     }
-    CDDrawWorkerHost* layer2 = g_gameReg->World()->GetLevel()->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tx, ty, IDX(code));
+    CLevelPlane* layer2 = g_gameReg->World()->GetLevel()->m_mainPlane;
+    SET_LEVEL_PLANE_CELL(layer2, tx, ty, IDX(code));
     reg->GetTileGrid()->ComputeCellFlags(tx, ty, IDX(code));
     return 1;
 }

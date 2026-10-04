@@ -50,7 +50,7 @@ i32 CSBI_ImageSetAni::Init(
     if (key == NULL) {
         return 0;
     }
-    tbl = host->FindWorker(key);
+    tbl = host->FindImageSet(key);
     m_frameSet = tbl;
     if (tbl == NULL) {
         goto fail;

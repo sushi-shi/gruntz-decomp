@@ -35,7 +35,7 @@ CLevelTimer::CLevelTimer() {
 
 RVA(0x0009bb00, 0x119)
 i32 CLevelTimer::LoadTimerSprite(i32 originX, i32 originY) {
-    CImageSet* spr = g_gameReg->World()->FindWorker("GAME_TIMER");
+    CImageSet* spr = g_gameReg->World()->FindImageSet("GAME_TIMER");
     m_sprite = spr;
     if (!spr) {
         return 0;
@@ -259,7 +259,7 @@ i32 CLevelTimer::Serialize(CFileMemBase* ar) {
 
     char tmp[SERIAL_NAME_LEN];
 
-    SERIAL_WRITE_WORKER(ar, tmp, m_sprite);
+    SERIAL_WRITE_IMAGE_SET(ar, tmp, m_sprite);
 
     ar->Write(&m_active, sizeof(m_active));
 

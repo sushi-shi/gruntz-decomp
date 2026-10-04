@@ -364,7 +364,7 @@ i32 CTriggerMgr::UpdateCameraTracking() {
         UnitAt(m_cameraTargetIdentity.m_x, m_cameraTargetIdentity.m_y)->m_object;
     i32 y = targetObject->m_screenY;
     i32 x = targetObject->m_screenX;
-    CDDrawWorkerHost* mainPlane = m_world->GetLevel()->m_mainPlane;
+    CLevelPlane* mainPlane = m_world->GetLevel()->m_mainPlane;
     mainPlane->SetScrollPosition(x, y);
     return 1;
 }
@@ -600,7 +600,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
                 if (targetingCursorId != 0) {
                     POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
                     m_world->GetLevel()->m_mainPlane->WorldToViewport(&source.x, &source.y);
-                    CDDrawWorkerHost* plane = m_world->GetLevel()->m_mainPlane;
+                    CLevelPlane* plane = m_world->GetLevel()->m_mainPlane;
                     i32 dx = x;
                     i32 dy = y;
                     WwdPlaneFlags wflags = static_cast<WwdPlaneFlags>(plane->m_flags);
@@ -2283,7 +2283,7 @@ i32 CTriggerMgr::RecallSelectionGroup(i32 slot) {
     RECT bbox;
     bbox.right = 0;
     bbox.bottom = 0;
-    CDDrawWorkerHost* grid = g_gameReg->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* grid = g_gameReg->World()->GetLevel()->m_mainPlane;
     bbox.left = grid->GetPlanePixelWidth() - 1;
     bbox.top = grid->GetPlanePixelHeight() - 1;
     do {
@@ -2327,7 +2327,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     }
     RECT bbox;
     i32 count = 0;
-    CDDrawWorkerHost* dims = g_gameReg->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* dims = g_gameReg->World()->GetLevel()->m_mainPlane;
     bbox.left = dims->GetPlanePixelWidth() - 1;
     bbox.top = dims->GetPlanePixelHeight() - 1;
     bbox.right = 0;

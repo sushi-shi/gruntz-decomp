@@ -39,7 +39,7 @@
 #include <string.h>
 
 RVA(0x001615a0, 0x9a)
-CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CLevelPlane::CLevelPlane(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
 
     m_tileHandles = NULL;
@@ -54,11 +54,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 
 // @early-stop
 RVA(0x00161640, 0x3a2)
-i32 CDDrawWorkerHost::Read(
-    const WwdPlaneHeader* pd,
-    const char* blockBase,
-    LevelCoordRect* bounds
-) {
+i32 CLevelPlane::Read(const WwdPlaneHeader* pd, const char* blockBase, LevelCoordRect* bounds) {
     if (pd->m_headerSize != WWD_PLANE_HEADER_SIZE) {
         return 0;
     }
@@ -79,7 +75,7 @@ i32 CDDrawWorkerHost::Read(
         nameBuf[len] = 0;
         if (len > 0) {
 
-            m_imageSets.SetAtGrow(static_cast<char>(n), (OwnerMgr())->FindWorker(nameBuf));
+            m_imageSets.SetAtGrow(static_cast<char>(n), (OwnerMgr())->FindImageSet(nameBuf));
         }
     }
 
@@ -102,7 +98,7 @@ i32 CDDrawWorkerHost::Read(
     if (m_flags & IDX(WWD_PLANE_FLAG_AUTO_TILE_SIZE)) {
 
         CImageSet* set = (m_imageSets.GetSize() > 0) ? ImageSetAt(0) : NULL;
-        for (i32 f = 0; f < set->m_items.GetSize(); f++) {
+        for (i32 f = 0; f < set->m_frames.GetSize(); f++) {
             if (set->GetAt(f) != NULL) {
                 CImage* first = set->GetAt(f);
                 SET_TILE_SIZE_FROM_IMAGE(first);
@@ -117,7 +113,7 @@ i32 CDDrawWorkerHost::Read(
     m_fillFx.dwFillColor = pd->m_fillColor;
     m_flags = IDX(pd->m_flags);
 
-    APPLY_WORKER_HOST_BOUNDS(bounds);
+    APPLY_LEVEL_PLANE_VIEWPORT(bounds);
 
     m_scrollScaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scrollScaleY = static_cast<float>(m_movementYPercent) * 0.01f;
@@ -149,7 +145,7 @@ i32 CDDrawWorkerHost::Read(
     UpdatePlaneViewRect();
 
     if (pd->m_objectsOffset != 0) {
-        if (RebuildPlanes(blockBase + pd->m_objectsOffset, pd->m_objectsCount) == 0) {
+        if (LoadObjectRecords(blockBase + pd->m_objectsOffset, pd->m_objectsCount) == 0) {
             return 0;
         }
     }
@@ -158,7 +154,7 @@ i32 CDDrawWorkerHost::Read(
 
 // @early-stop
 RVA(0x001619f0, 0x1f7)
-i32 CDDrawWorkerHost::InitGeometry(
+i32 CLevelPlane::InitGeometry(
     i32 tileColumns,
     i32 tileRows,
     i32 tileWidthPx,
@@ -197,7 +193,7 @@ i32 CDDrawWorkerHost::InitGeometry(
     if (planeName != NULL) {
         strcpy(m_planeName, planeName);
     }
-    APPLY_WORKER_HOST_BOUNDS(viewportRect);
+    APPLY_LEVEL_PLANE_VIEWPORT(viewportRect);
     m_scrollScaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scrollScaleY = static_cast<float>(m_movementYPercent) * 0.01f;
     m_tileHandles = new i32[m_tileColumns * m_tileRows];
@@ -210,7 +206,7 @@ i32 CDDrawWorkerHost::InitGeometry(
 }
 
 RVA(0x00161bf0, 0x5e)
-void CDDrawWorkerHost::Unload() {
+void CLevelPlane::Unload() {
     if (m_spatialMgr != NULL) {
         m_spatialMgr->PruneCount();
     }
@@ -229,13 +225,13 @@ void CDDrawWorkerHost::Unload() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161c50, 0x3f)
-void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
-    m_imageSets.SetAtGrow(index, OwnerMgr()->FindWorker(key));
+void CLevelPlane::SetImageSetByName(char index, const char* key) {
+    m_imageSets.SetAtGrow(index, OwnerMgr()->FindImageSet(key));
 }
 
 // @early-stop
 RVA(0x00161c90, 0x1e4)
-void CDDrawWorkerHost::UpdatePlaneViewRect() {
+void CLevelPlane::UpdatePlaneViewRect() {
     WwdPlaneFlags flags = static_cast<WwdPlaneFlags>(m_flags);
     i32 wrapX, wrapY;
     wrapX = HAS(flags, WWD_PLANE_FLAG_WRAP_X);
@@ -323,12 +319,12 @@ void CDDrawWorkerHost::UpdatePlaneViewRect() {
 }
 
 RVA(0x00161e80, 0x79)
-void CDDrawWorkerHost::SetViewportRect(LevelCoordRect* coords) {
-    APPLY_WORKER_HOST_BOUNDS(coords);
+void CLevelPlane::SetViewportRect(LevelCoordRect* coords) {
+    APPLY_LEVEL_PLANE_VIEWPORT(coords);
 }
 
 RVA(0x00161f00, 0x75)
-void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
+void CLevelPlane::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
     m_tileWidthPx = tileWidthPx;
     m_tileHeightPx = tileHeightPx;
     SET_RECT_COMPONENTS(m_tileRect, 0, 0, tileWidthPx, tileHeightPx);
@@ -342,15 +338,15 @@ void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161f80, 0x14)
-void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
+void CLevelPlane::SetTileSizeFromImage(CImage* image) {
     SET_TILE_SIZE_FROM_IMAGE(image);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161fa0, 0x6c)
-void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
-    for (i32 i = 0; i < set->m_items.GetSize(); i++) {
+void CLevelPlane::SetTileSizeFromImageSet(CImageSet* set) {
+    for (i32 i = 0; i < set->m_frames.GetSize(); i++) {
         if (set->GetAt(i) != NULL) {
             CImage* f = set->GetAt(i);
             SET_TILE_SIZE_FROM_IMAGE(f);
@@ -361,7 +357,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
 
 // @early-stop
 RVA(0x00162010, 0x8bd)
-void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
+void CLevelPlane::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
     }
@@ -468,7 +464,7 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
 #undef DRAW_CELL
 
 RVA(0x001628d0, 0x12)
-i32 CDDrawWorkerHost::Prune() {
+i32 CLevelPlane::Prune() {
     if (m_spatialMgr == NULL) {
         return 0;
     }
@@ -477,8 +473,8 @@ i32 CDDrawWorkerHost::Prune() {
 
 // @early-stop
 RVA(0x001628f0, 0x1fc)
-i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
-    if (base == NULL) {
+i32 CLevelPlane::LoadObjectRecords(const char* recordCursor, i32 objectCount) {
+    if (recordCursor == NULL) {
         return 0;
     }
 
@@ -487,15 +483,15 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         m_spatialMgr = NULL;
     }
 
-    RECT rc;
-    SET_RECT_COMPONENTS(rc, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
+    RECT planeBounds;
+    SET_RECT_COMPONENTS(planeBounds, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
 
-    CDDrawSurfaceMgr* reg = OwnerMgr();
-    CDDrawChildGroup* activeGroup = reg->ChildGroup();
+    CDDrawSurfaceMgr* world = OwnerMgr();
+    CDDrawChildGroup* activeGroup = world->ChildGroup();
     if (activeGroup == NULL) {
         return 0;
     }
-    CGameLevel* level = reg->GetLevel();
+    CGameLevel* level = world->GetLevel();
     if (level == NULL) {
         return 0;
     }
@@ -529,7 +525,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     m_spatialMgr = newSpatialMgr;
     if (newSpatialMgr->Init(
             activeGroup,
-            &rc,
+            &planeBounds,
             defaultCellSize,
             largeCellSize,
             smallCellSize,
@@ -543,14 +539,14 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         return 0;
     }
 
-    for (i32 i = 0; i < count; i++) {
+    for (i32 objectIndex = 0; objectIndex < objectCount; objectIndex++) {
         // Byte-forced view of packed WWD storage.
 
-        i32 r = ReadPlaneObjects(reinterpret_cast<const PlaneObjectRecord*>(base));
-        if (r == 0) {
+        i32 bytesRead = ReadObjectRecord(reinterpret_cast<const PlaneObjectRecord*>(recordCursor));
+        if (bytesRead == 0) {
             return 0;
         }
-        base += r;
+        recordCursor += bytesRead;
     }
     return 1;
 }
@@ -568,60 +564,60 @@ static inline void ReadPlaneString(char* buf, const char*& cursor, i32 len) {
 // @early-stop
 RVA(0x00162af0, 0x806)
 
-i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
-    if (src == NULL) {
+i32 CLevelPlane::ReadObjectRecord(const PlaneObjectRecord* record) {
+    if (record == NULL) {
         return 0;
     }
 
-    const i32* p = src->m_fields;
-    i32 nameLen = *p++;
-    i32 logicLen = *p++;
-    i32 imageSetLen = *p++;
-    i32 soundLen = *p++;
-    i32 x = *p++;
-    i32 y = *p++;
-    i32 z = *p++;
-    i32 gridIndex = *p++;
-    i32 id = src->m_id;
+    const i32* fields = record->m_fields;
+    i32 nameLen = *fields++;
+    i32 logicLen = *fields++;
+    i32 imageSetLen = *fields++;
+    i32 animationAndSoundNameLength = *fields++;
+    i32 x = *fields++;
+    i32 y = *fields++;
+    i32 z = *fields++;
+    i32 frameIndex = *fields++;
+    i32 objectId = record->m_id;
 
-    CWwdSpriteObject* obj = new CWwdSpriteObject(OwnerMgr(), id, 0);
+    CWwdSpriteObject* obj = new CWwdSpriteObject(OwnerMgr(), objectId, 0);
     if (obj == NULL) {
         return 0;
     }
 
-    const char* strCursor = src->m_strings;
-    char buf[0x400];
+    const char* strCursor = record->m_strings;
+    char stringBuffer[0x400];
 
-    ReadPlaneString(buf, strCursor, nameLen);
-    CString name(buf);
+    ReadPlaneString(stringBuffer, strCursor, nameLen);
+    CString name(stringBuffer);
 
-    ReadPlaneString(buf, strCursor, logicLen);
-    CString logic(buf);
+    ReadPlaneString(stringBuffer, strCursor, logicLen);
+    CString logicTypeName(stringBuffer);
 
-    ReadPlaneString(buf, strCursor, imageSetLen);
-    CString imageSet(buf);
+    ReadPlaneString(stringBuffer, strCursor, imageSetLen);
+    CString imageSetName(stringBuffer);
 
-    ReadPlaneString(buf, strCursor, soundLen);
-    CString sound(buf);
+    ReadPlaneString(stringBuffer, strCursor, animationAndSoundNameLength);
+    CString animationAndSoundName(stringBuffer);
 
     if (x < 0 || x >= m_planePixelWidth || y < 0 || y >= m_planePixelHeight) {
-        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+        i32 bytesRead = static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
         delete obj;
-        return used;
+        return bytesRead;
     }
 
-    if (logic.IsEmpty()) {
-        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+    if (logicTypeName.IsEmpty()) {
+        i32 bytesRead = static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
         delete obj;
-        return used;
+        return bytesRead;
     }
 
     CLogicRecord* logicTemplate =
-        OwnerMgr()->GetLogicRegistry()->FindTemplate(static_cast<const char*>(logic));
+        OwnerMgr()->GetLogicRegistry()->FindTemplate(static_cast<const char*>(logicTypeName));
     if (logicTemplate == NULL) {
-        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+        i32 bytesRead = static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
         delete obj;
-        return used;
+        return bytesRead;
     }
 
     if (obj->Setup(x, y, z, logicTemplate) == 0) {
@@ -631,45 +627,45 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE));
 
-    CLogicRecord* anim = obj->GetLogicRecord();
-    if (anim == NULL) {
+    CLogicRecord* logicRecord = obj->GetLogicRecord();
+    if (logicRecord == NULL) {
         delete obj;
         return 0;
     }
 
-    if (!imageSet.IsEmpty()) {
-        if (gridIndex != -1) {
-            obj->SetImageFrameByName(static_cast<const char*>(imageSet), gridIndex);
+    if (!imageSetName.IsEmpty()) {
+        if (frameIndex != -1) {
+            obj->SetImageFrameByName(static_cast<const char*>(imageSetName), frameIndex);
         } else {
-            obj->SetImageSetByName(static_cast<const char*>(imageSet));
+            obj->SetImageSetByName(static_cast<const char*>(imageSetName));
         }
     }
 
-    if (!sound.IsEmpty()) {
-        obj->SetAnimationByName(static_cast<const char*>(sound), 0);
-        obj->SetSoundCueByName(static_cast<const char*>(sound));
+    if (!animationAndSoundName.IsEmpty()) {
+        obj->SetAnimationByName(static_cast<const char*>(animationAndSoundName), 0);
+        obj->SetSoundCueByName(static_cast<const char*>(animationAndSoundName));
     }
 
     if (!name.IsEmpty()) {
         obj->m_name = static_cast<const char*>(name);
     }
 
-    p++;
+    fields++;
 
-    obj->AddFlags(static_cast<u32>(*p++));
-    obj->m_stateFlags = static_cast<SpriteStateFlags>(*p++);
-    anim->m_userFlags = *p++;
+    obj->AddFlags(static_cast<u32>(*fields++));
+    obj->m_stateFlags = static_cast<SpriteStateFlags>(*fields++);
+    logicRecord->m_userFlags = *fields++;
 
-    obj->m_score = *p++;
-    obj->m_points = *p++;
-    obj->m_powerup = *p++;
-    obj->m_damage = *p++;
-    obj->m_smarts = *p++;
-    obj->m_health = *p++;
-    SET_RECT_COMPONENTS(obj->m_extent, *p++, *p++, *p++, *p++);
-    SET_RECT_COMPONENTS(obj->m_area, *p++, *p++, *p++, *p++);
-    SET_RECT_COMPONENTS(obj->m_switchRect, *p++, *p++, *p++, *p++);
-    SET_RECT_COMPONENTS(obj->m_clip, *p++, *p++, *p++, *p++);
+    obj->m_score = *fields++;
+    obj->m_points = *fields++;
+    obj->m_powerup = *fields++;
+    obj->m_damage = *fields++;
+    obj->m_smarts = *fields++;
+    obj->m_health = *fields++;
+    SET_RECT_COMPONENTS(obj->m_extent, *fields++, *fields++, *fields++, *fields++);
+    SET_RECT_COMPONENTS(obj->m_area, *fields++, *fields++, *fields++, *fields++);
+    SET_RECT_COMPONENTS(obj->m_switchRect, *fields++, *fields++, *fields++, *fields++);
+    SET_RECT_COMPONENTS(obj->m_clip, *fields++, *fields++, *fields++, *fields++);
 
     if (obj->m_area.left == 0 && obj->m_area.right == 0) {
         obj->m_area.left = COORD_UNSET;
@@ -684,51 +680,51 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->m_switchRect.left = COORD_UNSET;
     }
 
-    SET_RECT_COMPONENTS(anim->m_userRect1, *p++, *p++, *p++, *p++);
-    SET_RECT_COMPONENTS(anim->m_userRect2, *p++, *p++, *p++, *p++);
-    anim->m_user1 = *p++;
-    anim->m_user2 = *p++;
-    anim->m_user3 = *p++;
-    anim->m_user4 = *p++;
-    anim->m_user5 = *p++;
-    anim->m_user6 = *p++;
-    anim->m_user7 = *p++;
-    anim->m_user8 = *p++;
-    anim->m_minX = *p++;
-    anim->m_minY = *p++;
-    anim->m_maxX = *p++;
-    anim->m_maxY = *p++;
-    obj->m_speedX = *p++;
-    obj->m_speedY = *p++;
-    anim->m_tweakX = *p++;
-    anim->m_tweakY = *p++;
-    anim->m_counter = *p++;
-    anim->SetSpeed(*p++);
-    anim->m_width = *p++;
-    anim->m_height = *p++;
-    obj->m_direction = *p++;
-    obj->m_faceDirection = *p++;
-    anim->m_timeDelay = *p++;
-    anim->m_frameDelay = *p++;
-    obj->m_objectType = *p++;
-    obj->m_hitTypeFlags = *p++;
+    SET_RECT_COMPONENTS(logicRecord->m_userRect1, *fields++, *fields++, *fields++, *fields++);
+    SET_RECT_COMPONENTS(logicRecord->m_userRect2, *fields++, *fields++, *fields++, *fields++);
+    logicRecord->m_user1 = *fields++;
+    logicRecord->m_user2 = *fields++;
+    logicRecord->m_user3 = *fields++;
+    logicRecord->m_user4 = *fields++;
+    logicRecord->m_user5 = *fields++;
+    logicRecord->m_user6 = *fields++;
+    logicRecord->m_user7 = *fields++;
+    logicRecord->m_user8 = *fields++;
+    logicRecord->m_minX = *fields++;
+    logicRecord->m_minY = *fields++;
+    logicRecord->m_maxX = *fields++;
+    logicRecord->m_maxY = *fields++;
+    obj->m_speedX = *fields++;
+    obj->m_speedY = *fields++;
+    logicRecord->m_tweakX = *fields++;
+    logicRecord->m_tweakY = *fields++;
+    logicRecord->m_counter = *fields++;
+    logicRecord->SetSpeed(*fields++);
+    logicRecord->m_width = *fields++;
+    logicRecord->m_height = *fields++;
+    obj->m_direction = *fields++;
+    obj->m_faceDirection = *fields++;
+    logicRecord->m_timeDelay = *fields++;
+    logicRecord->m_frameDelay = *fields++;
+    obj->m_objectType = *fields++;
+    obj->m_hitTypeFlags = *fields++;
 
-    u32 w = static_cast<u32>(*p++);
+    u32 w = static_cast<u32>(*fields++);
     if (w > 0) {
         obj->m_strideX = static_cast<i32>(w);
     }
-    u32 h = static_cast<u32>(*p++);
+    u32 h = static_cast<u32>(*fields++);
     if (h > 0) {
         obj->m_strideY = static_cast<i32>(h);
     }
 
     m_spatialMgr->ParkObject(static_cast<CWwdGameObject*>(obj));
 
-    return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+    return static_cast<i32>((strCursor - record->m_strings)) + 0x11c;
 }
 
 RVA(0x00163300, 0x70)
-i32 CDDrawWorkerHost::ActivateVisibleObjects() {
+i32 CLevelPlane::ActivateVisibleObjects() {
     CWwdSpatialMgr* scroll = m_spatialMgr;
     if (scroll == NULL) {
         return 0;
@@ -753,7 +749,7 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
 }
 
 RVA(0x00163370, 0x70)
-i32 CDDrawWorkerHost::DeactivateDistantObjects() {
+i32 CLevelPlane::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_spatialMgr;
     if (scroll == NULL) {
         return 0;
@@ -778,7 +774,7 @@ i32 CDDrawWorkerHost::DeactivateDistantObjects() {
 }
 
 RVA(0x001633e0, 0x12)
-i32 CDDrawWorkerHost::ActivateKeepActiveObjects() {
+i32 CLevelPlane::ActivateKeepActiveObjects() {
     if (m_spatialMgr == NULL) {
         return 0;
     }
@@ -788,7 +784,7 @@ i32 CDDrawWorkerHost::ActivateKeepActiveObjects() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00163400, 0x12)
-i32 CDDrawWorkerHost::FlushAllObjects() {
+i32 CLevelPlane::FlushAllObjects() {
     if (m_spatialMgr == NULL) {
         return 0;
     }
@@ -796,7 +792,7 @@ i32 CDDrawWorkerHost::FlushAllObjects() {
 }
 
 RVA(0x00163420, 0xf0)
-void CDDrawWorkerHost::UpdateActiveRegionSizes() {
+void CLevelPlane::UpdateActiveRegionSizes() {
     if (m_spatialMgr == NULL) {
         return;
     }
@@ -837,7 +833,7 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
 
 // @early-stop
 RVA(0x00163510, 0x156)
-i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
+i32 CLevelPlane::ValidateTiles(char* errOut) {
     if (IsLoaded() == 0) {
         return 0;
     }
@@ -889,7 +885,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
 }
 
 RVA(0x00163670, 0x95)
-void CDDrawWorkerHost::ResolveColorKey() {
+void CLevelPlane::ResolveColorKey() {
     ColorDepth format = OwnerMgr()->GetDrawTarget()->GetFrontSurface()->m_bpp;
     if (format == BPP_PALETTED_8) {
         return;
@@ -920,7 +916,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
 }
 
 RVA(0x00163710, 0x60)
-i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
+i32 CLevelPlane::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     if (!ar) {
         return 0;
     }
@@ -950,12 +946,12 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* ar, SerialMode mode, Logic
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00163770, 0xe)
-i32 CDDrawWorkerHost::CanSave(CFileMemBase* s) {
+i32 CLevelPlane::CanSave(CFileMemBase* s) {
     return s != NULL;
 }
 
 RVA(0x00163780, 0x134)
-i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
+i32 CLevelPlane::Save(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
@@ -983,7 +979,7 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
 }
 
 RVA(0x001638c0, 0x140)
-i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
+i32 CLevelPlane::Load(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
@@ -1015,7 +1011,7 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00163a00, 0xe)
-i32 CDDrawWorkerHost::CanLoad(CFileMemBase* s) {
+i32 CLevelPlane::CanLoad(CFileMemBase* s) {
     return s != NULL;
 }
 

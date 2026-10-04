@@ -1252,11 +1252,11 @@ i32 CPlay::LoadLevel(i32 level, i32) {
 
     self->m_mgr->RecomputeViewScale();
     if (self->m_world->GetLevel()->m_mainPlane != NULL) {
-        (static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane))
+        (static_cast<CLevelPlane*>(self->m_world->GetLevel()->m_mainPlane))
             ->ActivateKeepActiveObjects();
     }
     if (self->m_world->GetLevel()->m_mainPlane != NULL) {
-        (static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane))
+        (static_cast<CLevelPlane*>(self->m_world->GetLevel()->m_mainPlane))
             ->ActivateVisibleObjects();
     }
     AdvanceLoadingBar(false);
@@ -1267,8 +1267,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     self->m_mgr->GetTileGrid()->Reset();
 
     {
-        CDDrawWorkerHost* mainPlane =
-            static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane);
+        CLevelPlane* mainPlane = static_cast<CLevelPlane*>(self->m_world->GetLevel()->m_mainPlane);
         CGruntzMapMgr* tileGrid = self->m_mgr->GetTileGrid();
         if (!tileGrid->BuildCellAttributes(mainPlane->GetTileColumns(), mainPlane->GetTileRows())) {
             goto fail0;
@@ -1354,11 +1353,11 @@ i32 CPlay::LoadLevel(i32 level, i32) {
                         ;
                     self->m_mgr->RefreshGameClock();
                     if (self->m_world->GetLevel()->m_mainPlane != NULL) {
-                        (static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane))
+                        (static_cast<CLevelPlane*>(self->m_world->GetLevel()->m_mainPlane))
                             ->ActivateKeepActiveObjects();
                     }
                     if (self->m_world->GetLevel()->m_mainPlane != NULL) {
-                        (static_cast<CDDrawWorkerHost*>(self->m_world->GetLevel()->m_mainPlane))
+                        (static_cast<CLevelPlane*>(self->m_world->GetLevel()->m_mainPlane))
                             ->ActivateVisibleObjects();
                     }
                     AdvanceLoadingBar(false);
@@ -1498,7 +1497,7 @@ void CPlay::ClearLevelState() {
     triggerManager->m_levelWarpStoneCollected = false;
     m_mgr->GetTriggerMgr()->m_puddles.RemoveAll();
     m_mgr->GetTriggerMgr()->SetLocalWarlord(NULL);
-    (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
+    (static_cast<CTransientDrawList*>(m_world->m_workerList))->ClearWorkers();
     FreeStartMarkers();
     for (k = 0; k < 4; k++) {
         FreePlacedObjectCells(k);
@@ -1912,7 +1911,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == VK_SPACE) {
         if (g_gameplayInput->GetHeldButtons() & IDX(INPUT_BUTTON5)) {
-            CDDrawWorkerHost* obj = this->m_world->GetLevel()->m_mainPlane;
+            CLevelPlane* obj = this->m_world->GetLevel()->m_mainPlane;
             i32 bookmarkScrollX = obj->GetScrollPixelX();
             i32 bookmarkScrollY = obj->GetScrollPixelY();
             Coord* slot;
@@ -2160,7 +2159,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 y1 = r->bottom;
         i32 my = this->m_cursorY;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
-            CDDrawWorkerHost* g = q->m_mainPlane;
+            CLevelPlane* g = q->m_mainPlane;
             RECT* view = g->GetPlaneViewRect();
             i32 by = view->top - q->m_viewportRect.top + my;
             i32 bx = view->left - q->m_viewportRect.left + mx;
@@ -2175,7 +2174,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         CGruntzMgr* h = this->m_mgr;
         i32 my = this->m_cursorY;
         CGameLevel* q = h->m_world->GetLevel();
-        CDDrawWorkerHost* g = q->m_mainPlane;
+        CLevelPlane* g = q->m_mainPlane;
         RECT* view = g->GetPlaneViewRect();
         i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx = ((this->m_cursorX - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
@@ -2499,7 +2498,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             }
         }
         CGameLevel* geom = m_mgr->World()->GetLevel();
-        CDDrawWorkerHost* cam = geom->m_mainPlane;
+        CLevelPlane* cam = geom->m_mainPlane;
         RECT* view = cam->GetPlaneViewRect();
         sx = view->left - geom->m_viewportRect.left + xr;
         sy = view->top - geom->m_viewportRect.top + y;
@@ -2912,7 +2911,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     LevelCoordRect pr = ph->GetViewportRect();
     if (::PtInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->GetLevel();
-        CDDrawWorkerHost* geom = ds->m_mainPlane;
+        CLevelPlane* geom = ds->m_mainPlane;
         i32 rawX = geom->GetPlaneViewRect()->left - ds->m_viewportRect.left + x;
         i32 rawY = geom->GetPlaneViewRect()->top - ds->m_viewportRect.top + y;
         i32 snapX = (rawX & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -3072,7 +3071,7 @@ void CPlay::DrawDebugStatsFull() {
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
-        CDDrawWorkerHost* p = m_world->GetLevel()->m_mainPlane;
+        CLevelPlane* p = m_world->GetLevel()->m_mainPlane;
         sprintf(scratch, " Pos = %i,%i", p->GetScrollPixelX(), p->GetScrollPixelY());
         strcat(buf, scratch);
     }
@@ -3165,7 +3164,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
-        CDDrawWorkerHost* p = m_world->GetLevel()->m_mainPlane;
+        CLevelPlane* p = m_world->GetLevel()->m_mainPlane;
 
         sprintf(scratch, " Pos = %i,%i", p->GetScrollPixelX(), p->GetScrollPixelY());
         strcat(buf, scratch);
@@ -3294,7 +3293,7 @@ RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
-    CImageSet* set = m_world->FindWorker("GAME_MESSAGEZ");
+    CImageSet* set = m_world->FindImageSet("GAME_MESSAGEZ");
     if (set == NULL) {
         return 0;
     }
@@ -3625,7 +3624,7 @@ i32 CPlay::LoadCursorAnimation(
     if (m_world == NULL) {
         return 0;
     }
-    CImageSet* grid = m_world->FindWorker(spriteKey);
+    CImageSet* grid = m_world->FindImageSet(spriteKey);
     m_cursorSprite = grid;
     if (grid == NULL) {
         return 0;
@@ -3638,8 +3637,8 @@ i32 CPlay::LoadCursorAnimation(
         if (spr == NULL) {
             spr = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
         }
-        m_cursorSprite->SetAllTypes(SHADE_PAL_16);
-        m_cursorSprite->SetAllFormats(spr);
+        m_cursorSprite->SetAllShadeModes(SHADE_PAL_16);
+        m_cursorSprite->SetAllShadeTables(spr);
     }
     CImage* frame = m_cursorSprite->GetAt(initialFrame);
     m_cursorImage = frame;
@@ -3668,7 +3667,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         CImage* frame = g->GetAt(idx);
         m_cursorImage = frame;
         if (frame == NULL) {
-            m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->GetMinIndex());
+            m_cursorImage = IMAGE_SET_FRAME_AT_UNCHECKED(g, g->GetMinIndex());
             m_cursorFrameIndex = g->GetMinIndex();
         }
     }
@@ -3904,7 +3903,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     CPlay* self = this;
     CGruntzMgr* w = m_mgr;
     b32 changed = false;
-    CDDrawWorkerHost* g = w->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* g = w->World()->GetLevel()->m_mainPlane;
 
     i32 sx = g->GetScrollPixelX();
     i32 sy = g->GetScrollPixelY();
@@ -3994,7 +3993,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
-    CImageSet* set = m_world->FindWorker("GAME_MESSAGEZ");
+    CImageSet* set = m_world->FindImageSet("GAME_MESSAGEZ");
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
@@ -5032,7 +5031,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (dispatch == DispatchBrickzLogic) {
 
-            CDDrawWorkerHost* pl = m_world->GetLevel()->m_mainPlane;
+            CLevelPlane* pl = m_world->GetLevel()->m_mainPlane;
             i32 tile = pl->m_tileHandles[pl->m_tileRowOffsets[obj->m_speedY] + obj->m_speedX];
             if (tile >= 0x12f && tile <= 0x149) {
                 if (m_tileTriggers->AddBrickStack(
@@ -5121,7 +5120,7 @@ i32 CPlay::ValidateLevelTiles() {
 }
 
 RVA(0x000d53a0, 0x19)
-i32 CDDrawWorkerHost::GetTileHandle(i32 tileX, i32 tileY) {
+i32 CLevelPlane::GetTileHandle(i32 tileX, i32 tileY) {
     return m_tileHandles[m_tileRowOffsets[tileY] + tileX];
 }
 
@@ -5199,7 +5198,7 @@ i32 CPlay::BuildRockAndCoveredPowerupLogics() {
                     y = lim - 1;
                 }
             }
-            CDDrawWorkerHost* g = ds->m_mainPlane;
+            CLevelPlane* g = ds->m_mainPlane;
             i32 shX = g->m_shiftX;
             i32 tileX = x >> shX;
             i32 shY = g->m_shiftY;
@@ -5368,7 +5367,7 @@ i32 CPlay::SetCameraPosition(i32 worldX, i32 worldY) {
     CGruntzMgr* gameManager = m_mgr;
     CTriggerMgr* triggerManager = gameManager->GetTriggerMgr();
     triggerManager->StopCameraTracking();
-    CDDrawWorkerHost* mainPlane = m_mgr->World()->GetLevel()->m_mainPlane;
+    CLevelPlane* mainPlane = m_mgr->World()->GetLevel()->m_mainPlane;
     mainPlane->SetScrollPosition(worldX, worldY);
     return 1;
 }
@@ -5956,7 +5955,7 @@ i32 CPlay::AdvanceLoadingBar(b32 final) {
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
-    CImageSet* spr = m_world->FindWorker("GAME_LOADINGBAR");
+    CImageSet* spr = m_world->FindImageSet("GAME_LOADINGBAR");
     if (!spr) {
         return 0;
     }
@@ -5998,8 +5997,8 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
                 if (shadeTable == NULL) {
                     shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
                 }
-                m_cursorSprite->SetAllTypes(SHADE_PAL_16);
-                m_cursorSprite->SetAllFormats(shadeTable);
+                m_cursorSprite->SetAllShadeModes(SHADE_PAL_16);
+                m_cursorSprite->SetAllShadeTables(shadeTable);
             }
             char sequenceName[0x40];
             wsprintfA(sequenceName, "AMBIENT%d", GetMusicVariant());

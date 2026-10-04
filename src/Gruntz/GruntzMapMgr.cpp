@@ -67,7 +67,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
 RVA(0x00082600, 0x73)
 TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     CLAMP_TILE_TO_PLANE(x, y, m_mainPlane);
-    CDDrawWorkerHost* mp = m_mainPlane;
+    CLevelPlane* mp = m_mainPlane;
     i32 tile = mp->m_tileHandles[mp->m_tileRowOffsets[y] + x];
     return CollisionAtHandle(tile, 0, 0);
 }

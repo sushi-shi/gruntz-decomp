@@ -45,10 +45,10 @@
 #include <string.h>
 
 RVA(0x00163bc0, 0x2c)
-void CDDrawWorkerList::Unload() {
+void CTransientDrawList::Unload() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_workers.GetNext(pos));
         if (child) {
             delete child;
         }
@@ -57,22 +57,22 @@ void CDDrawWorkerList::Unload() {
 }
 
 RVA(0x00163bf0, 0x6d)
-void CDDrawWorkerList::RenderAndPruneWorkers(
+void CTransientDrawList::RenderAndPruneWorkers(
     CDDrawSurfacePair* backBuffer,
     CDDrawSurfacePair* overlay
 ) {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
         POSITION cur = pos;
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_workers.GetNext(pos));
         child->RenderFrame(backBuffer, overlay);
-        child->m_refCount--;
+        child->m_renderPassesRemaining--;
         if ((overlay->GetSurface() != NULL
              && !HAS(
                  static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
                  SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
              ))
-            || child->m_refCount <= 0) {
+            || child->m_renderPassesRemaining <= 0) {
             m_workers.RemoveAt(cur);
             if (child) {
                 delete child;
@@ -82,10 +82,10 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
 }
 
 RVA(0x00163c60, 0x2c)
-void CDDrawWorkerList::ClearWorkers() {
+void CTransientDrawList::ClearWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
-        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
+        CTransientDrawItem* child = static_cast<CTransientDrawItem*>(m_workers.GetNext(pos));
         if (child) {
             delete child;
         }
@@ -1151,21 +1151,21 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 }
 
 RVA(0x00165fa0, 0x93)
-void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+void CTransientPixel::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     overlay->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
     backBuffer->GetSurface()->PutPixel(m_screenX, m_screenY, m_pixelValue);
 }
 
 RVA(0x00166040, 0x66)
-i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
-    CImageSet* p = OwnerMgr()->FindWorker(workerName);
+i32 CTransientImage::ResolveFrame(const char* workerName, i32 frameIndex) {
+    CImageSet* p = OwnerMgr()->FindImageSet(workerName);
     CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
     m_frame = v;
     return v != NULL;
 }
 
 RVA(0x001660b0, 0x33)
-void CDDrawFrameWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+void CTransientImage::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     m_frame->RenderImage(this, backBuffer);
     if (overlay->GetSurface() != NULL
         && !HAS(

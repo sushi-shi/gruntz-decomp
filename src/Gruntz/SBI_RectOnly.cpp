@@ -306,9 +306,9 @@ i32 CStatusBarMgr::Render() {
                 below.bottom = v;
                 tgt->Restore(&below, 0);
             }
-            CImageSet* cfg = m_world->FindWorker("GAME_STATUSBAR_MAINBAR");
+            CImageSet* cfg = m_world->FindImageSet("GAME_STATUSBAR_MAINBAR");
             if (cfg) {
-                CImage* entry = DDRAW_WORKER_FRAME_AT_UNCHECKED(cfg, cfg->GetMinIndex());
+                CImage* entry = IMAGE_SET_FRAME_AT_UNCHECKED(cfg, cfg->GetMinIndex());
                 if (entry) {
                     CDDrawSubMgrPages* l1 = g_gameReg->World()->m_drawTarget;
                     entry->RenderFrame(
@@ -1675,8 +1675,8 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                     if (sel == NULL) {
                         sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
                     }
-                    set->GetFrameSet()->SetAllTypes(SHADE_PAL_16);
-                    set->GetFrameSet()->SetAllFormats(sel);
+                    set->GetFrameSet()->SetAllShadeModes(SHADE_PAL_16);
+                    set->GetFrameSet()->SetAllShadeTables(sel);
                     aptr++;
                     slot++;
                     y += 0x36;

@@ -202,7 +202,7 @@ i32 CRollingBall::Update() {
                     tileY = h - 1;
                 }
             }
-            CDDrawWorkerHost* pl = lvl->m_mainPlane;
+            CLevelPlane* pl = lvl->m_mainPlane;
             i32 raw = pl->m_tileHandles[pl->m_tileRowOffsets[tileY] + tileX];
             i32 act;
             if (raw != UNINIT_FILL && raw != -1) {
@@ -397,7 +397,7 @@ i32 CRollingBall::Update() {
                     tileY2 = h - 1;
                 }
             }
-            CDDrawWorkerHost* pl2 = lvl2->m_mainPlane;
+            CLevelPlane* pl2 = lvl2->m_mainPlane;
             i32 raw2 = pl2->m_tileHandles[pl2->m_tileRowOffsets[tileY2] + tileX2];
             i32 act2;
             if (raw2 != UNINIT_FILL && raw2 != -1) {

@@ -16,9 +16,10 @@ class CImageSet;
 
 class CDDrawSurfacePair;
 
-class CDDrawPlacedWorker : public CResolveNode {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CTransientDrawItem : public CResolveNode {
 public:
-    virtual ~CDDrawPlacedWorker() OVERRIDE {
+    virtual ~CTransientDrawItem() OVERRIDE {
         m_dirty.Reset();
     }
 
@@ -30,7 +31,7 @@ public:
 
     virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
 
-    i32 m_refCount;
+    i32 m_renderPassesRemaining;
 
     union {
         i32 m_contentValue;
@@ -38,9 +39,9 @@ public:
         char m_pixelValue;
     };
 
-    CDDrawPlacedWorker() {}
+    CTransientDrawItem() {}
 
-    CDDrawPlacedWorker(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
+    CTransientDrawItem(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
         m_id = 0;
         m_ownerCtx = ctx;
         m_flags = 0;
@@ -53,27 +54,29 @@ public:
     }
 };
 
-struct CDDrawPixelWorker : public CDDrawPlacedWorker {
-    virtual ~CDDrawPixelWorker() OVERRIDE;
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+struct CTransientPixel : public CTransientDrawItem {
+    virtual ~CTransientPixel() OVERRIDE;
 
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
-    CDDrawPixelWorker() {}
-    CDDrawPixelWorker(CDDrawSurfaceMgr* ctx) : CDDrawPlacedWorker(ctx) {
+    CTransientPixel() {}
+    CTransientPixel(CDDrawSurfaceMgr* ctx) : CTransientDrawItem(ctx) {
         m_pixelValue = 0;
     }
     virtual i32 PlacePixel(i32 x, i32 y, i32 pixelValue);
 };
 
-struct CDDrawFrameWorker : public CDDrawPlacedWorker {
-    virtual ~CDDrawFrameWorker() OVERRIDE;
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+struct CTransientImage : public CTransientDrawItem {
+    virtual ~CTransientImage() OVERRIDE;
 
     virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
-    CDDrawFrameWorker() {}
-    CDDrawFrameWorker(CDDrawSurfaceMgr* ctx) : CDDrawPlacedWorker(ctx) {
+    CTransientImage() {}
+    CTransientImage(CDDrawSurfaceMgr* ctx) : CTransientDrawItem(ctx) {
         m_contentValue = 0;
     }
     virtual i32 PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex);

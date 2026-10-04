@@ -27,7 +27,8 @@ class CFileMemBase;
 struct PlaneObjectRecord;
 struct WwdPlaneHeader;
 
-class CDDrawWorkerHost : public CWapObj {
+// @identity-TODO: original class spelling is unavailable; runtime class is inherited.
+class CLevelPlane : public CWapObj {
 public:
     LevelCoordRect* GetPlaneViewRect() {
         return &m_planeViewRect;
@@ -54,8 +55,8 @@ public:
         return m_tileRows;
     }
 
-    CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
-    virtual ~CDDrawWorkerHost() OVERRIDE;
+    CLevelPlane(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    virtual ~CLevelPlane() OVERRIDE;
 
     virtual i32 IsLoaded() OVERRIDE;
 
@@ -113,8 +114,8 @@ public:
     i32 Load(CFileMemBase* s);
     i32 CanLoad(CFileMemBase* s);
 
-    i32 RebuildPlanes(const char* base, i32 count);
-    i32 ReadPlaneObjects(const PlaneObjectRecord* src);
+    i32 LoadObjectRecords(const char* recordCursor, i32 objectCount);
+    i32 ReadObjectRecord(const PlaneObjectRecord* record);
 
     void WorldToViewport(LONG* px, LONG* py);
 
@@ -162,7 +163,7 @@ public:
     DDBLTFX m_fillFx;
 };
 
-#define SET_WORKER_HOST_CELL(plane, x, y, id)                                                      \
+#define SET_LEVEL_PLANE_CELL(plane, x, y, id)                                                      \
     (plane)->m_tileHandles[(plane)->m_tileRowOffsets[y] + x] = id
 
 #define TILE_SHIFT_INTO(shift, scratch, extent)                                                    \

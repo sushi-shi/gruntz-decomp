@@ -569,7 +569,7 @@ i32 CMulti::Render() {
         tickAdvanced = 1;
     }
     UpdateGameplayInput();
-    CDDrawWorkerHost* mainPlane = m_world->GetLevel()->m_mainPlane;
+    CLevelPlane* mainPlane = m_world->GetLevel()->m_mainPlane;
     if (mainPlane) {
         mainPlane->ActivateVisibleObjects();
     }

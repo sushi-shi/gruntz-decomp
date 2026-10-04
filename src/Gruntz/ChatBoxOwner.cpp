@@ -153,19 +153,19 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target) {
         return 0;
     }
 
-    CImageSet* spr = self->m_world->FindWorker("GAME_CHATBOX");
+    CImageSet* spr = self->m_world->FindImageSet("GAME_CHATBOX");
     if (!spr) {
         return 0;
     }
 
     if (self->m_layout == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->GetMaxIndex());
+        CImage* frame = IMAGE_SET_FRAME_AT_UNCHECKED(spr, spr->GetMaxIndex());
         if (!frame) {
             return 0;
         }
         frame->RenderFrame(target, self->m_originX + 0x140, self->m_originY + 0x20, 0);
     } else {
-        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->GetMinIndex());
+        CImage* frame = IMAGE_SET_FRAME_AT_UNCHECKED(spr, spr->GetMinIndex());
         if (!frame) {
             return 0;
         }

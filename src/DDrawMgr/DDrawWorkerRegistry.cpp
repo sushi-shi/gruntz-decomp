@@ -180,7 +180,7 @@ i32 CImageSetRegistry::LoadImageSetsFromTree(CRezDir* dir, const char* sub, cons
             m_imageSetsByName.SetAt(sub, w);
         }
         static_cast<CImageSet*>(w)->BuildFramesFromArchive(dir);
-        if (static_cast<CImageSet*>(w)->m_items.GetSize() == 0) {
+        if (static_cast<CImageSet*>(w)->m_frames.GetSize() == 0) {
             RemoveByKey(sub);
         } else {
             ++count;
@@ -218,7 +218,7 @@ i32 CImageSetRegistry::ReloadImageSetsFromTree(CRezDir* dir, const char* sub, co
                 delete[] buf;
                 return -1;
             }
-            if (static_cast<CImageSet*>(out)->m_items.GetSize() > 0) {
+            if (static_cast<CImageSet*>(out)->m_frames.GetSize() > 0) {
                 ++count;
             }
         }

@@ -134,14 +134,14 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
                 curY--;
             }
 
-            CDDrawWorkerHost* mg = gh->m_mainPlane;
+            CLevelPlane* mg = gh->m_mainPlane;
             mg->SetScrollPosition(curX, curY);
 
             i32 snapX = gh->m_mainPlane->GetScrollPixelX();
             i32 snapY = gh->m_mainPlane->GetScrollPixelY();
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
                 if (i != gh->m_mainIndex) {
-                    CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
+                    CLevelPlane* p = static_cast<CLevelPlane*>(gh->m_planes[i]);
                     p->SetScrollPosition(snapX, snapY);
                 }
             }

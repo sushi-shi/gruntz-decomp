@@ -207,7 +207,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     {
         i32 startX = source->m_startX;
         i32 startY = source->m_startY;
-        CDDrawWorkerHost* mp = m_mainPlane;
+        CLevelPlane* mp = m_mainPlane;
         mp->SetScrollPosition(startX, startY);
 
         i32 ox = m_mainPlane->GetScrollPixelX();
@@ -215,7 +215,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         i32 i2 = 0;
         while (i2 < m_planes.GetSize()) {
             if (i2 != m_mainIndex) {
-                CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(m_planes[i2]);
+                CLevelPlane* p = static_cast<CLevelPlane*>(m_planes[i2]);
                 p->SetScrollPosition(ox, oy);
             }
             ++i2;
@@ -296,7 +296,7 @@ i32 CGameLevel::SetViewportSizeAndUpdatePlanes(i32 w, i32 h) {
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetAt(i)))->SetViewportRect(&rect);
+            (static_cast<CLevelPlane*>(m_planes.GetAt(i)))->SetViewportRect(&rect);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -358,9 +358,8 @@ CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
 }
 
 RVA(0x0015d8d0, 0xc3)
-CDDrawWorkerHost*
-CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT*) {
-    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
+CLevelPlane* CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT*) {
+    CLevelPlane* plane = new CLevelPlane(OwnerMgr(), m_planes.GetSize(), 0);
 
     if (plane->Read(planeData, blockBase, &m_viewportRect) == 0) {
         if (plane) {
@@ -381,7 +380,7 @@ CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RE
 }
 
 RVA(0x0015d9a0, 0xdc)
-CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
+CLevelPlane* CGameLevel::ReadObjectPlane(
     i32 w,
     i32 h,
     i32 tileW,
@@ -390,7 +389,7 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
     i32 depthY,
     const char* name
 ) {
-    CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
+    CLevelPlane* plane = new CLevelPlane(OwnerMgr(), m_planes.GetSize(), 0);
 
     if (plane->InitGeometry(
             w,
@@ -424,7 +423,7 @@ RVA(0x0015da80, 0x47)
 void CGameLevel::UpdatePlaneViewports(LevelCoordRect* coords) {
     m_viewportRect = *coords;
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        (static_cast<CDDrawWorkerHost*>(m_planes[i]))->SetViewportRect(coords);
+        (static_cast<CLevelPlane*>(m_planes[i]))->SetViewportRect(coords);
     }
 }
 
@@ -442,7 +441,7 @@ void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor){DRAW_PLANES_AFTE
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015db30, 0xae)
 i32 CGameLevel::RemovePlane(i32 index) {
-    CDDrawWorkerHost* p = GetPlane(index);
+    CLevelPlane* p = GetPlane(index);
     if (p == NULL) {
         return 0;
     }
@@ -451,7 +450,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
     m_planes.RemoveAt(index, 1);
     if (wasMain) {
         i32 last = m_planes.GetUpperBound();
-        CDDrawWorkerHost* lp = GetPlane(last);
+        CLevelPlane* lp = GetPlane(last);
         if (lp != NULL) {
             RESET_MAIN_PLANE_SELECTION(i)
             m_mainIndex = last;
@@ -470,7 +469,7 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
         if (from == to) {
             return 1;
         }
-        CDDrawWorkerHost* el = GetPlane(from);
+        CLevelPlane* el = GetPlane(from);
         if (el != NULL) {
             m_planes.RemoveAt(from, 1);
             m_planes.InsertAt(to, static_cast<CObject*>(el), 1);
@@ -500,7 +499,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
         i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
-                CDDrawWorkerHost* p = GetPlane(i);
+                CLevelPlane* p = GetPlane(i);
                 i32 zBound = p->m_zCoord;
                 i32 blocked = 0;
                 while (pos != NULL && blocked == 0) {
@@ -531,11 +530,11 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
 }
 
 RVA(0x0015dde0, 0x5c)
-CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
+CLevelPlane* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        CDDrawWorkerHost* p = GetPlane(i);
+        CLevelPlane* p = GetPlane(i);
         if (stricmp(name, p->m_planeName) == 0) {
-            return static_cast<CDDrawWorkerHost*>(p);
+            return static_cast<CLevelPlane*>(p);
         }
     }
     return NULL;
@@ -1391,7 +1390,7 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, 
 RVA(0x0015ffe0, 0x99)
 i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     CLAMP_PIXEL_TO_PLANE(x, y, m_mainPlane);
-    CDDrawWorkerHost* pl = m_mainPlane;
+    CLevelPlane* pl = m_mainPlane;
     i32 qx = x >> pl->m_shiftX;
     i32 alignedX = qx << pl->m_shiftX;
     i32 qy = y >> pl->m_shiftY;
@@ -1674,7 +1673,7 @@ i32 CGameLevel::ValidateAllPlanes(char* errOut) {
         *errOut = 0;
     }
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        if ((static_cast<CDDrawWorkerHost*>(m_planes[i]))->ValidateTiles(errOut) == 0) {
+        if ((static_cast<CLevelPlane*>(m_planes[i]))->ValidateTiles(errOut) == 0) {
             ok = false;
         }
     }
@@ -1684,7 +1683,7 @@ i32 CGameLevel::ValidateAllPlanes(char* errOut) {
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        (static_cast<CDDrawWorkerHost*>(m_planes[i]))->ResolveColorKey();
+        (static_cast<CLevelPlane*>(m_planes[i]))->ResolveColorKey();
     }
 }
 
@@ -1803,7 +1802,7 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     CLAMP_TO_EXTENT(px, m_mainPlane->GetPlanePixelWidth());
     i32 py = limit;
     CLAMP_TO_EXTENT(py, m_mainPlane->GetPlanePixelHeight());
-    CDDrawWorkerHost* pl = m_mainPlane;
+    CLevelPlane* pl = m_mainPlane;
     i32 qx = px >> pl->m_shiftX;
     i32 qy = py >> pl->m_shiftY;
     i32 col = qx;

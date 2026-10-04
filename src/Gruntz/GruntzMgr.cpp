@@ -1358,7 +1358,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     }
     if (m_curState->GetStateId() == GAMESTATE_PLAY || m_curState->GetStateId() == GAMESTATE_MULTI) {
         if (m_world->GetLevel() != NULL) {
-            CDDrawWorkerHost* f = m_world->GetLevel()->m_mainPlane;
+            CLevelPlane* f = m_world->GetLevel()->m_mainPlane;
             if (f != NULL) {
                 if (w > f->GetPlanePixelWidth() || h > f->GetPlanePixelHeight()) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
@@ -1509,7 +1509,7 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
     switch (msg) {
         case WM_INITDIALOG: {
 
-            CDDrawWorkerHost* warp = g_gameReg->World()->GetLevel()->m_mainPlane;
+            CLevelPlane* warp = g_gameReg->World()->GetLevel()->m_mainPlane;
             i32 seedX = warp->GetScrollPixelX();
             i32 seedY = warp->GetScrollPixelY();
             SetDlgItemInt(hDlg, 0x40e, seedX, false);
@@ -1834,7 +1834,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
                 idx--;
             }
-            CDDrawWorkerHost* layer = view->GetPlane(idx - 1);
+            CLevelPlane* layer = view->GetPlane(idx - 1);
             if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
                 layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
@@ -1851,7 +1851,7 @@ i32 CGruntzMgr::ToggleHeightLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = World()->GetLevel();
         if (view) {
-            CDDrawWorkerHost* layer = view->m_mainPlane;
+            CLevelPlane* layer = view->m_mainPlane;
             if (layer) {
                 layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
@@ -1868,7 +1868,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = World()->GetLevel();
         if (view) {
-            CDDrawWorkerHost* layer = view->GetPlane(0);
+            CLevelPlane* layer = view->GetPlane(0);
             if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
                 layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
@@ -2614,22 +2614,22 @@ i32 CGruntzMgr::ToggleMonolithOverlay() {
 
     CImageSet* rec;
     {
-        rec = m_world->FindWorker("GAME_MONOLITH");
+        rec = m_world->FindImageSet("GAME_MONOLITH");
     }
     if (rec == NULL) {
         return 0;
     }
     i32 savedIdx = rec->GetMinIndex();
-    CImage* e = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, savedIdx);
+    CImage* e = IMAGE_SET_FRAME_AT_UNCHECKED(rec, savedIdx);
     if (e == NULL) {
         return 0;
     }
     i32 monolithWidth = e->GetWidth();
     i32 monolithHeight = e->GetHeight();
-    CDDrawWorkerHost* found =
-        static_cast<CDDrawWorkerHost*>(m_world->GetLevel()->FindPlaneByName("MONOLITH"));
+    CLevelPlane* found =
+        static_cast<CLevelPlane*>(m_world->GetLevel()->FindPlaneByName("MONOLITH"));
     if (found == NULL) {
-        CDDrawWorkerHost* spr = m_world->GetLevel()->ReadObjectPlane(
+        CLevelPlane* spr = m_world->GetLevel()->ReadObjectPlane(
             0x20,
             0x20,
             monolithWidth,
@@ -2649,7 +2649,7 @@ i32 CGruntzMgr::ToggleMonolithOverlay() {
             for (i32 j = 0; j < spr->GetTileColumns(); j++) {
                 i32 val = parity ? savedIdx : -1;
                 parity ^= 1;
-                SET_WORKER_HOST_CELL(spr, j, i, val);
+                SET_LEVEL_PLANE_CELL(spr, j, i, val);
             }
             parity ^= 1;
         }
@@ -2679,7 +2679,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_world == NULL) {
         return 0;
     }
-    CImageSet* out = World()->FindWorker("GAME_DEVHEADS");
+    CImageSet* out = World()->FindImageSet("GAME_DEVHEADS");
     if (out == NULL) {
         return 0;
     }
@@ -2705,9 +2705,9 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
     if (sink && key) {
-        CImageSet* row = World()->FindWorker(key);
+        CImageSet* row = World()->FindImageSet(key);
         if (row) {
-            CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->GetMinIndex());
+            CImage* dst = IMAGE_SET_FRAME_AT_UNCHECKED(row, row->GetMinIndex());
             if (dst) {
                 CImage* src = sink->GetAt(idx);
                 if (src != NULL) {
@@ -2757,20 +2757,20 @@ void CGruntzMgr::CheatSkeletonToggle() {
 
         CImageSet* set;
         {
-            set = World()->FindWorker("Gruntz");
+            set = World()->FindImageSet("Gruntz");
         }
         if (set) {
-            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
+            CImage* fr = IMAGE_SET_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->GetShadeBlitter();
                 if (fmt) {
                     switch (fmt->m_drawType) {
                         case SHADE_DST_BY_SRC:
-                            set->SetAllTypes(SHADE_COPY);
+                            set->SetAllShadeModes(SHADE_COPY);
                             AppendChatMessage(const_cast<char*>("Back from the dead?"));
                             break;
                         default:
-                            set->SetAllTypes(SHADE_DST_BY_SRC);
+                            set->SetAllShadeModes(SHADE_DST_BY_SRC);
                             AppendChatMessage(const_cast<char*>("You're scaring me..."));
                             break;
                     }
@@ -2789,20 +2789,20 @@ void CGruntzMgr::CheatEclipseToggle() {
 
         CImageSet* set;
         {
-            set = World()->FindWorker("Gruntz");
+            set = World()->FindImageSet("Gruntz");
         }
         if (set) {
-            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
+            CImage* fr = IMAGE_SET_FRAME_AT_UNCHECKED(set, set->GetMinIndex());
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->GetShadeBlitter();
                 if (fmt) {
                     ShadeMode st = fmt->m_drawType;
                     if (st != SHADE_DST_BY_LEVEL) {
-                        set->SetAllTypes(SHADE_DST_BY_LEVEL);
+                        set->SetAllShadeModes(SHADE_DST_BY_LEVEL);
                         set->SetAllLightLevels(GetRandom(255));
                         AppendChatMessage(const_cast<char*>("Me and my..."));
                     } else {
-                        set->SetAllTypes(SHADE_COPY);
+                        set->SetAllShadeModes(SHADE_COPY);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
                     PlayRegistryCueIfElapsed(World()->SoundRegistry(), "GAME_MINORCHEAT");

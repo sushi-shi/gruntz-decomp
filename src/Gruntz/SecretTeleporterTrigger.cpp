@@ -206,7 +206,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             CGruntzMgr* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
-            CDDrawWorkerHost* rc = g->World()->GetLevel()->m_mainPlane;
+            CLevelPlane* rc = g->World()->GetLevel()->m_mainPlane;
             if (::PtInRect(rc->GetPlaneViewRect(), ex, ey)) {
                 g->VoiceMgr()->PlayVoice(hit, 0x3fc, -1, 0, -1, -1);
             }
