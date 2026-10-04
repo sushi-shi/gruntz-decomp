@@ -11,7 +11,7 @@ This family contains eight spelled casts: six in `GameLevel.cpp` and two in `Lev
 | W3: [decompressed byte base](../../src/Gruntz/GameLevel.cpp#L154) | `reinterpret_cast<char*>(hdr)` | `WwdHeader*` → `char*`; the second leg of W2, establishing the byte cursor used by later table readers. |
 | W4: [plane headers](../../src/Gruntz/GameLevel.cpp#L166) | `reinterpret_cast<const WwdPlaneHeader*>(block + source->m_planesOffset)` | `char*` at a file offset → record pointer, then a contiguous plane-record walk. |
 | W5: [tile-description table](../../src/Gruntz/GameLevel.cpp#L177) | `reinterpret_cast<WwdTileDescTable*>(block + source->m_tileDescriptionsOffset)` | `char*` at a file offset → count/header and variable descriptor tail. |
-| W6: [InflateMainBlock](../../src/Gruntz/GameLevel.cpp#L1547) | `reinterpret_cast<Bytef*>(src) + src->m_headerSize` | `WwdHeader*` → unsigned-byte pointer, then skip the file header to obtain zlib input. |
+| W6: [InflateMainBlock](../../src/Gruntz/GameLevel.cpp#L1537) | `reinterpret_cast<Bytef*>(src) + src->m_headerSize` | `WwdHeader*` → unsigned-byte pointer, then skip the file header to obtain zlib input. |
 | W7: [CLevelPlane::Read](../../src/DDrawMgr/LevelPlane.cpp#L124) | `reinterpret_cast<const i32*>(blockBase + pd->m_tilesOffset)` | `const char*` → `const i32*`; copy the serialized tile-handle run into an owned integer array. |
 | W8: [LoadObjectRecords](../../src/DDrawMgr/LevelPlane.cpp#L545) | `reinterpret_cast<const PlaneObjectRecord*>(recordCursor)` | `const char*` → fixed object-record prefix followed by four length-counted strings. |
 

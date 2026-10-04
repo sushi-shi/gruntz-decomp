@@ -90,7 +90,7 @@ contract and provenance. Source line numbers can move.
 | [src/Gruntz/GameLevel.cpp:154](../../src/Gruntz/GameLevel.cpp#L154) | `reinterpret_cast<char*>(hdr)` | [world-records](world-records.md) |
 | [src/Gruntz/GameLevel.cpp:166](../../src/Gruntz/GameLevel.cpp#L166) | `reinterpret_cast<const WwdPlaneHeader*>(block + source->m_planesOffset)` | [world-records](world-records.md) |
 | [src/Gruntz/GameLevel.cpp:177](../../src/Gruntz/GameLevel.cpp#L177) | `reinterpret_cast<WwdTileDescTable*>(block + source->m_tileDescriptionsOffset)` | [world-records](world-records.md) |
-| [src/Gruntz/GameLevel.cpp:1547](../../src/Gruntz/GameLevel.cpp#L1547) | `reinterpret_cast<Bytef*>(src)` | [world-records](world-records.md) |
+| [src/Gruntz/GameLevel.cpp:1537](../../src/Gruntz/GameLevel.cpp#L1537) | `reinterpret_cast<Bytef*>(src)` | [world-records](world-records.md) |
 | [src/Gruntz/MultiStartDlg.cpp:97](../../src/Gruntz/MultiStartDlg.cpp#L97) | `reinterpret_cast<WNDPROC>(GetWindowLongA(editHwnd, GWL_WNDPROC))` | [win32-procedures](win32-procedures.md) |
 | [src/Gruntz/MultiStartDlg.cpp:98](../../src/Gruntz/MultiStartDlg.cpp#L98) | `reinterpret_cast<LONG>(MultiMapComboEditProc)` | [win32-procedures](win32-procedures.md) |
 | [src/Gruntz/MultiStartDlg.cpp:106](../../src/Gruntz/MultiStartDlg.cpp#L106) | `reinterpret_cast<LPCTSTR>(lParam)` | [win32-procedures](win32-procedures.md) |
