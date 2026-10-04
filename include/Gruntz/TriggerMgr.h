@@ -45,7 +45,7 @@ public:
 
     i32 Load(CFileMemBase* ar);
 
-    i32 SetLevel(CDDrawSurfaceMgr* lvl);
+    i32 SetWorld(CDDrawSurfaceMgr* world);
 
     i32 UpdateCameraTracking();
 

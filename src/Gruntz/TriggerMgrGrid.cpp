@@ -55,11 +55,11 @@
 #include <stddef.h>
 
 RVA(0x0006b640, 0x2f)
-i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
-    if (lvl == NULL) {
+i32 CTriggerMgr::SetWorld(CDDrawSurfaceMgr* world) {
+    if (world == NULL) {
         return 0;
     }
-    m_world = lvl;
+    m_world = world;
     m_cameraTrackingActive = false;
     m_localWarlord = NULL;
     m_countdownActive = true;

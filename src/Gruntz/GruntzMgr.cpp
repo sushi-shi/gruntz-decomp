@@ -676,7 +676,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_triggerMgr = new CTriggerMgr;
-    if (!m_triggerMgr->SetLevel(World())) {
+    if (!m_triggerMgr->SetWorld(World())) {
         SAFE_DELETE(m_triggerMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x41b);
         return 0;
