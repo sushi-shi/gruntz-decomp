@@ -160,7 +160,7 @@ i32 CSecretLevelTrigger::Tick() {
         spr = m_object;
         b32 ok = true;
         i32 lvl = spr->m_powerup;
-        i32 lyr = spr->m_damage;
+        i32 lyr = spr->GetDamage();
 
         if (lvl != IDX(PICKUP_NONE) && IDX(hit->GetActivePickupType()) != lvl) {
             ok = false;
@@ -198,7 +198,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->SetSpeedX(m_object->m_speedX);
             spr->SetSpeedY(m_object->m_speedY);
             spr->m_powerup = m_object->m_powerup;
-            spr->m_damage = m_object->m_damage;
+            spr->m_damage = m_object->GetDamage();
             spr->SetScore(m_object->GetScore());
             spr->SetPoints(m_object->GetPoints());
             spr->m_health = 0;

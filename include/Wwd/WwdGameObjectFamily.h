@@ -99,6 +99,10 @@ public:
         m_moveMode = mode;
     }
 
+    i32 GetDamage() const {
+        return m_damage;
+    }
+
     i32 GetScore() const {
         return m_score;
     }

@@ -70,12 +70,12 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_offset.m_x = m_center.m_x - px;
     m_offset.m_y = m_center.m_y - cy;
 
-    if (m_object->m_damage == 0) {
+    if (m_object->GetDamage() == 0) {
         m_angularVelocity =
             DATA_COMPGEN(0x001ea3f0, 3.1415927) / static_cast<double>(g_buteMgr.GetDword("Hazardz", "SpotLightTime", 0xbb8));
     } else {
         m_angularVelocity =
-            DATA_COMPGEN(0x001ea3f0, 3.1415927) / static_cast<double>(static_cast<u32>(m_object->m_damage));
+            DATA_COMPGEN(0x001ea3f0, 3.1415927) / static_cast<double>(static_cast<u32>(m_object->GetDamage()));
     }
     if (m_object->m_direction == 1) {
         m_angularVelocity = m_angularVelocity * DATA_COMPGEN(0x001ea3f8, -1.0);
