@@ -210,6 +210,10 @@ public:
     i32 m_powerup;
     i32 m_damage;
 
+    const i32& GetSmarts() const {
+        return m_smarts;
+    }
+
     i32 m_smarts;
     i32 m_health;
 

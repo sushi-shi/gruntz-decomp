@@ -226,14 +226,14 @@ i32 CKitchenSlime::SerializeDispatch(
 // @early-stop
 RVA(0x000b3160, 0x35c)
 i32 CKitchenSlime::LoadSprites() {
-    i32 savedDir = Level()->m_smarts;
+    i32 savedDir = Level()->GetSmarts();
 
     Coord tile;
     b32 found = false;
     i32 i = 0;
     while (found == false) {
         CGameObject* lvl = Level();
-        i32 sw = lvl->m_smarts;
+        i32 sw = lvl->GetSmarts();
         switch (static_cast<CardinalDir>(sw)) {
             case CARDINAL_NORTH: {
                 Coord step;
@@ -277,12 +277,12 @@ i32 CKitchenSlime::LoadSprites() {
 
             if (lvl->m_direction == 1) {
                 lvl->m_smarts = sw - 1;
-                if (Level()->m_smarts <= 0) {
+                if (Level()->GetSmarts() <= 0) {
                     Level()->m_smarts = 4;
                 }
             } else {
                 lvl->m_smarts++;
-                if (Level()->m_smarts > 4) {
+                if (Level()->GetSmarts() > 4) {
                     Level()->m_smarts = 1;
                 }
             }
@@ -291,8 +291,8 @@ i32 CKitchenSlime::LoadSprites() {
 
     m_posX = 0;
     m_posY = 0;
-    b32 changed = (Level()->m_smarts != savedDir);
-    switch (static_cast<CardinalDir>(Level()->m_smarts)) {
+    b32 changed = (Level()->GetSmarts() != savedDir);
+    switch (static_cast<CardinalDir>(Level()->GetSmarts())) {
         case CARDINAL_NORTH:
             m_dirX = 0.0;
             m_dirY = -1.0;

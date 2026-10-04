@@ -40,7 +40,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SET_OBJECT_AREA(1)
     SwitchAnimationByName("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;
-    GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
+    GruntzPlayer* slot = &g_gameReg->m_players[m_object->GetSmarts()];
     if (slot->IsActive() == false) {
         m_resolved = false;
         return;
@@ -58,14 +58,14 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
     if (e != NULL) {
-        e->m_smarts = m_object->m_smarts;
+        e->m_smarts = m_object->GetSmarts();
         e->GetLogicRecord()->Dispatch(e);
 
         m_warlordLogic = static_cast<CWarlord*>(e->GetLogicRecord()->UserLogic());
-        if (m_object->m_smarts == g_curPlayer) {
+        if (m_object->GetSmarts() == g_curPlayer) {
             g_gameReg->GetTriggerMgr()->m_pendingFx = m_warlordLogic;
         }
-        GruntzPlayer* slot2 = &g_gameReg->m_players[m_object->m_smarts];
+        GruntzPlayer* slot2 = &g_gameReg->m_players[m_object->GetSmarts()];
         if (slot2 != NULL) {
             slot2->m_warlordObjectId = e->GetObjectId();
         }

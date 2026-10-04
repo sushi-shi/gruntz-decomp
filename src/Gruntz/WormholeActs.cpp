@@ -78,7 +78,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 NULL
             )
             != NULL) {
-            i32 owningPlayer = m_object->m_smarts;
+            i32 owningPlayer = m_object->GetSmarts();
             if (hitPlayerIndex == owningPlayer) {
                 return 0;
             }
@@ -120,7 +120,7 @@ i32 CExitTrigger::AdvanceAnim() {
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
                 if (cur->GetLogicRecord()->GetDispatch() == DispatchGruntCreationPointLogic
-                    && cur->m_smarts == owningPlayer) {
+                    && cur->GetSmarts() == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->SpriteTable()->GetSel(
                         IDX(g_gameReg->m_players[hitPlayerIndex].GetColor()),
@@ -137,7 +137,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     }
                 }
                 if (cur->GetLogicRecord()->GetDispatch() == DispatchFortressFlagLogic
-                    && cur->m_smarts == owningPlayer) {
+                    && cur->GetSmarts() == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->SpriteTable()->GetSel(
                         IDX(g_gameReg->m_players[hitPlayerIndex].GetColor()),
@@ -156,7 +156,7 @@ i32 CExitTrigger::AdvanceAnim() {
             }
         } else {
 
-            i32 lostPlayer = m_object->m_smarts;
+            i32 lostPlayer = m_object->GetSmarts();
             if (lostPlayer == g_curPlayer) {
                 return 0;
             }
@@ -183,7 +183,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 LogicRecordDispatchFn dispatch = cur->GetLogicRecord()->GetDispatch();
                 if (dispatch == DispatchGruntCreationPointLogic
                     || dispatch == DispatchFortressFlagLogic) {
-                    if (cur->m_smarts == m_object->m_smarts) {
+                    if (cur->GetSmarts() == m_object->GetSmarts()) {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;
                         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
@@ -205,7 +205,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     }
                 }
             }
-            g_gameReg->GetTriggerMgr()->StartPlayerVictorySequence(m_object->m_smarts);
+            g_gameReg->GetTriggerMgr()->StartPlayerVictorySequence(m_object->GetSmarts());
         }
     }
     return 0;

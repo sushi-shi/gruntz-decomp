@@ -246,7 +246,7 @@ void CTileTriggerContainer::AddLogicFromRecord(
         object->m_clip,
         object->GetLogicRecord()->GetUserRect1(),
         object->GetLogicRecord()->GetUserRect2(),
-        object->m_smarts,
+        object->GetSmarts(),
         object->m_damage,
         object->m_points,
         object->m_health

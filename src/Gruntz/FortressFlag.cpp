@@ -145,7 +145,7 @@ i32 CFortressFlag::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
         CWwdSpriteObject* spr = m_object;
-        i32 idx = IDX(g_gameReg->m_players[spr->m_smarts].GetColor());
+        i32 idx = IDX(g_gameReg->m_players[spr->GetSmarts()].GetColor());
         CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(idx, 0);
         spr = m_object;
         spr->SetDrawFill(SHADE_PAL_16, sel);

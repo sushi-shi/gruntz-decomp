@@ -164,7 +164,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     for (CGameObject* cur = mgr->m_world->ChildGroup()->FirstChild(); cur != NULL;
          cur = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur->GetLogicRecord()->GetDispatch() == &DispatchGruntCreationPointLogic
-            && cur->m_smarts == playerIndex) {
+            && cur->GetSmarts() == playerIndex) {
             Coord* slot = g_coordPool.Pop();
             slot->m_x = cur->m_screenX / TILE_SIZE_PX;
             slot->m_y = cur->m_screenY / TILE_SIZE_PX;
@@ -175,7 +175,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     for (CGameObject* cur2 = mgr->m_world->ChildGroup()->FirstChild(); cur2 != NULL;
          cur2 = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur2->GetLogicRecord()->GetDispatch() == &DispatchExitTriggerLogic
-            && cur2->m_smarts == playerIndex) {
+            && cur2->GetSmarts() == playerIndex) {
             m_marker.m_x = cur2->m_screenX / TILE_SIZE_PX;
             m_marker.m_y = cur2->m_screenY / TILE_SIZE_PX;
             break;
@@ -185,7 +185,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     for (CGameObject* cur3 = mgr->m_world->ChildGroup()->FirstChild(); cur3 != NULL;
          cur3 = mgr->m_world->ChildGroup()->NextChild()) {
         if (cur3->GetLogicRecord()->GetDispatch() == &DispatchWayPointLogic
-            && cur3->m_smarts == playerIndex) {
+            && cur3->GetSmarts() == playerIndex) {
             Coord* slot = g_coordPool.Pop();
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
             slot->m_y = cur3->m_screenY >> TILE_SHIFT_PX;
@@ -1999,7 +1999,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         if (g->GetLogicRecord()->GetDispatch() == &DispatchInGameIconLogic && !g->IsHidden()) {
             i32 special = 0;
 
-            switch (static_cast<PickupType>(g->m_smarts)) {
+            switch (static_cast<PickupType>(g->GetSmarts())) {
                 case PICKUP_HEALTH1:
                     special = 1;
                     break;

@@ -39,14 +39,14 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
 
     i32 idx;
     if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-        if (g_gameReg->m_players[m_object->m_smarts].IsActive() != false) {
-            idx = IDX(g_gameReg->m_players[m_object->m_smarts].GetColor());
+        if (g_gameReg->m_players[m_object->GetSmarts()].IsActive() != false) {
+            idx = IDX(g_gameReg->m_players[m_object->GetSmarts()].GetColor());
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             // Retail leaves the inactive-player shade index unassigned.
         }
     } else {
-        idx = m_object->m_smarts;
+        idx = m_object->GetSmarts();
     }
     CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(idx, 0);
 
@@ -73,13 +73,13 @@ i32 CGruntCreationPoint::SerializeDispatch(
     if (mode != SERIAL_SAVE && mode == SERIAL_POSTLOAD) {
         i32 idx;
         if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
-            if (g_gameReg->m_players[m_object->m_smarts].IsActive() != false) {
-                idx = IDX(g_gameReg->m_players[m_object->m_smarts].GetColor());
+            if (g_gameReg->m_players[m_object->GetSmarts()].IsActive() != false) {
+                idx = IDX(g_gameReg->m_players[m_object->GetSmarts()].GetColor());
             } else {
                 idx = IDX(FindAvailablePlayerColor());
             }
         } else {
-            idx = m_object->m_smarts;
+            idx = m_object->GetSmarts();
         }
         CShadeTable* sel = g_gameReg->SpriteTable()->GetSel(idx, 0);
         if (sel == NULL) {

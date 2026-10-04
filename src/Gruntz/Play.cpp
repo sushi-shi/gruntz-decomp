@@ -4514,7 +4514,7 @@ b32 CPlay::PlaceStartGruntz() {
             if (dispatch == DispatchGruntStartingPointLogic) {
                 DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                 i32 idx = m_mgr->GetTriggerMgr()->PlaceObject(
-                    obj->m_smarts,
+                    obj->GetSmarts(),
                     x,
                     y,
                     100000,
@@ -4530,21 +4530,21 @@ b32 CPlay::PlaceStartGruntz() {
                 );
                 if (idx == -1) {
                     CString s;
-                    s.Format("Could not add Grunt: Player=%d, x=%d, y=%d", obj->m_smarts, x, y);
+                    s.Format("Could not add Grunt: Player=%d, x=%d, y=%d", obj->GetSmarts(), x, y);
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return false;
                 }
                 obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             } else if (g_gameReg->GetGameMode() != GAMEMODE_QUESTZ
                        && dispatch == DispatchGruntCreationPointLogic
-                       && obj->m_smarts == g_curPlayer) {
+                       && obj->GetSmarts() == g_curPlayer) {
 
                 GruntzPlayer* e = &g_gameReg->m_players[g_curPlayer];
                 if (e != NULL && counter < e->GetMaxGruntz()) {
                     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                     m_mgr->GetCommandMgr()->EnqueueSingle(
                         true,
-                        static_cast<char>(obj->m_smarts),
+                        static_cast<char>(obj->GetSmarts()),
                         0,
                         static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
                         x,
@@ -4774,7 +4774,7 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->GetLogicRecord()->GetUserRect2(),
                             type == TILEKIND_CHECKPOINT_UP,
                             obj->m_damage,
-                            obj->m_smarts
+                            obj->GetSmarts()
                         )) {
                         MODAL_REPORT_AT(
                             "Bad pressure plate at: x=%d, y=%d",
@@ -4982,7 +4982,7 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_clip,
                         obj->GetLogicRecord()->GetUserRect1(),
                         obj->GetLogicRecord()->GetUserRect2(),
-                        obj->m_smarts,
+                        obj->GetSmarts(),
                         obj->m_damage,
                         obj->m_points,
                         0
@@ -5008,7 +5008,7 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_clip,
                     obj->GetLogicRecord()->GetUserRect1(),
                     obj->GetLogicRecord()->GetUserRect2(),
-                    obj->m_smarts,
+                    obj->GetSmarts(),
                     obj->m_damage,
                     obj->m_points,
                     0
@@ -5039,12 +5039,12 @@ i32 CPlay::ValidateLevelTiles() {
             }
             obj->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else if (dispatch == DispatchInGameIconLogic) {
-            if (obj->m_smarts == IDX(PICKUP_MEGAPHONE)) {
+            if (obj->GetSmarts() == IDX(PICKUP_MEGAPHONE)) {
 
                 m_statusBar->QueuePickupReward(obj->m_points, obj->m_score);
             }
         } else if (dispatch == DispatchGruntCreationPointLogic) {
-            if (obj->m_smarts == g_curPlayer) {
+            if (obj->GetSmarts() == g_curPlayer) {
                 Coord* slot = g_coordPool.Pop();
                 slot->m_x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 slot->m_y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -5089,7 +5089,7 @@ i32 CPlay::ValidateLevelTiles() {
                         || static_cast<u32>(gyy) >= gg->GetHeight()) {
                         continue;
                     }
-                    i32 kind = obj->m_smarts;
+                    i32 kind = obj->GetSmarts();
                     i32 bit = 0;
                     switch (static_cast<PlayerSlot>(kind)) {
                         case PLAYER_SLOT_0:
@@ -5240,7 +5240,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_clip,
                     p->GetLogicRecord()->GetUserRect1(),
                     p->GetLogicRecord()->GetUserRect2(),
-                    p->m_smarts,
+                    p->GetSmarts(),
                     p->m_powerup,
                     p->m_points,
                     p->m_faceDirection
@@ -5273,14 +5273,14 @@ i32 CPlay::AddLevelGruntz() {
         if (g->GetLogicRecord()->GetDispatch() != DispatchGruntStartingPointLogic) {
             continue;
         }
-        if (g->m_smarts == g_curPlayer) {
+        if (g->GetSmarts() == g_curPlayer) {
             continue;
         }
         i32 x = ((g->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX);
         i32 y = ((g->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX);
 
         if (m_mgr->GetTriggerMgr()->PlaceObject(
-                g->m_smarts,
+                g->GetSmarts(),
                 x,
                 y,
                 0x186a0,
@@ -5296,7 +5296,7 @@ i32 CPlay::AddLevelGruntz() {
             )
             == -1) {
             CString msg;
-            msg.Format("Could not add Grunt: Player=%d, x=%d, y=%d", g->m_smarts, x, y);
+            msg.Format("Could not add Grunt: Player=%d, x=%d, y=%d", g->GetSmarts(), x, y);
 
             (g_gameReg)->EnterModalUI(msg);
             return 0;
@@ -5698,7 +5698,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         break;
                 }
             } else if (dispatch == DispatchInGameIconLogic) {
-                PickupType smarts = static_cast<PickupType>(obj->m_smarts);
+                PickupType smarts = static_cast<PickupType>(obj->GetSmarts());
                 PickupType cv =
                     smarts == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : smarts;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
@@ -5711,15 +5711,15 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 } else if (cv == PICKUP_COIN) {
                     m_mgr->GetGameStats()->m_coinsAvailable++;
                 }
-                i32 d = obj->m_smarts;
+                i32 d = obj->GetSmarts();
                 PickupType item = static_cast<PickupType>(d);
                 if (item <= PICKUP_TOYZ_LAST) {
                     if (!BuildGruntTypeNameTable(item, 1, 0, ctx)) {
                         return 0;
                     }
-                    if (loaded[obj->m_smarts] == 0) {
+                    if (loaded[obj->GetSmarts()] == 0) {
                         BuildHelpReveal(false);
-                        loaded[obj->m_smarts] = 1;
+                        loaded[obj->GetSmarts()] = 1;
                     }
                 } else if (d == IDX(GRUNT_HAREKRISHNA)) {
                     if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
@@ -5789,7 +5789,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(false);
                         loaded[obj->m_powerup] = 1;
                     }
-                } else if (obj->m_smarts == IDX(GRUNT_HAREKRISHNA)) {
+                } else if (obj->GetSmarts() == IDX(GRUNT_HAREKRISHNA)) {
                     if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 1, 0, ctx)) {
                         return 0;
                     }
@@ -5797,7 +5797,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(false);
                         loaded[0x21] = 1;
                     }
-                } else if (obj->m_smarts == IDX(GRUNT_REAPER)) {
+                } else if (obj->GetSmarts() == IDX(GRUNT_REAPER)) {
                     if (!BuildGruntTypeNameTable(GRUNT_REAPER, 1, 0, ctx)) {
                         return 0;
                     }
@@ -6885,7 +6885,7 @@ i32 CPlay::ClearPlacedObjects() {
                         g_coordPool.Push(obj);
                         return -1;
                     }
-                    if (result->m_smarts != IDX(PICKUP_WARPSTONE)) {
+                    if (result->GetSmarts() != IDX(PICKUP_WARPSTONE)) {
                         done = true;
                     }
                 } else {

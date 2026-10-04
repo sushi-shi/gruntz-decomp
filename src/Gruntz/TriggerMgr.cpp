@@ -1057,7 +1057,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     if (gaugePoints == 0) {
         gaugePoints = 0x19;
     }
-    if (puddle->Place(sprite->m_smarts, sprite->m_score, animatePlacement, gaugePoints) == 0) {
+    if (puddle->Place(sprite->GetSmarts(), sprite->m_score, animatePlacement, gaugePoints) == 0) {
         puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;

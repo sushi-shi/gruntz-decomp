@@ -81,7 +81,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_TELEPORT);
     SET_ANIMATION_ACT("A");
-    i32 kind = m_object->m_smarts;
+    i32 kind = m_object->GetSmarts();
     CShadeTable* color;
     if (kind == -1) {
         CLightFxMgr* lightFxMgr = g_gameReg->GetLightFxMgr();
@@ -103,7 +103,7 @@ i32 CWormhole::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
 
-        i32 kind = m_object->m_smarts;
+        i32 kind = m_object->GetSmarts();
         CShadeTable* color;
         if (kind == -1) {
 
@@ -312,7 +312,7 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
 RVA(0x000411f0, 0xa0)
 void CTeleporter::LoadColors() {
-    TeleporterKind kind = static_cast<TeleporterKind>(m_object->m_smarts);
+    TeleporterKind kind = static_cast<TeleporterKind>(m_object->GetSmarts());
 
     if (kind == TELEPORTER_SECRET) {
 
@@ -404,7 +404,7 @@ i32 CTeleporter::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* a = m_wwdObject;
     if (a->m_animationCursor.IsComplete()) {
-        if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SINGLE_USE) {
+        if (static_cast<TeleporterKind>(m_object->GetSmarts()) == TELEPORTER_SINGLE_USE) {
             a->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         } else {
             a->Hide();
@@ -446,7 +446,7 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SECRET) {
+    if (static_cast<TeleporterKind>(m_object->GetSmarts()) == TELEPORTER_SECRET) {
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, true, true);
         g_gameReg->GetGameStats()->m_secretsFound++;
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);

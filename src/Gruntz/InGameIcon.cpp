@@ -468,7 +468,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     m_object->m_screenY -= 0x18;
     CWwdSpriteObject* o = m_object;
     o->SetSortKey(SORTKEY_GRUNT_HUD);
-    SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
+    SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->GetSmarts());
     m_countdownTiming.Start(0x1388);
     SET_ANIMATION_ACT("A");
 }
@@ -829,7 +829,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        if (!found->BeginPickupAnimation(PICKUP_HELPBOX, 0, m_object->m_smarts, 0, 1)) {
+        if (!found->BeginPickupAnimation(PICKUP_HELPBOX, 0, m_object->GetSmarts(), 0, 1)) {
             return 0;
         }
 
