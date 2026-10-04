@@ -788,8 +788,7 @@ i32 CBootyState::BuildStatRevealSprites() {
     m_statIcons[7]->SetImageSetByName("GAME_WORMHOLE");
     m_statIcons[7]->SetAnimationByName("GAME_TELEPORTER", 0);
     m_statIcons[7]->Hide();
-    CWwdSpriteObject* icon7 = m_statIcons[7];
-    icon7->SetDrawFill(SHADE_DST_BY_SRC_16, tint);
+    m_statIcons[7]->SetDrawFill(SHADE_DST_BY_SRC_16, tint);
 
     CWwdSpriteObject* ex = CreateSimpleAnimationSprite(0);
     m_statIcons[1] = ex;
@@ -798,8 +797,7 @@ i32 CBootyState::BuildStatRevealSprites() {
     }
     ex->SetImageSetByName("GRUNTZ_EXITZ");
     m_statIcons[1]->SetAnimationByName("GAME_GRUNTFLEX", 0);
-    CWwdSpriteObject* icon1 = m_statIcons[1];
-    icon1->SetDrawFill(SHADE_PAL_16, handleA);
+    m_statIcons[1]->SetDrawFill(SHADE_PAL_16, handleA);
     m_statIcons[1]->Hide();
 
     CWwdSpriteObject* dt = CreateSimpleAnimationSprite(0);
@@ -809,8 +807,7 @@ i32 CBootyState::BuildStatRevealSprites() {
     }
     dt->SetImageSetByName("GRUNTZ_NORMALGRUNT_DEATH");
     m_statIcons[2]->SetAnimationByName("GAME_GRUNTTWITCH", 0);
-    CWwdSpriteObject* icon2 = m_statIcons[2];
-    icon2->SetDrawFill(SHADE_PAL_16, handleA);
+    m_statIcons[2]->SetDrawFill(SHADE_PAL_16, handleA);
     m_statIcons[2]->Hide();
 
     CWwdSpriteObject* gl = CreateSimpleAnimationSprite(0);
@@ -820,8 +817,7 @@ i32 CBootyState::BuildStatRevealSprites() {
     }
     gl->SetImageSetByName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
     m_statIcons[3]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* icon3 = m_statIcons[3];
-    icon3->SetDrawFill(SHADE_PAL_16, handleA);
+    m_statIcons[3]->SetDrawFill(SHADE_PAL_16, handleA);
     m_statIcons[3]->Hide();
 
     CWwdSpriteObject* bb = CreateSimpleAnimationSprite(0);
@@ -831,8 +827,7 @@ i32 CBootyState::BuildStatRevealSprites() {
     }
     bb->SetImageSetByName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
     m_statIcons[4]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* beachBallIcon = m_statIcons[4];
-    beachBallIcon->SetDrawFill(SHADE_PAL_16, handleA);
+    m_statIcons[4]->SetDrawFill(SHADE_PAL_16, handleA);
     m_statIcons[4]->Hide();
 
     CWwdSpriteObject* rz = CreateSimpleAnimationSprite(0);
@@ -842,8 +837,7 @@ i32 CBootyState::BuildStatRevealSprites() {
     }
     rz->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
     m_statIcons[5]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* icon5 = m_statIcons[5];
-    icon5->SetDrawFill(SHADE_PAL_16, handleA);
+    m_statIcons[5]->SetDrawFill(SHADE_PAL_16, handleA);
     m_statIcons[5]->Hide();
 
     CWwdSpriteObject* cn = CreateSimpleAnimationSprite(0);
@@ -853,8 +847,7 @@ i32 CBootyState::BuildStatRevealSprites() {
     }
     cn->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_COIN");
     m_statIcons[6]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* icon6 = m_statIcons[6];
-    icon6->SetDrawFill(SHADE_PAL_16, handleA);
+    m_statIcons[6]->SetDrawFill(SHADE_PAL_16, handleA);
     m_statIcons[6]->Hide();
 
     for (i32 i = 0; i < 8; i++) {
@@ -865,8 +858,7 @@ i32 CBootyState::BuildStatRevealSprites() {
         }
         b->SetImageSetByName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
         m_bombSprites[i]->SetAnimationByName("GAME_GRUNTBOMBSPRINT", 0);
-        CWwdSpriteObject* bp = m_bombSprites[i];
-        bp->SetDrawFill(SHADE_PAL_16, handleA);
+        m_bombSprites[i]->SetDrawFill(SHADE_PAL_16, handleA);
         SET_SCREEN_POS(
             m_bombSprites[i],
             0x2c6,
@@ -889,8 +881,7 @@ i32 CBootyState::BuildStatRevealSprites() {
         }
         g->SetImageSetByName("GRUNTZ_GOKARTGRUNT_EAST");
         m_goKartSprites[i]->SetAnimationByName("GAME_CYCLE100", 0);
-        CWwdSpriteObject* gp = m_goKartSprites[i];
-        gp->SetDrawFill(SHADE_PAL_16, handleB);
+        m_goKartSprites[i]->SetDrawFill(SHADE_PAL_16, handleB);
         SET_SCREEN_POS(
             m_goKartSprites[i],
             -70,

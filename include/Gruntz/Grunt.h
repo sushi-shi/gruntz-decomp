@@ -331,6 +331,10 @@ public:
     void ResetToSeek();
     void SetAiAttackTarget(CGrunt* target);
     void ResetArrivalFlags();
+
+    i32 GetArrivalFlags() const {
+        return m_arrivalFlags;
+    }
     void RepathToward(CGrunt* target);
 
     GruntAiState GetAiState() const {

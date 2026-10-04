@@ -297,7 +297,7 @@ GruntDirectionCell __stdcall TmDeflectStep(
     if (entrance.m_x == goalX && entrance.m_y == goalY) {
         return s_gruntDirCenter;
     }
-    i32 mask = g->m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
+    i32 mask = g->GetArrivalFlags() | BRICKZ_CELL_OCCUPIED;
     i32 lastX = g->m_lastTilePx.m_x;
     i32 lastY = g->m_lastTilePx.m_y;
     i32 pass = g->m_passableMask;
