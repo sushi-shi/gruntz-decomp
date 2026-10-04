@@ -51,7 +51,7 @@ rva	unit	function	lost_max	cur
 0x067bd0	gruntentrancemove	?StartEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	100.0000	99.5161
 0x0f0e20	gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	91.6483	85.3241
 0x07f180	grunthealthsprite	?HealthUpdate@CGruntHealthSprite@@QAEHXZ	100.0000	95.0725
-0x0f42f0	gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.8975	95.7157
+0x0f42f0	gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.8975	95.7170
 0x07e9f0	gruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	100.0000	81.8182
 0x051c00	gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	74.9682	62.8182
 0x052fb0	gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	95.9827	93.1946
@@ -80,7 +80,8 @@ rva	unit	function	lost_max	cur
 0x0d2dd0	play	?ValidateLevelTiles@CPlay@@QAEHXZ	91.7086	91.5408
 0x0dec60	projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	48.4367
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	96.9690	96.9566
-0x0e7440	sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	100.0000	87.8421
+0x0e7440	sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	100.0000	99.6842
+0x0e7b00	sbi_imagesetani	?Render@CSBI_ImageSetAni@@UAEHXZ	100.0000	99.7333
 0x0e82a0	sbi_menuitem	?Render@CSBI_MenuItem@@UAEHXZ	100.0000	74.0357
 0x0fe910	sbi_rectonly	?HandleClick@CStatusBarMgr@@QAEHHHH@Z	99.7111	97.6338
 0x0fe6b0	sbi_rectonly	?Render@CStatusBarMgr@@QAEHXZ	100.0000	99.7895
