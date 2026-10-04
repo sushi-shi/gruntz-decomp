@@ -1904,7 +1904,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
             }
 
             mach = new CSBI_GruntMachine;
-            if (!mach->BuildResourceTabStatusBar(
+            if (!mach->Initialize(
                     this,
                     code,
                     SBICMD_RESOURCE_MACHINE_BACKGROUND,

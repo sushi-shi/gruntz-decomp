@@ -34,24 +34,24 @@
 
 // @early-stop
 RVA(0x000e8a70, 0x18c)
-i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
+i32 CSBI_GruntMachine::Initialize(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
     SbiCommandId cmd,
     StatusBarTab tab,
-    RECT g,
-    const char* key,
+    RECT rect,
+    const char* frameSetName,
     i32 leftFrameIndex,
     i32 rightFrameIndex
 ) {
 
-    CDDrawSurfaceMgr* h;
+    CDDrawSurfaceMgr* world;
     CDDrawWorker* rec;
-    CImage* spr;
-    CDDrawWorker* cfg;
-    CImage* s;
-    CShadeTable* sel;
-    CImage* val;
+    CImage* backgroundImage;
+    CDDrawWorker* machineFrames;
+    CImage* leftImage;
+    CShadeTable* shadeTable;
+    CImage* rightImage;
 
     if (host == NULL) {
         goto fail;
@@ -59,41 +59,41 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (owner == NULL) {
         goto fail;
     }
-    h = host;
-    Initialize(owner, tab, h);
+    world = host;
+    CStatusBarItem::Initialize(owner, tab, world);
 
-    m_rect = g;
+    m_rect = rect;
 
     m_cmd = cmd;
-    spr = h->FindFrame("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", 1);
-    m_standaloneFrame = spr;
-    if (spr == NULL) {
+    backgroundImage = world->FindFrame("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", 1);
+    m_backgroundImage = backgroundImage;
+    if (backgroundImage == NULL) {
         return 0;
     }
-    cfg = m_host->FindWorker(key);
-    m_config = cfg;
-    if (cfg == NULL) {
+    machineFrames = m_host->FindWorker(frameSetName);
+    m_machineFrames = machineFrames;
+    if (machineFrames == NULL) {
         return 0;
     }
     m_leftFrameIndex = leftFrameIndex;
     m_rightFrameIndex = rightFrameIndex;
-    s = m_config->GetAt(leftFrameIndex);
-    m_leftFrame = s;
-    if (s == NULL) {
+    leftImage = m_machineFrames->GetAt(leftFrameIndex);
+    m_leftFrame = leftImage;
+    if (leftImage == NULL) {
         goto fail;
     }
-    sel = g_gameReg->GruntPalettes()->GetShadeTable(
+    shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(
         IDX(g_gameReg->GetPlayer(g_curPlayer).GetColor()),
         0
     );
-    if (sel == NULL) {
-        sel = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
+    if (shadeTable == NULL) {
+        shadeTable = g_gameReg->GruntPalettes()->GetShadeTable(1, 0);
     }
-    m_config->SetAllTypes(SHADE_PAL_16);
-    m_config->SetAllFormats(sel);
-    val = m_config->GetAt(m_rightFrameIndex);
-    m_rightFrame = val;
-    return val != NULL;
+    m_machineFrames->SetAllTypes(SHADE_PAL_16);
+    m_machineFrames->SetAllFormats(shadeTable);
+    rightImage = m_machineFrames->GetAt(m_rightFrameIndex);
+    m_rightFrame = rightImage;
+    return rightImage != NULL;
 fail:
     return 0;
 }
@@ -102,7 +102,7 @@ RVA(0x000e8c70, 0xc)
 void CSBI_GruntMachine::Reset() {
     m_leftFrame = NULL;
     m_rightFrame = NULL;
-    m_config = NULL;
+    m_machineFrames = NULL;
 }
 
 RVA(0x000e8c90, 0x8)
@@ -115,7 +115,7 @@ i32 CSBI_GruntMachine::Render() {
     if (m_redrawFrames > 0) {
         i32 idx = m_leftFrameIndex;
         m_redrawFrames--;
-        CDDrawWorker* cfg = m_config;
+        CDDrawWorker* cfg = m_machineFrames;
 
         m_leftFrame = cfg->GetAt(idx);
         idx = m_rightFrameIndex;
@@ -123,7 +123,7 @@ i32 CSBI_GruntMachine::Render() {
 
         CDDrawSurfacePair* ctx = g_gameReg->World()->GetDrawTarget()->m_backPair;
 
-        CImage* f = m_standaloneFrame;
+        CImage* f = m_backgroundImage;
         if (f) {
             f->RenderFrame(ctx, m_rect.left + f->GetAnchorX(), m_rect.top + f->GetAnchorY(), 0);
         }
@@ -178,7 +178,7 @@ i32 CSBI_GruntMachine::SerializeFields(
         case SERIAL_SAVE: {
             i32 v;
 
-            SERIAL_WRITE_WORKER(s, buf, m_config);
+            SERIAL_WRITE_WORKER(s, buf, m_machineFrames);
             s->Write(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
             SERIAL_WRITE_FRAME(s, reg, buf, v, m_leftFrame);
@@ -186,14 +186,14 @@ i32 CSBI_GruntMachine::SerializeFields(
 
             SERIAL_WRITE_FRAME(s, reg, buf, v, m_rightFrame);
 
-            SERIAL_WRITE_FRAME(s, reg, buf, v, m_standaloneFrame);
+            SERIAL_WRITE_FRAME(s, reg, buf, v, m_backgroundImage);
             break;
         }
 
         case SERIAL_LOAD: {
             CObject* out;
 
-            GS_NAMEREF(m_config);
+            GS_NAMEREF(m_machineFrames);
             s->Read(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
             {
@@ -209,7 +209,7 @@ i32 CSBI_GruntMachine::SerializeFields(
 
             {
                 i32 idx;
-                GS_IDXREF(m_standaloneFrame);
+                GS_IDXREF(m_backgroundImage);
             }
 
             break;

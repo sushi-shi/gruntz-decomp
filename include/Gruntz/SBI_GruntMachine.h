@@ -22,8 +22,8 @@ public:
         m_kind = SBI_KIND_GRUNT_MACHINE;
         m_leftFrame = NULL;
         m_rightFrame = NULL;
-        m_standaloneFrame = NULL;
-        m_config = NULL;
+        m_backgroundImage = NULL;
+        m_machineFrames = NULL;
     }
 
     virtual ~CSBI_GruntMachine() OVERRIDE;
@@ -34,25 +34,25 @@ public:
     virtual i32 Refresh(i32 deltaMs) OVERRIDE;
     virtual i32 Render() OVERRIDE;
 
-    i32 BuildResourceTabStatusBar(
+    i32 Initialize(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
         SbiCommandId cmd,
         StatusBarTab tab,
-        RECT g,
-        const char* key,
+        RECT rect,
+        const char* frameSetName,
         i32 leftFrameIndex,
         i32 rightFrameIndex
     );
 
     void SetFrames(i32 leftFrameIndex, i32 rightFrameIndex);
 
-    CDDrawWorker* m_config;
+    CDDrawWorker* m_machineFrames;
     CImage* m_leftFrame;
     i32 m_leftFrameIndex;
     CImage* m_rightFrame;
     i32 m_rightFrameIndex;
-    CImage* m_standaloneFrame;
+    CImage* m_backgroundImage;
 };
 
 #endif // SBI_GRUNTMACHINE_H
