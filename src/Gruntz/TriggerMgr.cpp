@@ -1214,8 +1214,8 @@ i32 CTriggerMgr::Save(CFileMemBase* ar) {
             CGrunt* g = *cell;
             i32 id = 0;
             if (g != NULL) {
-                id = g->m_object->GetObjectId();
                 CGameObject* found = NULL;
+                id = g->m_object->GetObjectId();
                 lvl->ChildGroup()->LookupRegisteredObject(id, found);
             }
             ar->Write(&id, sizeof(id));
@@ -1869,7 +1869,7 @@ i32 CTriggerMgr::ResurrectGruntsInArea(i32 centerX, i32 centerY, i32 radiusTiles
                     != -1) {
                     resurrected = true;
                 }
-            } else if (player->GetBattlezConfig()->TrySeedSpawnAt(tileX, tileY) != 0) {
+            } else if (player->GetBattlezAiController()->TrySeedSpawnAt(tileX, tileY) != 0) {
                 resurrected = true;
             }
         }

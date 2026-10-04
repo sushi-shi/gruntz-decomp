@@ -4940,7 +4940,7 @@ class ValueTempLivenessControls(unittest.TestCase):
             "lea edx,[esp+0x10]", "push edx")), {("mem", 0x17C)})
 
     def test_an_address_taken_aggregates_interior_fields_are_not_dead(self):
-        """The known negative (CBattlezMapConfig::ScanRegion).  Two adjacent
+        """The known negative (CBattlezAiController::ScanRegion).  Two adjacent
         RECTs are built and one is pushed by address; the second RECT's
         right/bottom stores are fed by an adjacent member pair and are never
         named again, which is exactly the temp's signature - but the `lea`

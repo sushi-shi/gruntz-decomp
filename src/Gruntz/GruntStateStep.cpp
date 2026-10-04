@@ -25,7 +25,7 @@
 #include <string.h>
 
 RVA(0x00033520, 0xbc3)
-i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
+i32 CBattlezAiController::StepDefenderUnit(CGrunt* defender) {
     GruntAiState state = defender->GetAiState();
     if (state == AISTATE_RETURN) {
         return 1;
@@ -68,7 +68,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                     defender->ScanCell().m_x + 5,
                     defender->ScanCell().m_y + 5
                 );
-                CMapMgr* grid = m_board;
+                CMapMgr* grid = m_tileGrid;
                 arrivalMask = 0x20000dc7;
                 grid->Clip(&searchBounds);
             }
@@ -82,7 +82,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                 }
             }
             if (manhattanDistance <= 0xa) {
-                m_board->Clip(NULL);
+                m_tileGrid->Clip(NULL);
             }
         }
         goto checkIdleWander;
@@ -118,7 +118,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
             }
             if (targetDistance > m_defenderTargetMaxDistance) {
                 if (GetAttackWaypointCount() != 0) {
-                    Coord* attackWaypoint = CoordAt(rand() % GetAttackWaypointCount());
+                    Coord* attackWaypoint = GetAttackWaypoint(rand() % GetAttackWaypointCount());
                     defender->MoveToTile(attackWaypoint->m_x, attackWaypoint->m_y, 0, 0x983, 0, 0);
                 }
                 UNSET_COORD(defender->m_arrivalCell);
@@ -151,7 +151,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                     defender->ScanCell().m_x + 5,
                     defender->ScanCell().m_y + 5
                 );
-                CMapMgr* grid = m_board;
+                CMapMgr* grid = m_tileGrid;
                 arrivalMask = 0x20000dc7;
                 grid->Clip(&searchBounds);
             }
@@ -163,7 +163,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                 }
             }
             if (manhattanDistance <= 0xa) {
-                m_board->Clip(NULL);
+                m_tileGrid->Clip(NULL);
             }
             defender->m_dwell = 0;
             goto checkIdleWander;
@@ -177,7 +177,7 @@ checkIdleWander:
         if (defender->CoordsEmpty()
             && static_cast<u32>(defender->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
             && GetAttackWaypointCount() != 0) {
-            Coord* attackWaypoint = CoordAt(rand() % GetAttackWaypointCount());
+            Coord* attackWaypoint = GetAttackWaypoint(rand() % GetAttackWaypointCount());
             defender->MoveToTile(attackWaypoint->m_x, attackWaypoint->m_y, 0, 0x983, 0, 0);
             defender->m_dwell = 0;
         }

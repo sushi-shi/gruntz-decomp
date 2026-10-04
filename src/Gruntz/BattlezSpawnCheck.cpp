@@ -54,11 +54,11 @@
 #include <string.h>
 
 RVA(0x00034c70, 0x133)
-i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
+i32 CBattlezAiController::CheckQueuedSpawnTile(CGrunt* unit) {
     if (!unit->CoordsEmpty()) {
         return 1;
     }
-    if (m_board->CellFlagsAtUnchecked(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y) & 0x20) {
+    if (m_tileGrid->CellFlagsAtUnchecked(unit->ArrivalCell().m_x, unit->ArrivalCell().m_y) & 0x20) {
         if (static_cast<u32>(unit->GetDwell()) <= static_cast<u32>(m_reserveBudget)) {
             return 1;
         }

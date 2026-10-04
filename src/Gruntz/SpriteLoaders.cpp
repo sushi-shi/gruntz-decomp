@@ -95,7 +95,7 @@ i32 CLevelTimer::Tick(i32 elapsedMs) {
         g_gameReg->GetTriggerMgr()->StartPlayerDefeatSequence(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->GetPlayer(g_curPlayer);
         if (slot != NULL) {
-            slot->m_clearedRound = true;
+            slot->m_eliminated = true;
         }
         i32 key = g_gameReg->GetPlayer(0).m_warlordObjectId;
         if (key != 0) {

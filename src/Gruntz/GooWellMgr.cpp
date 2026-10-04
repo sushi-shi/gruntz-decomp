@@ -129,7 +129,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         GruntzPlayer* slot = &g_gameReg->GetPlayer(i);
                         if (slot && slot->HasJoinedRound() && !slot->HasDropped()
                             && !slot->IsEliminated()) {
-                            slot->m_clearedRound = true;
+                            slot->m_eliminated = true;
                             CGameObject* out = NULL;
                             if (g_gameReg->World()->ChildGroup()->LookupRegisteredObject(
                                     slot->m_warlordObjectId,

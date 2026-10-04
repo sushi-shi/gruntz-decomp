@@ -54,7 +54,7 @@
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00035550, 0x52)
-i32 CBattlezMapConfig::ForcePlaceFromReserve(CGrunt* unit) {
+i32 CBattlezAiController::ForcePlaceFromReserve(CGrunt* unit) {
     if (!unit->CoordsEmpty()) {
         return 1;
     }

@@ -22,13 +22,13 @@
 
 // @early-stop
 RVA(0x00032ce0, 0x448)
-i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
+i32 CBattlezAiController::ScanRegion(CGrunt* g) {
     if (g->GetStamina() >= STAMINA_FULL) {
         if (!g->CoordsEmpty()) {
             Coord* c = g->GetTailCoord();
             i32 col = c->m_x;
             i32 row = c->m_y;
-            CMapMgr* grid = m_board;
+            CMapMgr* grid = m_tileGrid;
             i32 flags = grid->CellFlagsAt(col, row);
             if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                 && grid->m_rows[row][col].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
@@ -40,12 +40,12 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             i32 tileY = g->GetScreenTileY();
             CRect
                 box(g->ScanCell().m_x - 5, g->ScanCell().m_y - 5, g->ScanCell().m_x + 5, tileY + 5);
-            CRect gb(0, 0, m_board->GetWidth(), m_board->GetHeight());
+            CRect gb(0, 0, m_tileGrid->GetWidth(), m_tileGrid->GetHeight());
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
                 u32 hits = 0;
                 for (i32 row = isect.top; row < isect.bottom; row++) {
-                    BrickzCell* cell = &m_board->CellAtUnchecked(isect.left, row);
+                    BrickzCell* cell = &m_tileGrid->CellAtUnchecked(isect.left, row);
                     if (hits > 4) {
                         break;
                     }
@@ -54,14 +54,14 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                             i32 flags = cell->m_flags;
                             if (flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    m_board->Clip(NULL);
+                                    m_tileGrid->Clip(NULL);
                                     return 1;
                                 }
                                 hits++;
                             } else if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                                        && cell->m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    m_board->Clip(NULL);
+                                    m_tileGrid->Clip(NULL);
                                     return 1;
                                 }
                                 hits++;
@@ -72,11 +72,11 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                 }
             }
             {
-                m_board->Clip(NULL);
+                m_tileGrid->Clip(NULL);
             }
             if (GetAttackWaypointCount() != 0) {
 
-                Coord* e = CoordAt(rand() % GetAttackWaypointCount());
+                Coord* e = GetAttackWaypoint(rand() % GetAttackWaypointCount());
                 g->MoveToTile(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
             g->m_dwell = 0;

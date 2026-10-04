@@ -18,18 +18,18 @@ class CGrunt;
 class CGruntzMgr;
 class CPlay;
 
-class CBattlezMapConfig {
+class CBattlezAiController {
 public:
     const Coord& GetBaseTile() const {
-        return m_marker;
+        return m_baseTile;
     }
 
     i32 LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty);
 
-    CBattlezMapConfig();
-    ~CBattlezMapConfig();
+    CBattlezAiController();
+    ~CBattlezAiController();
     void FreeArrays();
-    i32 StepAllRowSpawns();
+    i32 SpawnInitialGrunts();
     void Clear();
     i32 EnterDefenderMode(CGrunt*, i32);
     i32 PathCrossesMarkedTile(CGrunt*);
@@ -55,9 +55,9 @@ public:
     );
 
     i32 RouteUnitToGoal(CGrunt* unit, Coord goal, i32 blockedMask, i32 passableMask);
-    i32 StepRowSpawn(b32 allowReserved);
+    i32 TrySpawnGrunt(b32 allowReserved);
     i32 CanPlaySpecialAnim(CGrunt*);
-    i32 StepBoard();
+    i32 Update();
     i32 ChooseIdleBehavior(CGrunt*);
 
     void RerouteIdleUnit(
@@ -79,7 +79,7 @@ public:
     i32 AcceptAlways(CGrunt*);
     i32 CheckQueuedSpawnTile(CGrunt*);
     i32 RetargetIdleUnit(CGrunt*);
-    i32 StepRowUnits();
+    i32 UpdateUnits();
     i32 RepathAroundBlockedTiles(CGrunt*);
     CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
     CGrunt* FindNearbyIdleGrunt(CGrunt* unit);
@@ -100,11 +100,11 @@ public:
     i32 RerouteSwitchSeeker(CGrunt* grunt);
 
     b32 m_active;
-    CGruntzMgr* m_ctx;
+    CGruntzMgr* m_game;
     CTriggerMgr* m_triggerMgr;
-    CMapMgr* m_board;
+    CMapMgr* m_tileGrid;
     CPlay* m_play;
-    CTileTriggerContainer* m_cellQuery;
+    CTileTriggerContainer* m_tileTriggers;
 
     i32 m_playerIndex;
     // @identity-TODO: reserved members below are initialized, cleared, or streamed
@@ -152,17 +152,17 @@ public:
     i32 m_repathBudget;
     i32 m_inactiveTargetRerouteDelay;
     i32 m_nearbyRouteSearchDelay;
-    Coord m_marker;
+    Coord m_baseTile;
     i32 m_reserved0d8;
 
-    CPtrArray m_candArray;
+    CPtrArray m_spawnTiles;
     CPtrArray m_attackWaypoints;
 
     i32 GetAttackWaypointCount() const {
         return m_attackWaypoints.GetSize();
     }
 
-    Coord* CoordAt(i32 index) {
+    Coord* GetAttackWaypoint(i32 index) {
         return static_cast<Coord*>(m_attackWaypoints.GetAt(index));
     }
     CDWordArray m_reserved104;

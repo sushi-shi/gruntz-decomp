@@ -1809,19 +1809,19 @@ void CGrunt::StepBehavior(char*) {
         }
         if (flags & 0x100000) {
             reg2->GetPlayer(0)
-                .GetBattlezConfig()
+                .GetBattlezAiController()
                 ->ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x200000) {
             reg2->GetPlayer(1)
-                .GetBattlezConfig()
+                .GetBattlezAiController()
                 ->ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x400000) {
             reg2->GetPlayer(2)
-                .GetBattlezConfig()
+                .GetBattlezAiController()
                 ->ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x800000) {
             reg2->GetPlayer(3)
-                .GetBattlezConfig()
+                .GetBattlezAiController()
                 ->ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         }
 

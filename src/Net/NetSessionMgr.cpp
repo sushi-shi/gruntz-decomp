@@ -524,7 +524,7 @@ void CNetSession::ReconcileDrainingSlots() {
                 slot->ClearSyncState();
                 GruntzPlayer* player = slot->GetPlayer();
                 slot->m_state = NETSLOT_DONE;
-                player->m_doneFlag = true;
+                player->m_dropped = true;
             }
             slot++;
         } while (--slotsRemaining);
@@ -537,7 +537,7 @@ void CNetSession::ReconcileDrainingSlots() {
                 slot->ClearSyncState();
                 GruntzPlayer* player = slot->GetPlayer();
                 slot->m_state = NETSLOT_DONE;
-                player->m_doneFlag = true;
+                player->m_dropped = true;
             }
             slot++;
         } while (--slotsRemaining);

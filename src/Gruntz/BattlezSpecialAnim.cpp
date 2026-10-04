@@ -52,7 +52,7 @@
 #include <string.h>
 
 RVA(0x00034460, 0x3fc)
-i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
+i32 CBattlezAiController::CanPlaySpecialAnim(CGrunt* unit) {
     if (unit == NULL) {
         return 0;
     }

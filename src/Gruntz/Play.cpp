@@ -944,9 +944,9 @@ i32 CPlay::LoadLevel(i32 level, i32) {
                 team->m_joined = true;
             }
         } else {
-            team->m_doneFlag = false;
+            team->m_dropped = false;
             team->m_joined = team->IsActive();
-            team->m_clearedRound = false;
+            team->m_eliminated = false;
         }
     }
 
@@ -1511,8 +1511,8 @@ void CPlay::ClearLevelState() {
     }
     m_cameraBookmarks.RemoveAll();
     for (i = 0; i < 4; i++) {
-        m_mgr->GetPlayer(i).GetBattlezConfig()->FreeArrays();
-        m_mgr->GetPlayer(i).GetBattlezConfig()->Clear();
+        m_mgr->GetPlayer(i).GetBattlezAiController()->FreeArrays();
+        m_mgr->GetPlayer(i).GetBattlezAiController()->Clear();
     }
     m_cameraBookmarkIndex = -1;
 }
@@ -4172,7 +4172,7 @@ i32 CPlay::ExecuteCommand(
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->GetTriggerMgr()->UnitAt(player, gi);
             if (g != NULL && g->IsEntranceCommitted() != false) {
-                g->m_actionTargetsGrunt = false;
+                g->ClearGruntActionTarget();
             }
             if (!m_mgr->GetTriggerMgr()->MoveUnitTo(
                     player,
@@ -4251,7 +4251,7 @@ i32 CPlay::ExecuteCommand(
                     node->m_object->m_screenY
                 );
             } else {
-                g->m_actionTargetsGrunt = false;
+                g->ClearGruntActionTarget();
             }
             res = m_mgr->GetTriggerMgr()->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
@@ -4297,7 +4297,7 @@ i32 CPlay::ExecuteCommand(
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->IsBusy() != false) {
-                g->m_actionTargetsGrunt = false;
+                g->ClearGruntActionTarget();
                 return 0;
             }
             i32 sx = g2->m_object->m_screenX;
@@ -4364,7 +4364,7 @@ i32 CPlay::ExecuteCommand(
                     node->m_object->m_screenY
                 );
             } else {
-                g->m_actionTargetsGrunt = false;
+                g->ClearGruntActionTarget();
             }
             res = m_mgr->GetTriggerMgr()->UseToyAt(player, gi, px, py);
             if (res == 0) {
@@ -4410,7 +4410,7 @@ i32 CPlay::ExecuteCommand(
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->GetTriggerMgr()->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->IsBusy() != false) {
-                g->m_actionTargetsGrunt = false;
+                g->ClearGruntActionTarget();
                 return 0;
             }
             i32 sx = g2->m_object->m_screenX;
@@ -5495,7 +5495,7 @@ i32 CPlay::StartLevelPlay() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->GetPlayer(i).GetBattlezConfig()->StepAllRowSpawns();
+        g_gameReg->GetPlayer(i).GetBattlezAiController()->SpawnInitialGrunts();
     }
     m_levelTimeExpired = false;
     CLevelTimer* fm = m_levelTimer;

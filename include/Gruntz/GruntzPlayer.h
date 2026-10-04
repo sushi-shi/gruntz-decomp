@@ -77,11 +77,11 @@ public:
     }
 
     b32 HasDropped() const {
-        return m_doneFlag;
+        return m_dropped;
     }
 
     b32 IsEliminated() const {
-        return m_clearedRound;
+        return m_eliminated;
     }
 
     BattlezDifficulty GetDifficulty() const {
@@ -92,8 +92,8 @@ public:
         return m_maxGruntz;
     }
 
-    CBattlezMapConfig* GetBattlezConfig() {
-        return &m_battlezConfig;
+    CBattlezAiController* GetBattlezAiController() {
+        return &m_battlezAiController;
     }
 
     i32 m_playerIndex;
@@ -107,13 +107,13 @@ public:
     i32 m_networkPlayerId;
     b32 m_ready;
     b32 m_active;
-    b32 m_clearedRound;
+    b32 m_eliminated;
     b32 m_joined;
-    b32 m_doneFlag;
+    b32 m_dropped;
 
     b32 m_optionsPresenceCounted;
 
-    CBattlezMapConfig m_battlezConfig;
+    CBattlezAiController m_battlezAiController;
     i32 m_focusX;
     i32 m_focusY;
     i32 m_maxGruntz;
@@ -132,7 +132,7 @@ public:
     m_focusX = 0;                                                                                  \
     m_focusY = 0;                                                                                  \
     m_maxGruntz = 0xf;                                                                             \
-    m_doneFlag = false;                                                                            \
+    m_dropped = false;                                                                             \
     m_optionsPresenceCounted = false;                                                              \
     m_latency.Clear()
 
