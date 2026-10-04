@@ -173,7 +173,7 @@ DATA(0x001e93c8)
 static const double s_glitterStartRadius = 350.0;
 
 DATA(0x0020b838)
-RECT g_levelMsgRectsA[8] = {
+RECT g_bootyStatLabelRects[8] = {
     {105, 106, 190, 155},
     {26, 149, 182, 199},
     {72, 192, 187, 240},
@@ -185,7 +185,7 @@ RECT g_levelMsgRectsA[8] = {
 };
 
 DATA(0x0020b8f8)
-RECT g_levelMsgRectsB[8] = {
+RECT g_bootyStatValueRects[8] = {
     {245, 92, 417, 162},
     {245, 135, 417, 205},
     {245, 180, 417, 250},
@@ -196,12 +196,12 @@ RECT g_levelMsgRectsB[8] = {
     {245, 392, 417, 462}
 };
 
-RVA_DYNINIT(0x00018720, 0xa, g_levelMsgStrings)
-RVA_DYNINIT(0x00018740, 0x79, g_levelMsgStrings)
-RVA_DYNINIT(0x000187e0, 0xe, g_levelMsgStrings)
-RVA_DYNINIT(0x00018800, 0x14, g_levelMsgStrings)
+RVA_DYNINIT(0x00018720, 0xa, g_bootyStatLabels)
+RVA_DYNINIT(0x00018740, 0x79, g_bootyStatLabels)
+RVA_DYNINIT(0x000187e0, 0xe, g_bootyStatLabels)
+RVA_DYNINIT(0x00018800, 0x14, g_bootyStatLabels)
 DATA(0x00229ef8)
-CString g_levelMsgStrings[8] = {
+CString g_bootyStatLabels[8] = {
     "Time:",
     "Survivorz:",
     "Deathz:",
@@ -301,7 +301,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     if (!BuildGruntSprintAnimation()) {
         return 0;
     }
-    if (!LoadGruntEffectSprites()) {
+    if (!BuildStatRevealSprites()) {
         return 0;
     }
     if (!BuildBootyWalkingGruntz()) {
@@ -654,7 +654,7 @@ void CBootyState::UpdateGruntSprintAnimation() {
 }
 
 DATA(0x0020b8b8)
-Coord g_levelMsgIconPos[8] = {
+Coord g_bootyStatIconPositions[8] = {
     {0xea, 0x80},
     {0xec, 0xae},
     {0xeb, 0xe3},
@@ -745,7 +745,7 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
 
 // @early-stop
 RVA(0x0001a040, 0x55e)
-i32 CBootyState::LoadGruntEffectSprites() {
+i32 CBootyState::BuildStatRevealSprites() {
     CShadeTable* handleA = g_gameReg->GruntPalettes()->GetShadeTable(0, 0);
     if (handleA == NULL) {
         return 0;
@@ -768,145 +768,145 @@ i32 CBootyState::LoadGruntEffectSprites() {
         "SimpleAnimation",
         WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE
     );
-    m_icons[0] = sw;
+    m_statIcons[0] = sw;
     if (sw == NULL) {
         return 0;
     }
     sw->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
-    m_icons[0]->SetAnimationByName("GAME_CYCLE100", 0);
-    m_icons[0]->Hide();
+    m_statIcons[0]->SetAnimationByName("GAME_CYCLE100", 0);
+    m_statIcons[0]->Hide();
 
     CWwdSpriteObject* wh = CreateSimpleAnimationSprite(0);
-    m_icons[7] = wh;
+    m_statIcons[7] = wh;
     if (wh == NULL) {
         return 0;
     }
     CLightFxMgr* lightFxMgr = g_gameReg->GetLightFxMgr();
     CShadeTable* tint = lightFxMgr->GetShadeTable(g_buteMgr.GetInt("Wormhole", "SecretColor", 1));
-    m_icons[7]->SetImageSetByName("GAME_WORMHOLE");
-    m_icons[7]->SetAnimationByName("GAME_TELEPORTER", 0);
-    m_icons[7]->Hide();
-    CWwdSpriteObject* icon7 = m_icons[7];
+    m_statIcons[7]->SetImageSetByName("GAME_WORMHOLE");
+    m_statIcons[7]->SetAnimationByName("GAME_TELEPORTER", 0);
+    m_statIcons[7]->Hide();
+    CWwdSpriteObject* icon7 = m_statIcons[7];
     icon7->SetDrawFill(SHADE_DST_BY_SRC_16, tint);
 
     CWwdSpriteObject* ex = CreateSimpleAnimationSprite(0);
-    m_icons[1] = ex;
+    m_statIcons[1] = ex;
     if (ex == NULL) {
         return 0;
     }
     ex->SetImageSetByName("GRUNTZ_EXITZ");
-    m_icons[1]->SetAnimationByName("GAME_GRUNTFLEX", 0);
-    CWwdSpriteObject* icon1 = m_icons[1];
+    m_statIcons[1]->SetAnimationByName("GAME_GRUNTFLEX", 0);
+    CWwdSpriteObject* icon1 = m_statIcons[1];
     icon1->SetDrawFill(SHADE_PAL_16, handleA);
-    m_icons[1]->Hide();
+    m_statIcons[1]->Hide();
 
     CWwdSpriteObject* dt = CreateSimpleAnimationSprite(0);
-    m_icons[2] = dt;
+    m_statIcons[2] = dt;
     if (dt == NULL) {
         return 0;
     }
     dt->SetImageSetByName("GRUNTZ_NORMALGRUNT_DEATH");
-    m_icons[2]->SetAnimationByName("GAME_GRUNTTWITCH", 0);
-    CWwdSpriteObject* icon2 = m_icons[2];
+    m_statIcons[2]->SetAnimationByName("GAME_GRUNTTWITCH", 0);
+    CWwdSpriteObject* icon2 = m_statIcons[2];
     icon2->SetDrawFill(SHADE_PAL_16, handleA);
-    m_icons[2]->Hide();
+    m_statIcons[2]->Hide();
 
     CWwdSpriteObject* gl = CreateSimpleAnimationSprite(0);
-    m_icons[3] = gl;
+    m_statIcons[3] = gl;
     if (gl == NULL) {
         return 0;
     }
     gl->SetImageSetByName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
-    m_icons[3]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* icon3 = m_icons[3];
+    m_statIcons[3]->SetAnimationByName("GAME_CYCLE100", 0);
+    CWwdSpriteObject* icon3 = m_statIcons[3];
     icon3->SetDrawFill(SHADE_PAL_16, handleA);
-    m_icons[3]->Hide();
+    m_statIcons[3]->Hide();
 
     CWwdSpriteObject* bb = CreateSimpleAnimationSprite(0);
-    m_icons[4] = bb;
+    m_statIcons[4] = bb;
     if (bb == NULL) {
         return 0;
     }
     bb->SetImageSetByName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
-    m_icons[4]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* beachBallIcon = m_icons[4];
+    m_statIcons[4]->SetAnimationByName("GAME_CYCLE100", 0);
+    CWwdSpriteObject* beachBallIcon = m_statIcons[4];
     beachBallIcon->SetDrawFill(SHADE_PAL_16, handleA);
-    m_icons[4]->Hide();
+    m_statIcons[4]->Hide();
 
     CWwdSpriteObject* rz = CreateSimpleAnimationSprite(0);
-    m_icons[5] = rz;
+    m_statIcons[5] = rz;
     if (rz == NULL) {
         return 0;
     }
     rz->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
-    m_icons[5]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* icon5 = m_icons[5];
+    m_statIcons[5]->SetAnimationByName("GAME_CYCLE100", 0);
+    CWwdSpriteObject* icon5 = m_statIcons[5];
     icon5->SetDrawFill(SHADE_PAL_16, handleA);
-    m_icons[5]->Hide();
+    m_statIcons[5]->Hide();
 
     CWwdSpriteObject* cn = CreateSimpleAnimationSprite(0);
-    m_icons[6] = cn;
+    m_statIcons[6] = cn;
     if (cn == NULL) {
         return 0;
     }
     cn->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_COIN");
-    m_icons[6]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* icon6 = m_icons[6];
+    m_statIcons[6]->SetAnimationByName("GAME_CYCLE100", 0);
+    CWwdSpriteObject* icon6 = m_statIcons[6];
     icon6->SetDrawFill(SHADE_PAL_16, handleA);
-    m_icons[6]->Hide();
+    m_statIcons[6]->Hide();
 
     for (i32 i = 0; i < 8; i++) {
         CWwdSpriteObject* b = CreateSimpleAnimationSprite(2);
-        m_bomb[i] = b;
+        m_bombSprites[i] = b;
         if (b == NULL) {
             return 0;
         }
         b->SetImageSetByName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
-        m_bomb[i]->SetAnimationByName("GAME_GRUNTBOMBSPRINT", 0);
-        CWwdSpriteObject* bp = m_bomb[i];
+        m_bombSprites[i]->SetAnimationByName("GAME_GRUNTBOMBSPRINT", 0);
+        CWwdSpriteObject* bp = m_bombSprites[i];
         bp->SetDrawFill(SHADE_PAL_16, handleA);
         SET_SCREEN_POS(
-            m_bomb[i],
+            m_bombSprites[i],
             0x2c6,
-            (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2
+            (g_bootyStatValueRects[i].top + g_bootyStatValueRects[i].bottom) / 2
         );
-        m_bomb[i]->Hide();
+        m_bombSprites[i]->Hide();
 
         CWwdSpriteObject* e = CreateSimpleAnimationSprite(2);
-        m_expl[i] = e;
+        m_explosionSprites[i] = e;
         if (e == NULL) {
             return 0;
         }
         e->SetImageSetByName("GAME_EXPLOSION");
-        m_expl[i]->Hide();
+        m_explosionSprites[i]->Hide();
 
         CWwdSpriteObject* g = CreateSimpleAnimationSprite(2);
-        m_gokart[i] = g;
+        m_goKartSprites[i] = g;
         if (g == NULL) {
             return 0;
         }
         g->SetImageSetByName("GRUNTZ_GOKARTGRUNT_EAST");
-        m_gokart[i]->SetAnimationByName("GAME_CYCLE100", 0);
-        CWwdSpriteObject* gp = m_gokart[i];
+        m_goKartSprites[i]->SetAnimationByName("GAME_CYCLE100", 0);
+        CWwdSpriteObject* gp = m_goKartSprites[i];
         gp->SetDrawFill(SHADE_PAL_16, handleB);
         SET_SCREEN_POS(
-            m_gokart[i],
+            m_goKartSprites[i],
             -70,
-            (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2
+            (g_bootyStatValueRects[i].top + g_bootyStatValueRects[i].bottom) / 2
         );
-        m_gokart[i]->Hide();
+        m_goKartSprites[i]->Hide();
     }
     return 1;
 }
 
 RVA(0x0001a700, 0x6b6)
-i32 CBootyState::LevelMsgHudDriver() {
+i32 CBootyState::UpdateStatRevealAnimation() {
     if (m_skipAnimations != false) {
 
-        if (m_slot == BOOTY_EXPLOSION_COUNT) {
+        if (m_statRowIndex == BOOTY_EXPLOSION_COUNT) {
 
             for (i32 i = 0; i < 8; i++) {
-                CWwdSpriteObject* e = m_expl[i];
+                CWwdSpriteObject* e = m_explosionSprites[i];
                 if (e->m_animationCursor.IsComplete()) {
                     e->Hide();
                 }
@@ -916,25 +916,31 @@ i32 CBootyState::LevelMsgHudDriver() {
 
         i32 shown = 0;
         for (i32 i = 0; i < 8; i++) {
-            m_bomb[i]->Hide();
-            m_gokart[i]->Hide();
-            m_icons[i]->Show();
-            SET_SCREEN_POS(m_icons[i], g_levelMsgIconPos[i].m_x, g_levelMsgIconPos[i].m_y);
-            CRect box(g_levelMsgRectsA[i]);
-            CString text = g_levelMsgStrings[i];
-            m_templateFlags[i] = 1;
+            m_bombSprites[i]->Hide();
+            m_goKartSprites[i]->Hide();
+            m_statIcons[i]->Show();
+            SET_SCREEN_POS(
+                m_statIcons[i],
+                g_bootyStatIconPositions[i].m_x,
+                g_bootyStatIconPositions[i].m_y
+            );
+            CRect box(g_bootyStatLabelRects[i]);
+            CString text = g_bootyStatLabels[i];
+            m_statLabelVisible[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            box.CopyRect(&g_levelMsgRectsB[i]);
-            this->FormatHudText(&text, static_cast<BootyStatRow>(i));
+            box.CopyRect(&g_bootyStatValueRects[i]);
+            this->FormatStatValue(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            if (i >= m_slot
-                && (i != m_slot || m_expl[i]->m_animationCursor.GetAnimation() == NULL)) {
-                m_expl[i]->Show();
-                m_expl[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
-                m_expl[i]->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
-                m_expl[i]->m_screenY =
-                    (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
+            if (i >= m_statRowIndex
+                && (i != m_statRowIndex
+                    || m_explosionSprites[i]->m_animationCursor.GetAnimation() == NULL)) {
+                m_explosionSprites[i]->Show();
+                m_explosionSprites[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
+                m_explosionSprites[i]->m_screenX =
+                    (g_bootyStatValueRects[i].right + g_bootyStatValueRects[i].left) / 2;
+                m_explosionSprites[i]->m_screenY =
+                    (g_bootyStatValueRects[i].bottom + g_bootyStatValueRects[i].top) / 2 - 0x10;
                 if (shown == 0) {
 
                     SoundCueRegistry* registry = g_gameReg->World()->SoundRegistry();
@@ -943,75 +949,77 @@ i32 CBootyState::LevelMsgHudDriver() {
                 }
             }
         }
-        m_slot = 8;
+        m_statRowIndex = 8;
         return 1;
     }
 
-    if (m_slot < 8) {
-        if (m_slot == 0 && (m_bomb[0]->IsHidden() || m_gokart[0]->IsHidden())) {
-            m_bomb[0]->Show();
-            m_gokart[0]->Show();
+    if (m_statRowIndex < 8) {
+        if (m_statRowIndex == 0
+            && (m_bombSprites[0]->IsHidden() || m_goKartSprites[0]->IsHidden())) {
+            m_bombSprites[0]->Show();
+            m_goKartSprites[0]->Show();
         }
-        m_bomb[m_slot]->m_screenX -= 10;
-        i32 gx = m_gokart[m_slot]->m_screenX + 10;
-        m_gokart[m_slot]->m_screenX = gx;
-        i32 s = m_slot;
+        m_bombSprites[m_statRowIndex]->m_screenX -= 10;
+        i32 gx = m_goKartSprites[m_statRowIndex]->m_screenX + 10;
+        m_goKartSprites[m_statRowIndex]->m_screenX = gx;
+        i32 s = m_statRowIndex;
 
-        if (m_templateFlags[s] == 0
-            && gx >= (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2) {
-            m_templateFlags[s] = 1;
-            CRect box(g_levelMsgRectsA[m_slot]);
-            CString text = g_levelMsgStrings[m_slot];
-            m_templateFlags[m_slot] = 1;
+        if (m_statLabelVisible[s] == 0
+            && gx >= (g_bootyStatLabelRects[s].right + g_bootyStatLabelRects[s].left) / 2) {
+            m_statLabelVisible[s] = 1;
+            CRect box(g_bootyStatLabelRects[m_statRowIndex]);
+            CString text = g_bootyStatLabels[m_statRowIndex];
+            m_statLabelVisible[m_statRowIndex] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
         }
-        s = m_slot;
-        if (m_readyFlags[s] == 0 && gx >= g_levelMsgIconPos[s].m_x) {
+        s = m_statRowIndex;
+        if (m_readyFlags[s] == 0 && gx >= g_bootyStatIconPositions[s].m_x) {
             m_readyFlags[s] = 1;
-            m_icons[m_slot]->Show();
+            m_statIcons[m_statRowIndex]->Show();
             SET_SCREEN_POS(
-                m_icons[m_slot],
-                g_levelMsgIconPos[m_slot].m_x,
-                g_levelMsgIconPos[m_slot].m_y
+                m_statIcons[m_statRowIndex],
+                g_bootyStatIconPositions[m_statRowIndex].m_x,
+                g_bootyStatIconPositions[m_statRowIndex].m_y
             );
         }
     }
 
-    for (i32 j = 0; j < m_slot; j++) {
-        CWwdSpriteObject* e = m_expl[j];
+    for (i32 j = 0; j < m_statRowIndex; j++) {
+        CWwdSpriteObject* e = m_explosionSprites[j];
         if (e->m_animationCursor.IsComplete()) {
             e->Hide();
         }
     }
 
-    for (i32 i = m_slot; i < 8; i++) {
-        if (m_gokart[i]->m_screenX >= m_bomb[i]->m_screenX) {
+    for (i32 i = m_statRowIndex; i < 8; i++) {
+        if (m_goKartSprites[i]->m_screenX >= m_bombSprites[i]->m_screenX) {
             CString text;
-            CRect box(g_levelMsgRectsB[i]);
-            this->FormatHudText(&text, static_cast<BootyStatRow>(i));
+            CRect box(g_bootyStatValueRects[i]);
+            this->FormatStatValue(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            m_expl[i]->Show();
-            m_expl[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
-            m_expl[i]->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
-            m_expl[i]->m_screenY =
-                (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
-            m_bomb[i]->Hide();
-            m_gokart[i]->Hide();
-            m_slot++;
+            m_explosionSprites[i]->Show();
+            m_explosionSprites[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
+            m_explosionSprites[i]->m_screenX =
+                (g_bootyStatValueRects[i].left + g_bootyStatValueRects[i].right) / 2;
+            m_explosionSprites[i]->m_screenY =
+                (g_bootyStatValueRects[i].top + g_bootyStatValueRects[i].bottom) / 2 - 0x10;
+            m_bombSprites[i]->Hide();
+            m_goKartSprites[i]->Hide();
+            m_statRowIndex++;
             PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_EXPLOSION1");
-            if (m_slot >= 8) {
+            if (m_statRowIndex >= 8) {
                 return 1;
             }
-            m_bomb[m_slot]->Show();
-            m_gokart[m_slot]->Show();
+            m_bombSprites[m_statRowIndex]->Show();
+            m_goKartSprites[m_statRowIndex]->Show();
         }
     }
     return 0;
 }
 
 RVA(0x0001af70, 0x3e0)
-void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
+void CBootyState::FormatStatValue(CString* buf, BootyStatRow sel) {
     switch (sel) {
         case BOOTYSTAT_TIME: {
             u32 secs = static_cast<u32>(
@@ -1379,20 +1387,20 @@ i32 CBootyState::Render() {
         // FALL THROUGH
         case BOOTYSEQ_LETTERS:
             UpdateGruntSprintAnimation();
-            if (LevelMsgHudDriver() == 0) {
+            if (UpdateStatRevealAnimation() == 0) {
                 break;
             }
             m_activation = BOOTYSEQ_WALK;
         // FALL THROUGH
         case BOOTYSEQ_WALK:
-            LevelMsgHudDriver();
+            UpdateStatRevealAnimation();
             if (UpdateBootyWalkingGruntz() == 0) {
                 break;
             }
             m_activation = BOOTYSEQ_PERFECT_BONUS;
             break;
         case BOOTYSEQ_PERFECT_BONUS: {
-            LevelMsgHudDriver();
+            UpdateStatRevealAnimation();
             UpdateBootyWalkingGruntz();
             CheckPerfectBonus();
             if (m_secretHudHandled == false
@@ -1481,15 +1489,15 @@ i32 CBootyState::RestoreGraphics() {
 RVA(0x0001c9d0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {
-        if (m_templateFlags[i]) {
-            CRect r1(g_levelMsgRectsA[i]);
-            CString t(g_levelMsgStrings[i]);
+        if (m_statLabelVisible[i]) {
+            CRect r1(g_bootyStatLabelRects[i]);
+            CString t(g_bootyStatLabels[i]);
             DrawTextToOverlaySurface(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         if (m_readyFlags[i]) {
-            CRect r2(g_levelMsgRectsB[i]);
+            CRect r2(g_bootyStatValueRects[i]);
             CString t2;
-            FormatHudText(&t2, static_cast<BootyStatRow>(i));
+            FormatStatValue(&t2, static_cast<BootyStatRow>(i));
             DrawTextToOverlaySurface(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }

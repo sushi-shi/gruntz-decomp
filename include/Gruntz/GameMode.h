@@ -22,7 +22,7 @@ extern CRect g_versionRect;
 
 GZ_ENUM_FORWARD(GruntDirection);
 
-extern RECT g_levelMsgRectsB[8];
+extern RECT g_bootyStatValueRects[8];
 
 struct SoundCue;
 class CMoviePlayer;
@@ -138,7 +138,7 @@ public:
     CBootyState() {
         m_secretHudHandled = false;
         m_activation = BOOTYSEQ_WARP_CUE;
-        m_slot = 0;
+        m_statRowIndex = 0;
         m_stepIndex = 0;
         m_walkStarted = false;
         m_soundStarted = false;
@@ -152,7 +152,7 @@ public:
         }
         for (i32 i = 0; i < 8; i++) {
             m_readyFlags[i] = 0;
-            m_templateFlags[i] = 0;
+            m_statLabelVisible[i] = 0;
         }
     }
 
@@ -180,9 +180,9 @@ public:
     i32 BuildBootyWalkingGruntz();
     i32 UpdateBootyWalkingGruntz();
 
-    i32 LoadGruntEffectSprites();
-    i32 LevelMsgHudDriver();
-    void FormatHudText(CString* buf, BootyStatRow sel);
+    i32 BuildStatRevealSprites();
+    i32 UpdateStatRevealAnimation();
+    void FormatStatValue(CString* buf, BootyStatRow sel);
 
     i32 BuildWarpStoneGlitterAnimation();
 
@@ -215,13 +215,13 @@ public:
 
     CWwdSpriteObject* m_sprintSprites[8];
 
-    CWwdSpriteObject* m_bomb[8];
-    CWwdSpriteObject* m_gokart[8];
-    CWwdSpriteObject* m_expl[8];
+    CWwdSpriteObject* m_bombSprites[8];
+    CWwdSpriteObject* m_goKartSprites[8];
+    CWwdSpriteObject* m_explosionSprites[8];
 
     i32 m_readyFlags[8];
-    i32 m_templateFlags[8];
-    i32 m_slot;
+    i32 m_statLabelVisible[8];
+    i32 m_statRowIndex;
     CWwdSpriteObject* m_visSprites[4];
     CWwdSpriteObject* m_animSprites[WARPLETTER_COUNT];
     i32 m_stepIndex;
@@ -231,7 +231,7 @@ public:
 
     CWwdSpriteObject* m_bootyPerfectSprite;
 
-    CWwdSpriteObject* m_icons[8];
+    CWwdSpriteObject* m_statIcons[8];
 };
 
 class CMultiBootyState : public CState {

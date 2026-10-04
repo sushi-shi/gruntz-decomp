@@ -616,7 +616,7 @@ bootystateactivate	?CheckPerfectBonus@CBootyState@@QAEHXZ	100.0000	100.0000	16	5
 bootystateactivate	?DrawBattleStats@CMultiBootyState@@QAEXXZ	100.0000	100.0000	18	b952d8f88dc5	0x1ed30	100.0000	
 bootystateactivate	?EnterState@CBootyState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	13	d1b7a9d12132	0x18d30	100.0000	
 bootystateactivate	?EnterState@CMultiBootyState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	13	a4dd2c045c9c	0x1e570	100.0000	
-bootystateactivate	?FormatHudText@CBootyState@@QAEXPAVCString@@W4BootyStatRow@@@Z	100.0000	100.0000	6	ae4e69a3b09d	0x1af70	100.0000	
+bootystateactivate	?FormatStatValue@CBootyState@@QAEXPAVCString@@W4BootyStatRow@@@Z	100.0000	100.0000	6	ae4e69a3b09d	0x1af70	100.0000	
 bootystateactivate	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:08064dd2c3eb	0x1f450	100.0000	
 bootystateactivate	?GetStateId@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d3f0	100.0000	
 bootystateactivate	?GetStateId@CMultiBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d4c0	100.0000	
@@ -624,10 +624,10 @@ bootystateactivate	?GetWarlordName@CMultiBootyState@@QAE?AVCString@@H@Z	100.0000
 bootystateactivate	?GetWinningPlayerIndex@CMultiBootyState@@QAEHXZ	100.0000	100.0000	8	22e55bac172c	0x1ecf0	100.0000	
 bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	15	6ce977f857dd	0x18e40	100.0000	
 bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	15	ced8b16420cc	0x1e660	100.0000	
-bootystateactivate	?LevelMsgHudDriver@CBootyState@@QAEHXZ	92.3644	92.3644	22	bcaeb9b253d9	0x1a700	92.3685	
+bootystateactivate	?UpdateStatRevealAnimation@CBootyState@@QAEHXZ	92.3644	92.3644	22	bcaeb9b253d9	0x1a700	92.3685	
 bootystateactivate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	22	7ee3c6e2d55b	0x18830	100.0000	
 bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	89.1250	89.1250	43	1241632ef283	0x1d440	89.1250	
-bootystateactivate	?LoadGruntEffectSprites@CBootyState@@QAEHXZ	99.9547	99.9547	22	28012cc0574c	0x1a040	99.9547	
+bootystateactivate	?BuildStatRevealSprites@CBootyState@@QAEHXZ	99.9547	99.9547	22	28012cc0574c	0x1a040	99.9547	
 bootystateactivate	?OnKeyDown@CBootyState@@UAEHHH@Z	100.0000	100.0000	1	82ef10399f11	0x1d420	100.0000	
 bootystateactivate	?OnKeyDown@CMultiBootyState@@UAEHHH@Z	100.0000	100.0000	1	c834612aa5cc	0x1f920	100.0000	
 bootystateactivate	?OnLButtonDown@CBootyState@@UAEHHHH@Z	100.0000	100.0000	1	645c1d534fe5	0x1d3e0	100.0000	
