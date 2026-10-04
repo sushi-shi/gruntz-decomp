@@ -3,12 +3,12 @@
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
-#include <RectMacros.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
+#include <RectMacros.h>
 
 GZ_ENUM_CONST_BEGIN(ArrivalFlagsPreset)
     ARRIVAL_FLAGS_PLAYER = 0x4000901,
