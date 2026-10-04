@@ -1551,12 +1551,11 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
-            CGameLevel* board = m_world->m_level;
-            if (tx >= board->m_mainPlane->GetPlanePixelWidth()
-                || ty >= board->m_mainPlane->GetPlanePixelHeight()) {
+            if (tx >= m_world->m_level->m_mainPlane->GetPlanePixelWidth()
+                || ty >= m_world->m_level->m_mainPlane->GetPlanePixelHeight()) {
                 continue;
             }
-            TileCollisionKind type = PbResolveCell(board, tx, ty);
+            TileCollisionKind type = PbResolveCell(m_world->m_level, tx, ty);
 
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {
@@ -1593,19 +1592,14 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 root->GetTileTriggers()->RemoveIdleLogic(lo);
             } else {
                 CGruntzMgr* reg = g_gameReg;
-                CDDrawWorkerHost* wg = reg->m_world->m_level->m_mainPlane;
-                i32 off = wg->m_tileRowOffsets[ty];
                 if (type == TILEKIND_GAUNTLET_ROCK_A) {
-                    wg->m_tileHandles[off + tx] = 0x5a;
-                    (reg->GetTileGrid())->ComputeCellFlags(tx, ty, 0x5a);
+                    SET_MAIN_PLANE_TILE(reg, tx, ty, 0x5a);
                 } else {
-                    wg->m_tileHandles[off + tx] = 0x5b;
-                    (reg->GetTileGrid())->ComputeCellFlags(tx, ty, 0x5b);
+                    SET_MAIN_PLANE_TILE(reg, tx, ty, 0x5b);
                 }
             }
 
-            POINT pt;
-            SET_POINT_COMPONENTS(pt, pxX, pxY);
+            CPoint pt(pxX, pxY);
             if (!PtInRect(&g_gameReg->m_viewBounds, pt)) {
                 continue;
             }
