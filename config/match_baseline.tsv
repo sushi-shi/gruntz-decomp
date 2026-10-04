@@ -4165,7 +4165,7 @@ tilelogicpump	?AdvanceAnim@CTileTrigger@@QAEHXZ	100.0000	100.0000	1	fbadc709b5cb
 tilelogicpump	?AdvanceAnim@CTileTriggerSwitch@@QAEHXZ	100.0000	100.0000	1	ff2ca2abb89e	0x10e200	100.0000	
 tilelogicpump	?AdvanceAnim@CWarpStonePad@@QAEHXZ	100.0000	100.0000	1	ce72902b5685	0x10dc20	100.0000	
 tilelogicpump	?AdvanceCheckpointAnimation@CCheckpointTrigger@@QAEHXZ	100.0000	100.0000	3	ce8dc26ace4f	0x10f970	100.0000	
-tilelogicpump	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	5	301a597971a6	0x110070	100.0000	
+tilelogicpump	?StartTransitionAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	5	301a597971a6	0x110070	100.0000	
 tilelogicpump	?DispatchBrickzLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	5	688582766596	0x10d3d0	100.0000	
 tilelogicpump	?DispatchCheckpointTriggerLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	7	0f1818d8cd03	0x10d290	100.0000	
 tilelogicpump	?DispatchCoveredPowerupLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	5	1b05dfd6ebd0	0x10d010	100.0000	
@@ -4188,7 +4188,7 @@ tilelogicpump	?RegisterActs@CTileTriggerSwitch@@SAXXZ	100.0000	100.0000	2	cba01a
 tilelogicpump	?RegisterActs@CTileTriggerTransition@@SAXXZ	100.0000	100.0000	2	54242626d688	0x10fe70	100.0000	
 tilelogicpump	?RegisterActs@CWarpStonePad@@SAXXZ	100.0000	100.0000	2	856de9954028	0x10da20	100.0000	
 tilelogicpump	?SerializeDispatch@CCheckpointTrigger@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	5	aede5d4d6908	0x10f9a0	100.0000	
-tilelogicpump	?TransitionAct@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	6	0105e9a2e67e	0x110110	100.0000	
+tilelogicpump	?UpdateTransitionAnimation@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	6	0105e9a2e67e	0x110110	100.0000	
 tilelogicpump	?Trigger@CBrickz@@QAEHXZ	100.0000	100.0000	1	18fbb6a917f0	0x10ede0	100.0000	
 tilelogicpump	?TryActivateCheckpoint@CCheckpointTrigger@@QAEHXZ	100.0000	100.0000	29	f1384ccea7cc	0x10f6a0	100.0000	
 tilescan	?RerouteSwitchSeeker@CBattlezAiController@@QAEHPAVCGrunt@@@Z	87.7983	87.7983	25	aa9574c412f5	0x35f10	87.7983	

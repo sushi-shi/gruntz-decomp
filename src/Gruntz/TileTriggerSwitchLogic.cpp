@@ -371,7 +371,11 @@ i32 CTileTriggerLogic::Tick() {
                             CTileTriggerTransition* lg = static_cast<CTileTriggerTransition*>(
                                 o->GetLogicRecord()->UserLogic()
                             );
-                            if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", PbStr(anim)) == 0) {
+                            if (lg->StartTransitionAnimation(
+                                    "GAME_REDPYRAMIDZ",
+                                    AsMutableCStringData(anim)
+                                )
+                                == 0) {
                                 lg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             }
                         }
@@ -607,7 +611,8 @@ i32 CTileTriggerLogic::Tick() {
     }
 
     if (trans != NULL) {
-        if (trans->ApplyAnimation(PbStr(key), PbStr(anim)) == 0) {
+        if (trans->StartTransitionAnimation(AsMutableCStringData(key), AsMutableCStringData(anim))
+            == 0) {
             trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }

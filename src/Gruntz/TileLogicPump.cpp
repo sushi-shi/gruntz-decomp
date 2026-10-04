@@ -500,21 +500,21 @@ RVA(0x0010fe70, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (CActRegPool<CTileTriggerTransition>::s_table[id]) =
-        static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
+        static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::UpdateTransitionAnimation);
 }
 
 RVA(0x00110070, 0x71)
-i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    if (SwitchAnimationByName(geom, 0) == 0) {
+i32 CTileTriggerTransition::StartTransitionAnimation(char* imageSetName, char* animationName) {
+    if (SwitchAnimationByName(animationName, 0) == 0) {
         return 0;
     }
-    APPLY_FIRST_ANIMATION_FRAME_SPRITE(sprite, desc, elem)
+    APPLY_FIRST_ANIMATION_FRAME_SPRITE(imageSetName, animation, firstFrame)
     SET_ANIMATION_ACT("A");
     return 1;
 }
 
 RVA(0x00110110, 0x39)
-i32 CTileTriggerTransition::TransitionAct() {
+i32 CTileTriggerTransition::UpdateTransitionAnimation() {
     m_wwdObject->GetAnimationCursor().Advance(g_engineFrameDelta);
     MARK_OBJECT_COMPLETE_IF(m_wwdObject->GetAnimationCursor().IsComplete())
     return 0;
