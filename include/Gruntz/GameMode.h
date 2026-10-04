@@ -142,7 +142,7 @@ public:
         m_stepIndex = 0;
         m_walkStarted = false;
         m_soundStarted = false;
-        m_initGate = false;
+        m_skipAnimations = false;
         m_secretGate = false;
         m_levelCompleteGate = false;
         m_initOnce = false;
@@ -174,7 +174,7 @@ public:
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
     virtual i32 OnRButtonDown(i32, i32, i32) OVERRIDE;
 
-    i32 BuildBootyGruntIdleAnimation();
+    i32 HandleContinueInput();
     i32 ShowSecretBonusMessage();
     void ShowLevelCompleteMessage();
     i32 BuildBootyWalkingGruntz();
@@ -195,7 +195,7 @@ public:
 
     void PickGruntSprintStartPosition(GruntDirection direction, i32* outX, i32* outY);
 
-    b32 m_initGate;
+    b32 m_skipAnimations;
     b32 m_secretHudHandled;
     BootySeqPhase m_activation;
 

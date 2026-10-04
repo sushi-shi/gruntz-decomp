@@ -486,7 +486,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
 // @early-stop
 RVA(0x000196c0, 0x1d3)
 i32 CBootyState::UpdateWarpStoneGlitterAnimation() {
-    if (m_initGate) {
+    if (m_skipAnimations) {
         for (i32 i = 0; i <= m_warpStonePieceIndex; i++) {
             CWwdSpriteObject* piece = m_warpStonePieceSprites[i];
             piece->m_screenX = g_bootyLetterCoords[i].m_x;
@@ -599,7 +599,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 // @early-stop
 RVA(0x00019b90, 0xf8)
 void CBootyState::UpdateGruntSprintAnimation() {
-    if (m_initGate) {
+    if (m_skipAnimations) {
         CWwdSpriteObject** q = m_sprintSprites;
         i32 n = 8;
         do {
@@ -901,7 +901,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
 
 RVA(0x0001a700, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {
-    if (m_initGate != false) {
+    if (m_skipAnimations != false) {
 
         if (m_slot == BOOTY_EXPLOSION_COUNT) {
 
@@ -1128,7 +1128,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         return 1;
     }
 
-    if (m_initGate != false) {
+    if (m_skipAnimations != false) {
 
         if (levelNumber < 0x24) {
             for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
@@ -1552,10 +1552,10 @@ i32 CBootyState::OnPaint() {
 
 // @early-stop
 RVA(0x0001ce60, 0x460)
-i32 CBootyState::BuildBootyGruntIdleAnimation() {
+i32 CBootyState::HandleContinueInput() {
     BootySeqPhase state = m_activation;
     if (state != BOOTYSEQ_PERFECT_BONUS && state != BOOTYSEQ_DONE) {
-        m_initGate = true;
+        m_skipAnimations = true;
         return 1;
     }
     CGameStats* gameStats = g_gameReg->GetGameStats();
@@ -1660,17 +1660,17 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
 
 RVA(0x0001d3e0, 0x8)
 i32 CBootyState::OnLButtonDown(i32, i32, i32) {
-    return BuildBootyGruntIdleAnimation();
+    return HandleContinueInput();
 }
 
 RVA(0x0001d400, 0x8)
 i32 CBootyState::OnRButtonDown(i32, i32, i32) {
-    return BuildBootyGruntIdleAnimation();
+    return HandleContinueInput();
 }
 
 RVA(0x0001d420, 0x8)
 i32 CBootyState::OnKeyDown(i32, i32) {
-    return BuildBootyGruntIdleAnimation();
+    return HandleContinueInput();
 }
 
 RVA(0x0001d440, 0xd7d)

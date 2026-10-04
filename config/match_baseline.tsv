@@ -606,7 +606,7 @@ bootystateactivate	??1CButeMgr@@QAE@XZ	100.0000	100.0000	1	cpp:e2ca049ea8bf	0x21
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510	100.0000	
 bootystateactivate	??_GCBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c338efc04c88	0x8d410	100.0000	
 bootystateactivate	??_GCMultiBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c338efc04c88	0x8d4e0	100.0000	
-bootystateactivate	?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ	98.4743	98.4743	30	d9990bcad246	0x1ce60	98.4743	
+bootystateactivate	?HandleContinueInput@CBootyState@@QAEHXZ	98.4743	98.4743	30	d9990bcad246	0x1ce60	98.4743	
 bootystateactivate	?BuildBootyPerfectAnimation@CBootyState@@QAEHXZ	100.0000	100.0000	6	ad20e350cf7d	0x1c070	100.0000	
 bootystateactivate	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	99.7697	99.7697	20	c7fc3111c69b	0x1b450	99.7697	
 bootystateactivate	?BuildGruntSprintAnimation@CBootyState@@QAEHXZ	98.4014	98.4014	11	f341ea33ad82	0x19920	98.4014	
