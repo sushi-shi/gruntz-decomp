@@ -917,11 +917,11 @@ CAniElement* AnimationRegistry::FindAnimation(const char* key) {
 
 RVA(0x0006b2e0, 0x39)
 void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceImmediately) {
-    m_value = m_wwdObject->m_animationCursor.GetAnimation();
-    CAniAdvanceCursor* anim = &m_wwdObject->m_animationCursor;
-    anim->SetAnimation(animation);
+    m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
+    CAniAdvanceCursor* cursor = &m_wwdObject->m_animationCursor;
+    cursor->SetAnimation(animation);
     if (advanceImmediately != 0) {
-        anim->Advance(static_cast<i32>(g_engineFrameDelta));
+        cursor->Advance(static_cast<i32>(g_engineFrameDelta));
     }
 }
 

@@ -287,7 +287,7 @@ public:
 
     CLogicRecord* m_ownerLogicRecord;
 
-    class CAniElement* m_value;
+    class CAniElement* m_previousAnimation;
     char m_blob[0x10];
 
     void Hide() {
@@ -311,17 +311,17 @@ public:
     }
 
     void SwitchAnimation(CAniElement* anim) {
-        m_value = m_wwdObject->m_animationCursor.GetAnimation();
+        m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
         m_wwdObject->m_animationCursor.SetAnimation(anim);
     }
 
     void SwitchAnimationAndMaybeAdvance(CAniElement* anim, i32 advanceImmediately) {
-        m_value = m_wwdObject->m_animationCursor.GetAnimation();
+        m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
         m_wwdObject->SetAnimation(anim, advanceImmediately);
     }
 
     i32 SwitchAnimationByName(const char* key, i32 advanceImmediately) {
-        m_value = m_wwdObject->m_animationCursor.GetAnimation();
+        m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
         return m_wwdObject->SetAnimationByName(key, advanceImmediately);
     }
 };

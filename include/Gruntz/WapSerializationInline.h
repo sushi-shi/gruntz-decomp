@@ -33,23 +33,25 @@ inline i32 CWapX::SerializeAnimationState(
             m_wwdObject = static_cast<CWwdSpriteObject*>(object);
             m_ownerLogicRecord = object->GetLogicRecord();
             if (strlen(name) == 0) {
-                m_value = NULL;
+                m_previousAnimation = NULL;
             } else {
                 CMapStringToPtr* map =
                     &m_ownerLogicRecord->OwnerMgr()->m_animRegistry->m_animations;
-                CAniElement* value = MapFind<CAniElement>(*map, name);
-                m_value = value;
+                CAniElement* previousAnimation = MapFind<CAniElement>(*map, name);
+                m_previousAnimation = previousAnimation;
             }
             break;
         }
         case SERIAL_SAVE: {
 
             memset(name, 0, sizeof(name));
-            if (m_value != NULL) {
+            if (m_previousAnimation != NULL) {
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_ownerLogicRecord->OwnerMgr()->m_animRegistry->FindAnimationKey(m_value)
+                        m_ownerLogicRecord->OwnerMgr()->m_animRegistry->FindAnimationKey(
+                            m_previousAnimation
+                        )
                     )
                 );
             }
