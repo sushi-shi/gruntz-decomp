@@ -278,7 +278,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_rngSeed = timeGetTime();
         m_minimap = NULL;
         if (m_mgr->IsLoadingSaveGame() == false) {
-            m_mgr->m_saveInfoRec = NULL;
+            m_mgr->SetSaveSlot(NULL);
         }
         if (!LoadImageBanks()) {
             return 0;
