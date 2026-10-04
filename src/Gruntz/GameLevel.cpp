@@ -648,7 +648,6 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
     return result;
 }
 
-// @early-stop
 RVA(0x0015e130, 0x1bb)
 i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
