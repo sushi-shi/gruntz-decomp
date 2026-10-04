@@ -249,8 +249,8 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* gameManager, i32 levelIndex, i32
     }
     NetGameMgr()->m_modalBusy = false;
     memset(&m_saveSlot, 0, sizeof(m_saveSlot));
-    m_savedEffectsEnabled = NetGameMgr()->m_isEffectsEnabled;
-    NetGameMgr()->m_isEffectsEnabled = true;
+    m_savedEffectsEnabled = NetGameMgr()->IsEffectsEnabled();
+    NetGameMgr()->SetEffectsEnabled(true);
     if (ResolveSharedAssetDirectories() == 0) {
         return 0;
     }
@@ -367,7 +367,7 @@ void CMulti::ReleaseResources() {
         delete minimap;
         m_minimap = NULL;
     }
-    Mgr()->m_isEffectsEnabled = m_savedEffectsEnabled;
+    Mgr()->SetEffectsEnabled(m_savedEffectsEnabled);
 
     CPlay::ReleaseResources();
 }

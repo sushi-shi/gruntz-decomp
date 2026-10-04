@@ -36,15 +36,14 @@ void DialogInit(HWND hDlg) {
         return;
     }
     CheckDlgButton(hDlg, 0x46f, g_gameReg->m_isHighDetail);
-    CheckDlgButton(hDlg, 0x4d5, g_gameReg->m_isEffectsEnabled);
+    CheckDlgButton(hDlg, 0x4d5, g_gameReg->IsEffectsEnabled());
 }
 
-// @early-stop
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
     if (g_gameReg == NULL) {
         return;
     }
     g_gameReg->m_isHighDetail = IsDlgButtonChecked(hDlg, 0x46f);
-    g_gameReg->m_isEffectsEnabled = IsDlgButtonChecked(hDlg, 0x4d5);
+    g_gameReg->SetEffectsEnabled(IsDlgButtonChecked(hDlg, 0x4d5));
 }

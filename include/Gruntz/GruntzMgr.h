@@ -203,6 +203,13 @@ public:
         m_scrollSpeed = speed;
     }
 
+    b32 IsEffectsEnabled() const {
+        return m_isEffectsEnabled;
+    }
+    void SetEffectsEnabled(b32 enabled) {
+        m_isEffectsEnabled = enabled;
+    }
+
     b32 IsVoiceEnabled() const {
         return m_isVoiceEnabled;
     }
