@@ -2007,7 +2007,7 @@ i32 CBattlezAiController::RouteToNearbyPickup(CGrunt* unit) {
     }
 
     CDDrawChildGroup* coll = m_game->World()->ChildGroup();
-    CGameObject* g = coll->FirstSerialChild();
+    CGameObject* g = coll->FirstSpriteChild();
     while (g != NULL) {
         if (g->GetLogicRecord()->GetDispatch() == &DispatchInGameIconLogic && !g->IsHidden()) {
             i32 special = 0;
@@ -2079,7 +2079,7 @@ i32 CBattlezAiController::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
 
-        g = m_game->World()->ChildGroup()->NextSerialChild();
+        g = m_game->World()->ChildGroup()->NextSpriteChild();
     }
     m_tileGrid->Clip(static_cast<const RECT*>(0));
     return 0;

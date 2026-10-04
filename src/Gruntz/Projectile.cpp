@@ -683,7 +683,8 @@ i32 CProjectile::SerializeDispatch(
             g_serialCounter++;
             i32 count;
             s->Read(&count, sizeof(count));
-            m_shadow = LookupSerialRef(reg->ChildGroup()->m_registeredGameObjectsById, count);
+            m_shadow =
+                LookupSpriteObjectById(reg->ChildGroup()->m_registeredGameObjectsById, count);
             if (m_shadow == NULL && count != 0) {
                 return 0;
             }

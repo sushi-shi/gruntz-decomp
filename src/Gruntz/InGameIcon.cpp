@@ -731,7 +731,7 @@ i32 CInGameIcon::SerializeDispatch(
             g_serialCounter++;
             i32 id;
             ar->Read(&id, sizeof(id));
-            CWwdSpriteObject* sprite = LookupSerialRef(
+            CWwdSpriteObject* sprite = LookupSpriteObjectById(
                 m_ownerLogicRecord->OwnerMgr()->ChildGroup()->m_registeredGameObjectsById,
                 id
             );

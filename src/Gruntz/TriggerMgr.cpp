@@ -1384,7 +1384,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&key, sizeof(key));
         if (key != 0) {
             CWwdSpriteObject* obj =
-                LookupSerialRef(world->ChildGroup()->m_registeredGameObjectsById, key);
+                LookupSpriteObjectById(world->ChildGroup()->m_registeredGameObjectsById, key);
             m_cameraSprite = obj;
             if (obj == NULL) {
                 return 0;

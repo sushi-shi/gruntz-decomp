@@ -254,7 +254,8 @@ i32 CSpotLight::SerializeDispatch(
             {
                 i32 id;
                 s->Read(&id, sizeof(id));
-                m_focus = LookupSerialRef(world->ChildGroup()->m_registeredGameObjectsById, id);
+                m_focus =
+                    LookupSpriteObjectById(world->ChildGroup()->m_registeredGameObjectsById, id);
                 if (m_focus == NULL && id != 0) {
                     return 0;
                 }

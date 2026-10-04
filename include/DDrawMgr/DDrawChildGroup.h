@@ -29,7 +29,7 @@ public:
     inline CGameObject* FirstChild();
     CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_walkCursor = NULL;
-        m_serialScanCursor = NULL;
+        m_spriteScanCursor = NULL;
     }
 
     virtual ~CDDrawChildGroup() OVERRIDE;
@@ -124,7 +124,7 @@ public:
     void InsertSorted(CGameObject* obj, i32 addToMaps);
     i32 CheckSortOrder();
     CWwdGameObject* FindById(i32 id);
-    CWwdGameObject* FindSerialRefById(i32 id);
+    CWwdGameObject* FindSpriteById(i32 id);
     CWwdGameObject* FindByLogicRecord(i32 id, CLogicRecord* logicRecord);
     CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 
@@ -134,7 +134,7 @@ public:
     }
 
     CWwdGameObject* FindByObjectId(i32 objectId);
-    CWwdGameObject* FindSerialRefByObjectId(i32 objectId);
+    CWwdGameObject* FindSpriteByObjectId(i32 objectId);
     i32 IsKindUnique(i32 kind);
     i32 CountByKind(i32 kind);
     i32 SumWeighted();
@@ -160,7 +160,7 @@ public:
 
     POSITION m_walkCursor;
 
-    POSITION m_serialScanCursor;
+    POSITION m_spriteScanCursor;
 
     void DrawObjectDebugGeometry();
     void DrawObjectCounts();
@@ -170,8 +170,8 @@ public:
     i32 RectsOverlap(RECT* a, RECT* b);
     i32 BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj);
 
-    inline CGameObject* NextSerialChild();
-    inline CGameObject* FirstSerialChild();
+    inline CGameObject* NextSpriteChild();
+    inline CGameObject* FirstSpriteChild();
 };
 
 inline CGameObject* CDDrawChildGroup::FirstChild() {

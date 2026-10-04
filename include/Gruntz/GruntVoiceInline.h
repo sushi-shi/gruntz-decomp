@@ -14,7 +14,7 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
-    CGameObject* resolved = LookupSerialRef(
+    CGameObject* resolved = LookupSpriteObjectById(
         g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
         m_sourceObjectId
     );
@@ -35,7 +35,7 @@ inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
 }
 
 inline b32 CGruntVoice::PositionIndicatorAtSourceObject() {
-    CGameObject* resolved = LookupSerialRef(
+    CGameObject* resolved = LookupSpriteObjectById(
         g_gameReg->World()->ChildGroup()->m_registeredGameObjectsById,
         m_sourceObjectId
     );

@@ -6257,7 +6257,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 id;
         ar->Read(&id, sizeof(id));
         CWwdSpriteObject* sink =
-            LookupSerialRef(res->ChildGroup()->m_registeredGameObjectsById, id);
+            LookupSpriteObjectById(res->ChildGroup()->m_registeredGameObjectsById, id);
         m_cursorSnapSprite = sink;
         if (sink == NULL && id != 0) {
             return 0;
