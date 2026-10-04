@@ -242,13 +242,13 @@ i32 CWwdDotObject::SetupDot(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTempla
 
 // @early-stop
 RVA(0x0015c290, 0x2f)
-void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
-    m_boundObject = src;
+void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* sprite) {
+    m_boundObject = sprite;
     m_finished = true;
     m_animation = NULL;
     m_durationScale = 1.0f;
     m_consumeEvents =
-        HAS(static_cast<DDrawSurfaceMgrFlags>(src->OwnerMgr()->m_flags),
+        HAS(static_cast<DDrawSurfaceMgrFlags>(sprite->OwnerMgr()->m_flags),
             SURFACEMGR_CONSUME_ANIMATION_EVENTS);
     m_useElapsedTime = true;
 }
@@ -261,61 +261,61 @@ void CAniAdvanceCursor::Unload() {
 }
 
 RVA(0x0015c2d0, 0x45)
-void CAniAdvanceCursor::SetAnimation(CAnimationSequence* src) {
-    CAniFrameRecord* e;
-    i32 v;
-    m_animation = src;
-    if (!src) {
+void CAniAdvanceCursor::SetAnimation(CAnimationSequence* animation) {
+    CAniFrameRecord* firstRecord;
+    i32 eventCode;
+    m_animation = animation;
+    if (!animation) {
         return;
     }
     m_recordIndex = 0;
-    e = src->RecordAt(0);
-    m_currentRecord = e;
+    firstRecord = animation->RecordAt(0);
+    m_currentRecord = firstRecord;
     m_recordDurationRemaining = 0;
     m_finished = false;
-    v = e->m_eventCode;
-    m_pendingEventCode = v;
-    m_currentEventCode = v;
+    eventCode = firstRecord->m_eventCode;
+    m_pendingEventCode = eventCode;
+    m_currentEventCode = eventCode;
     {
-        float f = src->m_durationScale;
-        m_durationScale = f;
+        float durationScale = animation->m_durationScale;
+        m_durationScale = durationScale;
     }
 }
 
 RVA(0x0015c320, 0x40)
 
 void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
-    CAnimationSequence* src = m_animation;
-    if (src == NULL) {
+    CAnimationSequence* animation = m_animation;
+    if (animation == NULL) {
         return;
     }
     m_recordIndex = 0;
-    CAniFrameRecord* e;
-    e = src->RecordAt(0);
-    m_currentRecord = e;
+    CAniFrameRecord* firstRecord;
+    firstRecord = animation->RecordAt(0);
+    m_currentRecord = firstRecord;
     m_finished = false;
-    i32 v = e->m_eventCode;
+    i32 eventCode = firstRecord->m_eventCode;
     m_durationScale = 1.0f;
-    m_pendingEventCode = v;
-    m_currentEventCode = v;
+    m_pendingEventCode = eventCode;
+    m_currentEventCode = eventCode;
     if (resetElapsedTime != 0) {
         m_recordDurationRemaining = 0;
     }
 }
 
 RVA(0x0015c360, 0x59c)
-i32 CAniAdvanceCursor::Advance(u32 elapsed) {
+i32 CAniAdvanceCursor::Advance(u32 elapsedMs) {
     if (m_animation == NULL) {
         return -1;
     }
 
     if (m_recordDurationRemaining > 0) {
         if (m_useElapsedTime != false) {
-            if (elapsed >= m_recordDurationRemaining) {
+            if (elapsedMs >= m_recordDurationRemaining) {
                 m_recordDurationRemaining = 0;
                 m_currentEventCode = m_pendingEventCode;
             } else {
-                m_recordDurationRemaining -= elapsed;
+                m_recordDurationRemaining -= elapsedMs;
                 return m_currentEventCode;
             }
         } else {
@@ -327,98 +327,98 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     }
 
     if (m_finished == false) {
-        CWwdSpriteObject* ctx = m_boundObject;
-        CAniFrameRecord* d = m_currentRecord;
+        CWwdSpriteObject* boundSprite = m_boundObject;
+        CAniFrameRecord* stepRecord = m_currentRecord;
 
-        switch (d->m_stepMode) {
+        switch (stepRecord->m_stepMode) {
             case WWDSTEP_NEXT: {
-                CWwdSpriteObject* c = m_boundObject;
-                CDDrawWorker* seq = c->GetImageSet();
-                if (seq == NULL) {
+                CWwdSpriteObject* sprite = m_boundObject;
+                CDDrawWorker* imageSet = sprite->GetImageSet();
+                if (imageSet == NULL) {
                     break;
                 }
-                c->m_frameIndex = c->m_frameIndex + 1;
-                c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->GetFrameImage() == NULL) {
-                    i32 first = c->GetImageSet()->GetMinIndex();
-                    c->m_frameIndex = first;
-                    c->m_frameImage = c->GetImageSet()->GetFrame(first);
+                sprite->m_frameIndex = sprite->m_frameIndex + 1;
+                sprite->m_frameImage = imageSet->GetFrame(sprite->m_frameIndex);
+                if (sprite->GetFrameImage() == NULL) {
+                    i32 firstFrameIndex = sprite->GetImageSet()->GetMinIndex();
+                    sprite->m_frameIndex = firstFrameIndex;
+                    sprite->m_frameImage = sprite->GetImageSet()->GetFrame(firstFrameIndex);
                 }
                 break;
             }
             case WWDSTEP_PREV: {
-                CWwdSpriteObject* c = m_boundObject;
-                CDDrawWorker* seq = c->GetImageSet();
-                if (seq == NULL) {
+                CWwdSpriteObject* sprite = m_boundObject;
+                CDDrawWorker* imageSet = sprite->GetImageSet();
+                if (imageSet == NULL) {
                     break;
                 }
-                i32 idx = c->m_frameIndex;
-                if (idx == seq->GetMinIndex()) {
-                    c->m_frameIndex = seq->GetMaxIndex();
+                i32 frameIndex = sprite->m_frameIndex;
+                if (frameIndex == imageSet->GetMinIndex()) {
+                    sprite->m_frameIndex = imageSet->GetMaxIndex();
                 } else {
-                    c->m_frameIndex = idx - 1;
+                    sprite->m_frameIndex = frameIndex - 1;
                 }
-                c->m_frameImage = seq->GetFrame(c->m_frameIndex);
+                sprite->m_frameImage = imageSet->GetFrame(sprite->m_frameIndex);
                 break;
             }
             case WWDSTEP_SET: {
-                CWwdSpriteObject* c = m_boundObject;
-                i32 frame = d->GetFrameParameter();
-                CDDrawWorker* seq = c->GetImageSet();
-                if (seq == NULL) {
+                CWwdSpriteObject* sprite = m_boundObject;
+                i32 frameIndex = stepRecord->GetFrameParameter();
+                CDDrawWorker* imageSet = sprite->GetImageSet();
+                if (imageSet == NULL) {
                     break;
                 }
-                c->m_frameImage = seq->GetFrame(frame);
-                c->m_frameIndex = frame;
+                sprite->m_frameImage = imageSet->GetFrame(frameIndex);
+                sprite->m_frameIndex = frameIndex;
                 break;
             }
             case WWDSTEP_FIRST: {
-                CWwdSpriteObject* c = m_boundObject;
-                CDDrawWorker* seq = c->GetImageSet();
-                if (seq == NULL) {
+                CWwdSpriteObject* sprite = m_boundObject;
+                CDDrawWorker* imageSet = sprite->GetImageSet();
+                if (imageSet == NULL) {
                     break;
                 }
-                i32 first = seq->GetMinIndex();
-                c->m_frameIndex = first;
-                c->m_frameImage = seq->GetFrame(first);
+                i32 firstFrameIndex = imageSet->GetMinIndex();
+                sprite->m_frameIndex = firstFrameIndex;
+                sprite->m_frameImage = imageSet->GetFrame(firstFrameIndex);
                 break;
             }
             case WWDSTEP_LAST: {
-                CWwdSpriteObject* c = m_boundObject;
-                CDDrawWorker* seq = c->GetImageSet();
-                if (seq == NULL) {
+                CWwdSpriteObject* sprite = m_boundObject;
+                CDDrawWorker* imageSet = sprite->GetImageSet();
+                if (imageSet == NULL) {
                     break;
                 }
-                i32 last = seq->GetMaxIndex();
-                c->m_frameIndex = last;
-                c->m_frameImage = seq->GetFrame(last);
+                i32 lastFrameIndex = imageSet->GetMaxIndex();
+                sprite->m_frameIndex = lastFrameIndex;
+                sprite->m_frameImage = imageSet->GetFrame(lastFrameIndex);
                 break;
             }
             case WWDSTEP_FORWARD_BY: {
-                CWwdSpriteObject* c = m_boundObject;
-                i32 step = d->GetFrameParameter();
-                CDDrawWorker* seq = c->GetImageSet();
-                if (seq == NULL) {
+                CWwdSpriteObject* sprite = m_boundObject;
+                i32 frameOffset = stepRecord->GetFrameParameter();
+                CDDrawWorker* imageSet = sprite->GetImageSet();
+                if (imageSet == NULL) {
                     break;
                 }
-                c->m_frameIndex = c->m_frameIndex + step;
-                c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->GetFrameImage() == NULL) {
-                    c->ClampToLastFrame();
+                sprite->m_frameIndex = sprite->m_frameIndex + frameOffset;
+                sprite->m_frameImage = imageSet->GetFrame(sprite->m_frameIndex);
+                if (sprite->GetFrameImage() == NULL) {
+                    sprite->ClampToLastFrame();
                 }
                 break;
             }
             case WWDSTEP_BACK_BY: {
-                CWwdSpriteObject* c = m_boundObject;
-                i32 step = d->GetFrameParameter();
-                CDDrawWorker* seq = c->GetImageSet();
-                if (seq == NULL) {
+                CWwdSpriteObject* sprite = m_boundObject;
+                i32 frameOffset = stepRecord->GetFrameParameter();
+                CDDrawWorker* imageSet = sprite->GetImageSet();
+                if (imageSet == NULL) {
                     break;
                 }
-                c->m_frameIndex = c->m_frameIndex - step;
-                c->m_frameImage = seq->GetFrame(c->m_frameIndex);
-                if (c->GetFrameImage() == NULL) {
-                    c->ClampToFirstFrame();
+                sprite->m_frameIndex = sprite->m_frameIndex - frameOffset;
+                sprite->m_frameImage = imageSet->GetFrame(sprite->m_frameIndex);
+                if (sprite->GetFrameImage() == NULL) {
+                    sprite->ClampToFirstFrame();
                 }
                 break;
             }
@@ -426,29 +426,29 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
         }
 
-        ctx = m_boundObject;
-        ctx->m_plotDX = 0;
-        ctx->m_plotDY = 0;
+        boundSprite = m_boundObject;
+        boundSprite->m_plotDX = 0;
+        boundSprite->m_plotDY = 0;
         switch (m_currentRecord->m_positionMode) {
             case WWDPOS_PLOT_OFFSET: {
-                CAniFrameRecord* pd = m_currentRecord;
-                CWwdSpriteObject* c = m_boundObject;
-                c->m_plotDX = pd->m_positionDeltaX;
-                c->m_plotDY = pd->m_positionDeltaY;
+                CAniFrameRecord* positionRecord = m_currentRecord;
+                CWwdSpriteObject* sprite = m_boundObject;
+                sprite->m_plotDX = positionRecord->m_positionDeltaX;
+                sprite->m_plotDY = positionRecord->m_positionDeltaY;
                 break;
             }
             case WWDPOS_MOVE_RELATIVE: {
-                CAniFrameRecord* pd = m_currentRecord;
-                CWwdSpriteObject* c = m_boundObject;
-                i32 x = c->m_screenX;
-                i32 dy = pd->m_positionDeltaY;
-                i32 dx = pd->m_positionDeltaX;
-                if (HAS(c->m_stateFlags, SPRITE_STATE_MIRROR_X)) {
-                    c->m_screenX = x - dx;
+                CAniFrameRecord* positionRecord = m_currentRecord;
+                CWwdSpriteObject* sprite = m_boundObject;
+                i32 x = sprite->m_screenX;
+                i32 dy = positionRecord->m_positionDeltaY;
+                i32 dx = positionRecord->m_positionDeltaX;
+                if (HAS(sprite->m_stateFlags, SPRITE_STATE_MIRROR_X)) {
+                    sprite->m_screenX = x - dx;
                 } else {
-                    c->m_screenX = x + dx;
+                    sprite->m_screenX = x + dx;
                 }
-                c->m_screenY = c->m_screenY + dy;
+                sprite->m_screenY = sprite->m_screenY + dy;
                 break;
             }
             case WWDPOS_MOVE_ABSOLUTE:
@@ -462,43 +462,45 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
         }
 
-        CWwdSpriteObject* c = m_boundObject;
+        CWwdSpriteObject* sprite = m_boundObject;
         b32 shouldPlayCue = true;
-        if (HAS(static_cast<WwdGameObjectFlags>(c->m_flags),
+        if (HAS(static_cast<WwdGameObjectFlags>(sprite->m_flags),
                 WWD_GAME_OBJECT_FLAG_CULL_SOUND_WHEN_NOT_DRAWN)
             || HAS(m_currentRecord->m_flags, ANI_RECORD_FLAG_CULL_CUE_WHEN_NOT_DRAWN)) {
-            if (!c->m_dirty.IsValid()) {
+            if (!sprite->m_dirty.IsValid()) {
                 shouldPlayCue = false;
             }
         }
         if (shouldPlayCue) {
-            CAniFrameRecord* dd = m_currentRecord;
-            if (HAS(dd->m_flags, ANI_RECORD_FLAG_POSITIONAL_CUE)) {
-                i32 sourceX = c->m_screenX;
-                SoundCue* soundCue = dd->PickCue();
+            CAniFrameRecord* cueRecord = m_currentRecord;
+            if (HAS(cueRecord->m_flags, ANI_RECORD_FLAG_POSITIONAL_CUE)) {
+                i32 sourceX = sprite->m_screenX;
+                SoundCue* soundCue = cueRecord->PickCue();
                 if (soundCue != NULL) {
                     soundCue->PlaySpatialized(sourceX, 0, 0, 0);
                 }
             } else {
-                SoundCue* soundCue = dd->PickCue();
+                SoundCue* soundCue = cueRecord->PickCue();
                 if (soundCue != NULL) {
                     soundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
             }
         }
 
-        CAniFrameRecord* rd = m_currentRecord;
-        i32 reload = rd->m_duration;
-        m_recordDurationRemaining = reload;
-        m_useElapsedTime = static_cast<u8>(!HAS(rd->m_flags, ANI_RECORD_FLAG_FRAME_COUNT));
+        CAniFrameRecord* timingRecord = m_currentRecord;
+        i32 recordDuration = timingRecord->m_duration;
+        m_recordDurationRemaining = recordDuration;
+        m_useElapsedTime =
+            static_cast<u8>(!HAS(timingRecord->m_flags, ANI_RECORD_FLAG_FRAME_COUNT));
 
         if (m_durationScaleBits != ANI_DURATION_SCALE_ONE_BITS) {
-            m_recordDurationRemaining =
-                static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_durationScale));
+            m_recordDurationRemaining = static_cast<i32>(
+                (static_cast<double>(static_cast<u32>(recordDuration)) * m_durationScale)
+            );
         }
 
-        i32 modeWord = IDX(rd->m_loopMode);
-        switch (static_cast<WwdAnimLoopMode>(modeWord & 0xffff)) {
+        i32 loopModeWord = IDX(timingRecord->m_loopMode);
+        switch (static_cast<WwdAnimLoopMode>(loopModeWord & 0xffff)) {
             case WWDLOOP_FINISH:
                 m_finished = true;
                 break;
@@ -529,7 +531,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case WWDLOOP_AT_PARAM: {
                 if (m_currentRecord->m_frameParameter == m_boundObject->m_frameIndex) {
-                    if (rd->m_loopMode != WWDLOOP_FINISH) {
+                    if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                         m_recordIndex = m_recordIndex + 1;
                         m_currentRecord =
                             static_cast<CAniFrameRecord*>(m_animation->AtChecked(m_recordIndex));
@@ -547,52 +549,52 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case WWDLOOP_AT_FIRST: {
-                CWwdSpriteObject* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->GetImageSet();
-                if (c2->m_frameIndex == seq->GetMinIndex()) {
-                    if (rd->m_loopMode != WWDLOOP_FINISH) {
+                CWwdSpriteObject* loopSprite = m_boundObject;
+                CDDrawWorker* imageSet = loopSprite->GetImageSet();
+                if (loopSprite->m_frameIndex == imageSet->GetMinIndex()) {
+                    if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
                     }
                 }
                 break;
             }
             case WWDLOOP_AT_LAST: {
-                CWwdSpriteObject* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->GetImageSet();
-                if (c2->m_frameIndex == seq->GetMaxIndex()) {
-                    if (rd->m_loopMode != WWDLOOP_FINISH) {
+                CWwdSpriteObject* loopSprite = m_boundObject;
+                CDDrawWorker* imageSet = loopSprite->GetImageSet();
+                if (loopSprite->m_frameIndex == imageSet->GetMaxIndex()) {
+                    if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
                     }
                 }
                 break;
             }
             case WWDLOOP_AFTER_FIRST: {
-                CWwdSpriteObject* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->GetImageSet();
-                if (c2->m_frameIndex == seq->GetMinIndex() + 1) {
-                    if (rd->m_loopMode != WWDLOOP_FINISH) {
+                CWwdSpriteObject* loopSprite = m_boundObject;
+                CDDrawWorker* imageSet = loopSprite->GetImageSet();
+                if (loopSprite->m_frameIndex == imageSet->GetMinIndex() + 1) {
+                    if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                         AdvanceToNextRecord();
                     }
                 }
                 break;
             }
             case WWDLOOP_NEXT:
-                if (rd->m_loopMode != WWDLOOP_FINISH) {
+                if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
                     AdvanceToNextRecord();
                 }
                 break;
             case WWDLOOP_BEFORE_LAST: {
-                CWwdSpriteObject* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->GetImageSet();
-                if (c2->m_frameIndex == seq->GetMaxIndex() - 1) {
-                    if (rd->m_loopMode != WWDLOOP_FINISH) {
-                        CAnimationSequence* a = m_animation;
+                CWwdSpriteObject* loopSprite = m_boundObject;
+                CDDrawWorker* imageSet = loopSprite->GetImageSet();
+                if (loopSprite->m_frameIndex == imageSet->GetMaxIndex() - 1) {
+                    if (timingRecord->m_loopMode != WWDLOOP_FINISH) {
+                        CAnimationSequence* animation = m_animation;
                         m_recordIndex = m_recordIndex + 1;
-                        CAniFrameRecord* p = a->RecordAt(m_recordIndex);
-                        m_currentRecord = p;
-                        if (p == NULL) {
+                        CAniFrameRecord* nextRecord = animation->RecordAt(m_recordIndex);
+                        m_currentRecord = nextRecord;
+                        if (nextRecord == NULL) {
                             m_recordIndex = 0;
-                            m_currentRecord = a->RecordAt(0);
+                            m_currentRecord = animation->RecordAt(0);
                         }
                         if (m_currentRecord != NULL) {
                             m_currentEventCode = m_pendingEventCode;
@@ -609,13 +611,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
     if (m_consumeEvents != 0) {
         if (m_recordDurationRemaining > 0) {
-            i32 r = m_currentEventCode;
+            i32 eventCode = m_currentEventCode;
             m_currentEventCode = 0;
-            return r;
+            return eventCode;
         }
-        i32 r = m_pendingEventCode;
+        i32 eventCode = m_pendingEventCode;
         m_pendingEventCode = 0;
-        return r;
+        return eventCode;
     }
     if (m_recordDurationRemaining > 0) {
         return m_currentEventCode;
@@ -625,19 +627,19 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
 RVA(0x0015c900, 0x5c)
 i32 CAniAdvanceCursor::SerializeDispatch(
-    CFileMemBase* ar,
+    CFileMemBase* archive,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* self
+    CGameObject* object
 ) {
-    if (ar == NULL) {
+    if (archive == NULL) {
         return 0;
     }
     switch (mode) {
         case SERIAL_PRESAVE:
             return 1;
         case SERIAL_SAVE:
-            if (Serialize(ar) == 0) {
+            if (Serialize(archive) == 0) {
                 return 0;
             }
             break;
@@ -646,7 +648,7 @@ i32 CAniAdvanceCursor::SerializeDispatch(
         case SERIAL_PRELOAD:
             return 1;
         case SERIAL_LOAD:
-            if (Deserialize(ar) == 0) {
+            if (Deserialize(archive) == 0) {
                 return 0;
             }
             break;
@@ -659,62 +661,64 @@ i32 CAniAdvanceCursor::SerializeDispatch(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015c960, 0xe)
-i32 CAniAdvanceCursor::CanSerialize(CFileMemBase* ar) {
-    return ar != NULL;
+i32 CAniAdvanceCursor::CanSerialize(CFileMemBase* archive) {
+    return archive != NULL;
 }
 
 RVA(0x0015c970, 0xfe)
-i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
-    if (ar == NULL) {
+i32 CAniAdvanceCursor::Serialize(CFileMemBase* archive) {
+    if (archive == NULL) {
         return 0;
     }
-    ar->Write(&m_recordIndex, sizeof(m_recordIndex));
-    ar->Write(&m_recordDurationRemaining, sizeof(m_recordDurationRemaining));
-    ar->Write(&m_useElapsedTime, sizeof(m_useElapsedTime));
-    ar->Write(&m_finished, sizeof(m_finished));
-    ar->Write(&m_consumeEvents, sizeof(m_consumeEvents));
-    ar->Write(&m_pendingEventCode, sizeof(m_pendingEventCode));
-    ar->Write(&m_currentEventCode, sizeof(m_currentEventCode));
-    ar->Write(&m_durationScale, sizeof(m_durationScale));
-    char buf[SERIAL_NAME_LEN];
-    memset(buf, 0, sizeof(buf));
+    archive->Write(&m_recordIndex, sizeof(m_recordIndex));
+    archive->Write(&m_recordDurationRemaining, sizeof(m_recordDurationRemaining));
+    archive->Write(&m_useElapsedTime, sizeof(m_useElapsedTime));
+    archive->Write(&m_finished, sizeof(m_finished));
+    archive->Write(&m_consumeEvents, sizeof(m_consumeEvents));
+    archive->Write(&m_pendingEventCode, sizeof(m_pendingEventCode));
+    archive->Write(&m_currentEventCode, sizeof(m_currentEventCode));
+    archive->Write(&m_durationScale, sizeof(m_durationScale));
+    char animationKey[SERIAL_NAME_LEN];
+    memset(animationKey, 0, sizeof(animationKey));
     if (m_animation != NULL) {
 
-        strcpy(buf, OwnerMgr()->GetAnimationRegistry()->FindAnimationKey(m_animation));
+        strcpy(animationKey, OwnerMgr()->GetAnimationRegistry()->FindAnimationKey(m_animation));
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    archive->Write(animationKey, SERIAL_NAME_LEN);
     return 1;
 }
 
 // @early-stop
 RVA(0x0015ca70, 0x15b)
-i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
-    if (ar == NULL) {
+i32 CAniAdvanceCursor::Deserialize(CFileMemBase* archive) {
+    if (archive == NULL) {
         return 0;
     }
-    ar->Read(&m_recordIndex, sizeof(m_recordIndex));
-    ar->Read(&m_recordDurationRemaining, sizeof(m_recordDurationRemaining));
-    ar->Read(&m_useElapsedTime, sizeof(m_useElapsedTime));
-    ar->Read(&m_finished, sizeof(m_finished));
-    ar->Read(&m_consumeEvents, sizeof(m_consumeEvents));
-    ar->Read(&m_pendingEventCode, sizeof(m_pendingEventCode));
-    ar->Read(&m_currentEventCode, sizeof(m_currentEventCode));
-    ar->Read(&m_durationScale, sizeof(m_durationScale));
-    char buf[SERIAL_NAME_LEN];
-    ar->Read(buf, SERIAL_NAME_LEN);
-    if (strlen(buf) == 0) {
+    archive->Read(&m_recordIndex, sizeof(m_recordIndex));
+    archive->Read(&m_recordDurationRemaining, sizeof(m_recordDurationRemaining));
+    archive->Read(&m_useElapsedTime, sizeof(m_useElapsedTime));
+    archive->Read(&m_finished, sizeof(m_finished));
+    archive->Read(&m_consumeEvents, sizeof(m_consumeEvents));
+    archive->Read(&m_pendingEventCode, sizeof(m_pendingEventCode));
+    archive->Read(&m_currentEventCode, sizeof(m_currentEventCode));
+    archive->Read(&m_durationScale, sizeof(m_durationScale));
+    char animationKey[SERIAL_NAME_LEN];
+    archive->Read(animationKey, SERIAL_NAME_LEN);
+    if (strlen(animationKey) == 0) {
         m_animation = NULL;
     } else {
-        m_animation =
-            MapFind<CAnimationSequence>(OwnerMgr()->GetAnimationRegistry()->m_animations, buf);
+        m_animation = MapFind<CAnimationSequence>(
+            OwnerMgr()->GetAnimationRegistry()->m_animations,
+            animationKey
+        );
     }
-    CAnimationSequence* w = m_animation;
-    if (w != NULL) {
-        CAniFrameRecord* e = w->RecordAt(m_recordIndex);
-        m_currentRecord = e;
-        if (e == NULL) {
+    CAnimationSequence* animation = m_animation;
+    if (animation != NULL) {
+        CAniFrameRecord* record = animation->RecordAt(m_recordIndex);
+        m_currentRecord = record;
+        if (record == NULL) {
             m_recordIndex = 0;
-            m_currentRecord = w->RecordAt(0);
+            m_currentRecord = animation->RecordAt(0);
         }
         if (m_currentRecord != NULL) {
             m_finished = false;
@@ -729,8 +733,8 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015cbd0, 0xe)
-i32 CAniAdvanceCursor::CanDeserialize(CFileMemBase* ar) {
-    return ar != NULL;
+i32 CAniAdvanceCursor::CanDeserialize(CFileMemBase* archive) {
+    return archive != NULL;
 }
 
 RVA(0x0015cbe0, 0x46)
