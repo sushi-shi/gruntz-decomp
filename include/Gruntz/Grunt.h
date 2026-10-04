@@ -252,6 +252,10 @@ public:
         m_battleState = task;
     }
 
+    i32 GetTargetTeam() const {
+        return m_targetTeam;
+    }
+
     GruntAiState GetDefenderState() const {
         return m_defenderState;
     }

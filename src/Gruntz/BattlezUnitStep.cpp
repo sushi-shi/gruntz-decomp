@@ -251,7 +251,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (defenderState == AISTATE_RETURN) {
         return 1;
     }
-    i32 band = unit->m_targetTeam;
+    i32 band = unit->GetTargetTeam();
     if (band == -1) {
         band = rand() % 4;
         if (band == m_playerIndex) {
@@ -281,7 +281,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             return 1;
         }
     }
-    band = unit->m_targetTeam;
+    band = unit->GetTargetTeam();
     CBattlezMapConfig* bundle = m_ctx->m_players[band].GetBattlezConfig();
     Coord marker = bundle->m_marker;
     if (unit->CoordsEmpty()) {

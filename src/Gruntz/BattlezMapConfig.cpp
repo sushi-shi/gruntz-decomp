@@ -3331,8 +3331,8 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 targetPlayer, i32 targetUnit, i32, i
             continue;
         }
         Coord current = ScreenTile(u);
-        if (u->GetBattlezTask() == BZTASK_ADVANCE && u->m_targetTeam != -1) {
-            Coord marker = m_ctx->m_players[u->m_targetTeam].GetBattlezConfig()->m_marker;
+        if (u->GetBattlezTask() == BZTASK_ADVANCE && u->GetTargetTeam() != -1) {
+            Coord marker = m_ctx->m_players[u->GetTargetTeam()].GetBattlezConfig()->m_marker;
             i32 dx = marker.m_x - current.m_x;
             i32 dy = marker.m_y - current.m_y;
             dx = abs(dx);
