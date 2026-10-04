@@ -89,7 +89,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_lastTilePx, sizeof(m_lastTilePx));
     ar->Read(&m_commitPx, sizeof(m_commitPx));
     ar->Read(&m_reserved1dc, sizeof(m_reserved1dc));
-    ar->Read(&m_entranceActive, sizeof(m_entranceActive));
+    ar->Read(&m_busy, sizeof(m_busy));
     ar->Read(&m_arrivalPending, sizeof(m_arrivalPending));
     ar->Read(&m_playerIndex, sizeof(m_playerIndex));
     ar->Read(&m_unitIndex, sizeof(m_unitIndex));

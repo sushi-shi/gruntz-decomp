@@ -76,7 +76,7 @@ i32 CGrunt::StepDiggerBehavior() {
                 if (m_attackQueued != false) {
                     return 1;
                 }
-                m_entranceActive = false;
+                m_busy = false;
                 m_attackWindupActive = false;
                 m_attackQueued = false;
                 m_inCombat = false;
@@ -92,7 +92,7 @@ i32 CGrunt::StepDiggerBehavior() {
             if (m_attackQueued != false) {
                 return 1;
             }
-            m_entranceActive = false;
+            m_busy = false;
             m_attackWindupActive = false;
             m_attackQueued = false;
             m_inCombat = false;

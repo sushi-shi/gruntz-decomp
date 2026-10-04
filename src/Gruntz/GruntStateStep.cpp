@@ -99,9 +99,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* defender) {
                 UNSET_COORD(defender->m_arrivalCell);
                 if (defender != NULL && defender->IsAtSavedScreenPos()
                     && defender->m_entranceCommitted != false
-                    && defender->IsDeathAnimationStarted() == false
-                    && defender->m_entranceActive == false && defender->m_inCombat == false
-                    && BattlezActDiffersFromIGLPJCR(defender)) {
+                    && defender->IsDeathAnimationStarted() == false && defender->m_busy == false
+                    && defender->m_inCombat == false && BattlezActDiffersFromIGLPJCR(defender)) {
                     HandleUnitContact(defender, target);
                 }
                 defender->SetAiState(AISTATE_SEEK);

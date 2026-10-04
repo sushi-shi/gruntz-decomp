@@ -680,7 +680,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_entranceActive = true;
+            g->m_busy = true;
             g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
             return 1;
 
@@ -689,7 +689,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_entranceActive = true;
+            g->m_busy = true;
             g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
             return 1;
 
@@ -698,7 +698,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_entranceActive = true;
+            g->m_busy = true;
             g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
             return 1;
 
@@ -707,13 +707,13 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (g == NULL || g->IsDeathAnimationStarted() != false) {
                 return 1;
             }
-            g->m_entranceActive = true;
+            g->m_busy = true;
             g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
             if (g != NULL && g->IsDeathAnimationStarted() == false) {
-                g->m_entranceActive = true;
+                g->m_busy = true;
                 switch (static_cast<GruntDirection>(g->m_facing.m_direction)) {
                     case DIR_NORTH:
                         g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
@@ -1206,7 +1206,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     CGrunt* hit;
     i32 scrollSpell;
     CGrunt* cell = UnitAt(playerIndex, unitIndex);
-    if (cell == NULL || cell->IsEntranceCommitted() == false || cell->m_entranceActive != false) {
+    if (cell == NULL || cell->IsEntranceCommitted() == false || cell->m_busy != false) {
         return 0;
     }
     i32 argTileX = worldX >> TILE_SHIFT_PX;
@@ -1325,7 +1325,7 @@ i32 CTriggerMgr::ClearCell(
     if (cell->IsGuarding() != false) {
         END_GUARD(cell);
     }
-    if (cell->m_entranceActive != false) {
+    if (cell->m_busy != false) {
         return 0;
     }
     CANCEL_UNIT_TOOL_EFFECTS(cell, playerIndex, unitIndex);

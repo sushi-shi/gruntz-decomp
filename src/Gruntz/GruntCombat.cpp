@@ -524,7 +524,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     PLAY_GRUNT_CUE_IN_VIEW(0xe);
 
     ApplyPickup(PICKUP_NONE, 1, 0, 1);
-    m_entranceActive = false;
+    m_busy = false;
     return 1;
 }
 
@@ -1432,7 +1432,7 @@ i32 CGrunt::CommitNeighbor(
     i32 stamina = m_stamina;
     SetNeighbor(targetPlayerIndex, targetUnitIndex);
     m_attackTargetPx.Set(targetPxX, targetPxY);
-    if (stamina < STAMINA_FULL || m_entranceActive != false) {
+    if (stamina < STAMINA_FULL || m_busy != false) {
         m_attackQueued = true;
         return 1;
     }
@@ -1671,7 +1671,7 @@ void CGrunt::Activate() {
     m_stamina = STAMINA_FULL;
     m_toyTime = 0;
     m_wingzTime = 0;
-    m_entranceActive = false;
+    m_busy = false;
     m_arrivalPending = false;
     m_aiType = AI_NONE;
     m_inCombat = false;
@@ -1964,7 +1964,7 @@ void CGrunt::StepBehavior(char*) {
     }
 
 afterTile:
-    if (m_entranceActive == false && m_entranceCommitted != false) {
+    if (m_busy == false && m_entranceCommitted != false) {
         CWwdSpriteObject* obj = m_object;
         i32 sx = obj->m_screenX;
         if (sx != m_lastTilePx.m_x) {

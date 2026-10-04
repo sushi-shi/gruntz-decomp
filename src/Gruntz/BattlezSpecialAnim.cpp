@@ -69,7 +69,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     if (unit->IsDeathAnimationStarted() != false) {
         return 0;
     }
-    if (unit->m_entranceActive != false) {
+    if (unit->m_busy != false) {
         return 0;
     }
     if (unit->IsInCombat() != false) {

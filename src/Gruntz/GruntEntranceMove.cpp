@@ -195,7 +195,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
     m_entranceArmed = true;
     m_entranceCommitted = false;
-    m_entranceActive = true;
+    m_busy = true;
     CWwdSpriteObject* h = m_object;
     h->SetSortKey(SORTKEY_ACTOR);
 
@@ -313,7 +313,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         } else if (m_triggerMgr->IsUnitSelected(m_playerIndex, m_unitIndex)) {                     \
             Select();                                                                              \
         }                                                                                          \
-        m_entranceActive = false;                                                                  \
+        m_busy = false;                                                                            \
         ReadConfigFromButeMgr();                                                                   \
         BuildImageSetNames(0, 0);                                                                  \
         LoadAnimationSet(0, 0);                                                                    \
@@ -558,7 +558,7 @@ i32 CGrunt::UpdateScrollUseAnimation() {
 
     SET_ANIMATION_ACT("A");
     ApplyPickup(m_savedToolType, 1, 0, 0);
-    m_entranceActive = false;
+    m_busy = false;
 
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     CGruntzMapMgr* board = g_gameReg->GetTileGrid();
@@ -658,7 +658,7 @@ i32 CGrunt::UpdateFreezeAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (cur->IsComplete()) {
         if (m_freezeUnfrozen != false) {
-            m_entranceActive = false;
+            m_busy = false;
             ReadConfigFromButeMgr();
             BuildImageSetNames(0, 0);
             LoadAnimationSet(0, 0);

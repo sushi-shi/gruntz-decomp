@@ -37,7 +37,7 @@ i32 CGrunt::BeginPickupAnimation(
         return 0;
     }
     if (forced == 0) {
-        if (m_entranceActive != false) {
+        if (m_busy != false) {
             return 0;
         }
 
@@ -53,7 +53,7 @@ i32 CGrunt::BeginPickupAnimation(
         }
     }
     FinishActiveAction();
-    if (m_entranceActive != false) {
+    if (m_busy != false) {
         return 0;
     }
     if (type >= PICKUP_COLORBRICK_FIRST && type <= PICKUP_BRICKZ_LAST) {
@@ -438,7 +438,7 @@ i32 CGrunt::BeginPickupAnimation(
             g->VoiceMgr()->PlayVoice(this, id, -1, 0, -1, -1);
         }
     }
-    m_entranceActive = true;
+    m_busy = true;
     m_pendingPickupType = type;
     m_helpCueId = helpCueId;
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)

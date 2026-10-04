@@ -456,7 +456,7 @@ public:
     CWwdSpriteObject* m_powerupSprite;
     b32 m_selected;
     Coord m_reserved1dc;
-    b32 m_entranceActive;
+    b32 m_busy;
     b32 m_arrivalPending;
     i32 m_playerIndex;
     i32 m_unitIndex;

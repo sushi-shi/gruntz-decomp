@@ -25,7 +25,7 @@
      && (m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1), true))
 
 inline void CGrunt::RestorePreviousAppearance() {
-    m_entranceActive = false;
+    m_busy = false;
     bool previousWasWalk = (::GetAnimationActName(m_previousAnimationActId) == "D");
     if (previousWasWalk) {
         if (m_inCombat != false && m_attackQueued == false) {

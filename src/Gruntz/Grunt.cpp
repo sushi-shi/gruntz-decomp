@@ -1170,7 +1170,7 @@ i32 CGrunt::StepGruntMovement() {
             }
         }
     }
-    if (m_entranceActive == false) {
+    if (m_busy == false) {
         i32 lastTileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 lastCellFlags = tileGrid->CellFlagsAt(lastTileX, lastTileY);
@@ -1246,10 +1246,10 @@ prepareTraversal:
         g_coordPool.Push(pathCoord);
     }
     if (destinationFlags & 0x80) {
-        m_entranceActive = true;
+        m_busy = true;
     } else {
         if (IsNotAnimationAct("L")) {
-            m_entranceActive = false;
+            m_busy = false;
         }
     }
 
@@ -1697,7 +1697,7 @@ i32 CGrunt::Place(
         m_playerIndex,
         m_unitIndex
     );
-    m_entranceActive = false;
+    m_busy = false;
     ReadConfigFromButeMgr();
     BuildImageSetNames(0, 0);
     LoadAnimationSet(0, 0);
@@ -1739,7 +1739,7 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
         goto fail;
     }
     if (fresh == 0) {
-        if (m_entranceActive != false) {
+        if (m_busy != false) {
             goto fail;
         }
         if (IsNotAnimationAct("A")) {

@@ -68,7 +68,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 if (this->m_attackQueued != false) {
                     return 1;
                 }
-                this->m_entranceActive = false;
+                this->m_busy = false;
                 this->m_attackWindupActive = false;
                 this->m_attackQueued = false;
                 this->m_inCombat = false;
@@ -84,7 +84,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             if (this->m_attackQueued != false) {
                 return 1;
             }
-            this->m_entranceActive = false;
+            this->m_busy = false;
             this->m_attackWindupActive = false;
             this->m_attackQueued = false;
             this->m_inCombat = false;
