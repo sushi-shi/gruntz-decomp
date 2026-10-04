@@ -266,15 +266,16 @@ i32 CTileTriggerLogic::Tick() {
     TileCollisionKind srcId = PbResolveCell(world->m_level, m_tileX, m_tileY);
 
     {
-        DECLARE_TILE_CENTER_PIXEL_PAIR_Y_FIRST(sy, sx, m_tileY, m_tileX)
-        POINT pt;
-        SET_POINT_COMPONENTS(pt, sx, sy);
+        CPoint pt(
+            (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
+            (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX
+        );
         if (PtInRect(&g_gameReg->m_viewBounds, pt) && srcId != TILEKIND_REDPYRAMID_UP
             && srcId != TILEKIND_REDPYRAMID_DOWN) {
             CGameObject* trig = world->ChildGroup()->CreateSprite(
                 0,
-                sx,
-                sy,
+                pt.x,
+                pt.y,
                 0,
                 "TileTriggerTransition",
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -338,12 +339,10 @@ i32 CTileTriggerLogic::Tick() {
 
         case TILEKIND_REDPYRAMID_DOWN:
         case TILEKIND_REDPYRAMID_UP: {
-            i32 pxX = 0x10;
-            for (i32 gx = 0; gx < world->m_level->m_mainPlane->GetTileColumns();
-                 gx++, pxX += 0x20) {
-                i32 pxY = 0x10;
-                for (i32 gy = 0; gy < world->m_level->m_mainPlane->GetTileRows();
-                     gy++, pxY += 0x20) {
+            for (i32 gx = 0; gx < world->m_level->m_mainPlane->GetTileColumns(); gx++) {
+                i32 pxX = (gx << TILE_SHIFT_PX) + TILE_HALF_PX;
+                for (i32 gy = 0; gy < world->m_level->m_mainPlane->GetTileRows(); gy++) {
+                    i32 pxY = (gy << TILE_SHIFT_PX) + TILE_HALF_PX;
                     i32 hit = 0;
                     if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
@@ -357,13 +356,12 @@ i32 CTileTriggerLogic::Tick() {
                         hit = 1;
                     }
                     if (hit != 0) {
-                        POINT pt;
-                        SET_POINT_COMPONENTS(pt, pxX, pxY);
+                        CPoint pt(pxX, pxY);
                         if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                             CGameObject* o = world->ChildGroup()->CreateSprite(
                                 0,
-                                pxX,
-                                pxY,
+                                pt.x,
+                                pt.y,
                                 0,
                                 "TileTriggerTransition",
                                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
