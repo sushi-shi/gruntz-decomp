@@ -33,6 +33,4 @@ public:
     i32 m_landY;
 };
 
-extern const double g_objDropDiv;
-extern const double g_dropFallBias;
 #endif // GRUNTZ_CDROPPEDOBJECT_H

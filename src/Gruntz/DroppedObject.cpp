@@ -50,11 +50,6 @@
 
 #include <string.h>
 
-DATA(0x001ea9f0)
-const double g_objDropDiv = 32.0;
-DATA(0x001eaa00)
-const double g_dropFallBias = -0.5;
-
 RVA_DYNINIT(0x000c5ee0, 0xa, CActRegPool<CObjectDropper>::s_table)
 RVA_DYNINIT(0x000c5f00, 0x15, CActRegPool<CObjectDropper>::s_table)
 RVA_DYNINIT(0x000c5f30, 0xe, CActRegPool<CObjectDropper>::s_table)
@@ -139,7 +134,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     m_scrollMode = OBJECT_DROP_ALL_PLAYERS;
     m_lastDropPlayerIndex = -1;
     m_lastDropUnitIndex = -1;
-    m_speed = g_objDropDiv / static_cast<double>(static_cast<u32>(time));
+    m_speed = DATA_COMPGEN(0x001ea9f0, 32.0) / static_cast<double>(static_cast<u32>(time));
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
         m_scrollMode = OBJECT_DROP_PLAYER_ZERO_ONLY;
     }
@@ -323,7 +318,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     m_fallY = static_cast<double>(o->m_screenY);
     o->SetSortKey(SORTKEY_ACTOR_FRONT);
     m_timePerTile =
-        g_objDropDiv
+        32.0
         / static_cast<double>(g_buteMgr.GetDword("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
 }
 
@@ -348,7 +343,7 @@ RVA(0x000c7090, 0x230)
 i32 CDroppedObject::AdvanceFall() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
-    i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
+    i32 landed = static_cast<i32>((m_fallY - (-0.5)));
     if (landed > m_landY) {
         i32 x = m_object->m_screenX;
         CMapMgr* g = g_gameReg->GetTileGrid();

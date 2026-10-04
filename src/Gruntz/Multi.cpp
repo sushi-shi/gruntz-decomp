@@ -1973,7 +1973,7 @@ void CMulti::ApplyPlayerDrop(i32 playerId) {
             slot->BeginDrain();
             slot->ClearSyncState();
             slot->m_state = NETSLOT_DONE;
-            slot->m_player->m_doneFlag = true;
+            slot->GetPlayer()->m_doneFlag = true;
         }
         return;
     }
@@ -2864,7 +2864,7 @@ void CMulti::CheckDropTimeout() {
     if (slot == NULL) {
         return;
     }
-    g_dropPlayerId = slot->m_player->m_networkPlayerId;
+    g_dropPlayerId = slot->GetPlayer()->m_networkPlayerId;
     g_sessionName = slot->GetPlayerName();
     BroadcastValueMessage(NETMSG_DROP_TIMEOUT, g_dropPlayerId, DPSEND_GUARANTEED);
     ShowDropPlayerDialog();
@@ -3137,7 +3137,10 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     i32 end = seq + static_cast<i32>(m_commandDelay) * 3;
     for (; seq < end; seq++) {
 
-        NetGameMgr()->GetCommandMgr()->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
+        NetGameMgr()->GetCommandMgr()->RemoveScheduledCommand(
+            slot->GetPlayer()->m_playerIndex,
+            seq
+        );
         slot->RemoveRecord(seq / static_cast<i32>(m_commandDelay));
     }
     slot->ClearSequenceSet(slot->ReceivedAhead());

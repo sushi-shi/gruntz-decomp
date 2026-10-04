@@ -168,6 +168,9 @@ struct CNetCmdSlot {
 
     i32 DrainAcknowledged();
     inline void QueueRecord(GruntRec* record, u8 entryCount, char* cursor, i32 remaining);
+    GruntzPlayer* const& GetPlayer() const {
+        return m_player;
+    }
     b32 IsDraining() const {
         return m_isDraining;
     }

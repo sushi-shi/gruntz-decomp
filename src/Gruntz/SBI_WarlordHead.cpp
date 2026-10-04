@@ -78,27 +78,23 @@ i32 CSBI_WarlordHead::SetState(i32 dir) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000eb880, 0xbd)
 i32 CSBI_WarlordHead::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
         CDDrawSurfacePair* target = g_gameReg->m_world->m_drawTarget->GetBackPair();
 
-        CDDrawWorker* cfg = m_frameSet;
         CImage* f;
         if (m_direction == 1) {
-            f = cfg->GetAt(3);
+            f = m_frameSet->GetAt(3);
         } else {
-            f = cfg->GetAt(4);
+            f = m_frameSet->GetAt(4);
         }
         if (f) {
             f->RenderFrame(target, m_rect.left + f->m_anchorX, m_rect.top + f->m_anchorY, 0);
         }
 
-        cfg = m_frameSet;
-        i32 idx = m_frameIndex;
-        CImage* g = cfg->GetAt(idx);
+        CImage* g = m_frameSet->GetAt(m_frameIndex);
         SetFrame(g);
         if (g) {
             g->RenderFrame(target, m_rect.left + g->m_anchorX, m_rect.top + g->m_anchorY, 0);
