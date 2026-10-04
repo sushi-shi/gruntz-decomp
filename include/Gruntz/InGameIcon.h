@@ -64,13 +64,13 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
 
     i32 RefreshCell();
-    i32 PeekCycle();
-    i32 PlaceAt(i32 playerIndex, i32 unitIndex);
-    i32 Reposition();
+    i32 UpdateAvailablePickup();
+    i32 TryGivePickupToGrunt(i32 playerIndex, i32 unitIndex);
+    i32 UpdateRespawn();
 
     SoundCue* m_pickupSoundCue;
     ClockInterval m_driftTiming;
-    ClockInterval m_peekTiming;
+    ClockInterval m_colorCycleTimer;
     CWwdSpriteObject* m_glitterSprite;
 };
 

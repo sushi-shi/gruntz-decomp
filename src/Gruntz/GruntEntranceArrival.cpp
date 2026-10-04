@@ -1329,6 +1329,6 @@ i32 CGrunt::FinishToobMoveAnimation() {
         return 0;
     }
     CInGameIcon* icon = static_cast<CInGameIcon*>(found->GetLogicRecord()->UserLogic());
-    icon->PlaceAt(m_playerIndex, m_unitIndex);
+    icon->TryGivePickupToGrunt(m_playerIndex, m_unitIndex);
     return 0;
 }

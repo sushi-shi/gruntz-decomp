@@ -1787,7 +1787,7 @@ void CGrunt::StepBehavior(char*) {
 
                 CInGameIcon* icon =
                     static_cast<CInGameIcon*>(result->GetLogicRecord()->UserLogic());
-                icon->PlaceAt(m_playerIndex, m_unitIndex);
+                icon->TryGivePickupToGrunt(m_playerIndex, m_unitIndex);
             }
         }
 
