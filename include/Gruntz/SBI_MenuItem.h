@@ -47,7 +47,7 @@ public:
     i32 ResolveFrame(const char* key, i32 frameIndex);
     i32 SetState(SbiMenuItemState state, i32 playHighlightSound);
     i32 ProbeState(SbiMenuItemState state);
-    i32 Blit();
+    i32 ClearHighlight();
 
     SbiMenuItemState m_state;
 

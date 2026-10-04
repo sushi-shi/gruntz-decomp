@@ -208,7 +208,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_autoCommandDelay = true;
     m_resendInterval = 0;
     m_minimap = NULL;
-    m_savedClock = 0;
+    m_savedGameTimeMs = 0;
     m_rngSeed = static_cast<i32>(timeGetTime());
     m_gameConfigUpdated = false;
     m_roundComplete = false;
@@ -297,7 +297,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
 
     CStatusBarMgr* sess = new CStatusBarMgr;
     m_statusBar = sess;
-    if (sess->LoadBattlezItemConfig(m_world) == 0) {
+    if (sess->Initialize(m_world) == 0) {
         if (m_statusBar == NULL) {
             return 0;
         }
@@ -335,7 +335,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     g_frameDelta = 0;
     g_lastNow = 0;
     g_frameTime = 0;
-    m_savedClock = 0;
+    m_savedGameTimeMs = 0;
     NetGameMgr()->ChatLog()->ClearMessages();
     m_gameStarted = true;
     return 1;
@@ -393,7 +393,7 @@ i32 CMulti::EnterState(GameStateId previousState) {
         return 0;
     }
     m_mgr->RefreshGameClock();
-    g_frameTime = m_savedClock;
+    g_frameTime = m_savedGameTimeMs;
     DWORD(WINAPI * tg)(void) = timeGetTime;
     m_sendCountdownMs = 0;
     m_lastFrameTimeMs = tg();
@@ -411,7 +411,7 @@ i32 CMulti::EnterState(GameStateId previousState) {
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::LeaveState(GameStateId nextState) {
     m_mgr->VoiceMgr()->PauseAllVoices();
-    m_savedClock = static_cast<i32>(g_frameTime);
+    m_savedGameTimeMs = static_cast<i32>(g_frameTime);
     if (m_returningToMenu) {
         PrepareReturnToMenu();
     }
@@ -452,7 +452,7 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
     g_frameDelta = 0;
     g_lastNow = 0;
     g_frameTime = 0;
-    m_savedClock = 0;
+    m_savedGameTimeMs = 0;
     m_reserved5d0 = 0;
     m_sendCountdownMs = 0;
     m_lastFrameTimeMs = timeGetTime();
@@ -485,7 +485,7 @@ i32 CMulti::LoadLevel(i32 level, i32 unused) {
     g_frameDelta = 0;
     g_lastNow = 0;
     g_frameTime = 0;
-    m_savedClock = 0;
+    m_savedGameTimeMs = 0;
     m_reserved5d0 = 0;
     m_sendCountdownMs = 0;
     m_lastFrameTimeMs = timeGetTime();
@@ -673,7 +673,7 @@ void CMulti::RenderGameFrame() {
     if (m_roundComplete == false && Mgr()->GetFrameGate() != false) {
         RestoreCursorSaveUnder();
         DrawVisibleWorld();
-        m_statusBar->LoadMainStatusBarSprite();
+        m_statusBar->Render();
         CDDrawSurfacePair* h =
             static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair());
         if (h == NULL) {
@@ -690,7 +690,7 @@ void CMulti::RenderGameFrame() {
         (static_cast<CDDrawSurfacePair*>(m_world->GetDrawTarget()->GetBackPair()))
             ->GetSurface()
             ->Fill(0);
-        m_statusBar->Deactivate();
+        m_statusBar->RequestRedraw();
     }
     if (m_selectionDragActive == false) {
         if (Mgr()->m_triggerMgr->m_cameraTrackingActive != false) {
@@ -705,7 +705,7 @@ void CMulti::RenderGameFrame() {
         (m_world->m_level->m_mainPlane)->GetScrollPixelY()
     );
     DrawWorldView();
-    m_statusBar->LoadMainStatusBarSprite();
+    m_statusBar->Render();
     if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
         && m_statusBar->m_activeTab != TAB_GAME) {
         RECT rc;

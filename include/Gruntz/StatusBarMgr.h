@@ -137,8 +137,8 @@ public:
 
     i32 BuildTabzDialog();
     i32 StartChipMachineCycle();
-    i32 LoadBattlezItemConfig(CDDrawSurfaceMgr* world);
-    i32 LoadMainStatusBarSprite();
+    i32 Initialize(CDDrawSurfaceMgr* world);
+    i32 Render();
     i32 UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y);
     i32 UpdateStatusBar(i32 deltaMs);
     void BuildGameTabResumeButton(b32 show);
@@ -164,17 +164,17 @@ public:
     void UpdateChipGrinderStatusBar();
     void NotifyAllSlots();
     void UpdateDestructWarningAnimation();
-    i32 Activate();
+    i32 CreateCollapsedSprite();
     i32 SetTabState(SbiCommandId cmd, SbiMenuItemState state);
 
     void Teardown();
     i32 TryActivate();
-    i32 Deactivate();
+    i32 RequestRedraw();
     i32 SelectToolResource(StatusBarHighlightRow row);
     i32 SelectToyResource(StatusBarHighlightRow row);
     i32 SelectBrickResource(StatusBarHighlightRow row);
     i32 SetTab(GameTabContent tab, b32 forceReload);
-    i32 ClearTabSprites(StatusBarTab idx);
+    i32 ClearButtonHighlights(StatusBarTab idx);
     i32 HitTest(i32 x, i32 y);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
@@ -221,13 +221,13 @@ public:
     }
     i32 SetState(StatusBarDock state);
     i32 RestoreStatusBar();
-    i32 SetSpritePos(i32 x, i32 y);
-    i32 HitTestLayer(i32 x, i32 y);
+    i32 SetCollapsedSpritePosition(i32 x, i32 y);
+    i32 HitTestCollapsedSprite(i32 x, i32 y);
     i32 QueuePickupReward(i32 pickupValue, i32 score);
     void ReportTab(i32 tab);
 
     i32 DockStatusBarLeft();
-    i32 HideRect();
+    i32 HideStatusBar();
 
     void AdvanceTab(i32 reverse);
 
@@ -236,14 +236,14 @@ public:
     StatusBarDock m_position;
     StatusBarDock m_restorePosition;
 
-    class CWwdSpriteObject* m_barSprite;
+    class CWwdSpriteObject* m_collapsedSprite;
 
     CDDrawSurfaceMgr* m_world;
 
     RECT m_barRect;
     i32 m_redrawFrames;
-    i32 m_barX;
-    i32 m_barY;
+    i32 m_collapsedSpriteX;
+    i32 m_collapsedSpriteY;
 
     CPtrList m_tabLists[8];
     StatusBarTab m_activeTab;
@@ -334,8 +334,8 @@ public:
         m_rewardQueue.RemoveAll();
     }
 
-    b32 m_hlBusy;
-    CWarpStoneFly* m_retabNotify;
+    b32 m_layoutLocked;
+    CWarpStoneFly* m_warpStoneFly;
     b32 m_levelOverlayActive;
     b32 m_quitConfirmationActive;
     DestructWarningState m_destructWarningState;
@@ -344,8 +344,8 @@ public:
     CSBI_ImageSet* m_destructButtonImage;
     b32 m_destructButtonLocked;
     b32 m_observerTabAvailable;
-    i32 m_battlezPct[38];
-    i32 m_barFrameGate;
+    i32 m_randomRewardThresholds[38];
+    i32 m_displayHeight;
     SoundBuffer* m_destructWarningSound;
 
     CSBI_WarlordHead* m_warlordHead[4];
@@ -369,7 +369,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_endSecondaryButton = NULL;
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
-    m_barSprite = NULL;
+    m_collapsedSprite = NULL;
     m_world = NULL;
     m_redrawFrames = 0;
     m_activeTab = TAB_NONE;
@@ -377,7 +377,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabsBuilt = false;
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
-    m_barFrameGate = 0x1e0;
+    m_displayHeight = 0x1e0;
     m_tabCycle = 0;
     memset(m_statFlags, 0, sizeof(m_statFlags));
     memset(m_hitRects, 0, sizeof(m_hitRects));
@@ -399,8 +399,8 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_gruntWellTargetLevel = GRUNT_WELL_EMPTY;
     m_gruntWellLevel = GRUNT_WELL_EMPTY;
     m_reserved544 = 1;
-    m_hlBusy = false;
-    m_retabNotify = NULL;
+    m_layoutLocked = false;
+    m_warpStoneFly = NULL;
     m_destructButtonLocked = false;
 }
 

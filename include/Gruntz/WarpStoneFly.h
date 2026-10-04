@@ -28,10 +28,10 @@ public:
     i32 m_targetY;
     double m_currentX;
     double m_currentY;
-    double m_velocityScale;
+    double m_speedPixelsPerMs;
     double m_xDirection;
     double m_yDirection;
-    CImage* m_sprite;
+    CImage* m_frameImage;
     CStatusBarMgr* m_owner;
 };
 

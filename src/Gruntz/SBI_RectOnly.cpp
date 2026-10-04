@@ -95,7 +95,7 @@ i32 g_curPlayer = 0;
 
 // @early-stop
 RVA(0x000fdc00, 0x5c2)
-i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
+i32 CStatusBarMgr::Initialize(CDDrawSurfaceMgr* world) {
     m_world = world;
     m_restorePosition = STATUSBAR_DOCK_RIGHT;
     m_position = STATUSBAR_DOCK_RIGHT;
@@ -103,8 +103,8 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     i32 vy = g_gameReg->m_modeSize.cy;
     SetRect(&m_barRect, vx - 0xa0, 0, vx, SCREEN_H_PX);
     m_redrawFrames = 0;
-    m_barX = vx - 0x45;
-    m_barY = vy - 0x30;
+    m_collapsedSpriteX = vx - 0x45;
+    m_collapsedSpriteY = vy - 0x30;
     m_itemKind = GAME_TAB_MENU;
     m_tabCycle = g_curPlayer;
     Reset();
@@ -117,44 +117,78 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_rezTick = 0;
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
-    m_battlezPct[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
-    m_battlezPct[1] = m_battlezPct[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
-    m_battlezPct[2] = m_battlezPct[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
-    m_battlezPct[3] = g_buteMgr.GetInt("Multiplayer", "RedBrick");
-    m_battlezPct[4] = m_battlezPct[3] + g_buteMgr.GetInt("Multiplayer", "BlueBrick");
-    m_battlezPct[5] = m_battlezPct[4] + g_buteMgr.GetInt("Multiplayer", "GoldBrick");
-    m_battlezPct[6] = m_battlezPct[5] + g_buteMgr.GetInt("Multiplayer", "BlackBrick");
-    m_battlezPct[7] = g_buteMgr.GetInt("Multiplayer", "BabyWalkerz");
-    m_battlezPct[8] = m_battlezPct[7] + g_buteMgr.GetInt("Multiplayer", "BeachBallz");
-    m_battlezPct[9] = m_battlezPct[8] + g_buteMgr.GetInt("Multiplayer", "BigWheelz");
-    m_battlezPct[10] = m_battlezPct[9] + g_buteMgr.GetInt("Multiplayer", "GoKartz");
-    m_battlezPct[11] = m_battlezPct[10] + g_buteMgr.GetInt("Multiplayer", "JackInTheBoxz");
-    m_battlezPct[12] = m_battlezPct[11] + g_buteMgr.GetInt("Multiplayer", "JumpRopez");
-    m_battlezPct[13] = m_battlezPct[12] + g_buteMgr.GetInt("Multiplayer", "PogoStickz");
-    m_battlezPct[14] = m_battlezPct[13] + g_buteMgr.GetInt("Multiplayer", "Scrollz");
-    m_battlezPct[15] = m_battlezPct[14] + g_buteMgr.GetInt("Multiplayer", "SqueakToyz");
-    m_battlezPct[16] = m_battlezPct[15] + g_buteMgr.GetInt("Multiplayer", "Yoyoz");
-    m_battlezPct[17] = g_buteMgr.GetInt("Multiplayer", "Bombz");
-    m_battlezPct[18] = m_battlezPct[17] + g_buteMgr.GetInt("Multiplayer", "Boomerangz");
-    m_battlezPct[19] = m_battlezPct[18] + g_buteMgr.GetInt("Multiplayer", "Brickz");
-    m_battlezPct[20] = m_battlezPct[19] + g_buteMgr.GetInt("Multiplayer", "Clubz");
-    m_battlezPct[21] = m_battlezPct[20] + g_buteMgr.GetInt("Multiplayer", "Gauntletz");
-    m_battlezPct[22] = m_battlezPct[21] + g_buteMgr.GetInt("Multiplayer", "Glovez");
-    m_battlezPct[23] = m_battlezPct[22] + g_buteMgr.GetInt("Multiplayer", "Gooberz");
-    m_battlezPct[24] = m_battlezPct[23] + g_buteMgr.GetInt("Multiplayer", "GravityBootz");
-    m_battlezPct[25] = m_battlezPct[24] + g_buteMgr.GetInt("Multiplayer", "GunHatz");
-    m_battlezPct[26] = m_battlezPct[25] + g_buteMgr.GetInt("Multiplayer", "NerfGunz");
-    m_battlezPct[27] = m_battlezPct[26] + g_buteMgr.GetInt("Multiplayer", "Rockz");
-    m_battlezPct[28] = m_battlezPct[27] + g_buteMgr.GetInt("Multiplayer", "Shieldz");
-    m_battlezPct[29] = m_battlezPct[28] + g_buteMgr.GetInt("Multiplayer", "Shovelz");
-    m_battlezPct[30] = m_battlezPct[29] + g_buteMgr.GetInt("Multiplayer", "Springz");
-    m_battlezPct[31] = m_battlezPct[30] + g_buteMgr.GetInt("Multiplayer", "Spyz");
-    m_battlezPct[32] = m_battlezPct[31] + g_buteMgr.GetInt("Multiplayer", "Swordz");
-    m_battlezPct[33] = m_battlezPct[32] + g_buteMgr.GetInt("Multiplayer", "TimeBombz");
-    m_battlezPct[34] = m_battlezPct[33] + g_buteMgr.GetInt("Multiplayer", "Toobz");
-    m_battlezPct[35] = m_battlezPct[34] + g_buteMgr.GetInt("Multiplayer", "Wandz");
-    m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
-    m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
+    m_randomRewardThresholds[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
+    m_randomRewardThresholds[1] =
+        m_randomRewardThresholds[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
+    m_randomRewardThresholds[2] =
+        m_randomRewardThresholds[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
+    m_randomRewardThresholds[3] = g_buteMgr.GetInt("Multiplayer", "RedBrick");
+    m_randomRewardThresholds[4] =
+        m_randomRewardThresholds[3] + g_buteMgr.GetInt("Multiplayer", "BlueBrick");
+    m_randomRewardThresholds[5] =
+        m_randomRewardThresholds[4] + g_buteMgr.GetInt("Multiplayer", "GoldBrick");
+    m_randomRewardThresholds[6] =
+        m_randomRewardThresholds[5] + g_buteMgr.GetInt("Multiplayer", "BlackBrick");
+    m_randomRewardThresholds[7] = g_buteMgr.GetInt("Multiplayer", "BabyWalkerz");
+    m_randomRewardThresholds[8] =
+        m_randomRewardThresholds[7] + g_buteMgr.GetInt("Multiplayer", "BeachBallz");
+    m_randomRewardThresholds[9] =
+        m_randomRewardThresholds[8] + g_buteMgr.GetInt("Multiplayer", "BigWheelz");
+    m_randomRewardThresholds[10] =
+        m_randomRewardThresholds[9] + g_buteMgr.GetInt("Multiplayer", "GoKartz");
+    m_randomRewardThresholds[11] =
+        m_randomRewardThresholds[10] + g_buteMgr.GetInt("Multiplayer", "JackInTheBoxz");
+    m_randomRewardThresholds[12] =
+        m_randomRewardThresholds[11] + g_buteMgr.GetInt("Multiplayer", "JumpRopez");
+    m_randomRewardThresholds[13] =
+        m_randomRewardThresholds[12] + g_buteMgr.GetInt("Multiplayer", "PogoStickz");
+    m_randomRewardThresholds[14] =
+        m_randomRewardThresholds[13] + g_buteMgr.GetInt("Multiplayer", "Scrollz");
+    m_randomRewardThresholds[15] =
+        m_randomRewardThresholds[14] + g_buteMgr.GetInt("Multiplayer", "SqueakToyz");
+    m_randomRewardThresholds[16] =
+        m_randomRewardThresholds[15] + g_buteMgr.GetInt("Multiplayer", "Yoyoz");
+    m_randomRewardThresholds[17] = g_buteMgr.GetInt("Multiplayer", "Bombz");
+    m_randomRewardThresholds[18] =
+        m_randomRewardThresholds[17] + g_buteMgr.GetInt("Multiplayer", "Boomerangz");
+    m_randomRewardThresholds[19] =
+        m_randomRewardThresholds[18] + g_buteMgr.GetInt("Multiplayer", "Brickz");
+    m_randomRewardThresholds[20] =
+        m_randomRewardThresholds[19] + g_buteMgr.GetInt("Multiplayer", "Clubz");
+    m_randomRewardThresholds[21] =
+        m_randomRewardThresholds[20] + g_buteMgr.GetInt("Multiplayer", "Gauntletz");
+    m_randomRewardThresholds[22] =
+        m_randomRewardThresholds[21] + g_buteMgr.GetInt("Multiplayer", "Glovez");
+    m_randomRewardThresholds[23] =
+        m_randomRewardThresholds[22] + g_buteMgr.GetInt("Multiplayer", "Gooberz");
+    m_randomRewardThresholds[24] =
+        m_randomRewardThresholds[23] + g_buteMgr.GetInt("Multiplayer", "GravityBootz");
+    m_randomRewardThresholds[25] =
+        m_randomRewardThresholds[24] + g_buteMgr.GetInt("Multiplayer", "GunHatz");
+    m_randomRewardThresholds[26] =
+        m_randomRewardThresholds[25] + g_buteMgr.GetInt("Multiplayer", "NerfGunz");
+    m_randomRewardThresholds[27] =
+        m_randomRewardThresholds[26] + g_buteMgr.GetInt("Multiplayer", "Rockz");
+    m_randomRewardThresholds[28] =
+        m_randomRewardThresholds[27] + g_buteMgr.GetInt("Multiplayer", "Shieldz");
+    m_randomRewardThresholds[29] =
+        m_randomRewardThresholds[28] + g_buteMgr.GetInt("Multiplayer", "Shovelz");
+    m_randomRewardThresholds[30] =
+        m_randomRewardThresholds[29] + g_buteMgr.GetInt("Multiplayer", "Springz");
+    m_randomRewardThresholds[31] =
+        m_randomRewardThresholds[30] + g_buteMgr.GetInt("Multiplayer", "Spyz");
+    m_randomRewardThresholds[32] =
+        m_randomRewardThresholds[31] + g_buteMgr.GetInt("Multiplayer", "Swordz");
+    m_randomRewardThresholds[33] =
+        m_randomRewardThresholds[32] + g_buteMgr.GetInt("Multiplayer", "TimeBombz");
+    m_randomRewardThresholds[34] =
+        m_randomRewardThresholds[33] + g_buteMgr.GetInt("Multiplayer", "Toobz");
+    m_randomRewardThresholds[35] =
+        m_randomRewardThresholds[34] + g_buteMgr.GetInt("Multiplayer", "Wandz");
+    m_randomRewardThresholds[36] =
+        m_randomRewardThresholds[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
+    m_randomRewardThresholds[37] =
+        m_randomRewardThresholds[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
     SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
     if ((static_cast<CRegMgr*>(g_gameReg->m_settings))->Get("StatusBar Position", 0) == 1) {
         DockStatusBarLeft();
@@ -171,7 +205,7 @@ void CStatusBarMgr::Teardown() {
 
 RVA(0x000fe3e0, 0x55)
 i32 CStatusBarMgr::SetState(StatusBarDock state) {
-    if (m_hlBusy != false) {
+    if (m_layoutLocked != false) {
         return 1;
     }
     StatusBarDock old = m_position;
@@ -179,12 +213,12 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
         return 1;
     }
     if (state == STATUSBAR_HIDDEN) {
-        if (Activate() == 0) {
+        if (CreateCollapsedSprite() == 0) {
             return 0;
         }
         m_restorePosition = m_position;
     } else {
-        Deactivate();
+        RequestRedraw();
     }
     old = m_position;
     m_position = state;
@@ -194,7 +228,7 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
 
 RVA(0x000fe460, 0x83)
 i32 CStatusBarMgr::DockStatusBarLeft() {
-    if (m_hlBusy == false && m_position != STATUSBAR_DOCK_LEFT) {
+    if (m_layoutLocked == false && m_position != STATUSBAR_DOCK_LEFT) {
         ResetWidgets(true);
         SetRect(&m_barRect, 0, 0, 0xa0, SCREEN_H_PX);
         SetState(STATUSBAR_DOCK_LEFT);
@@ -210,7 +244,7 @@ i32 CStatusBarMgr::DockStatusBarLeft() {
 
 RVA(0x000fe520, 0xa9)
 i32 CStatusBarMgr::DockStatusBarRight() {
-    if (m_hlBusy != false) {
+    if (m_layoutLocked != false) {
         return 1;
     }
     if (m_position == STATUSBAR_DOCK_RIGHT) {
@@ -231,8 +265,8 @@ i32 CStatusBarMgr::DockStatusBarRight() {
 }
 
 RVA(0x000fe600, 0x49)
-i32 CStatusBarMgr::HideRect() {
-    if (m_hlBusy == false && m_position != STATUSBAR_HIDDEN) {
+i32 CStatusBarMgr::HideStatusBar() {
+    if (m_layoutLocked == false && m_position != STATUSBAR_HIDDEN) {
         ResetWidgets(true);
         SetRect(&m_barRect, -1, -1, -1, -1);
         SetState(STATUSBAR_HIDDEN);
@@ -243,7 +277,7 @@ i32 CStatusBarMgr::HideRect() {
 
 RVA(0x000fe670, 0x2b)
 i32 CStatusBarMgr::RestoreStatusBar() {
-    if (m_hlBusy != false) {
+    if (m_layoutLocked != false) {
         return 1;
     }
     if (m_position != STATUSBAR_HIDDEN) {
@@ -257,11 +291,11 @@ i32 CStatusBarMgr::RestoreStatusBar() {
 
 // @early-stop
 RVA(0x000fe6b0, 0x145)
-i32 CStatusBarMgr::LoadMainStatusBarSprite() {
+i32 CStatusBarMgr::Render() {
     if (m_position != STATUSBAR_HIDDEN) {
         if (m_redrawFrames > 0) {
             m_redrawFrames--;
-            i32 v = m_barFrameGate;
+            i32 v = m_displayHeight;
             if (v > SCREEN_H_PX) {
                 CDDSurface* tgt = (g_gameReg->World()->m_drawTarget)->m_backPair->GetSurface();
 
@@ -302,8 +336,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 cur->Render();
             }
         }
-        if (m_retabNotify) {
-            m_retabNotify->Draw();
+        if (m_warpStoneFly) {
+            m_warpStoneFly->Draw();
         }
     }
 
@@ -320,19 +354,19 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 
 // @early-stop
 RVA(0x000fe860, 0x2d)
-i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
-    if (m_barSprite == NULL) {
+i32 CStatusBarMgr::SetCollapsedSpritePosition(i32 x, i32 y) {
+    if (m_collapsedSprite == NULL) {
         return 0;
     }
-    SET_SCREEN_POS(m_barSprite, x, y);
-    m_barX = x;
-    m_barY = y;
+    SET_SCREEN_POS(m_collapsedSprite, x, y);
+    m_collapsedSpriteX = x;
+    m_collapsedSpriteY = y;
     return 1;
 }
 
 RVA(0x000fe8a0, 0x4e)
-i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
-    CWwdSpriteObject* r = m_barSprite;
+i32 CStatusBarMgr::HitTestCollapsedSprite(i32 x, i32 y) {
+    CWwdSpriteObject* r = m_collapsedSprite;
     CImage* L = r->GetFrameImage();
     i32 xlo = r->m_screenX - L->GetAnchorX();
     i32 ylo = r->m_screenY - L->GetAnchorY();
@@ -379,7 +413,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     return 1;
                 case SBICMD_HIDE:
                     HiCueFind();
-                    HideRect();
+                    HideStatusBar();
                     return 1;
                 default:
                     return 0;
@@ -519,7 +553,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             m_tabCycle = IDX(cmd) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
             ResetWidgets(false);
             TryActivate();
-            Deactivate();
+            RequestRedraw();
             return 1;
 
         case TAB_GRUNTZ:
@@ -661,12 +695,12 @@ RVA(0x000ff9f0, 0xe4)
 i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
     if (r == NULL) {
-        ClearTabSprites(TAB_ALL);
+        ClearButtonHighlights(TAB_ALL);
         return 1;
     }
     r->OnPointerDrag(keyFlags, x, y);
     if (r->GetKind() != SBI_KIND_MENU_ITEM) {
-        ClearTabSprites(TAB_ALL);
+        ClearButtonHighlights(TAB_ALL);
         return 1;
     }
     SbiCommandId cmd = r->GetCommandId();
@@ -674,14 +708,14 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
         if (cmd >= SBICMD_TAB_FIRST && cmd <= SBICMD_TAB_LAST) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
         } else {
-            ClearTabSprites(TAB_CONTROLS);
+            ClearButtonHighlights(TAB_CONTROLS);
         }
     }
     if (m_activeTab == TAB_GAME) {
         if (r->GetTab() == TAB_GAME) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
         } else {
-            ClearTabSprites(TAB_GAME);
+            ClearButtonHighlights(TAB_GAME);
         }
     }
     if (m_levelOverlayActive) {
@@ -689,7 +723,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
             return 1;
         }
-        ClearTabSprites(TAB_GAME);
+        ClearButtonHighlights(TAB_GAME);
     }
     return 1;
 }
@@ -746,9 +780,9 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
             cur->Refresh(deltaMs);
         }
     }
-    if (m_retabNotify) {
-        m_retabNotify->Tick(deltaMs);
-        Deactivate();
+    if (m_warpStoneFly) {
+        m_warpStoneFly->Tick(deltaMs);
+        RequestRedraw();
     }
     return 1;
 }
@@ -1020,10 +1054,10 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
         DELETE_STATUS_ITEMS(m_tabLists[t])
     }
     if (keepHost) {
-        if (m_barSprite) {
+        if (m_collapsedSprite) {
 
-            m_barSprite->Hide();
-            m_barSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
+            m_collapsedSprite->Hide();
+            m_collapsedSprite->AddFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
     m_statzTabButton = NULL;
@@ -1041,7 +1075,7 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     m_endSecondaryButton = NULL;
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
-    m_barSprite = NULL;
+    m_collapsedSprite = NULL;
     i32 i;
     memset(m_hitRects, 0, sizeof(m_hitRects));
     memset(m_statObj, 0, sizeof(m_statObj));
@@ -1110,14 +1144,14 @@ void CStatusBarMgr::ClearTabGroup() {
 }
 
 RVA(0x00100cb0, 0x8b)
-i32 CStatusBarMgr::Deactivate() {
+i32 CStatusBarMgr::RequestRedraw() {
     if (m_position == STATUSBAR_HIDDEN) {
 
         i32 w = g_gameReg->m_modeSize.cx;
         i32 h = g_gameReg->m_modeSize.cy;
-        m_barX = w - 0x45;
-        m_barY = h - 0x30;
-        SetSpritePos(w - 0x45, h - 0x30);
+        m_collapsedSpriteX = w - 0x45;
+        m_collapsedSpriteY = h - 0x30;
+        SetCollapsedSpritePosition(w - 0x45, h - 0x30);
     }
 
     POSITION n = m_tabLists[0].GetHeadPosition();
@@ -1137,7 +1171,7 @@ i32 CStatusBarMgr::Deactivate() {
         }
     }
 
-    ClearTabSprites(TAB_ALL);
+    ClearButtonHighlights(TAB_ALL);
     m_redrawFrames = 2;
     return 1;
 }
@@ -1150,7 +1184,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
     }
     switch (cmd) {
         case SBICMD_TAB_STATZ:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->SetState(state, 1);
@@ -1160,7 +1194,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_GRUNTZ:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->ProbeState(state);
@@ -1170,7 +1204,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_RESOURCE:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->ProbeState(state);
@@ -1180,7 +1214,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_MULTIPLAYER:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->ProbeState(state);
@@ -1190,7 +1224,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_GAME:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_statzTabButton->ProbeState(state);
@@ -1200,7 +1234,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameTabButton->SetState(state, 1);
             break;
         case SBICMD_PAUSE:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->SetState(state, 1);
@@ -1211,7 +1245,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_LOAD_GAME:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1222,7 +1256,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_SAVE_GAME:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1233,7 +1267,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_SETTINGS:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1244,7 +1278,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_BOOTY_STATE:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1255,7 +1289,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_QUIT:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameResumePauseButton->ProbeState(state);
@@ -1266,7 +1300,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_gameQuitButton->SetState(state, 1);
             break;
         case SBICMD_GAME_TAB:
-            if (m_hlBusy) {
+            if (m_layoutLocked) {
                 return 1;
             }
             m_gameQuitButton->SetState(state, 1);
@@ -1296,56 +1330,56 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
 }
 
 RVA(0x00101420, 0x110)
-i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
+i32 CStatusBarMgr::ClearButtonHighlights(StatusBarTab idx) {
     if (idx == TAB_ALL || idx == TAB_CONTROLS) {
         if (m_statzTabButton) {
-            m_statzTabButton->Blit();
+            m_statzTabButton->ClearHighlight();
         }
         if (m_gruntzTabButton) {
-            m_gruntzTabButton->Blit();
+            m_gruntzTabButton->ClearHighlight();
         }
         if (m_resourceTabButton) {
-            m_resourceTabButton->Blit();
+            m_resourceTabButton->ClearHighlight();
         }
         if (m_multiTabButton) {
-            m_multiTabButton->Blit();
+            m_multiTabButton->ClearHighlight();
         }
         if (m_gameTabButton) {
-            m_gameTabButton->Blit();
+            m_gameTabButton->ClearHighlight();
         }
     }
     if (idx == TAB_GAME || idx == TAB_ALL) {
         if (m_gameResumePauseButton) {
-            m_gameResumePauseButton->Blit();
+            m_gameResumePauseButton->ClearHighlight();
         }
         if (m_gameLoadButton) {
-            m_gameLoadButton->Blit();
+            m_gameLoadButton->ClearHighlight();
         }
         if (m_gameSaveButton) {
-            m_gameSaveButton->Blit();
+            m_gameSaveButton->ClearHighlight();
         }
         if (m_gameSettingsButton) {
-            m_gameSettingsButton->Blit();
+            m_gameSettingsButton->ClearHighlight();
         }
         if (m_gameHelpButton) {
-            m_gameHelpButton->Blit();
+            m_gameHelpButton->ClearHighlight();
         }
         if (m_gameQuitButton) {
-            m_gameQuitButton->Blit();
+            m_gameQuitButton->ClearHighlight();
         }
     }
     if (idx == TAB_DIALOG || idx == TAB_ALL) {
         if (m_endPrimaryButton) {
-            m_endPrimaryButton->Blit();
+            m_endPrimaryButton->ClearHighlight();
         }
         if (m_endSecondaryButton) {
-            m_endSecondaryButton->Blit();
+            m_endSecondaryButton->ClearHighlight();
         }
         if (m_confirmYesButton) {
-            m_confirmYesButton->Blit();
+            m_confirmYesButton->ClearHighlight();
         }
         if (m_confirmNoButton) {
-            m_confirmNoButton->Blit();
+            m_confirmNoButton->ClearHighlight();
         }
     }
     return 1;
@@ -1554,7 +1588,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
         g_gameReg->ReportError(s_activateErrId, s_setTabErrTag);
         return 0;
     }
-    Deactivate();
+    RequestRedraw();
     return 1;
 }
 
@@ -1568,7 +1602,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(b32 show) {
     }
     if (m_gameResumePauseButton) {
         m_gameResumePauseButton->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
-        Deactivate();
+        RequestRedraw();
         m_gameResumePauseButton->RequestRedraw();
     }
     m_chatBoxDisabled = true;
@@ -1578,7 +1612,7 @@ RVA(0x00102200, 0x37)
 void CStatusBarMgr::BuildGameTabPauseButton() {
     if (m_gameResumePauseButton) {
         m_gameResumePauseButton->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
-        Deactivate();
+        RequestRedraw();
         m_gameResumePauseButton->RequestRedraw();
     }
     m_chatBoxDisabled = false;
@@ -2258,7 +2292,7 @@ RVA(0x00104d60, 0x48)
 i32 CStatusBarMgr::TryActivate() {
 
     if (m_position == STATUSBAR_HIDDEN) {
-        return Activate();
+        return CreateCollapsedSprite();
     }
     if (!BuildStatusBarTabs()) {
         g_gameReg->ReportError(s_activateErrId, s_activateErrTag);
@@ -2269,25 +2303,25 @@ i32 CStatusBarMgr::TryActivate() {
 }
 
 RVA(0x00104dd0, 0x6b)
-i32 CStatusBarMgr::Activate() {
-    if (m_barSprite != NULL) {
+i32 CStatusBarMgr::CreateCollapsedSprite() {
+    if (m_collapsedSprite != NULL) {
         return 0;
     }
     i32 w = g_gameReg->m_modeSize.cx;
     i32 d = g_gameReg->m_modeSize.cy;
-    CLAMP_UPPER_INPLACE(m_barX, w - 0x22);
-    if (m_barY > d - 9) {
-        m_barY = d - 0x22;
+    CLAMP_UPPER_INPLACE(m_collapsedSpriteX, w - 0x22);
+    if (m_collapsedSpriteY > d - 9) {
+        m_collapsedSpriteY = d - 0x22;
     }
-    m_barSprite = (m_world)->ChildGroup()->CreateSprite(
+    m_collapsedSprite = (m_world)->ChildGroup()->CreateSprite(
         0,
-        m_barX,
-        m_barY,
+        m_collapsedSpriteX,
+        m_collapsedSpriteY,
         SORTKEY_OVERLAY,
         "StatusBarSprite",
         IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)
     );
-    return m_barSprite != NULL;
+    return m_collapsedSprite != NULL;
 }
 
 RVA(0x00104e60, 0xed)
@@ -2475,14 +2509,14 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != SLOT_ARMED) {
         return 0;
     }
-    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_hlBusy == false) {
+    if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ && m_layoutLocked == false) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
         if (m_activeTab != TAB_GRUNTZ) {
             SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
         }
-        Deactivate();
+        RequestRedraw();
     }
     sp->m_state = SLOT_FILLING;
 
@@ -3289,8 +3323,8 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     ClearRewardQueue();
     ClockInterval* clock = &m_reserved2b0;
     clock->Clear();
-    m_hlBusy = false;
-    SAFE_DELETE(m_retabNotify);
+    m_layoutLocked = false;
+    SAFE_DELETE(m_warpStoneFly);
     ExitMode();
     m_observerTabAvailable = false;
     m_destructButtonLocked = false;
@@ -3312,79 +3346,79 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
             }
         }
     } else {
-        i32 r1 = WapRand(m_battlezPct[2]);
-        if (r1 <= m_battlezPct[0]) {
-            i32 r = WapRand(m_battlezPct[37]);
-            if (r <= m_battlezPct[17]) {
+        i32 r1 = WapRand(m_randomRewardThresholds[2]);
+        if (r1 <= m_randomRewardThresholds[0]) {
+            i32 r = WapRand(m_randomRewardThresholds[37]);
+            if (r <= m_randomRewardThresholds[17]) {
                 result = PICKUP_BOMB;
-            } else if (r <= m_battlezPct[18]) {
+            } else if (r <= m_randomRewardThresholds[18]) {
                 result = PICKUP_BOOMERANG;
-            } else if (r <= m_battlezPct[19]) {
+            } else if (r <= m_randomRewardThresholds[19]) {
                 result = PICKUP_BRICK;
-            } else if (r <= m_battlezPct[20]) {
+            } else if (r <= m_randomRewardThresholds[20]) {
                 result = PICKUP_CLUB;
-            } else if (r <= m_battlezPct[21]) {
+            } else if (r <= m_randomRewardThresholds[21]) {
                 result = PICKUP_GAUNTLETZ;
-            } else if (r <= m_battlezPct[22]) {
+            } else if (r <= m_randomRewardThresholds[22]) {
                 result = PICKUP_GLOVEZ;
-            } else if (r <= m_battlezPct[23]) {
+            } else if (r <= m_randomRewardThresholds[23]) {
                 result = PICKUP_GOOBER;
-            } else if (r <= m_battlezPct[24]) {
+            } else if (r <= m_randomRewardThresholds[24]) {
                 result = PICKUP_GRAVITYBOOTZ;
-            } else if (r <= m_battlezPct[25]) {
+            } else if (r <= m_randomRewardThresholds[25]) {
                 result = PICKUP_GUNHAT;
-            } else if (r <= m_battlezPct[26]) {
+            } else if (r <= m_randomRewardThresholds[26]) {
                 result = PICKUP_NERFGUN;
-            } else if (r <= m_battlezPct[27]) {
+            } else if (r <= m_randomRewardThresholds[27]) {
                 result = PICKUP_ROCK;
-            } else if (r <= m_battlezPct[28]) {
+            } else if (r <= m_randomRewardThresholds[28]) {
                 result = PICKUP_SHIELD;
-            } else if (r <= m_battlezPct[29]) {
+            } else if (r <= m_randomRewardThresholds[29]) {
                 result = PICKUP_SHOVEL;
-            } else if (r <= m_battlezPct[30]) {
+            } else if (r <= m_randomRewardThresholds[30]) {
                 result = PICKUP_SPRING;
-            } else if (r <= m_battlezPct[31]) {
+            } else if (r <= m_randomRewardThresholds[31]) {
                 result = PICKUP_SPY;
-            } else if (r <= m_battlezPct[32]) {
+            } else if (r <= m_randomRewardThresholds[32]) {
                 result = PICKUP_SWORD;
-            } else if (r <= m_battlezPct[33]) {
+            } else if (r <= m_randomRewardThresholds[33]) {
                 result = PICKUP_TIMEBOMB;
-            } else if (r <= m_battlezPct[34]) {
+            } else if (r <= m_randomRewardThresholds[34]) {
                 result = PICKUP_TOOB;
-            } else if (r <= m_battlezPct[35]) {
+            } else if (r <= m_randomRewardThresholds[35]) {
                 result = PICKUP_WAND;
             } else {
-                result = r > m_battlezPct[36] ? PICKUP_WINGZ : PICKUP_WELDER;
+                result = r > m_randomRewardThresholds[36] ? PICKUP_WINGZ : PICKUP_WELDER;
             }
-        } else if (r1 <= m_battlezPct[1]) {
-            i32 r = WapRand(m_battlezPct[16]);
-            if (r <= m_battlezPct[7]) {
+        } else if (r1 <= m_randomRewardThresholds[1]) {
+            i32 r = WapRand(m_randomRewardThresholds[16]);
+            if (r <= m_randomRewardThresholds[7]) {
                 result = PICKUP_BABYWALKER;
-            } else if (r <= m_battlezPct[8]) {
+            } else if (r <= m_randomRewardThresholds[8]) {
                 result = PICKUP_BEACHBALL;
-            } else if (r <= m_battlezPct[9]) {
+            } else if (r <= m_randomRewardThresholds[9]) {
                 result = PICKUP_BIGWHEEL;
-            } else if (r <= m_battlezPct[10]) {
+            } else if (r <= m_randomRewardThresholds[10]) {
                 result = PICKUP_GOKART;
-            } else if (r <= m_battlezPct[11]) {
+            } else if (r <= m_randomRewardThresholds[11]) {
                 result = PICKUP_JACKINTHEBOX;
-            } else if (r <= m_battlezPct[12]) {
+            } else if (r <= m_randomRewardThresholds[12]) {
                 result = PICKUP_JUMPROPE;
-            } else if (r <= m_battlezPct[13]) {
+            } else if (r <= m_randomRewardThresholds[13]) {
                 result = PICKUP_POGOSTICK;
-            } else if (r <= m_battlezPct[14]) {
+            } else if (r <= m_randomRewardThresholds[14]) {
                 result = PICKUP_SCROLL;
             } else {
-                result = r > m_battlezPct[15] ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
+                result = r > m_randomRewardThresholds[15] ? PICKUP_YOYO : PICKUP_SQUEAKTOY;
             }
         } else {
-            i32 r = WapRand(m_battlezPct[6]);
-            if (r <= m_battlezPct[3]) {
+            i32 r = WapRand(m_randomRewardThresholds[6]);
+            if (r <= m_randomRewardThresholds[3]) {
                 result = PICKUP_REDBRICK;
-            } else if (r <= m_battlezPct[4]) {
+            } else if (r <= m_randomRewardThresholds[4]) {
                 result = PICKUP_BLUEBRICK;
             } else {
-                result = r > m_battlezPct[5] ? PICKUP_BLACKBRICK : PICKUP_GOLDBRICK;
+                result = r > m_randomRewardThresholds[5] ? PICKUP_BLACKBRICK : PICKUP_GOLDBRICK;
             }
         }
         if (result == PICKUP_WARPSTONE) {
@@ -3464,7 +3498,7 @@ i32 CStatusBarMgr::SerializeDispatch(
             break;
     }
 
-    if (m_retabNotify != NULL) {
+    if (m_warpStoneFly != NULL) {
         i32 tmp = 1;
         if (mode == SERIAL_SAVE) {
             s->Write(&tmp, sizeof(tmp));
@@ -3477,14 +3511,14 @@ i32 CStatusBarMgr::SerializeDispatch(
             s->Read(&tmp, sizeof(tmp));
             if (tmp != 0) {
                 CWarpStoneFly* c = new CWarpStoneFly();
-                m_retabNotify = c;
+                m_warpStoneFly = c;
                 c->m_owner = this;
             }
         }
     }
 
-    if (m_retabNotify != NULL) {
-        if (m_retabNotify->SerializeDispatch(s, mode, typeId, payload) == 0) {
+    if (m_warpStoneFly != NULL) {
+        if (m_warpStoneFly->SerializeDispatch(s, mode, typeId, payload) == 0) {
             return 0;
         }
     }
@@ -3608,7 +3642,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     SER(m_destructButtonImage)
 #undef SER
 
-    Deactivate();
+    RequestRedraw();
     return 1;
 }
 
@@ -3628,16 +3662,16 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 
     {
         i32 tmp = 0;
-        if (m_barSprite) {
-            tmp = m_barSprite->GetObjectId();
+        if (m_collapsedSprite) {
+            tmp = m_collapsedSprite->GetObjectId();
         }
         s->Write(&tmp, sizeof(tmp));
     }
 
     s->Write(&m_barRect.left, sizeof(m_barRect));
     s->Write(&m_redrawFrames, sizeof(m_redrawFrames));
-    s->Write(&m_barX, sizeof(m_barX));
-    s->Write(&m_barY, sizeof(m_barY));
+    s->Write(&m_collapsedSpriteX, sizeof(m_collapsedSpriteX));
+    s->Write(&m_collapsedSpriteY, sizeof(m_collapsedSpriteY));
     s->Write(&m_itemKind, sizeof(m_itemKind));
     s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
@@ -3661,7 +3695,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_reserved544, sizeof(m_reserved544));
     s->Write(&m_fallingItemRect, sizeof(m_fallingItemRect));
     s->Write(&m_machineItemRect, sizeof(m_machineItemRect));
-    s->Write(&m_hlBusy, sizeof(m_hlBusy));
+    s->Write(&m_layoutLocked, sizeof(m_layoutLocked));
     s->Write(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
     s->Write(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
     s->Write(&m_machinePhase, sizeof(m_machinePhase));
@@ -3720,12 +3754,12 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(this, 4);
     ar->Read(&m_restorePosition, sizeof(m_restorePosition));
 
-    SERIALREF(m_barSprite);
+    SERIALREF(m_collapsedSprite);
 
     ar->Read(&m_barRect.left, sizeof(m_barRect));
     ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
-    ar->Read(&m_barX, sizeof(m_barX));
-    ar->Read(&m_barY, sizeof(m_barY));
+    ar->Read(&m_collapsedSpriteX, sizeof(m_collapsedSpriteX));
+    ar->Read(&m_collapsedSpriteY, sizeof(m_collapsedSpriteY));
     ar->Read(&m_itemKind, sizeof(m_itemKind));
     ar->Read(&m_tabCycle, sizeof(m_tabCycle));
 
@@ -3749,7 +3783,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_reserved544, sizeof(m_reserved544));
     ar->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
     ar->Read(&m_machineItemRect, sizeof(m_machineItemRect));
-    ar->Read(&m_hlBusy, sizeof(m_hlBusy));
+    ar->Read(&m_layoutLocked, sizeof(m_layoutLocked));
     ar->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
     ar->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
     ar->Read(&m_machinePhase, sizeof(m_machinePhase));
@@ -3809,11 +3843,11 @@ i32 CStatusBarMgr::FindReadySlot() {
 
 RVA(0x00109ad0, 0xa9)
 i32 CStatusBarMgr::StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment) {
-    if (m_retabNotify) {
+    if (m_warpStoneFly) {
         return 0;
     }
     CWarpStoneFly* o = new CWarpStoneFly();
-    m_retabNotify = o;
+    m_warpStoneFly = o;
     if (o == NULL) {
         return 0;
     }
@@ -3822,7 +3856,7 @@ i32 CStatusBarMgr::StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragm
 
 RVA(0x00109bb0, 0xb)
 CWarpStoneFly::CWarpStoneFly() {
-    m_sprite = NULL;
+    m_frameImage = NULL;
     m_owner = NULL;
 }
 
@@ -3832,7 +3866,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
 
     i32 n = IDX(fragment) + 1;
     CImage* frame = g_gameReg->World()->FindFrame("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", n);
-    m_sprite = frame;
+    m_frameImage = frame;
     if (frame == NULL) {
 
         return 0;
@@ -3865,7 +3899,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDword("WarpStone", "FlyTime", 0x5dc);
 
-    m_velocityScale = dist / static_cast<double>(flyTime);
+    m_speedPixelsPerMs = dist / static_cast<double>(flyTime);
     m_xDirection = static_cast<double>(deltaX) / dist;
     m_yDirection = static_cast<double>(dyv) / dist;
 
@@ -3899,12 +3933,12 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Read(&m_targetY, sizeof(m_targetY));
             arc->Read(&m_currentX, sizeof(m_currentX));
             arc->Read(&m_currentY, sizeof(m_currentY));
-            arc->Read(&m_velocityScale, sizeof(m_velocityScale));
+            arc->Read(&m_speedPixelsPerMs, sizeof(m_speedPixelsPerMs));
             arc->Read(&m_xDirection, sizeof(m_xDirection));
             arc->Read(&m_yDirection, sizeof(m_yDirection));
             char name[SERIAL_NAME_LEN];
             i32 index;
-            SERIAL_READ_FRAME(arc, lvl, name, index, m_sprite);
+            SERIAL_READ_FRAME(arc, lvl, name, index, m_frameImage);
             return 1;
         }
         case SERIAL_SAVE: {
@@ -3914,12 +3948,12 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Write(&m_targetY, sizeof(m_targetY));
             arc->Write(&m_currentX, sizeof(m_currentX));
             arc->Write(&m_currentY, sizeof(m_currentY));
-            arc->Write(&m_velocityScale, sizeof(m_velocityScale));
+            arc->Write(&m_speedPixelsPerMs, sizeof(m_speedPixelsPerMs));
             arc->Write(&m_xDirection, sizeof(m_xDirection));
             arc->Write(&m_yDirection, sizeof(m_yDirection));
             g_serialCounter++;
 
-            CImage* obj = m_sprite;
+            CImage* obj = m_frameImage;
             char name[SERIAL_NAME_LEN];
             i32 index = 0;
             memset(name, 0, SERIAL_NAME_LEN);
@@ -3942,19 +3976,19 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     if (currentX == m_targetX && currentY == m_targetY) {
         WarpStoneFragment fragment = m_fragment;
         g_gameReg->GetTriggerMgr()->AddWarpStoneFragment(fragment);
-        m_owner->m_hlBusy = false;
+        m_owner->m_layoutLocked = false;
         if (m_owner->GetState() != STATUSBAR_HIDDEN && m_owner->GetActiveTab() == TAB_GAME) {
             m_owner->ResetWidgets(false);
             m_owner->TryActivate();
         }
         CStatusBarMgr* owner = m_owner;
-        SAFE_DELETE(owner->m_retabNotify);
+        SAFE_DELETE(owner->m_warpStoneFly);
         return 1;
     }
 
     double t = static_cast<double>(dt);
-    double newX = m_currentX + (t * m_velocityScale) * m_xDirection;
-    double newY = m_currentY + (t * m_yDirection) * m_velocityScale;
+    double newX = m_currentX + (t * m_speedPixelsPerMs) * m_xDirection;
+    double newY = m_currentY + (t * m_yDirection) * m_speedPixelsPerMs;
     m_currentX = newX;
     m_currentY = newY;
 
@@ -3982,7 +4016,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
 
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
-    m_sprite->RenderFrame(
+    m_frameImage->RenderFrame(
         g_gameReg->World()->GetDrawTarget()->GetBackPair(),
         static_cast<i32>(m_currentX),
         static_cast<i32>(m_currentY),
@@ -4285,7 +4319,7 @@ void CStatusBarMgr::ExitMode() {
     m_endSecondaryButton = NULL;
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
-    m_hlBusy = false;
+    m_layoutLocked = false;
     if (wasQuitConfirmation == false && g_gameReg->GetGameMode() != GAMEMODE_QUESTZ) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
@@ -4294,13 +4328,13 @@ void CStatusBarMgr::ExitMode() {
             SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         SetTab(GAME_TAB_MENU, true);
-        Deactivate();
+        RequestRedraw();
     } else {
         m_chatBoxDisabled = false;
     }
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
-    Deactivate();
+    RequestRedraw();
 }
 
 RVA(0x0010b320, 0x167)
@@ -4346,7 +4380,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
 
 RVA(0x0010b4f0, 0xaa)
 void CStatusBarMgr::AdvanceTab(i32 reverse) {
-    if (m_hlBusy != false) {
+    if (m_layoutLocked != false) {
         return;
     }
     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
@@ -4357,7 +4391,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     }
     if (m_activeTab != TAB_MULTIPLAYER) {
         SetTabState(SBICMD_TAB_MULTIPLAYER, MENUITEM_SELECTED);
-        Deactivate();
+        RequestRedraw();
         return;
     }
     if (reverse != 0) {
@@ -4371,7 +4405,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     }
     ResetWidgets(false);
     TryActivate();
-    Deactivate();
+    RequestRedraw();
 }
 
 RVA(0x0010b5d0, 0xdd)

@@ -2300,14 +2300,14 @@ i32 CGrunt::ApplyPickup(PickupType pickupType, i32 fresh, i32 scrollSpell, i32 d
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             CStatusBarMgr* sb = play->m_statusBar;
-            if (sb->m_hlBusy == false) {
+            if (sb->m_layoutLocked == false) {
                 if (sb->GetState() == STATUSBAR_HIDDEN) {
                     sb->RestoreStatusBar();
                 }
                 if (sb->GetActiveTab() != TAB_RESOURCE) {
                     sb->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
                 }
-                sb->Deactivate();
+                sb->RequestRedraw();
             }
             play->m_statusBar->UpdateRezMachineWakeStatusBar();
             return 1;

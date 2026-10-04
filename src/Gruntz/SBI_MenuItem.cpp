@@ -122,7 +122,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
         m_owner->ClearTabGroup();
         m_owner->m_activeTab = static_cast<StatusBarTab>(IDX(m_cmd));
         m_owner->LoadTabSprites();
-        m_owner->Deactivate();
+        m_owner->RequestRedraw();
     } else if (state == MENUITEM_HIGHLIGHT && playHighlightSound) {
 
         PlayRegistryCueIfElapsed(g_gameReg->World()->SoundRegistry(), "GAME_TABHIGHLIGHT2");
@@ -150,7 +150,7 @@ i32 CSBI_MenuItem::ProbeState(SbiMenuItemState state) {
 }
 
 RVA(0x000e84f0, 0x16)
-i32 CSBI_MenuItem::Blit() {
+i32 CSBI_MenuItem::ClearHighlight() {
     if (m_state != MENUITEM_HIGHLIGHT) {
         return 1;
     }

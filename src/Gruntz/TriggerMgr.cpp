@@ -911,7 +911,7 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
     LONG viewportY = worldY;
     level->m_mainPlane->WorldToViewport(&viewportX, &viewportY);
     CStatusBarMgr* sbi = play->m_statusBar;
-    if (sbi->m_hlBusy == false) {
+    if (sbi->m_layoutLocked == false) {
         if (sbi->GetState() == STATUSBAR_HIDDEN) {
             sbi->RestoreStatusBar();
         }
@@ -919,10 +919,10 @@ void CTriggerMgr::CollectLevelWarpStone(i32 worldX, i32 worldY) {
             sbi->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
         sbi->SetTab(GAME_TAB_MENU, true);
-        sbi->Deactivate();
+        sbi->RequestRedraw();
     }
     if (play->m_statusBar->StartWarpStoneFly(viewportX, viewportY, fragment) != 0) {
-        play->m_statusBar->m_hlBusy = true;
+        play->m_statusBar->m_layoutLocked = true;
     } else {
         AddWarpStoneFragment(fragment);
     }
@@ -939,8 +939,8 @@ void CTriggerMgr::LoseLevelWarpStone() {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     CStatusBarMgr* st = world->m_statusBar;
-    SAFE_DELETE(st->m_retabNotify);
-    world->m_statusBar->m_hlBusy = false;
+    SAFE_DELETE(st->m_warpStoneFly);
+    world->m_statusBar->m_layoutLocked = false;
     if (m_collectedWarpStoneFragments.GetSize() > 0) {
         m_collectedWarpStoneFragments.RemoveAt(m_collectedWarpStoneFragments.GetUpperBound(), 1);
         CStatusBarMgr* ctx = world->m_statusBar;

@@ -1363,7 +1363,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
                     st->ResetViewport();
                     if (st->m_statusBar != NULL) {
-                        st->m_statusBar->m_barFrameGate = m_modeSize.cy;
+                        st->m_statusBar->m_displayHeight = m_modeSize.cy;
                         if (st->m_statusBar->GetState() == STATUSBAR_DOCK_RIGHT) {
                             st->m_statusBar->DockStatusBarLeft();
                             st->m_statusBar->DockStatusBarRight();
@@ -1402,7 +1402,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
         CPlay* st = static_cast<CPlay*>(m_curState);
         st->ResetViewport();
         if (st->m_statusBar != NULL) {
-            st->m_statusBar->m_barFrameGate = h;
+            st->m_statusBar->m_displayHeight = h;
             if (st->m_statusBar->GetState() == STATUSBAR_DOCK_RIGHT) {
                 st->m_statusBar->DockStatusBarLeft();
                 st->m_statusBar->DockStatusBarRight();
@@ -2356,7 +2356,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
     CPlay* o = static_cast<CPlay*>(PickPausedThenPlayState());
     if (o) {
         if (o->m_statusBar) {
-            (static_cast<CStatusBarMgr*>(o->m_statusBar))->Deactivate();
+            (static_cast<CStatusBarMgr*>(o->m_statusBar))->RequestRedraw();
         }
         o->FinishSelectionDrag();
     }
@@ -2405,7 +2405,7 @@ i32 CGruntzMgr::RunMfcDialog(CDialog* dlg, b32 notify) {
     CPlay* o = static_cast<CPlay*>(PickPausedThenPlayState());
     if (o) {
         if (o->m_statusBar) {
-            (static_cast<CStatusBarMgr*>(o->m_statusBar))->Deactivate();
+            (static_cast<CStatusBarMgr*>(o->m_statusBar))->RequestRedraw();
         }
         o->FinishSelectionDrag();
     }
