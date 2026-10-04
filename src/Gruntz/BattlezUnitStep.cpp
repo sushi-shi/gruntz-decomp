@@ -83,9 +83,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             if (g->MoveToTile(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
-            g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
-            g->SetAiState(AISTATE_ATTACK);
-            g->ResetDwell();
+            g->SetAiAttackTarget(nb);
             AcceptAlways(g);
             return 1;
         }
@@ -124,9 +122,7 @@ inflight: {
     }
     if (nb != NULL && cur != nb) {
         g->RecycleCoords();
-        g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
-        g->SetAiState(AISTATE_ATTACK);
-        g->ResetDwell();
+        g->SetAiAttackTarget(nb);
         {
             if (g->MoveToTile(nb->GetScreenTileX(), nb->GetScreenTileY(), 0, 0xd87, 0, 0) == 0) {
                 return 1;

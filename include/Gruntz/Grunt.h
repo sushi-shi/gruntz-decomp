@@ -326,6 +326,7 @@ public:
     }
 
     void ResetToSeek();
+    void SetAiAttackTarget(CGrunt* target);
     void ResetArrivalFlags();
     void RepathToward(CGrunt* target);
 

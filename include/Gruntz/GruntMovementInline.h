@@ -35,6 +35,12 @@ inline void CGrunt::SetAttackTargetIdentity(i32 playerIndex, i32 unitIndex) {
     m_attackTargetUnitIndex = unitIndex;
 }
 
+inline void CGrunt::SetAiAttackTarget(CGrunt* target) {
+    m_arrivalCell.Set(target->GetPlayerIndex(), target->GetUnitIndex());
+    SetAiState(AISTATE_ATTACK);
+    ResetDwell();
+}
+
 inline void CGrunt::ResetToSeek() {
     UNSET_COORD(m_arrivalCell);
     SetAiState(AISTATE_SEEK);
