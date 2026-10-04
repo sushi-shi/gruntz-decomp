@@ -21,19 +21,19 @@ inline PickupType CGrunt::ResolveEquippedToolType(PickupType activePickupType) c
 }
 
 #define EQUIPPED_TOOL_TERNARY_LE(grunt)                                                            \
-    ((grunt->m_activePickupType <= PICKUP_EQUIPPABLE_LAST) ? grunt->m_activePickupType             \
-                                                           : grunt->m_savedToolType)
+    ((grunt->GetActivePickupType() <= PICKUP_EQUIPPABLE_LAST) ? grunt->GetActivePickupType()       \
+                                                              : grunt->m_savedToolType)
 
 #define EQUIPPED_TOOL_TERNARY_GT(grunt)                                                            \
-    ((grunt->m_activePickupType > PICKUP_EQUIPPABLE_LAST) ? grunt->m_savedToolType                 \
-                                                          : grunt->m_activePickupType)
+    ((grunt->GetActivePickupType() > PICKUP_EQUIPPABLE_LAST) ? grunt->m_savedToolType              \
+                                                             : grunt->GetActivePickupType())
 
 #define EQUIPPED_TOOL_OF_TERNARY_LE(grunt, activePickupType)                                       \
     ((activePickupType <= PICKUP_EQUIPPABLE_LAST) ? activePickupType : grunt->m_savedToolType)
 
 #define ADD_BATTLEZ_TRAVERSAL_FLAGS(grunt, flags)                                                  \
     {                                                                                              \
-        PickupType prim = (grunt)->m_activePickupType;                                             \
+        PickupType prim = (grunt)->GetActivePickupType();                                          \
         if ((grunt)->ResolveEquippedToolType(prim) == PICKUP_TOOB) {                               \
             (flags) |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;                                               \
         } else if ((grunt)->ResolveEquippedToolType(prim) == PICKUP_SPRING) {                      \

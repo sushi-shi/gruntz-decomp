@@ -2549,7 +2549,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
     m_pendingFxKind = 0;
     CGrunt* cell = SoleSelectedGrunt();
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
-        if (cell->m_activePickupType >= PICKUP_TOYZ_FIRST) {
+        if (cell->GetActivePickupType() >= PICKUP_TOYZ_FIRST) {
             CloseActionOptionsMenu();
         } else {
             PickupType kind = cell->GetCarriedToyType();

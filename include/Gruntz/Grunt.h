@@ -180,6 +180,9 @@ public:
     PickupType GetPowerupType() const {
         return m_powerupType;
     }
+    PickupType GetActivePickupType() const {
+        return m_activePickupType;
+    }
     PickupType GetCarriedToyType() const {
         return m_carriedToyType;
     }

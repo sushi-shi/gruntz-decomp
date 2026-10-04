@@ -19,7 +19,7 @@ inline void ClearMoveTileFx(CGrunt* grunt) {
         grunt->GetUnitIndex(),
         grunt->m_moveTile.m_x,
         grunt->m_moveTile.m_y,
-        grunt->m_activePickupType,
+        grunt->GetActivePickupType(),
         WWDDRAW_NO_ANIMATION
     );
 }

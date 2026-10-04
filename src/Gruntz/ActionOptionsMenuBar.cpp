@@ -128,7 +128,7 @@ i32 CActionOptionsMenuBar::Refresh() {
         m_buttonIcon[0] = PICKUP_NONE;
     } else {
         m_buttonIcon[1] = grunt->GetCarriedToyType();
-        if (grunt->m_activePickupType >= PICKUP_TOYZ_FIRST) {
+        if (grunt->GetActivePickupType() >= PICKUP_TOYZ_FIRST) {
             m_buttonState[1] = ACTIONOPTION_DISABLED;
         } else if (m_buttonState[1] == ACTIONOPTION_DISABLED) {
             m_buttonState[1] = ACTIONOPTION_NORMAL;

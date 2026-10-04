@@ -161,7 +161,7 @@ i32 CSecretLevelTrigger::Tick() {
         i32 lvl = spr->m_powerup;
         i32 lyr = spr->m_damage;
 
-        if (lvl != IDX(PICKUP_NONE) && IDX(hit->m_activePickupType) != lvl) {
+        if (lvl != IDX(PICKUP_NONE) && IDX(hit->GetActivePickupType()) != lvl) {
             ok = false;
         }
         if (lyr != IDX(PICKUP_NONE) && IDX(hit->GetCarriedToyType()) != lyr) {

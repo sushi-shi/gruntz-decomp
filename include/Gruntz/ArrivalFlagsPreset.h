@@ -38,7 +38,7 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
         (grunt)->m_arrivalRerollTiming.Clear();                                                    \
         (grunt)->m_guarding = true;                                                                \
         (grunt)->m_defenderPx = (grunt)->m_lastTilePx;                                             \
-        PickupType kind = (grunt)->m_activePickupType;                                             \
+        PickupType kind = (grunt)->GetActivePickupType();                                          \
                                                                                                    \
         switch (kind) {                                                                            \
             case PICKUP_BOOMERANG:                                                                 \

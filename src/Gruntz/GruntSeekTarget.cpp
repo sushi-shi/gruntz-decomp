@@ -178,7 +178,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             do {
                 CGrunt* sv = slots[i];
                 if (sv != NULL && sv->IsEntranceCommitted() != false) {
-                    PickupType k = sv->m_activePickupType;
+                    PickupType k = sv->GetActivePickupType();
                     if (EQUIPPED_TOOL_OF_TERNARY_LE(sv, k) != PICKUP_NONE
                         && EQUIPPED_TOOL_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE
                         && EQUIPPED_TOOL_OF_TERNARY_LE(sv, k) != PICKUP_BOMB) {
