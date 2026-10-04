@@ -1251,8 +1251,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         }
     } else if (m_walkStarted != false) {
 
-        CWwdSpriteObject* spr = m_animSprites[m_stepIndex];
-        if (spr->m_animationCursor.IsComplete()) {
+        CAniAdvanceCursor* cursor = &m_animSprites[m_stepIndex]->m_animationCursor;
+        if (cursor->IsComplete()) {
             m_stepIndex++;
             if (m_stepIndex == g_gameReg->GetGameStats()->m_levelNumber % 4) {
                 m_stepIndex = 4;
@@ -1266,7 +1266,9 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             }
         }
     } else {
-        m_animSprites[m_stepIndex]->m_screenY -= 3;
+        i32 nextY = m_animSprites[m_stepIndex]->m_screenY;
+        nextY -= 3;
+        m_animSprites[m_stepIndex]->m_screenY = nextY;
     }
     return 0;
 }
