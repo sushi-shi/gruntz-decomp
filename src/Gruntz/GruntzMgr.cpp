@@ -3533,7 +3533,7 @@ void CGruntzMgr::DeactivateAllPlayers() {
         GruntzPlayer* player = &m_players[i];
         if (player != NULL) {
             player->m_active = false;
-            player->m_eliminated = false;
+            player->SetEliminated(false);
         }
     }
 }
