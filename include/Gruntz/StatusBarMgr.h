@@ -113,7 +113,6 @@ public:
 
     void StartDestructWarning(i32 countdownMs);
     i32 StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment);
-    void ResetCounters();
     void ResetGruntOvens();
     void EmptyGruntOven(i32 idx);
     i32 StartAvailableGruntOven();
@@ -179,19 +178,6 @@ public:
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
-    i32 ConfigureRect(
-        i32 sub,
-        CGameWorld* host,
-        i32 cmd,
-        i32 obj,
-        i32 r0,
-        i32 r1,
-        i32 r2,
-        i32 r3,
-        i32 key,
-        i32 frame,
-        i32 extra
-    );
     i32 HandleDoubleClick(i32 keyFlags, i32 screenX, i32 screenY);
 
     i32 OnPointerRelease(i32 keyFlags, i32 x, i32 y);

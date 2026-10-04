@@ -13,7 +13,6 @@
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Ints.h>
 #include <Lith/BDefs.h>

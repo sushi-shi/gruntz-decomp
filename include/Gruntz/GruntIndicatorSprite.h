@@ -9,6 +9,4 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/UserLogic.h>
 
-struct CIndicatorSyncHelper {};
-
 #endif // GRUNTZ_GRUNTINDICATORSPRITE_H

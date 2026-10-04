@@ -11,7 +11,6 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
-#include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <ZTools/BitVec.h>
 #include <ZTools/ZDArray.h>

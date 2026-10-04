@@ -17,7 +17,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteStateFlags.h>
-#include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Image/ImageSet.h>

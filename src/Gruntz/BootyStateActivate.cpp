@@ -46,7 +46,6 @@
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/ImageState.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/MovieEntryId.h>
@@ -63,6 +62,7 @@
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/State.h>
 #include <Gruntz/String.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
