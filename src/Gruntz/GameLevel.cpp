@@ -974,7 +974,6 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     return destY;
 }
 
-// @early-stop
 RVA(0x0015ede0, 0x2a7)
 i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 lo = t->m_extent.left + destX;
