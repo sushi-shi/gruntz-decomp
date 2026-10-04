@@ -477,7 +477,7 @@ attract	?OnPaint@CState@@UAEHXZ	100.0000	100.0000	3	a5dbbb843747	0xfac70	100.000
 attract	?Present@CState@@QAEXH@Z	100.0000	100.0000	9	d6960a39422f	0xfaec0	100.0000	
 attract	?PresentTitlePage@CState@@QAEHPBDHHHH@Z	99.5238	99.5238	9	8b929ca14bd5	0xfa300	99.5238	
 attract	?RestoreGraphics@CState@@UAEHXZ	99.5403	99.5403	15	d87a8c5a6772	0xface0	99.5403	
-attract	?RetireScene@CState@@QAEHHHHH@Z	98.3913	98.3913	9	d187d4c6d665	0xfa8f0	98.3913	
+attract	?FadeSineToBuffer@CState@@QAEHHHHH@Z	98.3913	98.3913	9	d187d4c6d665	0xfa8f0	98.3913	
 attract	?SerializeHeader@CPlay@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	4	c26d73be8dae	0xfafa0	100.0000	
 attract	?ShadeScreen@CState@@QAEHH@Z	100.0000	100.0000	10	b14931114df6	0xfaf50	100.0000	
 attractstate	??1CAttract@@UAE@XZ	100.0000	100.0000	1	b2b974d351ac	0x8cd90	100.0000	

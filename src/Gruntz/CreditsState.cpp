@@ -332,7 +332,7 @@ i32 CCreditsState::InitAttractTitle() {
     CDDSurface* tgt = m_world->GetDisplayBuffers()->GetBackBuffer()->GetSurface();
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
     (static_cast<CDisplayBuffers*>(m_world->GetDisplayBuffers()))->CopyBackToOverlay();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return 1;
 }
 

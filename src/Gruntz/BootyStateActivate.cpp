@@ -331,7 +331,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
         return 0;
     }
     m_world->GetDisplayBuffers()->CopyOverlayToBack();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     CGruntzMgr* reg = g_gameReg;
     CDDrawSurfaceMgr* world = reg->World();
@@ -1486,7 +1486,7 @@ i32 CBootyState::RestoreGraphics() {
         ShowSecretBonusMessage();
     }
     m_world->GetDisplayBuffers()->CopyOverlayToBack();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return 1;
 }
 
@@ -1631,7 +1631,7 @@ i32 CBootyState::HandleContinueInput() {
                     m_world->GetDisplayBuffers()->GetBackBuffer()
                 );
                 m_world->GetDisplayBuffers()->CopyBackToOverlay();
-                RetireScene(0x50, 0x3e8, 0, true);
+                FadeSineToBuffer(0x50, 0x3e8, 0, true);
                 if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
                 }
@@ -1647,7 +1647,7 @@ i32 CBootyState::HandleContinueInput() {
                     return 0;
                 }
                 m_world->GetDisplayBuffers()->CopyOverlayToBack();
-                RetireScene(0x50, 0x3e8, 0, true);
+                FadeSineToBuffer(0x50, 0x3e8, 0, true);
                 m_sequencePhase = BOOTYSEQ_SECRET_PENDING;
                 return 1;
             }
@@ -1660,7 +1660,7 @@ i32 CBootyState::HandleContinueInput() {
                 return 0;
             }
             m_world->GetDisplayBuffers()->CopyOverlayToBack();
-            RetireScene(0x50, 0x3e8, 0, true);
+            FadeSineToBuffer(0x50, 0x3e8, 0, true);
             return 1;
         }
 
@@ -1988,7 +1988,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
         return ok;
     }
     m_world->GetDisplayBuffers()->CopyOverlayToBack();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     CDDrawSurfaceMgr* host = g_gameReg->World();
     i32 item = g_gameReg->GetSoundVolume();
@@ -2513,7 +2513,7 @@ i32 CMultiBootyState::RestoreGraphics() {
 
     DrawBattleStats();
     m_world->GetDisplayBuffers()->CopyOverlayToBack();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return 1;
 }
 

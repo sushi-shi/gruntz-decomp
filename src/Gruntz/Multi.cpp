@@ -426,7 +426,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
         r.left = 0;
         r.top = 0;
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-        RetireScene(0x50, 0x3e8, 0, true);
+        FadeSineToBuffer(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->GetTriggerMgr()) {
             m_mgr->GetTriggerMgr()->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
         }

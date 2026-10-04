@@ -288,9 +288,9 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
 
 // @early-stop
 RVA(0x000fa8f0, 0x118)
-i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
-    CFaderMgr* mgr = m_faderMgr;
-    if (mgr == NULL) {
+i32 CState::FadeSineToBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs, b32 useOverlay) {
+    CFaderMgr* faderMgr = m_faderMgr;
+    if (faderMgr == NULL) {
         return 0;
     }
     if (m_world->GetDeviceManager() == NULL) {
@@ -300,34 +300,34 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
     if (targetSurface == NULL) {
         return 0;
     }
-    CRenderBuffer* sourcePair;
+    CRenderBuffer* sourceBuffer;
     if (useOverlay != false && m_world->GetDisplayBuffers()->HasOverlay() != 0) {
-        sourcePair = m_world->GetDisplayBuffers()->m_overlayBuffer;
+        sourceBuffer = m_world->GetDisplayBuffers()->m_overlayBuffer;
     } else {
-        sourcePair = m_world->GetDisplayBuffers()->GetBackBuffer();
+        sourceBuffer = m_world->GetDisplayBuffers()->GetBackBuffer();
     }
-    CDDSurface* sourceSurface = sourcePair->GetSurface();
+    CDDSurface* sourceSurface = sourceBuffer->GetSurface();
     if (sourceSurface == NULL) {
         return 0;
     }
 
-    CSineFaderConfig t;
-    t.m_clearToBlack = false;
-    t.m_intensityPercent = pct;
-    t.m_targetSurface = targetSurface;
-    t.m_sourceSurface = sourceSurface;
-    CFader* f = mgr->Add(FADERKIND_SINE, &t);
-    if (f == NULL) {
+    CSineFaderConfig config;
+    config.m_clearToBlack = false;
+    config.m_intensityPercent = intensityPercent;
+    config.m_targetSurface = targetSurface;
+    config.m_sourceSurface = sourceSurface;
+    CFader* fader = faderMgr->Add(FADERKIND_SINE, &config);
+    if (fader == NULL) {
         return 0;
     }
 
     if (g_disableFades != false) {
-        ActiveWait(dur);
+        ActiveWait(durationMs);
         m_world->GetDisplayBuffers()->GetFrontSurface()->GetSurface()->Blt(sourceSurface);
     } else {
-        f->RunFade(dur, lead, 0);
+        fader->RunFade(durationMs, leadMs, 0);
     }
-    mgr->Remove(f);
+    faderMgr->Remove(fader);
     return 1;
 }
 

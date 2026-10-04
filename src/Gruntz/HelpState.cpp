@@ -87,7 +87,7 @@ i32 CHelpState::EnterState(GameStateId previousState) {
     if (LoadTitlePage(g_titleBuf, 0, 0, 0, 0, true) == 0) {
         return 0;
     }
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return 1;
 }
 

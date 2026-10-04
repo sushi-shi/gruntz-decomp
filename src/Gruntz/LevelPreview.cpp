@@ -126,7 +126,7 @@ i32 CPreviewState::Refade() {
     }
     i32 r =
         LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true);
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return r;
 }
 
@@ -141,7 +141,7 @@ i32 CPreviewState::RefadeVirtual() {
     }
     i32 r =
         LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true);
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return r;
 }
 
@@ -181,7 +181,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
         failed = true;
     } else {
         PlayRegistryCueIfElapsed(m_world->SoundRegistry(), "GAME_TELEPORTEROPEN");
-        RetireScene(0x50, 0x3e8, 0, true);
+        FadeSineToBuffer(0x50, 0x3e8, 0, true);
     }
     m_previewCountdownMs = 60000;
     if (failed) {

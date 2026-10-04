@@ -405,7 +405,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         r.left = 0;
         r.top = 0;
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-        RetireScene(0x50, 0x3e8, 0, true);
+        FadeSineToBuffer(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->GetTriggerMgr()) {
             m_mgr->GetTriggerMgr()->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
         }
@@ -1113,7 +1113,7 @@ i32 CPlay::LoadLevel(i32 level, i32) {
     if (!LoadTitlePage(nameBuf, 0, 0, 0, 0, true)) {
         goto fail0;
     }
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     DrawLevelInfoText();
     self->m_stateResources = prevTiles;
     {
@@ -1599,7 +1599,7 @@ i32 CPlay::RestoreGraphics() {
     m_statusBar->Render();
     m_stepCountdown = 2;
     m_world->GetDisplayBuffers()->CopyBackToOverlay();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
     return 1;
 }
 
@@ -5869,7 +5869,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
     }
 
     m_world->GetDisplayBuffers()->CopyBackToOverlay();
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != NULL) {

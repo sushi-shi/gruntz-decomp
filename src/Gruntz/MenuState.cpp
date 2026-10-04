@@ -219,7 +219,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         World()->GetDisplayBuffers()->CopyOverlayToBack();
     }
 
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     if (ShowCursor(true) < 0) {
         do {
@@ -351,7 +351,7 @@ i32 CMenuState::RestoreDisplay() {
     tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
     World()->GetDisplayBuffers()->CopyBackToOverlay();
 
-    RetireScene(0x50, 0x3e8, 0, true);
+    FadeSineToBuffer(0x50, 0x3e8, 0, true);
 
     if (ShowCursor(true) < 0) {
         do {

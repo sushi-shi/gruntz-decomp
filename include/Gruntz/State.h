@@ -150,7 +150,7 @@ public:
         i32 unused4
     );
 
-    i32 RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay);
+    i32 FadeSineToBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs, b32 useOverlay);
 
     i32 FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
     i32 FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
