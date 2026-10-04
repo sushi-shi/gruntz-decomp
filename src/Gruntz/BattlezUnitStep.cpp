@@ -283,7 +283,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     }
     band = unit->GetTargetTeam();
     CBattlezMapConfig* bundle = m_ctx->m_players[band].GetBattlezConfig();
-    Coord marker = bundle->m_marker;
+    Coord marker = bundle->GetBaseTile();
     if (unit->CoordsEmpty()) {
         switch (unit->GetDefenderState()) {
             case AISTATE_SEEK: {
