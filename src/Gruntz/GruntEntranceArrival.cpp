@@ -1278,7 +1278,6 @@ i32 CGrunt::UpdateToolUseAnimation() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::FinishToobMoveAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1315,22 +1314,14 @@ i32 CGrunt::FinishToobMoveAnimation() {
         g = g_gameReg;
     }
     grid = g->GetTileGrid();
-    char* cellObj;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->GetWidth())
-        || static_cast<u32>(ty) >= static_cast<u32>(grid->GetHeight())) {
-        cellObj = NULL;
-    } else {
-
-        // byte-evidenced: the cell word holds the object key.
-        cellObj = reinterpret_cast<char*>(grid->m_rowInts[ty][tx * 7 + 2]);
-    }
-    if (cellObj == NULL) {
+    i32 objectId = grid->ObjectIdAt(tx, ty);
+    if (objectId == 0) {
         return 0;
     }
-    CGameObject* found = LookupActiveObject(
-        g->World()->ChildGroup()->m_registeredGameObjectsById,
-        static_cast<void*>(cellObj)
-    );
+    CGameObject* found = NULL;
+    if (!g->World()->ChildGroup()->LookupRegisteredObject(objectId, found)) {
+        found = NULL;
+    }
     if (found == NULL) {
         grid = g_gameReg->GetTileGrid();
         grid->SetObjectIdAt(tx, ty, 0);
