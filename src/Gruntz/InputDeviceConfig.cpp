@@ -13,7 +13,7 @@
 #include <windowsx.h>
 
 RVA(0x000387c0, 0xd4)
-CString CInputConfig::LoadInputDeviceConfig(i32 uppercase) {
+CString CInputConfig::GetInputDeviceName(i32 uppercase) {
     CString name("None");
     switch (m_deviceId) {
         case INPUTDEV_KEYBOARD:
