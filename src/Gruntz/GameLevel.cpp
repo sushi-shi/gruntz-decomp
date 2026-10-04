@@ -861,9 +861,11 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
 
 RVA(0x0015e720, 0x14c)
 i32 CGameLevel::StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags) {
-    i32 mid = t->m_extent.right + destX;
-    i32 lo = t->m_extent.top + destY;
-    i32 hi = t->m_extent.bottom + destY;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 mid = bounds.right;
+    i32 lo = bounds.top;
+    i32 hi = bounds.bottom;
     i32 cur = lo;
 
     while (cur <= hi) {
@@ -887,9 +889,11 @@ i32 CGameLevel::StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
 
 RVA(0x0015e870, 0x14c)
 i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags) {
-    i32 mid = t->m_extent.left + destX;
-    i32 lo = t->m_extent.top + destY;
-    i32 hi = t->m_extent.bottom + destY;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 mid = bounds.left;
+    i32 lo = bounds.top;
+    i32 hi = bounds.bottom;
     i32 cur = lo;
 
     while (cur <= hi) {
@@ -915,9 +919,11 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015e9c0, 0x139)
 i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
-    i32 hiX = t->m_extent.right + x;
-    i32 fixedY = t->m_extent.top + y;
-    i32 col = t->m_extent.left + x;
+    RECT bounds;
+    t->ExtentAt(x, y, bounds);
+    i32 hiX = bounds.right;
+    i32 fixedY = bounds.top;
+    i32 col = bounds.left;
     while (col <= hiX) {
         TileCollisionKind result;
         PROBE_TILE(this, col, fixedY, result);
@@ -936,9 +942,11 @@ i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
 // @early-stop
 RVA(0x0015eb00, 0x2d2)
 i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
-    i32 mid = t->m_extent.right + destX;
-    i32 cur = t->m_extent.left + destX;
-    i32 hiY = t->m_extent.bottom + destY + 1;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 mid = bounds.right;
+    i32 cur = bounds.left;
+    i32 hiY = bounds.bottom + 1;
 
     if (cur <= mid) {
         do {
@@ -976,9 +984,11 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
 
 RVA(0x0015ede0, 0x2a7)
 i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
-    i32 lo = t->m_extent.left + destX;
-    i32 mid = t->m_extent.right + destX;
-    i32 hiY = destY + t->m_extent.bottom + 1;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 lo = bounds.left;
+    i32 mid = bounds.right;
+    i32 hiY = bounds.bottom + 1;
 
     TileCollisionKind first;
     PROBE_TILE(this, destX, hiY, first);
@@ -1052,9 +1062,11 @@ i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
 // @early-stop
 RVA(0x0015f1c0, 0x171)
 i32 CGameLevel::ResolveCeilingCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
-    i32 startCol = t->m_extent.left + destX;
-    i32 mid = t->m_extent.right + destX;
-    i32 ceil = destY + t->m_extent.top - 1;
+    RECT bounds;
+    t->ExtentAt(destX, destY, bounds);
+    i32 startCol = bounds.left;
+    i32 mid = bounds.right;
+    i32 ceil = bounds.top - 1;
     i32 cur = startCol;
 
     if (cur <= mid) {
