@@ -2400,6 +2400,12 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     return 1;
 }
 
+inline void CBattlezMapConfig::SetClaimTarget(i32 col, i32 row) {
+    g_stepRun = false;
+    g_stepCol = col;
+    g_stepRow = row;
+}
+
 RVA(0x0002d800, 0x605)
 void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     if (g_stepRun == false) {
@@ -2412,9 +2418,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if ((m_board)
                 ->FindPathWithEndpointOverrides(start.m_x, start.m_y, col, row, &list, 1, 0x4903, 0)
             != 0) {
-            g_stepRun = false;
-            g_stepCol = col;
-            g_stepRow = row;
+            SetClaimTarget(col, row);
             RecycleCoordList(list);
             return;
         }
@@ -2436,9 +2440,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         0
                     )
                     != 0) {
-                    g_stepRun = false;
-                    g_stepCol = col;
-                    g_stepRow = row;
+                    SetClaimTarget(col, row);
                     RecycleCoordList(list2);
                 }
             }
@@ -2474,9 +2476,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                     )
                     != 0) {
                     if (!list3.IsEmpty()) {
-                        g_stepRun = false;
-                        g_stepCol = col;
-                        g_stepRow = row;
+                        SetClaimTarget(col, row);
                         RecycleCoordList(list3);
                     }
                 }

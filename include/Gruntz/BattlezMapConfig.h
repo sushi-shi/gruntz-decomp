@@ -72,6 +72,7 @@ public:
     i32 ValidateUnitPath(CGrunt*);
 
     void ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
+    static void SetClaimTarget(i32 col, i32 row);
     i32 PathToNearestCandidate(CGrunt*, b32, i32, i32);
     i32 PathToNearestGoal(CGrunt*, i32, i32);
     CGrunt* PickRandomIdleUnit(i32);
