@@ -829,17 +829,17 @@ CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
 
 // @early-stop
 RVA(0x00165460, 0x156)
-i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
+i32 CAnimationSequence::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
     m_scale = 1.0f;
     m_durationMs = 0;
     const char* cursor = src->m_data;
     m_flags = src->m_flags | flags;
 
-    if (src->m_namelen != 0) {
-        m_name = new char[src->m_namelen + 2];
+    if (src->m_nameLengthBytes != 0) {
+        m_name = new char[src->m_nameLengthBytes + 2];
         u32 n;
-        for (n = 0; n < src->m_namelen; n++) {
+        for (n = 0; n < src->m_nameLengthBytes; n++) {
             m_name[n] = *cursor++;
         }
         m_name[n] = 0;
@@ -848,14 +848,14 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
     }
 
     i32 i;
-    for (i = 0; i < src->m_count; i++) {
+    for (i = 0; i < src->m_recordCount; i++) {
         CAniFrameRecord* rec = new CAniFrameRecord;
 
         Pix16CPtr head;
         head.m_chars = cursor;
         if (rec->Parse(ctx, head.m_swords) == 0) {
             delete rec;
-            DELETE_ANI_ELEMENT_CONTENTS(i);
+            DELETE_ANIMATION_SEQUENCE_CONTENTS(i);
             return 0;
         }
         m_records.Add(rec);
@@ -866,7 +866,7 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
 }
 
 RVA(0x001655c0, 0x53)
-i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags) {
+i32 CAnimationSequence::LoadResource(SoundCueRegistry* ctx, CRezItm* entry, i32 flags) {
     if (entry->GetType() != REZ_TAG_ANI) {
         return 0;
     }
@@ -882,7 +882,7 @@ i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags) {
 }
 
 RVA(0x00165620, 0x101)
-i32 CAniElement::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused) {
+i32 CAnimationSequence::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused) {
     CFile fr;
     if (fr.Open(filename, CFile::modeRead, NULL) == false) {
         return 0;
@@ -900,9 +900,9 @@ i32 CAniElement::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unuse
 }
 
 RVA(0x00165730, 0x4c)
-void CAniElement::DeleteAll() {
+void CAnimationSequence::DeleteAll() {
     i32 i;
-    DELETE_ANI_ELEMENT_CONTENTS(i);
+    DELETE_ANIMATION_SEQUENCE_CONTENTS(i);
 }
 
 RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniFrameRecord@@UAEPAXI@Z)

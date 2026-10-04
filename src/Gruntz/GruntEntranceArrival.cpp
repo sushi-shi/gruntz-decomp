@@ -469,7 +469,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         sel = (static_cast<u32>(toy1ExcessMs) < static_cast<u32>(toy2ExcessMs)) ? 0 : 1;
     }
 
-    CAniElement* want = m_poseToy[sel];
+    CAnimationSequence* want = m_poseToy[sel];
     if (m_wwdObject->m_animationCursor.GetAnimation() != want) {
         SwitchAnimation(want);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
@@ -931,7 +931,7 @@ i32 CGrunt::StartExitAnimation() {
 
     SET_ANIMATION_ACT("B");
 
-    CAniElement* found;
+    CAnimationSequence* found;
     i32 r = GetRandom(480);
     if (r > 0x140) {
         found = m_wwdObject->OwnerMgr()->GetAnimationRegistry()->FindAnimation(s_gruntzExitzOne);
@@ -1082,11 +1082,11 @@ tail:
     }
 
     m_attackWindupActive = false;
-    CAniElement* pose = m_poseStruck[struckPose];
+    CAnimationSequence* pose = m_poseStruck[struckPose];
     SwitchAnimation(pose);
     i32 frame;
     {
-        CAniElement* desc = m_wwdObject->m_animationCursor.GetAnimation();
+        CAnimationSequence* desc = m_wwdObject->m_animationCursor.GetAnimation();
         CAniFrameRecord* elem = desc->RecordAt(0);
         frame = elem->m_frameParameter;
     }

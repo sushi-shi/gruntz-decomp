@@ -65,7 +65,7 @@ public:
         PF_IMPACT = 5,
         PF_FALL = 6
     };
-    CAniElement* m_frames[7];
+    CAnimationSequence* m_frames[7];
     CWwdSpriteObject* m_shadow;
     SoundBuffer* m_sound;
     CPtrList m_hitList;

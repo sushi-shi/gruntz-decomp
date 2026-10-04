@@ -153,7 +153,7 @@ typedef i32 (CUserLogic::*CActHandler)();
     out.m_x >>= TILE_SHIFT_PX;
 
 #define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                  \
-    CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
+    CAnimationSequence* animation = m_wwdObject->m_animationCursor.m_animation;                    \
     CAniFrameRecord* record = animation->RecordAt(0);                                              \
     i32 frame = record->m_frameParameter;
 
@@ -177,7 +177,7 @@ typedef i32 (CUserLogic::*CActHandler)();
     }
 
 #define APPLY_CURRENT_ANIMATION_FRAME_SPRITE(name, animation, record)                              \
-    CAniElement* animation = m_wwdObject->m_animationCursor.GetAnimation();                        \
+    CAnimationSequence* animation = m_wwdObject->m_animationCursor.GetAnimation();                 \
     CAniFrameRecord* record = animation->RecordAt(0);                                              \
     APPLY_LOOKUP_SPRITE_INLINE(name, record->m_frameParameter);
 
@@ -280,14 +280,14 @@ public:
         CGameObject* object
     );
 
-    void ApplyAnimation(class CAniElement* animation, i32 advanceImmediately);
+    void ApplyAnimation(class CAnimationSequence* animation, i32 advanceImmediately);
 
     CGameObject* m_gameObject;
     CWwdSpriteObject* m_wwdObject;
 
     CLogicRecord* m_ownerLogicRecord;
 
-    class CAniElement* m_previousAnimation;
+    class CAnimationSequence* m_previousAnimation;
     char m_blob[0x10];
 
     void Hide() {
@@ -310,12 +310,12 @@ public:
         m_wwdObject->SetImageSetByName(name);
     }
 
-    void SwitchAnimation(CAniElement* anim) {
+    void SwitchAnimation(CAnimationSequence* anim) {
         m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
         m_wwdObject->m_animationCursor.SetAnimation(anim);
     }
 
-    void SwitchAnimationAndMaybeAdvance(CAniElement* anim, i32 advanceImmediately) {
+    void SwitchAnimationAndMaybeAdvance(CAnimationSequence* anim, i32 advanceImmediately) {
         m_previousAnimation = m_wwdObject->m_animationCursor.GetAnimation();
         m_wwdObject->SetAnimation(anim, advanceImmediately);
     }

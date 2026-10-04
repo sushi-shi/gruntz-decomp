@@ -6,7 +6,7 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
-class CAniElement;
+class CAnimationSequence;
 class CRezDir;
 struct CRezItm;
 
@@ -18,24 +18,24 @@ public:
     virtual i32 IsReady() OVERRIDE;
     virtual void Unload() OVERRIDE;
 
-    CAniElement* FindAnimation(const char* key);
-    void RemoveAnimation(CAniElement* target);
+    CAnimationSequence* FindAnimation(const char* key);
+    void RemoveAnimation(CAnimationSequence* target);
     void ClearAnimations();
     i32 RemoveWithPrefix(const char* prefix, const char* separator);
     i32 HasWithPrefix(const char* prefix);
-    CString FindAnimationKey(CAniElement* target);
+    CString FindAnimationKey(CAnimationSequence* target);
     virtual ~AnimationRegistry() OVERRIDE;
 
-    CAniElement* LoadAnimationFromSource(const char* key, CRezItm* source);
-    CAniElement* LoadAnimationFromFile(const char* key, const char* path);
-    CAniElement* LoadNamedAnimation(CRezItm* source);
-    void AddAnimation(CAniElement* animation, const char* key);
+    CAnimationSequence* LoadAnimationFromSource(const char* key, CRezItm* source);
+    CAnimationSequence* LoadAnimationFromFile(const char* key, const char* path);
+    CAnimationSequence* LoadNamedAnimation(CRezItm* source);
+    void AddAnimation(CAnimationSequence* animation, const char* key);
     i32 LoadFromTree(CRezDir* tree, const char* prefix, const char* separator);
 
     CMapStringToPtr m_animations;
 
 private:
-    void RegisterAnimation(CAniElement* animation, const char* key) {
+    void RegisterAnimation(CAnimationSequence* animation, const char* key) {
         m_animations[key] = animation;
     }
 };

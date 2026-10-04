@@ -43,7 +43,7 @@ GZ_ENUM_CONST_BEGIN(GruntIdleVariant)
     GRUNT_IDLE_VARIANT_SECONDARY = 2
 GZ_ENUM_CONST_END(GruntIdleVariant)
 
-class CAniElement;
+class CAnimationSequence;
 
 class SoundSample;
 
@@ -648,16 +648,16 @@ public:
         m_blockedVoicePending = pending;
     }
 
-    CAniElement* m_poseWalk;
-    CAniElement* m_poseAttack[2];
-    CAniElement* m_poseAttackIdle;
-    CAniElement* m_poseStruck[2];
-    CAniElement* m_poseIdle[5];
-    CAniElement* m_poseDeath;
-    CAniElement* m_poseToy[3];
-    CAniElement* m_poseItem[2];
+    CAnimationSequence* m_poseWalk;
+    CAnimationSequence* m_poseAttack[2];
+    CAnimationSequence* m_poseAttackIdle;
+    CAnimationSequence* m_poseStruck[2];
+    CAnimationSequence* m_poseIdle[5];
+    CAnimationSequence* m_poseDeath;
+    CAnimationSequence* m_poseToy[3];
+    CAnimationSequence* m_poseItem[2];
 
-    CAniElement* m_pickupAnimation;
+    CAnimationSequence* m_pickupAnimation;
     Coord m_reserved3dc;
     Coord m_toolTargetTile;
     i32 m_health;

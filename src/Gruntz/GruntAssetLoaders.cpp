@@ -213,7 +213,7 @@ i32 CGrunt::StartDeath(GruntDeathType deathType, i32 killerPlayerIndex) {
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
-                m_poseDeath = MapFind<CAniElement>(
+                m_poseDeath = MapFind<CAnimationSequence>(
                     m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                     s_deathzFall2
                 );
@@ -227,7 +227,7 @@ i32 CGrunt::StartDeath(GruntDeathType deathType, i32 killerPlayerIndex) {
         }
 
         case DEATH_ELECTROCUTE: {
-            m_poseDeath = MapFind<CAniElement>(
+            m_poseDeath = MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_deathzElectrocute
             );
@@ -239,7 +239,7 @@ i32 CGrunt::StartDeath(GruntDeathType deathType, i32 killerPlayerIndex) {
 
         case DEATH_MELT: {
             SnapToLastTile(1);
-            m_poseDeath = MapFind<CAniElement>(
+            m_poseDeath = MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 "GRUNTZ_DEATHZ_MELT"
             );
@@ -250,7 +250,7 @@ i32 CGrunt::StartDeath(GruntDeathType deathType, i32 killerPlayerIndex) {
         }
 
         case DEATH_KAROKE: {
-            m_poseDeath = MapFind<CAniElement>(
+            m_poseDeath = MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_deathzKaroke
             );
@@ -265,7 +265,7 @@ i32 CGrunt::StartDeath(GruntDeathType deathType, i32 killerPlayerIndex) {
                 SwitchAnimation(m_poseDeath);
                 goto pathA;
             }
-            m_poseDeath = MapFind<CAniElement>(
+            m_poseDeath = MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_deathzExplode
             );
@@ -276,7 +276,7 @@ i32 CGrunt::StartDeath(GruntDeathType deathType, i32 killerPlayerIndex) {
         }
 
         case DEATH_DRAIN: {
-            m_poseDeath = MapFind<CAniElement>(
+            m_poseDeath = MapFind<CAnimationSequence>(
                 m_wwdObject->OwnerMgr()->GetAnimationRegistry()->m_animations,
                 s_exitzDrain
             );

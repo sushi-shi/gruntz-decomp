@@ -27,7 +27,7 @@ class CDDrawWorker;
 
 class CImage;
 struct SoundCue;
-class CAniElement;
+class CAnimationSequence;
 
 struct CGameObject : public CResolveNode {
 public:
@@ -392,7 +392,7 @@ public:
     void SetImageSetByName(const char* name);
     i32 SetAnimationByName(const char* key, i32 advanceImmediately);
     i32 SetSoundCueByName(const char* name);
-    void SetAnimation(CAniElement* animation, i32 advanceImmediately);
+    void SetAnimation(CAnimationSequence* animation, i32 advanceImmediately);
     i32 IntersectsViewport();
 
     void ClampToFirstFrame();

@@ -46,12 +46,12 @@ public:
 
     CString m_warlordName;
 
-    CAniElement* m_idleAnims[4];
-    CAniElement* m_battlecryAnims[3];
-    CAniElement* m_animJoy;
-    CAniElement* m_animDeath;
-    CAniElement* m_animMoving;
-    CAniElement* m_animPanic;
+    CAnimationSequence* m_idleAnims[4];
+    CAnimationSequence* m_battlecryAnims[3];
+    CAnimationSequence* m_animJoy;
+    CAnimationSequence* m_animDeath;
+    CAnimationSequence* m_animMoving;
+    CAnimationSequence* m_animPanic;
 
     ClockInterval m_cooldownTimer;
     ClockInterval m_notifyTimer;

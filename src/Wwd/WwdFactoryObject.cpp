@@ -261,7 +261,7 @@ void CAniAdvanceCursor::Unload() {
 }
 
 RVA(0x0015c2d0, 0x45)
-void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
+void CAniAdvanceCursor::SetAnimation(CAnimationSequence* src) {
     CAniFrameRecord* e;
     i32 v;
     m_animation = src;
@@ -285,7 +285,7 @@ void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
 RVA(0x0015c320, 0x40)
 
 void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
-    CAniElement* src = m_animation;
+    CAnimationSequence* src = m_animation;
     if (src == NULL) {
         return;
     }
@@ -586,7 +586,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CDDrawWorker* seq = c2->GetImageSet();
                 if (c2->m_frameIndex == seq->GetMaxIndex() - 1) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
-                        CAniElement* a = m_animation;
+                        CAnimationSequence* a = m_animation;
                         m_recordIndex = m_recordIndex + 1;
                         CAniFrameRecord* p = a->RecordAt(m_recordIndex);
                         m_currentRecord = p;
@@ -705,9 +705,10 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (strlen(buf) == 0) {
         m_animation = NULL;
     } else {
-        m_animation = MapFind<CAniElement>(OwnerMgr()->GetAnimationRegistry()->m_animations, buf);
+        m_animation =
+            MapFind<CAnimationSequence>(OwnerMgr()->GetAnimationRegistry()->m_animations, buf);
     }
-    CAniElement* w = m_animation;
+    CAnimationSequence* w = m_animation;
     if (w != NULL) {
         CAniFrameRecord* e = w->RecordAt(m_recordIndex);
         m_currentRecord = e;

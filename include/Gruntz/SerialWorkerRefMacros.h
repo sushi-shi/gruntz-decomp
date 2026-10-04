@@ -67,7 +67,8 @@
         g_serialCounter++;                                                                         \
         (ar)->Read(name, SERIAL_NAME_LEN);                                                         \
         if (strlen(name) != 0) {                                                                   \
-            (field) = MapFind<CAniElement>((mgr)->GetAnimationRegistry()->m_animations, name);     \
+            (field) =                                                                              \
+                MapFind<CAnimationSequence>((mgr)->GetAnimationRegistry()->m_animations, name);    \
         } else {                                                                                   \
             (field) = NULL;                                                                        \
         }                                                                                          \

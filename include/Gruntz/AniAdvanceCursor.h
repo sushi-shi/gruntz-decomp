@@ -13,7 +13,7 @@
 class CWwdSpriteObject;
 struct CGameObject;
 class CAniFrameRecord;
-class CAniElement;
+class CAnimationSequence;
 class CFileMemBase;
 
 GZ_ENUM_CONST_BEGIN(AniAdvanceValue)
@@ -52,13 +52,13 @@ public:
     virtual void Unload() OVERRIDE;
 
     void BindSprite(CWwdSpriteObject* src);
-    CAniElement* GetAnimation() const {
+    CAnimationSequence* GetAnimation() const {
         return m_animation;
     }
     void SetConsumeDraw(b32 consume) {
         m_consumeDraw = consume;
     }
-    void SetAnimation(CAniElement* animation);
+    void SetAnimation(CAnimationSequence* animation);
     void RestartAnimation(i32 resetElapsedTime);
 
     i32 CanSerialize(CFileMemBase* ar);
@@ -72,7 +72,7 @@ public:
     inline void AdvanceToNextRecord();
 
     CWwdSpriteObject* m_boundObject;
-    CAniElement* m_animation;
+    CAnimationSequence* m_animation;
 
     CAniFrameRecord* m_currentRecord;
     i32 m_recordIndex;

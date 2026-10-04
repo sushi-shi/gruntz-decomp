@@ -427,7 +427,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
     POSITION pos = registryMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        CAniElement* animation = NULL;
+        CAnimationSequence* animation = NULL;
         MapGetNext(*registryMap, pos, key, animation);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CResourceNameEntry* resourceEntry = m_objectResources.FindByName(key);
@@ -441,7 +441,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src
 
     pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
-        CAniElement* animation = static_cast<CAniElement*>(toRemove.GetNext(pos));
+        CAnimationSequence* animation = static_cast<CAnimationSequence*>(toRemove.GetNext(pos));
         surfaceMgr->GetAnimationRegistry()->RemoveAnimation(animation);
     }
     toRemove.RemoveAll();
