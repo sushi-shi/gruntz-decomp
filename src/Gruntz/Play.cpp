@@ -4193,34 +4193,7 @@ i32 CPlay::ExecuteCommand(
             );
             if (g != NULL) {
                 if (g->IsGuarding() != true) {
-                    g->m_arrivalRerollTiming.Clear();
-                    g->m_tileClaimed = true;
-                    g->m_defenderPx = g->LastTilePx();
-
-                    switch (g->m_entranceReason) {
-                        case PICKUP_BOOMERANG:
-                            g->m_defenderRadius = 1;
-                            break;
-                        case PICKUP_GUNHAT:
-                        case PICKUP_NERFGUN:
-                        case PICKUP_ROCK:
-                            g->m_defenderRadius = 1;
-                            break;
-                        case PICKUP_WELDER:
-                        case PICKUP_WINGZ:
-                            g->m_defenderRadius = 1;
-                            break;
-                        default:
-                            g->m_defenderRadius =
-                                g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
-                    }
-                    g->m_arrivalFlags |= 0x18040402;
-                    g->m_arrivalState = AI_DEFENDER;
-                    g->SetDefenderState(AISTATE_SEEK);
-                    UNSET_COORD(g->m_arrivalCell);
-                    g->m_arrivalActive = false;
-                    SET_RECT_XY_EXTENTS(g->m_object->m_extent, 0, 0, 0, 0);
-                    g->SetEntrancePos(1, 1);
+                    BEGIN_GUARD(g);
                 }
                 g->m_arrivalNotified = false;
             }

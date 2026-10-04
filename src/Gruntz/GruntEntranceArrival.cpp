@@ -19,6 +19,7 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
@@ -719,32 +720,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                 }
                 if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
                     && m_arrived == false && m_tileClaimed != true) {
-                    m_arrivalRerollTiming.Clear();
-                    m_tileClaimed = true;
-                    m_defenderPx = m_lastTilePx;
-                    PickupType kind = m_entranceReason;
-
-                    switch (kind) {
-                        case PICKUP_BOOMERANG:
-                        case PICKUP_GUNHAT:
-                        case PICKUP_NERFGUN:
-                        case PICKUP_ROCK:
-                        case PICKUP_WELDER:
-                        case PICKUP_WINGZ:
-                            m_defenderRadius = 1;
-                            break;
-                        default:
-                            m_defenderRadius =
-                                g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
-                            break;
-                    }
-                    m_arrivalState = AI_DEFENDER;
-                    m_defenderState = AISTATE_SEEK;
-                    UNSET_COORD(m_arrivalCell);
-                    m_arrivalActive = false;
-                    m_arrivalFlags |= 0x18040402;
-                    SET_RECT_XY_EXTENTS(m_object->m_extent, 0, 0, 0, 0);
-                    SetEntrancePos(1, 1);
+                    BEGIN_GUARD(this);
                 }
             }
         }

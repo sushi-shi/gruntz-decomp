@@ -1,7 +1,9 @@
 #ifndef GRUNTZ_GRUNTZ_ARRIVALFLAGSPRESET_H
 #define GRUNTZ_GRUNTZ_ARRIVALFLAGSPRESET_H
 
+#include <Bute/ButeMgr.h>
 #include <Enums.h>
+#include <RectMacros.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -30,6 +32,36 @@ inline void MarkQuestzArrival(CGrunt* grunt) {
         grunt->m_arrivalFlags |= 0x10;
     }
 }
+
+#define BEGIN_GUARD(grunt)                                                                        \
+    {                                                                                             \
+        (grunt)->m_arrivalRerollTiming.Clear();                                                   \
+        (grunt)->m_tileClaimed = true;                                                            \
+        (grunt)->m_defenderPx = (grunt)->m_lastTilePx;                                            \
+        PickupType kind = (grunt)->m_entranceReason;                                              \
+                                                                                                  \
+        switch (kind) {                                                                           \
+            case PICKUP_BOOMERANG:                                                                \
+            case PICKUP_GUNHAT:                                                                   \
+            case PICKUP_NERFGUN:                                                                  \
+            case PICKUP_ROCK:                                                                     \
+            case PICKUP_WELDER:                                                                   \
+            case PICKUP_WINGZ:                                                                    \
+                (grunt)->m_defenderRadius = 1;                                                    \
+                break;                                                                            \
+            default:                                                                              \
+                (grunt)->m_defenderRadius =                                                       \
+                    g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;                     \
+                break;                                                                            \
+        }                                                                                         \
+        (grunt)->m_arrivalState = AI_DEFENDER;                                                    \
+        (grunt)->m_defenderState = AISTATE_SEEK;                                                  \
+        UNSET_COORD((grunt)->m_arrivalCell);                                                      \
+        (grunt)->m_arrivalActive = false;                                                         \
+        (grunt)->m_arrivalFlags |= 0x18040402;                                                    \
+        SET_RECT_XY_EXTENTS((grunt)->m_object->m_extent, 0, 0, 0, 0);                             \
+        (grunt)->SetEntrancePos(1, 1);                                                            \
+    }
 
 #define END_GUARD(grunt)                                                                           \
     {                                                                                              \
