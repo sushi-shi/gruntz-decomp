@@ -106,7 +106,7 @@ i32 CStatusBarMgr::Initialize(CDDrawSurfaceMgr* world) {
     m_collapsedSpriteX = vx - 0x45;
     m_collapsedSpriteY = vy - 0x30;
     m_gameTabContent = GAME_TAB_MENU;
-    m_tabCycle = g_curPlayer;
+    m_multiplayerPlayerIndex = g_curPlayer;
     Reset();
     if (BuildStatusBarTabs() == 0) {
         return 0;
@@ -550,7 +550,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                 return 0;
             }
             HiCueLookup();
-            m_tabCycle = IDX(cmd) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
+            m_multiplayerPlayerIndex = IDX(cmd) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
             ResetWidgets(false);
             TryActivate();
             RequestRedraw();
@@ -1082,7 +1082,7 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     memset(m_slotNotify, 0, sizeof(m_slotNotify));
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
-    memset(m_warlordHead, 0, sizeof(m_warlordHead));
+    memset(m_multiplayerHeadButtons, 0, sizeof(m_multiplayerHeadButtons));
     m_machineItemSprite = NULL;
     m_fallingItemSprite = NULL;
     m_destructButtonImage = NULL;
@@ -1117,7 +1117,7 @@ void CStatusBarMgr::ClearActiveTabContent() {
             memset(m_unitSampleArrows, 0, sizeof(m_unitSampleArrows));
             break;
         case TAB_MULTIPLAYER:
-            memset(m_warlordHead, 0, sizeof(m_warlordHead));
+            memset(m_multiplayerHeadButtons, 0, sizeof(m_multiplayerHeadButtons));
             break;
         case TAB_GRUNTZ: {
 
@@ -2018,7 +2018,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 1,
                 0
             );
-            m_warlordHead[0] = head;
+            m_multiplayerHeadButtons[0] = head;
             AddTabItem(4, head);
             NEW_STATUS_BAR_ITEM(
                 head,
@@ -2031,7 +2031,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 1,
                 0
             );
-            m_warlordHead[1] = head;
+            m_multiplayerHeadButtons[1] = head;
             AddTabItem(4, head);
             NEW_STATUS_BAR_ITEM(
                 head,
@@ -2044,7 +2044,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 1,
                 0
             );
-            m_warlordHead[2] = head;
+            m_multiplayerHeadButtons[2] = head;
             AddTabItem(4, head);
             NEW_STATUS_BAR_ITEM(
                 head,
@@ -2057,18 +2057,18 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                 1,
                 0
             );
-            m_warlordHead[3] = head;
+            m_multiplayerHeadButtons[3] = head;
             AddTabItem(4, head);
 
             {
-                CSBI_WarlordHead** slot = m_warlordHead;
+                CSBI_WarlordHead** slot = m_multiplayerHeadButtons;
                 i32 pi = 0;
                 do {
                     GruntzPlayer* p = &g_gameReg->m_players[pi];
                     CShadeTable* sel;
                     if (p->HasJoinedRound() != false && p->HasDropped() == false) {
                         sel = g_gameReg->GruntPalettes()->GetShadeTable(IDX(p->GetColor()), 0);
-                        if (pi == m_tabCycle) {
+                        if (pi == m_multiplayerPlayerIndex) {
                             (*slot)->SetState(1);
                         }
                     } else {
@@ -2095,7 +2095,7 @@ i32 CStatusBarMgr::BuildActiveTabContent() {
                             TAB_MULTIPLAYER,
                             CRect(gruntBarLeft, y - 0x11, gruntBarRight, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
-                            m_tabCycle,
+                            m_multiplayerPlayerIndex,
                             i,
                             0
                         )) {
@@ -3606,7 +3606,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     }
     {
         i32 i = 0;
-        CSBI_WarlordHead** q = m_warlordHead;
+        CSBI_WarlordHead** q = m_multiplayerHeadButtons;
         do {
             SER(*q)
             i++;
@@ -3673,7 +3673,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_collapsedSpriteX, sizeof(m_collapsedSpriteX));
     s->Write(&m_collapsedSpriteY, sizeof(m_collapsedSpriteY));
     s->Write(&m_gameTabContent, sizeof(m_gameTabContent));
-    s->Write(&m_tabCycle, sizeof(m_tabCycle));
+    s->Write(&m_multiplayerPlayerIndex, sizeof(m_multiplayerPlayerIndex));
 
     StatusSampleMode* p = m_unitSampleModes;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
@@ -3761,7 +3761,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
     ar->Read(&m_collapsedSpriteX, sizeof(m_collapsedSpriteX));
     ar->Read(&m_collapsedSpriteY, sizeof(m_collapsedSpriteY));
     ar->Read(&m_gameTabContent, sizeof(m_gameTabContent));
-    ar->Read(&m_tabCycle, sizeof(m_tabCycle));
+    ar->Read(&m_multiplayerPlayerIndex, sizeof(m_multiplayerPlayerIndex));
 
     StatusSampleMode* p = m_unitSampleModes;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
@@ -4379,7 +4379,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
 }
 
 RVA(0x0010b4f0, 0xaa)
-void CStatusBarMgr::AdvanceTab(i32 reverse) {
+void CStatusBarMgr::CycleMultiplayerPlayer(i32 reverse) {
     if (m_layoutLocked != false) {
         return;
     }
@@ -4395,12 +4395,12 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
         return;
     }
     if (reverse != 0) {
-        if (++m_tabCycle < 0) {
-            m_tabCycle = 3;
+        if (++m_multiplayerPlayerIndex < 0) {
+            m_multiplayerPlayerIndex = 3;
         }
     } else {
-        if (++m_tabCycle >= 4) {
-            m_tabCycle = 0;
+        if (++m_multiplayerPlayerIndex >= 4) {
+            m_multiplayerPlayerIndex = 0;
         }
     }
     ResetWidgets(false);

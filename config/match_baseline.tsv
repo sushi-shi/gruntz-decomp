@@ -3758,7 +3758,7 @@ sbi_rectonly	??_GCSBI_StatzTabArrow@@UAEPAXI@Z	100.0000	100.0000	1	cpp:6662a3503
 sbi_rectonly	??_GCStatusBarItem@@UAEPAXI@Z	100.0000	100.0000	1	cpp:6662a35030fa	0x100620	100.0000	
 sbi_rectonly	?ActivateSlot@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	10	ef63abd8d67b	0x10b930	100.0000	
 sbi_rectonly	?AdvanceGruntWell@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	d24fb05b3977	0x105750	100.0000	
-sbi_rectonly	?AdvanceTab@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	6	7bcfe4469a0b	0x10b4f0	100.0000	
+sbi_rectonly	?CycleMultiplayerPlayer@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	6	7bcfe4469a0b	0x10b4f0	100.0000	
 sbi_rectonly	?AnySlotActive@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	1	a2374f91cba2	0x105710	100.0000	
 sbi_rectonly	?ArmSlot@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	0a34a099b032	0x105560	100.0000	
 sbi_rectonly	?BuildGameTabContent@CStatusBarMgr@@QAEHXZ	96.3063	96.3063	17	f4451d6fa062	0x101580	96.3063	

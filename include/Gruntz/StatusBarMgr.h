@@ -229,7 +229,7 @@ public:
     i32 DockStatusBarLeft();
     i32 HideStatusBar();
 
-    void AdvanceTab(i32 reverse);
+    void CycleMultiplayerPlayer(i32 reverse);
 
     i32 DockStatusBarRight();
 
@@ -348,8 +348,8 @@ public:
     i32 m_displayHeight;
     SoundBuffer* m_destructWarningSound;
 
-    CSBI_WarlordHead* m_warlordHead[4];
-    i32 m_tabCycle;
+    CSBI_WarlordHead* m_multiplayerHeadButtons[4];
+    i32 m_multiplayerPlayerIndex;
 };
 
 inline CStatusBarMgr::CStatusBarMgr() {
@@ -378,14 +378,14 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_levelOverlayActive = false;
     m_quitConfirmationActive = false;
     m_displayHeight = 0x1e0;
-    m_tabCycle = 0;
+    m_multiplayerPlayerIndex = 0;
     memset(m_unitSampleModes, 0, sizeof(m_unitSampleModes));
     memset(m_unitSideTabs, 0, sizeof(m_unitSideTabs));
     memset(m_unitSampleArrows, 0, sizeof(m_unitSampleArrows));
     memset(m_slotNotify, 0, sizeof(m_slotNotify));
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
-    memset(m_warlordHead, 0, sizeof(m_warlordHead));
+    memset(m_multiplayerHeadButtons, 0, sizeof(m_multiplayerHeadButtons));
     m_resourceMainBackground = NULL;
     m_resourceUpperBackground = NULL;
     m_resourceWindowBackground = NULL;

@@ -2050,7 +2050,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         mgr->m_world->SoundRegistry()->PlayCue("GAME_TABHIGHLIGHT1");
-        this->m_statusBar->AdvanceTab(g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0));
+        this->m_statusBar->CycleMultiplayerPlayer(
+            g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)
+        );
         return 1;
     }
 
