@@ -14,6 +14,11 @@ rva	unit	function	lost_max	cur
 0x032060	battlezunitstep	?AdvanceToEnemyBase@CBattlezAiController@@QAEHPAVCGrunt@@@Z	83.5371	80.4525
 0x031610	battlezunitstep	?PursueNearbyEnemy@CBattlezAiController@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
 0x077df0	brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	93.2718	92.7476
+0x153d90	cimage	?BlitFlipH@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	99.2786
+0x153b20	cimage	?BlitFlipV@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	98.6087
+0x154750	cimage	?BlitShadeFlipH@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	99.4067
+0x153ff0	cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	98.5070
+0x1544d0	cimage	?BlitShadeFlipV@CImage@@QAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	99.3110
 0x153470	cimage	?RenderImage@CImage@@UAEXPAVCRenderState@@PAVCDDrawSurfacePair@@@Z	100.0000	98.0233
 0x14a200	ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	79.9049	79.8770
 0x14b770	ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.5866	77.3231
@@ -40,7 +45,7 @@ rva	unit	function	lost_max	cur
 0x0597a0	gruntcombat	?ApplyCombatHitEffects@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	73.2468	73.1162
 0x059230	gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	99.1168	97.4074
 0x057db0	gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	68.8303
-0x05d210	gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	88.1116	87.5067
+0x05d210	gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	88.8914	80.0294
 0x0f8240	gruntdefenselean	?StepMagicWandGruntBehavior@CGrunt@@QAEHXZ	96.3499	95.6614
 0x0f2b20	gruntdefensestep	?StepScrollGruntBehavior@CGrunt@@QAEHXZ	96.9379	96.8563
 0x0f36a0	gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	83.8203
