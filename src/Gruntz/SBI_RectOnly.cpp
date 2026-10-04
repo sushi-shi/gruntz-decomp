@@ -344,7 +344,6 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000fe910, 0xc30)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
     CStatusBarItem* w = HitTestRects(x, y);
@@ -590,7 +589,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                         HiCueLookup();
                         (static_cast<CPlay*>(g_gameReg->m_curState))->CloseLevelOverlay(0);
                     }
-                    return 1;
+                    break;
                 case SBICMD_DIALOG_SECONDARY:
                     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
@@ -602,7 +601,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                         HiCueTimed();
                         g_gameReg->FinalizeLevelAndShowResults();
                     }
-                    return 1;
+                    break;
                 case SBICMD_DIALOG_YES:
                     if (g_gameReg->GetGameMode() == GAMEMODE_QUESTZ) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
@@ -614,14 +613,15 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                         HiCueTimed();
                         g_gameReg->FinalizeLevelAndShowResults();
                     }
-                    return 1;
+                    break;
                 case SBICMD_DIALOG_NO:
                     HiCueTimed();
                     (static_cast<CPlay*>(g_gameReg->m_curState))->CloseLevelOverlay(0);
-                    return 1;
+                    break;
                 default:
                     return 0;
             }
+            break;
 
         default:
             return 0;
