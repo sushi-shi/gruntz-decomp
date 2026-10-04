@@ -493,6 +493,10 @@ public:
     b32 m_toyBreakStarted;
     b32 m_bombRunStarting;
     b32 m_actionTargetsGrunt;
+
+    void ClearGruntActionTarget() {
+        m_actionTargetsGrunt = false;
+    }
     b32 m_toobWaterMode;
     b32 m_wingzEnabled;
     b32 m_freezeDelayDone;
