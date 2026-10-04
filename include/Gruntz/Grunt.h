@@ -176,6 +176,7 @@ class CGrunt : public CMovingLogic, public CWapX {
 public:
     inline PickupType ResolveEquippedToolType(PickupType activePickupType) const;
     inline PickupType GetEquippedToolType() const;
+    inline void ClearMoveTileFx();
 
     PickupType GetPowerupType() const {
         return m_powerupType;

@@ -599,7 +599,7 @@ i32 CGrunt::BeginFreezeAnimation() {
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
         if (m_activePickupType != PICKUP_BOMB) {
             goto finalize;
         }
@@ -858,7 +858,7 @@ i32 CGrunt::FinishActiveAction() {
         if (m_activePickupType == PICKUP_WAND) {
             g_gameReg->VoiceMgr()->StopVoice(m_object->GetObjectId());
         }
-        ClearMoveTileFx(this);
+        ClearMoveTileFx();
         return 1;
     }
     if (GRUNT_IS_USING_TOY()) {

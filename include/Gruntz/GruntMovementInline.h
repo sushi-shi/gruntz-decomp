@@ -13,13 +13,13 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
            && grunt->m_object->m_screenY == grunt->m_lastTilePx.m_y;
 }
 
-inline void ClearMoveTileFx(CGrunt* grunt) {
-    grunt->m_triggerMgr->LoadTileArrivalFx(
-        grunt->GetPlayerIndex(),
-        grunt->GetUnitIndex(),
-        grunt->m_moveTile.m_x,
-        grunt->m_moveTile.m_y,
-        grunt->GetActivePickupType(),
+inline void CGrunt::ClearMoveTileFx() {
+    m_triggerMgr->LoadTileArrivalFx(
+        GetPlayerIndex(),
+        GetUnitIndex(),
+        m_moveTile.m_x,
+        m_moveTile.m_y,
+        GetActivePickupType(),
         WWDDRAW_NO_ANIMATION
     );
 }
