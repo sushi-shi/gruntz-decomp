@@ -11,7 +11,6 @@
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
-#include <Gruntz/AnimSink.h>
 #include <Gruntz/Explosion.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegMfcPtr.h>
