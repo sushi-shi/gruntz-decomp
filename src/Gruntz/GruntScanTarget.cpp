@@ -249,7 +249,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 PRIO(pb, sg->GetActivePickupType());
                 if (pa <= pb && sg->IsEntranceCommitted() != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
-                    RepathToward(this, sg);
+                    RepathToward(sg);
                     if (m_inCombat != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }

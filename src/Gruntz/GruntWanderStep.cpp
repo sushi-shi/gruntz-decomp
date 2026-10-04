@@ -118,7 +118,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 m_aiState = AISTATE_SEEK;
                 return 1;
             }
-            RepathToward(this, slot);
+            RepathToward(slot);
             if (m_inCombat != false) {
                 return 1;
             }

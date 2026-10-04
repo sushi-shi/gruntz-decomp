@@ -40,17 +40,10 @@ inline void CGrunt::ResetToSeek() {
     SetAiState(AISTATE_SEEK);
 }
 
-inline void RepathToward(CGrunt* grunt, CGrunt* target) {
-    if (static_cast<u32>(grunt->GetDwell()) > DWELL_REPATH_MS) {
-        grunt->MoveTo(
-            target->m_lastTilePx.m_x,
-            target->m_lastTilePx.m_y,
-            0,
-            grunt->m_arrivalFlags,
-            1,
-            0
-        );
-        grunt->ResetDwell();
+inline void CGrunt::RepathToward(CGrunt* target) {
+    if (static_cast<u32>(GetDwell()) > DWELL_REPATH_MS) {
+        MoveTo(target->m_lastTilePx.m_x, target->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
+        ResetDwell();
     }
 }
 

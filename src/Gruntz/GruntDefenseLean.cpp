@@ -91,7 +91,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 || GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
-            RepathToward(this, occ);
+            RepathToward(occ);
             if (m_inCombat != false) {
                 return 1;
             }
