@@ -17,6 +17,9 @@ public:
     i32 ResetWithLevelRecords(QuestLevelStats* levelRecords);
     ~CGameStats();
     void Reset();
+    i32 GetLevelNumber() const {
+        return m_levelNumber;
+    }
     void SetLevelNumber(i32 levelNumber);
     void RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex);
     void ClearFlagCaptures();

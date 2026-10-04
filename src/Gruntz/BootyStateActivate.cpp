@@ -388,7 +388,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
         i32 count = static_cast<i32>(
             ((g_gameReg->GetGameStats())->CurrentAreaCoinRatio() * g_secretRatioScale)
         );
-        i32 rowBase = (g_gameReg->GetGameStats()->m_levelNumber - 1) / 4;
+        i32 rowBase = (g_gameReg->GetGameStats()->GetLevelNumber() - 1) / 4;
         SecretBonusTier category =
             (count >= 0x64) ? SECRET_BONUS_TIER_THREE
                             : ((count >= 0x32) ? SECRET_BONUS_TIER_TWO : SECRET_BONUS_TIER_ONE);
@@ -447,7 +447,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
 RVA(0x00019540, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CWwdSpriteObject** slot = m_trailSprites;
-    m_letterIdx = (g_gameReg->GetGameStats()->m_levelNumber - 1) % 4;
+    m_letterIdx = (g_gameReg->GetGameStats()->GetLevelNumber() - 1) % 4;
     m_radius = 0xc8;
     m_angleStep = 0;
     m_scratchX = 0;
@@ -1073,7 +1073,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->GetGameStats()->m_isCustomLevel != false) {
         return 1;
     }
-    if (g_gameReg->GetGameStats()->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
+    if (g_gameReg->GetGameStats()->GetLevelNumber() > IDX(QUESTLEVEL_LAST)) {
         return 1;
     }
     CShadeTable* sel = g_gameReg->GruntPalettes()->GetShadeTable(0, 0);
@@ -1097,7 +1097,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         RVA_DYNINIT(0x0001b670, 0xa, s_buf)
         DATA(0x0022af0c)
         static CString s_buf;
-        const char* prefix = (i < (g_gameReg->GetGameStats()->m_levelNumber - 1) % 4 + 1)
+        const char* prefix = (i < (g_gameReg->GetGameStats()->GetLevelNumber() - 1) % 4 + 1)
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
         s_buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
@@ -1115,7 +1115,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     if (gameStats->m_isCustomLevel != false) {
         return 1;
     }
-    i32 levelNumber = gameStats->m_levelNumber;
+    i32 levelNumber = gameStats->GetLevelNumber();
     if (levelNumber > 0x24) {
         return 1;
     }
@@ -1127,7 +1127,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
 
         if (levelNumber < 0x24) {
             for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
-                if (i <= (g_gameReg->GetGameStats()->m_levelNumber - 1) % 4) {
+                if (i <= (g_gameReg->GetGameStats()->GetLevelNumber() - 1) % 4) {
                     m_visSprites[i]->Hide();
                     SET_SCREEN_POS(m_animSprites[i], g_idleSpriteIds[i], 0xdc);
                     m_animSprites[i]->Show();
@@ -1232,7 +1232,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_visSprites[m_stepIndex]->Hide();
                     m_stepIndex++;
                     g_gameReg->VoiceMgr()->PlayVoice(NULL, 0x441, 0, 1, -1, -1);
-                    if (m_stepIndex == g_gameReg->GetGameStats()->m_levelNumber % 4) {
+                    if (m_stepIndex == g_gameReg->GetGameStats()->GetLevelNumber() % 4) {
                         m_stepIndex = 4;
                         return 1;
                     }
@@ -1254,7 +1254,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         CAniAdvanceCursor* cursor = &m_animSprites[m_stepIndex]->m_animationCursor;
         if (cursor->IsComplete()) {
             m_stepIndex++;
-            if (m_stepIndex == g_gameReg->GetGameStats()->m_levelNumber % 4) {
+            if (m_stepIndex == g_gameReg->GetGameStats()->GetLevelNumber() % 4) {
                 m_stepIndex = 4;
                 return 1;
             }
@@ -1395,7 +1395,7 @@ i32 CBootyState::Render() {
                 CString s;
                 RECT rc;
                 CGameStats* gameStats = g_gameReg->GetGameStats();
-                if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
+                if (gameStats->GetLevelNumber() > IDX(QUESTLEVEL_LAST)) {
 
                     if (gameStats->m_currentAreaComplete != false) {
                         s = "You have completed training! Now, grab the pebble from my hand.";
@@ -1505,7 +1505,7 @@ void CBootyState::ShowLevelCompleteMessage() {
         CString s;
         RECT r;
         CGameStats* gameStats = g_gameReg->GetGameStats();
-        if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
+        if (gameStats->GetLevelNumber() > IDX(QUESTLEVEL_LAST)) {
             if (gameStats->m_currentAreaComplete != false) {
                 s = "You have completed training! Now, grab the pebble from my hand.";
             } else {
@@ -1562,7 +1562,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 m_initOnce = true;
                 SoundCueRegistry* ss = g_gameReg->World()->SoundRegistry();
                 ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A");
-                if (g_gameReg->GetGameStats()->m_levelNumber < 0x24) {
+                if (g_gameReg->GetGameStats()->GetLevelNumber() < 0x24) {
                     for (i32 p = 0; p < 4; p++) {
                         m_visSprites[p]->Hide();
                         SET_SCREEN_POS(m_animSprites[p], g_idleSpriteIds[p], 0xdc);
@@ -1613,7 +1613,8 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             }
         }
         if (m_initOnce != false && gameStats->m_currentAreaComplete != false
-            && gameStats->m_levelNumber < IDX(QUESTLEVEL_LAST) && state == BOOTYSEQ_PERFECT_BONUS) {
+            && gameStats->GetLevelNumber() < IDX(QUESTLEVEL_LAST)
+            && state == BOOTYSEQ_PERFECT_BONUS) {
             if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
                 if (!ShowSecretBonusMessage()) {
                     return 0;
@@ -1637,7 +1638,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         }
 
         CGameStats* nextLevelStats = g_gameReg->GetGameStats();
-        if (nextLevelStats->m_levelNumber == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
+        if (nextLevelStats->GetLevelNumber() == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
             SoundStream* sub = m_world->SoundRegistry()->m_soundStream;
             if (sub != NULL) {
                 sub->StopAllStreams();
@@ -1646,7 +1647,8 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             PostMessageA(g_gameReg->m_gameWnd->GetHwnd(), WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
         } else {
 
-            g_gameReg->PassClickToPlayState((nextLevelStats->m_levelNumber % 0x28) + 1, false, 1);
+            g_gameReg
+                ->PassClickToPlayState((nextLevelStats->GetLevelNumber() % 0x28) + 1, false, 1);
         }
     }
     return 1;
@@ -1687,7 +1689,11 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     {
         char area[128];
-        sprintf(area, "AREA%i", IDX(LevelAreaForLevel(g_gameReg->GetGameStats()->m_levelNumber)));
+        sprintf(
+            area,
+            "AREA%i",
+            IDX(LevelAreaForLevel(g_gameReg->GetGameStats()->GetLevelNumber()))
+        );
         m_levelResources = m_resourceArchive->GetDirFromPath(area);
     }
     if (!m_levelResources) {
