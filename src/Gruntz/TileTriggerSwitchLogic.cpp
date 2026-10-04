@@ -396,8 +396,8 @@ i32 CTileTriggerLogic::Tick() {
                 anim = "GAME_PYRAMIDDOWN";
             }
             TileCollisionKind now = PbResolveCell(world->m_level, m_tileX, m_tileY);
-            i32 ty = m_tileY;
             i32 tx = m_tileX;
+            i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_GREENPYRAMID_UP) {
@@ -418,8 +418,8 @@ i32 CTileTriggerLogic::Tick() {
                 anim = "GAME_PYRAMIDDOWN";
             }
             TileCollisionKind now = PbResolveCell(world->m_level, m_tileX, m_tileY);
-            i32 ty = m_tileY;
             i32 tx = m_tileX;
+            i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_PURPLEPYRAMID_UP) {
@@ -440,8 +440,8 @@ i32 CTileTriggerLogic::Tick() {
                 anim = "GAME_PYRAMIDDOWN";
             }
             TileCollisionKind now = PbResolveCell(world->m_level, m_tileX, m_tileY);
-            i32 ty = m_tileY;
             i32 tx = m_tileX;
+            i32 ty = m_tileY;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_ORANGEPYRAMID_UP) {
