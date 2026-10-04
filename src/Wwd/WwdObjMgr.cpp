@@ -458,11 +458,11 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
         REGISTER_CHILD_OBJECT_ID(obj);
     }
     POSITION pos = m_list.GetHeadPosition();
-    i32 key = obj->m_sortKey;
+    i32 key = obj->GetSortKey();
     while (pos != NULL) {
         POSITION cur = pos;
         CWwdGameObject* data = static_cast<CWwdGameObject*>(NextChild(pos));
-        if (data->m_sortKey > key
+        if (data->GetSortKey() > key
             && !HAS(
                 static_cast<WwdGameObjectFlags>(data->m_flags),
                 WWD_GAME_OBJECT_FLAG_SORT_PENDING
@@ -778,7 +778,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
         rc.top = wt - view->GetPlaneViewRect()->top + view->m_viewportRect.top;
 
         view->WorldToViewport(&rc.right, &rc.bottom);
-        drawHost->DrawCount(&rc, obj->m_sortKey);
+        drawHost->DrawCount(&rc, obj->GetSortKey());
     } while (pos != NULL);
 }
 
@@ -797,7 +797,7 @@ i32 CDDrawChildGroup::CheckSortOrder() {
             anchor = static_cast<CWwdGameObject*>(NextChild(node));
         }
         if (anchor != NULL) {
-            i32 key = anchor->m_sortKey;
+            i32 key = anchor->GetSortKey();
             while (node != NULL) {
                 CGameObject* cur_obj = NextChild(node);
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
@@ -805,7 +805,7 @@ i32 CDDrawChildGroup::CheckSortOrder() {
                         static_cast<WwdGameObjectFlags>(obj->m_flags),
                         WWD_GAME_OBJECT_FLAG_SORT_PENDING
                     )) {
-                    i32 curKey = obj->m_sortKey;
+                    i32 curKey = obj->GetSortKey();
                     if (key > curKey) {
                         anchor->GetClassId();
                         obj->GetClassId();
@@ -993,7 +993,7 @@ i32 CDDrawChildGroup::SumWeighted() {
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);
+        sum += i * (obj->m_screenX + obj->GetSortKey() + obj->m_screenY + obj->m_id);
         ++i;
     }
     return sum;

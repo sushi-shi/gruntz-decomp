@@ -177,6 +177,10 @@ public:
 
     void AttachToOwner(CDDrawSurfaceMgr* owner, i32 id);
 
+    const i32& GetSortKey() const {
+        return m_sortKey;
+    }
+
     void SetSortKey(i32 key) {
         if (m_sortKey != key) {
             m_sortKey = key;

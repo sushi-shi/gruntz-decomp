@@ -506,7 +506,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
                 while (pos != NULL && blocked == 0) {
                     POSITION cur = pos;
                     CGameObject* pl = ctx->NextChild(pos);
-                    if (pl->m_sortKey < zBound) {
+                    if (pl->GetSortKey() < zBound) {
                         pl->Render(visitor);
                     } else {
                         pos = cur;
