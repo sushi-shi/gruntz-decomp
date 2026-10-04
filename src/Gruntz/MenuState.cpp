@@ -253,16 +253,16 @@ void CMenuState::StopMusicChain() {
         return;
     }
     SoundCue* mus = m_menuMusicCue;
-    if (!mus->GetSound()->IsPlaying()) {
+    if (!mus->IsPlaying()) {
         return;
     }
     m_menuMusicCue->GetSound()->RampVolumeTo(0, 0x1f4, true);
-    if (!m_menuMusicCue->GetSound()->IsPlaying()) {
+    if (!m_menuMusicCue->IsPlaying()) {
         return;
     }
     do {
         m_world->SoundRegistry()->TickVolumeRamps();
-    } while (m_menuMusicCue->GetSound()->IsPlaying());
+    } while (m_menuMusicCue->IsPlaying());
 }
 
 RVA(0x000a06d0, 0x5f)
