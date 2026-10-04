@@ -105,10 +105,10 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        i32* block9,
-        i32 powerupType,
+        i32* replacementTiles,
+        i32 pickupType,
         i32 textId,
-        i32 dutyOffSpan
+        i32 pickupFaceDirection
     );
 
     CBrickStack*

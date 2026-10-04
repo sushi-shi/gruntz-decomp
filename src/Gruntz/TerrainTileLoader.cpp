@@ -151,7 +151,7 @@ i32 CTriggerMgr::HandleToolAnimationCue(
                     );
                     return 0;
                 }
-                rock->BuildRockBreakInGameText();
+                rock->BreakRock();
                 state->m_tileTriggers->RemoveIdleLogic(rock);
                 return 1;
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A

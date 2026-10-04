@@ -719,7 +719,7 @@ RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
 RVA(0x001122a0, 0x241)
-i32 CGiantRockLogic::BuildRockBreakInGameText() {
+i32 CGiantRockLogic::BreakRock() {
 
     CDDrawSurfaceMgr* gameMgr = g_gameReg->World();
 
@@ -736,7 +736,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     for (i32 j = 0; j <= 2; j++) {
         for (i32 i = 0; i <= 2; i++) {
-            i32 value = m_matrix[j * 3 + i];
+            i32 value = m_replacementTiles[j * 3 + i];
             i32 py = j + m_tileY - 1;
             i32 px = i + m_tileX - 1;
             CGruntzMgr* reg = g_gameReg;
@@ -757,7 +757,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(cx, cy, m_tileX, m_tileY)
     g_gameReg->GetTriggerMgr()
-        ->SpawnPickup(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
+        ->SpawnPickup(m_pickupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
         CGameObject* txt = g_gameReg->World()->ChildGroup()->CreateSprite(
@@ -1639,12 +1639,12 @@ i32 CGiantRockLogic::SerializeDispatch(
     }
     switch (mode) {
         case SERIAL_SAVE:
-            if (SerializeMatrix(ar) == 0) {
+            if (SaveRockFields(ar) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (DeserializeMatrix(ar) == 0) {
+            if (LoadRockFields(ar) == 0) {
                 return 0;
             }
             break;
@@ -1653,38 +1653,38 @@ i32 CGiantRockLogic::SerializeDispatch(
 }
 
 RVA(0x00113dd0, 0x7b)
-i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
+i32 CGiantRockLogic::SaveRockFields(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
     if (g_gameReg->World() == NULL) {
         return 0;
     }
-    s->Write(&m_powerupType, sizeof(m_powerupType));
+    s->Write(&m_pickupType, sizeof(m_pickupType));
     s->Write(&m_textId, sizeof(m_textId));
 
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Write(&m_matrix[r * 3 + c], sizeof(m_matrix[r * 3 + c]));
+            s->Write(&m_replacementTiles[r * 3 + c], sizeof(m_replacementTiles[r * 3 + c]));
         }
     }
     return 1;
 }
 
 RVA(0x00113e70, 0x7b)
-i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
+i32 CGiantRockLogic::LoadRockFields(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
     }
     if (g_gameReg->World() == NULL) {
         return 0;
     }
-    s->Read(&m_powerupType, sizeof(m_powerupType));
+    s->Read(&m_pickupType, sizeof(m_pickupType));
     s->Read(&m_textId, sizeof(m_textId));
 
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Read(&m_matrix[r * 3 + c], sizeof(m_matrix[r * 3 + c]));
+            s->Read(&m_replacementTiles[r * 3 + c], sizeof(m_replacementTiles[r * 3 + c]));
         }
     }
     return 1;

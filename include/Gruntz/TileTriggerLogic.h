@@ -169,20 +169,20 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        const i32* matrix,
-        PickupType powerupType,
+        const i32* replacementTiles,
+        PickupType pickupType,
         i32 textId,
-        i32 dutyOffSpan
+        i32 pickupFaceDirection
     );
 
-    i32 BuildRockBreakInGameText();
+    i32 BreakRock();
 
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
-    i32 SerializeMatrix(CFileMemBase* s);
-    i32 DeserializeMatrix(CFileMemBase* s);
+    i32 SaveRockFields(CFileMemBase* s);
+    i32 LoadRockFields(CFileMemBase* s);
 
-    i32 m_matrix[9];
-    PickupType m_powerupType;
+    i32 m_replacementTiles[9];
+    PickupType m_pickupType;
     i32 m_textId;
 };
 

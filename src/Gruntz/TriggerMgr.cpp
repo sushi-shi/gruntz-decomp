@@ -1580,7 +1580,7 @@ i32 CTriggerMgr::ApplyExplosion(i32 centerX, i32 centerY, i32 radiusTiles, i32 k
                         );
                         return 0;
                     }
-                    gr->BuildRockBreakInGameText();
+                    gr->BreakRock();
                     root->GetTileTriggers()->RemoveIdleLogic(gr);
                     continue;
                 }

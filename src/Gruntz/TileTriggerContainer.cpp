@@ -391,10 +391,10 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    i32* block9,
-    i32 powerupType,
+    i32* replacementTiles,
+    i32 pickupType,
     i32 textId,
-    i32 dutyOffSpan
+    i32 pickupFaceDirection
 ) {
     CGiantRockLogic* e = new CGiantRockLogic;
     if (e == NULL) {
@@ -405,10 +405,10 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
             tileX,
             tileY,
             cellKey,
-            block9,
-            static_cast<PickupType>(powerupType),
+            replacementTiles,
+            static_cast<PickupType>(pickupType),
             textId,
-            dutyOffSpan
+            pickupFaceDirection
         )) {
         delete e;
         return NULL;

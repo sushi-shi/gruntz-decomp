@@ -4209,13 +4209,13 @@ tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHW4TileCollisionKind@@@Z	99.590
 tileswitchlogic	?AreCheckpointSwitchLinksActive@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	6	da7d22532ae0	0x112c70	100.0000	
 tileswitchlogic	?AreMultiSwitchLinksActive@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	17	f9acbbeb6a50	0x111f40	100.0000	
 tileswitchlogic	?BreakTopBrick@CBrickStack@@QAEHPAVCGrunt@@@Z	97.9808	97.9808	25	e2df33d19172	0x112ee0	97.9808	
-tileswitchlogic	?BuildRockBreakInGameText@CGiantRockLogic@@QAEHXZ	100.0000	100.0000	26	d0739b4c77d9	0x1122a0	100.0000	
+tileswitchlogic	?BreakRock@CGiantRockLogic@@QAEHXZ	100.0000	100.0000	26	d0739b4c77d9	0x1122a0	100.0000	
 tileswitchlogic	?BuildSmall@CCheckpointTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHPBUtagRECT@@HHH@Z	100.0000	100.0000	14	f5d4f905e749	0x112a50	100.0000	
 tileswitchlogic	?BuildSmall@CTileTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHPBUtagRECT@@HHH@Z	100.0000	100.0000	2	fb54860f0c9a	0x110460	100.0000	
 tileswitchlogic	?Classify@CTileTriggerLogic@@QAEHH@Z	98.8451	98.8451	3	a937c2540b95	0x112970	98.8451	
 tileswitchlogic	?Deserialize@CTileTriggerLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	8c51f0a4a616	0x113c10	100.0000	
 tileswitchlogic	?DeserializeFields@CBrickStack@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	d883bb61fecc	0x114040	100.0000	
-tileswitchlogic	?DeserializeMatrix@CGiantRockLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	896851ea226d	0x113e70	100.0000	
+tileswitchlogic	?LoadRockFields@CGiantRockLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	896851ea226d	0x113e70	100.0000	
 tileswitchlogic	?FindIndexByKey@CTileTriggerLogic@@QAEHH@Z	100.0000	100.0000	1	8d828e280e7c	0x110820	100.0000	
 tileswitchlogic	?LoadBridgeMove@CTileTriggerLogic@@QAEXW4TileCollisionKind@@@Z	100.0000	100.0000	10	35693c39bb2c	0x110860	100.0000	
 tileswitchlogic	?LoadState@CTileTriggerSwitchLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	0a6dedc59107	0x1139a0	100.0000	
@@ -4228,7 +4228,7 @@ tileswitchlogic	?SerializeDispatch@CGiantRockLogic@@QAEHPAVCFileMemBase@@W4Seria
 tileswitchlogic	?SerializeDispatch@CTileTriggerLogic@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	4	21449312df0c	0x113a90	100.0000	
 tileswitchlogic	?SerializeDispatch@CTileTriggerSwitchLogic@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	3	354d43512237	0x113860	100.0000	
 tileswitchlogic	?SerializeFields@CBrickStack@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	33dc192774f6	0x113f60	100.0000	
-tileswitchlogic	?SerializeMatrix@CGiantRockLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	35fe62bab579	0x113dd0	100.0000	
+tileswitchlogic	?SaveRockFields@CGiantRockLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	35fe62bab579	0x113dd0	100.0000	
 tileswitchlogic	?SetBrickTile@CBrickStack@@QAEHW4BrickTileId@@@Z	96.5252	96.5252	13	f3e143df7779	0x112da0	96.5252	
 tileswitchlogic	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	5	8baae22a0ec5	0x111ec0	100.0000	
 tileswitchlogic	?Setup@CTileTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHHHH@Z	100.0000	100.0000	2	30b58b95e4b0	0x1104f0	100.0000	

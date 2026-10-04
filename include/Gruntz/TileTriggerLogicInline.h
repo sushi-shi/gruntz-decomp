@@ -74,16 +74,16 @@ __inline i32 CGiantRockLogic::Build(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    const i32* matrix,
-    PickupType powerupType,
+    const i32* replacementTiles,
+    PickupType pickupType,
     i32 textId,
-    i32 dutyOffSpan
+    i32 pickupFaceDirection
 ) {
     if (m_initGate != false) {
         return 0;
     }
-    memcpy(m_matrix, matrix, sizeof(m_matrix));
-    m_powerupType = powerupType;
+    memcpy(m_replacementTiles, replacementTiles, sizeof(m_replacementTiles));
+    m_pickupType = pickupType;
     m_textId = textId;
     m_typeTag = TRIGID_GIANT_ROCK_22;
     m_tileX = tileX;
@@ -98,7 +98,7 @@ __inline i32 CGiantRockLogic::Build(
     m_leadInSpan = 0;
     m_dutyOffSpan = 0;
     m_startClock = g_frameTime;
-    m_dutyOffSpan = dutyOffSpan;
+    m_dutyOffSpan = pickupFaceDirection;
     return 1;
 }
 
