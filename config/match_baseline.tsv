@@ -2062,7 +2062,7 @@ gruntcombat	?RegisterGruntActions@@YAXXZ	100.0000	100.0000	11	24d955af8006	0x5be
 gruntcombat	?SetAnimation@CWwdSpriteObject@@QAEXPAVCAnimationSequence@@H@Z	100.0000	100.0000	5	afc182afed31	0x58b60	100.0000	
 gruntcombat	?SetColorIndex@CGrunt@@QAEXH@Z	100.0000	100.0000	8	d4e790612a48	0x57800	100.0000	
 gruntcombat	?SetMaxStep@CMotionState@@QAEXN@Z	100.0000	100.0000	4	e837b01d910f	0x58ca0	100.0000	
-gruntcombat	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	51a80694a3bf	0x58bc0	100.0000	
+gruntcombat	?SetKinematics@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	51a80694a3bf	0x58bc0	100.0000	
 gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	80.0305	80.0305	86	b6cf6ec9b8a0	0x5d210	88.8914	
 gruntcombat	?StopPowerupLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	1aa1e3145753	0x57ce0	100.0000	
 gruntcombat	?StopVehicleLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	da602215f904	0x57c10	100.0000	

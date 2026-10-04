@@ -95,7 +95,7 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     } else {
         Motion()->m_maxBounds.m_y = static_cast<double>(maxY);
     }
-    m_motion.SetParams(
+    m_motion.SetKinematics(
         static_cast<double>(m_object->m_screenX),
         static_cast<double>(m_object->m_screenY),
         0.0,
@@ -142,7 +142,7 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(
     } else {
         Motion()->m_maxBounds.m_y = static_cast<double>(maxY);
     }
-    m_motion.SetParams(
+    m_motion.SetKinematics(
         static_cast<double>(m_object->m_screenX),
         static_cast<double>(m_object->m_screenY),
         0.0,

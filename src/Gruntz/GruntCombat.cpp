@@ -845,7 +845,7 @@ void CWwdSpriteObject::SetAnimation(CAnimationSequence* animation, i32 advanceIm
 }
 
 RVA(0x00058bc0, 0xa1)
-i32 CMotionState::SetParams(
+i32 CMotionState::SetKinematics(
     double posX,
     double posY,
     double posZ,

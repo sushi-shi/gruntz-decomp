@@ -19,9 +19,9 @@ public:
     CMotionState(EInlineBase);
     ~CMotionState();
 
-    void InitBounds();
+    void InitializeDefaults();
 
-    i32 SetParams(
+    i32 SetKinematics(
         double posX,
         double posY,
         double posZ,
@@ -60,10 +60,10 @@ public:
 inline CMotionState::~CMotionState() {}
 
 inline CMotionState::CMotionState(EInlineBase) {
-    InitBounds();
+    InitializeDefaults();
 }
 
-inline void CMotionState::InitBounds() {
+inline void CMotionState::InitializeDefaults() {
     VEC3_SET(m_position, 0.0, 0.0, 0.0);
     VEC3_SET(m_velocity, 0.0, 0.0, 0.0);
     VEC3_SET(m_acceleration, 0.0, 0.0, 0.0);
