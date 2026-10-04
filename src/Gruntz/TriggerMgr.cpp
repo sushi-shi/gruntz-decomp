@@ -1654,7 +1654,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
             if (grunt->IsEntranceCommitted() == false) {
                 continue;
             }
-            if (grunt->IsEntranceDropActive() != false) {
+            if (grunt->IsSpawnProtected() != false) {
                 continue;
             }
             i32 gruntX = grunt->m_object->m_screenX;

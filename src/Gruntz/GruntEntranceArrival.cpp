@@ -980,7 +980,7 @@ i32 CGrunt::StepCombatReaction(
     i32 fromProjectile,
     PickupType attackerGruntKind
 ) {
-    if (m_entranceCommitted == false || m_entranceDropActive != false) {
+    if (m_entranceCommitted == false || m_spawnProtectionActive != false) {
         return 0;
     }
     {

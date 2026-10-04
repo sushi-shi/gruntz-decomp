@@ -1627,7 +1627,7 @@ i32 CGrunt::Place(
     m_neighborScanEnabled = true;
     m_tileMoveCommitted = false;
     m_entranceArmed = false;
-    m_entranceDropActive = false;
+    m_spawnProtectionActive = false;
     m_deathType = DEATH_NONE;
     m_pendingTrigger = false;
     m_cellRemovalNotified = false;

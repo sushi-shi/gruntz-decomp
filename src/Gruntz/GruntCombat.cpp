@@ -1693,19 +1693,19 @@ void CGrunt::StepBehavior(char*) {
     }
     m_dwell += g_frameDelta;
 
-    if (m_entranceDropActive != false) {
+    if (m_spawnProtectionActive != false) {
         bool differs = IsNotAnimationAct("A");
         if (differs) {
             differs = IsNotAnimationAct("K");
             if (differs) {
-                goto dropExpire;
+                goto expireSpawnProtection;
             }
         }
 
         if (m_entranceTiming.Expired()) {
-        dropExpire: {
+        expireSpawnProtection: {
             CWwdSpriteObject* obj = m_object;
-            m_entranceDropActive = false;
+            m_spawnProtectionActive = false;
             obj->m_drawActive = true;
             obj->m_drawFillCmd = SHADE_PAL_16;
         }

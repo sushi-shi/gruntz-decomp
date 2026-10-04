@@ -1080,7 +1080,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_gruntKind, sizeof(m_gruntKind));
     ar->Write(&m_entranceArmed, sizeof(m_entranceArmed));
     ar->Write(&m_deathType, sizeof(m_deathType));
-    ar->Write(&m_entranceDropActive, sizeof(m_entranceDropActive));
+    ar->Write(&m_spawnProtectionActive, sizeof(m_spawnProtectionActive));
     ar->Write(&m_hasExtent, sizeof(m_hasExtent));
     ar->Write(&m_unusedBattleCell, sizeof(m_unusedBattleCell));
     ar->Write(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));

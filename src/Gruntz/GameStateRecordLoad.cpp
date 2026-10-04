@@ -150,7 +150,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_gruntKind, sizeof(m_gruntKind));
     ar->Read(&m_entranceArmed, sizeof(m_entranceArmed));
     ar->Read(&m_deathType, sizeof(m_deathType));
-    ar->Read(&m_entranceDropActive, sizeof(m_entranceDropActive));
+    ar->Read(&m_spawnProtectionActive, sizeof(m_spawnProtectionActive));
     ar->Read(&m_hasExtent, sizeof(m_hasExtent));
     ar->Read(&m_unusedBattleCell, sizeof(m_unusedBattleCell));
     ar->Read(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));

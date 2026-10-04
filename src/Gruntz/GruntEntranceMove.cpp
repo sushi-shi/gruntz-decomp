@@ -307,7 +307,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 g_gameReg->VoiceMgr()->PlayVoice(this, 0x33f, -1, 0, -1, -1);                      \
                 m_triggerMgr->SelectUnit(m_playerIndex, m_unitIndex, 0, 0);                        \
             }                                                                                      \
-            m_entranceDropActive = true;                                                           \
+            m_spawnProtectionActive = true;                                                        \
             m_entranceTiming.Start(g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000));         \
             m_flashTiming.m_intervalLo = 0;                                                        \
             m_flashTiming.m_intervalHi = 0;                                                        \

@@ -1582,7 +1582,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (u == NULL) {
                 continue;
             }
-            if (u->IsEntranceDropActive() != false) {
+            if (u->IsSpawnProtected() != false) {
                 continue;
             }
             Coord tile = ScreenTile(u);
@@ -1629,7 +1629,7 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 cell = rand() % TM_UNITS_PER_PLAYER;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         CGrunt* u = m_triggerMgr->UnitAt(band, i);
-        if (u != NULL && u->IsEntranceDropActive() == false) {
+        if (u != NULL && u->IsSpawnProtected() == false) {
             return u;
         }
         cell = (cell + 1) % TM_UNITS_PER_PLAYER;
@@ -1665,7 +1665,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->GetGruntKind() == GRUNT_GHOST) {
         return 0;
     }
-    if (other->IsEntranceDropActive() != false) {
+    if (other->IsSpawnProtected() != false) {
         return 0;
     }
     i32 roll = rand() % 4;

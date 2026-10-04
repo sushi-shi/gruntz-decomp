@@ -203,8 +203,8 @@ public:
     b32 IsGuarding() const {
         return m_tileClaimed;
     }
-    b32 IsEntranceDropActive() const {
-        return m_entranceDropActive;
+    b32 IsSpawnProtected() const {
+        return m_spawnProtectionActive;
     }
     b32 IsEntranceCommitted() const {
         return m_entranceCommitted;
@@ -561,7 +561,7 @@ public:
     b32 m_neighborScanEnabled;
     b32 m_tileMoveCommitted;
     GruntDeathType m_deathType;
-    b32 m_entranceDropActive;
+    b32 m_spawnProtectionActive;
     b32 m_deathAnimStarted;
     b32 m_cellRemovalNotified;
     i32 m_killerPlayerIndex;
