@@ -203,6 +203,9 @@ public:
     i32 GetStamina() const {
         return m_stamina;
     }
+    i32 GetToyTimePercent() const {
+        return m_toyTime;
+    }
     i32 GetHealth() const {
         return m_health;
     }

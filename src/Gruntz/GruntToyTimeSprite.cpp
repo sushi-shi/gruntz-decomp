@@ -22,5 +22,5 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CGameObject* obj) : CGruntHealthSprite(
 
 RVA(0x0007fca0, 0xd)
 i32 CGruntToyTimeSprite::GetDisplayedValue(CGrunt* grunt) {
-    return grunt->m_toyTime;
+    return grunt->GetToyTimePercent();
 }
