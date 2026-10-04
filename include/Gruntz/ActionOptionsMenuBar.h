@@ -36,8 +36,8 @@ public:
     i32 RefreshIfActive(i32 unusedDeltaMs);
     i32 Refresh();
     i32 Render();
-    i32 HitClick(i32 mx, i32 my);
-    ActionOptionHit HitHover(i32 mx, i32 my);
+    i32 UpdateHoverState(i32 mx, i32 my);
+    ActionOptionHit HitTestButtons(i32 mx, i32 my);
     void Deactivate();
     i32 Serialize(CFileMemBase* ar);
     i32 LoadAssets();

@@ -1,5 +1,5 @@
 rva	unit	function	lost_max	cur
-0x009650	actionoptionsmenubar	?HitClick@CActionOptionsMenuBar@@QAEHHH@Z	100.0000	94.0741
+0x009650	actionoptionsmenubar	?UpdateHoverState@CActionOptionsMenuBar@@QAEHHH@Z	100.0000	94.0741
 0x009330	actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	100.0000	93.2432
 0x0e5c10	aniplayer	?RenderCel@CAniPlayer@@QAEHXZ	98.4848	76.0000
 0x09b430	areamgr	?IsSameWorld@CAreaMgr@@QAEHH@Z	100.0000	58.5000

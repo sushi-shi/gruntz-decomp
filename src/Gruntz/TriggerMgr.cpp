@@ -425,7 +425,7 @@ i32 CTriggerMgr::UpdateTargetingCursor(i32 x, i32 y) {
 
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != NULL && ov->m_active != false) {
-        ov->HitClick(x, y);
+        ov->UpdateHoverState(x, y);
         return 1;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -1476,7 +1476,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     }
     CGrunt* cell = SoleSelectedGrunt();
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    ActionOptionHit kind = ov->HitHover(x, y);
+    ActionOptionHit kind = ov->HitTestButtons(x, y);
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
         PickupType alt = cell->GetEquippedToolType();
         if (alt == PICKUP_WAND) {

@@ -197,7 +197,7 @@ i32 CActionOptionsMenuBar::Render() {
 }
 
 RVA(0x00009650, 0xcf)
-i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
+i32 CActionOptionsMenuBar::UpdateHoverState(i32 mx, i32 my) {
     if (!m_active) {
         return 1;
     }
@@ -242,7 +242,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
 }
 
 RVA(0x00009760, 0x6c)
-ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
+ActionOptionHit CActionOptionsMenuBar::HitTestButtons(i32 mx, i32 my) {
     if (!m_active) {
         return ACTIONOPTION_HIT_NONE;
     }
