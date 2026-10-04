@@ -36,7 +36,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                 return 1;
             }
         }
-        if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordsEmpty()) {
+        if (g->GetDwell() > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordsEmpty()) {
             i32 tileY = g->GetScreenTileY();
             CRect
                 box(g->ScanCell().m_x - 5, g->ScanCell().m_y - 5, g->ScanCell().m_x + 5, tileY + 5);

@@ -58,10 +58,10 @@ i32 CBattlezMapConfig::ForcePlaceFromReserve(CGrunt* unit) {
     if (!unit->CoordsEmpty()) {
         return 1;
     }
-    if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
+    if (static_cast<u32>(unit->GetDwell()) <= static_cast<u32>(m_reserveBudget)) {
         return 1;
     }
     unit->TileSwitch(unit->m_arrivalCell.m_x, unit->m_arrivalCell.m_y, 0, 0xd87, 0, 0);
-    unit->m_dwell = 0;
+    unit->ResetDwell();
     return 1;
 }

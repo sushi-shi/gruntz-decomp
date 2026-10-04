@@ -592,7 +592,7 @@ candidateFound:
     unit->SetTargetTeam(-1);
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
-    unit->m_dwell = 0;
+    unit->ResetDwell();
     unit->m_blockedVoicePending = true;
     return 1;
 }
@@ -1310,7 +1310,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 unit->SetDefenderState(AISTATE_SEEK);
                 unit->RecycleCoords();
                 unit->SetBattlezTask(BZTASK_SEEK_SWITCH);
-                unit->m_dwell = 0;
+                unit->ResetDwell();
                 return 0;
             }
         }
@@ -2203,7 +2203,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             g->SetDefenderState(AISTATE_SEEK);
             g->RecycleCoords();
             g->SetBattlezTask(BZTASK_SEEK_SWITCH);
-            g->m_dwell = 0;
+            g->ResetDwell();
             return 0;
         }
     }
@@ -2723,7 +2723,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         }
     }
     if (best != NULL) {
-        if (static_cast<u32>(unit->m_dwell) > 0x64) {
+        if (static_cast<u32>(unit->GetDwell()) > 0x64) {
             m_board->Clip(&box);
 
             i32 flags = 0;
@@ -2770,10 +2770,10 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                 }
 
                 m_board->Clip(NULL);
-                unit->m_dwell = 0;
+                unit->ResetDwell();
             } else {
                 m_board->Clip(NULL);
-                unit->m_dwell = 0;
+                unit->ResetDwell();
                 return 0;
             }
         }
@@ -3398,7 +3398,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     UNSET_COORD(unit->m_defenderPx);
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
-    unit->m_dwell = 0;
+    unit->ResetDwell();
     unit->m_blockedVoicePending = true;
     unit->SetBattlezTask(BZTASK_ADVANCE);
     return 1;

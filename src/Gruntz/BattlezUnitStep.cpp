@@ -84,19 +84,19 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             }
             g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
             g->SetDefenderState(AISTATE_ATTACK);
-            g->m_dwell = 0;
+            g->ResetDwell();
             AcceptAlways(g);
             return 1;
         }
 
-        if (static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleRerouteDelay)) {
+        if (static_cast<u32>(g->GetDwell()) > static_cast<u32>(m_idleRerouteDelay)) {
             Coord here;
             g->GetScreenTile(&here);
             RerouteIdleUnit(g, here.m_x, here.m_y, m_idleBurnRandX, m_idleBurnRandY, -1);
             if (g->CoordCount() > m_idleRouteLimitY + m_idleRouteLimitX && !g->CoordsEmpty()) {
                 g->RecycleCoords();
             }
-            g->m_dwell = 0;
+            g->ResetDwell();
         }
         return 1;
     }
@@ -125,7 +125,7 @@ inflight: {
         g->RecycleCoords();
         g->m_arrivalCell.Set(nb->GetPlayerIndex(), nb->GetUnitIndex());
         g->SetDefenderState(AISTATE_ATTACK);
-        g->m_dwell = 0;
+        g->ResetDwell();
         {
             if (g->TileSwitch(nb->GetScreenTileX(), nb->GetScreenTileY(), 0, 0xd87, 0, 0) == 0) {
                 return 1;
@@ -147,7 +147,7 @@ inflight: {
             }
         }
 
-        if (static_cast<u32>(g->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
+        if (static_cast<u32>(g->GetDwell()) <= static_cast<u32>(m_reserveBudget)) {
             return 1;
         }
         {
@@ -174,7 +174,7 @@ inflight: {
     L_clearAt:
         ResetToSeek(g);
     L_done:
-        g->m_dwell = 0;
+        g->ResetDwell();
         return 1;
     }
 
@@ -212,7 +212,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
 
             CMapMgr* board = m_board;
             board->Clip(NULL);
-            if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordsEmpty()) {
+            if (static_cast<u32>(unit->GetDwell()) > DWELL_REPATH_MS && unit->CoordsEmpty()) {
                 i32 flags = unit->GetRouteBlockedMask();
                 unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER);
                 CGameObject* tl = target->m_object;
@@ -224,7 +224,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                     0,
                     BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER
                 );
-                unit->m_dwell = 0;
+                unit->ResetDwell();
             }
             return 1;
         }
@@ -320,7 +320,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 return 1;
             }
             case AISTATE_BATTLEZ_ROUTE_TARGET: {
-                if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
+                if (static_cast<u32>(unit->GetDwell()) <= static_cast<u32>(m_moveBudget)) {
                     return 1;
                 }
                 Coord defender = unit->DefenderPosition();
@@ -357,7 +357,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                     } else if (st == BATTLEZ_ROUTE_ALL_TOOLS_EXPANDED) {
                         unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER);
                     }
-                    unit->m_dwell = 0;
+                    unit->ResetDwell();
                     return 1;
                 }
                 unit->SetDefenderState(AISTATE_BATTLEZ_FINAL_ROUTE);
@@ -373,7 +373,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     goto routeSuccess;
                 }
-                unit->m_dwell = 0;
+                unit->ResetDwell();
                 unit->SetRoutePassableMask(BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER);
                 return 1;
             }
@@ -382,7 +382,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     routeSuccess:
         unit->SetRouteBlockedMask(g_battlezRouteBlockedMask);
         unit->SetRoutePassableMask(g_battlezRoutePassableMask);
-        unit->m_dwell = 0;
+        unit->ResetDwell();
         return 1;
     }
     if (unit->GetDefenderState() == AISTATE_SEEK) {

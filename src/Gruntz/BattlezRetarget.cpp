@@ -64,7 +64,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     }
     if (unit->CoordsEmpty()) {
         if (cell == -1) {
-            if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
+            if (static_cast<u32>(unit->GetDwell()) <= static_cast<u32>(m_moveBudget)) {
                 return 1;
             }
             i32 r = rand() % 4;
@@ -85,21 +85,21 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
                     AcceptAlways(unit);
                 }
             }
-            unit->m_dwell = 0;
+            unit->ResetDwell();
             return 1;
         }
         CBattlezMapConfig* recB = m_ctx->m_players[cell].GetBattlezConfig();
         if (recB == NULL) {
             return 1;
         }
-        if (static_cast<u32>(unit->m_dwell) <= 0x7d0) {
+        if (static_cast<u32>(unit->GetDwell()) <= 0x7d0) {
             return 1;
         }
 
         i32 y = recB->m_marker.m_y;
         i32 x = recB->m_marker.m_x;
         unit->TileSwitch(x, y, 0, 0x987, 0, 0x4068);
-        unit->m_dwell = 0;
+        unit->ResetDwell();
         return 1;
     }
     if (recA == NULL || cfgB == NULL) {

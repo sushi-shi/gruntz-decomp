@@ -42,7 +42,7 @@ inline void ResetToSeek(CGrunt* grunt) {
 }
 
 inline void RepathToward(CGrunt* grunt, CGrunt* target) {
-    if (static_cast<u32>(grunt->m_dwell) > DWELL_REPATH_MS) {
+    if (static_cast<u32>(grunt->GetDwell()) > DWELL_REPATH_MS) {
         grunt->StepArrivalDrop(
             target->m_lastTilePx.m_x,
             target->m_lastTilePx.m_y,
@@ -51,7 +51,7 @@ inline void RepathToward(CGrunt* grunt, CGrunt* target) {
             1,
             0
         );
-        grunt->m_dwell = 0;
+        grunt->ResetDwell();
     }
 }
 

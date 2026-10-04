@@ -271,6 +271,14 @@ public:
         m_routePassableMask = mask;
     }
 
+    i32 GetDwell() const {
+        return m_dwell;
+    }
+
+    void ResetDwell() {
+        m_dwell = 0;
+    }
+
     i32 GetTargetTeam() const {
         return m_targetTeam;
     }
